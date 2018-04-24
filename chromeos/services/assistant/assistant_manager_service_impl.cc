@@ -84,21 +84,22 @@ void AssistantManagerServiceImpl::SendGetSettingsUiRequest(
     const std::string& selector,
     GetSettingsUiResponseCallback callback) {
   std::string serialized_proto = SerializeGetSettingsUiRequest(selector);
-  assistant_manager_internal_->SendGetSettingsUiRequest(serialized_proto, [
-    callback, weak_ptr = weak_factory_.GetWeakPtr(),
-    task_runner = main_thread_task_runner_
-  ](const assistant_client::VoicelessResponse& response) {
-    // This callback may be called from server multiple times. We should only
-    // process non-empty response.
-    std::string settings = UnwrapGetSettingsUiResponse(response);
-    if (!settings.empty()) {
-      task_runner->PostTask(
-          FROM_HERE,
-          base::BindOnce(
-              &AssistantManagerServiceImpl::HandleGetSettingsResponse,
-              std::move(weak_ptr), callback, settings));
-    }
-  });
+  assistant_manager_internal_->SendGetSettingsUiRequest(
+      serialized_proto, std::string(), [
+        callback, weak_ptr = weak_factory_.GetWeakPtr(),
+        task_runner = main_thread_task_runner_
+      ](const assistant_client::VoicelessResponse& response) {
+        // This callback may be called from server multiple times. We should
+        // only process non-empty response.
+        std::string settings = UnwrapGetSettingsUiResponse(response);
+        if (!settings.empty()) {
+          task_runner->PostTask(
+              FROM_HERE,
+              base::BindOnce(
+                  &AssistantManagerServiceImpl::HandleGetSettingsResponse,
+                  std::move(weak_ptr), callback, settings));
+        }
+      });
 }
 
 void AssistantManagerServiceImpl::SendTextQuery(const std::string& query) {

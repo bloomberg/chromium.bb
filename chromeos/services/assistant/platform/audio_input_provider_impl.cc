@@ -20,40 +20,6 @@ constexpr assistant_client::BufferFormat kFormat{
 
 }  // namespace
 
-AudioInputConfigImpl::AudioInputConfigImpl() = default;
-
-AudioInputConfigImpl::~AudioInputConfigImpl() = default;
-
-std::vector<int> AudioInputConfigImpl::GetSelectedChannels() const {
-  return std::vector<int>{};
-}
-
-float AudioInputConfigImpl::GetMicSensitivity() const {
-  return 0.f;
-}
-
-assistant_client::AudioInputConfig::InputType
-AudioInputConfigImpl::GetInputType() const {
-  return assistant_client::AudioInputConfig::MICROPHONE_NEAR_FIELD;
-}
-
-std::string AudioInputConfigImpl::GetMicManufacturer() const {
-  return "default";
-}
-
-std::string AudioInputConfigImpl::GetMicModel() const {
-  return "default";
-}
-
-std::string AudioInputConfigImpl::GetMicVersion() const {
-  return "0";
-}
-
-assistant_client::AudioInputConfig::MicState AudioInputConfigImpl::GetMicState()
-    const {
-  return assistant_client::AudioInputConfig::ENABLED;
-}
-
 class AudioInputBufferImpl : public assistant_client::AudioBuffer {
  public:
   AudioInputBufferImpl(const void* data, uint32_t frame_count)
@@ -123,11 +89,6 @@ AudioInputProviderImpl::AudioInputProviderImpl(mojom::AudioInputPtr audio_input)
     : audio_input_(std::move(audio_input)) {}
 
 AudioInputProviderImpl::~AudioInputProviderImpl() = default;
-
-assistant_client::AudioInputConfig&
-AudioInputProviderImpl::GetAudioInputConfig() {
-  return audio_input_config_;
-}
 
 assistant_client::AudioInput& AudioInputProviderImpl::GetAudioInput() {
   return audio_input_;
