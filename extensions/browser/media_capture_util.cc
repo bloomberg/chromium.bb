@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/shell/browser/media_capture_util.h"
+#include "extensions/browser/media_capture_util.h"
 
 #include <algorithm>
 #include <string>
@@ -94,6 +94,18 @@ void VerifyMediaAccessPermission(content::MediaStreamType type,
     CHECK(permissions_data->HasAPIPermission(APIPermission::kVideoCapture))
         << "Video capture request but no videoCapture permission in manifest.";
   }
+}
+
+bool CheckMediaAccessPermission(content::MediaStreamType type,
+                                const Extension* extension) {
+  const PermissionsData* permissions_data = extension->permissions_data();
+  if (type == content::MEDIA_DEVICE_AUDIO_CAPTURE) {
+    return permissions_data->HasAPIPermission(APIPermission::kAudioCapture);
+  } else {
+    DCHECK(type == content::MEDIA_DEVICE_VIDEO_CAPTURE);
+    return permissions_data->HasAPIPermission(APIPermission::kVideoCapture);
+  }
+  return false;
 }
 
 }  // namespace media_capture_util

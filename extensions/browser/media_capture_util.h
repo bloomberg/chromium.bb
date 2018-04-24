@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_SHELL_BROWSER_MEDIA_CAPTURE_UTIL_H_
-#define EXTENSIONS_SHELL_BROWSER_MEDIA_CAPTURE_UTIL_H_
+#ifndef EXTENSIONS_BROWSER_MEDIA_CAPTURE_UTIL_H_
+#define EXTENSIONS_BROWSER_MEDIA_CAPTURE_UTIL_H_
 
 #include "base/macros.h"
 #include "content/public/common/media_stream_request.h"
@@ -32,7 +32,11 @@ void GrantMediaStreamRequest(content::WebContents* web_contents,
 void VerifyMediaAccessPermission(content::MediaStreamType type,
                                  const Extension* extension);
 
+// Check if the extension has permission for |type|.
+bool CheckMediaAccessPermission(content::MediaStreamType type,
+                                const Extension* extension);
+
 }  // namespace media_capture_util
 }  // namespace extensions
 
-#endif  // EXTENSIONS_SHELL_BROWSER_MEDIA_CAPTURE_UTIL_H_
+#endif  // EXTENSIONS_BROWSER_MEDIA_CAPTURE_UTIL_H_

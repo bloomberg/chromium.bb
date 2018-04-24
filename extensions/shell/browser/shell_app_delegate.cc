@@ -5,8 +5,8 @@
 #include "extensions/shell/browser/shell_app_delegate.h"
 
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/media_capture_util.h"
 #include "extensions/common/constants.h"
-#include "extensions/shell/browser/media_capture_util.h"
 #include "extensions/shell/browser/shell_extension_web_contents_observer.h"
 
 namespace extensions {
