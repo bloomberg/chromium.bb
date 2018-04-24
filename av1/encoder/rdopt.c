@@ -5633,66 +5633,68 @@ static INLINE int mv_check_bounds(const MvLimits *mv_limits, const MV *mv) {
          (mv->col >> 3) > mv_limits->col_max;
 }
 
-// Check if NEARESTMV/NEARMV/GLOBALMV is the cheapest way encode zero motion.
-// TODO(aconverse): Find out if this is still productive then clean up or remove
-static int check_best_zero_mv(const AV1_COMP *const cpi,
-                              const MACROBLOCK *const x,
-                              const int16_t mode_context[REF_FRAMES],
-                              int_mv (*frame_mv)[REF_FRAMES], int this_mode,
-                              const MV_REFERENCE_FRAME ref_frames[2],
-                              const BLOCK_SIZE bsize, int mi_row, int mi_col) {
-  int_mv zeromv[2] = { { .as_int = 0 } };
-  int comp_pred_mode = ref_frames[1] > INTRA_FRAME;
-  if (this_mode == GLOBALMV || this_mode == GLOBAL_GLOBALMV) {
-    for (int cur_frm = 0; cur_frm < 1 + comp_pred_mode; cur_frm++) {
-      zeromv[cur_frm].as_int =
-          gm_get_motion_vector(&cpi->common.global_motion[ref_frames[cur_frm]],
-                               cpi->common.allow_high_precision_mv, bsize,
-                               mi_col, mi_row,
-                               cpi->common.cur_frame_force_integer_mv)
-              .as_int;
-    }
+static INLINE int get_single_mode(int this_mode, int ref_idx,
+                                  int is_comp_pred) {
+  int single_mode;
+  if (is_comp_pred) {
+    single_mode =
+        ref_idx ? compound_ref1_mode(this_mode) : compound_ref0_mode(this_mode);
+  } else {
+    single_mode = this_mode;
   }
+  return single_mode;
+}
 
-  if ((this_mode == NEARMV || this_mode == NEARESTMV ||
-       this_mode == GLOBALMV) &&
-      frame_mv[this_mode][ref_frames[0]].as_int == zeromv[0].as_int) {
-    assert(ref_frames[1] == NONE_FRAME);
-    int16_t rfc = av1_mode_context_analyzer(mode_context, ref_frames);
-    int c1 = cost_mv_ref(x, NEARMV, rfc);
-    int c2 = cost_mv_ref(x, NEARESTMV, rfc);
-    int c3 = cost_mv_ref(x, GLOBALMV, rfc);
-
+static int check_best_zero_mv(const AV1_COMMON *const cm,
+                              const MACROBLOCK *const x, int this_mode,
+                              const MV_REFERENCE_FRAME ref_frames[2]) {
+  const int is_comp_pred = ref_frames[1] > INTRA_FRAME;
+  const uint8_t ref_frame_type = av1_ref_frame_type(ref_frames);
+  const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
+  if (!is_comp_pred) {
     if (this_mode == NEARMV) {
-      if (c1 > c3) return 0;
-    } else if (this_mode == NEARESTMV) {
-      if (c2 > c3) return 0;
-    } else {
-      assert(this_mode == GLOBALMV);
-      if ((c3 >= c2 && frame_mv[NEARESTMV][ref_frames[0]].as_int == 0) ||
-          (c3 >= c1 && frame_mv[NEARMV][ref_frames[0]].as_int == 0))
+      if (mbmi_ext->ref_mv_count[ref_frame_type] == 0) {
+        // NEARMV has the same motion vector as NEARESTMV
         return 0;
+      }
+      if (mbmi_ext->ref_mv_count[ref_frame_type] == 1 &&
+          cm->global_motion[ref_frames[0]].wmtype <= TRANSLATION) {
+        // NEARMV has the same motion vector as GLOBALMV
+        return 0;
+      }
     }
-  } else if ((this_mode == NEAREST_NEARESTMV || this_mode == NEAR_NEARMV ||
-              this_mode == GLOBAL_GLOBALMV) &&
-             frame_mv[this_mode][ref_frames[0]].as_int == zeromv[0].as_int &&
-             frame_mv[this_mode][ref_frames[1]].as_int == zeromv[1].as_int) {
-    int16_t rfc = av1_mode_context_analyzer(mode_context, ref_frames);
-    int c2 = cost_mv_ref(x, NEAREST_NEARESTMV, rfc);
-    int c3 = cost_mv_ref(x, GLOBAL_GLOBALMV, rfc);
-    int c5 = cost_mv_ref(x, NEAR_NEARMV, rfc);
-
-    if (this_mode == NEAREST_NEARESTMV) {
-      if (c2 > c3) return 0;
-    } else if (this_mode == NEAR_NEARMV) {
-      if (c5 > c3) return 0;
-    } else {
-      assert(this_mode == GLOBAL_GLOBALMV);
-      if ((c3 >= c2 && frame_mv[NEAREST_NEARESTMV][ref_frames[0]].as_int == 0 &&
-           frame_mv[NEAREST_NEARESTMV][ref_frames[1]].as_int == 0) ||
-          (c3 >= c5 && frame_mv[NEAR_NEARMV][ref_frames[0]].as_int == 0 &&
-           frame_mv[NEAR_NEARMV][ref_frames[1]].as_int == 0))
+    if (this_mode == GLOBALMV) {
+      if (mbmi_ext->ref_mv_count[ref_frame_type] == 0 &&
+          cm->global_motion[ref_frames[0]].wmtype <= TRANSLATION) {
+        // GLOBALMV has the same motion vector as NEARESTMV
         return 0;
+      }
+    }
+  } else {
+    for (int i = 0; i < 2; ++i) {
+      const int single_mode = get_single_mode(this_mode, i, is_comp_pred);
+      if (single_mode == NEARMV) {
+        if (mbmi_ext->ref_mv_count[ref_frame_type] == 0) {
+          // NEARMV has the same motion vector as NEARESTMV in compound mode
+          return 0;
+        }
+      }
+    }
+    if (this_mode == NEAR_NEARMV) {
+      if (mbmi_ext->ref_mv_count[ref_frame_type] == 1 &&
+          cm->global_motion[ref_frames[0]].wmtype <= TRANSLATION &&
+          cm->global_motion[ref_frames[1]].wmtype <= TRANSLATION) {
+        // NEAR_NEARMV has the same motion vector as GLOBAL_GLOBALMV
+        return 0;
+      }
+    }
+    if (this_mode == GLOBAL_GLOBALMV) {
+      if (mbmi_ext->ref_mv_count[ref_frame_type] == 0 &&
+          cm->global_motion[ref_frames[0]].wmtype <= TRANSLATION &&
+          cm->global_motion[ref_frames[1]].wmtype <= TRANSLATION) {
+        // GLOBAL_GLOBALMV has the same motion vector as NEARST_NEARSTMV
+        return 0;
+      }
     }
   }
   return 1;
@@ -7812,18 +7814,6 @@ static INLINE int get_ref_mv_offset(int single_mode, const MB_MODE_INFO *mbmi) {
   return ref_mv_offset;
 }
 
-static INLINE int get_single_mode(int this_mode, int ref_idx,
-                                  int is_comp_pred) {
-  int single_mode;
-  if (is_comp_pred) {
-    single_mode =
-        ref_idx ? compound_ref1_mode(this_mode) : compound_ref0_mode(this_mode);
-  } else {
-    single_mode = this_mode;
-  }
-  return single_mode;
-}
-
 static INLINE void get_this_mv(int_mv *this_mv, int this_mode, int ref_idx,
                                const MACROBLOCK *x) {
   const MACROBLOCKD *const xd = &x->e_mbd;
@@ -9473,14 +9463,13 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             continue;
         }
       }
-    } else if (cm->global_motion[ref_frame].wmtype == IDENTITY &&
-               (!comp_pred ||
-                cm->global_motion[second_ref_frame].wmtype == IDENTITY)) {
+    }
+
+    {
       const MV_REFERENCE_FRAME ref_frames[2] = { ref_frame, second_ref_frame };
-      if (!check_best_zero_mv(cpi, x, mbmi_ext->mode_context,
-                              search_state.frame_mv, this_mode, ref_frames,
-                              bsize, mi_row, mi_col))
+      if (!check_best_zero_mv(cm, x, this_mode, ref_frames)) {
         continue;
+      }
     }
 
     // Select prediction reference frames.
