@@ -97,7 +97,6 @@ KERNEL_EBUILD_ROOT = os.path.join(
     'src/third_party/chromiumos-overlay/sys-kernel'
 )
 
-PROFILE_SOURCES = {}
 GSURL_CWP_SUBDIR = {
     'silvermont': '',
     'airmont': 'airmont',
@@ -754,8 +753,10 @@ def ProfileAge(profile_version):
           datetime.datetime.utcfromtimestamp(profile_version[3])).days
 
 
-PROFILE_SOURCES['benchmark'] = GetBenchmarkProfile
-PROFILE_SOURCES['silvermont'] = GetCWPProfile
-PROFILE_SOURCES['airmont'] = GetCWPProfile
-PROFILE_SOURCES['haswell'] = GetCWPProfile
-PROFILE_SOURCES['broadwell'] = GetCWPProfile
+PROFILE_SOURCES = {
+    'benchmark': GetBenchmarkProfile,
+    'silvermont': GetCWPProfile,
+    'airmont': GetCWPProfile,
+    'haswell': GetCWPProfile,
+    'broadwell': GetCWPProfile,
+}

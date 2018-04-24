@@ -1,8 +1,8 @@
-# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
+# Copyright 2018 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unittests for build stages."""
+"""Unittests for updating Chrome ebuild stages."""
 
 from __future__ import print_function
 
@@ -12,6 +12,7 @@ from chromite.cbuildbot.stages import generic_stages_unittest
 
 from chromite.lib import gs
 from chromite.lib import portage_util
+
 
 class UpdateChromeEbuildTest(generic_stages_unittest.AbstractStageTestCase):
   """Test updating Chrome ebuild files"""
@@ -35,7 +36,7 @@ class UpdateChromeEbuildTest(generic_stages_unittest.AbstractStageTestCase):
   def ConstructStage(self):
     return afdo_stages.AFDOUpdateChromeEbuildStage(self._run)
 
-  def testIt(self):
+  def testAFDOUpdateChromeEbuildStage(self):
     self.RunStage()
 
     # afdo.UpdateChromeEbuildAFDOFile should be called with the mock responses
