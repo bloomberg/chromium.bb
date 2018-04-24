@@ -34,9 +34,6 @@ class HostedAppMenuButton : public AppMenuButton,
                            const gfx::Point& point,
                            const ui::Event* event) override;
 
-  // AppMenuButton:
-  gfx::Size CalculatePreferredSize() const override;
-
  private:
   void FadeHighlightOff();
 
