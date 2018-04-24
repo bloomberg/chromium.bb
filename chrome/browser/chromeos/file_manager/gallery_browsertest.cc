@@ -75,26 +75,12 @@ IN_PROC_BROWSER_TEST_F(
   StartTest();
 }
 
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_OpenMultipleImagesOnDrive DISABLED_OpenMultipleImagesOnDrive
-#else
-#define MAYBE_OpenMultipleImagesOnDrive OpenMultipleImagesOnDrive
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_OpenMultipleImagesOnDrive) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenMultipleImagesOnDrive) {
   set_test_case_name("openMultipleImagesOnDrive");
   StartTest();
 }
 
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_TraverseSlideImagesOnDownloads \
-  DISABLED_TraverseSlideImagesOnDownloads
-#else
-#define MAYBE_TraverseSlideImagesOnDownloads TraverseSlideImagesOnDownloads
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       MAYBE_TraverseSlideImagesOnDownloads) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, TraverseSlideImagesOnDownloads) {
   set_test_case_name("traverseSlideImagesOnDownloads");
   StartTest();
 }
@@ -105,13 +91,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
   StartTest();
 }
 
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_TraverseSlideImagesOnDrive DISABLED_TraverseSlideImagesOnDrive
-#else
-#define MAYBE_TraverseSlideImagesOnDrive TraverseSlideImagesOnDrive
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_TraverseSlideImagesOnDrive) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, TraverseSlideImagesOnDrive) {
   set_test_case_name("traverseSlideImagesOnDrive");
   StartTest();
 }
@@ -122,16 +102,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
   StartTest();
 }
 
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_TraverseSlideThumbnailsOnDownloads \
-  DISABLED_TraverseSlideThumbnailsOnDownloads
-#else
-#define MAYBE_TraverseSlideThumbnailsOnDownloads \
-  TraverseSlideThumbnailsOnDownloads
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       MAYBE_TraverseSlideThumbnailsOnDownloads) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, TraverseSlideThumbnailsOnDownloads) {
   set_test_case_name("traverseSlideThumbnailsOnDownloads");
   StartTest();
 }
@@ -161,13 +132,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_RenameImageOnDrive) {
   StartTest();
 }
 
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_DeleteImageOnDownloads DISABLED_DeleteImageOnDownloads
-#else
-#define MAYBE_DeleteImageOnDownloads DeleteImageOnDownloads
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_DeleteImageOnDownloads) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, DeleteImageOnDownloads) {
   set_test_case_name("deleteImageOnDownloads");
   StartTest();
 }
@@ -177,13 +142,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode, DeleteImageOnDownloads) {
   StartTest();
 }
 
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_DeleteImageOnDrive DISABLED_DeleteImageOnDrive
-#else
-#define MAYBE_DeleteImageOnDrive DeleteImageOnDrive
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_DeleteImageOnDrive) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, DeleteImageOnDrive) {
   set_test_case_name("deleteImageOnDrive");
   StartTest();
 }
@@ -220,13 +179,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
   StartTest();
 }
 
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_RotateImageOnDownloads DISABLED_RotateImageOnDownloads
-#else
-#define MAYBE_RotateImageOnDownloads RotateImageOnDownloads
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_RotateImageOnDownloads) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RotateImageOnDownloads) {
   set_test_case_name("rotateImageOnDownloads");
   StartTest();
 }
@@ -236,9 +189,8 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode, RotateImageOnDownloads) {
   StartTest();
 }
 
-// http://crbug.com/508949
 // http://crbug.com/690983 (Chrome OS debug build)
-#if defined(MEMORY_SANITIZER) || (defined(OS_CHROMEOS) && !defined(NDEBUG))
+#if (defined(OS_CHROMEOS) && !defined(NDEBUG))
 #define MAYBE_RotateImageOnDrive DISABLED_RotateImageOnDrive
 #else
 #define MAYBE_RotateImageOnDrive RotateImageOnDrive
@@ -263,13 +215,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode, CropImageOnDownloads) {
   StartTest();
 }
 
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_CropImageOnDrive DISABLED_CropImageOnDrive
-#else
-#define MAYBE_CropImageOnDrive CropImageOnDrive
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_CropImageOnDrive) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, CropImageOnDrive) {
   set_test_case_name("cropImageOnDrive");
   StartTest();
 }
@@ -352,30 +298,13 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
   StartTest();
 }
 
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_RenameImageInThumbnailModeOnDownloads \
-  DISABLED_RenameImageInThumbnailModeOnDownloads
-#else
-#define MAYBE_RenameImageInThumbnailModeOnDownloads \
-  RenameImageInThumbnailModeOnDownloads
-#endif
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       MAYBE_RenameImageInThumbnailModeOnDownloads) {
+                       RenameImageInThumbnailModeOnDownloads) {
   set_test_case_name("renameImageInThumbnailModeOnDownloads");
   StartTest();
 }
 
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_RenameImageInThumbnailModeOnDrive \
-  DISABLED_RenameImageInThumbnailModeOnDrive
-#else
-#define MAYBE_RenameImageInThumbnailModeOnDrive \
-  RenameImageInThumbnailModeOnDrive
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       MAYBE_RenameImageInThumbnailModeOnDrive) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RenameImageInThumbnailModeOnDrive) {
   set_test_case_name("renameImageInThumbnailModeOnDrive");
   StartTest();
 }
@@ -507,15 +436,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
   StartTest();
 }
 
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_StopStartSlideshowOnDownloads \
-  DISABLED_StopStartSlideshowOnDownloads
-#else
-#define MAYBE_StopStartSlideshowOnDownloads StopStartSlideshowOnDownloads
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       MAYBE_StopStartSlideshowOnDownloads) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, StopStartSlideshowOnDownloads) {
   set_test_case_name("stopStartSlideshowOnDownloads");
   StartTest();
 }
