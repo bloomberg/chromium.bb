@@ -8,9 +8,10 @@
 #include <iosfwd>
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/position.h"
-#include "third_party/blink/renderer/core/editing/text_affinity.h"
 
 namespace blink {
+
+enum class TextAffinity;
 
 template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT PositionWithAffinityTemplate {
