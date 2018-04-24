@@ -8,8 +8,6 @@ blink_modules_sources("websockets") {
   sources = [
     "close_event.cc",
     "close_event.h",
-    "document_web_socket_channel.cc",
-    "document_web_socket_channel.h",
     "dom_web_socket.cc",
     "dom_web_socket.h",
     "inspector_web_socket_events.cc",
@@ -20,6 +18,8 @@ blink_modules_sources("websockets") {
     "web_socket_channel.cc",
     "web_socket_channel.h",
     "web_socket_channel_client.h",
+    "web_socket_channel_impl.cc",
+    "web_socket_channel_impl.h",
     "web_socket_handle.h",
     "web_socket_handle_client.h",
     "web_socket_handle_impl.cc",

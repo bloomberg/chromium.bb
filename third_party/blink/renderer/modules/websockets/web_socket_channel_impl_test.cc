@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/websockets/document_web_socket_channel.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_channel_impl.h"
 
 #include <stdint.h>
 #include <memory>
@@ -118,23 +118,23 @@ class MockWebSocketHandshakeThrottle : public WebSocketHandshakeThrottle {
   MOCK_METHOD0(Destructor, void());
 };
 
-class DocumentWebSocketChannelTest : public PageTestBase {
+class WebSocketChannelImplTest : public PageTestBase {
  public:
-  DocumentWebSocketChannelTest()
+  WebSocketChannelImplTest()
       : channel_client_(MockWebSocketChannelClient::Create()),
         handle_(MockWebSocketHandle::Create()),
         handshake_throttle_(nullptr),
         sum_of_consumed_buffered_amount_(0) {
     ON_CALL(*ChannelClient(), DidConsumeBufferedAmount(_))
-        .WillByDefault(Invoke(
-            this, &DocumentWebSocketChannelTest::DidConsumeBufferedAmount));
+        .WillByDefault(
+            Invoke(this, &WebSocketChannelImplTest::DidConsumeBufferedAmount));
   }
 
-  ~DocumentWebSocketChannelTest() override { Channel()->Disconnect(); }
+  ~WebSocketChannelImplTest() override { Channel()->Disconnect(); }
 
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
-    channel_ = DocumentWebSocketChannel::CreateForTesting(
+    channel_ = WebSocketChannelImpl::CreateForTesting(
         &GetDocument(), channel_client_.Get(), SourceLocation::Capture(),
         Handle(), base::WrapUnique(handshake_throttle_));
   }
@@ -176,7 +176,7 @@ class DocumentWebSocketChannelTest : public PageTestBase {
   MockWebSocketHandle* handle_;
   // |handshake_throttle_| is owned by |channel_| once SetUp() has been called.
   MockWebSocketHandshakeThrottle* handshake_throttle_;
-  Persistent<DocumentWebSocketChannel> channel_;
+  Persistent<WebSocketChannelImpl> channel_;
   unsigned long sum_of_consumed_buffered_amount_;
 };
 
@@ -184,26 +184,22 @@ MATCHER_P2(MemEq,
            p,
            len,
            std::string("pointing to memory") + (negation ? " not" : "") +
-               " equal to \"" +
-               std::string(p, len) +
-               "\" (length=" +
-               PrintToString(len) +
-               ")") {
+               " equal to \"" + std::string(p, len) +
+               "\" (length=" + PrintToString(len) + ")") {
   return memcmp(arg, p, len) == 0;
 }
 
 MATCHER_P(KURLEq,
           url_string,
           std::string(negation ? "doesn't equal" : "equals") + " to \"" +
-              url_string +
-              "\"") {
+              url_string + "\"") {
   const KURL url(NullURL(), url_string);
   *result_listener << "where the url is \"" << arg.GetString().Utf8().data()
                    << "\"";
   return arg == url;
 }
 
-TEST_F(DocumentWebSocketChannelTest, connectSuccess) {
+TEST_F(WebSocketChannelImplTest, connectSuccess) {
   Vector<String> protocols;
 
   Checkpoint checkpoint;
@@ -236,7 +232,7 @@ TEST_F(DocumentWebSocketChannelTest, connectSuccess) {
   HandleClient()->DidConnect(Handle(), String("a"), String("b"));
 }
 
-TEST_F(DocumentWebSocketChannelTest, sendText) {
+TEST_F(WebSocketChannelImplTest, sendText) {
   Connect();
   {
     InSequence s;
@@ -258,7 +254,7 @@ TEST_F(DocumentWebSocketChannelTest, sendText) {
   EXPECT_EQ(9ul, sum_of_consumed_buffered_amount_);
 }
 
-TEST_F(DocumentWebSocketChannelTest, sendTextContinuation) {
+TEST_F(WebSocketChannelImplTest, sendTextContinuation) {
   Connect();
   Checkpoint checkpoint;
   {
@@ -297,7 +293,7 @@ TEST_F(DocumentWebSocketChannelTest, sendTextContinuation) {
   EXPECT_EQ(62ul, sum_of_consumed_buffered_amount_);
 }
 
-TEST_F(DocumentWebSocketChannelTest, sendBinaryInVector) {
+TEST_F(WebSocketChannelImplTest, sendBinaryInVector) {
   Connect();
   {
     InSequence s;
@@ -315,7 +311,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVector) {
   EXPECT_EQ(3ul, sum_of_consumed_buffered_amount_);
 }
 
-TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorWithNullBytes) {
+TEST_F(WebSocketChannelImplTest, sendBinaryInVectorWithNullBytes) {
   Connect();
   {
     InSequence s;
@@ -356,7 +352,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorWithNullBytes) {
   EXPECT_EQ(12ul, sum_of_consumed_buffered_amount_);
 }
 
-TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorNonLatin1UTF8) {
+TEST_F(WebSocketChannelImplTest, sendBinaryInVectorNonLatin1UTF8) {
   Connect();
   EXPECT_CALL(*Handle(), Send(true, WebSocketHandle::kMessageTypeBinary,
                               MemEq("\xe7\x8b\x90", 3), 3));
@@ -371,7 +367,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorNonLatin1UTF8) {
   EXPECT_EQ(3ul, sum_of_consumed_buffered_amount_);
 }
 
-TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorNonUTF8) {
+TEST_F(WebSocketChannelImplTest, sendBinaryInVectorNonUTF8) {
   Connect();
   EXPECT_CALL(*Handle(), Send(true, WebSocketHandle::kMessageTypeBinary,
                               MemEq("\x80\xff\xe7", 3), 3));
@@ -386,8 +382,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorNonUTF8) {
   EXPECT_EQ(3ul, sum_of_consumed_buffered_amount_);
 }
 
-TEST_F(DocumentWebSocketChannelTest,
-       sendBinaryInVectorNonLatin1UTF8Continuation) {
+TEST_F(WebSocketChannelImplTest, sendBinaryInVectorNonLatin1UTF8Continuation) {
   Connect();
   Checkpoint checkpoint;
   {
@@ -418,7 +413,7 @@ TEST_F(DocumentWebSocketChannelTest,
   EXPECT_EQ(18ul, sum_of_consumed_buffered_amount_);
 }
 
-TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBuffer) {
+TEST_F(WebSocketChannelImplTest, sendBinaryInArrayBuffer) {
   Connect();
   {
     InSequence s;
@@ -435,7 +430,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBuffer) {
   EXPECT_EQ(3ul, sum_of_consumed_buffered_amount_);
 }
 
-TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBufferPartial) {
+TEST_F(WebSocketChannelImplTest, sendBinaryInArrayBufferPartial) {
   Connect();
   {
     InSequence s;
@@ -462,7 +457,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBufferPartial) {
   EXPECT_EQ(10ul, sum_of_consumed_buffered_amount_);
 }
 
-TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBufferWithNullBytes) {
+TEST_F(WebSocketChannelImplTest, sendBinaryInArrayBufferWithNullBytes) {
   Connect();
   {
     InSequence s;
@@ -499,7 +494,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBufferWithNullBytes) {
   EXPECT_EQ(12ul, sum_of_consumed_buffered_amount_);
 }
 
-TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBufferNonLatin1UTF8) {
+TEST_F(WebSocketChannelImplTest, sendBinaryInArrayBufferNonLatin1UTF8) {
   Connect();
   EXPECT_CALL(*Handle(), Send(true, WebSocketHandle::kMessageTypeBinary,
                               MemEq("\xe7\x8b\x90", 3), 3));
@@ -513,7 +508,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBufferNonLatin1UTF8) {
   EXPECT_EQ(3ul, sum_of_consumed_buffered_amount_);
 }
 
-TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBufferNonUTF8) {
+TEST_F(WebSocketChannelImplTest, sendBinaryInArrayBufferNonUTF8) {
   Connect();
   EXPECT_CALL(*Handle(), Send(true, WebSocketHandle::kMessageTypeBinary,
                               MemEq("\x80\xff\xe7", 3), 3));
@@ -527,7 +522,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInArrayBufferNonUTF8) {
   EXPECT_EQ(3ul, sum_of_consumed_buffered_amount_);
 }
 
-TEST_F(DocumentWebSocketChannelTest,
+TEST_F(WebSocketChannelImplTest,
        sendBinaryInArrayBufferNonLatin1UTF8Continuation) {
   Connect();
   Checkpoint checkpoint;
@@ -560,7 +555,7 @@ TEST_F(DocumentWebSocketChannelTest,
 
 // FIXME: Add tests for WebSocketChannel::send(scoped_refptr<BlobDataHandle>)
 
-TEST_F(DocumentWebSocketChannelTest, receiveText) {
+TEST_F(WebSocketChannelImplTest, receiveText) {
   Connect();
   {
     InSequence s;
@@ -574,7 +569,7 @@ TEST_F(DocumentWebSocketChannelTest, receiveText) {
                                  WebSocketHandle::kMessageTypeText, "BARX", 3);
 }
 
-TEST_F(DocumentWebSocketChannelTest, receiveTextContinuation) {
+TEST_F(WebSocketChannelImplTest, receiveTextContinuation) {
   Connect();
   EXPECT_CALL(*ChannelClient(), DidReceiveTextMessage(String("BAZ")));
 
@@ -586,7 +581,7 @@ TEST_F(DocumentWebSocketChannelTest, receiveTextContinuation) {
       Handle(), true, WebSocketHandle::kMessageTypeContinuation, "ZX", 1);
 }
 
-TEST_F(DocumentWebSocketChannelTest, receiveTextNonLatin1) {
+TEST_F(WebSocketChannelImplTest, receiveTextNonLatin1) {
   Connect();
   UChar non_latin1_string[] = {0x72d0, 0x0914, 0x0000};
   EXPECT_CALL(*ChannelClient(),
@@ -597,7 +592,7 @@ TEST_F(DocumentWebSocketChannelTest, receiveTextNonLatin1) {
                                  "\xe7\x8b\x90\xe0\xa4\x94", 6);
 }
 
-TEST_F(DocumentWebSocketChannelTest, receiveTextNonLatin1Continuation) {
+TEST_F(WebSocketChannelImplTest, receiveTextNonLatin1Continuation) {
   Connect();
   UChar non_latin1_string[] = {0x72d0, 0x0914, 0x0000};
   EXPECT_CALL(*ChannelClient(),
@@ -614,7 +609,7 @@ TEST_F(DocumentWebSocketChannelTest, receiveTextNonLatin1Continuation) {
       Handle(), true, WebSocketHandle::kMessageTypeContinuation, "\x94", 1);
 }
 
-TEST_F(DocumentWebSocketChannelTest, receiveBinary) {
+TEST_F(WebSocketChannelImplTest, receiveBinary) {
   Connect();
   Vector<char> foo_vector;
   foo_vector.Append("FOO", 3);
@@ -624,7 +619,7 @@ TEST_F(DocumentWebSocketChannelTest, receiveBinary) {
       Handle(), true, WebSocketHandle::kMessageTypeBinary, "FOOx", 3);
 }
 
-TEST_F(DocumentWebSocketChannelTest, receiveBinaryContinuation) {
+TEST_F(WebSocketChannelImplTest, receiveBinaryContinuation) {
   Connect();
   Vector<char> baz_vector;
   baz_vector.Append("BAZ", 3);
@@ -638,7 +633,7 @@ TEST_F(DocumentWebSocketChannelTest, receiveBinaryContinuation) {
       Handle(), true, WebSocketHandle::kMessageTypeContinuation, "Zx", 1);
 }
 
-TEST_F(DocumentWebSocketChannelTest, receiveBinaryWithNullBytes) {
+TEST_F(WebSocketChannelImplTest, receiveBinaryWithNullBytes) {
   Connect();
   {
     InSequence s;
@@ -674,7 +669,7 @@ TEST_F(DocumentWebSocketChannelTest, receiveBinaryWithNullBytes) {
       Handle(), true, WebSocketHandle::kMessageTypeBinary, "\0\0\0", 3);
 }
 
-TEST_F(DocumentWebSocketChannelTest, receiveBinaryNonLatin1UTF8) {
+TEST_F(WebSocketChannelImplTest, receiveBinaryNonLatin1UTF8) {
   Connect();
   Vector<char> v;
   v.Append("\xe7\x8b\x90\xe0\xa4\x94", 6);
@@ -685,7 +680,7 @@ TEST_F(DocumentWebSocketChannelTest, receiveBinaryNonLatin1UTF8) {
                                  "\xe7\x8b\x90\xe0\xa4\x94", 6);
 }
 
-TEST_F(DocumentWebSocketChannelTest, receiveBinaryNonLatin1UTF8Continuation) {
+TEST_F(WebSocketChannelImplTest, receiveBinaryNonLatin1UTF8Continuation) {
   Connect();
   Vector<char> v;
   v.Append("\xe7\x8b\x90\xe0\xa4\x94", 6);
@@ -702,7 +697,7 @@ TEST_F(DocumentWebSocketChannelTest, receiveBinaryNonLatin1UTF8Continuation) {
       Handle(), true, WebSocketHandle::kMessageTypeContinuation, "\x94", 1);
 }
 
-TEST_F(DocumentWebSocketChannelTest, receiveBinaryNonUTF8) {
+TEST_F(WebSocketChannelImplTest, receiveBinaryNonUTF8) {
   Connect();
   Vector<char> v;
   v.Append("\x80\xff", 2);
@@ -712,7 +707,7 @@ TEST_F(DocumentWebSocketChannelTest, receiveBinaryNonUTF8) {
       Handle(), true, WebSocketHandle::kMessageTypeBinary, "\x80\xff", 2);
 }
 
-TEST_F(DocumentWebSocketChannelTest, closeFromBrowser) {
+TEST_F(WebSocketChannelImplTest, closeFromBrowser) {
   Connect();
   Checkpoint checkpoint;
   {
@@ -747,7 +742,7 @@ TEST_F(DocumentWebSocketChannelTest, closeFromBrowser) {
   Channel()->Disconnect();
 }
 
-TEST_F(DocumentWebSocketChannelTest, closeFromWebSocket) {
+TEST_F(WebSocketChannelImplTest, closeFromWebSocket) {
   Connect();
   Checkpoint checkpoint;
   {
@@ -776,7 +771,7 @@ TEST_F(DocumentWebSocketChannelTest, closeFromWebSocket) {
   Channel()->Disconnect();
 }
 
-TEST_F(DocumentWebSocketChannelTest, failFromBrowser) {
+TEST_F(WebSocketChannelImplTest, failFromBrowser) {
   Connect();
   {
     InSequence s;
@@ -791,7 +786,7 @@ TEST_F(DocumentWebSocketChannelTest, failFromBrowser) {
   HandleClient()->DidFail(Handle(), "fail message");
 }
 
-TEST_F(DocumentWebSocketChannelTest, failFromWebSocket) {
+TEST_F(WebSocketChannelImplTest, failFromWebSocket) {
   Connect();
   {
     InSequence s;
@@ -807,10 +802,10 @@ TEST_F(DocumentWebSocketChannelTest, failFromWebSocket) {
                   SourceLocation::Create(String(), 0, 0, nullptr));
 }
 
-class DocumentWebSocketChannelHandshakeThrottleTest
-    : public DocumentWebSocketChannelTest {
+class WebSocketChannelImplHandshakeThrottleTest
+    : public WebSocketChannelImplTest {
  public:
-  DocumentWebSocketChannelHandshakeThrottleTest() {
+  WebSocketChannelImplHandshakeThrottleTest() {
     handshake_throttle_ = MockWebSocketHandshakeThrottle::Create();
   }
 
@@ -824,7 +819,7 @@ class DocumentWebSocketChannelHandshakeThrottleTest
   static KURL url() { return KURL("ws://localhost/"); }
 };
 
-TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, ThrottleArguments) {
+TEST_F(WebSocketChannelImplHandshakeThrottleTest, ThrottleArguments) {
   EXPECT_CALL(*Handle(), Connect(_, _, _, _, _));
   EXPECT_CALL(*handshake_throttle_,
               ThrottleHandshake(WebURL(url()), GetWebCallbacks()));
@@ -832,7 +827,7 @@ TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, ThrottleArguments) {
   Channel()->Connect(url(), "");
 }
 
-TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, ThrottleSucceedsFirst) {
+TEST_F(WebSocketChannelImplHandshakeThrottleTest, ThrottleSucceedsFirst) {
   Checkpoint checkpoint;
   NormalHandshakeExpectations();
   {
@@ -850,7 +845,7 @@ TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, ThrottleSucceedsFirst) {
   HandleClient()->DidConnect(Handle(), String("a"), String("b"));
 }
 
-TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, HandshakeSucceedsFirst) {
+TEST_F(WebSocketChannelImplHandshakeThrottleTest, HandshakeSucceedsFirst) {
   Checkpoint checkpoint;
   NormalHandshakeExpectations();
   {
@@ -869,7 +864,7 @@ TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, HandshakeSucceedsFirst) {
 }
 
 // This happens if JS code calls close() during the handshake.
-TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, FailDuringThrottle) {
+TEST_F(WebSocketChannelImplHandshakeThrottleTest, FailDuringThrottle) {
   Checkpoint checkpoint;
   NormalHandshakeExpectations();
   {
@@ -887,7 +882,7 @@ TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, FailDuringThrottle) {
 
 // It makes no difference to the behaviour if the WebSocketHandle has actually
 // connected.
-TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
+TEST_F(WebSocketChannelImplHandshakeThrottleTest,
        FailDuringThrottleAfterConnect) {
   Checkpoint checkpoint;
   NormalHandshakeExpectations();
@@ -906,7 +901,7 @@ TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
 }
 
 // This happens if the JS context is destroyed during the handshake.
-TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, CloseDuringThrottle) {
+TEST_F(WebSocketChannelImplHandshakeThrottleTest, CloseDuringThrottle) {
   Checkpoint checkpoint;
   NormalHandshakeExpectations();
   {
@@ -916,11 +911,11 @@ TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, CloseDuringThrottle) {
     EXPECT_CALL(checkpoint, Call(1));
   }
   Channel()->Connect(url(), "");
-  Channel()->Close(DocumentWebSocketChannel::kCloseEventCodeGoingAway, "");
+  Channel()->Close(WebSocketChannelImpl::kCloseEventCodeGoingAway, "");
   checkpoint.Call(1);
 }
 
-TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
+TEST_F(WebSocketChannelImplHandshakeThrottleTest,
        CloseDuringThrottleAfterConnect) {
   Checkpoint checkpoint;
   NormalHandshakeExpectations();
@@ -932,12 +927,11 @@ TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
   }
   Channel()->Connect(url(), "");
   HandleClient()->DidConnect(Handle(), String("a"), String("b"));
-  Channel()->Close(DocumentWebSocketChannel::kCloseEventCodeGoingAway, "");
+  Channel()->Close(WebSocketChannelImpl::kCloseEventCodeGoingAway, "");
   checkpoint.Call(1);
 }
 
-TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
-       DisconnectDuringThrottle) {
+TEST_F(WebSocketChannelImplHandshakeThrottleTest, DisconnectDuringThrottle) {
   Checkpoint checkpoint;
   NormalHandshakeExpectations();
   {
@@ -950,7 +944,7 @@ TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
   checkpoint.Call(1);
 }
 
-TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
+TEST_F(WebSocketChannelImplHandshakeThrottleTest,
        DisconnectDuringThrottleAfterConnect) {
   Checkpoint checkpoint;
   NormalHandshakeExpectations();
@@ -965,7 +959,7 @@ TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
   checkpoint.Call(1);
 }
 
-TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
+TEST_F(WebSocketChannelImplHandshakeThrottleTest,
        ThrottleReportsErrorBeforeConnect) {
   NormalHandshakeExpectations();
   {
@@ -978,7 +972,7 @@ TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
   GetWebCallbacks()->OnError("Connection blocked by throttle");
 }
 
-TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
+TEST_F(WebSocketChannelImplHandshakeThrottleTest,
        ThrottleReportsErrorAfterConnect) {
   NormalHandshakeExpectations();
   {
@@ -992,8 +986,7 @@ TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
   GetWebCallbacks()->OnError("Connection blocked by throttle");
 }
 
-TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
-       ConnectFailBeforeThrottle) {
+TEST_F(WebSocketChannelImplHandshakeThrottleTest, ConnectFailBeforeThrottle) {
   NormalHandshakeExpectations();
   {
     InSequence s;
@@ -1006,8 +999,7 @@ TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
 }
 
 // TODO(ricea): Can this actually happen?
-TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
-       ConnectCloseBeforeThrottle) {
+TEST_F(WebSocketChannelImplHandshakeThrottleTest, ConnectCloseBeforeThrottle) {
   NormalHandshakeExpectations();
   {
     InSequence s;

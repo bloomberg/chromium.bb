@@ -179,8 +179,8 @@ bool MainChannelClient::Initialize(std::unique_ptr<SourceLocation> location,
   DCHECK(IsMainThread());
   if (WasContextDestroyedBeforeObserverCreation())
     return false;
-  main_channel_ = DocumentWebSocketChannel::Create(loading_context, this,
-                                                   std::move(location));
+  main_channel_ =
+      WebSocketChannelImpl::Create(loading_context, this, std::move(location));
   return true;
 }
 
