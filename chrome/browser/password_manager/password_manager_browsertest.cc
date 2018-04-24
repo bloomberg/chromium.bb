@@ -3365,7 +3365,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, ReattachWebContents) {
   // messages for non-main frames, in particular
   // AutofillHostMsg_PasswordFormsParsed. If that were the first time the
   // factories hear about such frames, this would crash.
-  tab_strip_model->AddWebContents(detached_web_contents.release(), -1,
+  tab_strip_model->AddWebContents(std::move(detached_web_contents), -1,
                                   ::ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                   TabStripModel::ADD_ACTIVE);
 }

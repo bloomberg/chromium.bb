@@ -219,25 +219,29 @@ WebContents* GetTabAndRevertIfNecessary(Browser* browser,
   switch (disposition) {
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
     case WindowOpenDisposition::NEW_BACKGROUND_TAB: {
-      WebContents* new_tab = current_tab->Clone();
+      std::unique_ptr<WebContents> new_tab =
+          base::WrapUnique(current_tab->Clone());
+      WebContents* raw_new_tab = new_tab.get();
       if (disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB)
         new_tab->WasHidden();
       browser->tab_strip_model()->AddWebContents(
-          new_tab, -1, ui::PAGE_TRANSITION_LINK,
+          std::move(new_tab), -1, ui::PAGE_TRANSITION_LINK,
           (disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB)
               ? TabStripModel::ADD_ACTIVE
               : TabStripModel::ADD_NONE);
-      return new_tab;
+      return raw_new_tab;
     }
     case WindowOpenDisposition::NEW_WINDOW: {
-      WebContents* new_tab = current_tab->Clone();
+      std::unique_ptr<WebContents> new_tab =
+          base::WrapUnique(current_tab->Clone());
+      WebContents* raw_new_tab = new_tab.get();
       Browser* new_browser =
           new Browser(Browser::CreateParams(browser->profile(), true));
-      new_browser->tab_strip_model()->AddWebContents(
-          new_tab, -1, ui::PAGE_TRANSITION_LINK,
-          TabStripModel::ADD_ACTIVE);
+      new_browser->tab_strip_model()->AddWebContents(std::move(new_tab), -1,
+                                                     ui::PAGE_TRANSITION_LINK,
+                                                     TabStripModel::ADD_ACTIVE);
       new_browser->window()->Show();
-      return new_tab;
+      return raw_new_tab;
     }
     default:
       browser->window()->GetLocationBar()->Revert();
@@ -702,7 +706,7 @@ WebContents* DuplicateTabAt(Browser* browser, int index) {
     new_browser->window()->Show();
 
     // The page transition below is only for the purpose of inserting the tab.
-    new_browser->tab_strip_model()->AddWebContents(contents_dupe.release(), -1,
+    new_browser->tab_strip_model()->AddWebContents(std::move(contents_dupe), -1,
                                                    ui::PAGE_TRANSITION_LINK,
                                                    TabStripModel::ADD_ACTIVE);
   }

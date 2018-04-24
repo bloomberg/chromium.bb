@@ -322,7 +322,7 @@ class TabStripModel : public WebContentsCloseDelegate {
   // AddTabTypes; see it for details. This method ends up calling into
   // InsertWebContentsAt to do the actual insertion. Pass kNoTab for |index| to
   // append the contents to the end of the tab strip.
-  void AddWebContents(content::WebContents* contents,
+  void AddWebContents(std::unique_ptr<content::WebContents> contents,
                       int index,
                       ui::PageTransition transition,
                       int add_types);
