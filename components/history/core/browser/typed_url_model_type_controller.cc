@@ -9,11 +9,13 @@
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_client.h"
+#include "components/sync/model/model_type_controller_delegate.h"
 
 using syncer::ModelType;
 using syncer::ModelTypeController;
-using syncer::ModelTypeSyncBridge;
+using syncer::ModelTypeControllerDelegate;
 using syncer::SyncClient;
 
 namespace history {
@@ -25,7 +27,7 @@ namespace {
 // the tasks we want to run.
 class RunTaskOnHistoryThread : public HistoryDBTask {
  public:
-  explicit RunTaskOnHistoryThread(ModelTypeController::BridgeTask task)
+  explicit RunTaskOnHistoryThread(ModelTypeController::ModelTask task)
       : task_(std::move(task)) {}
 
   bool RunOnDBThread(HistoryBackend* backend, HistoryDatabase* db) override {
@@ -33,17 +35,17 @@ class RunTaskOnHistoryThread : public HistoryDBTask {
     // around all the way until DoneRunOnMainThread() is invoked back on the
     // main thread - we want to release references as soon as possible to avoid
     // keeping them around too long during shutdown.
-    TypedURLSyncBridge* bridge = backend->GetTypedURLSyncBridge();
-    DCHECK(bridge);
+    ModelTypeControllerDelegate* delegate = backend->GetTypedURLSyncBridge();
+    DCHECK(delegate);
 
-    std::move(task_).Run(bridge);
+    std::move(task_).Run(delegate);
     return true;
   }
 
   void DoneRunOnMainThread() override {}
 
  protected:
-  ModelTypeController::BridgeTask task_;
+  ModelTypeController::ModelTask task_;
 };
 
 }  // namespace
@@ -68,8 +70,8 @@ bool TypedURLModelTypeController::ReadyForStart() const {
       history_disabled_pref_name_);
 }
 
-void TypedURLModelTypeController::PostBridgeTask(const base::Location& location,
-                                                 BridgeTask task) {
+void TypedURLModelTypeController::PostModelTask(const base::Location& location,
+                                                ModelTask task) {
   history::HistoryService* history = sync_client()->GetHistoryService();
   if (!history) {
     // History must be disabled - don't start.

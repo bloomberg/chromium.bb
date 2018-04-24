@@ -19,6 +19,7 @@
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_change_processor.h"
+#include "components/sync/model/model_type_controller_delegate.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "net/base/network_change_notifier.h"
 
@@ -28,6 +29,7 @@ using syncer::ClientTagBasedModelTypeProcessor;
 using syncer::ConflictResolution;
 using syncer::FakeModelTypeSyncBridge;
 using syncer::ModelTypeChangeProcessor;
+using syncer::ModelTypeControllerDelegate;
 using syncer::ModelTypeSyncBridge;
 
 namespace {
@@ -42,17 +44,19 @@ const char kValue3[] = "value3";
 const char kValue4[] = "value4";
 const char* kPassphrase = "12345";
 
-// A ChromeSyncClient that provides a ModelTypeSyncBridge for PREFERENCES.
+// A ChromeSyncClient that provides a ModelTypeControllerDelegate for
+// PREFERENCES.
 class TestSyncClient : public ChromeSyncClient {
  public:
   TestSyncClient(Profile* profile, ModelTypeSyncBridge* bridge)
       : ChromeSyncClient(profile), bridge_(bridge) {}
 
-  base::WeakPtr<ModelTypeSyncBridge> GetSyncBridgeForModelType(
+  base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegateForModelType(
       syncer::ModelType type) override {
     return type == syncer::PREFERENCES
-               ? bridge_->AsWeakPtr()
-               : ChromeSyncClient::GetSyncBridgeForModelType(type);
+               ? static_cast<base::WeakPtr<ModelTypeControllerDelegate>>(
+                     bridge_->AsWeakPtr())
+               : ChromeSyncClient::GetControllerDelegateForModelType(type);
   }
 
  private:

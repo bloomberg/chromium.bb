@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "components/sync/base/data_type_histogram.h"
+#include "components/sync/model/model_type_controller_delegate.h"
 #include "components/sync/model_impl/processor_entity_tracker.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 
@@ -19,9 +20,9 @@ namespace syncer {
 
 namespace {
 
-ClientTagBasedModelTypeProcessor* GetProcessorFromBridge(
-    ModelTypeSyncBridge* bridge) {
-  ModelTypeChangeProcessor* processor = bridge->change_processor();
+ClientTagBasedModelTypeProcessor* GetProcessorFromDelegate(
+    ModelTypeControllerDelegate* delegate) {
+  ModelTypeChangeProcessor* processor = delegate->change_processor();
   if (processor == nullptr) {
     LOG(WARNING)
         << "ClientTagBasedModelTypeProcessor destroyed before debug info was "
@@ -36,19 +37,21 @@ ClientTagBasedModelTypeProcessor* GetProcessorFromBridge(
 void ModelTypeDebugInfo::GetAllNodes(
     const base::Callback<void(const ModelType, std::unique_ptr<ListValue>)>&
         callback,
-    ModelTypeSyncBridge* bridge) {
-  ClientTagBasedModelTypeProcessor* processor = GetProcessorFromBridge(bridge);
+    ModelTypeControllerDelegate* delegate) {
+  ClientTagBasedModelTypeProcessor* processor =
+      GetProcessorFromDelegate(delegate);
   if (processor) {
-    bridge->GetAllData(base::Bind(&ModelTypeDebugInfo::MergeDataWithMetadata,
-                                  base::Unretained(processor), callback));
+    delegate->GetAllData(base::Bind(&ModelTypeDebugInfo::MergeDataWithMetadata,
+                                    base::Unretained(processor), callback));
   }
 }
 
 // static
 void ModelTypeDebugInfo::GetStatusCounters(
     const base::Callback<void(ModelType, const StatusCounters&)>& callback,
-    ModelTypeSyncBridge* bridge) {
-  ClientTagBasedModelTypeProcessor* processor = GetProcessorFromBridge(bridge);
+    ModelTypeControllerDelegate* delegate) {
+  ClientTagBasedModelTypeProcessor* processor =
+      GetProcessorFromDelegate(delegate);
   if (processor) {
     StatusCounters counters;
     counters.num_entries_and_tombstones = processor->entities_.size();
@@ -63,8 +66,9 @@ void ModelTypeDebugInfo::GetStatusCounters(
 
 // static
 void ModelTypeDebugInfo::RecordMemoryUsageHistogram(
-    ModelTypeSyncBridge* bridge) {
-  ClientTagBasedModelTypeProcessor* processor = GetProcessorFromBridge(bridge);
+    ModelTypeControllerDelegate* delegate) {
+  ClientTagBasedModelTypeProcessor* processor =
+      GetProcessorFromDelegate(delegate);
   size_t memory_usage = processor->EstimateMemoryUsage();
   SyncRecordMemoryKbHistogram(kModelTypeMemoryHistogramPrefix, processor->type_,
                               memory_usage);

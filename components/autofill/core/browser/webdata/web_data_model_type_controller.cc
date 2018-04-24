@@ -18,18 +18,18 @@ WebDataModelTypeController::WebDataModelTypeController(
     SyncClient* sync_client,
     const scoped_refptr<base::SingleThreadTaskRunner>& model_thread,
     const scoped_refptr<AutofillWebDataService>& web_data_service,
-    const BridgeFromWebData& bridge_from_web_data)
+    const DelegateFromWebData& delegate_from_web_data)
     : ModelTypeController(type, sync_client, model_thread),
       web_data_service_(web_data_service),
-      bridge_from_web_data_(bridge_from_web_data) {}
+      delegate_from_web_data_(delegate_from_web_data) {}
 
 WebDataModelTypeController::~WebDataModelTypeController() {}
 
-ModelTypeController::BridgeProvider
-WebDataModelTypeController::GetBridgeProvider() {
-  // As opposed to the default implementation, get the bridge on demand, the web
-  // data service requires us to be on the model thread.
-  return base::Bind(bridge_from_web_data_,
+ModelTypeController::DelegateProvider
+WebDataModelTypeController::GetDelegateProvider() {
+  // As opposed to the default implementation, get the delegate on demand, the
+  // web data service requires us to be on the model thread.
+  return base::Bind(delegate_from_web_data_,
                     base::RetainedRef(web_data_service_));
 }
 

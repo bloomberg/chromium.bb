@@ -149,7 +149,7 @@ class ModelTypeControllerTest : public testing::Test, public FakeSyncClient {
     PumpUIThread();
   }
 
-  base::WeakPtr<ModelTypeSyncBridge> GetSyncBridgeForModelType(
+  base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegateForModelType(
       ModelType type) override {
     return bridge_->AsWeakPtr();
   }

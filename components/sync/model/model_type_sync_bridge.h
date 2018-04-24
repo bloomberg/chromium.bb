@@ -17,11 +17,10 @@
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/model_error.h"
-#include "components/sync/model/model_type_change_processor.h"
+#include "components/sync/model/model_type_controller_delegate.h"
 
 namespace syncer {
 
-class DataBatch;
 class MetadataChangeList;
 
 // Interface implemented by model types to receive updates from sync via a
@@ -32,9 +31,9 @@ class MetadataChangeList;
 // immediately begin locally tracking changes and can start syncing with the
 // server soon afterward. If an error occurs during startup, the processor's
 // ReportError() method should be called instead of ModelReadyToSync().
-class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
+class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge>,
+                            public ModelTypeControllerDelegate {
  public:
-  using DataCallback = base::OnceCallback<void(std::unique_ptr<DataBatch>)>;
   using StorageKeyList = std::vector<std::string>;
 
   enum class DisableSyncResponse {
@@ -45,7 +44,7 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
   ModelTypeSyncBridge(
       std::unique_ptr<ModelTypeChangeProcessor> change_processor);
 
-  virtual ~ModelTypeSyncBridge();
+  ~ModelTypeSyncBridge() override;
 
   // Creates an object used to communicate changes in the sync metadata to the
   // model type store.
@@ -84,11 +83,6 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
   // |callback| should be invoked if the operation is successful, otherwise
   // the processor's ReportError method should be called.
   virtual void GetData(StorageKeyList storage_keys, DataCallback callback) = 0;
-
-  // Asynchronously retrieve all of the local sync data. |callback| should be
-  // invoked if the operation is successful, otherwise the processor's
-  // ReportError method should be called.
-  virtual void GetAllData(DataCallback callback) = 0;
 
   // Get or generate a client tag for |entity_data|. This must be the same tag
   // that was/would have been generated in the SyncableService/Directory world
@@ -129,18 +123,6 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
       const EntityData& local_data,
       const EntityData& remote_data) const;
 
-  // Called by the DataTypeController to gather additional information needed
-  // before the processor can be connected to a sync worker. Once the
-  // metadata has been loaded, the info is collected and given to |callback|.
-  // When overriding, the bridge must notify the processor.
-  virtual void OnSyncStarting(const ModelErrorHandler& error_handler,
-                              ModelTypeChangeProcessor::StartCallback callback);
-
-  // Indicates that we no longer want to do any sync-related things for this
-  // data type. Severs all ties to the sync thread, deletes all local sync
-  // metadata, and then destroys the change processor.
-  void DisableSync();
-
   // Similar to ApplySyncChanges() but called by the processor when sync
   // is in the process of being disabled. |delete_metadata_change_list| contains
   // a change list to remove all metadata that the processor knows about, but
@@ -148,10 +130,20 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
   virtual DisableSyncResponse ApplyDisableSyncChanges(
       std::unique_ptr<MetadataChangeList> delete_metadata_change_list);
 
+  // ModelTypeController::Delegate implementation.
+  void OnSyncStarting(
+      const ModelErrorHandler& error_handler,
+      ModelTypeChangeProcessor::StartCallback callback) override;
+  void DisableSync() override;
+
+  // TODO(jkrcal): The following function should be part of this interface and
+  // is not only for a transient period of time. Thus the comment on this
+  // function stays here (https://crbug.com/819993).
+
   // Needs to be informed about any model change occurring via Delete() and
-  // Put(). The changing metadata should be stored to persistent storage before
-  // or atomically with the model changes.
-  ModelTypeChangeProcessor* change_processor() const;
+  // Put(). The changing metadata should be stored to persistent storage
+  // before or atomically with the model changes.
+  ModelTypeChangeProcessor* change_processor() const override;
 
  private:
   std::unique_ptr<ModelTypeChangeProcessor> change_processor_;
