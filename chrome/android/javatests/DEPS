@@ -7,6 +7,7 @@ include_rules = [
   "+components/dom_distiller/core/android/java/src/org/chromium/components/dom_distiller/core",
   "+components/gcm_driver/android/java/src/org/chromium/components/gcm_driver",
   "+components/gcm_driver/instance_id/android/javatests/src/org/chromium/components/gcm_driver/instance_id",
+  "+components/heap_profiling",
   "+components/location/android/java",
   "+components/minidump_uploader",
   "+components/navigation_interception",

@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.heap_profiling.HeapProfilingTestShim;
 
 /**
  * Test suite for out of process heap profiling.
