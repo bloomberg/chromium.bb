@@ -32,19 +32,21 @@ constexpr char kNotificationIdPrefix[] = "ARC_NOTIFICATION_";
 // TODO(yoshiki): rewrite this conversion as typemap
 int ConvertAndroidPriority(mojom::ArcNotificationPriority android_priority) {
   switch (android_priority) {
+    case mojom::ArcNotificationPriority::NONE:
     case mojom::ArcNotificationPriority::MIN:
-    case mojom::ArcNotificationPriority::LOW:
       return message_center::MIN_PRIORITY;
+    case mojom::ArcNotificationPriority::LOW:
     case mojom::ArcNotificationPriority::DEFAULT:
       return message_center::LOW_PRIORITY;
     case mojom::ArcNotificationPriority::HIGH:
-      return message_center::DEFAULT_PRIORITY;
+      return message_center::HIGH_PRIORITY;
     case mojom::ArcNotificationPriority::MAX:
       return message_center::MAX_PRIORITY;
   }
 
   NOTREACHED() << "Invalid Priority: " << android_priority;
-  return message_center::DEFAULT_PRIORITY;
+  // Invalid values are treated as Android's DEFAULT priority.
+  return message_center::LOW_PRIORITY;
 }
 
 }  // anonymous namespace

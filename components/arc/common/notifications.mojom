@@ -34,14 +34,16 @@ enum ArcNotificationType {
   BUNDLED = 4,
 };
 
-// These values are corresponding to the priorities of Android notification.
+// These values are corresponding to the priorities or importance of Android
+// notification.
 [Extensible]
 enum ArcNotificationPriority {
-  MIN = -2,  // same value as Notification.PRIORITY_MIN
-  LOW = -1,  // same value as Notification.PRIORITY_LOW
-  DEFAULT = 0,  // same value as Notification.PRIORITY_DEFAULT
-  HIGH = 1,  // same value as Notification.PRIORITY_HIGH
-  MAX = 2,  // same value as Notification.PRIORITY_MAX
+  NONE = -3,
+  MIN = -2,
+  LOW = -1,
+  DEFAULT = 0,
+  HIGH = 1,
+  MAX = 2,
 };
 
 // DEPRECATED

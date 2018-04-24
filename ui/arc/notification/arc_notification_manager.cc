@@ -348,10 +348,17 @@ void ArcNotificationManager::Shutdown() {
 
 bool ArcNotificationManager::ShouldIgnoreNotification(
     arc::mojom::ArcNotificationData* data) {
+  if (data->priority == mojom::ArcNotificationPriority::NONE)
+    return true;
+
   // Notifications from Play Store are ignored in Public Session and Kiosk mode.
   // TODO: Use centralized const for Play Store package.
-  return data->package_name.has_value() &&
-         *data->package_name == kPlayStorePackageName && IsRobotAccountMode();
+  if (data->package_name.has_value() &&
+      *data->package_name == kPlayStorePackageName && IsRobotAccountMode()) {
+    return true;
+  }
+
+  return false;
 }
 
 std::string ArcNotificationManager::GetAppId(
