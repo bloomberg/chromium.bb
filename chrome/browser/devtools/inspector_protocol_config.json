@@ -18,7 +18,7 @@
             },
             {
                 "domain": "Target",
-                "include": [ "setRemoteLocations" ],
+                "include": [ "setRemoteLocations", "createBrowserContext", "createTarget", "disposeBrowserContext" ],
                 "include_events": []
             },
             {
