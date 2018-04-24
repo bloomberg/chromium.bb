@@ -48,10 +48,11 @@ class GPU_IPC_SERVICE_EXPORT GpuInit {
 
   const GPUInfo& gpu_info() const { return gpu_info_; }
   const GpuFeatureInfo& gpu_feature_info() const { return gpu_feature_info_; }
-  const GPUInfo& gpu_info_for_hardware_gpu() const {
+  const base::Optional<GPUInfo>& gpu_info_for_hardware_gpu() const {
     return gpu_info_for_hardware_gpu_;
   }
-  const GpuFeatureInfo& gpu_feature_info_for_hardware_gpu() const {
+  const base::Optional<GpuFeatureInfo>& gpu_feature_info_for_hardware_gpu()
+      const {
     return gpu_feature_info_for_hardware_gpu_;
   }
   const GpuPreferences& gpu_preferences() const { return gpu_preferences_; }
@@ -70,8 +71,8 @@ class GPU_IPC_SERVICE_EXPORT GpuInit {
 
   // The following data are collected from hardware GPU and saved before
   // switching to SwiftShader.
-  GPUInfo gpu_info_for_hardware_gpu_;
-  GpuFeatureInfo gpu_feature_info_for_hardware_gpu_;
+  base::Optional<GPUInfo> gpu_info_for_hardware_gpu_;
+  base::Optional<GpuFeatureInfo> gpu_feature_info_for_hardware_gpu_;
 
   bool ShouldEnableSwiftShader(base::CommandLine* command_line,
                                bool blacklist_needs_more_info);

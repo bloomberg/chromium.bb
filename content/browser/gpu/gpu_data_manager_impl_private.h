@@ -60,11 +60,12 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void BlockSwiftShader();
   bool SwiftShaderAllowed() const;
 
-  void UpdateGpuInfo(const gpu::GPUInfo& gpu_info,
-                     const gpu::GPUInfo* optional_gpu_info_for_hardware_gpu);
-  void UpdateGpuFeatureInfo(
-      const gpu::GpuFeatureInfo& gpu_feature_info,
-      const gpu::GpuFeatureInfo& gpu_feature_info_for_hardware_gpu);
+  void UpdateGpuInfo(
+      const gpu::GPUInfo& gpu_info,
+      const base::Optional<gpu::GPUInfo>& optional_gpu_info_for_hardware_gpu);
+  void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info,
+                            const base::Optional<gpu::GpuFeatureInfo>&
+                                gpu_feature_info_for_hardware_gpu);
   gpu::GpuFeatureInfo GetGpuFeatureInfo() const;
   gpu::GpuFeatureInfo GetGpuFeatureInfoForHardwareGpu() const;
 

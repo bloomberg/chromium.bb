@@ -18,8 +18,8 @@ interface GpuHost {
   // be uninitialized data.
   DidInitialize(gpu.mojom.GpuInfo gpu_info,
                 gpu.mojom.GpuFeatureInfo gpu_feature_info,
-                gpu.mojom.GpuInfo gpu_info_for_hardware_gpu,
-                gpu.mojom.GpuFeatureInfo gpu_feature_info_for_hardware_gpu);
+                gpu.mojom.GpuInfo? gpu_info_for_hardware_gpu,
+                gpu.mojom.GpuFeatureInfo? gpu_feature_info_for_hardware_gpu);
   DidFailInitialize();
 
   DidCreateContextSuccessfully();

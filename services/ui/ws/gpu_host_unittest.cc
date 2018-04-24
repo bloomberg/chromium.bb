@@ -55,8 +55,8 @@ TestGpuService::TestGpuService(
                      std::move(io_runner),
                      gpu::GpuFeatureInfo(),
                      gpu::GpuPreferences(),
-                     gpu::GPUInfo(),
-                     gpu::GpuFeatureInfo()) {}
+                     base::nullopt,
+                     base::nullopt) {}
 
 }  // namespace
 

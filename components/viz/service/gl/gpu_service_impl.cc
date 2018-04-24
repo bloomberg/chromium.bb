@@ -115,8 +115,9 @@ GpuServiceImpl::GpuServiceImpl(
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     const gpu::GpuFeatureInfo& gpu_feature_info,
     const gpu::GpuPreferences& gpu_preferences,
-    const gpu::GPUInfo& gpu_info_for_hardware_gpu,
-    const gpu::GpuFeatureInfo& gpu_feature_info_for_hardware_gpu)
+    const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
+    const base::Optional<gpu::GpuFeatureInfo>&
+        gpu_feature_info_for_hardware_gpu)
     : main_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_runner_(std::move(io_runner)),
       watchdog_thread_(std::move(watchdog_thread)),

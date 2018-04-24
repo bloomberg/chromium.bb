@@ -256,7 +256,8 @@ void UpdateGpuInfoOnIO(const gpu::GPUInfo& gpu_info) {
       base::BindOnce(
           [](const gpu::GPUInfo& gpu_info) {
             TRACE_EVENT0("test_gpu", "OnGraphicsInfoCollected");
-            GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info, nullptr);
+            GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info,
+                                                             base::nullopt);
           },
           gpu_info));
 }
@@ -274,7 +275,7 @@ void GpuDataManagerImplPrivate::BlacklistWebGLForTesting() {
     else
       gpu_feature_info.status_values[ii] = gpu::kGpuFeatureStatusEnabled;
   }
-  UpdateGpuFeatureInfo(gpu_feature_info, gpu::GpuFeatureInfo());
+  UpdateGpuFeatureInfo(gpu_feature_info, base::nullopt);
   NotifyGpuInfoUpdate();
 }
 
@@ -432,17 +433,17 @@ void GpuDataManagerImplPrivate::UnblockDomainFrom3DAPIs(const GURL& url) {
 
 void GpuDataManagerImplPrivate::UpdateGpuInfo(
     const gpu::GPUInfo& gpu_info,
-    const gpu::GPUInfo* optional_gpu_info_for_hardware_gpu) {
+    const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu) {
   bool sandboxed = gpu_info_.sandboxed;
 #if defined(OS_WIN)
   uint32_t d3d12_feature_level = gpu_info_.d3d12_feature_level;
   uint32_t vulkan_version = gpu_info_.vulkan_version;
 #endif
   gpu_info_ = gpu_info;
-  if (optional_gpu_info_for_hardware_gpu &&
-      !gpu_info_for_hardware_gpu_.IsInitialized()) {
-    if (optional_gpu_info_for_hardware_gpu->IsInitialized()) {
-      gpu_info_for_hardware_gpu_ = *optional_gpu_info_for_hardware_gpu;
+  if (!gpu_info_for_hardware_gpu_.IsInitialized()) {
+    if (!!gpu_info_for_hardware_gpu) {
+      DCHECK(gpu_info_for_hardware_gpu->IsInitialized());
+      gpu_info_for_hardware_gpu_ = gpu_info_for_hardware_gpu.value();
     } else {
       gpu_info_for_hardware_gpu_ = gpu_info;
     }
@@ -477,11 +478,14 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(
 
 void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
     const gpu::GpuFeatureInfo& gpu_feature_info,
-    const gpu::GpuFeatureInfo& gpu_feature_info_for_hardware_gpu) {
+    const base::Optional<gpu::GpuFeatureInfo>&
+        gpu_feature_info_for_hardware_gpu) {
   gpu_feature_info_ = gpu_feature_info;
   if (!gpu_feature_info_for_hardware_gpu_.IsInitialized()) {
-    if (gpu_feature_info_for_hardware_gpu.IsInitialized()) {
-      gpu_feature_info_for_hardware_gpu_ = gpu_feature_info_for_hardware_gpu;
+    if (gpu_feature_info_for_hardware_gpu.has_value()) {
+      DCHECK(gpu_feature_info_for_hardware_gpu->IsInitialized());
+      gpu_feature_info_for_hardware_gpu_ =
+          gpu_feature_info_for_hardware_gpu.value();
     } else {
       gpu_feature_info_for_hardware_gpu_ = gpu_feature_info;
     }
@@ -585,7 +589,9 @@ bool GpuDataManagerImplPrivate::SwiftShaderAllowed() const {
 }
 
 void GpuDataManagerImplPrivate::OnGpuBlocked() {
-  gpu::GpuFeatureInfo gpu_feature_info_for_hardware_gpu = gpu_feature_info_;
+  base::Optional<gpu::GpuFeatureInfo> gpu_feature_info_for_hardware_gpu;
+  if (gpu_feature_info_.IsInitialized())
+    gpu_feature_info_for_hardware_gpu = gpu_feature_info_;
   gpu::GpuFeatureInfo gpu_feature_info = gpu::ComputeGpuFeatureInfoWithNoGpu();
   UpdateGpuFeatureInfo(gpu_feature_info, gpu_feature_info_for_hardware_gpu);
 
