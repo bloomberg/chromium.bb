@@ -219,4 +219,57 @@ TEST_P(RenderedPositionTest, TextAreaLinebreak) {
             FloatPoint(11.0f, 31.0f));
 }
 
+// crbug.com/815099
+TEST_P(RenderedPositionTest, CaretBeforeSoftWrap) {
+  SetBodyContent(
+      "<div style='font: 10px/10px Ahem; width:20px;' "
+      "contenteditable>foo</div>");
+  Element* target = GetDocument().QuerySelector("div");
+  target->focus();
+  Node* text_foo = target->firstChild();
+  Selection().SetSelection(
+      SelectionInDOMTree::Builder()
+          .Collapse(
+              PositionWithAffinity({text_foo, 2}, TextAffinity::kUpstream))
+          .Build(),
+      SetSelectionOptions::Builder().SetShouldShowHandle(true).Build());
+  UpdateAllLifecyclePhases();
+  const CompositedSelection& composited_selection =
+      RenderedPosition::ComputeCompositedSelection(Selection());
+  EXPECT_EQ(composited_selection.start.edge_top_in_layer,
+            FloatPoint(27.0f, 8.0f));
+  EXPECT_EQ(composited_selection.start.edge_bottom_in_layer,
+            FloatPoint(27.0f, 18.0f));
+  EXPECT_EQ(composited_selection.end.edge_top_in_layer,
+            FloatPoint(27.0f, 8.0f));
+  EXPECT_EQ(composited_selection.end.edge_bottom_in_layer,
+            FloatPoint(27.0f, 18.0f));
+}
+
+TEST_P(RenderedPositionTest, CaretAfterSoftWrap) {
+  SetBodyContent(
+      "<div style='font: 10px/10px Ahem; width:20px;' "
+      "contenteditable>foo</div>");
+  Element* target = GetDocument().QuerySelector("div");
+  target->focus();
+  Node* text_foo = target->firstChild();
+  Selection().SetSelection(
+      SelectionInDOMTree::Builder()
+          .Collapse(
+              PositionWithAffinity({text_foo, 2}, TextAffinity::kDownstream))
+          .Build(),
+      SetSelectionOptions::Builder().SetShouldShowHandle(true).Build());
+  UpdateAllLifecyclePhases();
+  const CompositedSelection& composited_selection =
+      RenderedPosition::ComputeCompositedSelection(Selection());
+  EXPECT_EQ(composited_selection.start.edge_top_in_layer,
+            FloatPoint(8.0f, 18.0f));
+  EXPECT_EQ(composited_selection.start.edge_bottom_in_layer,
+            FloatPoint(8.0f, 28.0f));
+  EXPECT_EQ(composited_selection.end.edge_top_in_layer,
+            FloatPoint(8.0f, 18.0f));
+  EXPECT_EQ(composited_selection.end.edge_bottom_in_layer,
+            FloatPoint(8.0f, 28.0f));
+}
+
 }  // namespace blink
