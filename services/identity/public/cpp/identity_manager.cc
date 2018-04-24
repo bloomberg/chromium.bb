@@ -41,13 +41,24 @@ AccountInfo IdentityManager::GetPrimaryAccountInfo() {
   // where you are setting the authenticated account info in the SigninManager.
   // TODO(blundell): Add the API to do this once we hit the first case and
   // document the API to use here.
-  DCHECK_EQ(signin_manager_->GetAuthenticatedAccountInfo().account_id,
+  DCHECK_EQ(signin_manager_->GetAuthenticatedAccountId(),
             primary_account_info_.account_id);
-  DCHECK_EQ(signin_manager_->GetAuthenticatedAccountInfo().gaia,
-            primary_account_info_.gaia);
-  DCHECK_EQ(signin_manager_->GetAuthenticatedAccountInfo().email,
-            primary_account_info_.email);
-#endif
+#if DCHECK_IS_ON()
+  // Note: If the primary account's refresh token gets revoked, then the account
+  // gets removed from AccountTrackerService (via
+  // AccountFetcherService::OnRefreshTokenRevoked), and so SigninManager's
+  // GetAuthenticatedAccountInfo is empty (even though
+  // GetAuthenticatedAccountId is NOT empty).
+  if (!signin_manager_->GetAuthenticatedAccountInfo().account_id.empty()) {
+    DCHECK_EQ(signin_manager_->GetAuthenticatedAccountInfo().account_id,
+              primary_account_info_.account_id);
+    DCHECK_EQ(signin_manager_->GetAuthenticatedAccountInfo().gaia,
+              primary_account_info_.gaia);
+    DCHECK_EQ(signin_manager_->GetAuthenticatedAccountInfo().email,
+              primary_account_info_.email);
+  }
+#endif  // DCHECK_IS_ON()
+#endif  // defined(OS_CHROMEOS)
   return primary_account_info_;
 }
 
