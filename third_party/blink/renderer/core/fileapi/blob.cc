@@ -198,6 +198,8 @@ String Blob::NormalizeType(const String& type) {
   if (type.IsNull())
     return g_empty_string;
   const size_t length = type.length();
+  if (length > 65535)
+    return g_empty_string;
   if (type.Is8Bit()) {
     const LChar* chars = type.Characters8();
     for (size_t i = 0; i < length; ++i) {
