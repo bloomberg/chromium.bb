@@ -165,8 +165,10 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
       }
       break;
     case AppType::ARC:
-      if (!arc::ArcNavigationThrottle::MaybeLaunchOrPersistArcApp(
+      if (arc::ArcNavigationThrottle::MaybeLaunchOrPersistArcApp(
               url, launch_name, should_launch_app, should_persist)) {
+        CloseOrGoBack(web_contents);
+      } else {
         close_reason = IntentPickerCloseReason::ERROR;
       }
       break;
@@ -361,6 +363,15 @@ void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
       chrome::FindBrowserWithWebContents(web_contents), std::move(apps),
       base::BindOnce(&AppsNavigationThrottle::OnIntentPickerClosed,
                      web_contents, url));
+}
+
+// static
+void AppsNavigationThrottle::CloseOrGoBack(content::WebContents* tab) {
+  DCHECK(tab);
+  if (tab->GetController().CanGoBack())
+    tab->GetController().GoBack();
+  else
+    tab->Close();
 }
 
 void AppsNavigationThrottle::CancelNavigation() {
