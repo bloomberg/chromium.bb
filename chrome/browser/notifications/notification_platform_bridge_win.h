@@ -84,6 +84,8 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   HRESULT GetToastNotificationForTesting(
       const message_center::Notification& notification,
       const NotificationTemplateBuilder& notification_template_builder,
+      const std::string& profile_id,
+      bool incognito,
       ABI::Windows::UI::Notifications::IToastNotification** toast_notification);
 
   scoped_refptr<NotificationPlatformBridgeWinImpl> impl_;
