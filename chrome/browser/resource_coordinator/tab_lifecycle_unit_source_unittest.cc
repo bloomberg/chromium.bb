@@ -319,13 +319,15 @@ TEST_F(TabLifecycleUnitSourceTest, ReplaceWebContents) {
       tab_strip_model_->GetWebContentsAt(1);
   TabLifecycleUnitExternal* tab_lifecycle_unit_external =
       source_->GetTabLifecycleUnitExternal(original_web_contents);
-  content::WebContents* new_web_contents = CreateTestWebContents();
+  std::unique_ptr<content::WebContents> new_web_contents =
+      base::WrapUnique(CreateTestWebContents());
+  content::WebContents* raw_new_web_contents = new_web_contents.get();
   std::unique_ptr<content::WebContents> original_web_contents_deleter =
-      tab_strip_model_->ReplaceWebContentsAt(1, new_web_contents);
+      tab_strip_model_->ReplaceWebContentsAt(1, std::move(new_web_contents));
   EXPECT_EQ(original_web_contents, original_web_contents_deleter.get());
   EXPECT_FALSE(source_->GetTabLifecycleUnitExternal(original_web_contents));
   EXPECT_EQ(tab_lifecycle_unit_external,
-            source_->GetTabLifecycleUnitExternal(new_web_contents));
+            source_->GetTabLifecycleUnitExternal(raw_new_web_contents));
 
   original_web_contents_deleter.reset();
 

@@ -147,8 +147,8 @@ void DistillCurrentPageAndView(content::WebContents* old_web_contents) {
   // Create new WebContents.
   content::WebContents::CreateParams create_params(
       old_web_contents->GetBrowserContext());
-  content::WebContents* new_web_contents =
-      content::WebContents::Create(create_params);
+  std::unique_ptr<content::WebContents> new_web_contents =
+      base::WrapUnique(content::WebContents::Create(create_params));
   DCHECK(new_web_contents);
 
   // Copy all navigation state from the old WebContents to the new one.
@@ -159,13 +159,14 @@ void DistillCurrentPageAndView(content::WebContents* old_web_contents) {
   // to avoid triggering a reload of the page.  This reloadmakes it very
   // difficult to distinguish between the intermediate reload and a user hitting
   // the back button.
-  StartNavigationToDistillerViewer(new_web_contents,
+  StartNavigationToDistillerViewer(new_web_contents.get(),
                                    old_web_contents->GetLastCommittedURL());
 
   std::unique_ptr<content::WebContents> old_web_contents_owned =
       CoreTabHelper::FromWebContents(old_web_contents)
           ->delegate()
-          ->SwapTabContents(old_web_contents, new_web_contents, false, false);
+          ->SwapTabContents(old_web_contents, std::move(new_web_contents),
+                            false, false);
 
   std::unique_ptr<SourcePageHandleWebContents> source_page_handle(
       new SourcePageHandleWebContents(old_web_contents_owned.release(), true));

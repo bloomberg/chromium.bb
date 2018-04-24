@@ -71,8 +71,9 @@ TEST_F(TabStripModelStatsRecorderTest, BasicTabLifecycle) {
 
   // Replace the contents of the first tab.
   // TabStripModeStatsRecorder should follow WebContents change.
-  WebContents* contents3 = CreateTestWebContents();
-  tabstrip.ReplaceWebContentsAt(0, contents3);
+  std::unique_ptr<WebContents> contents3 =
+      base::WrapUnique(CreateTestWebContents());
+  tabstrip.ReplaceWebContentsAt(0, std::move(contents3));
 
   // Close the inactive second tab.
   tabstrip.CloseWebContentsAt(tabstrip.GetIndexOfWebContents(contents2),

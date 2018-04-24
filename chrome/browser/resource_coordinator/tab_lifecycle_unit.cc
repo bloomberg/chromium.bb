@@ -227,8 +227,9 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
   // becomes VISIBLE.
   create_params.initially_hidden =
       old_contents->GetVisibility() == content::Visibility::HIDDEN;
-  content::WebContents* const null_contents =
-      content::WebContents::Create(create_params);
+  std::unique_ptr<content::WebContents> null_contents =
+      base::WrapUnique(content::WebContents::Create(create_params));
+  content::WebContents* raw_null_contents = null_contents.get();
   // Copy over the state from the navigation controller to preserve the
   // back/forward history and to continue to display the correct title/favicon.
   //
@@ -269,12 +270,12 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
   const int index = tab_strip_model_->GetIndexOfWebContents(old_contents);
   DCHECK_NE(index, TabStripModel::kNoTab);
   std::unique_ptr<content::WebContents> old_contents_deleter =
-      tab_strip_model_->ReplaceWebContentsAt(index, null_contents);
-  DCHECK_EQ(GetWebContents(), null_contents);
+      tab_strip_model_->ReplaceWebContentsAt(index, std::move(null_contents));
+  DCHECK_EQ(GetWebContents(), raw_null_contents);
 
   // This ensures that on reload after discard, the document has
   // "wasDiscarded" set to true.
-  null_contents->SetWasDiscarded(true);
+  raw_null_contents->SetWasDiscarded(true);
 
   // Discard the old tab's renderer.
   // TODO(jamescook): This breaks script connections with other tabs. Find a
