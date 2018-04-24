@@ -332,6 +332,156 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { GLOBAL_GLOBALMV, { BWDREF_FRAME, ALTREF_FRAME } },
 };
 
+static const int16_t intra_to_mode_idx[INTRA_MODE_NUM] = {
+  7,    // DC_PRED,
+  134,  // V_PRED,
+  133,  // H_PRED,
+  140,  // D45_PRED,
+  135,  // D135_PRED,
+  139,  // D113_PRED,
+  137,  // D157_PRED,
+  136,  // D203_PRED,
+  138,  // D67_PRED,
+  46,   // SMOOTH_PRED,
+  47,   // SMOOTH_V_PRED,
+  48,   // SMOOTH_H_PRED,
+  45,   // PAETH_PRED,
+};
+
+/* clang-format off */
+static const int16_t single_inter_to_mode_idx[SINGLE_INTER_MODE_NUM]
+                                             [REF_FRAMES] = {
+  // NEARESTMV,
+  { -1, 0, 1, 2, 6, 3, 4, 5, },
+  // NEARMV,
+  { -1, 15, 16, 17, 21, 18, 19, 20, },
+  // GLOBALMV,
+  { -1, 22, 23, 24, 27, 25, 26, 28, },
+  // NEWMV,
+  { -1, 8, 9, 10, 14, 11, 12, 13, },
+};
+/* clang-format on */
+
+/* clang-format off */
+static const int16_t comp_inter_to_mode_idx[COMP_INTER_MODE_NUM][REF_FRAMES]
+                                     [REF_FRAMES] = {
+  // NEAREST_NEARESTMV,
+  {
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+      { -1, -1, 41, 42, 43, 33, 37, 29, },
+      { -1, -1, -1, -1, -1, 34, 38, 30, },
+      { -1, -1, -1, -1, -1, 35, 39, 31, },
+      { -1, -1, -1, -1, -1, 36, 40, 32, },
+      { -1, -1, -1, -1, -1, -1, -1, 44, },
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+  },
+  // NEAR_NEARMV,
+  {
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+      { -1, -1, 141, 148, 155, 77, 105, 49, },
+      { -1, -1, -1, -1, -1, 84, 112, 56, },
+      { -1, -1, -1, -1, -1, 91, 119, 63, },
+      { -1, -1, -1, -1, -1, 98, 126, 70, },
+      { -1, -1, -1, -1, -1, -1, -1, 162, },
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+  },
+  // NEAREST_NEWMV,
+  {
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+      { -1, -1, 143, 150, 157, 79, 107, 51, },
+      { -1, -1, -1, -1, -1, 86, 114, 58, },
+      { -1, -1, -1, -1, -1, 93, 121, 65, },
+      { -1, -1, -1, -1, -1, 100, 128, 72, },
+      { -1, -1, -1, -1, -1, -1, -1, 164, },
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+  },
+  // NEW_NEARESTMV,
+  {
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+      { -1, -1, 142, 149, 156, 78, 106, 50, },
+      { -1, -1, -1, -1, -1, 85, 113, 57, },
+      { -1, -1, -1, -1, -1, 92, 120, 64, },
+      { -1, -1, -1, -1, -1, 99, 127, 71, },
+      { -1, -1, -1, -1, -1, -1, -1, 163, },
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+  },
+  // NEAR_NEWMV,
+  {
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+      { -1, -1, 145, 152, 159, 81, 109, 53, },
+      { -1, -1, -1, -1, -1, 88, 116, 60, },
+      { -1, -1, -1, -1, -1, 95, 123, 67, },
+      { -1, -1, -1, -1, -1, 102, 130, 74, },
+      { -1, -1, -1, -1, -1, -1, -1, 166, },
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+  },
+  // NEW_NEARMV,
+  {
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+      { -1, -1, 144, 151, 158, 80, 108, 52, },
+      { -1, -1, -1, -1, -1, 87, 115, 59, },
+      { -1, -1, -1, -1, -1, 94, 122, 66, },
+      { -1, -1, -1, -1, -1, 101, 129, 73, },
+      { -1, -1, -1, -1, -1, -1, -1, 165, },
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+  },
+  // GLOBAL_GLOBALMV,
+  {
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+      { -1, -1, 147, 154, 161, 83, 111, 55, },
+      { -1, -1, -1, -1, -1, 90, 118, 62, },
+      { -1, -1, -1, -1, -1, 97, 125, 69, },
+      { -1, -1, -1, -1, -1, 104, 132, 76, },
+      { -1, -1, -1, -1, -1, -1, -1, 168, },
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+  },
+  // NEW_NEWMV,
+  {
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+      { -1, -1, 146, 153, 160, 82, 110, 54, },
+      { -1, -1, -1, -1, -1, 89, 117, 61, },
+      { -1, -1, -1, -1, -1, 96, 124, 68, },
+      { -1, -1, -1, -1, -1, 103, 131, 75, },
+      { -1, -1, -1, -1, -1, -1, -1, 167, },
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+      { -1, -1, -1, -1, -1, -1, -1, -1, },
+  },
+};
+/* clang-format on */
+
+static int get_prediction_mode_idx(PREDICTION_MODE this_mode,
+                                   MV_REFERENCE_FRAME ref_frame,
+                                   MV_REFERENCE_FRAME second_ref_frame) {
+  if (this_mode < INTRA_MODE_END) {
+    assert(ref_frame == INTRA_FRAME);
+    assert(second_ref_frame == NONE_FRAME);
+    return intra_to_mode_idx[this_mode - INTRA_MODE_START];
+  }
+  if (this_mode >= SINGLE_INTER_MODE_START &&
+      this_mode < SINGLE_INTER_MODE_END) {
+    assert((ref_frame > INTRA_FRAME) && (ref_frame <= ALTREF_FRAME));
+    assert(second_ref_frame == NONE_FRAME);
+    return single_inter_to_mode_idx[this_mode - SINGLE_INTER_MODE_START]
+                                   [ref_frame];
+  }
+  if (this_mode >= COMP_INTER_MODE_START && this_mode < COMP_INTER_MODE_END) {
+    assert((ref_frame > INTRA_FRAME) && (ref_frame <= ALTREF_FRAME));
+    assert((second_ref_frame > INTRA_FRAME) &&
+           (second_ref_frame <= ALTREF_FRAME));
+    return comp_inter_to_mode_idx[this_mode - COMP_INTER_MODE_START][ref_frame]
+                                 [second_ref_frame];
+  }
+  assert(0);
+  return -1;
+}
+
 static const PREDICTION_MODE intra_rd_search_mode_order[INTRA_MODES] = {
   DC_PRED,       H_PRED,        V_PRED,    SMOOTH_PRED, PAETH_PRED,
   SMOOTH_V_PRED, SMOOTH_H_PRED, D135_PRED, D203_PRED,   D157_PRED,
@@ -8571,81 +8721,66 @@ static const int ref_frame_flag_list[REF_FRAMES] = { 0,
                                                      AOM_ALT_FLAG };
 
 static void estimate_skip_mode_rdcost(
-    const AV1_COMP *const cpi, TileDataEnc *tile_data, MACROBLOCK *const x,
-    BLOCK_SIZE bsize, int mi_row, int mi_col,
-    struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE]) {
+    const AV1_COMP *const cpi, MACROBLOCK *const x, BLOCK_SIZE bsize,
+    int mi_row, int mi_col, struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE]) {
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
 
-  int *mode_map = tile_data->mode_map[bsize];
-  int i;
-
-  for (int midx = 0; midx < MAX_MODES; ++midx) {
-    const int mode_index = mode_map[midx];
-    x->skip_mode_index_candidate = mode_index;
-
-    const MV_REFERENCE_FRAME ref_frame =
-        av1_mode_order[mode_index].ref_frame[0];
-    const MV_REFERENCE_FRAME second_ref_frame =
-        av1_mode_order[mode_index].ref_frame[1];
-    const int comp_pred = second_ref_frame > INTRA_FRAME;
-
-    if (!comp_pred) continue;
-
-    const PREDICTION_MODE this_mode = av1_mode_order[mode_index].mode;
-
-    if (!(cpi->ref_frame_flags & ref_frame_flag_list[ref_frame])) continue;
-    if (comp_pred &&
-        !(cpi->ref_frame_flags & ref_frame_flag_list[second_ref_frame]))
-      continue;
-    // Check whether current refs/mode align with skip_mode
-    if (!(ref_frame == (LAST_FRAME + cm->ref_frame_idx_0) &&
-          second_ref_frame == (LAST_FRAME + cm->ref_frame_idx_1) &&
-          this_mode == NEAREST_NEARESTMV)) {
-      continue;
-    }
-
-    mbmi->mode = this_mode;
-    mbmi->uv_mode = UV_DC_PRED;
-    mbmi->ref_frame[0] = ref_frame;
-    mbmi->ref_frame[1] = second_ref_frame;
-
-    assert(this_mode == NEAREST_NEARESTMV);
-    if (!build_cur_mv(mbmi->mv, this_mode, cm, x)) {
-      x->skip_mode_rdcost = INT64_MAX;
-      break;
-    }
-    if (x->skip_mode_rdcost == INT64_MAX) break;
-
-    mbmi->filter_intra_mode_info.use_filter_intra = 0;
-    mbmi->interintra_mode = (INTERINTRA_MODE)(II_DC_PRED - 1);
-    mbmi->comp_group_idx = 0;
-    mbmi->compound_idx = x->compound_idx;
-    mbmi->interinter_compound_type = COMPOUND_AVERAGE;
-    mbmi->motion_mode = SIMPLE_TRANSLATION;
-    mbmi->ref_mv_idx = 0;
-    mbmi->skip_mode = mbmi->skip = 1;
-
-    set_default_interp_filters(mbmi, cm->interp_filter);
-
-    set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
-    for (i = 0; i < num_planes; i++) {
-      xd->plane[i].pre[0] = yv12_mb[mbmi->ref_frame[0]][i];
-      xd->plane[i].pre[1] = yv12_mb[mbmi->ref_frame[1]][i];
-    }
-
-    BUFFER_SET orig_dst;
-    for (i = 0; i < num_planes; i++) {
-      orig_dst.plane[i] = xd->plane[i].dst.buf;
-      orig_dst.stride[i] = xd->plane[i].dst.stride;
-    }
-
-    // Obtain the rdcost for skip_mode.
-    skip_mode_rd(cpi, x, bsize, mi_row, mi_col, &orig_dst);
-    break;
+  if (cm->ref_frame_idx_0 == INVALID_IDX ||
+      cm->ref_frame_idx_1 == INVALID_IDX || x->skip_mode_rdcost == INT64_MAX) {
+    return;
   }
+
+  const MV_REFERENCE_FRAME ref_frame = LAST_FRAME + cm->ref_frame_idx_0;
+  const MV_REFERENCE_FRAME second_ref_frame = LAST_FRAME + cm->ref_frame_idx_1;
+  const PREDICTION_MODE this_mode = NEAREST_NEARESTMV;
+  const int mode_index =
+      get_prediction_mode_idx(this_mode, ref_frame, second_ref_frame);
+
+  if (mode_index == -1) {
+    return;
+  }
+
+  x->skip_mode_index_candidate = mode_index;
+
+  mbmi->mode = this_mode;
+  mbmi->uv_mode = UV_DC_PRED;
+  mbmi->ref_frame[0] = ref_frame;
+  mbmi->ref_frame[1] = second_ref_frame;
+
+  assert(this_mode == NEAREST_NEARESTMV);
+  if (!build_cur_mv(mbmi->mv, this_mode, cm, x)) {
+    x->skip_mode_rdcost = INT64_MAX;
+    return;
+  }
+
+  mbmi->filter_intra_mode_info.use_filter_intra = 0;
+  mbmi->interintra_mode = (INTERINTRA_MODE)(II_DC_PRED - 1);
+  mbmi->comp_group_idx = 0;
+  mbmi->compound_idx = x->compound_idx;
+  mbmi->interinter_compound_type = COMPOUND_AVERAGE;
+  mbmi->motion_mode = SIMPLE_TRANSLATION;
+  mbmi->ref_mv_idx = 0;
+  mbmi->skip_mode = mbmi->skip = 1;
+
+  set_default_interp_filters(mbmi, cm->interp_filter);
+
+  set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
+  for (int i = 0; i < num_planes; i++) {
+    xd->plane[i].pre[0] = yv12_mb[mbmi->ref_frame[0]][i];
+    xd->plane[i].pre[1] = yv12_mb[mbmi->ref_frame[1]][i];
+  }
+
+  BUFFER_SET orig_dst;
+  for (int i = 0; i < num_planes; i++) {
+    orig_dst.plane[i] = xd->plane[i].dst.buf;
+    orig_dst.stride[i] = xd->plane[i].dst.stride;
+  }
+
+  // Obtain the rdcost for skip_mode.
+  skip_mode_rd(cpi, x, bsize, mi_row, mi_col, &orig_dst);
 }
 
 // speed feature: fast intra/inter transform type search
@@ -10029,8 +10164,7 @@ PALETTE_EXIT:
       is_comp_ref_allowed(bsize)) {
     // Obtain the rdcost for skip_mode.
     x->compound_idx = 1;  // COMPOUND_AVERAGE
-    estimate_skip_mode_rdcost(cpi, tile_data, x, bsize, mi_row, mi_col,
-                              yv12_mb);
+    estimate_skip_mode_rdcost(cpi, x, bsize, mi_row, mi_col, yv12_mb);
 
     if (x->skip_mode_rdcost >= 0 && x->skip_mode_rdcost < INT64_MAX) {
       // Update skip mode rdcost.
