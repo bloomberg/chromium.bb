@@ -43,8 +43,16 @@ class AudioOutputDevice::AudioThreadCallback
   // Will always return true if DCHECKs are not enabled.
   bool CurrentThreadIsAudioDeviceThread();
 
+  // Sets first_play_start_time_ to the current time unless it's already set,
+  // in which case it's a no-op. The first call to this method MUST have
+  // completed by the time we recieve our first Process() callback to avoid
+  // data races.
+  void InitializePlayStartTime();
+
  private:
   const base::TimeTicks start_time_;
+  // If set, this is used to record the startup duration UMA stat.
+  base::Optional<base::TimeTicks> first_play_start_time_;
   AudioRendererSink::RenderCallback* render_callback_;
   std::unique_ptr<AudioBus> output_bus_;
   uint64_t callback_num_;
@@ -247,8 +255,11 @@ void AudioOutputDevice::CreateStreamOnIOThread() {
 void AudioOutputDevice::PlayOnIOThread() {
   DCHECK(task_runner()->BelongsToCurrentThread());
   if (state_ == PAUSED) {
+    DCHECK(audio_callback_);
     TRACE_EVENT_ASYNC_BEGIN0(
         "audio", "StartingPlayback", audio_callback_.get());
+    // Only the first call alters any state, the rest are no-ops.
+    audio_callback_->InitializePlayStartTime();
     ipc_->PlayStream();
     state_ = PLAYING;
     play_on_start_ = false;
@@ -483,6 +494,7 @@ AudioOutputDevice::AudioThreadCallback::AudioThreadCallback(
           ComputeAudioOutputBufferSize(audio_parameters),
           /*segment count*/ 1),
       start_time_(base::TimeTicks::Now()),
+      first_play_start_time_(base::nullopt),
       render_callback_(render_callback),
       callback_num_(0) {}
 
@@ -527,8 +539,13 @@ void AudioOutputDevice::AudioThreadCallback::Process(uint32_t control_signal) {
   // When playback starts, we get an immediate callback to Process to make sure
   // that we have some data, we'll get another one after the device is awake and
   // ingesting data, which is what we want to track with this trace.
-  if (callback_num_ == 2)
+  if (callback_num_ == 2) {
+    if (first_play_start_time_) {
+      UMA_HISTOGRAM_TIMES("Media.Audio.Render.OutputDeviceStartTime",
+                          base::TimeTicks::Now() - *first_play_start_time_);
+    }
     TRACE_EVENT_ASYNC_END0("audio", "StartingPlayback", this);
+  }
 
   // Update the audio-delay measurement, inform about the number of skipped
   // frames, and ask client to render audio.  Since |output_bus_| is wrapping
@@ -550,6 +567,11 @@ void AudioOutputDevice::AudioThreadCallback::Process(uint32_t control_signal) {
 bool AudioOutputDevice::AudioThreadCallback::
     CurrentThreadIsAudioDeviceThread() {
   return thread_checker_.CalledOnValidThread();
+}
+
+void AudioOutputDevice::AudioThreadCallback::InitializePlayStartTime() {
+  if (!first_play_start_time_.has_value())
+    first_play_start_time_ = base::TimeTicks::Now();
 }
 
 }  // namespace media
