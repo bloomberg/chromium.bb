@@ -79,9 +79,14 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOutsets) {
       5.f, SkBlurImageFilter::kClamp_TileMode));
   blur->SetBackgroundFilters(filters);
 
+#if defined(OS_WIN) || defined(_MIPS_ARCH_LOONGSON)
 #if defined(OS_WIN)
   // Windows has 5.9325% pixels by at most 2: crbug.com/259922
   float percentage_pixels_large_error = 6.0f;
+#else
+  // Loongson has 8.685% pixels by at most 2: crbug.com/819110
+  float percentage_pixels_large_error = 8.7f;
+#endif
   float percentage_pixels_small_error = 0.0f;
   float average_error_allowed_in_bad_pixels = 2.f;
   int large_error_allowed = 2;
