@@ -1019,8 +1019,7 @@ class StoragePartitonInterceptor
   // Ensure this object is cleaned up when the process goes away, since it
   // is not owned by anyone else.
   void RenderProcessExited(RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override {
+                           const ChildProcessTerminationInfo& info) override {
     host->RemoveObserver(this);
     delete this;
   }

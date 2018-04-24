@@ -72,10 +72,10 @@ class SubprocessMetricsProvider
       const content::ChildProcessData& data) override;
   void BrowserChildProcessCrashed(
       const content::ChildProcessData& data,
-      int exit_code) override;
+      const content::ChildProcessTerminationInfo& info) override;
   void BrowserChildProcessKilled(
       const content::ChildProcessData& data,
-      int exit_code) override;
+      const content::ChildProcessTerminationInfo& info) override;
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -84,9 +84,9 @@ class SubprocessMetricsProvider
 
   // content::RenderProcessHostObserver:
   void RenderProcessReady(content::RenderProcessHost* host) override;
-  void RenderProcessExited(content::RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override;
+  void RenderProcessExited(
+      content::RenderProcessHost* host,
+      const content::ChildProcessTerminationInfo& info) override;
   void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
 
   // Gets a histogram allocator from a subprocess. This must be called on

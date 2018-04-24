@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/browser/child_process_termination_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -106,7 +107,7 @@ void CrashDumpObserver::BrowserChildProcessHostDisconnected(
 
 void CrashDumpObserver::BrowserChildProcessCrashed(
     const content::ChildProcessData& data,
-    int exit_code) {
+    const content::ChildProcessTerminationInfo& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   OnChildExit(data.id, data.handle,
               static_cast<content::ProcessType>(data.process_type),
@@ -136,11 +137,9 @@ void CrashDumpObserver::Observe(int type,
       if (rph->FastShutdownStarted()) {
         break;
       }
-      content::RenderProcessHost::RendererClosedDetails* process_details =
-          content::Details<content::RenderProcessHost::RendererClosedDetails>(
-              details)
-              .ptr();
-      term_status = process_details->status;
+      content::ChildProcessTerminationInfo* termination_info =
+          content::Details<content::ChildProcessTerminationInfo>(details).ptr();
+      term_status = termination_info->status;
       app_state = base::android::ApplicationStatusListener::GetState();
       break;
     }

@@ -393,9 +393,9 @@ bool WebRtcEventLogManager::IsRemoteLoggingEnabled() const {
   return enabled.value();
 }
 
-void WebRtcEventLogManager::RenderProcessExited(RenderProcessHost* host,
-                                                base::TerminationStatus status,
-                                                int exit_code) {
+void WebRtcEventLogManager::RenderProcessExited(
+    RenderProcessHost* host,
+    const content::ChildProcessTerminationInfo& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderProcessHostExitedDestroyed(host);
 }

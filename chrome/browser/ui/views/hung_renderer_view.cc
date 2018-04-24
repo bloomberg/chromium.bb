@@ -126,9 +126,9 @@ void HungPagesTableModel::SetObserver(ui::TableModelObserver* observer) {
 ///////////////////////////////////////////////////////////////////////////////
 // HungPagesTableModel, RenderProcessHostObserver implementation:
 
-void HungPagesTableModel::RenderProcessExited(content::RenderProcessHost* host,
-                                              base::TerminationStatus status,
-                                              int exit_code) {
+void HungPagesTableModel::RenderProcessExited(
+    content::RenderProcessHost* host,
+    const content::ChildProcessTerminationInfo& info) {
   // Notify the delegate.
   delegate_->TabDestroyed();
   // WARNING: we've likely been deleted.

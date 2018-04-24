@@ -113,8 +113,7 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
 
   // RenderProcessHostObserver implementation
   void RenderProcessExited(RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override;
+                           const ChildProcessTerminationInfo& info) override;
 
   void set_delegate(RenderViewHostDelegate* d) {
     CHECK(d);  // http://crbug.com/82827

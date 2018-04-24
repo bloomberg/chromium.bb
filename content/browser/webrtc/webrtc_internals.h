@@ -151,8 +151,7 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
 
   // RenderProcessHostObserver implementation.
   void RenderProcessExited(RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override;
+                           const ChildProcessTerminationInfo& info) override;
 
   // ui::SelectFileDialog::Listener implementation.
   void FileSelected(const base::FilePath& path,

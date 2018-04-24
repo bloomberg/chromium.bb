@@ -17,6 +17,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/browser/child_process_termination_info.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -166,11 +167,14 @@ TEST_F(PluginMetricsProviderTest, ProvideStabilityMetricsWhenPendingTask) {
 
   // Increase number of process launches which should also start a delayed
   // task.
+  content::ChildProcessTerminationInfo abnormal_termination_info{
+      base::TERMINATION_STATUS_ABNORMAL_TERMINATION, 1};
   content::ChildProcessData child_process_data1(
       content::PROCESS_TYPE_PPAPI_PLUGIN);
   child_process_data1.name = base::UTF8ToUTF16("p1");
   provider.BrowserChildProcessHostConnected(child_process_data1);
-  provider.BrowserChildProcessCrashed(child_process_data1, 1);
+  provider.BrowserChildProcessCrashed(child_process_data1,
+                                      abnormal_termination_info);
 
   // A disconnect should not generate a crash event.
   provider.BrowserChildProcessHostConnected(child_process_data1);
@@ -180,11 +184,13 @@ TEST_F(PluginMetricsProviderTest, ProvideStabilityMetricsWhenPendingTask) {
       content::PROCESS_TYPE_PPAPI_PLUGIN);
   child_process_data2.name = base::UTF8ToUTF16("p2");
   provider.BrowserChildProcessHostConnected(child_process_data2);
-  provider.BrowserChildProcessCrashed(child_process_data2, 1);
+  provider.BrowserChildProcessCrashed(child_process_data2,
+                                      abnormal_termination_info);
 
   // A kill should generate a crash event
   provider.BrowserChildProcessHostConnected(child_process_data2);
-  provider.BrowserChildProcessKilled(child_process_data2, 1);
+  provider.BrowserChildProcessKilled(child_process_data2,
+                                     abnormal_termination_info);
 
   // Call ProvideStabilityMetrics to check that it will force pending tasks to
   // be executed immediately.

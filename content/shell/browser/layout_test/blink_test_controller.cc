@@ -35,6 +35,7 @@
 #include "build/build_config.h"
 #include "content/common/page_state_serialization.h"
 #include "content/common/unique_name_helper.h"
+#include "content/public/browser/child_process_termination_info.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/navigation_controller.h"
@@ -765,10 +766,9 @@ void BlinkTestController::RenderProcessHostDestroyed(
 
 void BlinkTestController::RenderProcessExited(
     RenderProcessHost* render_process_host,
-    base::TerminationStatus status,
-    int exit_code) {
+    const ChildProcessTerminationInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  switch (status) {
+  switch (info.status) {
     case base::TerminationStatus::TERMINATION_STATUS_NORMAL_TERMINATION:
     case base::TerminationStatus::TERMINATION_STATUS_STILL_RUNNING:
       break;

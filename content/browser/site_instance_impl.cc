@@ -533,9 +533,9 @@ void SiteInstanceImpl::RenderProcessWillExit(RenderProcessHost* host) {
     observer.RenderProcessGone(this);
 }
 
-void SiteInstanceImpl::RenderProcessExited(RenderProcessHost* host,
-                                           base::TerminationStatus status,
-                                           int exit_code) {
+void SiteInstanceImpl::RenderProcessExited(
+    RenderProcessHost* host,
+    const ChildProcessTerminationInfo& info) {
   for (auto& observer : observers_)
     observer.RenderProcessGone(this);
 }

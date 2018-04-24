@@ -186,9 +186,9 @@ class ExtensionFunctionDispatcher::UIThreadWorkerResponseCallbackWrapper
   ~UIThreadWorkerResponseCallbackWrapper() override {}
 
   // content::RenderProcessHostObserver override.
-  void RenderProcessExited(content::RenderProcessHost* rph,
-                           base::TerminationStatus status,
-                           int exit_code) override {
+  void RenderProcessExited(
+      content::RenderProcessHost* rph,
+      const content::ChildProcessTerminationInfo& info) override {
     CleanUp();
   }
 

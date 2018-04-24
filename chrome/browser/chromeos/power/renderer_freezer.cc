@@ -85,9 +85,9 @@ void RendererFreezer::Observe(int type,
   }
 }
 
-void RendererFreezer::RenderProcessExited(content::RenderProcessHost* host,
-                                          base::TerminationStatus status,
-                                          int exit_code) {
+void RendererFreezer::RenderProcessExited(
+    content::RenderProcessHost* host,
+    const content::ChildProcessTerminationInfo& info) {
   auto it = gcm_extension_processes_.find(host->GetID());
   if (it == gcm_extension_processes_.end()) {
     LOG(ERROR) << "Received unrequested RenderProcessExited message";

@@ -440,9 +440,9 @@ void WebRTCInternals::SendUpdate(const char* command,
   }
 }
 
-void WebRTCInternals::RenderProcessExited(RenderProcessHost* host,
-                                          base::TerminationStatus status,
-                                          int exit_code) {
+void WebRTCInternals::RenderProcessExited(
+    RenderProcessHost* host,
+    const ChildProcessTerminationInfo& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   OnRendererExit(host->GetID());
   render_process_id_set_.erase(host->GetID());

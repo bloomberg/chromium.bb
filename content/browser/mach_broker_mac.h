@@ -55,13 +55,13 @@ class CONTENT_EXPORT MachBroker : public base::PortProvider,
   // Implement |BrowserChildProcessObserver|.
   void BrowserChildProcessHostDisconnected(
       const ChildProcessData& data) override;
-  void BrowserChildProcessCrashed(const ChildProcessData& data,
-      int exit_code) override;
+  void BrowserChildProcessCrashed(
+      const ChildProcessData& data,
+      const ChildProcessTerminationInfo& info) override;
 
   // Implement |RenderProcessHostObserver|.
   void RenderProcessExited(RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override;
+                           const ChildProcessTerminationInfo& info) override;
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
   // Returns the Mach port name to use when sending or receiving messages.

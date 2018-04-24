@@ -84,8 +84,9 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
   // content::BrowserChildProcessObserver implementation:
   void BrowserChildProcessHostDisconnected(
       const content::ChildProcessData& data) override;
-  void BrowserChildProcessCrashed(const content::ChildProcessData& data,
-                                  int exit_code) override;
+  void BrowserChildProcessCrashed(
+      const content::ChildProcessData& data,
+      const content::ChildProcessTerminationInfo& info) override;
   // On Android we will never observe BrowserChildProcessCrashed
   // because we do not receive exit codes from zygote spawned
   // processes.

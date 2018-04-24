@@ -83,9 +83,9 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
       content::DevToolsAgentHost* agent_host) override;
 
   // content::RenderProcessHostObserver implementation:
-  void RenderProcessExited(content::RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override;
+  void RenderProcessExited(
+      content::RenderProcessHost* host,
+      const content::ChildProcessTerminationInfo& info) override;
   void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
 
   // content::WebContentsObserver implementation:

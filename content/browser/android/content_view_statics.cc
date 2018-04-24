@@ -40,9 +40,9 @@ class SuspendedProcessWatcher : public content::RenderProcessHostObserver {
 
   // If the process crashes, stop watching the corresponding RenderProcessHost
   // and ensure it doesn't get over-resumed.
-  void RenderProcessExited(content::RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override {
+  void RenderProcessExited(
+      content::RenderProcessHost* host,
+      const content::ChildProcessTerminationInfo& info) override {
     StopWatching(host);
   }
 

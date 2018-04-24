@@ -61,6 +61,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_termination_info.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
@@ -1709,9 +1710,9 @@ void RenderProcessHostWatcher::Wait() {
 
 void RenderProcessHostWatcher::RenderProcessExited(
     RenderProcessHost* host,
-    base::TerminationStatus status,
-    int exit_code) {
-  did_exit_normally_ = status == base::TERMINATION_STATUS_NORMAL_TERMINATION;
+    const ChildProcessTerminationInfo& info) {
+  did_exit_normally_ =
+      info.status == base::TERMINATION_STATUS_NORMAL_TERMINATION;
   if (type_ == WATCH_FOR_PROCESS_EXIT)
     message_loop_runner_->Quit();
 }

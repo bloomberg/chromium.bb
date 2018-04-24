@@ -68,14 +68,14 @@ void MachBroker::BrowserChildProcessHostDisconnected(
   InvalidateChildProcessId(data.id);
 }
 
-void MachBroker::BrowserChildProcessCrashed(const ChildProcessData& data,
-    int exit_code) {
+void MachBroker::BrowserChildProcessCrashed(
+    const ChildProcessData& data,
+    const ChildProcessTerminationInfo& info) {
   InvalidateChildProcessId(data.id);
 }
 
 void MachBroker::RenderProcessExited(RenderProcessHost* host,
-                                     base::TerminationStatus status,
-                                     int exit_code) {
+                                     const ChildProcessTerminationInfo& info) {
   InvalidateChildProcessId(host->GetID());
 }
 

@@ -15,6 +15,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/browser/child_process_termination_info.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -54,8 +55,12 @@ TEST_F(ChromeStabilityMetricsProviderTest, BrowserChildProcessObserver) {
   ChromeStabilityMetricsProvider provider(prefs());
 
   content::ChildProcessData child_process_data(content::PROCESS_TYPE_RENDERER);
-  provider.BrowserChildProcessCrashed(child_process_data, 1);
-  provider.BrowserChildProcessCrashed(child_process_data, 1);
+  content::ChildProcessTerminationInfo abnormal_termination_info{
+      base::TERMINATION_STATUS_ABNORMAL_TERMINATION, 1};
+  provider.BrowserChildProcessCrashed(child_process_data,
+                                      abnormal_termination_info);
+  provider.BrowserChildProcessCrashed(child_process_data,
+                                      abnormal_termination_info);
 
   // Call ProvideStabilityMetrics to check that it will force pending tasks to
   // be executed immediately.
@@ -91,39 +96,35 @@ TEST_F(ChromeStabilityMetricsProviderTest, NotificationObserver) {
       rph_factory->CreateRenderProcessHost(profile, site_instance.get()));
 
   // Crash and abnormal termination should increment renderer crash count.
-  content::RenderProcessHost::RendererClosedDetails crash_details(
-      base::TERMINATION_STATUS_PROCESS_CRASHED, 1);
+  content::ChildProcessTerminationInfo crash_details{
+      base::TERMINATION_STATUS_PROCESS_CRASHED, 1};
   provider.Observe(
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::Source<content::RenderProcessHost>(host),
-      content::Details<content::RenderProcessHost::RendererClosedDetails>(
-          &crash_details));
+      content::Details<content::ChildProcessTerminationInfo>(&crash_details));
 
-  content::RenderProcessHost::RendererClosedDetails term_details(
-      base::TERMINATION_STATUS_ABNORMAL_TERMINATION, 1);
+  content::ChildProcessTerminationInfo term_details{
+      base::TERMINATION_STATUS_ABNORMAL_TERMINATION, 1};
   provider.Observe(
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::Source<content::RenderProcessHost>(host),
-      content::Details<content::RenderProcessHost::RendererClosedDetails>(
-          &term_details));
+      content::Details<content::ChildProcessTerminationInfo>(&term_details));
 
   // Kill does not increment renderer crash count.
-  content::RenderProcessHost::RendererClosedDetails kill_details(
-      base::TERMINATION_STATUS_PROCESS_WAS_KILLED, 1);
+  content::ChildProcessTerminationInfo kill_details{
+      base::TERMINATION_STATUS_PROCESS_WAS_KILLED, 1};
   provider.Observe(
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::Source<content::RenderProcessHost>(host),
-      content::Details<content::RenderProcessHost::RendererClosedDetails>(
-          &kill_details));
+      content::Details<content::ChildProcessTerminationInfo>(&kill_details));
 
   // Failed launch increments failed launch count.
-  content::RenderProcessHost::RendererClosedDetails failed_launch_details(
-      base::TERMINATION_STATUS_LAUNCH_FAILED, 1);
-  provider.Observe(
-      content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-      content::Source<content::RenderProcessHost>(host),
-      content::Details<content::RenderProcessHost::RendererClosedDetails>(
-          &failed_launch_details));
+  content::ChildProcessTerminationInfo failed_launch_details{
+      base::TERMINATION_STATUS_LAUNCH_FAILED, 1};
+  provider.Observe(content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                   content::Source<content::RenderProcessHost>(host),
+                   content::Details<content::ChildProcessTerminationInfo>(
+                       &failed_launch_details));
 
   metrics::SystemProfileProto system_profile;
 
@@ -156,15 +157,13 @@ TEST_F(ChromeStabilityMetricsProviderTest, NotificationObserver) {
   provider.Observe(
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::Source<content::RenderProcessHost>(extension_host),
-      content::Details<content::RenderProcessHost::RendererClosedDetails>(
-          &crash_details));
+      content::Details<content::ChildProcessTerminationInfo>(&crash_details));
 
   // Failed launch increments failed launch count.
-  provider.Observe(
-      content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-      content::Source<content::RenderProcessHost>(extension_host),
-      content::Details<content::RenderProcessHost::RendererClosedDetails>(
-          &failed_launch_details));
+  provider.Observe(content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                   content::Source<content::RenderProcessHost>(extension_host),
+                   content::Details<content::ChildProcessTerminationInfo>(
+                       &failed_launch_details));
 
   system_profile.Clear();
   provider.ProvideStabilityMetrics(&system_profile);

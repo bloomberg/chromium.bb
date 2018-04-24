@@ -77,8 +77,7 @@ class RenderProcessHostTest : public ContentBrowserTest,
 
   // RenderProcessHostObserver:
   void RenderProcessExited(RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override {
+                           const ChildProcessTerminationInfo& info) override {
     ++process_exits_;
     if (!process_exit_callback_.is_null())
       process_exit_callback_.Run();
@@ -499,8 +498,7 @@ class RenderProcessHostObserverCounter : public RenderProcessHostObserver {
   }
 
   void RenderProcessExited(RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override {
+                           const ChildProcessTerminationInfo& info) override {
     DCHECK(observing_);
     DCHECK_EQ(host, observed_host_);
     exited_count_++;
@@ -596,8 +594,7 @@ class ShellCloser : public RenderProcessHostObserver {
  protected:
   // RenderProcessHostObserver:
   void RenderProcessExited(RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override {
+                           const ChildProcessTerminationInfo& info) override {
     logging_string_->append("ShellCloser::RenderProcessExited ");
     shell_->Close();
   }
@@ -620,8 +617,7 @@ class ObserverLogger : public RenderProcessHostObserver {
  protected:
   // RenderProcessHostObserver:
   void RenderProcessExited(RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override {
+                           const ChildProcessTerminationInfo& info) override {
     logging_string_->append("ObserverLogger::RenderProcessExited ");
   }
 

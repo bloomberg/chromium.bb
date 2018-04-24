@@ -58,9 +58,9 @@ class HungPagesTableModel : public ui::TableModel,
   void SetObserver(ui::TableModelObserver* observer) override;
 
   // Overridden from RenderProcessHostObserver:
-  void RenderProcessExited(content::RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override;
+  void RenderProcessExited(
+      content::RenderProcessHost* host,
+      const content::ChildProcessTerminationInfo& info) override;
 
   // Overridden from RenderWidgetHostObserver:
   void RenderWidgetHostDestroyed(

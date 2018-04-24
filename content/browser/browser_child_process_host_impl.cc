@@ -82,14 +82,16 @@ void NotifyProcessHostDisconnected(const ChildProcessData& data) {
     observer.BrowserChildProcessHostDisconnected(data);
 }
 
-void NotifyProcessCrashed(const ChildProcessData& data, int exit_code) {
+void NotifyProcessCrashed(const ChildProcessData& data,
+                          const ChildProcessTerminationInfo& info) {
   for (auto& observer : g_browser_child_process_observers.Get())
-    observer.BrowserChildProcessCrashed(data, exit_code);
+    observer.BrowserChildProcessCrashed(data, info);
 }
 
-void NotifyProcessKilled(const ChildProcessData& data, int exit_code) {
+void NotifyProcessKilled(const ChildProcessData& data,
+                         const ChildProcessTerminationInfo& info) {
   for (auto& observer : g_browser_child_process_observers.Get())
-    observer.BrowserChildProcessKilled(data, exit_code);
+    observer.BrowserChildProcessKilled(data, info);
 }
 
 }  // namespace
@@ -435,7 +437,7 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
         delegate_->OnProcessCrashed(info.exit_code);
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            base::BindOnce(&NotifyProcessCrashed, data_, info.exit_code));
+            base::BindOnce(&NotifyProcessCrashed, data_, info));
         UMA_HISTOGRAM_ENUMERATION("ChildProcess.Crashed2",
                                   static_cast<ProcessType>(data_.process_type),
                                   PROCESS_TYPE_MAX);
@@ -451,7 +453,7 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
         delegate_->OnProcessCrashed(info.exit_code);
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            base::BindOnce(&NotifyProcessKilled, data_, info.exit_code));
+            base::BindOnce(&NotifyProcessKilled, data_, info));
         // Report that this child process was killed.
         UMA_HISTOGRAM_ENUMERATION("ChildProcess.Killed2",
                                   static_cast<ProcessType>(data_.process_type),
