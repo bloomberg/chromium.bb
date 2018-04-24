@@ -8,19 +8,13 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_test_util.h"
-#include "components/invalidation/impl/profile_invalidation_provider.h"
-#include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/sync/base/pref_names.h"
@@ -34,7 +28,7 @@
 #include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/version_info/version_info_values.h"
-#include "google_apis/gaia/gaia_constants.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,9 +41,6 @@ using testing::Return;
 namespace browser_sync {
 
 namespace {
-
-const char kGaiaId[] = "12345";
-const char kEmail[] = "test_user@gmail.com";
 
 class FakeDataTypeManager : public syncer::DataTypeManager {
  public:
@@ -210,14 +201,9 @@ class ProfileSyncServiceTest : public ::testing::Test {
   }
 
   void IssueTestTokens() {
-    std::string account_id =
-        account_tracker()->SeedAccountInfo(kGaiaId, kEmail);
-    auth_service()->UpdateCredentials(account_id, "oauth2_login_token");
-#if defined(OS_CHROMEOS)
-    signin_manager()->SignIn(account_id);
-#else
-    signin_manager()->SignIn(kGaiaId, kEmail, "password");
-#endif
+    identity::MakePrimaryAccountAvailable(signin_manager(), auth_service(),
+                                          identity_manager(),
+                                          "test_user@gmail.com");
   }
 
   void CreateService(ProfileSyncService::StartBehavior behavior) {
@@ -362,6 +348,10 @@ class ProfileSyncServiceTest : public ::testing::Test {
 
   FakeProfileOAuth2TokenService* auth_service() {
     return profile_sync_service_bundle_.auth_service();
+  }
+
+  identity::IdentityManager* identity_manager() {
+    return profile_sync_service_bundle_.identity_manager();
   }
 
   ProfileSyncService* service() { return service_.get(); }
