@@ -1911,6 +1911,7 @@ void UiSceneCreator::CreateUrlBar() {
   url_bar->SetRotate(1, 0, 0, kUrlBarRotationRad);
   url_bar->set_bounds_contain_children(true);
   url_bar->set_corner_radius(kUrlBarHeightDMM / 2);
+  url_bar->SetTransitionedProperties({FOREGROUND_COLOR, BACKGROUND_COLOR});
   VR_BIND_VISIBILITY(url_bar, !model->fullscreen_enabled());
   VR_BIND_COLOR(model_, url_bar.get(), &ColorScheme::url_bar_background,
                 &Rect::SetColor);
