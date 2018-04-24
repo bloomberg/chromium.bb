@@ -40,6 +40,8 @@ urls_list = [
     'http://siriuslymeg.tumblr.com/',
     # Why: Popular Chinese language site.
     'http://wapbaike.baidu.com/',
+    # Why: Simple page with an animated GIF
+    'https://en.wikipedia.org/wiki/File:Rotating_earth_(large).gif',
 ]
 
 

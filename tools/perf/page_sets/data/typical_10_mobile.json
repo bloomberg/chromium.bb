@@ -29,6 +29,9 @@
         },
         "http://www.rg.ru/2014/10/21/cska-site.html": {
             "DEFAULT": "typical_10_mobile_000.wprgo"
+        },
+        "https://en.wikipedia.org/wiki/File:Rotating_earth_(large).gif": {
+            "DEFAULT": "typical_10_mobile_002.wprgo"
         }
     },
     "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.",
