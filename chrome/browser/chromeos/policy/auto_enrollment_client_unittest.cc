@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -527,15 +527,15 @@ TEST_F(AutoEnrollmentClientTest, CancelAndDeleteSoonWithPendingRequest) {
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_PENDING, state_);
 
   // Cancel while a request is in flight.
-  EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
+  EXPECT_TRUE(base::MessageLoopCurrent::Get()->IsIdleForTesting());
   client_.release()->CancelAndDeleteSoon();
-  EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
+  EXPECT_TRUE(base::MessageLoopCurrent::Get()->IsIdleForTesting());
 
   // The client cleans itself up once a reply is received.
   job->SendResponse(DM_STATUS_TEMPORARY_UNAVAILABLE,
                     em::DeviceManagementResponse());
   // The DeleteSoon task has been posted:
-  EXPECT_FALSE(base::MessageLoop::current()->IsIdleForTesting());
+  EXPECT_FALSE(base::MessageLoopCurrent::Get()->IsIdleForTesting());
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_PENDING, state_);
 }
 
@@ -548,10 +548,10 @@ TEST_F(AutoEnrollmentClientTest, NetworkChangedAfterCancelAndDeleteSoon) {
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_PENDING, state_);
 
   // Cancel while a request is in flight.
-  EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
+  EXPECT_TRUE(base::MessageLoopCurrent::Get()->IsIdleForTesting());
   AutoEnrollmentClient* client = client_.release();
   client->CancelAndDeleteSoon();
-  EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
+  EXPECT_TRUE(base::MessageLoopCurrent::Get()->IsIdleForTesting());
 
   // Network change events are ignored while a request is pending.
   client->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
@@ -561,7 +561,7 @@ TEST_F(AutoEnrollmentClientTest, NetworkChangedAfterCancelAndDeleteSoon) {
   job->SendResponse(DM_STATUS_TEMPORARY_UNAVAILABLE,
                     em::DeviceManagementResponse());
   // The DeleteSoon task has been posted:
-  EXPECT_FALSE(base::MessageLoop::current()->IsIdleForTesting());
+  EXPECT_FALSE(base::MessageLoopCurrent::Get()->IsIdleForTesting());
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_PENDING, state_);
 
   // Network changes that have been posted before are also ignored:
@@ -583,9 +583,9 @@ TEST_F(AutoEnrollmentClientTest, CancelAndDeleteSoonAfterCompletion) {
 
   // The client will delete itself immediately if there are no pending
   // requests.
-  EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
+  EXPECT_TRUE(base::MessageLoopCurrent::Get()->IsIdleForTesting());
   client_.release()->CancelAndDeleteSoon();
-  EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
+  EXPECT_TRUE(base::MessageLoopCurrent::Get()->IsIdleForTesting());
 }
 
 TEST_F(AutoEnrollmentClientTest, CancelAndDeleteSoonAfterNetworkFailure) {
@@ -595,9 +595,9 @@ TEST_F(AutoEnrollmentClientTest, CancelAndDeleteSoonAfterNetworkFailure) {
 
   // The client will delete itself immediately if there are no pending
   // requests.
-  EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
+  EXPECT_TRUE(base::MessageLoopCurrent::Get()->IsIdleForTesting());
   client_.release()->CancelAndDeleteSoon();
-  EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
+  EXPECT_TRUE(base::MessageLoopCurrent::Get()->IsIdleForTesting());
 }
 
 TEST_F(AutoEnrollmentClientTest, NetworkFailureThenRequireUpdatedModulus) {

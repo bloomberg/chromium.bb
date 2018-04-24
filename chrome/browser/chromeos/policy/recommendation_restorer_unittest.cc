@@ -9,7 +9,7 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -105,7 +105,7 @@ RecommendationRestorerTest::RecommendationRestorerTest()
 
 void RecommendationRestorerTest::SetUp() {
   testing::Test::SetUp();
-  base::MessageLoop::current()->SetTaskRunner(runner_);
+  base::MessageLoopCurrent::Get()->SetTaskRunner(runner_);
   ASSERT_TRUE(profile_manager_.SetUp());
 }
 
