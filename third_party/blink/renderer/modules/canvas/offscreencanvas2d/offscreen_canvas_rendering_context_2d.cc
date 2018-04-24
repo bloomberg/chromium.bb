@@ -129,7 +129,7 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
   if (image->IsTextureBacked()) {
     // Before discarding the image resource, we need to flush pending render ops
     // to fully resolve the snapshot.
-    image->PaintImageForCurrentFrame().GetSkImage()->getTextureHandle(
+    image->PaintImageForCurrentFrame().GetSkImage()->getBackendTexture(
         true);  // Flush pending ops.
   }
   Host()->DiscardResourceProvider();  // "Transfer" means no retained buffer.

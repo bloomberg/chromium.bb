@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/graphics_context_3d_utils.h"
 
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "skia/ext/texture_handle.h"
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -63,9 +62,14 @@ void GraphicsContext3DUtils::GetMailboxForSkImage(gpu::Mailbox& out_mailbox,
     cached_mailboxes_.insert(gr_texture, out_mailbox);
   }
 
-  GLuint texture_id =
-      skia::GrBackendObjectToGrGLTextureInfo(image->getTextureHandle(true))
-          ->fID;
+  GrBackendTexture backend_texture = image->getBackendTexture(true);
+  DCHECK(backend_texture.isValid());
+
+  GrGLTextureInfo info;
+  bool result = backend_texture.getGLTextureInfo(&info);
+  DCHECK(result);
+
+  GLuint texture_id = info.fID;
   gl->BindTexture(GL_TEXTURE_2D, texture_id);
   gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
   gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);

@@ -9,7 +9,6 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
-#include "skia/ext/texture_handle.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_heuristic_parameters.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
@@ -166,10 +165,14 @@ class CanvasResourceProvider_Texture_GpuMemoryBuffer final
       return nullptr;
     DCHECK(image->isTextureBacked());
 
-    GLuint skia_texture_id =
-        skia::GrBackendObjectToGrGLTextureInfo(image->getTextureHandle(true))
-            ->fID;
+    GrBackendTexture backend_texture = image->getBackendTexture(true);
+    DCHECK(backend_texture.isValid());
 
+    GrGLTextureInfo info;
+    if (!backend_texture.getGLTextureInfo(&info))
+      return nullptr;
+
+    GLuint skia_texture_id = info.fID;
     output_resource->CopyFromTexture(skia_texture_id,
                                      ColorParams().GLInternalFormat(),
                                      ColorParams().GLType());
