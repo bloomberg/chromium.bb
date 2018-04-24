@@ -4,14 +4,6 @@
 {
   'targets': [
     {
-      'target_name': 'alert_overlay',
-      'dependencies': [
-        '../../compiled_resources2.gyp:cr',
-        '../../compiled_resources2.gyp:util',
-      ],
-      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
       'target_name': 'array_data_model',
       'dependencies': [
         '../../compiled_resources2.gyp:cr',
