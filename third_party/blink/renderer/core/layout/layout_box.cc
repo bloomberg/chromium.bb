@@ -2065,12 +2065,6 @@ LayoutUnit LayoutBox::ContainingBlockLogicalWidthForContent() const {
   if (HasOverrideContainingBlockContentLogicalWidth())
     return OverrideContainingBlockContentLogicalWidth();
 
-  // TODO(rego): Probably this should be done directly in
-  // HasOverrideContainingBlockContentLogicalWidth(), but that would imply more
-  // changes in other parts of the code so leaving it for a follow-up patch.
-  if (IsGridItem())
-    return LayoutUnit();
-
   LayoutBlock* cb = ContainingBlock();
   if (IsOutOfFlowPositioned())
     return cb->ClientLogicalWidth();
@@ -2081,12 +2075,6 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForContent(
     AvailableLogicalHeightType height_type) const {
   if (HasOverrideContainingBlockContentLogicalHeight())
     return OverrideContainingBlockContentLogicalHeight();
-
-  // TODO(rego): Probably this should be done directly in
-  // HasOverrideContainingBlockContentLogicalHeight(), but that would imply more
-  // changes in other parts of the code so leaving it for a follow-up patch.
-  if (IsGridItem())
-    return LayoutUnit();
 
   LayoutBlock* cb = ContainingBlock();
   return cb->AvailableLogicalHeight(height_type);
@@ -2705,9 +2693,13 @@ void LayoutBox::ComputeLogicalWidth(
   }
 
   LayoutUnit container_width_in_inline_direction = container_logical_width;
-  if (has_perpendicular_containing_block)
+  if (has_perpendicular_containing_block) {
+    // PerpendicularContainingBlockLogicalHeight() can return -1 in some
+    // situations but we cannot have a negative width, that's why we clamp it to
+    // zero.
     container_width_in_inline_direction =
-        PerpendicularContainingBlockLogicalHeight();
+        PerpendicularContainingBlockLogicalHeight().ClampNegativeToZero();
+  }
 
   // Width calculations
   if (treat_as_replaced) {

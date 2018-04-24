@@ -214,9 +214,7 @@ bool GridTrackSizingAlgorithmStrategy::
         Optional<LayoutUnit> override_size) const {
   if (!override_size)
     override_size = algorithm_.GridAreaBreadthForChild(child, direction);
-  if (GridLayoutUtils::HasOverrideContainingBlockContentSizeForChild(
-          child, direction) &&
-      GridLayoutUtils::OverrideContainingBlockContentSizeForChild(
+  if (GridLayoutUtils::OverrideContainingBlockContentSizeForChild(
           child, direction) == override_size.value())
     return false;
 
