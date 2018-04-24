@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -146,6 +147,7 @@ public class AutofillKeyboardAccessoryTest {
     @Test
     @MediumTest
     @Feature({"keyboard-accessory"})
+    @DisabledTest(message = "crbug.com/836027")
     public void testSwitchFieldsRescrollsKeyboardAccessory()
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(false);
@@ -194,6 +196,7 @@ public class AutofillKeyboardAccessoryTest {
     @MediumTest
     @Feature({"keyboard-accessory"})
     @MinAndroidSdkLevel(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    @DisabledTest(message = "crbug.com/836027")
     public void testSwitchFieldsRescrollsKeyboardAccessoryRtl()
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(true);
