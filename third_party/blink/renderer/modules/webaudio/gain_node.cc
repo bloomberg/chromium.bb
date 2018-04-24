@@ -135,7 +135,13 @@ void GainHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
 
 GainNode::GainNode(BaseAudioContext& context)
     : AudioNode(context),
-      gain_(AudioParam::Create(context, kParamTypeGainGain, "Gain.gain", 1.0)) {
+      gain_(AudioParam::Create(
+          context,
+          kParamTypeGainGain,
+          "Gain.gain",
+          1.0,
+          AudioParamHandler::AutomationRate::kAudio,
+          AudioParamHandler::AutomationRateMode::kVariable)) {
   SetHandler(
       GainHandler::Create(*this, context.sampleRate(), gain_->Handler()));
 }

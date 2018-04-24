@@ -66,9 +66,10 @@ void BiquadDSPKernel::UpdateCoefficientsIfNecessary(int frames_to_process) {
       GetBiquadProcessor()->Parameter4().CalculateSampleAccurateValues(
           detune, frames_to_process);
 
-      // If all the values are actually constant for this render, we
-      // don't need to compute filter coefficients for each frame
-      // since they would be the same as the first.
+      // If all the values are actually constant for this render (or the
+      // automation rate is "k-rate" for all of the AudioParams), we don't need
+      // to compute filter coefficients for each frame since they would be the
+      // same as the first.
       bool isConstant =
           hasConstantValues(cutoff_frequency, frames_to_process) &&
           hasConstantValues(q, frames_to_process) &&
