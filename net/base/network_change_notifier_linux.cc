@@ -101,7 +101,7 @@ NetworkChangeNotifierLinux::NetworkChangeNotifierLinux(
       notifier_thread_(new Thread(ignored_interfaces)) {
   // We create this notifier thread because the notification implementation
   // needs a MessageLoopForIO, and there's no guarantee that
-  // MessageLoop::current() meets that criterion.
+  // MessageLoopCurrent::Get() meets that criterion.
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
   notifier_thread_->StartWithOptions(thread_options);
 }

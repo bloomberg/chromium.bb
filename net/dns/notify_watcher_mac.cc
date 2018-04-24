@@ -7,7 +7,7 @@
 #include <notify.h>
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/posix/eintr_wrapper.h"
 
 namespace net {
@@ -28,7 +28,7 @@ bool NotifyWatcherMac::Watch(const char* key, const CallbackType& callback) {
   if (status != NOTIFY_STATUS_OK)
     return false;
   DCHECK_GE(notify_fd_, 0);
-  if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
+  if (!base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
           notify_fd_, true, base::MessagePumpForIO::WATCH_READ, &watcher_,
           this)) {
     Cancel();

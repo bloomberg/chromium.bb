@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/stl_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -16,15 +17,14 @@ namespace {
 
 // When adding interceptors, DCHECK that this function returns true.
 bool OnMessageLoopForInterceptorAddition() {
-  base::MessageLoop* message_loop = base::MessageLoop::current();
   // Return true if called on a MessageLoopForIO or if there is no MessageLoop.
   // Checking for a MessageLoopForIO is a best effort at determining whether the
   // current thread is a networking thread.  Allowing cases without a
   // MessageLoop is required for some tests where there is no chance to insert
   // an interceptor between a networking thread being started and a resource
   // request being issued.
-  return message_loop == nullptr ||
-         message_loop->type() == base::MessageLoop::TYPE_IO;
+  return base::MessageLoopCurrentForIO::IsSet() ||
+         !base::MessageLoopCurrent::IsSet();
 }
 
 // When removing interceptors, DCHECK that this function returns true.
@@ -113,7 +113,7 @@ void URLRequestFilter::ClearHandlers() {
 URLRequestJob* URLRequestFilter::MaybeInterceptRequest(
     URLRequest* request,
     NetworkDelegate* network_delegate) const {
-  DCHECK(base::MessageLoopForIO::current());
+  DCHECK(base::MessageLoopCurrentForIO::Get());
   URLRequestJob* job = NULL;
   if (!request->url().is_valid())
     return NULL;
