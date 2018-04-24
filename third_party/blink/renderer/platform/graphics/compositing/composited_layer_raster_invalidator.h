@@ -63,7 +63,8 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
                    const ChunkToLayerMapper& mapper,
                    const PaintChunk& chunk)
         : id(chunk.id),
-          property_tree_state(chunk.properties),
+          clip_state(chunk.properties.Clip()),
+          effect_state(chunk.properties.Effect()),
           is_cacheable(chunk.is_cacheable),
           bounds_in_layer(invalidator.ClipByLayerBounds(
               mapper.MapVisualRect(chunk.bounds))),
@@ -76,7 +77,12 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
     }
 
     PaintChunk::Id id;
-    RefCountedPropertyTreeState property_tree_state;
+    // These two pointers are for property change detection. The pointed
+    // property nodes can be freed after this structure is created. As newly
+    // created property nodes always have Changed() flag set, it's not a problem
+    // that a new node is created at the address pointed by these pointers.
+    const void* clip_state;
+    const void* effect_state;
     bool is_cacheable;
     IntRect bounds_in_layer;
     FloatClipRect chunk_to_layer_clip;
@@ -105,6 +111,7 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
                                            PaintInvalidationReason,
                                            const String* debug_name = nullptr);
   PaintInvalidationReason ChunkPropertiesChanged(
+      const RefCountedPropertyTreeState& new_chunk_state,
       const PaintChunkInfo& new_chunk,
       const PaintChunkInfo& old_chunk,
       const PropertyTreeState& layer_state) const;

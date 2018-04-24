@@ -44,6 +44,15 @@ class PaintPropertyNodeTest : public testing::Test {
 
   void ExpectInitialState() {
     EXPECT_FALSE(root->Changed(*root));
+    EXPECT_TRUE(node->Changed(*root));
+    EXPECT_TRUE(child1->Changed(*node));
+    EXPECT_TRUE(child2->Changed(*node));
+    EXPECT_TRUE(grandchild1->Changed(*child1));
+    EXPECT_TRUE(grandchild2->Changed(*child2));
+  }
+
+  void ExpectUnchangedState() {
+    EXPECT_FALSE(root->Changed(*root));
     EXPECT_FALSE(node->Changed(*root));
     EXPECT_FALSE(child1->Changed(*root));
     EXPECT_FALSE(child2->Changed(*root));
@@ -80,10 +89,11 @@ TEST_F(PaintPropertyNodeTest, LowestCommonAncestor) {
 TEST_F(PaintPropertyNodeTest, InitialStateAndReset) {
   ExpectInitialState();
   ResetAllChanged();
-  ExpectInitialState();
+  ExpectUnchangedState();
 }
 
 TEST_F(PaintPropertyNodeTest, ChangeNode) {
+  ResetAllChanged();
   Update(node, root, FloatRoundedRect(1, 2, 3, 4));
   EXPECT_TRUE(node->Changed(*root));
   EXPECT_FALSE(node->Changed(*node));
@@ -96,10 +106,11 @@ TEST_F(PaintPropertyNodeTest, ChangeNode) {
   EXPECT_FALSE(grandchild1->Changed(*grandchild2));
 
   ResetAllChanged();
-  ExpectInitialState();
+  ExpectUnchangedState();
 }
 
 TEST_F(PaintPropertyNodeTest, ChangeOneChild) {
+  ResetAllChanged();
   Update(child1, node, FloatRoundedRect(1, 2, 3, 4));
   EXPECT_FALSE(node->Changed(*root));
   EXPECT_FALSE(node->Changed(*node));
@@ -120,10 +131,11 @@ TEST_F(PaintPropertyNodeTest, ChangeOneChild) {
   EXPECT_TRUE(grandchild2->Changed(*grandchild1));
 
   ResetAllChanged();
-  ExpectInitialState();
+  ExpectUnchangedState();
 }
 
 TEST_F(PaintPropertyNodeTest, Reparent) {
+  ResetAllChanged();
   Update(child1, child2, FloatRoundedRect(1, 2, 3, 4));
   EXPECT_FALSE(node->Changed(*root));
   EXPECT_TRUE(child1->Changed(*node));
@@ -134,7 +146,7 @@ TEST_F(PaintPropertyNodeTest, Reparent) {
   EXPECT_TRUE(grandchild1->Changed(*child2));
 
   ResetAllChanged();
-  ExpectInitialState();
+  ExpectUnchangedState();
 }
 
 }  // namespace blink
