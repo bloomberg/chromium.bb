@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/path_service.h"
@@ -370,7 +371,7 @@ class CountingDownloadFile : public download::DownloadFileImpl {
     download::GetDownloadTaskRunner()->PostTaskAndReply(
         FROM_HERE,
         base::BindOnce(&CountingDownloadFile::GetNumberActiveFiles, &result),
-        base::MessageLoop::current()->QuitWhenIdleClosure());
+        base::MessageLoopCurrent::Get()->QuitWhenIdleClosure());
     base::RunLoop().Run();
     DCHECK_NE(-1, result);
     return result;
