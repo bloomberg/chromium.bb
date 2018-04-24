@@ -110,6 +110,8 @@ ThreatSeverity GetThreatSeverity(const ListIdentifier& list_id) {
       return 2;
     case CSD_WHITELIST:
       return 3;
+    case SUSPICIOUS:
+      return 4;
     default:
       NOTREACHED() << "Unexpected ThreatType encountered: "
                    << list_id.threat_type();
@@ -128,6 +130,9 @@ ListIdentifier GetUrlIdFromSBThreatType(SBThreatType sb_threat_type) {
 
     case SB_THREAT_TYPE_URL_UNWANTED:
       return GetUrlUwsId();
+
+    case SB_THREAT_TYPE_SUSPICIOUS_SITE:
+      return GetUrlSuspiciousSiteId();
 
     default:
       NOTREACHED();
