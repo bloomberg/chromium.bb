@@ -11,6 +11,7 @@ mode, etc.
 """
 
 import argparse
+import json
 import os
 import sys
 
@@ -29,7 +30,7 @@ def main(argv):
       help='Path to build directory')
   args = parser.parse_args()
 
-  print compile_db.GenerateWithNinja(args.p)
+  print json.dumps(compile_db.GenerateWithNinja(args.p))
 
 
 if __name__ == '__main__':
