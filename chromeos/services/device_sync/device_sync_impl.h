@@ -28,6 +28,7 @@ namespace cryptauth {
 class CryptAuthClientFactory;
 class CryptAuthDeviceManager;
 class GcmDeviceInfoProvider;
+class SoftwareFeatureManager;
 }  // namespace cryptauth
 
 namespace gcm {
@@ -96,6 +97,14 @@ class DeviceSyncImpl : public mojom::DeviceSync,
   void ForceEnrollmentNow(ForceEnrollmentNowCallback callback) override;
   void ForceSyncNow(ForceSyncNowCallback callback) override;
   void GetSyncedDevices(GetSyncedDevicesCallback callback) override;
+  void SetSoftwareFeatureState(
+      const std::string& device_public_key,
+      cryptauth::SoftwareFeature software_feature,
+      bool enabled,
+      bool is_exclusive,
+      SetSoftwareFeatureStateCallback callback) override;
+  void FindEligibleDevices(cryptauth::SoftwareFeature software_feature,
+                           FindEligibleDevicesCallback callback) override;
 
   // cryptauth::CryptAuthEnrollmentManager::Observer:
   void OnEnrollmentFinished(bool success) override;
@@ -142,6 +151,28 @@ class DeviceSyncImpl : public mojom::DeviceSync,
   void InitializeCryptAuthManagementObjects();
   void CompleteInitializationAfterSuccessfulEnrollment();
 
+  base::Optional<cryptauth::RemoteDevice> GetSyncedDeviceWithPublicKey(
+      const std::string& public_key) const;
+
+  void OnSetSoftwareFeatureStateSuccess(
+      const base::RepeatingCallback<void(const base::Optional<std::string>&)>&
+          callback);
+  void OnSetSoftwareFeatureStateError(
+      const base::RepeatingCallback<void(const base::Optional<std::string>&)>&
+          callback,
+      const std::string& error);
+  void OnFindEligibleDevicesSuccess(
+      const base::RepeatingCallback<
+          void(const base::Optional<std::string>&,
+               mojom::FindEligibleDevicesResponsePtr)>& callback,
+      const std::vector<cryptauth::ExternalDeviceInfo>& eligible_devices,
+      const std::vector<cryptauth::IneligibleDevice>& ineligible_devices);
+  void OnFindEligibleDevicesError(
+      const base::RepeatingCallback<
+          void(const base::Optional<std::string>&,
+               mojom::FindEligibleDevicesResponsePtr)>& callback,
+      const std::string& error);
+
   void SetPrefConnectionDelegateForTesting(
       std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate);
 
@@ -163,6 +194,7 @@ class DeviceSyncImpl : public mojom::DeviceSync,
       cryptauth_enrollment_manager_;
   std::unique_ptr<cryptauth::CryptAuthDeviceManager> cryptauth_device_manager_;
   std::unique_ptr<cryptauth::RemoteDeviceProvider> remote_device_provider_;
+  std::unique_ptr<cryptauth::SoftwareFeatureManager> software_feature_manager_;
 
   mojo::InterfacePtrSet<mojom::DeviceSyncObserver> observers_;
   mojo::BindingSet<mojom::DeviceSync> bindings_;

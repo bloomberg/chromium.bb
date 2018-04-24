@@ -24,8 +24,10 @@
 #include "components/cryptauth/fake_cryptauth_gcm_manager.h"
 #include "components/cryptauth/fake_gcm_device_info_provider.h"
 #include "components/cryptauth/fake_remote_device_provider.h"
+#include "components/cryptauth/fake_software_feature_manager.h"
 #include "components/cryptauth/remote_device_provider_impl.h"
 #include "components/cryptauth/remote_device_test_util.h"
+#include "components/cryptauth/software_feature_manager_impl.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -67,6 +69,55 @@ cryptauth::RemoteDeviceList GenerateTestRemoteDevices() {
 
   return devices;
 }
+
+std::vector<cryptauth::ExternalDeviceInfo> GenerateTestExternalDeviceInfos(
+    const cryptauth::RemoteDeviceList& remote_devices) {
+  std::vector<cryptauth::ExternalDeviceInfo> device_infos;
+
+  for (const auto& remote_device : remote_devices) {
+    cryptauth::ExternalDeviceInfo info;
+    info.set_public_key(remote_device.public_key);
+    device_infos.push_back(info);
+  }
+
+  return device_infos;
+}
+
+std::vector<cryptauth::IneligibleDevice> GenerateTestIneligibleDevices(
+    const std::vector<cryptauth::ExternalDeviceInfo>& device_infos) {
+  std::vector<cryptauth::IneligibleDevice> ineligible_devices;
+
+  for (const auto& device_info : device_infos) {
+    cryptauth::IneligibleDevice device;
+    device.mutable_device()->CopyFrom(device_info);
+    ineligible_devices.push_back(device);
+  }
+
+  return ineligible_devices;
+}
+
+// Delegate which invokes the Closure provided to its constructor when a
+// delegate function is invoked.
+class FakeSoftwareFeatureManagerDelegate
+    : public cryptauth::FakeSoftwareFeatureManager::Delegate {
+ public:
+  FakeSoftwareFeatureManagerDelegate(base::Closure on_delegate_call_closure)
+      : on_delegate_call_closure_(on_delegate_call_closure) {}
+
+  ~FakeSoftwareFeatureManagerDelegate() override = default;
+
+  // cryptauth::FakeSoftwareFeatureManager::Delegate:
+  void OnSetSoftwareFeatureStateCalled() override {
+    on_delegate_call_closure_.Run();
+  }
+
+  void OnFindEligibleDevicesCalled() override {
+    on_delegate_call_closure_.Run();
+  }
+
+ private:
+  base::Closure on_delegate_call_closure_;
+};
 
 class FakeCryptAuthGCMManagerFactory
     : public cryptauth::CryptAuthGCMManagerImpl::Factory {
@@ -253,6 +304,30 @@ class FakeRemoteDeviceProviderFactory
   cryptauth::FakeRemoteDeviceProvider* instance_ = nullptr;
 };
 
+class FakeSoftwareFeatureManagerFactory
+    : public cryptauth::SoftwareFeatureManagerImpl::Factory {
+ public:
+  FakeSoftwareFeatureManagerFactory() = default;
+  ~FakeSoftwareFeatureManagerFactory() override = default;
+
+  cryptauth::FakeSoftwareFeatureManager* instance() { return instance_; }
+
+  // cryptauth::SoftwareFeatureManagerImpl::Factory:
+  std::unique_ptr<cryptauth::SoftwareFeatureManager> BuildInstance(
+      cryptauth::CryptAuthClientFactory* cryptauth_client_factory) override {
+    // Only one instance is expected to be created per test.
+    EXPECT_FALSE(instance_);
+
+    auto instance = std::make_unique<cryptauth::FakeSoftwareFeatureManager>();
+    instance_ = instance.get();
+
+    return std::move(instance);
+  }
+
+ private:
+  cryptauth::FakeSoftwareFeatureManager* instance_ = nullptr;
+};
+
 class FakeURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   FakeURLRequestContextGetter() : null_task_runner_(new base::NullTaskRunner) {}
@@ -350,7 +425,11 @@ class DeviceSyncServiceTest : public testing::Test {
     base::SimpleTestClock* simple_test_clock_;
   };
 
-  DeviceSyncServiceTest() : test_devices_(GenerateTestRemoteDevices()) {}
+  DeviceSyncServiceTest()
+      : test_devices_(GenerateTestRemoteDevices()),
+        test_device_infos_(GenerateTestExternalDeviceInfos(test_devices_)),
+        test_ineligible_devices_(
+            GenerateTestIneligibleDevices(test_device_infos_)) {}
   ~DeviceSyncServiceTest() override = default;
 
   void SetUp() override {
@@ -397,6 +476,11 @@ class DeviceSyncServiceTest : public testing::Test {
             fake_cryptauth_enrollment_manager_factory_.get());
     cryptauth::RemoteDeviceProviderImpl::Factory::SetInstanceForTesting(
         fake_remote_device_provider_factory_.get());
+
+    fake_software_feature_manager_factory_ =
+        std::make_unique<FakeSoftwareFeatureManagerFactory>();
+    cryptauth::SoftwareFeatureManagerImpl::Factory::SetInstanceForTesting(
+        fake_software_feature_manager_factory_.get());
 
     auto fake_pref_connection_delegate =
         std::make_unique<FakePrefConnectionDelegate>(
@@ -550,12 +634,64 @@ class DeviceSyncServiceTest : public testing::Test {
 
   const cryptauth::RemoteDeviceList& test_devices() { return test_devices_; }
 
+  const std::vector<cryptauth::ExternalDeviceInfo>& test_device_infos() {
+    return test_device_infos_;
+  }
+
+  const std::vector<cryptauth::IneligibleDevice>& test_ineligible_devices() {
+    return test_ineligible_devices_;
+  }
+
   FakeDeviceSyncObserver* fake_device_sync_observer() {
     return fake_device_sync_observer_.get();
   }
 
   FakePrefConnectionDelegate* fake_pref_connection_delegate() {
     return fake_pref_connection_delegate_;
+  }
+
+  cryptauth::FakeSoftwareFeatureManager* fake_software_feature_manager() {
+    return fake_software_feature_manager_factory_->instance();
+  }
+
+  std::unique_ptr<base::Optional<std::string>>
+  GetLastSetSoftwareFeatureStateResponseAndReset() {
+    return std::move(last_set_software_feature_state_response_);
+  }
+
+  std::unique_ptr<std::pair<base::Optional<std::string>,
+                            mojom::FindEligibleDevicesResponsePtr>>
+  GetLastFindEligibleDevicesResponseAndReset() {
+    return std::move(last_find_eligible_devices_response_);
+  }
+
+  // Verifies that API functions return error codes before initialization has
+  // completed. This function should not be invoked after initialization.
+  void VerifyApiFunctionsFailBeforeInitialization() {
+    // Force*Now() functions return false when they are not handled.
+    EXPECT_FALSE(CallForceEnrollmentNow());
+    EXPECT_FALSE(CallForceSyncNow());
+
+    // GetSyncedDevices() returns an empty list before initialization.
+    // TODO(khorimoto): Update it to return a null array instead of an empty
+    // list to differentiate between cases where there are actually no devices.
+    EXPECT_TRUE(CallGetSyncedDevices().empty());
+
+    // SetSoftwareFeatureState() should return a struct with the special
+    // kErrorNotInitialized error code.
+    CallSetSoftwareFeatureState(
+        test_devices()[0].public_key,
+        cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST, true /* enabled */,
+        true /* is_exclusive */);
+    auto last_set_response = GetLastSetSoftwareFeatureStateResponseAndReset();
+    EXPECT_EQ(mojom::kErrorNotInitialized, *last_set_response);
+
+    // Likewise, FindEligibleDevices() should also return a struct with the same
+    // error code.
+    CallFindEligibleDevices(cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+    auto last_find_response = GetLastFindEligibleDevicesResponseAndReset();
+    EXPECT_EQ(mojom::kErrorNotInitialized, last_find_response->first);
+    EXPECT_FALSE(last_find_response->second /* response */);
   }
 
   void CallAddObserver() {
@@ -608,6 +744,71 @@ class DeviceSyncServiceTest : public testing::Test {
     return last_synced_devices_result_;
   }
 
+  void CallSetSoftwareFeatureState(const std::string& public_key,
+                                   cryptauth::SoftwareFeature software_feature,
+                                   bool enabled,
+                                   bool is_exclusive) {
+    base::RunLoop run_loop;
+    cryptauth::FakeSoftwareFeatureManager* manager =
+        fake_software_feature_manager();
+
+    // If the manager has not yet been created, the service has not been
+    // initialized. SetSoftwareFeatureState() is expected to respond
+    // synchronously with an error.
+    if (!manager) {
+      device_sync_->SetSoftwareFeatureState(
+          public_key, software_feature, enabled, is_exclusive,
+          base::Bind(&DeviceSyncServiceTest::
+                         OnSetSoftwareFeatureStateCompletedSynchronously,
+                     base::Unretained(this), run_loop.QuitClosure()));
+      run_loop.Run();
+      return;
+    }
+
+    // If the manager has been created, the service responds asynchronously.
+    FakeSoftwareFeatureManagerDelegate delegate(run_loop.QuitClosure());
+    fake_software_feature_manager_factory_->instance()->set_delegate(&delegate);
+
+    device_sync_->SetSoftwareFeatureState(
+        public_key, software_feature, enabled, is_exclusive,
+        base::Bind(&DeviceSyncServiceTest::OnSetSoftwareFeatureStateCompleted,
+                   base::Unretained(this)));
+    run_loop.Run();
+
+    fake_software_feature_manager_factory_->instance()->set_delegate(nullptr);
+  }
+
+  void CallFindEligibleDevices(cryptauth::SoftwareFeature software_feature) {
+    base::RunLoop run_loop;
+    cryptauth::FakeSoftwareFeatureManager* manager =
+        fake_software_feature_manager();
+
+    // If the manager has not yet been created, the service has not been
+    // initialized. FindEligibleDevices() is expected to respond synchronously
+    // with an error.
+    if (!manager) {
+      device_sync_->FindEligibleDevices(
+          software_feature,
+          base::Bind(&DeviceSyncServiceTest::
+                         OnFindEligibleDevicesCompletedSynchronously,
+                     base::Unretained(this), run_loop.QuitClosure()));
+      run_loop.Run();
+      return;
+    }
+
+    // If the manager has been created, the service responds asynchronously.
+    FakeSoftwareFeatureManagerDelegate delegate(run_loop.QuitClosure());
+    fake_software_feature_manager_factory_->instance()->set_delegate(&delegate);
+
+    device_sync_->FindEligibleDevices(
+        software_feature,
+        base::Bind(&DeviceSyncServiceTest::OnFindEligibleDevicesCompleted,
+                   base::Unretained(this)));
+    run_loop.Run();
+
+    fake_software_feature_manager_factory_->instance()->set_delegate(nullptr);
+  }
+
  private:
   void OnAddObserverCompleted(base::OnceClosure quit_closure) {
     std::move(quit_closure).Run();
@@ -631,8 +832,42 @@ class DeviceSyncServiceTest : public testing::Test {
     std::move(quit_closure).Run();
   }
 
+  void OnSetSoftwareFeatureStateCompleted(
+      const base::Optional<std::string>& error_code) {
+    EXPECT_FALSE(last_set_software_feature_state_response_);
+    last_set_software_feature_state_response_ =
+        std::make_unique<base::Optional<std::string>>(error_code);
+  }
+
+  void OnSetSoftwareFeatureStateCompletedSynchronously(
+      base::OnceClosure quit_closure,
+      const base::Optional<std::string>& error_code) {
+    OnSetSoftwareFeatureStateCompleted(error_code);
+    std::move(quit_closure).Run();
+  }
+
+  void OnFindEligibleDevicesCompleted(
+      const base::Optional<std::string>& error_code,
+      mojom::FindEligibleDevicesResponsePtr response) {
+    EXPECT_FALSE(last_find_eligible_devices_response_);
+    last_find_eligible_devices_response_ =
+        std::make_unique<std::pair<base::Optional<std::string>,
+                                   mojom::FindEligibleDevicesResponsePtr>>(
+            error_code, std::move(response));
+  }
+
+  void OnFindEligibleDevicesCompletedSynchronously(
+      base::OnceClosure quit_closure,
+      const base::Optional<std::string>& error_code,
+      mojom::FindEligibleDevicesResponsePtr response) {
+    OnFindEligibleDevicesCompleted(error_code, std::move(response));
+    std::move(quit_closure).Run();
+  }
+
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
   const cryptauth::RemoteDeviceList test_devices_;
+  const std::vector<cryptauth::ExternalDeviceInfo> test_device_infos_;
+  const std::vector<cryptauth::IneligibleDevice> test_ineligible_devices_;
 
   TestingPrefServiceSimple* test_pref_service_;
   FakePrefConnectionDelegate* fake_pref_connection_delegate_;
@@ -646,6 +881,8 @@ class DeviceSyncServiceTest : public testing::Test {
       fake_cryptauth_enrollment_manager_factory_;
   std::unique_ptr<FakeRemoteDeviceProviderFactory>
       fake_remote_device_provider_factory_;
+  std::unique_ptr<FakeSoftwareFeatureManagerFactory>
+      fake_software_feature_manager_factory_;
 
   std::unique_ptr<identity::IdentityTestEnvironment> identity_test_environment_;
   std::unique_ptr<gcm::FakeGCMDriver> fake_gcm_driver_;
@@ -660,6 +897,11 @@ class DeviceSyncServiceTest : public testing::Test {
   bool last_force_enrollment_now_result_;
   bool last_force_sync_now_result_;
   cryptauth::RemoteDeviceList last_synced_devices_result_;
+  std::unique_ptr<base::Optional<std::string>>
+      last_set_software_feature_state_response_;
+  std::unique_ptr<std::pair<base::Optional<std::string>,
+                            mojom::FindEligibleDevicesResponsePtr>>
+      last_find_eligible_devices_response_;
 
   std::unique_ptr<FakeDeviceSyncObserver> fake_device_sync_observer_;
   mojom::DeviceSyncPtr device_sync_;
@@ -676,9 +918,7 @@ TEST_F(DeviceSyncServiceTest, PreferencesNeverConnect) {
 
   // Do not complete the connection; without this step, the other API functions
   // should fail.
-  EXPECT_FALSE(CallForceEnrollmentNow());
-  EXPECT_FALSE(CallForceSyncNow());
-  EXPECT_TRUE(CallGetSyncedDevices().empty());
+  VerifyApiFunctionsFailBeforeInitialization();
 
   // No observer callbacks should have been invoked.
   base::RunLoop().RunUntilIdle();
@@ -700,9 +940,7 @@ TEST_F(DeviceSyncServiceTest,
   VerifyInitializationStatus(false /* expected_to_be_initialized */);
 
   // Other API functions should still fail since initialization never completed.
-  EXPECT_FALSE(CallForceEnrollmentNow());
-  EXPECT_FALSE(CallForceSyncNow());
-  EXPECT_TRUE(CallGetSyncedDevices().empty());
+  VerifyApiFunctionsFailBeforeInitialization();
 
   // No observer callbacks should have been invoked.
   base::RunLoop().RunUntilIdle();
@@ -807,6 +1045,107 @@ TEST_F(DeviceSyncServiceTest, SyncedDeviceUpdates) {
 
   // The updated list should be available via GetSyncedDevices().
   EXPECT_EQ(updated_device_list, CallGetSyncedDevices());
+}
+
+TEST_F(DeviceSyncServiceTest, SetSoftwareFeatureState) {
+  InitializeServiceSuccessfully();
+
+  const auto& set_software_calls =
+      fake_software_feature_manager()->set_software_feature_state_calls();
+  EXPECT_EQ(0u, set_software_calls.size());
+
+  // Enable BETTER_TOGETHER_HOST for device 0.
+  CallSetSoftwareFeatureState(test_devices()[0].public_key,
+                              cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+                              true /* enabled */, true /* is_exclusive */);
+  EXPECT_EQ(1u, set_software_calls.size());
+  EXPECT_EQ(cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+            set_software_calls[0]->software_feature);
+  EXPECT_TRUE(set_software_calls[0]->enabled);
+  EXPECT_TRUE(set_software_calls[0]->is_exclusive);
+
+  // The callback has not yet been invoked.
+  EXPECT_FALSE(GetLastSetSoftwareFeatureStateResponseAndReset());
+
+  // Now, invoke the success callback.
+  set_software_calls[0]->success_callback.Run();
+  base::RunLoop().RunUntilIdle();
+  auto last_response = GetLastSetSoftwareFeatureStateResponseAndReset();
+  EXPECT_TRUE(last_response);
+  EXPECT_FALSE(*last_response /* error_code */);
+
+  // Disable BETTER_TOGETHER_HOST for device 0.
+  CallSetSoftwareFeatureState(test_devices()[0].public_key,
+                              cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+                              false /* enabled */, false /* is_exclusive */);
+  EXPECT_EQ(2u, set_software_calls.size());
+  EXPECT_EQ(cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+            set_software_calls[1]->software_feature);
+  EXPECT_FALSE(set_software_calls[1]->enabled);
+  EXPECT_FALSE(set_software_calls[1]->is_exclusive);
+
+  // The callback has not yet been invoked.
+  EXPECT_FALSE(GetLastSetSoftwareFeatureStateResponseAndReset());
+
+  // Now, invoke the error callback.
+  set_software_calls[1]->error_callback.Run("error");
+  base::RunLoop().RunUntilIdle();
+  last_response = GetLastSetSoftwareFeatureStateResponseAndReset();
+  EXPECT_TRUE(last_response);
+  EXPECT_EQ("error", *last_response /* error_code */);
+}
+
+TEST_F(DeviceSyncServiceTest, FindEligibleDevices) {
+  InitializeServiceSuccessfully();
+
+  const auto& find_eligible_calls =
+      fake_software_feature_manager()->find_eligible_multidevice_host_calls();
+  EXPECT_EQ(0u, find_eligible_calls.size());
+
+  // Find devices which are BETTER_TOGETHER_HOSTs.
+  CallFindEligibleDevices(cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+  EXPECT_EQ(1u, find_eligible_calls.size());
+  EXPECT_EQ(cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+            find_eligible_calls[0]->software_feature);
+
+  // The callback has not yet been invoked.
+  EXPECT_FALSE(GetLastFindEligibleDevicesResponseAndReset());
+
+  // Now, invoke the success callback, simultating that device 0 is eligible and
+  // devices 1-4 are not.
+  find_eligible_calls[0]->success_callback.Run(
+      std::vector<cryptauth::ExternalDeviceInfo>(test_device_infos().begin(),
+                                                 test_device_infos().begin()),
+      std::vector<cryptauth::IneligibleDevice>(
+          test_ineligible_devices().begin() + 1,
+          test_ineligible_devices().end()));
+  base::RunLoop().RunUntilIdle();
+  auto last_response = GetLastFindEligibleDevicesResponseAndReset();
+  EXPECT_TRUE(last_response);
+  EXPECT_FALSE(last_response->first /* error_code */);
+  EXPECT_EQ(last_response->second->eligible_devices,
+            cryptauth::RemoteDeviceList(test_devices().begin(),
+                                        test_devices().begin()));
+  EXPECT_EQ(last_response->second->ineligible_devices,
+            cryptauth::RemoteDeviceList(test_devices().begin() + 1,
+                                        test_devices().end()));
+
+  // Find devices which are BETTER_TOGETHER_HOSTs again.
+  CallFindEligibleDevices(cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+  EXPECT_EQ(2u, find_eligible_calls.size());
+  EXPECT_EQ(cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+            find_eligible_calls[1]->software_feature);
+
+  // The callback has not yet been invoked.
+  EXPECT_FALSE(GetLastFindEligibleDevicesResponseAndReset());
+
+  // Now, invoke the error callback.
+  find_eligible_calls[1]->error_callback.Run("error");
+  base::RunLoop().RunUntilIdle();
+  last_response = GetLastFindEligibleDevicesResponseAndReset();
+  EXPECT_TRUE(last_response);
+  EXPECT_EQ("error", last_response->first /* error_code */);
+  EXPECT_FALSE(last_response->second /* response */);
 }
 
 }  // namespace device_sync
