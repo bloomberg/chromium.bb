@@ -323,13 +323,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE,
                                     "restoreGeometryMaximizedState")));
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_Traverse DISABLED_Traverse
-#else
-#define MAYBE_Traverse Traverse
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_Traverse,
+    Traverse,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "traverseDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "traverseDownloads"),
@@ -394,13 +389,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "genericTaskIsNotExecuted"),
         TestParameter(NOT_IN_GUEST_MODE, "genericAndNonGenericTasksAreMixed")));
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_FolderShortcuts DISABLED_FolderShortcuts
-#else
-#define MAYBE_FolderShortcuts FolderShortcuts
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_FolderShortcuts,
+    FolderShortcuts,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "traverseFolderShortcuts"),
