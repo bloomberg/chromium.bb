@@ -289,7 +289,7 @@ You can verify that any changes you've made to an expectations file are correct
 by running:
 
 ```bash
-third_party/WebKit/Tools/Scripts/lint-test-expectations
+third_party/blink/tools/lint_test_expectations.py
 ```
 
 which will cycle through all of the possible combinations of configurations

@@ -74,14 +74,14 @@ def _CheckTestExpectations(input_api, output_api):
     local_paths = [f.LocalPath() for f in input_api.AffectedFiles()]
     if any('LayoutTests' in path for path in local_paths):
         lint_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
-            '..', 'Tools', 'Scripts', 'lint-test-expectations')
+            '..', '..', 'blink', 'tools', 'lint_test_expectations.py')
         _, errs = input_api.subprocess.Popen(
             [input_api.python_executable, lint_path],
             stdout=input_api.subprocess.PIPE,
             stderr=input_api.subprocess.PIPE).communicate()
         if not errs:
             return [output_api.PresubmitError(
-                "lint-test-expectations failed "
+                "lint_test_expectations.py failed "
                 "to produce output; check by hand. ")]
         if errs.strip() != 'Lint succeeded.':
             return [output_api.PresubmitError(errs)]

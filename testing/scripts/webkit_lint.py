@@ -15,8 +15,8 @@ def main_run(args):
   with common.temporary_file() as tempfile_path:
     rc = common.run_command([
         sys.executable,
-        os.path.join(common.SRC_DIR, 'third_party', 'WebKit',
-                     'Tools', 'Scripts', 'lint-test-expectations'),
+        os.path.join(common.SRC_DIR, 'third_party', 'blink',
+                     'tools', 'lint_test_expectations.py'),
         '--json', tempfile_path
     ])
 
