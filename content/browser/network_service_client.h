@@ -19,15 +19,14 @@ class NetworkServiceClient : public network::mojom::NetworkServiceClient {
   ~NetworkServiceClient() override;
 
   // network::mojom::NetworkServiceClient implementation:
-  void OnAuthRequired(
-      uint32_t process_id,
-      uint32_t routing_id,
-      uint32_t request_id,
-      const GURL& url,
-      bool first_auth_attempt,
-      const scoped_refptr<net::AuthChallengeInfo>& auth_info,
-      network::mojom::NetworkServiceClient::OnAuthRequiredCallback callback)
-      override;
+  void OnAuthRequired(uint32_t process_id,
+                      uint32_t routing_id,
+                      uint32_t request_id,
+                      const GURL& url,
+                      bool first_auth_attempt,
+                      const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+                      network::mojom::AuthChallengeResponderPtr
+                          auth_challenge_responder) override;
   void OnCertificateRequested(
       uint32_t process_id,
       uint32_t routing_id,

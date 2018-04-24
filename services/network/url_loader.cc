@@ -284,6 +284,7 @@ URLLoader::URLLoader(
       request_id_(request_id),
       keepalive_(request.keepalive),
       binding_(this, std::move(url_loader_request)),
+      auth_challenge_responder_binding_(this),
       url_loader_client_(std::move(url_loader_client)),
       writable_handle_watcher_(FROM_HERE,
                                mojo::SimpleWatcher::ArmingPolicy::MANUAL,
@@ -468,15 +469,19 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
 void URLLoader::OnAuthRequired(net::URLRequest* unused,
                                net::AuthChallengeInfo* auth_info) {
   if (!network_service_client_) {
-    OnAuthRequiredResponse(base::nullopt);
+    OnAuthCredentials(base::nullopt);
     return;
   }
 
+  network::mojom::AuthChallengeResponderPtr auth_challenge_responder;
+  auto request = mojo::MakeRequest(&auth_challenge_responder);
+  DCHECK(!auth_challenge_responder_binding_.is_bound());
+  auth_challenge_responder_binding_.Bind(std::move(request));
+  auth_challenge_responder_binding_.set_connection_error_handler(
+      base::BindOnce(&URLLoader::DeleteSelf, base::Unretained(this)));
   network_service_client_->OnAuthRequired(
       process_id_, render_frame_id_, request_id_, url_request_->url(),
-      first_auth_attempt_, auth_info,
-      base::BindOnce(&URLLoader::OnAuthRequiredResponse,
-                     weak_ptr_factory_.GetWeakPtr()));
+      first_auth_attempt_, auth_info, std::move(auth_challenge_responder));
 
   first_auth_attempt_ = false;
 }
@@ -691,6 +696,20 @@ net::LoadState URLLoader::GetLoadStateForTesting() const {
   return url_request_->GetLoadState().state;
 }
 
+void URLLoader::OnAuthCredentials(
+    const base::Optional<net::AuthCredentials>& credentials) {
+  auth_challenge_responder_binding_.Close();
+
+  if (!url_request_)
+    return;
+
+  if (!credentials.has_value()) {
+    url_request_->CancelAuth();
+  } else {
+    url_request_->SetAuth(credentials.value());
+  }
+}
+
 void URLLoader::NotifyCompleted(int error_code) {
   // Ensure sending the final upload progress message here, since
   // OnResponseCompleted can be called without OnResponseStarted on cancellation
@@ -821,18 +840,6 @@ void URLLoader::OnCertificateRequestedResponse(
     } else {
       url_request_->ContinueWithCertificate(nullptr, nullptr);
     }
-  }
-}
-
-void URLLoader::OnAuthRequiredResponse(
-    const base::Optional<net::AuthCredentials>& credentials) {
-  if (!url_request_)
-    return;
-
-  if (!credentials.has_value()) {
-    url_request_->CancelAuth();
-  } else {
-    url_request_->SetAuth(credentials.value());
   }
 }
 
