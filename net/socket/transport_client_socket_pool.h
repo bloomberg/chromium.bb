@@ -240,6 +240,10 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
   void AddHigherLayeredPool(HigherLayeredPool* higher_pool) override;
   void RemoveHigherLayeredPool(HigherLayeredPool* higher_pool) override;
 
+  ClientSocketFactory* client_socket_factory() {
+    return client_socket_factory_;
+  }
+
  protected:
   // Methods shared with WebSocketTransportClientSocketPool
   void NetLogTcpClientSocketPoolRequestedSocket(
@@ -284,6 +288,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
   };
 
   PoolBase base_;
+  ClientSocketFactory* const client_socket_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportClientSocketPool);
 };

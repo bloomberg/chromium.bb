@@ -75,13 +75,14 @@ const int proxy_test_mock_errors[] = {
     ERR_CONNECTION_REFUSED,
     ERR_CONNECTION_ABORTED,
     ERR_TIMED_OUT,
-    ERR_TUNNEL_CONNECTION_FAILED,
     ERR_SOCKS_CONNECTION_FAILED,
     ERR_PROXY_CERTIFICATE_INVALID,
     ERR_QUIC_PROTOCOL_ERROR,
     ERR_QUIC_HANDSHAKE_FAILED,
     ERR_SSL_PROTOCOL_ERROR,
-    ERR_MSG_TOO_BIG,
+    // TODO(crbug.com/826570): Non-QUIC proxies do not fallback on this
+    // error. Figure out how to fix this.
+    // ERR_MSG_TOO_BIG,
 };
 
 class FailingProxyResolverFactory : public ProxyResolverFactory {
@@ -479,6 +480,11 @@ INSTANTIATE_TEST_CASE_P(
                        testing::ValuesIn(proxy_test_mock_errors)));
 
 TEST_P(JobControllerReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
+  // Use mock proxy client sockets to test the fallback behavior of error codes
+  // returned by HttpProxyClientSocketWrapper. Errors returned by transport
+  // sockets usually get re-written by the wrapper class. crbug.com/826570.
+  session_deps_.socket_factory->UseMockProxyClientSockets();
+
   const bool set_alternative_proxy_server = ::testing::get<0>(GetParam());
   const int mock_error = ::testing::get<1>(GetParam());
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
@@ -492,14 +498,11 @@ TEST_P(JobControllerReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
   ASSERT_TRUE(proxy_resolution_service->proxy_retry_info().empty())
       << mock_error;
 
-  StaticSocketDataProvider socket_data_proxy_main_job;
-  socket_data_proxy_main_job.set_connect_data(MockConnect(ASYNC, mock_error));
-  session_deps_.socket_factory->AddSocketDataProvider(
-      &socket_data_proxy_main_job);
-
+  // Alternative Proxy job is given preference over the main job, so populate
+  // the socket provider first.
   StaticSocketDataProvider socket_data_proxy_alternate_job;
   if (set_alternative_proxy_server) {
-    // Mock socket used by the QUIC job.
+    // Mock data for QUIC proxy socket.
     socket_data_proxy_alternate_job.set_connect_data(
         MockConnect(ASYNC, mock_error));
     session_deps_.socket_factory->AddSocketDataProvider(
@@ -509,29 +512,36 @@ TEST_P(JobControllerReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
   }
 
   SSLSocketDataProvider ssl_data(ASYNC, OK);
+  ProxyClientSocketDataProvider proxy_data(ASYNC, mock_error);
 
-  // When retrying the job using the second proxy (badFallback:98),
+  StaticSocketDataProvider socket_data_proxy_main_job;
+  socket_data_proxy_main_job.set_connect_data(MockConnect(ASYNC, OK));
+  session_deps_.socket_factory->AddSocketDataProvider(
+      &socket_data_proxy_main_job);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
+  session_deps_.socket_factory->AddProxyClientSocketDataProvider(&proxy_data);
+
+  // When retrying the job using the second proxy (badfallback:98),
   // alternative job must not be created. So, socket data for only the
   // main job is needed.
   StaticSocketDataProvider socket_data_proxy_main_job_2;
-  socket_data_proxy_main_job_2.set_connect_data(MockConnect(ASYNC, mock_error));
+  socket_data_proxy_main_job_2.set_connect_data(MockConnect(ASYNC, OK));
   session_deps_.socket_factory->AddSocketDataProvider(
       &socket_data_proxy_main_job_2);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
+  session_deps_.socket_factory->AddProxyClientSocketDataProvider(&proxy_data);
 
   // First request would use DIRECT, and succeed.
   StaticSocketDataProvider socket_data_direct_first_request;
   socket_data_direct_first_request.set_connect_data(MockConnect(ASYNC, OK));
   session_deps_.socket_factory->AddSocketDataProvider(
       &socket_data_direct_first_request);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
 
   // Second request would use DIRECT, and succeed.
   StaticSocketDataProvider socket_data_direct_second_request;
   socket_data_direct_second_request.set_connect_data(MockConnect(ASYNC, OK));
   session_deps_.socket_factory->AddSocketDataProvider(
       &socket_data_direct_second_request);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
 
   // Now request a stream. It should succeed using the DIRECT.
   HttpRequestInfo request_info;

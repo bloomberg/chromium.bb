@@ -457,6 +457,21 @@ MockTransportClientSocketFactory::CreateSSLClientSocket(
   return std::unique_ptr<SSLClientSocket>();
 }
 
+std::unique_ptr<ProxyClientSocket>
+MockTransportClientSocketFactory::CreateProxyClientSocket(
+    std::unique_ptr<ClientSocketHandle> transport_socket,
+    const std::string& user_agent,
+    const HostPortPair& endpoint,
+    HttpAuthController* http_auth_controller,
+    bool tunnel,
+    bool using_spdy,
+    NextProto negotiated_protocol,
+    bool is_https_proxy,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 void MockTransportClientSocketFactory::ClearSSLSessionCache() {
   NOTIMPLEMENTED();
 }
