@@ -198,17 +198,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   if (speed >= 4) {
     sf->tx_type_search.fast_intra_tx_type_search = 1;
     sf->tx_type_search.fast_inter_tx_type_search = 1;
-    sf->mode_search_skip_flags =
-        (cm->frame_type == KEY_FRAME)
-            ? 0
-            : FLAG_SKIP_INTRA_DIRMISMATCH | FLAG_SKIP_INTRA_BESTINTER |
-                  FLAG_SKIP_COMP_BESTINTRA | FLAG_SKIP_INTRA_LOWVAR;
-    if ((cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION) ||
-        av1_internal_image_edge(cpi)) {
-      sf->use_square_partition_only = !boosted;
-    } else {
-      sf->use_square_partition_only = !frame_is_intra_only(cm);
-    }
+    sf->use_square_partition_only = !boosted;
     sf->tx_size_search_method =
         frame_is_intra_only(cm) ? USE_FULL_RD : USE_LARGESTALL;
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
@@ -217,26 +207,29 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->cb_partition_search = !boosted;
     sf->cb_pred_filter_search = 1;
     sf->alt_ref_search_fp = 1;
-    sf->recode_loop = ALLOW_RECODE_KFMAXBW;
-    sf->adaptive_rd_thresh = 3;
     sf->mode_skip_start = 6;
+    sf->adaptive_interp_filter_search = 1;
+  }
+
+  if (speed >= 5) {
+    sf->recode_loop = ALLOW_RECODE_KFMAXBW;
     sf->intra_y_mode_mask[TX_64X64] = INTRA_DC_H_V;
     sf->intra_uv_mode_mask[TX_64X64] = UV_INTRA_DC_H_V_CFL;
     sf->intra_y_mode_mask[TX_32X32] = INTRA_DC_H_V;
     sf->intra_uv_mode_mask[TX_32X32] = UV_INTRA_DC_H_V_CFL;
     sf->intra_y_mode_mask[TX_16X16] = INTRA_DC_H_V;
     sf->intra_uv_mode_mask[TX_16X16] = UV_INTRA_DC_H_V_CFL;
-    sf->adaptive_interp_filter_search = 1;
-  }
-
-  if (speed >= 5) {
     sf->use_square_partition_only = 1;
     sf->tx_size_search_method = USE_LARGESTALL;
     sf->mv.search_method = BIGDIA;
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
     sf->adaptive_rd_thresh = 4;
-    if (cm->frame_type != KEY_FRAME)
-      sf->mode_search_skip_flags |= FLAG_EARLY_TERMINATE;
+    sf->mode_search_skip_flags =
+        (cm->frame_type == KEY_FRAME)
+            ? 0
+            : FLAG_SKIP_INTRA_DIRMISMATCH | FLAG_SKIP_INTRA_BESTINTER |
+                  FLAG_SKIP_COMP_BESTINTRA | FLAG_SKIP_INTRA_LOWVAR |
+                  FLAG_EARLY_TERMINATE;
     sf->disable_filter_search_var_thresh = 200;
     sf->use_fast_coef_updates = ONE_LOOP_REDUCED;
     sf->use_fast_coef_costing = 1;
