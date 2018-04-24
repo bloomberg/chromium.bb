@@ -163,10 +163,6 @@
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/supervised_user/chromeos/manager_password_service_factory.h"
-#include "chrome/browser/supervised_user/chromeos/supervised_user_password_service_factory.h"
-#endif
 #endif
 
 namespace chrome {
@@ -281,10 +277,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   cloud_print::PrivetNotificationServiceFactory::GetInstance();
 #endif
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#if defined(OS_CHROMEOS)
-  chromeos::SupervisedUserPasswordServiceFactory::GetInstance();
-  chromeos::ManagerPasswordServiceFactory::GetInstance();
-#endif
   SupervisedUserServiceFactory::GetInstance();
 #if !defined(OS_ANDROID)
   SupervisedUserSyncServiceFactory::GetInstance();

@@ -24,8 +24,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
-#include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service_factory.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
@@ -257,8 +255,6 @@ void SigninSupervisedUserImportHandler::SendExistingSupervisedUsers(
   }
 
   base::ListValue supervised_users;
-  SupervisedUserSharedSettingsService* service =
-      SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(profile);
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
     const base::DictionaryValue* value = NULL;
     bool success = it.value().GetAsDictionary(&value);
@@ -272,17 +268,11 @@ void SigninSupervisedUserImportHandler::SendExistingSupervisedUsers(
     supervised_user->SetString("name", name);
 
     int avatar_index = SupervisedUserSyncService::kNoAvatar;
-    const base::Value* avatar_index_value =
-        service->GetValue(it.key(), supervised_users::kChromeAvatarIndex);
-    if (avatar_index_value) {
-      success = avatar_index_value->GetAsInteger(&avatar_index);
-    } else {
-      // Check if there is a legacy avatar index stored.
-      std::string avatar_str;
-      value->GetString(SupervisedUserSyncService::kChromeAvatar, &avatar_str);
-      success =
-          SupervisedUserSyncService::GetAvatarIndex(avatar_str, &avatar_index);
-    }
+    // Check if there is a legacy avatar index stored.
+    std::string avatar_str;
+    value->GetString(SupervisedUserSyncService::kChromeAvatar, &avatar_str);
+    success =
+        SupervisedUserSyncService::GetAvatarIndex(avatar_str, &avatar_index);
     DCHECK(success);
 
     std::string avatar_url =
