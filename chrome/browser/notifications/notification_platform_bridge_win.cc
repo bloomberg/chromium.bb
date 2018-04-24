@@ -229,9 +229,11 @@ class NotificationPlatformBridgeWinImpl
     // control and Tag can contain just about anything. Therefore we use a hash
     // of the Tag value to produce uniqueness that fits within the specified
     // limits. Although Group is hard-coded, uniqueness is guaranteed through
-    // features providing a sufficiently distinct notification.id().
+    // features providing a sufficiently distinct notification id, profile id,
+    // and incognito status combinations.
     ScopedHString group = ScopedHString::Create(kGroup);
-    ScopedHString tag = ScopedHString::Create(GetTag(notification.id()));
+    ScopedHString tag =
+        ScopedHString::Create(GetTag(notification.id(), profile_id, incognito));
 
     hr = toast2->put_Group(group.get());
     if (FAILED(hr)) {
@@ -393,6 +395,7 @@ class NotificationPlatformBridgeWinImpl
   }
 
   void Close(const std::string& profile_id,
+             bool incognito,
              const std::string& notification_id) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
@@ -405,7 +408,8 @@ class NotificationPlatformBridgeWinImpl
 
     ScopedHString application_id = ScopedHString::Create(GetAppId());
     ScopedHString group = ScopedHString::Create(kGroup);
-    ScopedHString tag = ScopedHString::Create(GetTag(notification_id));
+    ScopedHString tag =
+        ScopedHString::Create(GetTag(notification_id, profile_id, incognito));
 
     HRESULT hr = history->RemoveGroupedTagWithId(tag.get(), group.get(),
                                                  application_id.get());
@@ -659,8 +663,12 @@ class NotificationPlatformBridgeWinImpl
     return ShellUtil::GetBrowserModelId(InstallUtil::IsPerUserInstall());
   }
 
-  base::string16 GetTag(const std::string& notification_id) {
-    return base::UintToString16(base::Hash(notification_id));
+  base::string16 GetTag(const std::string& notification_id,
+                        const std::string& profile_id,
+                        bool incognito) {
+    std::string payload = base::StringPrintf(
+        "%s|%s|%d", notification_id.c_str(), profile_id.c_str(), incognito);
+    return base::UintToString16(base::Hash(payload));
   }
 
   HRESULT OnDismissed(
@@ -786,7 +794,8 @@ void NotificationPlatformBridgeWin::Close(Profile* profile,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&NotificationPlatformBridgeWinImpl::Close,
-                                impl_, notification_id, GetProfileId(profile)));
+                                impl_, GetProfileId(profile),
+                                profile->IsOffTheRecord(), notification_id));
 }
 
 void NotificationPlatformBridgeWin::GetDisplayed(
@@ -884,8 +893,10 @@ void NotificationPlatformBridgeWin::SetNotifierForTesting(
 HRESULT NotificationPlatformBridgeWin::GetToastNotificationForTesting(
     const message_center::Notification& notification,
     const NotificationTemplateBuilder& notification_template_builder,
+    const std::string& profile_id,
+    bool incognito,
     winui::Notifications::IToastNotification** toast_notification) {
-  return impl_->GetToastNotification(
-      notification, notification_template_builder, "UnusedValue",
-      /*incognito=*/false, toast_notification);
+  return impl_->GetToastNotification(notification,
+                                     notification_template_builder, profile_id,
+                                     incognito, toast_notification);
 }
