@@ -428,7 +428,7 @@ void SandboxedUnpacker::Unpack(const base::FilePath& directory) {
 }
 
 void SandboxedUnpacker::ReadManifestDone(
-    std::unique_ptr<base::Value> manifest,
+    base::Optional<base::Value> manifest,
     const base::Optional<std::string>& error) {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
   if (error) {
@@ -441,7 +441,8 @@ void SandboxedUnpacker::ReadManifestDone(
   }
 
   std::unique_ptr<base::DictionaryValue> manifest_dict =
-      base::DictionaryValue::From(std::move(manifest));
+      base::DictionaryValue::From(
+          base::Value::ToUniquePtrValue(std::move(manifest.value())));
 
   std::string error_msg;
   scoped_refptr<Extension> extension(
@@ -671,7 +672,8 @@ void SandboxedUnpacker::ReadJSONRulesetIfNeeded(
           extension_.get());
   if (!resource) {
     ReadJSONRulesetDone(std::move(manifest),
-                        /*json_ruleset=*/nullptr, /*error=*/base::nullopt);
+                        /*json_ruleset=*/base::nullopt,
+                        /*error=*/base::nullopt);
     return;
   }
 
@@ -682,7 +684,7 @@ void SandboxedUnpacker::ReadJSONRulesetIfNeeded(
 
 void SandboxedUnpacker::ReadJSONRulesetDone(
     std::unique_ptr<base::DictionaryValue> manifest,
-    std::unique_ptr<base::Value> json_ruleset,
+    base::Optional<base::Value> json_ruleset,
     const base::Optional<std::string>& error) {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
 
@@ -698,8 +700,13 @@ void SandboxedUnpacker::ReadJSONRulesetDone(
 
   // Index and persist ruleset for the Declarative Net Request API.
   base::Optional<int> dnr_ruleset_checksum;
+  std::unique_ptr<base::Value> json_ruleset_ptr =
+      json_ruleset
+          ? base::Value::ToUniquePtrValue(std::move(json_ruleset.value()))
+          : nullptr;
+
   if (!IndexAndPersistRulesIfNeeded(
-          base::ListValue::From(std::move(json_ruleset)),
+          base::ListValue::From(std::move(json_ruleset_ptr)),
           &dnr_ruleset_checksum)) {
     return;  // Failure was already reported.
   }
@@ -1014,7 +1021,7 @@ void SandboxedUnpacker::ParseJsonFile(
   std::string contents;
   if (!base::ReadFileToString(path, &contents)) {
     std::move(callback).Run(
-        /*value=*/nullptr,
+        /*value=*/base::nullopt,
         /*error=*/base::Optional<std::string>("File doesn't exist."));
     return;
   }

@@ -94,7 +94,7 @@ void JsonFileSanitizer::JsonFileRead(
 
 void JsonFileSanitizer::JsonParsingDone(
     const base::FilePath& file_path,
-    std::unique_ptr<base::Value> json_value,
+    base::Optional<base::Value> json_value,
     const base::Optional<std::string>& error) {
   if (!json_value || !json_value->is_dict()) {
     ReportError(Status::kDecodingError, error ? *error : std::string());

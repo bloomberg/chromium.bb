@@ -4,8 +4,8 @@
 
 module data_decoder.mojom;
 
-import "mojo/common/values.mojom";
+import "mojo/public/mojom/base/values.mojom";
 
 interface JsonParser {
-  Parse(string json) => (mojo.common.mojom.Value? result, string? error);
+  Parse(string json) => (mojo_base.mojom.Value? result, string? error);
 };
