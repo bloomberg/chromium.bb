@@ -50,6 +50,13 @@ constexpr int kSizeKBMin = 1;
 constexpr int kSizeKBMax = 512 * 1024;  // 512MB
 constexpr int kSizeKBBuckets = 100;
 
+// Only support version 1 of Storage Id. However, the "latest" version can also
+// be requested.
+constexpr uint32_t kRequestLatestStorageIdVersion = 0;
+constexpr uint32_t kCurrentStorageIdVersion = 1;
+static_assert(kCurrentStorageIdVersion < 0x80000000,
+              "Versions 0x80000000 and above are reserved.");
+
 cdm::HdcpVersion ToCdmHdcpVersion(HdcpVersion hdcp_version) {
   switch (hdcp_version) {
     case media::HdcpVersion::kHdcpVersionNone:
@@ -1024,6 +1031,14 @@ void CdmAdapter::SendPlatformChallenge(const char* service_id,
                                        uint32_t challenge_size) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
+  if (!cdm_config_.allow_distinctive_identifier) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindRepeating(&CdmAdapter::OnChallengePlatformDone,
+                            weak_factory_.GetWeakPtr(), false, "", "", ""));
+    return;
+  }
+
   helper_->ChallengePlatform(std::string(service_id, service_id_size),
                              std::string(challenge, challenge_size),
                              base::Bind(&CdmAdapter::OnChallengePlatformDone,
@@ -1166,13 +1181,25 @@ cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
   DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
+  if (!cdm_config_.allow_persistent_state) {
+    DVLOG(1) << __func__ << ": Persistent state not allowed.";
+    return nullptr;
+  }
+
   return helper_->CreateCdmFileIO(client);
 }
 
 void CdmAdapter::RequestStorageId(uint32_t version) {
-  if (version >= 0x80000000) {
-    // Versions 0x80000000 and above are reserved.
-    cdm_->OnStorageId(version, nullptr, 0);
+  if (!cdm_config_.allow_persistent_state ||
+      !(version == kCurrentStorageIdVersion ||
+        version == kRequestLatestStorageIdVersion)) {
+    DVLOG(1) << __func__ << ": Persistent state not allowed ("
+             << cdm_config_.allow_persistent_state
+             << ") or invalid storage ID version (" << version << ").";
+    task_runner_->PostTask(
+        FROM_HERE, base::BindRepeating(&CdmAdapter::OnStorageIdObtained,
+                                       weak_factory_.GetWeakPtr(), version,
+                                       std::vector<uint8_t>()));
     return;
   }
 
