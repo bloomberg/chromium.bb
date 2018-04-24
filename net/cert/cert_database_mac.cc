@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
@@ -119,7 +120,7 @@ void CertDatabase::SetMessageLoopForKeychainEvents() {
   if (notifier_.get())
     notifier_.release()->Shutdown();
 
-  notifier_.reset(new Notifier(this, base::MessageLoopForUI::current()));
+  notifier_.reset(new Notifier(this, base::MessageLoopCurrentForUI::Get()));
 }
 
 CertDatabase::CertDatabase()
