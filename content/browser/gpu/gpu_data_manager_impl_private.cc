@@ -333,6 +333,8 @@ void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
     return;
   if (!GpuAccessAllowed(nullptr))
     return;
+  if (in_process_gpu_)
+    return;
 
   complete_gpu_info_already_requested_ = true;
 
@@ -352,6 +354,8 @@ void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
 
 void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion() {
 #if defined(OS_WIN)
+  if (in_process_gpu_)
+    return;
   base::OnceClosure task = base::BindOnce([]() {
     GpuProcessHost* host = GpuProcessHost::Get(
         GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED, true /* force_create */);
