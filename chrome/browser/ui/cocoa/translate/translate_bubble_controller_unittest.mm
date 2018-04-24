@@ -59,11 +59,13 @@ class TranslateBubbleControllerTest : public CocoaProfileTest {
   }
 
   content::WebContents* AppendToTabStrip() {
-    content::WebContents* web_contents = content::WebContents::Create(
-        content::WebContents::CreateParams(profile(), site_instance_.get()));
-    browser()->tab_strip_model()->AppendWebContents(
-        web_contents, /*foreground=*/true);
-    return web_contents;
+    std::unique_ptr<content::WebContents> web_contents = base::WrapUnique(
+        content::WebContents::Create(content::WebContents::CreateParams(
+            profile(), site_instance_.get())));
+    content::WebContents* raw_web_contents = web_contents.get();
+    browser()->tab_strip_model()->AppendWebContents(std::move(web_contents),
+                                                    /*foreground=*/true);
+    return raw_web_contents;
   }
 
   BrowserWindowController* bwc() { return bwc_; }

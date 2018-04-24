@@ -68,13 +68,13 @@ content::WebContents* TabActivitySimulator::AddWebContentsAndNavigate(
     ui::PageTransition page_transition) {
   // Create as a foreground tab if it's the only tab in the tab strip.
   bool initially_visible = tab_strip_model->empty();
-  content::WebContents* test_contents =
-      CreateWebContents(tab_strip_model->profile(), initially_visible)
-          .release();
-  tab_strip_model->AppendWebContents(test_contents,
+  std::unique_ptr<content::WebContents> test_contents =
+      CreateWebContents(tab_strip_model->profile(), initially_visible);
+  content::WebContents* raw_test_contents = test_contents.get();
+  tab_strip_model->AppendWebContents(std::move(test_contents),
                                      initially_visible /* foreground */);
-  Navigate(test_contents, initial_url, page_transition);
-  return test_contents;
+  Navigate(raw_test_contents, initial_url, page_transition);
+  return raw_test_contents;
 }
 
 void TabActivitySimulator::SwitchToTabAt(TabStripModel* tab_strip_model,

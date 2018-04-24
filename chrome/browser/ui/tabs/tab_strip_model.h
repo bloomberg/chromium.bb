@@ -156,7 +156,8 @@ class TabStripModel : public WebContentsCloseDelegate {
 
   // Adds the specified WebContents in the default location. Tabs opened
   // in the foreground inherit the group of the previously active tab.
-  void AppendWebContents(content::WebContents* contents, bool foreground);
+  void AppendWebContents(std::unique_ptr<content::WebContents> contents,
+                         bool foreground);
 
   // Adds the specified WebContents at the specified location.
   // |add_types| is a bitmask of AddTabTypes; see it for details.

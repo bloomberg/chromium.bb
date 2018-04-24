@@ -94,18 +94,20 @@ TEST_F(TabsApiUnitTest, QueryWithoutTabsPermission) {
   std::string tab_titles[] = {"", "Sample title", "Sample title"};
 
   // Add 3 web contentses to the browser.
-  std::unique_ptr<content::WebContents> web_contentses[arraysize(tab_urls)];
+  content::WebContents* web_contentses[arraysize(tab_urls)];
   for (size_t i = 0; i < arraysize(tab_urls); ++i) {
-    content::WebContents* web_contents =
-        content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
-    web_contentses[i].reset(web_contents);
-    browser()->tab_strip_model()->AppendWebContents(web_contents, true);
+    std::unique_ptr<content::WebContents> web_contents = base::WrapUnique(
+        content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+    content::WebContents* raw_web_contents = web_contents.get();
+    web_contentses[i] = raw_web_contents;
+    browser()->tab_strip_model()->AppendWebContents(std::move(web_contents),
+                                                    true);
     EXPECT_EQ(browser()->tab_strip_model()->GetActiveWebContents(),
-              web_contents);
+              raw_web_contents);
     content::WebContentsTester* web_contents_tester =
-        content::WebContentsTester::For(web_contents);
+        content::WebContentsTester::For(raw_web_contents);
     web_contents_tester->NavigateAndCommit(tab_urls[i]);
-    web_contents->GetController().GetVisibleEntry()->SetTitle(
+    raw_web_contents->GetController().GetVisibleEntry()->SetTitle(
         base::ASCIIToUTF16(tab_titles[i]));
   }
 
@@ -140,7 +142,10 @@ TEST_F(TabsApiUnitTest, QueryWithoutTabsPermission) {
   ASSERT_TRUE(tabs_list_with_permission->GetDictionary(0, &third_tab_info));
   int third_tab_id = -1;
   ASSERT_TRUE(third_tab_info->GetInteger("id", &third_tab_id));
-  EXPECT_EQ(ExtensionTabUtil::GetTabId(web_contentses[2].get()), third_tab_id);
+  EXPECT_EQ(ExtensionTabUtil::GetTabId(web_contentses[2]), third_tab_id);
+
+  while (!browser()->tab_strip_model()->empty())
+    browser()->tab_strip_model()->DetachWebContentsAt(0);
 }
 
 TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
@@ -150,18 +155,20 @@ TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
   std::string tab_titles[] = {"", "Sample title", "Sample title"};
 
   // Add 3 web contentses to the browser.
-  std::unique_ptr<content::WebContents> web_contentses[arraysize(tab_urls)];
+  content::WebContents* web_contentses[arraysize(tab_urls)];
   for (size_t i = 0; i < arraysize(tab_urls); ++i) {
-    content::WebContents* web_contents =
-        content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
-    web_contentses[i].reset(web_contents);
-    browser()->tab_strip_model()->AppendWebContents(web_contents, true);
+    std::unique_ptr<content::WebContents> web_contents = base::WrapUnique(
+        content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+    content::WebContents* raw_web_contents = web_contents.get();
+    web_contentses[i] = raw_web_contents;
+    browser()->tab_strip_model()->AppendWebContents(std::move(web_contents),
+                                                    true);
     EXPECT_EQ(browser()->tab_strip_model()->GetActiveWebContents(),
-              web_contents);
+              raw_web_contents);
     content::WebContentsTester* web_contents_tester =
-        content::WebContentsTester::For(web_contents);
+        content::WebContentsTester::For(raw_web_contents);
     web_contents_tester->NavigateAndCommit(tab_urls[i]);
-    web_contents->GetController().GetVisibleEntry()->SetTitle(
+    raw_web_contents->GetController().GetVisibleEntry()->SetTitle(
         base::ASCIIToUTF16(tab_titles[i]));
   }
 
@@ -192,8 +199,7 @@ TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
     ASSERT_TRUE(tabs_list_with_permission->GetDictionary(0, &third_tab_info));
     int third_tab_id = -1;
     ASSERT_TRUE(third_tab_info->GetInteger("id", &third_tab_id));
-    EXPECT_EQ(ExtensionTabUtil::GetTabId(web_contentses[2].get()),
-              third_tab_id);
+    EXPECT_EQ(ExtensionTabUtil::GetTabId(web_contentses[2]), third_tab_id);
   }
 
   // Try the same without title, first and third tabs will match.
@@ -211,10 +217,8 @@ TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
     ASSERT_TRUE(tabs_list_with_permission->GetDictionary(1, &third_tab_info));
 
     std::vector<int> expected_tabs_ids;
-    expected_tabs_ids.push_back(
-        ExtensionTabUtil::GetTabId(web_contentses[0].get()));
-    expected_tabs_ids.push_back(
-        ExtensionTabUtil::GetTabId(web_contentses[2].get()));
+    expected_tabs_ids.push_back(ExtensionTabUtil::GetTabId(web_contentses[0]));
+    expected_tabs_ids.push_back(ExtensionTabUtil::GetTabId(web_contentses[2]));
 
     int first_tab_id = -1;
     ASSERT_TRUE(first_tab_info->GetInteger("id", &first_tab_id));
@@ -224,6 +228,8 @@ TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
     ASSERT_TRUE(third_tab_info->GetInteger("id", &third_tab_id));
     EXPECT_TRUE(base::ContainsValue(expected_tabs_ids, third_tab_id));
   }
+  while (!browser()->tab_strip_model()->empty())
+    browser()->tab_strip_model()->DetachWebContentsAt(0);
 }
 
 // Test that using the PDF extension for tab updates is treated as a
@@ -242,19 +248,21 @@ TEST_F(TabsApiUnitTest, PDFExtensionNavigation) {
           .Build();
   ASSERT_TRUE(extension);
 
-  content::WebContents* web_contents =
-      content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
-  ASSERT_TRUE(web_contents);
+  std::unique_ptr<content::WebContents> web_contents = base::WrapUnique(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+  content::WebContents* raw_web_contents = web_contents.get();
+  ASSERT_TRUE(raw_web_contents);
   content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents);
+      content::WebContentsTester::For(raw_web_contents);
   const GURL kGoogle("http://www.google.com");
   web_contents_tester->NavigateAndCommit(kGoogle);
-  EXPECT_EQ(kGoogle, web_contents->GetLastCommittedURL());
-  EXPECT_EQ(kGoogle, web_contents->GetVisibleURL());
+  EXPECT_EQ(kGoogle, raw_web_contents->GetLastCommittedURL());
+  EXPECT_EQ(kGoogle, raw_web_contents->GetVisibleURL());
 
-  SessionTabHelper::CreateForWebContents(web_contents);
-  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
-  browser()->tab_strip_model()->AppendWebContents(web_contents, true);
+  SessionTabHelper::CreateForWebContents(raw_web_contents);
+  int tab_id = SessionTabHelper::IdForTab(raw_web_contents).id();
+  browser()->tab_strip_model()->AppendWebContents(std::move(web_contents),
+                                                  true);
 
   scoped_refptr<TabsUpdateFunction> function = new TabsUpdateFunction();
   function->set_extension(extension.get());
@@ -266,8 +274,8 @@ TEST_F(TabsApiUnitTest, PDFExtensionNavigation) {
   api_test_utils::SendResponseHelper response_helper(function.get());
   function->RunWithValidation()->Execute();
 
-  EXPECT_EQ(kGoogle, web_contents->GetLastCommittedURL());
-  EXPECT_EQ(kGoogle, web_contents->GetVisibleURL());
+  EXPECT_EQ(kGoogle, raw_web_contents->GetLastCommittedURL());
+  EXPECT_EQ(kGoogle, raw_web_contents->GetVisibleURL());
 
   // Clean up.
   response_helper.WaitForResponse();

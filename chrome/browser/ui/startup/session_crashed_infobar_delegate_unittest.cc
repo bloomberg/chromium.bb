@@ -52,7 +52,7 @@ TEST_F(SessionCrashedInfoBarDelegateUnitTest, DetachingTabWithCrashedInfoBar) {
   std::unique_ptr<content::WebContents> owned_web_contents =
       tab_strip->DetachWebContentsAt(0);
   tab_strip = opened_browser->tab_strip_model();
-  tab_strip->AppendWebContents(owned_web_contents.release(), true);
+  tab_strip->AppendWebContents(std::move(owned_web_contents), true);
 
   // Close the original browser.
   first_browser->window()->Close();

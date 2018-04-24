@@ -175,22 +175,25 @@ class TabBlockedStateTestBrowser
 
 class TabStripModelTest : public ChromeRenderViewHostTestHarness {
  public:
-  WebContents* CreateWebContents() {
-    return WebContents::Create(WebContents::CreateParams(profile()));
+  std::unique_ptr<WebContents> CreateWebContents() {
+    return base::WrapUnique(
+        WebContents::Create(WebContents::CreateParams(profile())));
   }
 
-  WebContents* CreateWebContentsWithSharedRPH(WebContents* web_contents) {
+  std::unique_ptr<WebContents> CreateWebContentsWithSharedRPH(
+      WebContents* web_contents) {
     WebContents::CreateParams create_params(
         profile(), web_contents->GetRenderViewHost()->GetSiteInstance());
-    WebContents* retval = WebContents::Create(create_params);
+    std::unique_ptr<WebContents> retval =
+        base::WrapUnique(WebContents::Create(create_params));
     EXPECT_EQ(retval->GetMainFrame()->GetProcess(),
               web_contents->GetMainFrame()->GetProcess());
     return retval;
   }
 
-  WebContents* CreateWebContentsWithID(int id) {
-    WebContents* contents = CreateWebContents();
-    SetID(contents, id);
+  std::unique_ptr<WebContents> CreateWebContentsWithID(int id) {
+    std::unique_ptr<WebContents> contents = CreateWebContents();
+    SetID(contents.get(), id);
     return contents;
   }
 
@@ -432,7 +435,8 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
 
   typedef MockTabStripModelObserver::State State;
 
-  WebContents* contents1 = CreateWebContentsWithID(1);
+  std::unique_ptr<WebContents> contents1 = CreateWebContentsWithID(1);
+  WebContents* raw_contents1 = contents1.get();
 
   // Note! The ordering of these tests is important, each subsequent test
   // builds on the state established in the previous. This is important if you
@@ -441,16 +445,16 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   // Test AppendWebContents, ContainsIndex
   {
     EXPECT_FALSE(tabstrip.ContainsIndex(0));
-    tabstrip.AppendWebContents(contents1, true);
+    tabstrip.AppendWebContents(std::move(contents1), true);
     EXPECT_TRUE(tabstrip.ContainsIndex(0));
     EXPECT_EQ(1, tabstrip.count());
     EXPECT_EQ(3, observer.GetStateCount());
-    State s1(contents1, 0, MockTabStripModelObserver::INSERT);
+    State s1(raw_contents1, 0, MockTabStripModelObserver::INSERT);
     s1.foreground = true;
     EXPECT_TRUE(observer.StateEquals(0, s1));
-    State s2(contents1, 0, MockTabStripModelObserver::ACTIVATE);
+    State s2(raw_contents1, 0, MockTabStripModelObserver::ACTIVATE);
     EXPECT_TRUE(observer.StateEquals(1, s2));
-    State s3(contents1, 0, MockTabStripModelObserver::SELECT);
+    State s3(raw_contents1, 0, MockTabStripModelObserver::SELECT);
     s3.src_contents = NULL;
     s3.src_index = ui::ListSelectionModel::kUnselectedIndex;
     EXPECT_TRUE(observer.StateEquals(2, s3));
@@ -459,23 +463,24 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   EXPECT_EQ("1", GetTabStripStateString(tabstrip));
 
   // Test InsertWebContentsAt, foreground tab.
-  WebContents* contents2 = CreateWebContentsWithID(2);
+  std::unique_ptr<WebContents> contents2 = CreateWebContentsWithID(2);
+  content::WebContents* raw_contents2 = contents2.get();
   {
-    tabstrip.InsertWebContentsAt(1, base::WrapUnique(contents2),
+    tabstrip.InsertWebContentsAt(1, std::move(contents2),
                                  TabStripModel::ADD_ACTIVE);
 
     EXPECT_EQ(2, tabstrip.count());
     EXPECT_EQ(4, observer.GetStateCount());
-    State s1(contents2, 1, MockTabStripModelObserver::INSERT);
+    State s1(raw_contents2, 1, MockTabStripModelObserver::INSERT);
     s1.foreground = true;
     EXPECT_TRUE(observer.StateEquals(0, s1));
-    State s2(contents1, 0, MockTabStripModelObserver::DEACTIVATE);
+    State s2(raw_contents1, 0, MockTabStripModelObserver::DEACTIVATE);
     EXPECT_TRUE(observer.StateEquals(1, s2));
-    State s3(contents2, 1, MockTabStripModelObserver::ACTIVATE);
-    s3.src_contents = contents1;
+    State s3(raw_contents2, 1, MockTabStripModelObserver::ACTIVATE);
+    s3.src_contents = raw_contents1;
     EXPECT_TRUE(observer.StateEquals(2, s3));
-    State s4(contents2, 1, MockTabStripModelObserver::SELECT);
-    s4.src_contents = contents1;
+    State s4(raw_contents2, 1, MockTabStripModelObserver::SELECT);
+    s4.src_contents = raw_contents1;
     s4.src_index = 0;
     EXPECT_TRUE(observer.StateEquals(3, s4));
     observer.ClearStates();
@@ -483,14 +488,15 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   EXPECT_EQ("1 2", GetTabStripStateString(tabstrip));
 
   // Test InsertWebContentsAt, background tab.
-  WebContents* contents3 = CreateWebContentsWithID(3);
+  std::unique_ptr<WebContents> contents3 = CreateWebContentsWithID(3);
+  WebContents* raw_contents3 = contents3.get();
   {
-    tabstrip.InsertWebContentsAt(2, base::WrapUnique(contents3),
+    tabstrip.InsertWebContentsAt(2, std::move(contents3),
                                  TabStripModel::ADD_NONE);
 
     EXPECT_EQ(3, tabstrip.count());
     EXPECT_EQ(1, observer.GetStateCount());
-    State s1(contents3, 2, MockTabStripModelObserver::INSERT);
+    State s1(raw_contents3, 2, MockTabStripModelObserver::INSERT);
     s1.foreground = false;
     EXPECT_TRUE(observer.StateEquals(0, s1));
     observer.ClearStates();
@@ -501,14 +507,14 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   {
     tabstrip.ActivateTabAt(2, true);
     EXPECT_EQ(3, observer.GetStateCount());
-    State s1(contents2, 1, MockTabStripModelObserver::DEACTIVATE);
+    State s1(raw_contents2, 1, MockTabStripModelObserver::DEACTIVATE);
     EXPECT_TRUE(observer.StateEquals(0, s1));
-    State s2(contents3, 2, MockTabStripModelObserver::ACTIVATE);
-    s2.src_contents = contents2;
+    State s2(raw_contents3, 2, MockTabStripModelObserver::ACTIVATE);
+    s2.src_contents = raw_contents2;
     s2.change_reason = TabStripModelObserver::CHANGE_REASON_USER_GESTURE;
     EXPECT_TRUE(observer.StateEquals(1, s2));
-    State s3(contents3, 2, MockTabStripModelObserver::SELECT);
-    s3.src_contents = contents2;
+    State s3(raw_contents3, 2, MockTabStripModelObserver::SELECT);
+    s3.src_contents = raw_contents2;
     s3.src_index = 1;
     EXPECT_TRUE(observer.StateEquals(2, s3));
     observer.ClearStates();
@@ -522,32 +528,32 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
         tabstrip.DetachWebContentsAt(2);
     WebContents* detached = detached_with_ownership.get();
     // ... and append again because we want this for later.
-    tabstrip.AppendWebContents(detached_with_ownership.release(), true);
+    tabstrip.AppendWebContents(std::move(detached_with_ownership), true);
     EXPECT_EQ(8, observer.GetStateCount());
     State s1(detached, 2, MockTabStripModelObserver::DETACH);
     EXPECT_TRUE(observer.StateEquals(0, s1));
     State s2(detached, ui::ListSelectionModel::kUnselectedIndex,
              MockTabStripModelObserver::DEACTIVATE);
     EXPECT_TRUE(observer.StateEquals(1, s2));
-    State s3(contents2, 1, MockTabStripModelObserver::ACTIVATE);
-    s3.src_contents = contents3;
+    State s3(raw_contents2, 1, MockTabStripModelObserver::ACTIVATE);
+    s3.src_contents = raw_contents3;
     s3.change_reason = TabStripModelObserver::CHANGE_REASON_NONE;
     EXPECT_TRUE(observer.StateEquals(2, s3));
-    State s4(contents2, 1, MockTabStripModelObserver::SELECT);
+    State s4(raw_contents2, 1, MockTabStripModelObserver::SELECT);
     s4.src_contents = NULL;
     s4.src_index = ui::ListSelectionModel::kUnselectedIndex;
     EXPECT_TRUE(observer.StateEquals(3, s4));
     State s5(detached, 2, MockTabStripModelObserver::INSERT);
     s5.foreground = true;
     EXPECT_TRUE(observer.StateEquals(4, s5));
-    State s6(contents2, 1, MockTabStripModelObserver::DEACTIVATE);
+    State s6(raw_contents2, 1, MockTabStripModelObserver::DEACTIVATE);
     EXPECT_TRUE(observer.StateEquals(5, s6));
     State s7(detached, 2, MockTabStripModelObserver::ACTIVATE);
-    s7.src_contents = contents2;
+    s7.src_contents = raw_contents2;
     s7.change_reason = TabStripModelObserver::CHANGE_REASON_NONE;
     EXPECT_TRUE(observer.StateEquals(6, s7));
     State s8(detached, 2, MockTabStripModelObserver::SELECT);
-    s8.src_contents = contents2;
+    s8.src_contents = raw_contents2;
     s8.src_index = 1;
     EXPECT_TRUE(observer.StateEquals(7, s8));
     observer.ClearStates();
@@ -560,18 +566,18 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     EXPECT_EQ(2, tabstrip.count());
 
     EXPECT_EQ(5, observer.GetStateCount());
-    State s1(contents3, 2, MockTabStripModelObserver::CLOSE);
+    State s1(raw_contents3, 2, MockTabStripModelObserver::CLOSE);
     EXPECT_TRUE(observer.StateEquals(0, s1));
-    State s2(contents3, 2, MockTabStripModelObserver::DETACH);
+    State s2(raw_contents3, 2, MockTabStripModelObserver::DETACH);
     EXPECT_TRUE(observer.StateEquals(1, s2));
-    State s3(contents3, ui::ListSelectionModel::kUnselectedIndex,
+    State s3(raw_contents3, ui::ListSelectionModel::kUnselectedIndex,
              MockTabStripModelObserver::DEACTIVATE);
     EXPECT_TRUE(observer.StateEquals(2, s3));
-    State s4(contents2, 1, MockTabStripModelObserver::ACTIVATE);
-    s4.src_contents = contents3;
+    State s4(raw_contents2, 1, MockTabStripModelObserver::ACTIVATE);
+    s4.src_contents = raw_contents3;
     s4.change_reason = TabStripModelObserver::CHANGE_REASON_NONE;
     EXPECT_TRUE(observer.StateEquals(3, s4));
-    State s5(contents2, 1, MockTabStripModelObserver::SELECT);
+    State s5(raw_contents2, 1, MockTabStripModelObserver::SELECT);
     s5.src_contents = NULL;
     s5.src_index = ui::ListSelectionModel::kUnselectedIndex;
     EXPECT_TRUE(observer.StateEquals(4, s5));
@@ -584,7 +590,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
     tabstrip.MoveWebContentsAt(1, 0, true);
 
     EXPECT_EQ(1, observer.GetStateCount());
-    State s1(contents2, 0, MockTabStripModelObserver::MOVE);
+    State s1(raw_contents2, 0, MockTabStripModelObserver::MOVE);
     s1.src_index = 1;
     EXPECT_TRUE(observer.StateEquals(0, s1));
     EXPECT_EQ(0, tabstrip.active_index());
@@ -596,7 +602,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   {
     tabstrip.MoveWebContentsAt(1, 0, false);
     EXPECT_EQ(1, observer.GetStateCount());
-    State s1(contents1, 0, MockTabStripModelObserver::MOVE);
+    State s1(raw_contents1, 0, MockTabStripModelObserver::MOVE);
     s1.src_index = 1;
     EXPECT_TRUE(observer.StateEquals(0, s1));
     EXPECT_EQ(1, tabstrip.active_index());
@@ -608,18 +614,18 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
 
   // Test Getters
   {
-    EXPECT_EQ(contents2, tabstrip.GetActiveWebContents());
-    EXPECT_EQ(contents2, tabstrip.GetWebContentsAt(0));
-    EXPECT_EQ(contents1, tabstrip.GetWebContentsAt(1));
-    EXPECT_EQ(0, tabstrip.GetIndexOfWebContents(contents2));
-    EXPECT_EQ(1, tabstrip.GetIndexOfWebContents(contents1));
+    EXPECT_EQ(raw_contents2, tabstrip.GetActiveWebContents());
+    EXPECT_EQ(raw_contents2, tabstrip.GetWebContentsAt(0));
+    EXPECT_EQ(raw_contents1, tabstrip.GetWebContentsAt(1));
+    EXPECT_EQ(0, tabstrip.GetIndexOfWebContents(raw_contents2));
+    EXPECT_EQ(1, tabstrip.GetIndexOfWebContents(raw_contents1));
   }
 
   // Test UpdateWebContentsStateAt
   {
     tabstrip.UpdateWebContentsStateAt(0, TabChangeType::kAll);
     EXPECT_EQ(1, observer.GetStateCount());
-    State s1(contents2, 0, MockTabStripModelObserver::CHANGE);
+    State s1(raw_contents2, 0, MockTabStripModelObserver::CHANGE);
     EXPECT_TRUE(observer.StateEquals(0, s1));
     observer.ClearStates();
   }
@@ -671,67 +677,76 @@ TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
   // as the first tab in the strip and then we create 5 other tabs in the
   // background with opener set as their opener.
 
-  WebContents* opener = CreateWebContents();
-  tabstrip.AppendWebContents(opener, true);
-  WebContents* contents1 = CreateWebContents();
-  WebContents* contents2 = CreateWebContents();
-  WebContents* contents3 = CreateWebContents();
-  WebContents* contents4 = CreateWebContents();
-  WebContents* contents5 = CreateWebContents();
+  std::unique_ptr<WebContents> opener = CreateWebContents();
+  WebContents* raw_opener = opener.get();
+  tabstrip.AppendWebContents(std::move(opener), true);
+  std::unique_ptr<WebContents> contents1 = CreateWebContents();
+  WebContents* raw_contents1 = contents1.get();
+  std::unique_ptr<WebContents> contents2 = CreateWebContents();
+  std::unique_ptr<WebContents> contents3 = CreateWebContents();
+  std::unique_ptr<WebContents> contents4 = CreateWebContents();
+  std::unique_ptr<WebContents> contents5 = CreateWebContents();
+  WebContents* raw_contents5 = contents5.get();
 
   // We use |InsertWebContentsAt| here instead of |AppendWebContents| so that
   // openership relationships are preserved.
-  tabstrip.InsertWebContentsAt(tabstrip.count(), base::WrapUnique(contents1),
+  tabstrip.InsertWebContentsAt(tabstrip.count(), std::move(contents1),
                                TabStripModel::ADD_INHERIT_GROUP);
-  tabstrip.InsertWebContentsAt(tabstrip.count(), base::WrapUnique(contents2),
+  tabstrip.InsertWebContentsAt(tabstrip.count(), std::move(contents2),
                                TabStripModel::ADD_INHERIT_GROUP);
-  tabstrip.InsertWebContentsAt(tabstrip.count(), base::WrapUnique(contents3),
+  tabstrip.InsertWebContentsAt(tabstrip.count(), std::move(contents3),
                                TabStripModel::ADD_INHERIT_GROUP);
-  tabstrip.InsertWebContentsAt(tabstrip.count(), base::WrapUnique(contents4),
+  tabstrip.InsertWebContentsAt(tabstrip.count(), std::move(contents4),
                                TabStripModel::ADD_INHERIT_GROUP);
-  tabstrip.InsertWebContentsAt(tabstrip.count(), base::WrapUnique(contents5),
+  tabstrip.InsertWebContentsAt(tabstrip.count(), std::move(contents5),
                                TabStripModel::ADD_INHERIT_GROUP);
 
   // All the tabs should have the same opener.
   for (int i = 1; i < tabstrip.count(); ++i)
-    EXPECT_EQ(opener, tabstrip.GetOpenerOfWebContentsAt(i));
+    EXPECT_EQ(raw_opener, tabstrip.GetOpenerOfWebContentsAt(i));
 
   // If there is a next adjacent item, then the index should be of that item.
-  EXPECT_EQ(2, tabstrip.GetIndexOfNextWebContentsOpenedBy(opener, 1, false));
+  EXPECT_EQ(2,
+            tabstrip.GetIndexOfNextWebContentsOpenedBy(raw_opener, 1, false));
   // If the last tab in the group is closed, the preceding tab in the same
   // group should be selected.
-  EXPECT_EQ(4, tabstrip.GetIndexOfNextWebContentsOpenedBy(opener, 5, false));
+  EXPECT_EQ(4,
+            tabstrip.GetIndexOfNextWebContentsOpenedBy(raw_opener, 5, false));
 
   // Tests the method that finds the last tab opened by the same opener in the
   // strip (this is the insertion index for the next background tab for the
   // specified opener).
-  EXPECT_EQ(5, tabstrip.GetIndexOfLastWebContentsOpenedBy(opener, 1));
+  EXPECT_EQ(5, tabstrip.GetIndexOfLastWebContentsOpenedBy(raw_opener, 1));
 
   // For a tab that has opened no other tabs, the return value should always be
   // -1...
-  EXPECT_EQ(-1,
-            tabstrip.GetIndexOfNextWebContentsOpenedBy(contents1, 3, false));
-  EXPECT_EQ(-1, tabstrip.GetIndexOfLastWebContentsOpenedBy(contents1, 3));
+  EXPECT_EQ(
+      -1, tabstrip.GetIndexOfNextWebContentsOpenedBy(raw_contents1, 3, false));
+  EXPECT_EQ(-1, tabstrip.GetIndexOfLastWebContentsOpenedBy(raw_contents1, 3));
 
   // ForgetAllOpeners should destroy all opener relationships.
   tabstrip.ForgetAllOpeners();
-  EXPECT_EQ(-1, tabstrip.GetIndexOfNextWebContentsOpenedBy(opener, 1, false));
-  EXPECT_EQ(-1, tabstrip.GetIndexOfNextWebContentsOpenedBy(opener, 5, false));
-  EXPECT_EQ(-1, tabstrip.GetIndexOfLastWebContentsOpenedBy(opener, 1));
+  EXPECT_EQ(-1,
+            tabstrip.GetIndexOfNextWebContentsOpenedBy(raw_opener, 1, false));
+  EXPECT_EQ(-1,
+            tabstrip.GetIndexOfNextWebContentsOpenedBy(raw_opener, 5, false));
+  EXPECT_EQ(-1, tabstrip.GetIndexOfLastWebContentsOpenedBy(raw_opener, 1));
 
   // Specify the last tab as the opener of the others.
   for (int i = 0; i < tabstrip.count() - 1; ++i)
-    tabstrip.SetOpenerOfWebContentsAt(i, contents5);
+    tabstrip.SetOpenerOfWebContentsAt(i, raw_contents5);
 
   for (int i = 0; i < tabstrip.count() - 1; ++i)
-    EXPECT_EQ(contents5, tabstrip.GetOpenerOfWebContentsAt(i));
+    EXPECT_EQ(raw_contents5, tabstrip.GetOpenerOfWebContentsAt(i));
 
   // If there is a next adjacent item, then the index should be of that item.
-  EXPECT_EQ(2, tabstrip.GetIndexOfNextWebContentsOpenedBy(contents5, 1, false));
+  EXPECT_EQ(
+      2, tabstrip.GetIndexOfNextWebContentsOpenedBy(raw_contents5, 1, false));
 
   // If the last tab in the group is closed, the preceding tab in the same
   // group should be selected.
-  EXPECT_EQ(3, tabstrip.GetIndexOfNextWebContentsOpenedBy(contents5, 4, false));
+  EXPECT_EQ(
+      3, tabstrip.GetIndexOfNextWebContentsOpenedBy(raw_contents5, 4, false));
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
@@ -743,17 +758,17 @@ static int GetInsertionIndex(TabStripModel* tabstrip) {
 }
 
 static void InsertWebContentses(TabStripModel* tabstrip,
-                                WebContents* contents1,
-                                WebContents* contents2,
-                                WebContents* contents3) {
+                                std::unique_ptr<WebContents> contents1,
+                                std::unique_ptr<WebContents> contents2,
+                                std::unique_ptr<WebContents> contents3) {
   tabstrip->InsertWebContentsAt(GetInsertionIndex(tabstrip),
-                                base::WrapUnique(contents1),
+                                std::move(contents1),
                                 TabStripModel::ADD_INHERIT_GROUP);
   tabstrip->InsertWebContentsAt(GetInsertionIndex(tabstrip),
-                                base::WrapUnique(contents2),
+                                std::move(contents2),
                                 TabStripModel::ADD_INHERIT_GROUP);
   tabstrip->InsertWebContentsAt(GetInsertionIndex(tabstrip),
-                                base::WrapUnique(contents3),
+                                std::move(contents3),
                                 TabStripModel::ADD_INHERIT_GROUP);
 }
 
@@ -763,18 +778,22 @@ TEST_F(TabStripModelTest, TestLTRInsertionOptions) {
   TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
-  WebContents* opener = CreateWebContents();
-  tabstrip.AppendWebContents(opener, true);
+  std::unique_ptr<WebContents> opener = CreateWebContents();
+  tabstrip.AppendWebContents(std::move(opener), true);
 
-  WebContents* contents1 = CreateWebContents();
-  WebContents* contents2 = CreateWebContents();
-  WebContents* contents3 = CreateWebContents();
+  std::unique_ptr<WebContents> contents1 = CreateWebContents();
+  WebContents* raw_contents1 = contents1.get();
+  std::unique_ptr<WebContents> contents2 = CreateWebContents();
+  WebContents* raw_contents2 = contents2.get();
+  std::unique_ptr<WebContents> contents3 = CreateWebContents();
+  WebContents* raw_contents3 = contents3.get();
 
   // Test LTR
-  InsertWebContentses(&tabstrip, contents1, contents2, contents3);
-  EXPECT_EQ(contents1, tabstrip.GetWebContentsAt(1));
-  EXPECT_EQ(contents2, tabstrip.GetWebContentsAt(2));
-  EXPECT_EQ(contents3, tabstrip.GetWebContentsAt(3));
+  InsertWebContentses(&tabstrip, std::move(contents1), std::move(contents2),
+                      std::move(contents3));
+  EXPECT_EQ(raw_contents1, tabstrip.GetWebContentsAt(1));
+  EXPECT_EQ(raw_contents2, tabstrip.GetWebContentsAt(2));
+  EXPECT_EQ(raw_contents3, tabstrip.GetWebContentsAt(3));
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
@@ -791,67 +810,79 @@ TEST_F(TabStripModelTest, TestInsertionIndexDetermination) {
   TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
-  WebContents* opener = CreateWebContents();
-  tabstrip.AppendWebContents(opener, true);
+  std::unique_ptr<WebContents> opener = CreateWebContents();
+  WebContents* raw_opener = opener.get();
+  tabstrip.AppendWebContents(std::move(opener), true);
 
   // Open some other random unrelated tab in the background to monkey with our
   // insertion index.
-  WebContents* other = CreateWebContents();
-  tabstrip.AppendWebContents(other, false);
+  std::unique_ptr<WebContents> other = CreateWebContents();
+  WebContents* raw_other = other.get();
+  tabstrip.AppendWebContents(std::move(other), false);
 
-  WebContents* contents1 = CreateWebContents();
-  WebContents* contents2 = CreateWebContents();
-  WebContents* contents3 = CreateWebContents();
+  std::unique_ptr<WebContents> contents1 = CreateWebContents();
+  WebContents* raw_contents1 = contents1.get();
+  std::unique_ptr<WebContents> contents2 = CreateWebContents();
+  WebContents* raw_contents2 = contents2.get();
+  std::unique_ptr<WebContents> contents3 = CreateWebContents();
+  WebContents* raw_contents3 = contents3.get();
 
   // Start by testing LTR.
-  InsertWebContentses(&tabstrip, contents1, contents2, contents3);
-  EXPECT_EQ(opener, tabstrip.GetWebContentsAt(0));
-  EXPECT_EQ(contents1, tabstrip.GetWebContentsAt(1));
-  EXPECT_EQ(contents2, tabstrip.GetWebContentsAt(2));
-  EXPECT_EQ(contents3, tabstrip.GetWebContentsAt(3));
-  EXPECT_EQ(other, tabstrip.GetWebContentsAt(4));
+  InsertWebContentses(&tabstrip, std::move(contents1), std::move(contents2),
+                      std::move(contents3));
+  EXPECT_EQ(raw_opener, tabstrip.GetWebContentsAt(0));
+  EXPECT_EQ(raw_contents1, tabstrip.GetWebContentsAt(1));
+  EXPECT_EQ(raw_contents2, tabstrip.GetWebContentsAt(2));
+  EXPECT_EQ(raw_contents3, tabstrip.GetWebContentsAt(3));
+  EXPECT_EQ(raw_other, tabstrip.GetWebContentsAt(4));
 
   // The opener API should work...
-  EXPECT_EQ(3, tabstrip.GetIndexOfNextWebContentsOpenedBy(opener, 2, false));
-  EXPECT_EQ(2, tabstrip.GetIndexOfNextWebContentsOpenedBy(opener, 3, false));
-  EXPECT_EQ(3, tabstrip.GetIndexOfLastWebContentsOpenedBy(opener, 1));
+  EXPECT_EQ(3,
+            tabstrip.GetIndexOfNextWebContentsOpenedBy(raw_opener, 2, false));
+  EXPECT_EQ(2,
+            tabstrip.GetIndexOfNextWebContentsOpenedBy(raw_opener, 3, false));
+  EXPECT_EQ(3, tabstrip.GetIndexOfLastWebContentsOpenedBy(raw_opener, 1));
 
   // Now open a foreground tab from a link. It should be opened adjacent to the
   // opener tab.
-  WebContents* fg_link_contents = CreateWebContents();
+  std::unique_ptr<WebContents> fg_link_contents = CreateWebContents();
+  WebContents* raw_fg_link_contents = fg_link_contents.get();
   int insert_index = tabstrip.order_controller()->DetermineInsertionIndex(
       ui::PAGE_TRANSITION_LINK, true);
   EXPECT_EQ(1, insert_index);
   tabstrip.InsertWebContentsAt(
-      insert_index, base::WrapUnique(fg_link_contents),
+      insert_index, std::move(fg_link_contents),
       TabStripModel::ADD_ACTIVE | TabStripModel::ADD_INHERIT_GROUP);
   EXPECT_EQ(1, tabstrip.active_index());
-  EXPECT_EQ(fg_link_contents, tabstrip.GetActiveWebContents());
+  EXPECT_EQ(raw_fg_link_contents, tabstrip.GetActiveWebContents());
 
   // Now close this contents. The selection should move to the opener contents.
   tabstrip.CloseSelectedTabs();
   EXPECT_EQ(0, tabstrip.active_index());
 
   // Now open a new empty tab. It should open at the end of the strip.
-  WebContents* fg_nonlink_contents = CreateWebContents();
+  std::unique_ptr<WebContents> fg_nonlink_contents = CreateWebContents();
+  WebContents* raw_fg_nonlink_contents = fg_nonlink_contents.get();
   insert_index = tabstrip.order_controller()->DetermineInsertionIndex(
       ui::PAGE_TRANSITION_AUTO_BOOKMARK, true);
   EXPECT_EQ(tabstrip.count(), insert_index);
   // We break the opener relationship...
-  tabstrip.InsertWebContentsAt(insert_index,
-                               base::WrapUnique(fg_nonlink_contents),
+  tabstrip.InsertWebContentsAt(insert_index, std::move(fg_nonlink_contents),
                                TabStripModel::ADD_NONE);
   // Now select it, so that user_gesture == true causes the opener relationship
   // to be forgotten...
   tabstrip.ActivateTabAt(tabstrip.count() - 1, true);
   EXPECT_EQ(tabstrip.count() - 1, tabstrip.active_index());
-  EXPECT_EQ(fg_nonlink_contents, tabstrip.GetActiveWebContents());
+  EXPECT_EQ(raw_fg_nonlink_contents, tabstrip.GetActiveWebContents());
 
   // Verify that all opener relationships are forgotten.
-  EXPECT_EQ(-1, tabstrip.GetIndexOfNextWebContentsOpenedBy(opener, 2, false));
-  EXPECT_EQ(-1, tabstrip.GetIndexOfNextWebContentsOpenedBy(opener, 3, false));
-  EXPECT_EQ(-1, tabstrip.GetIndexOfNextWebContentsOpenedBy(opener, 3, false));
-  EXPECT_EQ(-1, tabstrip.GetIndexOfLastWebContentsOpenedBy(opener, 1));
+  EXPECT_EQ(-1,
+            tabstrip.GetIndexOfNextWebContentsOpenedBy(raw_opener, 2, false));
+  EXPECT_EQ(-1,
+            tabstrip.GetIndexOfNextWebContentsOpenedBy(raw_opener, 3, false));
+  EXPECT_EQ(-1,
+            tabstrip.GetIndexOfNextWebContentsOpenedBy(raw_opener, 3, false));
+  EXPECT_EQ(-1, tabstrip.GetIndexOfLastWebContentsOpenedBy(raw_opener, 1));
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
@@ -865,21 +896,22 @@ TEST_F(TabStripModelTest, TestInsertionIndexDeterminationAfterDragged) {
   EXPECT_TRUE(tabstrip.empty());
 
   // Start with three tabs, of which the first is active.
-  WebContents* opener1 = CreateWebContentsWithID(1);
-  tabstrip.AppendWebContents(opener1, true /* foreground */);
+  std::unique_ptr<WebContents> opener1 = CreateWebContentsWithID(1);
+  WebContents* raw_opener1 = opener1.get();
+  tabstrip.AppendWebContents(std::move(opener1), true /* foreground */);
   tabstrip.AppendWebContents(CreateWebContentsWithID(2), false);
   tabstrip.AppendWebContents(CreateWebContentsWithID(3), false);
   EXPECT_EQ("1 2 3", GetTabStripStateString(tabstrip));
   EXPECT_EQ(1, GetID(tabstrip.GetActiveWebContents()));
-  EXPECT_EQ(-1, tabstrip.GetIndexOfLastWebContentsOpenedBy(opener1, 0));
+  EXPECT_EQ(-1, tabstrip.GetIndexOfLastWebContentsOpenedBy(raw_opener1, 0));
 
   // Open a link in a new background tab.
   tabstrip.InsertWebContentsAt(GetInsertionIndex(&tabstrip),
-                               base::WrapUnique(CreateWebContentsWithID(11)),
+                               CreateWebContentsWithID(11),
                                TabStripModel::ADD_INHERIT_GROUP);
   EXPECT_EQ("1 11 2 3", GetTabStripStateString(tabstrip));
   EXPECT_EQ(1, GetID(tabstrip.GetActiveWebContents()));
-  EXPECT_EQ(1, tabstrip.GetIndexOfLastWebContentsOpenedBy(opener1, 0));
+  EXPECT_EQ(1, tabstrip.GetIndexOfLastWebContentsOpenedBy(raw_opener1, 0));
 
   // Drag that tab (which activates it) one to the right.
   tabstrip.MoveWebContentsAt(1, 2, true /* select_after_move */);
@@ -888,8 +920,8 @@ TEST_F(TabStripModelTest, TestInsertionIndexDeterminationAfterDragged) {
   // It should no longer be counted by GetIndexOfLastWebContentsOpenedBy,
   // since there is a tab in between, even though its opener is unchanged.
   // TODO(johnme): Maybe its opener should be reset when it's dragged away.
-  EXPECT_EQ(-1, tabstrip.GetIndexOfLastWebContentsOpenedBy(opener1, 0));
-  EXPECT_EQ(opener1, tabstrip.GetOpenerOfWebContentsAt(2));
+  EXPECT_EQ(-1, tabstrip.GetIndexOfLastWebContentsOpenedBy(raw_opener1, 0));
+  EXPECT_EQ(raw_opener1, tabstrip.GetOpenerOfWebContentsAt(2));
 
   // Activate the parent tab again.
   tabstrip.ActivateTabAt(0, true /* user_gesture */);
@@ -897,12 +929,12 @@ TEST_F(TabStripModelTest, TestInsertionIndexDeterminationAfterDragged) {
 
   // Open another link in a new background tab.
   tabstrip.InsertWebContentsAt(GetInsertionIndex(&tabstrip),
-                               base::WrapUnique(CreateWebContentsWithID(12)),
+                               CreateWebContentsWithID(12),
                                TabStripModel::ADD_INHERIT_GROUP);
   // Tab 12 should be next to 1, and considered opened by it.
   EXPECT_EQ("1 12 2 11 3", GetTabStripStateString(tabstrip));
   EXPECT_EQ(1, GetID(tabstrip.GetActiveWebContents()));
-  EXPECT_EQ(1, tabstrip.GetIndexOfLastWebContentsOpenedBy(opener1, 0));
+  EXPECT_EQ(1, tabstrip.GetIndexOfLastWebContentsOpenedBy(raw_opener1, 0));
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
@@ -916,21 +948,22 @@ TEST_F(TabStripModelTest, TestInsertionIndexDeterminationNestedOpener) {
   EXPECT_TRUE(tabstrip.empty());
 
   // Start with two tabs, of which the first is active:
-  WebContents* opener1 = CreateWebContentsWithID(1);
-  tabstrip.AppendWebContents(opener1, true /* foreground */);
+  std::unique_ptr<WebContents> opener1 = CreateWebContentsWithID(1);
+  WebContents* raw_opener1 = opener1.get();
+  tabstrip.AppendWebContents(std::move(opener1), true /* foreground */);
   tabstrip.AppendWebContents(CreateWebContentsWithID(2), false);
   EXPECT_EQ("1 2", GetTabStripStateString(tabstrip));
   EXPECT_EQ(1, GetID(tabstrip.GetActiveWebContents()));
-  EXPECT_EQ(-1, tabstrip.GetIndexOfLastWebContentsOpenedBy(opener1, 0));
+  EXPECT_EQ(-1, tabstrip.GetIndexOfLastWebContentsOpenedBy(raw_opener1, 0));
 
   // Open a link in a new background child tab.
-  WebContents* child11 = CreateWebContentsWithID(11);
-  tabstrip.InsertWebContentsAt(GetInsertionIndex(&tabstrip),
-                               base::WrapUnique(child11),
+  std::unique_ptr<WebContents> child11 = CreateWebContentsWithID(11);
+  WebContents* raw_child11 = child11.get();
+  tabstrip.InsertWebContentsAt(GetInsertionIndex(&tabstrip), std::move(child11),
                                TabStripModel::ADD_INHERIT_GROUP);
   EXPECT_EQ("1 11 2", GetTabStripStateString(tabstrip));
   EXPECT_EQ(1, GetID(tabstrip.GetActiveWebContents()));
-  EXPECT_EQ(1, tabstrip.GetIndexOfLastWebContentsOpenedBy(opener1, 0));
+  EXPECT_EQ(1, tabstrip.GetIndexOfLastWebContentsOpenedBy(raw_opener1, 0));
 
   // Activate the child tab:
   tabstrip.ActivateTabAt(1, true /* user_gesture */);
@@ -938,14 +971,14 @@ TEST_F(TabStripModelTest, TestInsertionIndexDeterminationNestedOpener) {
 
   // Open a link in a new background grandchild tab.
   tabstrip.InsertWebContentsAt(GetInsertionIndex(&tabstrip),
-                               base::WrapUnique(CreateWebContentsWithID(111)),
+                               CreateWebContentsWithID(111),
                                TabStripModel::ADD_INHERIT_GROUP);
   EXPECT_EQ("1 11 111 2", GetTabStripStateString(tabstrip));
   EXPECT_EQ(11, GetID(tabstrip.GetActiveWebContents()));
   // The grandchild tab should be counted by GetIndexOfLastWebContentsOpenedBy
   // as opened by both its parent (child11) and grandparent (opener1).
-  EXPECT_EQ(2, tabstrip.GetIndexOfLastWebContentsOpenedBy(opener1, 0));
-  EXPECT_EQ(2, tabstrip.GetIndexOfLastWebContentsOpenedBy(child11, 1));
+  EXPECT_EQ(2, tabstrip.GetIndexOfLastWebContentsOpenedBy(raw_opener1, 0));
+  EXPECT_EQ(2, tabstrip.GetIndexOfLastWebContentsOpenedBy(raw_child11, 1));
 
   // Activate the parent tab again:
   tabstrip.ActivateTabAt(0, true /* user_gesture */);
@@ -953,14 +986,14 @@ TEST_F(TabStripModelTest, TestInsertionIndexDeterminationNestedOpener) {
 
   // Open another link in a new background child tab (a sibling of child11).
   tabstrip.InsertWebContentsAt(GetInsertionIndex(&tabstrip),
-                               base::WrapUnique(CreateWebContentsWithID(12)),
+                               CreateWebContentsWithID(12),
                                TabStripModel::ADD_INHERIT_GROUP);
   EXPECT_EQ("1 11 111 12 2", GetTabStripStateString(tabstrip));
   EXPECT_EQ(1, GetID(tabstrip.GetActiveWebContents()));
   // opener1 has three adjacent descendants (11, 111, 12)
-  EXPECT_EQ(3, tabstrip.GetIndexOfLastWebContentsOpenedBy(opener1, 0));
+  EXPECT_EQ(3, tabstrip.GetIndexOfLastWebContentsOpenedBy(raw_opener1, 0));
   // child11 has only one adjacent descendant (111)
-  EXPECT_EQ(2, tabstrip.GetIndexOfLastWebContentsOpenedBy(child11, 1));
+  EXPECT_EQ(2, tabstrip.GetIndexOfLastWebContentsOpenedBy(raw_child11, 1));
 
   // Closing a tab should cause its children to inherit the tab's opener.
   EXPECT_EQ(true, tabstrip.CloseWebContentsAt(
@@ -969,8 +1002,8 @@ TEST_F(TabStripModelTest, TestInsertionIndexDeterminationNestedOpener) {
   EXPECT_EQ("1 111 12 2", GetTabStripStateString(tabstrip));
   EXPECT_EQ(1, GetID(tabstrip.GetActiveWebContents()));
   // opener1 is now the opener of 111, so has two adjacent descendants (111, 12)
-  EXPECT_EQ(opener1, tabstrip.GetOpenerOfWebContentsAt(1));
-  EXPECT_EQ(2, tabstrip.GetIndexOfLastWebContentsOpenedBy(opener1, 0));
+  EXPECT_EQ(raw_opener1, tabstrip.GetOpenerOfWebContentsAt(1));
+  EXPECT_EQ(2, tabstrip.GetIndexOfLastWebContentsOpenedBy(raw_opener1, 0));
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
@@ -992,48 +1025,50 @@ TEST_F(TabStripModelTest, TestSelectOnClose) {
   TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
-  WebContents* opener = CreateWebContents();
-  tabstrip.AppendWebContents(opener, true);
+  std::unique_ptr<WebContents> opener = CreateWebContents();
+  tabstrip.AppendWebContents(std::move(opener), true);
 
-  WebContents* contents1 = CreateWebContents();
-  WebContents* contents2 = CreateWebContents();
-  WebContents* contents3 = CreateWebContents();
+  std::unique_ptr<WebContents> contentses[3];
+  for (int i = 0; i < 3; ++i)
+    contentses[i] = CreateWebContents();
 
   // Note that we use Detach instead of Close throughout this test to avoid
   // having to keep reconstructing these WebContentses.
 
   // First test that closing tabs that are in the background doesn't adjust the
   // current selection.
-  InsertWebContentses(&tabstrip, contents1, contents2, contents3);
+  InsertWebContentses(&tabstrip, std::move(contentses[0]),
+                      std::move(contentses[1]), std::move(contentses[2]));
   EXPECT_EQ(0, tabstrip.active_index());
 
-  tabstrip.DetachWebContentsAt(1).release();
+  contentses[0] = tabstrip.DetachWebContentsAt(1);
   EXPECT_EQ(0, tabstrip.active_index());
 
   for (int i = tabstrip.count() - 1; i >= 1; --i)
-    tabstrip.DetachWebContentsAt(i).release();
+    contentses[i] = tabstrip.DetachWebContentsAt(i);
 
   // Now test that when a tab doesn't have an opener, selection shifts to the
   // right when the tab is closed.
-  InsertWebContentses(&tabstrip, contents1, contents2, contents3);
+  InsertWebContentses(&tabstrip, std::move(contentses[0]),
+                      std::move(contentses[1]), std::move(contentses[2]));
   EXPECT_EQ(0, tabstrip.active_index());
 
   tabstrip.ForgetAllOpeners();
   tabstrip.ActivateTabAt(1, true);
   EXPECT_EQ(1, tabstrip.active_index());
-  tabstrip.DetachWebContentsAt(1).release();
+  contentses[0] = tabstrip.DetachWebContentsAt(1);
   EXPECT_EQ(1, tabstrip.active_index());
-  tabstrip.DetachWebContentsAt(1).release();
+  contentses[1] = tabstrip.DetachWebContentsAt(1);
   EXPECT_EQ(1, tabstrip.active_index());
-  tabstrip.DetachWebContentsAt(1).release();
+  contentses[2] = tabstrip.DetachWebContentsAt(1);
   EXPECT_EQ(0, tabstrip.active_index());
 
-  for (int i = tabstrip.count() - 1; i >= 1; --i)
-    tabstrip.DetachWebContentsAt(i).release();
+  EXPECT_EQ(1, tabstrip.count());
 
   // Now test that when a tab does have an opener, it selects the next tab
   // opened by the same opener scanning LTR when it is closed.
-  InsertWebContentses(&tabstrip, contents1, contents2, contents3);
+  InsertWebContentses(&tabstrip, std::move(contentses[0]),
+                      std::move(contentses[1]), std::move(contentses[2]));
   EXPECT_EQ(0, tabstrip.active_index());
   tabstrip.ActivateTabAt(2, false);
   EXPECT_EQ(2, tabstrip.active_index());
@@ -1045,13 +1080,13 @@ TEST_F(TabStripModelTest, TestSelectOnClose) {
   EXPECT_EQ(0, tabstrip.active_index());
   // Finally test that when a tab has no "siblings" that the opener is
   // selected.
-  WebContents* other_contents = CreateWebContents();
-  tabstrip.InsertWebContentsAt(1, base::WrapUnique(other_contents),
+  std::unique_ptr<WebContents> other_contents = CreateWebContents();
+  tabstrip.InsertWebContentsAt(1, std::move(other_contents),
                                TabStripModel::ADD_NONE);
   EXPECT_EQ(2, tabstrip.count());
-  WebContents* opened_contents = CreateWebContents();
+  std::unique_ptr<WebContents> opened_contents = CreateWebContents();
   tabstrip.InsertWebContentsAt(
-      2, base::WrapUnique(opened_contents),
+      2, std::move(opened_contents),
       TabStripModel::ADD_ACTIVE | TabStripModel::ADD_INHERIT_GROUP);
   EXPECT_EQ(2, tabstrip.active_index());
   tabstrip.CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
@@ -1237,14 +1272,16 @@ TEST_F(TabStripModelTest, TestContextMenuCloseCommands) {
   TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
-  WebContents* opener = CreateWebContents();
-  tabstrip.AppendWebContents(opener, true);
+  std::unique_ptr<WebContents> opener = CreateWebContents();
+  WebContents* raw_opener = opener.get();
+  tabstrip.AppendWebContents(std::move(opener), true);
 
-  WebContents* contents1 = CreateWebContents();
-  WebContents* contents2 = CreateWebContents();
-  WebContents* contents3 = CreateWebContents();
+  std::unique_ptr<WebContents> contents1 = CreateWebContents();
+  std::unique_ptr<WebContents> contents2 = CreateWebContents();
+  std::unique_ptr<WebContents> contents3 = CreateWebContents();
 
-  InsertWebContentses(&tabstrip, contents1, contents2, contents3);
+  InsertWebContentses(&tabstrip, std::move(contents1), std::move(contents2),
+                      std::move(contents3));
   EXPECT_EQ(0, tabstrip.active_index());
 
   tabstrip.ExecuteContextMenuCommand(2, TabStripModel::CommandCloseTab);
@@ -1252,25 +1289,27 @@ TEST_F(TabStripModelTest, TestContextMenuCloseCommands) {
 
   tabstrip.ExecuteContextMenuCommand(0, TabStripModel::CommandCloseTabsToRight);
   EXPECT_EQ(1, tabstrip.count());
-  EXPECT_EQ(opener, tabstrip.GetActiveWebContents());
+  EXPECT_EQ(raw_opener, tabstrip.GetActiveWebContents());
 
-  WebContents* dummy = CreateWebContents();
-  tabstrip.AppendWebContents(dummy, false);
+  std::unique_ptr<WebContents> dummy = CreateWebContents();
+  WebContents* raw_dummy = dummy.get();
+  tabstrip.AppendWebContents(std::move(dummy), false);
 
   contents1 = CreateWebContents();
   contents2 = CreateWebContents();
   contents3 = CreateWebContents();
-  InsertWebContentses(&tabstrip, contents1, contents2, contents3);
+  InsertWebContentses(&tabstrip, std::move(contents1), std::move(contents2),
+                      std::move(contents3));
   EXPECT_EQ(5, tabstrip.count());
 
   int dummy_index = tabstrip.count() - 1;
   tabstrip.ActivateTabAt(dummy_index, true);
-  EXPECT_EQ(dummy, tabstrip.GetActiveWebContents());
+  EXPECT_EQ(raw_dummy, tabstrip.GetActiveWebContents());
 
   tabstrip.ExecuteContextMenuCommand(dummy_index,
                                      TabStripModel::CommandCloseOtherTabs);
   EXPECT_EQ(1, tabstrip.count());
-  EXPECT_EQ(dummy, tabstrip.GetActiveWebContents());
+  EXPECT_EQ(raw_dummy, tabstrip.GetActiveWebContents());
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
@@ -1282,17 +1321,8 @@ TEST_F(TabStripModelTest, GetIndicesClosedByCommand) {
   TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
-  WebContents* contents1 = CreateWebContents();
-  WebContents* contents2 = CreateWebContents();
-  WebContents* contents3 = CreateWebContents();
-  WebContents* contents4 = CreateWebContents();
-  WebContents* contents5 = CreateWebContents();
-
-  tabstrip.AppendWebContents(contents1, true);
-  tabstrip.AppendWebContents(contents2, true);
-  tabstrip.AppendWebContents(contents3, true);
-  tabstrip.AppendWebContents(contents4, true);
-  tabstrip.AppendWebContents(contents5, true);
+  for (int i = 0; i < 5; ++i)
+    tabstrip.AppendWebContents(CreateWebContents(), true);
 
   EXPECT_EQ("4 3 2 1",
             GetIndicesClosedByCommandAsString(
@@ -1333,15 +1363,17 @@ TEST_F(TabStripModelTest, AddWebContents_MiddleClickLinksAndClose) {
   EXPECT_TRUE(tabstrip.empty());
 
   // Open the Home Page.
-  WebContents* homepage_contents = CreateWebContents();
-  tabstrip.AddWebContents(homepage_contents, -1,
+  std::unique_ptr<WebContents> homepage_contents = CreateWebContents();
+  WebContents* raw_homepage_contents = homepage_contents.get();
+  tabstrip.AddWebContents(homepage_contents.release(), -1,
                           ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                           TabStripModel::ADD_ACTIVE);
 
   // Open some other tab, by user typing.
-  WebContents* typed_page_contents = CreateWebContents();
-  tabstrip.AddWebContents(typed_page_contents, -1, ui::PAGE_TRANSITION_TYPED,
-                          TabStripModel::ADD_ACTIVE);
+  std::unique_ptr<WebContents> typed_page_contents = CreateWebContents();
+  WebContents* raw_typed_page_contents = typed_page_contents.get();
+  tabstrip.AddWebContents(typed_page_contents.release(), -1,
+                          ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
 
   EXPECT_EQ(2, tabstrip.count());
 
@@ -1350,23 +1382,26 @@ TEST_F(TabStripModelTest, AddWebContents_MiddleClickLinksAndClose) {
 
   // Open a bunch of tabs by simulating middle clicking on links on the home
   // page.
-  WebContents* middle_click_contents1 = CreateWebContents();
-  tabstrip.AddWebContents(middle_click_contents1, -1, ui::PAGE_TRANSITION_LINK,
-                          TabStripModel::ADD_NONE);
-  WebContents* middle_click_contents2 = CreateWebContents();
-  tabstrip.AddWebContents(middle_click_contents2, -1, ui::PAGE_TRANSITION_LINK,
-                          TabStripModel::ADD_NONE);
-  WebContents* middle_click_contents3 = CreateWebContents();
-  tabstrip.AddWebContents(middle_click_contents3, -1, ui::PAGE_TRANSITION_LINK,
-                          TabStripModel::ADD_NONE);
+  std::unique_ptr<WebContents> middle_click_contents1 = CreateWebContents();
+  WebContents* raw_middle_click_contents1 = middle_click_contents1.get();
+  tabstrip.AddWebContents(middle_click_contents1.release(), -1,
+                          ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
+  std::unique_ptr<WebContents> middle_click_contents2 = CreateWebContents();
+  WebContents* raw_middle_click_contents2 = middle_click_contents2.get();
+  tabstrip.AddWebContents(middle_click_contents2.release(), -1,
+                          ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
+  std::unique_ptr<WebContents> middle_click_contents3 = CreateWebContents();
+  WebContents* raw_middle_click_contents3 = middle_click_contents3.get();
+  tabstrip.AddWebContents(middle_click_contents3.release(), -1,
+                          ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
 
   EXPECT_EQ(5, tabstrip.count());
 
-  EXPECT_EQ(homepage_contents, tabstrip.GetWebContentsAt(0));
-  EXPECT_EQ(middle_click_contents1, tabstrip.GetWebContentsAt(1));
-  EXPECT_EQ(middle_click_contents2, tabstrip.GetWebContentsAt(2));
-  EXPECT_EQ(middle_click_contents3, tabstrip.GetWebContentsAt(3));
-  EXPECT_EQ(typed_page_contents, tabstrip.GetWebContentsAt(4));
+  EXPECT_EQ(raw_homepage_contents, tabstrip.GetWebContentsAt(0));
+  EXPECT_EQ(raw_middle_click_contents1, tabstrip.GetWebContentsAt(1));
+  EXPECT_EQ(raw_middle_click_contents2, tabstrip.GetWebContentsAt(2));
+  EXPECT_EQ(raw_middle_click_contents3, tabstrip.GetWebContentsAt(3));
+  EXPECT_EQ(raw_typed_page_contents, tabstrip.GetWebContentsAt(4));
 
   // Now simulate selecting a tab in the middle of the group of tabs opened from
   // the home page and start closing them. Each WebContents in the group
@@ -1376,13 +1411,13 @@ TEST_F(TabStripModelTest, AddWebContents_MiddleClickLinksAndClose) {
   // any other WebContents.
   tabstrip.ActivateTabAt(2, true);
   tabstrip.CloseSelectedTabs();
-  EXPECT_EQ(middle_click_contents3, tabstrip.GetActiveWebContents());
+  EXPECT_EQ(raw_middle_click_contents3, tabstrip.GetActiveWebContents());
   tabstrip.CloseSelectedTabs();
-  EXPECT_EQ(middle_click_contents1, tabstrip.GetActiveWebContents());
+  EXPECT_EQ(raw_middle_click_contents1, tabstrip.GetActiveWebContents());
   tabstrip.CloseSelectedTabs();
-  EXPECT_EQ(homepage_contents, tabstrip.GetActiveWebContents());
+  EXPECT_EQ(raw_homepage_contents, tabstrip.GetActiveWebContents());
   tabstrip.CloseSelectedTabs();
-  EXPECT_EQ(typed_page_contents, tabstrip.GetActiveWebContents());
+  EXPECT_EQ(raw_typed_page_contents, tabstrip.GetActiveWebContents());
 
   EXPECT_EQ(1, tabstrip.count());
 
@@ -1399,15 +1434,17 @@ TEST_F(TabStripModelTest, AddWebContents_LeftClickPopup) {
   EXPECT_TRUE(tabstrip.empty());
 
   // Open the Home Page.
-  WebContents* homepage_contents = CreateWebContents();
-  tabstrip.AddWebContents(homepage_contents, -1,
+  std::unique_ptr<WebContents> homepage_contents = CreateWebContents();
+  WebContents* raw_homepage_contents = homepage_contents.get();
+  tabstrip.AddWebContents(homepage_contents.release(), -1,
                           ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                           TabStripModel::ADD_ACTIVE);
 
   // Open some other tab, by user typing.
-  WebContents* typed_page_contents = CreateWebContents();
-  tabstrip.AddWebContents(typed_page_contents, -1, ui::PAGE_TRANSITION_TYPED,
-                          TabStripModel::ADD_ACTIVE);
+  std::unique_ptr<WebContents> typed_page_contents = CreateWebContents();
+  WebContents* raw_typed_page_contents = typed_page_contents.get();
+  tabstrip.AddWebContents(typed_page_contents.release(), -1,
+                          ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
 
   EXPECT_EQ(2, tabstrip.count());
 
@@ -1415,23 +1452,24 @@ TEST_F(TabStripModelTest, AddWebContents_LeftClickPopup) {
   tabstrip.ActivateTabAt(0, true);
 
   // Open a tab by simulating a left click on a link that opens in a new tab.
-  WebContents* left_click_contents = CreateWebContents();
-  tabstrip.AddWebContents(left_click_contents, -1, ui::PAGE_TRANSITION_LINK,
-                          TabStripModel::ADD_ACTIVE);
+  std::unique_ptr<WebContents> left_click_contents = CreateWebContents();
+  WebContents* raw_left_click_contents = left_click_contents.get();
+  tabstrip.AddWebContents(left_click_contents.release(), -1,
+                          ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_ACTIVE);
 
   // Verify the state meets our expectations.
   EXPECT_EQ(3, tabstrip.count());
-  EXPECT_EQ(homepage_contents, tabstrip.GetWebContentsAt(0));
-  EXPECT_EQ(left_click_contents, tabstrip.GetWebContentsAt(1));
-  EXPECT_EQ(typed_page_contents, tabstrip.GetWebContentsAt(2));
+  EXPECT_EQ(raw_homepage_contents, tabstrip.GetWebContentsAt(0));
+  EXPECT_EQ(raw_left_click_contents, tabstrip.GetWebContentsAt(1));
+  EXPECT_EQ(raw_typed_page_contents, tabstrip.GetWebContentsAt(2));
 
   // The newly created tab should be selected.
-  EXPECT_EQ(left_click_contents, tabstrip.GetActiveWebContents());
+  EXPECT_EQ(raw_left_click_contents, tabstrip.GetActiveWebContents());
 
   // After closing the selected tab, the selection should move to the left, to
   // the opener.
   tabstrip.CloseSelectedTabs();
-  EXPECT_EQ(homepage_contents, tabstrip.GetActiveWebContents());
+  EXPECT_EQ(raw_homepage_contents, tabstrip.GetActiveWebContents());
 
   EXPECT_EQ(2, tabstrip.count());
 
@@ -1448,15 +1486,17 @@ TEST_F(TabStripModelTest, AddWebContents_CreateNewBlankTab) {
   EXPECT_TRUE(tabstrip.empty());
 
   // Open the Home Page.
-  WebContents* homepage_contents = CreateWebContents();
-  tabstrip.AddWebContents(homepage_contents, -1,
+  std::unique_ptr<WebContents> homepage_contents = CreateWebContents();
+  WebContents* raw_homepage_contents = homepage_contents.get();
+  tabstrip.AddWebContents(homepage_contents.release(), -1,
                           ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                           TabStripModel::ADD_ACTIVE);
 
   // Open some other tab, by user typing.
-  WebContents* typed_page_contents = CreateWebContents();
-  tabstrip.AddWebContents(typed_page_contents, -1, ui::PAGE_TRANSITION_TYPED,
-                          TabStripModel::ADD_ACTIVE);
+  std::unique_ptr<WebContents> typed_page_contents = CreateWebContents();
+  WebContents* raw_typed_page_contents = typed_page_contents.get();
+  tabstrip.AddWebContents(typed_page_contents.release(), -1,
+                          ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
 
   EXPECT_EQ(2, tabstrip.count());
 
@@ -1464,30 +1504,35 @@ TEST_F(TabStripModelTest, AddWebContents_CreateNewBlankTab) {
   tabstrip.ActivateTabAt(0, true);
 
   // Open a new blank tab in the foreground.
-  WebContents* new_blank_contents = CreateWebContents();
-  tabstrip.AddWebContents(new_blank_contents, -1, ui::PAGE_TRANSITION_TYPED,
-                          TabStripModel::ADD_ACTIVE);
+  std::unique_ptr<WebContents> new_blank_contents = CreateWebContents();
+  WebContents* raw_new_blank_contents = new_blank_contents.get();
+  tabstrip.AddWebContents(new_blank_contents.release(), -1,
+                          ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
 
   // Verify the state of the tabstrip.
   EXPECT_EQ(3, tabstrip.count());
-  EXPECT_EQ(homepage_contents, tabstrip.GetWebContentsAt(0));
-  EXPECT_EQ(typed_page_contents, tabstrip.GetWebContentsAt(1));
-  EXPECT_EQ(new_blank_contents, tabstrip.GetWebContentsAt(2));
+  EXPECT_EQ(raw_homepage_contents, tabstrip.GetWebContentsAt(0));
+  EXPECT_EQ(raw_typed_page_contents, tabstrip.GetWebContentsAt(1));
+  EXPECT_EQ(raw_new_blank_contents, tabstrip.GetWebContentsAt(2));
 
   // Now open a couple more blank tabs in the background.
-  WebContents* background_blank_contents1 = CreateWebContents();
-  tabstrip.AddWebContents(background_blank_contents1, -1,
+  std::unique_ptr<WebContents> background_blank_contents1 = CreateWebContents();
+  WebContents* raw_background_blank_contents1 =
+      background_blank_contents1.get();
+  tabstrip.AddWebContents(background_blank_contents1.release(), -1,
                           ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_NONE);
-  WebContents* background_blank_contents2 = CreateWebContents();
-  tabstrip.AddWebContents(background_blank_contents2, -1,
+  std::unique_ptr<WebContents> background_blank_contents2 = CreateWebContents();
+  WebContents* raw_background_blank_contents2 =
+      background_blank_contents2.get();
+  tabstrip.AddWebContents(background_blank_contents2.release(), -1,
                           ui::PAGE_TRANSITION_GENERATED,
                           TabStripModel::ADD_NONE);
   EXPECT_EQ(5, tabstrip.count());
-  EXPECT_EQ(homepage_contents, tabstrip.GetWebContentsAt(0));
-  EXPECT_EQ(typed_page_contents, tabstrip.GetWebContentsAt(1));
-  EXPECT_EQ(new_blank_contents, tabstrip.GetWebContentsAt(2));
-  EXPECT_EQ(background_blank_contents1, tabstrip.GetWebContentsAt(3));
-  EXPECT_EQ(background_blank_contents2, tabstrip.GetWebContentsAt(4));
+  EXPECT_EQ(raw_homepage_contents, tabstrip.GetWebContentsAt(0));
+  EXPECT_EQ(raw_typed_page_contents, tabstrip.GetWebContentsAt(1));
+  EXPECT_EQ(raw_new_blank_contents, tabstrip.GetWebContentsAt(2));
+  EXPECT_EQ(raw_background_blank_contents1, tabstrip.GetWebContentsAt(3));
+  EXPECT_EQ(raw_background_blank_contents2, tabstrip.GetWebContentsAt(4));
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
@@ -1501,15 +1546,17 @@ TEST_F(TabStripModelTest, AddWebContents_ForgetOpeners) {
   EXPECT_TRUE(tabstrip.empty());
 
   // Open the Home Page
-  WebContents* homepage_contents = CreateWebContents();
-  tabstrip.AddWebContents(homepage_contents, -1,
+  std::unique_ptr<WebContents> homepage_contents = CreateWebContents();
+  WebContents* raw_homepage_contents = homepage_contents.get();
+  tabstrip.AddWebContents(homepage_contents.release(), -1,
                           ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                           TabStripModel::ADD_ACTIVE);
 
   // Open some other tab, by user typing.
-  WebContents* typed_page_contents = CreateWebContents();
-  tabstrip.AddWebContents(typed_page_contents, -1, ui::PAGE_TRANSITION_TYPED,
-                          TabStripModel::ADD_ACTIVE);
+  std::unique_ptr<WebContents> typed_page_contents = CreateWebContents();
+  WebContents* raw_typed_page_contents = typed_page_contents.get();
+  tabstrip.AddWebContents(typed_page_contents.release(), -1,
+                          ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
 
   EXPECT_EQ(2, tabstrip.count());
 
@@ -1518,36 +1565,39 @@ TEST_F(TabStripModelTest, AddWebContents_ForgetOpeners) {
 
   // Open a bunch of tabs by simulating middle clicking on links on the home
   // page.
-  WebContents* middle_click_contents1 = CreateWebContents();
-  tabstrip.AddWebContents(middle_click_contents1, -1, ui::PAGE_TRANSITION_LINK,
-                          TabStripModel::ADD_NONE);
-  WebContents* middle_click_contents2 = CreateWebContents();
-  tabstrip.AddWebContents(middle_click_contents2, -1, ui::PAGE_TRANSITION_LINK,
-                          TabStripModel::ADD_NONE);
-  WebContents* middle_click_contents3 = CreateWebContents();
-  tabstrip.AddWebContents(middle_click_contents3, -1, ui::PAGE_TRANSITION_LINK,
-                          TabStripModel::ADD_NONE);
+  std::unique_ptr<WebContents> middle_click_contents1 = CreateWebContents();
+  WebContents* raw_middle_click_contents1 = middle_click_contents1.get();
+  tabstrip.AddWebContents(middle_click_contents1.release(), -1,
+                          ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
+  std::unique_ptr<WebContents> middle_click_contents2 = CreateWebContents();
+  WebContents* raw_middle_click_contents2 = middle_click_contents2.get();
+  tabstrip.AddWebContents(middle_click_contents2.release(), -1,
+                          ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
+  std::unique_ptr<WebContents> middle_click_contents3 = CreateWebContents();
+  WebContents* raw_middle_click_contents3 = middle_click_contents3.get();
+  tabstrip.AddWebContents(middle_click_contents3.release(), -1,
+                          ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
 
   // Break out of the context by selecting a tab in a different context.
-  EXPECT_EQ(typed_page_contents, tabstrip.GetWebContentsAt(4));
+  EXPECT_EQ(raw_typed_page_contents, tabstrip.GetWebContentsAt(4));
   tabstrip.SelectLastTab();
-  EXPECT_EQ(typed_page_contents, tabstrip.GetActiveWebContents());
+  EXPECT_EQ(raw_typed_page_contents, tabstrip.GetActiveWebContents());
 
   // Step back into the context by selecting a tab inside it.
   tabstrip.ActivateTabAt(2, true);
-  EXPECT_EQ(middle_click_contents2, tabstrip.GetActiveWebContents());
+  EXPECT_EQ(raw_middle_click_contents2, tabstrip.GetActiveWebContents());
 
   // Now test that closing tabs selects to the right until there are no more,
   // then to the left, as if there were no context (context has been
   // successfully forgotten).
   tabstrip.CloseSelectedTabs();
-  EXPECT_EQ(middle_click_contents3, tabstrip.GetActiveWebContents());
+  EXPECT_EQ(raw_middle_click_contents3, tabstrip.GetActiveWebContents());
   tabstrip.CloseSelectedTabs();
-  EXPECT_EQ(typed_page_contents, tabstrip.GetActiveWebContents());
+  EXPECT_EQ(raw_typed_page_contents, tabstrip.GetActiveWebContents());
   tabstrip.CloseSelectedTabs();
-  EXPECT_EQ(middle_click_contents1, tabstrip.GetActiveWebContents());
+  EXPECT_EQ(raw_middle_click_contents1, tabstrip.GetActiveWebContents());
   tabstrip.CloseSelectedTabs();
-  EXPECT_EQ(homepage_contents, tabstrip.GetActiveWebContents());
+  EXPECT_EQ(raw_homepage_contents, tabstrip.GetActiveWebContents());
 
   EXPECT_EQ(1, tabstrip.count());
 
@@ -1562,23 +1612,20 @@ TEST_F(TabStripModelTest, AppendContentsReselectionTest) {
   EXPECT_TRUE(tabstrip.empty());
 
   // Open the Home Page.
-  WebContents* homepage_contents = CreateWebContents();
-  tabstrip.AddWebContents(homepage_contents, -1,
+  tabstrip.AddWebContents(CreateWebContents().release(), -1,
                           ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                           TabStripModel::ADD_ACTIVE);
 
   // Open some other tab, by user typing.
-  WebContents* typed_page_contents = CreateWebContents();
-  tabstrip.AddWebContents(typed_page_contents, -1, ui::PAGE_TRANSITION_TYPED,
-                          TabStripModel::ADD_NONE);
+  tabstrip.AddWebContents(CreateWebContents().release(), -1,
+                          ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_NONE);
 
   // The selected tab should still be the first.
   EXPECT_EQ(0, tabstrip.active_index());
 
   // Now simulate a link click that opens a new tab (by virtue of target=_blank)
   // and make sure the correct tab gets selected when the new tab is closed.
-  WebContents* target_blank = CreateWebContents();
-  tabstrip.AppendWebContents(target_blank, true);
+  tabstrip.AppendWebContents(CreateWebContents(), true);
   EXPECT_EQ(2, tabstrip.active_index());
   tabstrip.CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(0, tabstrip.active_index());
@@ -1593,46 +1640,51 @@ TEST_F(TabStripModelTest, ReselectionConsidersChildrenTest) {
   TabStripModel strip(&delegate, profile());
 
   // Open page A
-  WebContents* page_a_contents = CreateWebContents();
-  strip.AddWebContents(page_a_contents, -1, ui::PAGE_TRANSITION_AUTO_BOOKMARK,
+  std::unique_ptr<WebContents> page_a_contents = CreateWebContents();
+  WebContents* raw_page_a_contents = page_a_contents.get();
+  strip.AddWebContents(page_a_contents.release(), -1,
+                       ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                        TabStripModel::ADD_ACTIVE);
 
   // Simulate middle click to open page A.A and A.B
-  WebContents* page_a_a_contents = CreateWebContents();
-  strip.AddWebContents(page_a_a_contents, -1, ui::PAGE_TRANSITION_LINK,
-                       TabStripModel::ADD_NONE);
-  WebContents* page_a_b_contents = CreateWebContents();
-  strip.AddWebContents(page_a_b_contents, -1, ui::PAGE_TRANSITION_LINK,
-                       TabStripModel::ADD_NONE);
+  std::unique_ptr<WebContents> page_a_a_contents = CreateWebContents();
+  WebContents* raw_page_a_a_contents = page_a_a_contents.get();
+  strip.AddWebContents(page_a_a_contents.release(), -1,
+                       ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
+  std::unique_ptr<WebContents> page_a_b_contents = CreateWebContents();
+  WebContents* raw_page_a_b_contents = page_a_b_contents.get();
+  strip.AddWebContents(page_a_b_contents.release(), -1,
+                       ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
 
   // Select page A.A
   strip.ActivateTabAt(1, true);
-  EXPECT_EQ(page_a_a_contents, strip.GetActiveWebContents());
+  EXPECT_EQ(raw_page_a_a_contents, strip.GetActiveWebContents());
 
   // Simulate a middle click to open page A.A.A
-  WebContents* page_a_a_a_contents = CreateWebContents();
-  strip.AddWebContents(page_a_a_a_contents, -1, ui::PAGE_TRANSITION_LINK,
-                       TabStripModel::ADD_NONE);
+  std::unique_ptr<WebContents> page_a_a_a_contents = CreateWebContents();
+  WebContents* raw_page_a_a_a_contents = page_a_a_a_contents.get();
+  strip.AddWebContents(page_a_a_a_contents.release(), -1,
+                       ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
 
-  EXPECT_EQ(page_a_a_a_contents, strip.GetWebContentsAt(2));
+  EXPECT_EQ(raw_page_a_a_a_contents, strip.GetWebContentsAt(2));
 
   // Close page A.A
   strip.CloseWebContentsAt(strip.active_index(), TabStripModel::CLOSE_NONE);
 
   // Page A.A.A should be selected, NOT A.B
-  EXPECT_EQ(page_a_a_a_contents, strip.GetActiveWebContents());
+  EXPECT_EQ(raw_page_a_a_a_contents, strip.GetActiveWebContents());
 
   // Close page A.A.A
   strip.CloseWebContentsAt(strip.active_index(), TabStripModel::CLOSE_NONE);
 
   // Page A.B should be selected
-  EXPECT_EQ(page_a_b_contents, strip.GetActiveWebContents());
+  EXPECT_EQ(raw_page_a_b_contents, strip.GetActiveWebContents());
 
   // Close page A.B
   strip.CloseWebContentsAt(strip.active_index(), TabStripModel::CLOSE_NONE);
 
   // Page A should be selected
-  EXPECT_EQ(page_a_contents, strip.GetActiveWebContents());
+  EXPECT_EQ(raw_page_a_contents, strip.GetActiveWebContents());
 
   // Clean up.
   strip.CloseAllTabs();
@@ -1643,30 +1695,26 @@ TEST_F(TabStripModelTest, AddWebContents_NewTabAtEndOfStripInheritsGroup) {
   TabStripModel strip(&delegate, profile());
 
   // Open page A
-  WebContents* page_a_contents = CreateWebContents();
-  strip.AddWebContents(page_a_contents, -1, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+  strip.AddWebContents(CreateWebContents().release(), -1,
+                       ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                        TabStripModel::ADD_ACTIVE);
 
   // Open pages B, C and D in the background from links on page A...
-  WebContents* page_b_contents = CreateWebContents();
-  WebContents* page_c_contents = CreateWebContents();
-  WebContents* page_d_contents = CreateWebContents();
-  strip.AddWebContents(page_b_contents, -1, ui::PAGE_TRANSITION_LINK,
-                       TabStripModel::ADD_NONE);
-  strip.AddWebContents(page_c_contents, -1, ui::PAGE_TRANSITION_LINK,
-                       TabStripModel::ADD_NONE);
-  strip.AddWebContents(page_d_contents, -1, ui::PAGE_TRANSITION_LINK,
-                       TabStripModel::ADD_NONE);
+  for (int i = 0; i < 3; ++i) {
+    strip.AddWebContents(CreateWebContents().release(), -1,
+                         ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
+  }
 
   // Switch to page B's tab.
   strip.ActivateTabAt(1, true);
 
   // Open a New Tab at the end of the strip (simulate Ctrl+T)
-  WebContents* new_contents = CreateWebContents();
-  strip.AddWebContents(new_contents, -1, ui::PAGE_TRANSITION_TYPED,
+  std::unique_ptr<WebContents> new_contents = CreateWebContents();
+  WebContents* raw_new_contents = new_contents.get();
+  strip.AddWebContents(new_contents.release(), -1, ui::PAGE_TRANSITION_TYPED,
                        TabStripModel::ADD_ACTIVE);
 
-  EXPECT_EQ(4, strip.GetIndexOfWebContents(new_contents));
+  EXPECT_EQ(4, strip.GetIndexOfWebContents(raw_new_contents));
   EXPECT_EQ(4, strip.active_index());
 
   // Close the New Tab that was just opened. We should be returned to page B's
@@ -1678,11 +1726,12 @@ TEST_F(TabStripModelTest, AddWebContents_NewTabAtEndOfStripInheritsGroup) {
   // Open a non-New Tab tab at the end of the strip, with a TYPED transition.
   // This is like typing a URL in the address bar and pressing Alt+Enter. The
   // behavior should be the same as above.
-  WebContents* page_e_contents = CreateWebContents();
-  strip.AddWebContents(page_e_contents, -1, ui::PAGE_TRANSITION_TYPED,
+  std::unique_ptr<WebContents> page_e_contents = CreateWebContents();
+  WebContents* raw_page_e_contents = page_e_contents.get();
+  strip.AddWebContents(page_e_contents.release(), -1, ui::PAGE_TRANSITION_TYPED,
                        TabStripModel::ADD_ACTIVE);
 
-  EXPECT_EQ(4, strip.GetIndexOfWebContents(page_e_contents));
+  EXPECT_EQ(4, strip.GetIndexOfWebContents(raw_page_e_contents));
   EXPECT_EQ(4, strip.active_index());
 
   // Close the Tab. Selection should shift back to page B's Tab.
@@ -1694,11 +1743,13 @@ TEST_F(TabStripModelTest, AddWebContents_NewTabAtEndOfStripInheritsGroup) {
   // transition. This is like right clicking on a bookmark and choosing "Open
   // in New Tab". No opener relationship should be preserved between this Tab
   // and the one that was active when the gesture was performed.
-  WebContents* page_f_contents = CreateWebContents();
-  strip.AddWebContents(page_f_contents, -1, ui::PAGE_TRANSITION_AUTO_BOOKMARK,
+  std::unique_ptr<WebContents> page_f_contents = CreateWebContents();
+  WebContents* raw_page_f_contents = page_f_contents.get();
+  strip.AddWebContents(page_f_contents.release(), -1,
+                       ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                        TabStripModel::ADD_ACTIVE);
 
-  EXPECT_EQ(4, strip.GetIndexOfWebContents(page_f_contents));
+  EXPECT_EQ(4, strip.GetIndexOfWebContents(raw_page_f_contents));
   EXPECT_EQ(4, strip.active_index());
 
   // Close the Tab. The next-adjacent should be selected.
@@ -1719,41 +1770,44 @@ TEST_F(TabStripModelTest, NavigationForgetsOpeners) {
   TabStripModel strip(&delegate, profile());
 
   // Open page A
-  WebContents* page_a_contents = CreateWebContents();
-  strip.AddWebContents(page_a_contents, -1, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+  strip.AddWebContents(CreateWebContents().release(), -1,
+                       ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                        TabStripModel::ADD_ACTIVE);
 
   // Open pages B, C and D in the background from links on page A...
-  WebContents* page_b_contents = CreateWebContents();
-  WebContents* page_c_contents = CreateWebContents();
-  WebContents* page_d_contents = CreateWebContents();
-  strip.AddWebContents(page_b_contents, -1, ui::PAGE_TRANSITION_LINK,
+  std::unique_ptr<WebContents> page_c_contents = CreateWebContents();
+  WebContents* raw_page_c_contents = page_c_contents.get();
+  std::unique_ptr<WebContents> page_d_contents = CreateWebContents();
+  WebContents* raw_page_d_contents = page_d_contents.get();
+  strip.AddWebContents(CreateWebContents().release(), -1,
+                       ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
+  strip.AddWebContents(page_c_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
-  strip.AddWebContents(page_c_contents, -1, ui::PAGE_TRANSITION_LINK,
-                       TabStripModel::ADD_NONE);
-  strip.AddWebContents(page_d_contents, -1, ui::PAGE_TRANSITION_LINK,
+  strip.AddWebContents(page_d_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
 
   // Open page E in a different opener group from page A.
-  WebContents* page_e_contents = CreateWebContents();
-  strip.AddWebContents(page_e_contents, -1, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+  std::unique_ptr<WebContents> page_e_contents = CreateWebContents();
+  WebContents* raw_page_e_contents = page_e_contents.get();
+  strip.AddWebContents(page_e_contents.release(), -1,
+                       ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                        TabStripModel::ADD_NONE);
 
   // Tell the TabStripModel that we are navigating page D via a link click.
   strip.ActivateTabAt(3, true);
-  strip.TabNavigating(page_d_contents, ui::PAGE_TRANSITION_LINK);
+  strip.TabNavigating(raw_page_d_contents, ui::PAGE_TRANSITION_LINK);
 
   // Close page D, page C should be selected. (part of same group).
   strip.CloseWebContentsAt(3, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(2, strip.active_index());
 
   // Tell the TabStripModel that we are navigating in page C via a bookmark.
-  strip.TabNavigating(page_c_contents, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  strip.TabNavigating(raw_page_c_contents, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
 
   // Close page C, page E should be selected. (C is no longer part of the
   // A-B-C-D group, selection moves to the right).
   strip.CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
-  EXPECT_EQ(page_e_contents, strip.GetWebContentsAt(strip.active_index()));
+  EXPECT_EQ(raw_page_e_contents, strip.GetWebContentsAt(strip.active_index()));
 
   strip.CloseAllTabs();
 }
@@ -1768,18 +1822,19 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
 
   // Open a tab and several tabs from it, then select one of the tabs that was
   // opened.
-  WebContents* page_a_contents = CreateWebContents();
-  strip.AddWebContents(page_a_contents, -1, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+  strip.AddWebContents(CreateWebContents().release(), -1,
+                       ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                        TabStripModel::ADD_ACTIVE);
 
-  WebContents* page_b_contents = CreateWebContents();
-  WebContents* page_c_contents = CreateWebContents();
-  WebContents* page_d_contents = CreateWebContents();
-  strip.AddWebContents(page_b_contents, -1, ui::PAGE_TRANSITION_LINK,
+  std::unique_ptr<WebContents> page_c_contents = CreateWebContents();
+  WebContents* raw_page_c_contents = page_c_contents.get();
+  std::unique_ptr<WebContents> page_d_contents = CreateWebContents();
+  WebContents* raw_page_d_contents = page_d_contents.get();
+  strip.AddWebContents(CreateWebContents().release(), -1,
+                       ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
+  strip.AddWebContents(page_c_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
-  strip.AddWebContents(page_c_contents, -1, ui::PAGE_TRANSITION_LINK,
-                       TabStripModel::ADD_NONE);
-  strip.AddWebContents(page_d_contents, -1, ui::PAGE_TRANSITION_LINK,
+  strip.AddWebContents(page_d_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
 
   strip.ActivateTabAt(2, true);
@@ -1789,23 +1844,21 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
   // last on.
 
   // Now simulate opening a new tab at the end of the TabStrip.
-  WebContents* new_contents1 = CreateWebContents();
-  strip.AddWebContents(new_contents1, -1, ui::PAGE_TRANSITION_TYPED,
-                       TabStripModel::ADD_ACTIVE);
+  strip.AddWebContents(CreateWebContents().release(), -1,
+                       ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
 
   // At this point, if we close this tab the last selected one should be
   // re-selected.
   strip.CloseWebContentsAt(strip.count() - 1, TabStripModel::CLOSE_NONE);
-  EXPECT_EQ(page_c_contents, strip.GetWebContentsAt(strip.active_index()));
+  EXPECT_EQ(raw_page_c_contents, strip.GetWebContentsAt(strip.active_index()));
 
   // TEST 2: If the user is in a group of tabs and opens a new tab at the end
   // of the strip, selecting any other tab in the strip will cause that new
   // tab's opener relationship to be forgotten.
 
   // Open a new tab again.
-  WebContents* new_contents2 = CreateWebContents();
-  strip.AddWebContents(new_contents2, -1, ui::PAGE_TRANSITION_TYPED,
-                       TabStripModel::ADD_ACTIVE);
+  strip.AddWebContents(CreateWebContents().release(), -1,
+                       ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
 
   // Now select the first tab.
   strip.ActivateTabAt(0, true);
@@ -1815,7 +1868,7 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
 
   // Now close the last tab. The next adjacent should be selected.
   strip.CloseWebContentsAt(strip.count() - 1, TabStripModel::CLOSE_NONE);
-  EXPECT_EQ(page_d_contents, strip.GetWebContentsAt(strip.active_index()));
+  EXPECT_EQ(raw_page_d_contents, strip.GetWebContentsAt(strip.active_index()));
 
   strip.CloseAllTabs();
 }
@@ -1839,14 +1892,16 @@ TEST_F(TabStripModelTest, MAYBE_FastShutdown) {
   // Make sure fast shutdown is attempted when tabs that share a RPH are shut
   // down.
   {
-    WebContents* contents1 = CreateWebContents();
-    WebContents* contents2 = CreateWebContentsWithSharedRPH(contents1);
+    std::unique_ptr<WebContents> contents1 = CreateWebContents();
+    WebContents* raw_contents1 = contents1.get();
+    std::unique_ptr<WebContents> contents2 =
+        CreateWebContentsWithSharedRPH(contents1.get());
 
-    SetID(contents1, 1);
-    SetID(contents2, 2);
+    SetID(contents1.get(), 1);
+    SetID(contents2.get(), 2);
 
-    tabstrip.AppendWebContents(contents1, true);
-    tabstrip.AppendWebContents(contents2, true);
+    tabstrip.AppendWebContents(std::move(contents1), true);
+    tabstrip.AppendWebContents(std::move(contents2), true);
 
     // Turn on the fake unload listener so the tabs don't actually get shut
     // down when we call CloseAllTabs()---we need to be able to check that
@@ -1855,7 +1910,8 @@ TEST_F(TabStripModelTest, MAYBE_FastShutdown) {
     tabstrip.CloseAllTabs();
     // On a mock RPH this checks whether we *attempted* fast shutdown.
     // A real RPH would reject our attempt since there is an unload handler.
-    EXPECT_TRUE(contents1->GetMainFrame()->GetProcess()->FastShutdownStarted());
+    EXPECT_TRUE(
+        raw_contents1->GetMainFrame()->GetProcess()->FastShutdownStarted());
     EXPECT_EQ(2, tabstrip.count());
 
     delegate.set_run_unload_listener(false);
@@ -1866,18 +1922,20 @@ TEST_F(TabStripModelTest, MAYBE_FastShutdown) {
   // Make sure fast shutdown is not attempted when only some tabs that share a
   // RPH are shut down.
   {
-    WebContents* contents1 = CreateWebContents();
-    WebContents* contents2 = CreateWebContentsWithSharedRPH(contents1);
+    std::unique_ptr<WebContents> contents1 = CreateWebContents();
+    WebContents* raw_contents1 = contents1.get();
+    std::unique_ptr<WebContents> contents2 =
+        CreateWebContentsWithSharedRPH(contents1.get());
 
-    SetID(contents1, 1);
-    SetID(contents2, 2);
+    SetID(contents1.get(), 1);
+    SetID(contents2.get(), 2);
 
-    tabstrip.AppendWebContents(contents1, true);
-    tabstrip.AppendWebContents(contents2, true);
+    tabstrip.AppendWebContents(std::move(contents1), true);
+    tabstrip.AppendWebContents(std::move(contents2), true);
 
     tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
     EXPECT_FALSE(
-        contents1->GetMainFrame()->GetProcess()->FastShutdownStarted());
+        raw_contents1->GetMainFrame()->GetProcess()->FastShutdownStarted());
     EXPECT_EQ(1, tabstrip.count());
 
     tabstrip.CloseAllTabs();
@@ -1896,18 +1954,19 @@ TEST_F(TabStripModelTest, Pinning) {
 
   typedef MockTabStripModelObserver::State State;
 
-  WebContents* contents1 = CreateWebContentsWithID(1);
-  WebContents* contents2 = CreateWebContentsWithID(2);
-  WebContents* contents3 = CreateWebContentsWithID(3);
+  std::unique_ptr<WebContents> contents1 = CreateWebContentsWithID(1);
+  WebContents* raw_contents1 = contents1.get();
+  std::unique_ptr<WebContents> contents3 = CreateWebContentsWithID(3);
+  WebContents* raw_contents3 = contents3.get();
 
   // Note! The ordering of these tests is important, each subsequent test
   // builds on the state established in the previous. This is important if you
   // ever insert tests rather than append.
 
   // Initial state, three tabs, first selected.
-  tabstrip.AppendWebContents(contents1, true);
-  tabstrip.AppendWebContents(contents2, false);
-  tabstrip.AppendWebContents(contents3, false);
+  tabstrip.AppendWebContents(std::move(contents1), true);
+  tabstrip.AppendWebContents(CreateWebContentsWithID(2), false);
+  tabstrip.AppendWebContents(std::move(contents3), false);
 
   observer.ClearStates();
 
@@ -1917,7 +1976,7 @@ TEST_F(TabStripModelTest, Pinning) {
 
     // As the order didn't change, we should get a pinned notification.
     ASSERT_EQ(1, observer.GetStateCount());
-    State state(contents1, 0, MockTabStripModelObserver::PINNED);
+    State state(raw_contents1, 0, MockTabStripModelObserver::PINNED);
     EXPECT_TRUE(observer.StateEquals(0, state));
 
     // And verify the state.
@@ -1932,7 +1991,7 @@ TEST_F(TabStripModelTest, Pinning) {
 
     // As the order didn't change, we should get a pinned notification.
     ASSERT_EQ(1, observer.GetStateCount());
-    State state(contents1, 0, MockTabStripModelObserver::PINNED);
+    State state(raw_contents1, 0, MockTabStripModelObserver::PINNED);
     EXPECT_TRUE(observer.StateEquals(0, state));
 
     // And verify the state.
@@ -1947,11 +2006,11 @@ TEST_F(TabStripModelTest, Pinning) {
 
     // The pinning should have resulted in a move and a pinned notification.
     ASSERT_EQ(2, observer.GetStateCount());
-    State state(contents3, 0, MockTabStripModelObserver::MOVE);
+    State state(raw_contents3, 0, MockTabStripModelObserver::MOVE);
     state.src_index = 2;
     EXPECT_TRUE(observer.StateEquals(0, state));
 
-    state = State(contents3, 0, MockTabStripModelObserver::PINNED);
+    state = State(raw_contents3, 0, MockTabStripModelObserver::PINNED);
     EXPECT_TRUE(observer.StateEquals(1, state));
 
     // And verify the state.
@@ -1966,7 +2025,7 @@ TEST_F(TabStripModelTest, Pinning) {
 
     // As the order didn't change, we should get a pinned notification.
     ASSERT_EQ(1, observer.GetStateCount());
-    State state(contents1, 1, MockTabStripModelObserver::PINNED);
+    State state(raw_contents1, 1, MockTabStripModelObserver::PINNED);
     EXPECT_TRUE(observer.StateEquals(0, state));
 
     // And verify the state.
@@ -1993,11 +2052,11 @@ TEST_F(TabStripModelTest, Pinning) {
     tabstrip.SetTabPinned(0, false);
 
     ASSERT_EQ(2, observer.GetStateCount());
-    State state(contents3, 1, MockTabStripModelObserver::MOVE);
+    State state(raw_contents3, 1, MockTabStripModelObserver::MOVE);
     state.src_index = 0;
     EXPECT_TRUE(observer.StateEquals(0, state));
 
-    state = State(contents3, 1, MockTabStripModelObserver::PINNED);
+    state = State(raw_contents3, 1, MockTabStripModelObserver::PINNED);
     EXPECT_TRUE(observer.StateEquals(1, state));
 
     // And verify the state.
@@ -2027,16 +2086,17 @@ TEST_F(TabStripModelTest, Pinning) {
     observer.ClearStates();
   }
 
-  WebContents* contents4 = CreateWebContentsWithID(4);
+  std::unique_ptr<WebContents> contents4 = CreateWebContentsWithID(4);
+  WebContents* raw_contents4 = contents4.get();
 
   // Insert "4" between "1" and "3". As "1" and "4" are pinned, "4" should end
   // up after them.
   {
-    tabstrip.InsertWebContentsAt(1, base::WrapUnique(contents4),
+    tabstrip.InsertWebContentsAt(1, std::move(contents4),
                                  TabStripModel::ADD_NONE);
 
     ASSERT_EQ(1, observer.GetStateCount());
-    State state(contents4, 2, MockTabStripModelObserver::INSERT);
+    State state(raw_contents4, 2, MockTabStripModelObserver::INSERT);
     EXPECT_TRUE(observer.StateEquals(0, state));
 
     EXPECT_EQ("1p 3p 4 2", GetTabStripStateString(tabstrip));
@@ -2053,45 +2113,49 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
   TabStripDummyDelegate delegate;
   TabStripModel strip(&delegate, profile());
 
-  WebContents* first_contents = CreateWebContents();
-  strip.AddWebContents(first_contents, -1, ui::PAGE_TRANSITION_TYPED,
+  std::unique_ptr<WebContents> first_contents = CreateWebContents();
+  WebContents* raw_first_contents = first_contents.get();
+  strip.AddWebContents(first_contents.release(), -1, ui::PAGE_TRANSITION_TYPED,
                        TabStripModel::ADD_ACTIVE);
 
   MockTabStripModelObserver tabstrip_observer(&strip);
   strip.AddObserver(&tabstrip_observer);
 
-  WebContents* new_contents = CreateWebContents();
-  strip.ReplaceWebContentsAt(0, new_contents);
+  std::unique_ptr<WebContents> new_contents = CreateWebContents();
+  WebContents* raw_new_contents = new_contents.get();
+  strip.ReplaceWebContentsAt(0, new_contents.release());
 
   ASSERT_EQ(2, tabstrip_observer.GetStateCount());
 
   // First event should be for replaced.
-  State state(new_contents, 0, MockTabStripModelObserver::REPLACED);
-  state.src_contents = first_contents;
+  State state(raw_new_contents, 0, MockTabStripModelObserver::REPLACED);
+  state.src_contents = raw_first_contents;
   EXPECT_TRUE(tabstrip_observer.StateEquals(0, state));
 
   // And the second for selected.
-  state = State(new_contents, 0, MockTabStripModelObserver::ACTIVATE);
-  state.src_contents = first_contents;
+  state = State(raw_new_contents, 0, MockTabStripModelObserver::ACTIVATE);
+  state.src_contents = raw_first_contents;
   state.change_reason = TabStripModelObserver::CHANGE_REASON_REPLACED;
   EXPECT_TRUE(tabstrip_observer.StateEquals(1, state));
 
   // Now add another tab and replace it, making sure we don't get a selected
   // event this time.
-  WebContents* third_contents = CreateWebContents();
-  strip.AddWebContents(third_contents, 1, ui::PAGE_TRANSITION_TYPED,
+  std::unique_ptr<WebContents> third_contents = CreateWebContents();
+  WebContents* raw_third_contents = third_contents.get();
+  strip.AddWebContents(third_contents.release(), 1, ui::PAGE_TRANSITION_TYPED,
                        TabStripModel::ADD_NONE);
 
   tabstrip_observer.ClearStates();
 
   // And replace it.
   new_contents = CreateWebContents();
-  strip.ReplaceWebContentsAt(1, new_contents);
+  raw_new_contents = new_contents.get();
+  strip.ReplaceWebContentsAt(1, new_contents.release());
 
   ASSERT_EQ(1, tabstrip_observer.GetStateCount());
 
-  state = State(new_contents, 1, MockTabStripModelObserver::REPLACED);
-  state.src_contents = third_contents;
+  state = State(raw_new_contents, 1, MockTabStripModelObserver::REPLACED);
+  state.src_contents = raw_third_contents;
   EXPECT_TRUE(tabstrip_observer.StateEquals(0, state));
 
   strip.CloseAllTabs();
@@ -2102,14 +2166,17 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
 TEST_F(TabStripModelTest, DeleteFromDestroy) {
   TabStripDummyDelegate delegate;
   TabStripModel strip(&delegate, profile());
-  WebContents* contents1 = CreateWebContents();
-  WebContents* contents2 = CreateWebContents();
+  std::unique_ptr<WebContents> contents1 = CreateWebContents();
+  WebContents* raw_contents1 = contents1.get();
+  std::unique_ptr<WebContents> contents2 = CreateWebContents();
+  WebContents* raw_contents2 = contents2.get();
   MockTabStripModelObserver tab_strip_model_observer(&strip);
-  strip.AppendWebContents(contents1, true);
-  strip.AppendWebContents(contents2, true);
+  strip.AppendWebContents(std::move(contents1), true);
+  strip.AppendWebContents(std::move(contents2), true);
   // DeleteWebContentsOnDestroyedObserver deletes contents1 when contents2 sends
   // out notification that it is being destroyed.
-  DeleteWebContentsOnDestroyedObserver observer(contents2, contents1, NULL);
+  DeleteWebContentsOnDestroyedObserver observer(raw_contents2, raw_contents1,
+                                                NULL);
   strip.AddObserver(&tab_strip_model_observer);
   strip.CloseAllTabs();
 
@@ -2129,13 +2196,16 @@ TEST_F(TabStripModelTest, DeleteTabStripFromDestroy) {
   TabStripModel* strip = new TabStripModel(&delegate, profile());
   MockTabStripModelObserver tab_strip_model_observer(strip);
   strip->AddObserver(&tab_strip_model_observer);
-  WebContents* contents1 = CreateWebContents();
-  WebContents* contents2 = CreateWebContents();
-  strip->AppendWebContents(contents1, true);
-  strip->AppendWebContents(contents2, true);
+  std::unique_ptr<WebContents> contents1 = CreateWebContents();
+  WebContents* raw_contents1 = contents1.get();
+  std::unique_ptr<WebContents> contents2 = CreateWebContents();
+  WebContents* raw_contents2 = contents2.get();
+  strip->AppendWebContents(std::move(contents1), true);
+  strip->AppendWebContents(std::move(contents2), true);
   // DeleteWebContentsOnDestroyedObserver deletes |contents1| and |strip| when
   // |contents2| sends out notification that it is being destroyed.
-  DeleteWebContentsOnDestroyedObserver observer(contents2, contents1, strip);
+  DeleteWebContentsOnDestroyedObserver observer(raw_contents2, raw_contents1,
+                                                strip);
   strip->CloseAllTabs();
   EXPECT_TRUE(tab_strip_model_observer.empty());
 }
@@ -2238,53 +2308,61 @@ TEST_F(TabStripModelTest, MoveSelectedTabsTo_ForgetGroups) {
   TabStripModel strip(&delegate, profile());
 
   // Open page A as a new tab and then A1 in the background from A.
-  WebContents* page_a_contents = CreateWebContents();
-  strip.AddWebContents(page_a_contents, -1, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+  std::unique_ptr<WebContents> page_a_contents = CreateWebContents();
+  WebContents* raw_page_a_contents = page_a_contents.get();
+  strip.AddWebContents(page_a_contents.release(), -1,
+                       ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                        TabStripModel::ADD_ACTIVE);
-  WebContents* page_a1_contents = CreateWebContents();
-  strip.AddWebContents(page_a1_contents, -1, ui::PAGE_TRANSITION_LINK,
+  std::unique_ptr<WebContents> page_a1_contents = CreateWebContents();
+  WebContents* raw_page_a1_contents = page_a1_contents.get();
+  strip.AddWebContents(page_a1_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
 
   // Likewise, open pages B and B1.
-  WebContents* page_b_contents = CreateWebContents();
-  strip.AddWebContents(page_b_contents, -1, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+  std::unique_ptr<WebContents> page_b_contents = CreateWebContents();
+  WebContents* raw_page_b_contents = page_b_contents.get();
+  strip.AddWebContents(page_b_contents.release(), -1,
+                       ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                        TabStripModel::ADD_ACTIVE);
-  WebContents* page_b1_contents = CreateWebContents();
-  strip.AddWebContents(page_b1_contents, -1, ui::PAGE_TRANSITION_LINK,
+  std::unique_ptr<WebContents> page_b1_contents = CreateWebContents();
+  WebContents* raw_page_b1_contents = page_b1_contents.get();
+  strip.AddWebContents(page_b1_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
 
-  EXPECT_EQ(page_a_contents, strip.GetWebContentsAt(0));
-  EXPECT_EQ(page_a1_contents, strip.GetWebContentsAt(1));
-  EXPECT_EQ(page_b_contents, strip.GetWebContentsAt(2));
-  EXPECT_EQ(page_b1_contents, strip.GetWebContentsAt(3));
+  EXPECT_EQ(raw_page_a_contents, strip.GetWebContentsAt(0));
+  EXPECT_EQ(raw_page_a1_contents, strip.GetWebContentsAt(1));
+  EXPECT_EQ(raw_page_b_contents, strip.GetWebContentsAt(2));
+  EXPECT_EQ(raw_page_b1_contents, strip.GetWebContentsAt(3));
 
   // Move page B to the start of the tab strip.
   strip.MoveSelectedTabsTo(0);
 
   // Open page B2 in the background from B. It should end up after B.
-  WebContents* page_b2_contents = CreateWebContents();
-  strip.AddWebContents(page_b2_contents, -1, ui::PAGE_TRANSITION_LINK,
+  std::unique_ptr<WebContents> page_b2_contents = CreateWebContents();
+  WebContents* raw_page_b2_contents = page_b2_contents.get();
+  strip.AddWebContents(page_b2_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
-  EXPECT_EQ(page_b_contents, strip.GetWebContentsAt(0));
-  EXPECT_EQ(page_b2_contents, strip.GetWebContentsAt(1));
-  EXPECT_EQ(page_a_contents, strip.GetWebContentsAt(2));
-  EXPECT_EQ(page_a1_contents, strip.GetWebContentsAt(3));
-  EXPECT_EQ(page_b1_contents, strip.GetWebContentsAt(4));
+  EXPECT_EQ(raw_page_b_contents, strip.GetWebContentsAt(0));
+  EXPECT_EQ(raw_page_b2_contents, strip.GetWebContentsAt(1));
+  EXPECT_EQ(raw_page_a_contents, strip.GetWebContentsAt(2));
+  EXPECT_EQ(raw_page_a1_contents, strip.GetWebContentsAt(3));
+  EXPECT_EQ(raw_page_b1_contents, strip.GetWebContentsAt(4));
 
   // Switch to A.
   strip.ActivateTabAt(2, true);
-  EXPECT_EQ(page_a_contents, strip.GetActiveWebContents());
+  EXPECT_EQ(raw_page_a_contents, strip.GetActiveWebContents());
 
   // Open page A2 in the background from A. It should end up after A1.
-  WebContents* page_a2_contents = CreateWebContents();
-  strip.AddWebContents(page_a2_contents, -1, ui::PAGE_TRANSITION_LINK,
+  std::unique_ptr<WebContents> page_a2_contents = CreateWebContents();
+  WebContents* raw_page_a2_contents = page_a2_contents.get();
+  strip.AddWebContents(page_a2_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
-  EXPECT_EQ(page_b_contents, strip.GetWebContentsAt(0));
-  EXPECT_EQ(page_b2_contents, strip.GetWebContentsAt(1));
-  EXPECT_EQ(page_a_contents, strip.GetWebContentsAt(2));
-  EXPECT_EQ(page_a1_contents, strip.GetWebContentsAt(3));
-  EXPECT_EQ(page_a2_contents, strip.GetWebContentsAt(4));
-  EXPECT_EQ(page_b1_contents, strip.GetWebContentsAt(5));
+  EXPECT_EQ(raw_page_b_contents, strip.GetWebContentsAt(0));
+  EXPECT_EQ(raw_page_b2_contents, strip.GetWebContentsAt(1));
+  EXPECT_EQ(raw_page_a_contents, strip.GetWebContentsAt(2));
+  EXPECT_EQ(raw_page_a1_contents, strip.GetWebContentsAt(3));
+  EXPECT_EQ(raw_page_a2_contents, strip.GetWebContentsAt(4));
+  EXPECT_EQ(raw_page_b1_contents, strip.GetWebContentsAt(5));
 
   strip.CloseAllTabs();
 }
@@ -2292,12 +2370,8 @@ TEST_F(TabStripModelTest, MoveSelectedTabsTo_ForgetGroups) {
 TEST_F(TabStripModelTest, CloseSelectedTabs) {
   TabStripDummyDelegate delegate;
   TabStripModel strip(&delegate, profile());
-  WebContents* contents1 = CreateWebContents();
-  WebContents* contents2 = CreateWebContents();
-  WebContents* contents3 = CreateWebContents();
-  strip.AppendWebContents(contents1, true);
-  strip.AppendWebContents(contents2, true);
-  strip.AppendWebContents(contents3, true);
+  for (int i = 0; i < 3; ++i)
+    strip.AppendWebContents(CreateWebContents(), true);
   strip.ToggleSelectionAt(1);
   strip.CloseSelectedTabs();
   EXPECT_EQ(1, strip.count());
@@ -2311,21 +2385,21 @@ TEST_F(TabStripModelTest, MultipleSelection) {
   TabStripDummyDelegate delegate;
   TabStripModel strip(&delegate, profile());
   MockTabStripModelObserver observer(&strip);
-  WebContents* contents0 = CreateWebContents();
-  WebContents* contents1 = CreateWebContents();
-  WebContents* contents2 = CreateWebContents();
-  WebContents* contents3 = CreateWebContents();
-  strip.AppendWebContents(contents0, false);
-  strip.AppendWebContents(contents1, false);
-  strip.AppendWebContents(contents2, false);
-  strip.AppendWebContents(contents3, false);
+  std::unique_ptr<WebContents> contents0 = CreateWebContents();
+  WebContents* raw_contents0 = contents0.get();
+  std::unique_ptr<WebContents> contents3 = CreateWebContents();
+  WebContents* raw_contents3 = contents3.get();
+  strip.AppendWebContents(std::move(contents0), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(std::move(contents3), false);
   strip.AddObserver(&observer);
 
   // Selection and active tab change.
   strip.ActivateTabAt(3, true);
   ASSERT_EQ(2, observer.GetStateCount());
   ASSERT_EQ(observer.GetStateAt(0).action, MockTabStripModelObserver::ACTIVATE);
-  State s1(contents3, 3, MockTabStripModelObserver::SELECT);
+  State s1(raw_contents3, 3, MockTabStripModelObserver::SELECT);
   EXPECT_TRUE(observer.StateEquals(1, s1));
   observer.ClearStates();
 
@@ -2335,8 +2409,8 @@ TEST_F(TabStripModelTest, MultipleSelection) {
   ASSERT_EQ(observer.GetStateAt(0).action,
             MockTabStripModelObserver::DEACTIVATE);
   ASSERT_EQ(observer.GetStateAt(1).action, MockTabStripModelObserver::ACTIVATE);
-  State s2(contents0, 0, MockTabStripModelObserver::SELECT);
-  s2.src_contents = contents3;
+  State s2(raw_contents0, 0, MockTabStripModelObserver::SELECT);
+  s2.src_contents = raw_contents3;
   s2.src_index = 3;
   EXPECT_TRUE(observer.StateEquals(2, s2));
   observer.ClearStates();
@@ -2410,10 +2484,10 @@ TEST_F(TabStripModelTest, MultipleToSingle) {
 
   TabStripDummyDelegate delegate;
   TabStripModel strip(&delegate, profile());
-  WebContents* contents1 = CreateWebContents();
-  WebContents* contents2 = CreateWebContents();
-  strip.AppendWebContents(contents1, false);
-  strip.AppendWebContents(contents2, false);
+  std::unique_ptr<WebContents> contents2 = CreateWebContents();
+  WebContents* raw_contents2 = contents2.get();
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(std::move(contents2), false);
   strip.ToggleSelectionAt(0);
   strip.ToggleSelectionAt(1);
 
@@ -2423,8 +2497,8 @@ TEST_F(TabStripModelTest, MultipleToSingle) {
   // still remains at 1.
   strip.ActivateTabAt(1, true);
   ASSERT_EQ(1, observer.GetStateCount());
-  State s(contents2, 1, MockTabStripModelObserver::SELECT);
-  s.src_contents = contents2;
+  State s(raw_contents2, 1, MockTabStripModelObserver::SELECT);
+  s.src_contents = raw_contents2;
   s.src_index = 1;
   s.change_reason = TabStripModelObserver::CHANGE_REASON_NONE;
   EXPECT_TRUE(observer.StateEquals(0, s));
@@ -2441,14 +2515,17 @@ TEST_F(TabStripModelTest, TabBlockedState) {
   TabBlockedStateTestBrowser browser_src(&strip_src);
 
   // Add a tab.
-  WebContents* contents1 = CreateWebContents();
-  web_modal::WebContentsModalDialogManager::CreateForWebContents(contents1);
-  strip_src.AppendWebContents(contents1, false);
+  std::unique_ptr<WebContents> contents1 = CreateWebContents();
+  web_modal::WebContentsModalDialogManager::CreateForWebContents(
+      contents1.get());
+  strip_src.AppendWebContents(std::move(contents1), false);
 
   // Add another tab.
-  WebContents* contents2 = CreateWebContents();
-  web_modal::WebContentsModalDialogManager::CreateForWebContents(contents2);
-  strip_src.AppendWebContents(contents2, false);
+  std::unique_ptr<WebContents> contents2 = CreateWebContents();
+  WebContents* raw_contents2 = contents2.get();
+  web_modal::WebContentsModalDialogManager::CreateForWebContents(
+      contents2.get());
+  strip_src.AppendWebContents(std::move(contents2), false);
 
   // Create a destination tab strip.
   TabStripModel strip_dst(&dummy_tab_strip_delegate, profile());
@@ -2456,7 +2533,7 @@ TEST_F(TabStripModelTest, TabBlockedState) {
 
   // Setup a SingleWebContentsDialogManager for tab |contents2|.
   web_modal::WebContentsModalDialogManager* modal_dialog_manager =
-      web_modal::WebContentsModalDialogManager::FromWebContents(contents2);
+      web_modal::WebContentsModalDialogManager::FromWebContents(raw_contents2);
 
   // Show a dialog that blocks tab |contents2|.
   // DummySingleWebContentsDialogManager doesn't care about the
@@ -2473,10 +2550,10 @@ TEST_F(TabStripModelTest, TabBlockedState) {
   // Detach the tab.
   std::unique_ptr<WebContents> moved_contents =
       strip_src.DetachWebContentsAt(1);
-  EXPECT_EQ(contents2, moved_contents.get());
+  EXPECT_EQ(raw_contents2, moved_contents.get());
 
   // Attach the tab to the destination tab strip.
-  strip_dst.AppendWebContents(moved_contents.release(), true);
+  strip_dst.AppendWebContents(std::move(moved_contents), true);
   EXPECT_TRUE(strip_dst.IsTabBlocked(0));
 
   strip_dst.CloseAllTabs();
@@ -2490,11 +2567,11 @@ TEST_F(TabStripModelTest, LinkClicksWithPinnedTabOrdering) {
   TabStripModel strip(&delegate, profile());
 
   // Open two pages, pinned.
-  WebContents* page_a_contents = CreateWebContents();
-  strip.AddWebContents(page_a_contents, -1, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+  strip.AddWebContents(CreateWebContents().release(), -1,
+                       ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                        TabStripModel::ADD_ACTIVE | TabStripModel::ADD_PINNED);
-  WebContents* page_b_contents = CreateWebContents();
-  strip.AddWebContents(page_b_contents, -1, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+  strip.AddWebContents(CreateWebContents().release(), -1,
+                       ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                        TabStripModel::ADD_ACTIVE | TabStripModel::ADD_PINNED);
 
   // Activate the first tab (a).
@@ -2502,15 +2579,17 @@ TEST_F(TabStripModelTest, LinkClicksWithPinnedTabOrdering) {
 
   // Open two more tabs as link clicks. The first tab, c, should appear after
   // the pinned tabs followed by the second tab (d).
-  WebContents* page_c_contents = CreateWebContents();
-  WebContents* page_d_contents = CreateWebContents();
-  strip.AddWebContents(page_c_contents, -1, ui::PAGE_TRANSITION_LINK,
+  std::unique_ptr<WebContents> page_c_contents = CreateWebContents();
+  WebContents* raw_page_c_contents = page_c_contents.get();
+  std::unique_ptr<WebContents> page_d_contents = CreateWebContents();
+  WebContents* raw_page_d_contents = page_d_contents.get();
+  strip.AddWebContents(page_c_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
-  strip.AddWebContents(page_d_contents, -1, ui::PAGE_TRANSITION_LINK,
+  strip.AddWebContents(page_d_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
 
-  EXPECT_EQ(2, strip.GetIndexOfWebContents(page_c_contents));
-  EXPECT_EQ(3, strip.GetIndexOfWebContents(page_d_contents));
+  EXPECT_EQ(2, strip.GetIndexOfWebContents(raw_page_c_contents));
+  EXPECT_EQ(3, strip.GetIndexOfWebContents(raw_page_d_contents));
   strip.CloseAllTabs();
 }
 

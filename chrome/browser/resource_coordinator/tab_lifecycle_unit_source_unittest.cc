@@ -133,10 +133,12 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
                       (*first_lifecycle_unit)->GetSortKey().last_focused_time);
           }
         }));
-    content::WebContents* first_web_contents = CreateAndNavigateWebContents();
-    tab_strip_model_->AppendWebContents(first_web_contents, true);
+    std::unique_ptr<content::WebContents> first_web_contents =
+        CreateAndNavigateWebContents();
+    content::WebContents* raw_first_web_contents = first_web_contents.get();
+    tab_strip_model_->AppendWebContents(std::move(first_web_contents), true);
     testing::Mock::VerifyAndClear(&source_observer_);
-    EXPECT_TRUE(source_->GetTabLifecycleUnitExternal(first_web_contents));
+    EXPECT_TRUE(source_->GetTabLifecycleUnitExternal(raw_first_web_contents));
 
     // Add another foreground tab to the focused tab strip.
     test_clock_.Advance(kShortDelay);
@@ -156,13 +158,15 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
                       (*second_lifecycle_unit)->GetSortKey().last_focused_time);
           }
         }));
-    content::WebContents* second_web_contents = CreateAndNavigateWebContents();
-    tab_strip_model_->AppendWebContents(second_web_contents, true);
+    std::unique_ptr<content::WebContents> second_web_contents =
+        CreateAndNavigateWebContents();
+    content::WebContents* raw_second_web_contents = second_web_contents.get();
+    tab_strip_model_->AppendWebContents(std::move(second_web_contents), true);
     testing::Mock::VerifyAndClear(&source_observer_);
-    EXPECT_TRUE(source_->GetTabLifecycleUnitExternal(second_web_contents));
+    EXPECT_TRUE(source_->GetTabLifecycleUnitExternal(raw_second_web_contents));
 
     // TabStripModel doesn't update the visibility of its WebContents by itself.
-    first_web_contents->WasHidden();
+    raw_first_web_contents->WasHidden();
   }
 
   void TestAppendTabsToTabStrip(bool focus_tab_strip) {
@@ -196,10 +200,12 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
           EXPECT_EQ(NowTicks(),
                     third_lifecycle_unit->GetSortKey().last_focused_time);
         }));
-    content::WebContents* third_web_contents = CreateAndNavigateWebContents();
-    tab_strip_model_->AppendWebContents(third_web_contents, false);
+    std::unique_ptr<content::WebContents> third_web_contents =
+        CreateAndNavigateWebContents();
+    content::WebContents* raw_third_web_contents = third_web_contents.get();
+    tab_strip_model_->AppendWebContents(std::move(third_web_contents), false);
     testing::Mock::VerifyAndClear(&source_observer_);
-    EXPECT_TRUE(source_->GetTabLifecycleUnitExternal(third_web_contents));
+    EXPECT_TRUE(source_->GetTabLifecycleUnitExternal(raw_third_web_contents));
 
     // Expect notifications when tabs are closed.
     CloseTabsAndExpectNotifications(
@@ -229,10 +235,11 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
   base::SimpleTestTickClock test_clock_;
 
  private:
-  content::WebContents* CreateAndNavigateWebContents() {
-    content::WebContents* web_contents = CreateTestWebContents();
+  std::unique_ptr<content::WebContents> CreateAndNavigateWebContents() {
+    std::unique_ptr<content::WebContents> web_contents =
+        base::WrapUnique(CreateTestWebContents());
     // Commit an URL to allow discarding.
-    content::WebContentsTester::For(web_contents)
+    content::WebContentsTester::For(web_contents.get())
         ->NavigateAndCommit(GURL("https://www.example.com"));
     return web_contents;
   }
@@ -347,7 +354,7 @@ TEST_F(TabLifecycleUnitSourceTest, DetachWebContents) {
 
   // Insert the tab into the second tab strip without focusing it. Verify that
   // it can be discarded.
-  other_tab_strip_model.AppendWebContents(owned_contents.release(), false);
+  other_tab_strip_model.AppendWebContents(std::move(owned_contents), false);
   EXPECT_FOR_ALL_DISCARD_REASONS(first_lifecycle_unit, CanDiscard, true);
 
   EXPECT_EQ(LifecycleUnit::State::LOADED, first_lifecycle_unit->GetState());

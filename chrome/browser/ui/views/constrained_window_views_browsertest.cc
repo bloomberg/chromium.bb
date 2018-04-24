@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabMoveTest) {
       browser()->tab_strip_model()->DetachWebContentsAt(
           browser()->tab_strip_model()->GetIndexOfWebContents(web_contents));
   Browser* browser2 = CreateBrowser(browser()->profile());
-  browser2->tab_strip_model()->AppendWebContents(owned_web_contents.release(),
+  browser2->tab_strip_model()->AppendWebContents(std::move(owned_web_contents),
                                                  true);
   EXPECT_TRUE(dialog->GetWidget()->IsVisible());
 

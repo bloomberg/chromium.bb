@@ -718,27 +718,31 @@ TEST_F(PinnedTabsResetTest, ResetPinnedTabs) {
   std::unique_ptr<content::WebContents> contents2(CreateWebContents());
   std::unique_ptr<content::WebContents> contents3(CreateWebContents());
   std::unique_ptr<content::WebContents> contents4(CreateWebContents());
+  content::WebContents* raw_contents1 = contents1.get();
+  content::WebContents* raw_contents2 = contents2.get();
+  content::WebContents* raw_contents3 = contents3.get();
+  content::WebContents* raw_contents4 = contents4.get();
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
 
-  tab_strip_model->AppendWebContents(contents4.get(), true);
-  tab_strip_model->AppendWebContents(contents3.get(), true);
-  tab_strip_model->AppendWebContents(contents2.get(), true);
+  tab_strip_model->AppendWebContents(std::move(contents4), true);
+  tab_strip_model->AppendWebContents(std::move(contents3), true);
+  tab_strip_model->AppendWebContents(std::move(contents2), true);
   tab_strip_model->SetTabPinned(2, true);
-  tab_strip_model->AppendWebContents(contents1.get(), true);
+  tab_strip_model->AppendWebContents(std::move(contents1), true);
   tab_strip_model->SetTabPinned(3, true);
 
-  EXPECT_EQ(contents2.get(), tab_strip_model->GetWebContentsAt(0));
-  EXPECT_EQ(contents1.get(), tab_strip_model->GetWebContentsAt(1));
-  EXPECT_EQ(contents4.get(), tab_strip_model->GetWebContentsAt(2));
-  EXPECT_EQ(contents3.get(), tab_strip_model->GetWebContentsAt(3));
+  EXPECT_EQ(raw_contents2, tab_strip_model->GetWebContentsAt(0));
+  EXPECT_EQ(raw_contents1, tab_strip_model->GetWebContentsAt(1));
+  EXPECT_EQ(raw_contents4, tab_strip_model->GetWebContentsAt(2));
+  EXPECT_EQ(raw_contents3, tab_strip_model->GetWebContentsAt(3));
   EXPECT_EQ(2, tab_strip_model->IndexOfFirstNonPinnedTab());
 
   ResetAndWait(ProfileResetter::PINNED_TABS);
 
-  EXPECT_EQ(contents2.get(), tab_strip_model->GetWebContentsAt(0));
-  EXPECT_EQ(contents1.get(), tab_strip_model->GetWebContentsAt(1));
-  EXPECT_EQ(contents4.get(), tab_strip_model->GetWebContentsAt(2));
-  EXPECT_EQ(contents3.get(), tab_strip_model->GetWebContentsAt(3));
+  EXPECT_EQ(raw_contents2, tab_strip_model->GetWebContentsAt(0));
+  EXPECT_EQ(raw_contents1, tab_strip_model->GetWebContentsAt(1));
+  EXPECT_EQ(raw_contents4, tab_strip_model->GetWebContentsAt(2));
+  EXPECT_EQ(raw_contents3, tab_strip_model->GetWebContentsAt(3));
   EXPECT_EQ(0, tab_strip_model->IndexOfFirstNonPinnedTab());
 }
 
