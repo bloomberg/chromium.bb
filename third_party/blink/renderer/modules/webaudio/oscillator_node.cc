@@ -470,17 +470,23 @@ OscillatorNode::OscillatorNode(BaseAudioContext& context,
                                PeriodicWave* wave_table)
     : AudioScheduledSourceNode(context),
       // Use musical pitch standard A440 as a default.
-      frequency_(AudioParam::Create(context,
-                                    kParamTypeOscillatorFrequency,
-                                    "Oscillator.frequency",
-                                    440,
-                                    -context.sampleRate() / 2,
-                                    context.sampleRate() / 2)),
+      frequency_(
+          AudioParam::Create(context,
+                             kParamTypeOscillatorFrequency,
+                             "Oscillator.frequency",
+                             440,
+                             AudioParamHandler::AutomationRate::kAudio,
+                             AudioParamHandler::AutomationRateMode::kVariable,
+                             -context.sampleRate() / 2,
+                             context.sampleRate() / 2)),
       // Default to no detuning.
-      detune_(AudioParam::Create(context,
-                                 kParamTypeOscillatorDetune,
-                                 "Oscillator.detune",
-                                 0)) {
+      detune_(AudioParam::Create(
+          context,
+          kParamTypeOscillatorDetune,
+          "Oscillator.detune",
+          0,
+          AudioParamHandler::AutomationRate::kAudio,
+          AudioParamHandler::AutomationRateMode::kVariable)) {
   SetHandler(OscillatorHandler::Create(
       *this, context.sampleRate(), oscillator_type, wave_table,
       frequency_->Handler(), detune_->Handler()));

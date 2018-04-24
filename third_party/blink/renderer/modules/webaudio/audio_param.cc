@@ -42,6 +42,8 @@ AudioParamHandler::AudioParamHandler(BaseAudioContext& context,
                                      AudioParamType param_type,
                                      String param_name,
                                      double default_value,
+                                     AutomationRate rate,
+                                     AutomationRateMode rate_mode,
                                      float min_value,
                                      float max_value)
     : AudioSummingJunction(context.GetDeferredTaskHandler()),
@@ -49,6 +51,8 @@ AudioParamHandler::AudioParamHandler(BaseAudioContext& context,
       param_name_(param_name),
       intrinsic_value_(default_value),
       default_value_(default_value),
+      automation_rate_(rate),
+      rate_mode_(rate_mode),
       min_value_(min_value),
       max_value_(max_value) {
   // The destination MUST exist because we need the destination handler for the
@@ -148,7 +152,7 @@ void AudioParamHandler::CalculateSampleAccurateValues(
   if (!is_safe)
     return;
 
-  CalculateFinalValues(values, number_of_values, true);
+  CalculateFinalValues(values, number_of_values, IsAudioRate());
 }
 
 void AudioParamHandler::CalculateFinalValues(float* values,
@@ -176,7 +180,9 @@ void AudioParamHandler::CalculateFinalValues(float* values,
     if (has_value)
       value = timeline_value;
 
-    values[0] = value;
+    for (unsigned k = 0; k < number_of_values; ++k) {
+      values[k] = value;
+    }
     SetIntrinsicValue(value);
   }
 
@@ -251,12 +257,16 @@ AudioParam::AudioParam(BaseAudioContext& context,
                        AudioParamType param_type,
                        String param_name,
                        double default_value,
+                       AudioParamHandler::AutomationRate rate,
+                       AudioParamHandler::AutomationRateMode rate_mode,
                        float min_value,
                        float max_value)
     : handler_(AudioParamHandler::Create(context,
                                          param_type,
                                          param_name,
                                          default_value,
+                                         rate,
+                                         rate_mode,
                                          min_value,
                                          max_value)),
       context_(context) {}
@@ -265,11 +275,14 @@ AudioParam* AudioParam::Create(BaseAudioContext& context,
                                AudioParamType param_type,
                                String param_name,
                                double default_value,
+                               AudioParamHandler::AutomationRate rate,
+                               AudioParamHandler::AutomationRateMode rate_mode,
                                float min_value,
                                float max_value) {
   DCHECK_LE(min_value, max_value);
-  return new AudioParam(context, param_type, param_name, default_value,
-                        min_value, max_value);
+
+  return new AudioParam(context, param_type, param_name, default_value, rate,
+                        rate_mode, min_value, max_value);
 }
 
 void AudioParam::Trace(blink::Visitor* visitor) {
@@ -322,6 +335,36 @@ float AudioParam::maxValue() const {
 
 void AudioParam::SetParamType(AudioParamType param_type) {
   Handler().SetParamType(param_type);
+}
+
+String AudioParam::automationRate() const {
+  switch (Handler().GetAutomationRate()) {
+    case AudioParamHandler::AutomationRate::kAudio:
+      return "a-rate";
+    case AudioParamHandler::AutomationRate::kControl:
+      return "k-rate";
+    default:
+      NOTREACHED();
+      return "a-rate";
+  }
+}
+
+void AudioParam::setAutomationRate(const String& rate,
+                                   ExceptionState& exception_state) {
+  if (Handler().IsAutomationRateFixed()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
+        Handler().GetParamName() +
+            ".automationRate is fixed and cannot be changed to \"" + rate +
+            "\"");
+    return;
+  }
+
+  if (rate == "a-rate") {
+    Handler().SetAutomationRate(AudioParamHandler::AutomationRate::kAudio);
+  } else if (rate == "k-rate") {
+    Handler().SetAutomationRate(AudioParamHandler::AutomationRate::kControl);
+  }
 }
 
 AudioParam* AudioParam::setValueAtTime(float value,

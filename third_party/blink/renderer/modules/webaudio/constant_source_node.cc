@@ -107,10 +107,13 @@ bool ConstantSourceHandler::PropagatesSilence() const {
 // ----------------------------------------------------------------
 ConstantSourceNode::ConstantSourceNode(BaseAudioContext& context)
     : AudioScheduledSourceNode(context),
-      offset_(AudioParam::Create(context,
-                                 kParamTypeConstantSourceOffset,
-                                 "ConstantSource.offset",
-                                 1)) {
+      offset_(AudioParam::Create(
+          context,
+          kParamTypeConstantSourceOffset,
+          "ConstantSource.offset",
+          1,
+          AudioParamHandler::AutomationRate::kAudio,
+          AudioParamHandler::AutomationRateMode::kVariable)) {
   SetHandler(ConstantSourceHandler::Create(*this, context.sampleRate(),
                                            offset_->Handler()));
 }

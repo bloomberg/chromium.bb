@@ -27,8 +27,14 @@
  */
 
 // See https://webaudio.github.io/web-audio-api/#AudioParam
+enum AutomationRate {
+   "a-rate",
+   "k-rate"
+};
+
 interface AudioParam {
     [RaisesException=Setter] attribute float value;
+    [RaisesException=Setter] attribute AutomationRate automationRate;
     readonly attribute float defaultValue;
 
     // Nominal range for the value.

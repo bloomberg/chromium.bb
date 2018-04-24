@@ -161,6 +161,7 @@ interface AudioNode : EventTarget
     setter channelInterpretation
 interface AudioParam
     attribute @@toStringTag
+    getter automationRate
     getter defaultValue
     getter maxValue
     getter minValue
@@ -173,6 +174,7 @@ interface AudioParam
     method setTargetAtTime
     method setValueAtTime
     method setValueCurveAtTime
+    setter automationRate
     setter value
 interface AudioParamMap
     attribute @@toStringTag

@@ -65,12 +65,15 @@ scoped_refptr<DelayHandler> DelayHandler::Create(AudioNode& node,
 
 DelayNode::DelayNode(BaseAudioContext& context, double max_delay_time)
     : AudioNode(context),
-      delay_time_(AudioParam::Create(context,
-                                     kParamTypeDelayDelayTime,
-                                     "Delay.delayTime",
-                                     0.0,
-                                     0.0,
-                                     max_delay_time)) {
+      delay_time_(
+          AudioParam::Create(context,
+                             kParamTypeDelayDelayTime,
+                             "Delay.delayTime",
+                             0.0,
+                             AudioParamHandler::AutomationRate::kAudio,
+                             AudioParamHandler::AutomationRateMode::kVariable,
+                             0.0,
+                             max_delay_time)) {
   SetHandler(DelayHandler::Create(*this, context.sampleRate(),
                                   delay_time_->Handler(), max_delay_time));
 }
