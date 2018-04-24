@@ -2882,7 +2882,6 @@ void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {
 
 void RenderFrameImpl::CommitNavigation(
     const network::ResourceResponseHead& head,
-    const GURL& body_url,
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -2973,7 +2972,7 @@ void RenderFrameImpl::CommitNavigation(
     } else {
       WebURLRequest request = CreateURLRequestForCommit(
           common_params, request_params, std::move(url_loader_client_endpoints),
-          head, body_url);
+          head);
 
       // Load the request.
       frame_->Load(request, load_type, item_for_history_navigation,
@@ -6432,31 +6431,17 @@ WebURLRequest RenderFrameImpl::CreateURLRequestForCommit(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    const network::ResourceResponseHead& head,
-    const GURL& body_url) {
+    const network::ResourceResponseHead& head) {
   // This will override the url requested by the WebURLLoader, as well as
   // provide it with the response to the request.
   std::unique_ptr<NavigationResponseOverrideParameters> response_override(
       new NavigationResponseOverrideParameters());
-  response_override->stream_url = body_url;
   response_override->url_loader_client_endpoints =
       std::move(url_loader_client_endpoints);
   response_override->response = head;
   response_override->redirects = request_params.redirects;
   response_override->redirect_responses = request_params.redirect_response;
   response_override->redirect_infos = request_params.redirect_infos;
-
-  // Used to notify the browser that it can release its |stream_handle_| when
-  // the |response_override| object isn't used anymore.
-  // TODO(clamy): Remove this when we switch to Mojo streams.
-  response_override->on_delete = base::BindOnce(
-      [](base::WeakPtr<RenderFrameImpl> weak_self, const GURL& url) {
-        if (RenderFrameImpl* self = weak_self.get()) {
-          self->Send(
-              new FrameHostMsg_StreamHandleConsumed(self->routing_id_, url));
-        }
-      },
-      weak_factory_.GetWeakPtr());
 
   WebURLRequest request = CreateURLRequestForNavigation(
       common_params, request_params, std::move(response_override),

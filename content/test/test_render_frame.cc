@@ -154,7 +154,7 @@ void TestRenderFrame::WillSendRequest(blink::WebURLRequest& request) {
 
 void TestRenderFrame::Navigate(const CommonNavigationParams& common_params,
                                const RequestNavigationParams& request_params) {
-  CommitNavigation(network::ResourceResponseHead(), GURL(), common_params,
+  CommitNavigation(network::ResourceResponseHead(), common_params,
                    request_params,
                    network::mojom::URLLoaderClientEndpointsPtr(),
                    std::make_unique<URLLoaderFactoryBundleInfo>(),

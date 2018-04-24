@@ -133,7 +133,6 @@ class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
 class SensorProviderProxyImpl;
-class StreamHandle;
 class TimeoutMonitor;
 class WebBluetoothServiceImpl;
 struct CommonNavigationParams;
@@ -560,7 +559,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CommitNavigation(
       network::ResourceResponse* response,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      std::unique_ptr<StreamHandle> body,
       const CommonNavigationParams& common_params,
       const RequestNavigationParams& request_params,
       bool is_view_source,
@@ -678,10 +676,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindInterfaceProviderRequest(
       service_manager::mojom::InterfaceProviderRequest
           interface_provider_request);
-
-  const StreamHandle* stream_handle_for_testing() const {
-    return stream_handle_.get();
-  }
 
   // Exposed so that tests can swap out the implementation and intercept calls.
   mojo::AssociatedBinding<mojom::FrameHost>& frame_host_binding_for_testing() {
@@ -1079,9 +1073,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // based on its parent frame.
   void ResetFeaturePolicy();
 
-  // Called when the frame has consumed the StreamHandle and it can be released.
-  void OnStreamHandleConsumed(const GURL& stream_url);
-
   // TODO(ekaramad): One major purpose behind the API is to traverse the frame
   // tree top-down to visit the  RenderWidgetHostViews of interest in the most
   // efficient way. We might want to revisit this API, remove it from RFHImpl,
@@ -1315,10 +1306,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Flag to not create a BrowserAccessibilityManager, for testing. If one
   // already exists it will still be used.
   bool no_create_browser_accessibility_manager_for_testing_;
-
-  // Owns the stream used in navigations to store the body of the response once
-  // it has started.
-  std::unique_ptr<StreamHandle> stream_handle_;
 
   // Context shared for each mojom::PermissionService instance created for this
   // RFH.

@@ -15,16 +15,11 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/test_resource_handler.h"
 #include "content/browser/loader_delegate_impl.h"
-#include "content/browser/streams/stream.h"
-#include "content/browser/streams/stream_context.h"
-#include "content/browser/streams/stream_registry.h"
-#include "content/browser/streams/stream_url_request_job.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
-#include "content/public/browser/stream_handle.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -49,27 +44,6 @@ namespace content {
 
 namespace {
 
-class StreamProtocolHandler
-    : public net::URLRequestJobFactory::ProtocolHandler {
- public:
-  StreamProtocolHandler(StreamRegistry* registry) : registry_(registry) {}
-
-  // net::URLRequestJobFactory::ProtocolHandler implementation.
-  net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    scoped_refptr<Stream> stream = registry_->GetStream(request->url());
-    if (stream.get())
-      return new StreamURLRequestJob(request, network_delegate, stream);
-    return nullptr;
-  }
-
- private:
-  StreamRegistry* registry_;
-
-  DISALLOW_COPY_AND_ASSIGN(StreamProtocolHandler);
-};
-
 std::unique_ptr<ResourceHandler> CreateTestResourceHandler(
     net::URLRequest* request) {
   return std::make_unique<TestResourceHandler>();
@@ -90,12 +64,9 @@ class NavigationURLLoaderTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     net::URLRequestContext* request_context =
         browser_context_->GetResourceContext()->GetRequestContext();
-    // Attach URLRequestTestJob and make streams work.
+    // Attach URLRequestTestJob.
     job_factory_.SetProtocolHandler(
         "test", net::URLRequestTestJob::CreateProtocolHandler());
-    job_factory_.SetProtocolHandler(
-        "blob", std::make_unique<StreamProtocolHandler>(
-                    StreamContext::GetFor(browser_context_.get())->registry()));
     request_context->set_job_factory(&job_factory_);
   }
 
@@ -261,7 +232,7 @@ TEST_F(NavigationURLLoaderTest, CancelResponseRace) {
   // response body was received.
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(net::URLRequestTestJob::ProcessOnePendingMessage());
-  EXPECT_FALSE(delegate.body());
+  EXPECT_FALSE(delegate.has_url_loader_client_endpoints());
 }
 
 // Tests that the loader may be canceled by context.
@@ -282,7 +253,8 @@ TEST_F(NavigationURLLoaderTest, CancelByContext) {
   EXPECT_EQ(1, delegate.on_request_handled_counter());
 }
 
-// Tests that the request is owned by the body StreamHandle.
+// Tests that the request stays alive as long as the URLLoaderClient endpoints
+// are not destructed.
 TEST_F(NavigationURLLoaderTest, OwnedByHandle) {
   // Fake a top-level request to a URL whose body does not load immediately.
   TestNavigationURLLoaderDelegate delegate;
@@ -295,8 +267,8 @@ TEST_F(NavigationURLLoaderTest, OwnedByHandle) {
   // Proceed with the response.
   loader->ProceedWithResponse();
 
-  // Release the body.
-  delegate.ReleaseBody();
+  // Release the URLLoaderClient endpoints.
+  delegate.ReleaseURLLoaderClientEndpoints();
   base::RunLoop().RunUntilIdle();
 
   // Verify that URLRequestTestJob no longer has anything paused.

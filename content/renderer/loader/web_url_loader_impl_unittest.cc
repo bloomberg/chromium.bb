@@ -633,19 +633,17 @@ TEST_F(WebURLLoaderImplTest, FtpDeleteOnFail) {
   DoFailRequest();
 }
 
-// PlzNavigate: checks that the navigation response override parameters provided
-// on navigation commit are properly applied.
+// Checks that the navigation response override parameters provided on
+// navigation commit are properly applied.
 TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
   // Initialize the request and the stream override.
   const GURL kNavigationURL = GURL(kTestURL);
-  const GURL kStreamURL = GURL("http://bar");
   const std::string kMimeType = "text/html";
   blink::WebURLRequest request(kNavigationURL);
   request.SetFrameType(network::mojom::RequestContextFrameType::kTopLevel);
   request.SetRequestContext(blink::WebURLRequest::kRequestContextFrame);
   std::unique_ptr<NavigationResponseOverrideParameters> response_override(
       new NavigationResponseOverrideParameters());
-  response_override->stream_url = kStreamURL;
   response_override->response.mime_type = kMimeType;
   auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_navigation_response_override(std::move(response_override));
@@ -653,16 +651,14 @@ TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
 
   client()->loader()->LoadAsynchronously(request, client());
 
-  // The stream url should have been added to the ResourceRequest.
   ASSERT_TRUE(peer());
   EXPECT_EQ(kNavigationURL, dispatcher()->url());
-  EXPECT_EQ(kStreamURL, dispatcher()->stream_url());
-
   EXPECT_FALSE(client()->did_receive_response());
 
   response_override = dispatcher()->TakeNavigationResponseOverrideParams();
   ASSERT_TRUE(response_override);
   peer()->OnReceivedResponse(response_override->response);
+
   EXPECT_TRUE(client()->did_receive_response());
 
   // The response info should have been overriden.

@@ -525,7 +525,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // mojom::FrameNavigationControl implementation:
   void CommitNavigation(
       const network::ResourceResponseHead& head,
-      const GURL& body_url,
       const CommonNavigationParams& common_params,
       const RequestNavigationParams& request_params,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -1091,8 +1090,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const CommonNavigationParams& common_params,
       const RequestNavigationParams& request_params,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      const network::ResourceResponseHead& head,
-      const GURL& body_url);
+      const network::ResourceResponseHead& head);
 
   // Returns a ChildURLLoaderFactoryBundle which can be used to request
   // subresources for this frame.

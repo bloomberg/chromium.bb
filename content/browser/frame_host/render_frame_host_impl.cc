@@ -1007,8 +1007,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_RequestOverlayRoutingToken,
                         OnRequestOverlayRoutingToken)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowCreatedWindow, OnShowCreatedWindow)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_StreamHandleConsumed,
-                        OnStreamHandleConsumed)
   IPC_END_MESSAGE_MAP()
 
   // No further actions here, since we may have been deleted.
@@ -1113,11 +1111,6 @@ void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
   if (GetNavigationHandle())
     GetNavigationHandle()->set_net_error_code(net::ERR_ABORTED);
   ResetLoadingState();
-
-  // The renderer process is gone, so the |stream_handle_| will no longer be
-  // used. It can be released.
-  // TODO(clamy): Remove this when we switch to Mojo streams.
-  stream_handle_.reset();
 
   // Any future UpdateState or UpdateTitle messages from this or a recreated
   // process should be ignored until the next commit.
@@ -3397,9 +3390,8 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       false /* started_from_context_menu */, false /* has_user_gesture */,
       base::nullopt /* suggested_filename */);
   CommitNavigation(nullptr, network::mojom::URLLoaderClientEndpointsPtr(),
-                   std::unique_ptr<StreamHandle>(), common_params,
-                   RequestNavigationParams(), false, base::nullopt,
-                   base::nullopt /* subresource_overrides */,
+                   common_params, RequestNavigationParams(), false,
+                   base::nullopt, base::nullopt /* subresource_overrides */,
                    base::UnguessableToken::Create() /* not traced */);
 }
 
@@ -3543,7 +3535,6 @@ void RenderFrameHostImpl::SendJavaScriptDialogReply(
 void RenderFrameHostImpl::CommitNavigation(
     network::ResourceResponse* response,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    std::unique_ptr<StreamHandle> body,
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     bool is_view_source,
@@ -3556,7 +3547,7 @@ void RenderFrameHostImpl::CommitNavigation(
                common_params.url.possibly_invalid_spec());
   DCHECK(!IsRendererDebugURL(common_params.url));
   DCHECK(
-      (response && (url_loader_client_endpoints || body)) ||
+      (response && url_loader_client_endpoints) ||
       common_params.url.SchemeIs(url::kDataScheme) ||
       FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type) ||
       !IsURLHandledByNetworkStack(common_params.url));
@@ -3577,7 +3568,6 @@ void RenderFrameHostImpl::CommitNavigation(
     render_view_host()->Send(new FrameMsg_EnableViewSourceMode(routing_id_));
   }
 
-  const GURL body_url = body.get() ? body->GetURL() : GURL();
   const network::ResourceResponseHead head =
       response ? response->head : network::ResourceResponseHead();
   const bool is_same_document =
@@ -3694,7 +3684,7 @@ void RenderFrameHostImpl::CommitNavigation(
                        common_params.should_replace_current_entry));
   } else {
     GetNavigationControl()->CommitNavigation(
-        head, body_url, common_params, request_params,
+        head, common_params, request_params,
         std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
         std::move(subresource_overrides),
@@ -3703,9 +3693,6 @@ void RenderFrameHostImpl::CommitNavigation(
     // If a network request was made, update the Previews state.
     if (IsURLHandledByNetworkStack(common_params.url))
       last_navigation_previews_state_ = common_params.previews_state;
-
-    // Released in OnStreamHandleConsumed().
-    stream_handle_ = std::move(body);
   }
 
   pending_commit_ = true;
@@ -4683,11 +4670,6 @@ void RenderFrameHostImpl::SetLastCommittedSiteUrl(const GURL& url) {
         frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
         GetProcess(), last_committed_site_url_);
   }
-}
-
-void RenderFrameHostImpl::OnStreamHandleConsumed(const GURL& stream_url) {
-  if (stream_handle_ && stream_handle_->GetURL() == stream_url)
-    stream_handle_.reset();
 }
 
 #if defined(OS_ANDROID)

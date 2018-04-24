@@ -11,9 +11,7 @@ namespace content {
 NavigationResponseOverrideParameters::NavigationResponseOverrideParameters() =
     default;
 
-NavigationResponseOverrideParameters::~NavigationResponseOverrideParameters() {
-  if (on_delete)
-    std::move(on_delete).Run(stream_url);
-}
+NavigationResponseOverrideParameters::~NavigationResponseOverrideParameters() =
+    default;
 
 }  // namespace content
