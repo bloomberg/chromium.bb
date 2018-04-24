@@ -1773,7 +1773,7 @@ jumbo_source_set("unit_tests") {
     "fetch/readable_stream_bytes_consumer_test.cc",
     "fetch/request_test.cc",
     "fetch/response_test.cc",
-    "frame/AdTrackerTest.cpp",
+    "frame/ad_tracker_test.cc",
     "frame/browser_controls_test.cc",
     "frame/csp/content_security_policy_test.cc",
     "frame/csp/csp_directive_list_test.cc",

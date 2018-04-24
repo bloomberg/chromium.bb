@@ -6,10 +6,8 @@ import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("frame") {
   sources = [
-    "AdTracker.cpp",
-    "AdTracker.h",
-    "PerformanceMonitor.cpp",
-    "PerformanceMonitor.h",
+    "ad_tracker.cc",
+    "ad_tracker.h",
     "bar_prop.cc",
     "bar_prop.h",
     "browser_controls.cc",
@@ -110,6 +108,8 @@ blink_core_sources("frame") {
     "pausable_task.h",
     "pausable_timer.cc",
     "pausable_timer.h",
+    "performance_monitor.cc",
+    "performance_monitor.h",
     "picture_in_picture_controller.cc",
     "picture_in_picture_controller.h",
     "platform_event_controller.cc",

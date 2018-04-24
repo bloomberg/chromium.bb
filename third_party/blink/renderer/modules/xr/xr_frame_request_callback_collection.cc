@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_frame_request_callback_collection.h"
 
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_frame_request_callback.h"
-#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/xr/xr_presentation_frame.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"

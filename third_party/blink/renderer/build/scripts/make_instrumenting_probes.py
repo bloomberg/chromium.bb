@@ -24,6 +24,7 @@ third_party_dir = os.path.normpath(os.path.join(module_path, os.pardir, os.pardi
 sys.path.insert(1, third_party_dir)
 import jinja2
 
+from blinkbuild.name_style_converter import NameStyleConverter
 from name_utilities import method_name
 
 def _json5_loads(lines):
@@ -58,7 +59,8 @@ def agent_name_to_class(agent_name):
 
 def agent_name_to_include(agent_name):
     include_path = agent_config(agent_name, "include_path") or config["settings"]["include_path"]
-    return os.path.join(include_path, agent_name_to_class(agent_name) + ".h")
+    agent_class = agent_name_to_class(agent_name)
+    return os.path.join(include_path, NameStyleConverter(agent_class).to_snake_case() + ".h")
 
 
 def initialize_jinja_env(cache_dir):

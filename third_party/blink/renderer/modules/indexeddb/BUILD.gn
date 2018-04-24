@@ -6,8 +6,6 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("indexeddb") {
   sources = [
-    "InspectorIndexedDBAgent.cpp",
-    "InspectorIndexedDBAgent.h",
     "global_indexed_db.cc",
     "global_indexed_db.h",
     "idb_any.cc",
@@ -63,6 +61,8 @@ blink_modules_sources("indexeddb") {
     "indexed_db.h",
     "indexed_db_client.cc",
     "indexed_db_client.h",
+    "inspector_indexed_db_agent.cc",
+    "inspector_indexed_db_agent.h",
     "web_idb_callbacks_impl.cc",
     "web_idb_callbacks_impl.h",
     "web_idb_database_callbacks_impl.cc",
