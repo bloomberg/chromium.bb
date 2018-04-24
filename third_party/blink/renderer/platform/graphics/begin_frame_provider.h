@@ -18,14 +18,23 @@ struct PLATFORM_EXPORT BeginFrameProviderParams final {
   viz::FrameSinkId frame_sink_id;
 };
 
+class PLATFORM_EXPORT BeginFrameProviderClient {
+ public:
+  virtual void BeginFrame() = 0;
+  virtual ~BeginFrameProviderClient() = default;
+};
+
 class PLATFORM_EXPORT BeginFrameProvider
     : public viz::mojom::blink::CompositorFrameSinkClient,
       public mojom::blink::OffscreenCanvasSurfaceClient {
  public:
   explicit BeginFrameProvider(
-      const BeginFrameProviderParams& begin_frame_provider_params);
+      const BeginFrameProviderParams& begin_frame_provider_params,
+      BeginFrameProviderClient*);
 
   void CreateCompositorFrameSink();
+
+  void RequestBeginFrame();
 
   // viz::mojom::blink::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
@@ -56,11 +65,14 @@ class PLATFORM_EXPORT BeginFrameProvider
   ~BeginFrameProvider() = default;
 
  private:
+  bool needs_begin_frame_ = false;
+
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> cfs_binding_;
   mojo::Binding<mojom::blink::OffscreenCanvasSurfaceClient> ocs_binding_;
   const viz::FrameSinkId frame_sink_id_;
   const viz::FrameSinkId parent_frame_sink_id_;
   viz::mojom::blink::CompositorFrameSinkPtr compositor_frame_sink_;
+  BeginFrameProviderClient* begin_frame_client_;
 };
 
 }  // namespace blink

@@ -2539,12 +2539,14 @@ interface WorkerGlobalScope : EventTarget
     getter self
     method atob
     method btoa
+    method cancelAnimationFrame
     method clearInterval
     method clearTimeout
     method constructor
     method createImageBitmap
     method fetch
     method importScripts
+    method requestAnimationFrame
     method setInterval
     method setTimeout
     setter onerror
