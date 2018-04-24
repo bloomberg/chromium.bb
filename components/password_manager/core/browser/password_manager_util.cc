@@ -21,6 +21,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 
+using autofill::PasswordForm;
+
 namespace password_manager_util {
 namespace {
 
@@ -70,6 +72,15 @@ void StartCleaningBlacklisted(
     PrefService* prefs) {
   // The object will delete itself once the credentials are retrieved.
   new BlacklistedCredentialsCleaner(store.get(), prefs);
+}
+
+// Return true if
+// 1.|lhs| is non-PSL match, |rhs| is PSL match or
+// 2.|lhs| and |rhs| have the same value of |is_public_suffix_match|, and |lhs|
+// is preferred while |rhs| is not preferred.
+bool IsBetterMatch(const PasswordForm* lhs, const PasswordForm* rhs) {
+  return std::make_pair(!lhs->is_public_suffix_match, lhs->preferred) >
+         std::make_pair(!rhs->is_public_suffix_match, rhs->preferred);
 }
 
 }  // namespace
@@ -200,6 +211,39 @@ void CleanUserDataInBlacklistedCredentials(
                        prefs),
         base::TimeDelta::FromSeconds(delay_in_seconds));
   }
+}
+
+void FindBestMatches(
+    std::vector<const PasswordForm*> matches,
+    std::map<base::string16, const PasswordForm*>* best_matches,
+    std::vector<const PasswordForm*>* not_best_matches,
+    const PasswordForm** preferred_match) {
+  DCHECK(std::all_of(
+      matches.begin(), matches.end(),
+      [](const PasswordForm* match) { return !match->blacklisted_by_user; }));
+  DCHECK(best_matches);
+  DCHECK(not_best_matches);
+  DCHECK(preferred_match);
+
+  *preferred_match = nullptr;
+  best_matches->clear();
+  not_best_matches->clear();
+
+  if (matches.empty())
+    return;
+
+  // Sort matches using IsBetterMatch predicate.
+  std::sort(matches.begin(), matches.end(), IsBetterMatch);
+  for (const auto* match : matches) {
+    const base::string16& username = match->username_value;
+    // The first match for |username| in the sorted array is best match.
+    if (best_matches->find(username) == best_matches->end())
+      best_matches->insert(std::make_pair(username, match));
+    else
+      not_best_matches->push_back(match);
+  }
+
+  *preferred_match = *matches.begin();
 }
 
 }  // namespace password_manager_util
