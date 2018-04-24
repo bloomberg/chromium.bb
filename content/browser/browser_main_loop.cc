@@ -576,6 +576,14 @@ int BrowserMainLoop::EarlyInitialization() {
 #endif  // defined(USE_GLIB)
 
   if (parts_) {
+#if defined(OS_WIN)
+    // If we're running tests (ui_task is non-null), then the ResourceBundle
+    // has already been initialized.
+    if (!parameters_.ui_task) {
+      // Override the configured locale with the user's preferred UI language.
+      l10n_util::OverrideLocaleWithUILanguageList();
+    }
+#endif
     const int pre_early_init_error_code = parts_->PreEarlyInitialization();
     if (pre_early_init_error_code != content::RESULT_CODE_NORMAL_EXIT)
       return pre_early_init_error_code;
@@ -636,15 +644,6 @@ void BrowserMainLoop::PreMainMessageLoopStart() {
         "BrowserMainLoop::MainMessageLoopStart:PreMainMessageLoopStart");
     parts_->PreMainMessageLoopStart();
   }
-
-#if defined(OS_WIN)
-  // If we're running tests (ui_task is non-null), then the ResourceBundle
-  // has already been initialized.
-  if (!parameters_.ui_task) {
-    // Override the configured locale with the user's preferred UI language.
-    l10n_util::OverrideLocaleWithUILanguageList();
-  }
-#endif
 }
 
 void BrowserMainLoop::MainMessageLoopStart() {
