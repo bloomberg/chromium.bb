@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -73,7 +73,7 @@ class VisualStateTest : public ContentBrowserTest {
   }
 
   void AssertIsIdle() {
-    ASSERT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
+    ASSERT_TRUE(base::MessageLoopCurrent::Get()->IsIdleForTesting());
   }
 
   void InvokeVisualStateCallback(bool result) {
