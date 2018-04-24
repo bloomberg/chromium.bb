@@ -35,9 +35,6 @@ class StreamSocket;
 //       that there is no more than one connection at a time running
 //       through the following steps.
 //
-// This class is neither thread-safe nor thread-compatible.
-// TODO(ricea): Make this class thread-compatible by making it not be a
-// singleton.
 class NET_EXPORT_PRIVATE WebSocketEndpointLockManager {
  public:
   // Implement this interface to wait for an endpoint to be available.
