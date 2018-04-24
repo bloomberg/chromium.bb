@@ -61,25 +61,28 @@ constexpr int kPartitionAllocSize = 8 * 23;
 constexpr int kPartitionAllocCount = 107;
 static const char* kPartitionAllocTypeName = "kPartitionAllocTypeName";
 
-// Whether at least 1 renderer exists, and all renderers are being profiled.
+// Ideally, we'd check to see that at least one renderer exists, and all
+// renderers are being profiled, but something odd seems to be happening with
+// warm-up/spare renderers.
+//
+// Whether at least 1 renderer exists, and at least 1 renderer is being
+// profiled.
 bool RenderersAreBeingProfiled(
     const std::vector<base::ProcessId>& profiled_pids) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  size_t renderer_count = 0;
   for (auto iter = content::RenderProcessHost::AllHostsIterator();
        !iter.IsAtEnd(); iter.Advance()) {
     if (iter.GetCurrentValue()->GetProcess().Handle() ==
         base::kNullProcessHandle)
       continue;
     base::ProcessId pid = iter.GetCurrentValue()->GetProcess().Pid();
-    if (std::find(profiled_pids.begin(), profiled_pids.end(), pid) ==
+    if (std::find(profiled_pids.begin(), profiled_pids.end(), pid) !=
         profiled_pids.end()) {
-      return false;
+      return true;
     }
-    ++renderer_count;
   }
 
-  return renderer_count != 0;
+  return false;
 }
 
 // On success, populates |pid|.
