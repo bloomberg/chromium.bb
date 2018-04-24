@@ -85,8 +85,8 @@ class ITunesLinksHandlerTabHelperTest : public PlatformTest {
   base::HistogramTester histogram_tester_;
 };
 
-// Verifies that navigating to URLs that are not product hosted on the iTunes
-// AppStore does not launch storekit.
+// Verifies that navigating to non iTunes product URLs, or not supported iTunes
+// product type URLs does not launch storekit.
 TEST_F(ITunesLinksHandlerTabHelperTest, NonMatchingUrlsDoesntLaunchStoreKit) {
   EXPECT_FALSE(VerifyStoreKitLaunched(""));
   EXPECT_FALSE(VerifyStoreKitLaunched("foobar"));
@@ -94,58 +94,52 @@ TEST_F(ITunesLinksHandlerTabHelperTest, NonMatchingUrlsDoesntLaunchStoreKit) {
   EXPECT_FALSE(VerifyStoreKitLaunched("http://foo"));
   EXPECT_FALSE(VerifyStoreKitLaunched("http://foo?bar#qux"));
   EXPECT_FALSE(VerifyStoreKitLaunched("http://foo.bar/qux"));
-  EXPECT_FALSE(VerifyStoreKitLaunched("http://itunes.apple.com"));
-  EXPECT_FALSE(VerifyStoreKitLaunched("http://itunes.apple.com/id"));
-  EXPECT_FALSE(VerifyStoreKitLaunched("http://itunes.apple.com/12345"));
-  EXPECT_FALSE(VerifyStoreKitLaunched("itms-apps://itunes.apple.com/id123"));
-
+  EXPECT_FALSE(
+      VerifyStoreKitLaunched("http://geo.itunes.apple.com/de/genre/apps/"));
+  EXPECT_FALSE(VerifyStoreKitLaunched(
+      "https://itunes.apple.com/us/tv-show/theshow/id1232"));
+  EXPECT_FALSE(
+      VerifyStoreKitLaunched("http://itunes.apple.com/podcast/id12345"));
+  EXPECT_FALSE(VerifyStoreKitLaunched(
+      "itms-apps://itunes.apple.com/us/app/appname/id123"));
+  EXPECT_FALSE(VerifyStoreKitLaunched(
+      "http://itunes.apple.com/us/movie/testmovie/id12345"));
+  EXPECT_FALSE(
+      VerifyStoreKitLaunched("http://itunes.apple.com/app-bundle/id12345"));
   histogram_tester_.ExpectTotalCount(kITunesURLsHandlingResultHistogram, 0);
-
-  // Verify that StoreKit is not launched for iTunes bundle URLs for iOS 11.
-  // TODO(crbug.com/831196): Remove the test after storeKit bug is fixed.
-  if (@available(iOS 11, *)) {
-    EXPECT_FALSE(VerifyStoreKitLaunched(
-        "http://itunes.apple.com/us/app-bundle/testapp/id12345"));
-    EXPECT_FALSE(
-        VerifyStoreKitLaunched("http://itunes.apple.com/app-bundle/id12345"));
-    histogram_tester_.ExpectUniqueSample(
-        kITunesURLsHandlingResultHistogram,
-        static_cast<base::HistogramBase::Sample>(
-            ITunesUrlsStoreKitHandlingResult::kBundleUrlNotHandled),
-        2);
-  }
 }
 
 // Verifies that navigating to URLs for a product hosted on iTunes AppStore
-// launches storekit.
+// with supported media type launches storekit.
 TEST_F(ITunesLinksHandlerTabHelperTest, MatchingUrlsLaunchesStoreKit) {
-  EXPECT_TRUE(VerifyStoreKitLaunched("http://itunes.apple.com/id123"));
+  EXPECT_TRUE(
+      VerifyStoreKitLaunched("http://itunes.apple.com/us/app/app_name/id123"));
   NSString* product_id = @"id";
   NSString* af_tkn = @"at";
   NSDictionary* expected_params = @{product_id : @"123"};
 
   EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
 
-  EXPECT_TRUE(VerifyStoreKitLaunched("http://itunes.apple.com/bar/id123?"));
+  EXPECT_TRUE(VerifyStoreKitLaunched("http://itunes.apple.com/app/bar/id123?"));
   EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
 
   EXPECT_TRUE(VerifyStoreKitLaunched(
-      "http://foo.itunes.apple.com/bar/id123?qux&baz#foo"));
+      "http://foo.itunes.apple.com/app/test/id123?qux&baz#foo"));
   expected_params = @{product_id : @"123", @"qux" : @"", @"baz" : @""};
   EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
 
   EXPECT_TRUE(
-      VerifyStoreKitLaunched("http://itunes.apple.com/bar/id243?at=12312"));
+      VerifyStoreKitLaunched("http://itunes.apple.com/app/bar/id243?at=12312"));
   expected_params = @{product_id : @"243", af_tkn : @"12312"};
   EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
 
   EXPECT_TRUE(VerifyStoreKitLaunched(
-      "http://itunes.apple.com/bar/idabc?at=213&ct=123"));
+      "http://itunes.apple.com/app/bar/idabc?at=213&ct=123"));
   expected_params = @{product_id : @"abc", af_tkn : @"213", @"ct" : @"123"};
   EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
 
   EXPECT_TRUE(VerifyStoreKitLaunched(
-      "http://itunes.apple.com/bar/id123?at=2&uo=4#foo"));
+      "http://itunes.apple.com/de/app/bar/id123?at=2&uo=4#foo"));
   expected_params = @{product_id : @"123", af_tkn : @"2", @"uo" : @"4"};
   EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
 
@@ -155,64 +149,51 @@ TEST_F(ITunesLinksHandlerTabHelperTest, MatchingUrlsLaunchesStoreKit) {
           ITunesUrlsStoreKitHandlingResult::kSingleAppUrlHandled),
       6);
   histogram_tester_.ExpectTotalCount(kITunesURLsHandlingResultHistogram, 6);
-  // Verify that StoreKit is launched for iTunes bundle URLs before iOS 11.
-  if (@available(iOS 11, *)) {
-    // In iOS 11 StoreKit doesn't load iTunes bundle correctly.
-    // TODO(crbug.com/831196): Remove the condition after storeKit bug is fixed.
-  } else {
-    EXPECT_TRUE(VerifyStoreKitLaunched(
-        "http://itunes.apple.com/us/app-bundle/testapp/id12345"));
-    EXPECT_TRUE(
-        VerifyStoreKitLaunched("http://itunes.apple.com/app-bundle/id12345"));
-    histogram_tester_.ExpectBucketCount(
-        kITunesURLsHandlingResultHistogram,
-        static_cast<base::HistogramBase::Sample>(
-            ITunesUrlsStoreKitHandlingResult::kBundleUrlHandled),
-        2);
-    histogram_tester_.ExpectTotalCount(kITunesURLsHandlingResultHistogram, 8);
-  }
 }
 
-// Verifies that ItunesLinkHandlerPolicyDecider don't allow redirects to Apple
-// appstore when the original request link is http itunes product URL.
+// Verifies that ITunesLinkHandlerPolicyDecider don't allow redirects to Apple
+// appstore when the original request link is supported http iTunes product URL.
 TEST_F(ITunesLinksHandlerTabHelperTest, TestPolicyDeciderShouldAllowRequest) {
   EXPECT_FALSE(ShouldAllowRequest(
-      /*url_string=*/@"itms://itunes.apple.com/12345",
-      /*pending_item_url=*/"http://itunes.apple.com/bar/id123"));
-  EXPECT_TRUE(
-      ShouldAllowRequest(/*url_string=*/@"itms://itunes.apple.com/12345",
-                         /*pending_item_url=*/"http://foo.bar"));
-  EXPECT_TRUE(
-      ShouldAllowRequest(/*url_string=*/@"http://itunes.apple.com/12345",
-                         /*pending_item_url=*/""));
-  EXPECT_TRUE(
-      ShouldAllowRequest(/*url_string=*/@"http://itunes.apple.com/bar/id123",
-                         /*pending_item_url=*/""));
+      /*url_string=*/@"itms://itunes.apple.com/us/app/name/id12345",
+      /*pending_item_url=*/"http://itunes.apple.com/us/app/name/id12345"));
   EXPECT_TRUE(ShouldAllowRequest(
-      /*url_string=*/@"http://itunes.apple.com/12345",
+      /*url_string=*/@"itms://itunes.apple.com/us/app/name/id12345",
+      /*pending_item_url=*/"http://foo.bar"));
+  EXPECT_TRUE(ShouldAllowRequest(
+      /*url_string=*/@"http://itunes.apple.com/us/app/name/id12345",
+      /*pending_item_url=*/""));
+  EXPECT_TRUE(ShouldAllowRequest(
+      /*url_string=*/@"itms-apps://itunes.apple.com/us/podcast/name/id123",
+      /*pending_item_url=*/"https://itunes.apple.com/us/podcast/name/id123"));
+  EXPECT_TRUE(ShouldAllowRequest(
+      /*url_string=*/@"https://itunes.apple.com/app/test/id12345",
       /*pending_item_url=*/"https://foo.bar"));
 }
 
-// Verifies that ItunesLinkHandlerPolicyDecider block response from http itunes
-// product URL.
+// Verifies that ITunesLinkHandlerPolicyDecider block response from supported
+// http iTunes product URL.
 TEST_F(ITunesLinksHandlerTabHelperTest, TestPolicyDeciderShouldAllowResponse) {
-  EXPECT_TRUE(ShouldAllowResponse(/*url_string=*/@"http://itunes.apple.com",
+  EXPECT_TRUE(ShouldAllowResponse(/*url_string=*/@"https://itunes.apple.com/",
                                   /*main_frame=*/true));
   EXPECT_FALSE(ShouldAllowResponse(
-      /*url_string=*/@"http://itunes.apple.com/id1234", /*main_frame=*/true));
+      /*url_string=*/@"http://itunes.apple.com/app/test/id1234",
+      /*main_frame=*/true));
   // If the response is for subframe, it should be allowed.
   EXPECT_TRUE(ShouldAllowResponse(
-      /*url_string=*/@"http://itunes.apple.com/id1234", /*main_frame=*/false));
+      /*url_string=*/@"http://itunes.apple.com/app/test/id1234",
+      /*main_frame=*/false));
 
   EXPECT_TRUE(ShouldAllowResponse(
-      /*url_string=*/@"http://itunes.apple.com/12345", /*main_frame=*/true));
+      /*url_string=*/@"https://itunes.apple.com/us/podcast/name/id123",
+      /*main_frame=*/true));
   EXPECT_FALSE(ShouldAllowResponse(
-      /*url_string=*/@"http://itunes.apple.com/bar/id123?qux",
+      /*url_string=*/@"http://itunes.apple.com/de/app/bar/id123?qux",
       /*main_frame=*/true));
 
-  EXPECT_TRUE(
-      ShouldAllowResponse(/*url_string=*/@"itms-apps://itunes.apple.com/id123",
-                          /*main_frame=*/true));
+  EXPECT_TRUE(ShouldAllowResponse(
+      /*url_string=*/@"itms-apps://itunes.apple.com/de/app/bar/id123?qux",
+      /*main_frame=*/true));
   EXPECT_TRUE(ShouldAllowResponse(/*url_string=*/@"http://foo.bar/qux",
                                   /*main_frame=*/true));
 }
