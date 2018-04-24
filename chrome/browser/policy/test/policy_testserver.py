@@ -191,6 +191,8 @@ LICENSE_TYPES = {
   'kiosk': dm.LicenseType.KIOSK,
 }
 
+INVALID_ENROLLMENT_TOKEN = 'invalid_enrollment_token'
+
 class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
   """Decodes and handles device management requests from clients.
 
@@ -766,6 +768,9 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     if not msg.machine_name:
       return (400, 'Invalid machine name: ')
+
+    if enrollment_token == INVALID_ENROLLMENT_TOKEN:
+      return (401, 'Invalid enrollment token')
 
     response = dm.DeviceManagementResponse()
     response.register_response.device_management_token = (

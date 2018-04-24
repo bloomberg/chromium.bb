@@ -24,6 +24,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_client_registration_helper.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
+#include "components/policy/core/common/cloud/machine_level_user_cloud_policy_metrics.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
@@ -57,16 +58,6 @@ namespace policy {
 namespace {
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-
-// This enum is used for recording the metrics. It must match the
-// MachineLevelUserCloudPolicyEnrollmentResult in enums.xml and should not be
-// reordered. |kMaxValue| must be assigned to the last entry of the enum.
-enum MachineLevelUserCloudPolicyEnrollmentResult {
-  kSuccess = 0,
-  kFailedToFetch = 1,
-  kFailedToStore = 2,
-  kMaxValue = kFailedToStore,
-};
 
 std::unique_ptr<MachineLevelUserCloudPolicyManager>
 CreateMachineLevelUserCloudPolicyManager() {
@@ -149,6 +140,14 @@ ChromeBrowserPolicyConnector::GetPlatformProvider() {
   ConfigurationPolicyProvider* provider =
       BrowserPolicyConnectorBase::GetPolicyProviderForTesting();
   return provider ? provider : platform_provider_;
+}
+
+void ChromeBrowserPolicyConnector::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ChromeBrowserPolicyConnector::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
@@ -303,6 +302,7 @@ void ChromeBrowserPolicyConnector::RegisterForPolicyWithEnrollmentTokenCallback(
     DVLOG(1) << "No DM token returned from browser registration";
     RecordEnrollmentResult(
         MachineLevelUserCloudPolicyEnrollmentResult::kFailedToFetch);
+    NotifyMachineLevelUserCloudPolicyRegisterFinished(false);
     return;
   }
 
@@ -325,6 +325,14 @@ void ChromeBrowserPolicyConnector::RegisterForPolicyWithEnrollmentTokenCallback(
   // Start fetching policies.
   machine_level_user_cloud_policy_fetcher_->SetupRegistrationAndFetchPolicy(
       dm_token, client_id);
+  NotifyMachineLevelUserCloudPolicyRegisterFinished(true);
+}
+
+void ChromeBrowserPolicyConnector::
+    NotifyMachineLevelUserCloudPolicyRegisterFinished(bool succeeded) {
+  for (auto& observer : observers_) {
+    observer.OnMachineLevelUserCloudPolicyRegisterFinished(succeeded);
+  }
 }
 
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

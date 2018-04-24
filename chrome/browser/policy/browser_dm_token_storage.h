@@ -39,11 +39,19 @@ class BrowserDMTokenStorage {
   // an error is encountered.
   virtual std::string RetrieveDMToken() = 0;
 
+  // Set the mock BrowserDMTokenStorage for testing. The caller owns the
+  // instance of the storage.
+  static void SetForTesting(BrowserDMTokenStorage* storage) {
+    storage_for_testing_ = storage;
+  }
+
  protected:
   BrowserDMTokenStorage() = default;
   virtual ~BrowserDMTokenStorage() = default;
 
  private:
+  static BrowserDMTokenStorage* storage_for_testing_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserDMTokenStorage);
 };
 

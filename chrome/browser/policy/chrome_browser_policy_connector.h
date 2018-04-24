@@ -59,6 +59,19 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
 
   ConfigurationPolicyProvider* GetPlatformProvider();
 
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Called when machine level user cloud policy enrollment is finished.
+    // |succeeded| is true if |dm_token| is returned from the server.
+    virtual void OnMachineLevelUserCloudPolicyRegisterFinished(bool succeeded) {
+    }
+  };
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   MachineLevelUserCloudPolicyManager* GetMachineLevelUserCloudPolicyManager();
 #endif
@@ -81,6 +94,8 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
       const std::string& dm_token,
       const std::string& client_id);
 
+  void NotifyMachineLevelUserCloudPolicyRegisterFinished(bool succeeded);
+
   // Owned by base class.
   MachineLevelUserCloudPolicyManager* machine_level_user_cloud_policy_manager_ =
       nullptr;
@@ -89,7 +104,9 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
       machine_level_user_cloud_policy_registrar_;
   std::unique_ptr<MachineLevelUserCloudPolicyFetcher>
       machine_level_user_cloud_policy_fetcher_;
+
 #endif
+  base::ObserverList<Observer, true> observers_;
 
   // Owned by base class.
   ConfigurationPolicyProvider* platform_provider_ = nullptr;

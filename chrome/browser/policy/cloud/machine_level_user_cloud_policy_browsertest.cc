@@ -1,10 +1,11 @@
-// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <stdint.h>
 
 #include <memory>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -12,9 +13,15 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/test/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_browser_main.h"
+#include "chrome/browser/chrome_browser_main_extra_parts.h"
+#include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/common/chrome_paths.h"
@@ -22,9 +29,11 @@
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
+#include "components/policy/core/common/cloud/machine_level_user_cloud_policy_metrics.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/mock_cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
+#include "components/policy/core/common/policy_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
@@ -43,14 +52,92 @@ using testing::_;
 
 namespace em = enterprise_management;
 
+namespace policy {
 namespace {
+
 const char kEnrollmentToken[] = "enrollment_token";
+const char kInvalidEnrollmentToken[] = "invalid_enrollment_token";
 const char kMachineName[] = "foo";
 const char kClientID[] = "fake-client-id";
 const char kDMToken[] = "fake-dm-token";
-}  // namespace
+const char kEnrollmentResultMetrics[] =
+    "Enterprise.MachineLevelUserCloudPolicyEnrollment.Result";
 
-namespace policy {
+class ChromeBrowserPolicyConnectorObserver
+    : public ChromeBrowserPolicyConnector::Observer {
+ public:
+  void OnMachineLevelUserCloudPolicyRegisterFinished(bool succeeded) override {
+    EXPECT_EQ(should_succeed_, succeeded);
+    is_finished_ = true;
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  void SetRunLoop(base::RunLoop* run_loop) { run_loop_ = run_loop; }
+  void SetShouldSucceed(bool should_succeed) {
+    should_succeed_ = should_succeed;
+  }
+
+  bool IsFinished() { return is_finished_; }
+
+ private:
+  base::RunLoop* run_loop_ = nullptr;
+  bool is_finished_ = false;
+  bool should_succeed_ = false;
+};
+
+class FakeBrowserDMTokenStorage : public BrowserDMTokenStorage {
+ public:
+  FakeBrowserDMTokenStorage() = default;
+
+  std::string RetrieveClientId() override { return client_id_; }
+  std::string RetrieveEnrollmentToken() override { return enrollment_token_; }
+  void StoreDMToken(const std::string& dm_token,
+                    StoreCallback callback) override {
+    // Store the dm token in memory even if storage gonna failed. This is the
+    // same behavior of production code.
+    dm_token_ = dm_token;
+    // Run the callback synchronously to make sure the metrics is recorded
+    // before verfication.
+    std::move(callback).Run(storage_enabled_);
+  }
+  std::string RetrieveDMToken() override { return dm_token_; }
+
+  void SetEnrollmentToken(const std::string& enrollment_token) {
+    enrollment_token_ = enrollment_token;
+  }
+
+  void SetClientId(std::string client_id) { client_id_ = client_id; }
+
+  void EnableStorage(bool storage_enabled) {
+    storage_enabled_ = storage_enabled;
+  }
+
+ private:
+  std::string enrollment_token_;
+  std::string client_id_;
+  std::string dm_token_;
+  bool storage_enabled_ = true;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeBrowserDMTokenStorage);
+};
+
+class ChromeBrowserExtraSetUp : public ChromeBrowserMainExtraParts {
+ public:
+  explicit ChromeBrowserExtraSetUp(
+      ChromeBrowserPolicyConnectorObserver* observer)
+      : observer_(observer) {}
+  void PreMainMessageLoopStart() override {
+    g_browser_process->browser_policy_connector()->AddObserver(observer_);
+  }
+
+ private:
+  ChromeBrowserPolicyConnectorObserver* observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserExtraSetUp);
+};
+
+}  // namespace
 
 MATCHER_P(MatchProto, expected, "matches protobuf") {
   return arg.SerializePartialAsString() == expected.SerializePartialAsString();
@@ -253,5 +340,87 @@ IN_PROC_BROWSER_TEST_F(MachineLevelUserCloudPolicyManagerTest, NoDmToken) {
 IN_PROC_BROWSER_TEST_F(MachineLevelUserCloudPolicyManagerTest, WithDmToken) {
   EXPECT_TRUE(CreateAndInitManager("dummy_dm_token"));
 }
+
+class MachineLevelUserCloudPolicyEnrollmentTest
+    : public InProcessBrowserTest,
+      public ::testing::WithParamInterface<std::tuple<bool, bool>> {
+ public:
+  MachineLevelUserCloudPolicyEnrollmentTest() {
+    BrowserDMTokenStorage::SetForTesting(&storage_);
+    storage_.SetEnrollmentToken(is_enrollment_token_valid()
+                                    ? kEnrollmentToken
+                                    : kInvalidEnrollmentToken);
+    storage_.SetClientId("client_id");
+    storage_.EnableStorage(storage_enabled());
+    observer_.SetShouldSucceed(is_enrollment_token_valid());
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    ASSERT_TRUE(test_server_.Start());
+
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    command_line->AppendSwitchASCII(switches::kDeviceManagementUrl,
+                                    test_server_.GetServiceURL().spec());
+
+    histogram_tester_.ExpectTotalCount(kEnrollmentResultMetrics, 0);
+  }
+
+  void CreatedBrowserMainParts(content::BrowserMainParts* parts) override {
+    static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
+        new ChromeBrowserExtraSetUp(&observer_));
+  }
+
+  void TearDownOnMainThread() override {
+    g_browser_process->browser_policy_connector()->RemoveObserver(&observer_);
+  }
+
+  void WaitForPolicyRegisterFinished() {
+    if (!observer_.IsFinished()) {
+      base::RunLoop run_loop;
+      observer_.SetRunLoop(&run_loop);
+      run_loop.Run();
+    }
+  }
+
+ protected:
+  bool is_enrollment_token_valid() const { return std::get<0>(GetParam()); }
+  bool storage_enabled() const { return std::get<1>(GetParam()); }
+
+  base::HistogramTester histogram_tester_;
+
+ private:
+  LocalPolicyTestServer test_server_;
+  FakeBrowserDMTokenStorage storage_;
+  ChromeBrowserPolicyConnectorObserver observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyEnrollmentTest);
+};
+
+IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyEnrollmentTest, Test) {
+  WaitForPolicyRegisterFinished();
+
+  EXPECT_EQ(is_enrollment_token_valid() ? "fake_device_management_token"
+                                        : std::string(),
+            BrowserDMTokenStorage::Get()->RetrieveDMToken());
+
+  MachineLevelUserCloudPolicyEnrollmentResult expected_result;
+  if (is_enrollment_token_valid() && storage_enabled()) {
+    expected_result = MachineLevelUserCloudPolicyEnrollmentResult::kSuccess;
+  } else if (is_enrollment_token_valid() && !storage_enabled()) {
+    expected_result =
+        MachineLevelUserCloudPolicyEnrollmentResult::kFailedToStore;
+  } else {
+    expected_result =
+        MachineLevelUserCloudPolicyEnrollmentResult::kFailedToFetch;
+  }
+  histogram_tester_.ExpectBucketCount(kEnrollmentResultMetrics, expected_result,
+                                      1);
+  histogram_tester_.ExpectTotalCount(kEnrollmentResultMetrics, 1);
+}
+
+INSTANTIATE_TEST_CASE_P(,
+                        MachineLevelUserCloudPolicyEnrollmentTest,
+                        ::testing::Combine(::testing::Bool(),
+                                           ::testing::Bool()));
 
 }  // namespace policy
