@@ -281,6 +281,8 @@ PASS AudioParam interface: existence and properties of interface prototype objec
 PASS AudioParam interface: existence and properties of interface prototype object's @@unscopables property
 PASS AudioParam interface: attribute value
 PASS Unscopable handled correctly for value property on AudioParam
+PASS AudioParam interface: attribute automationRate
+PASS Unscopable handled correctly for automationRate property on AudioParam
 PASS AudioParam interface: attribute defaultValue
 PASS Unscopable handled correctly for defaultValue property on AudioParam
 PASS AudioParam interface: attribute minValue
@@ -304,6 +306,7 @@ PASS Unscopable handled correctly for cancelAndHoldAtTime(double) on AudioParam
 PASS AudioParam must be primary interface of [object AudioParam]
 PASS Stringification of [object AudioParam]
 PASS AudioParam interface: [object AudioParam] must inherit property "value" with the proper type
+PASS AudioParam interface: [object AudioParam] must inherit property "automationRate" with the proper type
 PASS AudioParam interface: [object AudioParam] must inherit property "defaultValue" with the proper type
 PASS AudioParam interface: [object AudioParam] must inherit property "minValue" with the proper type
 PASS AudioParam interface: [object AudioParam] must inherit property "maxValue" with the proper type

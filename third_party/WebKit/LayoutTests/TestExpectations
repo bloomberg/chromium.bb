@@ -2306,7 +2306,6 @@ crbug.com/833215 [ Linux ] external/wpt/accelerometer/Accelerometer.https.html [
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/syntax/parsing/html5lib_template.html?run_type=uri [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/webaudio/idlharness.https.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-integrity-classic.sub.html [ Skip ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-integrity-module.sub.html [ Skip ]
 crbug.com/626703 [ Mac10.12 ] virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Timeout ]
