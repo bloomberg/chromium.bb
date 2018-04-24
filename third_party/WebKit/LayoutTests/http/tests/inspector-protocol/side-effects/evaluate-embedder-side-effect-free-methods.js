@@ -4,12 +4,34 @@
 
   await session.evaluate(`
     var global_performance = window.performance;
+
+    document.documentElement.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+
     var div = document.createElement('div');
     div.setAttribute('attr1', 'attr1-value');
     div.setAttribute('attr2', 'attr2-value');
+    document.body.appendChild(div);
+
+    var divNamed = document.createElement('div');
+    divNamed.setAttribute('name', 'div-name');
+    document.body.appendChild(divNamed);
+
+    var spanWithClass = document.createElement('span');
+    spanWithClass.className = 'foo bar';
+    div.appendChild(spanWithClass);
+
     var textNode = document.createTextNode('footext');
     var divNoAttrs = document.createElement('div');
   `);
+
+  // Sanity check: test that setters are not allowed on whitelisted methods.
+  await checkHasSideEffect(`document.querySelector('div').x = "foo"`);
+
+  // Document
+  await checkHasNoSideEffect(`document.getElementsByTagName('div')`);
+  await checkHasNoSideEffect(`document.getElementsByTagNameNS('http://www.w3.org/1999/xhtml', 'div')`);
+  await checkHasNoSideEffect(`document.getElementsByClassName('foo')`);
+  await checkHasNoSideEffect(`document.getElementsByName('div-name')`);
 
   // Element
   await checkHasNoSideEffect(`div.getAttributeNames()`);
@@ -24,10 +46,14 @@
   await checkHasNoSideEffect(`divNoAttrs.hasAttribute('attr1')`);
 
   // Node
-  await checkHasNoSideEffect(`div.contains(textNode)`);
-  await checkHasNoSideEffect(`div.contains()`);
-  await checkHasNoSideEffect(`div.contains({})`);
-  await checkHasNoSideEffect(`textNode.contains(textNode)`);
+  var testNodes = ['div', 'document', 'textNode'];
+  for (var node of testNodes) {
+    await checkHasNoSideEffect(`${node}.contains(textNode)`);
+    await checkHasNoSideEffect(`${node}.contains()`);
+    await checkHasNoSideEffect(`${node}.contains({})`);
+    await checkHasNoSideEffect(`${node}.querySelector('div')`);
+    await checkHasNoSideEffect(`${node}.querySelectorAll('div')`);
+  }
 
   // Window
   await checkHasNoSideEffect(`global_performance.now()`);

@@ -34,9 +34,9 @@
     LegacyTreatAsPartialInterface,
     NoInterfaceObject // Always used on target of 'implements'
 ] interface ParentNode {
-    [SameObject, PerWorldBindings] readonly attribute HTMLCollection children;
-    [PerWorldBindings] readonly attribute Element? firstElementChild;
-    [PerWorldBindings] readonly attribute Element? lastElementChild;
+    [Affects=Nothing, SameObject, PerWorldBindings] readonly attribute HTMLCollection children;
+    [Affects=Nothing, PerWorldBindings] readonly attribute Element? firstElementChild;
+    [Affects=Nothing, PerWorldBindings] readonly attribute Element? lastElementChild;
     [Affects=Nothing] readonly attribute unsigned long childElementCount;
 
     [Unscopable, RaisesException, CEReactions, CustomElementCallbacks] void prepend((Node or DOMString)... nodes);
@@ -44,6 +44,6 @@
 
     // [Unscopable] Element? query(DOMString relativeSelectors);
     // [NewObject, Unscopable] Elements queryAll(DOMString relativeSelectors);
-    [RaisesException] Element? querySelector(DOMString selectors);
-    [NewObject, RaisesException] NodeList querySelectorAll(DOMString selectors);
+    [Affects=Nothing, RaisesException] Element? querySelector(DOMString selectors);
+    [Affects=Nothing, NewObject, RaisesException] NodeList querySelectorAll(DOMString selectors);
 };

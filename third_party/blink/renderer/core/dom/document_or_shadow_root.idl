@@ -15,7 +15,7 @@
     // https://drafts.csswg.org/cssom-view/#extensions-to-the-document-interface
     Element? elementFromPoint(double x, double y);
     sequence<Element> elementsFromPoint(double x, double y);
-    readonly attribute Element? activeElement;
+    [Affects=Nothing] readonly attribute Element? activeElement;
     [SameObject] readonly attribute StyleSheetList styleSheets;
     // PointerLock API
     // https://w3c.github.io/pointerlock/

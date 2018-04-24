@@ -40,14 +40,14 @@ interface Node : EventTarget {
 
     [Affects=Nothing, Measure] readonly attribute boolean isConnected;
     [PerWorldBindings] readonly attribute Document? ownerDocument;
-    [PerWorldBindings] readonly attribute Node? parentNode;
-    [PerWorldBindings] readonly attribute Element? parentElement;
+    [Affects=Nothing, PerWorldBindings] readonly attribute Node? parentNode;
+    [Affects=Nothing, PerWorldBindings] readonly attribute Element? parentElement;
     [ImplementedAs=hasChildren] boolean hasChildNodes();
-    [SameObject, PerWorldBindings] readonly attribute NodeList childNodes;
-    [PerWorldBindings] readonly attribute Node? firstChild;
-    [PerWorldBindings] readonly attribute Node? lastChild;
-    [PerWorldBindings] readonly attribute Node? previousSibling;
-    [PerWorldBindings] readonly attribute Node? nextSibling;
+    [Affects=Nothing, SameObject, PerWorldBindings] readonly attribute NodeList childNodes;
+    [Affects=Nothing, PerWorldBindings] readonly attribute Node? firstChild;
+    [Affects=Nothing, PerWorldBindings] readonly attribute Node? lastChild;
+    [Affects=Nothing, PerWorldBindings] readonly attribute Node? previousSibling;
+    [Affects=Nothing, PerWorldBindings] readonly attribute Node? nextSibling;
     [MeasureAs=NodeGetRootNode] Node getRootNode(optional GetRootNodeOptions options);
 
     [Affects=Nothing, CEReactions, CustomElementCallbacks] attribute DOMString? nodeValue;
