@@ -355,6 +355,15 @@ TEST_F(ShellSurfaceTest, SetMinimumSize) {
                       ->GetNativeWindow()
                       ->delegate()
                       ->GetMinimumSize());
+
+  gfx::Size size_with_frame(50, 83);
+  surface->SetFrame(SurfaceFrameType::NORMAL);
+  EXPECT_EQ(size, shell_surface->GetMinimumSize());
+  EXPECT_EQ(size_with_frame, shell_surface->GetWidget()->GetMinimumSize());
+  EXPECT_EQ(size_with_frame, shell_surface->GetWidget()
+                                 ->GetNativeWindow()
+                                 ->delegate()
+                                 ->GetMinimumSize());
 }
 
 TEST_F(ShellSurfaceTest, SetMaximumSize) {
