@@ -60,6 +60,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/page_transition_types.h"
 
@@ -768,6 +769,13 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
+#if defined(ADDRESS_SANITIZER)
+  // TODO(lukasza): https://crbug.com/835578: Flaky UaF when running with
+  // site-per-process.
+  if (content::AreAllSitesIsolatedForTesting())
+    return;
+#endif
+
   Profile* profile = browser()->profile();
 
   GURL url1("http://google.com");
