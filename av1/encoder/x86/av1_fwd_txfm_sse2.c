@@ -2125,22 +2125,22 @@ static const transform_1d_sse2 row_txfm8x32_arr[TX_TYPES] = {
 };
 
 static const transform_1d_sse2 row_txfm8x64_arr[TX_TYPES] = {
-  fdct8x64_new_sse2,       // DCT_DCT
-  NULL,                    // ADST_DCT
-  NULL,                    // DCT_ADST
-  NULL,                    // ADST_ADST
-  NULL,                    // FLIPADST_DCT
-  NULL,                    // DCT_FLIPADST
-  NULL,                    // FLIPADST_FLIPADST
-  NULL,                    // ADST_FLIPADST
-  NULL,                    // FLIPADST_ADST
-  fidentity8x64_new_sse2,  // IDTX
-  fidentity8x64_new_sse2,  // V_DCT
-  fdct8x64_new_sse2,       // H_DCT
-  NULL,                    // V_ADST
-  NULL,                    // H_ADST
-  NULL,                    // V_FLIPADST
-  NULL                     // H_FLIPADST
+  fdct8x64_new_sse2,  // DCT_DCT
+  NULL,               // ADST_DCT
+  NULL,               // DCT_ADST
+  NULL,               // ADST_ADST
+  NULL,               // FLIPADST_DCT
+  NULL,               // DCT_FLIPADST
+  NULL,               // FLIPADST_FLIPADST
+  NULL,               // ADST_FLIPADST
+  NULL,               // FLIPADST_ADST
+  NULL,               // IDTX
+  NULL,               // V_DCT
+  NULL,               // H_DCT
+  NULL,               // V_ADST
+  NULL,               // H_ADST
+  NULL,               // V_FLIPADST
+  NULL                // H_FLIPADST
 };
 
 void av1_lowbd_fwd_txfm2d_4x4_sse2(const int16_t *input, int32_t *output,

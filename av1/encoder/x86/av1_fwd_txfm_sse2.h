@@ -90,20 +90,6 @@ static INLINE void fidentity8x32_new_sse2(const __m128i *input, __m128i *output,
   }
 }
 
-static INLINE void fidentity8x64_new_sse2(const __m128i *input, __m128i *output,
-                                          int8_t cos_bit) {
-  (void)cos_bit;
-  const __m128i one = _mm_set1_epi16(1);
-
-  for (int i = 0; i < 64; ++i) {
-    const __m128i a_lo = _mm_unpacklo_epi16(input[i], one);
-    const __m128i a_hi = _mm_unpackhi_epi16(input[i], one);
-    const __m128i b_lo = scale_round_sse2(a_lo, 4 * NewSqrt2);
-    const __m128i b_hi = scale_round_sse2(a_hi, 4 * NewSqrt2);
-    output[i] = _mm_packs_epi32(b_lo, b_hi);
-  }
-}
-
 static const transform_1d_sse2 col_txfm8x32_arr[TX_TYPES] = {
   fdct8x32_new_sse2,       // DCT_DCT
   NULL,                    // ADST_DCT
@@ -124,22 +110,22 @@ static const transform_1d_sse2 col_txfm8x32_arr[TX_TYPES] = {
 };
 
 static const transform_1d_sse2 col_txfm8x64_arr[TX_TYPES] = {
-  fdct8x64_new_sse2,       // DCT_DCT
-  NULL,                    // ADST_DCT
-  NULL,                    // DCT_ADST
-  NULL,                    // ADST_ADST
-  NULL,                    // FLIPADST_DCT
-  NULL,                    // DCT_FLIPADST
-  NULL,                    // FLIPADST_FLIPADST
-  NULL,                    // ADST_FLIPADST
-  NULL,                    // FLIPADST_ADST
-  fidentity8x64_new_sse2,  // IDTX
-  fdct8x64_new_sse2,       // V_DCT
-  fidentity8x64_new_sse2,  // H_DCT
-  NULL,                    // V_ADST
-  NULL,                    // H_ADST
-  NULL,                    // V_FLIPADST
-  NULL                     // H_FLIPADST
+  fdct8x64_new_sse2,  // DCT_DCT
+  NULL,               // ADST_DCT
+  NULL,               // DCT_ADST
+  NULL,               // ADST_ADST
+  NULL,               // FLIPADST_DCT
+  NULL,               // DCT_FLIPADST
+  NULL,               // FLIPADST_FLIPADST
+  NULL,               // ADST_FLIPADST
+  NULL,               // FLIPADST_ADST
+  NULL,               // IDTX
+  NULL,               // V_DCT
+  NULL,               // H_DCT
+  NULL,               // V_ADST
+  NULL,               // H_ADST
+  NULL,               // V_FLIPADST
+  NULL                // H_FLIPADST
 };
 
 #ifdef __cplusplus
