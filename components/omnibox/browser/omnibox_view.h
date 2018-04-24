@@ -23,7 +23,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_client.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/range/range.h"
 
@@ -34,6 +36,8 @@ class OmniboxEditModel;
 
 class OmniboxView {
  public:
+  using IconFetchedCallback = base::OnceCallback<void(const gfx::Image& icon)>;
+
   // Represents the changes between two State objects.  This is used by the
   // model to determine how its internal state should be updated after the view
   // state changes.  See OmniboxEditModel::OnAfterPossibleChange().
@@ -84,8 +88,11 @@ class OmniboxView {
   // the field is empty.
   bool IsEditingOrEmpty() const;
 
-  // Returns the vector icon to display as the location icon.
-  const gfx::VectorIcon& GetVectorIcon() const;
+  // Returns the icon to display as the location icon. If a favicon is
+  // available, |on_icon_fetched| may be called later asynchronously.
+  gfx::ImageSkia GetIcon(int dip_size,
+                         SkColor color,
+                         IconFetchedCallback on_icon_fetched) const;
 
   // The user text is the text the user has manually keyed in.  When present,
   // this is shown in preference to the permanent text; hitting escape will

@@ -21,6 +21,11 @@
 #include "components/toolbar/toolbar_model.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
+
+#if !defined(OS_IOS)
+#include "ui/gfx/paint_vector_icon.h"
+#endif
 
 // static
 base::string16 OmniboxView::StripJavascriptSchemas(const base::string16& text) {
@@ -96,14 +101,39 @@ bool OmniboxView::IsEditingOrEmpty() const {
       (GetOmniboxTextLength() == 0);
 }
 
-const gfx::VectorIcon& OmniboxView::GetVectorIcon() const {
-  if (!IsEditingOrEmpty())
-    return controller_->GetToolbarModel()->GetVectorIcon();
+gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
+                                    SkColor color,
+                                    IconFetchedCallback on_icon_fetched) const {
+#if defined(OS_IOS)
+  // OmniboxViewIOS provides its own icon logic. The iOS build also does not
+  // link in the vector icon rendering code.
+  return gfx::ImageSkia();
+#else   // !defined(OS_IOS)
+  if (!IsEditingOrEmpty()) {
+    return gfx::CreateVectorIcon(
+        controller_->GetToolbarModel()->GetVectorIcon(), dip_size, color);
+  }
 
-  return AutocompleteMatch::TypeToVectorIcon(
-      model_ ? model_->CurrentTextType()
-             : AutocompleteMatchType::URL_WHAT_YOU_TYPED,
-      /*is_bookmark=*/false, /*is_tab_match=*/false);
+  // For Material Refresh, display the favicon of the default search engine.
+  const auto type = model_ ? model_->CurrentTextType()
+                           : AutocompleteMatchType::URL_WHAT_YOU_TYPED;
+  if (ui::MaterialDesignController::IsNewerMaterialUi() &&
+      AutocompleteMatch::IsSearchType(type)) {
+    // TODO(tommycli): Implement fetching the default search provider and
+    // starting the async request for its favicon here. This will also need
+    // caching to provide good performance.
+
+    // Fall through to provide the vector icon until we receive the favicon.
+    // Note that the FaviconService can fail to fetch the favicon, in which
+    // the default vector icon we provide below should remain.
+  }
+
+  const gfx::VectorIcon& vector_icon =
+      AutocompleteMatch::TypeToVectorIcon(type,
+                                          /*is_bookmark=*/false,
+                                          /*is_tab_match=*/false);
+  return gfx::CreateVectorIcon(vector_icon, dip_size, color);
+#endif  // defined(OS_IOS)
 }
 
 void OmniboxView::SetUserText(const base::string16& text) {
