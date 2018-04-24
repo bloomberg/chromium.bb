@@ -401,17 +401,6 @@ if (current_os == "win" || current_os == "winuwp") {
 # below.
 sources_assignment_filter = []
 
-# TODO(crbug.com/812974): Clean up _posix files and remove Fuchsia here.
-if (!is_posix && !is_fuchsia) {
-  sources_assignment_filter += [
-    "*_posix.h",
-    "*_posix.cc",
-    "*_posix_unittest.h",
-    "*_posix_unittest.cc",
-    "*\bposix/*",
-  ]
-}
-
 if (!is_win) {
   sources_assignment_filter += [
     "*_win.cc",
