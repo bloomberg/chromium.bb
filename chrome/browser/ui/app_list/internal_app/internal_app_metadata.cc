@@ -19,20 +19,6 @@
 
 namespace app_list {
 
-namespace {
-
-// Returns InternalApp by |app_id|.
-// Returns nullptr if |app_id| does not correspond to an internal app.
-const InternalApp* FindInternalApp(const std::string& app_id) {
-  for (const auto& app : GetInternalAppList()) {
-    if (app_id == app.app_id)
-      return &app;
-  }
-  return nullptr;
-}
-
-}  // namespace
-
 const std::vector<InternalApp>& GetInternalAppList() {
   static const base::NoDestructor<std::vector<InternalApp>> internal_app_list(
       {{kInternalAppIdKeyboardShortcutViewer,
@@ -47,6 +33,14 @@ const std::vector<InternalApp>& GetInternalAppList() {
         /*show_in_launcher=*/true,
         /*searchable_string_resource_id=*/0}});
   return *internal_app_list;
+}
+
+const InternalApp* FindInternalApp(const std::string& app_id) {
+  for (const auto& app : GetInternalAppList()) {
+    if (app_id == app.app_id)
+      return &app;
+  }
+  return nullptr;
 }
 
 bool IsInternalApp(const std::string& app_id) {

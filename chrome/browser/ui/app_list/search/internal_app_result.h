@@ -16,6 +16,8 @@ class Profile;
 
 namespace app_list {
 
+class AppContextMenu;
+
 class InternalAppResult : public AppResult {
  public:
   InternalAppResult(Profile* profile,
@@ -33,6 +35,8 @@ class InternalAppResult : public AppResult {
   void ExecuteLaunchCommand(int event_flags) override;
 
  private:
+  std::unique_ptr<AppContextMenu> context_menu_;
+
   DISALLOW_COPY_AND_ASSIGN(InternalAppResult);
 };
 

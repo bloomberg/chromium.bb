@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/internal_app/internal_app_item.h"
 
+#include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -25,10 +26,24 @@ InternalAppItem::InternalAppItem(
     SetDefaultPositionIfApplicable();
 }
 
+InternalAppItem::~InternalAppItem() = default;
+
 const char* InternalAppItem::GetItemType() const {
   return InternalAppItem::kItemType;
 }
 
 void InternalAppItem::Activate(int event_flags) {
   app_list::OpenInternalApp(id(), profile());
+}
+
+ui::MenuModel* InternalAppItem::GetContextMenuModel() {
+  if (!context_menu_) {
+    context_menu_ = std::make_unique<app_list::AppContextMenu>(
+        nullptr, profile(), id(), GetController());
+  }
+  return context_menu_->GetMenuModel();
+}
+
+app_list::AppContextMenu* InternalAppItem::GetAppContextMenu() {
+  return context_menu_.get();
 }

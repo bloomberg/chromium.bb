@@ -19,12 +19,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/ash/fake_tablet_mode_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
+#include "chrome/browser/ui/ash/launcher/internal_app_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/test/fake_app_instance.h"
@@ -32,6 +34,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/views/widget/widget.h"
 
@@ -409,6 +412,58 @@ TEST_F(LauncherContextMenuTest, ArcContextMenuOptions) {
 
   // Test that there are 4 items in an ARC app context menu.
   EXPECT_EQ(4, menu->GetItemCount());
+}
+
+// Tests that the context menu of internal app  is correct.
+TEST_F(LauncherContextMenuTest, InternalAppShelfContextMenu) {
+  for (const auto& internal_app : app_list::GetInternalAppList()) {
+    if (!internal_app.show_in_launcher)
+      continue;
+
+    const std::string app_id = internal_app.app_id;
+    const ash::ShelfID shelf_id(app_id);
+    // Pin internal app.
+    controller()->PinAppWithID(app_id);
+    const ash::ShelfItem* item = controller()->GetItem(ash::ShelfID(app_id));
+    ASSERT_TRUE(item);
+    EXPECT_EQ(l10n_util::GetStringUTF16(internal_app.name_string_resource_id),
+              item->title);
+    ash::ShelfItemDelegate* item_delegate =
+        model()->GetShelfItemDelegate(shelf_id);
+    ASSERT_TRUE(item_delegate);
+
+    const int64_t display_id = GetPrimaryDisplay().id();
+    std::unique_ptr<ui::MenuModel> menu =
+        GetContextMenu(item_delegate, display_id);
+    ASSERT_TRUE(menu);
+
+    // Internal app is pinned but not running.
+    EXPECT_TRUE(
+        IsItemEnabledInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
+    EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), LauncherContextMenu::MENU_PIN));
+    EXPECT_FALSE(
+        IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
+  }
+}
+
+// Tests that the number of context menu options of internal app is correct.
+TEST_F(LauncherContextMenuTest, InternalAppShelfContextMenuOptionsNumber) {
+  for (const auto& internal_app : app_list::GetInternalAppList()) {
+    const std::string app_id = internal_app.app_id;
+    const ash::ShelfID shelf_id(app_id);
+    // Pin internal app.
+    controller()->PinAppWithID(app_id);
+    const ash::ShelfItem* item = controller()->GetItem(ash::ShelfID(app_id));
+    ASSERT_TRUE(item);
+
+    int64_t primary_id = GetPrimaryDisplay().id();
+    std::unique_ptr<LauncherContextMenu> menu =
+        std::make_unique<InternalAppShelfContextMenu>(controller(), item,
+                                                      primary_id);
+
+    const int expected_options_num = internal_app.show_in_launcher ? 4 : 2;
+    EXPECT_EQ(expected_options_num, menu->GetItemCount());
+  }
 }
 
 }  // namespace

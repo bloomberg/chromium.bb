@@ -20,6 +20,8 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/extension_app_context_menu.h"
+#include "chrome/browser/ui/app_list/internal_app/internal_app_item.h"
+#include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/test/base/testing_profile.h"
@@ -590,4 +592,20 @@ TEST_F(AppContextMenuTest, CommandIdsMatchEnumsForHistograms) {
   EXPECT_EQ(201, app_list::AppContextMenu::USE_LAUNCH_TYPE_REGULAR);
   EXPECT_EQ(202, app_list::AppContextMenu::USE_LAUNCH_TYPE_FULLSCREEN);
   EXPECT_EQ(203, app_list::AppContextMenu::USE_LAUNCH_TYPE_WINDOW);
+}
+
+// Tests that internal app's context menu is correct.
+TEST_P(AppContextMenuTest, InternalAppMenu) {
+  for (const auto& internal_app : app_list::GetInternalAppList()) {
+    if (!internal_app.show_in_launcher)
+      continue;
+
+    controller()->SetAppPinnable(internal_app.app_id,
+                                 AppListControllerDelegate::PIN_EDITABLE);
+    InternalAppItem item(profile(), nullptr, internal_app);
+    ui::MenuModel* menu = item.GetContextMenuModel();
+    ASSERT_NE(nullptr, menu);
+    EXPECT_EQ(1, menu->GetItemCount());
+    ValidateItemState(menu, 0, MenuState(app_list::AppContextMenu::TOGGLE_PIN));
+  }
 }

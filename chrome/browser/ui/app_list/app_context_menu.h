@@ -47,6 +47,10 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
     USE_LAUNCH_TYPE_COMMAND_END,
   };
 
+  AppContextMenu(AppContextMenuDelegate* delegate,
+                 Profile* profile,
+                 const std::string& app_id,
+                 AppListControllerDelegate* controller);
   ~AppContextMenu() override;
 
   // Note this could return nullptr if corresponding app item is gone.
@@ -61,11 +65,6 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
   bool GetIconForCommandId(int command_id, gfx::Image* icon) const override;
 
  protected:
-  AppContextMenu(AppContextMenuDelegate* delegate,
-                 Profile* profile,
-                 const std::string& app_id,
-                 AppListControllerDelegate* controller);
-
   // Creates default items, derived class may override to add their specific
   // items.
   virtual void BuildMenu(ui::SimpleMenuModel* menu_model);
