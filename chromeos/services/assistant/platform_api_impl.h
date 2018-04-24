@@ -19,9 +19,9 @@
 // libassistant/contrib dependency.
 #include "libassistant/contrib/core/macros.h"
 #include "libassistant/contrib/platform/audio/output/audio_output_provider_impl.h"
-#include "libassistant/contrib/platform/auth/auth_provider_impl.h"
 #include "libassistant/contrib/platform/resources/resource_provider.h"
 #include "libassistant/shared/public/platform_api.h"
+#include "libassistant/shared/public/platform_auth.h"
 
 namespace chromeos {
 namespace assistant {
