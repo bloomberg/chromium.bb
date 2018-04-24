@@ -1019,6 +1019,9 @@
       'filepath': 'content/(browser|renderer)/manifest/'\
                   '|content/public/common/manifest*',
     },
+    'mash_buildbot_filters': {
+      'filepath': 'testing/buildbot/filters/mash.*filter',
+    },
     'md_settings': {
       'filepath': 'chrome/browser/resources/settings/'\
                   '|chrome/browser/ui/webui/settings/'\
@@ -2136,6 +2139,7 @@
     'login': ['vabr+watchlistlogin@chromium.org'],
     'mac' : ['mac-reviews@chromium.org'],
     'manifest': ['mlamouri+watch-manifest@chromium.org'],
+    'mash_buildbot_filters': ['jamescook+watch@chromium.org'],
     'md_settings': ['michaelpg+watch-md-settings@chromium.org',
                     'stevenjb+watch-md-settings@chromium.org'],
     'media': ['feature-media-reviews@chromium.org'],
