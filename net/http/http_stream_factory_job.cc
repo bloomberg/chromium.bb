@@ -1373,7 +1373,7 @@ void HttpStreamFactory::Job::InitSSLConfig(SSLConfig* ssl_config,
 
 int HttpStreamFactory::Job::ReconsiderProxyAfterError(int error) {
   // Check if the error was a proxy failure.
-  if (!CanFalloverToNextProxy(&error))
+  if (!CanFalloverToNextProxy(proxy_info_.proxy_server(), error, &error))
     return error;
 
   // Alternative proxy server job should not use fallback proxies, and instead
