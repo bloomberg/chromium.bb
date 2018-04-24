@@ -16,7 +16,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/media_stream_audio_renderer.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
@@ -169,9 +168,6 @@ class CONTENT_EXPORT TrackAudioRenderer
 
   // Flag to indicate whether |sink_| has been started yet.
   bool sink_started_;
-
-  // Used to DCHECK that some methods are called on the audio thread.
-  base::ThreadChecker audio_thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(TrackAudioRenderer);
 };

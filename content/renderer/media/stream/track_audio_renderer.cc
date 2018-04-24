@@ -74,7 +74,6 @@ void TrackAudioRenderer::OnRenderError() {
 // content::MediaStreamAudioSink implementation
 void TrackAudioRenderer::OnData(const media::AudioBus& audio_bus,
                                 base::TimeTicks reference_time) {
-  DCHECK(audio_thread_checker_.CalledOnValidThread());
   DCHECK(!reference_time.is_null());
 
   TRACE_EVENT1("audio", "TrackAudioRenderer::OnData", "reference time (ms)",
@@ -98,10 +97,6 @@ void TrackAudioRenderer::OnData(const media::AudioBus& audio_bus,
 
 void TrackAudioRenderer::OnSetFormat(const media::AudioParameters& params) {
   DVLOG(1) << "TrackAudioRenderer::OnSetFormat()";
-  // If the source is restarted, we might have changed to another capture
-  // thread.
-  audio_thread_checker_.DetachFromThread();
-  DCHECK(audio_thread_checker_.CalledOnValidThread());
 
   // If the parameters changed, the audio in the AudioShifter is invalid and
   // should be dropped.
