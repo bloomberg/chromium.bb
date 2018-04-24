@@ -537,17 +537,10 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
 #endif  // defined(OS_ANDROID)
 
 #if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
-  if (!first_throttle && io_data->safe_browsing_enabled()->GetValue()) {
-    bool url_loader_throttle_used =
-        base::FeatureList::IsEnabled(
-            safe_browsing::kCheckByURLLoaderThrottle) &&
-        (!content::IsResourceTypeFrame(resource_type) ||
-         content::IsNavigationMojoResponseEnabled());
-
-    if (!url_loader_throttle_used) {
-      first_throttle = MaybeCreateSafeBrowsingResourceThrottle(
-          request, resource_type, safe_browsing_.get(), io_data);
-    }
+  if (!first_throttle && io_data->safe_browsing_enabled()->GetValue() &&
+      !base::FeatureList::IsEnabled(safe_browsing::kCheckByURLLoaderThrottle)) {
+    first_throttle = MaybeCreateSafeBrowsingResourceThrottle(
+        request, resource_type, safe_browsing_.get(), io_data);
   }
 #endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
 

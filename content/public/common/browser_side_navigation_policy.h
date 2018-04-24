@@ -13,7 +13,6 @@
 namespace content {
 
 CONTENT_EXPORT bool IsBrowserSideNavigationEnabled();
-CONTENT_EXPORT bool IsNavigationMojoResponseEnabled();
 
 }  // namespace content
 

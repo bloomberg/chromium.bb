@@ -95,9 +95,8 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
     navigation_response_override_ = std::move(response_override);
   }
 
-  // NavigationMojoResponse: |continue_navigation| is used to continue a
-  // navigation on the renderer process that has already been started on the
-  // browser process.
+  // |continue_navigation| is used to continue a navigation on the renderer
+  // process that has already been started on the browser process.
   base::OnceClosure TakeContinueNavigationFunctionOwnerShip() {
     return std::move(continue_navigation_function_);
   }
@@ -172,8 +171,8 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   blink::WebString requested_with_;
   std::unique_ptr<NavigationResponseOverrideParameters>
       navigation_response_override_;
-  // TODO(arthursonzogni): Once NavigationMojoResponse is launched, move most of
-  // the |navigation_response_override_| content as parameters of this function.
+  // TODO(arthursonzogni): Move most of the |navigation_response_override_|
+  // content as parameters of this function.
   base::OnceClosure continue_navigation_function_;
   bool initiated_in_secure_context_;
   bool is_for_no_state_prefetch_;

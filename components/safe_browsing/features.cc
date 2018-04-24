@@ -30,10 +30,6 @@ const base::Feature kAdSamplerTriggerFeature{"SafeBrowsingAdSamplerTrigger",
 
 // If enabled in pre-network-service world, SafeBrowsing URL checks are done by
 // applying SafeBrowsing's URLLoaderThrottle subclasses to ThrottlingURLLoader.
-// It affects:
-//   - subresource loading from renderers;
-//   - frame resource loading from the browser, if
-//     content::IsNavigationMojoResponseEnabled() is true.
 //
 // This flag has no effect if network service is enabled. With network service,
 // SafeBrowsing URL checks are always done by SafeBrowsing's URLLoaderThrottle

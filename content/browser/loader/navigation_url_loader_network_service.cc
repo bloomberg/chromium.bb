@@ -50,8 +50,6 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/ssl_status.h"
-#include "content/public/browser/stream_handle.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
@@ -403,7 +401,6 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       AppCacheNavigationHandleCore* appcache_handle_core,
       std::unique_ptr<NavigationRequestInfo> request_info,
       std::unique_ptr<NavigationUIData> navigation_ui_data) {
-    DCHECK(IsNavigationMojoResponseEnabled());
     DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(!started_);

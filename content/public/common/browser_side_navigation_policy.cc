@@ -15,12 +15,4 @@ bool IsBrowserSideNavigationEnabled() {
   return true;
 }
 
-// Browser side navigation (aka PlzNavigate) is using blob URLs to deliver
-// the body of the main resource to the renderer process. When enabled, the
-// NavigationMojoResponse feature replaces this mechanism by a Mojo DataPipe.
-// Design doc: https://goo.gl/Rrrc7n.
-bool IsNavigationMojoResponseEnabled() {
-  return true;
-}
-
 }  // namespace content
