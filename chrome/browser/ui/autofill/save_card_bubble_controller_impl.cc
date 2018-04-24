@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -145,10 +146,14 @@ base::string16 SaveCardBubbleControllerImpl::GetWindowTitle() const {
 }
 
 base::string16 SaveCardBubbleControllerImpl::GetExplanatoryMessage() const {
-  return is_uploading_
-             ? l10n_util::GetStringUTF16(
-                   IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V2)
-             : base::string16();
+  if (is_uploading_) {
+    return IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled()
+               ? l10n_util::GetStringUTF16(
+                     IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3)
+               : l10n_util::GetStringUTF16(
+                     IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V2);
+  }
+  return base::string16();
 }
 
 const CreditCard SaveCardBubbleControllerImpl::GetCard() const {

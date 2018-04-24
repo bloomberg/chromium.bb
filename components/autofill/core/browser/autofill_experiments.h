@@ -45,6 +45,7 @@ extern const base::Feature kAutofillUpstreamAllowAllEmailDomains;
 extern const base::Feature kAutofillUpstreamRequestCvcIfMissing;
 extern const base::Feature kAutofillUpstreamSendDetectedValues;
 extern const base::Feature kAutofillUpstreamSendPanFirstSix;
+extern const base::Feature kAutofillUpstreamUpdatePromptExplanation;
 extern const char kCreditCardSigninPromoImpressionLimitParamKey[];
 extern const char kAutofillCreditCardLastUsedDateShowExpirationDateKey[];
 extern const char kAutofillUpstreamMaxMinutesSinceAutofillProfileUseKey[];
@@ -143,6 +144,11 @@ bool IsAutofillUpstreamSendDetectedValuesExperimentEnabled();
 // first six digits of the card PAN to Google Payments to help determine whether
 // card upload is possible.
 bool IsAutofillUpstreamSendPanFirstSixExperimentEnabled();
+
+// Returns whether the experiment is enbaled where upstream sends updated
+// prompt explanation which changes 'save this card' to 'save your card and
+// billing address.'
+bool IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled();
 
 #if defined(OS_MACOSX)
 // Returns whether the Credit Card Autofill Touch Bar experiment is enabled.

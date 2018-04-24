@@ -330,6 +330,12 @@ const char kEnableAutofillCreditCardUploadSendPanFirstSixDescription[] =
     "Payments, sends the first six digits of the card number to avoid cases "
     "where card upload is likely to fail.";
 
+const char kEnableAutofillCreditCardUploadUpdatePromptExplanationName[] =
+    "Enable updated prompt explanation when offering credit card upload";
+const char kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[] =
+    "If enabled, changes the server save card prompt's explanation to mention "
+    "the saving of the billing address.";
+
 const char kEnableAutofillNativeDropdownViewsName[] =
     "Display Autofill Dropdown Using Views";
 const char kEnableAutofillNativeDropdownViewsDescription[] =

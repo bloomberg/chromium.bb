@@ -194,6 +194,10 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
     upload_request_.active_experiments.push_back(
         kAutofillUpstreamSendPanFirstSix.name);
   }
+  if (IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled()) {
+    upload_request_.active_experiments.push_back(
+        kAutofillUpstreamUpdatePromptExplanation.name);
+  }
 
   // All required data is available, start the upload process.
   if (observer_for_testing_)

@@ -231,6 +231,10 @@ extern const char
 extern const char kEnableAutofillCreditCardUploadSendPanFirstSixName[];
 extern const char kEnableAutofillCreditCardUploadSendPanFirstSixDescription[];
 
+extern const char kEnableAutofillCreditCardUploadUpdatePromptExplanationName[];
+extern const char
+    kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[];
+
 extern const char kEnableAutofillToolkitViewsCreditCardDialogsMac[];
 extern const char kEnableAutofillToolkitViewsCreditCardDialogsMacDescription[];
 

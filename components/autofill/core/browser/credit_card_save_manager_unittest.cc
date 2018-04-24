@@ -156,6 +156,11 @@ class CreditCardSaveManagerTest : public testing::Test {
     scoped_feature_list_.InitAndEnableFeature(kAutofillUpstreamSendPanFirstSix);
   }
 
+  void EnableAutofillUpstreamUpdatePromptExplanationExperiment() {
+    scoped_feature_list_.InitAndEnableFeature(
+        kAutofillUpstreamUpdatePromptExplanation);
+  }
+
   void FormsSeen(const std::vector<FormData>& forms) {
     autofill_manager_->OnFormsSeen(forms, base::TimeTicks());
   }
@@ -3733,6 +3738,44 @@ TEST_F(CreditCardSaveManagerTest,
                    AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME |
                    AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE,
                1 /* expected_num_matching_entries */);
+}
+
+TEST_F(
+    CreditCardSaveManagerTest,
+    UploadCreditCard_AddUpdatePromptExplanationFlagStateToRequestIfExperimentOn) {
+  EnableAutofillUpstreamUpdatePromptExplanationExperiment();
+  personal_data_.ClearProfiles();
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
+
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4444333322221111");
+  credit_card_form.fields[2].value = ASCIIToUTF16("11");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  // Confirm that upload happened and that the enabled UpdatePromptExplanation
+  // experiment flag state was sent in the request.
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
+  FormSubmitted(credit_card_form);
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
+  EXPECT_THAT(
+      payments_client_->GetActiveExperimentsSetInRequest(),
+      UnorderedElementsAre(kAutofillUpstreamSendDetectedValues.name,
+                           kAutofillUpstreamUpdatePromptExplanation.name));
 }
 
 TEST_F(CreditCardSaveManagerTest,
