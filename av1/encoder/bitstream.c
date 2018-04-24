@@ -855,8 +855,8 @@ static void write_cfl_alphas(FRAME_CONTEXT *const ec_ctx, int idx,
   }
 }
 
-static void write_cdef(AV1_COMMON *cm, aom_writer *w, int skip, int mi_col,
-                       int mi_row) {
+static void write_cdef(AV1_COMMON *cm, MACROBLOCKD *const xd, aom_writer *w,
+                       int skip, int mi_col, int mi_row) {
   if (cm->coded_lossless || (cm->allow_intrabc && NO_FILTER_FOR_IBC)) {
     // Initialize to indicate no CDEF for safety.
     cm->cdef_bits = 0;
@@ -872,8 +872,8 @@ static void write_cdef(AV1_COMMON *cm, aom_writer *w, int skip, int mi_col,
   // Initialise when at top left part of the superblock
   if (!(mi_row & (cm->seq_params.mib_size - 1)) &&
       !(mi_col & (cm->seq_params.mib_size - 1))) {  // Top left?
-    cm->cdef_preset[0] = cm->cdef_preset[1] = cm->cdef_preset[2] =
-        cm->cdef_preset[3] = -1;
+    xd->cdef_preset[0] = xd->cdef_preset[1] = xd->cdef_preset[2] =
+        xd->cdef_preset[3] = -1;
   }
 
   // Emit CDEF param at first non-skip coding block
@@ -881,9 +881,9 @@ static void write_cdef(AV1_COMMON *cm, aom_writer *w, int skip, int mi_col,
   const int index = cm->seq_params.sb_size == BLOCK_128X128
                         ? !!(mi_col & mask) + 2 * !!(mi_row & mask)
                         : 0;
-  if (cm->cdef_preset[index] == -1 && !skip) {
+  if (xd->cdef_preset[index] == -1 && !skip) {
     aom_write_literal(w, mbmi->cdef_strength, cm->cdef_bits);
-    cm->cdef_preset[index] = mbmi->cdef_strength;
+    xd->cdef_preset[index] = mbmi->cdef_strength;
   }
 }
 
@@ -953,7 +953,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
   write_inter_segment_id(cpi, w, seg, segp, mi_row, mi_col, skip, 0);
 
-  write_cdef(cm, w, skip, mi_col, mi_row);
+  write_cdef(cm, xd, w, skip, mi_col, mi_row);
 
   if (cm->delta_q_present_flag) {
     int super_block_upper_left =
@@ -1179,7 +1179,7 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
   if (!seg->preskip_segid && seg->update_map)
     write_segment_id(cpi, mbmi, w, seg, segp, mi_row, mi_col, skip);
 
-  write_cdef(cm, w, skip, mi_col, mi_row);
+  write_cdef(cm, xd, w, skip, mi_col, mi_row);
 
   if (cm->delta_q_present_flag) {
     int super_block_upper_left =
