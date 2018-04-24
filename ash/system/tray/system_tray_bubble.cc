@@ -199,7 +199,7 @@ void SystemTrayBubble::InitView(views::View* anchor,
     init_params->max_height = GetDetailedBubbleMaxHeight();
   }
 
-  system_tray_view_ = new SystemTrayView(system_tray_type, items);
+  system_tray_view_ = new SystemTrayView(tray_, system_tray_type, items);
 
   init_params->delegate = tray_;
   // Place the bubble on same display as this system tray.

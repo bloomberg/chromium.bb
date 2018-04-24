@@ -5,6 +5,7 @@
 #include "ash/system/tray/system_tray_view.h"
 
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/views/layout/box_layout.h"
@@ -46,10 +47,15 @@ class BottomAlignedBoxLayout : public views::BoxLayout {
 
 }  // anonymous namespace
 
-SystemTrayView::SystemTrayView(SystemTrayType system_tray_type,
+SystemTrayView::SystemTrayView(SystemTray* system_tray,
+                               SystemTrayType system_tray_type,
                                const std::vector<ash::SystemTrayItem*>& items)
-    : items_(items), system_tray_type_(system_tray_type) {
+    : time_to_click_recorder_(
+          std::make_unique<TimeToClickRecorder>(system_tray)),
+      items_(items),
+      system_tray_type_(system_tray_type) {
   SetLayoutManager(std::make_unique<BottomAlignedBoxLayout>());
+  AddPreTargetHandler(time_to_click_recorder_.get());
 }
 
 SystemTrayView::~SystemTrayView() {
