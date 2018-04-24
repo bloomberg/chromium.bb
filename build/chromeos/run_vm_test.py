@@ -81,7 +81,15 @@ def main():
   args, unknown_args = parser.parse_known_args()
 
   if unknown_args:
-    print >> sys.stderr, 'Ignoring unknown args: %s' % unknown_args
+    logging.warning('Ignoring unknown args: %s' % unknown_args)
+
+  if not os.path.exists('/dev/kvm'):
+    logging.error('/dev/kvm is missing. Is KVM installed on this machine?')
+    return 1
+  elif not os.access('/dev/kvm', os.W_OK):
+    logging.warning(
+        '/dev/kvm is not writable as current user. Perhaps you should be root?')
+    return 1
 
   args.cros_cache = os.path.abspath(os.path.join(
       args.path_to_outdir, args.cros_cache))
@@ -122,8 +130,8 @@ def main():
         ';', 'exit $test_code',
     ])
 
-  print 'Running the following command:'
-  print ' '.join(cros_run_vm_test_cmd)
+  logging.info('Running the following command:')
+  logging.info(' '.join(cros_run_vm_test_cmd))
 
   vm_proc = subprocess.Popen(
       cros_run_vm_test_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
