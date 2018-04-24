@@ -355,12 +355,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mojo_common_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "mojo_unittests"
       },
       {
@@ -970,12 +964,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mojo_common_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "mojo_unittests"
       },
       {
@@ -1521,12 +1509,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "midi_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "mojo_common_unittests"
       },
       {
         "swarming": {
@@ -2211,12 +2193,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mojo_common_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "mojo_unittests"
       },
       {
@@ -2787,12 +2763,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "midi_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "mojo_common_unittests"
       },
       {
         "swarming": {

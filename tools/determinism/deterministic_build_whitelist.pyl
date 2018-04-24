@@ -117,7 +117,6 @@
     'media_unittests',
     'message_center_unittests',
     'midi_unittests',
-    'mojo_common_unittests',
     'mojo_unittests',
     'nacl_loader_unittests',
     'native_theme_unittests',

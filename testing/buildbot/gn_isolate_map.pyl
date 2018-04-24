@@ -824,10 +824,6 @@
       "../../chrome/test/mini_installer/test_installer.py",
     ],
   },
-  "mojo_common_unittests": {
-    "label": "//mojo/common:mojo_common_unittests",
-    "type": "console_test_launcher",
-  },
   "mojo_core_unittests": {
     "label": "//mojo/edk:mojo_core_unittests",
     "type": "console_test_launcher",

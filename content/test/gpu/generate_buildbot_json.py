@@ -1021,7 +1021,6 @@ V8_FYI_WATERFALL = {
         "jingle_unittests",
         "media_unittests",
         "media_blink_unittests",
-        "mojo_common_unittests",
         "mojo_unittests",
         "nacl_loader_unittests",
         "net_unittests",
