@@ -26,6 +26,10 @@ struct NET_EXPORT BidirectionalStreamRequestInfo {
   // The method to use (GET, POST, etc.).
   std::string method;
 
+  // Whether to allow early data to be used with this request, overriding the
+  // early data based on the |method| semantics.
+  bool allow_early_data_override;
+
   // Request priority.
   RequestPriority priority;
 
