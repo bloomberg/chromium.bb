@@ -34,6 +34,53 @@ RUNNING_LOCALLY = (
   os.getenv('SWARMING_HEADLESS') != '1' and os.getenv('CHROME_HEADLESS') != '1')
 
 
+def GetArgumentParser(doc=__doc__):
+  """Gets a parser object with this module's args.
+
+  args:
+    info: The info text to use
+
+  Returns:
+    A filled out ArgumentParser instance.
+  """
+  # TODO(mmeade): Replace --build-dir and --target with a new path
+  # flags and plumb it through.
+  parser = argparse.ArgumentParser(
+    description=doc, formatter_class=argparse.RawDescriptionHelpFormatter)
+  parser.add_argument('-q', '--quiet', action='store_true', default=False,
+                      help='Reduce test runner output')
+  parser.add_argument('-v', '--verbose', action='store_true', default=False,
+                      help='Increase test runner output')
+  parser.add_argument('--build-dir', default='',
+                      help='Path to main build directory (the parent of the '
+                      'Release or Debug directory)')
+  parser.add_argument('--target', default='',
+                      help='Build target (Release or Debug)')
+  parser.add_argument('--force-clean', action='store_true', default=False,
+                      help='Force cleaning existing installations')
+  parser.add_argument('--write-full-results-to', metavar='FILENAME',
+                      help='Path to write the list of full results to.')
+  parser.add_argument('test', nargs='*',
+                      help='Name(s) of tests to run.')
+
+  # The following flags will replace the build-dir, target, and filename arg.
+  parser.add_argument('--installer-path',
+                      default='mini_installer.exe',
+                      metavar='FILENAME',
+                      help='The path of the installer.')
+  parser.add_argument('--previous-version-installer-path',
+                      default='previous_version_mini_installer.exe',
+                      metavar='FILENAME',
+                      help='The path of the previous version installer.')
+  parser.add_argument('--chromedriver-path',
+                      default='chromedriver.exe',
+                      help='The path to chromedriver.')
+  parser.add_argument('--config', default='config.config',
+                      metavar='FILENAME',
+                      help='Path to test configuration file')
+  return parser
+
+
 class Config(object):
   """Describes the machine states, actions, and test cases.
 
@@ -452,47 +499,17 @@ def GetAbsoluteConfigPath(path):
 
 
 def DoMain():
-  # TODO(mmeade): Replace --build-dir and --target with a new path
-  # flags and plumb it through.
-  parser = argparse.ArgumentParser(
-    description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-  parser.add_argument('-q', '--quiet', action='store_true', default=False,
-                      help='Reduce test runner output')
-  parser.add_argument('--build-dir', default='',
-                      help='Path to main build directory (the parent of the '
-                      'Release or Debug directory)')
-  parser.add_argument('--target', default='',
-                      help='Build target (Release or Debug)')
-  parser.add_argument('--force-clean', action='store_true', default=False,
-                      help='Force cleaning existing installations')
-  parser.add_argument('--write-full-results-to', metavar='FILENAME',
-                      help='Path to write the list of full results to.')
-  parser.add_argument('test', nargs='*',
-                      help='Name(s) of tests to run.')
-
-  # The following flags will replace the build-dir, target, and filename arg.
-  parser.add_argument('--installer-path',
-                      default='mini_installer.exe',
-                      metavar='FILENAME',
-                      help='The path of the installer.')
-  parser.add_argument('--previous-version-installer-path',
-                      default='previous_version_mini_installer.exe',
-                      metavar='FILENAME',
-                      help='The path of the previous version installer.')
-  parser.add_argument('--chromedriver-path',
-                      default='chromedriver.exe',
-                      help='The path to chromedriver.')
-  parser.add_argument('--config', default='config.config',
-                      metavar='FILENAME',
-                      help='Path to test configuration file')
-  args = parser.parse_args()
+  args = GetArgumentParser().parse_args()
 
   # Due to what looks like a bug the root handlers need to be cleared out
   # so the right handler will be created.
   logging.Logger.root.handlers = []
+  log_level = (logging.ERROR if args.quiet else
+               logging.DEBUG if args.verbose else
+               logging.INFO)
   logging.basicConfig(
     format='[%(asctime)s:%(filename)s(%(lineno)d)] %(message)s',
-    datefmt='%m%d/%H%M%S', level=logging.ERROR if args.quiet else logging.INFO)
+    datefmt='%m%d/%H%M%S', level=log_level)
 
   # TODO(mmeade): Fully switch to paths
   # Use absolute paths.
