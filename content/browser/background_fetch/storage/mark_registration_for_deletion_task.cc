@@ -65,8 +65,7 @@ void MarkRegistrationForDeletionTask::DidGetActiveUniqueId(
   }
 
   proto::BackgroundFetchMetadata metadata_proto;
-  if (metadata_proto.ParseFromString(data[1]) &&
-      metadata_proto.has_creation_microseconds_since_unix_epoch()) {
+  if (metadata_proto.ParseFromString(data[1])) {
     // Mark registration as no longer active. Also deletes pending request
     // keys, since those are globally sorted and requests within deactivated
     // registrations are no longer eligible to be started. Pending request
@@ -74,9 +73,7 @@ void MarkRegistrationForDeletionTask::DidGetActiveUniqueId(
     service_worker_context()->ClearRegistrationUserDataByKeyPrefixes(
         registration_id_.service_worker_registration_id(),
         {ActiveRegistrationUniqueIdKey(registration_id_.developer_id()),
-         PendingRequestKeyPrefix(
-             metadata_proto.creation_microseconds_since_unix_epoch(),
-             registration_id_.unique_id())},
+         PendingRequestKeyPrefix(registration_id_.unique_id())},
         base::BindOnce(&MarkRegistrationForDeletionTask::DidDeactivate,
                        weak_factory_.GetWeakPtr()));
   } else {

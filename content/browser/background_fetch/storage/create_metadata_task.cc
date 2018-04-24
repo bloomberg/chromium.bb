@@ -15,11 +15,6 @@ namespace content {
 
 namespace background_fetch {
 
-std::string RequestKey(const std::string& unique_id, int request_index) {
-  // Allows looking up a request by registration id and index within that.
-  return RequestKeyPrefix(unique_id) + base::IntToString(request_index);
-}
-
 CreateMetadataTask::CreateMetadataTask(
     BackgroundFetchDataManager* data_manager,
     const BackgroundFetchRegistrationId& registration_id,
@@ -93,6 +88,21 @@ void CreateMetadataTask::InitializeMetadataProto() {
   metadata_proto_->set_ui_title(options_.title);
 }
 
+proto::ServiceWorkerFetchRequest
+CreateMetadataTask::CreateServiceWorkerFetchRequestProto(
+    const ServiceWorkerFetchRequest& request) {
+  proto::ServiceWorkerFetchRequest request_proto;
+  request_proto.set_url(request.url.spec());
+  request_proto.set_method(request.method);
+  request_proto.mutable_headers()->insert(request.headers.begin(),
+                                          request.headers.end());
+  request_proto.mutable_referrer()->set_url(request.referrer.url.spec());
+  request_proto.mutable_referrer()->set_policy(request.referrer.policy);
+  request_proto.set_is_reload(request.is_reload);
+
+  return request_proto;
+}
+
 void CreateMetadataTask::StoreMetadata() {
   std::vector<std::pair<std::string, std::string>> entries;
   entries.reserve(requests_.size() * 2 + 1);
@@ -116,14 +126,13 @@ void CreateMetadataTask::StoreMetadata() {
 
   // Signed integers are used for request indexes to avoid unsigned gotchas.
   for (int i = 0; i < base::checked_cast<int>(requests_.size()); i++) {
-    // TODO(crbug.com/757760): Serialize actual values for these entries.
-    entries.emplace_back(RequestKey(registration_id_.unique_id(), i),
-                         "TODO: Serialize FetchAPIRequest as value");
-    entries.emplace_back(
-        PendingRequestKey(
-            metadata_proto_->creation_microseconds_since_unix_epoch(),
-            registration_id_.unique_id(), i),
-        std::string());
+    proto::BackgroundFetchPendingRequest pending_request_proto;
+    pending_request_proto.set_unique_id(registration_id_.unique_id());
+    pending_request_proto.set_request_index(i);
+    *pending_request_proto.mutable_request() =
+        CreateServiceWorkerFetchRequestProto(requests_[i]);
+    entries.emplace_back(PendingRequestKey(registration_id_.unique_id(), i),
+                         pending_request_proto.SerializeAsString());
   }
 
   service_worker_context()->StoreRegistrationUserData(
