@@ -163,14 +163,14 @@ void RunAllTasksUntilIdle() {
     // current loop iteration and loop in case the MessageLoop posts tasks to
     // the Task Scheduler after the initial flush.
     TaskObserver task_observer;
-    base::MessageLoop::current()->AddTaskObserver(&task_observer);
+    base::MessageLoopCurrent::Get()->AddTaskObserver(&task_observer);
 
     base::RunLoop run_loop;
     base::TaskScheduler::GetInstance()->FlushAsyncForTesting(
         run_loop.QuitWhenIdleClosure());
     run_loop.Run();
 
-    base::MessageLoop::current()->RemoveTaskObserver(&task_observer);
+    base::MessageLoopCurrent::Get()->RemoveTaskObserver(&task_observer);
 
     if (!task_observer.processed())
       break;

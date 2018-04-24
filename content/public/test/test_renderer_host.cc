@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -138,7 +139,7 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
   // tests have their own, so this only creates one when none exists. This
   // means tests must ensure any MessageLoop they make is created before
   // the RenderViewHostTestEnabler.
-  if (!base::MessageLoop::current())
+  if (!base::MessageLoopCurrent::Get())
     message_loop_ = std::make_unique<base::MessageLoop>();
 #if !defined(OS_ANDROID)
   ImageTransportFactory::SetFactory(
