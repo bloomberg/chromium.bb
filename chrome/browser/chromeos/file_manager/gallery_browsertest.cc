@@ -50,15 +50,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_OpenSingleImageOnDrive) {
   StartTest();
 }
 
-// http://crbug.com/803505 : Flaky due to crash on linux-chromeos-dbg
-#if !defined(NDEBUG)
-#define MAYBE_OpenMultipleImagesOnDownloads \
-  DISABLED_OpenMultipleImagesOnDownloads
-#else
-#define MAYBE_OpenMultipleImagesOnDownloads OpenMultipleImagesOnDownloads
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       MAYBE_OpenMultipleImagesOnDownloads) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenMultipleImagesOnDownloads) {
   set_test_case_name("openMultipleImagesOnDownloads");
   StartTest();
 }
