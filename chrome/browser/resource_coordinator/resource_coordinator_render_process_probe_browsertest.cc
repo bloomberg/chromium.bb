@@ -49,19 +49,25 @@ class TestingResourceCoordinatorRenderProcessProbe
     return true;
   }
 
-  size_t current_gather_cycle() const { return current_gather_cycle_; }
   const RenderProcessInfoMap& render_process_info_map() const {
     return render_process_info_map_;
   }
 
-  void StartGatherCycleAndWait() {
+  size_t current_gather_cycle() const { return current_gather_cycle_; }
+  bool is_gather_cycle_started() const { return is_gather_cycle_started_; }
+
+  void WaitForGather() {
     base::RunLoop run_loop;
     current_run_loop_ = &run_loop;
 
-    StartGatherCycle();
     run_loop.Run();
 
     current_run_loop_ = nullptr;
+  }
+
+  void StartGatherCycleAndWait() {
+    StartGatherCycle();
+    WaitForGather();
   }
 
  private:
@@ -150,6 +156,49 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
   EXPECT_EQ(4u, probe.current_gather_cycle());
   EXPECT_EQ(initial_size, probe.render_process_info_map().size());
   EXPECT_TRUE(probe.AllMeasurementsAreAtCurrentCycle());
+}
+
+IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
+                       StartSingleGather) {
+  // Ensure that the |resource_coordinator| service is enabled.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({features::kGlobalResourceCoordinator,
+                                 features::kGRCRenderProcessCPUProfiling},
+                                {});
+
+  TestingResourceCoordinatorRenderProcessProbe probe;
+
+  // Test the gather cycle state.
+  EXPECT_FALSE(probe.is_gather_cycle_started());
+  probe.StartGatherCycle();
+  EXPECT_TRUE(probe.is_gather_cycle_started());
+  probe.WaitForGather();
+  EXPECT_FALSE(probe.is_gather_cycle_started());
+  EXPECT_EQ(1u, probe.current_gather_cycle());
+
+  // Test a single gather while the gather cycle is disabled.
+  probe.StartSingleGather();
+  EXPECT_FALSE(probe.is_gather_cycle_started());
+  probe.WaitForGather();
+  EXPECT_FALSE(probe.is_gather_cycle_started());
+  EXPECT_EQ(2u, probe.current_gather_cycle());
+
+  // Test a single gather followed by starting the gather cycle.
+  probe.StartSingleGather();
+  EXPECT_FALSE(probe.is_gather_cycle_started());
+  probe.StartGatherCycle();
+  EXPECT_TRUE(probe.is_gather_cycle_started());
+  probe.WaitForGather();
+  EXPECT_FALSE(probe.is_gather_cycle_started());
+  EXPECT_EQ(3u, probe.current_gather_cycle());
+
+  // And now a single gather after the cycle is started.
+  probe.StartGatherCycle();
+  EXPECT_TRUE(probe.is_gather_cycle_started());
+  probe.StartSingleGather();
+  probe.WaitForGather();
+  EXPECT_FALSE(probe.is_gather_cycle_started());
+  EXPECT_EQ(4u, probe.current_gather_cycle());
 }
 
 }  // namespace resource_coordinator
