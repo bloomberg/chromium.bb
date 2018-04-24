@@ -129,6 +129,8 @@ static INLINE void transpose_32_4x4x2(int stride, const __m128i *inputA,
 static void lowbd_fwd_txfm2d_64x64_sse4_1(const int16_t *input, int32_t *output,
                                           int stride, TX_TYPE tx_type, int bd) {
   (void)bd;
+  (void)tx_type;
+  assert(tx_type == DCT_DCT);
   const TX_SIZE tx_size = TX_64X64;
   __m128i buf0[64], buf1[512];
   const int8_t *shift = fwd_txfm_shift_ls[tx_size];
@@ -138,7 +140,7 @@ static void lowbd_fwd_txfm2d_64x64_sse4_1(const int16_t *input, int32_t *output,
   const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
   const int width = tx_size_wide[tx_size];
   const int height = tx_size_high[tx_size];
-  const transform_1d_sse2 col_txfm = col_txfm8x64_arr[tx_type];
+  const transform_1d_sse2 col_txfm = fdct8x64_new_sse2;
   const int width_div8 = (width >> 3);
   const int height_div8 = (height >> 3);
 
@@ -223,6 +225,7 @@ static void lowbd_fwd_txfm2d_64x32_sse4_1(const int16_t *input, int32_t *output,
 static void lowbd_fwd_txfm2d_32x64_sse4_1(const int16_t *input, int32_t *output,
                                           int stride, TX_TYPE tx_type, int bd) {
   (void)bd;
+  assert(tx_type == DCT_DCT);
   const TX_SIZE tx_size = TX_32X64;
   __m128i buf0[64], buf1[256];
   const int8_t *shift = fwd_txfm_shift_ls[tx_size];
@@ -232,7 +235,7 @@ static void lowbd_fwd_txfm2d_32x64_sse4_1(const int16_t *input, int32_t *output,
   const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
   const int width = tx_size_wide[tx_size];
   const int height = tx_size_high[tx_size];
-  const transform_1d_sse2 col_txfm = col_txfm8x64_arr[tx_type];
+  const transform_1d_sse2 col_txfm = fdct8x64_new_sse2;
   const int width_div8 = (width >> 3);
   const int height_div8 = (height >> 3);
 
