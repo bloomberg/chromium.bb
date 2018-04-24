@@ -2521,6 +2521,8 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
   main_thread_only().metrics_helper.RecordTaskMetrics(queue, task, start, end,
                                                       thread_time);
   main_thread_only().task_description_for_tracing = base::nullopt;
+
+  RecordTaskUkm(queue, task, start, end, thread_time);
 }
 
 void MainThreadSchedulerImpl::RecordTaskUkm(
@@ -2554,6 +2556,10 @@ void MainThreadSchedulerImpl::RecordTaskUkmImpl(
     base::Optional<base::TimeDelta> thread_time,
     PageSchedulerImpl* page_scheduler,
     size_t page_schedulers_to_attribute) {
+  // Skip tasks which have deleted the page scheduler.
+  if (!page_scheduler)
+    return;
+
   ukm::UkmRecorder* ukm_recorder = page_scheduler->GetUkmRecorder();
   // OOPIFs are not supported.
   if (!ukm_recorder)

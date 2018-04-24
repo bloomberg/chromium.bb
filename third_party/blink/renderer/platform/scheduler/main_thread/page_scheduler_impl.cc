@@ -385,10 +385,14 @@ void PageSchedulerImpl::SetMaxVirtualTimeTaskStarvationCount(
 }
 
 ukm::UkmRecorder* PageSchedulerImpl::GetUkmRecorder() {
+  if (!delegate_)
+    return nullptr;
   return delegate_->GetUkmRecorder();
 }
 
 int64_t PageSchedulerImpl::GetUkmSourceId() {
+  if (!delegate_)
+    return 0;
   return delegate_->GetUkmSourceId();
 }
 
