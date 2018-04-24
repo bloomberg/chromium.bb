@@ -338,15 +338,11 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_FullscreenEvents) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// Times out on Win dbg bots: http://crbug.com/177163
-// Flaky on MSan bots: http://crbug.com/294431
-#if (defined(OS_WIN) && !defined(NDEBUG)) || defined(MEMORY_SANITIZER)
-#define MAYBE_GrantForChromePages DISABLED_GrantForChromePages
-#else
-#define MAYBE_GrantForChromePages GrantForChromePages
-#endif
+// Times out on Win dbg bots: https://crbug.com/177163
+// Flaky on MSan bots: https://crbug.com/294431
+// But really, just flaky everywhere. http://crbug.com/294431#c33
 // Make sure tabCapture API can be granted for Chrome:// pages.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GrantForChromePages) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_GrantForChromePages) {
   ExtensionTestMessageListener before_open_tab("ready1", true);
   ASSERT_TRUE(RunExtensionSubtest("tab_capture",
                                   "active_tab_chrome_pages.html"))
