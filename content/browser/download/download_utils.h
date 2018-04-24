@@ -33,6 +33,8 @@ CreateURLRequestOnIOThread(download::DownloadUrlParameters* params);
 storage::BlobStorageContext* BlobStorageContextGetter(
     ResourceContext* resource_context);
 
+uint64_t GetUniqueDownloadId();
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_UTILS_H_
