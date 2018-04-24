@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "content/browser/frame_host/navigation_request_info.h"
-#include "content/browser/loader/navigation_url_loader_impl.h"
+#include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/test_resource_handler.h"
 #include "content/browser/loader_delegate_impl.h"
