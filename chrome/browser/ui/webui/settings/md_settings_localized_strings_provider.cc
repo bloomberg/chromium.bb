@@ -17,6 +17,7 @@
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -48,7 +49,6 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chromeos/chromeos_switches.h"
@@ -60,7 +60,6 @@
 #include "ui/display/manager/touch_device_manager.h"
 #else
 #include "chrome/browser/ui/webui/settings/system_handler.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #endif
 
 #if defined(OS_WIN)
@@ -492,7 +491,7 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
         IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_BASIC_WITH_EXCEPTION;
   }
 #else  // !defined(OS_CHROMEOS)
-  if (signin::IsDiceEnabledForProfile(profile->GetPrefs())) {
+  if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
     clear_cookies_summary_msg_id =
         IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_BASIC_WITH_EXCEPTION;
   }
@@ -1668,7 +1667,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
           base::ASCIIToUTF16(sync_dashboard_url)));
 
   // The syncDisconnect text differs depending on Dice-enabledness.
-  if (signin::IsDiceEnabledForProfile(profile->GetPrefs())) {
+  if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
     LocalizedString sync_disconnect_strings[] = {
         {"syncDisconnect", IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_CONFIRM},
         {"syncDisconnectTitle", IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_TITLE},
