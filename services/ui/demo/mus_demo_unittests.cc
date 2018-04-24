@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/window_server_test.mojom.h"
@@ -48,7 +49,13 @@ class MusDemoTest : public service_manager::test::ServiceTest {
 
 }  // namespace
 
-TEST_F(MusDemoTest, CheckMusDemoDraws) {
+// Timeout on linux: https://crbug.com/836248
+#if defined(OS_LINUX)
+#define MAYBE_CheckMusDemoDraws DISABLED_CheckMusDemoDraws
+#else
+#define MAYBE_CheckMusDemoDraws CheckMusDemoDraws
+#endif
+TEST_F(MusDemoTest, MAYBE_CheckMusDemoDraws) {
   connector()->StartService("mus_demo");
 
   ::ui::mojom::WindowServerTestPtr test_interface;
