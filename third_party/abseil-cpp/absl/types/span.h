@@ -216,7 +216,7 @@ using EnableIfConvertibleToSpanConst =
 //   // Construct a Span implicitly from a container
 //   void MyRoutine(absl::Span<const int> a) {
 //     ...
-//   };
+//   }
 //   std::vector v = {1,2,3,4,5};
 //   MyRoutine(v)                     // convert to Span<const T>
 //
@@ -224,7 +224,7 @@ using EnableIfConvertibleToSpanConst =
 // point to remains alive, must also ensure that such memory does not get
 // reallocated. Therefore, to avoid undefined behavior, containers with
 // associated span views should not invoke operations that may reallocate memory
-// (such as resizing) or invalidate iterarors into the container.
+// (such as resizing) or invalidate iterators into the container.
 //
 // One common use for a `Span` is when passing arguments to a routine that can
 // accept a variety of array types (e.g. a `std::vector`, `absl::InlinedVector`,
@@ -235,7 +235,7 @@ using EnableIfConvertibleToSpanConst =
 //
 //   void MyRoutine(absl::Span<const int> a) {
 //     ...
-//   };
+//   }
 //
 //   std::vector v = {1,2,3,4,5};
 //   MyRoutine(v);
