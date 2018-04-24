@@ -119,7 +119,7 @@ sign \x00c4 34578
 sign \x00c7 5678
 sign \x00cb 14578
 sign \x00ce 245678
-sign \x00d4 12678
+uplow \x00d4\x00f4 12678,1268 # o with circumflex
 sign \x00d6 24678
 math \x00d7 3 # times
 sign \x00dc 125678
@@ -129,7 +129,6 @@ sign \x00e4 3458
 sign \x00e7 568
 sign \x00eb 15678
 sign \x00ee 24568
-sign \x00f4 1268
 sign \x00f6 2468
 math \x00f7 25 # division
 sign \x00fc 12568
@@ -143,17 +142,16 @@ sign \x0110 2357
 sign \x0111 2378
 sign \x0118 4567
 sign \x0119 4578
-sign \x0139 4678
+uplow \x0139\x013a 4678,468 # l with acute
 sign \x013a 468
-uplow \x013d\x013e 12378,1238 # l with caron
+uplow \x013d\x013e 1378,138 # l with caron
 sign \x0141 2567
 sign \x0142 2568
 sign \x0143 134578
 sign \x0144 13458
 sign \x0150 13578
 sign \x0151 13568
-sign \x0154 123578
-sign \x0155 12358
+uplow \x0154\x0155 123578,12358 # r with acute
 sign \x015a 124678
 sign \x015b 123458
 sign \x015e 23478
