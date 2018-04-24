@@ -69,6 +69,16 @@ syncer::ModelTypeSet GetDisabledTypesFromCommandLine(
   return disabled_types;
 }
 
+// This helper function only wraps
+// autofill::AutocompleteSyncBridge::FromWebDataService(). This way, it
+// simplifies life for the compiler which cannot directly cast
+// "WeakPtr<ModelTypeSyncBridge> (AutofillWebDataService*)" to
+// "WeakPtr<ModelTypeControllerDelegate> (AutofillWebDataService*)".
+base::WeakPtr<syncer::ModelTypeControllerDelegate> DelegateFromDataService(
+    autofill::AutofillWebDataService* service) {
+  return autofill::AutocompleteSyncBridge::FromWebDataService(service);
+}
+
 }  // namespace
 
 ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
@@ -128,8 +138,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
       sync_service->RegisterDataTypeController(
           std::make_unique<autofill::WebDataModelTypeController>(
               syncer::AUTOFILL, sync_client_, db_thread_, web_data_service_,
-              base::Bind(
-                  &autofill::AutocompleteSyncBridge::FromWebDataService)));
+              base::Bind(&DelegateFromDataService)));
     }
 
     // Autofill sync is enabled by default.  Register unless explicitly

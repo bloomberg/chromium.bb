@@ -9,6 +9,7 @@
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/fake_sync_service.h"
+#include "components/sync/model/model_type_sync_bridge.h"
 
 namespace syncer {
 
@@ -102,8 +103,8 @@ base::WeakPtr<SyncableService> FakeSyncClient::GetSyncableServiceForType(
   return base::WeakPtr<SyncableService>();
 }
 
-base::WeakPtr<ModelTypeSyncBridge> FakeSyncClient::GetSyncBridgeForModelType(
-    ModelType type) {
+base::WeakPtr<ModelTypeControllerDelegate>
+FakeSyncClient::GetControllerDelegateForModelType(ModelType type) {
   return bridge_->AsWeakPtr();
 }
 

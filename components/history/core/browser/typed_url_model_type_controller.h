@@ -23,7 +23,7 @@ class TypedURLModelTypeController : public syncer::ModelTypeController {
 
  private:
   // syncer::ModelTypeController implementation.
-  void PostBridgeTask(const base::Location& location, BridgeTask task) override;
+  void PostModelTask(const base::Location& location, ModelTask task) override;
 
   void OnSavingBrowserHistoryDisabledChanged();
 

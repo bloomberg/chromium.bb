@@ -10,10 +10,11 @@
 #include "base/callback.h"
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 
 namespace syncer {
+
+class ModelTypeControllerDelegate;
 
 // This class holds static functions used for extracting debug information for a
 // model type. They should be run on the model thread. These functions are
@@ -26,25 +27,25 @@ class ModelTypeDebugInfo {
   static void GetAllNodes(
       const base::Callback<void(const ModelType,
                                 std::unique_ptr<base::ListValue>)>& callback,
-      ModelTypeSyncBridge* bridge);
+      ModelTypeControllerDelegate* delegate);
 
   // Returns StatusCounters for the type to |callback|.
   // Used for updating data type counters in chrome://sync-internals.
   static void GetStatusCounters(
       const base::Callback<void(const ModelType, const StatusCounters&)>&
           callback,
-      ModelTypeSyncBridge* bridge);
+      ModelTypeControllerDelegate* delegate);
 
-  // Queries |bridge| for estimate of memory usage and records it in a
+  // Queries |delegate| for estimate of memory usage and records it in a
   // histogram.
-  static void RecordMemoryUsageHistogram(ModelTypeSyncBridge* bridge);
+  static void RecordMemoryUsageHistogram(ModelTypeControllerDelegate* delegate);
 
  private:
   ModelTypeDebugInfo();
 
-  // This is callback function for ModelTypeSyncBridge::GetAllData. This
-  // function will merge real data from |batch| with metadata extracted from
-  // the |processor|, then pass it all to |callback|.
+  // This is callback function for ModelTypeControllerDelegate::GetAllData.
+  // This function will merge real data from |batch| with metadata extracted
+  // from the |processor|, then pass it all to |callback|.
   static void MergeDataWithMetadata(
       ClientTagBasedModelTypeProcessor* processor,
       const base::Callback<void(const ModelType,

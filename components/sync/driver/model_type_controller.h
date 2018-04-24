@@ -16,20 +16,20 @@
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/model/model_error.h"
+#include "components/sync/model/model_type_controller_delegate.h"
 #include "components/sync/model/sync_error.h"
 
 namespace syncer {
 
-class ModelTypeSyncBridge;
 class SyncClient;
 struct ActivationContext;
 
 // DataTypeController implementation for Unified Sync and Storage model types.
 class ModelTypeController : public DataTypeController {
  public:
-  using BridgeProvider =
-      base::OnceCallback<base::WeakPtr<ModelTypeSyncBridge>()>;
-  using BridgeTask = base::OnceCallback<void(ModelTypeSyncBridge*)>;
+  using DelegateProvider =
+      base::OnceCallback<base::WeakPtr<ModelTypeControllerDelegate>()>;
+  using ModelTask = base::OnceCallback<void(ModelTypeControllerDelegate*)>;
 
   ModelTypeController(
       ModelType type,
@@ -71,15 +71,15 @@ class ModelTypeController : public DataTypeController {
   void OnProcessorStarted(
       std::unique_ptr<ActivationContext> activation_context);
 
-  // Bridge accessor that can be overridden. This will be called on the UI
+  // Delegate accessor that can be overridden. This will be called on the UI
   // thread, but the callback will only be run on the model thread.
-  virtual BridgeProvider GetBridgeProvider();
+  virtual DelegateProvider GetDelegateProvider();
 
-  // Post the given task that requires the bridge object to run to the model
-  // thread, where the bridge lives.
-  virtual void PostBridgeTask(const base::Location& location, BridgeTask task);
+  // Post the given task (that requires the delegate object to run) to the model
+  // thread.
+  virtual void PostModelTask(const base::Location& location, ModelTask task);
 
-  // The sync client, which provides access to this type's ModelTypeSyncBridge.
+  // The sync client, which provides access to this type's Delegate.
   SyncClient* const sync_client_;
 
   // The thread the model type lives on.

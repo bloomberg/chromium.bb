@@ -11,15 +11,15 @@
 #include "components/sync/driver/model_type_controller.h"
 
 namespace syncer {
-class ModelTypeSyncBridge;
+class ModelTypeControllerDelegate;
 }  // namespace syncer
 
 namespace autofill {
 
 class WebDataModelTypeController : public syncer::ModelTypeController {
  public:
-  using BridgeFromWebData =
-      base::Callback<base::WeakPtr<syncer::ModelTypeSyncBridge>(
+  using DelegateFromWebData =
+      base::Callback<base::WeakPtr<syncer::ModelTypeControllerDelegate>(
           AutofillWebDataService*)>;
 
   WebDataModelTypeController(
@@ -27,19 +27,19 @@ class WebDataModelTypeController : public syncer::ModelTypeController {
       syncer::SyncClient* sync_client,
       const scoped_refptr<base::SingleThreadTaskRunner>& model_thread,
       const scoped_refptr<AutofillWebDataService>& web_data_service,
-      const BridgeFromWebData& bridge_from_web_data);
+      const DelegateFromWebData& delegate_from_web_data);
 
   ~WebDataModelTypeController() override;
 
  private:
   // syncer::ModelTypeController implementation.
-  syncer::ModelTypeController::BridgeProvider GetBridgeProvider() override;
+  syncer::ModelTypeController::DelegateProvider GetDelegateProvider() override;
 
   // A reference to the AutofillWebDataService for this controller.
   scoped_refptr<AutofillWebDataService> web_data_service_;
 
-  // How to grab the correct bridge from a web data.
-  BridgeFromWebData bridge_from_web_data_;
+  // How to grab the correct delegate from a web data.
+  DelegateFromWebData delegate_from_web_data_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDataModelTypeController);
 };
