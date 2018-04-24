@@ -30,8 +30,7 @@
 from __future__ import with_statement
 import sys
 
-from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
-from webkitpy.common import read_checksum_from_png
+from blinkpy.common import read_checksum_from_png
 
 
 if '__main__' == __name__:

@@ -37,6 +37,8 @@ import logging
 import os
 import unittest
 
+from blinkpy.common.system.log_testing import LoggingTestCase
+from blinkpy.common.system.log_testing import TestLogStream
 from blinkpy.style import checker as style
 from blinkpy.style.checker import _all_categories
 from blinkpy.style.checker import _BASE_FILTER_RULES
@@ -58,8 +60,6 @@ from blinkpy.style.filter import FilterConfiguration
 from blinkpy.style.filter import validate_filter_rules
 from blinkpy.style.optparser import ArgumentParser
 from blinkpy.style.optparser import CommandOptionValues
-from webkitpy.common.system.log_testing import LoggingTestCase
-from webkitpy.common.system.log_testing import TestLogStream
 
 
 class ConfigureLoggingTestBase(unittest.TestCase):

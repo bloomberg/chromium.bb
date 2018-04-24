@@ -23,8 +23,8 @@
 
 """Supports checking WebKit style in png files."""
 
-from webkitpy.common import read_checksum_from_png
-from webkitpy.common.system.system_host import SystemHost
+from blinkpy.common import read_checksum_from_png
+from blinkpy.common.system.system_host import SystemHost
 
 
 class PNGChecker(object):

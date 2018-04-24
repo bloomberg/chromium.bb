@@ -35,6 +35,7 @@ import os.path
 import re
 import sys
 
+from blinkpy.common.system.log_utils import configure_logging as _configure_logging
 from blinkpy.style.checkers.common import CarriageReturnChecker
 from blinkpy.style.checkers.common import categories as CommonCategories
 from blinkpy.style.checkers.cpp import CppChecker
@@ -49,7 +50,6 @@ from blinkpy.style.error_handlers import DefaultStyleErrorHandler
 from blinkpy.style.filter import FilterConfiguration
 from blinkpy.style.optparser import ArgumentParser
 from blinkpy.style.optparser import DefaultCommandOptionValues
-from webkitpy.common.system.log_utils import configure_logging as _configure_logging
 
 
 _log = logging.getLogger(__name__)

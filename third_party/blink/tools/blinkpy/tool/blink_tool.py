@@ -37,7 +37,7 @@ import logging
 import optparse
 import sys
 
-from webkitpy.common.host import Host
+from blinkpy.common.host import Host
 from blinkpy.tool.commands.analyze_baselines import AnalyzeBaselines
 from blinkpy.tool.commands.command import HelpPrintingOptionParser
 from blinkpy.tool.commands.copy_existing_baselines import CopyExistingBaselines

@@ -17,12 +17,10 @@ import json
 import logging
 import re
 
-from webkitpy.common.net.buildbot import current_build_link
-from webkitpy.common.net.git_cl import GitCL
-from webkitpy.common.path_finder import PathFinder
-from webkitpy.common.system.log_utils import configure_logging
-from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
-from webkitpy.layout_tests.port.base import Port
+from blinkpy.common.net.buildbot import current_build_link
+from blinkpy.common.net.git_cl import GitCL
+from blinkpy.common.path_finder import PathFinder
+from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.w3c.chromium_exportable_commits import exportable_commits_over_last_n_commits
 from blinkpy.w3c.common import read_credentials, is_testharness_baseline, is_file_exportable
 from blinkpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
@@ -32,6 +30,8 @@ from blinkpy.w3c.test_copier import TestCopier
 from blinkpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
 from blinkpy.w3c.wpt_github import WPTGitHub
 from blinkpy.w3c.wpt_manifest import WPTManifest
+from blinkpy.web_tests.models.test_expectations import TestExpectations, TestExpectationParser
+from blinkpy.web_tests.port.base import Port
 
 # Settings for how often to check try job results and how long to wait.
 POLL_DELAY_SECONDS = 2 * 60

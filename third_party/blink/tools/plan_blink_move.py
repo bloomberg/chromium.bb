@@ -10,7 +10,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__),
                              '..', 'renderer', 'build', 'scripts'))
 from blinkbuild.name_style_converter import NameStyleConverter
-from webkitpy.common.system.filesystem import FileSystem
+from blinkpy.common.system.filesystem import FileSystem
 
 
 def relative_dest(fs, filename):

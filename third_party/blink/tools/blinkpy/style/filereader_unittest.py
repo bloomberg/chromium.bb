@@ -21,10 +21,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+from blinkpy.common.system.filesystem import FileSystem
+from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.style.checker import ProcessorBase
 from blinkpy.style.filereader import TextFileReader
-from webkitpy.common.system.filesystem import FileSystem
-from webkitpy.common.system.log_testing import LoggingTestCase
 
 
 class TextFileReaderTest(LoggingTestCase):

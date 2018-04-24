@@ -29,7 +29,7 @@
 import optparse
 import unittest
 
-from webkitpy.common.system.output_capture import OutputCapture
+from blinkpy.common.system.output_capture import OutputCapture
 from blinkpy.tool.mock_tool import MockBlinkTool
 
 

@@ -38,9 +38,8 @@ import StringIO
 import sys
 import urllib2
 
-from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
-from webkitpy.common.host import Host
-from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
+from blinkpy.common.host import Host
+from blinkpy.web_tests.models.test_expectations import TestExpectationParser
 
 # FIXME: Make this a direct request to Monorail.
 GOOGLE_CODE_URL = 'https://www.googleapis.com/projecthosting/v2/projects/chromium/issues/%s?key=AIzaSyDgCqT1Dt5AZWLHo4QJjyMHaCjhnFacGF0'

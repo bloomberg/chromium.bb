@@ -12,8 +12,8 @@ test type, options, URLs to use, and reference file paths if applicable.
 import json
 import logging
 
-from webkitpy.common.path_finder import PathFinder
-from webkitpy.common.memoized import memoized
+from blinkpy.common.memoized import memoized
+from blinkpy.common.path_finder import PathFinder
 
 _log = logging.getLogger(__file__)
 

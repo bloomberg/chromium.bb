@@ -47,9 +47,8 @@ Note that some tests will only work if "127.0.0.1" for the host part of the
 URL, rather than "localhost".
 """
 
-from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
-from webkitpy.common import version_check  # pylint: disable=unused-import
-from webkitpy.layout_tests.servers import cli_wrapper
-from webkitpy.layout_tests.servers import apache_http
+from blinkpy.common import version_check  # pylint: disable=unused-import
+from blinkpy.web_tests.servers import cli_wrapper
+from blinkpy.web_tests.servers import apache_http
 
 cli_wrapper.main(apache_http.ApacheHTTP, additional_dirs={}, number_of_servers=4, description=__doc__)

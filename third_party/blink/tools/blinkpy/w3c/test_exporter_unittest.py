@@ -4,8 +4,8 @@
 
 import json
 
-from webkitpy.common.host_mock import MockHost
-from webkitpy.common.system.log_testing import LoggingTestCase
+from blinkpy.common.host_mock import MockHost
+from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.w3c.chromium_commit_mock import MockChromiumCommit
 from blinkpy.w3c.gerrit import GerritError
 from blinkpy.w3c.gerrit_mock import MockGerritAPI, MockGerritCL

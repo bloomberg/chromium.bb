@@ -14,11 +14,11 @@ import copy
 import logging
 from collections import defaultdict, namedtuple
 
-from webkitpy.common.memoized import memoized
-from webkitpy.common.net.git_cl import GitCL
-from webkitpy.common.path_finder import PathFinder
-from webkitpy.common.system.executive import ScriptError
-from webkitpy.common.system.log_utils import configure_logging
+from blinkpy.common.memoized import memoized
+from blinkpy.common.net.git_cl import GitCL
+from blinkpy.common.path_finder import PathFinder
+from blinkpy.common.system.executive import ScriptError
+from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.w3c.wpt_manifest import WPTManifest
 
 _log = logging.getLogger(__name__)

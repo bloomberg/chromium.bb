@@ -4,7 +4,7 @@
 
 import unittest
 
-from webkitpy.common.system.filesystem_mock import MockFileSystem
+from blinkpy.common.system.filesystem_mock import MockFileSystem
 from blinkpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
 
 

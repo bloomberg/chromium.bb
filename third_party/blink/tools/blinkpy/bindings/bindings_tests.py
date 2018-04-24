@@ -29,9 +29,9 @@ import os
 import shutil
 import tempfile
 
-from webkitpy.common.system.executive import Executive
+from blinkpy.common.system.executive import Executive
 
-from webkitpy.common import path_finder
+from blinkpy.common import path_finder
 path_finder.add_bindings_scripts_dir_to_sys_path()
 
 from code_generator_v8 import CodeGeneratorDictionaryImpl

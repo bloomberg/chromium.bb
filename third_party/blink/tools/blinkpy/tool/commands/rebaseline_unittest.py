@@ -6,16 +6,16 @@ import json
 import optparse
 import unittest
 
-from webkitpy.common.net.buildbot import Build
-from webkitpy.common.net.layout_test_results import LayoutTestResults
-from webkitpy.common.system.executive_mock import MockExecutive
-from webkitpy.layout_tests.builder_list import BuilderList
-from webkitpy.layout_tests.port.factory_mock import MockPortFactory
+from blinkpy.common.net.buildbot import Build
+from blinkpy.common.net.layout_test_results import LayoutTestResults
+from blinkpy.common.system.executive_mock import MockExecutive
 from blinkpy.tool.commands.rebaseline import (
     AbstractParallelRebaselineCommand, Rebaseline, RebaselineExpectations,
     TestBaselineSet
 )
 from blinkpy.tool.mock_tool import MockBlinkTool
+from blinkpy.web_tests.builder_list import BuilderList
+from blinkpy.web_tests.port.factory_mock import MockPortFactory
 
 
 class BaseTestCase(unittest.TestCase):

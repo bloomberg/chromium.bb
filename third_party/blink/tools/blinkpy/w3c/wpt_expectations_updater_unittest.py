@@ -5,17 +5,17 @@
 import copy
 import json
 
-from webkitpy.common.host_mock import MockHost
-from webkitpy.common.net.buildbot import Build
-from webkitpy.common.net.buildbot_mock import MockBuildBot
-from webkitpy.common.net.git_cl import TryJobStatus
-from webkitpy.common.net.git_cl_mock import MockGitCL
-from webkitpy.common.net.layout_test_results import LayoutTestResult, LayoutTestResults
-from webkitpy.common.system.executive import ScriptError
-from webkitpy.common.system.log_testing import LoggingTestCase
-from webkitpy.layout_tests.builder_list import BuilderList
-from webkitpy.layout_tests.port.factory_mock import MockPortFactory
+from blinkpy.common.host_mock import MockHost
+from blinkpy.common.net.buildbot import Build
+from blinkpy.common.net.buildbot_mock import MockBuildBot
+from blinkpy.common.net.git_cl import TryJobStatus
+from blinkpy.common.net.git_cl_mock import MockGitCL
+from blinkpy.common.net.layout_test_results import LayoutTestResult, LayoutTestResults
+from blinkpy.common.system.executive import ScriptError
+from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater, SimpleTestResult, MARKER_COMMENT
+from blinkpy.web_tests.builder_list import BuilderList
+from blinkpy.web_tests.port.factory_mock import MockPortFactory
 
 
 class WPTExpectationsUpdaterTest(LoggingTestCase):

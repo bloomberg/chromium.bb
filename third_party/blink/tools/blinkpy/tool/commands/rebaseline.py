@@ -32,12 +32,12 @@ import logging
 import optparse
 import re
 
-from webkitpy.common.memoized import memoized
-from webkitpy.common.net.buildbot import Build
-from webkitpy.layout_tests.controllers.test_result_writer import TestResultWriter
-from webkitpy.layout_tests.models.test_expectations import TestExpectations
-from webkitpy.layout_tests.port import base, factory
+from blinkpy.common.memoized import memoized
+from blinkpy.common.net.buildbot import Build
 from blinkpy.tool.commands.command import Command
+from blinkpy.web_tests.controllers.test_result_writer import TestResultWriter
+from blinkpy.web_tests.models.test_expectations import TestExpectations
+from blinkpy.web_tests.port import base, factory
 
 _log = logging.getLogger(__name__)
 

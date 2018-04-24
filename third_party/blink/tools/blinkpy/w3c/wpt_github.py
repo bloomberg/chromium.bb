@@ -9,7 +9,7 @@ import re
 import urllib2
 from collections import namedtuple
 
-from webkitpy.common.memoized import memoized
+from blinkpy.common.memoized import memoized
 from blinkpy.w3c.common import WPT_GH_ORG, WPT_GH_REPO_NAME, EXPORT_PR_LABEL
 
 _log = logging.getLogger(__name__)

@@ -24,11 +24,11 @@ import codecs
 import logging
 import sys
 
+from blinkpy.common.host import Host
 from blinkpy.style import checker
 from blinkpy.style.checker import StyleProcessor
 from blinkpy.style.filereader import TextFileReader
 from blinkpy.style.patchreader import PatchReader
-from webkitpy.common.host import Host
 
 
 _log = logging.getLogger(__name__)
@@ -115,7 +115,7 @@ class CheckWebKitStyle(object):
         # the checker.configure_logging() function for more information.
         stderr.encoding = 'UTF-8'
 
-        # FIXME: Change webkitpy.style so that we do not need to overwrite
+        # FIXME: Change blinkpy.style so that we do not need to overwrite
         #        the global sys.stderr.  This involves updating the code to
         #        accept a stream parameter where necessary, and not calling
         #        sys.stderr explicitly anywhere.

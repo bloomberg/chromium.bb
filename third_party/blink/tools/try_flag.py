@@ -10,8 +10,7 @@ For more information, see: http://bit.ly/flag-try-jobs
 
 import sys
 
-from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
-from webkitpy.layout_tests import try_flag
+from blinkpy.web_tests import try_flag
 
 
 if __name__ == '__main__':

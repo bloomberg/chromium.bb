@@ -25,9 +25,9 @@
 
 import unittest
 
+from blinkpy.common.system.filesystem_mock import MockFileSystem
+from blinkpy.common.system.system_host_mock import MockSystemHost
 from blinkpy.style.checkers.png import PNGChecker
-from webkitpy.common.system.filesystem_mock import MockFileSystem
-from webkitpy.common.system.system_host_mock import MockSystemHost
 
 
 class PNGCheckerTest(unittest.TestCase):

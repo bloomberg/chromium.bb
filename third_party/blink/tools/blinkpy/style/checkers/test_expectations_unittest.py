@@ -28,8 +28,8 @@
 
 import unittest
 
+from blinkpy.common.host_mock import MockHost
 from blinkpy.style.checkers.test_expectations import TestExpectationsChecker
-from webkitpy.common.host_mock import MockHost
 
 
 class ErrorCollector(object):

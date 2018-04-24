@@ -43,8 +43,8 @@ import re
 import sre_compile
 import unicodedata
 
-from webkitpy.common.memoized import memoized
-from webkitpy.common.system.filesystem import FileSystem
+from blinkpy.common.memoized import memoized
+from blinkpy.common.system.filesystem import FileSystem
 
 # Headers that we consider STL headers.
 _STL_HEADERS = frozenset([

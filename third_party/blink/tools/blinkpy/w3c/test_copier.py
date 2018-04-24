@@ -33,8 +33,8 @@ a local W3C repository source directory into a destination directory.
 
 import logging
 
-from webkitpy.common.path_finder import PathFinder
-from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
+from blinkpy.common.path_finder import PathFinder
+from blinkpy.web_tests.models.test_expectations import TestExpectationParser
 from blinkpy.w3c.common import is_basename_skipped
 
 _log = logging.getLogger(__name__)

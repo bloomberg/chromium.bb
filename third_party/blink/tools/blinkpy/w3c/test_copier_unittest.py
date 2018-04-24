@@ -25,11 +25,11 @@
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-from webkitpy.common.host_mock import MockHost
-from webkitpy.common.system.executive_mock import MockExecutive, ScriptError
-from webkitpy.common.system.filesystem_mock import MockFileSystem
+from blinkpy.common.host_mock import MockHost
+from blinkpy.common.system.executive_mock import MockExecutive, ScriptError
+from blinkpy.common.system.filesystem_mock import MockFileSystem
+from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.w3c.test_copier import TestCopier
-from webkitpy.common.system.log_testing import LoggingTestCase
 
 
 FAKE_SOURCE_REPO_DIR = '/blink'

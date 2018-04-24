@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from webkitpy.common.memoized import memoized
-from webkitpy.common.path_finder import PathFinder
+from blinkpy.common.memoized import memoized
+from blinkpy.common.path_finder import PathFinder
 
 
 @memoized

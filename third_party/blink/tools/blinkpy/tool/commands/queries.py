@@ -33,10 +33,10 @@ import re
 
 from optparse import make_option
 
-from webkitpy.common.system.crash_logs import CrashLogs
+from blinkpy.common.system.crash_logs import CrashLogs
 from blinkpy.tool.commands.command import Command
-from webkitpy.layout_tests.models.test_expectations import TestExpectations
-from webkitpy.layout_tests.port.factory import platform_options
+from blinkpy.web_tests.models.test_expectations import TestExpectations
+from blinkpy.web_tests.port.factory import platform_options
 
 
 class CrashLog(Command):

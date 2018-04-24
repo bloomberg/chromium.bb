@@ -4,11 +4,11 @@
 
 import optparse
 
-from webkitpy.layout_tests.builder_list import BuilderList
-from webkitpy.layout_tests.layout_package import bot_test_expectations
 from blinkpy.tool.commands import flaky_tests
 from blinkpy.tool.commands.command_test import CommandsTest
 from blinkpy.tool.mock_tool import MockBlinkTool
+from blinkpy.web_tests.builder_list import BuilderList
+from blinkpy.web_tests.layout_package import bot_test_expectations
 
 
 class FakeBotTestExpectations(object):

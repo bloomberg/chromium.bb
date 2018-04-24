@@ -36,9 +36,8 @@ import os
 import signal
 import sys
 
-from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
-from webkitpy.common import version_check  # pylint: disable=unused-import
-from webkitpy.common.system.log_utils import configure_logging
+from blinkpy.common import version_check  # pylint: disable=unused-import
+from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.tool.blink_tool import BlinkTool
 
 # A StreamWriter will by default try to encode all objects passed

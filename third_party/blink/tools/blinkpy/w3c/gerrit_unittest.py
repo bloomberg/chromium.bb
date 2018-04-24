@@ -4,8 +4,8 @@
 
 import unittest
 
-from webkitpy.common.host_mock import MockHost
-from webkitpy.common.system.executive_mock import mock_git_commands
+from blinkpy.common.host_mock import MockHost
+from blinkpy.common.system.executive_mock import mock_git_commands
 from blinkpy.w3c.gerrit import GerritCL
 from blinkpy.w3c.gerrit_mock import MockGerritAPI
 

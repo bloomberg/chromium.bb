@@ -4,9 +4,8 @@ import optparse
 import os
 import sys
 
-from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
-from webkitpy.common.host import Host
-from webkitpy.layout_tests.port import platform_options, configuration_options
+from blinkpy.common.host import Host
+from blinkpy.web_tests.port import platform_options, configuration_options
 
 
 def main(argv):
@@ -102,7 +101,7 @@ def decode_results(results, include_expected=False):
 
 
 def convert_trie_to_flat_paths(trie, prefix=None):
-    # Cloned from webkitpy.layout_tests.layout_package.json_results_generator
+    # Cloned from blinkpy.web_tests.layout_package.json_results_generator
     # so that this code can stand alone.
     result = {}
     for name, data in trie.iteritems():

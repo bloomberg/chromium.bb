@@ -4,8 +4,8 @@
 
 import unittest
 
-from webkitpy.common.host_mock import MockHost
-from webkitpy.common.system.executive_mock import mock_git_commands
+from blinkpy.common.host_mock import MockHost
+from blinkpy.common.system.executive_mock import mock_git_commands
 from blinkpy.w3c.chromium_commit import ChromiumCommit
 from blinkpy.w3c.chromium_commit_mock import MockChromiumCommit
 from blinkpy.w3c.chromium_exportable_commits import (
