@@ -5,6 +5,7 @@
 <link rel="import" href="number_settings_section.html">
 <link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="settings_behavior.html">
+<link rel="import" href="settings_section_behavior.html">
 
 <dom-module id="print-preview-scaling-settings">
   <template>
@@ -14,9 +15,8 @@
         default-value="100" input-label="$i18n{scalingLabel}"
         disabled="[[disabled]]" current-value="{{currentValue_}}"
         input-valid="{{inputValid_}}" hint-message="$i18n{scalingInstruction}"
-        class="multirow-controls">
-      <div slot="opt-outside-content" class="checkbox"
-          hidden$="[[!settings.fitToPage.available]]">
+        hide-input="[[hideInput_]]" class="multirow-controls">
+      <div slot="opt-outside-content" class="checkbox" id="fitToPageContainer">
         <label aria-live="polite">
           <input type="checkbox" id="fit-to-page-checkbox"
               disabled$="[[getDisabled_(disabled, inputValid_)]]"

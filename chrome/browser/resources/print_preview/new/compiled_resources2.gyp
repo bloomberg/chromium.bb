@@ -18,6 +18,7 @@
         'scaling_settings',
         'other_options_settings',
         'advanced_options_settings',
+        'more_settings',
         'link_container',
         'preview_area',
         'model',
@@ -56,6 +57,7 @@
         '../data/compiled_resources2.gyp:invitation_store',
         '../data/compiled_resources2.gyp:user_info',
         'destination_dialog',
+        'settings_section_behavior',
         'state',
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_lazy_render/compiled_resources2.gyp:cr_lazy_render',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
@@ -67,6 +69,7 @@
       'dependencies': [
         'input_behavior',
         'settings_behavior',
+        'settings_section_behavior',
         '../data/compiled_resources2.gyp:document_info',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
       ],
@@ -77,6 +80,7 @@
       'dependencies': [
         'number_settings_section',
         'settings_behavior',
+        'settings_section_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -84,6 +88,7 @@
       'target_name': 'layout_settings',
       'dependencies': [
         'settings_behavior',
+        'settings_section_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -91,6 +96,7 @@
       'target_name': 'color_settings',
       'dependencies': [
         'settings_behavior',
+        'settings_section_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -98,6 +104,7 @@
       'target_name': 'media_size_settings',
       'dependencies': [
         'settings_behavior',
+        'settings_section_behavior',
         'settings_select',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -106,6 +113,7 @@
       'target_name': 'margins_settings',
       'dependencies': [
         'settings_behavior',
+        'settings_section_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -113,6 +121,7 @@
       'target_name': 'dpi_settings',
       'dependencies': [
         'settings_behavior',
+        'settings_section_behavior',
         'settings_select',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
@@ -125,6 +134,7 @@
         '../data/compiled_resources2.gyp:document_info',
         'number_settings_section',
         'settings_behavior',
+        'settings_section_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -132,6 +142,7 @@
       'target_name': 'other_options_settings',
       'dependencies': [
         'settings_behavior',
+        'settings_section_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -141,6 +152,15 @@
         '../data/compiled_resources2.gyp:destination',
         'advanced_settings_dialog',
         'settings_behavior',
+        'settings_section_behavior',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'more_settings',
+      'dependencies': [
+        'settings_section_behavior',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -169,6 +189,13 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'settings_section_behavior',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'input_behavior',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
@@ -181,6 +208,7 @@
         '../data/compiled_resources2.gyp:destination',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        'settings_section_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

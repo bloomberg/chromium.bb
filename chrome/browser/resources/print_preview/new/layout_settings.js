@@ -5,7 +5,7 @@
 Polymer({
   is: 'print-preview-layout-settings',
 
-  behaviors: [SettingsBehavior],
+  behaviors: [SettingsBehavior, print_preview_new.SettingsSectionBehavior],
 
   properties: {
     disabled: Boolean,

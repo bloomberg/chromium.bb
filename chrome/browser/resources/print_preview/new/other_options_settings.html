@@ -5,6 +5,7 @@
 <link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="settings_behavior.html">
 <link rel="import" href="settings_section.html">
+<link rel="import" href="settings_section_behavior.html">
 
 <dom-module id="print-preview-other-options-settings">
   <template>
@@ -16,37 +17,35 @@
     <print-preview-settings-section class="multirow-controls">
       <span slot="title" id="options-label">$i18n{optionsLabel}</span>
       <div slot="controls" class="checkbox">
-        <label aria-live="polite"
-            hidden$="[[!settings.headerFooter.available]]">
-          <input type="checkbox" id="header-footer"
+        <label id="headerFooterContainer" aria-live="polite">
+          <input type="checkbox" id="headerFooter"
               disabled$="[[disabled]]"
               on-change="onHeaderFooterChange_"
               checked$="[[settings.headerFooter.value]]">
           <span>$i18n{optionHeaderFooter}</span>
         </label>
-        <label aria-live="polite" hidden$="[[!settings.duplex.available]]">
+        <label id="duplexContainer" aria-live="polite">
           <input type="checkbox" id="duplex" on-change="onDuplexChange_"
               disabled$="[[disabled]]"
               checked$="[[settings.duplex.value]]">
           <span>$i18n{optionTwoSided}</span>
         </label>
-        <label aria-live="polite"
-            hidden$="[[!settings.cssBackground.available]]">
-          <input type="checkbox" id="css-background"
+        <label id="cssBackgroundContainer" aria-live="polite">
+          <input type="checkbox" id="cssBackground"
               on-change="onCssBackgroundChange_"
               disabled$="[[disabled]]"
               checked$="[[settings.cssBackground.value]]">
           <span>$i18n{optionBackgroundColorsAndImages}</span>
         </label>
-        <label aria-live="polite" hidden$="[[!settings.rasterize.available]]">
+        <label id="rasterizeContainer" aria-live="polite">
           <input type="checkbox" id="rasterize"
               disabled$="[[disabled]]" on-change="onRasterizeChange_"
               checked$="[[settings.rasterize.value]]">
           <span>$i18n{optionRasterize}</span>
         </label>
-        <label aria-live="polite"
+        <label id="selectionOnlyContainer" aria-live="polite"
             hidden$="[[!settings.selectionOnly.available]]">
-          <input type="checkbox" id="selection-only"
+          <input type="checkbox" id="selectionOnly"
               disabled$="[[disabled]]"
               on-change="onSelectionOnlyChange_"
               checked$="[[settings.selectionOnly.value]]">

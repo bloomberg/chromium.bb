@@ -5,7 +5,7 @@
 Polymer({
   is: 'print-preview-other-options-settings',
 
-  behaviors: [SettingsBehavior],
+  behaviors: [SettingsBehavior, print_preview_new.SettingsSectionBehavior],
 
   properties: {
     disabled: Boolean,
@@ -20,11 +20,33 @@ Polymer({
   ],
 
   /**
+   * @param {boolean} showCollapsible Whether collapsible content should be
+   *     shown.
+   */
+  show: function(showCollapsible) {
+    const duplexAvailable = this.getSetting('duplex').available;
+    if (!showCollapsible && !duplexAvailable) {
+      this.hidden = true;
+      return;
+    }
+    this.$.headerFooterContainer.hidden =
+        !this.getSetting('headerFooter').available || !showCollapsible;
+    this.$.duplexContainer.hidden = !duplexAvailable;
+    this.$.cssBackgroundContainer.hidden =
+        !this.getSetting('cssBackground').available || !showCollapsible;
+    this.$.rasterizeContainer.hidden =
+        !this.getSetting('rasterize').available || !showCollapsible;
+    this.$.selectionOnlyContainer.hidden =
+        !this.getSetting('selectionOnly').available || !showCollapsible;
+    this.hidden = false;
+  },
+
+  /**
    * @param {boolean} value The new value of the header footer setting.
    * @private
    */
   onHeaderFooterSettingChange_: function(value) {
-    this.$$('#header-footer').checked = value;
+    this.$.headerFooter.checked = value;
   },
 
   /**
@@ -32,7 +54,7 @@ Polymer({
    * @private
    */
   onDuplexSettingChange_: function(value) {
-    this.$$('#duplex').checked = value;
+    this.$.duplex.checked = value;
   },
 
   /**
@@ -40,7 +62,7 @@ Polymer({
    * @private
    */
   onCssBackgroundSettingChange_: function(value) {
-    this.$$('#css-background').checked = value;
+    this.$.cssBackground.checked = value;
   },
 
   /**
@@ -48,7 +70,7 @@ Polymer({
    * @private
    */
   onRasterizeSettingChange_: function(value) {
-    this.$$('#rasterize').checked = value;
+    this.$.rasterize.checked = value;
   },
 
   /**
@@ -56,31 +78,31 @@ Polymer({
    * @private
    */
   onSelectionOnlySettingChange_: function(value) {
-    this.$$('#selection-only').checked = value;
+    this.$.selectionOnly.checked = value;
   },
 
   /** @private */
   onHeaderFooterChange_: function() {
-    this.setSetting('headerFooter', this.$$('#header-footer').checked);
+    this.setSetting('headerFooter', this.$.headerFooter.checked);
   },
 
   /** @private */
   onDuplexChange_: function() {
-    this.setSetting('duplex', this.$$('#duplex').checked);
+    this.setSetting('duplex', this.$.duplex.checked);
   },
 
   /** @private */
   onCssBackgroundChange_: function() {
-    this.setSetting('cssBackground', this.$$('#css-background').checked);
+    this.setSetting('cssBackground', this.$.cssBackground.checked);
   },
 
   /** @private */
   onRasterizeChange_: function() {
-    this.setSetting('rasterize', this.$$('#rasterize').checked);
+    this.setSetting('rasterize', this.$.rasterize.checked);
   },
 
   /** @private */
   onSelectionOnlyChange_: function() {
-    this.setSetting('selectionOnly', this.$$('#selection-only').checked);
+    this.setSetting('selectionOnly', this.$.selectionOnly.checked);
   },
 });

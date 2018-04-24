@@ -5,6 +5,8 @@
 Polymer({
   is: 'print-preview-link-container',
 
+  behaviors: [print_preview_new.SettingsSectionBehavior],
+
   properties: {
     appKioskMode: Boolean,
 
