@@ -68,8 +68,9 @@ bool UnsafeDifference(const Element& old_element, const Element& new_element) {
 }
 
 std::ostream& operator<<(std::ostream& stream, const Element& elt) {
-  stream << "(" << elt.exe_type << ", " << AsHex<8, size_t>(elt.offset) << " +"
-         << AsHex<8, size_t>(elt.size) << ")";
+  stream << "(" << CastExecutableTypeToString(elt.exe_type) << ", "
+         << AsHex<8, size_t>(elt.offset) << " +" << AsHex<8, size_t>(elt.size)
+         << ")";
   return stream;
 }
 

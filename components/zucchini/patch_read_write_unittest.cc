@@ -63,11 +63,11 @@ bool operator==(const ByteVector& a, ConstBufferView b) {
 
 TEST(PatchTest, ParseSerializeElementMatch) {
   ByteVector data = {
-      0x01, 0, 0, 0,  // old_offset
-      0x03, 0, 0, 0,  // new_offset
-      0x02, 0, 0, 0,  // old_length
-      0x04, 0, 0, 0,  // new_length
-      7,    0, 0, 0,  // kExeTypeDex
+      0x01, 0,   0,   0,    // old_offset
+      0x03, 0,   0,   0,    // new_offset
+      0x02, 0,   0,   0,    // old_length
+      0x04, 0,   0,   0,    // new_length
+      'D',  'E', 'X', ' ',  // kExeTypeDex
   };
   BufferSource buffer_source(data.data(), data.size());
   ElementMatch element_match = {};
@@ -392,37 +392,37 @@ TEST(TargetSourceSinkTest, Normal) {
 
 TEST(PatchElementTest, Normal) {
   ByteVector data = {
-      0x01, 0, 0, 0,  // old_offset
-      0x03, 0, 0, 0,  // new_offset
-      0x02, 0, 0, 0,  // old_length
-      0x04, 0, 0, 0,  // new_length
-      1,    0, 0, 0,  // EXE_TYPE_WIN32_X86
+      0x01, 0,   0,   0,    // old_offset
+      0x03, 0,   0,   0,    // new_offset
+      0x02, 0,   0,   0,    // old_length
+      0x04, 0,   0,   0,    // new_length
+      'P',  'x', '8', '6',  // EXE_TYPE_WIN32_X86
 
-      1,    0, 0, 0,  // src_skip size
-      0x10,           // src_skip content
-      1,    0, 0, 0,  // dst_skip size
-      0x11,           // dst_skip content
-      1,    0, 0, 0,  // copy_count size
-      0x12,           // copy_count content
+      1,    0,   0,   0,  // src_skip size
+      0x10,               // src_skip content
+      1,    0,   0,   0,  // dst_skip size
+      0x11,               // dst_skip content
+      1,    0,   0,   0,  // copy_count size
+      0x12,               // copy_count content
 
-      1,    0, 0, 0,  // extra_data size
-      0x13,           // extra_data content
+      1,    0,   0,   0,  // extra_data size
+      0x13,               // extra_data content
 
-      1,    0, 0, 0,  // raw_delta_skip size
-      0x14,           // raw_delta_skip content
-      1,    0, 0, 0,  // raw_delta_diff size
-      0x15,           // raw_delta_diff content
+      1,    0,   0,   0,  // raw_delta_skip size
+      0x14,               // raw_delta_skip content
+      1,    0,   0,   0,  // raw_delta_diff size
+      0x15,               // raw_delta_diff content
 
-      1,    0, 0, 0,  // reference_delta size
-      0x16,           // reference_delta content
+      1,    0,   0,   0,  // reference_delta size
+      0x16,               // reference_delta content
 
-      2,    0, 0, 0,  // pool count
-      0,              // pool_tag
-      1,    0, 0, 0,  // extra_targets size
-      0x17,           // extra_targets content
-      2,              // pool_tag
-      1,    0, 0, 0,  // extra_targets size
-      0x18,           // extra_targets content
+      2,    0,   0,   0,  // pool count
+      0,                  // pool_tag
+      1,    0,   0,   0,  // extra_targets size
+      0x17,               // extra_targets content
+      2,                  // pool_tag
+      1,    0,   0,   0,  // extra_targets size
+      0x18,               // extra_targets content
   };
 
   PatchElementReader patch_element_reader =
@@ -490,7 +490,7 @@ TEST(EnsemblePatchTest, RawPatch) {
       0x00, 0,    0,    0,     // new_offset
       0x02, 0,    0,    0,     // old_length
       0x98, 0xBA, 0xDC, 0xFE,  // new_length
-      1,    0,    0,    0,     // EXE_TYPE_WIN32_X86
+      'P',  'x',  '8',  '6',   // EXE_TYPE_WIN32_X86
       0,    0,    0,    0,     // src_skip size
       0,    0,    0,    0,     // dst_skip size
       0,    0,    0,    0,     // copy_count size
@@ -536,19 +536,19 @@ TEST(EnsemblePatchTest, CheckFile) {
 
       1,    0,    0,    0,  // number of element
 
-      0x01, 0,    0,    0,  // old_offset
-      0x00, 0,    0,    0,  // new_offset
-      0x02, 0,    0,    0,  // old_length
-      0x03, 0,    0,    0,  // new_length
-      1,    0,    0,    0,  // EXE_TYPE_WIN32_X86
-      0,    0,    0,    0,  // src_skip size
-      0,    0,    0,    0,  // dst_skip size
-      0,    0,    0,    0,  // copy_count size
-      0,    0,    0,    0,  // extra_data size
-      0,    0,    0,    0,  // raw_delta_skip size
-      0,    0,    0,    0,  // raw_delta_diff size
-      0,    0,    0,    0,  // reference_delta size
-      0,    0,    0,    0,  // pool count
+      0x01, 0,    0,    0,    // old_offset
+      0x00, 0,    0,    0,    // new_offset
+      0x02, 0,    0,    0,    // old_length
+      0x03, 0,    0,    0,    // new_length
+      'P',  'x',  '8',  '6',  // EXE_TYPE_WIN32_X86
+      0,    0,    0,    0,    // src_skip size
+      0,    0,    0,    0,    // dst_skip size
+      0,    0,    0,    0,    // copy_count size
+      0,    0,    0,    0,    // extra_data size
+      0,    0,    0,    0,    // raw_delta_skip size
+      0,    0,    0,    0,    // raw_delta_diff size
+      0,    0,    0,    0,    // reference_delta size
+      0,    0,    0,    0,    // pool count
   };
 
   EnsemblePatchReader ensemble_patch_reader =
