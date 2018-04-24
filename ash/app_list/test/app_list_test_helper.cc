@@ -37,6 +37,10 @@ void AppListTestHelper::ShowAndRunLoop(uint64_t display_id) {
   ShowAndRunLoop(display_id, app_list::AppListShowSource::kSearchKey);
 }
 
+void AppListTestHelper::Show(uint64_t display_id) {
+  ShowAndRunLoop(display_id, app_list::AppListShowSource::kSearchKey);
+}
+
 void AppListTestHelper::ShowAndRunLoop(
     uint64_t display_id,
     app_list::AppListShowSource show_source) {
@@ -47,6 +51,10 @@ void AppListTestHelper::ShowAndRunLoop(
 void AppListTestHelper::DismissAndRunLoop() {
   app_list_controller_->DismissAppList();
   WaitUntilIdle();
+}
+
+void AppListTestHelper::Dismiss() {
+  app_list_controller_->DismissAppList();
 }
 
 void AppListTestHelper::ToggleAndRunLoop(uint64_t display_id) {

@@ -1537,12 +1537,14 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
   ShowTopWindowBackdropForContainer(default_container(), true);
   EXPECT_TRUE(test_helper.GetBackdropWindow());
 
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   EXPECT_TRUE(test_helper.GetBackdropWindow());
   // Showing the fullscreen app list should hide the backdrop.
-  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplay().id());
+  GetAppListTestHelper()->Show(GetPrimaryDisplay().id());
   EXPECT_FALSE(test_helper.GetBackdropWindow());
   // Dismissing the app list should cause the backdrop to be shown again.
-  GetAppListTestHelper()->DismissAndRunLoop();
+  GetAppListTestHelper()->Dismiss();
   EXPECT_TRUE(test_helper.GetBackdropWindow());
 }
 
