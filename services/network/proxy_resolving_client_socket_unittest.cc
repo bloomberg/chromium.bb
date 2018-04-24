@@ -802,15 +802,22 @@ class ReconsiderProxyAfterErrorTest
 };
 
 // List of errors that are used in the proxy resolution tests.
-const int kProxyTestMockErrors[] = {
-    net::ERR_PROXY_CONNECTION_FAILED, net::ERR_NAME_NOT_RESOLVED,
-    net::ERR_ADDRESS_UNREACHABLE,     net::ERR_CONNECTION_CLOSED,
-    net::ERR_CONNECTION_RESET,        net::ERR_CONNECTION_REFUSED,
-    net::ERR_CONNECTION_ABORTED,      net::ERR_TUNNEL_CONNECTION_FAILED,
-    net::ERR_SOCKS_CONNECTION_FAILED, net::ERR_TIMED_OUT,
-    net::ERR_CONNECTION_TIMED_OUT,    net::ERR_PROXY_CERTIFICATE_INVALID,
-    net::ERR_QUIC_PROTOCOL_ERROR,     net::ERR_QUIC_HANDSHAKE_FAILED,
-    net::ERR_SSL_PROTOCOL_ERROR,      net::ERR_MSG_TOO_BIG};
+//
+// Note: ProxyResolvingClientSocket currently removes
+// net::ProxyServer::SCHEME_QUIC, so this list excludes errors that are
+// retryable only for QUIC proxies.
+const int kProxyTestMockErrors[] = {net::ERR_PROXY_CONNECTION_FAILED,
+                                    net::ERR_NAME_NOT_RESOLVED,
+                                    net::ERR_ADDRESS_UNREACHABLE,
+                                    net::ERR_CONNECTION_CLOSED,
+                                    net::ERR_CONNECTION_RESET,
+                                    net::ERR_CONNECTION_REFUSED,
+                                    net::ERR_CONNECTION_ABORTED,
+                                    net::ERR_SOCKS_CONNECTION_FAILED,
+                                    net::ERR_TIMED_OUT,
+                                    net::ERR_CONNECTION_TIMED_OUT,
+                                    net::ERR_PROXY_CERTIFICATE_INVALID,
+                                    net::ERR_SSL_PROTOCOL_ERROR};
 
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
@@ -831,22 +838,32 @@ TEST_P(ReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
       << mock_error;
 
   net::MockClientSocketFactory socket_factory;
+  socket_factory.UseMockProxyClientSockets();
+
+  net::ProxyClientSocketDataProvider proxy_data(io_mode, mock_error);
+
   // Connect to first broken proxy.
   net::StaticSocketDataProvider data1;
-  data1.set_connect_data(net::MockConnect(io_mode, mock_error));
+  net::SSLSocketDataProvider ssl_data1(io_mode, net::OK);
+  data1.set_connect_data(net::MockConnect(io_mode, net::OK));
   socket_factory.AddSocketDataProvider(&data1);
+  socket_factory.AddSSLSocketDataProvider(&ssl_data1);
+  socket_factory.AddProxyClientSocketDataProvider(&proxy_data);
 
   // Connect to second broken proxy.
   net::StaticSocketDataProvider data2;
-  data2.set_connect_data(net::MockConnect(io_mode, mock_error));
+  net::SSLSocketDataProvider ssl_data2(io_mode, net::OK);
+  data2.set_connect_data(net::MockConnect(io_mode, net::OK));
   socket_factory.AddSocketDataProvider(&data2);
+  socket_factory.AddSSLSocketDataProvider(&ssl_data2);
+  socket_factory.AddProxyClientSocketDataProvider(&proxy_data);
 
   // Connect using direct.
   net::StaticSocketDataProvider data3;
+  net::SSLSocketDataProvider ssl_data3(io_mode, net::OK);
   data3.set_connect_data(net::MockConnect(io_mode, net::OK));
   socket_factory.AddSocketDataProvider(&data3);
-  net::SSLSocketDataProvider ssl_socket(net::ASYNC, net::OK);
-  socket_factory.AddSSLSocketDataProvider(&ssl_socket);
+  socket_factory.AddSSLSocketDataProvider(&ssl_data3);
 
   const GURL kDestination("https://example.com:443");
   ProxyResolvingClientSocketFactory proxy_resolving_socket_factory(
@@ -865,7 +882,11 @@ TEST_P(ReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
   EXPECT_EQ(2u, retry_info.size()) << mock_error;
   EXPECT_NE(retry_info.end(), retry_info.find("https://badproxy:99"));
   EXPECT_NE(retry_info.end(), retry_info.find("https://badfallbackproxy:98"));
-  EXPECT_EQ(use_tls_, ssl_socket.ConnectDataConsumed());
+  // Should always use HTTPS to talk to HTTPS proxy.
+  EXPECT_TRUE(ssl_data1.ConnectDataConsumed());
+  EXPECT_TRUE(ssl_data2.ConnectDataConsumed());
+  // This depends on whether the consumer has requested to use TLS.
+  EXPECT_EQ(use_tls_, ssl_data3.ConnectDataConsumed());
 }
 
 }  // namespace network
