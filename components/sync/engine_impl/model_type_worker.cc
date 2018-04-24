@@ -292,6 +292,10 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
       CommitOnlyTypes().Has(GetModelType()));
 }
 
+bool ModelTypeWorker::HasLocalChangesForTest() const {
+  return has_local_changes_;
+}
+
 void ModelTypeWorker::OnCommitResponse(CommitResponseDataList* response_list) {
   DCHECK(thread_checker_.CalledOnValidThread());
 

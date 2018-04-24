@@ -60,9 +60,9 @@ TestForAuthError::TestForAuthError(browser_sync::ProfileSyncService* service)
     : SingleClientStatusChangeChecker(service) {}
 
 bool TestForAuthError::IsExitConditionSatisfied() {
-  return !service()->HasUnsyncedItems() ||
-      (service()->GetSyncTokenStatus().last_get_token_error.state() !=
-       GoogleServiceAuthError::NONE);
+  return !service()->HasUnsyncedItemsForTest() ||
+         (service()->GetSyncTokenStatus().last_get_token_error.state() !=
+          GoogleServiceAuthError::NONE);
 }
 
 std::string TestForAuthError::GetDebugMessage() const {

@@ -513,25 +513,20 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
     service()->QueryDetailedSyncStatus(&status);
     // Capture select info from the sync session snapshot and syncer status.
     os << ", has_unsynced_items: "
-       << (service()->IsSyncActive() ? service()->HasUnsyncedItems() : 0)
+       << (service()->IsSyncActive() ? service()->HasUnsyncedItemsForTest() : 0)
        << ", did_commit: "
        << (snap.model_neutral_state().num_successful_commits == 0 &&
            snap.model_neutral_state().commit_result == syncer::SYNCER_OK)
-       << ", encryption conflicts: "
-       << snap.num_encryption_conflicts()
-       << ", hierarchy conflicts: "
-       << snap.num_hierarchy_conflicts()
-       << ", server conflicts: "
-       << snap.num_server_conflicts()
+       << ", encryption conflicts: " << snap.num_encryption_conflicts()
+       << ", hierarchy conflicts: " << snap.num_hierarchy_conflicts()
+       << ", server conflicts: " << snap.num_server_conflicts()
        << ", num_updates_downloaded : "
        << snap.model_neutral_state().num_updates_downloaded_total
        << ", passphrase_required_reason: "
        << syncer::PassphraseRequiredReasonToString(
-           service()->passphrase_required_reason())
-       << ", notifications_enabled: "
-       << status.notifications_enabled
-       << ", service_is_active: "
-       << service()->IsSyncActive();
+              service()->passphrase_required_reason())
+       << ", notifications_enabled: " << status.notifications_enabled
+       << ", service_is_active: " << service()->IsSyncActive();
   } else {
     os << "Sync service not available";
   }

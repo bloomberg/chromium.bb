@@ -1720,10 +1720,10 @@ syncer::SyncCycleSnapshot ProfileSyncService::GetLastCycleSnapshot() const {
   return last_snapshot_;
 }
 
-bool ProfileSyncService::HasUnsyncedItems() const {
+bool ProfileSyncService::HasUnsyncedItemsForTest() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (HasSyncingEngine() && engine_initialized_) {
-    return engine_->HasUnsyncedItems();
+    return engine_->HasUnsyncedItemsForTest();
   }
   NOTREACHED();
   return false;

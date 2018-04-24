@@ -220,9 +220,9 @@ SyncBackendHostImpl::Status SyncBackendHostImpl::GetDetailedStatus() {
   return core_->sync_manager()->GetDetailedStatus();
 }
 
-bool SyncBackendHostImpl::HasUnsyncedItems() const {
+bool SyncBackendHostImpl::HasUnsyncedItemsForTest() const {
   DCHECK(initialized());
-  return core_->sync_manager()->HasUnsyncedItems();
+  return core_->sync_manager()->HasUnsyncedItemsForTest();
 }
 
 bool SyncBackendHostImpl::IsCryptographerReady(

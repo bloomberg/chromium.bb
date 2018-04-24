@@ -104,6 +104,8 @@ class ModelTypeWorker : public UpdateHandler,
   std::unique_ptr<CommitContribution> GetContribution(
       size_t max_entries) override;
 
+  bool HasLocalChangesForTest() const;
+
   // An alternative way to drive sending data to the processor, that should be
   // called when a new encryption mechanism is ready.
   void EncryptionAcceptedMaybeApplyUpdates();

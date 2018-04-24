@@ -460,7 +460,7 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // Returns whether or not the underlying sync engine has made any
   // local changes to items that have not yet been synced with the
   // server.
-  bool HasUnsyncedItems() const;
+  bool HasUnsyncedItemsForTest() const;
 
   // Used by ProfileSyncServiceHarness.  May return null.
   syncer::BackendMigrator* GetBackendMigratorForTest();

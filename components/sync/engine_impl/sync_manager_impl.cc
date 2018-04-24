@@ -950,9 +950,8 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
   return found_experiment;
 }
 
-bool SyncManagerImpl::HasUnsyncedItems() {
-  ReadTransaction trans(FROM_HERE, GetUserShare());
-  return (trans.GetWrappedTrans()->directory()->unsynced_entity_count() != 0);
+bool SyncManagerImpl::HasUnsyncedItemsForTest() {
+  return model_type_registry_->HasUnsyncedItemsForTest();
 }
 
 SyncEncryptionHandler* SyncManagerImpl::GetEncryptionHandler() {

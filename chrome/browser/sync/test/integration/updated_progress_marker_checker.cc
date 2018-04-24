@@ -19,8 +19,8 @@ bool UpdatedProgressMarkerChecker::IsExitConditionSatisfied() {
   // current client did not commit anything in its previous sync cycle, then
   // this client has the latest progress markers.
   //
-  // The !service()->HasUnsyncedItems() check makes sure that we have nothing to
-  // commit.
+  // The !service()->HasUnsyncedItemsForTest() check makes sure that we have
+  // nothing to commit.
   //
   // There is a subtle race condition here.  While committing items, the syncer
   // will unset the IS_UNSYNCED bits in the directory.  However, the evidence of
@@ -36,7 +36,7 @@ bool UpdatedProgressMarkerChecker::IsExitConditionSatisfied() {
   // completes, then the snapshot is much more likely to be up to date.
   const syncer::SyncCycleSnapshot& snap = service()->GetLastCycleSnapshot();
   return snap.model_neutral_state().num_successful_commits == 0 &&
-         service()->IsSyncActive() && !service()->HasUnsyncedItems();
+         service()->IsSyncActive() && !service()->HasUnsyncedItemsForTest();
 }
 
 std::string UpdatedProgressMarkerChecker::GetDebugMessage() const {
