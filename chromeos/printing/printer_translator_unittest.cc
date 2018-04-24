@@ -10,15 +10,19 @@
 #include "base/values.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/printing/printer_translator.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
+
+namespace {
 
 // Printer test data
 const char kHash[] = "ABCDEF123456";
 const char kName[] = "Chrome Super Printer";
 const char kDescription[] = "first star on the left";
 const char kUri[] = "ipp://printy.domain.co:555/ipp/print";
+const char kUsbUri[] = "usb://1234/af9d?serial=ink1";
 const char kUUID[] = "UUID-UUID-UUID";
 
 const char kMake[] = "Chrome";
@@ -29,6 +33,50 @@ const char kGUID[] = "{4d8faf22-303f-46c6-ab30-352d47d6a8b9}";
 
 // PpdReference test data
 const char kEffectiveMakeAndModel[] = "PrintBlaster LazerInker 2000";
+
+Printer CreateGenericPrinter() {
+  Printer ret;
+  ret.set_id(kHash);
+  ret.set_display_name(kName);
+  ret.set_description(kDescription);
+  ret.set_manufacturer(kMake);
+  ret.set_model(kModel);
+  ret.set_make_and_model(kMakeAndModel);
+  return ret;
+}
+
+Printer CreateAutoconfPrinter() {
+  Printer ret = CreateGenericPrinter();
+  ret.mutable_ppd_reference()->autoconf = true;
+  return ret;
+}
+
+// Check the values populated in |printer_info| match the values of |printer|.
+void CheckGenericPrinterInfo(const Printer& printer,
+                             const base::DictionaryValue& printer_info) {
+  ExpectDictStringValue(printer.id(), printer_info, "printerId");
+  ExpectDictStringValue(printer.display_name(), printer_info, "printerName");
+  ExpectDictStringValue(printer.description(), printer_info,
+                        "printerDescription");
+  ExpectDictStringValue(printer.manufacturer(), printer_info,
+                        "printerManufacturer");
+  ExpectDictStringValue(printer.model(), printer_info, "printerModel");
+  ExpectDictStringValue(printer.make_and_model(), printer_info,
+                        "printerMakeAndModel");
+}
+
+// Check that the corresponding values in |printer_info| match the given URI
+// components of |address|, |queue|, and |protocol|.
+void CheckPrinterInfoUri(const base::DictionaryValue& printer_info,
+                         const std::string& protocol,
+                         const std::string& address,
+                         const std::string& queue) {
+  ExpectDictStringValue(address, printer_info, "printerAddress");
+  ExpectDictStringValue(queue, printer_info, "printerQueue");
+  ExpectDictStringValue(protocol, printer_info, "printerProtocol");
+}
+
+}  // anonymous namespace
 
 TEST(PrinterTranslatorTest, RecommendedPrinterToPrinterMissingId) {
   base::DictionaryValue value;
@@ -161,6 +209,60 @@ TEST(PrinterTranslatorTest, BulkPrinterJson) {
   EXPECT_TRUE(printer);
 
   EXPECT_EQ(kGUID, printer->id());
+}
+
+TEST(PrinterTranslatorTest, GetCupsPrinterInfoGenericPrinter) {
+  Printer printer = CreateGenericPrinter();
+  std::unique_ptr<base::DictionaryValue> printer_info =
+      GetCupsPrinterInfo(printer);
+  CheckGenericPrinterInfo(CreateGenericPrinter(), *printer_info);
+
+  // We expect the default values to be set for the URI components since the
+  // generic printer does not have the URI field set.
+  CheckPrinterInfoUri(*printer_info, "ipp", "", "");
+
+  ExpectDictBooleanValue(false, *printer_info, "printerAutoconf");
+}
+
+TEST(PrinterTranslatorTest, GetCupsPrinterInfoGenericPrinterWithUri) {
+  Printer printer = CreateGenericPrinter();
+  printer.set_uri(kUri);
+
+  std::unique_ptr<base::DictionaryValue> printer_info =
+      GetCupsPrinterInfo(printer);
+  CheckGenericPrinterInfo(CreateGenericPrinter(), *printer_info);
+
+  CheckPrinterInfoUri(*printer_info, "ipp", "printy.domain.co:555",
+                      "ipp/print");
+
+  ExpectDictBooleanValue(false, *printer_info, "printerAutoconf");
+}
+
+TEST(PrinterTranslatorTest, GetCupsPrinterInfoGenericPrinterWithUsbUri) {
+  Printer printer = CreateGenericPrinter();
+  printer.set_uri(kUsbUri);
+
+  std::unique_ptr<base::DictionaryValue> printer_info =
+      GetCupsPrinterInfo(printer);
+  CheckGenericPrinterInfo(CreateGenericPrinter(), *printer_info);
+
+  CheckPrinterInfoUri(*printer_info, "usb", "1234/af9d?serial=ink1", "");
+
+  ExpectDictBooleanValue(false, *printer_info, "printerAutoconf");
+}
+
+TEST(PrinterTranslatorTest, GetCupsPrinterInfoAutoconfPrinter) {
+  Printer printer = CreateAutoconfPrinter();
+  std::unique_ptr<base::DictionaryValue> printer_info =
+      GetCupsPrinterInfo(printer);
+  CheckGenericPrinterInfo(CreateGenericPrinter(), *printer_info);
+
+  // We expect the default values to be set for the URI components since the
+  // generic printer does not have the URI field set.
+  CheckPrinterInfoUri(*printer_info, "ipp", "", "");
+
+  // Since this is an autoconf printer we expect "printerAutoconf" to be true.
+  ExpectDictBooleanValue(true, *printer_info, "printerAutoconf");
 }
 
 }  // namespace chromeos

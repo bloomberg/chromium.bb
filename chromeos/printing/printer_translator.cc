@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chromeos/printing/printer_configuration.h"
 
@@ -78,6 +80,39 @@ bool DictionaryToPrinter(const DictionaryValue& value, Printer* printer) {
   return true;
 }
 
+// Create an empty CupsPrinterInfo dictionary value. It should be consistent
+// with the fields in js side. See cups_printers_browser_proxy.js for the
+// definition of CupsPrintersInfo.
+std::unique_ptr<base::DictionaryValue> CreateEmptyPrinterInfo() {
+  std::unique_ptr<base::DictionaryValue> printer_info =
+      std::make_unique<base::DictionaryValue>();
+  printer_info->SetString("ppdManufacturer", "");
+  printer_info->SetString("ppdModel", "");
+  printer_info->SetString("printerAddress", "");
+  printer_info->SetBoolean("printerAutoconf", false);
+  printer_info->SetString("printerDescription", "");
+  printer_info->SetString("printerId", "");
+  printer_info->SetString("printerManufacturer", "");
+  printer_info->SetString("printerModel", "");
+  printer_info->SetString("printerMakeAndModel", "");
+  printer_info->SetString("printerName", "");
+  printer_info->SetString("printerPPDPath", "");
+  printer_info->SetString("printerProtocol", "ipp");
+  printer_info->SetString("printerQueue", "");
+  printer_info->SetString("printerStatus", "");
+  return printer_info;
+}
+
+// Formats a host and port string. The |port| portion is omitted if it is
+// unspecified or invalid.
+std::string PrinterAddress(const std::string& host, int port) {
+  if (port != url::PORT_UNSPECIFIED && port != url::PORT_INVALID) {
+    return base::StringPrintf("%s:%d", host.c_str(), port);
+  }
+
+  return host;
+}
+
 }  // namespace
 
 const char kPrinterId[] = "id";
@@ -111,6 +146,54 @@ std::unique_ptr<Printer> RecommendedPrinterToPrinter(
   }
 
   return printer;
+}
+
+std::unique_ptr<base::DictionaryValue> GetCupsPrinterInfo(
+    const Printer& printer) {
+  std::unique_ptr<base::DictionaryValue> printer_info =
+      CreateEmptyPrinterInfo();
+
+  printer_info->SetString("printerId", printer.id());
+  printer_info->SetString("printerName", printer.display_name());
+  printer_info->SetString("printerDescription", printer.description());
+  printer_info->SetString("printerManufacturer", printer.manufacturer());
+  printer_info->SetString("printerModel", printer.model());
+  printer_info->SetString("printerMakeAndModel", printer.make_and_model());
+  // NOTE: This assumes the the function IsIppEverywhere() simply returns
+  // |printer.ppd_reference_.autoconf|. If the implementation of
+  // IsIppEverywhere() changes this will need to be changed as well.
+  printer_info->SetBoolean("printerAutoconf", printer.IsIppEverywhere());
+
+  auto optional = printer.GetUriComponents();
+  if (!optional.has_value()) {
+    // Uri is invalid so we set default values.
+    LOG(WARNING) << "Could not parse uri.  Defaulting values";
+    printer_info->SetString("printerAddress", "");
+    printer_info->SetString("printerQueue", "");
+    printer_info->SetString("printerProtocol",
+                            "ipp");  // IPP is our default protocol.
+    return printer_info;
+  }
+
+  UriComponents uri = optional.value();
+
+  if (base::ToLowerASCII(uri.scheme()) == "usb") {
+    // USB has URI path (and, maybe, query) components that aren't really
+    // associated with a queue -- the mapping between printing semantics and URI
+    // semantics breaks down a bit here.  From the user's point of view, the
+    // entire host/path/query block is the printer address for USB.
+    printer_info->SetString("printerAddress",
+                            printer.uri().substr(strlen("usb://")));
+  } else {
+    printer_info->SetString("printerAddress",
+                            PrinterAddress(uri.host(), uri.port()));
+    if (!uri.path().empty()) {
+      printer_info->SetString("printerQueue", uri.path().substr(1));
+    }
+  }
+  printer_info->SetString("printerProtocol", base::ToLowerASCII(uri.scheme()));
+
+  return printer_info;
 }
 
 }  // namespace chromeos
