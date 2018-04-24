@@ -10,6 +10,7 @@
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "content/public/browser/navigation_throttle.h"
 
@@ -32,6 +33,8 @@ std::unique_ptr<Target::TargetInfo> CreateInfo(DevToolsAgentHost* host) {
           .Build();
   if (!host->GetOpenerId().empty())
     target_info->SetOpenerId(host->GetOpenerId());
+  if (host->GetBrowserContext())
+    target_info->SetBrowserContextId(host->GetBrowserContext()->UniqueId());
   return target_info;
 }
 

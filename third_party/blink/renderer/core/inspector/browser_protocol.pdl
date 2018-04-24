@@ -5471,6 +5471,7 @@ domain Target
       boolean attached
       # Opener target Id
       optional TargetID openerId
+      experimental optional BrowserContextID browserContextId
 
   experimental type RemoteLocation extends object
     properties
