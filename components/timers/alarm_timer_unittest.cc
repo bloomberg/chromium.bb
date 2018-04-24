@@ -21,8 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Most of these tests have been lifted right out of timer_unittest.cc with only
-// cosmetic changes (like replacing calls to MessageLoop::current()->Run() with
-// a RunLoop).  We want the AlarmTimer to be a drop-in replacement for the
+// cosmetic changes. We want the AlarmTimer to be a drop-in replacement for the
 // regular Timer so it should pass the same tests as the Timer class.
 namespace timers {
 namespace {
