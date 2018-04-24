@@ -18408,6 +18408,10 @@ Called by update_net_error_codes.py.-->
   <int value="2418" label="CSSResizeAuto"/>
   <int value="2419" label="PrefixedCursorGrab"/>
   <int value="2420" label="PrefixedCursorGrabbing"/>
+  <int value="2421" label="CredentialManagerCreatePublicKeyCredential"/>
+  <int value="2422" label="CredentialManagerGetPublicKeyCredential"/>
+  <int value="2423" label="CredentialManagerMakePublicKeyCredentialSuccess"/>
+  <int value="2424" label="CredentialManagerGetPublicKeyCredentialSuccess"/>
 </enum>
 
 <enum name="FeedbackSource">

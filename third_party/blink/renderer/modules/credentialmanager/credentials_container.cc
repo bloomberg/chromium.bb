@@ -356,6 +356,9 @@ void OnMakePublicKeyCredentialComplete(
     DCHECK(credential);
     DCHECK(!credential->info->client_data_json.IsEmpty());
     DCHECK(!credential->attestation_object.IsEmpty());
+    UseCounter::Count(
+        resolver->GetExecutionContext(),
+        WebFeature::kCredentialManagerMakePublicKeyCredentialSuccess);
     DOMArrayBuffer* client_data_buffer =
         VectorToDOMArrayBuffer(std::move(credential->info->client_data_json));
     DOMArrayBuffer* raw_id =
@@ -387,6 +390,9 @@ void OnGetAssertionComplete(
     DCHECK(credential);
     DCHECK(!credential->signature.IsEmpty());
     DCHECK(!credential->authenticator_data.IsEmpty());
+    UseCounter::Count(
+        resolver->GetExecutionContext(),
+        WebFeature::kCredentialManagerGetPublicKeyCredentialSuccess);
     DOMArrayBuffer* client_data_buffer =
         VectorToDOMArrayBuffer(std::move(credential->info->client_data_json));
     DOMArrayBuffer* raw_id =
@@ -435,6 +441,9 @@ ScriptPromise CredentialsContainer::get(
     return promise;
 
   if (options.hasPublicKey()) {
+    UseCounter::Count(resolver->GetExecutionContext(),
+                      WebFeature::kCredentialManagerGetPublicKeyCredential);
+
     const String& relying_party_id = options.publicKey().rpId();
     if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
       return promise;
@@ -586,6 +595,9 @@ ScriptPromise CredentialsContainer::create(
         FederatedCredential::Create(options.federated(), exception_state));
   } else {
     DCHECK(options.hasPublicKey());
+    UseCounter::Count(resolver->GetExecutionContext(),
+                      WebFeature::kCredentialManagerCreatePublicKeyCredential);
+
     const String& relying_party_id = options.publicKey().rp().id();
     if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
       return promise;

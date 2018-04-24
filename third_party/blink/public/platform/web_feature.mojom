@@ -1904,6 +1904,10 @@ enum WebFeature {
   kCSSResizeAuto = 2418,
   kPrefixedCursorGrab = 2419,
   kPrefixedCursorGrabbing = 2420,
+  kCredentialManagerCreatePublicKeyCredential = 2421,
+  kCredentialManagerGetPublicKeyCredential = 2422,
+  kCredentialManagerMakePublicKeyCredentialSuccess = 2423,
+  kCredentialManagerGetPublicKeyCredentialSuccess = 2424,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
