@@ -52,11 +52,6 @@ namespace password_manager {
 
 namespace {
 
-std::vector<std::string> SplitPathToSegments(const std::string& path) {
-  return base::SplitString(path, "/", base::TRIM_WHITESPACE,
-                           base::SPLIT_WANT_ALL);
-}
-
 bool DoesStringContainOnlyDigits(const base::string16& s) {
   for (auto c : s) {
     if (!base::IsAsciiDigit(c))
@@ -214,12 +209,7 @@ PasswordFormManager::PasswordFormManager(
       observed_form_signature_(CalculateFormSignature(observed_form.form_data)),
       other_possible_username_action_(
           PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES),
-      form_path_segments_(
-          observed_form_.origin.is_valid()
-              ? SplitPathToSegments(observed_form_.origin.path())
-              : std::vector<std::string>()),
       is_new_login_(true),
-      has_autofilled_(false),
       has_generated_password_(false),
       generated_password_changed_(false),
       is_manual_generation_(false),
@@ -673,7 +663,6 @@ void PasswordFormManager::ProcessFrameInternal(
     metrics_recorder_->RecordFillEvent(
         PasswordFormMetricsRecorder::kManagerFillEventBlockedOnInteraction);
   } else {
-    has_autofilled_ = true;
     metrics_recorder_->SetManagerAction(
         PasswordFormMetricsRecorder::kManagerActionAutofilled);
     metrics_recorder_->RecordFillEvent(
@@ -706,7 +695,6 @@ void PasswordFormManager::ProcessLoginPrompt() {
     return;
   }
 
-  has_autofilled_ = true;
   metrics_recorder_->SetManagerAction(
       PasswordFormMetricsRecorder::kManagerActionAutofilled);
   metrics_recorder_->RecordFillEvent(
@@ -1360,7 +1348,6 @@ std::unique_ptr<PasswordFormManager> PasswordFormManager::Clone() {
   }
   result->pending_credentials_ = pending_credentials_;
   result->is_new_login_ = is_new_login_;
-  result->has_autofilled_ = has_autofilled_;
   result->has_generated_password_ = has_generated_password_;
   result->generated_password_changed_ = generated_password_changed_;
   result->is_manual_generation_ = is_manual_generation_;
