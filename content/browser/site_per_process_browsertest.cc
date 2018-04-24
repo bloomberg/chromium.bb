@@ -1646,7 +1646,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Tests that scrolling bubbles from an oopif if its source body has
 // "overflow:hidden" style.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       ScrollBubblingFromOOPIFWithBodyOverflowHidden) {
+                       MAYBE_ScrollBubblingFromOOPIFWithBodyOverflowHidden) {
   GURL url_domain_a(embedded_test_server()->GetURL(
       "a.com", "/scrollable_page_with_iframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url_domain_a));
