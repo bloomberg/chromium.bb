@@ -400,12 +400,6 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     case syncer::SUPERVISED_USER_SETTINGS:
       return SupervisedUserSettingsServiceFactory::GetForProfile(profile_)->
           AsWeakPtr();
-#if !defined(OS_ANDROID)
-    case syncer::SUPERVISED_USERS:
-      return nullptr;
-    case syncer::SUPERVISED_USER_SHARED_SETTINGS:
-      return nullptr;
-#endif  // !defined(OS_ANDROID)
     case syncer::SUPERVISED_USER_WHITELISTS: {
       // Unlike other types here, ProfileSyncServiceFactory does not declare a
       // DependsOn the SupervisedUserServiceFactory (in order to avoid circular
