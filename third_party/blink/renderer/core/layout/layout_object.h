@@ -1394,7 +1394,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // style_ can only be nullptr before the first style is set, thus most
   // callers will never see a nullptr style and should use StyleRef().
-  // FIXME: It would be better if style() returned a const reference.
   const ComputedStyle& StyleRef() const { return MutableStyleRef(); }
   ComputedStyle& MutableStyleRef() const {
     DCHECK(style_);

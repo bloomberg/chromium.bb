@@ -31,7 +31,6 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
  protected:
   void SetUp() override {
     NGBaseLayoutAlgorithmTest::SetUp();
-    style_ = ComputedStyle::Create();
   }
 
   scoped_refptr<NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
@@ -67,7 +66,13 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
     return fragment->DumpFragmentTree(flags);
   }
 
-  scoped_refptr<ComputedStyle> style_;
+  scoped_refptr<ComputedStyle> MutableStyleForElement(Element* element) {
+    DCHECK(element->GetLayoutObject());
+    scoped_refptr<ComputedStyle> mutable_style =
+        ComputedStyle::Clone(element->GetLayoutObject()->StyleRef());
+    element->GetLayoutObject()->SetStyleInternal(mutable_style);
+    return mutable_style;
+  }
 };
 
 TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
@@ -383,7 +388,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase3) {
   scoped_refptr<const NGPhysicalBoxFragment> fragment;
   auto run_test = [&](const Length& container_height) {
     Element* container = GetDocument().getElementById("container");
-    container->MutableComputedStyle()->SetHeight(container_height);
+    MutableStyleForElement(container)->SetHeight(container_height);
     container->GetLayoutObject()->SetNeedsLayout("");
     std::tie(fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
         GetDocument().getElementsByTagName("html")->item(0));
@@ -435,7 +440,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase4) {
   scoped_refptr<const NGPhysicalBoxFragment> fragment;
   auto run_test = [&](const Length& container_padding_top) {
     Element* container = GetDocument().getElementById("container");
-    container->MutableComputedStyle()->SetPaddingTop(container_padding_top);
+    MutableStyleForElement(container)->SetPaddingTop(container_padding_top);
     container->GetLayoutObject()->SetNeedsLayout("");
     std::tie(fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
         GetDocument().getElementsByTagName("html")->item(0));
@@ -722,19 +727,20 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsEmptyBlockWithClearance) {
                       const Length& inflow_margin_top) {
     // Set the style of the elements we care about.
     Element* zero_top = GetDocument().getElementById("zero-top");
-    zero_top->MutableComputedStyle()->SetMarginBottom(zero_top_margin_bottom);
+    MutableStyleForElement(zero_top)->SetMarginBottom(zero_top_margin_bottom);
     zero_top->GetLayoutObject()->SetNeedsLayout("");
     Element* zero_inner = GetDocument().getElementById("zero-inner");
-    zero_inner->MutableComputedStyle()->SetMarginTop(zero_inner_margin_top);
-    zero_inner->MutableComputedStyle()->SetMarginBottom(
-        zero_inner_margin_bottom);
+    scoped_refptr<ComputedStyle> zero_inner_style =
+        MutableStyleForElement(zero_inner);
+    zero_inner_style->SetMarginTop(zero_inner_margin_top);
+    zero_inner_style->SetMarginBottom(zero_inner_margin_bottom);
     zero_inner->GetLayoutObject()->SetNeedsLayout("");
     Element* zero_element = GetDocument().getElementById("zero");
-    zero_element->MutableComputedStyle()->SetMarginBottom(zero_margin_bottom);
+    MutableStyleForElement(zero_element)->SetMarginBottom(zero_margin_bottom);
     zero_element->GetLayoutObject()->SetNeedsLayout("");
 
     Element* inflow_element = GetDocument().getElementById("inflow");
-    inflow_element->MutableComputedStyle()->SetMarginTop(inflow_margin_top);
+    MutableStyleForElement(inflow_element)->SetMarginTop(inflow_margin_top);
     inflow_element->GetLayoutObject()->SetNeedsLayout("");
 
     GetDocument().View()->UpdateAllLifecyclePhases();
@@ -1283,7 +1289,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFragmentsWithClear) {
   scoped_refptr<const NGPhysicalBoxFragment> fragment;
   auto run_with_clearance = [&](EClear clear_value) {
     Element* el_with_clear = GetDocument().getElementById("clearance");
-    el_with_clear->MutableComputedStyle()->SetClear(clear_value);
+    MutableStyleForElement(el_with_clear)->SetClear(clear_value);
     el_with_clear->GetLayoutObject()->SetNeedsLayout("");
     std::tie(fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
         GetDocument().getElementsByTagName("html")->item(0));
@@ -2127,7 +2133,7 @@ TEST_F(NGBlockLayoutAlgorithmTest,
   scoped_refptr<const NGPhysicalBoxFragment> fragment;
   auto run_test = [&](const Length& block_width) {
     Element* new_fc_block = GetDocument().getElementById("new-fc");
-    new_fc_block->MutableComputedStyle()->SetWidth(block_width);
+    MutableStyleForElement(new_fc_block)->SetWidth(block_width);
     new_fc_block->GetLayoutObject()->SetNeedsLayout("");
     std::tie(fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
         GetDocument().getElementsByTagName("html")->item(0));
