@@ -801,6 +801,14 @@ void LayoutGrid::PlaceItemsOnGrid(
     if (child->IsOutOfFlowPositioned())
       continue;
 
+    // Grid items should use the grid area sizes instead of the containing block
+    // (grid container) sizes, we initialize the overrides here if needed to
+    // ensure it.
+    if (!child->HasOverrideContainingBlockContentLogicalWidth())
+      child->SetOverrideContainingBlockContentLogicalWidth(LayoutUnit());
+    if (!child->HasOverrideContainingBlockContentLogicalHeight())
+      child->SetOverrideContainingBlockContentLogicalHeight(LayoutUnit(-1));
+
     has_any_orthogonal_grid_item =
         has_any_orthogonal_grid_item ||
         GridLayoutUtils::IsOrthogonalChild(*this, *child);
@@ -1183,23 +1191,14 @@ void LayoutGrid::LayoutGridItems() {
 
     // Because the grid area cannot be styled, we don't need to adjust
     // the grid breadth to account for 'box-sizing'.
-    LayoutUnit old_override_containing_block_content_logical_width =
-        child->HasOverrideContainingBlockContentLogicalWidth()
-            ? child->OverrideContainingBlockContentLogicalWidth()
-            : LayoutUnit();
-    LayoutUnit old_override_containing_block_content_logical_height =
-        child->HasOverrideContainingBlockContentLogicalHeight()
-            ? child->OverrideContainingBlockContentLogicalHeight()
-            : LayoutUnit();
-
     LayoutUnit override_containing_block_content_logical_width =
         GridAreaBreadthForChildIncludingAlignmentOffsets(*child, kForColumns);
     LayoutUnit override_containing_block_content_logical_height =
         GridAreaBreadthForChildIncludingAlignmentOffsets(*child, kForRows);
 
-    if (old_override_containing_block_content_logical_width !=
+    if (child->OverrideContainingBlockContentLogicalWidth() !=
             override_containing_block_content_logical_width ||
-        (old_override_containing_block_content_logical_height !=
+        (child->OverrideContainingBlockContentLogicalHeight() !=
              override_containing_block_content_logical_height &&
          child->HasRelativeLogicalHeight()))
       child->SetNeedsLayout(LayoutInvalidationReason::kGridChanged);
