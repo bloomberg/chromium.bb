@@ -92,6 +92,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
 
  private:
   PrefService* pref_service_;
+  syncer::SyncService* sync_service_;
   PersonalDataManager* personal_data_manager_;
   web::WebState* web_state_;
   __weak id<AutofillClientIOSBridge> bridge_;

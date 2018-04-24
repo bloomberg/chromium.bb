@@ -17,6 +17,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/ios/browser/autofill_util.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/infobars/core/infobar.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "ios/chrome/browser/application_context.h"
@@ -25,6 +26,7 @@
 #include "ios/chrome/browser/infobars/infobar_utils.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
+#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -42,6 +44,8 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
     id<AutofillClientIOSBridge> bridge,
     password_manager::PasswordGenerationManager* password_generation_manager)
     : pref_service_(browser_state->GetPrefs()),
+      sync_service_(IOSChromeProfileSyncServiceFactory::GetForBrowserState(
+          browser_state)),
       personal_data_manager_(PersonalDataManagerFactory::GetForBrowserState(
           browser_state->GetOriginalChromeBrowserState())),
       web_state_(web_state),
@@ -74,9 +78,8 @@ PrefService* ChromeAutofillClientIOS::GetPrefs() {
   return pref_service_;
 }
 
-// TODO(crbug.com/535784): Implement this when adding credit card upload.
 syncer::SyncService* ChromeAutofillClientIOS::GetSyncService() {
-  return nullptr;
+  return sync_service_;
 }
 
 identity::IdentityManager* ChromeAutofillClientIOS::GetIdentityManager() {
