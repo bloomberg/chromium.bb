@@ -312,3 +312,14 @@ D. Local Modifications
 
   - patches/number_ub.patch
   - upstream bug: https://ssl.icu-project.org/trac/ticket/13550
+
+14. Update IANA language tag/subtag mapping and add missing canonicalization for
+    deprecated regions
+
+  - patches/locid_map.patch
+  - upstream bugs:
+    https://ssl.icu-project.org/trac/ticket/13726
+    https://ssl.icu-project.org/trac/ticket/13723
+    https://ssl.icu-project.org/trac/ticket/13721
+    https://ssl.icu-project.org/trac/ticket/13720
+    https://ssl.icu-project.org/trac/ticket/13719

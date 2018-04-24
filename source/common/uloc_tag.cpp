@@ -77,24 +77,34 @@ static const char LOCALE_TYPE_YES[] = "yes";
 
 #define LANG_UND_LEN 3
 
+// Updated on 2018-04-24 from
+// https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry .
+// egrep 'Type: grandfathered' -A 7 language-subtag-registry  | \
+// egrep 'Tag|Prefe' | grep -B1 'Preferred' | grep -v '^--' | \
+// awk -n '/Tag/ {printf("    \"%s\", ", $2);} /Preferred/ {printf("\"%s\",\n", $2);}'
+// Mapping entries marked with 'extra' do not have preferred values in the IANA registry,
+// but are ICU-specific.
+// ja-latn-hepburn-heploc is not grandfathered, but listed here to map to its
+// preferred value.
 static const char* const GRANDFATHERED[] = {
 /*  grandfathered   preferred */
     "art-lojban",   "jbo",
     "cel-gaulish",  "xtg-x-cel-gaulish",
-    "en-GB-oed",    "en-GB-x-oed",
+    "en-GB-oed",    "en-GB-oxendict",
     "i-ami",        "ami",
     "i-bnn",        "bnn",
-    "i-default",    "en-x-i-default",
-    "i-enochian",   "und-x-i-enochian",
+    "i-default",    "en-x-i-default",  // extra
+    "i-enochian",   "und-x-i-enochian",  // extra
     "i-hak",        "hak",
     "i-klingon",    "tlh",
     "i-lux",        "lb",
-    "i-mingo",      "see-x-i-mingo",
+    "i-mingo",      "see-x-i-mingo",  // extra
     "i-navajo",     "nv",
     "i-pwn",        "pwn",
     "i-tao",        "tao",
     "i-tay",        "tay",
     "i-tsu",        "tsu",
+    "ja-latn-hepburn-heploc", "ja-latn-alalc97", // variant
     "no-bok",       "nb",
     "no-nyn",       "nn",
     "sgn-be-fr",    "sfb",
@@ -102,17 +112,112 @@ static const char* const GRANDFATHERED[] = {
     "sgn-ch-de",    "sgg",
     "zh-guoyu",     "cmn",
     "zh-hakka",     "hak",
-    "zh-min",       "nan-x-zh-min",
+    "zh-min",       "nan-x-zh-min",  // extra
     "zh-min-nan",   "nan",
     "zh-xiang",     "hsn",
     NULL,           NULL
 };
 
+// Updated on 2018-04-24 from
+// https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry .
+// grep 'Type: language' -A 7 language-subtag-registry  | egrep 'Subtag|Prefe' | \
+// grep -B1 'Preferred' | grep -v '^--' | \
+// awk -n '/Subtag/ {printf("\"%s\",       ", $2);} /Preferred/ {printf("\"%s\",\n", $2);}'
 static const char DEPRECATEDLANGS[][4] = {
 /*  deprecated  new */
+    "in",       "id",
     "iw",       "he",
     "ji",       "yi",
-    "in",       "id"
+    "jw",       "jv",
+    "mo",       "ro",
+    "aam",       "aas",
+    "adp",       "dz",
+    "aue",       "ktz",
+    "ayx",       "nun",
+    "bgm",       "bcg",
+    "bjd",       "drl",
+    "ccq",       "rki",
+    "cjr",       "mom",
+    "cka",       "cmr",
+    "cmk",       "xch",
+    "coy",       "pij",
+    "cqu",       "quh",
+    "drh",       "khk",
+    "drw",       "prs",
+    "gav",       "dev",
+    "gfx",       "vaj",
+    "ggn",       "gvr",
+    "gti",       "nyc",
+    "guv",       "duz",
+    "hrr",       "jal",
+    "ibi",       "opa",
+    "ilw",       "gal",
+    "jeg",       "oyb",
+    "kgc",       "tdf",
+    "kgh",       "kml",
+    "koj",       "kwv",
+    "krm",       "bmf",
+    "ktr",       "dtp",
+    "kvs",       "gdj",
+    "kwq",       "yam",
+    "kxe",       "tvd",
+    "kzj",       "dtp",
+    "kzt",       "dtp",
+    "lii",       "raq",
+    "lmm",       "rmx",
+    "meg",       "cir",
+    "mst",       "mry",
+    "mwj",       "vaj",
+    "myt",       "mry",
+    "nad",       "xny",
+    "ncp",       "kdz",
+    "nnx",       "ngv",
+    "nts",       "pij",
+    "oun",       "vaj",
+    "pcr",       "adx",
+    "pmc",       "huw",
+    "pmu",       "phr",
+    "ppa",       "bfy",
+    "ppr",       "lcq",
+    "pry",       "prt",
+    "puz",       "pub",
+    "sca",       "hle",
+    "skk",       "oyb",
+    "tdu",       "dtp",
+    "thc",       "tpo",
+    "thx",       "oyb",
+    "tie",       "ras",
+    "tkk",       "twm",
+    "tlw",       "weo",
+    "tmp",       "tyj",
+    "tne",       "kak",
+    "tnf",       "prs",
+    "tsf",       "taj",
+    "uok",       "ema",
+    "xba",       "cax",
+    "xia",       "acn",
+    "xkh",       "waw",
+    "xsj",       "suj",
+    "ybd",       "rki",
+    "yma",       "lrr",
+    "ymt",       "mtm",
+    "yos",       "zom",
+    "yuu",       "yug",
+};
+
+// Updated on 2018-04-24 from
+// https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry .
+// grep 'Type: region' -A 7 language-subtag-registry  | egrep 'Subtag|Prefe' | \
+// grep -B1 'Preferred' | \
+// awk -n '/Subtag/ {printf("\"%s\",       ", $2);} /Preferred/ {printf("\"%s\",\n", $2);}'
+static const char DEPRECATEDREGIONS[][3] = {
+/*  deprecated  new */
+    "BU",       "MM",
+    "DD",       "DE",
+    "FX",       "FR",
+    "TP",       "TL",
+    "YD",       "YE",
+    "ZR",       "CD",
 };
 
 /*
@@ -763,6 +868,14 @@ _appendRegionToLanguageTag(const char* localeID, char* appendAt, int32_t capacit
                 *(appendAt + reslen) = SEP;
             }
             reslen++;
+            /* resolve deprecated */
+            for (int i = 0; i < UPRV_LENGTHOF(DEPRECATEDREGIONS); i += 2) {
+                if (uprv_compareInvCharsAsAscii(buf, DEPRECATEDREGIONS[i]) == 0) {
+                    uprv_strcpy(buf, DEPRECATEDREGIONS[i + 1]);
+                    len = (int32_t)uprv_strlen(buf);
+                    break;
+                }
+            }
 
             if (reslen < capacity) {
                 uprv_memcpy(appendAt + reslen, buf, uprv_min(len, capacity - reslen));

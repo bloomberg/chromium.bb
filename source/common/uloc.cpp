@@ -496,6 +496,27 @@ static const CanonicalizationMap CANONICALIZE_MAP[] = {
     { "nl_BE_PREEURO",  "nl_BE", "currency", "BEF" },
     { "nl_NL_PREEURO",  "nl_NL", "currency", "NLG" },
     { "pt_PT_PREEURO",  "pt_PT", "currency", "PTE" },
+    // sgn entries are redundant tags with preferred values in
+    // https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry .
+    { "sgn_BR",         "bzs",   NULL, NULL },
+    { "sgn_CO",         "csn",   NULL, NULL },
+    { "sgn_DE",         "gsg",   NULL, NULL },
+    { "sgn_DK",         "dsl",   NULL, NULL },
+    { "sgn_ES",         "ssp",   NULL, NULL },
+    { "sgn_FR",         "fsl",   NULL, NULL },
+    { "sgn_GB",         "bfi",   NULL, NULL },
+    { "sgn_GR",         "gss",   NULL, NULL },
+    { "sgn_IE",         "isg",   NULL, NULL },
+    { "sgn_IT",         "ise",   NULL, NULL },
+    { "sgn_JP",         "jsl",   NULL, NULL },
+    { "sgn_MX",         "mfs",   NULL, NULL },
+    { "sgn_NI",         "ncs",   NULL, NULL },
+    { "sgn_NL",         "dse",   NULL, NULL },
+    { "sgn_NO",         "nsl",   NULL, NULL },
+    { "sgn_PT",         "psr",   NULL, NULL },
+    { "sgn_SE",         "swl",   NULL, NULL },
+    { "sgn_US",         "ase",   NULL, NULL },
+    { "sgn_ZA",         "sfs",   NULL, NULL },
     { "sr_SP_CYRL",     "sr_Cyrl_RS", NULL, NULL }, /* .NET name */
     { "sr_SP_LATN",     "sr_Latn_RS", NULL, NULL }, /* .NET name */
     { "sr_YU_CYRILLIC", "sr_Cyrl_RS", NULL, NULL }, /* Linux name */
