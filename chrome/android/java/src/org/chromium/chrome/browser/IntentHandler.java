@@ -1082,7 +1082,12 @@ public class IntentHandler {
         if (type != null && (type.equals("multipart/related") || type.equals("message/rfc822"))) {
             return true;
         }
-        if (!isFileUriScheme || !TextUtils.isEmpty(type)) return false;
+        // Note that "application/octet-stream" type may be passed by some apps that do not know
+        // about MHTML file types.
+        if (!isFileUriScheme
+                || (!TextUtils.isEmpty(type) && !type.equals("application/octet-stream"))) {
+            return false;
+        }
         String extension = MimeTypeMap.getFileExtensionFromUrl(url);
         return extension.equals("mhtml") || extension.equals("mht");
     }
