@@ -258,6 +258,11 @@ struct CrxComponent {
   // For extension, this information is set from the update service, which
   // gets the install source from the update URL.
   std::string install_source;
+
+  // Information about where the component/extension was loaded from.
+  // For extensions, this information is inferred from the extension
+  // registry.
+  std::string install_location;
 };
 
 // Called when a non-blocking call of UpdateClient completes.
