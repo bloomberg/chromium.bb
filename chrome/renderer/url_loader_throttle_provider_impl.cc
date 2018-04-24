@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/feature_list.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "chrome/common/prerender.mojom.h"
 #include "chrome/common/prerender_url_loader_throttle.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
@@ -43,7 +43,8 @@ chrome::mojom::PrerenderCanceler* GetPrerenderCanceller(int render_frame_id) {
 
   auto* canceler = new chrome::mojom::PrerenderCancelerPtr;
   render_frame->GetRemoteInterfaces()->GetInterface(canceler);
-  base::MessageLoop::current()->task_runner()->DeleteSoon(FROM_HERE, canceler);
+  base::MessageLoopCurrent::Get()->task_runner()->DeleteSoon(FROM_HERE,
+                                                             canceler);
   return canceler->get();
 }
 
@@ -128,7 +129,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
           prerender_helper->prerender_mode(),
           prerender_helper->histogram_prefix(),
           base::BindOnce(GetPrerenderCanceller, render_frame_id),
-          base::MessageLoop::current()->task_runner());
+          base::MessageLoopCurrent::Get()->task_runner());
       prerender_helper->AddThrottle(throttle->AsWeakPtr());
       if (prerender_helper->prerender_mode() == prerender::PREFETCH_ONLY) {
         auto* prerender_dispatcher =
