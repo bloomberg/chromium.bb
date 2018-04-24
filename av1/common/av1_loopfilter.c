@@ -1671,8 +1671,8 @@ static void filter_block_plane_vert(const AV1_COMMON *const cm,
   const uint32_t scale_vert = plane_ptr->subsampling_y;
   uint8_t *const dst_ptr = plane_ptr->dst.buf;
   const int dst_stride = plane_ptr->dst.stride;
-  const int y_range = (MIN_MIB_SIZE >> scale_vert);
-  const int x_range = (MIN_MIB_SIZE >> scale_horz);
+  const int y_range = (MAX_MIB_SIZE >> scale_vert);
+  const int x_range = (MAX_MIB_SIZE >> scale_horz);
   for (int y = 0; y < y_range; y += row_step) {
     uint8_t *p = dst_ptr + y * MI_SIZE * dst_stride;
     for (int x = 0; x < x_range;) {
@@ -1758,8 +1758,8 @@ static void filter_block_plane_horz(const AV1_COMMON *const cm,
   const uint32_t scale_vert = plane_ptr->subsampling_y;
   uint8_t *const dst_ptr = plane_ptr->dst.buf;
   const int dst_stride = plane_ptr->dst.stride;
-  const int y_range = (MIN_MIB_SIZE >> scale_vert);
-  const int x_range = (MIN_MIB_SIZE >> scale_horz);
+  const int y_range = (MAX_MIB_SIZE >> scale_vert);
+  const int x_range = (MAX_MIB_SIZE >> scale_horz);
   for (int x = 0; x < x_range; x += col_step) {
     uint8_t *p = dst_ptr + x * MI_SIZE;
     for (int y = 0; y < y_range;) {
@@ -1908,8 +1908,8 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
 
     if (cm->lf.combine_vert_horz_lf) {
       // filter all vertical and horizontal edges in every super block
-      for (mi_row = start; mi_row < stop; mi_row += MIN_MIB_SIZE) {
-        for (mi_col = col_start; mi_col < col_end; mi_col += MIN_MIB_SIZE) {
+      for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
+        for (mi_col = col_start; mi_col < col_end; mi_col += MAX_MIB_SIZE) {
           // filter vertical edges
           av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
                                mi_col, plane, plane + 1);
@@ -1921,30 +1921,30 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
                                        lf_mask);
 
           // filter horizontal edges
-          if (mi_col - MIN_MIB_SIZE >= 0) {
+          if (mi_col - MAX_MIB_SIZE >= 0) {
             av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer,
-                                 mi_row, mi_col - MIN_MIB_SIZE, plane,
+                                 mi_row, mi_col - MAX_MIB_SIZE, plane,
                                  plane + 1);
 
             LoopFilterMask *lf_mask =
-                get_loop_filter_mask(cm, mi_row, mi_col - MIN_MIB_SIZE);
+                get_loop_filter_mask(cm, mi_row, mi_col - MAX_MIB_SIZE);
             loop_filter_block_plane_horz(cm, pd, plane, mi_row,
-                                         mi_col - MIN_MIB_SIZE, path, lf_mask);
+                                         mi_col - MAX_MIB_SIZE, path, lf_mask);
           }
         }
         // filter horizontal edges
         av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
-                             mi_col - MIN_MIB_SIZE, plane, plane + 1);
+                             mi_col - MAX_MIB_SIZE, plane, plane + 1);
 
         LoopFilterMask *lf_mask =
-            get_loop_filter_mask(cm, mi_row, mi_col - MIN_MIB_SIZE);
+            get_loop_filter_mask(cm, mi_row, mi_col - MAX_MIB_SIZE);
         loop_filter_block_plane_horz(cm, pd, plane, mi_row,
-                                     mi_col - MIN_MIB_SIZE, path, lf_mask);
+                                     mi_col - MAX_MIB_SIZE, path, lf_mask);
       }
     } else {
       // filter all vertical edges in every super block
-      for (mi_row = start; mi_row < stop; mi_row += MIN_MIB_SIZE) {
-        for (mi_col = col_start; mi_col < col_end; mi_col += MIN_MIB_SIZE) {
+      for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
+        for (mi_col = col_start; mi_col < col_end; mi_col += MAX_MIB_SIZE) {
           av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
                                mi_col, plane, plane + 1);
 
@@ -1957,8 +1957,8 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
       }
 
       // filter all horizontal edges in every super block
-      for (mi_row = start; mi_row < stop; mi_row += MIN_MIB_SIZE) {
-        for (mi_col = col_start; mi_col < col_end; mi_col += MIN_MIB_SIZE) {
+      for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
+        for (mi_col = col_start; mi_col < col_end; mi_col += MAX_MIB_SIZE) {
           av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
                                mi_col, plane, plane + 1);
 
@@ -1970,41 +1970,41 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
     }
 #else
     if (cm->lf.combine_vert_horz_lf) {
-      // filter all vertical and horizontal edges in every 64x64 super block
-      for (mi_row = start; mi_row < stop; mi_row += MIN_MIB_SIZE) {
-        for (mi_col = col_start; mi_col < col_end; mi_col += MIN_MIB_SIZE) {
+      // filter all vertical and horizontal edges in every 128x128 super block
+      for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
+        for (mi_col = col_start; mi_col < col_end; mi_col += MAX_MIB_SIZE) {
           // filter vertical edges
           av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
                                mi_col, plane, plane + 1);
           filter_block_plane_vert(cm, xd, plane, &pd[plane], mi_row, mi_col);
           // filter horizontal edges
-          if (mi_col - MIN_MIB_SIZE >= 0) {
+          if (mi_col - MAX_MIB_SIZE >= 0) {
             av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer,
-                                 mi_row, mi_col - MIN_MIB_SIZE, plane,
+                                 mi_row, mi_col - MAX_MIB_SIZE, plane,
                                  plane + 1);
             filter_block_plane_horz(cm, xd, plane, &pd[plane], mi_row,
-                                    mi_col - MIN_MIB_SIZE);
+                                    mi_col - MAX_MIB_SIZE);
           }
         }
         // filter horizontal edges
         av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
-                             mi_col - MIN_MIB_SIZE, plane, plane + 1);
+                             mi_col - MAX_MIB_SIZE, plane, plane + 1);
         filter_block_plane_horz(cm, xd, plane, &pd[plane], mi_row,
-                                mi_col - MIN_MIB_SIZE);
+                                mi_col - MAX_MIB_SIZE);
       }
     } else {
-      // filter all vertical edges in every 64x64 super block
-      for (mi_row = start; mi_row < stop; mi_row += MIN_MIB_SIZE) {
-        for (mi_col = col_start; mi_col < col_end; mi_col += MIN_MIB_SIZE) {
+      // filter all vertical edges in every 128x128 super block
+      for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
+        for (mi_col = col_start; mi_col < col_end; mi_col += MAX_MIB_SIZE) {
           av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
                                mi_col, plane, plane + 1);
           filter_block_plane_vert(cm, xd, plane, &pd[plane], mi_row, mi_col);
         }
       }
 
-      // filter all horizontal edges in every 64x64 super block
-      for (mi_row = start; mi_row < stop; mi_row += MIN_MIB_SIZE) {
-        for (mi_col = col_start; mi_col < col_end; mi_col += MIN_MIB_SIZE) {
+      // filter all horizontal edges in every 128x128 super block
+      for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
+        for (mi_col = col_start; mi_col < col_end; mi_col += MAX_MIB_SIZE) {
           av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
                                mi_col, plane, plane + 1);
           filter_block_plane_horz(cm, xd, plane, &pd[plane], mi_row, mi_col);
