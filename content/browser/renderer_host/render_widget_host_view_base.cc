@@ -156,7 +156,7 @@ gfx::Size RenderWidgetHostViewBase::GetRequestedRendererSize() const {
 
 uint32_t RenderWidgetHostViewBase::GetCaptureSequenceNumber() const {
   // TODO(vmpstr): Implement this for overrides other than aura and child frame.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return 0u;
 }
 
@@ -166,7 +166,7 @@ ui::TextInputClient* RenderWidgetHostViewBase::GetTextInputClient() {
 }
 
 void RenderWidgetHostViewBase::SetIsInVR(bool is_in_vr) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 bool RenderWidgetHostViewBase::IsInVR() const {
@@ -185,7 +185,7 @@ void RenderWidgetHostViewBase::CopyFromSurface(
     const gfx::Rect& src_rect,
     const gfx::Size& output_size,
     base::OnceCallback<void(const SkBitmap&)> callback) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   std::move(callback).Run(SkBitmap());
 }
 
@@ -210,12 +210,12 @@ bool RenderWidgetHostViewBase::IsMouseLocked() {
 
 bool RenderWidgetHostViewBase::LockKeyboard(
     base::Optional<base::flat_set<int>> keys) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 void RenderWidgetHostViewBase::UnlockKeyboard() {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 bool RenderWidgetHostViewBase::IsKeyboardLocked() {
@@ -382,7 +382,7 @@ void RenderWidgetHostViewBase::DidReceiveRendererFrame() {
 void RenderWidgetHostViewBase::ShowDisambiguationPopup(
     const gfx::Rect& rect_pixels,
     const SkBitmap& zoomed_bitmap) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 gfx::Size RenderWidgetHostViewBase::GetVisibleViewportSize() const {
@@ -390,7 +390,7 @@ gfx::Size RenderWidgetHostViewBase::GetVisibleViewportSize() const {
 }
 
 void RenderWidgetHostViewBase::SetInsets(const gfx::Insets& insets) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void RenderWidgetHostViewBase::DisplayCursor(const WebCursor& cursor) {
