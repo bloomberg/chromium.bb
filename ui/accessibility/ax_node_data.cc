@@ -159,14 +159,12 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
 // to be mapped when renumbering the ids in a combined tree.
 bool IsNodeIdIntListAttribute(ax::mojom::IntListAttribute attr) {
   switch (attr) {
-    case ax::mojom::IntListAttribute::kCellIds:
     case ax::mojom::IntListAttribute::kControlsIds:
     case ax::mojom::IntListAttribute::kDescribedbyIds:
     case ax::mojom::IntListAttribute::kFlowtoIds:
     case ax::mojom::IntListAttribute::kIndirectChildIds:
     case ax::mojom::IntListAttribute::kLabelledbyIds:
     case ax::mojom::IntListAttribute::kRadioGroupIds:
-    case ax::mojom::IntListAttribute::kUniqueCellIds:
       return true;
 
     // Note: all of the attributes are included here explicitly,
@@ -1069,12 +1067,6 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::IntListAttribute::kMarkerEnds:
         result += " marker_ends=" + IntVectorToString(values);
-        break;
-      case ax::mojom::IntListAttribute::kCellIds:
-        result += " cell_ids=" + IntVectorToString(values);
-        break;
-      case ax::mojom::IntListAttribute::kUniqueCellIds:
-        result += " unique_cell_ids=" + IntVectorToString(values);
         break;
       case ax::mojom::IntListAttribute::kCharacterOffsets:
         result += " character_offsets=" + IntVectorToString(values);

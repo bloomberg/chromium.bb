@@ -323,6 +323,37 @@ NativeViewAccessibilityBase::GetTargetForNativeAccessibilityEvent() {
   return gfx::kNullAcceleratedWidget;
 }
 
+int NativeViewAccessibilityBase::GetTableRowCount() const {
+  return 0;
+}
+
+int NativeViewAccessibilityBase::GetTableColCount() const {
+  return 0;
+}
+
+std::vector<int32_t> NativeViewAccessibilityBase::GetColHeaderNodeIds(
+    int32_t col_index) const {
+  return std::vector<int32_t>();
+}
+
+std::vector<int32_t> NativeViewAccessibilityBase::GetRowHeaderNodeIds(
+    int32_t row_index) const {
+  return std::vector<int32_t>();
+}
+
+int32_t NativeViewAccessibilityBase::GetCellId(int32_t row_index,
+                                               int32_t col_index) const {
+  return 0;
+}
+
+int32_t NativeViewAccessibilityBase::CellIdToIndex(int32_t cell_id) const {
+  return -1;
+}
+
+int32_t NativeViewAccessibilityBase::CellIndexToId(int32_t cell_index) const {
+  return 0;
+}
+
 bool NativeViewAccessibilityBase::AccessibilityPerformAction(
     const ui::AXActionData& data) {
   return view()->HandleAccessibleAction(data);

@@ -347,13 +347,9 @@ AXPlatformNodeBase* AXPlatformNodeBase::GetTableCell(int index) const {
   AXPlatformNodeBase* table = GetTable();
   if (!table)
     return nullptr;
-  const std::vector<int32_t>& unique_cell_ids =
-      table->GetIntListAttribute(ax::mojom::IntListAttribute::kUniqueCellIds);
-  if (index < 0 || index >= static_cast<int>(unique_cell_ids.size()))
-    return nullptr;
 
   return static_cast<AXPlatformNodeBase*>(
-      table->delegate_->GetFromNodeID(unique_cell_ids[index]));
+      table->delegate_->GetFromNodeID(table->delegate_->CellIndexToId(index)));
 }
 
 AXPlatformNodeBase* AXPlatformNodeBase::GetTableCell(int row,
@@ -371,18 +367,9 @@ AXPlatformNodeBase* AXPlatformNodeBase::GetTableCell(int row,
   if (!table)
     return nullptr;
 
-  // In contrast to unique cell IDs, these are duplicated whenever a cell spans
-  // multiple columns or rows.
-  const std::vector<int32_t>& cell_ids =
-      table->GetIntListAttribute(ax::mojom::IntListAttribute::kCellIds);
-  DCHECK_EQ(GetTableRowCount() * GetTableColumnCount(),
-            static_cast<int>(cell_ids.size()));
-  int position = row * GetTableColumnCount() + column;
-  if (position < 0 || position >= static_cast<int>(cell_ids.size()))
-    return nullptr;
-
+  int32_t cell_id = table->delegate_->GetCellId(row, column);
   return static_cast<AXPlatformNodeBase*>(
-      table->delegate_->GetFromNodeID(cell_ids[position]));
+      table->delegate_->GetFromNodeID(cell_id));
 }
 
 int AXPlatformNodeBase::GetTableCellIndex() const {
@@ -393,14 +380,7 @@ int AXPlatformNodeBase::GetTableCellIndex() const {
   if (!table)
     return -1;
 
-  const std::vector<int32_t>& unique_cell_ids =
-      table->GetIntListAttribute(ax::mojom::IntListAttribute::kUniqueCellIds);
-  auto iter =
-      std::find(unique_cell_ids.begin(), unique_cell_ids.end(), GetData().id);
-  if (iter == unique_cell_ids.end())
-    return -1;
-
-  return std::distance(unique_cell_ids.begin(), iter);
+  return table->delegate_->CellIdToIndex(GetData().id);
 }
 
 int AXPlatformNodeBase::GetTableColumn() const {

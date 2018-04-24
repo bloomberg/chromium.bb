@@ -117,6 +117,37 @@ AXSystemCaretWin::GetTargetForNativeAccessibilityEvent() {
   return event_target_;
 }
 
+int AXSystemCaretWin::GetTableRowCount() const {
+  return 0;
+}
+
+int AXSystemCaretWin::GetTableColCount() const {
+  return 0;
+}
+
+std::vector<int32_t> AXSystemCaretWin::GetColHeaderNodeIds(
+    int32_t col_index) const {
+  return std::vector<int32_t>();
+}
+
+std::vector<int32_t> AXSystemCaretWin::GetRowHeaderNodeIds(
+    int32_t row_index) const {
+  return std::vector<int32_t>();
+}
+
+int32_t AXSystemCaretWin::GetCellId(int32_t row_index,
+                                    int32_t col_index) const {
+  return 0;
+}
+
+int32_t AXSystemCaretWin::CellIdToIndex(int32_t cell_id) const {
+  return -1;
+}
+
+int32_t AXSystemCaretWin::CellIndexToId(int32_t cell_index) const {
+  return 0;
+}
+
 bool AXSystemCaretWin::AccessibilityPerformAction(const AXActionData& data) {
   return false;
 }
