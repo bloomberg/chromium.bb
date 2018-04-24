@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/platform/graphics/begin_frame_provider.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -23,22 +24,37 @@ namespace blink {
 // OffscreenCanvas that is connected to a Canvas, and this class signals
 // OffscreenCanvases when it's time to dispatch frames.
 class CORE_EXPORT WorkerAnimationFrameProvider
-    : public GarbageCollectedFinalized<WorkerAnimationFrameProvider> {
+    : public GarbageCollectedFinalized<WorkerAnimationFrameProvider>,
+      public BeginFrameProviderClient {
  public:
   static WorkerAnimationFrameProvider* Create(
+      ExecutionContext* context,
       const BeginFrameProviderParams& begin_frame_provider_params) {
-    return new WorkerAnimationFrameProvider(begin_frame_provider_params);
+    return new WorkerAnimationFrameProvider(context,
+                                            begin_frame_provider_params);
   }
 
-  void Trace(blink::Visitor*) {}
+  int RegisterCallback(FrameRequestCallbackCollection::FrameCallback* callback);
+  void CancelCallback(int id);
+
+  void Trace(blink::Visitor* visitor) { visitor->Trace(callback_collection_); }
+
+  void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+    visitor->TraceWrappers(callback_collection_);
+  }
+
+  // BeginFrameProviderClient
+  void BeginFrame() override;
 
  protected:
   WorkerAnimationFrameProvider(
+      ExecutionContext* context,
       const BeginFrameProviderParams& begin_frame_provider_params);
 
  private:
   const std::unique_ptr<BeginFrameProvider> begin_frame_provider_;
   DISALLOW_COPY_AND_ASSIGN(WorkerAnimationFrameProvider);
+  FrameRequestCallbackCollection callback_collection_;
 };
 
 }  // namespace blink

@@ -13,11 +13,13 @@
 namespace blink {
 
 BeginFrameProvider::BeginFrameProvider(
-    const BeginFrameProviderParams& begin_frame_provider_params)
+    const BeginFrameProviderParams& begin_frame_provider_params,
+    BeginFrameProviderClient* client)
     : cfs_binding_(this),
       ocs_binding_(this),
       frame_sink_id_(begin_frame_provider_params.frame_sink_id),
-      parent_frame_sink_id_(begin_frame_provider_params.parent_frame_sink_id) {}
+      parent_frame_sink_id_(begin_frame_provider_params.parent_frame_sink_id),
+      begin_frame_client_(client) {}
 
 void BeginFrameProvider::CreateCompositorFrameSink() {
   DCHECK(frame_sink_id_.is_valid());
@@ -43,11 +45,33 @@ void BeginFrameProvider::CreateCompositorFrameSink() {
   canvas_provider->CreateCompositorFrameSink(
       frame_sink_id_, std::move(client),
       mojo::MakeRequest(&compositor_frame_sink_));
+}
 
+void BeginFrameProvider::RequestBeginFrame() {
+  if (needs_begin_frame_)
+    return;
+
+  if (!compositor_frame_sink_.is_bound()) {
+    CreateCompositorFrameSink();
+    if (!compositor_frame_sink_.is_bound()) {
+      return;
+    }
+  }
+
+  needs_begin_frame_ = true;
   compositor_frame_sink_->SetNeedsBeginFrame(true);
 }
 
 void BeginFrameProvider::OnBeginFrame(const viz::BeginFrameArgs& args) {
+  DCHECK(needs_begin_frame_);
+  // TODO(fserb): we could potentially be nicer here.
+  DCHECK(compositor_frame_sink_.is_bound());
+
+  needs_begin_frame_ = false;
+  compositor_frame_sink_->SetNeedsBeginFrame(false);
+
+  begin_frame_client_->BeginFrame();
+
   viz::BeginFrameAck ack;
   ack.source_id = args.source_id;
   ack.sequence_number = args.sequence_number;

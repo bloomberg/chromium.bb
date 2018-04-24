@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
@@ -149,6 +150,9 @@ class CORE_EXPORT WorkerGlobalScope
   // TODO(fserb): This can be removed once we WorkerGlobalScope implements
   // FontFaceSource on the IDL.
   FontFaceSet* fonts();
+
+  int requestAnimationFrame(V8FrameRequestCallback* callback);
+  void cancelAnimationFrame(int id);
 
   WorkerAnimationFrameProvider* GetAnimationFrameProvider() {
     return animation_frame_provider_;

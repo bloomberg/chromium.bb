@@ -356,6 +356,7 @@ WorkerGlobalScope::WorkerGlobalScope(
       time_origin_(time_origin),
       font_selector_(OffscreenFontSelector::Create(this)),
       animation_frame_provider_(WorkerAnimationFrameProvider::Create(
+          this,
           creation_params->begin_frame_provider_params)) {
   InstanceCounters::IncrementCounter(
       InstanceCounters::kWorkerGlobalScopeCounter);
@@ -404,6 +405,18 @@ void WorkerGlobalScope::RemoveURLFromMemoryCache(const KURL& url) {
                           TaskType::kNetworking),
                       FROM_HERE,
                       CrossThreadBind(&RemoveURLFromMemoryCacheInternal, url));
+}
+
+int WorkerGlobalScope::requestAnimationFrame(V8FrameRequestCallback* callback) {
+  FrameRequestCallbackCollection::V8FrameCallback* frame_callback =
+      FrameRequestCallbackCollection::V8FrameCallback::Create(callback);
+  frame_callback->SetUseLegacyTimeBase(true);
+
+  return animation_frame_provider_->RegisterCallback(frame_callback);
+}
+
+void WorkerGlobalScope::cancelAnimationFrame(int id) {
+  animation_frame_provider_->CancelCallback(id);
 }
 
 void WorkerGlobalScope::SetWorkerSettings(
