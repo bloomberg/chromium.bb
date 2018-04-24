@@ -63,8 +63,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/supervised_user/chromeos/manager_password_service_factory.h"
-#include "chrome/browser/supervised_user/chromeos/supervised_user_password_service_factory.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_constants.h"
@@ -516,11 +514,6 @@ void ChromeUserManagerImpl::Observe(
       Profile* profile = content::Details<Profile>(details).ptr();
       if (IsUserLoggedIn() && !IsLoggedInAsGuest() && !IsLoggedInAsKioskApp() &&
           !IsLoggedInAsArcKioskApp()) {
-        if (IsLoggedInAsSupervisedUser())
-          SupervisedUserPasswordServiceFactory::GetForProfile(profile);
-        if (IsLoggedInAsUserWithGaiaAccount())
-          ManagerPasswordServiceFactory::GetForProfile(profile);
-
         if (!profile->IsOffTheRecord()) {
           if (AuthSyncObserver::ShouldObserve(profile)) {
             AuthSyncObserver* sync_observer =

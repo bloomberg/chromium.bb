@@ -55,7 +55,6 @@
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service_factory.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
@@ -146,7 +145,6 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   DependsOn(SupervisedUserSettingsServiceFactory::GetInstance());
 #if !defined(OS_ANDROID)
-  DependsOn(SupervisedUserSharedSettingsServiceFactory::GetInstance());
   DependsOn(SupervisedUserSyncServiceFactory::GetInstance());
 #endif  // !defined(OS_ANDROID)
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)

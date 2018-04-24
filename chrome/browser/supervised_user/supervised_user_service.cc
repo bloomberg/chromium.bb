@@ -60,9 +60,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/supervised_user/legacy/supervised_user_pref_mapping_service.h"
-#include "chrome/browser/supervised_user/legacy/supervised_user_pref_mapping_service_factory.h"
-#include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #endif
@@ -420,9 +417,6 @@ void SupervisedUserService::SetActive(bool active) {
   if (!delegate_ || !delegate_->SetActive(active_)) {
     if (active_) {
 #if !defined(OS_ANDROID)
-      SupervisedUserPrefMappingServiceFactory::GetForBrowserContext(profile_)
-          ->Init();
-
       base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
       if (command_line->HasSwitch(switches::kSupervisedUserSyncToken)) {
         InitSync(

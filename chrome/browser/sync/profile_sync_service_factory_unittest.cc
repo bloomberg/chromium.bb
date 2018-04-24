@@ -60,7 +60,6 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::SEARCH_ENGINES);
     datatypes.push_back(syncer::THEMES);
     datatypes.push_back(syncer::SUPERVISED_USERS);
-    datatypes.push_back(syncer::SUPERVISED_USER_SHARED_SETTINGS);
 #endif  // !OS_ANDROID
 
 #if defined(OS_CHROMEOS)

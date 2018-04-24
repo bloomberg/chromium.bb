@@ -227,14 +227,6 @@ source_set("chromeos") {
   allow_circular_includes_from = [ "//chrome/browser/extensions" ]
 
   sources = [
-    "../supervised_user/chromeos/manager_password_service.cc",
-    "../supervised_user/chromeos/manager_password_service.h",
-    "../supervised_user/chromeos/manager_password_service_factory.cc",
-    "../supervised_user/chromeos/manager_password_service_factory.h",
-    "../supervised_user/chromeos/supervised_user_password_service.cc",
-    "../supervised_user/chromeos/supervised_user_password_service.h",
-    "../supervised_user/chromeos/supervised_user_password_service_factory.cc",
-    "../supervised_user/chromeos/supervised_user_password_service_factory.h",
     "accessibility/accessibility_extension_loader.cc",
     "accessibility/accessibility_extension_loader.h",
     "accessibility/accessibility_manager.cc",
