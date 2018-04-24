@@ -6,7 +6,6 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
-    ":alert_overlay",
     ":array_data_model",
     ":autocomplete_list",
     ":command",
@@ -34,13 +33,6 @@ js_type_check("closure_compile") {
     ":splitter",
     ":table",
     ":tree",
-  ]
-}
-
-js_library("alert_overlay") {
-  deps = [
-    "../..:cr",
-    "../..:util",
   ]
 }
 
