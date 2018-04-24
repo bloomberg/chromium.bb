@@ -1774,6 +1774,33 @@ TEST_P(NavigationManagerTest, ReloadWithUserAgentType) {
   EXPECT_EQ(UserAgentType::DESKTOP, pending_item->GetUserAgentType());
 }
 
+// Tests that ReloadWithUserAgentType does not expose internal URLs.
+TEST_P(NavigationManagerTest, ReloadWithUserAgentTypeOnIntenalUrl) {
+  GURL url = wk_navigation_util::CreateRedirectUrl(GURL("http://www.1.com"));
+  navigation_manager()->AddPendingItem(
+      url, Referrer(), ui::PAGE_TRANSITION_TYPED,
+      NavigationInitiationType::USER_INITIATED,
+      NavigationManager::UserAgentOverrideOption::MOBILE);
+  GURL virtual_url("http://www.1.com/virtual");
+  navigation_manager()->GetPendingItem()->SetVirtualURL(virtual_url);
+  [mock_wk_list_ setCurrentURL:base::SysUTF8ToNSString(url.spec())];
+  navigation_manager()->CommitPendingItem();
+
+  navigation_manager()->ReloadWithUserAgentType(UserAgentType::DESKTOP);
+
+  NavigationItem* pending_item = navigation_manager()->GetPendingItem();
+  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    EXPECT_EQ(url, pending_item->GetURL());
+  } else {
+    GURL reload_target_url;
+    ASSERT_TRUE(wk_navigation_util::ExtractTargetURL(pending_item->GetURL(),
+                                                     &reload_target_url));
+    EXPECT_EQ("http://www.1.com/", reload_target_url.spec());
+  }
+  EXPECT_EQ(virtual_url, pending_item->GetVirtualURL());
+  EXPECT_EQ(UserAgentType::DESKTOP, pending_item->GetUserAgentType());
+}
+
 // Tests that app-specific URLs are not rewritten for renderer-initiated loads
 // unless requested by a page with app-specific url.
 TEST_P(NavigationManagerTest, RewritingAppSpecificUrls) {
