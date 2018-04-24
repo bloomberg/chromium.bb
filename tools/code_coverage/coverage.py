@@ -313,6 +313,50 @@ class _CoverageReportHtmlGenerator(object):
       html_file.write(html_header + html_table + html_footer)
 
 
+def _GetSharedLibraries(binary_paths):
+  """Returns set of shared libraries used by specified binaries."""
+  libraries = set()
+  cmd = []
+  shared_library_re = None
+
+  if sys.platform.startswith('linux'):
+    cmd.extend(['ldd'])
+    shared_library_re = re.compile(
+        r'.*\.so\s=>\s(.*' + BUILD_DIR + '.*\.so)\s.*')
+  elif sys.platform.startswith('darwin'):
+    cmd.extend(['otool', '-L'])
+    shared_library_re = re.compile(r'\s+(@rpath/.*\.dylib)\s.*')
+  else:
+    assert False, ('Cannot detect shared libraries used by the given targets.')
+
+  assert shared_library_re is not None
+
+  cmd.extend(binary_paths)
+  output = subprocess.check_output(cmd)
+
+  for line in output.splitlines():
+    m = shared_library_re.match(line)
+    if not m:
+      continue
+
+    shared_library_path = m.group(1)
+    if sys.platform.startswith('darwin'):
+      # otool outputs "@rpath" macro instead of the dirname of the given binary.
+      shared_library_path = shared_library_path.replace('@rpath', BUILD_DIR)
+
+    assert os.path.exists(shared_library_path), ('Shared library "%s" used by '
+                                                 'the given target(s) does not '
+                                                 'exist.' % shared_library_path)
+    with open(shared_library_path) as f:
+      data = f.read()
+
+    # Do not add non-instrumented libraries. Otherwise, llvm-cov errors outs.
+    if '__llvm_cov' in data:
+      libraries.add(shared_library_path)
+
+  return list(libraries)
+
+
 def _GetHostPlatform():
   """Returns the host platform.
 
@@ -823,23 +867,25 @@ def _ExecuteCommand(target, command):
   """Runs a single command and generates a profraw data file."""
   # Per Clang "Source-based Code Coverage" doc:
   #
-  # "%p" expands out to the process ID.
+  # "%p" expands out to the process ID. It's not used by this scripts due to:
+  # 1) If a target program spawns too many processess, it may exhaust all disk
+  #    space available. For example, unit_tests writes thousands of .profraw
+  #    files each of size 1GB+.
+  # 2) If a target binary uses shared libraries, coverage profile data for them
+  #    will be missing, resulting in incomplete coverage reports.
   #
   # "%Nm" expands out to the instrumented binary's signature. When this pattern
   # is specified, the runtime creates a pool of N raw profiles which are used
   # for on-line profile merging. The runtime takes care of selecting a raw
   # profile from the pool, locking it, and updating it before the program exits.
-  # If N is not specified (i.e the pattern is "%m"), it's assumed that N = 1.
   # N must be between 1 and 9. The merge pool specifier can only occur once per
   # filename pattern.
   #
-  # "%p" is used when tests run in single process, however, it can't be used for
-  # multi-process because each process produces an intermediate dump, which may
-  # consume hundreds of gigabytes of disk space.
+  # "%1m" is used when tests run in single process, such as fuzz targets.
   #
-  # For "%Nm", 4 is chosen because it creates some level of parallelism, but
-  # it's not too big to consume too much computing resource or disk space.
-  profile_pattern_string = '%p' if _IsFuzzerTarget(target) else '%4m'
+  # For other cases, "%4m" is chosen as it creates some level of parallelism,
+  # but it's not too big to consume too much computing resource or disk space.
+  profile_pattern_string = '%1m' if _IsFuzzerTarget(target) else '%4m'
   expected_profraw_file_name = os.extsep.join(
       [target, profile_pattern_string, PROFRAW_FILE_EXTENSION])
   expected_profraw_file_path = os.path.join(OUTPUT_DIR,
@@ -1262,6 +1308,7 @@ def Main():
 
   logging.info('Generating code coverage report in html (this can take a while '
                'depending on size of target!)')
+  binary_paths.extend(_GetSharedLibraries(binary_paths))
   per_file_coverage_summary = _GeneratePerFileCoverageSummary(
       binary_paths, profdata_file_path, absolute_filter_paths,
       args.ignore_filename_regex)

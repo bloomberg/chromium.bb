@@ -8,6 +8,8 @@ Table of contents:
   * [Step 2 Create Raw Profiles](#step-2-create-raw-profiles)
   * [Step 3 Create Indexed Profile](#step-3-create-indexed-profile)
   * [Step 4 Create Coverage Reports](#step-4-create-coverage-reports)
+- [Contacts](#contacts)
+- [FAQ](#faq)
 
 Chromium uses Clang source-based code coverage, this [documentation] explains
 how to use Clang’s source-based coverage features in general.
@@ -135,11 +137,23 @@ $ llvm-cov show -output-dir=out/report -format=html \
 
 For more information on how to use llvm-cov, please refer to the [guide].
 
-## Reporting problems
+## Contacts
+
+### Reporting problems
 For any breakage report and feature requests, please [file a bug].
 
-## Mail list
+### Mailing list
 For questions and general discussions, please join [chrome-code-coverage group].
+
+## FAQ
+
+### Can I use `is_component_build=true` for code coverage build?
+
+Yes, code coverage instrumentation works with both component and non-component
+builds. Component build is usually faster to compile, but can be up to several
+times slower to run with code coverage instrumentation. For more information,
+see [crbug.com/831939](https://crbug.com/831939).
+
 
 [documentation]: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
 [coverage script]: https://cs.chromium.org/chromium/src/tools/code_coverage/coverage.py
