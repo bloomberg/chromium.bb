@@ -17,7 +17,7 @@ namespace blink {
 // binding(s) to be installed on the appropriate global object(s) during context
 // initialization.
 //
-// See src/third_party/WebKit/Source/bindings/IDLExtendedAttributes.md for more
+// See src/third_party/blink/renderer/bindings/IDLExtendedAttributes.md for more
 // information.
 class WebContextFeatures {
  public:

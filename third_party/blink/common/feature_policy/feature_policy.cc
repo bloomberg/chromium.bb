@@ -248,7 +248,7 @@ void FeaturePolicy::AddContainerPolicy(
 }
 
 // static
-// See third_party/WebKit/public/common/feature_policy/feature_policy.h for
+// See third_party/blink/public/common/feature_policy/feature_policy.h for
 // status of each feature (in spec, implemented, etc).
 const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
   CR_DEFINE_STATIC_LOCAL(FeatureList, default_feature_list,

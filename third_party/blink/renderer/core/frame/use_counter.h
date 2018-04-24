@@ -45,7 +45,7 @@ class ExecutionContext;
 class LocalFrame;
 class StyleSheetContents;
 // Definition for UseCounter features can be found in:
-// third_party/WebKit/public/platform/web_feature.mojom
+// third_party/blink/public/platform/web_feature.mojom
 
 // UseCounter is used for counting the number of times features of
 // Blink are used on real web pages and help us know commonly

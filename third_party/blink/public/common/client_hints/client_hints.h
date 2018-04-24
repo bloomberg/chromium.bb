@@ -13,7 +13,7 @@ namespace blink {
 
 // Mapping from WebClientHintsType to the header value for enabling the
 // corresponding client hint. The ordering should match the ordering of enums in
-// third_party/WebKit/public/platform/WebClientHintsType.h.
+// third_party/blink/public/platform/web_client_hints_type.h.
 BLINK_COMMON_EXPORT extern const char* const kClientHintsHeaderMapping[];
 
 BLINK_COMMON_EXPORT extern const size_t kClientHintsHeaderMappingCount;
