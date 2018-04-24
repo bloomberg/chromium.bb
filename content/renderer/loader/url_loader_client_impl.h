@@ -60,10 +60,9 @@ class CONTENT_EXPORT URLLoaderClientImpl final
 
   // Binds this instance to the given URLLoaderClient endpoints so that it can
   // start getting the mojo calls from the given loader. This is used only for
-  // the main resource loading when NavigationMojoResponse and/or NetworkService
-  // is enabled. Otherwise (in regular subresource loading cases) |this| is not
-  // bound to a client request, but used via ThrottlingURLLoader to get client
-  // upcalls from the loader.
+  // the main resource loading. Otherwise (in regular subresource loading cases)
+  // |this| is not bound to a client request, but used via ThrottlingURLLoader
+  // to get client upcalls from the loader.
   void Bind(
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
 
@@ -112,7 +111,6 @@ class CONTENT_EXPORT URLLoaderClientImpl final
   ResourceDispatcher* const resource_dispatcher_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  // Used in NavigationMojoResponse and NetworkService.
   network::mojom::URLLoaderPtr url_loader_;
   mojo::Binding<network::mojom::URLLoaderClient> url_loader_client_binding_;
 

@@ -24,7 +24,6 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -299,12 +298,8 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
 
   if (ioThreadThrottle->GetSafeBrowsingEnabled()) {
     DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-    bool safe_browsing_url_loader_throttle_used =
-        base::FeatureList::IsEnabled(
-            safe_browsing::kCheckByURLLoaderThrottle) &&
-        (!content::IsResourceTypeFrame(resource_type) ||
-         content::IsNavigationMojoResponseEnabled());
-    if (!safe_browsing_url_loader_throttle_used) {
+    if (!base::FeatureList::IsEnabled(
+            safe_browsing::kCheckByURLLoaderThrottle)) {
       content::ResourceThrottle* throttle =
           MaybeCreateAwSafeBrowsingResourceThrottle(
               request, resource_type,

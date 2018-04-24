@@ -34,7 +34,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
@@ -659,12 +658,9 @@ void ServiceWorkerProviderHost::CompleteNavigationInitialized(
   if (!controller_)
     return;
 
-  // In S13nServiceWorker/NavigationMojoResponse case the controller is already
-  // sent in navigation commit, but we still need this for
-  // S13nServiceWorker/NavigationMojoResponse case for setting the use counter
-  // correctly.
-  // TODO(kinuko): Stop doing this in S13nServiceWorker/NavigationMojoResponse
-  // case.
+  // The controller is already sent in navigation commit, but we still need this
+  // for setting the use counter correctly.
+  // TODO(kinuko): Stop doing this.
   SendSetControllerServiceWorker(false /* notify_controllerchange */);
 }
 

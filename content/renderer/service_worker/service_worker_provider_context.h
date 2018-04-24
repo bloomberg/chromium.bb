@@ -65,7 +65,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // the content::ServiceWorkerProviderHost that notifies of changes to the
   // registration's and workers' status. |request| is bound with |binding_|.
   //
-  // For S13nServiceWorker/NavigationMojoResponse:
   // |controller_info| contains the endpoint (which is non-null only when
   // S13nServiceWorker is enabled) and object info that is needed to set up the
   // controller service worker for the client.
