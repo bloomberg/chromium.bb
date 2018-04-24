@@ -1543,6 +1543,9 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
   } else if (name == HTMLNames::partAttr) {
     if (RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
       EnsureElementRareData().SetPart(params.new_value);
+  } else if (name == HTMLNames::partmapAttr) {
+    if (RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
+      EnsureElementRareData().SetPartNamesMap(params.new_value);
   } else if (IsStyledElement()) {
     if (name == styleAttr) {
       StyleAttributeChanged(params.new_value, params.reason);
@@ -4873,6 +4876,17 @@ bool Element::HasPartName() const {
 const SpaceSplitString* Element::PartNames() const {
   return RuntimeEnabledFeatures::CSSPartPseudoElementEnabled() && HasRareData()
              ? GetElementRareData()->PartNames()
+             : nullptr;
+}
+
+bool Element::HasPartNamesMap() const {
+  const NamesMap* names_map = PartNamesMap();
+  return names_map && names_map->size() > 0;
+}
+
+const NamesMap* Element::PartNamesMap() const {
+  return RuntimeEnabledFeatures::CSSPartPseudoElementEnabled() && HasRareData()
+             ? GetElementRareData()->PartNamesMap()
              : nullptr;
 }
 
