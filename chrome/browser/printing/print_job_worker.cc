@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -187,7 +186,7 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
   // TODO(thestig): This code is wrong. SetNestableTasksAllowed(true) is needed
   // on the thread where the PrintDlgEx is called, and definitely both calls
   // should happen on the same thread. See http://crbug.com/73466
-  // MessageLoop::current()->SetNestableTasksAllowed(true);
+  // MessageLoopCurrent::Get()->SetNestableTasksAllowed(true);
   printing_context_->set_margin_type(margin_type);
   printing_context_->set_is_modifiable(is_modifiable);
 
@@ -262,7 +261,7 @@ void PrintJobWorker::GetSettingsDone(PrintingContext::Result result) {
   // TODO(thestig): See above comment. SetNestableTasksAllowed(false) needs to
   // be called on the same thread as the previous call.  See
   // http://crbug.com/73466
-  // MessageLoop::current()->SetNestableTasksAllowed(false);
+  // MessageLoopCurrent::Get()->SetNestableTasksAllowed(false);
 
   // We can't use OnFailure() here since query_ does not support notifications.
 
