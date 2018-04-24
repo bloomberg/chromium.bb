@@ -39,9 +39,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_thread_lifecycle_observer.h"
-#include "third_party/blink/renderer/modules/websockets/document_web_socket_channel.h"
 #include "third_party/blink/renderer/modules/websockets/web_socket_channel.h"
 #include "third_party/blink/renderer/modules/websockets/web_socket_channel_client.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_channel_impl.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -149,7 +149,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
 
     CrossThreadWeakPersistent<Bridge> bridge_;
     scoped_refptr<base::SingleThreadTaskRunner> worker_networking_task_runner_;
-    Member<DocumentWebSocketChannel> main_channel_;
+    Member<WebSocketChannelImpl> main_channel_;
   };
 
   // Bridge for MainChannelClient. Running on the worker thread.

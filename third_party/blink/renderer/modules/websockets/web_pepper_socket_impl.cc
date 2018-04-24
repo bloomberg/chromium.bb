@@ -38,9 +38,9 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
-#include "third_party/blink/renderer/modules/websockets/document_web_socket_channel.h"
 #include "third_party/blink/renderer/modules/websockets/web_pepper_socket_channel_client_proxy.h"
 #include "third_party/blink/renderer/modules/websockets/web_socket_channel.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_channel_impl.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -62,8 +62,8 @@ WebPepperSocketImpl::WebPepperSocketImpl(const WebDocument& document,
       buffered_amount_(0),
       buffered_amount_after_close_(0) {
   Document* core_document = document;
-  private_ = DocumentWebSocketChannel::Create(
-      core_document, channel_proxy_.Get(), SourceLocation::Capture());
+  private_ = WebSocketChannelImpl::Create(core_document, channel_proxy_.Get(),
+                                          SourceLocation::Capture());
   DCHECK(private_);
 }
 

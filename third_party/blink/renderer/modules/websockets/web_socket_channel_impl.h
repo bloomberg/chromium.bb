@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_DOCUMENT_WEB_SOCKET_CHANNEL_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_DOCUMENT_WEB_SOCKET_CHANNEL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_CHANNEL_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_CHANNEL_IMPL_H_
 
 #include <stdint.h>
 #include <memory>
@@ -58,9 +58,10 @@ namespace blink {
 class WebSocketHandshakeRequest;
 class WebSocketHandshakeThrottle;
 
-// This class is a WebSocketChannel subclass that works with a Document in a
-// DOMWindow (i.e. works in the main thread).
-class MODULES_EXPORT DocumentWebSocketChannel final
+// This is an implementation of WebSocketChannel. This is created on the main
+// thread for Document, or on the worker thread for WorkerGlobalScope. All
+// functions must be called on the execution context's thread.
+class MODULES_EXPORT WebSocketChannelImpl final
     : public WebSocketChannel,
       public WebSocketHandleClient,
       public WebCallbacks<void, const WebString&> {
@@ -69,7 +70,7 @@ class MODULES_EXPORT DocumentWebSocketChannel final
   // explicitly by passing the last parameter.
   // In the usual case, they are set automatically and you don't have to
   // pass it.
-  static DocumentWebSocketChannel* Create(
+  static WebSocketChannelImpl* Create(
       ExecutionContext* context,
       WebSocketChannelClient* client,
       std::unique_ptr<SourceLocation> location) {
@@ -77,17 +78,17 @@ class MODULES_EXPORT DocumentWebSocketChannel final
     return Create(ThreadableLoadingContext::Create(*context), client,
                   std::move(location));
   }
-  static DocumentWebSocketChannel* Create(ThreadableLoadingContext*,
-                                          WebSocketChannelClient*,
-                                          std::unique_ptr<SourceLocation>);
-  static DocumentWebSocketChannel* CreateForTesting(
+  static WebSocketChannelImpl* Create(ThreadableLoadingContext*,
+                                      WebSocketChannelClient*,
+                                      std::unique_ptr<SourceLocation>);
+  static WebSocketChannelImpl* CreateForTesting(
       Document*,
       WebSocketChannelClient*,
       std::unique_ptr<SourceLocation>,
       WebSocketHandle*,
       std::unique_ptr<WebSocketHandshakeThrottle>);
 
-  ~DocumentWebSocketChannel() override;
+  ~WebSocketChannelImpl() override;
 
   // Allows the caller to provide the Mojo pipe through which the socket is
   // connected, overriding the interface provider of the Document.
@@ -133,11 +134,11 @@ class MODULES_EXPORT DocumentWebSocketChannel final
     Vector<char> data;
   };
 
-  DocumentWebSocketChannel(ThreadableLoadingContext*,
-                           WebSocketChannelClient*,
-                           std::unique_ptr<SourceLocation>,
-                           std::unique_ptr<WebSocketHandle>,
-                           std::unique_ptr<WebSocketHandshakeThrottle>);
+  WebSocketChannelImpl(ThreadableLoadingContext*,
+                       WebSocketChannelClient*,
+                       std::unique_ptr<SourceLocation>,
+                       std::unique_ptr<WebSocketHandle>,
+                       std::unique_ptr<WebSocketHandshakeThrottle>);
 
   void SendInternal(WebSocketHandle::MessageType,
                     const char* data,
@@ -222,8 +223,8 @@ class MODULES_EXPORT DocumentWebSocketChannel final
   static const uint64_t kReceivedDataSizeForFlowControlHighWaterMark = 1 << 15;
 };
 
-std::ostream& operator<<(std::ostream&, const DocumentWebSocketChannel*);
+std::ostream& operator<<(std::ostream&, const WebSocketChannelImpl*);
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_DOCUMENT_WEB_SOCKET_CHANNEL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_CHANNEL_IMPL_H_
