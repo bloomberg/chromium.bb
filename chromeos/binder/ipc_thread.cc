@@ -4,6 +4,7 @@
 
 #include "chromeos/binder/ipc_thread.h"
 
+#include "base/message_loop/message_loop_current.h"
 #include "chromeos/binder/command_broker.h"
 #include "chromeos/binder/driver.h"
 
@@ -37,7 +38,7 @@ bool IpcThreadPoller::Initialize() {
       return false;
     }
   }
-  if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
+  if (!base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
           driver_->GetFD(), true, base::MessagePumpForIO::WATCH_READ, &watcher_,
           this)) {
     LOG(ERROR) << "Failed to initialize watcher.";
