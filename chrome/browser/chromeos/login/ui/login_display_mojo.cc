@@ -8,7 +8,6 @@
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
-#include "chrome/browser/chromeos/login/user_board_view_mojo.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -18,18 +17,9 @@
 
 namespace chromeos {
 
-namespace {
-constexpr char kLoginDisplay[] = "login";
-}  // namespace
-
 LoginDisplayMojo::LoginDisplayMojo(Delegate* delegate,
                                    LoginDisplayHostMojo* host)
-    : LoginDisplay(delegate),
-      host_(host),
-      user_board_view_mojo_(std::make_unique<UserBoardViewMojo>()),
-      user_selection_screen_(
-          std::make_unique<ChromeUserSelectionScreen>(kLoginDisplay)) {
-  user_selection_screen_->SetView(user_board_view_mojo_.get());
+    : LoginDisplay(delegate), host_(host) {
   user_manager::UserManager::Get()->AddObserver(this);
 }
 
@@ -64,10 +54,11 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
         content::NotificationService::NoDetails());
   }));
 
-  user_selection_screen_->Init(filtered_users);
+  UserSelectionScreen* user_selection_screen = host_->user_selection_screen();
+  user_selection_screen->Init(filtered_users);
   client->login_screen()->LoadUsers(
-      user_selection_screen_->UpdateAndReturnUserListForMojo(), show_guest);
-  user_selection_screen_->SetUsersLoaded(true /*loaded*/);
+      user_selection_screen->UpdateAndReturnUserListForMojo(), show_guest);
+  user_selection_screen->SetUsersLoaded(true /*loaded*/);
 }
 
 void LoginDisplayMojo::OnPreferencesChanged() {

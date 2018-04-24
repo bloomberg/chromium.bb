@@ -9,10 +9,12 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/ui/gaia_dialog_delegate.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/login_display_mojo.h"
+#include "chrome/browser/chromeos/login/user_board_view_mojo.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chromeos/login/auth/user_context.h"
@@ -20,7 +22,17 @@
 
 namespace chromeos {
 
-LoginDisplayHostMojo::LoginDisplayHostMojo() : weak_factory_(this) {
+namespace {
+constexpr char kLoginDisplay[] = "login";
+}  // namespace
+
+LoginDisplayHostMojo::LoginDisplayHostMojo()
+    : user_board_view_mojo_(std::make_unique<UserBoardViewMojo>()),
+      user_selection_screen_(
+          std::make_unique<ChromeUserSelectionScreen>(kLoginDisplay)),
+      weak_factory_(this) {
+  user_selection_screen_->SetView(user_board_view_mojo_.get());
+
   // Preload the WebUI for post-login screens.
   InitWidgetAndView();
 }
@@ -198,20 +210,22 @@ void LoginDisplayHostMojo::HandleAuthenticateUser(
 }
 
 void LoginDisplayHostMojo::HandleAttemptUnlock(const AccountId& account_id) {
-  NOTIMPLEMENTED();
+  user_selection_screen_->AttemptEasyUnlock(account_id);
 }
 
 void LoginDisplayHostMojo::HandleHardlockPod(const AccountId& account_id) {
-  NOTIMPLEMENTED();
+  user_selection_screen_->HardLockPod(account_id);
 }
 
 void LoginDisplayHostMojo::HandleRecordClickOnLockIcon(
     const AccountId& account_id) {
-  NOTIMPLEMENTED();
+  user_selection_screen_->RecordClickOnLockIcon(account_id);
 }
 
 void LoginDisplayHostMojo::HandleOnFocusPod(const AccountId& account_id) {
-  NOTIMPLEMENTED();
+  // TODO(jdufault): Share common code between this and
+  // ViewsScreenLocker::HandleOnFocusPod See https://crbug.com/831787.
+  user_selection_screen_->CheckUserStatus(account_id);
 }
 
 void LoginDisplayHostMojo::HandleOnNoPodFocused() {
@@ -219,7 +233,7 @@ void LoginDisplayHostMojo::HandleOnNoPodFocused() {
 }
 
 bool LoginDisplayHostMojo::HandleFocusLockScreenApps(bool reverse) {
-  NOTIMPLEMENTED();
+  NOTREACHED();
   return false;
 }
 

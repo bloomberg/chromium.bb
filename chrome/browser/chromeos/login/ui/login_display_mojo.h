@@ -14,8 +14,6 @@
 namespace chromeos {
 
 class LoginDisplayHostMojo;
-class UserBoardViewMojo;
-class UserSelectionScreen;
 
 // Interface used by UI-agnostic code to send messages to views-based login
 // screen.
@@ -48,8 +46,6 @@ class LoginDisplayMojo : public LoginDisplay,
 
  private:
   LoginDisplayHostMojo* const host_ = nullptr;
-  std::unique_ptr<UserBoardViewMojo> user_board_view_mojo_;
-  std::unique_ptr<UserSelectionScreen> user_selection_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayMojo);
 };

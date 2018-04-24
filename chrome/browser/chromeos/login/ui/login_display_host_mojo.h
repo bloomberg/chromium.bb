@@ -19,6 +19,8 @@ namespace chromeos {
 
 class ExistingUserController;
 class GaiaDialogDelegate;
+class UserBoardViewMojo;
+class UserSelectionScreen;
 
 // A LoginDisplayHost instance that sends requests to the views-based signin
 // screen.
@@ -34,6 +36,10 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
 
   // Set the users in the views login screen.
   void SetUsers(const user_manager::UserList& users);
+
+  UserSelectionScreen* user_selection_screen() {
+    return user_selection_screen_.get();
+  }
 
   // LoginDisplayHost:
   LoginDisplay* CreateLoginDisplay(LoginDisplay::Delegate* delegate) override;
@@ -85,6 +91,9 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
 
   // Callback that should be executed the authentication result is available.
   AuthenticateUserCallback on_authenticated_;
+
+  std::unique_ptr<UserBoardViewMojo> user_board_view_mojo_;
+  std::unique_ptr<UserSelectionScreen> user_selection_screen_;
 
   std::unique_ptr<ExistingUserController> existing_user_controller_;
 
