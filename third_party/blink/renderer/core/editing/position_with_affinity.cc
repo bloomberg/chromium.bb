@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 
+#include "third_party/blink/renderer/core/editing/text_affinity.h"
+
 namespace blink {
 
 template <typename Strategy>
