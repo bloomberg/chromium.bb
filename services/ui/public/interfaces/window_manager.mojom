@@ -70,6 +70,12 @@ interface WindowManager {
   // and the client area should be equivalent to the window area. Type: bool
   const string kRemoveStandardFrame_InitProperty = "init:remove-standard-frame";
 
+  // FIXME Type: int32_t
+  const string kActiveFrameColor_InitProperty = "init:active-frame-color";
+
+  // FIXME Type: int32_t
+  const string kInactiveFrameColor_InitProperty = "init:inactive-frame-color";
+
   // A flag controlling the window's presence on the mash shelf. Type: bool
   const string kWindowIgnoredByShelf_InitProperty =
       "init:window-ignored-by-shelf";

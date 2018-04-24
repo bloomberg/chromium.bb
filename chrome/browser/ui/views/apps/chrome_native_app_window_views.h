@@ -41,6 +41,7 @@ class ChromeNativeAppWindowViews
       const extensions::AppWindow::CreateParams& create_params);
   virtual views::NonClientFrameView* CreateStandardDesktopAppFrame();
   virtual views::NonClientFrameView* CreateNonStandardAppFrame() = 0;
+  virtual bool ShouldRemoveStandardFrame();
 
   // ui::BaseWindow implementation.
   gfx::Rect GetRestoredBounds() const override;

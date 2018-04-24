@@ -59,6 +59,17 @@ bool ShouldRemoveStandardFrame(const InitProperties& properties) {
   return iter != properties.end() && mojo::ConvertTo<bool>(iter->second);
 }
 
+base::Optional<SkColor> GetFrameColor(const InitProperties& properties,
+                                      bool active) {
+  base::Optional<SkColor> color;
+  auto iter = properties.find(
+      active ? ui::mojom::WindowManager::kActiveFrameColor_InitProperty
+             : ui::mojom::WindowManager::kInactiveFrameColor_InitProperty);
+  if (iter != properties.end())
+    color = mojo::ConvertTo<int32_t>(iter->second);
+  return color;
+}
+
 bool ShouldEnableImmersive(const InitProperties& properties) {
   auto iter =
       properties.find(ui::mojom::WindowManager::kDisableImmersive_InitProperty);
