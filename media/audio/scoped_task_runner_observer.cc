@@ -24,7 +24,7 @@ void ScopedTaskRunnerObserver::ObserveLoopDestruction(
     base::WaitableEvent* done) {
   // Note: |done| may be NULL.
   if (task_runner_->BelongsToCurrentThread()) {
-    base::MessageLoop* loop = base::MessageLoop::current();
+    base::MessageLoopCurrent loop = base::MessageLoopCurrent::Get();
     if (enable) {
       loop->AddDestructionObserver(this);
     } else {

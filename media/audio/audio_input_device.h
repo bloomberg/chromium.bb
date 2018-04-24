@@ -131,8 +131,9 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
   void SetVolumeOnIOThread(double volume);
   void SetAutomaticGainControlOnIOThread(bool enabled);
 
-  // base::MessageLoop::DestructionObserver implementation for the IO loop.
-  // If the IO loop dies before we do, we shut down the audio thread from here.
+  // base::MessageLoopCurrent::DestructionObserver implementation for the IO
+  // loop. If the IO loop dies before we do, we shut down the audio thread from
+  // here.
   void WillDestroyCurrentMessageLoop() override;
 
   // This is called by |alive_checker_| if it detects that the input stream is
