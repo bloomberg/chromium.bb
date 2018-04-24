@@ -270,9 +270,7 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def _ContextLost_WebGLBlockedAfterJSNavigation(self, test_path):
     self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([]))
     self._NavigateAndWaitForLoad(test_path)
-
     tab = self.tab
-
     # Make sure the tab got a WebGL context.
     if tab.EvaluateJavaScript('window.domAutomationController._finished'):
       # This means the test failed for some reason.
@@ -280,7 +278,6 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         self.fail('Initial page claimed to succeed early')
       else:
         self.fail('Initial page failed to get a WebGL context')
-
     # Kill the GPU process in order to get WebGL blocked.
     gpucrash_tab = tab.browser.tabs.New()
     try:
@@ -303,17 +300,15 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         gpucrash_tab.Close()
       except Exception:
         print 'Tab crashed while closing chrome://gpucrash'
+    self._RestartBrowser('must restart after tests that kill the GPU process')
 
   def _ContextLost_WebGLUnblockedAfterUserInitiatedReload(self, test_path):
     self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([]))
     self._NavigateAndWaitForLoad(test_path)
-
     tab = self.tab
-
     # Make sure the tab initially got a WebGL context.
     if not tab.EvaluateJavaScript('window.domAutomationController._succeeded'):
       self.fail('Tab failed to get an initial WebGL context')
-
     # Kill the GPU process in order to get WebGL blocked.
     gpucrash_tab = tab.browser.tabs.New()
     try:
@@ -343,6 +338,7 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         gpucrash_tab.Close()
       except Exception:
         print 'Tab crashed while closing chrome://gpucrash'
+    self._RestartBrowser('must restart after tests that kill the GPU process')
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.
