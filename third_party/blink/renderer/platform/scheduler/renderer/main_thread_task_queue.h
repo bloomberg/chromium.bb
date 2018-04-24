@@ -77,7 +77,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
     explicit QueueCreationParams(QueueType queue_type)
         : queue_type(queue_type),
           spec(NameForQueueType(queue_type)),
-          can_be_blocked(false),
+          can_be_deferred(false),
           can_be_throttled(false),
           can_be_paused(false),
           can_be_stopped(false),
@@ -91,7 +91,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
     }
 
     QueueCreationParams SetCanBeDeferred(bool value) {
-      can_be_blocked = value;
+      can_be_deferred = value;
       return *this;
     }
 
@@ -141,7 +141,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
     TaskQueue::Spec spec;
     base::Optional<TaskQueue::QueuePriority> fixed_priority;
     FrameScheduler* frame_;
-    bool can_be_blocked;
+    bool can_be_deferred;
     bool can_be_throttled;
     bool can_be_paused;
     bool can_be_stopped;
@@ -159,7 +159,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
     return fixed_priority_;
   }
 
-  bool CanBeDeferred() const { return can_be_blocked_; }
+  bool CanBeDeferred() const { return can_be_deferred_; }
 
   bool CanBeThrottled() const { return can_be_throttled_; }
 
@@ -203,7 +203,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
   const QueueType queue_type_;
   const QueueClass queue_class_;
   const base::Optional<TaskQueue::QueuePriority> fixed_priority_;
-  const bool can_be_blocked_;
+  const bool can_be_deferred_;
   const bool can_be_throttled_;
   const bool can_be_paused_;
   const bool can_be_stopped_;
