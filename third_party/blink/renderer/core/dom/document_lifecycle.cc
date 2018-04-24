@@ -86,7 +86,10 @@ DocumentLifecycle::DisallowThrottlingScope::~DisallowThrottlingScope() {
 }
 
 DocumentLifecycle::DocumentLifecycle()
-    : state_(kUninitialized), detach_count_(0), disallow_transition_count_(0) {}
+    : state_(kUninitialized),
+      detach_count_(0),
+      disallow_transition_count_(0),
+      check_no_transition_(false) {}
 
 DocumentLifecycle::~DocumentLifecycle() = default;
 
@@ -335,6 +338,7 @@ void DocumentLifecycle::AdvanceTo(LifecycleState next_state) {
       << "Cannot advance document lifecycle from " << StateAsDebugString(state_)
       << " to " << StateAsDebugString(next_state) << ".";
 #endif
+  CHECK(state_ == next_state || !check_no_transition_);
   state_ = next_state;
 }
 
@@ -348,6 +352,7 @@ void DocumentLifecycle::EnsureStateAtMost(LifecycleState state) {
       << "Cannot rewind document lifecycle from " << StateAsDebugString(state_)
       << " to " << StateAsDebugString(state) << ".";
 #endif
+  CHECK(state_ == state || !check_no_transition_);
   state_ = state;
 }
 
