@@ -366,6 +366,8 @@ crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/block-insi
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/012.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/015.html [ Failure ]
 
+crbug.com/836300 fast/css3-text/css3-text-decoration/text-decoration-skip-ink-links.html [ Pass Failure ]
+
 # ====== LayoutNG ======
 
 ### Crash site: ContainerNode.cpp
