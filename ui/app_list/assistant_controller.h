@@ -6,6 +6,7 @@
 #define UI_APP_LIST_ASSISTANT_CONTROLLER_H_
 
 #include <string>
+#include <vector>
 
 #include "ash/public/interfaces/assistant_card_renderer.mojom.h"
 #include "base/macros.h"
@@ -41,6 +42,10 @@ class AssistantController {
 
   // Releases resources for the card uniquely identified by |id_token|.
   virtual void ReleaseCard(const base::UnguessableToken& id_token) = 0;
+
+  // Releases resources for any card uniquely identified in |id_token_list|.
+  virtual void ReleaseCards(
+      const std::vector<base::UnguessableToken>& id_token_list) = 0;
 
   // Invoked on suggestion chip pressed event.
   virtual void OnSuggestionChipPressed(const std::string& text) = 0;

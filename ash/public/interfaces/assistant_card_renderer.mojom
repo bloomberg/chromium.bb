@@ -23,6 +23,10 @@ interface AssistantCardRenderer {
   // Releases any resources associated with card uniquely identified by
   // |id_token|.
   Release(mojo_base.mojom.UnguessableToken id_token);
+
+  // Releases any resources associated with any card uniquely identified by one
+  // of the specified |id_tokens|.
+  ReleaseAll(array<mojo_base.mojom.UnguessableToken> id_tokens);
 };
 
 // Defines parameters for an Assistant card.

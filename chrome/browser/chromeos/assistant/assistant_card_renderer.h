@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_ASSISTANT_ASSISTANT_CARD_RENDERER_H_
 
 #include <unordered_map>
+#include <vector>
 
 #include "ash/public/interfaces/assistant_card_renderer.mojom.h"
 #include "base/macros.h"
@@ -43,6 +44,8 @@ class AssistantCardRenderer : public ash::mojom::AssistantCardRenderer {
       ash::mojom::AssistantCardParamsPtr params,
       ash::mojom::AssistantCardRenderer::RenderCallback callback) override;
   void Release(const base::UnguessableToken& id_token) override;
+  void ReleaseAll(
+      const std::vector<base::UnguessableToken>& id_tokens) override;
 
  private:
   mojo::Binding<ash::mojom::AssistantCardRenderer>

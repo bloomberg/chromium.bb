@@ -14,17 +14,18 @@
 // of the launcher.
 namespace app_list {
 
+class AssistantUiElement;
 struct Query;
 
 // An observer which receives notification of changes to an Assistant
 // interaction.
 class AssistantInteractionModelObserver {
  public:
-  // Invoked when the card associated with the interaction is changed.
-  virtual void OnCardChanged(const std::string& html) {}
+  // Invoked when a UI element associated with the interaction is added.
+  virtual void OnUiElementAdded(const AssistantUiElement* ui_element) {}
 
-  // Invoked when the card associated with the interaction is cleared.
-  virtual void OnCardCleared() {}
+  // Invoked when all UI elements associated with the interaction are cleared.
+  virtual void OnUiElementsCleared() {}
 
   // Invoked when the query associated with the interaction is changed.
   virtual void OnQueryChanged(const Query& query) {}
@@ -39,12 +40,6 @@ class AssistantInteractionModelObserver {
 
   // Invoked when all suggestions associated with the interaction are cleared.
   virtual void OnSuggestionsCleared() {}
-
-  // Invoked when the specified |text| is added to the associated interaction.
-  virtual void OnTextAdded(const std::string& text) {}
-
-  // Invoked when all text associated with the interaction is cleared.
-  virtual void OnTextCleared() {}
 
  protected:
   AssistantInteractionModelObserver() = default;
