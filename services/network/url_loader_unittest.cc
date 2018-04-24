@@ -826,11 +826,60 @@ class NeverFinishedBodyHttpResponse : public net::test_server::HttpResponse {
   }
 };
 
-// TODO(mmenke): Figure out why this test is failing and fix it.
-TEST_F(URLLoaderTest, DISABLED_CloseResponseBodyConsumerBeforeProducer) {
+// Check that the URLLoader tears itself down when the URLLoader pipe is closed.
+TEST_F(URLLoaderTest, DestroyOnURLLoaderPipeClosed) {
   net::EmbeddedTestServer server;
   server.RegisterRequestHandler(
-      base::Bind([](const net::test_server::HttpRequest& request) {
+      base::BindRepeating([](const net::test_server::HttpRequest& request) {
+        std::unique_ptr<net::test_server::HttpResponse> response =
+            std::make_unique<NeverFinishedBodyHttpResponse>();
+        return response;
+      }));
+  ASSERT_TRUE(server.Start());
+
+  ResourceRequest request =
+      CreateResourceRequest("GET", server.GetURL("/hello.html"));
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), 0, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      0 /* process_id */, 0 /* request_id */, resource_scheduler_client(),
+      nullptr);
+
+  // Run until the response body pipe arrives, to make sure that a live body
+  // pipe does not result in keeping the loader alive when the URLLoader pipe is
+  // closed.
+  client()->RunUntilResponseBodyArrived();
+  EXPECT_TRUE(client()->has_received_response());
+  EXPECT_FALSE(client()->has_received_completion());
+
+  loader.reset();
+
+  // Spin the message loop until the delete callback is invoked, and then delete
+  // the URLLoader.
+  delete_run_loop.Run();
+
+  // client()->RunUntilConnectionError();
+  // EXPECT_FALSE(client()->has_received_completion());
+  client()->RunUntilComplete();
+  EXPECT_EQ(net::ERR_FAILED, client()->completion_status().error_code);
+}
+
+// Make sure that the URLLoader is destroyed when the data pipe is closed.
+// The pipe may either be closed in
+// URLLoader::OnResponseBodyStreamConsumerClosed() or URLLoader::DidRead(),
+// depending on whether the closed pipe is first noticed when trying to write to
+// it, or when a mojo close notification is received, so if only one path
+// breaks, this test may flakily fail.
+TEST_F(URLLoaderTest, CloseResponseBodyConsumerBeforeProducer) {
+  net::EmbeddedTestServer server;
+  server.RegisterRequestHandler(
+      base::BindRepeating([](const net::test_server::HttpRequest& request) {
         std::unique_ptr<net::test_server::HttpResponse> response =
             std::make_unique<NeverFinishedBodyHttpResponse>();
         return response;
@@ -866,17 +915,13 @@ TEST_F(URLLoaderTest, DISABLED_CloseResponseBodyConsumerBeforeProducer) {
 
   auto response_body = client()->response_body_release();
   response_body.reset();
-  loader.reset();
 
   // Spin the message loop until the delete callback is invoked, and then delete
   // the URLLoader.
   delete_run_loop.Run();
 
-  // The client is disconnected only when the other side observes that both the
-  // URLLoaderPtr and the response body pipe are disconnected.
-  client()->RunUntilConnectionError();
-
-  EXPECT_FALSE(client()->has_received_completion());
+  client()->RunUntilComplete();
+  EXPECT_EQ(net::ERR_FAILED, client()->completion_status().error_code);
 }
 
 TEST_F(URLLoaderTest, PauseReadingBodyFromNetBeforeResponseHeaders) {
@@ -1533,7 +1578,7 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
 
 // This tests that case where a read pipe is closed while there's a post task to
 // invoke ReadMore.
-TEST_F(URLLoaderTest, DISABLED_ReadPipeClosedWhileReadTaskPosted) {
+TEST_F(URLLoaderTest, ReadPipeClosedWhileReadTaskPosted) {
   AddEternalSyncReadsInterceptor();
 
   ResourceRequest request =
