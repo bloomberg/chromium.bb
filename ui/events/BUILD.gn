@@ -303,6 +303,8 @@ component("gesture_detection") {
 
   if (is_android) {
     sources += [ "gesture_detection/gesture_configuration_android.cc" ]
+  } else if (is_chromecast) {
+    sources += [ "gesture_detection/gesture_configuration_cast.cc" ]
   } else if (use_aura) {
     sources += [ "gesture_detection/gesture_configuration_aura.cc" ]
   } else {
