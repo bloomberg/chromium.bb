@@ -629,7 +629,7 @@ const ui::ListSelectionModel& TabStripModel::selection_model() const {
   return selection_model_;
 }
 
-void TabStripModel::AddWebContents(WebContents* contents,
+void TabStripModel::AddWebContents(std::unique_ptr<WebContents> contents,
                                    int index,
                                    ui::PageTransition transition,
                                    int add_types) {
@@ -667,10 +667,11 @@ void TabStripModel::AddWebContents(WebContents* contents,
     // is re-selected, not the next-adjacent.
     inherit_group = true;
   }
-  InsertWebContentsAt(index, base::WrapUnique(contents),
+  WebContents* raw_contents = contents.get();
+  InsertWebContentsAt(index, std::move(contents),
                       add_types | (inherit_group ? ADD_INHERIT_GROUP : 0));
   // Reset the index, just in case insert ended up moving it on us.
-  index = GetIndexOfWebContents(contents);
+  index = GetIndexOfWebContents(raw_contents);
 
   if (inherit_group && ui::PageTransitionTypeIncludingQualifiersIs(
                            transition, ui::PAGE_TRANSITION_TYPED))
@@ -688,7 +689,7 @@ void TabStripModel::AddWebContents(WebContents* contents,
   // new background tab.
   if (WebContents* old_contents = GetActiveWebContents()) {
     if ((add_types & ADD_ACTIVE) == 0) {
-      ResizeWebContents(contents,
+      ResizeWebContents(raw_contents,
                         gfx::Rect(old_contents->GetContainerBounds().size()));
     }
   }

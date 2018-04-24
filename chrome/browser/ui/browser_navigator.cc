@@ -663,10 +663,10 @@ void Navigate(NavigateParams* params) {
 
     // The navigation should insert a new tab into the target Browser.
     params->browser->tab_strip_model()->AddWebContents(
-        params->target_contents,
-        params->tabstrip_index,
-        params->transition,
-        params->tabstrip_add_types);
+        base::WrapUnique(params->target_contents), params->tabstrip_index,
+        params->transition, params->tabstrip_add_types);
+
+    // TODO(erikchen): Fix ownership semantics here. https://crbug.com/832879.
     // Now that the |params->target_contents| is safely owned by the target
     // Browser's TabStripModel, we can release ownership.
     target_contents_owner.ReleaseOwnership();

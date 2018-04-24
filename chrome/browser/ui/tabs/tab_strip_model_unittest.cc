@@ -1365,14 +1365,14 @@ TEST_F(TabStripModelTest, AddWebContents_MiddleClickLinksAndClose) {
   // Open the Home Page.
   std::unique_ptr<WebContents> homepage_contents = CreateWebContents();
   WebContents* raw_homepage_contents = homepage_contents.get();
-  tabstrip.AddWebContents(homepage_contents.release(), -1,
+  tabstrip.AddWebContents(std::move(homepage_contents), -1,
                           ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                           TabStripModel::ADD_ACTIVE);
 
   // Open some other tab, by user typing.
   std::unique_ptr<WebContents> typed_page_contents = CreateWebContents();
   WebContents* raw_typed_page_contents = typed_page_contents.get();
-  tabstrip.AddWebContents(typed_page_contents.release(), -1,
+  tabstrip.AddWebContents(std::move(typed_page_contents), -1,
                           ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
 
   EXPECT_EQ(2, tabstrip.count());
@@ -1384,15 +1384,15 @@ TEST_F(TabStripModelTest, AddWebContents_MiddleClickLinksAndClose) {
   // page.
   std::unique_ptr<WebContents> middle_click_contents1 = CreateWebContents();
   WebContents* raw_middle_click_contents1 = middle_click_contents1.get();
-  tabstrip.AddWebContents(middle_click_contents1.release(), -1,
+  tabstrip.AddWebContents(std::move(middle_click_contents1), -1,
                           ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
   std::unique_ptr<WebContents> middle_click_contents2 = CreateWebContents();
   WebContents* raw_middle_click_contents2 = middle_click_contents2.get();
-  tabstrip.AddWebContents(middle_click_contents2.release(), -1,
+  tabstrip.AddWebContents(std::move(middle_click_contents2), -1,
                           ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
   std::unique_ptr<WebContents> middle_click_contents3 = CreateWebContents();
   WebContents* raw_middle_click_contents3 = middle_click_contents3.get();
-  tabstrip.AddWebContents(middle_click_contents3.release(), -1,
+  tabstrip.AddWebContents(std::move(middle_click_contents3), -1,
                           ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
 
   EXPECT_EQ(5, tabstrip.count());
@@ -1436,14 +1436,14 @@ TEST_F(TabStripModelTest, AddWebContents_LeftClickPopup) {
   // Open the Home Page.
   std::unique_ptr<WebContents> homepage_contents = CreateWebContents();
   WebContents* raw_homepage_contents = homepage_contents.get();
-  tabstrip.AddWebContents(homepage_contents.release(), -1,
+  tabstrip.AddWebContents(std::move(homepage_contents), -1,
                           ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                           TabStripModel::ADD_ACTIVE);
 
   // Open some other tab, by user typing.
   std::unique_ptr<WebContents> typed_page_contents = CreateWebContents();
   WebContents* raw_typed_page_contents = typed_page_contents.get();
-  tabstrip.AddWebContents(typed_page_contents.release(), -1,
+  tabstrip.AddWebContents(std::move(typed_page_contents), -1,
                           ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
 
   EXPECT_EQ(2, tabstrip.count());
@@ -1454,7 +1454,7 @@ TEST_F(TabStripModelTest, AddWebContents_LeftClickPopup) {
   // Open a tab by simulating a left click on a link that opens in a new tab.
   std::unique_ptr<WebContents> left_click_contents = CreateWebContents();
   WebContents* raw_left_click_contents = left_click_contents.get();
-  tabstrip.AddWebContents(left_click_contents.release(), -1,
+  tabstrip.AddWebContents(std::move(left_click_contents), -1,
                           ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_ACTIVE);
 
   // Verify the state meets our expectations.
@@ -1488,14 +1488,14 @@ TEST_F(TabStripModelTest, AddWebContents_CreateNewBlankTab) {
   // Open the Home Page.
   std::unique_ptr<WebContents> homepage_contents = CreateWebContents();
   WebContents* raw_homepage_contents = homepage_contents.get();
-  tabstrip.AddWebContents(homepage_contents.release(), -1,
+  tabstrip.AddWebContents(std::move(homepage_contents), -1,
                           ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                           TabStripModel::ADD_ACTIVE);
 
   // Open some other tab, by user typing.
   std::unique_ptr<WebContents> typed_page_contents = CreateWebContents();
   WebContents* raw_typed_page_contents = typed_page_contents.get();
-  tabstrip.AddWebContents(typed_page_contents.release(), -1,
+  tabstrip.AddWebContents(std::move(typed_page_contents), -1,
                           ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
 
   EXPECT_EQ(2, tabstrip.count());
@@ -1506,7 +1506,7 @@ TEST_F(TabStripModelTest, AddWebContents_CreateNewBlankTab) {
   // Open a new blank tab in the foreground.
   std::unique_ptr<WebContents> new_blank_contents = CreateWebContents();
   WebContents* raw_new_blank_contents = new_blank_contents.get();
-  tabstrip.AddWebContents(new_blank_contents.release(), -1,
+  tabstrip.AddWebContents(std::move(new_blank_contents), -1,
                           ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
 
   // Verify the state of the tabstrip.
@@ -1519,12 +1519,12 @@ TEST_F(TabStripModelTest, AddWebContents_CreateNewBlankTab) {
   std::unique_ptr<WebContents> background_blank_contents1 = CreateWebContents();
   WebContents* raw_background_blank_contents1 =
       background_blank_contents1.get();
-  tabstrip.AddWebContents(background_blank_contents1.release(), -1,
+  tabstrip.AddWebContents(std::move(background_blank_contents1), -1,
                           ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_NONE);
   std::unique_ptr<WebContents> background_blank_contents2 = CreateWebContents();
   WebContents* raw_background_blank_contents2 =
       background_blank_contents2.get();
-  tabstrip.AddWebContents(background_blank_contents2.release(), -1,
+  tabstrip.AddWebContents(std::move(background_blank_contents2), -1,
                           ui::PAGE_TRANSITION_GENERATED,
                           TabStripModel::ADD_NONE);
   EXPECT_EQ(5, tabstrip.count());
@@ -1548,14 +1548,14 @@ TEST_F(TabStripModelTest, AddWebContents_ForgetOpeners) {
   // Open the Home Page
   std::unique_ptr<WebContents> homepage_contents = CreateWebContents();
   WebContents* raw_homepage_contents = homepage_contents.get();
-  tabstrip.AddWebContents(homepage_contents.release(), -1,
+  tabstrip.AddWebContents(std::move(homepage_contents), -1,
                           ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                           TabStripModel::ADD_ACTIVE);
 
   // Open some other tab, by user typing.
   std::unique_ptr<WebContents> typed_page_contents = CreateWebContents();
   WebContents* raw_typed_page_contents = typed_page_contents.get();
-  tabstrip.AddWebContents(typed_page_contents.release(), -1,
+  tabstrip.AddWebContents(std::move(typed_page_contents), -1,
                           ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
 
   EXPECT_EQ(2, tabstrip.count());
@@ -1567,15 +1567,15 @@ TEST_F(TabStripModelTest, AddWebContents_ForgetOpeners) {
   // page.
   std::unique_ptr<WebContents> middle_click_contents1 = CreateWebContents();
   WebContents* raw_middle_click_contents1 = middle_click_contents1.get();
-  tabstrip.AddWebContents(middle_click_contents1.release(), -1,
+  tabstrip.AddWebContents(std::move(middle_click_contents1), -1,
                           ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
   std::unique_ptr<WebContents> middle_click_contents2 = CreateWebContents();
   WebContents* raw_middle_click_contents2 = middle_click_contents2.get();
-  tabstrip.AddWebContents(middle_click_contents2.release(), -1,
+  tabstrip.AddWebContents(std::move(middle_click_contents2), -1,
                           ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
   std::unique_ptr<WebContents> middle_click_contents3 = CreateWebContents();
   WebContents* raw_middle_click_contents3 = middle_click_contents3.get();
-  tabstrip.AddWebContents(middle_click_contents3.release(), -1,
+  tabstrip.AddWebContents(std::move(middle_click_contents3), -1,
                           ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
 
   // Break out of the context by selecting a tab in a different context.
@@ -1612,13 +1612,13 @@ TEST_F(TabStripModelTest, AppendContentsReselectionTest) {
   EXPECT_TRUE(tabstrip.empty());
 
   // Open the Home Page.
-  tabstrip.AddWebContents(CreateWebContents().release(), -1,
+  tabstrip.AddWebContents(CreateWebContents(), -1,
                           ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                           TabStripModel::ADD_ACTIVE);
 
   // Open some other tab, by user typing.
-  tabstrip.AddWebContents(CreateWebContents().release(), -1,
-                          ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_NONE);
+  tabstrip.AddWebContents(CreateWebContents(), -1, ui::PAGE_TRANSITION_TYPED,
+                          TabStripModel::ADD_NONE);
 
   // The selected tab should still be the first.
   EXPECT_EQ(0, tabstrip.active_index());
@@ -1642,18 +1642,18 @@ TEST_F(TabStripModelTest, ReselectionConsidersChildrenTest) {
   // Open page A
   std::unique_ptr<WebContents> page_a_contents = CreateWebContents();
   WebContents* raw_page_a_contents = page_a_contents.get();
-  strip.AddWebContents(page_a_contents.release(), -1,
+  strip.AddWebContents(std::move(page_a_contents), -1,
                        ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                        TabStripModel::ADD_ACTIVE);
 
   // Simulate middle click to open page A.A and A.B
   std::unique_ptr<WebContents> page_a_a_contents = CreateWebContents();
   WebContents* raw_page_a_a_contents = page_a_a_contents.get();
-  strip.AddWebContents(page_a_a_contents.release(), -1,
+  strip.AddWebContents(std::move(page_a_a_contents), -1,
                        ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
   std::unique_ptr<WebContents> page_a_b_contents = CreateWebContents();
   WebContents* raw_page_a_b_contents = page_a_b_contents.get();
-  strip.AddWebContents(page_a_b_contents.release(), -1,
+  strip.AddWebContents(std::move(page_a_b_contents), -1,
                        ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
 
   // Select page A.A
@@ -1663,7 +1663,7 @@ TEST_F(TabStripModelTest, ReselectionConsidersChildrenTest) {
   // Simulate a middle click to open page A.A.A
   std::unique_ptr<WebContents> page_a_a_a_contents = CreateWebContents();
   WebContents* raw_page_a_a_a_contents = page_a_a_a_contents.get();
-  strip.AddWebContents(page_a_a_a_contents.release(), -1,
+  strip.AddWebContents(std::move(page_a_a_a_contents), -1,
                        ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
 
   EXPECT_EQ(raw_page_a_a_a_contents, strip.GetWebContentsAt(2));
@@ -1695,14 +1695,14 @@ TEST_F(TabStripModelTest, AddWebContents_NewTabAtEndOfStripInheritsGroup) {
   TabStripModel strip(&delegate, profile());
 
   // Open page A
-  strip.AddWebContents(CreateWebContents().release(), -1,
+  strip.AddWebContents(CreateWebContents(), -1,
                        ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                        TabStripModel::ADD_ACTIVE);
 
   // Open pages B, C and D in the background from links on page A...
   for (int i = 0; i < 3; ++i) {
-    strip.AddWebContents(CreateWebContents().release(), -1,
-                         ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
+    strip.AddWebContents(CreateWebContents(), -1, ui::PAGE_TRANSITION_LINK,
+                         TabStripModel::ADD_NONE);
   }
 
   // Switch to page B's tab.
@@ -1711,7 +1711,7 @@ TEST_F(TabStripModelTest, AddWebContents_NewTabAtEndOfStripInheritsGroup) {
   // Open a New Tab at the end of the strip (simulate Ctrl+T)
   std::unique_ptr<WebContents> new_contents = CreateWebContents();
   WebContents* raw_new_contents = new_contents.get();
-  strip.AddWebContents(new_contents.release(), -1, ui::PAGE_TRANSITION_TYPED,
+  strip.AddWebContents(std::move(new_contents), -1, ui::PAGE_TRANSITION_TYPED,
                        TabStripModel::ADD_ACTIVE);
 
   EXPECT_EQ(4, strip.GetIndexOfWebContents(raw_new_contents));
@@ -1728,8 +1728,8 @@ TEST_F(TabStripModelTest, AddWebContents_NewTabAtEndOfStripInheritsGroup) {
   // behavior should be the same as above.
   std::unique_ptr<WebContents> page_e_contents = CreateWebContents();
   WebContents* raw_page_e_contents = page_e_contents.get();
-  strip.AddWebContents(page_e_contents.release(), -1, ui::PAGE_TRANSITION_TYPED,
-                       TabStripModel::ADD_ACTIVE);
+  strip.AddWebContents(std::move(page_e_contents), -1,
+                       ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
 
   EXPECT_EQ(4, strip.GetIndexOfWebContents(raw_page_e_contents));
   EXPECT_EQ(4, strip.active_index());
@@ -1745,7 +1745,7 @@ TEST_F(TabStripModelTest, AddWebContents_NewTabAtEndOfStripInheritsGroup) {
   // and the one that was active when the gesture was performed.
   std::unique_ptr<WebContents> page_f_contents = CreateWebContents();
   WebContents* raw_page_f_contents = page_f_contents.get();
-  strip.AddWebContents(page_f_contents.release(), -1,
+  strip.AddWebContents(std::move(page_f_contents), -1,
                        ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                        TabStripModel::ADD_ACTIVE);
 
@@ -1770,7 +1770,7 @@ TEST_F(TabStripModelTest, NavigationForgetsOpeners) {
   TabStripModel strip(&delegate, profile());
 
   // Open page A
-  strip.AddWebContents(CreateWebContents().release(), -1,
+  strip.AddWebContents(CreateWebContents(), -1,
                        ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                        TabStripModel::ADD_ACTIVE);
 
@@ -1779,17 +1779,17 @@ TEST_F(TabStripModelTest, NavigationForgetsOpeners) {
   WebContents* raw_page_c_contents = page_c_contents.get();
   std::unique_ptr<WebContents> page_d_contents = CreateWebContents();
   WebContents* raw_page_d_contents = page_d_contents.get();
-  strip.AddWebContents(CreateWebContents().release(), -1,
-                       ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
-  strip.AddWebContents(page_c_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
+  strip.AddWebContents(CreateWebContents(), -1, ui::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
-  strip.AddWebContents(page_d_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
+  strip.AddWebContents(std::move(page_c_contents), -1, ui::PAGE_TRANSITION_LINK,
+                       TabStripModel::ADD_NONE);
+  strip.AddWebContents(std::move(page_d_contents), -1, ui::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
 
   // Open page E in a different opener group from page A.
   std::unique_ptr<WebContents> page_e_contents = CreateWebContents();
   WebContents* raw_page_e_contents = page_e_contents.get();
-  strip.AddWebContents(page_e_contents.release(), -1,
+  strip.AddWebContents(std::move(page_e_contents), -1,
                        ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                        TabStripModel::ADD_NONE);
 
@@ -1822,7 +1822,7 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
 
   // Open a tab and several tabs from it, then select one of the tabs that was
   // opened.
-  strip.AddWebContents(CreateWebContents().release(), -1,
+  strip.AddWebContents(CreateWebContents(), -1,
                        ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                        TabStripModel::ADD_ACTIVE);
 
@@ -1830,11 +1830,11 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
   WebContents* raw_page_c_contents = page_c_contents.get();
   std::unique_ptr<WebContents> page_d_contents = CreateWebContents();
   WebContents* raw_page_d_contents = page_d_contents.get();
-  strip.AddWebContents(CreateWebContents().release(), -1,
-                       ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
-  strip.AddWebContents(page_c_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
+  strip.AddWebContents(CreateWebContents(), -1, ui::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
-  strip.AddWebContents(page_d_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
+  strip.AddWebContents(std::move(page_c_contents), -1, ui::PAGE_TRANSITION_LINK,
+                       TabStripModel::ADD_NONE);
+  strip.AddWebContents(std::move(page_d_contents), -1, ui::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
 
   strip.ActivateTabAt(2, true);
@@ -1844,8 +1844,8 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
   // last on.
 
   // Now simulate opening a new tab at the end of the TabStrip.
-  strip.AddWebContents(CreateWebContents().release(), -1,
-                       ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
+  strip.AddWebContents(CreateWebContents(), -1, ui::PAGE_TRANSITION_TYPED,
+                       TabStripModel::ADD_ACTIVE);
 
   // At this point, if we close this tab the last selected one should be
   // re-selected.
@@ -1857,8 +1857,8 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
   // tab's opener relationship to be forgotten.
 
   // Open a new tab again.
-  strip.AddWebContents(CreateWebContents().release(), -1,
-                       ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_ACTIVE);
+  strip.AddWebContents(CreateWebContents(), -1, ui::PAGE_TRANSITION_TYPED,
+                       TabStripModel::ADD_ACTIVE);
 
   // Now select the first tab.
   strip.ActivateTabAt(0, true);
@@ -2115,7 +2115,7 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
 
   std::unique_ptr<WebContents> first_contents = CreateWebContents();
   WebContents* raw_first_contents = first_contents.get();
-  strip.AddWebContents(first_contents.release(), -1, ui::PAGE_TRANSITION_TYPED,
+  strip.AddWebContents(std::move(first_contents), -1, ui::PAGE_TRANSITION_TYPED,
                        TabStripModel::ADD_ACTIVE);
 
   MockTabStripModelObserver tabstrip_observer(&strip);
@@ -2142,7 +2142,7 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
   // event this time.
   std::unique_ptr<WebContents> third_contents = CreateWebContents();
   WebContents* raw_third_contents = third_contents.get();
-  strip.AddWebContents(third_contents.release(), 1, ui::PAGE_TRANSITION_TYPED,
+  strip.AddWebContents(std::move(third_contents), 1, ui::PAGE_TRANSITION_TYPED,
                        TabStripModel::ADD_NONE);
 
   tabstrip_observer.ClearStates();
@@ -2310,24 +2310,24 @@ TEST_F(TabStripModelTest, MoveSelectedTabsTo_ForgetGroups) {
   // Open page A as a new tab and then A1 in the background from A.
   std::unique_ptr<WebContents> page_a_contents = CreateWebContents();
   WebContents* raw_page_a_contents = page_a_contents.get();
-  strip.AddWebContents(page_a_contents.release(), -1,
+  strip.AddWebContents(std::move(page_a_contents), -1,
                        ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                        TabStripModel::ADD_ACTIVE);
   std::unique_ptr<WebContents> page_a1_contents = CreateWebContents();
   WebContents* raw_page_a1_contents = page_a1_contents.get();
-  strip.AddWebContents(page_a1_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
-                       TabStripModel::ADD_NONE);
+  strip.AddWebContents(std::move(page_a1_contents), -1,
+                       ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
 
   // Likewise, open pages B and B1.
   std::unique_ptr<WebContents> page_b_contents = CreateWebContents();
   WebContents* raw_page_b_contents = page_b_contents.get();
-  strip.AddWebContents(page_b_contents.release(), -1,
+  strip.AddWebContents(std::move(page_b_contents), -1,
                        ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                        TabStripModel::ADD_ACTIVE);
   std::unique_ptr<WebContents> page_b1_contents = CreateWebContents();
   WebContents* raw_page_b1_contents = page_b1_contents.get();
-  strip.AddWebContents(page_b1_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
-                       TabStripModel::ADD_NONE);
+  strip.AddWebContents(std::move(page_b1_contents), -1,
+                       ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
 
   EXPECT_EQ(raw_page_a_contents, strip.GetWebContentsAt(0));
   EXPECT_EQ(raw_page_a1_contents, strip.GetWebContentsAt(1));
@@ -2340,8 +2340,8 @@ TEST_F(TabStripModelTest, MoveSelectedTabsTo_ForgetGroups) {
   // Open page B2 in the background from B. It should end up after B.
   std::unique_ptr<WebContents> page_b2_contents = CreateWebContents();
   WebContents* raw_page_b2_contents = page_b2_contents.get();
-  strip.AddWebContents(page_b2_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
-                       TabStripModel::ADD_NONE);
+  strip.AddWebContents(std::move(page_b2_contents), -1,
+                       ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
   EXPECT_EQ(raw_page_b_contents, strip.GetWebContentsAt(0));
   EXPECT_EQ(raw_page_b2_contents, strip.GetWebContentsAt(1));
   EXPECT_EQ(raw_page_a_contents, strip.GetWebContentsAt(2));
@@ -2355,8 +2355,8 @@ TEST_F(TabStripModelTest, MoveSelectedTabsTo_ForgetGroups) {
   // Open page A2 in the background from A. It should end up after A1.
   std::unique_ptr<WebContents> page_a2_contents = CreateWebContents();
   WebContents* raw_page_a2_contents = page_a2_contents.get();
-  strip.AddWebContents(page_a2_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
-                       TabStripModel::ADD_NONE);
+  strip.AddWebContents(std::move(page_a2_contents), -1,
+                       ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
   EXPECT_EQ(raw_page_b_contents, strip.GetWebContentsAt(0));
   EXPECT_EQ(raw_page_b2_contents, strip.GetWebContentsAt(1));
   EXPECT_EQ(raw_page_a_contents, strip.GetWebContentsAt(2));
@@ -2567,10 +2567,10 @@ TEST_F(TabStripModelTest, LinkClicksWithPinnedTabOrdering) {
   TabStripModel strip(&delegate, profile());
 
   // Open two pages, pinned.
-  strip.AddWebContents(CreateWebContents().release(), -1,
+  strip.AddWebContents(CreateWebContents(), -1,
                        ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                        TabStripModel::ADD_ACTIVE | TabStripModel::ADD_PINNED);
-  strip.AddWebContents(CreateWebContents().release(), -1,
+  strip.AddWebContents(CreateWebContents(), -1,
                        ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                        TabStripModel::ADD_ACTIVE | TabStripModel::ADD_PINNED);
 
@@ -2583,9 +2583,9 @@ TEST_F(TabStripModelTest, LinkClicksWithPinnedTabOrdering) {
   WebContents* raw_page_c_contents = page_c_contents.get();
   std::unique_ptr<WebContents> page_d_contents = CreateWebContents();
   WebContents* raw_page_d_contents = page_d_contents.get();
-  strip.AddWebContents(page_c_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
+  strip.AddWebContents(std::move(page_c_contents), -1, ui::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
-  strip.AddWebContents(page_d_contents.release(), -1, ui::PAGE_TRANSITION_LINK,
+  strip.AddWebContents(std::move(page_d_contents), -1, ui::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
 
   EXPECT_EQ(2, strip.GetIndexOfWebContents(raw_page_c_contents));
