@@ -31,6 +31,7 @@
 #include "ui/gfx/path.h"
 #include "ui/keyboard/container_floating_behavior.h"
 #include "ui/keyboard/container_full_width_behavior.h"
+#include "ui/keyboard/container_fullscreen_behavior.h"
 #include "ui/keyboard/container_type.h"
 #include "ui/keyboard/display_util.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
@@ -447,6 +448,9 @@ void KeyboardController::SetContainerBehaviorInternal(
       break;
     case ContainerType::FLOATING:
       container_behavior_ = std::make_unique<ContainerFloatingBehavior>(this);
+      break;
+    case ContainerType::FULLSCREEN:
+      container_behavior_ = std::make_unique<ContainerFullscreenBehavior>(this);
       break;
     default:
       NOTREACHED();

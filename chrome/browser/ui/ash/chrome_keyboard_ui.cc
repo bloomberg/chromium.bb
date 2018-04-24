@@ -313,8 +313,10 @@ aura::Window* ChromeKeyboardUI::GetContentsWindow() {
     SetupWebContents(keyboard_contents_.get());
     LoadContents(GetVirtualKeyboardUrl());
     keyboard_contents_->GetNativeView()->AddObserver(this);
-    keyboard_contents_->GetMainFrame()->GetView()->SetBackgroundColor(
-        SK_ColorTRANSPARENT);
+    content::RenderWidgetHostView* view =
+        keyboard_contents_->GetMainFrame()->GetView();
+    view->SetBackgroundColor(SK_ColorTRANSPARENT);
+    view->GetNativeView()->SetTransparent(true);
   }
 
   return keyboard_contents_->GetNativeView();
