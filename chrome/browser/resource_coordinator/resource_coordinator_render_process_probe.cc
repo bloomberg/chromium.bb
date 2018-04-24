@@ -62,10 +62,30 @@ bool ResourceCoordinatorRenderProcessProbe::IsEnabled() {
 
 void ResourceCoordinatorRenderProcessProbe::StartGatherCycle() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // TODO(siggi): It irks me to have this bit of policy embedded here.
+  //     I feel this should be moved to the caller...
   if (!ResourceCoordinatorRenderProcessProbe::IsEnabled()) {
     return;
   }
 
+  DCHECK(!is_gather_cycle_started_);
+
+  is_gather_cycle_started_ = true;
+  if (!is_gathering_) {
+    timer_.Start(FROM_HERE, base::TimeDelta(), this,
+                 &ResourceCoordinatorRenderProcessProbe::
+                     RegisterAliveRenderProcessesOnUIThread);
+  }
+}
+
+void ResourceCoordinatorRenderProcessProbe::StartSingleGather() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (is_gathering_)
+    return;
+
+  // If the gather cycle is started this measurement will go through early,
+  // and the interval between measurements will be shortened.
   timer_.Start(FROM_HERE, base::TimeDelta(), this,
                &ResourceCoordinatorRenderProcessProbe::
                    RegisterAliveRenderProcessesOnUIThread);
@@ -151,10 +171,12 @@ void ResourceCoordinatorRenderProcessProbe::
   DCHECK(is_gathering_);
   is_gathering_ = false;
 
-  if (DispatchMetrics()) {
+  if (DispatchMetrics() && is_gather_cycle_started_) {
     timer_.Start(FROM_HERE, interval_, this,
                  &ResourceCoordinatorRenderProcessProbe::
                      RegisterAliveRenderProcessesOnUIThread);
+  } else {
+    is_gather_cycle_started_ = false;
   }
 }
 

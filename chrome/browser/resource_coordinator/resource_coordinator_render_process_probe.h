@@ -51,6 +51,11 @@ class ResourceCoordinatorRenderProcessProbe {
   // Can only be invoked from the UI thread.
   void StartGatherCycle();
 
+  // Starts a single immediate collection cycle, if a cycle is not already
+  // in progress. If the timed gather cycle is running, this will preempt the
+  // next cycle and reset the metronome.
+  void StartSingleGather();
+
  protected:
   // Internal state protected for testing.
   friend struct base::LazyInstanceTraitsBase<
@@ -94,6 +99,9 @@ class ResourceCoordinatorRenderProcessProbe {
 
   // Number of measurements collected so far.
   size_t current_gather_cycle_ = 0u;
+
+  // True if StartGatherCycle has been called.
+  bool is_gather_cycle_started_ = false;
 
   // True while a gathering cycle is underways on a background thread.
   bool is_gathering_ = false;
