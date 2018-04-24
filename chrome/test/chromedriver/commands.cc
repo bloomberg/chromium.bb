@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -133,7 +133,7 @@ void ExecuteGetSessions(const Command& session_capabilities_command,
   }
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromSeconds(10));
-  base::MessageLoop::current()->SetNestableTasksAllowed(true);
+  base::MessageLoopCurrent::Get()->SetNestableTasksAllowed(true);
   run_loop.Run();
 
   callback.Run(Status(kOk), std::move(session_list), session_id, false);
@@ -185,7 +185,7 @@ void ExecuteQuitAll(
       FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromSeconds(10));
   // Uses a nested run loop to block this thread until all the quit
   // commands have executed, or the timeout expires.
-  base::MessageLoop::current()->SetNestableTasksAllowed(true);
+  base::MessageLoopCurrent::Get()->SetNestableTasksAllowed(true);
   run_loop.Run();
   callback.Run(Status(kOk), std::unique_ptr<base::Value>(),
                session_id, false);
