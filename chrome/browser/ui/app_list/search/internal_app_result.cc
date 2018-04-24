@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
@@ -51,7 +52,16 @@ std::unique_ptr<ChromeSearchResult> InternalAppResult::Duplicate() const {
 }
 
 ui::MenuModel* InternalAppResult::GetContextMenuModel() {
-  return nullptr;
+  const auto* internal_app = app_list::FindInternalApp(id());
+  DCHECK(internal_app);
+  if (!internal_app->show_in_launcher)
+    return nullptr;
+
+  if (!context_menu_) {
+    context_menu_ = std::make_unique<AppContextMenu>(nullptr, profile(), id(),
+                                                     controller());
+  }
+  return context_menu_->GetMenuModel();
 }
 
 }  // namespace app_list

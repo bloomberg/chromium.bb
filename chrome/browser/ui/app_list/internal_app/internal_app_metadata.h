@@ -38,6 +38,10 @@ struct InternalApp {
 // Returns a list of Chrome OS internal apps, which are searchable in launcher.
 const std::vector<InternalApp>& GetInternalAppList();
 
+// Returns InternalApp by |app_id|.
+// Returns nullptr if |app_id| does not correspond to an internal app.
+const InternalApp* FindInternalApp(const std::string& app_id);
+
 // Returns true if |app_id| corresponds to an internal app.
 bool IsInternalApp(const std::string& app_id);
 

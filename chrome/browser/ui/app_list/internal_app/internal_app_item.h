@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 
 namespace app_list {
+class AppContextMenu;
 struct InternalApp;
 }
 
@@ -20,13 +21,16 @@ class InternalAppItem : public ChromeAppListItem {
   InternalAppItem(Profile* profile,
                   const app_list::AppListSyncableService::SyncItem* sync_item,
                   const app_list::InternalApp& internal_app);
+  ~InternalAppItem() override;
 
-  ~InternalAppItem() override = default;
-
- private:
   // ChromeAppListItem:
   void Activate(int event_flags) override;
   const char* GetItemType() const override;
+  ui::MenuModel* GetContextMenuModel() override;
+  app_list::AppContextMenu* GetAppContextMenu() override;
+
+ private:
+  std::unique_ptr<app_list::AppContextMenu> context_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(InternalAppItem);
 };

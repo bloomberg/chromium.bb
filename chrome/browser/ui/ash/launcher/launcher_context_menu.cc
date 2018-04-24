@@ -13,11 +13,13 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/crostini_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
+#include "chrome/browser/ui/ash/launcher/internal_app_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/ui_base_features.h"
@@ -46,6 +48,11 @@ std::unique_ptr<LauncherContextMenu> LauncherContextMenu::Create(
           ->IsCrostiniShelfAppId(item->id.app_id)) {
     return std::make_unique<CrostiniShelfContextMenu>(controller, item,
                                                       display_id);
+  }
+
+  if (app_list::IsInternalApp(item->id.app_id)) {
+    return std::make_unique<InternalAppShelfContextMenu>(controller, item,
+                                                         display_id);
   }
 
   // Create an ExtensionLauncherContextMenu for other items.
