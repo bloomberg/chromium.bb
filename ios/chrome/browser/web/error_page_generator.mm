@@ -4,19 +4,7 @@
 
 #import "ios/chrome/browser/web/error_page_generator.h"
 
-#import "base/ios/ns_error_util.h"
-#include "base/logging.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/values.h"
-#include "components/error_page/common/error_page_params.h"
-#include "components/error_page/common/localized_error.h"
-#include "components/grit/components_resources.h"
-#include "ios/chrome/browser/application_context.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/base/resource/scale_factor.h"
-#include "ui/base/webui/jstemplate_builder.h"
-#include "url/gurl.h"
+#import "ios/chrome/browser/web/error_page_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -32,38 +20,7 @@
                   isIncognito:(BOOL)isIncognito {
   self = [super init];
   if (self) {
-    NSString* badURLSpec = error.userInfo[NSURLErrorFailingURLStringErrorKey];
-    NSError* originalError = base::ios::GetFinalUnderlyingErrorFromError(error);
-    NSString* errorDomain = nil;
-    int errorCode = 0;
-
-    if (originalError) {
-      errorDomain = [originalError domain];
-      errorCode = [originalError code];
-    } else {
-      errorDomain = [error domain];
-      errorCode = [error code];
-    }
-    DCHECK(errorCode != 0);
-
-    base::DictionaryValue errorStrings;
-    error_page::LocalizedError::GetStrings(
-        errorCode, base::SysNSStringToUTF8(errorDomain),
-        GURL(base::SysNSStringToUTF16(badURLSpec)), isPost, false, false,
-        isIncognito, GetApplicationContext()->GetApplicationLocale(), nullptr,
-        &errorStrings);
-
-    ui::ScaleFactor scaleFactor =
-        ui::ResourceBundle::GetSharedInstance().GetMaxScaleFactor();
-
-    const base::StringPiece templateHTML(
-        ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
-            IDR_NET_ERROR_HTML, scaleFactor));
-    if (templateHTML.empty())
-      NOTREACHED() << "unable to load template. ID: " << IDR_NET_ERROR_HTML;
-    std::string errorHTML = webui::GetTemplatesHtml(
-        templateHTML, &errorStrings, "t" /* IDR_NET_ERROR_HTML root id */);
-    _HTML = base::SysUTF8ToNSString(errorHTML);
+    _HTML = GetErrorPage(error, isPost, isIncognito);
   }
   return self;
 }
