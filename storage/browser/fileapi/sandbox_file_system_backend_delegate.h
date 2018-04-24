@@ -64,7 +64,7 @@ class SandboxQuotaObserver;
 class STORAGE_EXPORT SandboxFileSystemBackendDelegate
     : public FileSystemQuotaUtil {
  public:
-  typedef FileSystemBackend::OpenFileSystemCallback OpenFileSystemCallback;
+  using OpenFileSystemCallback = FileSystemBackend::OpenFileSystemCallback;
 
   // The FileSystem directory name.
   static const base::FilePath::CharType kFileSystemDirectory[];
@@ -253,7 +253,7 @@ class STORAGE_EXPORT SandboxFileSystemBackendDelegate
   // Accessed only on the file thread.
   std::set<GURL> visited_origins_;
 
-  std::set<std::pair<GURL, FileSystemType> > sticky_dirty_origins_;
+  std::set<std::pair<GURL, FileSystemType>> sticky_dirty_origins_;
 
   std::map<FileSystemType, UpdateObserverList> update_observers_;
   std::map<FileSystemType, ChangeObserverList> change_observers_;

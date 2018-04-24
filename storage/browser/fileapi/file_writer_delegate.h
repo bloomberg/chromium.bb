@@ -33,10 +33,10 @@ class STORAGE_EXPORT FileWriterDelegate : public net::URLRequest::Delegate {
     ERROR_WRITE_NOT_STARTED,
   };
 
-  typedef base::Callback<void(base::File::Error result,
-                              int64_t bytes,
-                              WriteProgressStatus write_status)>
-      DelegateWriteCallback;
+  using DelegateWriteCallback =
+      base::Callback<void(base::File::Error result,
+                          int64_t bytes,
+                          WriteProgressStatus write_status)>;
 
   FileWriterDelegate(std::unique_ptr<FileStreamWriter> file_writer,
                      FlushPolicy flush_policy);

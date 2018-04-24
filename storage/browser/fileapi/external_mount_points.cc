@@ -160,8 +160,7 @@ bool ExternalMountPoints::CrackVirtualPath(
   if (components.size() < 1)
     return false;
 
-  std::vector<base::FilePath::StringType>::iterator component_iter =
-      components.begin();
+  auto component_iter = components.begin();
   std::string maybe_mount_name =
       base::FilePath(*component_iter++).AsUTF8Unsafe();
 

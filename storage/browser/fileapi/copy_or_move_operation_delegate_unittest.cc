@@ -50,7 +50,7 @@ using storage::FileSystemURL;
 
 namespace content {
 
-typedef storage::FileSystemOperation::FileEntryList FileEntryList;
+using FileEntryList = storage::FileSystemOperation::FileEntryList;
 
 namespace {
 
@@ -350,10 +350,9 @@ class CopyOrMoveOperationTestHelper {
       }
     }
     EXPECT_TRUE(test_case_map.empty());
-    std::map<base::FilePath,
-        const FileSystemTestCaseRecord*>::const_iterator it;
-    for (it = test_case_map.begin(); it != test_case_map.end(); ++it) {
-      LOG(ERROR) << "Extra entry: " << it->first.LossyDisplayName();
+    for (const auto& path_record_pair : test_case_map) {
+      LOG(ERROR) << "Extra entry: "
+                 << path_record_pair.first.LossyDisplayName();
     }
   }
 

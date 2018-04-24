@@ -67,30 +67,29 @@ class FileSystemOperation {
   virtual ~FileSystemOperation() {}
 
   // Used for CreateFile(), etc. |result| is the return code of the operation.
-  typedef base::Callback<void(base::File::Error result)> StatusCallback;
+  using StatusCallback = base::Callback<void(base::File::Error result)>;
 
   // Used for GetMetadata(). |result| is the return code of the operation,
   // |file_info| is the obtained file info.
-  typedef base::Callback<
-      void(base::File::Error result,
-           const base::File::Info& file_info)> GetMetadataCallback;
+  using GetMetadataCallback =
+      base::Callback<void(base::File::Error result,
+                          const base::File::Info& file_info)>;
 
   // Used for OpenFile(). |on_close_callback| will be called after the file is
   // closed in the child process. It can be null, if no operation is needed on
   // closing a file.
-  typedef base::Callback<void(base::File file,
-                              base::OnceClosure on_close_callback)>
-      OpenFileCallback;
+  using OpenFileCallback =
+      base::Callback<void(base::File file,
+                          base::OnceClosure on_close_callback)>;
 
   // Used for ReadDirectoryCallback.
-  typedef std::vector<filesystem::mojom::DirectoryEntry> FileEntryList;
+  using FileEntryList = std::vector<filesystem::mojom::DirectoryEntry>;
 
   // Used for ReadDirectory(). |result| is the return code of the operation,
   // |file_list| is the list of files read, and |has_more| is true if some files
   // are yet to be read.
-  typedef base::RepeatingCallback<
-      void(base::File::Error result, FileEntryList file_list, bool has_more)>
-      ReadDirectoryCallback;
+  using ReadDirectoryCallback = base::RepeatingCallback<
+      void(base::File::Error result, FileEntryList file_list, bool has_more)>;
 
   // Used for CreateSnapshotFile(). (Please see the comment at
   // CreateSnapshotFile() below for how the method is called)
@@ -113,12 +112,11 @@ class FileSystemOperation {
   // longer necessary in the javascript world.
   // Please see the comment for ShareableFileReference for details.
   //
-  typedef base::Callback<void(
+  using SnapshotFileCallback = base::Callback<void(
       base::File::Error result,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
-      scoped_refptr<storage::ShareableFileReference> file_ref)>
-      SnapshotFileCallback;
+      scoped_refptr<storage::ShareableFileReference> file_ref)>;
 
   // Used to specify how recursive operation delegate behaves for errors.
   // With ERROR_BEHAVIOR_ABORT, it stops following operation when it fails an
@@ -202,17 +200,18 @@ class FileSystemOperation {
     PROGRESS,
     ERROR_COPY_ENTRY
   };
-  typedef base::Callback<void(CopyProgressType type,
-                              const FileSystemURL& source_url,
-                              const FileSystemURL& destination_url,
-                              int64_t size)> CopyProgressCallback;
+  using CopyProgressCallback =
+      base::Callback<void(CopyProgressType type,
+                          const FileSystemURL& source_url,
+                          const FileSystemURL& destination_url,
+                          int64_t size)>;
 
   // Used for CopyFileLocal() to report progress update.
   // |size| is the cumulative copied bytes for the copy.
   // At the beginning the progress callback should be called with |size| = 0,
   // and also at the ending the progress callback should be called with |size|
   // set to the copied file size.
-  typedef base::Callback<void(int64_t size)> CopyFileProgressCallback;
+  using CopyFileProgressCallback = base::Callback<void(int64_t size)>;
 
   // The option for copy or move operation.
   enum CopyOrMoveOption {
@@ -235,9 +234,8 @@ class FileSystemOperation {
   };
 
   // Used for Write().
-  typedef base::Callback<void(base::File::Error result,
-                              int64_t bytes,
-                              bool complete)> WriteCallback;
+  using WriteCallback = base::Callback<
+      void(base::File::Error result, int64_t bytes, bool complete)>;
 
   // Creates a file at |path|. If |exclusive| is true, an error is raised
   // in case a file is already present at the URL.

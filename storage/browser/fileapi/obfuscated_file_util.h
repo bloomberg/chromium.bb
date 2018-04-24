@@ -83,8 +83,8 @@ class STORAGE_EXPORT ObfuscatedFileUtil : public FileSystemFileUtil {
     virtual bool HasTypeDirectory(const std::string& type_string) const = 0;
   };
 
-  typedef base::Callback<std::string(const FileSystemURL&)>
-      GetTypeStringForURLCallback;
+  using GetTypeStringForURLCallback =
+      base::Callback<std::string(const FileSystemURL&)>;
 
   // |get_type_string_for_url| is user-defined callback that should return
   // a type string for the given FileSystemURL.  The type string is used
@@ -214,8 +214,8 @@ class STORAGE_EXPORT ObfuscatedFileUtil : public FileSystemFileUtil {
       const std::vector<std::string>& type_strings_to_prepopulate);
 
  private:
-  typedef SandboxDirectoryDatabase::FileId FileId;
-  typedef SandboxDirectoryDatabase::FileInfo FileInfo;
+  using FileId = SandboxDirectoryDatabase::FileId;
+  using FileInfo = SandboxDirectoryDatabase::FileInfo;
 
   friend class ObfuscatedFileEnumerator;
   friend class content::ObfuscatedFileUtilTest;

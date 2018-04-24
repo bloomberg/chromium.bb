@@ -112,12 +112,8 @@ base::FilePath SandboxQuotaObserver::GetUsageCachePath(
 
 void SandboxQuotaObserver::ApplyPendingUsageUpdate() {
   delayed_cache_update_helper_.Stop();
-  for (PendingUpdateNotificationMap::iterator itr =
-           pending_update_notification_.begin();
-       itr != pending_update_notification_.end();
-       ++itr) {
-    UpdateUsageCacheFile(itr->first, itr->second);
-  }
+  for (const auto& path_delta_pair : pending_update_notification_)
+    UpdateUsageCacheFile(path_delta_pair.first, path_delta_pair.second);
   pending_update_notification_.clear();
 }
 

@@ -36,7 +36,7 @@ class FileSystemQuotaUtil;
 class WatcherManager;
 
 // Callback to take GURL.
-typedef base::Callback<void(const GURL& url)> URLCallback;
+using URLCallback = base::Callback<void(const GURL& url)>;
 
 // Maximum numer of bytes to be read by FileStreamReader classes. Used in
 // FileSystemBackend::CreateFileStreamReader(), when it's not known how many

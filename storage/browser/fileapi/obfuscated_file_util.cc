@@ -48,8 +48,8 @@ namespace storage {
 
 namespace {
 
-typedef SandboxDirectoryDatabase::FileId FileId;
-typedef SandboxDirectoryDatabase::FileInfo FileInfo;
+using FileId = SandboxDirectoryDatabase::FileId;
+using FileInfo = SandboxDirectoryDatabase::FileInfo;
 
 void InitFileInfo(
     SandboxDirectoryDatabase::FileInfo* file_info,
@@ -172,8 +172,8 @@ class ObfuscatedFileEnumerator final
   }
 
  private:
-  typedef SandboxDirectoryDatabase::FileId FileId;
-  typedef SandboxDirectoryDatabase::FileInfo FileInfo;
+  using FileId = SandboxDirectoryDatabase::FileId;
+  using FileInfo = SandboxDirectoryDatabase::FileInfo;
 
   struct FileRecord {
     FileId file_id;
@@ -209,7 +209,7 @@ class ObfuscatedFileEnumerator final
 class ObfuscatedOriginEnumerator
     : public ObfuscatedFileUtil::AbstractOriginEnumerator {
  public:
-  typedef SandboxOriginDatabase::OriginRecord OriginRecord;
+  using OriginRecord = SandboxOriginDatabase::OriginRecord;
   ObfuscatedOriginEnumerator(
       SandboxOriginDatabaseInterface* origin_database,
       const base::FilePath& base_file_path)
@@ -356,8 +356,8 @@ base::File::Error ObfuscatedFileUtil::CreateDirectory(
     return base::File::FILE_OK;
   }
 
-  std::vector<base::FilePath::StringType> components;
-  VirtualPath::GetComponents(url.path(), &components);
+  std::vector<base::FilePath::StringType> components =
+      VirtualPath::GetComponents(url.path());
   FileId parent_id = 0;
   size_t index;
   for (index = 0; index < components.size(); ++index) {
@@ -895,12 +895,10 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
     // At this point we are sure we had successfully deleted the origin/type
     // directory (i.e. we're ready to just return true).
     // See if we have other directories in this origin directory.
-    for (std::set<std::string>::iterator iter = known_type_strings_.begin();
-         iter != known_type_strings_.end();
-         ++iter) {
-      if (*iter == type_string)
+    for (const std::string& type : known_type_strings_) {
+      if (type == type_string)
         continue;
-      if (base::DirectoryExists(origin_path.AppendASCII(*iter))) {
+      if (base::DirectoryExists(origin_path.AppendASCII(type))) {
         // Other type's directory exists; just return true here.
         return true;
       }

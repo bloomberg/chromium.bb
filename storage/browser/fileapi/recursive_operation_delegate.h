@@ -26,9 +26,9 @@ class FileSystemOperationRunner;
 class STORAGE_EXPORT RecursiveOperationDelegate
     : public base::SupportsWeakPtr<RecursiveOperationDelegate> {
  public:
-  typedef FileSystemOperation::StatusCallback StatusCallback;
-  typedef FileSystemOperation::FileEntryList FileEntryList;
-  typedef FileSystemOperation::ErrorBehavior ErrorBehavior;
+  using StatusCallback = FileSystemOperation::StatusCallback;
+  using FileEntryList = FileSystemOperation::FileEntryList;
+  using ErrorBehavior = FileSystemOperation::ErrorBehavior;
 
   virtual ~RecursiveOperationDelegate();
 

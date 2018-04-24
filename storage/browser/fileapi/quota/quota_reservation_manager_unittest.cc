@@ -36,7 +36,7 @@ const char kOrigin[] = "http://example.com";
 const storage::FileSystemType kType = kFileSystemTypeTemporary;
 const int64_t kInitialFileSize = 1;
 
-typedef QuotaReservationManager::ReserveQuotaCallback ReserveQuotaCallback;
+using ReserveQuotaCallback = QuotaReservationManager::ReserveQuotaCallback;
 
 int64_t GetFileSize(const base::FilePath& path) {
   int64_t size = 0;

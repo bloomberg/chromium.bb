@@ -40,20 +40,20 @@ class FileSystemContext;
 class STORAGE_EXPORT FileSystemOperationRunner
     : public base::SupportsWeakPtr<FileSystemOperationRunner> {
  public:
-  typedef FileSystemOperation::GetMetadataCallback GetMetadataCallback;
-  typedef FileSystemOperation::ReadDirectoryCallback ReadDirectoryCallback;
-  typedef FileSystemOperation::SnapshotFileCallback SnapshotFileCallback;
-  typedef FileSystemOperation::StatusCallback StatusCallback;
-  typedef FileSystemOperation::WriteCallback WriteCallback;
-  typedef FileSystemOperation::OpenFileCallback OpenFileCallback;
-  typedef FileSystemOperation::ErrorBehavior ErrorBehavior;
-  typedef FileSystemOperation::CopyProgressCallback CopyProgressCallback;
-  typedef FileSystemOperation::CopyFileProgressCallback
-      CopyFileProgressCallback;
-  typedef FileSystemOperation::CopyOrMoveOption CopyOrMoveOption;
-  typedef FileSystemOperation::GetMetadataField GetMetadataField;
+  using GetMetadataCallback = FileSystemOperation::GetMetadataCallback;
+  using ReadDirectoryCallback = FileSystemOperation::ReadDirectoryCallback;
+  using SnapshotFileCallback = FileSystemOperation::SnapshotFileCallback;
+  using StatusCallback = FileSystemOperation::StatusCallback;
+  using WriteCallback = FileSystemOperation::WriteCallback;
+  using OpenFileCallback = FileSystemOperation::OpenFileCallback;
+  using ErrorBehavior = FileSystemOperation::ErrorBehavior;
+  using CopyProgressCallback = FileSystemOperation::CopyProgressCallback;
+  using CopyFileProgressCallback =
+      FileSystemOperation::CopyFileProgressCallback;
+  using CopyOrMoveOption = FileSystemOperation::CopyOrMoveOption;
+  using GetMetadataField = FileSystemOperation::GetMetadataField;
 
-  typedef int OperationID;
+  using OperationID = int;
 
   virtual ~FileSystemOperationRunner();
 
@@ -314,7 +314,7 @@ class STORAGE_EXPORT FileSystemOperationRunner
 
   // We keep track of the file to be modified by each operation so that
   // we can notify observers when we're done.
-  typedef std::map<OperationID, FileSystemURLSet> OperationToURLSet;
+  using OperationToURLSet = std::map<OperationID, FileSystemURLSet>;
   OperationToURLSet write_target_urls_;
 
   // Operations that are finished but not yet fire their callbacks.

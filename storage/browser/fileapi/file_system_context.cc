@@ -215,15 +215,13 @@ bool FileSystemContext::DeleteDataForOriginOnFileTaskRunner(
   DCHECK(origin_url == origin_url.GetOrigin());
 
   bool success = true;
-  for (FileSystemBackendMap::iterator iter = backend_map_.begin();
-       iter != backend_map_.end();
-       ++iter) {
-    FileSystemBackend* backend = iter->second;
+  for (auto& type_backend_pair : backend_map_) {
+    FileSystemBackend* backend = type_backend_pair.second;
     if (!backend->GetQuotaUtil())
       continue;
     if (backend->GetQuotaUtil()->DeleteOriginDataOnFileTaskRunner(
-            this, quota_manager_proxy(), origin_url, iter->first)
-            != base::File::FILE_OK) {
+            this, quota_manager_proxy(), origin_url, type_backend_pair.first) !=
+        base::File::FILE_OK) {
       // Continue the loop, but record the failure.
       success = false;
     }
@@ -322,12 +320,12 @@ const AccessObserverList* FileSystemContext::GetAccessObservers(
   return backend->GetAccessObservers(type);
 }
 
-void FileSystemContext::GetFileSystemTypes(
-    std::vector<FileSystemType>* types) const {
-  types->clear();
-  for (FileSystemBackendMap::const_iterator iter = backend_map_.begin();
-       iter != backend_map_.end(); ++iter)
-    types->push_back(iter->first);
+std::vector<FileSystemType> FileSystemContext::GetFileSystemTypes() const {
+  std::vector<FileSystemType> types;
+  types.reserve(backend_map_.size());
+  for (const auto& type_backend_pair : backend_map_)
+    types.push_back(type_backend_pair.first);
+  return types;
 }
 
 ExternalFileSystemBackend*

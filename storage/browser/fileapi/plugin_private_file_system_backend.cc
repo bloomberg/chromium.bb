@@ -60,7 +60,7 @@ class PluginPrivateFileSystemBackend::FileSystemIDToPluginMap {
   }
 
  private:
-  typedef std::map<std::string, std::string> Map;
+  using Map = std::map<std::string, std::string>;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   Map map_;
 };

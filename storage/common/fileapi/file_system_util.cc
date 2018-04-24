@@ -50,7 +50,7 @@ base::FilePath VirtualPath::BaseName(const base::FilePath& virtual_path) {
 }
 
 base::FilePath VirtualPath::DirName(const base::FilePath& virtual_path) {
-  typedef base::FilePath::StringType StringType;
+  using StringType = base::FilePath::StringType;
   StringType  path = virtual_path.value();
 
   // The logic below is taken from that of base::FilePath::DirName, except
@@ -83,17 +83,13 @@ base::FilePath VirtualPath::DirName(const base::FilePath& virtual_path) {
   return base::FilePath(path);
 }
 
-void VirtualPath::GetComponents(
-    const base::FilePath& path,
-    std::vector<base::FilePath::StringType>* components) {
-  typedef base::FilePath::StringType StringType;
+std::vector<base::FilePath::StringType> VirtualPath::GetComponents(
+    const base::FilePath& path) {
+  using StringType = base::FilePath::StringType;
 
-  DCHECK(components);
-  if (!components)
-    return;
-  components->clear();
+  std::vector<StringType> components;
   if (path.value().empty())
-    return;
+    return components;
 
   StringType::size_type begin = 0, end = 0;
   while (begin < path.value().length() && end != StringType::npos) {
@@ -101,26 +97,21 @@ void VirtualPath::GetComponents(
     StringType component = path.value().substr(
         begin, end == StringType::npos ? StringType::npos : end - begin);
     if (!component.empty() && component != base::FilePath::kCurrentDirectory)
-      components->push_back(component);
+      components.push_back(component);
     begin = end + 1;
   }
+  return components;
 }
 
-void VirtualPath::GetComponentsUTF8Unsafe(
-    const base::FilePath& path,
-    std::vector<std::string>* components) {
-  DCHECK(components);
-  if (!components)
-    return;
-  components->clear();
-
-  std::vector<base::FilePath::StringType> stringtype_components;
-  VirtualPath::GetComponents(path, &stringtype_components);
-  std::vector<base::FilePath::StringType>::const_iterator it;
-  for (it = stringtype_components.begin(); it != stringtype_components.end();
-       ++it) {
-    components->push_back(base::FilePath(*it).AsUTF8Unsafe());
-  }
+std::vector<std::string> VirtualPath::GetComponentsUTF8Unsafe(
+    const base::FilePath& path) {
+  std::vector<base::FilePath::StringType> stringtype_components =
+      VirtualPath::GetComponents(path);
+  std::vector<std::string> components;
+  components.reserve(stringtype_components.size());
+  for (const auto& component : stringtype_components)
+    components.push_back(base::FilePath(component).AsUTF8Unsafe());
+  return components;
 }
 
 base::FilePath::StringType VirtualPath::GetNormalizedFilePath(
@@ -142,8 +133,8 @@ bool VirtualPath::IsAbsolute(const base::FilePath::StringType& path) {
 }
 
 bool VirtualPath::IsRootPath(const base::FilePath& path) {
-  std::vector<base::FilePath::StringType> components;
-  VirtualPath::GetComponents(path, &components);
+  std::vector<base::FilePath::StringType> components =
+      VirtualPath::GetComponents(path);
   return (path.empty() || components.empty() ||
           (components.size() == 1 &&
            components[0] == VirtualPath::kRoot));

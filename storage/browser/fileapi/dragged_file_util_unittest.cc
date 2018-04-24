@@ -41,7 +41,7 @@ namespace content {
 
 namespace {
 
-typedef AsyncFileTestHelper::FileEntryList FileEntryList;
+using FileEntryList = AsyncFileTestHelper::FileEntryList;
 
 // Used in DraggedFileUtilTest::SimulateDropFiles().
 // Random root paths in which we create each file/directory of the
@@ -361,9 +361,8 @@ TEST_F(DraggedFileUtilTest, ReadDirectoryTest) {
                  << ": " << test_case.path);
 
     // Read entries in the directory to construct the expected results map.
-    typedef std::map<base::FilePath::StringType,
-                     filesystem::mojom::DirectoryEntry>
-        EntryMap;
+    using EntryMap =
+        std::map<base::FilePath::StringType, filesystem::mojom::DirectoryEntry>;
     EntryMap expected_entry_map;
 
     base::FilePath dir_path = GetTestCasePlatformPath(test_case.path);

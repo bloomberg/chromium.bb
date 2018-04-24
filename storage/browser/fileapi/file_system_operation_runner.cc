@@ -25,7 +25,7 @@
 
 namespace storage {
 
-typedef FileSystemOperationRunner::OperationID OperationID;
+using OperationID = FileSystemOperationRunner::OperationID;
 
 class FileSystemOperationRunner::BeginOperationScoper
     : public base::SupportsWeakPtr<
@@ -708,11 +708,10 @@ void FileSystemOperationRunner::FinishOperation(OperationID id) {
   OperationToURLSet::iterator found = write_target_urls_.find(id);
   if (found != write_target_urls_.end()) {
     const FileSystemURLSet& urls = found->second;
-    for (FileSystemURLSet::const_iterator iter = urls.begin();
-        iter != urls.end(); ++iter) {
-      if (file_system_context_->GetUpdateObservers(iter->type())) {
-        file_system_context_->GetUpdateObservers(iter->type())
-            ->Notify(&FileUpdateObserver::OnEndUpdate, *iter);
+    for (const FileSystemURL& url : urls) {
+      if (file_system_context_->GetUpdateObservers(url.type())) {
+        file_system_context_->GetUpdateObservers(url.type())
+            ->Notify(&FileUpdateObserver::OnEndUpdate, url);
       }
     }
     write_target_urls_.erase(found);

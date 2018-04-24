@@ -323,7 +323,7 @@ void StorageMonitor::AddObserver(
 }
 
 void StorageMonitor::RemoveObserver(StorageObserver* observer) {
-  for (auto& type_observers_pair : storage_type_observers_map_)
+  for (const auto& type_observers_pair : storage_type_observers_map_)
     type_observers_pair.second->RemoveObserver(observer);
 }
 

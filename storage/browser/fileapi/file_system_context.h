@@ -184,7 +184,7 @@ class STORAGE_EXPORT FileSystemContext
   const AccessObserverList* GetAccessObservers(FileSystemType type) const;
 
   // Returns all registered filesystem types.
-  void GetFileSystemTypes(std::vector<FileSystemType>* types) const;
+  std::vector<FileSystemType> GetFileSystemTypes() const;
 
   // Returns a FileSystemBackend instance for external filesystem
   // type, which is used only by chromeos for now.  This is equivalent to
@@ -309,8 +309,7 @@ class STORAGE_EXPORT FileSystemContext
                                    StatusCallback callback);
 
  private:
-  typedef std::map<FileSystemType, FileSystemBackend*>
-      FileSystemBackendMap;
+  using FileSystemBackendMap = std::map<FileSystemType, FileSystemBackend*>;
 
   // For CreateFileSystemOperation.
   friend class FileSystemOperationRunner;

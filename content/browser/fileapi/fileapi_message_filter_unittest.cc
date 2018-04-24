@@ -44,13 +44,11 @@ class FileAPIMessageFilterTest : public testing::Test {
     file_system_context_ =
         CreateFileSystemContextForTesting(nullptr, base::FilePath());
 
-    std::vector<storage::FileSystemType> types;
-    file_system_context_->GetFileSystemTypes(&types);
-    for (size_t i = 0; i < types.size(); ++i) {
+    for (const storage::FileSystemType& type :
+         file_system_context_->GetFileSystemTypes()) {
       ChildProcessSecurityPolicyImpl::GetInstance()
           ->RegisterFileSystemPermissionPolicy(
-              types[i],
-              storage::FileSystemContext::GetPermissionPolicy(types[i]));
+              type, storage::FileSystemContext::GetPermissionPolicy(type));
     }
 
     blob_storage_context_ = ChromeBlobStorageContext::GetFor(&browser_context_);
