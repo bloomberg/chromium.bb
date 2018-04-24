@@ -25,7 +25,6 @@
 
 // https://drafts.csswg.org/cssom/#the-cssrulelist-interface
 
-// TODO(foolip): CSSRuleList should be an [ArrayClass].
 [
     Exposed=Window
 ] interface CSSRuleList {

@@ -20,7 +20,6 @@
 
 // https://drafts.csswg.org/cssom/#the-stylesheetlist-interface
 
-// TODO(foolip): StyleSheetList should be an [ArrayClass].
 [
     RaisesException=Constructor,
     Constructor(sequence<CSSStyleSheet> sheets),
