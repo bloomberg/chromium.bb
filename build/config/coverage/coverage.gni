@@ -5,21 +5,9 @@
 import("//build/toolchain/toolchain.gni")
 
 declare_args() {
-  # Enable Clang's Source-based Code Coverage. This should not be used with
-  # is_component_build=true.
-  # TODO(metzman): Add an assertion that will prevent is_component_build=true
-  # from being passed as an argument to gn, but will not force toolchains that
-  # set is_component_build=true to set it to false.
+  # Enable Clang's Source-based Code Coverage.
   use_clang_coverage = false
 }
 
 assert(!use_clang_coverage || is_clang,
        "Clang Source-based Code Coverage requires clang.")
-
-assert(
-    !(use_clang_coverage && is_component_build),
-    "Clang Source-based Code Coverage requires \"is_component_build=false\" " +
-        "flag because: There will be no coverage info for libraries in " +
-        "component builds and \"is_component_build\" is set to true by " +
-        "\"is_debug\" unless it is explicitly set to false.$0x0ATry adding " +
-        "\"is_component_build=false\" to your GN args.")
