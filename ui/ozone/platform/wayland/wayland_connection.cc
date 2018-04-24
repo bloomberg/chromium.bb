@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
@@ -78,7 +79,7 @@ bool WaylandConnection::StartProcessingEvents() {
   wl_display_flush(display_.get());
 
   DCHECK(base::MessageLoopForUI::IsCurrent());
-  if (!base::MessageLoopForUI::current()->WatchFileDescriptor(
+  if (!base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
           wl_display_get_fd(display_.get()), true,
           base::MessagePumpLibevent::WATCH_READ, &controller_, this))
     return false;
