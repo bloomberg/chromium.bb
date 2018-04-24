@@ -57,6 +57,7 @@ import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.PendingState;
+import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -480,7 +481,10 @@ public class DownloadUtils {
     static void publishOfflinePagesForSharing(OfflinePageBridge offlinePageBridge,
             List<OfflineItemWrapper> offlinePages, Callback<Map<String, String>> callback) {
         DownloadController.requestFileAccessPermission(granted -> {
-            if (!granted) return;
+            if (!granted) {
+                OfflinePageUtils.recordPublishPageResult(SavePageResult.PERMISSION_DENIED);
+                return;
+            }
             publishOfflinePageForSharing(
                     offlinePageBridge, offlinePages, 0, new HashMap<String, String>(), callback);
         });
