@@ -49,6 +49,7 @@ struct UserAvatar {
 struct UserInfo {
   UserType type;
   signin.mojom.AccountId account_id;
+  string service_user_id;
   string display_name;
   string display_email;
   UserAvatar avatar;

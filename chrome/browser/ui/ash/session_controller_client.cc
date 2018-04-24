@@ -39,6 +39,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_type.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/equals_traits.h"
@@ -92,8 +93,11 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
   session->user_info->display_email = user.display_email();
   session->user_info->is_ephemeral =
       UserManager::Get()->IsUserNonCryptohomeDataEphemeral(user.GetAccountId());
-  if (profile)
+  if (profile) {
+    session->user_info->service_user_id =
+        content::BrowserContext::GetServiceUserIdFor(profile);
     session->user_info->is_new_profile = profile->IsNewProfile();
+  }
 
   session->user_info->avatar = ash::mojom::UserAvatar::New();
   session->user_info->avatar->image = user.GetImage();
