@@ -26,7 +26,7 @@ void MockConfigurationPolicyProvider::UpdateChromePolicy(
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .CopyFrom(policy);
   UpdatePolicy(std::move(bundle));
-  if (base::MessageLoopCurrent::Get())
+  if (base::MessageLoopCurrent::IsSet())
     base::RunLoop().RunUntilIdle();
 }
 
