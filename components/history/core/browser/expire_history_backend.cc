@@ -117,6 +117,11 @@ const int kExpirationDelaySec = 30;
 // iteration, so we want to wait longer before checking to avoid wasting CPU.
 const int kExpirationEmptyDelayMin = 5;
 
+// If the expiration timer is delayed by over an hour, then assume that the
+// machine went to sleep.
+constexpr base::TimeDelta kExpirationSleepWakeupThreshold =
+    base::TimeDelta::FromHours(1);
+
 // The minimum number of hours between checking for old on-demand favicons that
 // should be cleared.
 const int kClearOnDemandFaviconsIntervalHours = 24;
@@ -524,6 +529,7 @@ void ExpireHistoryBackend::ScheduleExpire() {
     delay = base::TimeDelta::FromSeconds(kExpirationDelaySec);
   }
 
+  expected_expiration_time_ = base::Time::Now() + delay;
   task_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ExpireHistoryBackend::DoExpireIteration,
@@ -533,6 +539,21 @@ void ExpireHistoryBackend::ScheduleExpire() {
 
 void ExpireHistoryBackend::DoExpireIteration() {
   DCHECK(!work_queue_.empty()) << "queue has to be non-empty";
+
+  // If the timer is firing more than an hour later than expected, than the
+  // machine likely just woke from sleep/hibernation. There is potentially a lot
+  // of expiring that needs to happen. Wait for 5 minutes before starting to do
+  // any expiry, to avoid conflicting with other work that happens on waking
+  // from sleep.
+  if (base::Time::Now() - expected_expiration_time_ >
+      kExpirationSleepWakeupThreshold) {
+    task_runner_->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ExpireHistoryBackend::ScheduleExpire,
+                   weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMinutes(kExpirationEmptyDelayMin));
+    return;
+  }
 
   const ExpiringVisitsReader* reader = work_queue_.front();
   bool more_to_expire = ExpireSomeOldHistory(

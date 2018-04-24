@@ -272,6 +272,9 @@ class ExpireHistoryBackend {
   // The threshold for "old" history where we will automatically delete it.
   base::TimeDelta expiration_threshold_;
 
+  // The time at which we expect the expiration code to run.
+  base::Time expected_expiration_time_;
+
   // The lastly used threshold for "old" on-demand favicons.
   base::Time last_on_demand_expiration_threshold_;
 
