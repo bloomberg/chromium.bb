@@ -26,13 +26,13 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""GDB support for WebKit types.
+"""GDB support for Blink types.
 
 Add this to your gdb by amending your ~/.gdbinit as follows:
   python
   import sys
-  sys.path.insert(0, "/path/to/tools/gdb/")
-  import webkit
+  sys.path.insert(0, "/path/to/blink/tools/gdb/")
+  import blink
 """
 
 from __future__ import print_function
@@ -421,7 +421,7 @@ add_pretty_printers()
 
 
 class PrintPathToRootCommand(gdb.Command):
-    """Command for printing WebKit Node trees.
+    """Command for printing Blink Node trees.
 
     Usage: printpathtoroot variable_name"""
 

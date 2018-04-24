@@ -21,11 +21,12 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """
-    LLDB Support for WebKit Types
+    LLDB Support for Blink Types
 
-    Add the following to your .lldbinit file to add WebKit Type summaries in LLDB and Xcode:
+    Add the following to your .lldbinit file to add Blink Type summaries in
+    LLDB and Xcode:
 
-    command script import {Path to WebKit Root}/Tools/lldb/lldb_webkit.py
+    command script import {Path to Blink Root}/tools/lldb/lldb_blink.py
 
 """
 
@@ -33,16 +34,16 @@ import lldb
 
 
 def __lldb_init_module(debugger, dict):
-    debugger.HandleCommand('type summary add --expand -F lldb_webkit.WTFString_SummaryProvider WTF::String')
-    debugger.HandleCommand('type summary add --expand -F lldb_webkit.WTFStringImpl_SummaryProvider WTF::StringImpl')
-    debugger.HandleCommand('type summary add --expand -F lldb_webkit.WTFAtomicString_SummaryProvider WTF::AtomicString')
-    debugger.HandleCommand('type summary add --expand -F lldb_webkit.WTFVector_SummaryProvider -x "WTF::Vector<.+>$"')
-    debugger.HandleCommand('type summary add --expand -F lldb_webkit.WTFHashTable_SummaryProvider -x "WTF::HashTable<.+>$"')
-    debugger.HandleCommand('type synthetic add -x "WTF::Vector<.+>$" --python-class lldb_webkit.WTFVectorProvider')
-    debugger.HandleCommand('type synthetic add -x "WTF::HashTable<.+>$" --python-class lldb_webkit.WTFHashTableProvider')
-    debugger.HandleCommand('type summary add -F lldb_webkit.WebCoreLayoutUnit_SummaryProvider blink::LayoutUnit')
-    debugger.HandleCommand('type summary add -F lldb_webkit.WebCoreLayoutSize_SummaryProvider blink::LayoutSize')
-    debugger.HandleCommand('type summary add -F lldb_webkit.WebCoreLayoutPoint_SummaryProvider blink::LayoutPoint')
+    debugger.HandleCommand('type summary add --expand -F lldb_blink.WTFString_SummaryProvider WTF::String')
+    debugger.HandleCommand('type summary add --expand -F lldb_blink.WTFStringImpl_SummaryProvider WTF::StringImpl')
+    debugger.HandleCommand('type summary add --expand -F lldb_blink.WTFAtomicString_SummaryProvider WTF::AtomicString')
+    debugger.HandleCommand('type summary add --expand -F lldb_blink.WTFVector_SummaryProvider -x "WTF::Vector<.+>$"')
+    debugger.HandleCommand('type summary add --expand -F lldb_blink.WTFHashTable_SummaryProvider -x "WTF::HashTable<.+>$"')
+    debugger.HandleCommand('type synthetic add -x "WTF::Vector<.+>$" --python-class lldb_blink.WTFVectorProvider')
+    debugger.HandleCommand('type synthetic add -x "WTF::HashTable<.+>$" --python-class lldb_blink.WTFHashTableProvider')
+    debugger.HandleCommand('type summary add -F lldb_blink.BlinkLayoutUnit_SummaryProvider blink::LayoutUnit')
+    debugger.HandleCommand('type summary add -F lldb_blink.BlinkLayoutSize_SummaryProvider blink::LayoutSize')
+    debugger.HandleCommand('type summary add -F lldb_blink.BlinkLayoutPoint_SummaryProvider blink::LayoutPoint')
 
 
 def WTFString_SummaryProvider(valobj, dict):
@@ -69,26 +70,24 @@ def WTFHashTable_SummaryProvider(valobj, dict):
     return "{ tableSize = %d, keyCount = %d }" % (provider.tableSize(), provider.keyCount())
 
 
-def WebCoreLayoutUnit_SummaryProvider(valobj, dict):
-    provider = WebCoreLayoutUnitProvider(valobj, dict)
+def BlinkLayoutUnit_SummaryProvider(valobj, dict):
+    provider = BlinkLayoutUnitProvider(valobj, dict)
     return "{ %s }" % provider.to_string()
 
 
-def WebCoreLayoutSize_SummaryProvider(valobj, dict):
-    provider = WebCoreLayoutSizeProvider(valobj, dict)
+def BlinkLayoutSize_SummaryProvider(valobj, dict):
+    provider = BlinkLayoutSizeProvider(valobj, dict)
     return "{ width = %s, height = %s }" % (provider.get_width(), provider.get_height())
 
 
-def WebCoreLayoutPoint_SummaryProvider(valobj, dict):
-    provider = WebCoreLayoutPointProvider(valobj, dict)
+def BlinkLayoutPoint_SummaryProvider(valobj, dict):
+    provider = BlinkLayoutPointProvider(valobj, dict)
     return "{ x = %s, y = %s }" % (provider.get_x(), provider.get_y())
 
 # FIXME: Provide support for the following types:
 # def WTFCString_SummaryProvider(valobj, dict):
-# def WebCoreKURLGooglePrivate_SummaryProvider(valobj, dict):
-# def WebCoreQualifiedName_SummaryProvider(valobj, dict):
-# def JSCIdentifier_SummaryProvider(valobj, dict):
-# def JSCJSString_SummaryProvider(valobj, dict):
+# def BlinkKURL_SummaryProvider(valobj, dict):
+# def BlinkQualifiedName_SummaryProvider(valobj, dict):
 
 
 def guess_string_length(valobj, error):
@@ -176,7 +175,7 @@ class WTFStringProvider:
         return impl.to_string()
 
 
-class WebCoreLayoutUnitProvider:
+class BlinkLayoutUnitProvider:
     "Print a blink::LayoutUnit"
     def __init__(self, valobj, dict):
         self.valobj = valobj
@@ -185,28 +184,28 @@ class WebCoreLayoutUnitProvider:
         return "%.14gpx" % (self.valobj.GetChildMemberWithName('value_').GetValueAsSigned(0) / 64.0)
 
 
-class WebCoreLayoutSizeProvider:
+class BlinkLayoutSizeProvider:
     "Print a blink::LayoutSize"
     def __init__(self, valobj, dict):
         self.valobj = valobj
 
     def get_width(self):
-        return WebCoreLayoutUnitProvider(self.valobj.GetChildMemberWithName('width_'), dict).to_string()
+        return BlinkLayoutUnitProvider(self.valobj.GetChildMemberWithName('width_'), dict).to_string()
 
     def get_height(self):
-        return WebCoreLayoutUnitProvider(self.valobj.GetChildMemberWithName('height_'), dict).to_string()
+        return BlinkLayoutUnitProvider(self.valobj.GetChildMemberWithName('height_'), dict).to_string()
 
 
-class WebCoreLayoutPointProvider:
+class BlinkLayoutPointProvider:
     "Print a blink::LayoutPoint"
     def __init__(self, valobj, dict):
         self.valobj = valobj
 
     def get_x(self):
-        return WebCoreLayoutUnitProvider(self.valobj.GetChildMemberWithName('x_'), dict).to_string()
+        return BlinkLayoutUnitProvider(self.valobj.GetChildMemberWithName('x_'), dict).to_string()
 
     def get_y(self):
-        return WebCoreLayoutUnitProvider(self.valobj.GetChildMemberWithName('y_'), dict).to_string()
+        return BlinkLayoutUnitProvider(self.valobj.GetChildMemberWithName('y_'), dict).to_string()
 
 
 class WTFVectorProvider:
