@@ -104,16 +104,9 @@
   <message name="IDS_ERRORPAGES_HEADING_NETWORK_ACCESS_DENIED" desc="Heading of the error page when we're not being allowed to access the network.">
     Your Internet access is blocked
   </message>
-  <if expr="not is_android">
-    <message name="IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED" desc="Heading of the error page when the network connection failed.">
-      There is no Internet connection
-    </message>
-  </if>
-  <if expr="is_android">
-    <message name="IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED" desc="Mobile: Heading of the error page when the network connection failed.">
-      You are offline.
-    </message>
-  </if>
+  <message name="IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED" desc="Heading of the error page when the network connection failed.">
+    No internet
+  </message>
   <message name="IDS_ERRORPAGES_HEADING_CACHE_READ_FAILURE" desc="Heading in the error page when we encountered an error reading from the cache.  Generally this happens when the disk cache is corrupted from improper shutdown.">
     This site can’t be loaded from the cache
   </message>
