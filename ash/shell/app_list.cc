@@ -305,6 +305,11 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     NOTIMPLEMENTED();
   }
 
+  void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
+                                ui::MenuSourceType source_type) override {
+    NOTIMPLEMENTED();
+  }
+
   std::unique_ptr<app_list::AppListModel> model_;
   std::unique_ptr<app_list::SearchModel> search_model_;
 

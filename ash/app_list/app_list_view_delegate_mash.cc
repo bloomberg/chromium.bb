@@ -10,6 +10,7 @@
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/shell.h"
+#include "ash/shell_port.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -112,6 +113,12 @@ void AppListViewDelegateMash::AddObserver(
 void AppListViewDelegateMash::RemoveObserver(
     app_list::AppListViewDelegateObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void AppListViewDelegateMash::ShowWallpaperContextMenu(
+    const gfx::Point& onscreen_location,
+    ui::MenuSourceType source_type) {
+  ShellPort::Get()->ShowContextMenu(onscreen_location, source_type);
 }
 
 }  // namespace ash

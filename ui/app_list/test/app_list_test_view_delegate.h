@@ -65,6 +65,8 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   void AddObserver(app_list::AppListViewDelegateObserver* observer) override {}
   void RemoveObserver(
       app_list::AppListViewDelegateObserver* observer) override {}
+  void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
+                                ui::MenuSourceType source_type) override {}
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);

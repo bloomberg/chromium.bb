@@ -553,11 +553,22 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
     return;
   }
 
-  // No-op if the event was a right-click or two-finger tap.
   if ((event->IsGestureEvent() &&
-       event->AsGestureEvent()->type() == ui::ET_GESTURE_TWO_FINGER_TAP) ||
+       (event->AsGestureEvent()->type() == ui::ET_GESTURE_LONG_PRESS ||
+        event->AsGestureEvent()->type() == ui::ET_GESTURE_LONG_TAP ||
+        event->AsGestureEvent()->type() == ui::ET_GESTURE_TWO_FINGER_TAP)) ||
       (event->IsMouseEvent() &&
        event->AsMouseEvent()->IsOnlyRightMouseButton())) {
+    if (!IsHomeLauncherEnabledInTabletMode())
+      return;
+
+    // Home launcher is shown on top of wallpaper with trasparent background. So
+    // trigger the wallpaper context menu for the same events.
+    gfx::Point onscreen_location(event->location());
+    ConvertPointToScreen(this, &onscreen_location);
+    delegate_->ShowWallpaperContextMenu(
+        onscreen_location, event->IsGestureEvent() ? ui::MENU_SOURCE_TOUCH
+                                                   : ui::MENU_SOURCE_MOUSE);
     return;
   }
 
@@ -933,6 +944,9 @@ void AppListView::OnMouseEvent(ui::MouseEvent* event) {
 void AppListView::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP:
+    case ui::ET_GESTURE_LONG_PRESS:
+    case ui::ET_GESTURE_LONG_TAP:
+    case ui::ET_GESTURE_TWO_FINGER_TAP:
       SetIsInDrag(false);
       event->SetHandled();
       HandleClickOrTap(event);
