@@ -46,7 +46,7 @@
       if (!compontentView.loaded) {
         // try again when content is loaded.
         TestRunner.addSniffer(
-            compontentView, 'onTextEditorContentSet', previewViewHandled.bind(this, searches, callback, view));
+            compontentView, 'setContent', previewViewHandled.bind(this, searches, callback, view));
         return;
       }
     } else if (compontentView instanceof SourceFrame.XMLView) {
