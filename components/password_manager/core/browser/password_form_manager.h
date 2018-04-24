@@ -490,10 +490,6 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // field where matched username was found.
   std::unique_ptr<autofill::PasswordForm> username_correction_vote_;
 
-  // The origin url path of observed_form_ tokenized, for convenience when
-  // scoring.
-  const std::vector<std::string> form_path_segments_;
-
   // Stores updated credentials when the form was submitted but success is still
   // unknown. This variable contains credentials that are ready to be written
   // (saved or updated) to a password store. It is calculated based on
@@ -503,9 +499,6 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // Whether pending_credentials_ stores a new login or is an update
   // to an existing one.
   bool is_new_login_;
-
-  // Whether the form was autofilled with credentials.
-  bool has_autofilled_;
 
   // Whether this form has an auto generated password.
   bool has_generated_password_;
