@@ -271,7 +271,7 @@ TEST_F(WindowActivityWatcherTest, MoveTabToOtherWindow) {
       FakeBrowserWindow::CreateBrowserWithFakeWindowForParams(&params);
   created_browser->window()->Activate();
   created_browser->tab_strip_model()->InsertWebContentsAt(
-      0, dragged_tab.release(), TabStripModel::ADD_ACTIVE);
+      0, std::move(dragged_tab), TabStripModel::ADD_ACTIVE);
   UkmMetricMap created_browser_metrics({
       {TabManager_WindowMetrics::kWindowIdName,
        created_browser->session_id().id()},

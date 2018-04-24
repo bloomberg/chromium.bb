@@ -1841,21 +1841,23 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, AddedTab) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab);
 
-  content::WebContents* new_contents = content::WebContents::Create(
-      content::WebContents::CreateParams(tab->GetBrowserContext()));
+  std::unique_ptr<content::WebContents> new_contents =
+      base::WrapUnique(content::WebContents::Create(
+          content::WebContents::CreateParams(tab->GetBrowserContext())));
   content::NavigationController& controller = new_contents->GetController();
-  SecurityStateTabHelper::CreateForWebContents(new_contents);
-  CheckSecurityInfoForNonSecure(new_contents);
+  SecurityStateTabHelper::CreateForWebContents(new_contents.get());
+  CheckSecurityInfoForNonSecure(new_contents.get());
   controller.LoadURL(https_server_.GetURL("/title1.html"), content::Referrer(),
                      ui::PAGE_TRANSITION_TYPED, std::string());
-  EXPECT_TRUE(content::WaitForLoadStop(new_contents));
-  CheckSecurityInfoForSecure(new_contents, security_state::SECURE, false,
+  EXPECT_TRUE(content::WaitForLoadStop(new_contents.get()));
+  CheckSecurityInfoForSecure(new_contents.get(), security_state::SECURE, false,
                              security_state::CONTENT_STATUS_NONE, false,
                              false /* expect cert status error */);
 
-  browser()->tab_strip_model()->InsertWebContentsAt(0, new_contents,
+  content::WebContents* raw_new_contents = new_contents.get();
+  browser()->tab_strip_model()->InsertWebContentsAt(0, std::move(new_contents),
                                                     TabStripModel::ADD_NONE);
-  CheckSecurityInfoForSecure(new_contents, security_state::SECURE, false,
+  CheckSecurityInfoForSecure(raw_new_contents, security_state::SECURE, false,
                              security_state::CONTENT_STATUS_NONE, false,
                              false /* expect cert status error */);
 }

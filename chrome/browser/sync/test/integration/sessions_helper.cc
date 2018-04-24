@@ -153,7 +153,7 @@ void MoveTab(int from_index, int to_index, int tab_index) {
 
   TabStripModel* target_strip = test()->GetBrowser(to_index)->tab_strip_model();
   target_strip->InsertWebContentsAt(target_strip->count(),
-                                    detached_contents.release(),
+                                    std::move(detached_contents),
                                     TabStripModel::ADD_ACTIVE);
 }
 

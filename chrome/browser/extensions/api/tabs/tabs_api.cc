@@ -645,8 +645,8 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
           source_tab_strip->DetachWebContentsAt(tab_index);
       contents = detached_tab.get();
       TabStripModel* target_tab_strip = new_window->tab_strip_model();
-      target_tab_strip->InsertWebContentsAt(urls.size(), detached_tab.release(),
-                                            TabStripModel::ADD_NONE);
+      target_tab_strip->InsertWebContentsAt(
+          urls.size(), std::move(detached_tab), TabStripModel::ADD_NONE);
     }
   }
   // Create a new tab if the created window is still empty. Don't create a new
@@ -1580,7 +1580,7 @@ bool TabsMoveFunction::MoveTab(int tab_id,
         *new_index = target_tab_strip->count();
 
       content::WebContents* web_contents_raw = web_contents.get();
-      target_tab_strip->InsertWebContentsAt(*new_index, web_contents.release(),
+      target_tab_strip->InsertWebContentsAt(*new_index, std::move(web_contents),
                                             TabStripModel::ADD_NONE);
 
       if (has_callback()) {

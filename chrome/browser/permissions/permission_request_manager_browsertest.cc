@@ -488,8 +488,9 @@ IN_PROC_BROWSER_TEST_F(PermissionDialogTest, SwitchBrowserWindow) {
   // Attach the tab back to the original window. E.g. See steps in
   // [BrowserWindowController moveTabViews:..].
   TabStripModel* drag_strip = dragging_browser->tab_strip_model();
-  drag_strip->DetachWebContentsAt(0).release();
-  strip->InsertWebContentsAt(0, contentses.back().web_contents,
+  std::unique_ptr<content::WebContents> removed_contents =
+      drag_strip->DetachWebContentsAt(0);
+  strip->InsertWebContentsAt(0, std::move(removed_contents),
                              TabStripModel::ADD_ACTIVE);
 
   // Clear the request. There should be no crash.
