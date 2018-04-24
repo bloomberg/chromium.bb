@@ -17,7 +17,7 @@ std::string GetChannelName() {
 #if defined(DCHECK_IS_CONFIGURABLE)
   // Adorn the channel when DCHECKs are baked into the build, as there will be
   // a performance hit. See https://crbug.com/812058 for details.
-  channel += L" DCheck";
+  channel += L"-dcheck";
 #endif
   return base::UTF16ToASCII(channel);
 #else
