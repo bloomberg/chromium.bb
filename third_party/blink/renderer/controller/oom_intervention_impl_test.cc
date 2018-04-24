@@ -35,10 +35,10 @@ class MockOomInterventionHost : public mojom::blink::OomInterventionHost {
 
 class OomInterventionImplTest : public testing::Test {
  public:
-  size_t MockMemoryWorkloadCalculator() { return memory_workload_; }
+  uint64_t MockMemoryWorkloadCalculator() { return memory_workload_; }
 
  protected:
-  size_t memory_workload_ = 0;
+  uint64_t memory_workload_ = 0;
   FrameTestHelpers::WebViewHelper web_view_helper_;
 };
 
@@ -52,10 +52,15 @@ TEST_F(OomInterventionImplTest, DetectedAndDeclined) {
                          WTF::Unretained(this)));
   EXPECT_FALSE(page->Paused());
 
-  memory_workload_ = OomInterventionImpl::kMemoryWorkloadThreshold + 1;
+  // Assign an arbitrary threshold and report workload bigger than the
+  // threshold.
+  uint64_t threshold = 80;
+  intervention->memory_workload_threshold_ = threshold;
+  memory_workload_ = threshold + 1;
+
   mojom::blink::OomInterventionHostPtr host_ptr;
   MockOomInterventionHost mock_host(mojo::MakeRequest(&host_ptr));
-  intervention->StartDetection(std::move(host_ptr),
+  intervention->StartDetection(std::move(host_ptr), threshold,
                                true /*trigger_intervention*/);
   test::RunDelayedTasks(TimeDelta::FromSeconds(1));
   EXPECT_TRUE(page->Paused());

@@ -21,13 +21,14 @@ class CONTROLLER_EXPORT OomInterventionImpl
  public:
   static void Create(mojom::blink::OomInterventionRequest);
 
-  using MemoryWorkloadCaculator = base::RepeatingCallback<size_t()>;
+  using MemoryWorkloadCaculator = base::RepeatingCallback<uint64_t()>;
 
   explicit OomInterventionImpl(MemoryWorkloadCaculator);
   ~OomInterventionImpl() override;
 
   // mojom::blink::OomIntervention:
   void StartDetection(mojom::blink::OomInterventionHostPtr,
+                      uint64_t memory_workload_threshold,
                       bool trigger_intervention) override;
 
  private:
@@ -35,8 +36,7 @@ class CONTROLLER_EXPORT OomInterventionImpl
 
   void Check(TimerBase*);
 
-  // This constant is declared here for testing.
-  static const size_t kMemoryWorkloadThreshold;
+  uint64_t memory_workload_threshold_ = 0;
 
   MemoryWorkloadCaculator workload_calculator_;
   mojom::blink::OomInterventionHostPtr host_;

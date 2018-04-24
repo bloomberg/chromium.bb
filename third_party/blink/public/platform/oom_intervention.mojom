@@ -24,7 +24,11 @@ interface OomInterventionHost {
 // will be created when the browser gets a high memory pressure signal.
 // It monitors memory usage in renderer side to detect near-OOM situation.
 interface OomIntervention {
-  // Starts monitoring memory usage in renderer side.
+  // Starts monitoring memory usage in renderer side. When the renderer's
+  // memory usage exceeds |memory_workload_threshold| (in bytes) the renderer
+  // calls host->OnHighMemoryUsage(). The renderer also triggers OOM
+  // intervention when |trigger_intervention| is true.
   StartDetection(OomInterventionHost host,
+                 uint64 memory_workload_threshold,
                  bool trigger_intervention);
 };

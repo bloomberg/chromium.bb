@@ -16,7 +16,7 @@ namespace blink {
 namespace {
 
 // Roughly caclculates amount of memory which is used to execute pages.
-size_t BlinkMemoryWorkloadCaculator() {
+uint64_t BlinkMemoryWorkloadCaculator() {
   v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
   DCHECK(isolate);
   v8::HeapStatistics heap_statistics;
@@ -31,10 +31,6 @@ size_t BlinkMemoryWorkloadCaculator() {
 }
 
 }  // namespace
-
-// If memory workload is above this threshold, we assume that we are in a
-// near-OOM situation.
-const size_t OomInterventionImpl::kMemoryWorkloadThreshold = 80 * 1024 * 1024;
 
 // static
 void OomInterventionImpl::Create(mojom::blink::OomInterventionRequest request) {
@@ -57,8 +53,10 @@ OomInterventionImpl::~OomInterventionImpl() = default;
 
 void OomInterventionImpl::StartDetection(
     mojom::blink::OomInterventionHostPtr host,
+    uint64_t memory_workload_threshold,
     bool trigger_intervention) {
   host_ = std::move(host);
+  memory_workload_threshold_ = memory_workload_threshold;
   trigger_intervention_ = trigger_intervention;
 
   timer_.Start(TimeDelta(), TimeDelta::FromSeconds(1), FROM_HERE);
@@ -66,9 +64,10 @@ void OomInterventionImpl::StartDetection(
 
 void OomInterventionImpl::Check(TimerBase*) {
   DCHECK(host_);
+  DCHECK_GT(memory_workload_threshold_, 0UL);
 
-  size_t workload = workload_calculator_.Run();
-  if (workload > kMemoryWorkloadThreshold) {
+  uint64_t workload = workload_calculator_.Run();
+  if (workload > memory_workload_threshold_) {
     host_->OnHighMemoryUsage(trigger_intervention_);
 
     if (trigger_intervention_) {
