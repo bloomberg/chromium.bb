@@ -2427,7 +2427,6 @@ void RenderWidgetHostViewAura::OnSynchronizedDisplayPropertiesChanged() {
 
 viz::ScopedSurfaceIdAllocator RenderWidgetHostViewAura::ResizeDueToAutoResize(
     const gfx::Size& new_size,
-    uint64_t sequence_number,
     const viz::LocalSurfaceId& child_local_surface_id) {
   base::OnceCallback<void()> allocation_task = base::BindOnce(
       &RenderWidgetHostViewAura::WasResized, weak_ptr_factory_.GetWeakPtr(),

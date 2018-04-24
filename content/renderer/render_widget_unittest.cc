@@ -446,8 +446,6 @@ TEST_F(RenderWidgetUnittest, SurfaceSynchronizationAutoResizeThrottling) {
   ViewHostMsg_ResizeOrRepaint_ACK::Param params;
   ViewHostMsg_ResizeOrRepaint_ACK::Read(message, &params);
   EXPECT_EQ(auto_size, std::get<0>(params).view_size);
-  uint64_t auto_resize_sequence_number = std::get<0>(params).sequence_number;
-  EXPECT_GT(auto_resize_sequence_number, 0lu);
 
   // Issue another auto-resize but keep it in-flight.
   constexpr gfx::Size auto_size2(200, 200);
@@ -456,7 +454,6 @@ TEST_F(RenderWidgetUnittest, SurfaceSynchronizationAutoResizeThrottling) {
   // Send the LocalSurfaceId for the first Auto-Resize.
   content::ResizeParams resize_params;
   resize_params.auto_resize_enabled = true;
-  resize_params.auto_resize_sequence_number = auto_resize_sequence_number;
   resize_params.min_size_for_auto_resize = auto_size;
   resize_params.max_size_for_auto_resize = auto_size2;
   resize_params.local_surface_id = allocator.GenerateId();

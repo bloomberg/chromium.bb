@@ -230,10 +230,9 @@ class CONTENT_EXPORT FrameConnectorDelegate {
 #endif
 
   // Called by RenderWidgetHostViewChildFrame when the child frame has finished
-  // an auto-resize transaction. Provides the viz::LocalSurfaceId and sequence
-  // number to use for the transaction.
+  // an auto-resize transaction. Provides the viz::LocalSurfaceId to use for
+  // the transaction.
   virtual void ResizeDueToAutoResize(
-      uint64_t sequence_number,
       const viz::LocalSurfaceId& child_allocated_surface_id) {}
 
   bool has_size() const { return has_size_; }

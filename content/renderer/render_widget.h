@@ -418,10 +418,6 @@ class CONTENT_EXPORT RenderWidget
 
   bool auto_resize_mode() const { return auto_resize_mode_; }
 
-  uint64_t auto_resize_sequence_number() const {
-    return auto_resize_sequence_number_;
-  }
-
   const gfx::Size& min_size_for_auto_resize() const {
     return min_size_for_auto_resize_;
   }
@@ -738,9 +734,6 @@ class CONTENT_EXPORT RenderWidget
   // True if we need to send a ViewHsotMsg_ResizeOrRepaint_ACK message to notify
   // the browser about an already-completed auto-resize.
   bool need_resize_ack_for_auto_resize_;
-
-  // The sequence number used for the auto-resize request.
-  uint64_t auto_resize_sequence_number_ = 0;
 
   // The minimum size to use for auto-resize.
   gfx::Size min_size_for_auto_resize_;

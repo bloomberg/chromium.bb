@@ -1260,13 +1260,6 @@ void RenderWidget::Resize(const ResizeParams& params) {
         params.local_surface_id.value());
   }
 
-  if (params.auto_resize_enabled && auto_resize_mode_ &&
-      (!params.auto_resize_sequence_number ||
-       auto_resize_sequence_number_ != params.auto_resize_sequence_number)) {
-    DidResizeOrRepaintAck();
-    return;
-  }
-
   // The content_source_id that the browser sends us should never be larger than
   // |current_content_source_id_|.
   DCHECK_GE(1u << 30, current_content_source_id_ - params.content_source_id);
@@ -2279,7 +2272,6 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
     // |size_| from |compositor_viewport_pixel_size_|. Also note that the
     // calculation of |new_compositor_viewport_pixel_size| does not appear to
     // take into account device emulation.
-    ++auto_resize_sequence_number_;
     gfx::Size new_compositor_viewport_pixel_size =
         gfx::ScaleToCeiledSize(size_, GetWebScreenInfo().device_scale_factor);
     viz::LocalSurfaceId local_surface_id;
@@ -2614,7 +2606,6 @@ void RenderWidget::DidResizeOrRepaintAck() {
   ViewHostMsg_ResizeOrRepaint_ACK_Params params;
   params.view_size = size_;
   params.flags = next_paint_flags_;
-  params.sequence_number = auto_resize_sequence_number_;
   if (child_local_surface_id_allocator_.GetCurrentLocalSurfaceId().is_valid()) {
     params.child_allocated_local_surface_id =
         child_local_surface_id_allocator_.GetCurrentLocalSurfaceId();

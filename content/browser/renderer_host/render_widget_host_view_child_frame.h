@@ -189,7 +189,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void DisableAutoResize(const gfx::Size& new_size) override;
   viz::ScopedSurfaceIdAllocator ResizeDueToAutoResize(
       const gfx::Size& new_size,
-      uint64_t sequence_number,
       const viz::LocalSurfaceId& local_surface_id) override;
 
   // viz::mojom::CompositorFrameSinkClient implementation.
@@ -298,8 +297,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // using CSS.
   bool CanBecomeVisible();
 
-  void OnResizeDueToAutoResizeComplete(uint64_t sequence_number,
-                                       viz::LocalSurfaceId local_surface_id);
+  void OnResizeDueToAutoResizeComplete(viz::LocalSurfaceId local_surface_id);
 
   std::vector<base::OnceClosure> frame_swapped_callbacks_;
 

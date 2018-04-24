@@ -83,7 +83,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   virtual void ResizeDueToAutoResize(
       RenderWidgetHostImpl* render_widget_host,
       const gfx::Size& new_size,
-      uint64_t sequence_number,
       const viz::LocalSurfaceId& local_surface_id) {}
 
   // Callback to give the browser a chance to handle the specified keyboard

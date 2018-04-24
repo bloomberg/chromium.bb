@@ -153,7 +153,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   gfx::Rect GetBoundsInRootWindow() override;
   viz::ScopedSurfaceIdAllocator ResizeDueToAutoResize(
       const gfx::Size& new_size,
-      uint64_t sequence_number,
       const viz::LocalSurfaceId& child_local_surface_id) override;
   void DidNavigate() override;
 
@@ -438,7 +437,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   void OnResizeDueToAutoResizeComplete(
       const gfx::Size& new_size,
-      uint64_t sequence_number,
       const viz::LocalSurfaceId& child_allocated_local_surface_id);
 
   void OnGotStringForDictionaryOverlay(

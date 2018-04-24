@@ -161,7 +161,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       std::unique_ptr<MusEmbeddedFrame> mus_embedded_frame);
 #endif
 
-  void WasResized(const viz::LocalSurfaceId& child_allocated_surface_id);
+  void WasResized();
 
   const gfx::Rect& screen_space_rect() const {
     return pending_resize_params_.screen_space_rect;
@@ -173,10 +173,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   const ScreenInfo& screen_info() const {
     return pending_resize_params_.screen_info;
-  }
-
-  uint64_t auto_size_sequence_number() const {
-    return pending_resize_params_.auto_resize_sequence_number;
   }
 
   const viz::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
@@ -254,8 +250,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnSetHasReceivedUserGesture();
   void OnScrollRectToVisible(const gfx::Rect& rect_to_scroll,
                              const blink::WebScrollIntoViewParams& params);
-  void OnResizeDueToAutoResize(uint64_t sequence_number,
-                               viz::LocalSurfaceId child_allocated_surface_id);
+  void OnResizeDueToAutoResize(
+      const viz::LocalSurfaceId& child_allocated_surface_id);
   void OnEnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
   void OnDisableAutoResize();
   void OnSetHasReceivedUserGestureBeforeNavigation(bool value);

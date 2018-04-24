@@ -762,7 +762,6 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
   resize_params->auto_resize_enabled = auto_resize_enabled_;
   resize_params->min_size_for_auto_resize = min_size_for_auto_resize_;
   resize_params->max_size_for_auto_resize = max_size_for_auto_resize_;
-  resize_params->auto_resize_sequence_number = 0;
 
   if (view_) {
     resize_params->new_size = view_->GetRequestedRendererSize();
@@ -806,9 +805,7 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
        (old_resize_params_->min_size_for_auto_resize !=
             resize_params->min_size_for_auto_resize ||
         old_resize_params_->max_size_for_auto_resize !=
-            resize_params->max_size_for_auto_resize ||
-        old_resize_params_->auto_resize_sequence_number !=
-            resize_params->auto_resize_sequence_number)) ||
+            resize_params->max_size_for_auto_resize)) ||
       (!old_resize_params_->auto_resize_enabled &&
        (old_resize_params_->new_size != resize_params->new_size ||
         (old_resize_params_->compositor_viewport_pixel_size.IsEmpty() &&
@@ -2177,7 +2174,6 @@ void RenderWidgetHostImpl::OnResizeOrRepaintACK(
 
   DidCompleteResizeOrRepaint(params, paint_start);
 
-  last_auto_resize_request_number_ = params.sequence_number;
   last_auto_resize_surface_id_ = params.child_allocated_local_surface_id;
 
   if (auto_resize_enabled_) {
@@ -2638,12 +2634,11 @@ void RenderWidgetHostImpl::DelayedAutoResized() {
 
   if (view_) {
     viz::ScopedSurfaceIdAllocator scoped_allocator =
-        view_->ResizeDueToAutoResize(new_size, last_auto_resize_request_number_,
+        view_->ResizeDueToAutoResize(new_size,
                                      last_auto_resize_surface_id_.value());
 
     if (delegate_) {
       delegate_->ResizeDueToAutoResize(this, new_size,
-                                       last_auto_resize_request_number_,
                                        last_auto_resize_surface_id_.value());
     }
   }

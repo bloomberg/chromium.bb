@@ -250,30 +250,7 @@ void BrowserPlugin::CreateMusWindowAndEmbed(
 }
 #endif
 
-void BrowserPlugin::WasResized(
-    const viz::LocalSurfaceId& child_allocated_surface_id) {
-  // TODO(ericrk): Once we short-circuit responses to child allocated surface
-  // IDs, we can remove |surface_id_changed| here and simply update.
-  // https://crbug.com/811944
-  bool surface_id_changed = false;
-  if (child_allocated_surface_id.is_valid()) {
-    viz::LocalSurfaceId previous_id = GetLocalSurfaceId();
-    parent_local_surface_id_allocator_.UpdateFromChild(
-        child_allocated_surface_id);
-    surface_id_changed = previous_id != GetLocalSurfaceId();
-  }
-
-  // We no longer use auto resize sequence numbers to trigger ID generation,
-  // instead getting auto resize IDs from the child. If our auto-resize
-  // sequence number changed our surface ID must change as well.
-  // TODO(ericrk): Once we short-circuit, we can remove references to sequence
-  // numbers and clean this up. https://crbug.com/811944.
-  if (sent_resize_params_ &&
-      sent_resize_params_->auto_resize_sequence_number !=
-          pending_resize_params_.auto_resize_sequence_number) {
-    DCHECK(surface_id_changed);
-  }
-
+void BrowserPlugin::WasResized() {
   bool size_changed = !sent_resize_params_ ||
                       sent_resize_params_->auto_resize_enabled !=
                           pending_resize_params_.auto_resize_enabled ||
@@ -316,8 +293,7 @@ void BrowserPlugin::WasResized(
   bool position_changed = !sent_resize_params_ ||
                           sent_resize_params_->screen_space_rect.origin() !=
                               pending_resize_params_.screen_space_rect.origin();
-  bool resize_params_changed =
-      synchronized_params_changed || position_changed || surface_id_changed;
+  bool resize_params_changed = synchronized_params_changed || position_changed;
 
   if (resize_params_changed && attached()) {
     // Let the browser know about the updated view rect.
@@ -357,7 +333,7 @@ void BrowserPlugin::OnAttachACK(
   attached_ = true;
   if (child_local_surface_id)
     parent_local_surface_id_allocator_.Reset(*child_local_surface_id);
-  WasResized(viz::LocalSurfaceId());
+  WasResized();
 }
 
 void BrowserPlugin::OnGuestGone(int browser_plugin_instance_id) {
@@ -371,15 +347,22 @@ void BrowserPlugin::OnGuestReady(int browser_plugin_instance_id,
   guest_crashed_ = false;
   frame_sink_id_ = frame_sink_id;
   sent_resize_params_ = base::nullopt;
-  WasResized(viz::LocalSurfaceId());
+  WasResized();
 }
 
 void BrowserPlugin::OnResizeDueToAutoResize(
     int browser_plugin_instance_id,
-    uint64_t sequence_number,
-    viz::LocalSurfaceId child_allocated_local_surface_id) {
-  pending_resize_params_.auto_resize_sequence_number = sequence_number;
-  WasResized(child_allocated_local_surface_id);
+    const viz::LocalSurfaceId& child_allocated_local_surface_id) {
+  // In the auto-resize case, the child has allocated the provided
+  // LocalSurfaceId and is already aware of the update. Because of this, the
+  // parent (this class) only needs to update its internal ID, and doesn't need
+  // to send the update back to the child. Note that the surface ID cached on
+  // BrowserPluginGuest will not receive this update. However, the
+  // BrowserPluginGuest cached ID is only ever used to send updates to the
+  // child (which is already aware of this change), so this doesn't cause
+  // issues.
+  parent_local_surface_id_allocator_.UpdateFromChild(
+      child_allocated_local_surface_id);
 }
 
 void BrowserPlugin::OnEnableAutoResize(int browser_plugin_instance_id,
@@ -388,12 +371,12 @@ void BrowserPlugin::OnEnableAutoResize(int browser_plugin_instance_id,
   pending_resize_params_.auto_resize_enabled = true;
   pending_resize_params_.min_size_for_auto_resize = min_size;
   pending_resize_params_.max_size_for_auto_resize = max_size;
-  WasResized(viz::LocalSurfaceId());
+  WasResized();
 }
 
 void BrowserPlugin::OnDisableAutoResize(int browser_plugin_instance_id) {
   pending_resize_params_.auto_resize_enabled = false;
-  WasResized(viz::LocalSurfaceId());
+  WasResized();
 }
 
 void BrowserPlugin::OnSetCursor(int browser_plugin_instance_id,
@@ -485,13 +468,13 @@ void BrowserPlugin::ScreenInfoChanged(const ScreenInfo& screen_info) {
                                         screen_info.device_scale_factor);
     return;
   }
-  WasResized(viz::LocalSurfaceId());
+  WasResized();
 }
 
 void BrowserPlugin::UpdateCaptureSequenceNumber(
     uint32_t capture_sequence_number) {
   pending_resize_params_.capture_sequence_number = capture_sequence_number;
-  WasResized(viz::LocalSurfaceId());
+  WasResized();
 }
 
 bool BrowserPlugin::ShouldGuestBeFocused() const {
@@ -623,7 +606,7 @@ void BrowserPlugin::UpdateGeometry(const WebRect& plugin_rect_in_viewport,
                                         screen_info().device_scale_factor);
     return;
   }
-  WasResized(viz::LocalSurfaceId());
+  WasResized();
 }
 
 void BrowserPlugin::UpdateFocus(bool focused, blink::WebFocusType focus_type) {

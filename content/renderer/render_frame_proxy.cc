@@ -258,7 +258,7 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
 void RenderFrameProxy::ResendResizeParams() {
   // Reset |sent_resize_params_| in order to allocate a new viz::LocalSurfaceId.
   sent_resize_params_ = base::nullopt;
-  WasResized(viz::LocalSurfaceId());
+  WasResized();
 }
 
 void RenderFrameProxy::WillBeginCompositorFrame() {
@@ -280,13 +280,13 @@ void RenderFrameProxy::OnScreenInfoChanged(const ScreenInfo& screen_info) {
                                         screen_info.device_scale_factor);
     return;
   }
-  WasResized(viz::LocalSurfaceId());
+  WasResized();
 }
 
 void RenderFrameProxy::UpdateCaptureSequenceNumber(
     uint32_t capture_sequence_number) {
   pending_resize_params_.capture_sequence_number = capture_sequence_number;
-  WasResized(viz::LocalSurfaceId());
+  WasResized();
 }
 
 void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
@@ -571,10 +571,17 @@ void RenderFrameProxy::OnScrollRectToVisible(
 }
 
 void RenderFrameProxy::OnResizeDueToAutoResize(
-    uint64_t sequence_number,
-    viz::LocalSurfaceId child_allocated_surface_id) {
-  pending_resize_params_.auto_resize_sequence_number = sequence_number;
-  WasResized(child_allocated_surface_id);
+    const viz::LocalSurfaceId& child_allocated_surface_id) {
+  // In the auto-resize case, the child has allocated the provided
+  // LocalSurfaceId and is already aware of the update. Because of this, the
+  // parent (this class) only needs to update its internal ID, and doesn't need
+  // to send the update back to the child. Note that the surface ID cached on
+  // CrossProcessFrameConnector will not receive this update. However, the
+  // CrossProcessFrameConnector cached ID is only ever used to send updates to
+  // the child (which is already aware of this change), so this doesn't cause
+  // issues.
+  parent_local_surface_id_allocator_.UpdateFromChild(
+      child_allocated_surface_id);
 }
 
 void RenderFrameProxy::OnEnableAutoResize(const gfx::Size& min_size,
@@ -582,12 +589,12 @@ void RenderFrameProxy::OnEnableAutoResize(const gfx::Size& min_size,
   pending_resize_params_.auto_resize_enabled = true;
   pending_resize_params_.min_size_for_auto_resize = min_size;
   pending_resize_params_.max_size_for_auto_resize = max_size;
-  WasResized(viz::LocalSurfaceId());
+  WasResized();
 }
 
 void RenderFrameProxy::OnDisableAutoResize() {
   pending_resize_params_.auto_resize_enabled = false;
-  WasResized(viz::LocalSurfaceId());
+  WasResized();
 }
 
 #if defined(USE_AURA)
@@ -597,8 +604,7 @@ void RenderFrameProxy::SetMusEmbeddedFrame(
 }
 #endif
 
-void RenderFrameProxy::WasResized(
-    const viz::LocalSurfaceId& child_allocated_surface_id) {
+void RenderFrameProxy::WasResized() {
   if (!frame_sink_id_.is_valid() || crashed_)
     return;
 
@@ -609,28 +615,6 @@ void RenderFrameProxy::WasResized(
   bool capture_sequence_number_changed =
       sent_resize_params_ && sent_resize_params_->capture_sequence_number !=
                                  pending_resize_params_.capture_sequence_number;
-
-  // TODO(ericrk): Once we short-circuit responses to child allocated surface
-  // IDs, we can remove |surface_id_changed| here and simply update.
-  // https://crbug.com/811944
-  bool surface_id_changed = false;
-  if (child_allocated_surface_id.is_valid()) {
-    viz::LocalSurfaceId previous_id = local_surface_id_;
-    local_surface_id_ = parent_local_surface_id_allocator_.UpdateFromChild(
-        child_allocated_surface_id);
-    surface_id_changed = previous_id != local_surface_id_;
-  }
-
-  // We no longer use auto resize sequence numbers to trigger ID generation,
-  // instead getting auto resize IDs from the child. If our auto-resize
-  // sequence number changed our surface ID must change as well.
-  // TODO(ericrk): Once we short-circuit, we can remove references to sequence
-  // numbers and clean this up. https://crbug.com/811944.
-  if (sent_resize_params_ &&
-      sent_resize_params_->auto_resize_sequence_number !=
-          pending_resize_params_.auto_resize_sequence_number) {
-    DCHECK(surface_id_changed);
-  }
 
   bool synchronized_params_changed =
       !sent_resize_params_ ||
@@ -665,8 +649,7 @@ void RenderFrameProxy::WasResized(
   bool rect_changed =
       !sent_resize_params_ || sent_resize_params_->screen_space_rect !=
                                   pending_resize_params_.screen_space_rect;
-  bool resize_params_changed =
-      synchronized_params_changed || rect_changed || surface_id_changed;
+  bool resize_params_changed = synchronized_params_changed || rect_changed;
 
 #if defined(USE_AURA)
   if (rect_changed && mus_embedded_frame_) {
@@ -805,7 +788,7 @@ void RenderFrameProxy::FrameRectsChanged(
                                         screen_info().device_scale_factor);
     return;
   }
-  WasResized(viz::LocalSurfaceId());
+  WasResized();
 }
 
 void RenderFrameProxy::UpdateRemoteViewportIntersection(

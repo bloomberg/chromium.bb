@@ -112,7 +112,6 @@ class CONTENT_EXPORT CrossProcessFrameConnector
       ui::mojom::WindowTreeClientPtr window_tree_client) override;
 #endif
   void ResizeDueToAutoResize(
-      uint64_t sequence_number,
       const viz::LocalSurfaceId& child_allocated_surface_id) override;
 
   // Set the visibility of immediate child views, i.e. views whose parent view

@@ -240,7 +240,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::FrameResizeParams)
   IPC_STRUCT_TRAITS_MEMBER(auto_resize_enabled)
   IPC_STRUCT_TRAITS_MEMBER(min_size_for_auto_resize)
   IPC_STRUCT_TRAITS_MEMBER(max_size_for_auto_resize)
-  IPC_STRUCT_TRAITS_MEMBER(auto_resize_sequence_number)
   IPC_STRUCT_TRAITS_MEMBER(screen_space_rect)
   IPC_STRUCT_TRAITS_MEMBER(local_frame_size)
   IPC_STRUCT_TRAITS_MEMBER(capture_sequence_number)
@@ -995,8 +994,7 @@ IPC_MESSAGE_ROUTED0(FrameMsg_ClearFocusedElement)
 
 // Informs the parent renderer that the child has completed an autoresize
 // transaction and should update with the provided viz::LocalSurfaceId.
-IPC_MESSAGE_ROUTED2(FrameMsg_ResizeDueToAutoResize,
-                    uint64_t /* sequence_number */,
+IPC_MESSAGE_ROUTED1(FrameMsg_ResizeDueToAutoResize,
                     viz::LocalSurfaceId /* child_allocated_surface_id */)
 
 // Requests a viz::LocalSurfaceId to enable auto-resize mode from the parent

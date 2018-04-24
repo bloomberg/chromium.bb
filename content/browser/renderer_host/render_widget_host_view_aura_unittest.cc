@@ -2774,7 +2774,6 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
   sink_->ClearMessages();
   ViewHostMsg_ResizeOrRepaint_ACK_Params params;
   params.view_size = gfx::Size(75, 75);
-  params.sequence_number = 1;
   params.child_allocated_local_surface_id =
       viz::LocalSurfaceId(local_surface_id1.parent_sequence_number(),
                           local_surface_id1.child_sequence_number() + 1,
@@ -2841,7 +2840,6 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
   sink_->ClearMessages();
   ViewHostMsg_ResizeOrRepaint_ACK_Params params;
   params.view_size = gfx::Size(75, 75);
-  params.sequence_number = 1;
   params.child_allocated_local_surface_id =
       viz::LocalSurfaceId(local_surface_id1.parent_sequence_number(),
                           local_surface_id1.child_sequence_number() + 1,
@@ -2908,7 +2906,6 @@ TEST_F(RenderWidgetHostViewAuraTest, ChildAllocationAcceptedInParent) {
   widget_host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
   ViewHostMsg_ResizeOrRepaint_ACK_Params params;
   params.view_size = gfx::Size(75, 75);
-  params.sequence_number = 1;
   viz::ChildLocalSurfaceIdAllocator child_allocator;
   child_allocator.UpdateFromParent(local_surface_id1);
   viz::LocalSurfaceId local_surface_id2 = child_allocator.GenerateId();
@@ -2941,7 +2938,6 @@ TEST_F(RenderWidgetHostViewAuraTest, ConflictingAllocationsResolve) {
   widget_host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
   ViewHostMsg_ResizeOrRepaint_ACK_Params params;
   params.view_size = gfx::Size(75, 75);
-  params.sequence_number = 1;
   viz::ChildLocalSurfaceIdAllocator child_allocator;
   child_allocator.UpdateFromParent(local_surface_id1);
   viz::LocalSurfaceId local_surface_id2 = child_allocator.GenerateId();
