@@ -160,8 +160,6 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
 
   std::unique_ptr<content::PermissionManager> permission_manager_;
 
-  std::string id_;
-
   HeadlessNetworkConditions network_conditions_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserContextImpl);
