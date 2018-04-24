@@ -166,30 +166,49 @@ cr.define('settings_sections_tests', function() {
           print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       delete capabilities.printer.color;
 
-      // Each of these settings should not show the capability.
-      [null, {option: [{type: 'STANDARD_COLOR', is_default: true}]}, {
-        option: [
-          {type: 'STANDARD_COLOR', is_default: true}, {type: 'CUSTOM_COLOR'}
-        ]
-      },
-       {
-         option: [
-           {type: 'STANDARD_MONOCHROME', is_default: true},
-           {type: 'CUSTOM_MONOCHROME'}
-         ]
-       },
-       {option: [{type: 'STANDARD_MONOCHROME', is_default: true}]},
-       {option: [
-         {type: 'CUSTOM_MONOCHROME', is_default: true, vendor_id: '42'}
-       ]},
-       {option: [{type: 'CUSTOM_COLOR', is_default: true, vendor_id: '42'}]},
-      ].forEach(colorCap => {
+      // Each of these settings should not show the capability. The value should
+      // be the default for settings with multiple options and the only
+      // available option otherwise.
+      [
+        {
+          colorCap: null,
+          expectedValue: false,
+        },
+        {
+          colorCap: {option: [{type: 'STANDARD_COLOR', is_default: true}]},
+          expectedValue: true,
+        },
+        {
+          colorCap: { option: [{type: 'STANDARD_COLOR', is_default: true},
+                               {type: 'CUSTOM_COLOR'}]},
+          expectedValue: true,
+        },
+        {
+          colorCap: { option: [{type: 'STANDARD_MONOCHROME', is_default: true},
+                               {type: 'CUSTOM_MONOCHROME'}]},
+          expectedValue: false,
+        },
+        {
+          colorCap: {option: [{type: 'STANDARD_MONOCHROME'}]},
+          expectedValue: false,
+        },
+        {
+          colorCap: {option: [{type: 'CUSTOM_MONOCHROME', vendor_id: '42'}]},
+          expectedValue: false,
+        },
+        {
+          colorCap: {option: [{type: 'CUSTOM_COLOR', vendor_id: '42'}]},
+          expectedValue: true,
+        }
+      ].forEach(capabilityAndValue => {
         capabilities =
             print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-        capabilities.printer.color = colorCap;
+        capabilities.printer.color = capabilityAndValue.colorCap;
         // Layout section should now be hidden.
         page.set('destination_.capabilities', capabilities);
         assertTrue(colorElement.hidden);
+        assertEquals(capabilityAndValue.expectedValue,
+                     page.getSettingValue('color'));
       });
 
       // Each of these settings should show the capability with the default
@@ -227,7 +246,7 @@ cr.define('settings_sections_tests', function() {
         assertEquals(capabilityAndValue.expectedValue ? 'color' : 'bw',
                      colorElement.$$('select').value);
         assertEquals(capabilityAndValue.expectedValue,
-                     page.settings.color.value);
+                     page.getSettingValue('color'));
       });
     });
 

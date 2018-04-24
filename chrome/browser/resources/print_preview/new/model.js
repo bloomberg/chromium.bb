@@ -443,6 +443,7 @@ Polymer({
       const defaultOption = caps.media_size.option.find(o => !!o.is_default);
       this.set('settings.mediaSize.value', defaultOption);
     }
+
     if (this.settings.dpi.available) {
       const defaultOption = caps.dpi.option.find(o => !!o.is_default);
       this.set('settings.dpi.value', defaultOption);
@@ -450,12 +451,24 @@ Polymer({
         caps && caps.dpi && caps.dpi.option && caps.dpi.option.length > 0) {
       this.set('settings.dpi.unavailableValue', caps.dpi.option[0]);
     }
+
     if (this.settings.color.available) {
       const defaultOption = this.destination.defaultColorOption;
+      if (defaultOption) {
+        this.set(
+            'settings.color.value',
+            !['STANDARD_MONOCHROME', 'CUSTOM_MONOCHROME'].includes(
+                defaultOption.type));
+      }
+    } else if (
+        caps && caps.color && caps.color.option &&
+        caps.color.option.length > 0) {
       this.set(
-          'settings.color.value',
+          'settings.color.unavailableValue',
           !['STANDARD_MONOCHROME', 'CUSTOM_MONOCHROME'].includes(
-              defaultOption.type));
+              caps.color.option[0].type));
+    } else {  // if no color capability is reported, assume black and white.
+      this.set('settings.color.unavailableValue', false);
     }
 
     if (this.settings.vendorItems.available) {
