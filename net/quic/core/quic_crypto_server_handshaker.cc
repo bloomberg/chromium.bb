@@ -348,7 +348,13 @@ bool QuicCryptoServerHandshaker::ShouldSendExpectCTHeader() const {
 
 QuicLongHeaderType QuicCryptoServerHandshaker::GetLongHeaderType(
     QuicStreamOffset /*offset*/) const {
-  return last_sent_handshake_message_tag() == kSREJ ? RETRY : HANDSHAKE;
+  if (last_sent_handshake_message_tag() == kSREJ) {
+    return RETRY;
+  }
+  if (last_sent_handshake_message_tag() == kSHLO) {
+    return ZERO_RTT_PROTECTED;
+  }
+  return HANDSHAKE;
 }
 
 bool QuicCryptoServerHandshaker::GetBase64SHA256ClientChannelID(

@@ -36,7 +36,9 @@ QuicByteCount QuicCryptoStream::CryptoMessageFramingOverhead(
   return QuicPacketCreator::StreamFramePacketOverhead(
       version, PACKET_8BYTE_CONNECTION_ID,
       /*include_version=*/true,
-      /*include_diversification_nonce=*/true, PACKET_1BYTE_PACKET_NUMBER,
+      /*include_diversification_nonce=*/true,
+      version == QUIC_VERSION_99 ? PACKET_4BYTE_PACKET_NUMBER
+                                 : PACKET_1BYTE_PACKET_NUMBER,
       /*offset=*/0);
 }
 

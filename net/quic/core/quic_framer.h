@@ -307,6 +307,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // header.versions.
   bool AppendPacketHeader(const QuicPacketHeader& header,
                           QuicDataWriter* writer);
+  bool AppendIetfPacketHeader(const QuicPacketHeader& header,
+                              QuicDataWriter* writer);
   bool AppendTypeByte(const QuicFrame& frame,
                       bool last_frame_in_packet,
                       QuicDataWriter* writer);
@@ -415,8 +417,16 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                          char* decrypted_buffer,
                          size_t buffer_length);
 
+  bool ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
+                             const QuicPacketHeader& header,
+                             const QuicEncryptedPacket& packet,
+                             char* decrypted_buffer,
+                             size_t buffer_length);
+
   bool ProcessPublicResetPacket(QuicDataReader* reader,
                                 const QuicPacketHeader& header);
+
+  bool IsIetfStatelessResetPacket(const QuicPacketHeader& header) const;
 
   bool ProcessVersionNegotiationPacket(QuicDataReader* reader,
                                        const QuicPacketHeader& header);
@@ -427,6 +437,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // the current QuicDataReader.  Returns true on success, false on failure.
   bool ProcessUnauthenticatedHeader(QuicDataReader* encrypted_reader,
                                     QuicPacketHeader* header);
+
+  bool ProcessIetfPacketHeader(QuicDataReader* reader,
+                               QuicPacketHeader* header);
 
   // First processes possibly truncated packet number. Calculates the full
   // packet number from the truncated one and the last seen packet number, and
@@ -618,6 +631,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                                        QuicIetfStreamIdBlockedFrame* frame);
 
   bool RaiseError(QuicErrorCode error);
+
+  // Returns true if |header| indicates a version negotiation packet.
+  bool IsVersionNegotiation(const QuicPacketHeader& header) const;
 
   void set_error(QuicErrorCode error) { error_ = error; }
 

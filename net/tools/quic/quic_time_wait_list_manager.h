@@ -124,7 +124,12 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // Creates a public reset packet and sends it or queues it to be sent later.
   virtual void SendPublicReset(const QuicSocketAddress& server_address,
                                const QuicSocketAddress& client_address,
-                               QuicConnectionId connection_id);
+                               QuicConnectionId connection_id,
+                               bool ietf_quic);
+
+  // Returns a stateless reset token which will be included in the public reset
+  // packet.
+  virtual uint128 GetStatelessResetToken(QuicConnectionId connection_id) const;
 
  private:
   friend class test::QuicDispatcherPeer;
@@ -158,6 +163,9 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // afterward.  Returns true if the oldest connection was expired.  Returns
   // false if the map is empty or the oldest connection has not expired.
   bool MaybeExpireOldestConnection(QuicTime expiration_time);
+
+  std::unique_ptr<QuicEncryptedPacket> BuildIetfStatelessResetPacket(
+      QuicConnectionId connection_id);
 
   // A map from a recently closed connection_id to the number of packets
   // received after the termination of the connection bound to the

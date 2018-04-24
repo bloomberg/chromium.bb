@@ -519,7 +519,14 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
     if (!BothSidesSupportStatelessRejects()) {
       EXPECT_EQ(0u, client_stats.packets_dropped);
     }
-    EXPECT_EQ(client_stats.packets_received, client_stats.packets_processed);
+    if (!ClientSupportsIetfQuicNotSupportedByServer()) {
+      // In this case, if client sends 0-RTT POST with v99, receives IETF
+      // version negotiation packet and speaks a GQUIC version. Server processes
+      // this connection in time wait list and keeps sending IETF version
+      // negotiation packet for incoming packets. But these version negotiation
+      // packets cannot be processed by the client speaking GQUIC.
+      EXPECT_EQ(client_stats.packets_received, client_stats.packets_processed);
+    }
 
     const int num_expected_stateless_rejects =
         (BothSidesSupportStatelessRejects() &&
@@ -548,6 +555,14 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
   bool BothSidesSupportStatelessRejects() {
     return (GetParam().server_uses_stateless_rejects_if_peer_supported &&
             GetParam().client_supports_stateless_rejects);
+  }
+
+  // Client supports IETF QUIC, while it is not supported by server.
+  bool ClientSupportsIetfQuicNotSupportedByServer() {
+    return GetParam().client_supported_versions[0].transport_version ==
+               QUIC_VERSION_99 &&
+           FilterSupportedVersions(GetParam().server_supported_versions)[0]
+                   .transport_version != QUIC_VERSION_99;
   }
 
   void ExpectFlowControlsSynced(QuicFlowController* client,
@@ -2073,14 +2088,17 @@ TEST_P(EndToEndTestWithTls,
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
 
   // Send the version negotiation packet.
+  QuicConnection* client_connection =
+      client_->client()->client_session()->connection();
   QuicConnectionId incorrect_connection_id =
-      client_->client()->client_session()->connection()->connection_id() + 1;
+      client_connection->connection_id() + 1;
   std::unique_ptr<QuicEncryptedPacket> packet(
-      QuicFramer::BuildVersionNegotiationPacket(incorrect_connection_id, false,
-                                                server_supported_versions_));
+      QuicFramer::BuildVersionNegotiationPacket(
+          incorrect_connection_id,
+          client_connection->transport_version() == QUIC_VERSION_99,
+          server_supported_versions_));
   testing::NiceMock<MockQuicConnectionDebugVisitor> visitor;
-  client_->client()->client_session()->connection()->set_debug_visitor(
-      &visitor);
+  client_connection->set_debug_visitor(&visitor);
   EXPECT_CALL(visitor, OnIncorrectConnectionId(incorrect_connection_id))
       .Times(1);
   // We must pause the server's thread in order to call WritePacket without
@@ -2095,7 +2113,7 @@ TEST_P(EndToEndTestWithTls,
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
-  client_->client()->client_session()->connection()->set_debug_visitor(nullptr);
+  client_connection->set_debug_visitor(nullptr);
 }
 
 // A bad header shouldn't tear down the connection, because the receiver can't

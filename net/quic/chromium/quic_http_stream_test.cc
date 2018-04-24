@@ -1113,6 +1113,8 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicErrorIfHandshakeNotConfirmed) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   AddWrite(InnerConstructRequestHeadersPacket(
       1, GetNthClientInitiatedStreamId(0), kIncludeVersion, kFin,
       DEFAULT_PRIORITY, &spdy_request_headers_frame_length,

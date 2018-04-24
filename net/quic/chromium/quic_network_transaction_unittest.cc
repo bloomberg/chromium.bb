@@ -2140,6 +2140,8 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::string request_data;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRequestHeadersPacketAndSaveData(
                          1, GetNthClientInitiatedStreamId(0), true, true,
@@ -2148,6 +2150,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
 
   std::string settings_data;
   QuicStreamOffset settings_offset = header_stream_offset;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacketAndSaveData(
                          2, &header_stream_offset, &settings_data));
@@ -2245,6 +2248,8 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::string request_data;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRequestHeadersPacketAndSaveData(
                          1, GetNthClientInitiatedStreamId(0), true, true,
@@ -2253,6 +2258,7 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
 
   std::string settings_data;
   QuicStreamOffset settings_offset = header_stream_offset;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacketAndSaveData(
                          2, &header_stream_offset, &settings_data));
@@ -2356,6 +2362,8 @@ TEST_P(QuicNetworkTransactionTest,
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::string request_data;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRequestHeadersPacketAndSaveData(
                          1, GetNthClientInitiatedStreamId(0), true, true,
@@ -2364,6 +2372,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   std::string settings_data;
   QuicStreamOffset settings_offset = header_stream_offset;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacketAndSaveData(
                          2, &header_stream_offset, &settings_data));
@@ -2470,11 +2479,14 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
   // The request will initially go out over QUIC.
   MockQuicData quic_data;
   QuicStreamOffset header_stream_offset = 0;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientRequestHeadersPacket(
           1, GetNthClientInitiatedStreamId(0), true, true,
           GetRequestHeaders("GET", "https", "/"), &header_stream_offset));
+  client_maker_.SetEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(SYNCHRONOUS,
                      ConstructInitialSettingsPacket(2, &header_stream_offset));
   // Peer sending data from an non-existing stream causes this end to raise
@@ -2543,6 +2555,8 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::string request_data;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRequestHeadersPacketAndSaveData(
                          1, GetNthClientInitiatedStreamId(0), true, true,
@@ -2551,6 +2565,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
 
   std::string settings_data;
   QuicStreamOffset settings_offset = header_stream_offset;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacketAndSaveData(
                          2, &header_stream_offset, &settings_data));
@@ -2673,6 +2688,8 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::string request_data;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRequestHeadersPacketAndSaveData(
                          1, GetNthClientInitiatedStreamId(0), true, true,
@@ -2681,6 +2698,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
 
   std::string settings_data;
   QuicStreamOffset settings_offset = header_stream_offset;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacketAndSaveData(
                          2, &header_stream_offset, &settings_data));
@@ -2807,6 +2825,8 @@ TEST_P(QuicNetworkTransactionTest,
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::string request_data;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRequestHeadersPacketAndSaveData(
                          1, GetNthClientInitiatedStreamId(0), true, true,
@@ -2815,6 +2835,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   std::string settings_data;
   QuicStreamOffset settings_offset = header_stream_offset;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacketAndSaveData(
                          2, &header_stream_offset, &settings_data));
@@ -2936,6 +2957,8 @@ TEST_P(QuicNetworkTransactionTest,
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::string request_data;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRequestHeadersPacketAndSaveData(
                          1, GetNthClientInitiatedStreamId(0), true, true,
@@ -2944,6 +2967,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   std::string settings_data;
   QuicStreamOffset settings_offset = header_stream_offset;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacketAndSaveData(
                          2, &header_stream_offset, &settings_data));
@@ -3073,6 +3097,8 @@ TEST_P(QuicNetworkTransactionTest,
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::string request_data;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRequestHeadersPacketAndSaveData(
                          1, GetNthClientInitiatedStreamId(0), true, true,
@@ -3081,6 +3107,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   std::string settings_data;
   QuicStreamOffset settings_offset = header_stream_offset;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacketAndSaveData(
                          2, &header_stream_offset, &settings_data));
@@ -3190,11 +3217,14 @@ TEST_P(QuicNetworkTransactionTest,
   // The request will initially go out over QUIC.
   MockQuicData quic_data;
   QuicStreamOffset header_stream_offset = 0;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientRequestHeadersPacket(
           1, GetNthClientInitiatedStreamId(0), true, true,
           GetRequestHeaders("GET", "https", "/"), &header_stream_offset));
+  client_maker_.SetEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(SYNCHRONOUS,
                      ConstructInitialSettingsPacket(2, &header_stream_offset));
   // Peer sending data from an non-existing stream causes this end to raise
@@ -3283,6 +3313,8 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::string request_data;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRequestHeadersPacketAndSaveData(
                          1, GetNthClientInitiatedStreamId(0), true, true,
@@ -3291,6 +3323,7 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
 
   std::string settings_data;
   // QuicStreamOffset settings_offset = header_stream_offset;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeInitialSettingsPacketAndSaveData(
                          2, &header_stream_offset, &settings_data));
@@ -4244,6 +4277,8 @@ TEST_P(QuicNetworkTransactionTest, HungAlternativeService) {
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
   MockQuicData mock_quic_data;
   QuicStreamOffset header_stream_offset = 0;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientRequestHeadersPacket(
@@ -4276,6 +4311,8 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
   MockQuicData mock_quic_data;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   mock_quic_data.AddWrite(SYNCHRONOUS,
                           ConstructClientRequestHeadersPacket(
                               1, GetNthClientInitiatedStreamId(0), true, true,
@@ -4733,6 +4770,8 @@ TEST_P(QuicNetworkTransactionTest, DelayTCPOnStartWithQuicSupportOnSameIP) {
 
   MockQuicData mock_quic_data;
   QuicStreamOffset header_stream_offset = 0;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientRequestHeadersPacket(

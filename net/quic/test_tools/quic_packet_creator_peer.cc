@@ -18,7 +18,15 @@ bool QuicPacketCreatorPeer::SendVersionInPacket(QuicPacketCreator* creator) {
 void QuicPacketCreatorPeer::SetSendVersionInPacket(
     QuicPacketCreator* creator,
     bool send_version_in_packet) {
-  creator->send_version_in_packet_ = send_version_in_packet;
+  if (creator->framer_->transport_version() != QUIC_VERSION_99) {
+    creator->send_version_in_packet_ = send_version_in_packet;
+    return;
+  }
+  if (!send_version_in_packet) {
+    creator->packet_.encryption_level = ENCRYPTION_FORWARD_SECURE;
+    return;
+  }
+  DCHECK(creator->packet_.encryption_level < ENCRYPTION_FORWARD_SECURE);
 }
 
 // static

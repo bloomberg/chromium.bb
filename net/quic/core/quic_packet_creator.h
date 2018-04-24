@@ -268,6 +268,9 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // Returns true if |frame| starts with CHLO.
   bool StreamFrameStartsWithChlo(const QuicStreamFrame& frame) const;
 
+  // Returns true if packet under construction has IETF long header.
+  bool HasIetfLongHeader() const;
+
   // Does not own these delegates or the framer.
   DelegateInterface* delegate_;
   DebugDelegate* debug_delegate_;

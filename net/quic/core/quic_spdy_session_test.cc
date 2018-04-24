@@ -211,7 +211,8 @@ class TestSession : public QuicSpdySession {
 
   QuicConsumedData SendStreamData(QuicStream* stream) {
     struct iovec iov;
-    if (stream->id() != kCryptoStreamId) {
+    if (stream->id() != kCryptoStreamId &&
+        connection()->encryption_level() != ENCRYPTION_FORWARD_SECURE) {
       this->connection()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
     }
     MakeIOVector("not empty", &iov);
