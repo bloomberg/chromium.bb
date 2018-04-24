@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/ui/location_bar/location_bar_edit_view.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -36,6 +37,11 @@ typedef NS_ENUM(int, TrailingButtonState) {
 @property(nonatomic, strong) LocationBarSteadyView* locationBarSteadyView;
 
 @property(nonatomic, assign) TrailingButtonState trailingButtonState;
+
+// Starts voice search, updating the NamedGuide to be constrained to the
+// trailing button.
+- (void)startVoiceSearch;
+
 @end
 
 @implementation LocationBarViewController
@@ -194,6 +200,14 @@ typedef NS_ENUM(int, TrailingButtonState) {
     return;
   }
 
+  // Stop constraining the voice guide to the trailing button if transitioning
+  // from kVoiceSearchButton.
+  NamedGuide* voiceGuide =
+      [NamedGuide guideWithName:kVoiceSearchButtonGuide
+                           view:self.locationBarSteadyView];
+  if (voiceGuide.constrainedView == self.locationBarSteadyView.trailingButton)
+    voiceGuide.constrainedView = nil;
+
   _trailingButtonState = state;
 
   // Cancel previous possible state.
@@ -233,7 +247,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
                     action:@selector(preloadVoiceSearch)
           forControlEvents:UIControlEventTouchDown];
       [self.locationBarSteadyView.trailingButton
-                 addTarget:self.dispatcher
+                 addTarget:self
                     action:@selector(startVoiceSearch)
           forControlEvents:UIControlEventTouchUpInside];
       [self.locationBarSteadyView.trailingButton
@@ -241,6 +255,12 @@ typedef NS_ENUM(int, TrailingButtonState) {
           forState:UIControlStateNormal];
     }
   }
+}
+
+- (void)startVoiceSearch {
+  [NamedGuide guideWithName:kVoiceSearchButtonGuide view:self.view]
+      .constrainedView = self.locationBarSteadyView.trailingButton;
+  [self.dispatcher startVoiceSearch];
 }
 
 @end
