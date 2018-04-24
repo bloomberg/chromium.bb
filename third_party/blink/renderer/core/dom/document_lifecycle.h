@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 #if DCHECK_IS_ON()
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -196,6 +197,17 @@ class CORE_EXPORT DocumentLifecycle {
     DocumentLifecycle& document_lifecycle_;
   };
 
+  class CheckNoTransitionScope {
+    STACK_ALLOCATED();
+
+   public:
+    explicit CheckNoTransitionScope(DocumentLifecycle& document_lifecycle)
+        : auto_reset_(&document_lifecycle.check_no_transition_, true) {}
+
+   private:
+    AutoReset<bool> auto_reset_;
+  };
+
   DocumentLifecycle();
   ~DocumentLifecycle();
 
@@ -233,6 +245,7 @@ class CORE_EXPORT DocumentLifecycle {
 #endif
  private:
   friend class PostponeTransitionScope;
+  friend class CheckNoTransitionScope;
 #if DCHECK_IS_ON()
   bool CanAdvanceTo(LifecycleState) const;
   bool CanRewindTo(LifecycleState) const;
@@ -245,6 +258,7 @@ class CORE_EXPORT DocumentLifecycle {
   int detach_count_;
   int disallow_transition_count_;
   bool life_cycle_postponed_;
+  bool check_no_transition_;
   DISALLOW_COPY_AND_ASSIGN(DocumentLifecycle);
 };
 

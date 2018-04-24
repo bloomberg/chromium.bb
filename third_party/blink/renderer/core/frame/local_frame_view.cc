@@ -1078,28 +1078,32 @@ void LocalFrameView::PerformLayout(bool in_subtree_layout) {
   // functions so that a single human could understand what layout() is actually
   // doing.
 
-  if (in_subtree_layout) {
-    if (analyzer_) {
-      analyzer_->Increment(LayoutAnalyzer::kPerformLayoutRootLayoutObjects,
-                           layout_subtree_root_list_.size());
-    }
-    for (auto& root : layout_subtree_root_list_.Ordered()) {
-      if (!root->NeedsLayout())
-        continue;
-      LayoutFromRootObject(*root);
+  {
+    // TODO(szager): Remove this after diagnosing crash.
+    DocumentLifecycle::CheckNoTransitionScope check_no_transition(Lifecycle());
+    if (in_subtree_layout) {
+      if (analyzer_) {
+        analyzer_->Increment(LayoutAnalyzer::kPerformLayoutRootLayoutObjects,
+                             layout_subtree_root_list_.size());
+      }
+      for (auto& root : layout_subtree_root_list_.Ordered()) {
+        if (!root->NeedsLayout())
+          continue;
+        LayoutFromRootObject(*root);
 
-      // We need to ensure that we mark up all layoutObjects up to the
-      // LayoutView for paint invalidation. This simplifies our code as we
-      // just always do a full tree walk.
-      if (LayoutObject* container = root->Container())
-        container->SetMayNeedPaintInvalidation();
+        // We need to ensure that we mark up all layoutObjects up to the
+        // LayoutView for paint invalidation. This simplifies our code as we
+        // just always do a full tree walk.
+        if (LayoutObject* container = root->Container())
+          container->SetMayNeedPaintInvalidation();
+      }
+      layout_subtree_root_list_.Clear();
+    } else {
+      if (HasOrthogonalWritingModeRoots() &&
+          !RuntimeEnabledFeatures::LayoutNGEnabled())
+        LayoutOrthogonalWritingModeRoots();
+      GetLayoutView()->UpdateLayout();
     }
-    layout_subtree_root_list_.Clear();
-  } else {
-    if (HasOrthogonalWritingModeRoots() &&
-        !RuntimeEnabledFeatures::LayoutNGEnabled())
-      LayoutOrthogonalWritingModeRoots();
-    GetLayoutView()->UpdateLayout();
   }
 
   frame_->GetDocument()->Fetcher()->UpdateAllImageResourcePriorities();
