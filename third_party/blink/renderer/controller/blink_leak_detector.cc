@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/controller/blink_leak_detector.h"
 
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
@@ -22,24 +23,17 @@
 
 namespace blink {
 
-// static
-BlinkLeakDetector& BlinkLeakDetector::Instance() {
-  DEFINE_STATIC_LOCAL(BlinkLeakDetector, blink_leak_detector, ());
-  return blink_leak_detector;
-}
-
 BlinkLeakDetector::BlinkLeakDetector()
     : delayed_gc_timer_(Platform::Current()->CurrentThread()->GetTaskRunner(),
                         this,
-                        &BlinkLeakDetector::TimerFiredGC),
-      binding_(this) {}
+                        &BlinkLeakDetector::TimerFiredGC) {}
 
 BlinkLeakDetector::~BlinkLeakDetector() = default;
 
 // static
-void BlinkLeakDetector::Bind(mojom::blink::LeakDetectorRequest request) {
-  BlinkLeakDetector::Instance().binding_.Close();
-  BlinkLeakDetector::Instance().binding_.Bind(std::move(request));
+void BlinkLeakDetector::Create(mojom::blink::LeakDetectorRequest request) {
+  mojo::MakeStrongBinding(std::make_unique<BlinkLeakDetector>(),
+                          std::move(request));
 }
 
 void BlinkLeakDetector::PerformLeakDetection(
@@ -84,7 +78,7 @@ void BlinkLeakDetector::PerformLeakDetection(
   CSSDefaultStyleSheets::Instance().PrepareForLeakDetection();
 
   // Stop keepalive loaders that may persist after page navigation.
-  for (auto resource_fetcher : resource_fetchers_)
+  for (auto resource_fetcher : ResourceFetcher::MainThreadFetchers())
     resource_fetcher->PrepareForLeakDetection();
 
   V8GCController::CollectAllGarbageForTesting(
@@ -163,11 +157,6 @@ void BlinkLeakDetector::ReportResult() {
 #endif
 
   std::move(callback_).Run(std::move(result));
-}
-
-void BlinkLeakDetector::RegisterResourceFetcher(ResourceFetcher* fetcher) {
-  DCHECK(IsMainThread());
-  resource_fetchers_.insert(fetcher);
 }
 
 }  // namespace blink

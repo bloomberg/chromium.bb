@@ -13,22 +13,15 @@
 
 namespace blink {
 
-class ResourceFetcher;
-
 // Implementation of Leak Detector.
 class CONTROLLER_EXPORT BlinkLeakDetector : public mojom::blink::LeakDetector {
  public:
-  static BlinkLeakDetector& Instance();
-  static void Bind(mojom::blink::LeakDetectorRequest);
+  static void Create(mojom::blink::LeakDetectorRequest);
+
+  BlinkLeakDetector();
   ~BlinkLeakDetector() override;
 
-  // This registration function needs to be called whenever ResourceFetcher is
-  // created (i.e. ResourceFetcher::Create is called).
-  void RegisterResourceFetcher(ResourceFetcher*);
-
  private:
-  BlinkLeakDetector();
-
   // mojom::blink::LeakDetector implementation.
   void PerformLeakDetection(PerformLeakDetectionCallback) override;
 
@@ -37,9 +30,7 @@ class CONTROLLER_EXPORT BlinkLeakDetector : public mojom::blink::LeakDetector {
 
   TaskRunnerTimer<BlinkLeakDetector> delayed_gc_timer_;
   int number_of_gc_needed_ = 0;
-  PersistentHeapHashSet<WeakMember<ResourceFetcher>> resource_fetchers_;
   PerformLeakDetectionCallback callback_;
-  mojo::Binding<mojom::blink::LeakDetector> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkLeakDetector);
 };
