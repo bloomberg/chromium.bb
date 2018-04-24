@@ -53,6 +53,26 @@ const wl_interface* ObjectTraits<wl_compositor>::interface =
 void (*ObjectTraits<wl_compositor>::deleter)(wl_compositor*) =
     &wl_compositor_destroy;
 
+const wl_interface* ObjectTraits<wl_data_device_manager>::interface =
+    &wl_data_device_manager_interface;
+void (*ObjectTraits<wl_data_device_manager>::deleter)(wl_data_device_manager*) =
+    &wl_data_device_manager_destroy;
+
+const wl_interface* ObjectTraits<wl_data_device>::interface =
+    &wl_data_device_interface;
+void (*ObjectTraits<wl_data_device>::deleter)(wl_data_device*) =
+    &wl_data_device_destroy;
+
+const wl_interface* ObjectTraits<wl_data_offer>::interface =
+    &wl_data_offer_interface;
+void (*ObjectTraits<wl_data_offer>::deleter)(wl_data_offer*) =
+    &wl_data_offer_destroy;
+
+const wl_interface* ObjectTraits<wl_data_source>::interface =
+    &wl_data_source_interface;
+void (*ObjectTraits<wl_data_source>::deleter)(wl_data_source*) =
+    &wl_data_source_destroy;
+
 const wl_interface* ObjectTraits<wl_display>::interface = &wl_display_interface;
 void (*ObjectTraits<wl_display>::deleter)(wl_display*) = &wl_display_disconnect;
 

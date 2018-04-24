@@ -61,6 +61,7 @@ constructor_list_cc_file = "$target_gen_dir/constructor_list.cc"
 jumbo_component("ozone_base") {
   sources = [
     "ozone_base_export.h",
+    "public/clipboard_delegate.h",
     "public/cursor_factory_ozone.cc",
     "public/cursor_factory_ozone.h",
     "public/gl_ozone.h",

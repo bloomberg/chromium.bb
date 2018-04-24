@@ -10,16 +10,20 @@
 #include <xdg-shell-unstable-v6-server-protocol.h>
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/ptr_util.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_runner_util.h"
 
 namespace wl {
 namespace {
 
 const uint32_t kCompositorVersion = 4;
 const uint32_t kOutputVersion = 2;
+const uint32_t kDataDeviceManagerVersion = 3;
 const uint32_t kSeatVersion = 4;
 const uint32_t kXdgShellVersion = 1;
 
@@ -30,6 +34,37 @@ T* GetUserDataAs(wl_resource* resource) {
 
 void DestroyResource(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
+}
+
+void WriteDataOnWorkerThread(base::ScopedFD fd, const std::string& utf8_text) {
+  if (!base::WriteFileDescriptor(fd.get(), utf8_text.data(), utf8_text.size()))
+    LOG(ERROR) << "Failed to write selection data to clipboard.";
+}
+
+std::vector<uint8_t> ReadDataOnWorkerThread(base::ScopedFD fd) {
+  constexpr size_t kChunkSize = 1024;
+  std::vector<uint8_t> bytes;
+  while (true) {
+    uint8_t chunk[kChunkSize];
+    ssize_t bytes_read = HANDLE_EINTR(read(fd.get(), chunk, kChunkSize));
+    if (bytes_read > 0) {
+      bytes.insert(bytes.end(), chunk, chunk + bytes_read);
+      continue;
+    }
+    if (!bytes_read)
+      return bytes;
+    if (bytes_read < 0) {
+      LOG(ERROR) << "Failed to read selection data from clipboard.";
+      return std::vector<uint8_t>();
+    }
+  }
+}
+
+void CreatePipe(base::ScopedFD* read_pipe, base::ScopedFD* write_pipe) {
+  int raw_pipe[2];
+  PCHECK(0 == pipe(raw_pipe));
+  read_pipe->reset(raw_pipe[0]);
+  write_pipe->reset(raw_pipe[1]);
 }
 
 // wl_compositor
@@ -128,6 +163,97 @@ const struct zxdg_shell_v6_interface zxdg_shell_v6_impl = {
     &GetXdgSurfaceV6,  // get_xdg_surface
     &Pong,             // pong
 };
+
+// wl_data_device
+
+void DataDeviceSetSelection(wl_client* client,
+                            wl_resource* resource,
+                            wl_resource* data_source,
+                            uint32_t serial) {
+  GetUserDataAs<MockDataDevice>(resource)->SetSelection(
+      data_source ? GetUserDataAs<MockDataSource>(data_source) : nullptr,
+      serial);
+}
+
+void DataDeviceRelease(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+const struct wl_data_device_interface data_device_impl = {
+    nullptr /*data_device_start_drag*/, &DataDeviceSetSelection,
+    &DataDeviceRelease};
+
+// wl_data_device_manager
+
+void CreateDataSource(wl_client* client, wl_resource* resource, uint32_t id) {
+  wl_resource* data_source_resource = wl_resource_create(
+      client, &wl_data_source_interface, wl_resource_get_version(resource), id);
+  if (!data_source_resource) {
+    wl_client_post_no_memory(client);
+    return;
+  }
+
+  std::unique_ptr<MockDataSource> data_source(
+      new MockDataSource(data_source_resource));
+
+  auto* data_device_manager = GetUserDataAs<MockDataDeviceManager>(resource);
+  data_device_manager->set_data_source(std::move(data_source));
+}
+
+void GetDataDevice(wl_client* client,
+                   wl_resource* resource,
+                   uint32_t id,
+                   wl_resource* seat_resource) {
+  wl_resource* data_device_resource = wl_resource_create(
+      client, &wl_data_device_interface, wl_resource_get_version(resource), id);
+  if (!data_device_resource) {
+    wl_client_post_no_memory(client);
+    return;
+  }
+
+  std::unique_ptr<MockDataDevice> data_device(
+      new MockDataDevice(client, data_device_resource));
+
+  auto* data_device_manager = GetUserDataAs<MockDataDeviceManager>(resource);
+  data_device_manager->set_data_device(std::move(data_device));
+}
+
+const struct wl_data_device_manager_interface data_device_manager_impl = {
+    &CreateDataSource, &GetDataDevice};
+
+// wl_data_offer
+
+void DataOfferReceive(wl_client* client,
+                      wl_resource* resource,
+                      const char* mime_type,
+                      int fd) {
+  GetUserDataAs<MockDataOffer>(resource)->Receive(mime_type,
+                                                  base::ScopedFD(fd));
+}
+
+void DataOfferDestroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+const struct wl_data_offer_interface data_offer_impl = {
+    nullptr /* data_offer_accept*/, DataOfferReceive,
+    nullptr /*data_offer_finish*/, DataOfferDestroy,
+    nullptr /*data_offer_set_actions*/};
+
+// wl_data_source
+
+void DataSourceOffer(wl_client* client,
+                     wl_resource* resource,
+                     const char* mime_type) {
+  GetUserDataAs<MockDataSource>(resource)->Offer(mime_type);
+}
+
+void DataSourceDestroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+const struct wl_data_source_interface data_source_impl = {
+    DataSourceOffer, DataSourceDestroy, nullptr /*data_source_set_actions*/};
 
 // wl_seat
 
@@ -413,6 +539,98 @@ MockTouch::MockTouch(wl_resource* resource) : ServerObject(resource) {
 
 MockTouch::~MockTouch() {}
 
+MockDataOffer::MockDataOffer(wl_resource* resource)
+    : ServerObject(resource),
+      io_thread_("Worker thread"),
+      write_data_weak_ptr_factory_(this) {
+  SetImplementation(resource, &data_offer_impl, this);
+
+  base::Thread::Options options;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  io_thread_.StartWithOptions(options);
+}
+
+MockDataOffer::~MockDataOffer() {}
+
+void MockDataOffer::Receive(const std::string& mime_type, base::ScopedFD fd) {
+  DCHECK(fd.is_valid());
+  std::string text_utf8(kSampleClipboardText);
+  io_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WriteDataOnWorkerThread, std::move(fd), text_utf8));
+}
+
+void MockDataOffer::OnOffer(const std::string& mime_type) {
+  wl_data_offer_send_offer(resource(), mime_type.c_str());
+}
+
+MockDataDevice::MockDataDevice(wl_client* client, wl_resource* resource)
+    : ServerObject(resource), client_(client) {
+  SetImplementation(resource, &data_device_impl, this);
+}
+
+MockDataDevice::~MockDataDevice() {}
+
+void MockDataDevice::SetSelection(MockDataSource* data_source,
+                                  uint32_t serial) {
+  NOTIMPLEMENTED();
+}
+
+MockDataOffer* MockDataDevice::OnDataOffer() {
+  wl_resource* data_offer_resource =
+      wl_resource_create(client_, &wl_data_offer_interface,
+                         wl_resource_get_version(resource()), 0);
+  data_offer_.reset(new MockDataOffer(data_offer_resource));
+  wl_data_device_send_data_offer(resource(), data_offer_resource);
+
+  return GetUserDataAs<MockDataOffer>(data_offer_resource);
+}
+
+void MockDataDevice::OnSelection(MockDataOffer& data_offer) {
+  wl_data_device_send_selection(resource(), data_offer.resource());
+}
+
+MockDataSource::MockDataSource(wl_resource* resource)
+    : ServerObject(resource),
+      io_thread_("Worker thread"),
+      read_data_weak_ptr_factory_(this) {
+  SetImplementation(resource, &data_source_impl, this);
+
+  base::Thread::Options options;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  io_thread_.StartWithOptions(options);
+}
+
+MockDataSource::~MockDataSource() {}
+
+void MockDataSource::Offer(const std::string& mime_type) {
+  NOTIMPLEMENTED();
+}
+
+void MockDataSource::ReadData(ReadDataCallback callback) {
+  base::ScopedFD read_fd;
+  base::ScopedFD write_fd;
+  CreatePipe(&read_fd, &write_fd);
+
+  wl_data_source_send_send(resource(), kTextMimeTypeUtf8, write_fd.get());
+
+  base::PostTaskAndReplyWithResult(
+      io_thread_.task_runner().get(), FROM_HERE,
+      base::BindOnce(&ReadDataOnWorkerThread, std::move(read_fd)),
+      base::BindOnce(&MockDataSource::DataReadCb,
+                     read_data_weak_ptr_factory_.GetWeakPtr(),
+                     std::move(callback)));
+}
+
+void MockDataSource::DataReadCb(ReadDataCallback callback,
+                                const std::vector<uint8_t>& data) {
+  std::move(callback).Run(data);
+}
+
+void MockDataSource::OnCancelled() {
+  wl_data_source_send_cancelled(resource());
+}
+
 void GlobalDeleter::operator()(wl_global* global) {
   wl_global_destroy(global);
 }
@@ -464,6 +682,13 @@ MockCompositor::~MockCompositor() {}
 void MockCompositor::AddSurface(std::unique_ptr<MockSurface> surface) {
   surfaces_.push_back(std::move(surface));
 }
+
+MockDataDeviceManager::MockDataDeviceManager()
+    : Global(&wl_data_device_manager_interface,
+             &data_device_manager_impl,
+             kDataDeviceManagerVersion) {}
+
+MockDataDeviceManager::~MockDataDeviceManager() {}
 
 MockOutput::MockOutput()
     : Global(&wl_output_interface, nullptr, kOutputVersion) {}
@@ -528,6 +753,8 @@ bool FakeServer::Start(uint32_t shell_version) {
   if (!compositor_.Initialize(display_.get()))
     return false;
   if (!output_.Initialize(display_.get()))
+    return false;
+  if (!data_device_manager_.Initialize(display_.get()))
     return false;
   if (!seat_.Initialize(display_.get()))
     return false;
