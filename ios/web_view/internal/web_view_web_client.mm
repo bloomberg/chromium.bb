@@ -7,11 +7,13 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/strings/grit/components_strings.h"
 #include "ios/web/public/user_agent.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/internal/web_view_early_page_script_provider.h"
 #import "ios/web_view/internal/web_view_web_main_parts.h"
 #include "ios/web_view/public/cwv_web_view.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -80,6 +82,10 @@ NSString* WebViewWebClient::GetDocumentStartScriptForMainFrame(
   [scripts addObject:GetPageScript(@"web_view_bundle")];
 
   return [scripts componentsJoinedByString:@";"];
+}
+
+base::string16 WebViewWebClient::GetPluginNotSupportedText() const {
+  return l10n_util::GetStringUTF16(IDS_PLUGIN_NOT_SUPPORTED);
 }
 
 }  // namespace ios_web_view

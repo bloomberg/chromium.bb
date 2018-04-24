@@ -28,6 +28,7 @@ class WebViewWebClient : public web::WebClient {
   base::RefCountedMemory* GetDataResourceBytes(int resource_id) const override;
   NSString* GetDocumentStartScriptForMainFrame(
       web::BrowserState* browser_state) const override;
+  base::string16 GetPluginNotSupportedText() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebViewWebClient);
