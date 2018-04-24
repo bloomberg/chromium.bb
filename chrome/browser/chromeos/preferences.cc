@@ -52,7 +52,6 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/blink/public/platform/web_speech_synthesis_constants.h"
 #include "third_party/cros_system_api/dbus/update_engine/dbus-constants.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -420,16 +419,13 @@ void Preferences::RegisterProfilePrefs(
       prefs::kTextToSpeechLangToVoiceName,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterDoublePref(
-      prefs::kTextToSpeechRate,
-      blink::SpeechSynthesisConstants::kDefaultTextToSpeechRate,
+      prefs::kTextToSpeechRate, 1.0,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterDoublePref(
-      prefs::kTextToSpeechPitch,
-      blink::SpeechSynthesisConstants::kDefaultTextToSpeechPitch,
+      prefs::kTextToSpeechPitch, 1.0,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterDoublePref(
-      prefs::kTextToSpeechVolume,
-      blink::SpeechSynthesisConstants::kDefaultTextToSpeechVolume,
+      prefs::kTextToSpeechVolume, 1.0,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
 }
 
