@@ -604,10 +604,6 @@ IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, NoPrimaryAccount) {
 IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest,
                        PrimaryAccountHasNoRefreshToken) {
   std::string primary_account_id = SignIn("primary@example.com");
-  // TODO(treib,blundell): This breaks IdentityManager. RevokeCredentials causes
-  // the account to be removed from AccountTrackerService (via
-  // AccountFetcherService::OnRefreshTokenRevoked), which triggers DCHECKs in
-  // IdentityManager::GetPrimaryAccountInfo.
   token_service_->RevokeCredentials(primary_account_id);
   EXPECT_TRUE(ExpectGetAccounts({}));
 }
@@ -2327,7 +2323,6 @@ IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest,
   AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, false));
 
   // Revoke the refresh token and verify that the callback fires.
-  // TODO(treib,blundell): This breaks IdentityManager.
   token_service_->RevokeCredentials(primary_account_id);
 
   EXPECT_FALSE(HasExpectedEvent());
@@ -2344,7 +2339,6 @@ IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest,
   std::string primary_account_id = SignIn("primary@example.com");
 
   AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, false));
-  // TODO(treib,blundell): This breaks IdentityManager.
   token_service_->RevokeCredentials(primary_account_id);
 
   account_info.id = "gaia_id_for_primary@example.com";
