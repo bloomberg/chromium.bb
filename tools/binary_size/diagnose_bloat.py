@@ -83,8 +83,9 @@ class BaseDiff(object):
 
 
 class NativeDiff(BaseDiff):
+  # E.g.: Section Sizes (Total=1.2 kb (1222 bytes)):
   _RE_SUMMARY_STAT = re.compile(
-      r'Section Sizes \(Total=(?P<value>\d+) (?P<units>\w+)\)')
+      r'Section Sizes \(Total=(?P<value>\d+) ?(?P<units>\w+)')
   _SUMMARY_STAT_NAME = 'Native Library Delta'
 
   def __init__(self, size_name, supersize_path):
@@ -121,9 +122,10 @@ class ResourceSizesDiff(BaseDiff):
   _AGGREGATE_SECTIONS = (
       'InstallBreakdown', 'Breakdown', 'MainLibInfo', 'Uncompressed')
 
-  def __init__(self, apk_name):
+  def __init__(self, apk_name, filename='results-chart.json'):
     self._apk_name = apk_name
     self._diff = None  # Set by |ProduceDiff()|
+    self._filename = filename
     super(ResourceSizesDiff, self).__init__('Resource Sizes Diff')
 
   @property
@@ -188,7 +190,7 @@ class ResourceSizesDiff(BaseDiff):
     return ret
 
   def _LoadResults(self, archive_dir):
-    chartjson_file = os.path.join(archive_dir, 'results-chart.json')
+    chartjson_file = os.path.join(archive_dir, self._filename)
     with open(chartjson_file) as f:
       chartjson = json.load(f)
     return chartjson['charts']
@@ -809,6 +811,33 @@ def _SetRestoreFunc(subrepo):
   atexit.register(_GenRestoreFunc(subrepo))
 
 
+# Used by binary size trybot.
+def _DiffMain(args):
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--before-dir', required=True)
+  parser.add_argument('--after-dir', required=True)
+  parser.add_argument('--apk-name', required=True)
+  parser.add_argument('--diff-type', required=True, choices=['native', 'sizes'])
+  parser.add_argument('--diff-output', required=True)
+  args = parser.parse_args(args)
+
+  if args.diff_type == 'native':
+    supersize_path = os.path.join(_BINARY_SIZE_DIR, 'supersize')
+    diff = NativeDiff(args.apk_name + '.size', supersize_path)
+  else:
+    diff = ResourceSizesDiff(args.apk_name, args.apk_name + '.json')
+
+  diff.ProduceDiff(args.before_dir, args.after_dir)
+  with open(args.diff_output, 'w') as f:
+    f.writelines(l + '\n' for l in diff.DetailedResults())
+
+  stat = diff.summary_stat
+  if stat:
+    print 'Summary: {} {} {}'.format(*stat)
+  else:
+    print 'Missing Summary!'
+
+
 def main():
   parser = argparse.ArgumentParser(
       description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -900,7 +929,10 @@ def main():
                                 '--enable-chrome-android-internal).')
   if len(sys.argv) == 1:
     parser.print_help()
-    sys.exit()
+    return 1
+  if sys.argv[1] == 'diff':
+    return _DiffMain(sys.argv[2:])
+
   args = parser.parse_args()
   log_level = logging.DEBUG if args.verbose else logging.INFO
   logging.basicConfig(level=log_level,
