@@ -37,6 +37,9 @@ HostedAppMenuButton::HostedAppMenuButton(BrowserView* browser_view)
   SetAccessibleName(app_name);
   SetTooltipText(
       l10n_util::GetStringFUTF16(IDS_HOSTED_APPMENU_TOOLTIP, app_name));
+  int size = GetLayoutConstant(HOSTED_APP_MENU_BUTTON_SIZE);
+  SetMinSize(gfx::Size(size, size));
+  SetHorizontalAlignment(gfx::ALIGN_CENTER);
 }
 
 HostedAppMenuButton::~HostedAppMenuButton() {}
@@ -66,11 +69,6 @@ void HostedAppMenuButton::OnMenuButtonClicked(views::MenuButton* source,
            browser, AppMenu::NO_FLAGS);
 
   menu()->RunMenu(this);
-}
-
-gfx::Size HostedAppMenuButton::CalculatePreferredSize() const {
-  int size = GetLayoutConstant(HOSTED_APP_MENU_BUTTON_SIZE);
-  return gfx::Size(size, size);
 }
 
 void HostedAppMenuButton::FadeHighlightOff() {
