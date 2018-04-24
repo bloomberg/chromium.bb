@@ -19,6 +19,66 @@ constexpr uint8_t kThree[] = {0x03};
 constexpr uint8_t kOneTwoThree[] = {0x01, 0x02, 0x03};
 }  // namespace
 
+TEST(U2fParsingUtils, SpanLess) {
+  const std::array<int, 4> kOneTwoThreeFour = {1, 2, 3, 4};
+
+  EXPECT_FALSE(SpanLess()(kOne, kOne));
+  EXPECT_TRUE(SpanLess()(kOne, kOneTwo));
+  EXPECT_TRUE(SpanLess()(kOne, kTwo));
+  EXPECT_TRUE(SpanLess()(kOne, kTwoThree));
+  EXPECT_TRUE(SpanLess()(kOne, kThree));
+  EXPECT_TRUE(SpanLess()(kOne, kOneTwoThree));
+  EXPECT_TRUE(SpanLess()(kOne, kOneTwoThreeFour));
+
+  EXPECT_FALSE(SpanLess()(kOneTwo, kOne));
+  EXPECT_FALSE(SpanLess()(kOneTwo, kOneTwo));
+  EXPECT_TRUE(SpanLess()(kOneTwo, kTwo));
+  EXPECT_TRUE(SpanLess()(kOneTwo, kTwoThree));
+  EXPECT_TRUE(SpanLess()(kOneTwo, kThree));
+  EXPECT_TRUE(SpanLess()(kOneTwo, kOneTwoThree));
+  EXPECT_TRUE(SpanLess()(kOneTwo, kOneTwoThreeFour));
+
+  EXPECT_FALSE(SpanLess()(kTwo, kOne));
+  EXPECT_FALSE(SpanLess()(kTwo, kOneTwo));
+  EXPECT_FALSE(SpanLess()(kTwo, kTwo));
+  EXPECT_TRUE(SpanLess()(kTwo, kTwoThree));
+  EXPECT_TRUE(SpanLess()(kTwo, kThree));
+  EXPECT_FALSE(SpanLess()(kTwo, kOneTwoThree));
+  EXPECT_FALSE(SpanLess()(kTwo, kOneTwoThreeFour));
+
+  EXPECT_FALSE(SpanLess()(kTwoThree, kOne));
+  EXPECT_FALSE(SpanLess()(kTwoThree, kOneTwo));
+  EXPECT_FALSE(SpanLess()(kTwoThree, kTwo));
+  EXPECT_FALSE(SpanLess()(kTwoThree, kTwoThree));
+  EXPECT_TRUE(SpanLess()(kTwoThree, kThree));
+  EXPECT_FALSE(SpanLess()(kTwoThree, kOneTwoThree));
+  EXPECT_FALSE(SpanLess()(kTwoThree, kOneTwoThreeFour));
+
+  EXPECT_FALSE(SpanLess()(kThree, kOne));
+  EXPECT_FALSE(SpanLess()(kThree, kOneTwo));
+  EXPECT_FALSE(SpanLess()(kThree, kTwo));
+  EXPECT_FALSE(SpanLess()(kThree, kTwoThree));
+  EXPECT_FALSE(SpanLess()(kThree, kThree));
+  EXPECT_FALSE(SpanLess()(kThree, kOneTwoThree));
+  EXPECT_FALSE(SpanLess()(kThree, kOneTwoThreeFour));
+
+  EXPECT_FALSE(SpanLess()(kOneTwoThree, kOne));
+  EXPECT_FALSE(SpanLess()(kOneTwoThree, kOneTwo));
+  EXPECT_TRUE(SpanLess()(kOneTwoThree, kTwo));
+  EXPECT_TRUE(SpanLess()(kOneTwoThree, kTwoThree));
+  EXPECT_TRUE(SpanLess()(kOneTwoThree, kThree));
+  EXPECT_FALSE(SpanLess()(kOneTwoThree, kOneTwoThree));
+  EXPECT_TRUE(SpanLess()(kOneTwoThree, kOneTwoThreeFour));
+
+  EXPECT_FALSE(SpanLess()(kOneTwoThreeFour, kOne));
+  EXPECT_FALSE(SpanLess()(kOneTwoThreeFour, kOneTwo));
+  EXPECT_TRUE(SpanLess()(kOneTwoThreeFour, kTwo));
+  EXPECT_TRUE(SpanLess()(kOneTwoThreeFour, kTwoThree));
+  EXPECT_TRUE(SpanLess()(kOneTwoThreeFour, kThree));
+  EXPECT_FALSE(SpanLess()(kOneTwoThreeFour, kOneTwoThree));
+  EXPECT_FALSE(SpanLess()(kOneTwoThreeFour, kOneTwoThreeFour));
+}
+
 TEST(U2fParsingUtils, Materialize) {
   const std::vector<uint8_t> empty;
   EXPECT_THAT(Materialize(empty), ::testing::IsEmpty());

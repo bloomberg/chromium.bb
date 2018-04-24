@@ -196,9 +196,7 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoSign(
   auto key_handle = data.last(key_handle_length);
 
   // Check if this is our key_handle and it's for this appId.
-  auto it = mutable_state()->registrations.find(
-      fido_parsing_utils::Materialize(key_handle));
-
+  auto it = mutable_state()->registrations.find(key_handle);
   if (it == mutable_state()->registrations.end()) {
     return ErrorStatus(apdu::ApduResponse::Status::SW_WRONG_DATA);
   }
