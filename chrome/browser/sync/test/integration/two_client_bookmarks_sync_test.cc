@@ -1815,8 +1815,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
-                       FirstClientEnablesEncryptionWithPassSecondChanges) {
+// Test is crashing. https://crbug.com/836426
+IN_PROC_BROWSER_TEST_F(
+    TwoClientBookmarksSyncTest,
+    DISABLED_FirstClientEnablesEncryptionWithPassSecondChanges) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
