@@ -126,9 +126,9 @@ interface DeviceSync {
   [Sync]
   ForceSyncNow() => (bool success);
 
-  // Returns all synced devices associated with the primary account.
-  [Sync]
-  GetSyncedDevices() => (array<RemoteDevice> devices);
+  // Returns all synced devices associated with the primary account. If this
+  // device has not yet registered with the back-end, no list is provided.
+  GetSyncedDevices() => (array<RemoteDevice>? devices);
 
   // Enables or disables the given software feature for the device with the
   // given public key. If |enabled| and |is_exclusive| are both true, this

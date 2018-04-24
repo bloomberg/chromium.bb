@@ -672,10 +672,8 @@ class DeviceSyncServiceTest : public testing::Test {
     EXPECT_FALSE(CallForceEnrollmentNow());
     EXPECT_FALSE(CallForceSyncNow());
 
-    // GetSyncedDevices() returns an empty list before initialization.
-    // TODO(khorimoto): Update it to return a null array instead of an empty
-    // list to differentiate between cases where there are actually no devices.
-    EXPECT_TRUE(CallGetSyncedDevices().empty());
+    // GetSyncedDevices() returns a null list before initialization.
+    EXPECT_FALSE(CallGetSyncedDevices());
 
     // SetSoftwareFeatureState() should return a struct with the special
     // kErrorNotInitialized error code.
@@ -735,7 +733,7 @@ class DeviceSyncServiceTest : public testing::Test {
     return last_force_sync_now_result_;
   }
 
-  const cryptauth::RemoteDeviceList& CallGetSyncedDevices() {
+  const base::Optional<cryptauth::RemoteDeviceList>& CallGetSyncedDevices() {
     base::RunLoop run_loop;
     device_sync_->GetSyncedDevices(
         base::BindOnce(&DeviceSyncServiceTest::OnGetSyncedDevicesCompleted,
@@ -827,7 +825,7 @@ class DeviceSyncServiceTest : public testing::Test {
 
   void OnGetSyncedDevicesCompleted(
       base::OnceClosure quit_closure,
-      const cryptauth::RemoteDeviceList& synced_devices) {
+      const base::Optional<cryptauth::RemoteDeviceList>& synced_devices) {
     last_synced_devices_result_ = synced_devices;
     std::move(quit_closure).Run();
   }
@@ -896,7 +894,7 @@ class DeviceSyncServiceTest : public testing::Test {
   bool device_already_enrolled_in_cryptauth_;
   bool last_force_enrollment_now_result_;
   bool last_force_sync_now_result_;
-  cryptauth::RemoteDeviceList last_synced_devices_result_;
+  base::Optional<cryptauth::RemoteDeviceList> last_synced_devices_result_;
   std::unique_ptr<base::Optional<std::string>>
       last_set_software_feature_state_response_;
   std::unique_ptr<std::pair<base::Optional<std::string>,
@@ -954,7 +952,7 @@ TEST_F(DeviceSyncServiceTest,
   CompleteConnectionToPrefService();
 
   // Initialization has not yet completed, so no devices should be available.
-  EXPECT_TRUE(CallGetSyncedDevices().empty());
+  EXPECT_FALSE(CallGetSyncedDevices());
 
   // Simulate enrollment failing.
   SimulateEnrollment(false /* success */);
