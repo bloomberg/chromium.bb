@@ -293,6 +293,23 @@ typedef NSString* VNImageOption NS_STRING_ENUM;
 - (BOOL)performRequests:(NSArray<VNRequest*>*)requests error:(NSError**)error;
 @end
 
+// VNFaceLandmarks2D forward declarations.
+@interface VNFaceLandmarkRegion : NSObject
+@property(readonly) NSUInteger pointCount;
+@end
+
+@interface VNFaceLandmarkRegion2D : VNFaceLandmarkRegion
+@property(readonly, assign)
+    const CGPoint* normalizedPoints NS_RETURNS_INNER_POINTER;
+@end
+
+@interface VNFaceLandmarks2D : NSObject
+@property(readonly) VNFaceLandmarkRegion2D* leftEye;
+@property(readonly) VNFaceLandmarkRegion2D* rightEye;
+@property(readonly) VNFaceLandmarkRegion2D* outerLips;
+@property(readonly) VNFaceLandmarkRegion2D* nose;
+@end
+
 // VNFaceObservation forward declarations.
 @interface VNObservation : NSObject<NSCopying, NSSecureCoding>
 @end
@@ -302,6 +319,7 @@ typedef NSString* VNImageOption NS_STRING_ENUM;
 @end
 
 @interface VNFaceObservation : VNDetectedObjectObservation
+@property(readonly, nonatomic, strong) VNFaceLandmarks2D* landmarks;
 @end
 
 #endif  // MAC_OS_X_VERSION_10_13
