@@ -9,6 +9,7 @@ mojom("interfaces") {
     "pdf_compositor.mojom",
   ]
   public_deps = [
+    "//mojo/public/mojom/base",
     "//url/mojom:url_mojom_gurl",
   ]
 }

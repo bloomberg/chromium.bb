@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -88,12 +89,13 @@ class PdfCompositorServiceTest : public service_manager::test::ServiceTest {
   PdfCompositorServiceTest() : ServiceTest("pdf_compositor_service_unittest") {}
   ~PdfCompositorServiceTest() override {}
 
-  MOCK_METHOD1(CallbackOnCompositeSuccess, void(mojo::SharedBufferHandle));
+  MOCK_METHOD1(CallbackOnCompositeSuccess,
+               void(const base::ReadOnlySharedMemoryRegion&));
   MOCK_METHOD1(CallbackOnCompositeStatus, void(mojom::PdfCompositor::Status));
   void OnCompositeToPdfCallback(mojom::PdfCompositor::Status status,
-                                mojo::ScopedSharedBufferHandle handle) {
+                                base::ReadOnlySharedMemoryRegion region) {
     if (status == mojom::PdfCompositor::Status::SUCCESS)
-      CallbackOnCompositeSuccess(handle.get());
+      CallbackOnCompositeSuccess(region);
     else
       CallbackOnCompositeStatus(status);
     run_loop_->Quit();

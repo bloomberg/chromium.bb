@@ -15,8 +15,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
 
 namespace base {
+
+class ReadOnlySharedMemoryRegion;
 
 // A generic interface to memory. This object is reference counted because most
 // of its subclasses own the data they carry, and this interface needs to
@@ -138,8 +141,8 @@ class BASE_EXPORT RefCountedString : public RefCountedMemory {
   DISALLOW_COPY_AND_ASSIGN(RefCountedString);
 };
 
-// An implementation of RefCountedMemory, where the bytes are stored in shared
-// memory.
+// An implementation of RefCountedMemory, where the bytes are stored in
+// SharedMemory.
 class BASE_EXPORT RefCountedSharedMemory : public RefCountedMemory {
  public:
   // Constructs a RefCountedMemory object by taking ownership of an already
@@ -157,6 +160,32 @@ class BASE_EXPORT RefCountedSharedMemory : public RefCountedMemory {
   const size_t size_;
 
   DISALLOW_COPY_AND_ASSIGN(RefCountedSharedMemory);
+};
+
+// An implementation of RefCountedMemory, where the bytes are stored in
+// ReadOnlySharedMemoryMapping.
+class BASE_EXPORT RefCountedSharedMemoryMapping : public RefCountedMemory {
+ public:
+  // Constructs a RefCountedMemory object by taking ownership of an already
+  // mapped ReadOnlySharedMemoryMapping object.
+  explicit RefCountedSharedMemoryMapping(ReadOnlySharedMemoryMapping mapping);
+
+  // Convenience method to map all of |region| and take ownership of the
+  // mapping. Returns an empty scoped_refptr if the map operation fails.
+  static scoped_refptr<RefCountedSharedMemoryMapping> CreateFromWholeRegion(
+      const ReadOnlySharedMemoryRegion& region);
+
+  // RefCountedMemory:
+  const unsigned char* front() const override;
+  size_t size() const override;
+
+ private:
+  ~RefCountedSharedMemoryMapping() override;
+
+  const ReadOnlySharedMemoryMapping mapping_;
+  const size_t size_;
+
+  DISALLOW_COPY_AND_ASSIGN(RefCountedSharedMemoryMapping);
 };
 
 }  // namespace base

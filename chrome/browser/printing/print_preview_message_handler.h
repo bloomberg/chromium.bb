@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "components/printing/service/public/interfaces/pdf_compositor.mojom.h"
@@ -88,11 +89,11 @@ class PrintPreviewMessageHandler
   void OnCompositePdfPageDone(int page_number,
                               int request_id,
                               mojom::PdfCompositor::Status status,
-                              mojo::ScopedSharedBufferHandle handle);
+                              base::ReadOnlySharedMemoryRegion region);
   void OnCompositePdfDocumentDone(int page_count,
                                   int request_id,
                                   mojom::PdfCompositor::Status status,
-                                  mojo::ScopedSharedBufferHandle handle);
+                                  base::ReadOnlySharedMemoryRegion region);
 
   base::WeakPtrFactory<PrintPreviewMessageHandler> weak_ptr_factory_;
 

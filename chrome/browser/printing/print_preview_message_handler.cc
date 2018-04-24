@@ -268,28 +268,30 @@ void PrintPreviewMessageHandler::OnCompositePdfPageDone(
     int page_number,
     int request_id,
     mojom::PdfCompositor::Status status,
-    mojo::ScopedSharedBufferHandle handle) {
+    base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (status != mojom::PdfCompositor::Status::SUCCESS) {
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
     return;
   }
-  NotifyUIPreviewPageReady(page_number, request_id,
-                           GetDataFromMojoHandle(std::move(handle)));
+  NotifyUIPreviewPageReady(
+      page_number, request_id,
+      base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(region));
 }
 
 void PrintPreviewMessageHandler::OnCompositePdfDocumentDone(
     int page_count,
     int request_id,
     mojom::PdfCompositor::Status status,
-    mojo::ScopedSharedBufferHandle handle) {
+    base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (status != mojom::PdfCompositor::Status::SUCCESS) {
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
     return;
   }
-  NotifyUIPreviewDocumentReady(page_count, request_id,
-                               GetDataFromMojoHandle(std::move(handle)));
+  NotifyUIPreviewDocumentReady(
+      page_count, request_id,
+      base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(region));
 }
 
 bool PrintPreviewMessageHandler::OnMessageReceived(

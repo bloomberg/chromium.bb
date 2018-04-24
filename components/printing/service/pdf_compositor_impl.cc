@@ -4,7 +4,9 @@
 
 #include "components/printing/service/pdf_compositor_impl.h"
 
+#include <algorithm>
 #include <tuple>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/shared_memory_handle.h"
@@ -197,7 +199,7 @@ mojom::PdfCompositor::Status PdfCompositorImpl::CompositeToPdf(
     base::Optional<uint32_t> page_num,
     std::unique_ptr<base::SharedMemory> shared_mem,
     const ContentToFrameMap& subframe_content_map,
-    mojo::ScopedSharedBufferHandle* handle) {
+    base::ReadOnlySharedMemoryRegion* region) {
   DeserializationContext subframes =
       GetDeserializationContext(subframe_content_map);
 
@@ -226,14 +228,24 @@ mojom::PdfCompositor::Status PdfCompositorImpl::CompositeToPdf(
   }
   doc->close();
 
-  *handle = mojo::SharedBufferHandle::Create(wstream.bytesWritten());
-  DCHECK((*handle).is_valid());
+  const size_t size = wstream.bytesWritten();
+  mojo::ScopedSharedBufferHandle handle =
+      mojo::SharedBufferHandle::Create(size);
+  mojo::ScopedSharedBufferHandle readonly_handle;
+  if (handle.is_valid()) {
+    mojo::ScopedSharedBufferMapping mapping = handle->Map(size);
+    if (mapping) {
+      wstream.copyToAndReset(mapping.get());
+      readonly_handle =
+          handle->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
+    }
+  }
+  if (!readonly_handle.is_valid()) {
+    DLOG(ERROR) << "CompositeToPdf: Cannot create new shared memory region.";
+    return mojom::PdfCompositor::Status::HANDLE_MAP_ERROR;
+  }
 
-  mojo::ScopedSharedBufferMapping mapping =
-      (*handle)->Map(wstream.bytesWritten());
-  DCHECK(mapping);
-  wstream.copyToAndReset(mapping.get());
-
+  *region = mojo::UnwrapReadOnlySharedMemoryRegion(std::move(readonly_handle));
   return mojom::PdfCompositor::Status::SUCCESS;
 }
 
@@ -282,11 +294,11 @@ void PdfCompositorImpl::FulfillRequest(
     std::unique_ptr<base::SharedMemory> serialized_content,
     const ContentToFrameMap& subframe_content_map,
     CompositeToPdfCallback callback) {
-  mojo::ScopedSharedBufferHandle handle;
+  base::ReadOnlySharedMemoryRegion region;
   auto status =
       CompositeToPdf(frame_guid, page_num, std::move(serialized_content),
-                     subframe_content_map, &handle);
-  std::move(callback).Run(status, std::move(handle));
+                     subframe_content_map, &region);
+  std::move(callback).Run(status, std::move(region));
 }
 
 PdfCompositorImpl::FrameContentInfo::FrameContentInfo(

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/run_loop.h"
@@ -52,7 +53,7 @@ class PdfCompositorImplTest : public testing::Test {
   }
 
   void OnCompositeToPdfCallback(mojom::PdfCompositor::Status status,
-                                mojo::ScopedSharedBufferHandle handle) {
+                                base::ReadOnlySharedMemoryRegion region) {
     // A stub for testing, no implementation.
   }
 

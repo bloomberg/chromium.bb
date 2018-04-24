@@ -13,12 +13,12 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/shared_memory.h"
 #include "base/optional.h"
 #include "components/printing/service/public/cpp/pdf_service_mojo_types.h"
 #include "components/printing/service/public/interfaces/pdf_compositor.mojom.h"
-#include "mojo/public/cpp/system/buffer.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -57,7 +57,7 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
   // mojom::PdfCompositor::CompositeDocumentToPdfCallback.
   using CompositeToPdfCallback =
       base::OnceCallback<void(PdfCompositor::Status,
-                              mojo::ScopedSharedBufferHandle)>;
+                              base::ReadOnlySharedMemoryRegion)>;
 
   // Make this function virtual so tests can override it.
   virtual void FulfillRequest(
@@ -164,7 +164,7 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
       base::Optional<uint32_t> page_num,
       std::unique_ptr<base::SharedMemory> shared_mem,
       const ContentToFrameMap& subframe_content_map,
-      mojo::ScopedSharedBufferHandle* handle);
+      base::ReadOnlySharedMemoryRegion* region);
 
   // Composite the content of a subframe.
   sk_sp<SkPicture> CompositeSubframe(uint64_t frame_guid);
