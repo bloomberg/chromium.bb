@@ -40,7 +40,6 @@
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/stream_handle.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
@@ -836,7 +835,6 @@ void NavigationRequest::OnRequestRedirected(
 void NavigationRequest::OnResponseStarted(
     const scoped_refptr<network::ResourceResponse>& response,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    std::unique_ptr<StreamHandle> body,
     std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& request_id,
     bool is_download,
@@ -942,9 +940,9 @@ void NavigationRequest::OnResponseStarted(
   if (navigation_data)
     navigation_handle_->set_navigation_data(std::move(navigation_data));
 
-  // Store the response and the StreamHandle until checks have been processed.
+  // Store the response and the URLLoaderClient endpoints until checks have been
+  // processed.
   response_ = response;
-  body_ = std::move(body);
   url_loader_client_endpoints_ = std::move(url_loader_client_endpoints);
   ssl_info_ = response->head.ssl_info.has_value() ? *response->head.ssl_info
                                                   : net::SSLInfo();
@@ -1414,10 +1412,9 @@ void NavigationRequest::CommitNavigation() {
 
   frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host);
   render_frame_host->CommitNavigation(
-      response_.get(), std::move(url_loader_client_endpoints_),
-      std::move(body_), common_params_, request_params_, is_view_source_,
-      std::move(subresource_loader_params_), std::move(subresource_overrides_),
-      devtools_navigation_token_);
+      response_.get(), std::move(url_loader_client_endpoints_), common_params_,
+      request_params_, is_view_source_, std::move(subresource_loader_params_),
+      std::move(subresource_overrides_), devtools_navigation_token_);
 
   // Give SpareRenderProcessHostManager a heads-up about the most recently used
   // BrowserContext.  This is mostly needed to make sure the spare is warmed-up

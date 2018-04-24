@@ -19,7 +19,6 @@
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/public/browser/navigation_throttle.h"
-#include "content/public/browser/stream_handle.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -60,7 +59,6 @@ class TestRenderFrameHost::NavigationInterceptor
   // mojom::FrameNavigationControl:
   void CommitNavigation(
       const network::ResourceResponseHead& head,
-      const GURL& body_url,
       const CommonNavigationParams& common_params,
       const RequestNavigationParams& request_params,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -71,7 +69,7 @@ class TestRenderFrameHost::NavigationInterceptor
       const base::UnguessableToken& devtools_navigation_token) override {
     frame_host_->GetProcess()->set_did_frame_commit_navigation(true);
     frame_host_->GetInternalNavigationControl()->CommitNavigation(
-        head, body_url, common_params, request_params,
+        head, common_params, request_params,
         std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller_service_worker),
@@ -607,9 +605,9 @@ void TestRenderFrameHost::PrepareForCommitInternal(
   scoped_refptr<network::ResourceResponse> response(
       new network::ResourceResponse);
   response->head.socket_address = socket_address;
-  // TODO(carlosk): ideally with PlzNavigate it should be possible someday to
+  // TODO(carlosk): Ideally, it should be possible someday to
   // fully commit the navigation at this call to CallOnResponseStarted.
-  url_loader->CallOnResponseStarted(response, MakeEmptyStream(), nullptr);
+  url_loader->CallOnResponseStarted(response, nullptr);
 }
 
 void TestRenderFrameHost::PrepareForCommitIfNecessary() {

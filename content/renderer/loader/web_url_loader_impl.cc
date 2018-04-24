@@ -719,20 +719,13 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->previews_state =
       static_cast<int>(request.GetPreviewsState());
 
-  // PlzNavigate: The network request has already been made by the browser.
-  // The renderer should request a stream which contains the body of the
-  // response. If the Network Service or NavigationMojoResponse is enabled, the
-  // URLLoaderClientEndpoints from |response_override| is used instead to get
-  // the body.
+  // The network request has already been made by the browser. The renderer
+  // should bind the URLLoaderClientEndpoints stored in |response_override| to
+  // an implementation of a URLLoaderClient to get the response body.
   if (response_override) {
-    CHECK(IsBrowserSideNavigationEnabled());
     DCHECK(!sync_load_response);
     DCHECK_NE(network::mojom::RequestContextFrameType::kNone,
               request.GetFrameType());
-    if (!response_override->url_loader_client_endpoints) {
-      resource_request->resource_body_stream_url =
-          response_override->stream_url;
-    }
   }
 
   RequestExtraData empty_extra_data;

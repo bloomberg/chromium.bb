@@ -25,11 +25,10 @@ struct ResourceResponse;
 namespace content {
 
 class NavigationData;
-class StreamHandle;
 struct GlobalRequestID;
 struct SubresourceLoaderParams;
 
-// PlzNavigate: The delegate interface to NavigationURLLoader.
+// The delegate interface to NavigationURLLoader.
 class CONTENT_EXPORT NavigationURLLoaderDelegate {
  public:
   // Called when the request is redirected. Call FollowRedirect to continue
@@ -39,11 +38,9 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
       const scoped_refptr<network::ResourceResponse>& response) = 0;
 
   // Called when the request receives its response. No further calls will be
-  // made to the delegate. The response body is returned as a stream in
-  // |body_stream|. |navigation_data| is passed to the NavigationHandle.
-  // If the Network Service or NavigationMojoResponse is enabled, then the
-  // |url_loader_client_endpoints| will be used, otherwise |body_stream|. Only
-  // one of these will ever be non-null.
+  // made to the delegate. The response body can be retrieved by implementing an
+  // URLLoaderClient and binding the |url_loader_client_endpoints|.
+  // |navigation_data| is passed to the NavigationHandle.
   // |subresource_loader_params| is used in the network service only for passing
   // necessary info to create a custom subresource loader in the renderer
   // process if the navigated context is controlled by a request interceptor
@@ -51,7 +48,6 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
   virtual void OnResponseStarted(
       const scoped_refptr<network::ResourceResponse>& response,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      std::unique_ptr<StreamHandle> body_stream,
       std::unique_ptr<NavigationData> navigation_data,
       const GlobalRequestID& request_id,
       bool is_download,

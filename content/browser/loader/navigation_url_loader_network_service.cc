@@ -1323,7 +1323,7 @@ void NavigationURLLoaderNetworkService::OnReceiveResponse(
   // NavigationResourceHandler::OnResponseStarted() does.
 
   delegate_->OnResponseStarted(
-      std::move(response), std::move(url_loader_client_endpoints), nullptr,
+      std::move(response), std::move(url_loader_client_endpoints),
       std::move(navigation_data), global_request_id,
       allow_download_ && is_download, is_stream,
       request_controller_->TakeSubresourceLoaderParams());
