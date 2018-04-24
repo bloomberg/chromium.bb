@@ -125,7 +125,7 @@ TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
   const auto& chunk = chunks[0];
   EXPECT_EQ(background_chunk_client, &chunk.id.client);
 
-  const auto& tree_state = chunk.properties.property_tree_state;
+  const auto& tree_state = chunk.properties;
   EXPECT_EQ(EffectPaintPropertyNode::Root(), tree_state.Effect());
   const auto* properties = GetLayoutView().FirstFragment().PaintProperties();
   if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {

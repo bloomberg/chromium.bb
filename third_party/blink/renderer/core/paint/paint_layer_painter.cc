@@ -22,7 +22,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_display_item_fragment.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/graphics/paint/subsequence_recorder.h"
@@ -1019,12 +1018,9 @@ void PaintLayerPainter::PaintOverflowControlsForFragments(
       context, layer_fragments, [&](const PaintLayerFragment& fragment) {
         Optional<ScopedPaintChunkProperties> fragment_paint_chunk_properties;
         if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-          PaintChunkProperties properties(
-              fragment.fragment_data->LocalBorderBoxProperties());
-          properties.backface_hidden =
-              paint_layer_.GetLayoutObject().HasHiddenBackface();
           fragment_paint_chunk_properties.emplace(
-              context.GetPaintController(), properties, paint_layer_,
+              context.GetPaintController(),
+              fragment.fragment_data->LocalBorderBoxProperties(), paint_layer_,
               DisplayItem::kScrollOverflowControls);
         }
 
@@ -1081,21 +1077,17 @@ void PaintLayerPainter::PaintFragmentWithPhase(
   Optional<ScopedPaintChunkProperties> fragment_paint_chunk_properties;
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     DCHECK(phase != PaintPhase::kClippingMask);
-    PaintChunkProperties chunk_properties(
-        fragment.fragment_data->LocalBorderBoxProperties());
-    chunk_properties.backface_hidden =
-        paint_layer_.GetLayoutObject().HasHiddenBackface();
+    auto chunk_properties = fragment.fragment_data->LocalBorderBoxProperties();
     if (phase == PaintPhase::kMask) {
       const auto* properties = fragment.fragment_data->PaintProperties();
       DCHECK(properties && properties->Mask());
-      chunk_properties.property_tree_state.SetEffect(properties->Mask());
+      chunk_properties.SetEffect(properties->Mask());
       // Special case for SPv1 composited mask layer. Path-based clip-path
       // is only applies to the mask chunk, but not to the layer property
       // or local box box property.
       if (properties->ClipPathClip() &&
           properties->ClipPathClip()->Parent() == properties->MaskClip()) {
-        chunk_properties.property_tree_state.SetClip(
-            properties->ClipPathClip());
+        chunk_properties.SetClip(properties->ClipPathClip());
       }
     }
     fragment_paint_chunk_properties.emplace(

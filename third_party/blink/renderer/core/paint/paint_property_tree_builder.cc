@@ -623,6 +623,10 @@ static FloatPoint3D TransformOrigin(const LayoutBox& box) {
 }
 
 static bool NeedsTransform(const LayoutObject& object) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      object.StyleRef().BackfaceVisibility() == EBackfaceVisibility::kHidden)
+    return true;
+
   if (!object.IsBox())
     return false;
   return object.StyleRef().HasTransform() || object.StyleRef().Preserves3D() ||
@@ -645,32 +649,43 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
     // only way to represent compositing both an element and its stacking
     // descendants.
     if (NeedsTransform(object_)) {
-      auto& box = ToLayoutBox(object_);
-
       TransformPaintPropertyNode::State state;
-      state.origin = TransformOrigin(box);
-      style.ApplyTransform(
-          state.matrix, box.Size(), ComputedStyle::kExcludeTransformOrigin,
-          ComputedStyle::kIncludeMotionPath,
-          ComputedStyle::kIncludeIndependentTransformProperties);
+
+      if (object_.IsBox()) {
+        auto& box = ToLayoutBox(object_);
+        state.origin = TransformOrigin(box);
+        style.ApplyTransform(
+            state.matrix, box.Size(), ComputedStyle::kExcludeTransformOrigin,
+            ComputedStyle::kIncludeMotionPath,
+            ComputedStyle::kIncludeIndependentTransformProperties);
+
+        if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+          // TODO(trchen): transform-style should only be respected if a
+          // PaintLayer is created. If a node with transform-style: preserve-3d
+          // does not exist in an existing rendering context, it establishes a
+          // new one.
+          state.rendering_context_id = context_.current.rendering_context_id;
+          if (style.Preserves3D() && !state.rendering_context_id) {
+            state.rendering_context_id =
+                PtrHash<const LayoutObject>::GetHash(&object_);
+          }
+          state.direct_compositing_reasons =
+              CompositingReasonsForTransform(box);
+        }
+      }
 
       state.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
 
       if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-        // TODO(trchen): transform-style should only be respected if a
-        // PaintLayer is created. If a node with transform-style: preserve-3d
-        // does not exist in an existing rendering context, it establishes a new
-        // one.
-        state.rendering_context_id = context_.current.rendering_context_id;
-        if (style.Preserves3D() && !state.rendering_context_id) {
-          state.rendering_context_id =
-              PtrHash<const LayoutObject>::GetHash(&object_);
-        }
-        state.direct_compositing_reasons = CompositingReasonsForTransform(box);
+        state.backface_visibility =
+            object_.HasHiddenBackface()
+                ? TransformPaintPropertyNode::BackfaceVisibility::kHidden
+                : TransformPaintPropertyNode::BackfaceVisibility::kVisible;
         state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
             object_.UniqueId(), CompositorElementIdNamespace::kPrimary);
       }
+
       OnUpdate(properties_->UpdateTransform(context_.current.transform,
                                             std::move(state)));
     } else {

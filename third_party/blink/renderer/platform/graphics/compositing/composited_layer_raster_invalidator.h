@@ -63,7 +63,7 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
                    const ChunkToLayerMapper& mapper,
                    const PaintChunk& chunk)
         : id(chunk.id),
-          properties(chunk.properties),
+          property_tree_state(chunk.properties),
           is_cacheable(chunk.is_cacheable),
           bounds_in_layer(invalidator.ClipByLayerBounds(
               mapper.MapVisualRect(chunk.bounds))),
@@ -76,7 +76,7 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
     }
 
     PaintChunk::Id id;
-    PaintChunkProperties properties;
+    RefCountedPropertyTreeState property_tree_state;
     bool is_cacheable;
     IntRect bounds_in_layer;
     FloatClipRect chunk_to_layer_clip;

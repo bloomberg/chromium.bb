@@ -529,8 +529,8 @@ TEST_P(PaintControllerTest, UpdateClip) {
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       PaintChunk::Id id(first, kClipType);
-      PaintChunkProperties properties = DefaultPaintChunkProperties();
-      properties.property_tree_state.SetClip(clip);
+      auto properties = DefaultPaintChunkProperties();
+      properties.SetClip(clip.get());
       GetPaintController().UpdateCurrentPaintChunkProperties(id, properties);
     }
     ClipRecorder clip_recorder(context, first, kClipType, IntRect(1, 1, 2, 2));
@@ -589,9 +589,8 @@ TEST_P(PaintControllerTest, UpdateClip) {
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       PaintChunk::Id id(second, kClipType);
-      PaintChunkProperties properties = DefaultPaintChunkProperties();
-      properties.property_tree_state.SetClip(clip2);
-
+      auto properties = DefaultPaintChunkProperties();
+      properties.SetClip(clip2.get());
       GetPaintController().UpdateCurrentPaintChunkProperties(id, properties);
     }
     ClipRecorder clip_recorder(context, second, kClipType, IntRect(1, 1, 2, 2));
@@ -826,16 +825,13 @@ TEST_P(PaintControllerTest, CachedSubsequenceForcePaintChunk) {
   FakeDisplayItemClient root("root");
   auto root_properties = DefaultPaintChunkProperties();
   PaintChunk::Id root_id(root, DisplayItem::kCaret);
-  // Record a first chunk with backface_hidden == false
   GetPaintController().UpdateCurrentPaintChunkProperties(root_id,
                                                          root_properties);
   DrawRect(context, root, kBackgroundType, FloatRect(100, 100, 100, 100));
 
   FakeDisplayItemClient container("container");
   {
-    // Record a second chunk with backface_hidden == true
     auto container_properties = DefaultPaintChunkProperties();
-    container_properties.backface_hidden = true;
     PaintChunk::Id container_id(container, DisplayItem::kCaret);
 
     SubsequenceRecorder r(context, container);
@@ -861,8 +857,6 @@ TEST_P(PaintControllerTest, CachedSubsequenceForcePaintChunk) {
   EXPECT_EQ(root,
             GetPaintController().GetPaintArtifact().PaintChunks()[2].id.client);
 
-  root_properties.backface_hidden = true;
-  // This time, record the fist chunk with backface_hidden == true
   GetPaintController().UpdateCurrentPaintChunkProperties(root_id,
                                                          root_properties);
   DrawRect(context, root, kBackgroundType, FloatRect(100, 100, 100, 100));
@@ -890,16 +884,20 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
   FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
   GraphicsContext context(GetPaintController());
 
-  PaintChunkProperties container1_properties = DefaultPaintChunkProperties();
-  PaintChunkProperties container2_properties = DefaultPaintChunkProperties();
+  auto container1_effect =
+      CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.5);
+  auto container1_properties = DefaultPaintChunkProperties();
+  container1_properties.SetEffect(container1_effect.get());
+
+  auto container2_effect =
+      CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.5);
+  auto container2_properties = DefaultPaintChunkProperties();
+  container2_properties.SetEffect(container2_effect.get());
 
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      PaintChunk::Id id(container1, kBackgroundType);
-      container1_properties.property_tree_state.SetEffect(
-          CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.5));
       GetPaintController().UpdateCurrentPaintChunkProperties(
-          id, container1_properties);
+          PaintChunk::Id(container1, kBackgroundType), container1_properties);
     }
     SubsequenceRecorder r(context, container1);
     DrawRect(context, container1, kBackgroundType,
@@ -911,11 +909,8 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
   }
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      PaintChunk::Id id(container2, kBackgroundType);
-      container2_properties.property_tree_state.SetEffect(
-          CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.5));
       GetPaintController().UpdateCurrentPaintChunkProperties(
-          id, container2_properties);
+          PaintChunk::Id(container2, kBackgroundType), container2_properties);
     }
     SubsequenceRecorder r(context, container2);
     DrawRect(context, container2, kBackgroundType,
@@ -1222,16 +1217,20 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
   FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
   GraphicsContext context(GetPaintController());
 
-  PaintChunkProperties container1_properties = DefaultPaintChunkProperties();
-  PaintChunkProperties container2_properties = DefaultPaintChunkProperties();
+  auto container1_effect =
+      CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.5);
+  auto container1_properties = DefaultPaintChunkProperties();
+  container1_properties.SetEffect(container1_effect.get());
+
+  auto container2_effect =
+      CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.5);
+  auto container2_properties = DefaultPaintChunkProperties();
+  container2_properties.SetEffect(container2_effect.get());
 
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      PaintChunk::Id id(container1, kBackgroundType);
-      container1_properties.property_tree_state.SetEffect(
-          CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.5));
       GetPaintController().UpdateCurrentPaintChunkProperties(
-          id, container1_properties);
+          PaintChunk::Id(container1, kBackgroundType), container1_properties);
     }
     DrawRect(context, container1, kBackgroundType,
              FloatRect(100, 100, 100, 100));
@@ -1239,11 +1238,8 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
   }
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      PaintChunk::Id id(container2, kBackgroundType);
-      container2_properties.property_tree_state.SetEffect(
-          CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.5));
       GetPaintController().UpdateCurrentPaintChunkProperties(
-          id, container2_properties);
+          PaintChunk::Id(container2, kBackgroundType), container2_properties);
     }
     DrawRect(context, container2, kBackgroundType,
              FloatRect(100, 200, 100, 100));
@@ -1271,17 +1267,15 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
 
   // Move content2 into container1, without invalidation.
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    PaintChunk::Id id(container1, kBackgroundType);
     GetPaintController().UpdateCurrentPaintChunkProperties(
-        id, container1_properties);
+        PaintChunk::Id(container1, kBackgroundType), container1_properties);
   }
   DrawRect(context, container1, kBackgroundType, FloatRect(100, 100, 100, 100));
   DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
   DrawRect(context, content2, kBackgroundType, FloatRect(100, 200, 50, 200));
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    PaintChunk::Id id(container2, kBackgroundType);
     GetPaintController().UpdateCurrentPaintChunkProperties(
-        id, container2_properties);
+        PaintChunk::Id(container2, kBackgroundType), container2_properties);
   }
   DrawRect(context, container2, kBackgroundType, FloatRect(100, 200, 100, 100));
 
@@ -1352,33 +1346,42 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
   FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
   GraphicsContext context(GetPaintController());
 
-  PaintChunkProperties container1_background_properties =
-      DefaultPaintChunkProperties();
-  PaintChunkProperties content1_properties = DefaultPaintChunkProperties();
-  PaintChunkProperties container1_foreground_properties =
-      DefaultPaintChunkProperties();
-  PaintChunkProperties container2_background_properties =
-      DefaultPaintChunkProperties();
-  PaintChunkProperties content2_properties = DefaultPaintChunkProperties();
+  auto container1_effect =
+      CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.5);
+  auto container1_background_properties = DefaultPaintChunkProperties();
+  container1_background_properties.SetEffect(container1_effect.get());
+  auto container1_foreground_properties = DefaultPaintChunkProperties();
+  container1_foreground_properties.SetEffect(container1_effect.get());
+
+  auto content1_effect =
+      CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.6);
+  auto content1_properties = DefaultPaintChunkProperties();
+  content1_properties.SetEffect(content1_effect.get());
+
+  auto container2_effect =
+      CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.7);
+  auto container2_background_properties = DefaultPaintChunkProperties();
+  container2_background_properties.SetEffect(container2_effect.get());
+
+  auto content2_effect =
+      CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.8);
+  auto content2_properties = DefaultPaintChunkProperties();
+  content2_properties.SetEffect(content2_effect.get());
 
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      PaintChunk::Id id(container1, kBackgroundType);
-      container1_background_properties.property_tree_state.SetEffect(
-          CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.5));
       GetPaintController().UpdateCurrentPaintChunkProperties(
-          id, container1_background_properties);
+          PaintChunk::Id(container1, kBackgroundType),
+          container1_background_properties);
     }
     SubsequenceRecorder r(context, container1);
     DrawRect(context, container1, kBackgroundType,
              FloatRect(100, 100, 100, 100));
+
     {
       if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-        PaintChunk::Id id(content1, kBackgroundType);
-        content1_properties.property_tree_state.SetEffect(
-            CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.6));
         GetPaintController().UpdateCurrentPaintChunkProperties(
-            id, content1_properties);
+            PaintChunk::Id(content1, kBackgroundType), content1_properties);
       }
       SubsequenceRecorder r(context, content1);
       DrawRect(context, content1, kBackgroundType,
@@ -1387,33 +1390,26 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
                FloatRect(100, 100, 50, 200));
     }
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      PaintChunk::Id id(container1, kForegroundType);
-      container1_foreground_properties.property_tree_state.SetEffect(
-          CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.5));
       GetPaintController().UpdateCurrentPaintChunkProperties(
-          id, container1_foreground_properties);
+          PaintChunk::Id(container1, kForegroundType),
+          container1_foreground_properties);
     }
     DrawRect(context, container1, kForegroundType,
              FloatRect(100, 100, 100, 100));
   }
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      PaintChunk::Id id(container2, kBackgroundType);
-      container2_background_properties.property_tree_state.SetEffect(
-          CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.7));
       GetPaintController().UpdateCurrentPaintChunkProperties(
-          id, container2_background_properties);
+          PaintChunk::Id(container2, kBackgroundType),
+          container2_background_properties);
     }
     SubsequenceRecorder r(context, container2);
     DrawRect(context, container2, kBackgroundType,
              FloatRect(100, 200, 100, 100));
     {
       if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-        PaintChunk::Id id(content2, kBackgroundType);
-        content2_properties.property_tree_state.SetEffect(
-            CreateOpacityEffect(EffectPaintPropertyNode::Root(), 0.8));
         GetPaintController().UpdateCurrentPaintChunkProperties(
-            id, content2_properties);
+            PaintChunk::Id(content2, kBackgroundType), content2_properties);
       }
       SubsequenceRecorder r(context, content2);
       DrawRect(context, content2, kBackgroundType,
@@ -1486,9 +1482,8 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
   // Content2 now outputs foreground only.
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      PaintChunk::Id id(content2, kForegroundType);
       GetPaintController().UpdateCurrentPaintChunkProperties(
-          id, content2_properties);
+          PaintChunk::Id(content2, kForegroundType), content2_properties);
     }
     SubsequenceRecorder r(context, content2);
     DrawRect(context, content2, kForegroundType, FloatRect(100, 200, 50, 200));
@@ -1506,9 +1501,8 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
       EXPECT_FALSE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
           context, content1));
       if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-        PaintChunk::Id id(content1, kBackgroundType);
         GetPaintController().UpdateCurrentPaintChunkProperties(
-            id, content1_properties);
+            PaintChunk::Id(content1, kBackgroundType), content1_properties);
       }
       SubsequenceRecorder r(context, content1);
       DrawRect(context, content1, kBackgroundType,
@@ -1520,9 +1514,9 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
           context, content1));
     }
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      PaintChunk::Id id(container1, kForegroundType);
       GetPaintController().UpdateCurrentPaintChunkProperties(
-          id, container1_foreground_properties);
+          PaintChunk::Id(container1, kForegroundType),
+          container1_foreground_properties);
     }
     DrawRect(context, container1, kForegroundType,
              FloatRect(100, 100, 100, 100));
@@ -1824,10 +1818,7 @@ TEST_P(PaintControllerTest, SmallPaintControllerHasOnePaintChunk) {
   ScopedSlimmingPaintV2ForTest enable_s_pv2(true);
   FakeDisplayItemClient client("test client");
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    GetPaintController().UpdateCurrentPaintChunkProperties(
-        WTF::nullopt, DefaultPaintChunkProperties());
-  }
+  InitRootChunk();
   GraphicsContext context(GetPaintController());
   DrawRect(context, client, kBackgroundType, FloatRect(0, 0, 100, 100));
 

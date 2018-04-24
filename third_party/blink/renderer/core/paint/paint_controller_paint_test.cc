@@ -107,7 +107,7 @@ TEST_P(PaintControllerPaintTestForNonSPv1, ChunkIdClientCacheFlag) {
 
   // Verify that the background does not scroll.
   const PaintChunk& background_chunk = RootPaintController().PaintChunks()[0];
-  auto* transform = background_chunk.properties.property_tree_state.Transform();
+  auto* transform = background_chunk.properties.Transform();
   EXPECT_EQ(nullptr, transform->ScrollNode());
 
   const EffectPaintPropertyNode* effect_node =
@@ -116,7 +116,7 @@ TEST_P(PaintControllerPaintTestForNonSPv1, ChunkIdClientCacheFlag) {
 
   const PaintChunk& chunk = RootPaintController().PaintChunks()[1];
   EXPECT_EQ(*div.Layer(), chunk.id.client);
-  EXPECT_EQ(effect_node, chunk.properties.property_tree_state.Effect());
+  EXPECT_EQ(effect_node, chunk.properties.Effect());
 
   EXPECT_FALSE(div.Layer()->IsJustCreated());
   // Client used by only paint chunks and non-cachaeable display items but not

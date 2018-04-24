@@ -60,35 +60,31 @@ TEST_P(BlockPainterTest, ScrollHitTestProperties) {
 
   // The document should not scroll so there should be no scroll offset
   // transform.
-  auto* root_transform = root_chunk.properties.property_tree_state.Transform();
+  auto* root_transform = root_chunk.properties.Transform();
   EXPECT_EQ(nullptr, root_transform->ScrollNode());
 
   // The container's background chunk should not scroll and therefore should use
   // the root transform. Its local transform is actually a paint offset
   // transform.
-  auto* container_transform =
-      container_chunk.properties.property_tree_state.Transform()->Parent();
+  auto* container_transform = container_chunk.properties.Transform()->Parent();
   EXPECT_EQ(root_transform, container_transform);
   EXPECT_EQ(nullptr, container_transform->ScrollNode());
 
   // The scroll hit test should not be scrolled and should not be clipped.
   // Its local transform is actually a paint offset transform.
   auto* scroll_hit_test_transform =
-      scroll_hit_test_chunk.properties.property_tree_state.Transform()
-          ->Parent();
+      scroll_hit_test_chunk.properties.Transform()->Parent();
   EXPECT_EQ(nullptr, scroll_hit_test_transform->ScrollNode());
   EXPECT_EQ(root_transform, scroll_hit_test_transform);
-  auto* scroll_hit_test_clip =
-      scroll_hit_test_chunk.properties.property_tree_state.Clip();
+  auto* scroll_hit_test_clip = scroll_hit_test_chunk.properties.Clip();
   EXPECT_EQ(FloatRect(0, 0, 800, 600), scroll_hit_test_clip->ClipRect().Rect());
 
   // The scrolled contents should be scrolled and clipped.
-  auto* contents_transform =
-      contents_chunk.properties.property_tree_state.Transform();
+  auto* contents_transform = contents_chunk.properties.Transform();
   auto* contents_scroll = contents_transform->ScrollNode();
   EXPECT_EQ(IntRect(0, 0, 200, 300), contents_scroll->ContentsRect());
   EXPECT_EQ(IntRect(0, 0, 200, 200), contents_scroll->ContainerRect());
-  auto* contents_clip = contents_chunk.properties.property_tree_state.Clip();
+  auto* contents_clip = contents_chunk.properties.Clip();
   EXPECT_EQ(FloatRect(0, 0, 200, 200), contents_clip->ClipRect().Rect());
 
   // The scroll hit test display item maintains a reference to a scroll offset
@@ -134,20 +130,18 @@ TEST_P(BlockPainterTest, FrameScrollHitTestProperties) {
 
   // The scroll hit test should not be scrolled and should not be clipped.
   auto* scroll_hit_test_transform =
-      scroll_hit_test_chunk.properties.property_tree_state.Transform();
+      scroll_hit_test_chunk.properties.Transform();
   EXPECT_EQ(nullptr, scroll_hit_test_transform->ScrollNode());
-  auto* scroll_hit_test_clip =
-      scroll_hit_test_chunk.properties.property_tree_state.Clip();
+  auto* scroll_hit_test_clip = scroll_hit_test_chunk.properties.Clip();
   EXPECT_EQ(LayoutRect::InfiniteIntRect(),
             scroll_hit_test_clip->ClipRect().Rect());
 
   // The scrolled contents should be scrolled and clipped.
-  auto* contents_transform =
-      contents_chunk.properties.property_tree_state.Transform();
+  auto* contents_transform = contents_chunk.properties.Transform();
   auto* contents_scroll = contents_transform->ScrollNode();
   EXPECT_EQ(IntRect(0, 0, 800, 2000), contents_scroll->ContentsRect());
   EXPECT_EQ(IntRect(0, 0, 800, 600), contents_scroll->ContainerRect());
-  auto* contents_clip = contents_chunk.properties.property_tree_state.Clip();
+  auto* contents_clip = contents_chunk.properties.Clip();
   EXPECT_EQ(FloatRect(0, 0, 800, 600), contents_clip->ClipRect().Rect());
 
   // The scroll hit test display item maintains a reference to a scroll offset

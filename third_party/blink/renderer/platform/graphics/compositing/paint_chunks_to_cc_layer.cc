@@ -265,7 +265,7 @@ void ConversionContext::TranslateForLayerOffsetOnce() {
 void ConversionContext::SwitchToChunkState(const PaintChunk& chunk) {
   chunk_to_layer_mapper_.SwitchToChunk(chunk);
 
-  const auto& chunk_state = chunk.properties.property_tree_state;
+  const auto& chunk_state = chunk.properties;
   SwitchToEffect(chunk_state.Effect());
   SwitchToClip(chunk_state.Clip());
   SwitchToTransform(chunk_state.Transform());
@@ -640,7 +640,7 @@ void ConversionContext::EndTransform() {
 void ConversionContext::Convert(const PaintChunkSubset& paint_chunks,
                                 const DisplayItemList& display_items) {
   for (const auto& chunk : paint_chunks) {
-    const auto& chunk_state = chunk.properties.property_tree_state;
+    const auto& chunk_state = chunk.properties;
     bool switched_to_chunk_state = false;
 
     for (const auto& item : display_items.ItemsInPaintChunk(chunk)) {

@@ -5013,23 +5013,37 @@ TEST_P(PaintPropertyTreeBuilderTest,
       GetDocument(), WebFeature::kFilterAsContainingBlockMayChangeOutput));
 }
 
-TEST_P(PaintPropertyTreeBuilderTest, CompositedLayerPaintOffsetTranslation) {
+TEST_P(PaintPropertyTreeBuilderTest, BackfaceHidden) {
   SetBodyInnerHTML(R"HTML(
     <style>#target { position: absolute; top: 50px; left: 60px }</style>
     <div id='target' style='backface-visibility: hidden'></div>
   )HTML");
 
   const auto* target = GetLayoutObjectByElementId("target");
+  const auto* target_properties = target->FirstFragment().PaintProperties();
+  ASSERT_NE(nullptr, target_properties);
+  const auto* paint_offset_translation =
+      target_properties->PaintOffsetTranslation();
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_EQ(nullptr, target->FirstFragment().PaintProperties());
+    EXPECT_EQ(nullptr, paint_offset_translation);
     EXPECT_EQ(LayoutPoint(60, 50), target->FirstFragment().PaintOffset());
   } else {
     // For SPv1*, |target| is composited so we created PaintOffsetTranslation.
-    const auto* paint_offset_translation =
-        target->FirstFragment().PaintProperties()->PaintOffsetTranslation();
     ASSERT_NE(nullptr, paint_offset_translation);
     EXPECT_EQ(TransformationMatrix().Translate(60, 50),
               paint_offset_translation->Matrix());
+    EXPECT_EQ(TransformPaintPropertyNode::BackfaceVisibility::kInherited,
+              paint_offset_translation->GetBackfaceVisibility());
+  }
+
+  const auto* transform = target_properties->Transform();
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    ASSERT_NE(nullptr, transform);
+    EXPECT_TRUE(transform->Matrix().IsIdentity());
+    EXPECT_EQ(TransformPaintPropertyNode::BackfaceVisibility::kHidden,
+              transform->GetBackfaceVisibility());
+  } else {
+    EXPECT_EQ(nullptr, transform);
   }
 
   ToElement(target->GetNode())->setAttribute(HTMLNames::styleAttr, "");

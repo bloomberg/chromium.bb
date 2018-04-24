@@ -12,7 +12,7 @@ struct SameSizeAsPaintChunk {
   size_t begin;
   size_t end;
   PaintChunk::Id id;
-  PaintChunkProperties properties;
+  PropertyTreeState properties;
   unsigned bools;
   float extend;
   FloatRect bounds;

@@ -12,9 +12,10 @@ TransformPaintPropertyNode* TransformPaintPropertyNode::Root() {
   DEFINE_STATIC_REF(
       TransformPaintPropertyNode, root,
       base::AdoptRef(new TransformPaintPropertyNode(
-          nullptr, State{TransformationMatrix(), FloatPoint3D(), false, 0,
-                         CompositingReason::kNone, CompositorElementId(),
-                         ScrollPaintPropertyNode::Root()})));
+          nullptr,
+          State{TransformationMatrix(), FloatPoint3D(), false,
+                BackfaceVisibility::kVisible, 0, CompositingReason::kNone,
+                CompositorElementId(), ScrollPaintPropertyNode::Root()})));
   return root;
 }
 
@@ -40,6 +41,12 @@ std::unique_ptr<JSONObject> TransformPaintPropertyNode::ToJSON() const {
     json->SetString("origin", state_.origin.ToString());
   if (!state_.flattens_inherited_transform)
     json->SetBoolean("flattensInheritedTransform", false);
+  if (state_.backface_visibility != BackfaceVisibility::kInherited) {
+    json->SetString("backface",
+                    state_.backface_visibility == BackfaceVisibility::kVisible
+                        ? "visible"
+                        : "hidden");
+  }
   if (state_.rendering_context_id) {
     json->SetString("renderingContextId",
                     String::Format("%x", state_.rendering_context_id));

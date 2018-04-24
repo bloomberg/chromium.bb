@@ -131,8 +131,7 @@ void PaintController::DisplayItemListAsJSON::AppendSubsequenceAsJSON(
 
     json_object->SetString(
         "chunk", ClientName(chunk.id.client) + " " + chunk.id.ToString());
-    json_object->SetString("state",
-                           chunk.properties.property_tree_state.ToString());
+    json_object->SetString("state", chunk.properties.ToString());
     if (flags_ & DisplayItemList::kShowPaintRecords)
       json_object->SetString("chunkData", chunk.ToString());
 

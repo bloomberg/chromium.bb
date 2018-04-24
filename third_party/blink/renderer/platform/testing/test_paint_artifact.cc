@@ -55,26 +55,23 @@ TestPaintArtifact& TestPaintArtifact::Chunk(
     scoped_refptr<const TransformPaintPropertyNode> transform,
     scoped_refptr<const ClipPaintPropertyNode> clip,
     scoped_refptr<const EffectPaintPropertyNode> effect) {
-  PropertyTreeState property_tree_state(transform.get(), clip.get(),
-                                        effect.get());
-  PaintChunkProperties properties(property_tree_state);
-  return Chunk(client, properties);
+  return Chunk(client,
+               PropertyTreeState(transform.get(), clip.get(), effect.get()));
 }
 
 TestPaintArtifact& TestPaintArtifact::Chunk(
-    const PaintChunkProperties& properties) {
+    const PropertyTreeState& properties) {
   return Chunk(NewClient(), properties);
 }
 
-TestPaintArtifact& TestPaintArtifact::Chunk(
-    DisplayItemClient& client,
-    const PaintChunkProperties& properties) {
+TestPaintArtifact& TestPaintArtifact::Chunk(DisplayItemClient& client,
+                                            const PropertyTreeState& state) {
   auto& chunks = paint_chunks_data_.chunks;
   if (!chunks.IsEmpty())
     chunks.back().end_index = display_item_list_.size();
-  chunks.push_back(PaintChunk(
-      display_item_list_.size(), 0,
-      PaintChunk::Id(client, DisplayItem::kDrawingFirst), properties));
+  chunks.push_back(
+      PaintChunk(display_item_list_.size(), 0,
+                 PaintChunk::Id(client, DisplayItem::kDrawingFirst), state));
   // Assume PaintController has processed this chunk.
   chunks.back().client_is_just_created = false;
   return *this;

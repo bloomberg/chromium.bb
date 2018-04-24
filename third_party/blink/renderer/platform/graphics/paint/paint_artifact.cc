@@ -124,7 +124,7 @@ void PaintArtifact::AppendToWebDisplayItemList(
 void PaintArtifact::FinishCycle() {
   for (auto& chunk : chunks_and_invalidations_.chunks) {
     chunk.client_is_just_created = false;
-    chunk.properties.property_tree_state.ClearChangedToRoot();
+    chunk.properties.ClearChangedToRoot();
   }
   chunks_and_invalidations_.raster_invalidation_rects.clear();
   chunks_and_invalidations_.raster_invalidation_trackings.clear();

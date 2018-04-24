@@ -15,6 +15,11 @@
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='inner'",
+          "rect": [0, 0, 100, 100],
+          "reason": "disappeared"
+        },
+        {
           "object": "LayoutBlockFlow (relative positioned) DIV id='outer'",
           "rect": [0, 0, 100, 100],
           "reason": "appeared"

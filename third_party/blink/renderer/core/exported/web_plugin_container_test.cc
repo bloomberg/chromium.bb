@@ -1369,12 +1369,8 @@ TEST_F(WebPluginContainerTest, CompositedPluginSPv2) {
       static_cast<const CompositedPlugin*>(container->Plugin());
 
   std::unique_ptr<PaintController> paint_controller = PaintController::Create();
-  PropertyTreeState property_tree_state(TransformPaintPropertyNode::Root(),
-                                        ClipPaintPropertyNode::Root(),
-                                        EffectPaintPropertyNode::Root());
-  PaintChunkProperties properties(property_tree_state);
-
-  paint_controller->UpdateCurrentPaintChunkProperties(WTF::nullopt, properties);
+  paint_controller->UpdateCurrentPaintChunkProperties(
+      WTF::nullopt, PropertyTreeState::Root());
   GraphicsContext graphics_context(*paint_controller);
   container->Paint(graphics_context, kGlobalPaintNormalPhase,
                    CullRect(IntRect(10, 10, 400, 300)));

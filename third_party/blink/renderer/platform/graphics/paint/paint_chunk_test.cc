@@ -10,8 +10,8 @@
 
 namespace blink {
 
-TEST(PaintChunkTest, matchesSame) {
-  PaintChunkProperties properties;
+TEST(PaintChunkTest, MatchesSame) {
+  auto properties = PropertyTreeState::Root();
   FakeDisplayItemClient client;
   client.UpdateCacheGeneration();
   DisplayItem::Id id(client, DisplayItem::kDrawingFirst);
@@ -19,8 +19,8 @@ TEST(PaintChunkTest, matchesSame) {
                   .Matches(PaintChunk(0, 1, id, properties)));
 }
 
-TEST(PaintChunkTest, matchesEqual) {
-  PaintChunkProperties properties;
+TEST(PaintChunkTest, MatchesEqual) {
+  auto properties = PropertyTreeState::Root();
   FakeDisplayItemClient client;
   client.UpdateCacheGeneration();
   DisplayItem::Id id(client, DisplayItem::kDrawingFirst);
@@ -32,7 +32,7 @@ TEST(PaintChunkTest, matchesEqual) {
 }
 
 TEST(PaintChunkTest, IdNotMatches) {
-  PaintChunkProperties properties;
+  auto properties = PropertyTreeState::Root();
   FakeDisplayItemClient client1;
   client1.UpdateCacheGeneration();
   DisplayItem::Id id1(client1, DisplayItem::kDrawingFirst);
@@ -45,7 +45,7 @@ TEST(PaintChunkTest, IdNotMatches) {
 }
 
 TEST(PaintChunkTest, IdNotMatchesUncacheable) {
-  PaintChunkProperties properties;
+  auto properties = PropertyTreeState::Root();
   FakeDisplayItemClient client;
   client.UpdateCacheGeneration();
   DisplayItem::Id id(client, DisplayItem::kDrawingFirst);
@@ -60,7 +60,7 @@ TEST(PaintChunkTest, IdNotMatchesUncacheable) {
 }
 
 TEST(PaintChunkTest, IdNotMatchesJustCreated) {
-  PaintChunkProperties properties;
+  auto properties = PropertyTreeState::Root();
   Optional<FakeDisplayItemClient> client;
   client.emplace();
   EXPECT_TRUE(client->IsJustCreated());

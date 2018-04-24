@@ -74,9 +74,8 @@ class PLATFORM_EXPORT PaintController {
 
   // Provide a new set of paint chunk properties to apply to recorded display
   // items, for Slimming Paint v175+.
-  void UpdateCurrentPaintChunkProperties(
-      const Optional<PaintChunk::Id>& id,
-      const PaintChunkProperties& properties) {
+  void UpdateCurrentPaintChunkProperties(const Optional<PaintChunk::Id>& id,
+                                         const PropertyTreeState& properties) {
     if (id) {
       PaintChunk::Id id_with_fragment(*id, current_fragment_);
       UpdateCurrentPaintChunkPropertiesUsingIdWithFragment(id_with_fragment,
@@ -90,7 +89,7 @@ class PLATFORM_EXPORT PaintController {
     }
   }
 
-  const PaintChunkProperties& CurrentPaintChunkProperties() const {
+  const PropertyTreeState& CurrentPaintChunkProperties() const {
     return new_paint_chunks_.CurrentPaintChunkProperties();
   }
 
@@ -300,7 +299,7 @@ class PLATFORM_EXPORT PaintController {
 
   void UpdateCurrentPaintChunkPropertiesUsingIdWithFragment(
       const PaintChunk::Id& id_with_fragment,
-      const PaintChunkProperties& properties) {
+      const PropertyTreeState& properties) {
     new_paint_chunks_.UpdateCurrentPaintChunkProperties(id_with_fragment,
                                                         properties);
   }

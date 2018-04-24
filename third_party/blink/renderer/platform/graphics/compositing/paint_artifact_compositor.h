@@ -120,7 +120,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     FloatRect bounds;
     Vector<size_t> paint_chunk_indices;
     FloatRect rect_known_to_be_opaque;
-    bool backface_hidden;
     PropertyTreeState property_tree_state;
     bool requires_own_layer;
   };
