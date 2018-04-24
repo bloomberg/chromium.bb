@@ -38,9 +38,9 @@
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/web/devtools_agent.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/inspector/InspectorLayerTreeAgent.h"
-#include "third_party/blink/renderer/core/inspector/InspectorPageAgent.h"
-#include "third_party/blink/renderer/core/inspector/InspectorTracingAgent.h"
+#include "third_party/blink/renderer/core/inspector/inspector_layer_tree_agent.h"
+#include "third_party/blink/renderer/core/inspector/inspector_page_agent.h"
+#include "third_party/blink/renderer/core/inspector/inspector_tracing_agent.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 

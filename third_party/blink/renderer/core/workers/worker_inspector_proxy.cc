@@ -6,9 +6,9 @@
 
 #include "base/location.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
-#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
-#include "third_party/blink/renderer/core/inspector/InspectorWorkerAgent.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
+#include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
+#include "third_party/blink/renderer/core/inspector/inspector_worker_agent.h"
 #include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/execution_context_worker_registry.h"

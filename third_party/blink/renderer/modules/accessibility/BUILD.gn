@@ -6,8 +6,6 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("accessibility") {
   sources = [
-    "InspectorAccessibilityAgent.cpp",
-    "InspectorAccessibilityAgent.h",
     "ax_aria_grid.cc",
     "ax_aria_grid.h",
     "ax_aria_grid_cell.cc",
@@ -76,6 +74,8 @@ blink_modules_sources("accessibility") {
     "ax_table_row.h",
     "ax_virtual_object.cc",
     "ax_virtual_object.h",
+    "inspector_accessibility_agent.cc",
+    "inspector_accessibility_agent.h",
     "inspector_type_builder_helper.cc",
     "inspector_type_builder_helper.h",
   ]

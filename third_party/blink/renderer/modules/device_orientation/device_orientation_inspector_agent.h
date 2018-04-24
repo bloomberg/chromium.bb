@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_ORIENTATION_INSPECTOR_AGENT_H_
 
 #include "base/macros.h"
-#include "third_party/blink/renderer/core/inspector/InspectorBaseAgent.h"
+#include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/DeviceOrientation.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 

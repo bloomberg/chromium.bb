@@ -6,8 +6,6 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("cachestorage") {
   sources = [
-    "InspectorCacheStorageAgent.cpp",
-    "InspectorCacheStorageAgent.h",
     "cache.cc",
     "cache.h",
     "cache_storage.cc",
@@ -16,6 +14,8 @@ blink_modules_sources("cachestorage") {
     "cache_storage_error.h",
     "global_cache_storage.cc",
     "global_cache_storage.h",
+    "inspector_cache_storage_agent.cc",
+    "inspector_cache_storage_agent.h",
   ]
 
   public_deps = [

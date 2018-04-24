@@ -6,8 +6,6 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("webdatabase") {
   sources = [
-    "InspectorDatabaseAgent.cpp",
-    "InspectorDatabaseAgent.h",
     "change_version_data.h",
     "change_version_wrapper.cc",
     "change_version_wrapper.h",
@@ -31,6 +29,8 @@ blink_modules_sources("webdatabase") {
     "database_tracker.h",
     "dom_window_web_database.cc",
     "dom_window_web_database.h",
+    "inspector_database_agent.cc",
+    "inspector_database_agent.h",
     "inspector_database_resource.cc",
     "inspector_database_resource.h",
     "quota_tracker.cc",
