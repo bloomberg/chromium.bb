@@ -256,9 +256,9 @@ NSString* const kActivityServicesSnackbarCategory =
                                       dispatcher:dispatcher];
     [applicationActivities addObject:readingListActivity];
 
-    if (IsUIRefreshPhase1Enabled() && bookmarkModel &&
-        bookmarkModel->loaded()) {
-      BOOL bookmarked = bookmarkModel->IsBookmarked(data.visibleURL);
+    if (IsUIRefreshPhase1Enabled() && bookmarkModel) {
+      BOOL bookmarked = bookmarkModel->loaded() &&
+                        bookmarkModel->IsBookmarked(data.visibleURL);
       BookmarkActivity* bookmarkActivity =
           [[BookmarkActivity alloc] initWithURL:data.visibleURL
                                      bookmarked:bookmarked
