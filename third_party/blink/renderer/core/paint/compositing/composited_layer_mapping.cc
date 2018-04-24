@@ -534,12 +534,24 @@ GraphicsLayer* CompositedLayerMapping::FrameContentsGraphicsLayer() const {
 
   DCHECK(layoutView->HasLayer());
   PaintLayer* layer = layoutView->Layer();
-  if (!layer->IsAllowedToQueryCompositingState() ||
-      !layer->HasCompositedLayerMapping()) {
-    // If the child frame's compositing update is still pending, it will compute
-    // its own GraphicsLayer location with FrameOwnerContentsLocation().
+
+  // PaintLayerCompositor updates child frames before parents, so in general
+  // it is safe to read the child's compositing state here, and to position its
+  // main GraphicsLayer in UpdateAfterPartResize.
+
+  // If the child is not yet in compositing mode, there's nothing to do for now.
+  // If it becomes composited later, it will mark the parent frame for another
+  // compositing update (see PaintLayerCompositor::AttachRootLayer).
+
+  // If the child's rendering is throttled, its lifecycle state may not permit
+  // compositing queries.  But in that case, it has not yet entered compositing
+  // mode (see above).
+
+  if (layoutView->GetFrameView()->ShouldThrottleRendering())
     return nullptr;
-  }
+  DCHECK(layer->IsAllowedToQueryCompositingState());
+  if (!layer->HasCompositedLayerMapping())
+    return nullptr;
 
   return layer->GetCompositedLayerMapping()->MainGraphicsLayer();
 }
@@ -1269,8 +1281,15 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
     const IntRect& relative_compositing_bounds,
     const IntRect& local_compositing_bounds,
     const IntPoint& graphics_layer_parent_location) {
-  graphics_layer_->SetPosition(FloatPoint(
-      relative_compositing_bounds.Location() - graphics_layer_parent_location));
+  // In RLS mode, an iframe's main GraphicsLayer is positioned by the CLM for
+  // the <iframe> element in the parent frame's DOM.
+  bool is_iframe_doc = GetLayoutObject().IsLayoutView() &&
+                       !GetLayoutObject().GetFrame()->IsLocalRoot();
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() || !is_iframe_doc) {
+    graphics_layer_->SetPosition(
+        FloatPoint(relative_compositing_bounds.Location() -
+                   graphics_layer_parent_location));
+  }
   graphics_layer_->SetOffsetFromLayoutObject(
       ToIntSize(local_compositing_bounds.Location()));
 
@@ -1292,32 +1311,6 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
       EBackfaceVisibility::kVisible);
 }
 
-LayoutPoint CompositedLayerMapping::FrameOwnerContentsLocation() const {
-  LocalFrame* frame = GetLayoutObject().GetFrame();
-  DCHECK(frame && !frame->IsLocalRoot());
-
-  HTMLFrameOwnerElement* owner = ToHTMLFrameOwnerElement(frame->Owner());
-  LayoutObject* ownerLayoutObject = owner->GetLayoutObject();
-  if (!ownerLayoutObject || !ownerLayoutObject->HasLayer())
-    return LayoutPoint();
-
-  PaintLayer* ownerLayer = ToLayoutBoxModelObject(ownerLayoutObject)->Layer();
-  if (!ownerLayer->IsAllowedToQueryCompositingState() ||
-      !ownerLayer->HasCompositedLayerMapping()) {
-    // If the parent frame's compositing update is still pending, it will adjust
-    // our position in UpdateAfterPartResize.
-    return LayoutPoint();
-  }
-
-  CompositedLayerMapping* owner_clm = ownerLayer->GetCompositedLayerMapping();
-  LayoutSize parent_posn_offset = LayoutSize(
-      ToFloatSize(owner_clm->child_containment_layer_
-                      ? owner_clm->child_containment_layer_->GetPosition()
-                      : FloatPoint()));
-  return ownerLayer->GetCompositedLayerMapping()->ContentsBox().Location() -
-         parent_posn_offset;
-}
-
 void CompositedLayerMapping::ComputeGraphicsLayerParentLocation(
     const PaintLayer* compositing_container,
     IntPoint& graphics_layer_parent_location) {
@@ -1332,8 +1325,7 @@ void CompositedLayerMapping::ComputeGraphicsLayerParentLocation(
   } else if (!GetLayoutObject().GetFrame()->IsLocalRoot()) {  // TODO(oopif)
     DCHECK(RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
            !compositing_container);
-    graphics_layer_parent_location =
-        -FlooredIntPoint(FrameOwnerContentsLocation());
+    graphics_layer_parent_location = IntPoint();
   }
 
   if (compositing_container &&

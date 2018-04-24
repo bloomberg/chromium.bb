@@ -543,9 +543,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // that layer does not appear earlier in the set of layers for this object.
   bool InvalidateLayerIfNoPrecedingEntry(size_t);
 
-  // ContentsBox() of the CLM for the <iframe> element that owns us.
-  LayoutPoint FrameOwnerContentsLocation() const;
-
   // Main GraphicsLayer of the CLM for the iframe's content document.
   GraphicsLayer* FrameContentsGraphicsLayer() const;
 
