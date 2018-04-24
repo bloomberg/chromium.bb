@@ -96,7 +96,6 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   std::unique_ptr<CompositorFrameSinkSupport> support_;
 
   const FrameSinkId frame_sink_id_;
-  LocalSurfaceId local_surface_id_;
   CompositorFrameSinkSupportManager* const support_manager_;
   FrameSinkManagerImpl* frame_sink_manager_;
   ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
