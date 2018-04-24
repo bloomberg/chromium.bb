@@ -41,13 +41,6 @@ const char kAlternativeUniqueId[] = "bb48a9fb-c21f-4c2d-a9ae-58bd48a9fb53";
 const char kInitialTitle[] = "Initial Title";
 const char kUpdatedTitle[] = "Updated Title";
 
-// See schema documentation in background_fetch_data_manager.cc.
-// A "bgfetch_registration_" per registration (not including keys for requests).
-constexpr size_t kUserDataKeysPerInactiveRegistration = 1u;
-
-// A "bgfetch_request_" per request.
-constexpr size_t kUserDataKeysPerInactiveRequest = 1u;
-
 void DidCreateRegistration(
     base::Closure quit_closure,
     blink::mojom::BackgroundFetchError* out_error,
@@ -609,10 +602,6 @@ TEST_P(BackgroundFetchDataManagerTest, Cleanup) {
   BackgroundFetchOptions options;
   blink::mojom::BackgroundFetchError error;
 
-  size_t expected_inactive_data_count =
-      kUserDataKeysPerInactiveRegistration +
-      requests.size() * kUserDataKeysPerInactiveRequest;
-
   if (registration_storage_ ==
       BackgroundFetchRegistrationStorage::kPersistent) {
     EXPECT_EQ(
@@ -623,6 +612,15 @@ TEST_P(BackgroundFetchDataManagerTest, Cleanup) {
   CreateRegistration(registration_id, requests, options, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
+  if (registration_storage_ ==
+      BackgroundFetchRegistrationStorage::kPersistent) {
+    // We expect as many pending entries as there are requests.
+    EXPECT_EQ(requests.size(),
+              GetRegistrationUserDataByKeyPrefix(
+                  sw_id, background_fetch::kPendingRequestKeyPrefix)
+                  .size());
+  }
+
   // And deactivate it.
   MarkRegistrationForDeletion(registration_id, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -631,8 +629,13 @@ TEST_P(BackgroundFetchDataManagerTest, Cleanup) {
 
   if (registration_storage_ ==
       BackgroundFetchRegistrationStorage::kPersistent) {
+    // Pending Requests should be deleted after marking a registration for
+    // deletion.
+    EXPECT_EQ(0u, GetRegistrationUserDataByKeyPrefix(
+                      sw_id, background_fetch::kPendingRequestKeyPrefix)
+                      .size());
     EXPECT_EQ(
-        expected_inactive_data_count,
+        1u,  // All the registration data is stored in the metadata proto.
         GetRegistrationUserDataByKeyPrefix(sw_id, kUserDataPrefix).size());
   }
 

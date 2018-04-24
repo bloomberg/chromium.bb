@@ -23,13 +23,15 @@ value: "<unique_id>"
 key: "bgfetch_registration_<unique_id>"
 value: "<serialized content::proto::BackgroundFetchMetadata>"
 ```
+
 ```
-key: "bgfetch_request_<unique_id>_<request_index>"
-value: "<TODO: FetchAPIRequest serialized as a string>"
+key: "bgfetch_pending_request_<unique_id>_<request_index>"
+value: "<serialized content::proto::BackgroundFetchPendingRequest>"
 ```
+
 ```
-key: "bgfetch_pending_request_<creation_time>_<unique_id>_<request_index>"
-value: ""
+key: "bgfetch_active_request_<unique_id>_<request_index>"
+value: "<serialized content::proto::BackgroundFetchActiveRequest>"
 ```
 
 ### Expansions
@@ -42,9 +44,4 @@ introduce ambiguity.
 * `<request_index>` is an `int` containing the index of a request within a
 multi-part fetch. These must be padded with zeros to ensure that the ordering
 is maintain when reading back from the database, e.g. `0000000000`.
-* `<creation_time>` is the registration creation time expressed as the number
-of microseconds since the unix epoch (internally stored as an `int64_t`).
-Without padding with zeros, this may introduce an ordering inversion in
-November 2286 and again in the year 5138, but the impact would only be on the
-relative ordering with which two different fetches were scheduled.
 
