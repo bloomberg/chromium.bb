@@ -113,10 +113,10 @@ IN_PROC_BROWSER_TEST_P(DirectManipulationBrowserTest, HWNDReparent) {
   UpdateParent(
       shell2->window()->GetRootWindow()->GetHost()->GetAcceleratedWidget());
 
-  shell()->Close();
-
   // The animation observer should be removed.
   EXPECT_FALSE(HasCompositorAnimationObserver(lrwhh));
+
+  shell2->Close();
 }
 
 // EventLogger is to obserser the events sent from WindowEventTarget (the root
