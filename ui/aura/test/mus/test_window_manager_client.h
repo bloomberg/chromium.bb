@@ -83,11 +83,10 @@ class TestWindowManagerClient : public ui::mojom::WindowManagerClient {
   void WmSetCursorTouchVisible(bool enabled) override;
   void OnWmCreatedTopLevelWindow(uint32_t change_id,
                                  ui::Id transport_window_id) override;
-  void OnAcceleratorAck(
-      uint32_t event_id,
-      ui::mojom::EventResult result,
-      const std::unordered_map<std::string, std::vector<uint8_t>>& properties)
-      override;
+  void OnAcceleratorAck(uint32_t event_id,
+                        ui::mojom::EventResult result,
+                        const base::flat_map<std::string, std::vector<uint8_t>>&
+                            properties) override;
 
   std::vector<WindowManagerClientChangeType> changes_;
   int64_t last_internal_display_id_ = -1;

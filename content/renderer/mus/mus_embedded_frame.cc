@@ -80,7 +80,7 @@ MusEmbeddedFrame::MusEmbeddedFrame(
 void MusEmbeddedFrame::CreateChildWindowAndEmbed(
     const base::UnguessableToken& token) {
   // Set a name for debugging.
-  std::unordered_map<std::string, std::vector<uint8_t>> properties;
+  base::flat_map<std::string, std::vector<uint8_t>> properties;
   properties[ui::mojom::WindowManager::kName_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(std::string("RendererFrame"));
   window_tree()->NewWindow(GetAndAdvanceNextChangeId(), window_id_, properties);

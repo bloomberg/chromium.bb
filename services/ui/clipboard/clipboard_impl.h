@@ -43,8 +43,8 @@ class ClipboardImpl : public mojom::Clipboard {
                          ReadClipboardDataCallback callback) override;
   void WriteClipboardData(
       mojom::Clipboard::Type clipboard_type,
-      const base::Optional<
-          std::unordered_map<std::string, std::vector<uint8_t>>>& data,
+      const base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>&
+          data,
       WriteClipboardDataCallback callback) override;
 
  private:

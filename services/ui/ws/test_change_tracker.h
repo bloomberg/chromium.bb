@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <string>
-#include <unordered_map>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "services/ui/common/types.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -99,7 +99,7 @@ struct Change {
   float device_scale_factor;
   gfx::Transform transform;
   // Set in OnWindowInputEvent() if the event is a KeyEvent.
-  std::unordered_map<std::string, std::vector<uint8_t>> key_event_properties;
+  base::flat_map<std::string, std::vector<uint8_t>> key_event_properties;
   int64_t display_id;
   gfx::Point location1;
   gfx::PointF location2;

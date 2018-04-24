@@ -6,9 +6,9 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_EQUALS_TRAITS_H_
 
 #include <type_traits>
-#include <unordered_map>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 
@@ -74,9 +74,9 @@ struct EqualsTraits<std::vector<T>, false> {
 };
 
 template <typename K, typename V>
-struct EqualsTraits<std::unordered_map<K, V>, false> {
-  static bool Equals(const std::unordered_map<K, V>& a,
-                     const std::unordered_map<K, V>& b) {
+struct EqualsTraits<base::flat_map<K, V>, false> {
+  static bool Equals(const base::flat_map<K, V>& a,
+                     const base::flat_map<K, V>& b) {
     if (a.size() != b.size())
       return false;
     for (const auto& element : a) {

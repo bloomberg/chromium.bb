@@ -46,7 +46,7 @@ DragController::DragController(
     ServerWindow* source_window,
     DragTargetConnection* source_connection,
     int32_t drag_pointer,
-    const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data,
+    const base::flat_map<std::string, std::vector<uint8_t>>& mime_data,
     DropEffectBitmask drag_operations)
     : source_(source),
       cursor_updater_(cursor_updater),

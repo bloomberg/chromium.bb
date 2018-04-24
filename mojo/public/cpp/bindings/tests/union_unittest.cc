@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -703,7 +704,7 @@ TEST(UnionTest, PodUnionInMap) {
 TEST(UnionTest, PodUnionInMapSerialization) {
   using MojomType = MapDataView<StringDataView, PodUnionDataView>;
 
-  std::unordered_map<std::string, PodUnionPtr> map;
+  base::flat_map<std::string, PodUnionPtr> map;
   map.insert(std::make_pair("one", PodUnion::New()));
   map.insert(std::make_pair("two", PodUnion::New()));
 
@@ -723,7 +724,7 @@ TEST(UnionTest, PodUnionInMapSerialization) {
                                        &validate_params, &context);
   EXPECT_EQ(120U, message.payload_buffer()->cursor() - payload_start);
 
-  std::unordered_map<std::string, PodUnionPtr> map2;
+  base::flat_map<std::string, PodUnionPtr> map2;
   mojo::internal::Deserialize<MojomType>(writer.data(), &map2, &context);
 
   EXPECT_EQ(8, map2["one"]->get_f_int8());
@@ -733,7 +734,7 @@ TEST(UnionTest, PodUnionInMapSerialization) {
 TEST(UnionTest, PodUnionInMapSerializationWithNull) {
   using MojomType = MapDataView<StringDataView, PodUnionDataView>;
 
-  std::unordered_map<std::string, PodUnionPtr> map;
+  base::flat_map<std::string, PodUnionPtr> map;
   map.insert(std::make_pair("one", PodUnion::New()));
   map.insert(std::make_pair("two", nullptr));
 
@@ -752,7 +753,7 @@ TEST(UnionTest, PodUnionInMapSerializationWithNull) {
                                        &validate_params, &context);
   EXPECT_EQ(120U, message.payload_buffer()->cursor() - payload_start);
 
-  std::unordered_map<std::string, PodUnionPtr> map2;
+  base::flat_map<std::string, PodUnionPtr> map2;
   mojo::internal::Deserialize<MojomType>(writer.data(), &map2, &context);
 
   EXPECT_EQ(8, map2["one"]->get_f_int8());
@@ -893,7 +894,7 @@ TEST(UnionTest, ArrayInUnionValidation) {
 }
 
 TEST(UnionTest, MapInUnionGetterSetter) {
-  std::unordered_map<std::string, int8_t> map;
+  base::flat_map<std::string, int8_t> map;
   map.insert({"one", 1});
   map.insert({"two", 2});
 
@@ -905,7 +906,7 @@ TEST(UnionTest, MapInUnionGetterSetter) {
 }
 
 TEST(UnionTest, MapInUnionSerialization) {
-  std::unordered_map<std::string, int8_t> map;
+  base::flat_map<std::string, int8_t> map;
   map.insert({"one", 1});
   map.insert({"two", 2});
 
@@ -926,7 +927,7 @@ TEST(UnionTest, MapInUnionSerialization) {
 }
 
 TEST(UnionTest, MapInUnionValidation) {
-  std::unordered_map<std::string, int8_t> map;
+  base::flat_map<std::string, int8_t> map;
   map.insert({"one", 1});
   map.insert({"two", 2});
 

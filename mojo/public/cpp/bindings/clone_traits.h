@@ -6,9 +6,9 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_CLONE_TRAITS_H_
 
 #include <type_traits>
-#include <unordered_map>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 
@@ -65,9 +65,9 @@ struct CloneTraits<std::vector<T>, false> {
 };
 
 template <typename K, typename V>
-struct CloneTraits<std::unordered_map<K, V>, false> {
-  static std::unordered_map<K, V> Clone(const std::unordered_map<K, V>& input) {
-    std::unordered_map<K, V> result;
+struct CloneTraits<base::flat_map<K, V>, false> {
+  static base::flat_map<K, V> Clone(const base::flat_map<K, V>& input) {
+    base::flat_map<K, V> result;
     for (const auto& element : input) {
       result.insert(std::make_pair(mojo::Clone(element.first),
                                    mojo::Clone(element.second)));

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/test_simple_task_runner.h"
@@ -367,7 +368,7 @@ TEST_F(WindowManagerStateTest, AckWithProperties) {
   EXPECT_TRUE(tracker2->changes()->empty());
 
   // Ack the accelerator, with unhandled.
-  std::unordered_map<std::string, std::vector<uint8_t>> event_properties;
+  base::flat_map<std::string, std::vector<uint8_t>> event_properties;
   const std::string property_key = "x";
   const std::vector<uint8_t> property_value(2, 0xAB);
   event_properties[property_key] = property_value;

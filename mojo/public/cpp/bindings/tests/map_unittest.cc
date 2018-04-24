@@ -4,9 +4,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <unordered_map>
 #include <utility>
 
+#include "base/containers/flat_map.h"
 #include "mojo/public/cpp/bindings/tests/rect_chromium.h"
 #include "mojo/public/interfaces/bindings/tests/rect.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
@@ -17,7 +17,7 @@ namespace test {
 namespace {
 
 TEST(MapTest, StructKey) {
-  std::unordered_map<RectPtr, int32_t> map;
+  base::flat_map<RectPtr, int32_t> map;
   map.insert(std::make_pair(Rect::New(1, 2, 3, 4), 123));
 
   RectPtr key = Rect::New(1, 2, 3, 4);
@@ -29,7 +29,7 @@ TEST(MapTest, StructKey) {
 }
 
 TEST(MapTest, TypemappedStructKey) {
-  std::unordered_map<ContainsHashablePtr, int32_t> map;
+  base::flat_map<ContainsHashablePtr, int32_t> map;
   map.insert(
       std::make_pair(ContainsHashable::New(RectChromium(1, 2, 3, 4)), 123));
 

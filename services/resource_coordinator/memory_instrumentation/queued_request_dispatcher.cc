@@ -520,7 +520,7 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
         // Silently ignore any missing node in the process graph.
         if (!node)
           continue;
-        std::unordered_map<std::string, uint64_t> numeric_entries;
+        base::flat_map<std::string, uint64_t> numeric_entries;
         for (const auto& entry : *node->entries()) {
           if (entry.second.type == Node::Entry::Type::kUInt64)
             numeric_entries.emplace(entry.first, entry.second.value_uint64);

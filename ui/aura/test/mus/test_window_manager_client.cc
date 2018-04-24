@@ -121,6 +121,6 @@ void TestWindowManagerClient::OnWmCreatedTopLevelWindow(
 void TestWindowManagerClient::OnAcceleratorAck(
     uint32_t event_id,
     ui::mojom::EventResult result,
-    const std::unordered_map<std::string, std::vector<uint8_t>>& properties) {}
+    const base::flat_map<std::string, std::vector<uint8_t>>& properties) {}
 
 }  // namespace aura

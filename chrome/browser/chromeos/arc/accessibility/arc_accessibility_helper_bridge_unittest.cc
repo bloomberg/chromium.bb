@@ -245,8 +245,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
   event1->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
   event1->node_data[0]->id = 1;
   event1->node_data[0]->string_properties =
-      std::unordered_map<arc::mojom::AccessibilityStringProperty,
-                         std::string>();
+      base::flat_map<arc::mojom::AccessibilityStringProperty, std::string>();
   event1->node_data[0]->string_properties.value().insert(
       std::make_pair(arc::mojom::AccessibilityStringProperty::PACKAGE_NAME,
                      "com.android.vending"));
@@ -268,8 +267,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
   event2->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
   event2->node_data[0]->id = 2;
   event2->node_data[0]->string_properties =
-      std::unordered_map<arc::mojom::AccessibilityStringProperty,
-                         std::string>();
+      base::flat_map<arc::mojom::AccessibilityStringProperty, std::string>();
   event2->node_data[0]->string_properties.value().insert(
       std::make_pair(arc::mojom::AccessibilityStringProperty::PACKAGE_NAME,
                      "com.android.vending"));
@@ -288,8 +286,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
   event2->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
   event2->node_data[0]->id = 3;
   event2->node_data[0]->string_properties =
-      std::unordered_map<arc::mojom::AccessibilityStringProperty,
-                         std::string>();
+      base::flat_map<arc::mojom::AccessibilityStringProperty, std::string>();
   event2->node_data[0]->string_properties.value().insert(
       std::make_pair(arc::mojom::AccessibilityStringProperty::PACKAGE_NAME,
                      "com.google.music"));

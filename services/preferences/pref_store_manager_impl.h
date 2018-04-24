@@ -7,10 +7,10 @@
 
 #include <memory>
 #include <set>
-#include <unordered_map>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/prefs/pref_value_store.h"
@@ -72,8 +72,7 @@ class PrefStoreManagerImpl : public service_manager::Service {
 
   void ShutDown();
 
-  std::unordered_map<PrefValueStore::PrefStoreType,
-                     std::unique_ptr<PrefStoreImpl>>
+  base::flat_map<PrefValueStore::PrefStoreType, std::unique_ptr<PrefStoreImpl>>
       read_only_pref_stores_;
 
   mojo::StrongBindingSet<mojom::PrefStoreConnector> connector_bindings_;

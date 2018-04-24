@@ -17,7 +17,7 @@ WindowServiceClientTestHelper::~WindowServiceClientTestHelper() = default;
 
 aura::Window* WindowServiceClientTestHelper::NewTopLevelWindow(
     Id transport_window_id) {
-  std::unordered_map<std::string, std::vector<uint8_t>> properties;
+  base::flat_map<std::string, std::vector<uint8_t>> properties;
   const uint32_t change_id = 1u;
   window_service_client_->NewTopLevelWindow(change_id, transport_window_id,
                                             properties);

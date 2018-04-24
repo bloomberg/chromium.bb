@@ -24,7 +24,7 @@ using AXStringProperty = mojom::AccessibilityStringProperty;
 
 void SetProperty(AXNodeInfoData* node, AXBooleanProperty prop, bool value) {
   if (!node->boolean_properties) {
-    node->boolean_properties = std::unordered_map<AXBooleanProperty, bool>();
+    node->boolean_properties = base::flat_map<AXBooleanProperty, bool>();
   }
   node->boolean_properties.value().insert(std::make_pair(prop, value));
 }
@@ -33,15 +33,14 @@ void SetProperty(AXNodeInfoData* node,
                  AXStringProperty prop,
                  const std::string& value) {
   if (!node->string_properties) {
-    node->string_properties =
-        std::unordered_map<AXStringProperty, std::string>();
+    node->string_properties = base::flat_map<AXStringProperty, std::string>();
   }
   node->string_properties.value().insert(std::make_pair(prop, value));
 }
 
 void SetProperty(AXNodeInfoData* node, AXIntProperty prop, int32_t value) {
   if (!node->int_properties) {
-    node->int_properties = std::unordered_map<AXIntProperty, int>();
+    node->int_properties = base::flat_map<AXIntProperty, int>();
   }
   node->int_properties.value().insert(std::make_pair(prop, value));
 }
@@ -51,7 +50,7 @@ void SetProperty(AXNodeInfoData* node,
                  const std::vector<int>& value) {
   if (!node->int_list_properties) {
     node->int_list_properties =
-        std::unordered_map<AXIntListProperty, std::vector<int>>();
+        base::flat_map<AXIntListProperty, std::vector<int>>();
   }
   node->int_list_properties.value().insert(std::make_pair(prop, value));
 }

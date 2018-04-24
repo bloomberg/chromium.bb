@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_MUS_CLIPBOARD_MUS_H_
 #define UI_VIEWS_MUS_CLIPBOARD_MUS_H_
 
+#include "base/containers/flat_map.h"
 #include "services/ui/public/interfaces/clipboard.mojom.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/views/mus/mus_export.h"
@@ -77,7 +78,7 @@ class VIEWS_MUS_EXPORT ClipboardMus : public ui::Clipboard {
   // WriteObjects(), which then calls our base class DispatchObject() which
   // then calls into each data type specific Write() function. Once we've
   // collected all the data types, we then pass this to the mus server.
-  base::Optional<std::unordered_map<std::string, std::vector<uint8_t>>>
+  base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>
       current_clipboard_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardMus);

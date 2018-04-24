@@ -161,8 +161,7 @@ class ASH_EXPORT WindowManager : public aura::WindowManagerDelegate,
   ui::mojom::EventResult OnAccelerator(
       uint32_t id,
       const ui::Event& event,
-      std::unordered_map<std::string, std::vector<uint8_t>>* properties)
-      override;
+      base::flat_map<std::string, std::vector<uint8_t>>* properties) override;
   void OnCursorTouchVisibleChanged(bool enabled) override;
   void OnWmSetClientArea(
       aura::Window* window,

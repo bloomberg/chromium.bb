@@ -155,7 +155,7 @@ bool IsInternalProperty(const void* key) {
 
 void SetWindowTypeFromProperties(
     Window* window,
-    const std::unordered_map<std::string, std::vector<uint8_t>>& properties) {
+    const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
   auto type_iter =
       properties.find(ui::mojom::WindowManager::kWindowType_InitProperty);
   if (type_iter == properties.end())
@@ -969,7 +969,7 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
 
   DCHECK(window_manager_delegate_ || !IsRoot(window));
 
-  std::unordered_map<std::string, std::vector<uint8_t>> transport_properties;
+  base::flat_map<std::string, std::vector<uint8_t>> transport_properties;
   std::set<const void*> property_keys =
       window->GetWindow()->GetAllPropertyKeys();
   PropertyConverter* property_converter = delegate_->GetPropertyConverter();
@@ -1786,8 +1786,8 @@ void WindowTreeClient::OnWindowSurfaceChanged(
 }
 
 void WindowTreeClient::OnDragDropStart(
-    const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data) {
-  drag_drop_controller_->OnDragDropStart(mojo::UnorderedMapToMap(mime_data));
+    const base::flat_map<std::string, std::vector<uint8_t>>& mime_data) {
+  drag_drop_controller_->OnDragDropStart(mojo::FlatMapToMap(mime_data));
 }
 
 void WindowTreeClient::OnDragEnter(ui::Id window_id,
@@ -2020,11 +2020,11 @@ void WindowTreeClient::WmSetCanFocus(ui::Id window_id, bool can_focus) {
 void WindowTreeClient::WmCreateTopLevelWindow(
     uint32_t change_id,
     const viz::FrameSinkId& frame_sink_id,
-    const std::unordered_map<std::string, std::vector<uint8_t>>&
+    const base::flat_map<std::string, std::vector<uint8_t>>&
         transport_properties) {
   DCHECK(frame_sink_id.is_valid());
   std::map<std::string, std::vector<uint8_t>> properties =
-      mojo::UnorderedMapToMap(transport_properties);
+      mojo::FlatMapToMap(transport_properties);
   ui::mojom::WindowType window_type = ui::mojom::WindowType::UNKNOWN;
   auto type_iter =
       properties.find(ui::mojom::WindowManager::kWindowType_InitProperty);
@@ -2207,7 +2207,7 @@ void WindowTreeClient::OnAccelerator(uint32_t ack_id,
                                      uint32_t accelerator_id,
                                      std::unique_ptr<ui::Event> event) {
   DCHECK(event);
-  std::unordered_map<std::string, std::vector<uint8_t>> properties;
+  base::flat_map<std::string, std::vector<uint8_t>> properties;
   const ui::mojom::EventResult result = window_manager_delegate_->OnAccelerator(
       accelerator_id, *event.get(), &properties);
   if (ack_id && window_manager_client_)
@@ -2528,7 +2528,7 @@ std::unique_ptr<WindowPortMus> WindowTreeClient::CreateWindowPortForTopLevel(
   window_port->set_server_id(next_window_id_++);
   RegisterWindowMus(window_port.get());
 
-  std::unordered_map<std::string, std::vector<uint8_t>> transport_properties;
+  base::flat_map<std::string, std::vector<uint8_t>> transport_properties;
   if (properties) {
     for (const auto& property_pair : *properties)
       transport_properties[property_pair.first] = property_pair.second;

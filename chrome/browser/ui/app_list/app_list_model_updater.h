@@ -7,12 +7,12 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/public/interfaces/app_list.mojom.h"
 #include "base/callback_forward.h"
+#include "base/containers/flat_map.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -89,8 +89,8 @@ class AppListModelUpdater {
   virtual ChromeAppListItem* ItemAtForTest(size_t index) = 0;
   virtual ChromeAppListItem* FindFolderItem(const std::string& folder_id) = 0;
   virtual bool FindItemIndexForTest(const std::string& id, size_t* index) = 0;
-  using GetIdToAppListIndexMapCallback = base::OnceCallback<void(
-      const std::unordered_map<std::string, uint16_t>&)>;
+  using GetIdToAppListIndexMapCallback =
+      base::OnceCallback<void(const base::flat_map<std::string, uint16_t>&)>;
   virtual void GetIdToAppListIndexMap(GetIdToAppListIndexMapCallback callback) {
   }
   virtual void ContextMenuItemSelected(const std::string& id,

@@ -7,9 +7,9 @@
 
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
@@ -28,8 +28,8 @@ class ScopedPrefConnectionBuilder
       mojom::PrefStoreConnector::ConnectCallback callback);
 
   void ProvidePrefStoreConnections(
-      const std::unordered_map<PrefValueStore::PrefStoreType,
-                               std::unique_ptr<PrefStoreImpl>>& pref_stores);
+      const base::flat_map<PrefValueStore::PrefStoreType,
+                           std::unique_ptr<PrefStoreImpl>>& pref_stores);
 
   void ProvidePrefStoreConnection(PrefValueStore::PrefStoreType type,
                                   PrefStoreImpl* ptr);
@@ -50,8 +50,7 @@ class ScopedPrefConnectionBuilder
   mojom::PrefStoreConnector::ConnectCallback callback_;
   std::vector<std::string> observed_prefs_;
 
-  std::unordered_map<PrefValueStore::PrefStoreType,
-                     mojom::PrefStoreConnectionPtr>
+  base::flat_map<PrefValueStore::PrefStoreType, mojom::PrefStoreConnectionPtr>
       connections_;
 
   std::vector<mojom::PrefRegistrationPtr> defaults_;

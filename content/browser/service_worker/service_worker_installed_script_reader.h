@@ -7,8 +7,8 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 
+#include "base/containers/flat_map.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -38,7 +38,7 @@ class ServiceWorkerInstalledScriptReader {
   class Client {
    public:
     virtual void OnStarted(std::string encoding,
-                           std::unordered_map<std::string, std::string> headers,
+                           base::flat_map<std::string, std::string> headers,
                            mojo::ScopedDataPipeConsumerHandle body_handle,
                            uint64_t body_size,
                            mojo::ScopedDataPipeConsumerHandle meta_data_handle,

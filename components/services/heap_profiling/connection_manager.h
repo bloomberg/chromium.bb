@@ -33,8 +33,8 @@ class SequencedTaskRunner;
 namespace heap_profiling {
 
 using VmRegions =
-    std::unordered_map<base::ProcessId,
-                       std::vector<memory_instrumentation::mojom::VmRegionPtr>>;
+    base::flat_map<base::ProcessId,
+                   std::vector<memory_instrumentation::mojom::VmRegionPtr>>;
 
 // Manages all connections and logging for each process. Pipes are supplied by
 // the pipe server and this class will connect them to a parser and logger.

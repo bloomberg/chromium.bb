@@ -11,6 +11,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "services/ui/common/types.h"
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
@@ -112,7 +113,7 @@ class EventProcessor : public ServerWindowDrawnTrackerObserver,
       ServerWindow* window,
       DragTargetConnection* source_connection,
       int32_t drag_pointer,
-      const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data,
+      const base::flat_map<std::string, std::vector<uint8_t>>& mime_data,
       uint32_t drag_operations);
   void CancelDragDrop();
   void EndDragDrop();

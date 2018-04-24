@@ -67,7 +67,7 @@ class TestWindowTree : public ui::mojom::WindowTree {
 
   base::Optional<std::vector<uint8_t>> GetLastPropertyValue();
 
-  base::Optional<std::unordered_map<std::string, std::vector<uint8_t>>>
+  base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>
   GetLastNewWindowProperties();
 
   // True if at least one function has been called that takes a change id.
@@ -138,15 +138,15 @@ class TestWindowTree : public ui::mojom::WindowTree {
       WindowTreeChangeType type = WindowTreeChangeType::OTHER);
 
   // ui::mojom::WindowTree:
-  void NewWindow(uint32_t change_id,
-                 ui::Id window_id,
-                 const base::Optional<
-                     std::unordered_map<std::string, std::vector<uint8_t>>>&
-                     properties) override;
+  void NewWindow(
+      uint32_t change_id,
+      ui::Id window_id,
+      const base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>&
+          properties) override;
   void NewTopLevelWindow(
       uint32_t change_id,
       ui::Id window_id,
-      const std::unordered_map<std::string, std::vector<uint8_t>>& properties)
+      const base::flat_map<std::string, std::vector<uint8_t>>& properties)
       override;
   void DeleteWindow(uint32_t change_id, ui::Id window_id) override;
   void SetWindowBounds(
@@ -243,7 +243,7 @@ class TestWindowTree : public ui::mojom::WindowTree {
       uint32_t change_id,
       ui::Id source_window_id,
       const gfx::Point& screen_location,
-      const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data,
+      const base::flat_map<std::string, std::vector<uint8_t>>& drag_data,
       const SkBitmap& drag_image,
       const gfx::Vector2d& drag_image_offset,
       uint32_t drag_operation,
@@ -269,7 +269,7 @@ class TestWindowTree : public ui::mojom::WindowTree {
   ui::mojom::WindowTreeClient* client_;
   ui::mojom::WindowManager* window_manager_ = nullptr;
 
-  base::Optional<std::unordered_map<std::string, std::vector<uint8_t>>>
+  base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>
       last_new_window_properties_;
 
   TransientData transient_data_;

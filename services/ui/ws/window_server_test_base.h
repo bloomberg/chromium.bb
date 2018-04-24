@@ -118,8 +118,7 @@ class WindowServerTestBase : public WindowServerServiceTestBase,
   mojom::EventResult OnAccelerator(
       uint32_t accelerator_id,
       const ui::Event& event,
-      std::unordered_map<std::string, std::vector<uint8_t>>* properties)
-      override;
+      base::flat_map<std::string, std::vector<uint8_t>>* properties) override;
   void OnCursorTouchVisibleChanged(bool enabled) override;
   void OnWmPerformMoveLoop(aura::Window* window,
                            mojom::MoveLoopSource source,

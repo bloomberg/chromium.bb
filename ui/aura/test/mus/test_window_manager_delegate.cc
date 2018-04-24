@@ -78,7 +78,7 @@ void TestWindowManagerDelegate::OnWmDisplayModified(
 ui::mojom::EventResult TestWindowManagerDelegate::OnAccelerator(
     uint32_t accelerator_id,
     const ui::Event& event,
-    std::unordered_map<std::string, std::vector<uint8_t>>* properties) {
+    base::flat_map<std::string, std::vector<uint8_t>>* properties) {
   return ui::mojom::EventResult::UNHANDLED;
 }
 

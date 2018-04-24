@@ -16,8 +16,8 @@ ScopedPrefConnectionBuilder::ScopedPrefConnectionBuilder(
       observed_prefs_(std::move(observed_prefs)) {}
 
 void ScopedPrefConnectionBuilder::ProvidePrefStoreConnections(
-    const std::unordered_map<PrefValueStore::PrefStoreType,
-                             std::unique_ptr<PrefStoreImpl>>& pref_stores) {
+    const base::flat_map<PrefValueStore::PrefStoreType,
+                         std::unique_ptr<PrefStoreImpl>>& pref_stores) {
   for (const auto& pref_store : pref_stores) {
     ProvidePrefStoreConnection(pref_store.first, pref_store.second.get());
   }

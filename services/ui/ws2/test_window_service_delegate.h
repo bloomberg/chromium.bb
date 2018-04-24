@@ -24,7 +24,7 @@ class TestWindowServiceDelegate : public WindowServiceDelegate {
 
   // WindowServiceDelegate:
   std::unique_ptr<aura::Window> NewTopLevel(
-      const std::unordered_map<std::string, std::vector<uint8_t>>& properties)
+      const base::flat_map<std::string, std::vector<uint8_t>>& properties)
       override;
 
  private:

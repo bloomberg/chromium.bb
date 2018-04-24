@@ -9,9 +9,9 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "services/ui/public/interfaces/display_manager.mojom.h"
@@ -85,7 +85,7 @@ class WindowManagerState : public EventProcessorDelegate,
       DragSource* drag_source,
       ServerWindow* window,
       DragTargetConnection* source_connection,
-      const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data,
+      const base::flat_map<std::string, std::vector<uint8_t>>& drag_data,
       uint32_t drag_operation);
   void CancelDragDrop();
   void EndDragDrop();

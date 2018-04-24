@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "services/ui/common/types.h"
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
@@ -51,7 +52,7 @@ class DragController : public ServerWindowObserver {
       ServerWindow* source_window,
       DragTargetConnection* source_connection,
       int32_t drag_pointer,
-      const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data,
+      const base::flat_map<std::string, std::vector<uint8_t>>& mime_data,
       DropEffectBitmask drag_operations);
   ~DragController() override;
 
@@ -144,7 +145,7 @@ class DragController : public ServerWindowObserver {
   DragTargetConnection* source_connection_;
 
   // A list of the offered mime types.
-  std::unordered_map<std::string, std::vector<uint8_t>> mime_data_;
+  base::flat_map<std::string, std::vector<uint8_t>> mime_data_;
 
   // We need to keep track of state on a per window basis. A window being in
   // this map means that we're observing it. WindowState also keeps track of

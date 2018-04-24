@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -71,7 +72,7 @@ class ClipboardAppTest : public service_manager::test::ServiceTest {
 
   void SetStringText(const std::string& data) {
     uint64_t sequence_number;
-    std::unordered_map<std::string, std::vector<uint8_t>> mime_data;
+    base::flat_map<std::string, std::vector<uint8_t>> mime_data;
     mime_data[mojom::kMimeTypeText] =
         std::vector<uint8_t>(data.begin(), data.end());
     clipboard_->WriteClipboardData(Clipboard::Type::COPY_PASTE,
@@ -105,7 +106,7 @@ TEST_F(ClipboardAppTest, CanReadBackText) {
 }
 
 TEST_F(ClipboardAppTest, CanSetMultipleDataTypesAtOnce) {
-  std::unordered_map<std::string, std::vector<uint8_t>> mime_data;
+  base::flat_map<std::string, std::vector<uint8_t>> mime_data;
   mime_data[mojom::kMimeTypeText] = std::vector<uint8_t>(
       kPlainTextData, kPlainTextData + strlen(kPlainTextData));
   mime_data[mojom::kMimeTypeHTML] =
@@ -132,7 +133,7 @@ TEST_F(ClipboardAppTest, CanClearClipboardWithZeroArray) {
   EXPECT_TRUE(GetDataOfType(mojom::kMimeTypeText, &data));
   EXPECT_EQ(kPlainTextData, data);
 
-  std::unordered_map<std::string, std::vector<uint8_t>> mime_data;
+  base::flat_map<std::string, std::vector<uint8_t>> mime_data;
   uint64_t sequence_num = 0;
   clipboard_->WriteClipboardData(Clipboard::Type::COPY_PASTE,
                                  std::move(mime_data),
