@@ -1344,12 +1344,15 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 // High DPI browser tests are not needed on Android, and confuse some of the
 // coordinate calculations. Android uses fixed device scale factor.
 // Windows is disabled because of https://crbug.com/545547.
-#define MAYBE_HighDPISurfaceHitTestTest DISABLED_SurfaceHitTestTest
+#define MAYBE_SurfaceHitTestTest DISABLED_SurfaceHitTestTest
+#elif defined(THREAD_SANITIZER)
+// Flaky: https://crbug.com/833380
+#define MAYBE_SurfaceHitTestTest DISABLED_SurfaceHitTestTest
 #else
-#define MAYBE_HighDPISurfaceHitTestTest SurfaceHitTestTest
+#define MAYBE_SurfaceHitTestTest SurfaceHitTestTest
 #endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
-                       MAYBE_HighDPISurfaceHitTestTest) {
+                       MAYBE_SurfaceHitTestTest) {
   SurfaceHitTestTestHelper(shell(), embedded_test_server());
 }
 
@@ -1370,8 +1373,14 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   OverlapSurfaceHitTestHelper(shell(), embedded_test_server());
 }
 
+#if defined(THREAD_SANITIZER)
+// Flaky: https://crbug.com/833380
+#define MAYBE_OverlapSurfaceHitTestTest DISABLED_OverlapSurfaceHitTestTest
+#else
+#define MAYBE_OverlapSurfaceHitTestTest OverlapSurfaceHitTestTest
+#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
-                       OverlapSurfaceHitTestTest) {
+                       MAYBE_OverlapSurfaceHitTestTest) {
   OverlapSurfaceHitTestHelper(shell(), embedded_test_server());
 }
 
@@ -2097,8 +2106,16 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                                                 embedded_test_server());
 }
 
+#if defined(THREAD_SANITIZER)
+// Flaky: https://crbug.com/833380
+#define MAYBE_CursorUpdateReceivedFromCrossSiteIframe \
+  DISABLED_CursorUpdateReceivedFromCrossSiteIframe
+#else
+#define MAYBE_CursorUpdateReceivedFromCrossSiteIframe \
+  CursorUpdateReceivedFromCrossSiteIframe
+#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
-                       CursorUpdateReceivedFromCrossSiteIframe) {
+                       MAYBE_CursorUpdateReceivedFromCrossSiteIframe) {
   CursorUpdateReceivedFromCrossSiteIframeHelper(shell(),
                                                 embedded_test_server());
 }
@@ -3168,12 +3185,15 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 #if defined(OS_ANDROID) || defined(OS_WIN)
 // High DPI tests don't work properly on Android, which has fixed scale factor.
 // Windows is disabled because of https://crbug.com/545547.
-#define MAYBE_HighDPICreateContextMenuTest DISABLED_HighDPICreateContextMenuTest
+#define MAYBE_CreateContextMenuTest DISABLED_CreateContextMenuTest
+#elif defined(THREAD_SANITIZER)
+// Flaky: https://crbug.com/833380
+#define MAYBE_CreateContextMenuTest DISABLED_CreateContextMenuTest
 #else
-#define MAYBE_HighDPICreateContextMenuTest HighDPICreateContextMenuTest
+#define MAYBE_CreateContextMenuTest CreateContextMenuTest
 #endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
-                       MAYBE_HighDPICreateContextMenuTest) {
+                       MAYBE_CreateContextMenuTest) {
   CreateContextMenuTestHelper(shell(), embedded_test_server());
 }
 
