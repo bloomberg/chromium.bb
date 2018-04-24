@@ -126,6 +126,10 @@ Polymer({
           messageText.textContent =
               loadTimeData.getString('printerAddedFailedmMessage');
           break;
+        case PrinterSetupResult.NATIVE_PRINTERS_NOT_ALLOWED:
+          messageText.textContent = loadTimeData.getString(
+              'printerAddedNativePrintersNotAllowedMessage');
+          break;
         case PrinterSetupResult.PPD_TOO_LARGE:
           messageText.textContent =
               loadTimeData.getString('printerAddedPpdTooLargeMessage');

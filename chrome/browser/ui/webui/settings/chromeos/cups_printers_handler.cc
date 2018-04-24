@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/printing/ppd_cache.h"
@@ -281,6 +282,18 @@ void CupsPrintersHandler::HandleUpdateCupsPrinter(const base::ListValue* args) {
 
   Printer printer(printer_id);
   printer.set_display_name(printer_name);
+
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kUserNativePrintersAllowed)) {
+    LOG(WARNING) << "HandleAddCupsPrinter() called when "
+                    "kUserNativePrintersAllowed is set to false";
+    // Used to log UMA metrics.
+    OnAddedPrinterCommon(printer,
+                         PrinterSetupResult::kNativePrintersNotAllowed);
+    // Used to fire the web UI listener.
+    OnAddPrinterError(PrinterSetupResult::kNativePrintersNotAllowed);
+    return;
+  }
+
   printers_manager_->UpdateConfiguredPrinter(printer);
 
   // TODO(xdai): Replace "on-add-cups-printer" callback with Promise resolve
@@ -432,6 +445,17 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
     return;
   }
 
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kUserNativePrintersAllowed)) {
+    LOG(WARNING) << "HandleAddCupsPrinter() called when "
+                    "kUserNativePrintersAllowed is set to false";
+    // Used to log UMA metrics.
+    OnAddedPrinterCommon(*printer,
+                         PrinterSetupResult::kNativePrintersNotAllowed);
+    // Used to fire the web UI listener.
+    OnAddPrinterError(PrinterSetupResult::kNativePrintersNotAllowed);
+    return;
+  }
+
   auto optional = printer->GetUriComponents();
   if (!optional.has_value()) {
     // If the returned optional does not contain a value then it means that the
@@ -533,6 +557,9 @@ void CupsPrintersHandler::OnAddedPrinterCommon(const Printer& printer,
     case PrinterSetupResult::kDbusError:
     case PrinterSetupResult::kFatalError:
       LOG(ERROR) << "Unrecoverable error.  Reboot required.";
+      break;
+    case PrinterSetupResult::kNativePrintersNotAllowed:
+      LOG(ERROR) << "Unable to add or edit printer due to enterprise policy.";
       break;
     case PrinterSetupResult::kMaxValue:
       NOTREACHED() << "This is not an expected value";

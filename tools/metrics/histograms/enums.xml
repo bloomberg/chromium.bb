@@ -36908,6 +36908,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Success"/>
   <int value="2" label="Printer Unreachable"/>
   <int value="3" label="Could not contact debugd over dbus"/>
+  <int value="4" label="Can't configure native printers due to policy"/>
   <int value="10" label="PPD exceeds size limit"/>
   <int value="11" label="PPD Rejected by cupstestppd"/>
   <int value="12" label="Could not find PPD"/>
