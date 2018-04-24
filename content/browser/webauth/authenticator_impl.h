@@ -100,6 +100,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator,
 
   // WebContentsObserver:
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
 
   // Callback to handle the async response from a U2fDevice.
   void OnRegisterResponse(
