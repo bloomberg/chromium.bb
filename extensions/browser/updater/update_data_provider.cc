@@ -18,6 +18,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/updater/manifest_fetch_data.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
@@ -101,6 +102,8 @@ void UpdateDataProvider::GetData(
       }
     }
     info->install_source = extension_data.install_source;
+    info->install_location =
+        ManifestFetchData::GetSimpleLocationString(extension->location());
   }
 }
 

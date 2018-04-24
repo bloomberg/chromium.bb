@@ -89,7 +89,8 @@ class UpdateDataProviderTest : public ExtensionsTest {
   void AddExtension(const std::string& extension_id,
                     const std::string& version,
                     bool enabled,
-                    int disable_reasons) {
+                    int disable_reasons,
+                    Manifest::Location location) {
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     ASSERT_TRUE(base::PathExists(temp_dir.GetPath()));
@@ -109,6 +110,7 @@ class UpdateDataProviderTest : public ExtensionsTest {
                             .Build());
     builder.SetID(extension_id);
     builder.SetPath(temp_dir.GetPath());
+    builder.SetLocation(location);
 
     auto* test_browser_client =
         static_cast<UpdateDataProviderExtensionsBrowserClient*>(
@@ -148,7 +150,7 @@ TEST_F(UpdateDataProviderTest, GetData_EnabledExtension) {
 
   const std::string version = "0.1.2.3";
   AddExtension(kExtensionId1, version, true,
-               disable_reason::DisableReason::DISABLE_NONE);
+               disable_reason::DisableReason::DISABLE_NONE, Manifest::INTERNAL);
 
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
@@ -161,6 +163,7 @@ TEST_F(UpdateDataProviderTest, GetData_EnabledExtension) {
   EXPECT_EQ(version, data[0].version.GetString());
   EXPECT_NE(nullptr, data[0].installer.get());
   EXPECT_EQ(0UL, data[0].disabled_reasons.size());
+  EXPECT_EQ("internal", data[0].install_location);
 }
 
 TEST_F(UpdateDataProviderTest, GetData_EnabledExtensionWithData) {
@@ -169,7 +172,8 @@ TEST_F(UpdateDataProviderTest, GetData_EnabledExtensionWithData) {
 
   const std::string version = "0.1.2.3";
   AddExtension(kExtensionId1, version, true,
-               disable_reason::DisableReason::DISABLE_NONE);
+               disable_reason::DisableReason::DISABLE_NONE,
+               Manifest::EXTERNAL_PREF);
 
   ExtensionUpdateDataMap update_data;
   auto& info = update_data[kExtensionId1];
@@ -183,6 +187,7 @@ TEST_F(UpdateDataProviderTest, GetData_EnabledExtensionWithData) {
   ASSERT_EQ(1UL, data.size());
   EXPECT_EQ("0.0.0.0", data[0].version.GetString());
   EXPECT_EQ("webstore", data[0].install_source);
+  EXPECT_EQ("external", data[0].install_location);
   EXPECT_NE(nullptr, data[0].installer.get());
   EXPECT_EQ(0UL, data[0].disabled_reasons.size());
 }
@@ -193,7 +198,8 @@ TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_WithNoReason) {
 
   const std::string version = "0.1.2.3";
   AddExtension(kExtensionId1, version, false,
-               disable_reason::DisableReason::DISABLE_NONE);
+               disable_reason::DisableReason::DISABLE_NONE,
+               Manifest::EXTERNAL_REGISTRY);
 
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
@@ -208,6 +214,7 @@ TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_WithNoReason) {
   ASSERT_EQ(1UL, data[0].disabled_reasons.size());
   EXPECT_EQ(disable_reason::DisableReason::DISABLE_NONE,
             data[0].disabled_reasons[0]);
+  EXPECT_EQ("external", data[0].install_location);
 }
 
 TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_UnknownReason) {
@@ -216,7 +223,8 @@ TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_UnknownReason) {
 
   const std::string version = "0.1.2.3";
   AddExtension(kExtensionId1, version, false,
-               disable_reason::DisableReason::DISABLE_REASON_LAST);
+               disable_reason::DisableReason::DISABLE_REASON_LAST,
+               Manifest::COMMAND_LINE);
 
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
@@ -231,6 +239,7 @@ TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_UnknownReason) {
   ASSERT_EQ(1UL, data[0].disabled_reasons.size());
   EXPECT_EQ(disable_reason::DisableReason::DISABLE_NONE,
             data[0].disabled_reasons[0]);
+  EXPECT_EQ("other", data[0].install_location);
 }
 
 TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_WithReasons) {
@@ -240,7 +249,8 @@ TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_WithReasons) {
   const std::string version = "0.1.2.3";
   AddExtension(kExtensionId1, version, false,
                disable_reason::DisableReason::DISABLE_USER_ACTION |
-                   disable_reason::DisableReason::DISABLE_CORRUPTED);
+                   disable_reason::DisableReason::DISABLE_CORRUPTED,
+               Manifest::EXTERNAL_POLICY_DOWNLOAD);
 
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
@@ -257,6 +267,7 @@ TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_WithReasons) {
             data[0].disabled_reasons[0]);
   EXPECT_EQ(disable_reason::DisableReason::DISABLE_CORRUPTED,
             data[0].disabled_reasons[1]);
+  EXPECT_EQ("policy", data[0].install_location);
 }
 
 TEST_F(UpdateDataProviderTest,
@@ -268,7 +279,8 @@ TEST_F(UpdateDataProviderTest,
   AddExtension(kExtensionId1, version, false,
                disable_reason::DisableReason::DISABLE_USER_ACTION |
                    disable_reason::DisableReason::DISABLE_CORRUPTED |
-                   disable_reason::DisableReason::DISABLE_REASON_LAST);
+                   disable_reason::DisableReason::DISABLE_REASON_LAST,
+               Manifest::EXTERNAL_PREF_DOWNLOAD);
 
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
@@ -287,6 +299,7 @@ TEST_F(UpdateDataProviderTest,
             data[0].disabled_reasons[1]);
   EXPECT_EQ(disable_reason::DisableReason::DISABLE_CORRUPTED,
             data[0].disabled_reasons[2]);
+  EXPECT_EQ("external", data[0].install_location);
 }
 
 TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions) {
@@ -297,9 +310,10 @@ TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions) {
   const std::string version1 = "0.1.2.3";
   const std::string version2 = "9.8.7.6";
   AddExtension(kExtensionId1, version1, true,
-               disable_reason::DisableReason::DISABLE_NONE);
+               disable_reason::DisableReason::DISABLE_NONE,
+               Manifest::EXTERNAL_REGISTRY);
   AddExtension(kExtensionId2, version2, true,
-               disable_reason::DisableReason::DISABLE_NONE);
+               disable_reason::DisableReason::DISABLE_NONE, Manifest::UNPACKED);
 
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
@@ -313,9 +327,11 @@ TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions) {
   EXPECT_EQ(version1, data[0].version.GetString());
   EXPECT_NE(nullptr, data[0].installer.get());
   EXPECT_EQ(0UL, data[0].disabled_reasons.size());
+  EXPECT_EQ("external", data[0].install_location);
   EXPECT_EQ(version2, data[1].version.GetString());
   EXPECT_NE(nullptr, data[1].installer.get());
   EXPECT_EQ(0UL, data[1].disabled_reasons.size());
+  EXPECT_EQ("other", data[1].install_location);
 }
 
 TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions_DisabledExtension) {
@@ -326,9 +342,11 @@ TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions_DisabledExtension) {
   const std::string version1 = "0.1.2.3";
   const std::string version2 = "9.8.7.6";
   AddExtension(kExtensionId1, version1, false,
-               disable_reason::DisableReason::DISABLE_CORRUPTED);
+               disable_reason::DisableReason::DISABLE_CORRUPTED,
+               Manifest::INTERNAL);
   AddExtension(kExtensionId2, version2, true,
-               disable_reason::DisableReason::DISABLE_NONE);
+               disable_reason::DisableReason::DISABLE_NONE,
+               Manifest::EXTERNAL_PREF_DOWNLOAD);
 
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
@@ -344,10 +362,12 @@ TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions_DisabledExtension) {
   ASSERT_EQ(1UL, data[0].disabled_reasons.size());
   EXPECT_EQ(disable_reason::DisableReason::DISABLE_CORRUPTED,
             data[0].disabled_reasons[0]);
+  EXPECT_EQ("internal", data[0].install_location);
 
   EXPECT_EQ(version2, data[1].version.GetString());
   EXPECT_NE(nullptr, data[1].installer.get());
   EXPECT_EQ(0UL, data[1].disabled_reasons.size());
+  EXPECT_EQ("external", data[1].install_location);
 }
 
 TEST_F(UpdateDataProviderTest,
@@ -358,7 +378,8 @@ TEST_F(UpdateDataProviderTest,
 
   const std::string version = "0.1.2.3";
   AddExtension(kExtensionId1, version, true,
-               disable_reason::DisableReason::DISABLE_NONE);
+               disable_reason::DisableReason::DISABLE_NONE,
+               Manifest::COMPONENT);
 
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
@@ -372,6 +393,7 @@ TEST_F(UpdateDataProviderTest,
   EXPECT_EQ(version, data[0].version.GetString());
   EXPECT_NE(nullptr, data[0].installer.get());
   EXPECT_EQ(0UL, data[0].disabled_reasons.size());
+  EXPECT_EQ("other", data[0].install_location);
 }
 
 TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions_CorruptExtension) {
@@ -384,9 +406,11 @@ TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions_CorruptExtension) {
   const std::string version2 = "9.8.7.6";
   const std::string initial_version = "0.0.0.0";
   AddExtension(kExtensionId1, version1, true,
-               disable_reason::DisableReason::DISABLE_NONE);
+               disable_reason::DisableReason::DISABLE_NONE,
+               Manifest::EXTERNAL_COMPONENT);
   AddExtension(kExtensionId2, version2, true,
-               disable_reason::DisableReason::DISABLE_NONE);
+               disable_reason::DisableReason::DISABLE_NONE,
+               Manifest::EXTERNAL_POLICY);
 
   ExtensionUpdateDataMap update_data;
   auto& info1 = update_data[kExtensionId1];
@@ -403,10 +427,12 @@ TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions_CorruptExtension) {
   ASSERT_EQ(2UL, data.size());
   EXPECT_EQ(version1, data[0].version.GetString());
   EXPECT_EQ("webstore", data[0].install_source);
+  EXPECT_EQ("other", data[0].install_location);
   EXPECT_NE(nullptr, data[0].installer.get());
   EXPECT_EQ(0UL, data[0].disabled_reasons.size());
   EXPECT_EQ(initial_version, data[1].version.GetString());
   EXPECT_EQ("sideload", data[1].install_source);
+  EXPECT_EQ("policy", data[1].install_location);
   EXPECT_NE(nullptr, data[1].installer.get());
   EXPECT_EQ(0UL, data[1].disabled_reasons.size());
 }

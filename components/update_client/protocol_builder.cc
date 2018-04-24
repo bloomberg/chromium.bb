@@ -350,6 +350,9 @@ std::string BuildUpdateCheckRequest(
                           crx_component.install_source.c_str());
     else if (component.is_foreground())
       base::StringAppendF(&app, " installsource=\"ondemand\"");
+    if (!crx_component.install_location.empty())
+      base::StringAppendF(&app, " installedby=\"%s\"",
+                          crx_component.install_location.c_str());
     for (const auto& attr : installer_attributes) {
       base::StringAppendF(&app, " %s=\"%s\"", attr.first.c_str(),
                           attr.second.c_str());

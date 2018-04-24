@@ -207,6 +207,7 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, PolicyCorrupted) {
   // extension is corrupted:
   // - version="0.0.0.0"
   // - installsource="reinstall"
+  // - installedby="policy"
   // - enabled="0"
   // - <disabled reason="1024"/>
   const std::string update_request =
@@ -214,8 +215,10 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, PolicyCorrupted) {
   EXPECT_THAT(update_request,
               ::testing::HasSubstr(base::StringPrintf(
                   R"(<app appid="%s" version="0.0.0.0")", kExtensionId)));
-  EXPECT_THAT(update_request,
-              ::testing::HasSubstr(R"(installsource="reinstall" enabled="0")"));
+  EXPECT_THAT(
+      update_request,
+      ::testing::HasSubstr(
+          R"(installsource="reinstall" installedby="policy" enabled="0")"));
   EXPECT_THAT(update_request, ::testing::HasSubstr(base::StringPrintf(
                                   R"(<disabled reason="%d"/>)",
                                   disable_reason::DISABLE_CORRUPTED)));
@@ -354,6 +357,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUpdateServiceTest, FailedUpdateRetries) {
   // extension is corrupted:
   // - version="0.0.0.0"
   // - installsource="reinstall"
+  // - installedby="policy"
   // - enabled="0"
   // - <disabled reason="1024"/>
   const std::string update_request =
@@ -361,8 +365,10 @@ IN_PROC_BROWSER_TEST_F(PolicyUpdateServiceTest, FailedUpdateRetries) {
   EXPECT_THAT(update_request,
               ::testing::HasSubstr(base::StringPrintf(
                   R"(<app appid="%s" version="0.0.0.0")", id_.c_str())));
-  EXPECT_THAT(update_request,
-              ::testing::HasSubstr(R"(installsource="reinstall" enabled="0")"));
+  EXPECT_THAT(
+      update_request,
+      ::testing::HasSubstr(
+          R"(installsource="reinstall" installedby="policy" enabled="0")"));
   EXPECT_THAT(update_request, ::testing::HasSubstr(base::StringPrintf(
                                   R"(<disabled reason="%d"/>)",
                                   disable_reason::DISABLE_CORRUPTED)));
@@ -477,8 +483,10 @@ IN_PROC_BROWSER_TEST_F(PolicyUpdateServiceTest, PolicyCorruptedOnStartup) {
   EXPECT_THAT(update_request,
               ::testing::HasSubstr(base::StringPrintf(
                   R"(<app appid="%s" version="0.0.0.0")", id_.c_str())));
-  EXPECT_THAT(update_request,
-              ::testing::HasSubstr(R"(installsource="reinstall" enabled="0")"));
+  EXPECT_THAT(
+      update_request,
+      ::testing::HasSubstr(
+          R"(installsource="reinstall" installedby="policy" enabled="0")"));
   EXPECT_THAT(update_request, ::testing::HasSubstr(base::StringPrintf(
                                   R"(<disabled reason="%d"/>)",
                                   disable_reason::DISABLE_CORRUPTED)));
