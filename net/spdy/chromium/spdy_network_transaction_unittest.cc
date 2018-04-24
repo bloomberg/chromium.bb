@@ -7415,7 +7415,7 @@ TEST_F(SpdyNetworkTransactionTest, PlaintextWebSocketOverHttp2Proxy) {
 }
 
 // Regression test for https://crbug.com/819101.  Open two identical plaintext
-// websocket requests over proxy.  The HttpStreamFactory::Job for the second
+// websocket requests over proxy.  The HttpStreamFactoryImpl::Job for the second
 // request should reuse the first connection.
 TEST_F(SpdyNetworkTransactionTest, TwoWebSocketRequestsOverHttp2Proxy) {
   SpdySerializedFrame req(spdy_util_.ConstructSpdyConnect(

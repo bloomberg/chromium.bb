@@ -12,7 +12,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_transaction.h"
 #include "net/http/http_server_properties_impl.h"
-#include "net/http/http_stream_factory_job.h"
+#include "net/http/http_stream_factory_impl_job.h"
 #include "net/spdy/chromium/spdy_session.h"
 #include "net/spdy/chromium/spdy_session_pool.h"
 #include "net/spdy/core/spdy_framer.h"
