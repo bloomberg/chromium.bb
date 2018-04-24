@@ -22,7 +22,6 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_loader_util.h"
-#include "content/browser/loader/navigation_resource_handler.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -381,7 +380,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       ResourceDispatcherHostImpl::Get()->BeginNavigationRequest(
           resource_context_, url_request_context_getter->GetURLRequestContext(),
           upload_file_system_context, *request_info,
-          std::move(navigation_ui_data_), nullptr, std::move(url_loader_client),
+          std::move(navigation_ui_data_), std::move(url_loader_client),
           std::move(url_loader), service_worker_navigation_handle_core,
           appcache_handle_core,
           GetURLLoaderOptions(request_info->is_main_frame),

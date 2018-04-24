@@ -70,7 +70,6 @@ namespace content {
 class AppCacheNavigationHandleCore;
 class AppCacheService;
 class LoaderDelegate;
-class NavigationURLLoaderImplCore;
 class NavigationUIData;
 class ResourceContext;
 class ResourceDispatcherHostDelegate;
@@ -260,7 +259,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       storage::FileSystemContext* upload_file_system_context,
       const NavigationRequestInfo& info,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
-      NavigationURLLoaderImplCore* loader,
       network::mojom::URLLoaderClientPtr url_loader_client,
       network::mojom::URLLoaderRequest url_loader_request,
       ServiceWorkerNavigationHandleCore* service_worker_handle_core,
@@ -624,9 +622,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Wraps |handler| in the standard resource handlers for normal resource
   // loading and navigation requests. This adds MimeTypeResourceHandler and
   // ResourceThrottles.
-  // PlzNavigate: |navigation_loader_core| and |stream_handle| are used to
-  // properly initialized the NavigationResourceHandler placed in navigation
-  // requests. They should be non-null in that case.
   std::unique_ptr<ResourceHandler> AddStandardHandlers(
       net::URLRequest* request,
       ResourceType resource_type,
@@ -636,9 +631,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       AppCacheService* appcache_service,
       int child_id,
       int route_id,
-      std::unique_ptr<ResourceHandler> handler,
-      NavigationURLLoaderImplCore* navigation_loader_core,
-      std::unique_ptr<StreamHandle> stream_handle);
+      std::unique_ptr<ResourceHandler> handler);
 
   // Creates ResourceRequestInfoImpl for a download or page save.
   // |download| should be true if the request is a file download.

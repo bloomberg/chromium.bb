@@ -47,8 +47,6 @@
 #include "content/browser/loader/loader_delegate.h"
 #include "content/browser/loader/mime_sniffing_resource_handler.h"
 #include "content/browser/loader/mojo_async_resource_handler.h"
-#include "content/browser/loader/navigation_resource_handler.h"
-#include "content/browser/loader/navigation_url_loader_impl_core.h"
 #include "content/browser/loader/null_resource_controller.h"
 #include "content/browser/loader/redirect_to_file_resource_handler.h"
 #include "content/browser/loader/resource_loader.h"
@@ -80,7 +78,6 @@
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/site_isolation_policy.h"
-#include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
@@ -1312,7 +1309,7 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
       resource_context, request_data.fetch_request_mode,
       static_cast<RequestContextType>(request_data.fetch_request_context_type),
       requester_info->appcache_service(), child_id, route_id,
-      std::move(handler), nullptr, nullptr);
+      std::move(handler));
 }
 
 std::unique_ptr<ResourceHandler>
@@ -1338,9 +1335,7 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
     AppCacheService* appcache_service,
     int child_id,
     int route_id,
-    std::unique_ptr<ResourceHandler> handler,
-    NavigationURLLoaderImplCore* navigation_loader_core,
-    std::unique_ptr<StreamHandle> stream_handle) {
+    std::unique_ptr<ResourceHandler> handler) {
   // The InterceptingResourceHandler will replace its next handler with an
   // appropriate one based on the MIME type of the response if needed. It
   // should be placed at the end of the chain, just before |handler|.
@@ -1392,20 +1387,6 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
   // Add the post mime sniffing throttles.
   handler.reset(new ThrottlingResourceHandler(
       std::move(handler), request, std::move(post_mime_sniffing_throttles)));
-
-  if (IsBrowserSideNavigationEnabled() && IsResourceTypeFrame(resource_type) &&
-      !IsNavigationMojoResponseEnabled()) {
-    DCHECK(navigation_loader_core);
-    DCHECK(stream_handle);
-    // PlzNavigate
-    // Add a NavigationResourceHandler that will control the flow of navigation.
-    handler.reset(new NavigationResourceHandler(
-        request, std::move(handler), navigation_loader_core, delegate(),
-        std::move(stream_handle)));
-  } else {
-    DCHECK(!navigation_loader_core);
-    DCHECK(!stream_handle);
-  }
 
   PluginService* plugin_service = nullptr;
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -1782,7 +1763,6 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
     storage::FileSystemContext* upload_file_system_context,
     const NavigationRequestInfo& info,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
-    NavigationURLLoaderImplCore* loader,
     network::mojom::URLLoaderClientPtr url_loader_client,
     network::mojom::URLLoaderRequest url_loader_request,
     ServiceWorkerNavigationHandleCore* service_worker_handle_core,
@@ -1793,9 +1773,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   // browser-side navigations project.
   CHECK(IsBrowserSideNavigationEnabled());
 
-  DCHECK_EQ(IsNavigationMojoResponseEnabled(), !loader);
-  DCHECK_EQ(IsNavigationMojoResponseEnabled(), url_loader_client.is_bound());
-  DCHECK_EQ(IsNavigationMojoResponseEnabled(), url_loader_request.is_pending());
+  DCHECK(url_loader_client.is_bound());
+  DCHECK(url_loader_request.is_pending());
 
   ResourceType resource_type = info.is_main_frame ?
       RESOURCE_TYPE_MAIN_FRAME : RESOURCE_TYPE_SUB_FRAME;
@@ -1817,16 +1796,10 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
 
   if (is_shutdown_ || non_web_url_in_guest ||
       (delegate_ && !delegate_->ShouldBeginRequest(
-          info.common_params.method,
-          info.common_params.url,
-          resource_type,
-          resource_context))) {
-    if (IsNavigationMojoResponseEnabled()) {
-      url_loader_client->OnComplete(
-          network::URLLoaderCompletionStatus(net::ERR_ABORTED));
-    } else {
-      loader->NotifyRequestFailed(false, net::ERR_ABORTED, base::nullopt);
-    }
+                        info.common_params.method, info.common_params.url,
+                        resource_type, resource_context))) {
+    url_loader_client->OnComplete(
+        network::URLLoaderCompletionStatus(net::ERR_ABORTED));
     return;
   }
 
@@ -1881,12 +1854,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   if (body) {
     if (!GetBodyBlobDataHandles(body, resource_context, &blob_handles)) {
       new_request->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
-      if (IsNavigationMojoResponseEnabled()) {
-        url_loader_client->OnComplete(
-            network::URLLoaderCompletionStatus(net::ERR_ABORTED));
-      } else {
-        loader->NotifyRequestFailed(false, net::ERR_ABORTED, base::nullopt);
-      }
+      url_loader_client->OnComplete(
+          network::URLLoaderCompletionStatus(net::ERR_ABORTED));
       return;
     }
     new_request->set_upload(UploadDataStreamBuilder::Build(
@@ -1968,25 +1937,9 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   }
 
   std::unique_ptr<ResourceHandler> handler;
-  std::unique_ptr<StreamHandle> stream_handle;
-  if (IsNavigationMojoResponseEnabled()) {
-    handler = std::make_unique<MojoAsyncResourceHandler>(
-        new_request.get(), this, std::move(url_loader_request),
-        std::move(url_loader_client), resource_type, url_loader_options);
-  } else {
-    StreamContext* stream_context =
-        GetStreamContextForResourceContext(resource_context);
-    // Note: the stream should be created with immediate mode set to true to
-    // ensure that data read will be flushed to the reader as soon as it's
-    // available. Otherwise, we risk delaying transmitting the body of the
-    // resource to the renderer, which will delay parsing accordingly.
-    handler = std::make_unique<StreamResourceHandler>(
-        new_request.get(), stream_context->registry(),
-        new_request->url().GetOrigin(), true);
-    stream_handle = static_cast<StreamResourceHandler*>(handler.get())
-                        ->stream()
-                        ->CreateHandle();
-  }
+  handler = std::make_unique<MojoAsyncResourceHandler>(
+      new_request.get(), this, std::move(url_loader_request),
+      std::move(url_loader_client), resource_type, url_loader_options);
 
   // Safe to consider navigations as kNoCORS.
   // TODO(davidben): Fix the dependency on child_id/route_id. Those are used
@@ -1999,7 +1952,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
                            : nullptr,
       -1,  // child_id
       -1,  // route_id
-      std::move(handler), loader, std::move(stream_handle));
+      std::move(handler));
 
   BeginRequestInternal(std::move(new_request), std::move(handler),
                        false /* is_initiated_by_fetch_api */);
