@@ -346,7 +346,7 @@ TEST_F(MAYBE_MetricsCollectorTest,
 }
 
 // Flaky test: https://crbug.com/833028
-TEST_F(MAYBE_MetricsCollectorTest, DISABLED_ResponsivenessMetric) {
+TEST_F(MAYBE_MetricsCollectorTest, ResponsivenessMetric) {
   auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
   auto process_cu = CreateCoordinationUnit<ProcessCoordinationUnitImpl>();
