@@ -119,6 +119,10 @@ class WebViewPermissionHelper
 
   WebViewGuest* web_view_guest() { return web_view_guest_; }
 
+  void set_default_media_access_permission(bool allow_media_access) {
+    default_media_access_permission_ = allow_media_access;
+  }
+
  private:
   void OnMediaPermissionResponse(const content::MediaStreamRequest& request,
                                  const content::MediaResponseCallback& callback,
@@ -141,6 +145,8 @@ class WebViewPermissionHelper
       web_view_permission_helper_delegate_;
 
   WebViewGuest* const web_view_guest_;
+
+  bool default_media_access_permission_;
 
   base::WeakPtrFactory<WebViewPermissionHelper> weak_factory_;
 
