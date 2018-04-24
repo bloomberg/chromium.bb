@@ -24,8 +24,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
-#include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/user_manager.h"
@@ -198,15 +196,6 @@ void SigninSupervisedUserImportHandler::LoadCustodianProfileCallback(
         RejectCallback(GetAuthErrorMessage(profile));
         return;
       }
-
-      SupervisedUserSyncService* supervised_user_sync_service =
-          SupervisedUserSyncServiceFactory::GetForProfile(profile);
-      if (supervised_user_sync_service) {
-        supervised_user_sync_service->GetSupervisedUsersAsync(
-            base::Bind(
-                &SigninSupervisedUserImportHandler::SendExistingSupervisedUsers,
-                weak_ptr_factory_.GetWeakPtr(), profile));
-      }
       break;
     }
     case Profile::CREATE_STATUS_CANCELED:
@@ -234,63 +223,6 @@ base::string16 SigninSupervisedUserImportHandler::GetAuthErrorMessage(
   return l10n_util::GetStringFUTF16(
       IDS_PROFILES_CREATE_CUSTODIAN_ACCOUNT_DETAILS_OUT_OF_DATE_ERROR,
       base::ASCIIToUTF16(profile->GetProfileUserName()));
-}
-
-void SigninSupervisedUserImportHandler::SendExistingSupervisedUsers(
-    Profile* profile,
-    const base::DictionaryValue* dict) {
-  DCHECK(dict);
-  std::vector<ProfileAttributesEntry*> entries =
-      g_browser_process->profile_manager()->GetProfileAttributesStorage().
-          GetAllProfilesAttributes();
-
-  // Collect the ids of local supervised user profiles.
-  std::set<std::string> supervised_user_ids;
-  for (auto* entry : entries) {
-    // Filter out omitted profiles. These are currently being imported, and
-    // shouldn't show up as "already on this device" just yet.
-    if (entry->IsLegacySupervised() && !entry->IsOmitted()) {
-      supervised_user_ids.insert(entry->GetSupervisedUserId());
-    }
-  }
-
-  base::ListValue supervised_users;
-  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
-    const base::DictionaryValue* value = NULL;
-    bool success = it.value().GetAsDictionary(&value);
-    DCHECK(success);
-    std::string name;
-    value->GetString(SupervisedUserSyncService::kName, &name);
-
-    std::unique_ptr<base::DictionaryValue> supervised_user(
-        new base::DictionaryValue);
-    supervised_user->SetString("id", it.key());
-    supervised_user->SetString("name", name);
-
-    int avatar_index = SupervisedUserSyncService::kNoAvatar;
-    // Check if there is a legacy avatar index stored.
-    std::string avatar_str;
-    value->GetString(SupervisedUserSyncService::kChromeAvatar, &avatar_str);
-    success =
-        SupervisedUserSyncService::GetAvatarIndex(avatar_str, &avatar_index);
-    DCHECK(success);
-
-    std::string avatar_url =
-        avatar_index == SupervisedUserSyncService::kNoAvatar ?
-            profiles::GetDefaultAvatarIconUrl(
-                profiles::GetPlaceholderAvatarIndex()) :
-            profiles::GetDefaultAvatarIconUrl(avatar_index);
-    supervised_user->SetString("iconURL", avatar_url);
-    bool on_current_device =
-        supervised_user_ids.find(it.key()) != supervised_user_ids.end();
-    supervised_user->SetBoolean("onCurrentDevice", on_current_device);
-
-    supervised_users.Append(std::move(supervised_user));
-  }
-
-  // Resolve callback with response.
-  ResolveJavascriptCallback(base::Value(webui_callback_id_), supervised_users);
-  webui_callback_id_.clear();
 }
 
 bool SigninSupervisedUserImportHandler::IsAccountConnected(

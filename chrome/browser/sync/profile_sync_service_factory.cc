@@ -55,7 +55,6 @@
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -144,9 +143,6 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(SpellcheckServiceFactory::GetInstance());
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   DependsOn(SupervisedUserSettingsServiceFactory::GetInstance());
-#if !defined(OS_ANDROID)
-  DependsOn(SupervisedUserSyncServiceFactory::GetInstance());
-#endif  // !defined(OS_ANDROID)
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
   DependsOn(sync_sessions::SyncSessionsWebContentsRouterFactory::GetInstance());
   DependsOn(TemplateURLServiceFactory::GetInstance());

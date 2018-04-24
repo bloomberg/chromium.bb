@@ -32,11 +32,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
-#include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
-#endif
-
 // Gmock matchers and actions.
 using testing::_;
 using testing::Invoke;
@@ -52,29 +47,6 @@ const char kTestGaiaId2[] = "test-gaia-id-2";
 const char kTestEmail2[] = "foo2@bar.com";
 
 const char kTestWebUIResponse[] = "cr.webUIListenerCallback";
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-const char kSupervisedUserId1[] = "test-supervised-id-1";
-const char kSupervisedUserId2[] = "test-supervised-id-2";
-
-const char kSupervisedUsername1[] = "test-supervised-username-1";
-const char kSupervisedUsername2[] = "test-supervised-username-2";
-
-const char kSupervisedUserAvatarName1[] = "chrome-avatar-index:0";
-const char kSupervisedUserAvatarName2[] = "chrome-avatar-index:1";
-
-syncer::SyncData CreateSyncData(const std::string& id,
-                                const std::string& name,
-                                const std::string& chrome_avatar) {
-  sync_pb::EntitySpecifics specifics;
-  specifics.mutable_managed_user()->set_id(id);
-  specifics.mutable_managed_user()->set_name(name);
-  specifics.mutable_managed_user()->set_acknowledged(true);
-  specifics.mutable_managed_user()->set_chrome_avatar(chrome_avatar);
-
-  return syncer::SyncData::CreateRemoteData(1, specifics, base::Time());
-}
-#endif
 
 }  // namespace
 
@@ -168,39 +140,6 @@ class SigninCreateProfileHandlerTest : public BrowserWithTestWindowTest {
         SigninManagerFactory::GetForProfile(custodian_));
     fake_signin_manager_->SetAuthenticatedAccountInfo(kTestGaiaId1,
                                                       kTestEmail1);
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-    // Add supervised users to the custodian profile.
-    SupervisedUserSyncService* sync_service_ =
-        SupervisedUserSyncServiceFactory::GetForProfile(custodian_);
-    syncer::SyncDataList sync_data;
-    sync_data.push_back(CreateSyncData(kSupervisedUserId1,
-                                       kSupervisedUsername1,
-                                       kSupervisedUserAvatarName1));
-    sync_data.push_back(CreateSyncData(kSupervisedUserId2,
-                                       kSupervisedUsername2,
-                                       kSupervisedUserAvatarName2));
-    syncer::SyncMergeResult result = sync_service_->MergeDataAndStartSyncing(
-        syncer::SUPERVISED_USERS,
-        sync_data,
-        std::unique_ptr<syncer::SyncChangeProcessor>(
-            new syncer::FakeSyncChangeProcessor()),
-        std::unique_ptr<syncer::SyncErrorFactory>(
-            new syncer::SyncErrorFactoryMock()));
-    EXPECT_FALSE(result.error().IsSet());
-    EXPECT_EQ(2u, sync_service_->GetSupervisedUsers()->size());
-
-    // The second supervised user exists on the device.
-    profile_manager()->CreateTestingProfile(
-        kSupervisedUsername2,
-        std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
-        base::UTF8ToUTF16(kSupervisedUsername2), 0,
-        kSupervisedUserId2,  // supervised_user_id
-        TestingProfile::TestingFactories());
-
-    EXPECT_EQ(2u,
-        profile_manager()->profile_attributes_storage()->GetNumberOfProfiles());
-#endif
   }
 
   void TearDown() override {
