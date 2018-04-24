@@ -7,7 +7,9 @@
 namespace net {
 
 BidirectionalStreamRequestInfo::BidirectionalStreamRequestInfo()
-    : priority(LOW), end_stream_on_headers(false) {}
+    : allow_early_data_override(false),
+      priority(LOW),
+      end_stream_on_headers(false) {}
 
 BidirectionalStreamRequestInfo::~BidirectionalStreamRequestInfo() = default;
 
