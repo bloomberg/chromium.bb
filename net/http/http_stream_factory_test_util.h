@@ -11,9 +11,8 @@
 #include "net/base/proxy_server.h"
 #include "net/http/http_stream.h"
 #include "net/http/http_stream_factory.h"
-#include "net/http/http_stream_factory_impl.h"
-#include "net/http/http_stream_factory_impl_job.h"
-#include "net/http/http_stream_factory_impl_job_controller.h"
+#include "net/http/http_stream_factory_job.h"
+#include "net/http/http_stream_factory_job_controller.h"
 #include "net/http/http_stream_request.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/socket/next_proto.h"
@@ -24,20 +23,20 @@ using testing::Invoke;
 
 namespace net {
 
-class HttpStreamFactoryImplPeer {
+class HttpStreamFactoryPeer {
  public:
   static void AddJobController(
-      HttpStreamFactoryImpl* factory,
-      HttpStreamFactoryImpl::JobController* job_controller) {
+      HttpStreamFactory* factory,
+      HttpStreamFactory::JobController* job_controller) {
     factory->job_controller_set_.insert(base::WrapUnique(job_controller));
   }
 
-  static bool IsJobControllerDeleted(HttpStreamFactoryImpl* factory) {
+  static bool IsJobControllerDeleted(HttpStreamFactory* factory) {
     return factory->job_controller_set_.empty();
   }
 
-  static HttpStreamFactoryImpl::JobFactory* GetDefaultJobFactory(
-      HttpStreamFactoryImpl* factory) {
+  static HttpStreamFactory::JobFactory* GetDefaultJobFactory(
+      HttpStreamFactory* factory) {
     return factory->job_factory_.get();
   }
 };
@@ -106,10 +105,10 @@ class MockHttpStreamRequestDelegate : public HttpStreamRequest::Delegate {
   DISALLOW_COPY_AND_ASSIGN(MockHttpStreamRequestDelegate);
 };
 
-class MockHttpStreamFactoryImplJob : public HttpStreamFactoryImpl::Job {
+class MockHttpStreamFactoryImplJob : public HttpStreamFactory::Job {
  public:
-  MockHttpStreamFactoryImplJob(HttpStreamFactoryImpl::Job::Delegate* delegate,
-                               HttpStreamFactoryImpl::JobType job_type,
+  MockHttpStreamFactoryImplJob(HttpStreamFactory::Job::Delegate* delegate,
+                               HttpStreamFactory::JobType job_type,
                                HttpNetworkSession* session,
                                const HttpRequestInfo& request_info,
                                RequestPriority priority,
@@ -133,14 +132,14 @@ class MockHttpStreamFactoryImplJob : public HttpStreamFactoryImpl::Job {
 };
 
 // JobFactory for creating MockHttpStreamFactoryImplJobs.
-class TestJobFactory : public HttpStreamFactoryImpl::JobFactory {
+class TestJobFactory : public HttpStreamFactory::JobFactory {
  public:
   TestJobFactory();
   ~TestJobFactory() override;
 
-  std::unique_ptr<HttpStreamFactoryImpl::Job> CreateMainJob(
-      HttpStreamFactoryImpl::Job::Delegate* delegate,
-      HttpStreamFactoryImpl::JobType job_type,
+  std::unique_ptr<HttpStreamFactory::Job> CreateMainJob(
+      HttpStreamFactory::Job::Delegate* delegate,
+      HttpStreamFactory::JobType job_type,
       HttpNetworkSession* session,
       const HttpRequestInfo& request_info,
       RequestPriority priority,
@@ -153,9 +152,9 @@ class TestJobFactory : public HttpStreamFactoryImpl::JobFactory {
       bool enable_ip_based_pooling,
       NetLog* net_log) override;
 
-  std::unique_ptr<HttpStreamFactoryImpl::Job> CreateAltSvcJob(
-      HttpStreamFactoryImpl::Job::Delegate* delegate,
-      HttpStreamFactoryImpl::JobType job_type,
+  std::unique_ptr<HttpStreamFactory::Job> CreateAltSvcJob(
+      HttpStreamFactory::Job::Delegate* delegate,
+      HttpStreamFactory::JobType job_type,
       HttpNetworkSession* session,
       const HttpRequestInfo& request_info,
       RequestPriority priority,
@@ -170,9 +169,9 @@ class TestJobFactory : public HttpStreamFactoryImpl::JobFactory {
       bool enable_ip_based_pooling,
       NetLog* net_log) override;
 
-  std::unique_ptr<HttpStreamFactoryImpl::Job> CreateAltProxyJob(
-      HttpStreamFactoryImpl::Job::Delegate* delegate,
-      HttpStreamFactoryImpl::JobType job_type,
+  std::unique_ptr<HttpStreamFactory::Job> CreateAltProxyJob(
+      HttpStreamFactory::Job::Delegate* delegate,
+      HttpStreamFactory::JobType job_type,
       HttpNetworkSession* session,
       const HttpRequestInfo& request_info,
       RequestPriority priority,
