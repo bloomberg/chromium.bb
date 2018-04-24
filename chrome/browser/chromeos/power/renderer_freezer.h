@@ -76,9 +76,9 @@ class CHROMEOS_EXPORT RendererFreezer
                const content::NotificationDetails& details) override;
 
   // content::RenderProcessHostObserver overrides.
-  void RenderProcessExited(content::RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override;
+  void RenderProcessExited(
+      content::RenderProcessHost* host,
+      const content::ChildProcessTerminationInfo& info) override;
   void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
 
  private:

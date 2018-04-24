@@ -10,6 +10,7 @@
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
+#include "content/public/browser/child_process_termination_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -57,12 +58,12 @@ class RenderProcessHostObserverForExit
   base::TerminationStatus termination_status() const { return status_; }
 
  private:
-  void RenderProcessExited(content::RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override {
+  void RenderProcessExited(
+      content::RenderProcessHost* host,
+      const content::ChildProcessTerminationInfo& info) override {
     DCHECK(observed_host_ == host);
     render_process_host_exited_ = true;
-    status_ = status;
+    status_ = info.status;
     observed_host_->RemoveObserver(this);
     if (message_loop_runner_.get()) {
       message_loop_runner_->Quit();

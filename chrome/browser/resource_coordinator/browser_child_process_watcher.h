@@ -25,10 +25,12 @@ class BrowserChildProcessWatcher : public content::BrowserChildProcessObserver {
       const content::ChildProcessData& data) override;
   void BrowserChildProcessHostDisconnected(
       const content::ChildProcessData& data) override;
-  void BrowserChildProcessCrashed(const content::ChildProcessData& data,
-                                  int exit_code) override;
-  void BrowserChildProcessKilled(const content::ChildProcessData& data,
-                                 int exit_code) override;
+  void BrowserChildProcessCrashed(
+      const content::ChildProcessData& data,
+      const content::ChildProcessTerminationInfo& info) override;
+  void BrowserChildProcessKilled(
+      const content::ChildProcessData& data,
+      const content::ChildProcessTerminationInfo& info) override;
 
   void GPUProcessStopped();
 

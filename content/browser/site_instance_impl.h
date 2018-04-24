@@ -209,8 +209,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;
   void RenderProcessWillExit(RenderProcessHost* host) override;
   void RenderProcessExited(RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override;
+                           const ChildProcessTerminationInfo& info) override;
 
   // Used to restrict a process' origin access rights.
   void LockToOriginIfNeeded();

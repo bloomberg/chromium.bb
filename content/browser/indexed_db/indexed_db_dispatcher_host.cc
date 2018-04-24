@@ -160,8 +160,7 @@ void IndexedDBDispatcherHost::AddCursorBinding(
 
 void IndexedDBDispatcherHost::RenderProcessExited(
     RenderProcessHost* host,
-    base::TerminationStatus status,
-    int exit_code) {
+    const ChildProcessTerminationInfo& info) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(

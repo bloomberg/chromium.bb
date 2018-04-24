@@ -16,8 +16,9 @@ class ChromeChildProcessWatcher : public content::BrowserChildProcessObserver {
 
  private:
   // content::BrowserChildProcessObserver:
-  void BrowserChildProcessCrashed(const content::ChildProcessData& data,
-                                  int exit_code) override;
+  void BrowserChildProcessCrashed(
+      const content::ChildProcessData& data,
+      const content::ChildProcessTerminationInfo& info) override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeChildProcessWatcher);
 };

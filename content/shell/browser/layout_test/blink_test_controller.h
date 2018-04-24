@@ -174,8 +174,7 @@ class BlinkTestController : public WebContentsObserver,
   void RenderProcessHostDestroyed(
       RenderProcessHost* render_process_host) override;
   void RenderProcessExited(RenderProcessHost* render_process_host,
-                           base::TerminationStatus status,
-                           int exit_code) override;
+                           const ChildProcessTerminationInfo& info) override;
 
   // NotificationObserver implementation.
   void Observe(int type,

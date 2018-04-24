@@ -94,8 +94,7 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
 
   // RenderProcessHostObserver:
   void RenderProcessExited(RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override;
+                           const ChildProcessTerminationInfo& info) override;
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
   void MarkAsFinished();
@@ -262,8 +261,7 @@ MhtmlSaveStatus MHTMLGenerationManager::Job::SendToNextRenderFrame() {
 
 void MHTMLGenerationManager::Job::RenderProcessExited(
     RenderProcessHost* host,
-    base::TerminationStatus status,
-    int exit_code) {
+    const ChildProcessTerminationInfo& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   MHTMLGenerationManager::GetInstance()->RenderProcessExited(this);
 }

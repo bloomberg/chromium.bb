@@ -263,13 +263,6 @@ void CompositorView::BrowserChildProcessHostDisconnected(
   }
 }
 
-void CompositorView::BrowserChildProcessCrashed(
-    const content::ChildProcessData& data,
-    int exit_code) {
-  // The Android TERMINATION_STATUS_OOM_PROTECTED hack causes us to never go
-  // through here but through BrowserChildProcessHostDisconnected() instead.
-}
-
 void CompositorView::SetCompositorWindow(
     JNIEnv* env,
     const JavaParamRef<jobject>& object,

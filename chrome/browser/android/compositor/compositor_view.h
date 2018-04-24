@@ -98,8 +98,6 @@ class CompositorView : public content::CompositorClient,
   // content::BrowserChildProcessObserver implementation:
   void BrowserChildProcessHostDisconnected(
       const content::ChildProcessData& data) override;
-  void BrowserChildProcessCrashed(const content::ChildProcessData& data,
-                                  int exit_code) override;
 
   void SetBackground(bool visible, SkColor color);
 

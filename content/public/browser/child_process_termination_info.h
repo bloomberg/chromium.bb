@@ -14,7 +14,9 @@ namespace content {
 struct ChildProcessTerminationInfo {
   base::TerminationStatus status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
 
-  // Exit code of the process if it exited (e.g. status from waitpid if on
+  // If |status| is TERMINATION_STATUS_LAUNCH_FAILED then |exit_code| will
+  // contain a platform specific launch failure error code. Otherwise, it will
+  // contain the exit code for the process (e.g. status from waitpid if on
   // posix, from GetExitCodeProcess on Windows).
   int exit_code = RESULT_CODE_NORMAL_EXIT;
 

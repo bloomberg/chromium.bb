@@ -141,14 +141,14 @@ void SubprocessMetricsProvider::BrowserChildProcessHostDisconnected(
 
 void SubprocessMetricsProvider::BrowserChildProcessCrashed(
     const content::ChildProcessData& data,
-    int exit_code) {
+    const content::ChildProcessTerminationInfo& info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DeregisterSubprocessAllocator(data.id);
 }
 
 void SubprocessMetricsProvider::BrowserChildProcessKilled(
     const content::ChildProcessData& data,
-    int exit_code) {
+    const content::ChildProcessTerminationInfo& info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DeregisterSubprocessAllocator(data.id);
 }
@@ -186,8 +186,7 @@ void SubprocessMetricsProvider::RenderProcessReady(
 
 void SubprocessMetricsProvider::RenderProcessExited(
     content::RenderProcessHost* host,
-    base::TerminationStatus status,
-    int exit_code) {
+    const content::ChildProcessTerminationInfo& info) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   DeregisterSubprocessAllocator(host->GetID());

@@ -273,9 +273,9 @@ void EventRouter::OnListenerRemoved(const EventListener* listener) {
     observer->second->OnListenerRemoved(details);
 }
 
-void EventRouter::RenderProcessExited(content::RenderProcessHost* host,
-                                      base::TerminationStatus status,
-                                      int exit_code) {
+void EventRouter::RenderProcessExited(
+    content::RenderProcessHost* host,
+    const content::ChildProcessTerminationInfo& info) {
   listeners_.RemoveListenersForProcess(host);
   observed_process_set_.erase(host);
   host->RemoveObserver(this);

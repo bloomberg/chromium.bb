@@ -89,17 +89,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
     virtual ~PriorityClient() {}
   };
 
-  // Details for RENDERER_PROCESS_CLOSED notifications.
-  struct RendererClosedDetails {
-    RendererClosedDetails(base::TerminationStatus status,
-                          int exit_code) {
-      this->status = status;
-      this->exit_code = exit_code;
-    }
-    base::TerminationStatus status;
-    int exit_code;
-  };
-
   // Crash reporting mode for ShutdownForBadMessage.
   enum class CrashReportMode {
     NO_CRASH_DUMP,

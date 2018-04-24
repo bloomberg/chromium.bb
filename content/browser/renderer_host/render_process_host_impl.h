@@ -89,6 +89,7 @@ class SiteInstance;
 class SiteInstanceImpl;
 class StoragePartition;
 class StoragePartitionImpl;
+struct ChildProcessTerminationInfo;
 
 #if BUILDFLAG(ENABLE_WEBRTC)
 class MediaStreamTrackMetricsHost;
@@ -525,7 +526,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void CreateSharedRendererHistogramAllocator();
 
   // Handle termination of our process.
-  void ProcessDied(bool already_dead, RendererClosedDetails* known_details);
+  void ProcessDied(bool already_dead,
+                   ChildProcessTerminationInfo* known_details);
 
   // Destroy all objects that can cause methods to be invoked on this object or
   // any other that hang off it.

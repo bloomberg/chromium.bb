@@ -635,14 +635,14 @@ void RenderViewHostImpl::ClosePageIgnoringUnloadEvents() {
   delegate_->Close(this);
 }
 
-void RenderViewHostImpl::RenderProcessExited(RenderProcessHost* host,
-                                             base::TerminationStatus status,
-                                             int exit_code) {
+void RenderViewHostImpl::RenderProcessExited(
+    RenderProcessHost* host,
+    const ChildProcessTerminationInfo& info) {
   if (!GetWidget()->renderer_initialized())
     return;
 
-  GetWidget()->RendererExited(status, exit_code);
-  delegate_->RenderViewTerminated(this, status, exit_code);
+  GetWidget()->RendererExited(info.status, info.exit_code);
+  delegate_->RenderViewTerminated(this, info.status, info.exit_code);
 }
 
 bool RenderViewHostImpl::Send(IPC::Message* msg) {

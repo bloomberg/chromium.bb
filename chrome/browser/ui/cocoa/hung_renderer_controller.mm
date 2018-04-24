@@ -97,9 +97,9 @@ class HungRendererObserverBridge : public content::WebContentsObserver,
   void WebContentsDestroyed() override { [controller_ renderProcessGone]; }
 
   // RenderProcessHostObserver overrides:
-  void RenderProcessExited(content::RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override {
+  void RenderProcessExited(
+      content::RenderProcessHost* host,
+      const content::ChildProcessTerminationInfo& info) override {
     [controller_ renderProcessGone];
   }
 

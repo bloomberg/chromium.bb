@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/browser/child_process_termination_info.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -85,9 +86,8 @@ void ChromeStabilityMetricsProvider::Observe(
     }
 
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      content::RenderProcessHost::RendererClosedDetails* process_details =
-          content::Details<content::RenderProcessHost::RendererClosedDetails>(
-              details).ptr();
+      content::ChildProcessTerminationInfo* process_info =
+          content::Details<content::ChildProcessTerminationInfo>(details).ptr();
       bool was_extension_process = false;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       content::RenderProcessHost* host =
@@ -97,8 +97,8 @@ void ChromeStabilityMetricsProvider::Observe(
         was_extension_process = true;
       }
 #endif
-      helper_.LogRendererCrash(was_extension_process, process_details->status,
-                               process_details->exit_code);
+      helper_.LogRendererCrash(was_extension_process, process_info->status,
+                               process_info->exit_code);
       break;
     }
 
@@ -128,7 +128,7 @@ void ChromeStabilityMetricsProvider::Observe(
 
 void ChromeStabilityMetricsProvider::BrowserChildProcessCrashed(
     const content::ChildProcessData& data,
-    int exit_code) {
+    const content::ChildProcessTerminationInfo& info) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Exclude plugin crashes from the count below because we report them via
   // a separate UMA metric.

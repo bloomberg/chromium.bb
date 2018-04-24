@@ -18,6 +18,7 @@
 #include "components/security_state/content/content_utils.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_termination_info.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -504,12 +505,11 @@ void HeadlessWebContentsImpl::DevToolsAgentHostDetached(
 
 void HeadlessWebContentsImpl::RenderProcessExited(
     content::RenderProcessHost* host,
-    base::TerminationStatus status,
-    int exit_code) {
+    const content::ChildProcessTerminationInfo& info) {
   DCHECK_EQ(render_process_host_, host);
   render_process_exited_ = true;
   for (auto& observer : observers_)
-    observer.RenderProcessExited(status, exit_code);
+    observer.RenderProcessExited(info.status, info.exit_code);
 }
 
 void HeadlessWebContentsImpl::RenderProcessHostDestroyed(

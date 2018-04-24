@@ -702,8 +702,7 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
   //    sufficient from correctness perspective.
 
   void RenderProcessExited(RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int unused_exit_code) override {
+                           const ChildProcessTerminationInfo& info) override {
     if (host == spare_render_process_host_)
       CleanupSpareRenderProcessHost();
   }
@@ -3167,9 +3166,14 @@ void RenderProcessHostImpl::Cleanup() {
   // will be destroyed a bit later. Observers shouldn't rely on this process
   // anymore.
   if (HasConnection()) {
+    // Populates Android-only fields and closes the underlying base::Process.
+    ChildProcessTerminationInfo info =
+        child_process_launcher_->GetChildTerminationInfo(
+            false /* already_dead */);
+    info.status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
+    info.exit_code = 0;
     for (auto& observer : observers_) {
-      observer.RenderProcessExited(
-          this, base::TERMINATION_STATUS_NORMAL_TERMINATION, 0);
+      observer.RenderProcessExited(this, info);
     }
   }
   for (auto& observer : observers_)
@@ -3791,8 +3795,9 @@ void RenderProcessHostImpl::CreateSharedRendererHistogramAllocator() {
                 mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite));
 }
 
-void RenderProcessHostImpl::ProcessDied(bool already_dead,
-                                        RendererClosedDetails* known_details) {
+void RenderProcessHostImpl::ProcessDied(
+    bool already_dead,
+    ChildProcessTerminationInfo* known_info) {
   // Our child process has died.  If we didn't expect it, it's a crash.
   // In any case, we need to let everyone know it's gone.
   // The OnChannelError notification can fire multiple times due to nested sync
@@ -3810,9 +3815,8 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   // termination happened.
   ChildProcessTerminationInfo info;
   info.exit_code = 0;
-  if (known_details) {
-    info.status = known_details->status;
-    info.exit_code = known_details->exit_code;
+  if (known_info) {
+    info = *known_info;
   } else if (child_process_launcher_.get()) {
     info = child_process_launcher_->GetChildTerminationInfo(already_dead);
     if (already_dead && info.status == base::TERMINATION_STATUS_STILL_RUNNING) {
@@ -3832,8 +3836,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
     }
   }
 
-  RendererClosedDetails details(info.status, info.exit_code);
-
   child_process_launcher_.reset();
   is_dead_ = true;
   // Make sure no IPCs or mojo calls from the old process get dispatched after
@@ -3846,9 +3848,9 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   within_process_died_observer_ = true;
   NotificationService::current()->Notify(
       NOTIFICATION_RENDERER_PROCESS_CLOSED, Source<RenderProcessHost>(this),
-      Details<RendererClosedDetails>(&details));
+      Details<ChildProcessTerminationInfo>(&info));
   for (auto& observer : observers_)
-    observer.RenderProcessExited(this, info.status, info.exit_code);
+    observer.RenderProcessExited(this, info);
   within_process_died_observer_ = false;
 
   RemoveUserData(kSessionStorageHolderKey);
@@ -4167,9 +4169,10 @@ void RenderProcessHostImpl::OnProcessLaunchFailed(int error_code) {
   if (deleting_soon_)
     return;
 
-  RendererClosedDetails details{base::TERMINATION_STATUS_LAUNCH_FAILED,
-                                error_code};
-  ProcessDied(true, &details);
+  ChildProcessTerminationInfo info;
+  info.status = base::TERMINATION_STATUS_LAUNCH_FAILED;
+  info.exit_code = error_code;
+  ProcessDied(true, &info);
 }
 
 void RenderProcessHostImpl::OnUserMetricsRecordAction(

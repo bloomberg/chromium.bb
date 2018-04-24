@@ -86,13 +86,13 @@ void MockRenderProcessHost::SimulateRenderProcessExit(
     base::TerminationStatus status,
     int exit_code) {
   has_connection_ = false;
-  RenderProcessHost::RendererClosedDetails details(status, exit_code);
+  ChildProcessTerminationInfo termination_info{status, exit_code};
   NotificationService::current()->Notify(
       NOTIFICATION_RENDERER_PROCESS_CLOSED, Source<RenderProcessHost>(this),
-      Details<RenderProcessHost::RendererClosedDetails>(&details));
+      Details<ChildProcessTerminationInfo>(&termination_info));
 
   for (auto& observer : observers_)
-    observer.RenderProcessExited(this, details.status, details.exit_code);
+    observer.RenderProcessExited(this, termination_info);
 
   // Send every routing ID a FrameHostMsg_RenderProcessGone message. To ensure a
   // predictable order for unittests which may assert against the order, we sort
@@ -109,7 +109,8 @@ void MockRenderProcessHost::SimulateRenderProcessExit(
 
   for (auto& entry_pair : sorted_listeners_) {
     entry_pair.second->OnMessageReceived(FrameHostMsg_RenderProcessGone(
-        entry_pair.first, static_cast<int>(details.status), details.exit_code));
+        entry_pair.first, static_cast<int>(termination_info.status),
+        termination_info.exit_code));
   }
 }
 

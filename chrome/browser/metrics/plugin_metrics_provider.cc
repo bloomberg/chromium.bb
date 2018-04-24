@@ -348,14 +348,14 @@ void PluginMetricsProvider::BrowserChildProcessHostConnected(
 
 void PluginMetricsProvider::BrowserChildProcessCrashed(
     const content::ChildProcessData& data,
-    int exit_code) {
+    const content::ChildProcessTerminationInfo& info) {
   GetChildProcessStats(data).process_crashes++;
   RecordCurrentStateWithDelay(kRecordStateDelayMs);
 }
 
 void PluginMetricsProvider::BrowserChildProcessKilled(
     const content::ChildProcessData& data,
-    int exit_code) {
+    const content::ChildProcessTerminationInfo& info) {
   // Treat a kill as a crash, since Flash returns STATUS_DEBUGGER_INACTIVE for
   // actual crashes, which is treated as a kill rather than a crash by
   // base::GetTerminationStatus

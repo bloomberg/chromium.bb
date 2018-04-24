@@ -197,9 +197,9 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   bool IsRemoteLoggingEnabled() const;
 
   // RenderProcessHostObserver implementation.
-  void RenderProcessExited(content::RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override;
+  void RenderProcessExited(
+      content::RenderProcessHost* host,
+      const content::ChildProcessTerminationInfo& info) override;
   void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
 
   // RenderProcessExited() and RenderProcessHostDestroyed() treated similarly

@@ -107,8 +107,8 @@ enum NotificationType {
 
   // Indicates that a render process was closed (meaning it exited, but the
   // RenderProcessHost might be reused).  The source will be the corresponding
-  // RenderProcessHost.  The details will be a RendererClosedDetails struct.
-  // This may get sent along with RENDERER_PROCESS_TERMINATED.
+  // RenderProcessHost.  The details will be a ChildProcessTerminationInfo
+  // struct. This may get sent along with RENDERER_PROCESS_TERMINATED.
   // DEPRECATED: Use RenderProcessHostObserver::RenderProcessExited()
   NOTIFICATION_RENDERER_PROCESS_CLOSED,
 

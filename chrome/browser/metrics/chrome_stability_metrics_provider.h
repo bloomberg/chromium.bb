@@ -56,7 +56,7 @@ class ChromeStabilityMetricsProvider
   // content::BrowserChildProcessObserver:
   void BrowserChildProcessCrashed(
       const content::ChildProcessData& data,
-      int exit_code) override;
+      const content::ChildProcessTerminationInfo& info) override;
 
 #if defined(OS_ANDROID)
   // breakpad::CrashDumpManager::Observer:

@@ -73,8 +73,7 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   // Called by UI thread. Used to kill outstanding bindings and weak pointers
   // in callbacks.
   void RenderProcessExited(RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override;
+                           const ChildProcessTerminationInfo& info) override;
 
  private:
   class IDBSequenceHelper;

@@ -16,6 +16,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/browser/child_process_termination_info.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -135,13 +136,12 @@ void CastStabilityMetricsProvider::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      content::RenderProcessHost::RendererClosedDetails* process_details =
-          content::Details<content::RenderProcessHost::RendererClosedDetails>(
-              details).ptr();
+      content::ChildProcessTerminationInfo* termination_info =
+          content::Details<content::ChildProcessTerminationInfo>(details).ptr();
       content::RenderProcessHost* host =
           content::Source<content::RenderProcessHost>(source).ptr();
-      LogRendererCrash(
-          host, process_details->status, process_details->exit_code);
+      LogRendererCrash(host, termination_info->status,
+                       termination_info->exit_code);
       break;
     }
 
@@ -157,7 +157,7 @@ void CastStabilityMetricsProvider::Observe(
 
 void CastStabilityMetricsProvider::BrowserChildProcessCrashed(
     const content::ChildProcessData& data,
-    int exit_code) {
+    const content::ChildProcessTerminationInfo& info) {
   IncrementPrefValue(prefs::kStabilityChildProcessCrashCount);
 }
 

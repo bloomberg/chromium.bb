@@ -340,9 +340,9 @@ class EventRouter : public KeyedService,
   void OnListenerRemoved(const EventListener* listener) override;
 
   // RenderProcessHostObserver implementation.
-  void RenderProcessExited(content::RenderProcessHost* host,
-                           base::TerminationStatus status,
-                           int exit_code) override;
+  void RenderProcessExited(
+      content::RenderProcessHost* host,
+      const content::ChildProcessTerminationInfo& info) override;
   void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
 
   content::BrowserContext* const browser_context_;
