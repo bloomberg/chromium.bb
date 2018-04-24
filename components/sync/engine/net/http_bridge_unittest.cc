@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bit_cast.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -81,7 +83,7 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
   void RunSyncThreadBridgeUseTest(base::WaitableEvent* signal_when_created,
                                   base::WaitableEvent* signal_when_released);
 
-  static void TestSameHttpNetworkSession(base::MessageLoop* main_message_loop,
+  static void TestSameHttpNetworkSession(base::OnceClosure on_done,
                                          MAYBE_SyncHttpBridgeTest* test) {
     scoped_refptr<HttpBridge> http_bridge(test->BuildBridge());
     EXPECT_TRUE(test->GetTestRequestContextGetter());
@@ -93,8 +95,7 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
                                 ->GetURLRequestContext()
                                 ->http_transaction_factory()
                                 ->GetSession());
-    main_message_loop->task_runner()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+    std::move(on_done).Run();
   }
 
   base::MessageLoop* GetIOThreadLoop() { return io_thread_.message_loop(); }
@@ -196,13 +197,15 @@ void MAYBE_SyncHttpBridgeTest::RunSyncThreadBridgeUseTest(
 }
 
 TEST_F(MAYBE_SyncHttpBridgeTest, TestUsesSameHttpNetworkSession) {
+  base::RunLoop run_loop;
+
   // Run this test on the IO thread because we can only call
   // URLRequestContextGetter::GetURLRequestContext on the IO thread.
   io_thread()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&MAYBE_SyncHttpBridgeTest::TestSameHttpNetworkSession,
-                 base::MessageLoop::current(), this));
-  base::RunLoop().Run();
+                 run_loop.QuitWhenIdleClosure(), this));
+  run_loop.Run();
 }
 
 // Test the HttpBridge without actually making any network requests.
