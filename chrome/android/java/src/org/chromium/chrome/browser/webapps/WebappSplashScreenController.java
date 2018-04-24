@@ -335,14 +335,14 @@ class WebappSplashScreenController extends EmptyTabObserver {
     };
 
     private void startSplashscreenTraceEvents() {
-        TraceEvent.startAsync("WebappSplashScreen", 0);
-        SingleShotOnDrawListener.install(
-                mParentView, () -> { TraceEvent.startAsync("WebappSplashScreen.visible", 0); });
+        TraceEvent.startAsync("WebappSplashScreen", hashCode());
+        SingleShotOnDrawListener.install(mParentView,
+                () -> { TraceEvent.startAsync("WebappSplashScreen.visible", hashCode()); });
     }
 
     private void finishSplashscreenTraceEvents() {
-        TraceEvent.finishAsync("WebappSplashScreen", 0);
-        SingleShotOnDrawListener.install(
-                mParentView, () -> { TraceEvent.finishAsync("WebappSplashScreen.visible", 0); });
+        TraceEvent.finishAsync("WebappSplashScreen", hashCode());
+        SingleShotOnDrawListener.install(mParentView,
+                () -> { TraceEvent.finishAsync("WebappSplashScreen.visible", hashCode()); });
     }
 }
