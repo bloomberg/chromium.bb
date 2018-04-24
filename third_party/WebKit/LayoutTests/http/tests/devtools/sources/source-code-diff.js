@@ -21,7 +21,9 @@
 
   function onBeforeUISourceCode(uiSourceCode) {
     uiSourceCode.setWorkingCopy(textAfter);
-    TestRunner.addSniffer(SourceFrame.SourceCodeDiff.prototype, '_decorationsSetForTest', decorationsSet);
+    TestRunner.addSniffer(
+        Sources.GutterDiffPlugin.prototype, '_decorationsSetForTest',
+        decorationsSet);
     SourcesTestRunner.showUISourceCodePromise(uiSourceCode);
   }
 
@@ -32,11 +34,11 @@
     function print(decoration) {
       var type = decoration[1].type;
       var name = 'Unknown';
-      if (type === SourceFrame.SourceCodeDiff.GutterDecorationType.Insert)
+      if (type === SourceFrame.SourceCodeDiff.EditType.Insert)
         name = 'Insert';
-      else if (type === SourceFrame.SourceCodeDiff.GutterDecorationType.Delete)
+      else if (type === SourceFrame.SourceCodeDiff.EditType.Delete)
         name = 'Delete';
-      else if (type === SourceFrame.SourceCodeDiff.GutterDecorationType.Modify)
+      else if (type === SourceFrame.SourceCodeDiff.EditType.Modify)
         name = 'Modify';
 
       TestRunner.addResult(decoration[0] + ':' + name);
