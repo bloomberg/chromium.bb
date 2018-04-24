@@ -22,6 +22,7 @@ namespace ash {
 class FeaturePodControllerBase;
 class SystemTray;
 class SystemTrayItem;
+class TimeToClickRecorder;
 class UnifiedBrightnessSliderController;
 class UnifiedVolumeSliderController;
 class UnifiedSystemTrayModel;
@@ -117,6 +118,9 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   // Controller of brightness slider. Owned.
   std::unique_ptr<UnifiedBrightnessSliderController>
       brightness_slider_controller_;
+
+  // PreTargetHandler of |unified_view_| to record TimeToClick metrics. Owned.
+  std::unique_ptr<TimeToClickRecorder> time_to_click_recorder_;
 
   // If the previous state is expanded or not. Only valid during dragging (from
   // BeginDrag to EndDrag).

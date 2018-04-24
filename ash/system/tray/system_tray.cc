@@ -425,6 +425,17 @@ TrayIME* SystemTray::GetTrayIME() const {
   return tray_ime_;
 }
 
+void SystemTray::RecordTimeToClick() {
+  // Ignore if the tray bubble is not opened by click.
+  if (!last_button_clicked_)
+    return;
+
+  UMA_HISTOGRAM_TIMES("ChromeOS.SystemTray.TimeToClick",
+                      base::TimeTicks::Now() - last_button_clicked_.value());
+
+  last_button_clicked_.reset();
+}
+
 void SystemTray::CanSwitchAwayFromActiveUser(
     base::OnceCallback<void(bool)> callback) {
   // If neither screen sharing nor capturing is going on we can immediately
@@ -532,6 +543,11 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
   // tint the background.
   if (full_system_tray_menu_)
     SetIsActive(true);
+
+  // If the current view is not the default view or opened by click, reset the
+  // last button click time.
+  if (detailed || !show_by_click)
+    last_button_clicked_.reset();
 }
 
 void SystemTray::UpdateWebNotifications() {
@@ -603,6 +619,8 @@ void SystemTray::ClickedOutsideBubble() {
 bool SystemTray::PerformAction(const ui::Event& event) {
   UserMetricsRecorder::RecordUserClickOnTray(
       LoginMetricsRecorder::TrayClickTarget::kSystemTray);
+
+  last_button_clicked_ = base::TimeTicks::Now();
 
   if (features::IsSystemTrayUnifiedEnabled()) {
     return shelf()->GetStatusAreaWidget()->unified_system_tray()->PerformAction(
@@ -727,6 +745,18 @@ void SystemTray::RecordSystemMenuMetrics() {
         "Ash.SystemMenu.PercentageOfWorkAreaHeightCoveredByMenu",
         100 * bubble_view->height() / work_area_height, 1, 300, 100);
   }
+}
+
+TimeToClickRecorder::TimeToClickRecorder(SystemTray* tray) : tray_(tray) {}
+
+void TimeToClickRecorder::OnEvent(ui::Event* event) {
+  // Ignore if the event is neither click nor tap.
+  if (event->type() != ui::ET_MOUSE_PRESSED &&
+      event->type() != ui::ET_GESTURE_TAP) {
+    return;
+  }
+
+  tray_->RecordTimeToClick();
 }
 
 }  // namespace ash

@@ -133,6 +133,10 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   // Returns TrayIME object if present or null otherwise.
   TrayIME* GetTrayIME() const;
 
+  // Record TimeToClick metrics and reset |last_button_clicked_|. Called by
+  // TimeToClickRecorder which is system tray view's PreTargetHandler.
+  void RecordTimeToClick();
+
   // Determines if it's ok to switch away from the currently active user. Screen
   // casting may block this (or at least throw up a confirmation dialog). Calls
   // |callback| with the result.
@@ -224,6 +228,8 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   // Note that the value is only valid when |system_bubble_| is true.
   bool full_system_tray_menu_ = false;
 
+  base::Optional<base::TimeTicks> last_button_clicked_;
+
   // These objects are not owned by this class.
   TrayAccessibility* tray_accessibility_ = nullptr;
   TrayAudio* tray_audio_ = nullptr;
@@ -248,6 +254,22 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   ScreenTrayItem* screen_share_tray_item_ = nullptr;    // not owned
 
   DISALLOW_COPY_AND_ASSIGN(SystemTray);
+};
+
+// An event handler that will be installed as system tray view PreTargetHandler
+// to record TimeToClick metrics.
+class TimeToClickRecorder : public ui::EventHandler {
+ public:
+  TimeToClickRecorder(SystemTray* tray);
+  ~TimeToClickRecorder() override = default;
+
+ private:
+  // ui::EventHandler:
+  void OnEvent(ui::Event* event) override;
+
+  SystemTray* const tray_;
+
+  DISALLOW_COPY_AND_ASSIGN(TimeToClickRecorder);
 };
 
 }  // namespace ash
