@@ -77,7 +77,7 @@ class JsonFileSanitizer {
                     std::tuple<std::string, bool, bool> read_and_delete_result);
 
   void JsonParsingDone(const base::FilePath& file_path,
-                       std::unique_ptr<base::Value> json_value,
+                       base::Optional<base::Value> json_value,
                        const base::Optional<std::string>& error);
 
   void JsonFileWritten(const base::FilePath& file_path,

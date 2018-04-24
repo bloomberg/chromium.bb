@@ -23,10 +23,10 @@ class {{struct.name}}DataView {
   template <typename UserType>
   WARN_UNUSED_RESULT bool Read{{name|under_to_camel}}(UserType* output) {
 {%-     if pf.min_version != 0 %}
-    auto* pointer = data_->header_.version >= {{pf.min_version}}
+    auto* pointer = data_->header_.version >= {{pf.min_version}} && !data_->{{name}}.is_null()
                     ? &data_->{{name}} : nullptr;
 {%-     else %}
-    auto* pointer = &data_->{{name}};
+    auto* pointer = !data_->{{name}}.is_null() ? &data_->{{name}} : nullptr;
 {%-     endif %}
     return mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
         pointer, output, context_);

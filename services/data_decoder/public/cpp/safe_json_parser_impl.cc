@@ -53,14 +53,17 @@ void SafeJsonParserImpl::OnConnectionError() {
   ReportResults(nullptr, "Connection error with the json parser process.");
 }
 
-void SafeJsonParserImpl::OnParseDone(std::unique_ptr<base::Value> result,
+void SafeJsonParserImpl::OnParseDone(base::Optional<base::Value> result,
                                      const base::Optional<std::string>& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Shut down the utility process.
   json_parser_ptr_.reset();
 
-  ReportResults(std::move(result), error.value_or(""));
+  std::unique_ptr<base::Value> result_ptr =
+      result ? base::Value::ToUniquePtrValue(std::move(result.value()))
+             : nullptr;
+  ReportResults(std::move(result_ptr), error.value_or(""));
 }
 
 void SafeJsonParserImpl::ReportResults(std::unique_ptr<base::Value> parsed_json,

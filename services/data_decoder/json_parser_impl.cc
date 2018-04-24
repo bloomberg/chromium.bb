@@ -24,9 +24,11 @@ void JsonParserImpl::Parse(const std::string& json, ParseCallback callback) {
   std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
       json, base::JSON_PARSE_RFC, &error_code, &error);
   if (value) {
-    std::move(callback).Run(std::move(value), base::nullopt);
+    std::move(callback).Run(base::make_optional(std::move(*value)),
+                            base::nullopt);
   } else {
-    std::move(callback).Run(nullptr, base::make_optional(std::move(error)));
+    std::move(callback).Run(base::nullopt,
+                            base::make_optional(std::move(error)));
   }
 }
 

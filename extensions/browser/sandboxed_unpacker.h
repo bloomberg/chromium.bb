@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "extensions/browser/crx_file_info.h"
 #include "extensions/browser/image_sanitizer.h"
 #include "extensions/browser/install/crx_install_error.h"
@@ -27,8 +28,6 @@
 class SkBitmap;
 
 namespace base {
-class DictionaryValue;
-class ListValue;
 class SequencedTaskRunner;
 }
 
@@ -231,7 +230,7 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
 
   // Unpacks the extension in directory and returns the manifest.
   void Unpack(const base::FilePath& directory);
-  void ReadManifestDone(std::unique_ptr<base::Value> manifest,
+  void ReadManifestDone(base::Optional<base::Value> manifest,
                         const base::Optional<std::string>& error);
   void UnpackExtensionSucceeded(
       std::unique_ptr<base::DictionaryValue> manifest);
@@ -256,7 +255,7 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
 
   void ReadJSONRulesetIfNeeded(std::unique_ptr<base::DictionaryValue> manifest);
   void ReadJSONRulesetDone(std::unique_ptr<base::DictionaryValue> manifest,
-                           std::unique_ptr<base::Value> json_ruleset,
+                           base::Optional<base::Value> json_ruleset,
                            const base::Optional<std::string>& error);
 
   // Reports unpack success or failure, or unzip failure.
