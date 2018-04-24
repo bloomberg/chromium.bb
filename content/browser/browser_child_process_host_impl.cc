@@ -25,7 +25,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/tracing/common/trace_config_file.h"
+#include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
@@ -213,24 +213,9 @@ void BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(
 // static
 void BrowserChildProcessHostImpl::CopyTraceStartupFlags(
     base::CommandLine* cmd_line) {
-  const base::CommandLine& browser_cmd_line =
-      *base::CommandLine::ForCurrentProcess();
-
-  if (browser_cmd_line.HasSwitch(switches::kTraceStartup) &&
-      BrowserMainLoop::GetInstance()->is_tracing_startup_for_duration()) {
-    // Pass kTraceStartup switch to renderer only if startup tracing has not
-    // finished.
-    cmd_line->AppendSwitchASCII(
-        switches::kTraceStartup,
-        browser_cmd_line.GetSwitchValueASCII(switches::kTraceStartup));
-    if (browser_cmd_line.HasSwitch(switches::kTraceStartupRecordMode)) {
-      cmd_line->AppendSwitchASCII(switches::kTraceStartupRecordMode,
-                                  browser_cmd_line.GetSwitchValueASCII(
-                                      switches::kTraceStartupRecordMode));
-    }
-  } else if (tracing::TraceConfigFile::GetInstance()->IsEnabled()) {
+  if (tracing::TraceStartupConfig::GetInstance()->IsEnabled()) {
     const auto trace_config =
-        tracing::TraceConfigFile::GetInstance()->GetTraceConfig();
+        tracing::TraceStartupConfig::GetInstance()->GetTraceConfig();
     if (!trace_config.IsArgumentFilterEnabled()) {
       // The only trace option that we can pass through switches is the record
       // mode. Other trace options should have the default value.

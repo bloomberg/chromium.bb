@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/tracing/common/trace_config_file.h"
+#include "components/tracing/common/trace_startup_config.h"
 
 #include <stddef.h>
 
@@ -14,6 +14,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/tracing/common/tracing_switches.h"
@@ -33,9 +34,6 @@ const base::FilePath::CharType kAndroidTraceConfigFile[] =
     FILE_PATH_LITERAL("/data/local/chrome-trace-config.json");
 #endif
 
-const base::FilePath::CharType kDefaultResultFile[] =
-    FILE_PATH_LITERAL("chrometrace.log");
-
 // String parameters that can be used to parse the trace config file content.
 const char kTraceConfigParam[] = "trace_config";
 const char kStartupDurationParam[] = "startup_duration";
@@ -43,28 +41,47 @@ const char kResultFileParam[] = "result_file";
 
 }  // namespace
 
-TraceConfigFile* TraceConfigFile::GetInstance() {
-  return base::Singleton<TraceConfigFile,
-                         base::DefaultSingletonTraits<TraceConfigFile>>::get();
+TraceStartupConfig* TraceStartupConfig::GetInstance() {
+  return base::Singleton<TraceStartupConfig, base::DefaultSingletonTraits<
+                                                 TraceStartupConfig>>::get();
 }
 
-TraceConfigFile::TraceConfigFile()
+TraceStartupConfig::TraceStartupConfig()
     : is_enabled_(false),
       trace_config_(base::trace_event::TraceConfig()),
       startup_duration_(0),
-      result_file_(kDefaultResultFile) {
+      result_file_() {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+
+  if (command_line->HasSwitch(switches::kTraceStartup)) {
+    std::string startup_duration_str =
+        command_line->GetSwitchValueASCII(switches::kTraceStartupDuration);
+    startup_duration_ = 5;
+    if (!startup_duration_str.empty() &&
+        !base::StringToInt(startup_duration_str, &startup_duration_)) {
+      DLOG(WARNING) << "Could not parse --" << switches::kTraceStartupDuration
+                    << "=" << startup_duration_str << " defaulting to 5 (secs)";
+      startup_duration_ = 5;
+    }
+
+    trace_config_ = base::trace_event::TraceConfig(
+        command_line->GetSwitchValueASCII(switches::kTraceStartup),
+        command_line->GetSwitchValueASCII(switches::kTraceStartupRecordMode));
+
+    result_file_ =
+        command_line->GetSwitchValuePath(switches::kTraceStartupFile);
+
+    is_enabled_ = true;
+    return;
+  }
+
 #if defined(OS_ANDROID)
   base::FilePath trace_config_file(kAndroidTraceConfigFile);
 #else
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(switches::kTraceConfigFile) ||
-      command_line.HasSwitch(switches::kTraceStartup) ||
-      command_line.HasSwitch(switches::kTraceShutdown)) {
+  if (!command_line->HasSwitch(switches::kTraceConfigFile))
     return;
-  }
   base::FilePath trace_config_file =
-      command_line.GetSwitchValuePath(switches::kTraceConfigFile);
+      command_line->GetSwitchValuePath(switches::kTraceConfigFile);
 #endif
 
   if (trace_config_file.empty()) {
@@ -93,9 +110,10 @@ TraceConfigFile::TraceConfigFile()
     DLOG(WARNING) << "Cannot parse the trace config file correctly.";
 }
 
-TraceConfigFile::~TraceConfigFile() {}
+TraceStartupConfig::~TraceStartupConfig() = default;
 
-bool TraceConfigFile::ParseTraceConfigFileContent(const std::string& content) {
+bool TraceStartupConfig::ParseTraceConfigFileContent(
+    const std::string& content) {
   std::unique_ptr<base::Value> value(base::JSONReader::Read(content));
   if (!value || !value->is_dict())
     return false;
@@ -122,26 +140,30 @@ bool TraceConfigFile::ParseTraceConfigFileContent(const std::string& content) {
   return true;
 }
 
-bool TraceConfigFile::IsEnabled() const {
+bool TraceStartupConfig::IsEnabled() const {
   return is_enabled_;
 }
 
-void TraceConfigFile::SetDisabled() {
+void TraceStartupConfig::SetDisabled() {
   is_enabled_ = false;
 }
 
-base::trace_event::TraceConfig TraceConfigFile::GetTraceConfig() const {
+bool TraceStartupConfig::IsTracingStartupForDuration() const {
+  return is_enabled_ && startup_duration_ > 0;
+}
+
+base::trace_event::TraceConfig TraceStartupConfig::GetTraceConfig() const {
   DCHECK(IsEnabled());
   return trace_config_;
 }
 
-int TraceConfigFile::GetStartupDuration() const {
+int TraceStartupConfig::GetStartupDuration() const {
   DCHECK(IsEnabled());
   return startup_duration_;
 }
 
 #if !defined(OS_ANDROID)
-base::FilePath TraceConfigFile::GetResultFile() const {
+base::FilePath TraceStartupConfig::GetResultFile() const {
   DCHECK(IsEnabled());
   return result_file_;
 }

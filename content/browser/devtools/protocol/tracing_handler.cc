@@ -23,7 +23,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "base/trace_event/tracing_agent.h"
-#include "components/tracing/common/trace_config_file.h"
+#include "components/tracing/common/trace_startup_config.h"
 #include "components/viz/common/features.h"
 #include "content/browser/devtools/devtools_frame_trace_recorder.h"
 #include "content/browser/devtools/devtools_io_context.h"
@@ -621,7 +621,7 @@ void TracingHandler::FrameDeleted(RenderFrameHostImpl* frame_host) {
 
 // static
 bool TracingHandler::IsStartupTracingActive() {
-  return ::tracing::TraceConfigFile::GetInstance()->IsEnabled();
+  return ::tracing::TraceStartupConfig::GetInstance()->IsEnabled();
 }
 
 // static

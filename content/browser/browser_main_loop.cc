@@ -47,7 +47,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
-#include "components/tracing/common/trace_config_file.h"
+#include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/viz/common/features.h"
@@ -507,13 +507,7 @@ BrowserMainLoop::BrowserMainLoop(const MainFunctionParams& parameters)
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
       result_code_(RESULT_CODE_NORMAL_EXIT),
-      created_threads_(false),
-      // ContentMainRunner should have enabled tracing of the browser process
-      // when kTraceStartup or kTraceConfigFile is in the command line.
-      is_tracing_startup_for_duration_(
-          parameters.command_line.HasSwitch(switches::kTraceStartup) ||
-          (tracing::TraceConfigFile::GetInstance()->IsEnabled() &&
-           tracing::TraceConfigFile::GetInstance()->GetStartupDuration() > 0)) {
+      created_threads_(false) {
   DCHECK(!g_current_browser_main_loop);
   g_current_browser_main_loop = this;
 
@@ -1549,30 +1543,24 @@ void BrowserMainLoop::InitializeMojo() {
   // Start startup tracing through TracingController's interface. TraceLog has
   // been enabled in content_main_runner where threads are not available. Now We
   // need to start tracing for all other tracing agents, which require threads.
-  if (parsed_command_line_.HasSwitch(switches::kTraceStartup)) {
-    base::trace_event::TraceConfig trace_config(
-        parsed_command_line_.GetSwitchValueASCII(switches::kTraceStartup),
-        parsed_command_line_.GetSwitchValueASCII(
-            switches::kTraceStartupRecordMode));
+  auto* trace_startup_config = tracing::TraceStartupConfig::GetInstance();
+  if (trace_startup_config->IsEnabled()) {
+    // This checks kTraceConfigFile switch.
     TracingController::GetInstance()->StartTracing(
-        trace_config, TracingController::StartTracingDoneCallback());
+        trace_startup_config->GetTraceConfig(),
+        TracingController::StartTracingDoneCallback());
   } else if (parsed_command_line_.HasSwitch(switches::kTraceToConsole)) {
     TracingController::GetInstance()->StartTracing(
         tracing::GetConfigForTraceToConsole(),
-        TracingController::StartTracingDoneCallback());
-  } else if (tracing::TraceConfigFile::GetInstance()->IsEnabled()) {
-    // This checks kTraceConfigFile switch.
-    TracingController::GetInstance()->StartTracing(
-        tracing::TraceConfigFile::GetInstance()->GetTraceConfig(),
         TracingController::StartTracingDoneCallback());
   }
   // Start tracing to a file for certain duration if needed. Only do this after
   // starting the main message loop to avoid calling
   // MessagePumpForUI::ScheduleWork() before MessagePumpForUI::Start() as it
   // will crash the browser.
-  if (is_tracing_startup_for_duration_) {
+  if (trace_startup_config->IsTracingStartupForDuration()) {
     TRACE_EVENT0("startup", "BrowserMainLoop::InitStartupTracingForDuration");
-    InitStartupTracingForDuration(parsed_command_line_);
+    InitStartupTracingForDuration();
   }
 
   if (parts_) {
@@ -1581,66 +1569,40 @@ void BrowserMainLoop::InitializeMojo() {
   }
 }
 
-base::FilePath BrowserMainLoop::GetStartupTraceFileName(
-    const base::CommandLine& command_line) const {
+base::FilePath BrowserMainLoop::GetStartupTraceFileName() const {
   base::FilePath trace_file;
-  if (command_line.HasSwitch(switches::kTraceStartup)) {
-    trace_file = command_line.GetSwitchValuePath(
-        switches::kTraceStartupFile);
-    // trace_file = "none" means that startup events will show up for the next
-    // begin/end tracing (via about:tracing or AutomationProxy::BeginTracing/
-    // EndTracing, for example).
-    if (trace_file == base::FilePath().AppendASCII("none"))
-      return trace_file;
 
-    if (trace_file.empty()) {
 #if defined(OS_ANDROID)
-      TracingControllerAndroid::GenerateTracingFilePath(&trace_file);
+  TracingControllerAndroid::GenerateTracingFilePath(&trace_file);
 #else
-      // Default to saving the startup trace into the current dir.
-      trace_file = base::FilePath().AppendASCII("chrometrace.log");
-#endif
-    }
-  } else {
-#if defined(OS_ANDROID)
-    TracingControllerAndroid::GenerateTracingFilePath(&trace_file);
-#else
-    trace_file = tracing::TraceConfigFile::GetInstance()->GetResultFile();
-#endif
+  trace_file = tracing::TraceStartupConfig::GetInstance()->GetResultFile();
+  if (trace_file.empty()) {
+    // Default to saving the startup trace into the current dir.
+    trace_file = base::FilePath().AppendASCII("chrometrace.log");
   }
+#endif
 
   return trace_file;
 }
 
-void BrowserMainLoop::InitStartupTracingForDuration(
-    const base::CommandLine& command_line) {
-  DCHECK(is_tracing_startup_for_duration_);
+void BrowserMainLoop::InitStartupTracingForDuration() {
+  DCHECK(tracing::TraceStartupConfig::GetInstance()
+             ->IsTracingStartupForDuration());
 
-  startup_trace_file_ = GetStartupTraceFileName(parsed_command_line_);
+  startup_trace_file_ = GetStartupTraceFileName();
 
-  int delay_secs = 5;
-  if (command_line.HasSwitch(switches::kTraceStartup)) {
-    std::string delay_str = command_line.GetSwitchValueASCII(
-        switches::kTraceStartupDuration);
-    if (!delay_str.empty() && !base::StringToInt(delay_str, &delay_secs)) {
-      DLOG(WARNING) << "Could not parse --" << switches::kTraceStartupDuration
-          << "=" << delay_str << " defaulting to 5 (secs)";
-      delay_secs = 5;
-    }
-  } else {
-    delay_secs = tracing::TraceConfigFile::GetInstance()->GetStartupDuration();
-  }
-
-  startup_trace_timer_.Start(FROM_HERE,
-                             base::TimeDelta::FromSeconds(delay_secs),
-                             this,
-                             &BrowserMainLoop::EndStartupTracing);
+  startup_trace_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromSeconds(
+          tracing::TraceStartupConfig::GetInstance()->GetStartupDuration()),
+      this, &BrowserMainLoop::EndStartupTracing);
 }
 
 void BrowserMainLoop::EndStartupTracing() {
-  DCHECK(is_tracing_startup_for_duration_);
+  // Do nothing if startup tracing is already stopped.
+  if (!tracing::TraceStartupConfig::GetInstance()->IsEnabled())
+    return;
 
-  is_tracing_startup_for_duration_ = false;
   TracingController::GetInstance()->StopTracing(
       TracingController::CreateFileEndpoint(
           startup_trace_file_,
