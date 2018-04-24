@@ -470,6 +470,7 @@ if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
   test("video_encode_accelerator_unittest") {
     deps = [
       "//base",
+      "//base/test:test_support",
       "//media:test_support",
       "//media/gpu",
       "//testing/gtest",
