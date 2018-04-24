@@ -1,6 +1,10 @@
 # Keep alphabetized. When adding new exclusions file a bug with the reason and
 # include a link. If a test should never run on mash, add an early exit to the
 # code instead of listing here. See Shell::GetAshConfig().
+#
+# Most new features are expected to work with mash, see //ash/README.md.
+# If you need to disable more than ~10 tests, please contact someone on
+# mustash-team@ to discuss.
 
 # TODO: mash screenshot support: https://crbug.com/557397.
 -AccessibilityHighlightControllerTest.TestCaretRingDrawsBluePixels
