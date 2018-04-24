@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/read_only_shared_memory_region.h"
 
 namespace base {
 
@@ -95,11 +96,37 @@ RefCountedSharedMemory::RefCountedSharedMemory(
 RefCountedSharedMemory::~RefCountedSharedMemory() = default;
 
 const unsigned char* RefCountedSharedMemory::front() const {
-  return reinterpret_cast<const unsigned char*>(shm_->memory());
+  return static_cast<const unsigned char*>(shm_->memory());
 }
 
 size_t RefCountedSharedMemory::size() const {
   return size_;
+}
+
+RefCountedSharedMemoryMapping::RefCountedSharedMemoryMapping(
+    ReadOnlySharedMemoryMapping mapping)
+    : mapping_(std::move(mapping)), size_(mapping_.size()) {
+  DCHECK_GT(size_, 0U);
+}
+
+RefCountedSharedMemoryMapping::~RefCountedSharedMemoryMapping() = default;
+
+const unsigned char* RefCountedSharedMemoryMapping::front() const {
+  return static_cast<const unsigned char*>(mapping_.memory());
+}
+
+size_t RefCountedSharedMemoryMapping::size() const {
+  return size_;
+}
+
+// static
+scoped_refptr<RefCountedSharedMemoryMapping>
+RefCountedSharedMemoryMapping::CreateFromWholeRegion(
+    const ReadOnlySharedMemoryRegion& region) {
+  ReadOnlySharedMemoryMapping mapping = region.Map();
+  if (!mapping.IsValid())
+    return nullptr;
+  return MakeRefCounted<RefCountedSharedMemoryMapping>(std::move(mapping));
 }
 
 }  //  namespace base

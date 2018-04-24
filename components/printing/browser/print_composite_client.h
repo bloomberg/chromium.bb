@@ -95,13 +95,13 @@ class PrintCompositeClient
   void OnDidCompositePageToPdf(
       printing::mojom::PdfCompositor::CompositePageToPdfCallback callback,
       printing::mojom::PdfCompositor::Status status,
-      mojo::ScopedSharedBufferHandle handle);
+      base::ReadOnlySharedMemoryRegion region);
 
   void OnDidCompositeDocumentToPdf(
       int document_cookie,
       printing::mojom::PdfCompositor::CompositeDocumentToPdfCallback callback,
       printing::mojom::PdfCompositor::Status status,
-      mojo::ScopedSharedBufferHandle handle);
+      base::ReadOnlySharedMemoryRegion region);
 
   // Get the request or create a new one if none exists.
   // Since printed pages always share content with it document, they share the

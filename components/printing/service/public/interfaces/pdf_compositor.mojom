@@ -4,6 +4,7 @@
 
 module printing.mojom;
 
+import "mojo/public/mojom/base/shared_memory.mojom";
 import "url/mojom/url.mojom";
 
 const string kServiceName = "pdf_compositor";
@@ -44,14 +45,16 @@ interface PdfCompositor {
   CompositePageToPdf(uint64 frame_guid, uint32 page_num,
                      handle<shared_buffer> sk_handle,
                      map<uint32, uint64> subframe_content_info)
-      => (Status status, handle<shared_buffer>? pdf_handle);
+      => (Status status,
+          mojo_base.mojom.ReadOnlySharedMemoryRegion? pdf_region);
 
   // Requests to composite the entire document and convert it into a PDF file.
   // All the arguments carry the same meaning as CompositePageToPdf() above,
   // except this call doesn't have |page_num|.
   CompositeDocumentToPdf(uint64 frame_guid, handle<shared_buffer> sk_handle,
                          map<uint32, uint64> subframe_content_info)
-      => (Status status, handle<shared_buffer>? pdf_handle);
+      => (Status status,
+          mojo_base.mojom.ReadOnlySharedMemoryRegion? pdf_region);
 
   // Sets the URL which is committed in the main frame of the WebContents,
   // for use in crash diagnosis.

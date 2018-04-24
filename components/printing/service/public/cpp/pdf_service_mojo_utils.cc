@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ref_counted_memory.h"
 #include "base/memory/shared_memory.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -33,18 +32,6 @@ std::unique_ptr<base::SharedMemory> GetShmFromMojoHandle(
     return nullptr;
   }
   return shm;
-}
-
-scoped_refptr<base::RefCountedMemory> GetDataFromMojoHandle(
-    mojo::ScopedSharedBufferHandle handle) {
-  std::unique_ptr<base::SharedMemory> shm =
-      GetShmFromMojoHandle(std::move(handle));
-  if (!shm)
-    return nullptr;
-
-  size_t size = shm->mapped_size();
-  return base::MakeRefCounted<base::RefCountedSharedMemory>(std::move(shm),
-                                                            size);
 }
 
 }  // namespace printing

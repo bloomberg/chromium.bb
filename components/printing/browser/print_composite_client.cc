@@ -201,7 +201,7 @@ void PrintCompositeClient::DoCompositeDocumentToPdf(
 void PrintCompositeClient::OnDidCompositePageToPdf(
     printing::mojom::PdfCompositor::CompositePageToPdfCallback callback,
     printing::mojom::PdfCompositor::Status status,
-    mojo::ScopedSharedBufferHandle handle) {
+    base::ReadOnlySharedMemoryRegion region) {
   // Due to https://crbug.com/742517, we can not add and use COUNT for enums in
   // mojo.
   UMA_HISTOGRAM_ENUMERATION(
@@ -209,14 +209,14 @@ void PrintCompositeClient::OnDidCompositePageToPdf(
       static_cast<int32_t>(
           printing::mojom::PdfCompositor::Status::COMPOSTING_FAILURE) +
           1);
-  std::move(callback).Run(status, std::move(handle));
+  std::move(callback).Run(status, std::move(region));
 }
 
 void PrintCompositeClient::OnDidCompositeDocumentToPdf(
     int document_cookie,
     printing::mojom::PdfCompositor::CompositeDocumentToPdfCallback callback,
     printing::mojom::PdfCompositor::Status status,
-    mojo::ScopedSharedBufferHandle handle) {
+    base::ReadOnlySharedMemoryRegion region) {
   RemoveCompositeRequest(document_cookie);
   // Clear all stored printed subframes.
   printed_subframes_.erase(document_cookie);
@@ -228,7 +228,7 @@ void PrintCompositeClient::OnDidCompositeDocumentToPdf(
       static_cast<int32_t>(
           printing::mojom::PdfCompositor::Status::COMPOSTING_FAILURE) +
           1);
-  std::move(callback).Run(status, std::move(handle));
+  std::move(callback).Run(status, std::move(region));
 }
 
 ContentToFrameMap PrintCompositeClient::ConvertContentInfoMap(

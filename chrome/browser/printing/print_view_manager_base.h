@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -18,7 +19,6 @@
 #include "components/printing/service/public/interfaces/pdf_compositor.mojom.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/buildflags/buildflags.h"
 
 struct PrintHostMsg_DidPrintDocument_Params;
@@ -117,7 +117,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // IPC message handlers for service.
   void OnComposePdfDone(const PrintHostMsg_DidPrintDocument_Params& params,
                         mojom::PdfCompositor::Status status,
-                        mojo::ScopedSharedBufferHandle handle);
+                        base::ReadOnlySharedMemoryRegion region);
 
 // Helpers for PrintForPrintPreview();
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
