@@ -64,10 +64,6 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
     scroll_recorder.emplace(paint_info.context, layout_box_, paint_info.phase,
                             layout_box_.ScrolledContentOffset());
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      DCHECK_EQ(layout_box_.HasHiddenBackface(),
-                paint_info.context.GetPaintController()
-                    .CurrentPaintChunkProperties()
-                    .backface_hidden);
       if (const auto* fragment = paint_info.FragmentToPaint(layout_box_)) {
         scoped_scroll_property.emplace(
             paint_info.context.GetPaintController(),

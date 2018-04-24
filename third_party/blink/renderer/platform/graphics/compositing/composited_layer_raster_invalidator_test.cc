@@ -32,8 +32,7 @@ class CompositedLayerRasterInvalidatorTest
     // of paint chunk and raster invalidation properties.
     PaintChunk::Id id(fake_client, static_cast<DisplayItem::Type>(
                                        DisplayItem::kDrawingFirst + type));
-    PaintChunk chunk(0, 0, id,
-                     PaintChunkProperties(DefaultPropertyTreeState()));
+    PaintChunk chunk(0, 0, id, DefaultPropertyTreeState());
     chunk.bounds =
         FloatRect(type * 110, type * 220, type * 220 + 200, type * 110 + 200);
     data_.chunks.push_back(chunk);
@@ -44,7 +43,7 @@ class CompositedLayerRasterInvalidatorTest
       const TransformPaintPropertyNode* t,
       const ClipPaintPropertyNode* c = ClipPaintPropertyNode::Root(),
       const EffectPaintPropertyNode* e = EffectPaintPropertyNode::Root()) {
-    auto& state = data_.chunks.back().properties.property_tree_state;
+    auto& state = data_.chunks.back().properties;
     state.SetTransform(t);
     state.SetClip(c);
     state.SetEffect(e);
@@ -52,14 +51,8 @@ class CompositedLayerRasterInvalidatorTest
   }
 
   CompositedLayerRasterInvalidatorTest& Properties(
-      const PaintChunkProperties& properties) {
-    data_.chunks.back().properties = properties;
-    return *this;
-  }
-
-  CompositedLayerRasterInvalidatorTest& Properties(
       const RefCountedPropertyTreeState& state) {
-    data_.chunks.back().properties.property_tree_state = state;
+    data_.chunks.back().properties = state;
     return *this;
   }
 

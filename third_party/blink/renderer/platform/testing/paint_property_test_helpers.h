@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_properties.h"
+#include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 
 namespace blink {
@@ -109,8 +109,8 @@ inline scoped_refptr<TransformPaintPropertyNode> CreateScrollTranslation(
   return TransformPaintPropertyNode::Create(parent, std::move(state));
 }
 
-inline PaintChunkProperties DefaultPaintChunkProperties() {
-  return PaintChunkProperties(PropertyTreeState::Root());
+inline PropertyTreeState DefaultPaintChunkProperties() {
+  return PropertyTreeState::Root();
 }
 
 }  // namespace blink

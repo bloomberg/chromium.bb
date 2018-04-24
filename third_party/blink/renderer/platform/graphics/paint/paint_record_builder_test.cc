@@ -36,7 +36,7 @@ TEST_F(PaintRecordBuilderTest, TransientPaintController) {
 TEST_F(PaintRecordBuilderTest, LastingPaintController) {
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
-        WTF::nullopt, PaintChunkProperties(PropertyTreeState::Root()));
+        WTF::nullopt, PropertyTreeState::Root());
   }
 
   PaintRecordBuilder builder(nullptr, nullptr, &GetPaintController());
@@ -60,7 +60,7 @@ TEST_F(PaintRecordBuilderTest, LastingPaintController) {
 
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
-        WTF::nullopt, PaintChunkProperties(PropertyTreeState::Root()));
+        WTF::nullopt, PropertyTreeState::Root());
   }
 
   EXPECT_TRUE(DrawingRecorder::UseCachedDrawingIfPossible(context, client,

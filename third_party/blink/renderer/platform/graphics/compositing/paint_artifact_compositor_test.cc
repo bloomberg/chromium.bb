@@ -40,7 +40,7 @@ PaintChunk::Id DefaultId() {
 }
 
 PaintChunk DefaultChunk() {
-  return PaintChunk(0, 1, DefaultId(), DefaultPaintChunkProperties());
+  return PaintChunk(0, 1, DefaultId(), PropertyTreeState::Root());
 }
 
 gfx::Transform Translation(SkMScalar x, SkMScalar y) {
@@ -256,7 +256,7 @@ TEST_F(PaintArtifactCompositorTest, EmptyPaintArtifact) {
 
 TEST_F(PaintArtifactCompositorTest, OneChunkWithAnOffset) {
   TestPaintArtifact artifact;
-  artifact.Chunk(DefaultPaintChunkProperties())
+  artifact.Chunk(PropertyTreeState::Root())
       .RectDrawing(FloatRect(50, -50, 100, 100), Color::kWhite);
   Update(artifact.Build());
 
@@ -356,6 +356,48 @@ TEST_F(PaintArtifactCompositorTest, TransformCombining) {
   }
   EXPECT_NE(ContentLayerAt(0)->transform_tree_index(),
             ContentLayerAt(1)->transform_tree_index());
+}
+
+TEST_F(PaintArtifactCompositorTest, BackfaceVisibility) {
+  TransformPaintPropertyNode::State backface_hidden_state;
+  backface_hidden_state.backface_visibility =
+      TransformPaintPropertyNode::BackfaceVisibility::kHidden;
+  auto backface_hidden_transform = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), std::move(backface_hidden_state));
+
+  auto backface_inherited_transform = TransformPaintPropertyNode::Create(
+      backface_hidden_transform, TransformPaintPropertyNode::State{});
+
+  TransformPaintPropertyNode::State backface_visible_state;
+  backface_visible_state.backface_visibility =
+      TransformPaintPropertyNode::BackfaceVisibility::kVisible;
+  auto backface_visible_transform = TransformPaintPropertyNode::Create(
+      backface_hidden_transform, std::move(backface_visible_state));
+
+  TestPaintArtifact artifact;
+  artifact
+      .Chunk(backface_hidden_transform, ClipPaintPropertyNode::Root(),
+             EffectPaintPropertyNode::Root())
+      .RectDrawing(FloatRect(0, 0, 300, 200), Color::kWhite);
+  artifact
+      .Chunk(backface_inherited_transform, ClipPaintPropertyNode::Root(),
+             EffectPaintPropertyNode::Root())
+      .RectDrawing(FloatRect(100, 100, 100, 100), Color::kBlack);
+  artifact
+      .Chunk(backface_visible_transform, ClipPaintPropertyNode::Root(),
+             EffectPaintPropertyNode::Root())
+      .RectDrawing(FloatRect(0, 0, 300, 200), Color::kDarkGray);
+  Update(artifact.Build());
+
+  ASSERT_EQ(2u, ContentLayerCount());
+  EXPECT_THAT(
+      ContentLayerAt(0)->GetPicture(),
+      Pointee(DrawsRectangles(Vector<RectWithColor>{
+          RectWithColor(FloatRect(0, 0, 300, 200), Color::kWhite),
+          RectWithColor(FloatRect(100, 100, 100, 100), Color::kBlack)})));
+  EXPECT_THAT(
+      ContentLayerAt(1)->GetPicture(),
+      Pointee(DrawsRectangle(FloatRect(0, 0, 300, 200), Color::kDarkGray)));
 }
 
 TEST_F(PaintArtifactCompositorTest, FlattensInheritedTransform) {
@@ -691,7 +733,7 @@ TEST_F(PaintArtifactCompositorTest, ForeignLayerPassesThrough) {
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
-  test_artifact.Chunk(DefaultPaintChunkProperties())
+  test_artifact.Chunk(PropertyTreeState::Root())
       .ForeignLayer(FloatPoint(50, 60), IntSize(400, 300), layer);
   test_artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
@@ -1720,13 +1762,13 @@ TEST_F(PaintArtifactCompositorTest, OverlapTransform) {
                                    CompositingReason::k3DTransform);
 
   TestPaintArtifact test_artifact;
-  test_artifact.Chunk(DefaultPaintChunkProperties())
+  test_artifact.Chunk(PropertyTreeState::Root())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
   test_artifact
       .Chunk(transform.get(), ClipPaintPropertyNode::Root(),
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
-  test_artifact.Chunk(DefaultPaintChunkProperties())
+  test_artifact.Chunk(PropertyTreeState::Root())
       .RectDrawing(FloatRect(0, 0, 200, 300), Color::kGray);
 
   const PaintArtifact& artifact = test_artifact.Build();
@@ -1755,7 +1797,7 @@ TEST_F(PaintArtifactCompositorTest, MightOverlap) {
                                    TransformationMatrix().Translate(99, 0),
                                    FloatPoint3D(100, 100, 0));
   {
-    paint_chunk2.properties.property_tree_state.SetTransform(transform.get());
+    paint_chunk2.properties.SetTransform(transform.get());
     PendingLayer pending_layer2(paint_chunk2, 1, false);
     EXPECT_TRUE(MightOverlap(pending_layer, pending_layer2));
   }
@@ -1764,7 +1806,7 @@ TEST_F(PaintArtifactCompositorTest, MightOverlap) {
                                     TransformationMatrix().Translate(100, 0),
                                     FloatPoint3D(100, 100, 0));
   {
-    paint_chunk2.properties.property_tree_state.SetTransform(transform2.get());
+    paint_chunk2.properties.SetTransform(transform2.get());
     PendingLayer pending_layer2(paint_chunk2, 1, false);
     EXPECT_FALSE(MightOverlap(pending_layer, pending_layer2));
   }
@@ -1772,41 +1814,33 @@ TEST_F(PaintArtifactCompositorTest, MightOverlap) {
 
 TEST_F(PaintArtifactCompositorTest, PendingLayer) {
   PaintChunk chunk1 = DefaultChunk();
-  chunk1.properties.property_tree_state = PropertyTreeState(
-      TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-      EffectPaintPropertyNode::Root());
-  chunk1.properties.backface_hidden = true;
+  chunk1.properties = PropertyTreeState::Root();
   chunk1.known_to_be_opaque = true;
   chunk1.bounds = FloatRect(0, 0, 30, 40);
 
   PendingLayer pending_layer(chunk1, 0, false);
 
-  EXPECT_TRUE(pending_layer.backface_hidden);
   EXPECT_EQ(FloatRect(0, 0, 30, 40), pending_layer.bounds);
   EXPECT_EQ((Vector<size_t>{0}), pending_layer.paint_chunk_indices);
   EXPECT_EQ(pending_layer.bounds, pending_layer.rect_known_to_be_opaque);
 
   PaintChunk chunk2 = DefaultChunk();
-  chunk2.properties.property_tree_state = chunk1.properties.property_tree_state;
-  chunk2.properties.backface_hidden = true;
+  chunk2.properties = chunk1.properties;
   chunk2.known_to_be_opaque = true;
   chunk2.bounds = FloatRect(10, 20, 30, 40);
   pending_layer.Merge(PendingLayer(chunk2, 1, false));
 
-  EXPECT_TRUE(pending_layer.backface_hidden);
   // Bounds not equal to one PaintChunk.
   EXPECT_EQ(FloatRect(0, 0, 40, 60), pending_layer.bounds);
   EXPECT_EQ((Vector<size_t>{0, 1}), pending_layer.paint_chunk_indices);
   EXPECT_NE(pending_layer.bounds, pending_layer.rect_known_to_be_opaque);
 
   PaintChunk chunk3 = DefaultChunk();
-  chunk3.properties.property_tree_state = chunk1.properties.property_tree_state;
-  chunk3.properties.backface_hidden = true;
+  chunk3.properties = chunk1.properties;
   chunk3.known_to_be_opaque = true;
   chunk3.bounds = FloatRect(-5, -25, 20, 20);
   pending_layer.Merge(PendingLayer(chunk3, 2, false));
 
-  EXPECT_TRUE(pending_layer.backface_hidden);
   EXPECT_EQ(FloatRect(-5, -25, 45, 85), pending_layer.bounds);
   EXPECT_EQ((Vector<size_t>{0, 1, 2}), pending_layer.paint_chunk_indices);
   EXPECT_NE(pending_layer.bounds, pending_layer.rect_known_to_be_opaque);
@@ -1818,9 +1852,9 @@ TEST_F(PaintArtifactCompositorTest, PendingLayerWithGeometry) {
                                    FloatPoint3D(100, 100, 0));
 
   PaintChunk chunk1 = DefaultChunk();
-  chunk1.properties.property_tree_state = PropertyTreeState(
-      TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-      EffectPaintPropertyNode::Root());
+  chunk1.properties = PropertyTreeState(TransformPaintPropertyNode::Root(),
+                                        ClipPaintPropertyNode::Root(),
+                                        EffectPaintPropertyNode::Root());
   chunk1.bounds = FloatRect(0, 0, 30, 40);
 
   PendingLayer pending_layer(chunk1, 0, false);
@@ -1828,8 +1862,8 @@ TEST_F(PaintArtifactCompositorTest, PendingLayerWithGeometry) {
   EXPECT_EQ(FloatRect(0, 0, 30, 40), pending_layer.bounds);
 
   PaintChunk chunk2 = DefaultChunk();
-  chunk2.properties.property_tree_state = chunk1.properties.property_tree_state;
-  chunk2.properties.property_tree_state.SetTransform(transform);
+  chunk2.properties = chunk1.properties;
+  chunk2.properties.SetTransform(transform);
   chunk2.bounds = FloatRect(0, 0, 50, 60);
   pending_layer.Merge(PendingLayer(chunk2, 1, false));
 
@@ -1840,9 +1874,9 @@ TEST_F(PaintArtifactCompositorTest, PendingLayerWithGeometry) {
 // The test is disabled because opaque rect mapping is not implemented yet.
 TEST_F(PaintArtifactCompositorTest, PendingLayerKnownOpaque_DISABLED) {
   PaintChunk chunk1 = DefaultChunk();
-  chunk1.properties.property_tree_state = PropertyTreeState(
-      TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-      EffectPaintPropertyNode::Root());
+  chunk1.properties = PropertyTreeState(TransformPaintPropertyNode::Root(),
+                                        ClipPaintPropertyNode::Root(),
+                                        EffectPaintPropertyNode::Root());
   chunk1.bounds = FloatRect(0, 0, 30, 40);
   chunk1.known_to_be_opaque = false;
   PendingLayer pending_layer(chunk1, 0, false);
@@ -1850,7 +1884,7 @@ TEST_F(PaintArtifactCompositorTest, PendingLayerKnownOpaque_DISABLED) {
   EXPECT_TRUE(pending_layer.rect_known_to_be_opaque.IsEmpty());
 
   PaintChunk chunk2 = DefaultChunk();
-  chunk2.properties.property_tree_state = chunk1.properties.property_tree_state;
+  chunk2.properties = chunk1.properties;
   chunk2.bounds = FloatRect(0, 0, 25, 35);
   chunk2.known_to_be_opaque = true;
   pending_layer.Merge(PendingLayer(chunk2, 1, false));
@@ -1860,7 +1894,7 @@ TEST_F(PaintArtifactCompositorTest, PendingLayerKnownOpaque_DISABLED) {
   EXPECT_NE(pending_layer.bounds, pending_layer.rect_known_to_be_opaque);
 
   PaintChunk chunk3 = DefaultChunk();
-  chunk3.properties.property_tree_state = chunk1.properties.property_tree_state;
+  chunk3.properties = chunk1.properties;
   chunk3.bounds = FloatRect(0, 0, 50, 60);
   chunk3.known_to_be_opaque = true;
   pending_layer.Merge(PendingLayer(chunk3, 2, false));
@@ -3022,7 +3056,7 @@ TEST_F(PaintArtifactCompositorTest, WillBeRemovedFromFrame) {
 
 TEST_F(PaintArtifactCompositorTest, ContentsNonOpaque) {
   TestPaintArtifact artifact;
-  artifact.Chunk(DefaultPaintChunkProperties())
+  artifact.Chunk(PropertyTreeState::Root())
       .RectDrawing(FloatRect(100, 100, 200, 200), Color::kBlack);
   Update(artifact.Build());
   ASSERT_EQ(1u, ContentLayerCount());
@@ -3031,7 +3065,7 @@ TEST_F(PaintArtifactCompositorTest, ContentsNonOpaque) {
 
 TEST_F(PaintArtifactCompositorTest, ContentsOpaque) {
   TestPaintArtifact artifact;
-  artifact.Chunk(DefaultPaintChunkProperties())
+  artifact.Chunk(PropertyTreeState::Root())
       .RectDrawing(FloatRect(100, 100, 200, 200), Color::kBlack)
       .KnownToBeOpaque();
   Update(artifact.Build());
@@ -3041,7 +3075,7 @@ TEST_F(PaintArtifactCompositorTest, ContentsOpaque) {
 
 TEST_F(PaintArtifactCompositorTest, ContentsOpaqueSubpixel) {
   TestPaintArtifact artifact;
-  artifact.Chunk(DefaultPaintChunkProperties())
+  artifact.Chunk(PropertyTreeState::Root())
       .RectDrawing(FloatRect(100.5, 100.5, 200, 200), Color::kBlack)
       .KnownToBeOpaque();
   Update(artifact.Build());
@@ -3052,10 +3086,10 @@ TEST_F(PaintArtifactCompositorTest, ContentsOpaqueSubpixel) {
 
 TEST_F(PaintArtifactCompositorTest, ContentsOpaqueUnitedNonOpaque) {
   TestPaintArtifact artifact;
-  artifact.Chunk(DefaultPaintChunkProperties())
+  artifact.Chunk(PropertyTreeState::Root())
       .RectDrawing(FloatRect(100, 100, 200, 200), Color::kBlack)
       .KnownToBeOpaque()
-      .Chunk(DefaultPaintChunkProperties())
+      .Chunk(PropertyTreeState::Root())
       .RectDrawing(FloatRect(200, 200, 200, 200), Color::kBlack)
       .KnownToBeOpaque();
   Update(artifact.Build());
@@ -3066,10 +3100,10 @@ TEST_F(PaintArtifactCompositorTest, ContentsOpaqueUnitedNonOpaque) {
 
 TEST_F(PaintArtifactCompositorTest, ContentsOpaqueUnitedOpaque1) {
   TestPaintArtifact artifact;
-  artifact.Chunk(DefaultPaintChunkProperties())
+  artifact.Chunk(PropertyTreeState::Root())
       .RectDrawing(FloatRect(100, 100, 300, 300), Color::kBlack)
       .KnownToBeOpaque()
-      .Chunk(DefaultPaintChunkProperties())
+      .Chunk(PropertyTreeState::Root())
       .RectDrawing(FloatRect(200, 200, 200, 200), Color::kBlack)
       .KnownToBeOpaque();
   Update(artifact.Build());
@@ -3080,10 +3114,10 @@ TEST_F(PaintArtifactCompositorTest, ContentsOpaqueUnitedOpaque1) {
 
 TEST_F(PaintArtifactCompositorTest, ContentsOpaqueUnitedOpaque2) {
   TestPaintArtifact artifact;
-  artifact.Chunk(DefaultPaintChunkProperties())
+  artifact.Chunk(PropertyTreeState::Root())
       .RectDrawing(FloatRect(100, 100, 200, 200), Color::kBlack)
       .KnownToBeOpaque()
-      .Chunk(DefaultPaintChunkProperties())
+      .Chunk(PropertyTreeState::Root())
       .RectDrawing(FloatRect(100, 100, 300, 300), Color::kBlack)
       .KnownToBeOpaque();
   Update(artifact.Build());
@@ -3106,7 +3140,7 @@ TEST_F(PaintArtifactCompositorTest, DecompositeEffectWithNoOutputClip) {
                           TransformPaintPropertyNode::Root(), nullptr, 0.5);
 
   TestPaintArtifact artifact;
-  artifact.Chunk(DefaultPaintChunkProperties())
+  artifact.Chunk(PropertyTreeState::Root())
       .RectDrawing(FloatRect(50, 50, 100, 100), Color::kGray);
   artifact.Chunk(TransformPaintPropertyNode::Root(), clip1.get(), effect1.get())
       .RectDrawing(FloatRect(100, 100, 100, 100), Color::kGray);

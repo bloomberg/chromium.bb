@@ -27,12 +27,24 @@ namespace blink {
 class PLATFORM_EXPORT TransformPaintPropertyNode
     : public PaintPropertyNode<TransformPaintPropertyNode> {
  public:
+  enum class BackfaceVisibility : unsigned char {
+    // backface-visibility is not inherited per the css spec. However, for an
+    // element that don't create a new plane, for now we let the element
+    // inherit the parent backface-visibility.
+    kInherited,
+    // backface-visibility: hidden for the new plane.
+    kHidden,
+    // backface-visibility: visible for the new plane.
+    kVisible,
+  };
+
   // To make it less verbose and more readable to construct and update a node,
   // a struct with default values is used to represent the state.
   struct State {
     TransformationMatrix matrix;
     FloatPoint3D origin;
     bool flattens_inherited_transform = false;
+    BackfaceVisibility backface_visibility = BackfaceVisibility::kInherited;
     unsigned rendering_context_id = 0;
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
     CompositorElementId compositor_element_id;
@@ -41,6 +53,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     bool operator==(const State& o) const {
       return matrix == o.matrix && origin == o.origin &&
              flattens_inherited_transform == o.flattens_inherited_transform &&
+             backface_visibility == o.backface_visibility &&
              rendering_context_id == o.rendering_context_id &&
              direct_compositing_reasons == o.direct_compositing_reasons &&
              compositor_element_id == o.compositor_element_id &&
@@ -89,6 +102,10 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   // accumulated transform from its ancestors.
   bool FlattensInheritedTransform() const {
     return state_.flattens_inherited_transform;
+  }
+
+  BackfaceVisibility GetBackfaceVisibility() const {
+    return state_.backface_visibility;
   }
 
   bool HasDirectCompositingReasons() const {

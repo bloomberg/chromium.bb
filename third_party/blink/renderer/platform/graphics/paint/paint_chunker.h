@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_properties.h"
+#include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
@@ -17,9 +17,9 @@
 
 namespace blink {
 
-// Accepts information about changes to |PaintChunkProperties| as drawings are
+// Accepts information about changes to chunk properties as drawings are
 // accumulated, and produces a series of paint chunks: contiguous ranges of the
-// display list with identical |PaintChunkProperties|.
+// display list with identical properties.
 class PLATFORM_EXPORT PaintChunker final {
   DISALLOW_NEW();
   WTF_MAKE_NONCOPYABLE(PaintChunker);
@@ -28,16 +28,13 @@ class PLATFORM_EXPORT PaintChunker final {
   PaintChunker();
   ~PaintChunker();
 
-  bool IsInInitialState() const {
-    return data_.chunks.IsEmpty() &&
-           current_properties_ == PaintChunkProperties();
-  }
+  bool IsInInitialState() const;
 
-  const PaintChunkProperties& CurrentPaintChunkProperties() const {
+  const PropertyTreeState& CurrentPaintChunkProperties() const {
     return current_properties_;
   }
   void UpdateCurrentPaintChunkProperties(const Optional<PaintChunk::Id>&,
-                                         const PaintChunkProperties&);
+                                         const PropertyTreeState&);
 
   void ForceNewChunk() { force_new_chunk_ = true; }
 
@@ -89,7 +86,7 @@ class PLATFORM_EXPORT PaintChunker final {
   // chunk because the current_chunk_id_ is cleared for subsequent chunks, even
   // though those subsequent chunks will have valid chunk ids.
   Optional<PaintChunk::Id> current_chunk_id_;
-  PaintChunkProperties current_properties_;
+  PropertyTreeState current_properties_;
   // True when an item forces a new chunk (e.g., foreign display items), and for
   // the item following a forced chunk.
   bool force_new_chunk_;

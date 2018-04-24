@@ -240,14 +240,16 @@ TEST_P(GraphicsLayerTest, PaintRecursively) {
   client_.SetPainter([&](const GraphicsLayer* layer, GraphicsContext& context,
                          GraphicsLayerPaintingPhase, const IntRect&) {
     {
-      ScopedPaintChunkProperties properties(
-          context.GetPaintController(), transform1, *layer, kBackgroundType);
+      ScopedPaintChunkProperties properties(context.GetPaintController(),
+                                            transform1.get(), *layer,
+                                            kBackgroundType);
       PaintControllerTestBase::DrawRect(context, *layer, kBackgroundType,
                                         interest_rect);
     }
     {
-      ScopedPaintChunkProperties properties(
-          context.GetPaintController(), transform2, *layer, kForegroundType);
+      ScopedPaintChunkProperties properties(context.GetPaintController(),
+                                            transform2.get(), *layer,
+                                            kForegroundType);
       PaintControllerTestBase::DrawRect(context, *layer, kForegroundType,
                                         interest_rect);
     }

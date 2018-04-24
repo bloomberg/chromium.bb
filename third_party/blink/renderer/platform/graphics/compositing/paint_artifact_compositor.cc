@@ -272,16 +272,13 @@ PaintArtifactCompositor::PendingLayer::PendingLayer(
     : bounds(first_paint_chunk.bounds),
       rect_known_to_be_opaque(
           first_paint_chunk.known_to_be_opaque ? bounds : FloatRect()),
-      backface_hidden(first_paint_chunk.properties.backface_hidden),
-      property_tree_state(first_paint_chunk.properties.property_tree_state
-                              .GetPropertyTreeState()),
+      property_tree_state(first_paint_chunk.properties.GetPropertyTreeState()),
       requires_own_layer(chunk_requires_own_layer) {
   paint_chunk_indices.push_back(chunk_index);
 }
 
 void PaintArtifactCompositor::PendingLayer::Merge(const PendingLayer& guest) {
   DCHECK(!requires_own_layer && !guest.requires_own_layer);
-  DCHECK_EQ(backface_hidden, guest.backface_hidden);
 
   paint_chunk_indices.AppendVector(guest.paint_chunk_indices);
   FloatClipRect guest_bounds_in_home(guest.bounds);
@@ -299,8 +296,6 @@ static bool CanUpcastTo(const PropertyTreeState& guest,
 bool PaintArtifactCompositor::PendingLayer::CanMerge(
     const PendingLayer& guest) const {
   if (requires_own_layer || guest.requires_own_layer)
-    return false;
-  if (backface_hidden != guest.backface_hidden)
     return false;
   if (property_tree_state.Effect() != guest.property_tree_state.Effect())
     return false;
@@ -335,19 +330,32 @@ static bool IsNonCompositingAncestorOf(
   return true;
 }
 
+static bool IsBackfaceHidden(const TransformPaintPropertyNode* node) {
+  while (node && node->GetBackfaceVisibility() ==
+                     TransformPaintPropertyNode::BackfaceVisibility::kInherited)
+    node = node->Parent();
+  return node && node->GetBackfaceVisibility() ==
+                     TransformPaintPropertyNode::BackfaceVisibility::kHidden;
+}
+
 // Determines whether drawings based on the 'guest' state can be painted into
 // a layer with the 'home' state. A number of criteria need to be met:
 // 1. The guest effect must be a descendant of the home effect. However this
 //    check is enforced by the layerization recursion. Here we assume the guest
 //    has already been upcasted to the same effect.
-// 2. The guest clip must be a descendant of the home clip.
-// 3. The local space of each clip and effect node on the ancestor chain must
+// 2. The guest transform and the home transform have compatible backface
+//    visibility.
+// 3. The guest clip must be a descendant of the home clip.
+// 4. The local space of each clip and effect node on the ancestor chain must
 //    be within compositing boundary of the home transform space.
-// 4. The guest transform space must be within compositing boundary of the home
+// 5. The guest transform space must be within compositing boundary of the home
 //    transform space.
 static bool CanUpcastTo(const PropertyTreeState& guest,
                         const PropertyTreeState& home) {
   DCHECK_EQ(home.Effect(), guest.Effect());
+
+  if (IsBackfaceHidden(home.Transform()) != IsBackfaceHidden(guest.Transform()))
+    return false;
 
   for (const ClipPaintPropertyNode* current_clip = guest.Clip();
        current_clip != home.Clip(); current_clip = current_clip->Parent()) {
@@ -419,8 +427,7 @@ bool PaintArtifactCompositor::CanDecompositeEffect(
 static bool EffectGroupContainsChunk(
     const EffectPaintPropertyNode& group_effect,
     const PaintChunk& chunk) {
-  const EffectPaintPropertyNode* effect =
-      chunk.properties.property_tree_state.Effect();
+  const auto* effect = chunk.properties.Effect();
   return effect == &group_effect ||
          StrictChildOfAlongPath(&group_effect, effect);
 }
@@ -483,8 +490,7 @@ void PaintArtifactCompositor::LayerizeGroup(
     // A. The next chunk belongs to the current group but no subgroup.
     // B. The next chunk does not belong to the current group.
     // C. The next chunk belongs to some subgroup of the current group.
-    const EffectPaintPropertyNode* chunk_effect =
-        chunk_it->properties.property_tree_state.Effect();
+    const auto* chunk_effect = chunk_it->properties.Effect();
     if (chunk_effect == &current_group) {
       // Case A: The next chunk belongs to the current group but no subgroup.
       const auto& last_display_item =
@@ -774,8 +780,10 @@ void PaintArtifactCompositor::Update(
     layer->SetEffectTreeIndex(effect_id);
     layer->SetContentsOpaque(pending_layer.rect_known_to_be_opaque.Contains(
         FloatRect(EnclosingIntRect(pending_layer.bounds))));
-    layer->SetDoubleSided(!pending_layer.backface_hidden);
-    layer->SetShouldCheckBackfaceVisibility(pending_layer.backface_hidden);
+    bool backface_hidden =
+        IsBackfaceHidden(pending_layer.property_tree_state.Transform());
+    layer->SetDoubleSided(!backface_hidden);
+    layer->SetShouldCheckBackfaceVisibility(backface_hidden);
   }
   property_tree_manager.Finalize();
   content_layer_clients_.swap(new_content_layer_clients);

@@ -8,13 +8,28 @@
 
 namespace blink {
 
-PaintChunker::PaintChunker() : force_new_chunk_(false) {}
+static const PropertyTreeState& UninitializedProperties() {
+  DEFINE_STATIC_LOCAL(PropertyTreeState, initial_properties,
+                      (nullptr, nullptr, nullptr));
+  return initial_properties;
+}
+
+PaintChunker::PaintChunker()
+    : current_properties_(UninitializedProperties()), force_new_chunk_(false) {}
 
 PaintChunker::~PaintChunker() = default;
 
+bool PaintChunker::IsInInitialState() const {
+  if (current_properties_ != UninitializedProperties())
+    return false;
+
+  DCHECK(data_.chunks.IsEmpty());
+  return true;
+}
+
 void PaintChunker::UpdateCurrentPaintChunkProperties(
     const Optional<PaintChunk::Id>& chunk_id,
-    const PaintChunkProperties& properties) {
+    const PropertyTreeState& properties) {
   DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
 
   if (chunk_id)
@@ -35,9 +50,9 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
   // TODO(trchen): Enable this check for SPv175 too. Some drawable layers
   // don't paint with property tree yet, e.g. scrollbar layers.
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    DCHECK(current_properties_.property_tree_state.Transform());
-    DCHECK(current_properties_.property_tree_state.Clip());
-    DCHECK(current_properties_.property_tree_state.Effect());
+    DCHECK(current_properties_.Transform());
+    DCHECK(current_properties_.Clip());
+    DCHECK(current_properties_.Effect());
   }
 #endif
 
@@ -98,12 +113,12 @@ void PaintChunker::TrackRasterInvalidation(const PaintChunk& chunk,
 void PaintChunker::Clear() {
   data_.Clear();
   current_chunk_id_ = WTF::nullopt;
-  current_properties_ = PaintChunkProperties();
+  current_properties_ = UninitializedProperties();
 }
 
 PaintChunksAndRasterInvalidations PaintChunker::ReleaseData() {
   current_chunk_id_ = WTF::nullopt;
-  current_properties_ = PaintChunkProperties();
+  current_properties_ = UninitializedProperties();
   data_.chunks.ShrinkToFit();
   data_.raster_invalidation_rects.ShrinkToFit();
   return std::move(data_);

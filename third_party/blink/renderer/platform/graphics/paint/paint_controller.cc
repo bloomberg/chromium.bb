@@ -498,7 +498,7 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
       &current_paint_artifact_.GetDisplayItemList()[begin_index];
 
   Vector<PaintChunk>::const_iterator cached_chunk;
-  PaintChunkProperties properties_before_subsequence;
+  Optional<PropertyTreeState> properties_before_subsequence;
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     cached_chunk =
         current_paint_artifact_.FindChunkByDisplayItemIndex(begin_index);
@@ -508,7 +508,7 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
         new_paint_chunks_.CurrentPaintChunkProperties();
     new_paint_chunks_.ForceNewChunk();
     UpdateCurrentPaintChunkPropertiesUsingIdWithFragment(
-        cached_chunk->id, cached_chunk->properties);
+        cached_chunk->id, cached_chunk->properties.GetPropertyTreeState());
   } else {
     // Avoid uninitialized variable error on Windows.
     cached_chunk = current_paint_artifact_.PaintChunks().begin();
@@ -528,7 +528,7 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
       DCHECK(cached_chunk != current_paint_artifact_.PaintChunks().end());
       new_paint_chunks_.ForceNewChunk();
       UpdateCurrentPaintChunkPropertiesUsingIdWithFragment(
-          cached_chunk->id, cached_chunk->properties);
+          cached_chunk->id, cached_chunk->properties.GetPropertyTreeState());
     }
 
 #if DCHECK_IS_ON()
@@ -560,7 +560,7 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
     // after the cached subsequence without new properties.
     new_paint_chunks_.ForceNewChunk();
     UpdateCurrentPaintChunkProperties(WTF::nullopt,
-                                      properties_before_subsequence);
+                                      *properties_before_subsequence);
   }
 }
 
@@ -728,8 +728,7 @@ void PaintController::AppendDebugDrawingAfterCommit(
     DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
     // Create a PaintChunk for the debug drawing.
     PaintChunk chunk(display_item_list.size() - 1, display_item_list.size(),
-                     display_item.GetId(),
-                     PaintChunkProperties(*property_tree_state));
+                     display_item.GetId(), *property_tree_state);
     current_paint_artifact_.PaintChunks().push_back(chunk);
   }
 }

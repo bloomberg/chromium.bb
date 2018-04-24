@@ -147,10 +147,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
 
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       paint_controller->UpdateCurrentPaintChunkProperties(
-          root_paint_chunk_id_,
-          PaintChunkProperties(PropertyTreeState(
-              TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-              EffectPaintPropertyNode::Root())));
+          root_paint_chunk_id_, PropertyTreeState::Root());
     }
 
     Selection().PaintCaret(context, LayoutPoint());
