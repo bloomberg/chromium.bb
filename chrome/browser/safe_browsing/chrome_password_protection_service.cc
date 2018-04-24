@@ -150,14 +150,6 @@ int64_t GetNavigationIDFromPrefsByOrigin(PrefService* prefs,
              : 0;
 }
 
-bool AreEmailDomainsSame(const std::string& email,
-                         const std::string& email_domain) {
-  if (email_domain.empty() || email.empty())
-    return false;
-
-  return gaia::ExtractDomainName(email) == email_domain;
-}
-
 }  // namespace
 
 ChromePasswordProtectionService::ChromePasswordProtectionService(
@@ -885,15 +877,7 @@ ChromePasswordProtectionService::GetPasswordProtectionTriggerPref(
     case (PasswordReuseEvent::GMAIL):
       return is_policy_managed ? trigger_level : PHISHING_REUSE;
     case (PasswordReuseEvent::GSUITE): {
-      // For GSuite account, we should also check if the current sign-in account
-      // matches the configured enterprise email domain.
-      const AccountInfo account_info = GetAccountInfo();
-      std::string enterprise_email_domain = profile_->GetPrefs()->GetString(
-          prefs::kPasswordProtectionEnterpriseEmailDomain);
-      return is_policy_managed && AreEmailDomainsSame(account_info.email,
-                                                      enterprise_email_domain)
-                 ? trigger_level
-                 : PASSWORD_PROTECTION_OFF;
+      return is_policy_managed ? trigger_level : PASSWORD_PROTECTION_OFF;
     }
   }
   NOTREACHED();
@@ -936,20 +920,19 @@ base::string16 ChromePasswordProtectionService::GetWarningDetailText() {
     return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS);
   }
 
-  std::string enterprise_name =
-      profile_->GetPrefs()->GetString(prefs::kPasswordProtectionEnterpriseName);
-  if (!enterprise_name.empty()) {
+  std::string org_name = GetOrganizationName();
+  if (!org_name.empty()) {
     return l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE_WITH_ORG_NAME,
-        base::UTF8ToUTF16(enterprise_name));
+        base::UTF8ToUTF16(org_name));
   }
   return l10n_util::GetStringUTF16(
       IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE);
 }
 
 std::string ChromePasswordProtectionService::GetOrganizationName() {
-  // TODO(jialiul): Implement this function.
-  return std::string();
+  std::string email = GetAccountInfo().email;
+  return email.empty() ? std::string() : gaia::ExtractDomainName(email);
 }
 
 }  // namespace safe_browsing
