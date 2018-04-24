@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "chromecast/browser/extensions/cast_extension_web_contents_observer.h"
+#include "extensions/browser/media_capture_util.h"
 #include "extensions/browser/serial_extension_host_queue.h"
 
 namespace extensions {
@@ -41,14 +42,18 @@ void CastExtensionHostDelegate::ProcessMediaAccessRequest(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback,
-    const Extension* extension) {}
+    const Extension* extension) {
+  // Allow access to the microphone and/or camera.
+  media_capture_util::GrantMediaStreamRequest(
+      web_contents, request, callback, extension);
+}
 
 bool CastExtensionHostDelegate::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
     content::MediaStreamType type,
     const Extension* extension) {
-  return true;
+  return media_capture_util::CheckMediaAccessPermission(type, extension);
 }
 
 static base::LazyInstance<SerialExtensionHostQueue>::DestructorAtExit g_queue =

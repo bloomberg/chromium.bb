@@ -6,8 +6,8 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "extensions/browser/media_capture_util.h"
 #include "extensions/browser/serial_extension_host_queue.h"
-#include "extensions/shell/browser/media_capture_util.h"
 #include "extensions/shell/browser/shell_extension_web_contents_observer.h"
 
 namespace extensions {

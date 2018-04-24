@@ -104,8 +104,6 @@ source_set("app_shell_lib") {
     "browser/delegates/shell_kiosk_delegate.h",
     "browser/desktop_controller.cc",
     "browser/desktop_controller.h",
-    "browser/media_capture_util.cc",
-    "browser/media_capture_util.h",
     "browser/shell_app_delegate.cc",
     "browser/shell_app_delegate.h",
     "browser/shell_app_view_guest_delegate.cc",
