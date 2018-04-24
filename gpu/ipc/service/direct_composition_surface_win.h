@@ -66,6 +66,7 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   gfx::VSyncProvider* GetVSyncProvider() override;
   bool SetEnableDCLayers(bool enable) override;
   bool FlipsVertically() const override;
+  bool SupportsPresentationCallback() override;
   bool SupportsPostSubBuffer() override;
   bool OnMakeCurrent(gl::GLContext* context) override;
   bool SupportsDCLayers() const override;
