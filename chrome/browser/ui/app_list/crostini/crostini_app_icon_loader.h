@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_INTERNAL_APP_INTERNAL_APP_ICON_LOADER_H_
-#define CHROME_BROWSER_UI_APP_LIST_INTERNAL_APP_INTERNAL_APP_ICON_LOADER_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_CROSTINI_CROSTINI_APP_ICON_LOADER_H_
+#define CHROME_BROWSER_UI_APP_LIST_CROSTINI_CROSTINI_APP_ICON_LOADER_H_
 
 #include <map>
 #include <memory>
@@ -15,13 +15,13 @@
 
 class Profile;
 
-// An AppIconLoader that loads icons for internal apps. e.g. Settings.
-class InternalAppIconLoader : public AppIconLoader {
+// An AppIconLoader that loads icons for Crostini apps.
+class CrostiniAppIconLoader : public AppIconLoader {
  public:
-  InternalAppIconLoader(Profile* profile,
+  CrostiniAppIconLoader(Profile* profile,
                         int resource_size_in_dip,
                         AppIconLoaderDelegate* delegate);
-  ~InternalAppIconLoader() override;
+  ~CrostiniAppIconLoader() override;
 
   // AppIconLoader:
   bool CanLoadImageForApp(const std::string& app_id) override;
@@ -32,13 +32,13 @@ class InternalAppIconLoader : public AppIconLoader {
  private:
   using AppIDToIconMap = std::map<std::string, std::unique_ptr<gfx::ImageSkia>>;
 
-  // The preferred icon size.
-  int resource_size_in_dip_;
+  // Not owned.
+  Profile* profile_;
 
-  // Maps from internal app id to icon.
+  // Maps from Crostini app id to icon.
   AppIDToIconMap icon_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(InternalAppIconLoader);
+  DISALLOW_COPY_AND_ASSIGN(CrostiniAppIconLoader);
 };
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_INTERNAL_APP_INTERNAL_APP_ICON_LOADER_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_CROSTINI_CROSTINI_APP_ICON_LOADER_H_
