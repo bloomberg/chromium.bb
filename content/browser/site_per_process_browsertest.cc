@@ -1635,6 +1635,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   }
 }
 
+#if defined(OS_CHROMEOS)
+// Flaky: https://crbug.com/836200.
+#define MAYBE_ScrollBubblingFromOOPIFWithBodyOverflowHidden \
+  DISABLED_ScrollBubblingFromOOPIFWithBodyOverflowHidden
+#else
+#define MAYBE_ScrollBubblingFromOOPIFWithBodyOverflowHidden \
+  ScrollBubblingFromOOPIFWithBodyOverflowHidden
+#endif
 // Tests that scrolling bubbles from an oopif if its source body has
 // "overflow:hidden" style.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
