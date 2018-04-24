@@ -20,15 +20,14 @@
 #import "ios/web/public/web_client.h"
 #import "ios/web/test/fakes/crw_fake_back_forward_list.h"
 #include "ios/web/test/test_url_constants.h"
+#include "net/base/escape.h"
 #import "net/base/mac/url_conversions.h"
-#include "net/base/url_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "ui/base/page_transition_types.h"
 #include "url/scheme_host_port.h"
-#include "url/url_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -105,6 +104,16 @@ class WKBasedNavigationManagerTest : public PlatformTest {
 
     BrowserURLRewriter::GetInstance()->AddURLRewriter(WebUIUrlRewriter);
     url::AddStandardScheme(kSchemeToRewrite, url::SCHEME_WITH_HOST);
+  }
+
+  // Returns the value of the "#session=" URL hash component from |url|.
+  static std::string ExtractRestoredSession(const GURL& url) {
+    std::string decoded = net::UnescapeURLComponent(
+        url.ref(), net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
+                       net::UnescapeRule::SPACES |
+                       net::UnescapeRule::PATH_SEPARATORS);
+    return decoded.substr(
+        strlen(wk_navigation_util::kRestoreSessionSessionHashPrefix));
   }
 
   std::unique_ptr<NavigationManagerImpl> manager_;
@@ -607,14 +616,10 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionWithHistory) {
   EXPECT_EQ("restore_session.html", pending_url.ExtractFileName());
   EXPECT_EQ("http://www.0.com/", pending_item->GetVirtualURL());
 
-  std::string session_json;
-  net::GetValueForKeyInQuery(pending_url,
-                             wk_navigation_util::kRestoreSessionSessionQueryKey,
-                             &session_json);
   EXPECT_EQ(
       "{\"offset\":0,\"titles\":[\"Test Website 0\",\"\"],"
       "\"urls\":[\"http://www.0.com/\",\"http://www.1.com/\"]}",
-      session_json);
+      ExtractRestoredSession(pending_url));
 }
 
 // Tests that restoring session replaces existing history in navigation manager.
@@ -689,9 +694,7 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionWithEmptyHistory) {
 // the target URL.
 TEST_F(WKBasedNavigationManagerTest, HideInternalRedirectUrl) {
   GURL target_url = GURL("http://www.1.com?query=special%26chars");
-  GURL url = net::AppendQueryParameter(
-      wk_navigation_util::GetRestoreSessionBaseUrl(),
-      wk_navigation_util::kRestoreSessionTargetUrlQueryKey, target_url.spec());
+  GURL url = wk_navigation_util::CreateRedirectUrl(target_url);
   NSString* url_spec = base::SysUTF8ToNSString(url.spec());
   [mock_wk_list_ setCurrentURL:url_spec];
   NavigationItem* item = manager_->GetItemAtIndex(0);
@@ -807,14 +810,6 @@ class WKBasedNavigationManagerDetachedModeTest
     ASSERT_EQ(url0_, manager_->GetItemAtIndex(0)->GetURL());
     ASSERT_EQ(url1_, manager_->GetItemAtIndex(1)->GetURL());
     ASSERT_EQ(url2_, manager_->GetItemAtIndex(2)->GetURL());
-  }
-
-  // Returns the value of the "?session" URL param from |url|.
-  static std::string ExtractRestoredSession(const GURL& url) {
-    std::string session_json;
-    net::GetValueForKeyInQuery(
-        url, wk_navigation_util::kRestoreSessionSessionQueryKey, &session_json);
-    return session_json;
   }
 
   GURL url0_;

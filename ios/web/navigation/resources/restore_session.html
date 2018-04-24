@@ -21,13 +21,22 @@
         window.location.host,
         window.location.pathname].join('');
 
-      if (window.location.search == '') {
-        handleError("Search query is mandatory");
+      if (window.location.hash == '') {
+        handleError("URL fragment is mandatory");
       }
 
-      let params = new URLSearchParams(document.location.search.substring(1));
-      let sessionHistory = params.get("session");
-      let targetUrl = params.get("targetUrl");
+      // Helper function to interpret the URL fragment as a key/value pair. If
+      // the URL fragment starts with 'prefix', interprets the remainder of the
+      // fragment as a URI-encoded value and returns the decoded value.
+      // Otherwise, returns null.
+      function ExtractHashValueForPrefix(prefix) {
+        if (!location.hash.startsWith(prefix))
+          return null;
+        return decodeURIComponent(location.hash.substring(prefix.length));
+      }
+
+      let sessionHistory = ExtractHashValueForPrefix("#session=");
+      let targetUrl = ExtractHashValueForPrefix("#targetUrl=");
       if (sessionHistory) {
         restoreSession(baseUrl, sessionHistory);
       } else if (targetUrl) {
@@ -66,7 +75,7 @@
      */
     function restoreSession(baseUrl, sessionHistory) {
       function getRestoreURL(targetUrl) {
-        return baseUrl + '?targetUrl=' + encodeURIComponent(targetUrl);
+        return baseUrl + '#targetUrl=' + encodeURIComponent(targetUrl);
       }
 
       var sessionHistoryObject = {};
@@ -99,11 +108,10 @@
 
     /**
      * Redirects to a target URL.
-     * @param {string} encodedTargetUrl An escaped version of the target URL.
+     * @param {string} targetUrl The target URL to redirect to.
      */
-    function redirect(encodedTargetUrl) {
-      var target = decodeURIComponent(encodedTargetUrl);
-      window.location.replace(target);
+    function redirect(targetUrl) {
+      window.location.replace(targetUrl);
     }
 
     /**

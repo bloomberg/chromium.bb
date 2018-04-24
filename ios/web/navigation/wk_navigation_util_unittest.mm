@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/test/test_url_constants.h"
-#include "net/base/url_util.h"
+#include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -45,11 +45,13 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrl) {
       CreateRestoreSessionUrl(0 /* last_committed_item_index */, items);
   ASSERT_TRUE(IsRestoreSessionUrl(restore_session_url));
 
-  std::string session_json;
-  net::GetValueForKeyInQuery(restore_session_url,
-                             kRestoreSessionSessionQueryKey, &session_json);
+  net::UnescapeRule::Type unescape_rules =
+      net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
+      net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS;
+  std::string session_json =
+      net::UnescapeURLComponent(restore_session_url.ref(), unescape_rules);
   EXPECT_EQ(
-      "{\"offset\":-2,\"titles\":[\"Test Website 0\",\"\",\"\"],"
+      "session={\"offset\":-2,\"titles\":[\"Test Website 0\",\"\",\"\"],"
       "\"urls\":[\"http://www.0.com/\",\"http://www.1.com/\","
       "\"about:blank?for=testwebui%3A%2F%2Fwebui%2F\"]}",
       session_json);

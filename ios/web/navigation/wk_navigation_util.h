@@ -29,12 +29,12 @@ class NavigationItem;
 
 namespace wk_navigation_util {
 
-// Query parameter key used to encode the session history to inject in a
+// URL fragment prefix used to encode the session history to inject in a
 // restore_session.html URL.
-extern const char kRestoreSessionSessionQueryKey[];
+extern const char kRestoreSessionSessionHashPrefix[];
 
-// Query parameter key used to encode target URL in a restore_session.html URL.
-extern const char kRestoreSessionTargetUrlQueryKey[];
+// URL fragment prefix used to encode target URL in a restore_session.html URL.
+extern const char kRestoreSessionTargetUrlHashPrefix[];
 
 // Returns true if |url| is a placeholder URL or restore_session.html URL.
 bool IsWKInternalUrl(const GURL& url);
@@ -44,7 +44,7 @@ bool IsWKInternalUrl(const GURL& url);
 GURL GetRestoreSessionBaseUrl();
 
 // Creates a restore_session.html URL with the provided session history encoded
-// in the query argument, such that when this URL is loaded in the web view,
+// in the URL fragment, such that when this URL is loaded in the web view,
 // recreates all the history entries in |items| and the current loaded item is
 // the entry at |last_committed_item_index|.
 GURL CreateRestoreSessionUrl(
@@ -55,16 +55,17 @@ GURL CreateRestoreSessionUrl(
 bool IsRestoreSessionUrl(const GURL& url);
 
 // Creates a restore_session.html URL that encodes the specified |target_url| in
-// its 'targetUrl' query component. When this URL is loaded in the web view, it
-// executes a client-side redirect to |target_url|. This results in a new
-// navigation entry and prunes forward navigation history. This URL is used by
-// WKBasedNavigationManagerImpl to reload a page with user agent override, as
-// reloading |target_url| directly doesn't create a new navigation entry.
+// the URL fragment with a "targetUrl=" prefix. When this URL is loaded in the
+// web view, it executes a client-side redirect to |target_url|. This results in
+// a new navigation entry and prunes forward navigation history. This URL is
+// used by WKBasedNavigationManagerImpl to reload a page with user agent
+// override, as reloading |target_url| directly doesn't create a new navigation
+// entry.
 GURL CreateRedirectUrl(const GURL& target_url);
 
-// Extracts the URL encoded in the 'targetUrl' query component of
-// |restore_session_url| to |target_url| and returns true. If no such query
-// component exists, returns false.
+// Extracts the URL encoded in the URL fragment of |restore_session_url| to
+// |target_url| and returns true. If the URL fragment does not have a
+// "targetUrl=" prefix, returns false.
 bool ExtractTargetURL(const GURL& restore_session_url, GURL* target_url);
 
 // Returns true if |URL| is a placeholder navigation URL.
