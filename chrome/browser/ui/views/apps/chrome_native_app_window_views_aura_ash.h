@@ -58,6 +58,7 @@ class ChromeNativeAppWindowViewsAuraAsh
   void OnBeforePanelWidgetInit(views::Widget::InitParams* init_params,
                                views::Widget* widget) override;
   views::NonClientFrameView* CreateNonStandardAppFrame() override;
+  bool ShouldRemoveStandardFrame() override;
 
   // ui::BaseWindow:
   gfx::Rect GetRestoredBounds() const override;

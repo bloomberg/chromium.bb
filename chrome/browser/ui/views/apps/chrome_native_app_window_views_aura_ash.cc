@@ -174,6 +174,16 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
   init_params->mus_properties
       [ui::mojom::WindowManager::kRemoveStandardFrame_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(init_params->remove_standard_frame);
+  if (HasFrameColor()) {
+    init_params->mus_properties
+        [ui::mojom::WindowManager::kActiveFrameColor_InitProperty] =
+        mojo::ConvertTo<std::vector<uint8_t>>(
+            static_cast<int32_t>(ActiveFrameColor()));
+    init_params->mus_properties
+        [ui::mojom::WindowManager::kInactiveFrameColor_InitProperty] =
+        mojo::ConvertTo<std::vector<uint8_t>>(
+            static_cast<int32_t>(InactiveFrameColor()));
+  }
   init_params
       ->mus_properties[ui::mojom::WindowManager::kShelfItemType_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
@@ -185,7 +195,8 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforePanelWidgetInit(
     views::Widget* widget) {
   ChromeNativeAppWindowViewsAura::OnBeforePanelWidgetInit(init_params, widget);
 
-  if (!ash_util::IsRunningInMash() && ash::Shell::HasInstance()) {
+  if (chromeos::GetAshConfig() != ash::Config::MASH &&
+      ash::Shell::HasInstance()) {
     // Open a new panel on the target root.
     init_params->context = ash::Shell::GetRootWindowForNewWindows();
     init_params->bounds = gfx::Rect(GetPreferredSize());
@@ -210,6 +221,13 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonStandardAppFrame() {
                         ash::kResizeOutsideBoundsSize,
                         ash::kResizeAreaCornerSize);
   return frame;
+}
+
+bool ChromeNativeAppWindowViewsAuraAsh::ShouldRemoveStandardFrame() {
+  if (IsFrameless())
+    return true;
+
+  return HasFrameColor() && chromeos::GetAshConfig() != ash::Config::MASH;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -308,8 +326,8 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
   if (IsFrameless())
     return CreateNonStandardAppFrame();
 
-  if (ash_util::IsRunningInMash())
-    return ChromeNativeAppWindowViews::CreateNonClientFrameView(widget);
+  if (chromeos::GetAshConfig() == ash::Config::MASH)
+    return nullptr;
 
   if (app_window()->window_type_is_panel()) {
     ash::PanelFrameView* frame_view =
