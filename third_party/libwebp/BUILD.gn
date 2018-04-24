@@ -192,9 +192,12 @@ static_library("libwebp_dsp") {
 static_library("libwebp_dsp_sse41") {
   sources = [
     "src/dsp/alpha_processing_sse41.c",
+    "src/dsp/common_sse41.h",
     "src/dsp/dec_sse41.c",
     "src/dsp/enc_sse41.c",
     "src/dsp/lossless_enc_sse41.c",
+    "src/dsp/upsampling_sse41.c",
+    "src/dsp/yuv_sse41.c",
   ]
   configs += [ ":libwebp_config_internal" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
@@ -287,8 +290,6 @@ static_library("libwebp_enc") {
     "src/enc/config_enc.c",
     "src/enc/cost_enc.c",
     "src/enc/cost_enc.h",
-    "src/enc/delta_palettization_enc.c",
-    "src/enc/delta_palettization_enc.h",
     "src/enc/filter_enc.c",
     "src/enc/frame_enc.c",
     "src/enc/histogram_enc.c",
