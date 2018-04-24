@@ -26,6 +26,14 @@ class LoginDataDispatcher;
 // LoginScreenClient through mojo.
 class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
  public:
+  // The current authentication stage. Used to get more verbose logging.
+  enum class AuthenticationStage {
+    kIdle,
+    kGetSystemSalt,
+    kDoAuthenticate,
+    kUserCallback,
+  };
+
   using OnShownCallback = base::OnceCallback<void(bool did_show)>;
   // Callback for authentication checks. |success| is nullopt if an
   // authentication check did not run, otherwise it is true/false if auth
@@ -113,6 +121,10 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   // Flushes the mojo pipes - to be used in tests.
   void FlushForTesting();
 
+  AuthenticationStage authentication_stage() const {
+    return authentication_stage_;
+  }
+
  private:
   using PendingDoAuthenticateUser =
       base::OnceCallback<void(const std::string& system_salt)>;
@@ -136,13 +148,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   // Bindings for users of the LockScreen interface.
   mojo::BindingSet<mojom::LoginScreen> bindings_;
 
-  // The current authentication stage. Used to get more verbose logging.
-  enum class AuthenticationStage {
-    kIdle,
-    kGetSystemSalt,
-    kDoAuthenticate,
-    kUserCallback,
-  };
   AuthenticationStage authentication_stage_ = AuthenticationStage::kIdle;
 
   base::ObserverList<LoginScreenControllerObserver> observers_;
