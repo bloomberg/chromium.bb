@@ -55,6 +55,7 @@
 #include "components/version_info/version_info.h"
 #include "components/webdata/common/web_database.h"
 #include "components/webdata_services/web_data_service_test_util.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -407,8 +408,11 @@ class ProfileSyncServiceAutofillTest
   }
 
   void StartAutofillProfileSyncService(base::OnceClosure callback) {
-    SigninManagerBase* signin = profile_sync_service_bundle()->signin_manager();
-    signin->SetAuthenticatedAccountInfo("12345", "test_user@gmail.com");
+    identity::MakePrimaryAccountAvailable(
+        profile_sync_service_bundle()->signin_manager(),
+        profile_sync_service_bundle()->auth_service(),
+        profile_sync_service_bundle()->identity_manager(),
+        "test_user@gmail.com");
     CreateSyncService(std::move(sync_client_owned_), std::move(callback));
 
     EXPECT_CALL(*profile_sync_service_bundle()->component_factory(),
@@ -419,10 +423,6 @@ class ProfileSyncServiceAutofillTest
 
     EXPECT_CALL(personal_data_manager(), IsDataLoaded())
         .WillRepeatedly(Return(true));
-
-    // We need tokens to get the tests going
-    profile_sync_service_bundle()->auth_service()->UpdateCredentials(
-        signin->GetAuthenticatedAccountId(), "oauth2_login_token");
 
     sync_service()->RegisterDataTypeController(
         std::make_unique<AutofillProfileDataTypeController>(
