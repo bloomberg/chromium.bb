@@ -1545,11 +1545,9 @@ void PepperPluginInstanceImpl::SelectAll() {
   if (!LoadPdfInterface())
     return;
 
-#if defined(OS_MACOSX)
-  static const ui::EventFlags kPlatformModifier = ui::EF_COMMAND_DOWN;
-#else
+  // TODO(https://crbug.com/836074) |kPlatformModifier| should be
+  // |ui::EF_COMMAND_DOWN| on Mac.
   static const ui::EventFlags kPlatformModifier = ui::EF_CONTROL_DOWN;
-#endif
   // Synthesize a ctrl + a key event to send to the plugin and let it sort out
   // the event. See also https://crbug.com/739529.
   ui::KeyEvent event(L'A', ui::VKEY_A, kPlatformModifier);
