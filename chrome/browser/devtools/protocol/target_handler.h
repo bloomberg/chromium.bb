@@ -7,20 +7,17 @@
 
 #include <set>
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/devtools/protocol/forward.h"
 #include "chrome/browser/devtools/protocol/target.h"
+#include "chrome/browser/media/router/presentation/independent_otr_profile_manager.h"
 #include "net/base/host_port_pair.h"
-
-namespace content {
-class WebContents;
-}
 
 using RemoteLocations = std::set<net::HostPortPair>;
 
 class TargetHandler : public protocol::Target::Backend {
  public:
-  TargetHandler(content::WebContents* web_contents,
-                protocol::UberDispatcher* dispatcher);
+  explicit TargetHandler(protocol::UberDispatcher* dispatcher);
   ~TargetHandler() override;
 
   RemoteLocations& remote_locations() { return remote_locations_; }
@@ -29,9 +26,27 @@ class TargetHandler : public protocol::Target::Backend {
   protocol::Response SetRemoteLocations(
       std::unique_ptr<protocol::Array<protocol::Target::RemoteLocation>>
           in_locations) override;
+  protocol::Response CreateBrowserContext(std::string* out_context_id) override;
+  protocol::Response CreateTarget(
+      const std::string& url,
+      protocol::Maybe<int> width,
+      protocol::Maybe<int> height,
+      protocol::Maybe<std::string> browser_context_id,
+      protocol::Maybe<bool> enable_begin_frame_control,
+      std::string* out_target_id) override;
+  protocol::Response DisposeBrowserContext(const std::string& context_id,
+                                           bool* out_success) override;
 
  private:
+  void OnOriginalProfileDestroyed(Profile* profile);
+
+  base::flat_map<
+      std::string,
+      std::unique_ptr<IndependentOTRProfileManager::OTRProfileRegistration>>
+      registrations_;
   RemoteLocations remote_locations_;
+
+  base::WeakPtrFactory<TargetHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetHandler);
 };
