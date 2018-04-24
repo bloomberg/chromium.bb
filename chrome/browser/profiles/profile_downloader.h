@@ -17,7 +17,6 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "url/gurl.h"
 
 class ProfileDownloaderDelegate;
 
