@@ -605,31 +605,20 @@ TEST(ProcessMitigationsTest, CheckWin8AslrPolicySuccess) {
   base::string16 test_command = L"CheckPolicy ";
   test_command += std::to_wstring(TESTPOLICY_ASLR);
 
+//---------------------------------------------
+// Only test in release for now.
+// TODO(pennymac): overhaul ASLR, crbug/834907.
+//---------------------------------------------
+#if defined(NDEBUG)
   TestRunner runner;
   sandbox::TargetPolicy* policy = runner.GetPolicy();
 
-//---------------------------------
-// 1) Test setting pre-startup.
-//    **Can only set ASLR pre-startup in release build.
-//---------------------------------
-#if defined(NDEBUG)
   EXPECT_EQ(policy->SetProcessMitigations(
                 MITIGATION_RELOCATE_IMAGE | MITIGATION_RELOCATE_IMAGE_REQUIRED |
                 MITIGATION_BOTTOM_UP_ASLR | MITIGATION_HIGH_ENTROPY_ASLR),
             SBOX_ALL_OK);
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(test_command.c_str()));
-
-//---------------------------------
-// 2) Test setting post-startup.
-//    **Bottom up and high entropy can only be set pre-startup.
-//    **Can only set ASLR post-startup in debug build.
-//---------------------------------
-#else
-  EXPECT_EQ(policy->SetDelayedProcessMitigations(
-                MITIGATION_RELOCATE_IMAGE | MITIGATION_RELOCATE_IMAGE_REQUIRED),
-            SBOX_ALL_OK);
-  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(test_command.c_str()));
-#endif  // !defined(NDEBUG)
+#endif  // defined(NDEBUG)
 }
 
 //------------------------------------------------------------------------------
