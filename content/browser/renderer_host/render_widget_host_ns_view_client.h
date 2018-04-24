@@ -6,7 +6,31 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_NS_VIEW_CLIENT_H_
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
+#include "content/common/edit_command.h"
 #include "content/common/mac/attributed_string_coder.h"
+#include "ui/base/ime/ime_text_span.h"
+#include "ui/base/ime/text_input_type.h"
+
+namespace blink {
+class WebGestureEvent;
+class WebMouseEvent;
+class WebMouseWheelEvent;
+}  // namespace blink
+
+namespace display {
+class Display;
+}  // namespace display
+
+namespace gfx {
+class PointF;
+class Range;
+class Rect;
+}  // namespace gfx
+
+namespace ui {
+class LatencyInfo;
+}  // namespace ui
 
 namespace content {
 

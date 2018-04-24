@@ -70,6 +70,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
                              const base::TimeDelta& interval);
   void SetNeedsBeginFrames(bool needs_begin_frames);
   void SetWantsAnimateOnlyBeginFrames();
+  void TakeFallbackContentFrom(BrowserCompositorMac* other);
 
   // Update the renderer's SurfaceId to reflect the current dimensions of the
   // NSView. This will allocate a new SurfaceId if needed. This will return

@@ -58,6 +58,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac
 
   void SetNSView(AcceleratedWidgetMacNSView* view);
   void ResetNSView();
+  void ResetNSViewPreservingContents();
 
   // Return true if the last frame swapped has a size in DIP of |dip_size|.
   bool HasFrameOfSize(const gfx::Size& dip_size) const;
