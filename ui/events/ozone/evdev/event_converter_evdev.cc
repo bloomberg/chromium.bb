@@ -10,7 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/devices/device_util_linux.h"
@@ -44,7 +44,7 @@ EventConverterEvdev::~EventConverterEvdev() {
 }
 
 void EventConverterEvdev::Start() {
-  base::MessageLoopForUI::current()->WatchFileDescriptor(
+  base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
       fd_, true, base::MessagePumpLibevent::WATCH_READ, &controller_, this);
   watching_ = true;
 }
