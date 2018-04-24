@@ -397,6 +397,8 @@ const CGFloat kOmniboxButtonBackgroundAlphaFactor = 0.5;
                                                imageNamed:collapsePressedName]
                      imageForDisabledState:nil];
   contractButton.accessibilityLabel = l10n_util::GetNSString(IDS_CANCEL);
+  contractButton.accessibilityIdentifier =
+      kToolbarCancelOmniboxEditButtonIdentifier;
   contractButton.alpha = 0;
   contractButton.hidden = YES;
   [self configureButton:contractButton width:kToolbarButtonWidth];

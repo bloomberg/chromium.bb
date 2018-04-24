@@ -314,8 +314,21 @@ using chrome_test_util::OmniboxText;
     [[[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Copy")]
         inRoot:grey_kindOfClass(NSClassFromString(@"UICalloutBarButton"))]
         performAction:grey_tap()];
-    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Typing Shield")]
-        performAction:grey_tap()];
+
+    if (IsIPadIdiom()) {
+      [[EarlGrey
+          selectElementWithMatcher:grey_accessibilityID(@"Typing Shield")]
+          performAction:grey_tap()];
+
+    } else {
+      // Typing shield might be unavailable if there are any suggestions
+      // displayed in the popup.
+      [[EarlGrey
+          selectElementWithMatcher:
+              grey_accessibilityID(kToolbarCancelOmniboxEditButtonIdentifier)]
+          performAction:grey_tap()];
+    }
+
   } else {
     [ChromeEarlGreyUI openShareMenu];
     [[EarlGrey
