@@ -22260,6 +22260,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="DataUse.MessageSize.AllServices.Downstream.Unknown.NotCellular"/>
   <int value="-1607339868"
       label="DataUse.MessageSize.AllServices.Upstream.Unknown.NotCellular"/>
+  <int value="-1561887015" label="MediaRouter.Cast.Channel.Error"/>
   <int value="-1459119846"
       label="ServiceWorkerCache.Cache.Scheduler.QueueLength"/>
   <int value="-1390672863"
