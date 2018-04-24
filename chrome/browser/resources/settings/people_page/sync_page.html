@@ -98,7 +98,7 @@
     <template is="dom-if" if="[[shouldShowSyncAccountControl_(diceEnabled,
         unifiedConsentEnabled, syncStatus.syncSystemEnabled,
         syncStatus.signinAllowed)]]">
-      <settings-sync-account-control
+      <settings-sync-account-control always-show-promo
           sync-status="[[syncStatus]]"
           promo-label="$i18n{syncSignInPrompt}"
           promo-secondary-label="$i18n{syncSignInPromptSecondary}">

@@ -115,6 +115,21 @@
         left: auto;
         right: 0;
       }
+
+      settings-sync-account-control[showing-promo] {
+        /* When showing promo in this page, text should be larger. */
+        --promo-description: {
+          font-size: 0.9rem;
+          line-height: 1.625rem;
+        }
+        --promo-title: {
+          font-size: 1.1rem;
+          line-height: 1.625rem;
+        }
+        --promo-separator: {
+          display: none;
+        }
+      }
 </if>
     </style>
     <settings-animated-pages id="pages" section="people"
