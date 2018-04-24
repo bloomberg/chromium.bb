@@ -18,26 +18,6 @@
 namespace chromeos {
 namespace assistant {
 
-// TODO(muyuanli): This class is currently a stub. It will need to be wired up
-// to use the real HW parameters.
-class AudioInputConfigImpl : public assistant_client::AudioInputConfig {
- public:
-  AudioInputConfigImpl();
-  ~AudioInputConfigImpl() override;
-
-  // assistant_client::AudioInputConfigImpl overrides:
-  std::vector<int> GetSelectedChannels() const override;
-  float GetMicSensitivity() const override;
-  assistant_client::AudioInputConfig::InputType GetInputType() const override;
-  std::string GetMicManufacturer() const override;
-  std::string GetMicModel() const override;
-  std::string GetMicVersion() const override;
-  assistant_client::AudioInputConfig::MicState GetMicState() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AudioInputConfigImpl);
-};
-
 class AudioInputImpl : public assistant_client::AudioInput,
                        public mojom::AudioInputObserver {
  public:
@@ -71,14 +51,10 @@ class AudioInputProviderImpl : public assistant_client::AudioInputProvider {
   ~AudioInputProviderImpl() override;
 
   // assistant_client::AudioInputProvider overrides:
-  assistant_client::AudioInputConfig& GetAudioInputConfig() override;
   assistant_client::AudioInput& GetAudioInput() override;
-  // Assumes no config would change.
-  void RegisterConfigChangeCallback(ConfigChangeCallback callback) override {}
   int64_t GetCurrentAudioTime() override;
 
  private:
-  AudioInputConfigImpl audio_input_config_;
   AudioInputImpl audio_input_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputProviderImpl);
