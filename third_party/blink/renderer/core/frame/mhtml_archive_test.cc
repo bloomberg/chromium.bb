@@ -61,7 +61,7 @@ class MHTMLArchiveTest : public testing::Test {
   MHTMLArchiveTest() {
     file_path_ = test::CoreTestDataPath("frameserializer/css/");
     mhtml_date_ = WTF::Time::FromJsTime(1520551829000);
-    mhtml_date_header_ = String::FromUTF8("Fri, 8 Mar 2018 23:30:29 -0000");
+    mhtml_date_header_ = String::FromUTF8("Thu, 8 Mar 2018 23:30:29 -0000");
   }
 
  protected:
