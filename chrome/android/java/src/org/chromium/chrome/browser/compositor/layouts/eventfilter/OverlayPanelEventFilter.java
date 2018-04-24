@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.contextualsearch.SwipeRecognizer;
-import org.chromium.content_public.browser.ContentViewCore;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 
@@ -387,8 +387,8 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
         event.offsetLocation(-contentViewOffsetXPx, -contentViewOffsetYPx);
 
         // Get the container view to propagate the event to.
-        ContentViewCore cvc = mPanel.getContentViewCore();
-        ViewGroup containerView = cvc == null ? null : cvc.getContainerView();
+        WebContents webContents = mPanel.getWebContents();
+        ViewGroup containerView = mPanel.getContainerView();
 
         boolean wasEventCanceled = false;
         if (mWasActionDownEventSynthetic && action == MotionEvent.ACTION_UP) {

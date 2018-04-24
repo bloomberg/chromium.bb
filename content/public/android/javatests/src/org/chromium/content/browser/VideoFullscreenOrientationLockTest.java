@@ -170,7 +170,7 @@ public class VideoFullscreenOrientationLockTest {
         DOMUtils.waitForMediaPlay(mActivityTestRule.getWebContents(), VIDEO_ID);
 
         // Trigger requestFullscreen() via a click on a button.
-        Assert.assertTrue(DOMUtils.clickNode(mActivityTestRule.getContentViewCore(), "fullscreen"));
+        Assert.assertTrue(DOMUtils.clickNode(mActivityTestRule.getWebContents(), "fullscreen"));
         waitForContentsFullscreenState(true);
 
         // Should be locked to landscape now, `waitUntilLockedToLandscape` will throw otherwise.
@@ -193,7 +193,7 @@ public class VideoFullscreenOrientationLockTest {
         DOMUtils.waitForMediaPlay(mActivityTestRule.getWebContents(), VIDEO_ID);
 
         // Trigger requestFullscreen() via a click on a button.
-        Assert.assertTrue(DOMUtils.clickNode(mActivityTestRule.getContentViewCore(), "fullscreen"));
+        Assert.assertTrue(DOMUtils.clickNode(mActivityTestRule.getWebContents(), "fullscreen"));
         waitForContentsFullscreenState(true);
 
         // Should be locked to landscape now, `waitUntilLockedToLandscape` will throw otherwise.
@@ -217,7 +217,7 @@ public class VideoFullscreenOrientationLockTest {
         DOMUtils.waitForMediaPlay(mActivityTestRule.getWebContents(), VIDEO_ID);
 
         // Trigger requestFullscreen() via a click on a button.
-        Assert.assertTrue(DOMUtils.clickNode(mActivityTestRule.getContentViewCore(), "fullscreen"));
+        Assert.assertTrue(DOMUtils.clickNode(mActivityTestRule.getWebContents(), "fullscreen"));
         waitForContentsFullscreenState(true);
 
         // Should be locked to landscape now, `waitUntilLockedToLandscape` will throw otherwise.

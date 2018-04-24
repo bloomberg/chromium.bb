@@ -80,7 +80,7 @@ public class UndoIntegrationTest {
         final Tab tab = TabModelUtils.getCurrentTab(model);
 
         // Clock on the link that will trigger a delayed window popup.
-        DOMUtils.clickNode(tab.getContentViewCore(), "link");
+        DOMUtils.clickNode(tab.getWebContents(), "link");
 
         // Attempt to close the tab, which will delay closing until the undo timeout goes away.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {

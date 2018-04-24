@@ -197,13 +197,12 @@ public class CastSwitchVideoTest {
 
     private void playVideoFromCurrentTab(String videoElement) throws InterruptedException,
             TimeoutException {
-        final Tab tab = mCastTestRule.getActivity().getActivityTab();
-        WebContents webContents = tab.getWebContents();
+        WebContents webContents = mCastTestRule.getActivity().getActivityTab().getWebContents();
 
         mCastTestRule.waitUntilVideoReady(videoElement, webContents);
 
         // Need to click on the video first to overcome the user gesture requirement.
-        DOMUtils.clickNode(tab.getContentViewCore(), videoElement);
+        DOMUtils.clickNode(webContents, videoElement);
         DOMUtils.playMedia(webContents, videoElement);
         DOMUtils.waitForMediaPlay(webContents, videoElement);
     }

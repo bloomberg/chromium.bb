@@ -193,7 +193,7 @@ public class PictureInPictureControllerTest {
     }
 
     private WebContents getWebContents() {
-        return mActivity.getCurrentContentViewCore().getWebContents();
+        return mActivity.getCurrentWebContents();
     }
 
     private void triggerAutoPiP() throws Throwable{
@@ -213,7 +213,7 @@ public class PictureInPictureControllerTest {
         DOMUtils.waitForMediaPlay(getWebContents(), VIDEO_ID);
 
         // Trigger requestFullscreen() via a click on a button.
-        Assert.assertTrue(DOMUtils.clickNode(mActivity.getCurrentContentViewCore(), "fullscreen"));
+        Assert.assertTrue(DOMUtils.clickNode(getWebContents(), "fullscreen"));
 
         // We use the web contents fullscreen heuristic.
         CriteriaHelper.pollUiThread(

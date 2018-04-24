@@ -9,7 +9,6 @@ import android.content.res.Configuration;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.content.browser.ContentViewCoreImpl;
@@ -81,16 +80,6 @@ public interface ContentViewCore {
          */
         void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix);
     }
-
-    /**
-     * @return The ViewGroup that all view actions of this ContentViewCore should interact with.
-     */
-    ViewGroup getContainerView();
-
-    /**
-     * @return The WebContents currently being rendered.
-     */
-    WebContents getWebContents();
 
     /**
      * Updates the native {@link ContentViewCore} with a new window. This moves the NativeView and

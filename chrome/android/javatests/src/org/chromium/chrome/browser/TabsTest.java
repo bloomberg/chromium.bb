@@ -324,7 +324,7 @@ public class TabsTest {
                 mActivityTestRule.getActivity(), mTestServer.getURL(TEST_FILE_PATH), false);
         Assert.assertEquals("Failed to click node.", true,
                 DOMUtils.clickNode(
-                        mActivityTestRule.getActivity().getActivityTab().getContentViewCore(),
+                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
                         "input_text"));
         assertWaitForKeyboardStatus(true);
 
@@ -334,8 +334,8 @@ public class TabsTest {
         assertWaitForKeyboardStatus(false);
 
         // Click node in the 2nd tab.
-        DOMUtils.clickNode(mActivityTestRule.getActivity().getActivityTab().getContentViewCore(),
-                "input_text");
+        DOMUtils.clickNode(
+                mActivityTestRule.getActivity().getActivityTab().getWebContents(), "input_text");
         assertWaitForKeyboardStatus(true);
 
         // Switch to the 1st tab.
@@ -343,8 +343,8 @@ public class TabsTest {
         assertWaitForKeyboardStatus(false);
 
         // Click node in the 1st tab.
-        DOMUtils.clickNode(mActivityTestRule.getActivity().getActivityTab().getContentViewCore(),
-                "input_text");
+        DOMUtils.clickNode(
+                mActivityTestRule.getActivity().getActivityTab().getWebContents(), "input_text");
         assertWaitForKeyboardStatus(true);
 
         // Close current tab(the 1st tab).
@@ -368,14 +368,14 @@ public class TabsTest {
                 mActivityTestRule.getActivity(), mTestServer.getURL(TEST_FILE_PATH), false);
         Assert.assertEquals("Failed to click textarea.", true,
                 DOMUtils.clickNode(
-                        mActivityTestRule.getActivity().getActivityTab().getContentViewCore(),
+                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
                         "textarea"));
         assertWaitForKeyboardStatus(true);
 
         // Click the button to open a new window.
         Assert.assertEquals("Failed to click button.", true,
                 DOMUtils.clickNode(
-                        mActivityTestRule.getActivity().getActivityTab().getContentViewCore(),
+                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
                         "button"));
         assertWaitForKeyboardStatus(false);
     }
@@ -433,7 +433,7 @@ public class TabsTest {
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), mTestServer.getURL(TEST_FILE_PATH), false);
         DOMUtils.longPressNode(
-                mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "textarea");
+                mActivityTestRule.getActivity().getActivityTab().getWebContents(), "textarea");
         assertWaitForSelectedText("helloworld");
 
         // Switch to tab-switcher mode, switch back, and scroll page.

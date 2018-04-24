@@ -211,7 +211,7 @@ public class VrShellTransitionTest {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"),
                 PAGE_LOAD_TIMEOUT_S);
-        DOMUtils.clickNode(mVrTestFramework.getFirstTabCvc(), "fullscreen",
+        DOMUtils.clickNode(mVrTestFramework.getFirstTabWebContents(), "fullscreen",
                 false /* goThroughRootAndroidView */);
         VrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
 

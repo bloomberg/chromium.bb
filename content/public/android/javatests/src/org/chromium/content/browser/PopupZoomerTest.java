@@ -94,10 +94,10 @@ public class PopupZoomerTest {
             @Override
             public void run() {
                 Context context = mActivityTestRule.getActivity();
-                WebContents webContents = mActivityTestRule.getContentViewCore().getWebContents();
+                WebContents webContents = mActivityTestRule.getWebContents();
                 mContentViewCore = new ContentViewCoreImpl(webContents);
                 mPopupZoomer = createPopupZoomerForTest(InstrumentationRegistry.getTargetContext(),
-                        mActivityTestRule.getContentViewCore().getContainerView());
+                        mActivityTestRule.getContainerView());
                 TapDisambiguator.fromWebContents(webContents).setPopupZoomerForTest(mPopupZoomer);
             }
         });

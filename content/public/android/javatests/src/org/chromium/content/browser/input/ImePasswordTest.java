@@ -49,8 +49,7 @@ public class ImePasswordTest {
 
         // Change input_password to type text.
         final String code = "document.getElementById(\"input_password\").type = \"text\"";
-        JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                mRule.getContentViewCore().getWebContents(), code);
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(mRule.getWebContents(), code);
 
         // <input type="password"> that was changed to type="text" should still
         // be considered a password field.
@@ -72,7 +71,6 @@ public class ImePasswordTest {
                         & InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD);
         Assert.assertEquals("\"text\"",
                 JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                        mRule.getContentViewCore().getWebContents(),
-                        "document.activeElement.type"));
+                        mRule.getWebContents(), "document.activeElement.type"));
     }
 }

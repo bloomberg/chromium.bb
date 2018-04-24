@@ -76,7 +76,7 @@ public class ContextMenuUtils {
             }
         });
         int callCount = helper.getCallCount();
-        DOMUtils.longPressNodeByJs(tab.getContentViewCore(), jsCode);
+        DOMUtils.longPressNodeByJs(tab.getWebContents(), jsCode);
 
         helper.waitForCallback(callCount);
         return helper.getContextMenu();

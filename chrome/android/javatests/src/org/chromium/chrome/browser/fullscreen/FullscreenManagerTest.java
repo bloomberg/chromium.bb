@@ -160,7 +160,7 @@ public class FullscreenManagerTest {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                View view = tab.getContentViewCore().getContainerView();
+                View view = tab.getContentView();
                 view.setSystemUiVisibility(
                         view.getSystemUiVisibility() & ~View.SYSTEM_UI_FLAG_FULLSCREEN);
             }
@@ -448,7 +448,7 @@ public class FullscreenManagerTest {
             public boolean isSatisfied() {
                 return RenderCoordinates.fromWebContents(tab.getWebContents())
                                .getContentHeightPixInt()
-                        > tab.getContentViewCore().getContainerView().getHeight();
+                        > tab.getContentView().getHeight();
             }
         });
     }

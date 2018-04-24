@@ -37,7 +37,6 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
@@ -114,8 +113,6 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     final CallbackHelper mExpirationMonthChange;
     PaymentRequestUI mUI;
 
-    private final AtomicReference<ContentViewCore> mViewCoreRef;
-
     private final AtomicReference<WebContents> mWebContentsRef;
 
     private final String mTestFilePath;
@@ -142,7 +139,6 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         mExpirationMonthChange = new CallbackHelper();
         mShowFailed = new CallbackHelper();
         mCanMakePaymentQueryResponded = new CallbackHelper();
-        mViewCoreRef = new AtomicReference<>();
         mWebContentsRef = new AtomicReference<>();
         mTestFilePath = testFileName.startsWith("data:")
                 ? testFileName
@@ -162,8 +158,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     private void openPage() throws InterruptedException, ExecutionException, TimeoutException {
         onMainActivityStarted();
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mViewCoreRef.set(getActivity().getCurrentContentViewCore());
-            mWebContentsRef.set(mViewCoreRef.get().getWebContents());
+            mWebContentsRef.set(getActivity().getCurrentWebContents());
             PaymentRequestUI.setEditorObserverForTest(PaymentRequestTestRule.this);
             PaymentRequestUI.setPaymentRequestObserverForTest(PaymentRequestTestRule.this);
             PaymentRequestImpl.setObserverForTest(PaymentRequestTestRule.this);
@@ -244,7 +239,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     protected void openPageAndClickNode(String nodeId)
             throws InterruptedException, ExecutionException, TimeoutException {
         openPage();
-        DOMUtils.clickNode(mViewCoreRef.get(), nodeId);
+        DOMUtils.clickNode(mWebContentsRef.get(), nodeId);
     }
 
     protected void triggerUIAndWait(String nodeId, PaymentsCallbackHelper<PaymentRequestUI> helper)
@@ -264,7 +259,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     protected void clickNodeAndWait(String nodeId, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        DOMUtils.clickNode(mViewCoreRef.get(), nodeId);
+        DOMUtils.clickNode(mWebContentsRef.get(), nodeId);
         helper.waitForCallback(callCount);
     }
 

@@ -699,7 +699,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         Assert.assertEquals(indirectLoadCallCount, mShouldOverrideUrlLoadingHelper.getCallCount());
 
         // Simulate touch, hasUserGesture must be true only on the first call.
-        DOMUtils.clickNode(mAwContents.getContentViewCore(), "link");
+        DOMUtils.clickNode(mAwContents.getWebContents(), "link");
 
         mShouldOverrideUrlLoadingHelper.waitForCallback(indirectLoadCallCount, 1);
         Assert.assertEquals(
@@ -996,7 +996,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
 
             // Clicking on an about:blank link should always navigate to the page directly
             int currentCallCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
-            DOMUtils.clickNode(mAwContents.getContentViewCore(), "link");
+            DOMUtils.clickNode(mAwContents.getWebContents(), "link");
             mContentsClient.getOnPageFinishedHelper().waitForCallback(
                     currentCallCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
 
@@ -1036,7 +1036,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
             Assert.assertNull(mActivityTestRule.getActivity().getLastSentIntent());
 
             // Clicking on a link should create an intent.
-            DOMUtils.clickNode(mAwContents.getContentViewCore(), "link");
+            DOMUtils.clickNode(mAwContents.getWebContents(), "link");
             mActivityTestRule.pollUiThread(
                     () -> mActivityTestRule.getActivity().getLastSentIntent() != null);
             Assert.assertEquals(testUrl,

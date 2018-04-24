@@ -37,7 +37,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.test.util.ClickUtils;
 import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -112,11 +111,11 @@ public class VrShellNavigationTest {
                 }, POLL_TIMEOUT_LONG_MS);
     }
 
-    private void enterFullscreenOrFail(ContentViewCore cvc)
+    private void enterFullscreenOrFail(WebContents webContents)
             throws InterruptedException, TimeoutException {
-        DOMUtils.clickNode(cvc, "fullscreen", false /* goThroughRootAndroidView */);
-        TestFramework.waitOnJavaScriptStep(cvc.getWebContents());
-        Assert.assertTrue(DOMUtils.isFullscreen(cvc.getWebContents()));
+        DOMUtils.clickNode(webContents, "fullscreen", false /* goThroughRootAndroidView */);
+        TestFramework.waitOnJavaScriptStep(webContents);
+        Assert.assertTrue(DOMUtils.isFullscreen(webContents));
     }
 
     private void assertState(WebContents wc, Page page, PresentationMode presentationMode,
@@ -226,7 +225,7 @@ public class VrShellNavigationTest {
     private void impl2dFullscreenToWeb(Page page, TestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
-        enterFullscreenOrFail(framework.getFirstTabCvc());
+        enterFullscreenOrFail(framework.getFirstTabWebContents());
 
         navigateTo(page);
 
@@ -389,7 +388,7 @@ public class VrShellNavigationTest {
     private void webFullscreenTo2dImpl(Page page, TestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
-        enterFullscreenOrFail(framework.getFirstTabCvc());
+        enterFullscreenOrFail(framework.getFirstTabWebContents());
 
         navigateTo(Page.PAGE_2D);
 
@@ -422,7 +421,7 @@ public class VrShellNavigationTest {
     private void webFullscreenToWebImpl(Page page, TestFramework framework)
             throws InterruptedException, TimeoutException {
         framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
-        enterFullscreenOrFail(framework.getFirstTabCvc());
+        enterFullscreenOrFail(framework.getFirstTabWebContents());
 
         navigateTo(page);
 
@@ -513,7 +512,7 @@ public class VrShellNavigationTest {
     public void testRendererKilledInFullscreenStaysInVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         mVrTestFramework.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
-        enterFullscreenOrFail(mVrTestFramework.getFirstTabCvc());
+        enterFullscreenOrFail(mVrTestFramework.getFirstTabWebContents());
 
         final Tab tab = mTestRule.getActivity().getActivityTab();
         ThreadUtils.runOnUiThreadBlocking(() -> tab.simulateRendererKilledForTesting(true));

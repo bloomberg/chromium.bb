@@ -10,7 +10,7 @@ import org.junit.Assert;
 
 import org.chromium.chrome.browser.vr_shell.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr_shell.XrTestFramework;
-import org.chromium.content_public.browser.ContentViewCore;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Class containing utility functions for transitioning between different
@@ -25,10 +25,10 @@ public class XrTransitionUtils extends TransitionUtils {
      * WebXR version of enterPresentationOrFail since the condition to check is different between
      * the two APIs.
      */
-    public static void enterPresentationOrFail(ContentViewCore cvc) {
-        enterPresentation(cvc);
+    public static void enterPresentationOrFail(WebContents webContents) {
+        enterPresentation(webContents);
         Assert.assertTrue(XrTestFramework.pollJavaScriptBoolean(
-                "exclusiveSession != null", POLL_TIMEOUT_LONG_MS, cvc.getWebContents()));
+                "exclusiveSession != null", POLL_TIMEOUT_LONG_MS, webContents));
         Assert.assertTrue(TestVrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
     }
 }

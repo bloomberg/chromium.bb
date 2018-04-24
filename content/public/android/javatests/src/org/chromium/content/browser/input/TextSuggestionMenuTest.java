@@ -65,7 +65,7 @@ public class TextSuggestionMenuTest {
         textToCommit.setSpan(suggestionSpan, 0, 5, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         mRule.commitText(textToCommit, 1);
 
-        DOMUtils.clickNode(cvc, "div");
+        DOMUtils.clickNode(webContents, "div");
         waitForMenuToShow(webContents);
 
         TouchCommon.singleClickView(getDeleteButton(webContents));
@@ -120,7 +120,7 @@ public class TextSuggestionMenuTest {
                         + "range.setEnd(text, 5);"
                         + "internals.setMarker(document, range, 'spelling');");
 
-        DOMUtils.clickNode(cvc, "div");
+        DOMUtils.clickNode(webContents, "div");
         waitForMenuToShow(webContents);
 
         TouchCommon.singleClickView(getDeleteButton(webContents));
@@ -186,7 +186,7 @@ public class TextSuggestionMenuTest {
             }
         });
 
-        DOMUtils.clickNode(cvc, "span");
+        DOMUtils.clickNode(webContents, "span");
         waitForMenuToShow(webContents);
 
         // There should be 5 child views: 4 suggestions plus the list footer.
@@ -236,7 +236,7 @@ public class TextSuggestionMenuTest {
 
         mRule.commitText(textToCommit, 1);
 
-        DOMUtils.clickNode(cvc, "span");
+        DOMUtils.clickNode(webContents, "span");
         waitForMenuToShow(webContents);
 
         // There should be 2 child views: 1 suggestion plus the list footer.
@@ -282,7 +282,7 @@ public class TextSuggestionMenuTest {
         textToCommit.setSpan(suggestionSpan, 0, 5, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         mRule.commitText(textToCommit, 1);
 
-        DOMUtils.clickNode(cvc, "div");
+        DOMUtils.clickNode(webContents, "div");
         waitForMenuToShow(webContents);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {

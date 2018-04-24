@@ -103,10 +103,7 @@ public class ContentViewFocusTest {
         String url = UrlUtils.getIsolatedTestFileUrl(
                 "chrome/test/data/android/content_view_focus/content_view_focus_long_text.html");
         mActivityTestRule.loadUrl(url);
-        View view = mActivityTestRule.getActivity()
-                            .getActivityTab()
-                            .getContentViewCore()
-                            .getContainerView();
+        View view = mActivityTestRule.getActivity().getActivityTab().getContentView();
 
         // Give the content view focus
         TestTouchUtils.longClickView(InstrumentationRegistry.getInstrumentation(), view, 50, 10);
@@ -166,10 +163,7 @@ public class ContentViewFocusTest {
                 mActivityTestRule.getActivity().getLayoutManager(), true, false);
         OverviewModeBehaviorWatcher hideWatcher = new OverviewModeBehaviorWatcher(
                 mActivityTestRule.getActivity().getLayoutManager(), false, true);
-        View currentView = mActivityTestRule.getActivity()
-                                   .getActivityTab()
-                                   .getContentViewCore()
-                                   .getContainerView();
+        View currentView = mActivityTestRule.getActivity().getActivityTab().getContentView();
         addFocusChangedListener(currentView);
 
         // Enter the tab switcher

@@ -39,8 +39,7 @@ public class OverlayPanelManagerTest {
     /**
      * Mocks the ContextualSearchPanel, so it doesn't create ContentViewCore.
      */
-    public static class MockOverlayPanel extends OverlayPanel {
-
+    private static class MockOverlayPanel extends OverlayPanel {
         private PanelPriority mPriority;
         private boolean mCanBeSuppressed;
         private ViewGroup mContainerView;
@@ -60,6 +59,7 @@ public class OverlayPanelManagerTest {
             mContainerView = container;
         }
 
+        @Override
         public ViewGroup getContainerView() {
             return mContainerView;
         }

@@ -55,7 +55,7 @@ public class RepostFormWarningTest {
         mActivityTestRule.startMainActivityOnBlankPage();
 
         mTab = mActivityTestRule.getActivity().getActivityTab();
-        mCallbackHelper = new TestCallbackHelperContainer(mTab.getContentViewCore());
+        mCallbackHelper = new TestCallbackHelperContainer(mTab.getWebContents());
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }
 

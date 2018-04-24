@@ -96,7 +96,7 @@ public class FullscreenTestUtils {
     private static boolean isFullscreenFlagSet(final Tab tab, final boolean state,
             Activity activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            View view = tab.getContentViewCore().getContainerView();
+            View view = tab.getContentView();
             int visibility = view.getSystemUiVisibility();
             // SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN should only be used during the transition between
             // fullscreen states, so it should always be cleared when fullscreen transitions are

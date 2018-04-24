@@ -21,7 +21,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.signin.AccountTrackerService;
 import org.chromium.chrome.browser.signin.SigninHelper;
@@ -34,7 +33,6 @@ import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.ContentViewCore;
 
 /**
  * Test suite for Sync.
@@ -227,9 +225,5 @@ public class SyncTest {
         mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(false);
         mSyncTestRule.startSync();
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
-    }
-
-    private static ContentViewCore getContentViewCore(ChromeActivity activity) {
-        return activity.getActivityTab().getContentViewCore();
     }
 }

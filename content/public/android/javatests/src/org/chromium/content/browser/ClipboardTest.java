@@ -78,8 +78,7 @@ public class ClipboardTest {
         clipboardManager.setPrimaryClip(ClipData.newPlainText(null, ""));
         Assert.assertFalse(hasPrimaryClip(clipboardManager));
 
-        final WebContentsImpl webContents =
-                (WebContentsImpl) mActivityTestRule.getContentViewCore().getWebContents();
+        final WebContentsImpl webContents = (WebContentsImpl) mActivityTestRule.getWebContents();
         selectAll(webContents);
         copy(webContents);
 

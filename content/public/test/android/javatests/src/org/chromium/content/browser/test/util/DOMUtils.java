@@ -233,49 +233,49 @@ public class DOMUtils {
 
     /**
      * Click a DOM node by its id, scrolling it into view first.
-     * @param viewCore The ContentViewCore in which the node lives.
+     * @param webContents The WebContents in which the node lives.
      * @param nodeId The id of the node.
      */
-    public static boolean clickNode(final ContentViewCore viewCore, String nodeId)
+    public static boolean clickNode(final WebContents webContents, String nodeId)
             throws InterruptedException, TimeoutException {
-        return clickNode(viewCore, nodeId, true /* goThroughRootAndroidView */);
+        return clickNode(webContents, nodeId, true /* goThroughRootAndroidView */);
     }
 
     /**
      * Click a DOM node by its id, scrolling it into view first.
-     * @param viewCore The ContentViewCore in which the node lives.
+     * @param webContents The WebContents in which the node lives.
      * @param nodeId The id of the node.
      * @param goThroughRootAndroidView Whether the input should be routed through the Root View for
      *        the CVC.
      */
-    public static boolean clickNode(final ContentViewCore viewCore, String nodeId,
+    public static boolean clickNode(final WebContents webContents, String nodeId,
             boolean goThroughRootAndroidView) throws InterruptedException, TimeoutException {
-        scrollNodeIntoView(viewCore.getWebContents(), nodeId);
-        int[] clickTarget = getClickTargetForNode(viewCore, nodeId);
+        scrollNodeIntoView(webContents, nodeId);
+        int[] clickTarget = getClickTargetForNode(webContents, nodeId);
         if (goThroughRootAndroidView) {
             return TouchCommon.singleClickView(
-                    viewCore.getContainerView(), clickTarget[0], clickTarget[1]);
+                    getContainerView(webContents), clickTarget[0], clickTarget[1]);
         } else {
-            // TODO(mthiesse): It should be sufficient to use viewCore.getContainerView() here
+            // TODO(mthiesse): It should be sufficient to use getContainerView(webContents) here
             // directly, but content offsets are only updated in the EventForwarder when the
             // CompositorViewHolder intercepts touch events.
             View target =
-                    viewCore.getContainerView().getRootView().findViewById(android.R.id.content);
+                    getContainerView(webContents).getRootView().findViewById(android.R.id.content);
             return TouchCommon.singleClickViewThroughTarget(
-                    viewCore.getContainerView(), target, clickTarget[0], clickTarget[1]);
+                    getContainerView(webContents), target, clickTarget[0], clickTarget[1]);
         }
     }
 
     /**
      * Click a DOM node returned by JS code, scrolling it into view first.
-     * @param viewCore The ContentViewCore in which the node lives.
+     * @param webContents The WebContents in which the node lives.
      * @param jsCode The JS code to find the node.
      */
-    public static void clickNodeByJs(final ContentViewCore viewCore, String jsCode)
+    public static void clickNodeByJs(final WebContents webContents, String jsCode)
             throws InterruptedException, TimeoutException {
-        scrollNodeIntoViewByJs(viewCore.getWebContents(), jsCode);
-        int[] clickTarget = getClickTargetForNodeByJs(viewCore, jsCode);
-        TouchCommon.singleClickView(viewCore.getContainerView(), clickTarget[0], clickTarget[1]);
+        scrollNodeIntoViewByJs(webContents, jsCode);
+        int[] clickTarget = getClickTargetForNodeByJs(webContents, jsCode);
+        TouchCommon.singleClickView(getContainerView(webContents), clickTarget[0], clickTarget[1]);
     }
 
     /**
@@ -291,27 +291,27 @@ public class DOMUtils {
 
     /**
      * Long-press a DOM node by its id, scrolling it into view first.
-     * @param viewCore The ContentViewCore in which the node lives.
+     * @param webContents The WebContents in which the node lives.
      * @param nodeId The id of the node.
      */
-    public static void longPressNode(final ContentViewCore viewCore, String nodeId)
+    public static void longPressNode(final WebContents webContents, String nodeId)
             throws InterruptedException, TimeoutException {
-        scrollNodeIntoView(viewCore.getWebContents(), nodeId);
+        scrollNodeIntoView(webContents, nodeId);
         String jsCode = "document.getElementById('" + nodeId + "')";
-        longPressNodeByJs(viewCore, jsCode);
+        longPressNodeByJs(webContents, jsCode);
     }
 
     /**
      * Long-press a DOM node by its id.
      * <p>Note that content view should be located in the current position for a foreseeable
      * amount of time because this involves sleep to simulate touch to long press transition.
-     * @param viewCore The ContentViewCore in which the node lives.
+     * @param webContents The WebContents in which the node lives.
      * @param jsCode js code that returns an element.
      */
-    public static void longPressNodeByJs(final ContentViewCore viewCore, String jsCode)
+    public static void longPressNodeByJs(final WebContents webContents, String jsCode)
             throws InterruptedException, TimeoutException {
-        int[] clickTarget = getClickTargetForNodeByJs(viewCore, jsCode);
-        TouchCommon.longPressView(viewCore.getContainerView(), clickTarget[0], clickTarget[1]);
+        int[] clickTarget = getClickTargetForNodeByJs(webContents, jsCode);
+        TouchCommon.longPressView(getContainerView(webContents), clickTarget[0], clickTarget[1]);
     }
 
     /**
@@ -461,34 +461,34 @@ public class DOMUtils {
 
     /**
      * Returns click target for a given DOM node.
-     * @param viewCore The ContentViewCore in which the node lives.
+     * @param webContents The WebContents in which the node lives.
      * @param nodeId The id of the node.
      * @return the click target of the node in the form of a [ x, y ] array.
      */
-    private static int[] getClickTargetForNode(ContentViewCore viewCore, String nodeId)
+    private static int[] getClickTargetForNode(WebContents webContents, String nodeId)
             throws InterruptedException, TimeoutException {
         String jsCode = "document.getElementById('" + nodeId + "')";
-        return getClickTargetForNodeByJs(viewCore, jsCode);
+        return getClickTargetForNodeByJs(webContents, jsCode);
     }
 
     /**
      * Returns click target for a given DOM node.
-     * @param viewCore The ContentViewCore in which the node lives.
+     * @param webContents The WebContents in which the node lives.
      * @param jsCode The javascript to get the node.
      * @return the click target of the node in the form of a [ x, y ] array.
      */
-    private static int[] getClickTargetForNodeByJs(ContentViewCore viewCore, String jsCode)
+    private static int[] getClickTargetForNodeByJs(WebContents webContents, String jsCode)
             throws InterruptedException, TimeoutException {
-        Rect bounds = getNodeBoundsByJs(viewCore.getWebContents(), jsCode);
+        Rect bounds = getNodeBoundsByJs(webContents, jsCode);
         Assert.assertNotNull(
                 "Failed to get DOM element bounds of element='" + jsCode + "'.", bounds);
 
-        return getClickTargetForBounds(viewCore.getWebContents(), bounds);
+        return getClickTargetForBounds(webContents, bounds);
     }
 
     /**
      * Returns click target for the DOM node specified by the rect boundaries.
-     * @param viewCore The ContentViewCore in which the node lives.
+     * @param webContents The WebContents in which the node lives.
      * @param bounds The rect boundaries of a DOM node.
      * @return the click target of the node in the form of a [ x, y ] array.
      */
@@ -506,10 +506,10 @@ public class DOMUtils {
     }
 
     private static int getMaybeTopControlsHeight(WebContents webContents) {
-        final ContentViewCore viewCore = ContentViewCore.fromWebContents(webContents);
+        final ContentViewCore core = ContentViewCore.fromWebContents(webContents);
         try {
             return ThreadUtils.runOnUiThreadBlocking(
-                    () -> { return viewCore.getTopControlsShrinkBlinkHeightForTesting(); });
+                    () -> { return core.getTopControlsShrinkBlinkHeightForTesting(); });
         } catch (ExecutionException e) {
             return 0;
         }

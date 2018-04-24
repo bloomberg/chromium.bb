@@ -592,11 +592,11 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
     public String runJavaScriptCodeInCurrentTab(String code)
             throws InterruptedException, TimeoutException {
         return JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                getActivity().getCurrentContentViewCore().getWebContents(), code);
+                getActivity().getCurrentWebContents(), code);
     }
 
     /**
-     * Waits till the ContentViewCore receives the expected page scale factor
+     * Waits till the WebContents receives the expected page scale factor
      * from the compositor and asserts that this happens.
      */
     public void assertWaitForPageScaleFactorMatch(float expectedScale) {

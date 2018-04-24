@@ -71,8 +71,7 @@ public class WebContentsObserverAndroidTest {
                 new Callable<TestWebContentsObserver>() {
                     @Override
                     public TestWebContentsObserver call() throws Exception {
-                        return new TestWebContentsObserver(
-                                mActivityTestRule.getContentViewCore().getWebContents());
+                        return new TestWebContentsObserver(mActivityTestRule.getWebContents());
                     }
                 });
 
@@ -80,10 +79,8 @@ public class WebContentsObserverAndroidTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getContentViewCore()
-                        .getWebContents()
-                        .getNavigationController()
-                        .loadUrl(new LoadUrlParams(URL));
+                mActivityTestRule.getWebContents().getNavigationController().loadUrl(
+                        new LoadUrlParams(URL));
             }
         });
         observer.getDidFirstVisuallyNonEmptyPaintCallbackHelper().waitForCallback(callCount);

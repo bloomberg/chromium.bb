@@ -331,10 +331,10 @@ public class SafeBrowsingTest {
         mTestServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                () -> mWebContentsObserver = new TestAwWebContentsObserver(
-                        mContainerView.getContentViewCore().getWebContents(), mAwContents,
-                        mContentsClient) {
-                });
+                ()
+                        -> mWebContentsObserver =
+                                   new TestAwWebContentsObserver(mContainerView.getWebContents(),
+                                           mAwContents, mContentsClient) {});
     }
 
     @After

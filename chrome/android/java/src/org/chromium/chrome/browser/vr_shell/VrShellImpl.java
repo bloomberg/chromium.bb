@@ -195,7 +195,7 @@ public class VrShellImpl
                 }
                 if (tab != null && tab.getContentViewCore() != null) {
                     mContentViewCore = tab.getContentViewCore();
-                    mContentViewCore.getContainerView().requestFocus();
+                    tab.getContentView().requestFocus();
                     // We need the CVC to think it has Window Focus so it doesn't blur the page,
                     // even though we're drawing VR layouts over top of it.
                     mContentViewCore.onWindowFocusChanged(true);
@@ -702,7 +702,7 @@ public class VrShellImpl
             restoreTabFromVR();
             uninitializeImeForVr();
             if (mTab.getContentViewCore() != null) {
-                View parent = mTab.getContentViewCore().getContainerView();
+                View parent = mTab.getContentView();
                 mTab.getWebContents().setSize(parent.getWidth(), parent.getHeight());
             }
             mTab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);

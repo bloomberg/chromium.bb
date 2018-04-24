@@ -297,8 +297,7 @@ public class JavascriptTabModalDialogTest {
      */
     private OnEvaluateJavaScriptResultHelper executeJavaScriptAndWaitForDialog(
             final OnEvaluateJavaScriptResultHelper helper, String script) {
-        helper.evaluateJavaScriptForTests(
-                mActivity.getCurrentContentViewCore().getWebContents(), script);
+        helper.evaluateJavaScriptForTests(mActivity.getCurrentWebContents(), script);
         checkDialogShowing("Could not spawn or locate a modal dialog.", true);
         return helper;
     }

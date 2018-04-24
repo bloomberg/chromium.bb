@@ -6,7 +6,6 @@ package org.chromium.content.browser.test.util;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.WebContents;
 
@@ -19,15 +18,14 @@ import java.util.concurrent.TimeoutException;
 public class TestCallbackHelperContainer {
     private TestWebContentsObserver mTestWebContentsObserver;
 
-    public TestCallbackHelperContainer(final ContentViewCore contentViewCore) {
+    public TestCallbackHelperContainer(final WebContents webContents) {
         // TODO(yfriedman): Change callers to be executed on the UI thread. Unfortunately this is
         // super convenient as the caller is nearly always on the test thread which is fine to block
         // and it's cumbersome to keep bouncing to the UI thread.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mTestWebContentsObserver = new TestWebContentsObserver(contentViewCore
-                        .getWebContents());
+                mTestWebContentsObserver = new TestWebContentsObserver(webContents);
             }
         });
     }

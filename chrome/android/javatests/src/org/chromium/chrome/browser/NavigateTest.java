@@ -237,7 +237,7 @@ public class NavigateTest {
 
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
 
-        DOMUtils.clickNode(tab.getContentViewCore(), "aboutLink");
+        DOMUtils.clickNode(tab.getWebContents(), "aboutLink");
         ChromeTabUtils.waitForTabPageLoaded(tab, url2);
         Assert.assertEquals("Desired Link not open", url2,
                 mActivityTestRule.getActivity().getActivityTab().getUrl());
@@ -262,7 +262,7 @@ public class NavigateTest {
                 () -> tab.setUseDesktopUserAgent(true /* useDesktop */, true /* reloadOnChange */));
         ChromeTabUtils.waitForTabPageLoaded(tab, url1);
 
-        DOMUtils.clickNode(tab.getContentViewCore(), "aboutLink");
+        DOMUtils.clickNode(tab.getWebContents(), "aboutLink");
         ChromeTabUtils.waitForTabPageLoaded(tab, url2);
         Assert.assertEquals("Request Desktop site setting should stay turned on", true,
                 mActivityTestRule.getActivity().getActivityTab().getUseDesktopUserAgent());
@@ -292,7 +292,7 @@ public class NavigateTest {
         };
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         tab.addObserver(onPageLoadStartedObserver);
-        DOMUtils.clickNode(tab.getContentViewCore(), "aboutLink");
+        DOMUtils.clickNode(tab.getWebContents(), "aboutLink");
         ChromeTabUtils.waitForTabPageLoaded(tab, url2);
         Assert.assertEquals("Desired Link not open", url2,
                 mActivityTestRule.getActivity().getActivityTab().getUrl());
@@ -483,7 +483,7 @@ public class NavigateTest {
             mActivityTestRule.assertWaitForPageScaleFactorMatch(0.5f);
 
             // Click the page, which triggers the URL load.
-            DOMUtils.clickNode(mActivityTestRule.getActivity().getCurrentContentViewCore(), "body");
+            DOMUtils.clickNode(mActivityTestRule.getActivity().getCurrentWebContents(), "body");
 
             // Wait for the proper URL to be served.
             Assert.assertTrue(urlServedSemaphore.tryAcquire(5, TimeUnit.SECONDS));

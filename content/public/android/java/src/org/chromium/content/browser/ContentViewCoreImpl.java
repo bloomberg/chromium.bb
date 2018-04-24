@@ -114,17 +114,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         return mContext;
     }
 
-    @Override
-    public ViewGroup getContainerView() {
-        ViewAndroidDelegate viewDelegate = mWebContents.getViewAndroidDelegate();
-        return viewDelegate != null ? viewDelegate.getContainerView() : null;
-    }
-
-    @Override
-    public WebContents getWebContents() {
-        return mWebContents;
-    }
-
     private WindowAndroid getWindowAndroid() {
         return mWindowAndroid;
     }
@@ -221,7 +210,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     }
 
     private EventForwarder getEventForwarder() {
-        return getWebContents().getEventForwarder();
+        return mWebContents.getEventForwarder();
     }
 
     private void addDisplayAndroidObserverIfNeeded() {
@@ -355,7 +344,8 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
             mContainerViewInternals.super_onConfigurationChanged(newConfig);
             // To request layout has side effect, but it seems OK as it only happen in
             // onConfigurationChange and layout has to be changed in most case.
-            getContainerView().requestLayout();
+            ViewAndroidDelegate viewDelegate = mWebContents.getViewAndroidDelegate();
+            if (viewDelegate != null) viewDelegate.getContainerView().requestLayout();
         } finally {
             TraceEvent.end("ContentViewCore.onConfigurationChanged");
         }

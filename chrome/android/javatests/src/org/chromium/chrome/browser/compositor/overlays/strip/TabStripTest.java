@@ -827,7 +827,7 @@ public class TabStripTest {
         mActivityTestRule.loadUrl("data:text/html;charset=utf-8,<html><head></head><body><form>"
                 + "<input type='text' id='input0'></form></body></html>");
         DOMUtils.clickNode(
-                mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "input0");
+                mActivityTestRule.getActivity().getActivityTab().getWebContents(), "input0");
         assertWaitForKeyboardStatus(true);
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();

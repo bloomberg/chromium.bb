@@ -119,7 +119,7 @@ public class WebContentsAccessibilityTest {
         // Whenever the tree is updated, an AccessibilityEvent is fired, so we can just wait until
         // the next event before checking again.
         mAccessibilityEventCallbackHelper =
-                new AccessibilityEventCallbackHelper(contentViewCore.getContainerView());
+                new AccessibilityEventCallbackHelper(mActivityTestRule.getContainerView());
         int textNodeVirtualViewId = View.NO_ID;
         do {
             mAccessibilityEventCallbackHelper.waitForCallback(
@@ -282,7 +282,7 @@ public class WebContentsAccessibilityTest {
                 findNodeWithTextInputType(provider, View.NO_ID, InputType.TYPE_CLASS_TEXT);
 
         mAccessibilityEventCallbackHelper =
-                new AccessibilityEventCallbackHelper(contentViewCore.getContainerView());
+                new AccessibilityEventCallbackHelper(mActivityTestRule.getContainerView());
 
         AccessibilityNodeInfo editTextNode =
                 provider.createAccessibilityNodeInfo(editFieldVirtualViewId);

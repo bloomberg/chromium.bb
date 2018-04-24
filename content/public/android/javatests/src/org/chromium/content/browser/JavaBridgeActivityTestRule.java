@@ -72,7 +72,7 @@ public class JavaBridgeActivityTestRule
                 @Override
                 public void run() {
                     mTestCallbackHelperContainer =
-                            new TestCallbackHelperContainer(activity.getActiveContentViewCore());
+                            new TestCallbackHelperContainer(activity.getActiveWebContents());
                 }
             });
         } catch (Throwable e) {

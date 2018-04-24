@@ -62,7 +62,7 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
      */
     public SwipeRefreshHandler(final Context context, Tab tab) {
         mTab = tab;
-        mContainerView = mTab.getContentViewCore().getContainerView();
+        mContainerView = mTab.getContentView();
 
         mSwipeRefreshLayout = new SwipeRefreshLayout(context);
         mSwipeRefreshLayout.setLayoutParams(

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.compositor.bottombar;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.MeasureSpec;
+import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -40,6 +41,9 @@ public class OverlayPanelContent {
 
     /** The WebContents that this panel will display. */
     private WebContents mWebContents;
+
+    /** The container view that this panel uses. */
+    private ViewGroup mContainerView;
 
     /** The pointer to the native version of this class. */
     private long mNativeOverlayPanelContentPtr;
@@ -338,6 +342,7 @@ public class OverlayPanelContent {
                     }
                 };
 
+        mContainerView = cv;
         mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl();
         nativeSetInterceptNavigationDelegate(
                 mNativeOverlayPanelContentPtr, mInterceptNavigationDelegate, mWebContents);
@@ -471,16 +476,12 @@ public class OverlayPanelContent {
         mNativeOverlayPanelContentPtr = 0;
     }
 
-    /**
-     * @return This panel's ContentViewCore.
-     */
-    @VisibleForTesting
-    public ContentViewCore getContentViewCore() {
-        return mContentViewCore;
+    protected WebContents getWebContents() {
+        return mWebContents;
     }
 
-    private WebContents getWebContents() {
-        return mWebContents;
+    ViewGroup getContainerView() {
+        return mContainerView;
     }
 
     void onSizeChanged(int width, int height) {

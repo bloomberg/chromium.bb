@@ -2145,7 +2145,7 @@ public class AwSettingsTest {
             int count = callback.getCallCount();
             mActivityTestRule.loadDataSync(awContents, contentClient.getOnPageFinishedHelper(),
                     pageHtml, "text/html", false);
-            DOMUtils.clickNode(testContainer.getContentViewCore(), "play");
+            DOMUtils.clickNode(testContainer.getWebContents(), "play");
             callback.waitForCallback(count, 1);
             Assert.assertEquals(0, webServer.getRequestCount(httpPath));
 

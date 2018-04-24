@@ -30,7 +30,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.media.MediaSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -102,13 +101,13 @@ public class FullscreenActivityTest {
      */
     private FullscreenActivity enterFullscreen() throws Throwable {
         // Start playback to guarantee it's properly loaded.
-        WebContents webContents = mActivity.getCurrentContentViewCore().getWebContents();
+        WebContents webContents = mActivity.getCurrentWebContents();
         Assert.assertTrue(DOMUtils.isMediaPaused(webContents, VIDEO_ID));
         DOMUtils.playMedia(webContents, VIDEO_ID);
         DOMUtils.waitForMediaPlay(webContents, VIDEO_ID);
 
         // Trigger requestFullscreen() via a click on a button.
-        Assert.assertTrue(DOMUtils.clickNode(mActivity.getCurrentContentViewCore(), "fullscreen"));
+        Assert.assertTrue(DOMUtils.clickNode(webContents, "fullscreen"));
 
         final FullscreenActivity fullscreenActivity = waitForActivity(FullscreenActivity.class);
 
@@ -116,9 +115,9 @@ public class FullscreenActivityTest {
             @Override
             public boolean isSatisfied() {
                 try {
-                    ContentViewCore cvc = fullscreenActivity.getCurrentContentViewCore();
-                    return DOMUtils.isFullscreen(cvc.getWebContents())
-                            && hasFullscreenFlags(cvc.getContainerView());
+                    Tab tab = fullscreenActivity.getActivityTab();
+                    return DOMUtils.isFullscreen(tab.getWebContents())
+                            && hasFullscreenFlags(tab.getContentView());
                 } catch (InterruptedException | TimeoutException e) {
                     throw new RuntimeException(e);
                 }
@@ -157,8 +156,8 @@ public class FullscreenActivityTest {
     @Test
     @MediumTest
     public void testFullscreen() throws Throwable {
-        testFullscreenAndExit(activity ->
-                DOMUtils.exitFullscreen(activity.getCurrentContentViewCore().getWebContents()));
+        testFullscreenAndExit(
+                activity -> DOMUtils.exitFullscreen(activity.getCurrentWebContents()));
     }
 
     /**
@@ -185,7 +184,7 @@ public class FullscreenActivityTest {
         int old = mActivity.getTabsView().getSystemUiVisibility();
 
         FullscreenActivity fullscreenActivity = enterFullscreen();
-        DOMUtils.exitFullscreen(fullscreenActivity.getCurrentContentViewCore().getWebContents());
+        DOMUtils.exitFullscreen(fullscreenActivity.getCurrentWebContents());
 
         waitForActivity(ChromeTabbedActivity.class);
 

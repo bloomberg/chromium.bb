@@ -51,7 +51,7 @@ public class VideoFullscreenOrientationLockChromeTest {
     private static final String VIDEO_ID = "video";
 
     private WebContents getWebContents() {
-        return mActivityTestRule.getActivity().getCurrentContentViewCore().getWebContents();
+        return mActivityTestRule.getActivity().getCurrentWebContents();
     }
 
     private void waitForContentsFullscreenState(boolean fullscreenValue)
@@ -119,8 +119,7 @@ public class VideoFullscreenOrientationLockChromeTest {
         DOMUtils.waitForMediaPlay(getWebContents(), VIDEO_ID);
 
         // Trigger requestFullscreen() via a click on a button.
-        Assert.assertTrue(DOMUtils.clickNode(
-                mActivityTestRule.getActivity().getCurrentContentViewCore(), "fullscreen"));
+        Assert.assertTrue(DOMUtils.clickNode(getWebContents(), "fullscreen"));
         waitForContentsFullscreenState(true);
 
         // Should be locked to landscape now, `waitUntilLockedToLandscape` will throw otherwise.

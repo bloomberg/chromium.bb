@@ -398,7 +398,7 @@ class ContextualSearchFakeServer
             mLoadedUrl = url;
             mLoadedUrlCount++;
             super.loadUrl(url, shouldLoadImmediately);
-            mContentsObserver = new ContentsObserver(getContentViewCore().getWebContents());
+            mContentsObserver = new ContentsObserver(getWebContents());
         }
 
         @Override

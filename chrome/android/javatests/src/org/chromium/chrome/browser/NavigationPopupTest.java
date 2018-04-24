@@ -234,9 +234,7 @@ public class NavigationPopupTest {
                     mProfile, mActivityTestRule.getActivity(), controller, true);
             popup.setWidth(300);
             popup.setHeight(300);
-            popup.setAnchorView(mActivityTestRule.getActivity()
-                    .getCurrentContentViewCore()
-                    .getContainerView());
+            popup.setAnchorView(mActivityTestRule.getActivity().getActivityTab().getContentView());
 
             popup.show();
             popupReference.set(popup);
@@ -269,9 +267,7 @@ public class NavigationPopupTest {
                     mProfile, mActivityTestRule.getActivity(), controller, true);
             popup.setWidth(300);
             popup.setHeight(300);
-            popup.setAnchorView(mActivityTestRule.getActivity()
-                    .getCurrentContentViewCore()
-                    .getContainerView());
+            popup.setAnchorView(mActivityTestRule.getActivity().getActivityTab().getContentView());
 
             popup.show();
             popupReference.set(popup);

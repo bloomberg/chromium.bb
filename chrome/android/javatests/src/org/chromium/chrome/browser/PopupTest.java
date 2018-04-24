@@ -97,7 +97,7 @@ public class PopupTest {
         mActivityTestRule.loadUrl(url);
         CriteriaHelper.pollUiThread(Criteria.equals(0, () -> getNumInfobarsShowing()));
         DOMUtils.clickNode(
-                mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "link");
+                mActivityTestRule.getActivity().getActivityTab().getWebContents(), "link");
         CriteriaHelper.pollUiThread(Criteria.equals(0, () -> getNumInfobarsShowing()));
     }
 
@@ -113,7 +113,7 @@ public class PopupTest {
         mActivityTestRule.loadUrl(url);
         CriteriaHelper.pollUiThread(Criteria.equals(0, () -> getNumInfobarsShowing()));
         DOMUtils.clickNode(
-                mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "link");
+                mActivityTestRule.getActivity().getActivityTab().getWebContents(), "link");
         CriteriaHelper.pollUiThread(Criteria.equals(1, () -> getNumInfobarsShowing()));
         Assert.assertEquals(1, selector.getTotalTabCount());
     }

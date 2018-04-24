@@ -30,13 +30,10 @@ import org.chromium.chrome.browser.vr_shell.rules.ChromeTabbedActivityVrTestRule
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.content.browser.test.util.Coordinates;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.RenderCoordinates;
-import org.chromium.content_public.browser.WebContents;
 
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -65,9 +62,8 @@ public class VrShellControllerInputTest {
         mController.recenterView();
     }
 
-    private void waitForPageToBeScrollable(ContentViewCore cvc) {
-        final RenderCoordinates coord = RenderCoordinates.fromWebContents(cvc.getWebContents());
-        final View view = cvc.getContainerView();
+    private void waitForPageToBeScrollable(final RenderCoordinates coord) {
+        final View view = mVrTestRule.getActivity().getActivityTab().getContentView();
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -86,9 +82,9 @@ public class VrShellControllerInputTest {
     public void testControllerScrolling() throws InterruptedException {
         mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
                 PAGE_LOAD_TIMEOUT_S);
-        final WebContents wc = mVrTestRule.getActivity().getActivityTab().getWebContents();
-        Coordinates coord = Coordinates.createFor(wc);
-        waitForPageToBeScrollable(mVrTestRule.getActivity().getActivityTab().getContentViewCore());
+        final RenderCoordinates coord = RenderCoordinates.fromWebContents(
+                mVrTestRule.getActivity().getActivityTab().getWebContents());
+        waitForPageToBeScrollable(coord);
 
         // Test that scrolling down works
         int startScrollPoint = coord.getScrollYPixInt();
@@ -136,9 +132,9 @@ public class VrShellControllerInputTest {
     public void testControllerFlingScrolling() throws InterruptedException {
         mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
                 PAGE_LOAD_TIMEOUT_S);
-        final WebContents wc = mVrTestRule.getActivity().getActivityTab().getWebContents();
-        Coordinates coord = Coordinates.createFor(wc);
-        waitForPageToBeScrollable(mVrTestRule.getActivity().getActivityTab().getContentViewCore());
+        final RenderCoordinates coord = RenderCoordinates.fromWebContents(
+                mVrTestRule.getActivity().getActivityTab().getWebContents());
+        waitForPageToBeScrollable(coord);
 
         // Arbitrary, but valid values to trigger fling scrolling
         int scrollSteps = 2;
@@ -275,7 +271,7 @@ public class VrShellControllerInputTest {
                 VrTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"),
                 PAGE_LOAD_TIMEOUT_S);
         // Enter fullscreen
-        DOMUtils.clickNode(mVrTestFramework.getFirstTabCvc(), "fullscreen",
+        DOMUtils.clickNode(mVrTestFramework.getFirstTabWebContents(), "fullscreen",
                 false /* goThroughRootAndroidView */);
         VrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
         Assert.assertTrue(DOMUtils.isFullscreen(mVrTestFramework.getFirstTabWebContents()));
