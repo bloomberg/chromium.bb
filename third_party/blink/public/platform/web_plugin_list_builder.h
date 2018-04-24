@@ -31,6 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PLUGIN_LIST_BUILDER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PLUGIN_LIST_BUILDER_H_
 
+#include "third_party/blink/public/platform/web_color.h"
+
 namespace blink {
 
 class WebString;
@@ -40,7 +42,8 @@ class WebPluginListBuilder {
  public:
   virtual void AddPlugin(const WebString& name,
                          const WebString& description,
-                         const WebString& file_name) = 0;
+                         const WebString& file_name,
+                         WebColor background_color) = 0;
 
   virtual void AddMediaTypeToLastPlugin(const WebString& name,
                                         const WebString& description) = 0;

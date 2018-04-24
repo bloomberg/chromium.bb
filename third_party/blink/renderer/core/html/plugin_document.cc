@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/dom/raw_data_document_parser.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -47,8 +48,9 @@ using namespace HTMLNames;
 // FIXME: Share more code with MediaDocumentParser.
 class PluginDocumentParser : public RawDataDocumentParser {
  public:
-  static PluginDocumentParser* Create(PluginDocument* document) {
-    return new PluginDocumentParser(document);
+  static PluginDocumentParser* Create(PluginDocument* document,
+                                      Color background_color) {
+    return new PluginDocumentParser(document, background_color);
   }
 
   virtual void Trace(blink::Visitor* visitor) {
@@ -57,8 +59,10 @@ class PluginDocumentParser : public RawDataDocumentParser {
   }
 
  private:
-  PluginDocumentParser(Document* document)
-      : RawDataDocumentParser(document), embed_element_(nullptr) {}
+  PluginDocumentParser(Document* document, Color background_color)
+      : RawDataDocumentParser(document),
+        embed_element_(nullptr),
+        background_color_(background_color) {}
 
   void AppendBytes(const char*, size_t) override;
 
@@ -69,6 +73,7 @@ class PluginDocumentParser : public RawDataDocumentParser {
   WebPluginContainerImpl* GetPluginView() const;
 
   Member<HTMLEmbedElement> embed_element_;
+  const Color background_color_;
 };
 
 void PluginDocumentParser::CreateDocumentStructure() {
@@ -95,8 +100,10 @@ void PluginDocumentParser::CreateDocumentStructure() {
 
   HTMLBodyElement* body = HTMLBodyElement::Create(*GetDocument());
   body->setAttribute(styleAttr,
-                     "background-color: rgb(38,38,38); height: 100%; width: "
-                     "100%; overflow: hidden; margin: 0");
+                     "height: 100%; width: 100%; overflow: hidden; margin: 0");
+  body->SetInlineStyleProperty(
+      CSSPropertyBackgroundColor,
+      *cssvalue::CSSColorValue::Create(background_color_.Rgb()));
   root_element->AppendChild(body);
   if (IsStopped()) {
     // Possibly detached by a mutation event listener installed in
@@ -163,14 +170,16 @@ WebPluginContainerImpl* PluginDocumentParser::GetPluginView() const {
   return ToPluginDocument(GetDocument())->GetPluginView();
 }
 
-PluginDocument::PluginDocument(const DocumentInit& initializer)
-    : HTMLDocument(initializer, kPluginDocumentClass) {
+PluginDocument::PluginDocument(const DocumentInit& initializer,
+                               Color background_color)
+    : HTMLDocument(initializer, kPluginDocumentClass),
+      background_color_(background_color) {
   SetCompatibilityMode(kQuirksMode);
   LockCompatibilityMode();
 }
 
 DocumentParser* PluginDocument::CreateParser() {
-  return PluginDocumentParser::Create(this);
+  return PluginDocumentParser::Create(this, background_color_);
 }
 
 WebPluginContainerImpl* PluginDocument::GetPluginView() {

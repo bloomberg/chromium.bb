@@ -257,8 +257,10 @@ Document* DOMImplementation::createDocument(const String& type,
   // PDF is one image type for which a plugin can override built-in support.
   // We do not want QuickTime to take over all image types, obviously.
   if ((type == "application/pdf" || type == "text/pdf") && plugin_data &&
-      plugin_data->SupportsMimeType(type))
-    return PluginDocument::Create(init);
+      plugin_data->SupportsMimeType(type)) {
+    return PluginDocument::Create(
+        init, plugin_data->PluginBackgroundColorForMimeType(type));
+  }
   // multipart/x-mixed-replace is only supported for images.
   if (Image::SupportsType(type) || type == "multipart/x-mixed-replace")
     return ImageDocument::Create(init);
@@ -274,8 +276,10 @@ Document* DOMImplementation::createDocument(const String& type,
   // fundamental type that the browser is expected to handle, and also serves as
   // an optimization to prevent loading the plugin database in the common case.
   if (type != "text/plain" && plugin_data &&
-      plugin_data->SupportsMimeType(type))
-    return PluginDocument::Create(init);
+      plugin_data->SupportsMimeType(type)) {
+    return PluginDocument::Create(
+        init, plugin_data->PluginBackgroundColorForMimeType(type));
+  }
   if (IsTextMIMEType(type))
     return TextDocument::Create(init);
   if (type == "image/svg+xml")

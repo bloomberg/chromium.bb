@@ -318,7 +318,7 @@ void TestBlinkWebUnitTestSupport::GetPluginList(
     bool refresh,
     const blink::WebSecurityOrigin& mainFrameOrigin,
     blink::WebPluginListBuilder* builder) {
-  builder->AddPlugin("pdf", "pdf", "pdf-files");
+  builder->AddPlugin("pdf", "pdf", "pdf-files", SkColorSetRGB(38, 38, 38));
   builder->AddMediaTypeToLastPlugin("application/pdf", "pdf");
 }
 

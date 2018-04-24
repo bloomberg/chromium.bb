@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Multiply included file.
+// no-include-guard-because-multiply-included
 
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_message_macros.h"
@@ -30,4 +30,5 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPluginInfo)
   IPC_STRUCT_TRAITS_MEMBER(mime_types)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(pepper_permissions)
+  IPC_STRUCT_TRAITS_MEMBER(background_color)
 IPC_STRUCT_TRAITS_END()

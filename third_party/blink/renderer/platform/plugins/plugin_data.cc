@@ -45,8 +45,12 @@ void PluginInfo::Trace(blink::Visitor* visitor) {
 
 PluginInfo::PluginInfo(const String& name,
                        const String& filename,
-                       const String& description)
-    : name_(name), filename_(filename), description_(description) {}
+                       const String& description,
+                       Color background_color)
+    : name_(name),
+      filename_(filename),
+      description_(description),
+      background_color_(background_color) {}
 
 void PluginInfo::AddMimeType(MimeClassInfo* info) {
   mimes_.push_back(info);
@@ -120,6 +124,16 @@ bool PluginData::SupportsMimeType(const String& mime_type) const {
   }
 
   return false;
+}
+
+Color PluginData::PluginBackgroundColorForMimeType(
+    const String& mime_type) const {
+  for (const MimeClassInfo* info : mimes_) {
+    if (info->type_ == mime_type)
+      return info->Plugin()->BackgroundColor();
+  }
+  NOTREACHED();
+  return Color();
 }
 
 }  // namespace blink

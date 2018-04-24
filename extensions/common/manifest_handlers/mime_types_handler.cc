@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/public/common/webplugininfo.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest.h"
@@ -27,6 +28,10 @@ const char* const kMIMETypeHandlersWhitelist[] = {
     extension_misc::kQuickOfficeInternalExtensionId,
     extension_misc::kQuickOfficeExtensionId,
     extension_misc::kMimeHandlerPrivateTestExtensionId};
+
+constexpr SkColor kPdfExtensionBackgroundColor = SkColorSetRGB(82, 86, 89);
+constexpr SkColor kQuickOfficeExtensionBackgroundColor =
+    SkColorSetRGB(241, 241, 241);
 
 // Stored on the Extension.
 struct MimeTypesHandlerInfo : public extensions::Extension::ManifestData {
@@ -68,6 +73,18 @@ bool MimeTypesHandler::CanHandleMIMEType(const std::string& mime_type) const {
 
 bool MimeTypesHandler::HasPlugin() const {
   return !handler_url_.empty();
+}
+
+SkColor MimeTypesHandler::GetBackgroundColor() const {
+  if (extension_id_ == extension_misc::kPdfExtensionId) {
+    return kPdfExtensionBackgroundColor;
+  }
+  if (extension_id_ == extension_misc::kQuickOfficeExtensionId ||
+      extension_id_ == extension_misc::kQuickOfficeInternalExtensionId ||
+      extension_id_ == extension_misc::kQuickOfficeComponentExtensionId) {
+    return kQuickOfficeExtensionBackgroundColor;
+  }
+  return content::WebPluginInfo::kDefaultBackgroundColor;
 }
 
 base::FilePath MimeTypesHandler::GetPluginPath() const {

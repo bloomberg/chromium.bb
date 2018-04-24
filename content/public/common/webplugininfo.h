@@ -12,6 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "content/common/content_export.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace base {
 class Version;
@@ -57,6 +58,8 @@ struct CONTENT_EXPORT WebPluginInfo {
     PLUGIN_TYPE_BROWSER_PLUGIN
   };
 
+  static constexpr SkColor kDefaultBackgroundColor = SkColorSetRGB(38, 38, 38);
+
   WebPluginInfo();
   WebPluginInfo(const WebPluginInfo& rhs);
   ~WebPluginInfo();
@@ -98,6 +101,9 @@ struct CONTENT_EXPORT WebPluginInfo {
 
   // When type is PLUGIN_TYPE_PEPPER_* this indicates the permission bits.
   int32_t pepper_permissions;
+
+  // The color to use as the background before the plugin loads.
+  SkColor background_color = kDefaultBackgroundColor;
 };
 
 }  // namespace content
