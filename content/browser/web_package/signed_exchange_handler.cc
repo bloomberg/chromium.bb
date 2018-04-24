@@ -134,7 +134,7 @@ SignedExchangeHandler::SignedExchangeHandler(
       FROM_HERE, base::BindOnce(&SignedExchangeHandler::DoHeaderLoop,
                                 weak_factory_.GetWeakPtr()));
   TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                   "SignedExchangeCertFetcher::SignedExchangeHandler");
+                   "SignedExchangeHandler::SignedExchangeHandler");
 }
 
 SignedExchangeHandler::~SignedExchangeHandler() = default;
@@ -213,7 +213,7 @@ void SignedExchangeHandler::DidReadHeader(bool completed_syncly, int result) {
     DoHeaderLoop();
   }
   TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                   "SignedExchangeCertFetcher::DidReadHeader");
+                   "SignedExchangeHandler::DidReadHeader");
 }
 
 bool SignedExchangeHandler::ParseHeadersLength() {
@@ -235,7 +235,7 @@ bool SignedExchangeHandler::ParseHeadersLength() {
   SetupBuffers(headers_length_);
   state_ = State::kReadingHeaders;
   TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                   "SignedExchangeCertFetcher::ParseHeadersLength");
+                   "SignedExchangeHandler::ParseHeadersLength");
   return true;
 }
 
