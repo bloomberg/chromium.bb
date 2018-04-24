@@ -45,11 +45,13 @@ TEST_F(TabStripModelStatsRecorderTest, BasicTabLifecycle) {
 
   // Insert the first tab.
   WebContents* contents1 = CreateTestWebContents();
-  tabstrip.InsertWebContentsAt(0, contents1, TabStripModel::ADD_ACTIVE);
+  tabstrip.InsertWebContentsAt(0, base::WrapUnique(contents1),
+                               TabStripModel::ADD_ACTIVE);
 
   // Deactivate the first tab by inserting new tab.
   WebContents* contents2 = CreateTestWebContents();
-  tabstrip.InsertWebContentsAt(1, contents2, TabStripModel::ADD_ACTIVE);
+  tabstrip.InsertWebContentsAt(1, base::WrapUnique(contents2),
+                               TabStripModel::ADD_ACTIVE);
 
   tester.ExpectUniqueSample(
       "Tabs.StateTransfer.Target_Active",
@@ -105,15 +107,18 @@ TEST_F(TabStripModelStatsRecorderTest, ObserveMultipleTabStrips) {
 
   // Create a tab in strip 1.
   WebContents* contents1 = CreateTestWebContents();
-  tabstrip1.InsertWebContentsAt(0, contents1, TabStripModel::ADD_ACTIVE);
+  tabstrip1.InsertWebContentsAt(0, base::WrapUnique(contents1),
+                                TabStripModel::ADD_ACTIVE);
 
   // Create a tab in strip 2.
   WebContents* contents2 = CreateTestWebContents();
-  tabstrip2.InsertWebContentsAt(0, contents2, TabStripModel::ADD_ACTIVE);
+  tabstrip2.InsertWebContentsAt(0, base::WrapUnique(contents2),
+                                TabStripModel::ADD_ACTIVE);
 
   // Create another tab in strip 1.
   WebContents* contents3 = CreateTestWebContents();
-  tabstrip1.InsertWebContentsAt(1, contents3, TabStripModel::ADD_ACTIVE);
+  tabstrip1.InsertWebContentsAt(1, base::WrapUnique(contents3),
+                                TabStripModel::ADD_ACTIVE);
 
   tester.ExpectUniqueSample(
       "Tabs.StateTransfer.Target_Active",
@@ -121,15 +126,16 @@ TEST_F(TabStripModelStatsRecorderTest, ObserveMultipleTabStrips) {
 
   // Create another tab in strip 2.
   WebContents* contents4 = CreateTestWebContents();
-  tabstrip2.InsertWebContentsAt(1, contents4, TabStripModel::ADD_ACTIVE);
+  tabstrip2.InsertWebContentsAt(1, base::WrapUnique(contents4),
+                                TabStripModel::ADD_ACTIVE);
 
   tester.ExpectUniqueSample(
       "Tabs.StateTransfer.Target_Active",
       static_cast<int>(TabStripModelStatsRecorder::TabState::INACTIVE), 2);
 
   // Move the first tab in strip 1 to strip 2
-  tabstrip1.DetachWebContentsAt(0).release();
-  tabstrip2.InsertWebContentsAt(2, contents1, TabStripModel::ADD_ACTIVE);
+  tabstrip2.InsertWebContentsAt(2, tabstrip1.DetachWebContentsAt(0),
+                                TabStripModel::ADD_ACTIVE);
 
   tester.ExpectUniqueSample(
       "Tabs.StateTransfer.Target_Active",
@@ -172,12 +178,14 @@ TEST_F(TabStripModelStatsRecorderTest,
 
   // Create first tab
   WebContents* contents0 = CreateTestWebContents();
-  tabstrip.InsertWebContentsAt(0, contents0, TabStripModel::ADD_ACTIVE);
+  tabstrip.InsertWebContentsAt(0, base::WrapUnique(contents0),
+                               TabStripModel::ADD_ACTIVE);
 
   // Add 9 more tabs and activate them
   for (int i = 1; i < 10; ++i) {
     WebContents* contents = CreateTestWebContents();
-    tabstrip.InsertWebContentsAt(1, contents, TabStripModel::ADD_ACTIVE);
+    tabstrip.InsertWebContentsAt(1, base::WrapUnique(contents),
+                                 TabStripModel::ADD_ACTIVE);
   }
 
   // Reactivate the first tab
@@ -204,9 +212,12 @@ TEST_F(TabStripModelStatsRecorderTest,
   WebContents* contents0 = CreateTestWebContents();
   WebContents* contents1 = CreateTestWebContents();
   WebContents* contents2 = CreateTestWebContents();
-  tabstrip.InsertWebContentsAt(0, contents0, TabStripModel::ADD_ACTIVE);
-  tabstrip.InsertWebContentsAt(1, contents1, TabStripModel::ADD_ACTIVE);
-  tabstrip.InsertWebContentsAt(2, contents2, TabStripModel::ADD_ACTIVE);
+  tabstrip.InsertWebContentsAt(0, base::WrapUnique(contents0),
+                               TabStripModel::ADD_ACTIVE);
+  tabstrip.InsertWebContentsAt(1, base::WrapUnique(contents1),
+                               TabStripModel::ADD_ACTIVE);
+  tabstrip.InsertWebContentsAt(2, base::WrapUnique(contents2),
+                               TabStripModel::ADD_ACTIVE);
 
   // Switch between tabs {0,1} for 5 times, then switch to tab 2
   for (int i = 0; i < 5; ++i) {

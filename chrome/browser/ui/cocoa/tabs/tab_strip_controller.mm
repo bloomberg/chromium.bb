@@ -1835,8 +1835,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   // Insert it into this tab strip. We want it in the foreground and to not
   // inherit the current tab's group.
   tabStripModel_->InsertWebContentsAt(
-      modelIndex,
-      contents,
+      modelIndex, base::WrapUnique(contents),
       (activate ? TabStripModel::ADD_ACTIVE : TabStripModel::ADD_NONE) |
           (pinned ? TabStripModel::ADD_PINNED : TabStripModel::ADD_NONE));
 }

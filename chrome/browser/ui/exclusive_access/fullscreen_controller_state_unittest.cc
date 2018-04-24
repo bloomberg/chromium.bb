@@ -802,9 +802,10 @@ TEST_F(FullscreenControllerStateUnitTest,
   // The tab should remain in fullscreen mode and neither browser window should
   // have expanded. It is correct for both FullscreenControllers to agree the
   // tab is in fullscreen mode.
-  browser()->tab_strip_model()->DetachWebContentsAt(0).release();
-  second_browser->tab_strip_model()->
-      InsertWebContentsAt(0, tab, TabStripModel::ADD_ACTIVE);
+  std::unique_ptr<content::WebContents> owned_wc =
+      browser()->tab_strip_model()->DetachWebContentsAt(0);
+  second_browser->tab_strip_model()->InsertWebContentsAt(
+      0, std::move(owned_wc), TabStripModel::ADD_ACTIVE);
   EXPECT_FALSE(browser()->window()->IsFullscreen());
   EXPECT_FALSE(second_browser->window()->IsFullscreen());
   EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(tab));
@@ -817,9 +818,9 @@ TEST_F(FullscreenControllerStateUnitTest,
   // Now, detach and reattach it back to the first browser window.  Again, the
   // tab should remain in fullscreen mode and neither browser window should have
   // expanded.
-  second_browser->tab_strip_model()->DetachWebContentsAt(0).release();
-  browser()->tab_strip_model()->
-      InsertWebContentsAt(0, tab, TabStripModel::ADD_ACTIVE);
+  owned_wc = second_browser->tab_strip_model()->DetachWebContentsAt(0);
+  browser()->tab_strip_model()->InsertWebContentsAt(0, std::move(owned_wc),
+                                                    TabStripModel::ADD_ACTIVE);
   EXPECT_FALSE(browser()->window()->IsFullscreen());
   EXPECT_FALSE(second_browser->window()->IsFullscreen());
   EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(tab));

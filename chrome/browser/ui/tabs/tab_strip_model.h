@@ -169,7 +169,7 @@ class TabStripModel : public WebContentsCloseDelegate {
   // constraint that all pinned tabs occur before non-pinned tabs.
   // See also AddWebContents.
   void InsertWebContentsAt(int index,
-                           content::WebContents* contents,
+                           std::unique_ptr<content::WebContents> contents,
                            int add_types);
 
   // Closes the WebContents at the specified index. This causes the

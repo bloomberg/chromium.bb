@@ -184,14 +184,14 @@ bool TabStripModel::ContainsIndex(int index) const {
 }
 
 void TabStripModel::AppendWebContents(WebContents* contents, bool foreground) {
-  InsertWebContentsAt(count(), contents,
+  InsertWebContentsAt(count(), base::WrapUnique(contents),
                       foreground ? (ADD_INHERIT_GROUP | ADD_ACTIVE) : ADD_NONE);
 }
 
 void TabStripModel::InsertWebContentsAt(int index,
-                                        WebContents* contents,
+                                        std::unique_ptr<WebContents> contents,
                                         int add_types) {
-  delegate()->WillAddWebContents(contents);
+  delegate()->WillAddWebContents(contents.get());
 
   bool active = (add_types & ADD_ACTIVE) != 0;
   bool pin = (add_types & ADD_PINNED) != 0;
@@ -208,7 +208,7 @@ void TabStripModel::InsertWebContentsAt(int index,
   // since the old contents and the new contents will be the same...
   WebContents* active_contents = GetActiveWebContents();
   std::unique_ptr<WebContentsData> data =
-      std::make_unique<WebContentsData>(this, contents);
+      std::make_unique<WebContentsData>(this, contents.get());
   data->set_pinned(pin);
   if ((add_types & ADD_INHERIT_GROUP) && active_contents) {
     if (active) {
@@ -232,7 +232,7 @@ void TabStripModel::InsertWebContentsAt(int index,
   // be blocked, or just let the modal dialog manager make the blocking call
   // directly and not use this at all.
   const web_modal::WebContentsModalDialogManager* manager =
-      web_modal::WebContentsModalDialogManager::FromWebContents(contents);
+      web_modal::WebContentsModalDialogManager::FromWebContents(contents.get());
   if (manager)
     data->set_blocked(manager->IsDialogActive());
 
@@ -241,13 +241,18 @@ void TabStripModel::InsertWebContentsAt(int index,
   selection_model_.IncrementFrom(index);
 
   for (auto& observer : observers_)
-    observer.TabInsertedAt(this, contents, index, active);
+    observer.TabInsertedAt(this, contents.get(), index, active);
 
   if (active) {
     ui::ListSelectionModel new_model = selection_model_;
     new_model.SetSelectedIndex(index);
     SetSelection(std::move(new_model), Notify::kDefault);
   }
+
+  // TODO(erikchen): Clean up the internal ownership of TabStripModel once we
+  // move to a world where there's always explicit ownership of WebContents.
+  // https://crbug.com/832879.
+  contents.release();
 }
 
 std::unique_ptr<content::WebContents> TabStripModel::ReplaceWebContentsAt(
@@ -655,7 +660,7 @@ void TabStripModel::AddWebContents(WebContents* contents,
     // is re-selected, not the next-adjacent.
     inherit_group = true;
   }
-  InsertWebContentsAt(index, contents,
+  InsertWebContentsAt(index, base::WrapUnique(contents),
                       add_types | (inherit_group ? ADD_INHERIT_GROUP : 0));
   // Reset the index, just in case insert ended up moving it on us.
   index = GetIndexOfWebContents(contents);

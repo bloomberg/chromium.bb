@@ -1349,12 +1349,13 @@ class SitePerProcessCustomTextInputManagerFilteringTest
 // Test is flaky: http://crbug.com/710842
 IN_PROC_BROWSER_TEST_F(SitePerProcessCustomTextInputManagerFilteringTest,
                        DISABLED_LookUpStringForRangeRoutesToFocusedWidget) {
-  content::WebContents* new_contents =
+  std::unique_ptr<content::WebContents> new_contents = base::WrapUnique(
       content::WebContents::Create(content::WebContents::CreateParams(
-          active_contents()->GetBrowserContext(), nullptr));
-  browser()->tab_strip_model()->InsertWebContentsAt(1, new_contents,
+          active_contents()->GetBrowserContext(), nullptr)));
+  content::WebContents* raw_new_contents = new_contents.get();
+  browser()->tab_strip_model()->InsertWebContentsAt(1, std::move(new_contents),
                                                     TabStripModel::ADD_ACTIVE);
-  EXPECT_EQ(active_contents(), new_contents);
+  EXPECT_EQ(active_contents(), raw_new_contents);
 
   // Starting the test body.
   CreateIframePage("a(b)");
@@ -1429,12 +1430,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessCustomTextInputManagerFilteringTest,
 IN_PROC_BROWSER_TEST_F(
     SitePerProcessCustomTextInputManagerFilteringTest,
     DoNotCrashBrowserInWordLookUpForDestroyedWidget_ChildFrame) {
-  content::WebContents* new_contents =
+  std::unique_ptr<content::WebContents> new_contents = base::WrapUnique(
       content::WebContents::Create(content::WebContents::CreateParams(
-          active_contents()->GetBrowserContext(), nullptr));
-  browser()->tab_strip_model()->InsertWebContentsAt(1, new_contents,
+          active_contents()->GetBrowserContext(), nullptr)));
+  content::WebContents* raw_new_contents = new_contents.get();
+  browser()->tab_strip_model()->InsertWebContentsAt(1, std::move(new_contents),
                                                     TabStripModel::ADD_ACTIVE);
-  EXPECT_EQ(active_contents(), new_contents);
+  EXPECT_EQ(active_contents(), raw_new_contents);
 
   // Simple page with 1 cross origin (out-of-process) <iframe>.
   CreateIframePage("a(b)");
@@ -1483,7 +1485,7 @@ IN_PROC_BROWSER_TEST_F(
           ->GetRenderWidgetHostView();
 
   // The dictionary request to be made will be routed to the focused frame.
-  ASSERT_EQ(child_frame, new_contents->GetFocusedFrame());
+  ASSERT_EQ(child_frame, raw_new_contents->GetFocusedFrame());
 
   // Request for the dictionary lookup and intercept the word on its way back.
   // The request is always on the tab's view which is a RenderWidgetHostViewMac.
@@ -1499,12 +1501,13 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     SitePerProcessCustomTextInputManagerFilteringTest,
     DoNotCrashBrowserInWordLookUpForDestroyedWidget_MainFrame) {
-  content::WebContents* new_contents =
+  std::unique_ptr<content::WebContents> new_contents = base::WrapUnique(
       content::WebContents::Create(content::WebContents::CreateParams(
-          active_contents()->GetBrowserContext(), nullptr));
-  browser()->tab_strip_model()->InsertWebContentsAt(1, new_contents,
+          active_contents()->GetBrowserContext(), nullptr)));
+  content::WebContents* raw_new_contents = new_contents.get();
+  browser()->tab_strip_model()->InsertWebContentsAt(1, std::move(new_contents),
                                                     TabStripModel::ADD_ACTIVE);
-  EXPECT_EQ(active_contents(), new_contents);
+  EXPECT_EQ(active_contents(), raw_new_contents);
 
   // Simple page with no <iframe>s.
   CreateIframePage("a()");

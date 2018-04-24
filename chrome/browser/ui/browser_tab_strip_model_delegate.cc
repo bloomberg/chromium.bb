@@ -72,8 +72,9 @@ Browser* BrowserTabStripModelDelegate::CreateNewStripWithContents(
     if (i == 0)
       item.add_types |= TabStripModel::ADD_ACTIVE;
 
-    new_model->InsertWebContentsAt(
-        static_cast<int>(i), item.web_contents, item.add_types);
+    new_model->InsertWebContentsAt(static_cast<int>(i),
+                                   base::WrapUnique(item.web_contents),
+                                   item.add_types);
     // Make sure the loading state is updated correctly, otherwise the throbber
     // won't start if the page is loading.
     // TODO(beng): find a better way of doing this.
