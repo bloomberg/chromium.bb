@@ -4294,27 +4294,29 @@ registerLoadRequestForURL:(const GURL&)requestURL
     if (!allowNavigation && navigationResponse.isForMainFrame) {
       [_pendingNavigationInfo setCancelled:YES];
     }
-  } else if (responseURL.SchemeIsHTTPOrHTTPS()) {
-    std::string contentDisposition;
-    if (HTTPHeaders) {
-      HTTPHeaders->GetNormalizedHeader("content-disposition",
-                                       &contentDisposition);
+  } else {
+    if (responseURL.SchemeIsHTTPOrHTTPS()) {
+      std::string contentDisposition;
+      if (HTTPHeaders) {
+        HTTPHeaders->GetNormalizedHeader("content-disposition",
+                                         &contentDisposition);
+      }
+      int64_t contentLength = navigationResponse.response.expectedContentLength;
+      web::BrowserState* browserState = self.webState->GetBrowserState();
+      ui::PageTransition transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
+      if (navigationResponse.forMainFrame) {
+        web::NavigationContextImpl* context =
+            [self contextForPendingMainFrameNavigationWithURL:responseURL];
+        context->SetIsDownload(true);
+        // Navigation callbacks can only be called for the main frame.
+        _webStateImpl->OnNavigationFinished(context);
+        transition = context->GetPageTransition();
+      }
+      web::DownloadController::FromBrowserState(browserState)
+          ->CreateDownloadTask(_webStateImpl, [NSUUID UUID].UUIDString,
+                               responseURL, contentDisposition, contentLength,
+                               base::SysNSStringToUTF8(MIMEType), transition);
     }
-    int64_t contentLength = navigationResponse.response.expectedContentLength;
-    web::BrowserState* browserState = self.webState->GetBrowserState();
-    ui::PageTransition transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-    if (navigationResponse.forMainFrame) {
-      web::NavigationContextImpl* context =
-          [self contextForPendingMainFrameNavigationWithURL:responseURL];
-      context->SetIsDownload(true);
-      // Navigation callbacks can only be called for the main frame.
-      _webStateImpl->OnNavigationFinished(context);
-      transition = context->GetPageTransition();
-    }
-    web::DownloadController::FromBrowserState(browserState)
-        ->CreateDownloadTask(_webStateImpl, [NSUUID UUID].UUIDString,
-                             responseURL, contentDisposition, contentLength,
-                             base::SysNSStringToUTF8(MIMEType), transition);
     BOOL isPassKit = [MIMEType isEqualToString:@"application/vnd.apple.pkpass"];
     if (isPassKit ||
         base::FeatureList::IsEnabled(web::features::kNewFileDownload)) {
