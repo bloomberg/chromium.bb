@@ -51,6 +51,7 @@ class GL_EXPORT NativeViewGLSurfaceWGL : public GLSurfaceWGL {
   gfx::Size GetSize() override;
   void* GetHandle() override;
   GLSurfaceFormat GetFormat() override;
+  bool SupportsPresentationCallback() override;
 
  private:
   ~NativeViewGLSurfaceWGL() override;

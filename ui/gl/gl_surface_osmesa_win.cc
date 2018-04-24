@@ -69,6 +69,10 @@ gfx::SwapResult GLSurfaceOSMesaWin::SwapBuffers(
   return PostSubBuffer(0, 0, size.width(), size.height(), callback);
 }
 
+bool GLSurfaceOSMesaWin::SupportsPresentationCallback() {
+  return true;
+}
+
 bool GLSurfaceOSMesaWin::SupportsPostSubBuffer() {
   return true;
 }
@@ -79,8 +83,6 @@ gfx::SwapResult GLSurfaceOSMesaWin::PostSubBuffer(
     int width,
     int height,
     const PresentationCallback& callback) {
-  // TODO(penghuang): Provide useful presentation feedback.
-  // https://crbug.com/776877
   DCHECK(device_context_);
 
   gfx::Size size = GetSize();
@@ -109,6 +111,12 @@ gfx::SwapResult GLSurfaceOSMesaWin::PostSubBuffer(
                 x, y, width, height, GetHandle(),
                 reinterpret_cast<BITMAPINFO*>(&info), DIB_RGB_COLORS, SRCCOPY);
 
+  constexpr int64_t kRefreshIntervalInMicroseconds =
+      base::Time::kMicrosecondsPerSecond / 60;
+  callback.Run(gfx::PresentationFeedback(
+      base::TimeTicks::Now(),
+      base::TimeDelta::FromMicroseconds(kRefreshIntervalInMicroseconds),
+      0 /* flags */));
   return gfx::SwapResult::SWAP_ACK;
 }
 

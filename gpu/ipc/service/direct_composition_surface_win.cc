@@ -1409,6 +1409,10 @@ bool DirectCompositionSurfaceWin::FlipsVertically() const {
   return true;
 }
 
+bool DirectCompositionSurfaceWin::SupportsPresentationCallback() {
+  return true;
+}
+
 bool DirectCompositionSurfaceWin::SupportsPostSubBuffer() {
   return true;
 }

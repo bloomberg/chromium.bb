@@ -310,8 +310,19 @@ gfx::SwapResult NativeViewGLSurfaceWGL::SwapBuffers(
   }
 
   DCHECK(device_context_);
-  return ::SwapBuffers(device_context_) == TRUE ? gfx::SwapResult::SWAP_ACK
-                                                : gfx::SwapResult::SWAP_FAILED;
+  if (::SwapBuffers(device_context_) == TRUE) {
+    // TODO(penghuang): Provide more accurate values for presentation feedback.
+    constexpr int64_t kRefreshIntervalInMicroseconds =
+        base::Time::kMicrosecondsPerSecond / 60;
+    callback.Run(gfx::PresentationFeedback(
+        base::TimeTicks::Now(),
+        base::TimeDelta::FromMicroseconds(kRefreshIntervalInMicroseconds),
+        0 /* flags */));
+    return gfx::SwapResult::SWAP_ACK;
+  } else {
+    callback.Run(gfx::PresentationFeedback());
+    return gfx::SwapResult::SWAP_FAILED;
+  }
 }
 
 gfx::Size NativeViewGLSurfaceWGL::GetSize() {
@@ -327,6 +338,10 @@ void* NativeViewGLSurfaceWGL::GetHandle() {
 
 GLSurfaceFormat NativeViewGLSurfaceWGL::GetFormat() {
   return GLSurfaceFormat();
+}
+
+bool NativeViewGLSurfaceWGL::SupportsPresentationCallback() {
+  return true;
 }
 
 PbufferGLSurfaceWGL::PbufferGLSurfaceWGL(const gfx::Size& size)
