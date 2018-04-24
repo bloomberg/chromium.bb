@@ -27,7 +27,6 @@
 
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/inline_box_position.h"
-#include "third_party/blink/renderer/core/editing/rendered_position.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
@@ -152,12 +151,15 @@ const InlineTextBox* LogicallyPreviousBox(
     if (position.IsNull())
       break;
 
-    RenderedPosition rendered_position(position, TextAffinity::kDownstream);
-    const RootInlineBox* previous_root = rendered_position.RootBox();
-    if (!previous_root)
+    const InlineBox* inline_box =
+        ComputeInlineBoxPosition(
+            PositionWithAffinity(position, TextAffinity::kDownstream))
+            .inline_box;
+    if (!inline_box)
       break;
 
-    previous_box = leaf_boxes.PreviousTextBox(previous_root, nullptr);
+    const RootInlineBox& previous_root = inline_box->Root();
+    previous_box = leaf_boxes.PreviousTextBox(&previous_root, nullptr);
     if (previous_box) {
       previous_box_in_different_block = true;
       return previous_box;
@@ -197,12 +199,15 @@ const InlineTextBox* LogicallyNextBox(
     if (position.IsNull())
       break;
 
-    RenderedPosition rendered_position(position, TextAffinity::kDownstream);
-    const RootInlineBox* next_root = rendered_position.RootBox();
-    if (!next_root)
+    const InlineBox* inline_box =
+        ComputeInlineBoxPosition(
+            PositionWithAffinity(position, TextAffinity::kDownstream))
+            .inline_box;
+    if (!inline_box)
       break;
 
-    next_box = leaf_boxes.NextTextBox(next_root, nullptr);
+    const RootInlineBox& next_root = inline_box->Root();
+    next_box = leaf_boxes.NextTextBox(&next_root, nullptr);
     if (next_box) {
       next_box_in_different_block = true;
       return next_box;
