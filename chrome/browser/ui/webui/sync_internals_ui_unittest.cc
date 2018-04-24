@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <string>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -75,17 +75,11 @@ class SyncInternalsUITestWithService : public ChromeRenderViewHostTestHarness {
 
     EXPECT_CALL(mock_js_controller_, AddJsEventHandler(_));
 
-    {
-      // Needed by |sync_internals_ui_|'s constructor.  The
-      // message loop is provided by ChromeRenderViewHostTestHarness.
-      content::TestBrowserThread ui_thread_(BrowserThread::UI,
-                                            base::MessageLoopForUI::current());
-      // |sync_internals_ui_|'s constructor triggers all the
-      // expectations above.
-      web_ui_.reset(new TestSyncWebUI(web_contents()));
-      sync_internals_ui_ = new SyncInternalsUI(web_ui_.get());
-      web_ui_->SetController(sync_internals_ui_);
-    }
+    // |sync_internals_ui_|'s constructor triggers all the
+    // expectations above.
+    web_ui_.reset(new TestSyncWebUI(web_contents()));
+    sync_internals_ui_ = new SyncInternalsUI(web_ui_.get());
+    web_ui_->SetController(sync_internals_ui_);
 
     Mock::VerifyAndClearExpectations(profile_mock);
     Mock::VerifyAndClearExpectations(&mock_js_controller_);
@@ -155,17 +149,11 @@ class SyncInternalsUITestWithoutService
 
     ChromeRenderViewHostTestHarness::SetUp();
 
-    {
-      // Needed by |sync_internals_ui_|'s constructor.  The
-      // message loop is provided by ChromeRenderViewHostTestHarness.
-      content::TestBrowserThread ui_thread_(BrowserThread::UI,
-                                            base::MessageLoopForUI::current());
-      // |sync_internals_ui_|'s constructor triggers all the
-      // expectations above.
-      web_ui_.reset(new TestSyncWebUI(web_contents()));
-      sync_internals_ui_ = new SyncInternalsUI(web_ui_.get());
-      web_ui_->SetController(sync_internals_ui_);
-    }
+    // |sync_internals_ui_|'s constructor triggers all the
+    // expectations above.
+    web_ui_.reset(new TestSyncWebUI(web_contents()));
+    sync_internals_ui_ = new SyncInternalsUI(web_ui_.get());
+    web_ui_->SetController(sync_internals_ui_);
 
     Mock::VerifyAndClearExpectations(profile_mock);
   }
