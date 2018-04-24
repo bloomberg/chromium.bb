@@ -104,6 +104,10 @@ class OomInterventionTabHelper
 
   mojo::Binding<blink::mojom::OomInterventionHost> binding_;
 
+  // If memory workload in renderer is above this threshold, we assume that we
+  // are in a near-OOM situation.
+  uint64_t renderer_memory_workload_threshold_;
+
   base::WeakPtrFactory<OomInterventionTabHelper> weak_ptr_factory_;
 };
 
