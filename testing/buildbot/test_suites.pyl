@@ -870,8 +870,6 @@
     },
     'media_unittests': {
     },
-    'mojo_common_unittests': {
-    },
     'mojo_unittests': {
       'args': [
         '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_unittests.filter',
@@ -1444,11 +1442,6 @@
   'non_clang_win_chromium_gtests': {
     # TODO(kbr): merge back into chromium_gtests.
     'components_browsertests': {},
-    'mojo_common_unittests': {
-      'android_swarming': {
-        'hard_timeout': 60,
-      },
-    },
     'mojo_unittests': {
       'android_swarming': {
         'hard_timeout': 300,

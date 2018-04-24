@@ -2083,55 +2083,6 @@
       'linux-win_cross-rel',  # https://crbug.com/799827
     ],
   },
-  'mojo_common_unittests': {
-    'remove_from': [
-      # On chromium.android, unclear why these aren't run on all bots.
-      'KitKat Tablet Tester',
-      'Lollipop Phone Tester',
-      'Lollipop Tablet Tester',
-      'Marshmallow 64 bit Tester',
-      'Marshmallow Tablet Tester',
-      'Nougat Phone Tester',
-      # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Lollipop Low-end Tester',
-      'Unswarmed N5 Tests Dummy Builder',
-      'Unswarmed N5X Tests Dummy Builder',
-      # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
-      'linux-chromeos-dbg',
-      'linux-chromeos-rel',
-      # chromium.clang
-      'ToTLinuxASan',
-      # chromium.linux
-      'Cast Audio Linux',
-      'Cast Linux',
-    ],
-    'modifications': {
-      # chromium.android
-      'Marshmallow Phone Tester (rel)': {
-        'swarming': {
-          'hard_timeout': 120,
-        },
-      },
-
-      # chromium.android.fyi
-      'x64 Device Tester': {
-        'swarming': {
-          'hard_timeout': 0,
-        },
-      },
-
-      # chromium.fyi
-      'Fuchsia': {
-        'args': [
-          '--use-new-test-runner',
-          '-v',  # Useful for getting debug info and SCP throughput stats.
-        ],
-      },
-    },
-  },
   'mojo_test_apk': {
     'remove_from': [
       # On chromium.android, unclear why these aren't run on all bots.
