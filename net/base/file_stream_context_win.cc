@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
@@ -119,8 +119,8 @@ FileStream::Context::IOResult FileStream::Context::SeekFileImpl(
 }
 
 void FileStream::Context::OnFileOpened() {
-  base::MessageLoopForIO::current()->RegisterIOHandler(file_.GetPlatformFile(),
-                                                       this);
+  base::MessageLoopCurrentForIO::Get()->RegisterIOHandler(
+      file_.GetPlatformFile(), this);
 }
 
 void FileStream::Context::IOCompletionIsPending(CompletionOnceCallback callback,

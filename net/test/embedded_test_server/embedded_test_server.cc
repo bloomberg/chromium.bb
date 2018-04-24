@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
@@ -479,7 +480,7 @@ bool EmbeddedTestServer::PostTaskToIOThreadAndWait(
   // To handle this situation, create temporary message loop to support the
   // PostTaskAndReply operation if the current thread as no message loop.
   std::unique_ptr<base::MessageLoop> temporary_loop;
-  if (!base::MessageLoop::current())
+  if (!base::MessageLoopCurrent::Get())
     temporary_loop.reset(new base::MessageLoop());
 
   base::RunLoop run_loop;

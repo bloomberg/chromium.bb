@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/base/network_interfaces_linux.h"
@@ -230,7 +231,7 @@ void AddressTrackerLinux::Init() {
   }
 
   if (tracking_) {
-    rv = base::MessageLoopForIO::current()->WatchFileDescriptor(
+    rv = base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
         netlink_fd_, true, base::MessagePumpForIO::WATCH_READ, &watcher_, this);
     if (rv < 0) {
       PLOG(ERROR) << "Could not watch NETLINK socket";

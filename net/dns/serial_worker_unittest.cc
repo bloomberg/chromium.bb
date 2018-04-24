@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -109,7 +110,7 @@ class SerialWorkerTest : public testing::Test {
 
   // test::Test methods
   void SetUp() override {
-    message_loop_ = base::MessageLoop::current();
+    message_loop_ = base::MessageLoopCurrent::Get();
     worker_ = new TestSerialWorker(this);
   }
 
