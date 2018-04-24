@@ -145,7 +145,8 @@ VrShell::VrShell(JNIEnv* env,
                  float display_height_meters,
                  int display_width_pixels,
                  int display_height_pixels,
-                 bool pause_content)
+                 bool pause_content,
+                 bool low_density)
     : web_vr_autopresentation_expected_(
           ui_initial_state.web_vr_autopresentation_expected),
       delegate_provider_(delegate),
@@ -163,7 +164,7 @@ VrShell::VrShell(JNIEnv* env,
   gl_thread_ = std::make_unique<VrGLThread>(
       weak_ptr_factory_.GetWeakPtr(), main_thread_task_runner_, gvr_api,
       ui_initial_state, reprojected_rendering_, HasDaydreamSupport(env),
-      pause_content);
+      pause_content, low_density);
   ui_ = gl_thread_.get();
   toolbar_ = std::make_unique<ToolbarHelper>(ui_, this);
   autocomplete_controller_ =
@@ -1263,7 +1264,8 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
                            jfloat display_height_meters,
                            jint display_width_pixels,
                            jint display_pixel_height,
-                           jboolean pause_content) {
+                           jboolean pause_content,
+                           jboolean low_density) {
   UiInitialState ui_initial_state;
   ui_initial_state.browsing_disabled = browsing_disabled;
   ui_initial_state.in_cct = in_cct;
@@ -1281,7 +1283,7 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
       VrShellDelegate::GetNativeVrShellDelegate(env, delegate),
       reinterpret_cast<gvr_context*>(gvr_api), reprojected_rendering,
       display_width_meters, display_height_meters, display_width_pixels,
-      display_pixel_height, pause_content));
+      display_pixel_height, pause_content, low_density));
 }
 
 }  // namespace vr

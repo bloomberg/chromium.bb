@@ -348,6 +348,11 @@ public class VrShellImpl
         float displayWidthMeters = (dm.widthPixels / dm.xdpi) * INCHES_TO_METERS;
         float displayHeightMeters = (dm.heightPixels / dm.ydpi) * INCHES_TO_METERS;
 
+        // Semi-arbitrary resolution cutoff that determines how much we scale our default buffer
+        // size in VR. This is so we can make the right performance/quality tradeoff for both the
+        // relatively low-res Pixel, and higher-res Pixel XL and other devices.
+        boolean lowDensity = dm.densityDpi <= DisplayMetrics.DENSITY_XXHIGH;
+
         boolean hasOrCanRequestAudioPermission =
                 mActivity.getWindowAndroid().hasPermission(android.Manifest.permission.RECORD_AUDIO)
                 || mActivity.getWindowAndroid().canRequestPermission(
@@ -355,7 +360,7 @@ public class VrShellImpl
         mNativeVrShell = nativeInit(mDelegate, forWebVr, webVrAutopresentationExpected, inCct,
                 !mVrBrowsingEnabled, hasOrCanRequestAudioPermission,
                 getGvrApi().getNativeGvrContext(), mReprojectedRendering, displayWidthMeters,
-                displayHeightMeters, dm.widthPixels, dm.heightPixels, pauseContent);
+                displayHeightMeters, dm.widthPixels, dm.heightPixels, pauseContent, lowDensity);
 
         swapToTab(tab);
         createTabList();
@@ -1136,7 +1141,7 @@ public class VrShellImpl
             boolean webVrAutopresentationExpected, boolean inCct, boolean browsingDisabled,
             boolean hasOrCanRequestAudioPermission, long gvrApi, boolean reprojectedRendering,
             float displayWidthMeters, float displayHeightMeters, int displayWidthPixels,
-            int displayHeightPixels, boolean pauseContent);
+            int displayHeightPixels, boolean pauseContent, boolean lowDensity);
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
     private native void nativeSwapContents(long nativeVrShell, Tab tab);
     private native void nativeSetAndroidGestureTarget(
