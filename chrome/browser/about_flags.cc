@@ -2974,7 +2974,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::
          kEnableAutofillCreditCardUploadSendPanFirstSixDescription,
      kOsAll, FEATURE_VALUE_TYPE(autofill::kAutofillUpstreamSendPanFirstSix)},
-
+    {"enable-autofill-credit-card-upload-update-prompt-explanation",
+     flag_descriptions::
+         kEnableAutofillCreditCardUploadUpdatePromptExplanationName,
+     flag_descriptions::
+         kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(autofill::kAutofillUpstreamUpdatePromptExplanation)},
     {"enable-autofill-native-dropdown-views",
      flag_descriptions::kEnableAutofillNativeDropdownViewsName,
      flag_descriptions::kEnableAutofillNativeDropdownViewsDescription,
