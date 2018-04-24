@@ -85,4 +85,42 @@ Expression `textNode.querySelectorAll('div')`
 has side effect: false, expected: false
 Expression `global_performance.now()`
 has side effect: false, expected: false
+Expression `htmlCollection[0]`
+has side effect: false, expected: false
+Expression `htmlCollection.item(0)`
+has side effect: false, expected: false
+Expression `htmlCollection.length`
+has side effect: false, expected: false
+Expression `nodeList[0]`
+has side effect: false, expected: false
+Expression `nodeList.item(0)`
+has side effect: false, expected: false
+Expression `nodeList.length`
+has side effect: false, expected: false
+Expression `$$result[0]`
+has side effect: false, expected: false
+Expression `$$result.item(0)`
+has side effect: false, expected: false
+Expression `$$result.length`
+has side effect: false, expected: false
+Expression `domTokenList[0]`
+has side effect: false, expected: false
+Expression `domTokenList.item(0)`
+has side effect: false, expected: false
+Expression `domTokenList.length`
+has side effect: false, expected: false
+Expression `bodyStyle[0]`
+has side effect: false, expected: false
+Expression `bodyStyle.item(0)`
+has side effect: false, expected: false
+Expression `bodyStyle.length`
+has side effect: false, expected: false
+Expression `namedNodeMap[0]`
+has side effect: false, expected: false
+Expression `namedNodeMap.item(0)`
+has side effect: false, expected: false
+Expression `namedNodeMap.length`
+has side effect: false, expected: false
+Expression `namedNodeMap.attr1`
+has side effect: false, expected: false
 
