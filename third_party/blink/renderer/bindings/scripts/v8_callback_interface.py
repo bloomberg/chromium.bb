@@ -147,20 +147,16 @@ def method_context(operation):
     if idl_type_str not in ['boolean', 'void']:
         raise Exception('We only support callbacks that return boolean or void values.')
     add_includes_for_operation(operation)
-    call_with = extended_attributes.get('CallWith')
-    call_with_this_handle = v8_utilities.extended_attribute_value_contains(call_with, 'ThisValue')
     context = {
-        'call_with_this_handle': call_with_this_handle,
         'cpp_type': idl_type.callback_cpp_type,
         'idl_type': idl_type_str,
         'name': operation.name,
     }
-    context.update(arguments_context(operation.arguments,
-                                     call_with_this_handle))
+    context.update(arguments_context(operation.arguments))
     return context
 
 
-def arguments_context(arguments, call_with_this_handle):
+def arguments_context(arguments):
     def argument_context(argument):
         return {
             'cpp_value_to_v8_value': argument.idl_type.cpp_value_to_v8_value(
