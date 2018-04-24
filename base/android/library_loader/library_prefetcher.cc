@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <algorithm>
 #include <atomic>
+#include <cstdlib>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -200,18 +201,22 @@ bool NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary(bool ordered_only) {
   // state of its parent thread. It cannot rely on being able to acquire any
   // lock (unless special care is taken in a pre-fork handler), including being
   // able to call malloc().
-  std::pair<size_t, size_t> range;
-  if (ordered_only) {
-    range = GetOrderedTextRange();
-  } else {
-    range = GetTextRange();
-  }
+  //
+  // Always prefetch the ordered section first, as it's reached early during
+  // startup, and not necessarily located at the beginning of .text.
+  std::vector<std::pair<size_t, size_t>> ranges = {GetOrderedTextRange()};
+  if (!ordered_only)
+    ranges.push_back(GetTextRange());
 
   pid_t pid = fork();
   if (pid == 0) {
     setpriority(PRIO_PROCESS, 0, kBackgroundPriority);
     // _exit() doesn't call the atexit() handlers.
-    _exit(Prefetch(range.first, range.second) ? 0 : 1);
+    for (const auto& range : ranges) {
+      if (!Prefetch(range.first, range.second))
+        _exit(EXIT_FAILURE);
+    }
+    _exit(EXIT_SUCCESS);
   } else {
     if (pid < 0) {
       return false;
@@ -220,7 +225,7 @@ bool NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary(bool ordered_only) {
     const pid_t result = HANDLE_EINTR(waitpid(pid, &status, 0));
     if (result == pid) {
       if (WIFEXITED(status)) {
-        return WEXITSTATUS(status) == 0;
+        return WEXITSTATUS(status) == EXIT_SUCCESS;
       }
     }
     return false;
