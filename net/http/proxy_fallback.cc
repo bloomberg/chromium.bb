@@ -5,10 +5,26 @@
 #include "net/http/proxy_fallback.h"
 
 #include "net/base/net_errors.h"
+#include "net/base/proxy_server.h"
 
 namespace net {
 
-bool CanFalloverToNextProxy(int* error) {
+NET_EXPORT bool CanFalloverToNextProxy(const ProxyServer& proxy,
+                                       int error,
+                                       int* final_error) {
+  *final_error = error;
+
+  if (proxy.is_quic()) {
+    switch (error) {
+      case ERR_QUIC_PROTOCOL_ERROR:
+      case ERR_QUIC_HANDSHAKE_FAILED:
+      case ERR_MSG_TOO_BIG:
+        return true;
+    }
+  }
+
+  // TODO(eroman): Split up these error codes across the relevant proxy types.
+  //
   // A failure to resolve the hostname or any error related to establishing a
   // TCP connection could be grounds for trying a new proxy configuration.
   //
@@ -22,7 +38,7 @@ bool CanFalloverToNextProxy(int* error) {
   // Other browsers similarly don't fallback, and some client's PAC
   // configurations rely on this for some degree of content blocking.
   // See https://crbug.com/680837 for details.
-  switch (*error) {
+  switch (error) {
     case ERR_PROXY_CONNECTION_FAILED:
     case ERR_NAME_NOT_RESOLVED:
     case ERR_INTERNET_DISCONNECTED:
@@ -38,9 +54,6 @@ bool CanFalloverToNextProxy(int* error) {
     // a proxy using SSL, and ending up talking to a captive portal that
     // supports SSL instead.
     case ERR_PROXY_CERTIFICATE_INVALID:
-    case ERR_QUIC_PROTOCOL_ERROR:
-    case ERR_QUIC_HANDSHAKE_FAILED:
-    case ERR_MSG_TOO_BIG:
     // ERR_SSL_PROTOCOL_ERROR can happen when trying to talk SSL to a non-SSL
     // server (like a captive portal).
     case ERR_SSL_PROTOCOL_ERROR:
@@ -55,7 +68,7 @@ bool CanFalloverToNextProxy(int* error) {
       // differentiate between a proxy-side "host not found" versus a proxy-side
       // "address unreachable" error, and will report both of these failures as
       // ERR_ADDRESS_UNREACHABLE.
-      *error = ERR_ADDRESS_UNREACHABLE;
+      *final_error = ERR_ADDRESS_UNREACHABLE;
       return false;
   }
   return false;

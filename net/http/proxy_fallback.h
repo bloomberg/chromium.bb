@@ -46,12 +46,23 @@
 
 namespace net {
 
-// Returns true if the request should be re-tried using the next proxy in the
-// fallback list.
+class ProxyServer;
+
+// Returns true if a failed request issued through a proxy server should be
+// re-tried using the next proxy in the fallback list.
 //
-// |*error| is the network error that the request failed with. When returning
-// false it may be replaced with a different error.
-NET_EXPORT bool CanFalloverToNextProxy(int* error);
+// The proxy fallback logic is a compromise between compatibility and
+// increasing odds of success, and may choose not to retry a request on the
+// next proxy option, even though that could work.
+//
+//  - |proxy| is the proxy server that failed the request.
+//  - |error| is the error for the request when it was sent through |proxy|.
+//  - |final_error| is an out parameter that is set with the "final" error to
+//    report to the caller. The error is only re-written in cases where
+//    CanFalloverToNextProxy() returns false.
+NET_EXPORT bool CanFalloverToNextProxy(const ProxyServer& proxy,
+                                       int error,
+                                       int* final_error);
 
 }  // namespace net
 

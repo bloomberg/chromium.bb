@@ -1286,10 +1286,6 @@ int HttpStreamFactory::JobController::ReconsiderProxyAfterError(Job* job,
 
   DCHECK(!job->alternative_proxy_server().is_valid());
 
-  // Do not bypass non-QUIC proxy on ERR_MSG_TOO_BIG.
-  if (!proxy_info_.is_quic() && error == ERR_MSG_TOO_BIG)
-    return error;
-
   if (request_info_.load_flags & LOAD_BYPASS_PROXY)
     return error;
 

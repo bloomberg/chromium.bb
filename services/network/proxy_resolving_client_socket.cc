@@ -381,7 +381,7 @@ int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
   DCHECK_NE(error, net::ERR_IO_PENDING);
 
   // Check if the error was a proxy failure.
-  if (!net::CanFalloverToNextProxy(&error))
+  if (!net::CanFalloverToNextProxy(proxy_info_.proxy_server(), error, &error))
     return error;
 
   if (proxy_info_.is_https() && ssl_config_.send_client_cert) {

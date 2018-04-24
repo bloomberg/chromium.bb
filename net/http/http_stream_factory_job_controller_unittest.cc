@@ -64,10 +64,7 @@ namespace {
 
 const char kServerHostname[] = "www.example.com";
 
-// List of errors that are used in the proxy resolution tests.
-// Note that ERR_MSG_TOO_BIG is tested separately in ReconsiderErrMsgTooBig and
-// DoNotReconsiderErrMsgTooBig, because the behavior is different for QUIC and
-// non-QUIC proxies.
+// List of errors for which fallback is expected on an HTTPS proxy.
 const int proxy_test_mock_errors[] = {
     ERR_PROXY_CONNECTION_FAILED,
     ERR_NAME_NOT_RESOLVED,
@@ -80,8 +77,6 @@ const int proxy_test_mock_errors[] = {
     ERR_TIMED_OUT,
     ERR_SOCKS_CONNECTION_FAILED,
     ERR_PROXY_CERTIFICATE_INVALID,
-    ERR_QUIC_PROTOCOL_ERROR,
-    ERR_QUIC_HANDSHAKE_FAILED,
     ERR_SSL_PROTOCOL_ERROR,
 };
 
@@ -477,6 +472,9 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Combine(::testing::Bool(),
                        testing::ValuesIn(proxy_test_mock_errors)));
 
+// TODO(eroman): The testing should be expanded to test cases where proxy
+//               fallback is NOT supposed to occur, and also vary across all of
+//               the proxy types.
 TEST_P(JobControllerReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
   // Use mock proxy client sockets to test the fallback behavior of error codes
   // returned by HttpProxyClientSocketWrapper. Errors returned by transport
