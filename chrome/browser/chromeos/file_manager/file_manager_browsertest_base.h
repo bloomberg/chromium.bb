@@ -16,6 +16,8 @@
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Disabled under MSAN, ASAN, and LSAN as well. http://crbug.com/468980.
+// TODO(noel): maybe move this into the browser test files that need it
+// now that the FileManagerBrowserTest flake issues have been removed.
 #if !defined(NDEBUG) || defined(MEMORY_SANITIZER) || \
     defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
 #define DISABLE_SLOW_FILESAPP_TESTS
@@ -31,33 +33,32 @@ class DriveTestVolume;
 class FakeTestVolume;
 class LocalTestVolume;
 
-// The base test class.
 class FileManagerBrowserTestBase : public ExtensionApiTest {
  protected:
   FileManagerBrowserTestBase();
   ~FileManagerBrowserTestBase() override;
 
+  // ExtensionApiTest overrides.
   void SetUp() override;
-
+  void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpInProcessBrowserTestFixture() override;
-
   void SetUpOnMainThread() override;
 
-  // Adds an incognito and guest-mode flags for tests in the guest mode.
-  void SetUpCommandLine(base::CommandLine* command_line) override;
-
-  // Installs an extension at the specified |path| using the |manifest_name|
-  // manifest.
-  void InstallExtension(const base::FilePath& path, const char* manifest_name);
   // Loads our testing extension and sends it a string identifying the current
   // test.
   virtual void StartTest();
-  void RunTestMessageLoop();
 
   // Overriding point for test configurations.
   virtual const char* GetTestManifestName() const = 0;
   virtual GuestMode GetGuestModeParam() const = 0;
   virtual const char* GetTestCaseNameParam() const = 0;
+
+ private:
+  // Installs an extension at the specified |path| by |manifest_name|.
+  void InstallExtension(const base::FilePath& path, const char* manifest_name);
+  // TODO(noel): describe this function.
+  void RunTestMessageLoop();
+  // TODO(noel): describe this function.
   virtual void OnMessage(const std::string& name,
                          const base::DictionaryValue& value,
                          std::string* output);
@@ -68,13 +69,13 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
   std::unique_ptr<FakeTestVolume> usb_volume_;
   std::unique_ptr<FakeTestVolume> mtp_volume_;
 
- private:
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile);
   drive::DriveIntegrationServiceFactory::FactoryCallback
       create_drive_integration_service_;
   std::unique_ptr<drive::DriveIntegrationServiceFactory::ScopedFactoryForTest>
       service_factory_for_test_;
+
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
 };
 
