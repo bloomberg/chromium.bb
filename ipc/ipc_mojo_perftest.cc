@@ -7,6 +7,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -793,7 +794,7 @@ class CallbackPerfTest : public testing::Test {
     std::vector<PingPongTestParams> params = GetDefaultTestParams();
     for (size_t i = 0; i < params.size(); i++) {
       std::string hello("hello");
-      base::MessageLoop::current()->task_runner()->PostTask(
+      base::MessageLoopCurrent::Get()->task_runner()->PostTask(
           FROM_HERE, base::Bind(&CallbackPerfTest::SingleThreadPingPostTask,
                                 base::Unretained(this), hello));
       message_count_ = count_down_ = params[i].message_count();
@@ -804,7 +805,7 @@ class CallbackPerfTest : public testing::Test {
   }
 
   void SingleThreadPingPostTask(const std::string& value) {
-    base::MessageLoop::current()->task_runner()->PostTask(
+    base::MessageLoopCurrent::Get()->task_runner()->PostTask(
         FROM_HERE, base::Bind(&CallbackPerfTest::SingleThreadPongPostTask,
                               base::Unretained(this), value));
   }
@@ -828,7 +829,7 @@ class CallbackPerfTest : public testing::Test {
       }
     }
 
-    base::MessageLoop::current()->task_runner()->PostTask(
+    base::MessageLoopCurrent::Get()->task_runner()->PostTask(
         FROM_HERE, base::Bind(&CallbackPerfTest::SingleThreadPingPostTask,
                               base::Unretained(this), payload_));
   }
