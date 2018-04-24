@@ -118,9 +118,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "audioRepeatAllModeSingleFileDrive"),
         TestParameter(NOT_IN_GUEST_MODE, "audioNoRepeatModeSingleFileDrive"),
         TestParameter(NOT_IN_GUEST_MODE, "audioRepeatOneModeSingleFileDrive"),
-        // TODO(crbug.com/701922) Revive this flaky test.
-        // TestParameter(NOT_IN_GUEST_MODE,
-        //               "audioRepeatAllModeMultipleFileDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "audioRepeatAllModeMultipleFileDrive"),
         TestParameter(NOT_IN_GUEST_MODE, "audioNoRepeatModeMultipleFileDrive"),
         TestParameter(NOT_IN_GUEST_MODE,
                       "audioRepeatOneModeMultipleFileDrive")));
