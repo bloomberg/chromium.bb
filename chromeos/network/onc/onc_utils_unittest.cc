@@ -16,6 +16,7 @@
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_test_utils.h"
+#include "chromeos/tools/variable_expander.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -83,22 +84,12 @@ namespace {
 const char* kLoginId = "hans";
 const char* kLoginEmail = "hans@my.domain.com";
 
-class StringSubstitutionStub : public StringSubstitution {
- public:
-  StringSubstitutionStub() = default;
-  bool GetSubstitute(const std::string& placeholder,
-                     std::string* substitute) const override {
-    if (placeholder == ::onc::substitutes::kLoginIDField)
-      *substitute = kLoginId;
-    else if (placeholder ==::onc::substitutes::kEmailField)
-      *substitute = kLoginEmail;
-    else
-      return false;
-    return true;
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(StringSubstitutionStub);
-};
+std::map<std::string, std::string> GetTestStringSubstutions() {
+  std::map<std::string, std::string> substitutions;
+  substitutions[::onc::substitutes::kLoginID] = kLoginId;
+  substitutions[::onc::substitutes::kLoginEmail] = kLoginEmail;
+  return substitutions;
+}
 
 }  // namespace
 
@@ -106,8 +97,8 @@ TEST(ONCStringExpansion, OpenVPN) {
   std::unique_ptr<base::DictionaryValue> vpn_onc =
       test_utils::ReadTestDictionary("valid_openvpn.onc");
 
-  StringSubstitutionStub substitution;
-  ExpandStringsInOncObject(kNetworkConfigurationSignature, substitution,
+  VariableExpander variable_expander(GetTestStringSubstutions());
+  ExpandStringsInOncObject(kNetworkConfigurationSignature, variable_expander,
                            vpn_onc.get());
 
   std::string actual_expanded;
@@ -119,8 +110,8 @@ TEST(ONCStringExpansion, WiFi_EAP) {
   std::unique_ptr<base::DictionaryValue> wifi_onc =
       test_utils::ReadTestDictionary("wifi_clientcert_with_cert_pems.onc");
 
-  StringSubstitutionStub substitution;
-  ExpandStringsInOncObject(kNetworkConfigurationSignature, substitution,
+  VariableExpander variable_expander(GetTestStringSubstutions());
+  ExpandStringsInOncObject(kNetworkConfigurationSignature, variable_expander,
                            wifi_onc.get());
 
   std::string actual_expanded;

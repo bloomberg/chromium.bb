@@ -438,11 +438,14 @@ ONC_EXPORT extern const char kSubject[];
 }  // namespace verify_x509
 
 namespace substitutes {
-ONC_EXPORT extern const char kEmailField[];
-ONC_EXPORT extern const char kPasswordField[];
-ONC_EXPORT extern const char kLoginIDField[];
+ONC_EXPORT extern const char kLoginEmail[];
+ONC_EXPORT extern const char kLoginID[];
 ONC_EXPORT extern const char kCertSANEmail[];
 ONC_EXPORT extern const char kCertSANUPN[];
+ONC_EXPORT extern const char kCertSubjectCommonName[];
+ONC_EXPORT extern const char kDeviceSerialNumber[];
+ONC_EXPORT extern const char kDeviceAssetId[];
+ONC_EXPORT extern const char kPasswordPlaceholderVerbatim[];
 }  // namespace substitutes
 
 namespace proxy {

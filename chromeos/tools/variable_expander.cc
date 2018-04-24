@@ -108,14 +108,14 @@ VariableExpander::VariableExpander(std::map<std::string, std::string> variables)
 
 VariableExpander::~VariableExpander() = default;
 
-bool VariableExpander::ExpandString(std::string* str) {
+bool VariableExpander::ExpandString(std::string* str) const {
   bool no_error = true;
   for (const auto& kv : variables_)
     no_error &= Expand(kv.first, kv.second, str);
   return no_error;
 }
 
-bool VariableExpander::ExpandValue(base::Value* value) {
+bool VariableExpander::ExpandValue(base::Value* value) const {
   bool no_error = true;
   switch (value->type()) {
     case base::Value::Type::STRING: {

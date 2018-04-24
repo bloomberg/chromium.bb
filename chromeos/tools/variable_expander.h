@@ -41,13 +41,13 @@ class CHROMEOS_EXPORT VariableExpander {
   // Expands all variables in |str|. Returns true if no error has occurred.
   // Returns false if at least one variable was malformed and could not be
   // expanded (the good ones are still expanded).
-  bool ExpandString(std::string* str);
+  bool ExpandString(std::string* str) const;
 
   // Calls ExpandString on every string contained in |value|. Recursively
   // handles all hierarchy levels. Returns true if no error has occurred.
   // Returns false if at least one variable was malformed and could not be
   // expanded (the good ones are still expanded).
-  bool ExpandValue(base::Value* value);
+  bool ExpandValue(base::Value* value) const;
 
  private:
   // Maps variable -> value.
