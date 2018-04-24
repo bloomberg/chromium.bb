@@ -52,6 +52,9 @@ void FakeSoftwareFeatureManager::SetSoftwareFeatureState(
       std::make_unique<SetSoftwareFeatureStateArgs>(
           public_key, software_feature, enabled, success_callback,
           error_callback, is_exclusive));
+
+  if (delegate_)
+    delegate_->OnSetSoftwareFeatureStateCalled();
 }
 
 void FakeSoftwareFeatureManager::FindEligibleDevices(
@@ -63,6 +66,9 @@ void FakeSoftwareFeatureManager::FindEligibleDevices(
   find_eligible_multidevice_host_calls_.emplace_back(
       std::make_unique<FindEligibleDevicesArgs>(
           software_feature, success_callback, error_callback));
+
+  if (delegate_)
+    delegate_->OnFindEligibleDevicesCalled();
 }
 
 }  // namespace cryptauth

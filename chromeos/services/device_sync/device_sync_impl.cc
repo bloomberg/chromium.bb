@@ -18,6 +18,7 @@
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/remote_device_provider_impl.h"
 #include "components/cryptauth/secure_message_delegate_impl.h"
+#include "components/cryptauth/software_feature_manager_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -173,6 +174,49 @@ void DeviceSyncImpl::GetSyncedDevices(GetSyncedDevicesCallback callback) {
   std::move(callback).Run(remote_device_provider_->GetSyncedDevices());
 }
 
+void DeviceSyncImpl::SetSoftwareFeatureState(
+    const std::string& device_public_key,
+    cryptauth::SoftwareFeature software_feature,
+    bool enabled,
+    bool is_exclusive,
+    SetSoftwareFeatureStateCallback callback) {
+  if (status_ != Status::READY) {
+    PA_LOG(WARNING) << "DeviceSyncImpl::SetSoftwareFeatureState() invoked "
+                    << "before initialization was complete. Cannot set state.";
+    std::move(callback).Run(mojom::kErrorNotInitialized);
+    return;
+  }
+
+  auto callback_holder = base::AdaptCallbackForRepeating(std::move(callback));
+  software_feature_manager_->SetSoftwareFeatureState(
+      device_public_key, software_feature, enabled,
+      base::Bind(&DeviceSyncImpl::OnSetSoftwareFeatureStateSuccess,
+                 weak_ptr_factory_.GetWeakPtr(), callback_holder),
+      base::Bind(&DeviceSyncImpl::OnSetSoftwareFeatureStateError,
+                 weak_ptr_factory_.GetWeakPtr(), callback_holder),
+      is_exclusive);
+}
+
+void DeviceSyncImpl::FindEligibleDevices(
+    cryptauth::SoftwareFeature software_feature,
+    FindEligibleDevicesCallback callback) {
+  if (status_ != Status::READY) {
+    PA_LOG(WARNING) << "DeviceSyncImpl::FindEligibleDevices() invoked before "
+                    << "initialization was complete. Cannot find devices.";
+    std::move(callback).Run(mojom::kErrorNotInitialized,
+                            nullptr /* response */);
+    return;
+  }
+
+  auto callback_holder = base::AdaptCallbackForRepeating(std::move(callback));
+  software_feature_manager_->FindEligibleDevices(
+      software_feature,
+      base::Bind(&DeviceSyncImpl::OnFindEligibleDevicesSuccess,
+                 weak_ptr_factory_.GetWeakPtr(), callback_holder),
+      base::Bind(&DeviceSyncImpl::OnFindEligibleDevicesError,
+                 weak_ptr_factory_.GetWeakPtr(), callback_holder));
+}
+
 void DeviceSyncImpl::OnEnrollmentFinished(bool success) {
   PA_LOG(INFO) << "DeviceSyncImpl: Enrollment finished; success = " << success;
 
@@ -296,10 +340,88 @@ void DeviceSyncImpl::CompleteInitializationAfterSuccessfulEnrollment() {
           cryptauth_enrollment_manager_->GetUserPrivateKey());
   remote_device_provider_->AddObserver(this);
 
+  software_feature_manager_ =
+      cryptauth::SoftwareFeatureManagerImpl::Factory::NewInstance(
+          cryptauth_client_factory_.get());
+
   status_ = Status::READY;
 
   PA_LOG(INFO) << "DeviceSyncImpl: CryptAuth Enrollment is valid; service "
                << "fully initialized.";
+}
+
+base::Optional<cryptauth::RemoteDevice>
+DeviceSyncImpl::GetSyncedDeviceWithPublicKey(
+    const std::string& public_key) const {
+  DCHECK(status_ == Status::READY)
+      << "DeviceSyncImpl::GetSyncedDeviceWithPublicKey() called before ready.";
+
+  const auto& synced_devices = remote_device_provider_->GetSyncedDevices();
+  const auto& it = std::find_if(synced_devices.begin(), synced_devices.end(),
+                                [&public_key](const auto& remote_device) {
+                                  return public_key == remote_device.public_key;
+                                });
+
+  if (it == synced_devices.end())
+    return base::nullopt;
+
+  return *it;
+}
+
+void DeviceSyncImpl::OnSetSoftwareFeatureStateSuccess(
+    const base::RepeatingCallback<void(const base::Optional<std::string>&)>&
+        callback) {
+  callback.Run(base::nullopt /* error_code */);
+}
+
+void DeviceSyncImpl::OnSetSoftwareFeatureStateError(
+    const base::RepeatingCallback<void(const base::Optional<std::string>&)>&
+        callback,
+    const std::string& error) {
+  callback.Run(error);
+}
+
+void DeviceSyncImpl::OnFindEligibleDevicesSuccess(
+    const base::RepeatingCallback<void(const base::Optional<std::string>&,
+                                       mojom::FindEligibleDevicesResponsePtr)>&
+        callback,
+    const std::vector<cryptauth::ExternalDeviceInfo>& eligible_device_infos,
+    const std::vector<cryptauth::IneligibleDevice>& ineligible_devices) {
+  std::vector<cryptauth::RemoteDevice> eligible_remote_devices;
+  for (const auto& eligible_device_info : eligible_device_infos) {
+    auto possible_device =
+        GetSyncedDeviceWithPublicKey(eligible_device_info.public_key());
+    if (possible_device) {
+      eligible_remote_devices.emplace_back(*possible_device);
+    } else {
+      PA_LOG(ERROR) << "Could not find eligible device with public key \""
+                    << eligible_device_info.public_key() << "\".";
+    }
+  }
+
+  std::vector<cryptauth::RemoteDevice> ineligible_remote_devices;
+  for (const auto& ineligible_device : ineligible_devices) {
+    auto possible_device =
+        GetSyncedDeviceWithPublicKey(ineligible_device.device().public_key());
+    if (possible_device) {
+      ineligible_remote_devices.emplace_back(*possible_device);
+    } else {
+      PA_LOG(ERROR) << "Could not find ineligible device with public key \""
+                    << ineligible_device.device().public_key() << "\".";
+    }
+  }
+
+  callback.Run(base::nullopt /* error_code */,
+               mojom::FindEligibleDevicesResponse::New(
+                   eligible_remote_devices, ineligible_remote_devices));
+}
+
+void DeviceSyncImpl::OnFindEligibleDevicesError(
+    const base::RepeatingCallback<void(const base::Optional<std::string>&,
+                                       mojom::FindEligibleDevicesResponsePtr)>&
+        callback,
+    const std::string& error) {
+  callback.Run(error, nullptr /* response */);
 }
 
 void DeviceSyncImpl::SetPrefConnectionDelegateForTesting(

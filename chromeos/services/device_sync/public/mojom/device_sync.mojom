@@ -6,6 +6,8 @@ module chromeos.device_sync.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
 
+const string kErrorNotInitialized = "service_not_initialized";
+
 // Enumeration of software features which can be enabled/disabled for a given
 // device. Each feature has a host and client portion; here, "host" refers to
 // the associated phone which provides the feature (at most one host per
@@ -83,6 +85,11 @@ struct RemoteDevice {
   array<BeaconSeed> beacon_seeds;
 };
 
+struct FindEligibleDevicesResponse {
+  array<RemoteDevice> eligible_devices;
+  array<RemoteDevice> ineligible_devices;
+};
+
 interface DeviceSyncObserver {
   // Invoked when the current device has successfully completed enrollment. Note
   // that enrollment occurs once when the device first starts up, then the
@@ -122,4 +129,29 @@ interface DeviceSync {
   // Returns all synced devices associated with the primary account.
   [Sync]
   GetSyncedDevices() => (array<RemoteDevice> devices);
+
+  // Enables or disables the given software feature for the device with the
+  // given public key. If |enabled| and |is_exclusive| are both true, this
+  // function will enable the feature for the given device and disable the
+  // feature for any other device which currently has that feature enabled.
+  // |is_exclusive| is ignored if |enabled| is false.
+  //
+  // On success, this function returns a null error_code to the callback; on
+  // error, it returns a valid error_code string indicating the reason for
+  // failure.
+  SetSoftwareFeatureState(string device_public_key,
+                          SoftwareFeature software_feature,
+                          bool enabled,
+                          bool is_exclusive) => (string? error_code);
+
+  // Finds devices which are eligible for the given feature. When this function
+  // is invoked, a network request will be sent to each eligible device which
+  // instructs that device to enable BLE advertising; thus, this function can be
+  // used to bootstrap connections to these devices.
+  //
+  // On success, this function returns a null error_code with a valid response
+  // to the callback; on error, it returns a valid error_code string indicating
+  // the reason for failure along with a null response.
+  FindEligibleDevices(SoftwareFeature software_feature) =>
+      (string? error_code, FindEligibleDevicesResponse? response);
 };

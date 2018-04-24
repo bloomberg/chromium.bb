@@ -17,6 +17,13 @@ namespace cryptauth {
 // Test implementation of SoftwareFeatureManager.
 class FakeSoftwareFeatureManager : public SoftwareFeatureManager {
  public:
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+    virtual void OnSetSoftwareFeatureStateCalled() {}
+    virtual void OnFindEligibleDevicesCalled() {}
+  };
+
   struct SetSoftwareFeatureStateArgs {
     SetSoftwareFeatureStateArgs(
         const std::string& public_key,
@@ -60,6 +67,8 @@ class FakeSoftwareFeatureManager : public SoftwareFeatureManager {
   FakeSoftwareFeatureManager();
   ~FakeSoftwareFeatureManager() override;
 
+  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+
   const std::vector<std::unique_ptr<SetSoftwareFeatureStateArgs>>&
   set_software_feature_state_calls() {
     return set_software_feature_state_calls_;
@@ -86,6 +95,8 @@ class FakeSoftwareFeatureManager : public SoftwareFeatureManager {
       const base::Callback<void(const std::string&)>& error_callback) override;
 
  private:
+  Delegate* delegate_ = nullptr;
+
   std::vector<std::unique_ptr<SetSoftwareFeatureStateArgs>>
       set_software_feature_state_calls_;
   std::vector<std::unique_ptr<FindEligibleDevicesArgs>>
