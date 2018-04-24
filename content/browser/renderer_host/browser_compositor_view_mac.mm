@@ -423,6 +423,21 @@ void BrowserCompositorMac::SetWantsAnimateOnlyBeginFrames() {
   delegated_frame_host_->SetWantsAnimateOnlyBeginFrames();
 }
 
+void BrowserCompositorMac::TakeFallbackContentFrom(
+    BrowserCompositorMac* other) {
+  // We will have a flash if we can't recycle the compositor from |other|.
+  if (other->state_ != HasDetachedCompositor || state_ != HasNoCompositor) {
+    return;
+  }
+
+  delegated_frame_host_->TakeFallbackContentFrom(
+      other->delegated_frame_host_.get());
+  other->recyclable_compositor_->accelerated_widget_mac()
+      ->ResetNSViewPreservingContents();
+  other->TransitionToState(HasNoCompositor);
+  TransitionToState(HasAttachedCompositor);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost, public:
 

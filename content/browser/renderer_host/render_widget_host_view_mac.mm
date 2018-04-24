@@ -711,8 +711,16 @@ void RenderWidgetHostViewMac::SetWantsAnimateOnlyBeginFrames() {
 
 void RenderWidgetHostViewMac::TakeFallbackContentFrom(
     RenderWidgetHostView* view) {
-  SetBackgroundColor(view->background_color());
-  // TODO(crbug.com/829523): Implement this.
+  DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)
+              ->IsRenderWidgetHostViewChildFrame());
+  DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)
+              ->IsRenderWidgetHostViewGuest());
+  RenderWidgetHostViewMac* view_mac =
+      static_cast<RenderWidgetHostViewMac*>(view);
+  ScopedCAActionDisabler disabler;
+  SetBackgroundColor(view_mac->background_color());
+  browser_compositor_->TakeFallbackContentFrom(
+      view_mac->browser_compositor_.get());
 }
 
 bool RenderWidgetHostViewMac::GetLineBreakIndex(

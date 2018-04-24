@@ -94,6 +94,15 @@ void AcceleratedWidgetMac::ResetNSView() {
   view_ = NULL;
 }
 
+void AcceleratedWidgetMac::ResetNSViewPreservingContents() {
+  if (!view_)
+    return;
+
+  ScopedCAActionDisabler disabler;
+  [flipped_layer_ removeFromSuperlayer];
+  view_ = NULL;
+}
+
 bool AcceleratedWidgetMac::HasFrameOfSize(
     const gfx::Size& dip_size) const {
   return last_swap_size_dip_ == dip_size;
