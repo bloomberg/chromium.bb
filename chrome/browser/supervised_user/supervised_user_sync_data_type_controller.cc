@@ -18,9 +18,7 @@ SupervisedUserSyncDataTypeController::SupervisedUserSyncDataTypeController(
                                            syncer::GROUP_UI,
                                            base::ThreadTaskRunnerHandle::Get()),
       profile_(profile) {
-  DCHECK(type == syncer::SUPERVISED_USERS ||
-         type == syncer::SUPERVISED_USER_SETTINGS ||
-         type == syncer::SUPERVISED_USER_SHARED_SETTINGS ||
+  DCHECK(type == syncer::SUPERVISED_USER_SETTINGS ||
          type == syncer::SUPERVISED_USER_WHITELISTS);
 }
 
@@ -28,16 +26,5 @@ SupervisedUserSyncDataTypeController::~SupervisedUserSyncDataTypeController() {}
 
 bool SupervisedUserSyncDataTypeController::ReadyForStart() const {
   DCHECK(CalledOnValidThread());
-  switch (type()) {
-    case syncer::SUPERVISED_USERS:
-      return !profile_->IsSupervised();
-    case syncer::SUPERVISED_USER_SETTINGS:
-    case syncer::SUPERVISED_USER_WHITELISTS:
-      return profile_->IsSupervised();
-    case syncer::SUPERVISED_USER_SHARED_SETTINGS:
-      return !profile_->IsChild();
-    default:
-      NOTREACHED();
-  }
-  return false;
+  return profile_->IsSupervised();
 }

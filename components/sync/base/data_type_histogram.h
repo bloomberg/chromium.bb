@@ -116,10 +116,10 @@ void SyncRecordMemoryKbHistogram(const std::string& histogram_name_prefix,
       case ::syncer::SUPERVISED_USER_SETTINGS:                 \
         PER_DATA_TYPE_MACRO("ManagedUserSetting");             \
         break;                                                 \
-      case ::syncer::SUPERVISED_USERS:                         \
+      case ::syncer::DEPRECATED_SUPERVISED_USERS:              \
         PER_DATA_TYPE_MACRO("ManagedUser");                    \
         break;                                                 \
-      case ::syncer::SUPERVISED_USER_SHARED_SETTINGS:          \
+      case ::syncer::DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS:\
         PER_DATA_TYPE_MACRO("ManagedUserSharedSetting");       \
         break;                                                 \
       case ::syncer::ARTICLES:                                 \
