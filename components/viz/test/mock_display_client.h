@@ -18,8 +18,10 @@ class MockDisplayClient : public mojom::DisplayClient {
 
   mojom::DisplayClientPtr BindInterfacePtr();
 
-  // mojom::CompositorFrameSinkClient implementation.
+  // mojom::DisplayClient implementation.
   MOCK_METHOD1(OnDisplayReceivedCALayerParams, void(const gfx::CALayerParams&));
+  MOCK_METHOD1(DidSwapAfterSnapshotRequestReceived,
+               void(const std::vector<ui::LatencyInfo>&));
 
  private:
   mojo::Binding<mojom::DisplayClient> binding_;

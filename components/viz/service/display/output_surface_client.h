@@ -13,6 +13,7 @@
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/latency/latency_info.h"
 
 namespace gfx {
 struct CALayerParams;
@@ -43,6 +44,10 @@ class VIZ_SERVICE_EXPORT OutputSurfaceClient {
   virtual void DidReceivePresentationFeedback(
       uint64_t swap_id,
       const gfx::PresentationFeedback& feedback) {}
+
+  // Call after a swap occurs with all LatencyInfo aggregated up to that point.
+  virtual void DidFinishLatencyInfo(
+      const std::vector<ui::LatencyInfo>& latency_info) = 0;
 
  protected:
   virtual ~OutputSurfaceClient() {}

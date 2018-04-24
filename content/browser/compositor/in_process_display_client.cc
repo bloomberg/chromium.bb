@@ -4,6 +4,8 @@
 
 #include "content/browser/compositor/in_process_display_client.h"
 
+#include "content/browser/renderer_host/render_widget_host_impl.h"
+
 #if defined(OS_MACOSX)
 #include "ui/accelerated_widget_mac/ca_layer_frame_sink.h"
 #endif
@@ -38,6 +40,11 @@ void InProcessDisplayClient::OnDisplayReceivedCALayerParams(
 #else
   DLOG(ERROR) << "Should not receive CALayer params on non-macOS platforms.";
 #endif
+}
+
+void InProcessDisplayClient::DidSwapAfterSnapshotRequestReceived(
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(latency_info);
 }
 
 }  // namespace content

@@ -155,6 +155,12 @@ void DirectLayerTreeFrameSink::DisplayDidReceiveCALayerParams(
     display_client_->OnDisplayReceivedCALayerParams(ca_layer_params);
 }
 
+void DirectLayerTreeFrameSink::DidSwapAfterSnapshotRequestReceived(
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  // TODO(samans): Implement this method once the plumbing for latency info also
+  // works for non-OOP-D.
+}
+
 void DirectLayerTreeFrameSink::DidReceiveCompositorFrameAck(
     const std::vector<ReturnedResource>& resources) {
   // Submitting a CompositorFrame can synchronously draw and dispatch a frame

@@ -492,6 +492,22 @@ void Display::DidReceivePresentationFeedback(
   active_presented_callbacks_.clear();
 }
 
+void Display::DidFinishLatencyInfo(
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  std::vector<ui::LatencyInfo> latency_info_with_snapshot_component;
+  for (const auto& latency : latency_info) {
+    if (latency.FindLatency(ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT,
+                            nullptr)) {
+      latency_info_with_snapshot_component.push_back(latency);
+    }
+  }
+
+  if (!latency_info_with_snapshot_component.empty()) {
+    client_->DidSwapAfterSnapshotRequestReceived(
+        latency_info_with_snapshot_component);
+  }
+}
+
 void Display::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   aggregator_->SetFullDamageForSurface(current_surface_id_);
   if (scheduler_) {

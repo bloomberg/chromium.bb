@@ -8,6 +8,7 @@ import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/mojo/ca_layer_params.mojom";
 import "ui/gfx/mojo/color_space.mojom";
 import "ui/gfx/mojo/transform.mojom";
+import "ui/latency/mojo/latency_info.mojom";
 
 // See ui/compositor/compositor.h: ContextFactoryPrivate.
 // The DisplayPrivate is used by privileged clients to talk to Display.
@@ -37,4 +38,8 @@ interface DisplayPrivate {
 
 interface DisplayClient {
   OnDisplayReceivedCALayerParams(gfx.mojom.CALayerParams ca_layer_params);
+
+  // Notifies that a swap has occured after some latency info with snapshot
+  // component reached the display.
+  DidSwapAfterSnapshotRequestReceived(array<ui.mojom.LatencyInfo> latency_info);
 };

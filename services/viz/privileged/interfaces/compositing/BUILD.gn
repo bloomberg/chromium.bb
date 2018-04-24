@@ -21,5 +21,6 @@ mojom("compositing") {
     "//services/viz/public/interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
+    "//ui/latency/mojo:interfaces",
   ]
 }

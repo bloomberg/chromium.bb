@@ -187,6 +187,8 @@ class StubDisplayClient : public DisplayClient {
   void DisplayDidDrawAndSwap() override {}
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override{};
+  void DidSwapAfterSnapshotRequestReceived(
+      const std::vector<ui::LatencyInfo>& latency_info) override {}
 };
 
 void CopyCallback(bool* called, std::unique_ptr<CopyOutputResult> result) {
