@@ -585,9 +585,16 @@ bool ResolveLocalHostname(base::StringPiece host,
 
 const unsigned HostResolverImpl::kMaximumDnsFailures = 16;
 
-// Holds the data for a request that could not be completed synchronously.
-// It is owned by a Job. Canceled Requests are only marked as canceled rather
-// than removed from the Job's |requests_| list.
+// Holds the callback and request parameters for an outstanding request.
+//
+// The RequestImpl is owned by the end user of host resolution. Deletion prior
+// to the request having completed means the request was cancelled by the
+// caller.
+//
+// Both the RequestImpl and its associated Job hold non-owning pointers to each
+// other. Care must be taken to clear the corresponding pointer when
+// cancellation is initiated by the Job (OnJobCancelled) vs by the end user
+// (~RequestImpl).
 class HostResolverImpl::RequestImpl
     : public HostResolver::Request,
       public base::LinkNode<HostResolverImpl::RequestImpl> {
