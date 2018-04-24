@@ -17,6 +17,7 @@
 #include "services/ui/ws2/window_service_client_binding.h"
 #include "services/ui/ws2/window_service_delegate.h"
 #include "ui/aura/client/transient_window_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer.h"
@@ -932,7 +933,10 @@ void WindowServiceClient::GetWindowManagerClient(
 
 void WindowServiceClient::GetCursorLocationMemory(
     GetCursorLocationMemoryCallback callback) {
-  NOTIMPLEMENTED();
+  auto shared_buffer_handle =
+      aura::Env::GetInstance()->GetLastMouseLocationMemory();
+  DCHECK(shared_buffer_handle.is_valid());
+  std::move(callback).Run(std::move(shared_buffer_handle));
 }
 
 void WindowServiceClient::PerformWindowMove(uint32_t change_id,
