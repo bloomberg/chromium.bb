@@ -8538,13 +8538,11 @@ static const int ref_frame_flag_list[REF_FRAMES] = { 0,
 static void estimate_skip_mode_rdcost(
     const AV1_COMP *const cpi, TileDataEnc *tile_data, MACROBLOCK *const x,
     BLOCK_SIZE bsize, int mi_row, int mi_col,
-    int_mv frame_mv[MB_MODE_COUNT][REF_FRAMES],
     struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE]) {
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
-  MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
 
   int *mode_map = tile_data->mode_map[bsize];
   int i;
@@ -8574,49 +8572,17 @@ static void estimate_skip_mode_rdcost(
       continue;
     }
 
-    frame_mv[this_mode][ref_frame].as_int =
-        frame_mv[compound_ref0_mode(this_mode)][ref_frame].as_int;
-    frame_mv[this_mode][second_ref_frame].as_int =
-        frame_mv[compound_ref1_mode(this_mode)][second_ref_frame].as_int;
-
-    if (frame_mv[this_mode][ref_frame].as_int == INVALID_MV ||
-        frame_mv[this_mode][second_ref_frame].as_int == INVALID_MV)
-      break;
-
     mbmi->mode = this_mode;
     mbmi->uv_mode = UV_DC_PRED;
     mbmi->ref_frame[0] = ref_frame;
     mbmi->ref_frame[1] = second_ref_frame;
 
-    // Obtain NEAREST_NEARESTMV.
-    {
-      for (i = 0; i < 2; ++i) {
-        int_mv cur_mv = frame_mv[mbmi->mode][mbmi->ref_frame[i]];
-        clamp_mv2(&cur_mv.as_mv, xd);
-        if (mv_check_bounds(&x->mv_limits, &cur_mv.as_mv)) {
-          x->skip_mode_rdcost = INT64_MAX;
-          break;
-        }
-        mbmi->mv[i].as_int = cur_mv.as_int;
-      }
-      if (x->skip_mode_rdcost == INT64_MAX) break;
-
-      const uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
-      if (mbmi_ext->ref_mv_count[ref_frame_type] > 0) {
-        for (i = 0; i < 2; ++i) {
-          int_mv cur_mv =
-              (i == 0) ? mbmi_ext->ref_mv_stack[ref_frame_type][0].this_mv
-                       : mbmi_ext->ref_mv_stack[ref_frame_type][0].comp_mv;
-          clamp_mv2(&cur_mv.as_mv, xd);
-          if (mv_check_bounds(&x->mv_limits, &cur_mv.as_mv)) {
-            x->skip_mode_rdcost = INT64_MAX;
-            break;
-          }
-          mbmi->mv[i].as_int = cur_mv.as_int;
-        }
-        if (x->skip_mode_rdcost == INT64_MAX) break;
-      }
+    assert(this_mode == NEAREST_NEARESTMV);
+    if (!build_cur_mv(mbmi->mv, this_mode, cm, x)) {
+      x->skip_mode_rdcost = INT64_MAX;
+      break;
     }
+    if (x->skip_mode_rdcost == INT64_MAX) break;
 
     mbmi->filter_intra_mode_info.use_filter_intra = 0;
     mbmi->interintra_mode = (INTERINTRA_MODE)(II_DC_PRED - 1);
@@ -10029,7 +9995,7 @@ PALETTE_EXIT:
     // Obtain the rdcost for skip_mode.
     x->compound_idx = 1;  // COMPOUND_AVERAGE
     estimate_skip_mode_rdcost(cpi, tile_data, x, bsize, mi_row, mi_col,
-                              search_state.frame_mv, yv12_mb);
+                              yv12_mb);
 
     if (x->skip_mode_rdcost >= 0 && x->skip_mode_rdcost < INT64_MAX) {
       // Update skip mode rdcost.
