@@ -119,14 +119,12 @@ public final class ParameterizedRunner extends Suite {
      * number of ParameterSets in the associated list.
      *
      * @return a list of runners
-     * @throws ParameterizedTestInstantiationException if the test class is malformed.
      * @throws ParameterizedRunnerDelegateInstantiationException if runner delegate can not
      *         be instantiated with constructor reflectively
      * @throws IllegalAccessError if the field in tests are not accessible
      */
     static List<Runner> createRunners(TestClass testClass)
-            throws IllegalAccessException, ParameterizedTestInstantiationException,
-                   ParameterizedRunnerDelegateInstantiationException {
+            throws IllegalAccessException, ParameterizedRunnerDelegateInstantiationException {
         List<ParameterSet> classParameterSetList;
         if (testClass.getAnnotatedFields(ClassParameter.class).isEmpty()) {
             classParameterSetList = new ArrayList<>();
@@ -208,7 +206,7 @@ public final class ParameterizedRunner extends Suite {
         }
     }
 
-    static class ParameterizedTestInstantiationException extends Exception {
+    public static class ParameterizedTestInstantiationException extends Exception {
         ParameterizedTestInstantiationException(
                 TestClass testClass, String parameterSetString, Exception e) {
             super(String.format(

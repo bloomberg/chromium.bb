@@ -6,6 +6,8 @@ package org.chromium.base.test.params;
 
 import org.junit.runners.model.FrameworkMethod;
 
+import org.chromium.base.test.params.ParameterizedRunner.ParameterizedTestInstantiationException;
+
 import java.util.List;
 
 /**
@@ -30,5 +32,5 @@ public interface ParameterizedRunnerDelegate {
     /**
      * Override to use DelegateCommon's implementation
      */
-    Object createTest();
+    Object createTest() throws ParameterizedTestInstantiationException;
 }

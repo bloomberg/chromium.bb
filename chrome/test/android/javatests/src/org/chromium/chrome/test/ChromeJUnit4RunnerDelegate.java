@@ -7,6 +7,7 @@ package org.chromium.chrome.test;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 
+import org.chromium.base.test.params.ParameterizedRunner.ParameterizedTestInstantiationException;
 import org.chromium.base.test.params.ParameterizedRunnerDelegate;
 import org.chromium.base.test.params.ParameterizedRunnerDelegateCommon;
 
@@ -17,7 +18,7 @@ import java.util.List;
  */
 public final class ChromeJUnit4RunnerDelegate
         extends ChromeJUnit4ClassRunner implements ParameterizedRunnerDelegate {
-    private ParameterizedRunnerDelegateCommon mDelegateCommon;
+    private final ParameterizedRunnerDelegateCommon mDelegateCommon;
 
     public ChromeJUnit4RunnerDelegate(Class<?> klass,
             ParameterizedRunnerDelegateCommon delegateCommon) throws InitializationError {
@@ -36,7 +37,7 @@ public final class ChromeJUnit4RunnerDelegate
     }
 
     @Override
-    public Object createTest() {
+    public Object createTest() throws ParameterizedTestInstantiationException {
         return mDelegateCommon.createTest();
     }
 }

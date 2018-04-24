@@ -13,7 +13,6 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.TestClass;
 
 import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameter;
-import org.chromium.base.test.params.ParameterizedRunner.ParameterizedTestInstantiationException;
 import org.chromium.base.test.params.ParameterizedRunnerDelegateFactory.ParameterizedRunnerDelegateInstantiationException;
 
 import java.lang.reflect.Method;
@@ -57,17 +56,6 @@ public class ParameterizedRunnerDelegateFactoryTest {
         public Object createTest() {
             return null;
         }
-    }
-
-    static class BadTestClassWithMoreThanOneConstructor {
-        public BadTestClassWithMoreThanOneConstructor() {}
-        @SuppressWarnings("unused")
-        public BadTestClassWithMoreThanOneConstructor(String argument) {}
-    }
-
-    static class TestClassConstructorWithTwoArguments {
-        @SuppressWarnings("unused")
-        public TestClassConstructorWithTwoArguments(int a, int b) {}
     }
 
     static class ExampleTestClass {
@@ -115,19 +103,6 @@ public class ParameterizedRunnerDelegateFactoryTest {
         ParameterizedRunnerDelegateFactory factory = new ParameterizedRunnerDelegateFactory();
         TestClass testClass = new TestClass(BadExampleRunnerDelegate.LalaTestClass.class);
         factory.createRunner(testClass, null, BadExampleRunnerDelegate.class);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateTestWithMoreThanOneConstructor() throws Throwable {
-        TestClass testClass = new TestClass(BadTestClassWithMoreThanOneConstructor.class);
-        ParameterizedRunnerDelegateFactory.createTest(testClass, new ParameterSet());
-    }
-
-    @Test(expected = ParameterizedTestInstantiationException.class)
-    public void testCreateTestWithIncorrectArguments() throws Throwable {
-        TestClass testClass = new TestClass(TestClassConstructorWithTwoArguments.class);
-        ParameterSet pSet = new ParameterSet().value(1, 2, 3);
-        ParameterizedRunnerDelegateFactory.createTest(testClass, pSet);
     }
 
     @Test

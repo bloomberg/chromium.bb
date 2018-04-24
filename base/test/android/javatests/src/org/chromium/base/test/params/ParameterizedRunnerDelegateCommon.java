@@ -5,7 +5,11 @@
 package org.chromium.base.test.params;
 
 import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.TestClass;
 
+import org.chromium.base.test.params.ParameterizedRunner.ParameterizedTestInstantiationException;
+
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
@@ -13,12 +17,14 @@ import java.util.List;
  * delegated for parameterization purposes
  */
 public final class ParameterizedRunnerDelegateCommon {
+    private final TestClass mTestClass;
+    private final ParameterSet mClassParameterSet;
     private final List<FrameworkMethod> mParameterizedFrameworkMethodList;
-    private final Object mTest;
 
-    public ParameterizedRunnerDelegateCommon(
-            Object test, List<FrameworkMethod> parameterizedFrameworkMethods) {
-        mTest = test;
+    public ParameterizedRunnerDelegateCommon(TestClass testClass, ParameterSet classParameterSet,
+            List<FrameworkMethod> parameterizedFrameworkMethods) {
+        mTestClass = testClass;
+        mClassParameterSet = classParameterSet;
         mParameterizedFrameworkMethodList = parameterizedFrameworkMethods;
     }
 
@@ -36,7 +42,28 @@ public final class ParameterizedRunnerDelegateCommon {
         return mParameterizedFrameworkMethodList;
     }
 
-    public Object createTest() {
-        return mTest;
+    private void throwInstantiationException(Exception e)
+            throws ParameterizedTestInstantiationException {
+        String parameterSetString =
+                mClassParameterSet == null ? "null" : mClassParameterSet.toString();
+        throw new ParameterizedTestInstantiationException(mTestClass, parameterSetString, e);
+    }
+
+    public Object createTest() throws ParameterizedTestInstantiationException {
+        try {
+            if (mClassParameterSet == null) {
+                return mTestClass.getOnlyConstructor().newInstance();
+            }
+            return mTestClass.getOnlyConstructor().newInstance(
+                    mClassParameterSet.getValues().toArray());
+        } catch (InstantiationException e) {
+            throwInstantiationException(e);
+        } catch (IllegalAccessException e) {
+            throwInstantiationException(e);
+        } catch (InvocationTargetException e) {
+            throwInstantiationException(e);
+        }
+        assert false;
+        return null;
     }
 }
