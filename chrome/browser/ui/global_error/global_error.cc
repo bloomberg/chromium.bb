@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/global_error/global_error_bubble_view_base.h"
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/image/image.h"
 
 #if !defined(OS_ANDROID)
@@ -79,6 +80,10 @@ bool GlobalErrorWithStandardBubble::ShouldUseExtraView() const {
 
 bool GlobalErrorWithStandardBubble::ShouldAddElevationIconToAcceptButton() {
   return false;
+}
+
+int GlobalErrorWithStandardBubble::GetDefaultDialogButton() const {
+  return ui::DIALOG_BUTTON_OK;
 }
 
 void GlobalErrorWithStandardBubble::BubbleViewDidClose(Browser* browser) {

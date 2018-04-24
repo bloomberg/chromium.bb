@@ -133,6 +133,8 @@ extern const base::Feature kExperimentalCrostiniUI;
 
 extern const base::Feature kExperimentalKeyboardLockUI;
 
+extern const base::Feature kExternalExtensionDefaultButtonControl;
+
 // Android expects this string from Java code, so it is always needed.
 // TODO(crbug.com/731802): Use #if BUILDFLAG(ENABLE_VR_BROWSING) instead.
 #if BUILDFLAG(ENABLE_VR) || defined(OS_ANDROID)

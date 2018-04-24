@@ -209,6 +209,12 @@ int GlobalErrorBubbleView::GetDialogButtons() const {
               : ui::DIALOG_BUTTON_CANCEL);
 }
 
+int GlobalErrorBubbleView::GetDefaultDialogButton() const {
+  if (!error_)
+    return views::BubbleDialogDelegateView::GetDefaultDialogButton();
+  return error_->GetDefaultDialogButton();
+}
+
 views::View* GlobalErrorBubbleView::CreateExtraView() {
   if (!error_ || error_->GetBubbleViewCancelButtonLabel().empty() ||
       !error_->ShouldUseExtraView())

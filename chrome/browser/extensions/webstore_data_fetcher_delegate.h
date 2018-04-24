@@ -32,6 +32,7 @@ class WebstoreDataFetcherDelegate {
   static const char kAverageRatingKey[];
   static const char kIconUrlKey[];
   static const char kIdKey[];
+  static const char kExternalInstallDefaultButtonKey[];
   static const char kInlineInstallNotSupportedKey[];
   static const char kLocalizedDescriptionKey[];
   static const char kLocalizedNameKey[];
