@@ -92,11 +92,10 @@ RenderedPosition::RenderedPosition(const Position& position,
       ComputeInlineBoxPosition(PositionWithAffinity(position, affinity));
   inline_box_ = box_position.inline_box;
   offset_ = box_position.offset_in_box;
-  if (inline_box_)
+  if (inline_box_) {
     layout_object_ =
         LineLayoutAPIShim::LayoutObjectFrom(inline_box_->GetLineLayoutItem());
-  else
-    layout_object_ = LayoutObjectFromPosition(position);
+  }
 }
 
 RenderedPosition::RenderedPosition(const PositionInFlatTree& position,
@@ -108,11 +107,10 @@ RenderedPosition::RenderedPosition(const PositionInFlatTree& position,
       PositionInFlatTreeWithAffinity(position, affinity));
   inline_box_ = box_position.inline_box;
   offset_ = box_position.offset_in_box;
-  if (inline_box_)
+  if (inline_box_) {
     layout_object_ =
         LineLayoutAPIShim::LayoutObjectFrom(inline_box_->GetLineLayoutItem());
-  else
-    layout_object_ = LayoutObjectFromPosition(position);
+  }
 }
 
 const InlineBox* RenderedPosition::PrevLeafChild() const {
