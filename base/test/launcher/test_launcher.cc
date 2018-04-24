@@ -520,7 +520,8 @@ void DoLaunchChildTestProcess(
   if (redirect_stdio) {
     fflush(output_file.get());
     output_file.reset();
-    CHECK(ReadFileToString(output_filename, &output_file_contents));
+    CHECK(ReadFileToString(output_filename, &output_file_contents))
+        << output_filename;
 
     if (!DeleteFile(output_filename, false)) {
       // This needs to be non-fatal at least for Windows.
