@@ -192,8 +192,7 @@ void NotificationImageReporterTest::ReportNotificationImage() {
       image_);
 }
 
-// Disabled due to data race. https://crbug.com/836359
-TEST_F(NotificationImageReporterTest, DISABLED_ReportSuccess) {
+TEST_F(NotificationImageReporterTest, ReportSuccess) {
   SetExtendedReportingLevel(SBER_LEVEL_SCOUT);
 
   ReportNotificationImage();
@@ -218,8 +217,7 @@ TEST_F(NotificationImageReporterTest, DISABLED_ReportSuccess) {
   EXPECT_FALSE(report.image().has_original_dimensions());
 }
 
-// Disabled due to data race. https://crbug.com/836359
-TEST_F(NotificationImageReporterTest, DISABLED_ImageDownscaling) {
+TEST_F(NotificationImageReporterTest, ImageDownscaling) {
   SetExtendedReportingLevel(SBER_LEVEL_SCOUT);
 
   image_ = CreateBitmap(640 /* w */, 360 /* h */);
@@ -240,8 +238,7 @@ TEST_F(NotificationImageReporterTest, DISABLED_ImageDownscaling) {
   EXPECT_EQ(360, report.image().original_dimensions().height());
 }
 
-// Disabled due to data race. https://crbug.com/836359
-TEST_F(NotificationImageReporterTest, DISABLED_NoReportWithoutSBER) {
+TEST_F(NotificationImageReporterTest, NoReportWithoutSBER) {
   SetExtendedReportingLevel(SBER_LEVEL_OFF);
 
   ReportNotificationImage();
@@ -250,8 +247,7 @@ TEST_F(NotificationImageReporterTest, DISABLED_NoReportWithoutSBER) {
   EXPECT_EQ(0, notification_image_reporter_->sent_report_count());
 }
 
-// Disabled due to data race. https://crbug.com/836359
-TEST_F(NotificationImageReporterTest, DISABLED_NoReportWithoutScout) {
+TEST_F(NotificationImageReporterTest, NoReportWithoutScout) {
   SetExtendedReportingLevel(SBER_LEVEL_LEGACY);
 
   ReportNotificationImage();
@@ -284,8 +280,7 @@ TEST_F(NotificationImageReporterTest, NoReportOnWhitelistedUrl) {
   EXPECT_EQ(0, notification_image_reporter_->sent_report_count());
 }
 
-// Disabled due to data race. https://crbug.com/836359
-TEST_F(NotificationImageReporterTest, DISABLED_MaxReportsPerDay) {
+TEST_F(NotificationImageReporterTest, MaxReportsPerDay) {
   SetExtendedReportingLevel(SBER_LEVEL_SCOUT);
 
   const int kMaxReportsPerDay = 5;
