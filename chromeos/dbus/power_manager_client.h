@@ -11,18 +11,19 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
+#include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace power_manager {
 class BacklightBrightnessChange;
-class PowerSupplyProperties;
 class ScreenIdleState;
 }
 
@@ -184,6 +185,10 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
 
   // Increases the keyboard brightness.
   virtual void IncreaseKeyboardBrightness() = 0;
+
+  // Returns the last power status that was received from D-Bus, if any.
+  virtual base::Optional<power_manager::PowerSupplyProperties>
+  GetLastStatus() = 0;
 
   // Requests an updated copy of the power status. Observer::PowerChanged()
   // will be called asynchronously.

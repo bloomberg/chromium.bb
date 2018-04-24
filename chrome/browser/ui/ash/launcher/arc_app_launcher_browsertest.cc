@@ -168,7 +168,7 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
 
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
-    arc::ArcSessionManager::DisableUIForTesting();
+    arc::ArcSessionManager::SetUiEnabledForTesting(false);
   }
 
   void SetUpOnMainThread() override {

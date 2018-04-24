@@ -75,6 +75,7 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   void GetScreenBrightnessPercent(DBusMethodCallback<double> callback) override;
   void DecreaseKeyboardBrightness() override;
   void IncreaseKeyboardBrightness() override;
+  base::Optional<power_manager::PowerSupplyProperties> GetLastStatus() override;
   void RequestStatusUpdate() override;
   void RequestSuspend() override;
   void RequestRestart(power_manager::RequestRestartReason reason,

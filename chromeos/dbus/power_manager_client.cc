@@ -29,7 +29,6 @@
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_manager/input_event.pb.h"
 #include "chromeos/dbus/power_manager/peripheral_battery_status.pb.h"
-#include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager/switch_states.pb.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/device_event_log/device_event_log.h"
@@ -48,6 +47,28 @@ const int kSuspendDelayTimeoutMs = 5000;
 
 // Human-readable description of Chrome's suspend delay.
 const char kSuspendDelayDescription[] = "chrome";
+
+// Returns a modified version of |proto| where fields are consistent.
+power_manager::PowerSupplyProperties SanitizePowerSupplyProperties(
+    const power_manager::PowerSupplyProperties& proto) {
+  power_manager::PowerSupplyProperties sanitized = proto;
+
+  if (sanitized.battery_state() ==
+      power_manager::PowerSupplyProperties_BatteryState_FULL) {
+    sanitized.set_battery_percent(100.0);
+  }
+
+  if (!sanitized.is_calculating_battery_time()) {
+    const bool on_line_power =
+        sanitized.external_power() !=
+        power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED;
+    if ((on_line_power && sanitized.battery_time_to_full_sec() < 0) ||
+        (!on_line_power && sanitized.battery_time_to_empty_sec() < 0)) {
+      sanitized.set_is_calculating_battery_time(true);
+    }
+  }
+  return sanitized;
+}
 
 // Converts a LidState value from a power_manager::SwitchStates proto to the
 // corresponding PowerManagerClient::LidState value.
@@ -145,6 +166,11 @@ class PowerManagerClientImpl : public PowerManagerClient {
   void IncreaseKeyboardBrightness() override {
     SimpleMethodCallToPowerManager(
         power_manager::kIncreaseKeyboardBrightnessMethod);
+  }
+
+  base::Optional<power_manager::PowerSupplyProperties> GetLastStatus()
+      override {
+    return proto_;
   }
 
   void SetScreenBrightnessPercent(double percent, bool gradual) override {
@@ -382,6 +408,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
     }
 
     RegisterSuspendDelays();
+    RequestStatusUpdate();
   }
 
  private:
@@ -617,9 +644,11 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   void HandlePowerSupplyProperties(
       const power_manager::PowerSupplyProperties& proto) {
+    proto_ = SanitizePowerSupplyProperties(proto);
     for (auto& observer : observers_)
-      observer.PowerChanged(proto);
-    const bool on_battery = proto.external_power() ==
+      observer.PowerChanged(*proto_);
+    const bool on_battery =
+        proto_->external_power() ==
         power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED;
     base::PowerMonitorDeviceSource::SetPowerSource(on_battery);
   }
@@ -981,6 +1010,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   // Last state passed to SetIsProjecting().
   bool last_is_projecting_ = false;
+
+  // The last proto received from D-Bus; initially empty.
+  base::Optional<power_manager::PowerSupplyProperties> proto_;
 
   // The delegate used to manage the power consumption of Chrome's renderer
   // processes.

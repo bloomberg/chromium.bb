@@ -106,8 +106,8 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
         std::make_unique<chromeos::FakeChromeUserManager>());
     // Init ArcSessionManager for testing.
     ArcServiceLauncher::Get()->ResetForTesting();
-    ArcSessionManager::DisableUIForTesting();
-    ArcSessionManager::EnableCheckAndroidManagementForTesting();
+    ArcSessionManager::SetUiEnabledForTesting(false);
+    ArcSessionManager::EnableCheckAndroidManagementForTesting(true);
     ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
         std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
 

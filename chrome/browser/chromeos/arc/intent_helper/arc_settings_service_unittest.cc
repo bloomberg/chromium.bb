@@ -45,7 +45,7 @@ class ArcSettingsServiceTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     SetArcAvailableCommandLineForTesting(
         base::CommandLine::ForCurrentProcess());
-    ArcSessionManager::DisableUIForTesting();
+    ArcSessionManager::SetUiEnabledForTesting(false);
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
 
