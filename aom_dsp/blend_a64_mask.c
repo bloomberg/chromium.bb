@@ -33,13 +33,11 @@
 // In contrast, the output of the non-d32 functions will not be further rounded,
 // so we *should* use ROUND_POWER_OF_TWO there.
 
-void aom_lowbd_blend_a64_d16_mask(uint8_t *dst, uint32_t dst_stride,
-                                  const CONV_BUF_TYPE *src0,
-                                  uint32_t src0_stride,
-                                  const CONV_BUF_TYPE *src1,
-                                  uint32_t src1_stride, const uint8_t *mask,
-                                  uint32_t mask_stride, int h, int w, int subh,
-                                  int subw, ConvolveParams *conv_params) {
+void aom_lowbd_blend_a64_d16_mask_c(
+    uint8_t *dst, uint32_t dst_stride, const CONV_BUF_TYPE *src0,
+    uint32_t src0_stride, const CONV_BUF_TYPE *src1, uint32_t src1_stride,
+    const uint8_t *mask, uint32_t mask_stride, int h, int w, int subh, int subw,
+    ConvolveParams *conv_params) {
   int i, j;
   const int bd = 8;
   const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
@@ -51,8 +49,8 @@ void aom_lowbd_blend_a64_d16_mask(uint8_t *dst, uint32_t dst_stride,
   assert(IMPLIES((void *)src0 == dst, src0_stride == dst_stride));
   assert(IMPLIES((void *)src1 == dst, src1_stride == dst_stride));
 
-  assert(h >= 1);
-  assert(w >= 1);
+  assert(h >= 4);
+  assert(w >= 4);
   assert(IS_POWER_OF_TWO(h));
   assert(IS_POWER_OF_TWO(w));
 
