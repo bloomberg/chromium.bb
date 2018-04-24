@@ -38,6 +38,7 @@
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/filename_util.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
@@ -555,6 +556,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
       std::make_unique<network::ResourceRequest>();
   request->url = test_url;
   content::SimpleURLLoaderTestHelper simple_loader_helper;
+  request->load_flags = net::LOAD_ONLY_FROM_CACHE;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =
       network::SimpleURLLoader::Create(std::move(request),
                                        TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -562,16 +564,21 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
       loader_factory(), simple_loader_helper.GetCallback());
   simple_loader_helper.WaitForCallback();
 
-  std::string response_body = simple_loader_helper.response_body()
-                                  ? *simple_loader_helper.response_body()
-                                  : "";
-
-  // The response body from the above test should only appear in the response
-  // if there is an on-disk cache.
+  // The request should only succeed if there is an on-disk cache.
   if (GetHttpCacheType() != StorageType::kDisk) {
-    EXPECT_NE(original_response, response_body);
+    EXPECT_FALSE(simple_loader_helper.response_body());
+  } else if (GetParam().network_service_state !=
+             NetworkServiceState::kRestarted) {
+    ASSERT_TRUE(simple_loader_helper.response_body());
+    EXPECT_EQ(original_response, *simple_loader_helper.response_body());
   } else {
-    EXPECT_EQ(original_response, response_body);
+    // The network service restarted, and may or may not have recovered the
+    // cache entry. If the request succeded, though, it must return the correct
+    // result.
+    // TODO(mmenke): Is there any way to ensure the item in the cache can be
+    // recovered / the cache can be loaded in this test?
+    if (simple_loader_helper.response_body())
+      EXPECT_EQ(original_response, *simple_loader_helper.response_body());
   }
 }
 
