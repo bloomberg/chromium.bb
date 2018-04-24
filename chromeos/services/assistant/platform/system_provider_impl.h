@@ -19,20 +19,12 @@ class SystemProviderImpl : public assistant_client::SystemProvider {
   ~SystemProviderImpl() override;
 
   // assistant_client::SystemProvider implementation:
-  std::string GetDeviceModelId() override;
-  int GetDeviceModelRevision() override;
-  std::string GetEmbedderBuildInfo() override;
-  std::string GetBoardName() override;
-  std::string GetBoardRevision() override;
-  std::string GetOemDeviceId() override;
-  std::string GetDisplayName() override;
-  int GetDebugServerPort() override;
+  assistant_client::MicMuteState GetMicMuteState() override;
+  void RegisterMicMuteChangeCallback(ConfigChangeCallback callback) override;
+  assistant_client::PowerManagerProvider* GetPowerManagerProvider() override;
+  bool GetBatteryState(BatteryState* state) override;
 
  private:
-  std::string board_name_;
-  std::string device_model_id_;
-  std::string embedder_build_info_;
-
   DISALLOW_COPY_AND_ASSIGN(SystemProviderImpl);
 };
 
