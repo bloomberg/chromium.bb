@@ -106,14 +106,15 @@ bool GpuDataManagerImpl::GpuProcessStartAllowed() const {
 
 void GpuDataManagerImpl::UpdateGpuInfo(
     const gpu::GPUInfo& gpu_info,
-    const gpu::GPUInfo* optional_gpu_info_for_hardware_gpu) {
+    const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu) {
   base::AutoLock auto_lock(lock_);
-  private_->UpdateGpuInfo(gpu_info, optional_gpu_info_for_hardware_gpu);
+  private_->UpdateGpuInfo(gpu_info, gpu_info_for_hardware_gpu);
 }
 
 void GpuDataManagerImpl::UpdateGpuFeatureInfo(
     const gpu::GpuFeatureInfo& gpu_feature_info,
-    const gpu::GpuFeatureInfo& gpu_feature_info_for_hardware_gpu) {
+    const base::Optional<gpu::GpuFeatureInfo>&
+        gpu_feature_info_for_hardware_gpu) {
   base::AutoLock auto_lock(lock_);
   private_->UpdateGpuFeatureInfo(gpu_feature_info,
                                  gpu_feature_info_for_hardware_gpu);
