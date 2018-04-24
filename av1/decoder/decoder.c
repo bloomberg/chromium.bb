@@ -186,7 +186,18 @@ aom_codec_err_t av1_copy_reference_dec(AV1Decoder *pbi, int idx,
   return cm->error.error_code;
 }
 
+static int equal_dimensions_and_border(const YV12_BUFFER_CONFIG *a,
+                                       const YV12_BUFFER_CONFIG *b) {
+  return a->y_height == b->y_height && a->y_width == b->y_width &&
+         a->uv_height == b->uv_height && a->uv_width == b->uv_width &&
+         a->y_stride == b->y_stride && a->uv_stride == b->uv_stride &&
+         a->border == b->border &&
+         (a->flags & YV12_FLAG_HIGHBITDEPTH) ==
+             (b->flags & YV12_FLAG_HIGHBITDEPTH);
+}
+
 aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm, int idx,
+                                      int use_external_ref,
                                       YV12_BUFFER_CONFIG *sd) {
   const int num_planes = av1_num_planes(cm);
   YV12_BUFFER_CONFIG *ref_buf = NULL;
@@ -199,12 +210,32 @@ aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm, int idx,
     return AOM_CODEC_ERROR;
   }
 
-  if (!equal_dimensions(ref_buf, sd)) {
-    aom_internal_error(&cm->error, AOM_CODEC_ERROR,
-                       "Incorrect buffer dimensions");
+  if (!use_external_ref) {
+    if (!equal_dimensions(ref_buf, sd)) {
+      aom_internal_error(&cm->error, AOM_CODEC_ERROR,
+                         "Incorrect buffer dimensions");
+    } else {
+      // Overwrite the reference frame buffer.
+      aom_yv12_copy_frame(sd, ref_buf, num_planes);
+    }
   } else {
-    // Overwrite the reference frame buffer.
-    aom_yv12_copy_frame(sd, ref_buf, num_planes);
+    if (!equal_dimensions_and_border(ref_buf, sd)) {
+      aom_internal_error(&cm->error, AOM_CODEC_ERROR,
+                         "Incorrect buffer dimensions");
+    } else {
+      // Overwrite the reference frame buffer pointers.
+      // Once we no longer need the external reference buffer, these pointers
+      // are restored.
+      ref_buf->store_buf_adr[0] = ref_buf->y_buffer;
+      ref_buf->store_buf_adr[1] = ref_buf->u_buffer;
+      ref_buf->store_buf_adr[2] = ref_buf->v_buffer;
+      ref_buf->y_buffer = sd->y_buffer;
+      ref_buf->u_buffer = sd->u_buffer;
+      ref_buf->v_buffer = sd->v_buffer;
+      ref_buf->use_external_refernce_buffers = 1;
+      // TODO(yunqing): This will be removed later.
+      aom_yv12_extend_frame_borders_c(ref_buf, num_planes);
+    }
   }
 
   return cm->error.error_code;

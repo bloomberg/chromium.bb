@@ -104,8 +104,9 @@ typedef struct aom_postproc_cfg {
  * Define the data struct to access av1 reference frames.
  */
 typedef struct av1_ref_frame {
-  int idx;         /**< frame index to get (input) */
-  aom_image_t img; /**< img structure to populate (output) */
+  int idx;              /**< frame index to get (input) */
+  int use_external_ref; /**< Directly use external ref buffer(decoder only) */
+  aom_image_t img;      /**< img structure to populate (output) */
 } av1_ref_frame_t;
 
 /*!\cond */

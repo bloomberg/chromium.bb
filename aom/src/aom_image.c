@@ -188,29 +188,30 @@ int aom_img_set_rect(aom_image_t *img, unsigned int x, unsigned int y,
       if (img->fmt & AOM_IMG_FMT_HAS_ALPHA) {
         img->planes[AOM_PLANE_ALPHA] =
             data + x * bytes_per_sample + y * img->stride[AOM_PLANE_ALPHA];
-        data += img->h * img->stride[AOM_PLANE_ALPHA];
+        data += (img->h + 2 * border) * img->stride[AOM_PLANE_ALPHA];
       }
 
       img->planes[AOM_PLANE_Y] =
           data + x * bytes_per_sample + y * img->stride[AOM_PLANE_Y];
-      data += img->h * img->stride[AOM_PLANE_Y];
+      data += (img->h + 2 * border) * img->stride[AOM_PLANE_Y];
 
+      unsigned int uv_border_h = border >> img->y_chroma_shift;
+      unsigned int uv_x = x >> img->x_chroma_shift;
+      unsigned int uv_y = y >> img->y_chroma_shift;
       if (!(img->fmt & AOM_IMG_FMT_UV_FLIP)) {
         img->planes[AOM_PLANE_U] =
-            data + (x >> img->x_chroma_shift) * bytes_per_sample +
-            (y >> img->y_chroma_shift) * img->stride[AOM_PLANE_U];
-        data += (img->h >> img->y_chroma_shift) * img->stride[AOM_PLANE_U];
+            data + uv_x * bytes_per_sample + uv_y * img->stride[AOM_PLANE_U];
+        data += ((img->h >> img->y_chroma_shift) + 2 * uv_border_h) *
+                img->stride[AOM_PLANE_U];
         img->planes[AOM_PLANE_V] =
-            data + (x >> img->x_chroma_shift) * bytes_per_sample +
-            (y >> img->y_chroma_shift) * img->stride[AOM_PLANE_V];
+            data + uv_x * bytes_per_sample + uv_y * img->stride[AOM_PLANE_V];
       } else {
         img->planes[AOM_PLANE_V] =
-            data + (x >> img->x_chroma_shift) * bytes_per_sample +
-            (y >> img->y_chroma_shift) * img->stride[AOM_PLANE_V];
-        data += (img->h >> img->y_chroma_shift) * img->stride[AOM_PLANE_V];
+            data + uv_x * bytes_per_sample + uv_y * img->stride[AOM_PLANE_V];
+        data += ((img->h >> img->y_chroma_shift) + 2 * uv_border_h) *
+                img->stride[AOM_PLANE_V];
         img->planes[AOM_PLANE_U] =
-            data + (x >> img->x_chroma_shift) * bytes_per_sample +
-            (y >> img->y_chroma_shift) * img->stride[AOM_PLANE_U];
+            data + uv_x * bytes_per_sample + uv_y * img->stride[AOM_PLANE_U];
       }
     }
     return 0;

@@ -718,7 +718,7 @@ static aom_codec_err_t ctrl_set_reference(aom_codec_alg_priv_t *ctx,
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
     image2yuvconfig(&frame->img, &sd);
     return av1_set_reference_dec(&frame_worker_data->pbi->common, frame->idx,
-                                 &sd);
+                                 frame->use_external_ref, &sd);
   } else {
     return AOM_CODEC_INVALID_PARAM;
   }
