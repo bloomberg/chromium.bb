@@ -6,19 +6,20 @@
 
 namespace file_manager {
 
-template <GuestMode M>
+template <GuestMode MODE>
 class GalleryBrowserTestBase : public FileManagerBrowserTestBase {
  public:
-  GuestMode GetGuestModeParam() const override { return M; }
+  GuestMode GetGuestModeParam() const override { return MODE; }
+
   const char* GetTestCaseNameParam() const override {
     return test_case_name_.c_str();
   }
 
- protected:
   const char* GetTestManifestName() const override {
     return "gallery_test_manifest.json";
   }
 
+ protected:
   void set_test_case_name(const std::string& name) { test_case_name_ = name; }
 
  private:
