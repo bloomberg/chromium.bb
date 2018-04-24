@@ -607,6 +607,11 @@ const char kEnablePixelCanvasRecordingDescription[] =
     "with the pixel and improves text rendering. This should be enabled when a "
     "device is using fractional scale factor.";
 
+const char kEnableSyncUSSSessionsName[] = "Enable USS for sessions sync";
+const char kEnableSyncUSSSessionsDescription[] =
+    "Enables the new, experimental implementation of session sync (aka tab "
+    "sync).";
+
 const char kEnableTokenBindingName[] = "Token Binding.";
 const char kEnableTokenBindingDescription[] = "Enable Token Binding support.";
 

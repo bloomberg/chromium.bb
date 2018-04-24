@@ -27458,6 +27458,7 @@ from previous Chrome versions.
   <int value="955340765" label="ChromeHomeOptOutSnackbar:enabled"/>
   <int value="963457392" label="ChromeHomeModernLayout:disabled"/>
   <int value="963671232" label="DrawOcclusion:disabled"/>
+  <int value="972228058" label="SyncUSSSessions:disabled"/>
   <int value="975104092" label="show-taps"/>
   <int value="979445973" label="OmniboxSpareRenderer:enabled"/>
   <int value="980396200" label="enable-new-korean-ime"/>
@@ -27819,6 +27820,7 @@ from previous Chrome versions.
   <int value="1789517771" label="MacV2Sandbox:enabled"/>
   <int value="1792609232" label="NTPShortcuts:enabled"/>
   <int value="1803465156" label="enable-zero-suggest-most-visited"/>
+  <int value="1803470125" label="SyncUSSSessions:enabled"/>
   <int value="1809940714" label="SpeculativeLaunchServiceWorker:disabled"/>
   <int value="1812368073" label="enable-new-app-list-mixer"/>
   <int value="1814671708" label="disable-password-manager-reauthentication"/>
