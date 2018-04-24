@@ -84,6 +84,10 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
   static SentPacketState RetransmissionTypeToPacketState(
       TransmissionType retransmission_type);
 
+  // Returns true if header with |first_byte| is considered as an IETF QUIC
+  // packet header.
+  static bool IsIetfPacketHeader(uint8_t first_byte);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicUtils);
 };

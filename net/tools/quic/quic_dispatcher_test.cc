@@ -1118,14 +1118,14 @@ TEST_F(QuicDispatcherTestStrayPacketConnectionId,
 
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
   QuicConnectionId connection_id = 1;
-  // Dispatcher drops this packet.
+  // This packet is considered as IETF QUIC packet with short header with
+  // unacceptable packet number.
   EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, QuicStringPiece("hq")))
       .Times(0);
-  EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, connection_id))
-      .Times(0);
+  EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, _)).Times(1);
   EXPECT_CALL(*time_wait_list_manager_,
               AddConnectionIdToTimeWait(_, _, _, _, _))
-      .Times(0);
+      .Times(1);
   ProcessPacket(client_address, connection_id, true, "data",
                 PACKET_0BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER);
 }

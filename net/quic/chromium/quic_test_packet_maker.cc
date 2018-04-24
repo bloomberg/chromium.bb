@@ -38,6 +38,8 @@ QuicTestPacketMaker::QuicTestPacketMaker(
       spdy_request_framer_(SpdyFramer::ENABLE_COMPRESSION),
       spdy_response_framer_(SpdyFramer::ENABLE_COMPRESSION),
       perspective_(perspective),
+      encryption_level_(ENCRYPTION_FORWARD_SECURE),
+      long_header_type_(HANDSHAKE),
       client_headers_include_h2_stream_dependency_(
           client_headers_include_h2_stream_dependency &&
           version > QUIC_VERSION_42) {
@@ -57,8 +59,9 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakePingPacket(
   QuicPacketHeader header;
   header.connection_id = connection_id_;
   header.reset_flag = false;
-  header.version_flag = include_version;
-  header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
+  header.version_flag = ShouldIncludeVersion(include_version);
+  header.long_packet_type = long_header_type_;
+  header.packet_number_length = GetPacketNumberLength();
   header.packet_number = num;
 
   QuicPingFrame ping;
@@ -75,8 +78,9 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeAckAndPingPacket(
   QuicPacketHeader header;
   header.connection_id = connection_id_;
   header.reset_flag = false;
-  header.version_flag = include_version;
-  header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
+  header.version_flag = ShouldIncludeVersion(include_version);
+  header.long_packet_type = long_header_type_;
+  header.packet_number_length = GetPacketNumberLength();
   header.packet_number = num;
 
   QuicAckFrame ack(MakeAckFrame(largest_received));
@@ -129,8 +133,9 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
   QuicPacketHeader header;
   header.connection_id = connection_id_;
   header.reset_flag = false;
-  header.version_flag = include_version;
-  header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
+  header.version_flag = ShouldIncludeVersion(include_version);
+  header.long_packet_type = long_header_type_;
+  header.packet_number_length = GetPacketNumberLength();
   header.packet_number = num;
 
   QuicRstStreamFrame rst(1, stream_id, error_code, bytes_written);
@@ -166,8 +171,9 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
   QuicPacketHeader header;
   header.connection_id = connection_id_;
   header.reset_flag = false;
-  header.version_flag = include_version;
-  header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
+  header.version_flag = ShouldIncludeVersion(include_version);
+  header.long_packet_type = long_header_type_;
+  header.packet_number_length = GetPacketNumberLength();
   header.packet_number = num;
 
   QuicAckFrame ack(MakeAckFrame(largest_received));
@@ -217,8 +223,9 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
   QuicPacketHeader header;
   header.connection_id = connection_id_;
   header.reset_flag = false;
-  header.version_flag = include_version;
-  header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
+  header.version_flag = ShouldIncludeVersion(include_version);
+  header.long_packet_type = long_header_type_;
+  header.packet_number_length = GetPacketNumberLength();
   header.packet_number = num;
 
   QuicAckFrame ack(MakeAckFrame(largest_received));
@@ -268,8 +275,9 @@ QuicTestPacketMaker::MakeConnectionClosePacket(
   QuicPacketHeader header;
   header.connection_id = connection_id_;
   header.reset_flag = false;
-  header.version_flag = include_version;
-  header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
+  header.version_flag = ShouldIncludeVersion(include_version);
+  header.long_packet_type = long_header_type_;
+  header.packet_number_length = GetPacketNumberLength();
   header.packet_number = num;
 
   QuicConnectionCloseFrame close;
@@ -286,8 +294,9 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeGoAwayPacket(
   QuicPacketHeader header;
   header.connection_id = connection_id_;
   header.reset_flag = false;
-  header.version_flag = false;
-  header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
+  header.version_flag = ShouldIncludeVersion(false);
+  header.long_packet_type = long_header_type_;
+  header.packet_number_length = GetPacketNumberLength();
   header.packet_number = num;
 
   QuicGoAwayFrame goaway;
@@ -318,8 +327,9 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
   QuicPacketHeader header;
   header.connection_id = connection_id_;
   header.reset_flag = false;
-  header.version_flag = false;
-  header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
+  header.version_flag = ShouldIncludeVersion(false);
+  header.long_packet_type = long_header_type_;
+  header.packet_number_length = GetPacketNumberLength();
   header.packet_number = packet_number;
 
   QuicAckFrame ack(MakeAckFrame(largest_received));
@@ -803,8 +813,9 @@ void QuicTestPacketMaker::InitializeHeader(QuicPacketNumber packet_number,
                                            bool should_include_version) {
   header_.connection_id = connection_id_;
   header_.reset_flag = false;
-  header_.version_flag = should_include_version;
-  header_.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
+  header_.version_flag = ShouldIncludeVersion(should_include_version);
+  header_.long_packet_type = long_header_type_;
+  header_.packet_number_length = GetPacketNumberLength();
   header_.packet_number = packet_number;
 }
 
@@ -926,6 +937,29 @@ QuicTestPacketMaker::MakeAckAndMultiplePriorityFramesPacket(
 
   InitializeHeader(packet_number, should_include_version);
   return MakeMultipleFramesPacket(header_, frames);
+}
+
+void QuicTestPacketMaker::SetEncryptionLevel(EncryptionLevel level) {
+  encryption_level_ = level;
+}
+
+void QuicTestPacketMaker::SetLongHeaderType(QuicLongHeaderType type) {
+  long_header_type_ = type;
+}
+
+bool QuicTestPacketMaker::ShouldIncludeVersion(bool include_version) const {
+  if (version_ == QUIC_VERSION_99) {
+    return encryption_level_ < ENCRYPTION_FORWARD_SECURE;
+  }
+  return include_version;
+}
+
+QuicPacketNumberLength QuicTestPacketMaker::GetPacketNumberLength() const {
+  if (version_ == QUIC_VERSION_99 &&
+      encryption_level_ < ENCRYPTION_FORWARD_SECURE) {
+    return PACKET_4BYTE_PACKET_NUMBER;
+  }
+  return PACKET_1BYTE_PACKET_NUMBER;
 }
 
 }  // namespace test

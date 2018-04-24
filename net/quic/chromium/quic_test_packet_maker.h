@@ -296,6 +296,10 @@ class QuicTestPacketMaker {
       const std::vector<Http2StreamDependency>& priority_frames,
       QuicStreamOffset* offset);
 
+  void SetEncryptionLevel(EncryptionLevel level);
+
+  void SetLongHeaderType(QuicLongHeaderType type);
+
   SpdyHeaderBlock GetRequestHeaders(const std::string& method,
                                     const std::string& scheme,
                                     const std::string& path);
@@ -323,6 +327,10 @@ class QuicTestPacketMaker {
                                            SpdyHeaderBlock headers,
                                            QuicStreamId parent_stream_id);
 
+  bool ShouldIncludeVersion(bool include_version) const;
+
+  QuicPacketNumberLength GetPacketNumberLength() const;
+
   QuicTransportVersion version_;
   QuicConnectionId connection_id_;
   MockClock* clock_;  // Owned by QuicStreamFactory.
@@ -332,6 +340,8 @@ class QuicTestPacketMaker {
   MockRandom random_generator_;
   QuicPacketHeader header_;
   Perspective perspective_;
+  EncryptionLevel encryption_level_;
+  QuicLongHeaderType long_header_type_;
 
   // If true, generated request headers will include non-default HTTP2 stream
   // dependency info.

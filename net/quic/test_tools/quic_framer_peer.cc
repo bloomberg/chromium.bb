@@ -303,5 +303,11 @@ QuicEncrypter* QuicFramerPeer::GetEncrypter(QuicFramer* framer,
   return framer->encrypter_[level].get();
 }
 
+// static
+void QuicFramerPeer::SetLastPacketIsIetfQuic(QuicFramer* framer,
+                                             bool last_packet_is_ietf_quic) {
+  framer->last_packet_is_ietf_quic_ = last_packet_is_ietf_quic;
+}
+
 }  // namespace test
 }  // namespace net

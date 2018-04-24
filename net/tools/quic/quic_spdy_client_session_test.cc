@@ -306,7 +306,11 @@ TEST_P(QuicSpdyClientSessionTest, InvalidPacketReceived) {
       .WillRepeatedly(Invoke(static_cast<MockQuicConnection*>(connection_),
                              &MockQuicConnection::ReallyProcessUdpPacket));
   EXPECT_CALL(*connection_, OnCanWrite()).Times(AnyNumber());
-  EXPECT_CALL(*connection_, OnError(_)).Times(1);
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    EXPECT_CALL(*connection_, OnError(_)).Times(3);
+  } else {
+    EXPECT_CALL(*connection_, OnError(_)).Times(1);
+  }
 
   // Verify that empty packets don't close the connection.
   QuicReceivedPacket zero_length_packet(nullptr, 0, QuicTime::Zero(), false);
@@ -331,7 +335,11 @@ TEST_P(QuicSpdyClientSessionTest, InvalidPacketReceived) {
   // Change the last byte of the encrypted data.
   *(const_cast<char*>(received->data() + received->length() - 1)) += 1;
   EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
-  EXPECT_CALL(*connection_, OnError(Truly(CheckForDecryptionError))).Times(1);
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    EXPECT_CALL(*connection_, OnError(Truly(CheckForDecryptionError))).Times(0);
+  } else {
+    EXPECT_CALL(*connection_, OnError(Truly(CheckForDecryptionError))).Times(1);
+  }
   session_->ProcessUdpPacket(client_address, server_address, *received);
 }
 

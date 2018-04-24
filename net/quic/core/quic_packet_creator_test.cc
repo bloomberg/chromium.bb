@@ -74,7 +74,8 @@ class TestPacketCreator : public QuicPacketCreator {
                     DelegateInterface* delegate,
                     SimpleDataProducer* producer)
       : QuicPacketCreator(connection_id, framer, delegate),
-        producer_(producer) {}
+        producer_(producer),
+        version_(framer->transport_version()) {}
 
   bool ConsumeData(QuicStreamId id,
                    const struct iovec* iov,
@@ -95,7 +96,16 @@ class TestPacketCreator : public QuicPacketCreator {
                                           fin, needs_full_padding, frame);
   }
 
+  void StopSendingVersion() {
+    if (version_ == QUIC_VERSION_99) {
+      set_encryption_level(ENCRYPTION_FORWARD_SECURE);
+      return;
+    }
+    QuicPacketCreator::StopSendingVersion();
+  }
+
   SimpleDataProducer* producer_;
+  QuicTransportVersion version_;
 };
 
 class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
@@ -281,6 +291,9 @@ TEST_P(QuicPacketCreatorTest, SerializeFrames) {
 }
 
 TEST_P(QuicPacketCreatorTest, ReserializeFramesWithSequenceNumberLength) {
+  if (client_framer_.transport_version() == QUIC_VERSION_99) {
+    creator_.set_encryption_level(ENCRYPTION_FORWARD_SECURE);
+  }
   // If the original packet number length, the current packet number
   // length, and the configured send packet number length are different, the
   // retransmit must sent with the original length and the others do not change.
@@ -293,15 +306,15 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithSequenceNumberLength) {
   char buffer[kMaxPacketSize];
   QuicPendingRetransmission retransmission(CreateRetransmission(
       frames, true /* has_crypto_handshake */, -1 /* needs full padding */,
-      ENCRYPTION_NONE, PACKET_1BYTE_PACKET_NUMBER));
+      ENCRYPTION_NONE, PACKET_4BYTE_PACKET_NUMBER));
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
   creator_.ReserializeAllFrames(retransmission, buffer, kMaxPacketSize);
   // The packet number length is updated after every packet is sent,
   // so there is no need to restore the old length after sending.
-  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
+  EXPECT_EQ(PACKET_4BYTE_PACKET_NUMBER,
             QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
-  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
+  EXPECT_EQ(PACKET_4BYTE_PACKET_NUMBER,
             serialized_packet_.packet_number_length);
 
   {
@@ -669,8 +682,10 @@ TEST_P(QuicPacketCreatorTest, SerializeVersionNegotiationPacket) {
   QuicFramerPeer::SetPerspective(&client_framer_, Perspective::IS_SERVER);
   ParsedQuicVersionVector versions;
   versions.push_back(test::QuicVersionMax());
+  const bool ietf_quic =
+      GetParam().version.transport_version == QUIC_VERSION_99;
   std::unique_ptr<QuicEncryptedPacket> encrypted(
-      creator_.SerializeVersionNegotiationPacket(false, versions));
+      creator_.SerializeVersionNegotiationPacket(ietf_quic, versions));
 
   {
     InSequence s;
@@ -708,8 +723,14 @@ TEST_P(QuicPacketCreatorTest, SerializeConnectivityProbingPacket) {
 }
 
 TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthLeastAwaiting) {
-  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
-            QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
+  if (GetParam().version.transport_version == QUIC_VERSION_99) {
+    EXPECT_EQ(PACKET_4BYTE_PACKET_NUMBER,
+              QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
+    creator_.set_encryption_level(ENCRYPTION_FORWARD_SECURE);
+  } else {
+    EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
+              QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
+  }
 
   QuicPacketCreatorPeer::SetPacketNumber(&creator_, 64);
   creator_.UpdatePacketNumberLength(2, 10000 / kDefaultMaxPacketSize);
@@ -739,8 +760,14 @@ TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthLeastAwaiting) {
 }
 
 TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthCwnd) {
-  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
-            QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
+  if (GetParam().version.transport_version == QUIC_VERSION_99) {
+    EXPECT_EQ(PACKET_4BYTE_PACKET_NUMBER,
+              QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
+    creator_.set_encryption_level(ENCRYPTION_FORWARD_SECURE);
+  } else {
+    EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
+              QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
+  }
 
   creator_.UpdatePacketNumberLength(1, 10000 / kDefaultMaxPacketSize);
   EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,

@@ -1785,10 +1785,14 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
 
   if (version_negotiation_state_ != NEGOTIATED_VERSION) {
     if (perspective_ == Perspective::IS_CLIENT) {
-      DCHECK(!header.version_flag);
-      // If the client gets a packet without the version flag from the server
-      // it should stop sending version since the version negotiation is done.
-      packet_generator_.StopSendingVersion();
+      DCHECK(!header.version_flag || framer_.last_packet_is_ietf_quic());
+      if (framer_.transport_version() != QUIC_VERSION_99) {
+        // If the client gets a packet without the version flag from the server
+        // it should stop sending version since the version negotiation is done.
+        // IETF QUIC stops sending version once encryption level switches to
+        // forward secure.
+        packet_generator_.StopSendingVersion();
+      }
       version_negotiation_state_ = NEGOTIATED_VERSION;
       visitor_->OnSuccessfulVersionNegotiation(version());
       if (debug_visitor_ != nullptr) {

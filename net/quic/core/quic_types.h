@@ -422,6 +422,10 @@ enum QuicShortHeaderType : uint8_t {
 };
 
 enum QuicPacketHeaderTypeFlags : uint8_t {
+  // Bit 3: Google QUIC Demultiplexing bit, the short header always sets this
+  // bit to 0, allowing to distinguish Google QUIC packets from short header
+  // packets.
+  FLAGS_DEMULTIPLEXING_BIT = 1 << 3,
   // Bit 5: Indicates the key phase, which allows the receipt of the packet to
   // identify the packet protection keys that are used to protect the packet.
   FLAGS_KEY_PHASE_BIT = 1 << 5,

@@ -24,6 +24,14 @@
 
 namespace net {
 
+namespace {
+
+// Stateless reset token used in IETF public reset packet.
+// TODO(fayang): use a real stateless reset token instead of a hard code one.
+const uint128 kStatelessResetToken = 1010101;
+
+}  // namespace
+
 // A very simple alarm that just informs the QuicTimeWaitListManager to clean
 // up old connection_ids. This alarm should be cancelled and deleted before
 // the QuicTimeWaitListManager is deleted.
@@ -177,7 +185,8 @@ void QuicTimeWaitListManager::ProcessPacket(
     return;
   }
 
-  SendPublicReset(server_address, client_address, connection_id);
+  SendPublicReset(server_address, client_address, connection_id,
+                  connection_data->ietf_quic);
 }
 
 void QuicTimeWaitListManager::SendVersionNegotiationPacket(
@@ -202,7 +211,14 @@ bool QuicTimeWaitListManager::ShouldSendResponse(int received_packet_count) {
 void QuicTimeWaitListManager::SendPublicReset(
     const QuicSocketAddress& server_address,
     const QuicSocketAddress& client_address,
-    QuicConnectionId connection_id) {
+    QuicConnectionId connection_id,
+    bool ietf_quic) {
+  if (ietf_quic) {
+    SendOrQueuePacket(QuicMakeUnique<QueuedPacket>(
+        server_address, client_address,
+        BuildIetfStatelessResetPacket(connection_id)));
+    return;
+  }
   QuicPublicResetPacket packet;
   packet.connection_id = connection_id;
   // TODO(satyamshekhar): generate a valid nonce for this connection_id.
@@ -216,6 +232,13 @@ void QuicTimeWaitListManager::SendPublicReset(
 std::unique_ptr<QuicEncryptedPacket> QuicTimeWaitListManager::BuildPublicReset(
     const QuicPublicResetPacket& packet) {
   return QuicFramer::BuildPublicResetPacket(packet);
+}
+
+std::unique_ptr<QuicEncryptedPacket>
+QuicTimeWaitListManager::BuildIetfStatelessResetPacket(
+    QuicConnectionId connection_id) {
+  return QuicFramer::BuildIetfStatelessResetPacket(
+      connection_id, GetStatelessResetToken(connection_id));
 }
 
 // Either sends the packet and deletes it or makes pending queue the
@@ -325,5 +348,10 @@ QuicTimeWaitListManager::ConnectionIdData::ConnectionIdData(
     ConnectionIdData&& other) = default;
 
 QuicTimeWaitListManager::ConnectionIdData::~ConnectionIdData() = default;
+
+uint128 QuicTimeWaitListManager::GetStatelessResetToken(
+    QuicConnectionId connection_id) const {
+  return kStatelessResetToken;
+}
 
 }  // namespace net

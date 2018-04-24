@@ -815,9 +815,12 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   AddWrite(ConstructRequestHeadersPacketInner(
       1, GetNthClientInitiatedStreamId(0), kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
+  client_maker_.SetEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   AddWrite(ConstructInitialSettingsPacket(2, &header_stream_offset));
   AddWrite(ConstructClientAckPacket(3, 3, 1, 1));
 
@@ -913,6 +916,8 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
 TEST_P(BidirectionalStreamQuicImplTest, LoadTimingTwoRequests) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   QuicStreamOffset offset = 0;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   AddWrite(ConstructRequestHeadersPacketInner(
       1, GetNthClientInitiatedStreamId(0), kFin, DEFAULT_PRIORITY, nullptr,
       &offset));
@@ -921,6 +926,7 @@ TEST_P(BidirectionalStreamQuicImplTest, LoadTimingTwoRequests) {
   AddWrite(ConstructRequestHeadersPacketInner(
       2, GetNthClientInitiatedStreamId(1), kFin, DEFAULT_PRIORITY,
       GetNthClientInitiatedStreamId(0), nullptr, &offset));
+  client_maker_.SetEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   AddWrite(ConstructInitialSettingsPacket(3, &offset));
   AddWrite(ConstructClientAckPacket(4, 3, 1, 1));
   Initialize();
@@ -1539,9 +1545,12 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterHeaders) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   AddWrite(ConstructRequestHeadersPacketInner(
       1, GetNthClientInitiatedStreamId(0), kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
+  client_maker_.SetEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   AddWrite(ConstructInitialSettingsPacket(2, &header_stream_offset));
   Initialize();
 
@@ -1582,9 +1591,12 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterReadData) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   QuicStreamOffset header_stream_offset = 0;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   AddWrite(ConstructRequestHeadersPacketInner(
       1, GetNthClientInitiatedStreamId(0), kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
+  client_maker_.SetEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   AddWrite(ConstructInitialSettingsPacket(2, &header_stream_offset));
   // Why does QUIC ack Rst? Is this expected?
   AddWrite(ConstructClientAckPacket(3, 3, 1, 1));
@@ -2034,6 +2046,8 @@ TEST_P(BidirectionalStreamQuicImplTest, AsyncFinRead) {
 TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
+  client_maker_.SetEncryptionLevel(ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(ZERO_RTT_PROTECTED);
   AddWrite(ConstructRequestHeadersPacket(1, kFin, DEFAULT_PRIORITY,
                                          &spdy_request_headers_frame_length));
   AddWrite(ConstructClientAckPacket(2, 3, 1, 1));  // Ack the data packet

@@ -317,4 +317,10 @@ SentPacketState QuicUtils::RetransmissionTypeToPacketState(
   }
 }
 
+// static
+bool QuicUtils::IsIetfPacketHeader(uint8_t first_byte) {
+  return (first_byte & FLAGS_LONG_HEADER) ||
+         !(first_byte & FLAGS_DEMULTIPLEXING_BIT);
+}
+
 }  // namespace net

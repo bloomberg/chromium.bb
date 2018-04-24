@@ -33,6 +33,9 @@ class QuicFramerPeer {
 
   static QuicEncrypter* GetEncrypter(QuicFramer* framer, EncryptionLevel level);
 
+  static void SetLastPacketIsIetfQuic(QuicFramer* framer,
+                                      bool last_packet_is_ietf_quic);
+
   // IETF defined frame append/process methods.
   static bool ProcessIetfStreamFrame(QuicFramer* framer,
                                      QuicDataReader* reader,

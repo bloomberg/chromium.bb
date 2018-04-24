@@ -83,6 +83,7 @@ void QuicPacketCreator::SetMaxPacketLength(QuicByteCount length) {
 // maximum packet size if we stop sending version before it is serialized.
 void QuicPacketCreator::StopSendingVersion() {
   DCHECK(send_version_in_packet_);
+  DCHECK_NE(framer_->transport_version(), QUIC_VERSION_99);
   send_version_in_packet_ = false;
   if (packet_size_ > 0) {
     DCHECK_LT(kQuicVersionSize, packet_size_);
@@ -513,10 +514,16 @@ SerializedPacket QuicPacketCreator::NoPacket() {
 }
 
 QuicConnectionIdLength QuicPacketCreator::GetConnectionIdLength() const {
+  if (HasIetfLongHeader()) {
+    return PACKET_8BYTE_CONNECTION_ID;
+  }
   return connection_id_length_;
 }
 
 QuicPacketNumberLength QuicPacketCreator::GetPacketNumberLength() const {
+  if (HasIetfLongHeader()) {
+    return PACKET_4BYTE_PACKET_NUMBER;
+  }
   return packet_.packet_number_length;
 }
 
@@ -532,7 +539,11 @@ void QuicPacketCreator::FillPacketHeader(QuicPacketHeader* header) {
     header->nonce = nullptr;
   }
   header->packet_number = ++packet_.packet_number;
-  header->packet_number_length = packet_.packet_number_length;
+  header->packet_number_length = GetPacketNumberLength();
+  if (!HasIetfLongHeader()) {
+    return;
+  }
+  header->long_packet_type = long_header_type_;
 }
 
 bool QuicPacketCreator::ShouldRetransmit(const QuicFrame& frame) {
@@ -638,6 +649,9 @@ bool QuicPacketCreator::IncludeNonceInPublicHeader() const {
 }
 
 bool QuicPacketCreator::IncludeVersionInHeader() const {
+  if (framer_->transport_version() == QUIC_VERSION_99) {
+    return packet_.encryption_level < ENCRYPTION_FORWARD_SECURE;
+  }
   return send_version_in_packet_;
 }
 
@@ -670,6 +684,11 @@ void QuicPacketCreator::SetTransmissionType(TransmissionType type) {
 
 void QuicPacketCreator::SetLongHeaderType(QuicLongHeaderType type) {
   long_header_type_ = type;
+}
+
+bool QuicPacketCreator::HasIetfLongHeader() const {
+  return framer_->transport_version() == QUIC_VERSION_99 &&
+         packet_.encryption_level < ENCRYPTION_FORWARD_SECURE;
 }
 
 }  // namespace net

@@ -137,6 +137,18 @@ TEST_F(QuicUtilsTest, RetransmissionTypeToPacketState) {
   }
 }
 
+TEST_F(QuicUtilsTest, IsIetfPacketHeader) {
+  uint8_t first_byte = 0;
+  EXPECT_TRUE(QuicUtils::IsIetfPacketHeader(first_byte));
+
+  first_byte |= FLAGS_LONG_HEADER;
+  EXPECT_TRUE(QuicUtils::IsIetfPacketHeader(first_byte));
+
+  first_byte = 0;
+  first_byte |= PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID;
+  EXPECT_FALSE(QuicUtils::IsIetfPacketHeader(first_byte));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

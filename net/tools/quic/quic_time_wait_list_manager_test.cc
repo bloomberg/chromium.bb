@@ -41,6 +41,8 @@ namespace net {
 namespace test {
 namespace {
 
+const uint128 kTestStatelessResetToken = 1010101;
+
 class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
  public:
   FramerVisitorCapturingPublicReset() = default;
@@ -54,8 +56,22 @@ class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
     return public_reset_packet_;
   }
 
+  bool IsValidStatelessResetToken(uint128 token) const override {
+    return token == kTestStatelessResetToken;
+  }
+
+  void OnAuthenticatedIetfStatelessResetPacket(
+      const QuicIetfStatelessResetPacket& packet) override {
+    stateless_reset_packet_ = packet;
+  }
+
+  const QuicIetfStatelessResetPacket stateless_reset_packet() {
+    return stateless_reset_packet_;
+  }
+
  private:
   QuicPublicResetPacket public_reset_packet_;
+  QuicIetfStatelessResetPacket stateless_reset_packet_;
 };
 
 class MockFakeTimeEpollServer : public FakeTimeEpollServer {
@@ -103,8 +119,8 @@ class QuicTimeWaitListManagerTest : public QuicTest {
       bool connection_rejected_statelessly,
       std::vector<std::unique_ptr<QuicEncryptedPacket>>* packets) {
     time_wait_list_manager_.AddConnectionIdToTimeWait(
-        connection_id, version, false, connection_rejected_statelessly,
-        packets);
+        connection_id, version, version.transport_version == QUIC_VERSION_99,
+        connection_rejected_statelessly, packets);
   }
 
   bool IsConnectionIdInTimeWait(QuicConnectionId connection_id) {
@@ -146,9 +162,18 @@ bool ValidPublicResetPacketPredicate(
                                 testing::get<1>(packet_buffer));
   framer.ProcessPacket(encrypted);
   QuicPublicResetPacket packet = visitor.public_reset_packet();
-  return expected_connection_id == packet.connection_id &&
-         TestPeerIPAddress() == packet.client_address.host() &&
-         kTestPort == packet.client_address.port();
+  bool public_reset_is_valid =
+      expected_connection_id == packet.connection_id &&
+      TestPeerIPAddress() == packet.client_address.host() &&
+      kTestPort == packet.client_address.port();
+
+  QuicIetfStatelessResetPacket stateless_reset =
+      visitor.stateless_reset_packet();
+  bool stateless_reset_is_valid =
+      expected_connection_id == stateless_reset.header.connection_id &&
+      stateless_reset.stateless_reset_token == kTestStatelessResetToken;
+
+  return public_reset_is_valid || stateless_reset_is_valid;
 }
 
 Matcher<const testing::tuple<const char*, int>> PublicResetPacketEq(
