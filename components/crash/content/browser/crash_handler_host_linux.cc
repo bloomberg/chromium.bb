@@ -146,7 +146,7 @@ void CrashHandlerHostLinux::StartUploaderThread() {
 }
 
 void CrashHandlerHostLinux::Init() {
-  base::MessageLoopCurrentForIO ml = base::MessageLoopForIO::current();
+  base::MessageLoopCurrentForIO ml = base::MessageLoopCurrentForIO::Get();
   CHECK(ml->WatchFileDescriptor(browser_socket_, true /* persistent */,
                                 base::MessagePumpForIO::WATCH_READ,
                                 &file_descriptor_watcher_, this));
@@ -522,7 +522,7 @@ CrashHandlerHost::CrashHandlerHost()
 CrashHandlerHost::~CrashHandlerHost() = default;
 
 void CrashHandlerHost::Init() {
-  base::MessageLoopCurrentForIO ml = base::MessageLoopForIO::current();
+  base::MessageLoopCurrentForIO ml = base::MessageLoopCurrentForIO::Get();
   CHECK(ml->WatchFileDescriptor(browser_socket_.get(), /* persistent= */ true,
                                 base::MessagePumpForIO::WATCH_READ,
                                 &file_descriptor_watcher_, this));
