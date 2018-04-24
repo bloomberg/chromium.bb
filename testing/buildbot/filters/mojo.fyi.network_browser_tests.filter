@@ -173,6 +173,7 @@
 -ExtensionWebRequestApiTest.WebRequestDeclarative2
 -ExtensionWebRequestApiTest.WebRequestDiceHeaderProtection
 -ExtensionWebRequestApiTest.WebRequestTypes
+-NTPInterceptionWebRequestAPITest.NTPRendererRequestsHidden
 
 # https://crbug.com/721400
 # WebSocket with the network service

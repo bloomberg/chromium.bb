@@ -32,6 +32,7 @@
 #include "chrome/browser/guest_view/mime_handler_view/chrome_mime_handler_view_guest_delegate.h"
 #include "chrome/browser/guest_view/web_view/chrome_web_view_guest_delegate.h"
 #include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
+#include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
@@ -39,6 +40,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
+#include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -105,8 +107,19 @@ bool ChromeExtensionsAPIClient::ShouldHideResponseHeader(
 }
 
 bool ChromeExtensionsAPIClient::ShouldHideBrowserNetworkRequest(
-    const GURL& url) const {
-  return DevToolsUI::IsFrontendResourceURL(url);
+    const WebRequestInfo& request) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  bool is_protected_devtools_request =
+      request.render_process_id == -1 &&
+      request.type != content::RESOURCE_TYPE_MAIN_FRAME &&
+      DevToolsUI::IsFrontendResourceURL(request.url);
+
+  // Hide requests made by Devtools frontend and the NTP Instant renderer from
+  // extensions.
+  return is_protected_devtools_request ||
+         InstantIOContext::IsInstantProcess(request.resource_context,
+                                            request.render_process_id);
 }
 
 AppViewGuestDelegate* ChromeExtensionsAPIClient::CreateAppViewGuestDelegate()

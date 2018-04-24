@@ -5,12 +5,13 @@
 #include "extensions/browser/api/web_request/web_request_permissions.h"
 
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/web_request/web_request_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace extensions {
 
-TEST(ExtensionWebRequestPermissions, IsSensitiveURL) {
+TEST(ExtensionWebRequestPermissions, IsSensitiveRequest) {
   ExtensionsAPIClient api_client;
   struct TestCase {
     const char* url;
@@ -55,19 +56,22 @@ TEST(ExtensionWebRequestPermissions, IsSensitiveURL) {
       {"https://chrome.google.com/webstore?query", true, true},
   };
   for (const TestCase& test : cases) {
-    GURL url(test.url);
-    EXPECT_TRUE(url.is_valid()) << test.url;
+    WebRequestInfo request;
+    request.url = GURL(test.url);
+    EXPECT_TRUE(request.url.is_valid()) << test.url;
+
+    request.initiator = url::Origin::Create(request.url);
     EXPECT_EQ(test.is_sensitive_if_request_from_common_renderer,
-              IsSensitiveURL(url, url::Origin::Create(url),
-                             false /* is_request_from_browser */,
-                             false /* is_request_from_web_ui_renderer */))
+              IsSensitiveRequest(request, false /* is_request_from_browser */,
+                                 false /* is_request_from_web_ui_renderer */))
         << test.url;
 
-    const bool supported_in_webui_renderers = !url.SchemeIsHTTPOrHTTPS();
-    EXPECT_EQ(
-        test.is_sensitive_if_request_from_browser_or_webui_renderer,
-        IsSensitiveURL(url, base::nullopt, true /* is_request_from_browser */,
-                       supported_in_webui_renderers))
+    const bool supported_in_webui_renderers =
+        !request.url.SchemeIsHTTPOrHTTPS();
+    request.initiator = base::nullopt;
+    EXPECT_EQ(test.is_sensitive_if_request_from_browser_or_webui_renderer,
+              IsSensitiveRequest(request, true /* is_request_from_browser */,
+                                 supported_in_webui_renderers))
         << test.url;
   }
 }

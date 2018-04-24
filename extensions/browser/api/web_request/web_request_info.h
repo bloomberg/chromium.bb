@@ -24,6 +24,10 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace content {
+class ResourceContext;
+}  // namespace content
+
 namespace net {
 class HttpResponseHeaders;
 class URLRequest;
@@ -164,6 +168,9 @@ struct WebRequestInfo {
   // Helper used to log events relevant to WebRequest processing. See definition
   // of Logger above. This is always non-null.
   std::unique_ptr<Logger> logger;
+
+  // The ResourceContext associated with this request. May be null.
+  content::ResourceContext* resource_context = nullptr;
 
  private:
   void InitializeWebViewAndFrameData(

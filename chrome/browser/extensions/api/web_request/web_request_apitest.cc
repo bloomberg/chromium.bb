@@ -24,12 +24,15 @@
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/login/login_handler.h"
+#include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/login/scoped_test_public_session_login_state.h"
@@ -1316,6 +1319,87 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MinimumAccessInitiator) {
           initiator_listener.message());
     }
   }
+}
+
+// Test fixture which sets a custom NTP Page.
+class NTPInterceptionWebRequestAPITest : public ExtensionApiTest {
+ public:
+  NTPInterceptionWebRequestAPITest()
+      : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+
+  // ExtensionApiTest override:
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    test_data_dir_ = test_data_dir_.AppendASCII("webrequest")
+                         .AppendASCII("ntp_request_interception");
+    https_test_server_.ServeFilesFromDirectory(test_data_dir_);
+    ASSERT_TRUE(https_test_server_.Start());
+
+    GURL ntp_url = https_test_server_.GetURL("/fake_ntp.html");
+    local_ntp_test_utils::SetUserSelectedDefaultSearchProvider(
+        profile(), https_test_server_.base_url().spec(), ntp_url.spec());
+  }
+
+  const net::EmbeddedTestServer* https_test_server() const {
+    return &https_test_server_;
+  }
+
+ private:
+  net::EmbeddedTestServer https_test_server_;
+  DISALLOW_COPY_AND_ASSIGN(NTPInterceptionWebRequestAPITest);
+};
+
+// Ensures that requests made by the NTP Instant renderer are hidden from the
+// Web Request API. Regression test for crbug.com/797461.
+IN_PROC_BROWSER_TEST_F(NTPInterceptionWebRequestAPITest,
+                       NTPRendererRequestsHidden) {
+  // Loads an extension which tries to intercept requests to
+  // "fake_ntp_script.js", which will be loaded as part of the NTP renderer.
+  ExtensionTestMessageListener listener("ready", false /*will_reply*/);
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("extension"));
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  // Returns true if the given extension was able to intercept the request to
+  // "fake_ntp_script.js".
+  auto was_script_request_intercepted =
+      [this](const std::string& extension_id) {
+        const std::string result = ExecuteScriptInBackgroundPage(
+            extension_id, "getAndResetRequestIntercepted();");
+        EXPECT_TRUE(result == "true" || result == "false")
+            << "Unexpected result " << result;
+        return result == "true";
+      };
+
+  // Returns true if the given |web_contents| has window.scriptExecuted set to
+  // true;
+  auto was_ntp_script_loaded = [](content::WebContents* web_contents) {
+    bool was_ntp_script_loaded = false;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        web_contents, "domAutomationController.send(!!window.scriptExecuted);",
+        &was_ntp_script_loaded));
+    return was_ntp_script_loaded;
+  };
+
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate to the NTP. The request for "fake_ntp_script.js" should not have
+  // reached the extension, since it was made by the instant NTP renderer, which
+  // is semi-privileged.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  EXPECT_TRUE(was_ntp_script_loaded(web_contents));
+  ASSERT_TRUE(search::IsInstantNTP(web_contents));
+  EXPECT_FALSE(was_script_request_intercepted(extension->id()));
+
+  // However, when a normal webpage requests the same script, the request should
+  // be seen by the extension.
+  ui_test_utils::NavigateToURL(
+      browser(), https_test_server()->GetURL("/page_with_ntp_script.html"));
+  EXPECT_TRUE(was_ntp_script_loaded(web_contents));
+  ASSERT_FALSE(search::IsInstantNTP(web_contents));
+  EXPECT_TRUE(was_script_request_intercepted(extension->id()));
 }
 
 // Ensure that devtools frontend requests are hidden from the webRequest API.
