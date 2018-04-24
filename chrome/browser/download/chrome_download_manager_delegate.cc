@@ -272,11 +272,6 @@ ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       weak_ptr_factory_(this) {
-  DCHECK(!profile_->GetPath().empty());
-  base::FilePath metadata_cache_file =
-      profile_->GetPath().Append(chrome::kDownloadMetadataStoreFilename);
-  download_metadata_cache_.reset(new download::InProgressCacheImpl(
-      metadata_cache_file, disk_access_task_runner_));
 #if defined(OS_ANDROID)
   location_dialog_bridge_.reset(new DownloadLocationDialogBridgeImpl);
 #endif
@@ -570,11 +565,6 @@ void ChromeDownloadManagerDelegate::ChooseSavePath(
       can_save_as_complete,
       download_prefs_.get(),
       callback);
-}
-
-download::InProgressCache* ChromeDownloadManagerDelegate::GetInProgressCache() {
-  DCHECK(download_metadata_cache_ != nullptr);
-  return download_metadata_cache_.get();
 }
 
 void ChromeDownloadManagerDelegate::SanitizeSavePackageResourceName(

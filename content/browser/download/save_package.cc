@@ -30,11 +30,11 @@
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "components/download/public/common/download_ukm_helper.h"
+#include "components/download/public/common/download_utils.h"
 #include "components/filename_generation/filename_generation.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/download/download_manager_impl.h"
-#include "content/browser/download/download_utils.h"
 #include "content/browser/download/save_file.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/download/save_item.h"
@@ -259,7 +259,7 @@ void SavePackage::InternalInit() {
   download::RecordSavePackageEvent(download::SAVE_PACKAGE_STARTED);
 
   ukm_source_id_ = ukm::UkmRecorder::GetNewSourceID();
-  ukm_download_id_ = GetUniqueDownloadId();
+  ukm_download_id_ = download::GetUniqueDownloadId();
   download::DownloadUkmHelper::RecordDownloadStarted(
       ukm_download_id_, ukm_source_id_, download::DownloadContent::TEXT,
       download::DownloadSource::UNKNOWN);

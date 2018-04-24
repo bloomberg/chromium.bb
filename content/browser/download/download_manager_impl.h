@@ -22,6 +22,7 @@
 #include "base/synchronization/lock.h"
 #include "components/download/public/common/download_item_impl_delegate.h"
 #include "components/download/public/common/download_url_parameters.h"
+#include "components/download/public/common/in_progress_download_manager.h"
 #include "components/download/public/common/url_download_handler.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/common/content_export.h"
@@ -37,7 +38,6 @@ class DownloadFileFactory;
 class DownloadItemFactory;
 class DownloadItemImpl;
 class DownloadRequestHandleInterface;
-class InProgressDownloadManager;
 }
 
 namespace content {
@@ -47,6 +47,7 @@ class StoragePartitionImpl;
 class CONTENT_EXPORT DownloadManagerImpl
     : public DownloadManager,
       public download::UrlDownloadHandler::Delegate,
+      public download::InProgressDownloadManager::Delegate,
       private download::DownloadItemImplDelegate {
  public:
   using DownloadItemImplCreated =
@@ -181,15 +182,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   friend class DownloadManagerTest;
   friend class DownloadTest;
 
-  void StartDownloadWithId(
-      std::unique_ptr<download::DownloadCreateInfo> info,
-      std::unique_ptr<download::InputStream> stream,
-      scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-          url_loader_factory_getter,
-      const download::DownloadUrlParameters::OnStartedCallback& on_started,
-      bool new_download,
-      uint32_t id);
-
   void CreateSavePackageDownloadItemWithId(
       const base::FilePath& main_file_path,
       const GURL& page_url,
@@ -200,9 +192,17 @@ class CONTENT_EXPORT DownloadManagerImpl
       const DownloadItemImplCreated& on_started,
       uint32_t id);
 
-  // Intercepts the download to another system if applicable. Returns true if
-  // the download was intercepted.
-  bool InterceptDownload(const download::DownloadCreateInfo& info);
+  // InProgressDownloadManager::Delegate implementations.
+  bool InterceptDownload(const download::DownloadCreateInfo& info) override;
+  base::FilePath GetDefaultDownloadDirectory() override;
+  download::DownloadItemImpl* GetDownloadItem(
+      uint32_t id,
+      bool new_download,
+      const download::DownloadCreateInfo& info) override;
+  net::URLRequestContextGetter* GetURLRequestContextGetter(
+      const download::DownloadCreateInfo& info) override;
+  void OnNewDownloadStarted(download::DownloadItem* download) override;
+  void GetNextId(const DownloadIdCallback& callback) override;
 
   // Create a new active item based on the info.  Separate from
   // StartDownload() for testing.
@@ -210,9 +210,6 @@ class CONTENT_EXPORT DownloadManagerImpl
       uint32_t id,
       const download::DownloadCreateInfo& info);
 
-  // Get next download id. |callback| is called on the UI thread and may
-  // be called synchronously.
-  void GetNextId(const DownloadIdCallback& callback);
 
   // Called with the result of DownloadManagerDelegate::CheckForFileExistence.
   // Updates the state of the file and then notifies this update to the file's
@@ -263,9 +260,6 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   // Factory for creation of downloads items.
   std::unique_ptr<download::DownloadItemFactory> item_factory_;
-
-  // Factory for the creation of download files.
-  std::unique_ptr<download::DownloadFileFactory> file_factory_;
 
   // |downloads_| is the owning set for all downloads known to the
   // DownloadManager.  This includes downloads started by the user in

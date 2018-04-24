@@ -12,6 +12,8 @@
 
 namespace download {
 
+extern const base::FilePath::CharType kDownloadMetadataStoreFilename[];
+
 // InProgressCache provides a write-through cache that persists
 // information related to an in-progress download such as request origin, retry
 // count, resumption parameters etc to the disk. The entries are written to disk

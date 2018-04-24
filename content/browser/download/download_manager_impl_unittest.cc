@@ -161,14 +161,20 @@ class MockDownloadItemFactory
       std::unique_ptr<download::DownloadRequestHandleInterface> request_handle)
       override;
 
+  void set_is_download_started(bool is_download_started) {
+    is_download_started_ = is_download_started;
+  }
+
  private:
   std::map<uint32_t, download::MockDownloadItemImpl*> items_;
   download::DownloadItemImplDelegate item_delegate_;
+  bool is_download_started_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDownloadItemFactory);
 };
 
-MockDownloadItemFactory::MockDownloadItemFactory() {}
+MockDownloadItemFactory::MockDownloadItemFactory()
+    : is_download_started_(false) {}
 
 MockDownloadItemFactory::~MockDownloadItemFactory() {}
 
@@ -243,6 +249,10 @@ download::DownloadItemImpl* MockDownloadItemFactory::CreateActiveItem(
       .WillRepeatedly(Return(download_id));
   EXPECT_CALL(*result, GetGuid())
       .WillRepeatedly(ReturnRefOfCopy(base::GenerateGUID()));
+  if (is_download_started_) {
+    EXPECT_CALL(*result, RemoveObserver(_));
+    EXPECT_CALL(*result, AddObserver(_));
+  }
   items_[download_id] = result;
 
   // Active items are created and then immediately are called to start
@@ -444,6 +454,7 @@ class DownloadManagerTest : public testing::Test {
   // Key test variable; we'll keep it available to sub-classes.
   std::unique_ptr<DownloadManagerImpl> download_manager_;
   base::WeakPtr<MockDownloadFileFactory> mock_download_file_factory_;
+  base::WeakPtr<MockDownloadItemFactory> mock_download_item_factory_;
 
   // Target detetermined callback.
   bool callback_called_;
@@ -457,7 +468,6 @@ class DownloadManagerTest : public testing::Test {
 
  private:
   TestBrowserThreadBundle thread_bundle_;
-  base::WeakPtr<MockDownloadItemFactory> mock_download_item_factory_;
   std::unique_ptr<MockDownloadManagerDelegate> mock_download_manager_delegate_;
   std::unique_ptr<MockDownloadManagerObserver> observer_;
   std::unique_ptr<TestBrowserContext> browser_context_;
@@ -495,6 +505,7 @@ TEST_F(DownloadManagerTest, StartDownload) {
               MockCreateFile(Ref(*info->save_info.get()), input_stream.get()))
       .WillOnce(Return(mock_file));
 
+  mock_download_item_factory_->set_is_download_started(true);
   download_manager_->StartDownload(
       std::move(info), std::move(input_stream), nullptr,
       download::DownloadUrlParameters::OnStartedCallback());

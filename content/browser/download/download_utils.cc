@@ -6,7 +6,6 @@
 
 #include "base/format_macros.h"
 #include "base/process/process_handle.h"
-#include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/download/downloader/in_progress/download_entry.h"
@@ -97,16 +96,6 @@ std::unique_ptr<net::URLRequest> CreateURLRequestOnIOThread(
   request->set_initiator(params->initiator());
 
   return request;
-}
-
-// Gets the unique download id for ukm reporting.
-uint64_t GetUniqueDownloadId() {
-  // Get a new UKM download_id that is not 0.
-  uint64_t download_id = 0;
-  do {
-    download_id = base::RandUint64();
-  } while (download_id == 0);
-  return download_id;
 }
 
 }  // namespace content

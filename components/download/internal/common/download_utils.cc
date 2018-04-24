@@ -5,6 +5,7 @@
 #include "components/download/public/common/download_utils.h"
 
 #include "base/format_macros.h"
+#include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons_utils.h"
@@ -345,6 +346,26 @@ std::unique_ptr<net::HttpRequestHeaders> GetAdditionalRequestHeaders(
 
   AppendExtraHeaders(headers.get(), params);
   return headers;
+}
+
+DownloadEntry CreateDownloadEntryFromItem(
+    const DownloadItem& item,
+    const std::string& request_origin,
+    DownloadSource download_source,
+    bool fetch_error_body,
+    const DownloadUrlParameters::RequestHeadersType& request_headers) {
+  return DownloadEntry(item.GetGuid(), request_origin, download_source,
+                       fetch_error_body, request_headers,
+                       GetUniqueDownloadId());
+}
+
+uint64_t GetUniqueDownloadId() {
+  // Get a new UKM download_id that is not 0.
+  uint64_t download_id = 0;
+  do {
+    download_id = base::RandUint64();
+  } while (download_id == 0);
+  return download_id;
 }
 
 }  // namespace download

@@ -97,7 +97,6 @@ class ChromeDownloadManagerDelegate
       const base::FilePath::StringType& default_extension,
       bool can_save_as_complete,
       const content::SavePackagePathPickedCallback& callback) override;
-  download::InProgressCache* GetInProgressCache() override;
   void SanitizeSavePackageResourceName(base::FilePath* filename) override;
   void OpenDownload(download::DownloadItem* download) override;
   bool IsMostRecentDownloadItemAtFilePath(
@@ -215,8 +214,6 @@ class ChromeDownloadManagerDelegate
 
   Profile* profile_;
 
-  std::unique_ptr<download::InProgressCache> download_metadata_cache_;
-
 #if defined(OS_ANDROID)
   std::unique_ptr<DownloadLocationDialogBridge> location_dialog_bridge_;
 #endif
@@ -231,9 +228,9 @@ class ChromeDownloadManagerDelegate
   IdCallbackVector id_callbacks_;
   std::unique_ptr<DownloadPrefs> download_prefs_;
 
-  // SequencedTaskRunner to check for file existence and read/write metadata
-  // cache. A sequence is used so that a large download history doesn't cause a
-  // large number of concurrent disk operations.
+  // SequencedTaskRunner to check for file existence. A sequence is used so
+  // that a large download history doesn't cause a large number of concurrent
+  // disk operations.
   const scoped_refptr<base::SequencedTaskRunner> disk_access_task_runner_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
