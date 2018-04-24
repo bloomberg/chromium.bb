@@ -21,6 +21,8 @@ Polymer({
       notify: true,
     },
 
+    prefs: Object,
+
     /** @type {?CupsPrinterInfo} */
     activePrinter: {
       type: Object,
@@ -200,4 +202,16 @@ Polymer({
     });
   },
 
+  /**
+   * @param {boolean} connectedToNetwork Whether the device is connected to
+         a network.
+   * @param {boolean} userNativePrintersAllowed Whether users are allowed to
+         configure their own native printers.
+   * @return {boolean} Whether the 'Add Printer' button is active.
+   * @private
+   */
+  addPrinterButtonActive_: function(
+      connectedToNetwork, userNativePrintersAllowed) {
+    return connectedToNetwork && userNativePrintersAllowed;
+  }
 });

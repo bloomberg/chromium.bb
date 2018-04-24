@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
@@ -60,8 +61,16 @@
           $i18n{requireNetworkMessage}
         </div>
       </div>
+      <template is="dom-if" if="[[!addPrinterButtonActive_(canAddPrinter_,
+          prefs.native_printing.user_native_printers_allowed.value)]]">
+        <cr-policy-pref-indicator
+            pref="[[prefs.native_printing.user_native_printers_allowed]]">
+        </cr-policy-pref-indicator>
+      </template>
       <paper-button class="primary-button" id="addPrinter"
-          on-click="onAddPrinterTap_" disabled="[[!canAddPrinter_]]">
+          on-click="onAddPrinterTap_"
+          disabled="[[!addPrinterButtonActive_(canAddPrinter_,
+              prefs.native_printing.user_native_printers_allowed.value)]]">
         $i18n{addCupsPrinter}
       </paper-button>
     </div>
