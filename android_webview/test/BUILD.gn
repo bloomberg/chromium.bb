@@ -26,6 +26,7 @@ android_apk("webview_instrumentation_apk") {
     "//android_webview:platform_service_bridge_upstream_implementation_java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//components/heap_profiling:heap_profiling_java_test_support",
     "//components/policy/android:policy_java_test_support",
     "//content/public/android:content_java",
     "//third_party/android_support_test_runner:runner_java",
@@ -36,7 +37,6 @@ android_apk("webview_instrumentation_apk") {
   apk_name = "WebViewInstrumentation"
   android_manifest = "shell/AndroidManifest.xml"
   java_files = [
-    "../javatests/src/org/chromium/android_webview/test/HeapProfilingTestShim.java",
     "shell/src/org/chromium/android_webview/shell/AwShellActivity.java",
     "shell/src/org/chromium/android_webview/shell/AwShellApplication.java",
     "shell/src/org/chromium/android_webview/shell/AwShellResourceProvider.java",
@@ -104,22 +104,12 @@ android_assets("android_webview_apk_assets") {
   }
 }
 
-generate_jni("heap_profiling_jni_headers") {
-  sources = [
-    "../javatests/src/org/chromium/android_webview/test/HeapProfilingTestShim.java",
-  ]
-  jni_package = "heap_profiling"
-}
-
 shared_library("libstandalonelibwebviewchromium") {
   sources = [
-    "../../components/heap_profiling/heap_profiling_test_shim.cc",
-    "../../components/heap_profiling/heap_profiling_test_shim.h",
     "../lib/webview_entry_point.cc",
   ]
   ldflags = [ "-Wl,-shared,-Bsymbolic" ]
   deps = [
-    ":heap_profiling_jni_headers",
     "//android_webview:common",
     "//components/heap_profiling:test_support",
   ]

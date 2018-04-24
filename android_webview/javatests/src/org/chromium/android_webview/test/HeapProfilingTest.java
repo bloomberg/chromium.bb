@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.components.heap_profiling.HeapProfilingTestShim;
 
 /**
  * Tests suite for heap profiling.
