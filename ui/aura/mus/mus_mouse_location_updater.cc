@@ -43,7 +43,7 @@ void MusMouseLocationUpdater::OnEventProcessingStarted(const ui::Event& event) {
   }
 
   is_processing_trigger_event_ = true;
-  Env::GetInstance()->set_last_mouse_location(
+  Env::GetInstance()->SetLastMouseLocation(
       event.AsMouseEvent()->root_location());
   Env::GetInstance()->get_last_mouse_location_from_mus_ = false;
 }

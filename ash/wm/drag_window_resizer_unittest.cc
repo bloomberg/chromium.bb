@@ -683,7 +683,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     window->SetBoundsInScreen(
         gfx::Rect(0, 0, 50, 60),
         display::Screen::GetScreen()->GetPrimaryDisplay());
-    aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(0, 0));
+    aura::Env::GetInstance()->SetLastMouseLocation(gfx::Point(0, 0));
     // Grab (0, 0) of the window.
     std::unique_ptr<WindowResizer> resizer(
         CreateDragWindowResizer(window, gfx::Point(), HTCAPTION));

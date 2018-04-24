@@ -107,7 +107,7 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplaysInNative) {
                                                   .placement_list[0]
                                                   .position);
 
-  aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(900, 123));
+  aura::Env::GetInstance()->SetLastMouseLocation(gfx::Point(900, 123));
 
   EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(499, 123)));
   EXPECT_EQ("500,123",
