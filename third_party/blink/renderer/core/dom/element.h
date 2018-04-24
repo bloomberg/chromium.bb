@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/element_data.h"
+#include "third_party/blink/renderer/core/dom/names_map.h"
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
 #include "third_party/blink/renderer/core/html/focus_options.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -811,6 +812,9 @@ class CORE_EXPORT Element : public ContainerNode {
 
   bool HasPartName() const;
   const SpaceSplitString* PartNames() const;
+
+  bool HasPartNamesMap() const;
+  const NamesMap* PartNamesMap() const;
 
   ScrollOffset SavedLayerScrollOffset() const;
   void SetSavedLayerScrollOffset(const ScrollOffset&);

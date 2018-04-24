@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/dom/dataset_dom_string_map.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/named_node_map.h"
+#include "third_party/blink/renderer/core/dom/names_map.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element_data.h"
@@ -104,6 +105,16 @@ class ElementRareData : public NodeRareData {
     part_names_->Set(part_names);
   }
   const SpaceSplitString* PartNames() const { return part_names_.get(); }
+
+  void SetPartNamesMap(const AtomicString part_names) {
+    if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
+      return;
+    if (!part_names_map_) {
+      part_names_map_.reset(new NamesMap());
+    }
+    part_names_map_->Set(part_names);
+  }
+  const NamesMap* PartNamesMap() const { return part_names_map_.get(); }
 
   DatasetDOMStringMap* Dataset() const { return dataset_.Get(); }
   void SetDataset(DatasetDOMStringMap* dataset) {
@@ -190,6 +201,7 @@ class ElementRareData : public NodeRareData {
   TraceWrapperMember<ShadowRoot> shadow_root_;
   TraceWrapperMember<DOMTokenList> class_list_;
   std::unique_ptr<SpaceSplitString> part_names_;
+  std::unique_ptr<NamesMap> part_names_map_;
   TraceWrapperMember<NamedNodeMap> attribute_map_;
   Member<AttrNodeList> attr_node_list_;
   Member<InlineCSSStyleDeclaration> cssom_wrapper_;

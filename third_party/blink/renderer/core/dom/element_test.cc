@@ -391,6 +391,56 @@ TEST_F(ElementTest, PartAttribute) {
   }
 }
 
+TEST_F(ElementTest, PartmapAttribute) {
+  Document& document = GetDocument();
+  SetBodyContent(R"HTML(
+    <span id='has_one_mapping' partmap='partname1 partname2'></span>
+    <span id='has_two_mappings' partmap='partname1 partname2, partname3 partname4'></span>
+    <span id='has_no_mapping'></span>
+  )HTML");
+
+  Element* has_one_mapping = document.getElementById("has_one_mapping");
+  Element* has_two_mappings = document.getElementById("has_two_mappings");
+  Element* has_no_mapping = document.getElementById("has_no_mapping");
+
+  ASSERT_TRUE(has_no_mapping);
+  ASSERT_TRUE(has_one_mapping);
+  ASSERT_TRUE(has_two_mappings);
+
+  {
+    EXPECT_TRUE(has_one_mapping->HasPartNamesMap());
+    const NamesMap* part_names_map = has_one_mapping->PartNamesMap();
+    ASSERT_TRUE(part_names_map);
+    ASSERT_EQ(1UL, part_names_map->size());
+    ASSERT_EQ("partname2",
+              part_names_map->Get("partname1").value().SerializeToString());
+  }
+
+  {
+    EXPECT_TRUE(has_two_mappings->HasPartNamesMap());
+    const NamesMap* part_names_map = has_two_mappings->PartNamesMap();
+    ASSERT_TRUE(part_names_map);
+    ASSERT_EQ(2UL, part_names_map->size());
+    ASSERT_EQ("partname2",
+              part_names_map->Get("partname1").value().SerializeToString());
+    ASSERT_EQ("partname4",
+              part_names_map->Get("partname3").value().SerializeToString());
+  }
+
+  {
+    EXPECT_FALSE(has_no_mapping->HasPartNamesMap());
+    EXPECT_FALSE(has_no_mapping->PartNamesMap());
+
+    // Now update the attribute value and make sure it's reflected.
+    has_no_mapping->setAttribute("partmap", "partname1 partname2");
+    const NamesMap* part_names_map = has_no_mapping->PartNamesMap();
+    ASSERT_TRUE(part_names_map);
+    ASSERT_EQ(1UL, part_names_map->size());
+    ASSERT_EQ("partname2",
+              part_names_map->Get("partname1").value().SerializeToString());
+  }
+}
+
 TEST_F(ElementTest, OptionElementDisplayNoneComputedStyle) {
   Document& document = GetDocument();
   SetBodyContent(R"HTML(

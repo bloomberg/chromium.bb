@@ -1712,6 +1712,7 @@ jumbo_source_set("unit_tests") {
     "dom/layout_tree_builder_traversal_test.cc",
     "dom/live_node_list_registry_test.cc",
     "dom/mutation_observer_test.cc",
+    "dom/names_map_test.cc",
     "dom/ng/flat_tree_traversal_ng_test.cc",
     "dom/ng/slot_assignment_test.cc",
     "dom/node_test.cc",
