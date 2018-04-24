@@ -15,10 +15,24 @@ enum class PowerButtonMenuActionType {
   kDismissByEsc,
   kDismissByMouse,
   kDismissByTouch,
-  kPowerMenuActionCount,
+  kMaxValue = kDismissByTouch,
 };
 
 void RecordMenuActionHistogram(PowerButtonMenuActionType type);
+
+// Used for histograms. See tools/metrics/histograms/enums.xml
+// PowerButtonPressType.
+enum class PowerButtonPressType {
+  kTapWithoutMenu,
+  kTapWithMenu,
+  kLongPressToShowMenu,
+  kLongPressWithMenuToShutdown,
+  kLongPressWithoutMenuToShutdown,
+  kMaxValue = kLongPressWithoutMenuToShutdown,
+};
+
+void RecordPressInLaptopModeHistogram(PowerButtonPressType type);
+void RecordPressInTabletModeHistogram(PowerButtonPressType type);
 
 }  // namespace ash
 

@@ -189,6 +189,11 @@ class ASH_EXPORT PowerButtonController
   // switches::kAshPowerButtonPosition.
   void ParsePowerButtonPositionSwitch();
 
+  // Updates UMA histogram of power button press according to the power button
+  // up state. |up_state| is a bit field containing values from the
+  // PowerButtonUpState enum defined in the .cc file.
+  void UpdatePowerButtonEventUMAHistogram(uint32_t up_state);
+
   // Are the power or lock buttons currently held?
   bool power_button_down_ = false;
   bool lock_button_down_ = false;

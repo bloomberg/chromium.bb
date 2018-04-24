@@ -18,6 +18,7 @@
 #include "ash/shutdown_reason.h"
 #include "ash/system/power/power_button_display_controller.h"
 #include "ash/system/power/power_button_menu_item_view.h"
+#include "ash/system/power/power_button_menu_metrics_type.h"
 #include "ash/system/power/power_button_menu_screen_view.h"
 #include "ash/system/power/power_button_menu_view.h"
 #include "ash/system/power/power_button_screenshot_controller.h"
@@ -49,6 +50,15 @@ constexpr base::TimeDelta kShowMenuWhenScreenOffTimeout =
 // starting the cancellable pre-shutdown animation.
 constexpr base::TimeDelta kStartShutdownAnimationTimeout =
     base::TimeDelta::FromMilliseconds(650);
+
+enum PowerButtonUpState {
+  UP_NONE = 0,
+  UP_MENU_TIMER_WAS_RUNNING = 1 << 0,
+  UP_PRE_SHUTDOWN_TIMER_WAS_RUNNING = 1 << 1,
+  UP_SHOWING_ANIMATION_CANCELLED = 1 << 2,
+  UP_CAN_CANCEL_SHUTDOWN_ANIMATION = 1 << 3,
+  UP_MENU_WAS_OPENED = 1 << 4,
+};
 
 // Creates a fullscreen widget responsible for showing the power button menu.
 std::unique_ptr<views::Widget> CreateMenuWidget() {
@@ -246,9 +256,11 @@ void PowerButtonController::OnPowerButtonEvent(
           &PowerButtonController::StartPowerMenuAnimation);
     }
   } else {
-    if (lock_state_controller_->CanCancelShutdownAnimation())
+    uint32_t up_state = UP_NONE;
+    if (lock_state_controller_->CanCancelShutdownAnimation()) {
+      up_state |= UP_CAN_CANCEL_SHUTDOWN_ANIMATION;
       lock_state_controller_->CancelShutdownAnimation();
-
+    }
     const base::TimeTicks previous_up_time = last_button_up_time_;
     last_button_up_time_ = timestamp;
 
@@ -257,12 +269,14 @@ void PowerButtonController::OnPowerButtonEvent(
     power_button_menu_timer_.Stop();
     pre_shutdown_timer_.Stop();
 
+    const bool menu_was_opened = IsMenuOpened();
     if (!ShouldTurnScreenOffForTap()) {
       // Cancel the menu animation if it's still ongoing when the button is
       // released on a laptop-mode device.
-      if (IsMenuOpened() && !show_menu_animation_done_) {
+      if (menu_was_opened && !show_menu_animation_done_) {
         static_cast<PowerButtonMenuScreenView*>(menu_widget_->GetContentsView())
             ->ScheduleShowHideAnimation(false);
+        up_state |= UP_SHOWING_ANIMATION_CANCELLED;
       }
 
       // If the button is tapped (i.e. not held long enough to start the
@@ -275,6 +289,16 @@ void PowerButtonController::OnPowerButtonEvent(
     // Ignore the event if it comes too soon after the last one.
     if (timestamp - previous_up_time <= kIgnoreRepeatedButtonUpDelay)
       return;
+
+    if (!screen_off_when_power_button_down_) {
+      if (menu_timer_was_running)
+        up_state |= UP_MENU_TIMER_WAS_RUNNING;
+      if (pre_shutdown_timer_was_running)
+        up_state |= UP_PRE_SHUTDOWN_TIMER_WAS_RUNNING;
+      if (menu_was_opened)
+        up_state |= UP_MENU_WAS_OPENED;
+      UpdatePowerButtonEventUMAHistogram(up_state);
+    }
 
     if (screen_off_when_power_button_down_ || !force_off_on_button_up_)
       return;
@@ -569,6 +593,46 @@ void PowerButtonController::ParsePowerButtonPositionSwitch() {
                  << switches::kAshPowerButtonPosition;
       power_button_position_ = PowerButtonPosition::NONE;
       return;
+    }
+  }
+}
+
+void PowerButtonController::UpdatePowerButtonEventUMAHistogram(
+    uint32_t up_state) {
+  if (up_state & UP_SHOWING_ANIMATION_CANCELLED) {
+    RecordPressInLaptopModeHistogram(PowerButtonPressType::kTapWithoutMenu);
+  }
+
+  if (up_state & UP_MENU_TIMER_WAS_RUNNING) {
+    RecordPressInTabletModeHistogram(PowerButtonPressType::kTapWithoutMenu);
+  }
+
+  if (menu_shown_when_power_button_down_) {
+    if (up_state & UP_PRE_SHUTDOWN_TIMER_WAS_RUNNING) {
+      force_off_on_button_up_
+          ? RecordPressInTabletModeHistogram(PowerButtonPressType::kTapWithMenu)
+          : RecordPressInLaptopModeHistogram(
+                PowerButtonPressType::kTapWithMenu);
+    } else if (!(up_state & UP_CAN_CANCEL_SHUTDOWN_ANIMATION)) {
+      force_off_on_button_up_
+          ? RecordPressInTabletModeHistogram(
+                PowerButtonPressType::kLongPressWithMenuToShutdown)
+          : RecordPressInLaptopModeHistogram(
+                PowerButtonPressType::kLongPressWithMenuToShutdown);
+    }
+  } else if (up_state & UP_MENU_WAS_OPENED) {
+    if (up_state & UP_PRE_SHUTDOWN_TIMER_WAS_RUNNING ||
+        up_state & UP_CAN_CANCEL_SHUTDOWN_ANIMATION) {
+      force_off_on_button_up_ ? RecordPressInTabletModeHistogram(
+                                    PowerButtonPressType::kLongPressToShowMenu)
+                              : RecordPressInLaptopModeHistogram(
+                                    PowerButtonPressType::kLongPressToShowMenu);
+    } else if (!(up_state & UP_SHOWING_ANIMATION_CANCELLED)) {
+      force_off_on_button_up_
+          ? RecordPressInTabletModeHistogram(
+                PowerButtonPressType::kLongPressWithoutMenuToShutdown)
+          : RecordPressInLaptopModeHistogram(
+                PowerButtonPressType::kLongPressWithoutMenuToShutdown);
     }
   }
 }
