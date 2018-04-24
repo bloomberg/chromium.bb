@@ -18,13 +18,24 @@ namespace assistant {
 // Interface class that defines all assistant functionalities.
 class AssistantManagerService : public mojom::Assistant {
  public:
+  enum State {
+    // Initial state, the service is created but not started yet.
+    STOPPED = 0,
+    // The service is started, it takes a little time to be fully running.
+    STARTED = 1,
+    // The service is fully running and ready to take requests.
+    RUNNING = 2
+  };
+
   ~AssistantManagerService() override = default;
 
-  // Start the assistant in the background with |token|.
-  virtual void Start(const std::string& access_token) = 0;
+  // Start the assistant in the background with |token|. When the service is
+  // fully started |callback| will be called on the thread where ctor was run.
+  virtual void Start(const std::string& access_token,
+                     base::OnceClosure callback) = 0;
 
-  // Returns whether assistant is running.
-  virtual bool IsRunning() const = 0;
+  // Returns the current state.
+  virtual State GetState() const = 0;
 
   // Set access token for assistant.
   virtual void SetAccessToken(const std::string& access_token) = 0;

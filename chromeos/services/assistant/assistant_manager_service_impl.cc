@@ -26,39 +26,31 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     mojom::AudioInputPtr audio_input)
     : platform_api_(kDefaultConfigStr, std::move(audio_input)),
       action_module_(std::make_unique<action::CrosActionModule>(this)),
-      assistant_manager_(
-          assistant_client::AssistantManager::Create(&platform_api_,
-                                                     kDefaultConfigStr)),
-      assistant_manager_internal_(
-          UnwrapAssistantManagerInternal(assistant_manager_.get())),
       display_connection_(std::make_unique<CrosDisplayConnection>(this)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_factory_(this) {
-  assistant_manager_->AddConversationStateListener(this);
-}
+      weak_factory_(this) {}
 
 AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {}
 
-void AssistantManagerServiceImpl::Start(const std::string& access_token) {
-  // Posting to background thread because GetARCVersion may be blocking
+void AssistantManagerServiceImpl::Start(const std::string& access_token,
+                                        base::OnceClosure callback) {
+  // LibAssistant creation will make file IO. Post the creation to
+  // background thread to avoid DCHECK.
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&chromeos::version_loader::GetARCVersion),
+      base::BindOnce(&assistant_client::AssistantManager::Create,
+                     &platform_api_, kDefaultConfigStr),
       base::BindOnce(&AssistantManagerServiceImpl::StartAssistantInternal,
-                     base::Unretained(this), access_token));
+                     base::Unretained(this), std::move(callback), access_token,
+                     chromeos::version_loader::GetARCVersion()));
 
   // Set the flag to avoid starting the service multiple times.
-  running_ = true;
-
-  if (!assistant_settings_manager_) {
-    assistant_settings_manager_ =
-        std::make_unique<AssistantSettingsManagerImpl>(this);
-  }
+  state_ = State::STARTED;
 }
 
-bool AssistantManagerServiceImpl::IsRunning() const {
-  return running_;
-}
+AssistantManagerService::State AssistantManagerServiceImpl::GetState() const {
+  return state_;
+};
 
 void AssistantManagerServiceImpl::SetAccessToken(
     const std::string& access_token) {
@@ -179,8 +171,14 @@ void AssistantManagerServiceImpl::OnSpeechLevelUpdated(
 }
 
 void AssistantManagerServiceImpl::StartAssistantInternal(
+    base::OnceCallback<void()> callback,
     const std::string& access_token,
-    const std::string& arc_version) {
+    const std::string& arc_version,
+    assistant_client::AssistantManager* assistant_manager) {
+  assistant_manager_.reset(assistant_manager);
+  assistant_manager_internal_ =
+      UnwrapAssistantManagerInternal(assistant_manager_.get());
+
   auto* internal_options =
       assistant_manager_internal_->CreateDefaultInternalOptions();
   SetAssistantOptions(internal_options, BuildUserAgent(arc_version));
@@ -190,9 +188,23 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
 
   assistant_manager_internal_->SetDisplayConnection(display_connection_.get());
   assistant_manager_internal_->RegisterActionModule(action_module_.get());
+  assistant_manager_->AddConversationStateListener(this);
+
+  if (!assistant_settings_manager_) {
+    assistant_settings_manager_ =
+        std::make_unique<AssistantSettingsManagerImpl>(this);
+  }
 
   SetAccessToken(access_token);
-  assistant_manager_->Start();
+
+  assistant_client::Callback0 assistant_callback([callback = std::move(
+                                                      callback)]() mutable {
+    std::move(callback).Run();
+  });
+
+  assistant_manager_->Start(std::move(assistant_callback));
+
+  state_ = State::RUNNING;
 }
 
 std::string AssistantManagerServiceImpl::BuildUserAgent(

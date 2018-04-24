@@ -43,8 +43,9 @@ class AssistantManagerServiceImpl
   ~AssistantManagerServiceImpl() override;
 
   // assistant::AssistantManagerService overrides
-  void Start(const std::string& access_token) override;
-  bool IsRunning() const override;
+  void Start(const std::string& access_token,
+             base::OnceClosure callback) override;
+  State GetState() const override;
   void SetAccessToken(const std::string& access_token) override;
   void EnableListening(bool enable) override;
   AssistantSettingsManager* GetAssistantSettingsManager() override;
@@ -77,8 +78,11 @@ class AssistantManagerServiceImpl
           recognition_result) override;
 
  private:
-  void StartAssistantInternal(const std::string& access_token,
-                              const std::string& arc_version);
+  void StartAssistantInternal(
+      base::OnceClosure callback,
+      const std::string& access_token,
+      const std::string& arc_version,
+      assistant_client::AssistantManager* assistant_manager);
   std::string BuildUserAgent(const std::string& arc_version) const;
 
   void HandleGetSettingsResponse(GetSettingsUiResponseCallback callback,
@@ -98,12 +102,12 @@ class AssistantManagerServiceImpl
           recognition_result);
   void OnSpeechLevelUpdatedOnMainThread(const float speech_level);
 
-  bool running_ = false;
+  State state_ = State::STOPPED;
   PlatformApiImpl platform_api_;
   std::unique_ptr<action::CrosActionModule> action_module_;
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager_;
   std::unique_ptr<AssistantSettingsManagerImpl> assistant_settings_manager_;
-  assistant_client::AssistantManagerInternal* const assistant_manager_internal_;
+  assistant_client::AssistantManagerInternal* assistant_manager_internal_;
   std::unique_ptr<CrosDisplayConnection> display_connection_;
   mojo::InterfacePtrSet<mojom::AssistantEventSubscriber> subscribers_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
