@@ -209,7 +209,7 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
         kParentPhase, current_phase, timing_);
 
     double current_iteration;
-    WTF::Optional<double> progress;
+    base::Optional<double> progress;
     if (const double iteration_duration = this->IterationDuration()) {
       const double start_offset = MultiplyZeroAlwaysGivesZero(
           timing_.iteration_start, iteration_duration);
@@ -222,7 +222,7 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
 
       current_iteration = CalculateCurrentIteration(
           iteration_duration, iteration_time, scaled_active_time, timing_);
-      const WTF::Optional<double> transformed_time = CalculateTransformedTime(
+      const base::Optional<double> transformed_time = CalculateTransformedTime(
           current_iteration, iteration_duration, iteration_time, timing_);
 
       // The infinite iterationDuration case here is a workaround because

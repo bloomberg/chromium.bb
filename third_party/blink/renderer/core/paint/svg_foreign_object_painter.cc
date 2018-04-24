@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/svg_foreign_object_painter.h"
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_foreign_object.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/paint/block_painter.h"
@@ -12,7 +13,6 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/svg_paint_context.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -42,7 +42,7 @@ void SVGForeignObjectPainter::Paint(const PaintInfo& paint_info) {
   }
 
   PaintInfo paint_info_before_filtering(paint_info);
-  Optional<SVGTransformContext> transform_context;
+  base::Optional<SVGTransformContext> transform_context;
 
   if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     paint_info_before_filtering.UpdateCullRect(
@@ -55,8 +55,8 @@ void SVGForeignObjectPainter::Paint(const PaintInfo& paint_info) {
     // for now we don't allow normal overflow clip for LayoutSVGBlock, so we
     // have to apply clip manually. See LayoutSVGBlock::allowsOverflowClip() for
     // details.
-    Optional<FloatClipRecorder> clip_recorder;
-    Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
+    base::Optional<FloatClipRecorder> clip_recorder;
+    base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
     if (SVGLayoutSupport::IsOverflowHidden(layout_svg_foreign_object_)) {
       clip_recorder.emplace(paint_info_before_filtering.context,
                             layout_svg_foreign_object_,

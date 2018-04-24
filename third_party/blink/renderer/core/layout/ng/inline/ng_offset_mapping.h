@@ -5,12 +5,12 @@
 #ifndef NGOffsetMapping_h
 #define NGOffsetMapping_h
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -134,7 +134,7 @@ class CORE_EXPORT NGOffsetMapping {
 
   // Returns the text content offset corresponding to the given position.
   // Returns nullopt when the position is not laid out in this context.
-  Optional<unsigned> GetTextContentOffset(const Position&) const;
+  base::Optional<unsigned> GetTextContentOffset(const Position&) const;
 
   // Starting from the given position, searches for non-collapsed content in
   // the anchor node in forward/backward direction and returns the position
@@ -151,7 +151,7 @@ class CORE_EXPORT NGOffsetMapping {
 
   // Maps the given position to a text content offset, and then returns the text
   // content character before the offset. Returns nullopt if it does not exist.
-  Optional<UChar> GetCharacterBefore(const Position&) const;
+  base::Optional<UChar> GetCharacterBefore(const Position&) const;
 
   // ------ Mapping APIs from text content to DOM ------
 

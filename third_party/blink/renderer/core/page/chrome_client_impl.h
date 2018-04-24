@@ -109,7 +109,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                            const PlatformFrameView*) const override;
   float WindowToViewportScalar(const float) const override;
   WebScreenInfo GetScreenInfo() const override;
-  WTF::Optional<IntRect> VisibleContentRectForPainting() const override;
+  base::Optional<IntRect> VisibleContentRectForPainting() const override;
   void ContentsSizeChanged(LocalFrame*, const IntSize&) const override;
   void PageScaleFactorChanged() const override;
   float ClampPageScaleFactorToLimits(float scale) const override;

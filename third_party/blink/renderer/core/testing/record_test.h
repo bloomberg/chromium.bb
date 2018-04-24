@@ -6,12 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_RECORD_TEST_H_
 
 #include <utility>
+#include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/boolean_or_byte_string_byte_string_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/float_or_string_element_record.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -28,8 +28,9 @@ class RecordTest final : public ScriptWrappable {
   Vector<std::pair<String, int32_t>> getStringLongRecord();
 
   void setNullableStringLongRecord(
-      const Optional<Vector<std::pair<String, int32_t>>>& arg);
-  Optional<Vector<std::pair<String, int32_t>>> getNullableStringLongRecord();
+      const base::Optional<Vector<std::pair<String, int32_t>>>& arg);
+  base::Optional<Vector<std::pair<String, int32_t>>>
+  getNullableStringLongRecord();
 
   Vector<std::pair<String, String>> GetByteStringByteStringRecord();
   void setByteStringByteStringRecord(
@@ -57,7 +58,8 @@ class RecordTest final : public ScriptWrappable {
   RecordTest();
 
   Vector<std::pair<String, int32_t>> string_long_record_;
-  Optional<Vector<std::pair<String, int32_t>>> nullable_string_long_record_;
+  base::Optional<Vector<std::pair<String, int32_t>>>
+      nullable_string_long_record_;
   Vector<std::pair<String, String>> byte_string_byte_string_record_;
   HeapVector<std::pair<String, Member<Element>>> string_element_record_;
   NestedRecordType usv_string_usv_string_boolean_record_record_;

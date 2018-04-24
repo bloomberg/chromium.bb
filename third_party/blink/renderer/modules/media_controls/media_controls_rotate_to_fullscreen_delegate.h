@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_ROTATE_TO_FULLSCREEN_DELEGATE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_ROTATE_TO_FULLSCREEN_DELEGATE_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -54,7 +54,7 @@ class MediaControlsRotateToFullscreenDelegate final : public EventListener {
   MODULES_EXPORT SimpleOrientation ComputeVideoOrientation() const;
   SimpleOrientation ComputeScreenOrientation() const;
 
-  WTF::Optional<bool> device_orientation_supported_;
+  base::Optional<bool> device_orientation_supported_;
 
   SimpleOrientation current_screen_orientation_ = SimpleOrientation::kUnknown;
 

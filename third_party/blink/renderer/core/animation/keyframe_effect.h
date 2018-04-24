@@ -98,7 +98,7 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
       double animation_playback_rate) const;
   // Must only be called once.
   void StartAnimationOnCompositor(int group,
-                                  WTF::Optional<double> start_time,
+                                  base::Optional<double> start_time,
                                   double time_offset,
                                   double animation_playback_rate,
                                   CompositorAnimation* = nullptr);

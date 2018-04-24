@@ -220,8 +220,10 @@ const SecurityOrigin* WorkerFetchContext::GetParentSecurityOrigin() const {
   return nullptr;
 }
 
-Optional<mojom::IPAddressSpace> WorkerFetchContext::GetAddressSpace() const {
-  return WTF::make_optional(global_scope_->GetSecurityContext().AddressSpace());
+base::Optional<mojom::IPAddressSpace> WorkerFetchContext::GetAddressSpace()
+    const {
+  return base::make_optional(
+      global_scope_->GetSecurityContext().AddressSpace());
 }
 
 const ContentSecurityPolicy* WorkerFetchContext::GetContentSecurityPolicy()

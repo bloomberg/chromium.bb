@@ -32,14 +32,14 @@ namespace blink {
 //               "/" / "[" / "]" / "?" / "="
 //               ; Must be in quoted-string,
 //               ; to use within parameter values
-WTF::Optional<ParsedContentHeaderFieldParameters>
+base::Optional<ParsedContentHeaderFieldParameters>
 ParsedContentHeaderFieldParameters::Parse(HeaderFieldTokenizer tokenizer,
                                           Mode mode) {
   NameValuePairs parameters;
   while (!tokenizer.IsConsumed()) {
     if (!tokenizer.Consume(';')) {
       DVLOG(1) << "Failed to find ';'";
-      return WTF::nullopt;
+      return base::nullopt;
     }
 
     StringView key;
@@ -47,16 +47,16 @@ ParsedContentHeaderFieldParameters::Parse(HeaderFieldTokenizer tokenizer,
     if (!tokenizer.ConsumeToken(Mode::kNormal, key)) {
       DVLOG(1) << "Invalid content parameter name. (at " << tokenizer.Index()
                << ")";
-      return WTF::nullopt;
+      return base::nullopt;
     }
     if (!tokenizer.Consume('=')) {
       DVLOG(1) << "Failed to find '='";
-      return WTF::nullopt;
+      return base::nullopt;
     }
     if (!tokenizer.ConsumeTokenOrQuotedString(mode, value)) {
       DVLOG(1) << "Invalid content parameter value (at " << tokenizer.Index()
                << ", for '" << key.ToString() << "').";
-      return WTF::nullopt;
+      return base::nullopt;
     }
     parameters.emplace_back(key.ToString(), value);
   }

@@ -126,7 +126,7 @@ void ServiceWorkerGlobalScope::EvaluateClassicScript(
     source_code = script_data.TakeSourceText();
     cached_meta_data = script_data.TakeMetaData();
 
-    WTF::Optional<ContentSecurityPolicyResponseHeaders>
+    base::Optional<ContentSecurityPolicyResponseHeaders>
         content_security_policy_raw_headers =
             script_data.GetContentSecurityPolicyResponseHeaders();
     ApplyContentSecurityPolicyFromHeaders(

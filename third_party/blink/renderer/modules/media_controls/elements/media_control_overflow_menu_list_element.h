@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_OVERFLOW_MENU_LIST_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_OVERFLOW_MENU_LIST_ELEMENT_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_popup_menu_element.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -39,7 +39,7 @@ class MediaControlOverflowMenuListElement final
 
   TaskHandle current_task_handle_;
 
-  WTF::Optional<WTF::TimeTicks> time_shown_;
+  base::Optional<WTF::TimeTicks> time_shown_;
 };
 
 }  // namespace blink

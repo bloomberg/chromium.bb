@@ -30,6 +30,7 @@
 
 #include <memory>
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/deferred_image_decoder.h"
@@ -39,7 +40,6 @@
 #include "third_party/blink/renderer/platform/image-decoders/image_animation.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 

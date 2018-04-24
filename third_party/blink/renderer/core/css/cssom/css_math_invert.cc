@@ -8,10 +8,10 @@
 
 namespace blink {
 
-WTF::Optional<CSSNumericSumValue> CSSMathInvert::SumValue() const {
+base::Optional<CSSNumericSumValue> CSSMathInvert::SumValue() const {
   auto sum = value_->SumValue();
   if (!sum || sum->terms.size() != 1)
-    return WTF::nullopt;
+    return base::nullopt;
 
   for (auto& unit_exponent : sum->terms[0].units)
     unit_exponent.value *= -1;

@@ -213,7 +213,7 @@ class CORE_EXPORT HTMLCanvasElement final
   IntSize BitmapSourceSize() const override;
   ScriptPromise CreateImageBitmap(ScriptState*,
                                   EventTarget&,
-                                  Optional<IntRect> crop_rect,
+                                  base::Optional<IntRect> crop_rect,
                                   const ImageBitmapOptions&) override;
 
   // OffscreenCanvasPlaceholder implementation.

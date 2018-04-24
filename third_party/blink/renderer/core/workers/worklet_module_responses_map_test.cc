@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
+#include "base/optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_fetch_test_helper.h"
-#include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/platform/loader/testing/fetch_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -14,7 +15,6 @@
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

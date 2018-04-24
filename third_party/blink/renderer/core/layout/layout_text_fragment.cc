@@ -183,10 +183,10 @@ Position LayoutTextFragment::PositionForCaretOffset(unsigned offset) const {
   return Position(node, Start() + offset);
 }
 
-Optional<unsigned> LayoutTextFragment::CaretOffsetForPosition(
+base::Optional<unsigned> LayoutTextFragment::CaretOffsetForPosition(
     const Position& position) const {
   if (position.IsNull() || position.AnchorNode() != AssociatedTextNode())
-    return WTF::nullopt;
+    return base::nullopt;
   unsigned dom_offset;
   if (position.IsBeforeAnchor()) {
     dom_offset = 0;
@@ -199,7 +199,7 @@ Optional<unsigned> LayoutTextFragment::CaretOffsetForPosition(
     dom_offset = position.OffsetInContainerNode();
   }
   if (dom_offset < Start() || dom_offset > Start() + FragmentLength())
-    return WTF::nullopt;
+    return base::nullopt;
   return dom_offset - Start();
 }
 

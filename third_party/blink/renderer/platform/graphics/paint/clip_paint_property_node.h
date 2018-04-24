@@ -5,13 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CLIP_PAINT_PROPERTY_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CLIP_PAINT_PROPERTY_NODE_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper_clip_cache.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -31,7 +31,7 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   struct State {
     scoped_refptr<const TransformPaintPropertyNode> local_transform_space;
     FloatRoundedRect clip_rect;
-    Optional<FloatRoundedRect> clip_rect_excluding_overlay_scrollbars;
+    base::Optional<FloatRoundedRect> clip_rect_excluding_overlay_scrollbars;
     scoped_refptr<const RefCountedPath> clip_path;
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
 

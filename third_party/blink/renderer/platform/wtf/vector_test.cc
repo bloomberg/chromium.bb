@@ -26,9 +26,9 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 #include <memory>
+#include "base/optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_test_helper.h"
 
@@ -613,7 +613,7 @@ TEST(VectorTest, InitializerList) {
 }
 
 TEST(VectorTest, Optional) {
-  Optional<Vector<int>> vector;
+  base::Optional<Vector<int>> vector;
   EXPECT_FALSE(vector);
   vector.emplace(3);
   EXPECT_TRUE(vector);

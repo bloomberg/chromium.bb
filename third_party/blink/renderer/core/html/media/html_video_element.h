@@ -136,7 +136,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   IntSize BitmapSourceSize() const override;
   ScriptPromise CreateImageBitmap(ScriptState*,
                                   EventTarget&,
-                                  Optional<IntRect> crop_rect,
+                                  base::Optional<IntRect> crop_rect,
                                   const ImageBitmapOptions&) override;
 
   // WebMediaPlayerClient implementation.

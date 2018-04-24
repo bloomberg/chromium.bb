@@ -401,9 +401,10 @@ CSSPrimitiveValue* ConsumeGradientLengthOrPercent(
   return ConsumeLengthOrPercent(range, context.Mode(), value_range, unitless);
 }
 
-CSSPrimitiveValue* ConsumeAngle(CSSParserTokenRange& range,
-                                const CSSParserContext* context,
-                                WTF::Optional<WebFeature> unitlessZeroFeature) {
+CSSPrimitiveValue* ConsumeAngle(
+    CSSParserTokenRange& range,
+    const CSSParserContext* context,
+    base::Optional<WebFeature> unitlessZeroFeature) {
   // Ensure that we have a context for counting the unitlessZeroFeature if it is
   // requested.
   DCHECK(context || !unitlessZeroFeature);
@@ -600,7 +601,7 @@ static bool ParseHSLParameters(CSSParserTokenRange& range, RGBA32& result) {
   DCHECK(range.Peek().FunctionId() == CSSValueHsl ||
          range.Peek().FunctionId() == CSSValueHsla);
   CSSParserTokenRange args = ConsumeFunction(range);
-  CSSPrimitiveValue* hsl_value = ConsumeAngle(args, nullptr, WTF::nullopt);
+  CSSPrimitiveValue* hsl_value = ConsumeAngle(args, nullptr, base::nullopt);
   double angle_value;
   if (!hsl_value) {
     hsl_value = ConsumeNumber(args, kValueRangeAll);
@@ -835,7 +836,7 @@ static void PositionFromThreeOrFourValues(CSSValue** values,
 bool ConsumePosition(CSSParserTokenRange& range,
                      const CSSParserContext& context,
                      UnitlessQuirk unitless,
-                     WTF::Optional<WebFeature> threeValuePosition,
+                     base::Optional<WebFeature> threeValuePosition,
                      CSSValue*& result_x,
                      CSSValue*& result_y) {
   bool horizontal_edge = false;
@@ -910,7 +911,7 @@ bool ConsumePosition(CSSParserTokenRange& range,
 CSSValuePair* ConsumePosition(CSSParserTokenRange& range,
                               const CSSParserContext& context,
                               UnitlessQuirk unitless,
-                              WTF::Optional<WebFeature> threeValuePosition) {
+                              base::Optional<WebFeature> threeValuePosition) {
   CSSValue* result_x = nullptr;
   CSSValue* result_y = nullptr;
   if (ConsumePosition(range, context, unitless, threeValuePosition, result_x,
@@ -1255,7 +1256,7 @@ static CSSValue* ConsumeRadialGradient(CSSParserTokenRange& args,
   if (args.Peek().Id() == CSSValueAt) {
     args.ConsumeIncludingWhitespace();
     ConsumePosition(args, context, UnitlessQuirk::kForbid,
-                    Optional<WebFeature>(), center_x, center_y);
+                    base::Optional<WebFeature>(), center_x, center_y);
     if (!(center_x && center_y))
       return nullptr;
     // Right now, CSS radial gradients have the same start and end centers.
@@ -1330,7 +1331,7 @@ static CSSValue* ConsumeConicGradient(CSSParserTokenRange& args,
   CSSValue* center_y = nullptr;
   if (ConsumeIdent<CSSValueAt>(args)) {
     if (!ConsumePosition(args, context, UnitlessQuirk::kForbid,
-                         Optional<WebFeature>(), center_x, center_y))
+                         base::Optional<WebFeature>(), center_x, center_y))
       return nullptr;
   }
 

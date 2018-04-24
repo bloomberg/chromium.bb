@@ -188,7 +188,7 @@ void BlobBytesProvider::RequestAsFile(uint64_t source_offset,
                                   ("Storage.Blob.RendererFileWriteFailed"));
 
   if (!file.IsValid()) {
-    std::move(callback).Run(WTF::nullopt);
+    std::move(callback).Run(base::nullopt);
     return;
   }
 
@@ -197,7 +197,7 @@ void BlobBytesProvider::RequestAsFile(uint64_t source_offset,
   bool seek_failed = seek_distance < 0;
   seek_histogram.Count(seek_failed);
   if (seek_failed) {
-    std::move(callback).Run(WTF::nullopt);
+    std::move(callback).Run(base::nullopt);
     return;
   }
 
@@ -231,7 +231,7 @@ void BlobBytesProvider::RequestAsFile(uint64_t source_offset,
       bool write_failed = actual_written < 0;
       write_histogram.Count(write_failed);
       if (write_failed) {
-        std::move(callback).Run(WTF::nullopt);
+        std::move(callback).Run(base::nullopt);
         return;
       }
       written += actual_written;
@@ -241,12 +241,12 @@ void BlobBytesProvider::RequestAsFile(uint64_t source_offset,
   }
 
   if (!file.Flush()) {
-    std::move(callback).Run(WTF::nullopt);
+    std::move(callback).Run(base::nullopt);
     return;
   }
   base::File::Info info;
   if (!file.GetInfo(&info)) {
-    std::move(callback).Run(WTF::nullopt);
+    std::move(callback).Run(base::nullopt);
     return;
   }
   std::move(callback).Run(info.last_modified);

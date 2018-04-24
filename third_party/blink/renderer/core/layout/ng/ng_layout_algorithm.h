@@ -5,11 +5,11 @@
 #ifndef NGLayoutAlgorithm_h
 #define NGLayoutAlgorithm_h
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -56,8 +56,9 @@ class CORE_EXPORT NGLayoutAlgorithm {
   // account. If the return value is empty, the caller is expected to synthesize
   // this value from the overflow rect returned from Layout called with an
   // available width of 0 and LayoutUnit::max(), respectively.
-  virtual Optional<MinMaxSize> ComputeMinMaxSize(const MinMaxSizeInput&) const {
-    return WTF::nullopt;
+  virtual base::Optional<MinMaxSize> ComputeMinMaxSize(
+      const MinMaxSizeInput&) const {
+    return base::nullopt;
   }
 
  protected:

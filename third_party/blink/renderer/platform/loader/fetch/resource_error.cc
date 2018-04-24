@@ -46,7 +46,7 @@ int ResourceError::BlockedByXSSAuditorErrorCode() {
 }
 
 ResourceError ResourceError::CancelledError(const KURL& url) {
-  return ResourceError(net::ERR_ABORTED, url, WTF::nullopt);
+  return ResourceError(net::ERR_ABORTED, url, base::nullopt);
 }
 
 ResourceError ResourceError::CancelledDueToAccessCheckError(
@@ -69,21 +69,21 @@ ResourceError ResourceError::CancelledDueToAccessCheckError(
 }
 
 ResourceError ResourceError::CacheMissError(const KURL& url) {
-  return ResourceError(net::ERR_CACHE_MISS, url, WTF::nullopt);
+  return ResourceError(net::ERR_CACHE_MISS, url, base::nullopt);
 }
 
 ResourceError ResourceError::TimeoutError(const KURL& url) {
-  return ResourceError(net::ERR_TIMED_OUT, url, WTF::nullopt);
+  return ResourceError(net::ERR_TIMED_OUT, url, base::nullopt);
 }
 
 ResourceError ResourceError::Failure(const KURL& url) {
-  return ResourceError(net::ERR_FAILED, url, WTF::nullopt);
+  return ResourceError(net::ERR_FAILED, url, base::nullopt);
 }
 
 ResourceError::ResourceError(
     int error_code,
     const KURL& url,
-    WTF::Optional<network::CORSErrorStatus> cors_error_status)
+    base::Optional<network::CORSErrorStatus> cors_error_status)
     : error_code_(error_code),
       failing_url_(url),
       cors_error_status_(cors_error_status) {

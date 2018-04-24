@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/graphics/compositing/content_layer_client_impl.h"
 
 #include <memory>
+#include "base/optional.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
@@ -15,7 +16,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -180,7 +180,7 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   cc_picture_layer_->SetBounds(layer_bounds.size());
   cc_picture_layer_->SetIsDrawable(true);
 
-  Optional<RasterUnderInvalidationCheckingParams> params;
+  base::Optional<RasterUnderInvalidationCheckingParams> params;
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
     params.emplace(*raster_invalidator_.GetTracking(),
                    IntRect(0, 0, layer_bounds.width(), layer_bounds.height()),
@@ -189,7 +189,7 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   cc_display_item_list_ = PaintChunksToCcLayer::Convert(
       paint_chunks, layer_state, layer_bounds.OffsetFromOrigin(),
       display_item_list, cc::DisplayItemList::kTopLevelDisplayItemList,
-      WTF::OptionalOrNullptr(params));
+      base::OptionalOrNullptr(params));
 
   if (paint_chunks[0].size()) {
     cc_picture_layer_->SetBackgroundColor(DisplayItemBackgroundColor(

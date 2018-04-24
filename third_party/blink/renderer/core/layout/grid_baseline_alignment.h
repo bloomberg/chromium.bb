@@ -156,10 +156,10 @@ class GridBaselineAlignment {
 
   // Returns the sum of the 'max-ascent' and 'max-descent' of a particular
   // item's baseline-sharing group.
-  Optional<LayoutUnit> ExtentForBaselineAlignment(ItemPosition,
-                                                  unsigned shared_context,
-                                                  const LayoutBox&,
-                                                  GridAxis) const;
+  base::Optional<LayoutUnit> ExtentForBaselineAlignment(ItemPosition,
+                                                        unsigned shared_context,
+                                                        const LayoutBox&,
+                                                        GridAxis) const;
 
   // Determines whether baseline algnment may affect the intrinsic
   // size of the grid container.

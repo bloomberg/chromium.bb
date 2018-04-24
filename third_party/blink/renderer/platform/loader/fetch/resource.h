@@ -25,6 +25,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_H_
 
 #include <memory>
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_data_consumer_handle.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
@@ -50,7 +51,6 @@
 #include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 #include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -495,7 +495,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   Member<CachedMetadataHandler> cache_handler_;
 
-  Optional<ResourceError> error_;
+  base::Optional<ResourceError> error_;
 
   double load_finish_time_;
 

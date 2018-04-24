@@ -228,7 +228,7 @@ KeyframeEffect::CheckCanStartAnimationOnCompositor(
 
 void KeyframeEffect::StartAnimationOnCompositor(
     int group,
-    WTF::Optional<double> start_time,
+    base::Optional<double> start_time,
     double current_time,
     double animation_playback_rate,
     CompositorAnimation* compositor_animation) {

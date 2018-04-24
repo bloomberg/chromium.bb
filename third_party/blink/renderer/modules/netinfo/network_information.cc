@@ -112,9 +112,9 @@ void NetworkInformation::ConnectionChange(
     WebConnectionType type,
     double downlink_max_mbps,
     WebEffectiveConnectionType effective_type,
-    const Optional<TimeDelta>& http_rtt,
-    const Optional<TimeDelta>& transport_rtt,
-    const Optional<double>& downlink_mbps,
+    const base::Optional<TimeDelta>& http_rtt,
+    const base::Optional<TimeDelta>& transport_rtt,
+    const base::Optional<double>& downlink_mbps,
     bool save_data) {
   DCHECK(GetExecutionContext()->IsContextThread());
 

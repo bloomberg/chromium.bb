@@ -173,8 +173,8 @@ void ScrollableAreaPainter::PaintOverflowControls(
 
   GraphicsContext& context = paint_info.context;
 
-  Optional<ClipRecorder> clip_recorder;
-  Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
+  base::Optional<ClipRecorder> clip_recorder;
+  base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     const auto& box = *GetScrollableArea().GetLayoutBox();
     if (const auto* fragment = paint_info.FragmentToPaint(box)) {

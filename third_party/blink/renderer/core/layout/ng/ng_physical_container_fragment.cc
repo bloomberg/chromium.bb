@@ -31,7 +31,7 @@ NGLogicalSize ChildLogicalSizeInParent(
   return NGFragment(parent.Style().GetWritingMode(), child).Size();
 }
 
-Optional<PositionWithAffinity> PositionForPointInChild(
+base::Optional<PositionWithAffinity> PositionForPointInChild(
     const NGPhysicalFragment& child,
     const NGPhysicalOffset& point) {
   const NGPhysicalOffset& child_point = point - child.Offset();
@@ -47,7 +47,7 @@ Optional<PositionWithAffinity> PositionForPointInChild(
           : child.PositionForPoint(child_point);
   if (result.IsNotNull())
     return result;
-  return WTF::nullopt;
+  return base::nullopt;
 }
 
 }  // namespace

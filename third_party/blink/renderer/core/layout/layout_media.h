@@ -26,8 +26,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_MEDIA_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_MEDIA_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

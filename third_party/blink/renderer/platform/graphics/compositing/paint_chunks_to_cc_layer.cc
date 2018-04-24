@@ -314,7 +314,7 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
   }
 
   // Step 3: Now apply the list of clips in top-down order.
-  Optional<FloatRect> pending_combined_clip_rect;
+  base::Optional<FloatRect> pending_combined_clip_rect;
   const ClipPaintPropertyNode* lowest_combined_clip_node = nullptr;
   for (size_t i = pending_clips.size(); i--;) {
     const auto* sub_clip = pending_clips[i];

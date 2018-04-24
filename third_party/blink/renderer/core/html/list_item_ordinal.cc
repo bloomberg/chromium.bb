@@ -149,7 +149,7 @@ ListItemOrdinal::NodeAndOrdinal ListItemOrdinal::NextOrdinalItem(
                           : NextListItem(list, item);
 }
 
-Optional<int> ListItemOrdinal::ExplicitValue() const {
+base::Optional<int> ListItemOrdinal::ExplicitValue() const {
   if (!HasExplicitValue())
     return {};
   return value_;

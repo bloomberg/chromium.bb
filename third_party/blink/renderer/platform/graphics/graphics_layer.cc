@@ -154,7 +154,8 @@ void GraphicsLayer::SetOverscrollBehavior(
   layer_->Layer()->SetOverscrollBehavior(behavior);
 }
 
-void GraphicsLayer::SetSnapContainerData(Optional<SnapContainerData> data) {
+void GraphicsLayer::SetSnapContainerData(
+    base::Optional<SnapContainerData> data) {
   layer_->Layer()->SetSnapContainerData(std::move(data));
 }
 
@@ -403,7 +404,7 @@ bool GraphicsLayer::PaintWithoutCommit(
   GraphicsContext context(GetPaintController(), disabled_mode, nullptr);
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
-    GetPaintController().UpdateCurrentPaintChunkProperties(WTF::nullopt,
+    GetPaintController().UpdateCurrentPaintChunkProperties(base::nullopt,
                                                            layer_state_->state);
   }
 

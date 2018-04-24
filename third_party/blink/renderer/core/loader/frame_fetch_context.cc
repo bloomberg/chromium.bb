@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <memory>
+#include "base/optional.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
@@ -96,7 +97,6 @@
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -206,7 +206,7 @@ struct FrameFetchContext::FrozenState final
               const KURL& url,
               scoped_refptr<const SecurityOrigin> security_origin,
               scoped_refptr<const SecurityOrigin> parent_security_origin,
-              const Optional<mojom::IPAddressSpace>& address_space,
+              const base::Optional<mojom::IPAddressSpace>& address_space,
               const ContentSecurityPolicy* content_security_policy,
               KURL site_for_cookies,
               scoped_refptr<const SecurityOrigin> requestor_origin,
@@ -235,7 +235,7 @@ struct FrameFetchContext::FrozenState final
   const KURL url;
   const scoped_refptr<const SecurityOrigin> security_origin;
   const scoped_refptr<const SecurityOrigin> parent_security_origin;
-  const Optional<mojom::IPAddressSpace> address_space;
+  const base::Optional<mojom::IPAddressSpace> address_space;
   const Member<const ContentSecurityPolicy> content_security_policy;
   const KURL site_for_cookies;
   const scoped_refptr<const SecurityOrigin> requestor_origin;
@@ -514,7 +514,7 @@ void FrameFetchContext::DispatchWillSendRequest(
     InteractiveDetector* interactive_detector(
         InteractiveDetector::From(*document_));
     if (interactive_detector) {
-      interactive_detector->OnResourceLoadBegin(WTF::nullopt);
+      interactive_detector->OnResourceLoadBegin(base::nullopt);
     }
   }
 }
@@ -693,7 +693,7 @@ void FrameFetchContext::DispatchDidFail(const KURL& url,
     if (interactive_detector) {
       // We have not yet recorded load_finish_time. Pass nullopt here; we will
       // call CurrentTimeTicksInSeconds lazily when we need it.
-      interactive_detector->OnResourceLoadEnd(WTF::nullopt);
+      interactive_detector->OnResourceLoadEnd(base::nullopt);
     }
   }
   // Notification to FrameConsole should come AFTER InspectorInstrumentation
@@ -1196,13 +1196,14 @@ const SecurityOrigin* FrameFetchContext::GetParentSecurityOrigin() const {
   return parent->GetSecurityContext()->GetSecurityOrigin();
 }
 
-Optional<mojom::IPAddressSpace> FrameFetchContext::GetAddressSpace() const {
+base::Optional<mojom::IPAddressSpace> FrameFetchContext::GetAddressSpace()
+    const {
   if (IsDetached())
     return frozen_state_->address_space;
   if (!document_)
-    return WTF::nullopt;
+    return base::nullopt;
   ExecutionContext* context = document_;
-  return WTF::make_optional(context->GetSecurityContext().AddressSpace());
+  return base::make_optional(context->GetSecurityContext().AddressSpace());
 }
 
 const ContentSecurityPolicy* FrameFetchContext::GetContentSecurityPolicy()

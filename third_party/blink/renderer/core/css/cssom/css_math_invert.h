@@ -61,7 +61,7 @@ class CORE_EXPORT CSSMathInvert : public CSSMathValue {
 
   // From CSSNumericValue
   CSSNumericValue* Invert() final { return value_.Get(); }
-  WTF::Optional<CSSNumericSumValue> SumValue() const final;
+  base::Optional<CSSNumericSumValue> SumValue() const final;
 
   void BuildCSSText(Nested, ParenLess, StringBuilder&) const final;
 

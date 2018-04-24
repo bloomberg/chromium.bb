@@ -20,7 +20,7 @@ TEST_F(ClipPathClipperTest, ClipPathBoundingBoxClamped) {
     </div>
   )HTML");
   auto& object = *GetLayoutObjectByElementId("e");
-  Optional<FloatRect> bounding_box =
+  base::Optional<FloatRect> bounding_box =
       ClipPathClipper::LocalClipPathBoundingBox(object);
   ASSERT_TRUE(bounding_box.has_value());
   EXPECT_EQ(LayoutRect::InfiniteIntRect(), *bounding_box);

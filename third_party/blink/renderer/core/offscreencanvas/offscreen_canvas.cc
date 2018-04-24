@@ -146,7 +146,7 @@ IntSize OffscreenCanvas::BitmapSourceSize() const {
 ScriptPromise OffscreenCanvas::CreateImageBitmap(
     ScriptState* script_state,
     EventTarget&,
-    Optional<IntRect> crop_rect,
+    base::Optional<IntRect> crop_rect,
     const ImageBitmapOptions& options) {
   return ImageBitmapSource::FulfillImageBitmap(
       script_state,

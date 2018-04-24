@@ -120,21 +120,21 @@ void LayoutSVGResourceClipper::RemoveAllClientsFromCache(
                             : SVGResourceClient::kParentOnlyInvalidation);
 }
 
-Optional<Path> LayoutSVGResourceClipper::AsPath() {
+base::Optional<Path> LayoutSVGResourceClipper::AsPath() {
   if (clip_content_path_validity_ == kClipContentPathValid)
-    return Optional<Path>(clip_content_path_);
+    return base::Optional<Path>(clip_content_path_);
   if (clip_content_path_validity_ == kClipContentPathInvalid)
-    return WTF::nullopt;
+    return base::nullopt;
   DCHECK_EQ(clip_content_path_validity_, kClipContentPathUnknown);
 
   clip_content_path_validity_ = kClipContentPathInvalid;
   // If the current clip-path gets clipped itself, we have to fallback to
   // masking.
   if (StyleRef().ClipPath())
-    return WTF::nullopt;
+    return base::nullopt;
 
   unsigned op_count = 0;
-  Optional<SkOpBuilder> clip_path_builder;
+  base::Optional<SkOpBuilder> clip_path_builder;
   SkPath resolved_path;
   for (const SVGElement& child_element :
        Traversal<SVGElement>::ChildrenOf(*GetElement())) {
@@ -142,14 +142,14 @@ Optional<Path> LayoutSVGResourceClipper::AsPath() {
     if (strategy == ClipStrategy::kNone)
       continue;
     if (strategy == ClipStrategy::kMask)
-      return WTF::nullopt;
+      return base::nullopt;
 
     // Multiple shapes require PathOps. In some degenerate cases PathOps can
     // exhibit quadratic behavior, so we cap the number of ops to a reasonable
     // count.
     const unsigned kMaxOps = 42;
     if (++op_count > kMaxOps)
-      return WTF::nullopt;
+      return base::nullopt;
     if (clip_path_builder) {
       clip_path_builder->add(PathFromElement(child_element).GetSkPath(),
                              kUnion_SkPathOp);
@@ -167,7 +167,7 @@ Optional<Path> LayoutSVGResourceClipper::AsPath() {
     clip_path_builder->resolve(&resolved_path);
   clip_content_path_ = std::move(resolved_path);
   clip_content_path_validity_ = kClipContentPathValid;
-  return Optional<Path>(clip_content_path_);
+  return base::Optional<Path>(clip_content_path_);
 }
 
 sk_sp<const PaintRecord> LayoutSVGResourceClipper::CreatePaintRecord() {

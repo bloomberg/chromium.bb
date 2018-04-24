@@ -22,10 +22,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_LAYOUT_SELECTION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_LAYOUT_SELECTION_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -69,24 +69,24 @@ class SelectionPaintRange {
 
   SelectionPaintRange() = default;
   SelectionPaintRange(LayoutObject* start_layout_object,
-                      WTF::Optional<unsigned> start_offset,
+                      base::Optional<unsigned> start_offset,
                       LayoutObject* end_layout_object,
-                      WTF::Optional<unsigned> end_offset);
+                      base::Optional<unsigned> end_offset);
 
   bool operator==(const SelectionPaintRange& other) const;
 
   LayoutObject* StartLayoutObject() const;
-  WTF::Optional<unsigned> StartOffset() const;
+  base::Optional<unsigned> StartOffset() const;
   LayoutObject* EndLayoutObject() const;
-  WTF::Optional<unsigned> EndOffset() const;
+  base::Optional<unsigned> EndOffset() const;
 
   bool IsNull() const { return !start_layout_object_; }
 
  private:
   LayoutObject* start_layout_object_ = nullptr;
-  WTF::Optional<unsigned> start_offset_ = WTF::nullopt;
+  base::Optional<unsigned> start_offset_ = base::nullopt;
   LayoutObject* end_layout_object_ = nullptr;
-  WTF::Optional<unsigned> end_offset_ = WTF::nullopt;
+  base::Optional<unsigned> end_offset_ = base::nullopt;
 };
 
 class LayoutSelection final : public GarbageCollected<LayoutSelection> {
@@ -103,8 +103,8 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
   void InvalidatePaintForSelection();
 
   void ClearSelection();
-  WTF::Optional<unsigned> SelectionStart() const;
-  WTF::Optional<unsigned> SelectionEnd() const;
+  base::Optional<unsigned> SelectionStart() const;
+  base::Optional<unsigned> SelectionEnd() const;
   // This function returns selected part of |text_fragment|.
   // Returned pair is a partial range of
   // (text_fragment.StartOffset(), text_fragment.EndOffset()).

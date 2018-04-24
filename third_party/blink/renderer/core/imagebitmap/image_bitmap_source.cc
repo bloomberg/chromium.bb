@@ -26,7 +26,7 @@ ScriptPromise ImageBitmapSource::FulfillImageBitmap(ScriptState* script_state,
 ScriptPromise ImageBitmapSource::CreateImageBitmap(
     ScriptState* script_state,
     EventTarget& event_target,
-    Optional<IntRect> crop_rect,
+    base::Optional<IntRect> crop_rect,
     const ImageBitmapOptions& options) {
   return ScriptPromise();
 }

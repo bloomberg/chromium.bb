@@ -6,12 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_PROPERTY_TREE_BUILDER_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -100,7 +100,7 @@ struct PaintPropertyTreeBuilderFragmentContext {
 
   // If the object is a flow thread, this records the clip rect for this
   // fragment.
-  Optional<LayoutRect> fragment_clip;
+  base::Optional<LayoutRect> fragment_clip;
 
   // If the object is fragmented, this records the logical top of this fragment
   // in the flow thread.
@@ -199,7 +199,7 @@ class ObjectPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateCompositedLayerPaginationOffset();
   ALWAYS_INLINE bool NeedsFragmentation() const;
   ALWAYS_INLINE PaintPropertyTreeBuilderFragmentContext
-  ContextForFragment(const Optional<LayoutRect>& fragment_clip,
+  ContextForFragment(const base::Optional<LayoutRect>& fragment_clip,
                      LayoutUnit logical_top_in_flow_thread) const;
   ALWAYS_INLINE void CreateFragmentContexts(bool needs_paint_properties);
   // Returns whether ObjectPaintProperties were allocated or deleted.

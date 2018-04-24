@@ -955,9 +955,9 @@ void CompositedLayerMapping::ComputeBoundsOfOwningLayer(
   // transformed by a non-translation transform.
   owning_layer_.SetSubpixelAccumulation(subpixel_accumulation);
 
-  Optional<IntRect> mask_bounding_box = CSSMaskPainter::MaskBoundingBox(
+  base::Optional<IntRect> mask_bounding_box = CSSMaskPainter::MaskBoundingBox(
       GetLayoutObject(), LayoutPoint(subpixel_accumulation));
-  Optional<FloatRect> clip_path_bounding_box =
+  base::Optional<FloatRect> clip_path_bounding_box =
       ClipPathClipper::LocalClipPathBoundingBox(GetLayoutObject());
   if (clip_path_bounding_box)
     clip_path_bounding_box->MoveBy(FloatPoint(subpixel_accumulation));

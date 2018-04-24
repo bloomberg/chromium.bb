@@ -30,6 +30,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
@@ -38,7 +39,6 @@
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -217,8 +217,8 @@ class CORE_EXPORT FrameSelection final
 
   FrameCaret& FrameCaretForTesting() const { return *frame_caret_; }
 
-  WTF::Optional<unsigned> LayoutSelectionStart() const;
-  WTF::Optional<unsigned> LayoutSelectionEnd() const;
+  base::Optional<unsigned> LayoutSelectionStart() const;
+  base::Optional<unsigned> LayoutSelectionEnd() const;
   void ClearLayoutSelection();
   std::pair<unsigned, unsigned> LayoutSelectionStartEndForNG(
       const NGPhysicalTextFragment&) const;

@@ -751,7 +751,7 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   const ComputedStyle* reversing_adjusted_start_value = &state.old_style;
   double reversing_shortening_factor = 1;
   if (interrupted_transition) {
-    const WTF::Optional<double> interrupted_progress =
+    const base::Optional<double> interrupted_progress =
         interrupted_transition->animation->effect()->Progress();
     if (interrupted_progress) {
       reversing_adjusted_start_value = interrupted_transition->to.get();

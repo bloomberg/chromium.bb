@@ -238,7 +238,8 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
 
   // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
   NGBlockLayoutAlgorithm minmax_algorithm(*this, *constraint_space);
-  Optional<MinMaxSize> maybe_sizes = minmax_algorithm.ComputeMinMaxSize(input);
+  base::Optional<MinMaxSize> maybe_sizes =
+      minmax_algorithm.ComputeMinMaxSize(input);
   if (maybe_sizes.has_value())
     return *maybe_sizes;
 

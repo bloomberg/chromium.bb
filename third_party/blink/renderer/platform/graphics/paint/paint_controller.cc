@@ -498,7 +498,7 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
       &current_paint_artifact_.GetDisplayItemList()[begin_index];
 
   Vector<PaintChunk>::const_iterator cached_chunk;
-  Optional<PropertyTreeState> properties_before_subsequence;
+  base::Optional<PropertyTreeState> properties_before_subsequence;
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     cached_chunk =
         current_paint_artifact_.FindChunkByDisplayItemIndex(begin_index);
@@ -559,7 +559,7 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
     // Restore properties and force new chunk for any trailing display items
     // after the cached subsequence without new properties.
     new_paint_chunks_.ForceNewChunk();
-    UpdateCurrentPaintChunkProperties(WTF::nullopt,
+    UpdateCurrentPaintChunkProperties(base::nullopt,
                                       *properties_before_subsequence);
   }
 }

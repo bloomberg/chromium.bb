@@ -67,7 +67,7 @@ void FramePainter::Paint(GraphicsContext& context,
   if (should_paint_contents) {
     // TODO(pdr): Creating frame paint properties here will not be needed once
     // settings()->rootLayerScrolls() is enabled.
-    Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
+    base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
         !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       const auto* contents_state =
@@ -99,7 +99,7 @@ void FramePainter::Paint(GraphicsContext& context,
     scroll_view_dirty_rect.Intersect(visible_area_with_scrollbars);
     scroll_view_dirty_rect.MoveBy(-frame_view_location);
 
-    Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
+    base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
         !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       scoped_paint_chunk_properties.emplace(

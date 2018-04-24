@@ -184,10 +184,10 @@ void NGBoxFragmentPainter::PaintObject(
   if (paint_phase != PaintPhase::kSelfOutlineOnly) {
     // TODO(layout-dev): Figure out where paint properties should live.
     const auto& layout_object = *box_fragment_.GetLayoutObject();
-    Optional<PaintInfo> scrolled_paint_info;
+    base::Optional<PaintInfo> scrolled_paint_info;
     if (const auto* fragment = paint_info.FragmentToPaint(layout_object)) {
-      Optional<ScopedPaintChunkProperties> scoped_scroll_property;
-      Optional<ScrollRecorder> scroll_recorder;
+      base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
+      base::Optional<ScrollRecorder> scroll_recorder;
       DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
       const auto* object_properties = fragment->PaintProperties();
       auto* scroll_translation =
@@ -634,7 +634,7 @@ void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& text_fragment,
   // The text clip phase already has a DrawingRecorder. Text clips are initiated
   // only in BoxPainterBase::PaintFillLayer, which is already within a
   // DrawingRecorder.
-  Optional<DrawingRecorder> recorder;
+  base::Optional<DrawingRecorder> recorder;
   if (paint_info.phase != PaintPhase::kTextClip) {
     if (DrawingRecorder::UseCachedDrawingIfPossible(
             paint_info.context, text_fragment,
@@ -678,7 +678,7 @@ void NGBoxFragmentPainter::PaintOverflowControlsIfNeeded(
       ShouldPaintSelfBlockBackground(paint_info.phase) &&
       !paint_info.PaintRootBackgroundOnly()) {
     const NGPhysicalBoxFragment& fragment = PhysicalFragment();
-    Optional<ClipRecorder> clip_recorder;
+    base::Optional<ClipRecorder> clip_recorder;
     if (!fragment.Layer()->IsSelfPaintingLayer()) {
       LayoutRect clip_rect =
           LayoutRect(LayoutPoint(), fragment.Size().ToLayoutSize());

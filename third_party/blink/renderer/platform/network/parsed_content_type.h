@@ -32,10 +32,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_PARSED_CONTENT_TYPE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_PARSED_CONTENT_TYPE_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_header_field_parameters.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -68,7 +68,7 @@ class PLATFORM_EXPORT ParsedContentType final {
 
  private:
   String mime_type_;
-  WTF::Optional<ParsedContentHeaderFieldParameters> parameters_;
+  base::Optional<ParsedContentHeaderFieldParameters> parameters_;
 };
 
 }  // namespace blink

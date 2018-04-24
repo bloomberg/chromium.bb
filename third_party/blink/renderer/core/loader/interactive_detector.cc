@@ -214,7 +214,7 @@ void InteractiveDetector::EndNetworkQuietPeriod(TimeTicks current_time) {
 // CurrentTimeTicksInSeconds.
 void InteractiveDetector::UpdateNetworkQuietState(
     double request_count,
-    WTF::Optional<TimeTicks> opt_current_time) {
+    base::Optional<TimeTicks> opt_current_time) {
   if (request_count <= kNetworkQuietMaximumConnections &&
       active_network_quiet_window_start_.is_null()) {
     // Not using `value_or(CurrentTimeTicksInSeconds())` here because
@@ -232,7 +232,7 @@ void InteractiveDetector::UpdateNetworkQuietState(
 }
 
 void InteractiveDetector::OnResourceLoadBegin(
-    WTF::Optional<TimeTicks> load_begin_time) {
+    base::Optional<TimeTicks> load_begin_time) {
   if (!GetSupplementable())
     return;
   if (!interactive_time_.is_null())
@@ -245,7 +245,7 @@ void InteractiveDetector::OnResourceLoadBegin(
 // The optional load_finish_time, if provided, saves us a call to
 // CurrentTimeTicksInSeconds.
 void InteractiveDetector::OnResourceLoadEnd(
-    WTF::Optional<TimeTicks> load_finish_time) {
+    base::Optional<TimeTicks> load_finish_time) {
   if (!GetSupplementable())
     return;
   if (!interactive_time_.is_null())

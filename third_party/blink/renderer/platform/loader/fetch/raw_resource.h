@@ -25,13 +25,13 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "third_party/blink/public/platform/web_data_consumer_handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/buffering_data_pipe_writer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 class WebDataConsumerHandle;
@@ -91,7 +91,7 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   // keyed by the source code of the script.
   SourceKeyedCachedMetadataHandler* CacheHandler();
 
-  WTF::Optional<int64_t> DownloadedFileLength() const {
+  base::Optional<int64_t> DownloadedFileLength() const {
     return downloaded_file_length_;
   }
   scoped_refptr<BlobDataHandle> DownloadedBlob() const {
@@ -134,7 +134,7 @@ class PLATFORM_EXPORT RawResource final : public Resource {
                     base::SingleThreadTaskRunner*) override;
   void NotifyFinished() override;
 
-  WTF::Optional<int64_t> downloaded_file_length_;
+  base::Optional<int64_t> downloaded_file_length_;
   scoped_refptr<BlobDataHandle> downloaded_blob_;
 
   // Used for preload matching.

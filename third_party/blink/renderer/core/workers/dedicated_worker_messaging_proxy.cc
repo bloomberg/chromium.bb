@@ -187,7 +187,7 @@ void DedicatedWorkerMessagingProxy::Trace(blink::Visitor* visitor) {
   ThreadedMessagingProxyBase::Trace(visitor);
 }
 
-WTF::Optional<WorkerBackingThreadStartupData>
+base::Optional<WorkerBackingThreadStartupData>
 DedicatedWorkerMessagingProxy::CreateBackingThreadStartupData(
     v8::Isolate* isolate) {
   using HeapLimitMode = WorkerBackingThreadStartupData::HeapLimitMode;

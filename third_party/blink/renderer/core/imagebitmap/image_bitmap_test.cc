@@ -102,7 +102,7 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
           StaticBitmapImage::Create(image).get());
   image_element->SetImageForTest(original_image_resource);
 
-  Optional<IntRect> crop_rect =
+  base::Optional<IntRect> crop_rect =
       IntRect(0, 0, image_->width(), image_->height());
   ImageBitmap* image_bitmap_no_crop =
       ImageBitmap::Create(image_element, crop_rect,
@@ -174,7 +174,7 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
   image->SetImageForTest(original_image_resource);
 
   const ImageBitmapOptions default_options;
-  Optional<IntRect> crop_rect =
+  base::Optional<IntRect> crop_rect =
       IntRect(0, 0, image_->width(), image_->height());
   ImageBitmap* image_bitmap = ImageBitmap::Create(
       image, crop_rect, &(image->GetDocument()), default_options);
@@ -275,7 +275,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionHTMLImageElement) {
           StaticBitmapImage::Create(image).get());
   image_element->SetImageForTest(original_image_resource);
 
-  Optional<IntRect> crop_rect = IntRect(0, 0, image->width(), image->height());
+  base::Optional<IntRect> crop_rect =
+      IntRect(0, 0, image->width(), image->height());
 
   // Create and test the ImageBitmap objects.
   // We don't check "none" color space conversion as it requires the encoded
@@ -386,7 +387,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageBitmap) {
           StaticBitmapImage::Create(image).get());
   image_element->SetImageForTest(source_image_resource);
 
-  Optional<IntRect> crop_rect = IntRect(0, 0, image->width(), image->height());
+  base::Optional<IntRect> crop_rect =
+      IntRect(0, 0, image->width(), image->height());
   ImageBitmapOptions options =
       PrepareBitmapOptions(ColorSpaceConversion::SRGB);
   ImageBitmap* source_image_bitmap = ImageBitmap::Create(
@@ -489,7 +491,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionStaticBitmapImage) {
   image->readPixels(raster_image_info.makeWH(1, 1), src_pixel.get(),
                     image->width() * raster_image_info.bytesPerPixel(), 5, 5);
 
-  Optional<IntRect> crop_rect = IntRect(0, 0, image->width(), image->height());
+  base::Optional<IntRect> crop_rect =
+      IntRect(0, 0, image->width(), image->height());
 
   sk_sp<SkColorSpace> color_space = nullptr;
   SkColorType color_type = SkColorType::kN32_SkColorType;
@@ -586,7 +589,7 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
   std::unique_ptr<uint8_t[]> src_pixel(new uint8_t[4]());
   memcpy(src_pixel.get(), image_data->data()->Data(), 4);
 
-  Optional<IntRect> crop_rect = IntRect(0, 0, 1, 1);
+  base::Optional<IntRect> crop_rect = IntRect(0, 0, 1, 1);
   sk_sp<SkColorSpace> color_space = nullptr;
   SkColorType color_type = SkColorType::kN32_SkColorType;
   SkColorSpaceXform::ColorFormat color_format32 =

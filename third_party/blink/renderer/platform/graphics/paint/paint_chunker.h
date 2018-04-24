@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CHUNKER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CHUNKER_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
@@ -12,7 +13,6 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -33,7 +33,7 @@ class PLATFORM_EXPORT PaintChunker final {
   const PropertyTreeState& CurrentPaintChunkProperties() const {
     return current_properties_;
   }
-  void UpdateCurrentPaintChunkProperties(const Optional<PaintChunk::Id>&,
+  void UpdateCurrentPaintChunkProperties(const base::Optional<PaintChunk::Id>&,
                                          const PropertyTreeState&);
 
   void ForceNewChunk() { force_new_chunk_ = true; }
@@ -85,7 +85,7 @@ class PLATFORM_EXPORT PaintChunker final {
   // the current chunk id. This is currently not true when there is a forced
   // chunk because the current_chunk_id_ is cleared for subsequent chunks, even
   // though those subsequent chunks will have valid chunk ids.
-  Optional<PaintChunk::Id> current_chunk_id_;
+  base::Optional<PaintChunk::Id> current_chunk_id_;
   PropertyTreeState current_properties_;
   // True when an item forces a new chunk (e.g., foreign display items), and for
   // the item following a forced chunk.

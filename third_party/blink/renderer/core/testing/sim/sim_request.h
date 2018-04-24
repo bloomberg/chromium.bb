@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_SIM_SIM_REQUEST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_SIM_SIM_REQUEST_H_
 
+#include "base/optional.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_response.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -54,7 +54,7 @@ class SimRequest final {
 
   String url_;
   WebURLResponse response_;
-  Optional<WebURLError> error_;
+  base::Optional<WebURLError> error_;
   WebURLLoaderClient* client_;
   unsigned total_encoded_data_length_;
   bool is_ready_;

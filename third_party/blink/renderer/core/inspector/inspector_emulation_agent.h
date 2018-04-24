@@ -6,12 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_EMULATION_AGENT_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Emulation.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -85,8 +85,8 @@ class CORE_EXPORT InspectorEmulationAgent final
 
   struct PendingVirtualTimePolicy {
     PageScheduler::VirtualTimePolicy policy;
-    WTF::Optional<double> virtual_time_budget_ms;
-    WTF::Optional<int> max_virtual_time_task_starvation_count;
+    base::Optional<double> virtual_time_budget_ms;
+    base::Optional<int> max_virtual_time_task_starvation_count;
   };
   void ApplyVirtualTimePolicy(const PendingVirtualTimePolicy& new_policy);
 
@@ -96,7 +96,7 @@ class CORE_EXPORT InspectorEmulationAgent final
 
   // Supports a virtual time policy change scheduled to occur after any
   // navigation has started.
-  WTF::Optional<PendingVirtualTimePolicy> pending_virtual_time_policy_;
+  base::Optional<PendingVirtualTimePolicy> pending_virtual_time_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectorEmulationAgent);
 };

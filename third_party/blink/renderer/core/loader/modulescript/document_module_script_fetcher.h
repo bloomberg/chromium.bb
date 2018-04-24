@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_DOCUMENT_MODULE_SCRIPT_FETCHER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_DOCUMENT_MODULE_SCRIPT_FETCHER_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
@@ -12,7 +13,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -41,7 +41,7 @@ class CORE_EXPORT DocumentModuleScriptFetcher : public ModuleScriptFetcher,
   void Trace(blink::Visitor*) override;
 
  private:
-  void Finalize(const WTF::Optional<ModuleScriptCreationParams>&,
+  void Finalize(const base::Optional<ModuleScriptCreationParams>&,
                 const HeapVector<Member<ConsoleMessage>>& error_messages);
 
   Member<ResourceFetcher> fetcher_;

@@ -136,7 +136,7 @@ void TableRowPainter::PaintBackgroundBehindCell(
 void TableRowPainter::PaintCollapsedBorders(const PaintInfo& paint_info,
                                             const LayoutPoint& paint_offset,
                                             const CellSpan& dirtied_columns) {
-  Optional<DrawingRecorder> recorder;
+  base::Optional<DrawingRecorder> recorder;
 
   if (LIKELY(!layout_table_row_.Table()->ShouldPaintAllCollapsedBorders())) {
     HandleChangedPartialPaint(paint_info, dirtied_columns);

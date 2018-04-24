@@ -98,7 +98,7 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
                                               *context().tree_builder_context);
   }
   paint_invalidator_.InvalidatePaint(
-      frame_view, WTF::OptionalOrNullptr(context().tree_builder_context),
+      frame_view, base::OptionalOrNullptr(context().tree_builder_context),
       context().paint_invalidator_context);
 
   if (LayoutView* view = frame_view.GetLayoutView()) {
@@ -211,7 +211,7 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
   // some of the state computed here.
   UpdateAuxiliaryObjectProperties(object, context);
 
-  Optional<ObjectPaintPropertyTreeBuilder> property_tree_builder;
+  base::Optional<ObjectPaintPropertyTreeBuilder> property_tree_builder;
   bool property_changed = false;
   if (context.tree_builder_context) {
     property_tree_builder.emplace(object, *context.tree_builder_context);
@@ -224,7 +224,7 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
   }
 
   paint_invalidator_.InvalidatePaint(
-      object, WTF::OptionalOrNullptr(context.tree_builder_context),
+      object, base::OptionalOrNullptr(context.tree_builder_context),
       context.paint_invalidator_context);
 
   if (context.tree_builder_context) {

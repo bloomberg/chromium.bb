@@ -8,9 +8,9 @@
 #include <memory>
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -38,7 +38,7 @@ class WebURLLoaderMock : public WebURLLoader {
   void ServeAsynchronousRequest(WebURLLoaderTestDelegate* delegate,
                                 const WebURLResponse& response,
                                 const WebData& data,
-                                const Optional<WebURLError>& error);
+                                const base::Optional<WebURLError>& error);
 
   // Simulates the redirect being served.
   WebURL ServeRedirect(const WebURLRequest& request,
@@ -47,7 +47,7 @@ class WebURLLoaderMock : public WebURLLoader {
   // WebURLLoader methods:
   void LoadSynchronously(const WebURLRequest&,
                          WebURLResponse&,
-                         Optional<WebURLError>&,
+                         base::Optional<WebURLError>&,
                          WebData&,
                          int64_t& encoded_data_length,
                          int64_t& encoded_body_length,

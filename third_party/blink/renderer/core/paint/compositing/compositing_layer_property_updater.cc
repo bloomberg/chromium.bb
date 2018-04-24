@@ -41,7 +41,7 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
   DCHECK(layout_snapped_paint_offset == snapped_paint_offset ||
          subpixel_accumulation_may_be_bogus);
 
-  Optional<PropertyTreeState> container_layer_state;
+  base::Optional<PropertyTreeState> container_layer_state;
   auto SetContainerLayerState =
       [&fragment_data, &snapped_paint_offset,
        &container_layer_state](GraphicsLayer* graphics_layer) {

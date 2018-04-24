@@ -524,7 +524,7 @@ TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime) {
   ImageBitmap* image_bitmap_derived = nullptr;
   {
     const ImageBitmapOptions default_options;
-    Optional<IntRect> crop_rect =
+    base::Optional<IntRect> crop_rect =
         IntRect(0, 0, canvas->width(), canvas->height());
     ImageBitmap* image_bitmap_from_canvas =
         ImageBitmap::Create(canvas, crop_rect, default_options);
@@ -850,7 +850,7 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
       context->getImageData(2, 2, 1, 1, exception_state)->data()->Data();
 
   // Create and test the ImageBitmap objects.
-  Optional<IntRect> crop_rect = IntRect(0, 0, 4, 4);
+  base::Optional<IntRect> crop_rect = IntRect(0, 0, 4, 4);
   sk_sp<SkColorSpace> color_space = nullptr;
   SkColorType color_type = SkColorType::kRGBA_8888_SkColorType;
   SkColorSpaceXform::ColorFormat color_format32 =

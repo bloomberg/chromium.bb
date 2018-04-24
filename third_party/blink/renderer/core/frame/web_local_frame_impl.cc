@@ -404,7 +404,7 @@ class ChromePrintContext : public PrintContext {
     frame_view->PaintContents(builder.Context(), kGlobalPaintNormalPhase,
                               page_rect);
     {
-      Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
+      base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
       if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
         scoped_paint_chunk_properties.emplace(
             builder.Context().GetPaintController(), property_tree_state,

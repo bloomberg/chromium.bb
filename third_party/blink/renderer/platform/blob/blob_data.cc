@@ -282,14 +282,14 @@ void BlobData::AppendDataInternal(base::span<const char> data,
       current_memory_population_ += data.size();
     } else if (bytes_element->embedded_data) {
       current_memory_population_ -= bytes_element->embedded_data->size();
-      bytes_element->embedded_data = WTF::nullopt;
+      bytes_element->embedded_data = base::nullopt;
     }
   } else {
     BytesProviderPtrInfo bytes_provider_info;
     last_bytes_provider_ =
         BlobBytesProvider::CreateAndBind(MakeRequest(&bytes_provider_info));
 
-    auto bytes_element = DataElementBytes::New(data.size(), WTF::nullopt,
+    auto bytes_element = DataElementBytes::New(data.size(), base::nullopt,
                                                std::move(bytes_provider_info));
     if (should_embed_bytes) {
       bytes_element->embedded_data = Vector<uint8_t>();

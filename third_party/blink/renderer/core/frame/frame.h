@@ -29,6 +29,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_H_
 
+#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -41,7 +42,6 @@
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -261,7 +261,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // TODO(sashab): Investigate if this can be represented with m_lifecycle.
   bool is_loading_;
   base::UnguessableToken devtools_frame_token_;
-  WTF::Optional<CString> trace_value_;
+  base::Optional<CString> trace_value_;
 };
 
 inline FrameClient* Frame::Client() const {

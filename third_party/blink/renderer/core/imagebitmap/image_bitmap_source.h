@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_IMAGEBITMAP_IMAGE_BITMAP_SOURCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_IMAGEBITMAP_IMAGE_BITMAP_SOURCE_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -12,7 +13,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -24,7 +24,7 @@ class CORE_EXPORT ImageBitmapSource {
   virtual IntSize BitmapSourceSize() const { return IntSize(); }
   virtual ScriptPromise CreateImageBitmap(ScriptState*,
                                           EventTarget&,
-                                          Optional<IntRect>,
+                                          base::Optional<IntRect>,
                                           const ImageBitmapOptions&);
 
   virtual bool IsBlob() const { return false; }

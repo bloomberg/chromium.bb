@@ -36,6 +36,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_cors.h"
@@ -59,7 +60,6 @@
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -155,7 +155,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   WebAssociatedURLLoaderOptions options_;
   network::mojom::FetchRequestMode fetch_request_mode_;
   network::mojom::FetchCredentialsMode credentials_mode_;
-  Optional<WebURLError> error_;
+  base::Optional<WebURLError> error_;
 
   TaskRunnerTimer<ClientAdapter> error_timer_;
   bool enable_error_notifications_;

@@ -295,7 +295,7 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
   CompositorAnimations::AttachCompositedLayers(target,
                                                compositor_animation_.get());
 
-  WTF::Optional<double> start_time = WTF::nullopt;
+  base::Optional<double> start_time = base::nullopt;
   double time_offset = 0;
   int group = 0;
 

@@ -79,17 +79,17 @@ FloatRect ClipPathClipper::LocalReferenceBox(const LayoutObject& object) {
   return FloatRect(inline_b_box);
 }
 
-Optional<FloatRect> ClipPathClipper::LocalClipPathBoundingBox(
+base::Optional<FloatRect> ClipPathClipper::LocalClipPathBoundingBox(
     const LayoutObject& object) {
   if (object.IsText() || !object.StyleRef().ClipPath())
-    return WTF::nullopt;
+    return base::nullopt;
 
   FloatRect reference_box = LocalReferenceBox(object);
   ClipPathOperation& clip_path = *object.StyleRef().ClipPath();
   if (clip_path.GetType() == ClipPathOperation::SHAPE) {
     ShapeClipPathOperation& shape = ToShapeClipPathOperation(clip_path);
     if (!shape.IsValid())
-      return WTF::nullopt;
+      return base::nullopt;
     FloatRect bounding_box = shape.GetPath(reference_box).BoundingRect();
     bounding_box.Intersect(LayoutRect::InfiniteIntRect());
     return bounding_box;
@@ -99,7 +99,7 @@ Optional<FloatRect> ClipPathClipper::LocalClipPathBoundingBox(
   LayoutSVGResourceClipper* clipper =
       ResolveElementReference(object, ToReferenceClipPathOperation(clip_path));
   if (!clipper)
-    return WTF::nullopt;
+    return base::nullopt;
 
   FloatRect bounding_box = clipper->ResourceBoundingBox(reference_box);
   if (!object.IsSVGChild() &&
@@ -153,7 +153,8 @@ ClipPathClipper::ClipPathClipper(GraphicsContext& context,
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
 
-  Optional<FloatRect> bounding_box = LocalClipPathBoundingBox(layout_object);
+  base::Optional<FloatRect> bounding_box =
+      LocalClipPathBoundingBox(layout_object);
   if (!bounding_box)
     return;
 
@@ -164,7 +165,7 @@ ClipPathClipper::ClipPathClipper(GraphicsContext& context,
                          adjusted_bounding_box);
 
   bool is_valid = false;
-  if (Optional<Path> as_path =
+  if (base::Optional<Path> as_path =
           PathBasedClip(layout_object, layout_object.IsSVGChild(),
                         LocalReferenceBox(layout_object), is_valid)) {
     as_path->Translate(FloatSize(paint_offset.X(), paint_offset.Y()));
@@ -202,7 +203,7 @@ static AffineTransform MaskToContentTransform(
 }
 
 ClipPathClipper::~ClipPathClipper() {
-  Optional<ScopedPaintChunkProperties> scoped_properties;
+  base::Optional<ScopedPaintChunkProperties> scoped_properties;
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     const auto* properties = layout_object_.FirstFragment().PaintProperties();
     if (!properties || !properties->ClipPath())
@@ -253,8 +254,8 @@ ClipPathClipper::~ClipPathClipper() {
     if (resource_clipper->StyleRef().ClipPath()) {
       // Try to apply nested clip-path as path-based clip.
       bool unused;
-      if (Optional<Path> path = PathBasedClip(*resource_clipper, is_svg_child,
-                                              reference_box, unused)) {
+      if (base::Optional<Path> path = PathBasedClip(
+              *resource_clipper, is_svg_child, reference_box, unused)) {
         context_.ClipPath(path->GetSkPath(), kAntiAliased);
         rest_of_the_chain_already_appled = true;
       }
@@ -274,7 +275,7 @@ ClipPathClipper::~ClipPathClipper() {
   context_.Restore();
 }
 
-Optional<Path> ClipPathClipper::PathBasedClip(
+base::Optional<Path> ClipPathClipper::PathBasedClip(
     const LayoutObject& clip_path_owner,
     bool is_svg_child,
     const FloatRect& reference_box,
@@ -284,11 +285,11 @@ Optional<Path> ClipPathClipper::PathBasedClip(
   is_valid =
       IsClipPathOperationValid(clip_path, clip_path_owner, resource_clipper);
   if (!is_valid)
-    return WTF::nullopt;
+    return base::nullopt;
 
   if (resource_clipper) {
     DCHECK_EQ(clip_path.GetType(), ClipPathOperation::REFERENCE);
-    Optional<Path> path = resource_clipper->AsPath();
+    base::Optional<Path> path = resource_clipper->AsPath();
     if (!path)
       return path;
     path->Transform(
@@ -298,7 +299,7 @@ Optional<Path> ClipPathClipper::PathBasedClip(
 
   DCHECK_EQ(clip_path.GetType(), ClipPathOperation::SHAPE);
   auto& shape = ToShapeClipPathOperation(clip_path);
-  return Optional<Path>(shape.GetPath(reference_box));
+  return base::Optional<Path>(shape.GetPath(reference_box));
 }
 
 }  // namespace blink

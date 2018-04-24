@@ -39,28 +39,28 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
 
  public:
   static ImageBitmap* Create(ImageElementBase*,
-                             Optional<IntRect>,
+                             base::Optional<IntRect>,
                              Document*,
                              const ImageBitmapOptions& = ImageBitmapOptions());
   static ImageBitmap* Create(HTMLVideoElement*,
-                             Optional<IntRect>,
+                             base::Optional<IntRect>,
                              Document*,
                              const ImageBitmapOptions& = ImageBitmapOptions());
   static ImageBitmap* Create(HTMLCanvasElement*,
-                             Optional<IntRect>,
+                             base::Optional<IntRect>,
                              const ImageBitmapOptions& = ImageBitmapOptions());
   static ImageBitmap* Create(OffscreenCanvas*,
-                             Optional<IntRect>,
+                             base::Optional<IntRect>,
                              const ImageBitmapOptions& = ImageBitmapOptions());
   static ImageBitmap* Create(ImageData*,
-                             Optional<IntRect>,
+                             base::Optional<IntRect>,
                              const ImageBitmapOptions& = ImageBitmapOptions());
   static ImageBitmap* Create(ImageBitmap*,
-                             Optional<IntRect>,
+                             base::Optional<IntRect>,
                              const ImageBitmapOptions& = ImageBitmapOptions());
   static ImageBitmap* Create(scoped_refptr<StaticBitmapImage>);
   static ImageBitmap* Create(scoped_refptr<StaticBitmapImage>,
-                             Optional<IntRect>,
+                             base::Optional<IntRect>,
                              const ImageBitmapOptions& = ImageBitmapOptions());
   // This function is called by structured-cloning an ImageBitmap.
   // isImageBitmapPremultiplied indicates whether the original ImageBitmap is
@@ -75,7 +75,7 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
                              const CanvasColorParams&);
   static ScriptPromise CreateAsync(
       ImageElementBase*,
-      Optional<IntRect>,
+      base::Optional<IntRect>,
       Document*,
       ScriptState*,
       const ImageBitmapOptions& = ImageBitmapOptions());
@@ -119,7 +119,7 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
   IntSize BitmapSourceSize() const override { return Size(); }
   ScriptPromise CreateImageBitmap(ScriptState*,
                                   EventTarget&,
-                                  Optional<IntRect>,
+                                  base::Optional<IntRect>,
                                   const ImageBitmapOptions&) override;
 
   struct ParsedOptions {
@@ -137,20 +137,24 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
 
  private:
   ImageBitmap(ImageElementBase*,
-              Optional<IntRect>,
+              base::Optional<IntRect>,
               Document*,
               const ImageBitmapOptions&);
   ImageBitmap(HTMLVideoElement*,
-              Optional<IntRect>,
+              base::Optional<IntRect>,
               Document*,
               const ImageBitmapOptions&);
-  ImageBitmap(HTMLCanvasElement*, Optional<IntRect>, const ImageBitmapOptions&);
-  ImageBitmap(OffscreenCanvas*, Optional<IntRect>, const ImageBitmapOptions&);
-  ImageBitmap(ImageData*, Optional<IntRect>, const ImageBitmapOptions&);
-  ImageBitmap(ImageBitmap*, Optional<IntRect>, const ImageBitmapOptions&);
+  ImageBitmap(HTMLCanvasElement*,
+              base::Optional<IntRect>,
+              const ImageBitmapOptions&);
+  ImageBitmap(OffscreenCanvas*,
+              base::Optional<IntRect>,
+              const ImageBitmapOptions&);
+  ImageBitmap(ImageData*, base::Optional<IntRect>, const ImageBitmapOptions&);
+  ImageBitmap(ImageBitmap*, base::Optional<IntRect>, const ImageBitmapOptions&);
   ImageBitmap(scoped_refptr<StaticBitmapImage>);
   ImageBitmap(scoped_refptr<StaticBitmapImage>,
-              Optional<IntRect>,
+              base::Optional<IntRect>,
               const ImageBitmapOptions&);
   ImageBitmap(const void* pixel_data,
               uint32_t width,

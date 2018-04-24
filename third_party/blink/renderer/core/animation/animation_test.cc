@@ -85,9 +85,10 @@ class AnimationAnimationTest : public RenderingTest {
     return KeyframeEffect::Create(nullptr, MakeEmptyEffectModel(), timing);
   }
 
-  bool SimulateFrame(double time,
-                     Optional<CompositorElementIdSet> composited_element_ids =
-                         Optional<CompositorElementIdSet>()) {
+  bool SimulateFrame(
+      double time,
+      base::Optional<CompositorElementIdSet> composited_element_ids =
+          base::Optional<CompositorElementIdSet>()) {
     document->GetAnimationClock().UpdateTime(time);
     document->GetPendingAnimations().Update(composited_element_ids, false);
     // The timeline does not know about our animation, so we have to explicitly
@@ -808,7 +809,7 @@ TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
   LayoutObject* object_composited = GetLayoutObjectByElementId("foo");
   LayoutObject* object_not_composited = GetLayoutObjectByElementId("bar");
 
-  Optional<CompositorElementIdSet> composited_element_ids =
+  base::Optional<CompositorElementIdSet> composited_element_ids =
       CompositorElementIdSet();
   CompositorElementId expected_compositor_element_id =
       CompositorElementIdFromUniqueObjectId(
@@ -878,7 +879,7 @@ TEST_F(AnimationAnimationTest, SetCompositorPendingWithUnresolvedStartTimes) {
   UpdateAllLifecyclePhases();
 
   document->GetAnimationClock().UpdateTime(0);
-  document->GetPendingAnimations().Update(WTF::nullopt, true);
+  document->GetPendingAnimations().Update(base::nullopt, true);
 
   // At this point, the animation exists on both the compositor and blink side,
   // but no start time has arrived on either side. The compositor is currently
@@ -929,7 +930,7 @@ TEST_F(AnimationAnimationTest, PreCommitWithUnresolvedStartTimes) {
   UpdateAllLifecyclePhases();
 
   document->GetAnimationClock().UpdateTime(0);
-  document->GetPendingAnimations().Update(WTF::nullopt, true);
+  document->GetPendingAnimations().Update(base::nullopt, true);
 
   // At this point, the animation exists on both the compositor and blink side,
   // but no start time has arrived on either side. The compositor is currently
@@ -938,7 +939,7 @@ TEST_F(AnimationAnimationTest, PreCommitWithUnresolvedStartTimes) {
 
   // At this point, a call to PreCommit should bail out and tell us to wait for
   // next commit because there are no resolved start times.
-  EXPECT_FALSE(animation->PreCommit(0, WTF::nullopt, true));
+  EXPECT_FALSE(animation->PreCommit(0, base::nullopt, true));
 }
 
 }  // namespace blink

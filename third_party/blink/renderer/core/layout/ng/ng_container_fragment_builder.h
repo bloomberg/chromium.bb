@@ -39,7 +39,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
 
   // The NGBfcOffset is where this fragment was positioned within the BFC. If
   // it is not set, this fragment may be placed anywhere within the BFC.
-  const WTF::Optional<NGBfcOffset>& BfcOffset() const { return bfc_offset_; }
+  const base::Optional<NGBfcOffset>& BfcOffset() const { return bfc_offset_; }
   NGContainerFragmentBuilder& SetBfcOffset(const NGBfcOffset&);
 
   NGContainerFragmentBuilder& SetEndMarginStrut(const NGMarginStrut&);
@@ -170,7 +170,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
 
   NGLogicalSize size_;
 
-  WTF::Optional<NGBfcOffset> bfc_offset_;
+  base::Optional<NGBfcOffset> bfc_offset_;
   NGMarginStrut end_margin_strut_;
   std::unique_ptr<const NGExclusionSpace> exclusion_space_;
 

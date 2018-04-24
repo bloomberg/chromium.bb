@@ -195,7 +195,7 @@ class PLATFORM_EXPORT ResourceLoader final
     double finish_time;
     bool blocked_cross_site_document;
   };
-  Optional<DeferedFinishLoadingInfo> load_did_finish_before_blob_;
+  base::Optional<DeferedFinishLoadingInfo> load_did_finish_before_blob_;
 
   TaskRunnerTimer<ResourceLoader> cancel_timer_;
 };

@@ -5,13 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCOPED_PAINT_CHUNK_PROPERTIES_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCOPED_PAINT_CHUNK_PROPERTIES_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -70,7 +70,7 @@ class ScopedPaintChunkProperties {
     // ScopedPaintChunkProperties. The painter should create another scope of
     // paint properties with new id, or the new chunk will use the id of the
     // first display item as its id.
-    paint_controller_.UpdateCurrentPaintChunkProperties(WTF::nullopt,
+    paint_controller_.UpdateCurrentPaintChunkProperties(base::nullopt,
                                                         previous_properties_);
   }
 

@@ -69,7 +69,7 @@ void DocumentAnimations::UpdateAnimationTimingIfNeeded(Document& document) {
 void DocumentAnimations::UpdateAnimations(
     Document& document,
     DocumentLifecycle::LifecycleState required_lifecycle_state,
-    Optional<CompositorElementIdSet>& composited_element_ids) {
+    base::Optional<CompositorElementIdSet>& composited_element_ids) {
   DCHECK(document.Lifecycle().GetState() >= required_lifecycle_state);
 
   if (document.GetPendingAnimations().Update(composited_element_ids)) {

@@ -8,12 +8,12 @@
 
 namespace blink {
 
-Optional<double> NumberPropertyFunctions::GetInitialNumber(
+base::Optional<double> NumberPropertyFunctions::GetInitialNumber(
     const CSSProperty& property) {
   return GetNumber(property, ComputedStyle::InitialStyle());
 }
 
-Optional<double> NumberPropertyFunctions::GetNumber(
+base::Optional<double> NumberPropertyFunctions::GetNumber(
     const CSSProperty& property,
     const ComputedStyle& style) {
   switch (property.PropertyID()) {
@@ -44,21 +44,21 @@ Optional<double> NumberPropertyFunctions::GetNumber(
 
     case CSSPropertyFontSizeAdjust:
       if (!style.HasFontSizeAdjust())
-        return Optional<double>();
+        return base::Optional<double>();
       return style.FontSizeAdjust();
     case CSSPropertyColumnCount:
       if (style.HasAutoColumnCount())
-        return Optional<double>();
+        return base::Optional<double>();
       return style.ColumnCount();
     case CSSPropertyZIndex:
       if (style.HasAutoZIndex())
-        return Optional<double>();
+        return base::Optional<double>();
       return style.ZIndex();
 
     case CSSPropertyTextSizeAdjust: {
       const TextSizeAdjust& text_size_adjust = style.GetTextSizeAdjust();
       if (text_size_adjust.IsAuto())
-        return Optional<double>();
+        return base::Optional<double>();
       return text_size_adjust.Multiplier() * 100;
     }
 
@@ -66,16 +66,16 @@ Optional<double> NumberPropertyFunctions::GetNumber(
       const Length& length = style.SpecifiedLineHeight();
       // Numbers are represented by percentages.
       if (length.GetType() != kPercent)
-        return Optional<double>();
+        return base::Optional<double>();
       double value = length.Value();
       // -100% represents the keyword "normal".
       if (value == -100)
-        return Optional<double>();
+        return base::Optional<double>();
       return value / 100;
     }
 
     default:
-      return Optional<double>();
+      return base::Optional<double>();
   }
 }
 

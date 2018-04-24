@@ -4,13 +4,13 @@
 
 #include "third_party/blink/renderer/core/paint/file_upload_control_painter.h"
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/layout_button.h"
 #include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/platform/graphics/paint/clip_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -23,7 +23,7 @@ void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
     return;
 
   // Push a clip.
-  Optional<ClipRecorder> clip_recorder;
+  base::Optional<ClipRecorder> clip_recorder;
   if (paint_info.phase == PaintPhase::kForeground ||
       paint_info.phase == PaintPhase::kDescendantBlockBackgroundsOnly) {
     IntRect clip_rect = EnclosingIntRect(LayoutRect(

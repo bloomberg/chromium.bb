@@ -759,8 +759,8 @@ void HTMLImageElement::EnsureCollapsedOrFallbackContent() {
     return;
 
   ImageResourceContent* image_content = GetImageLoader().GetContent();
-  Optional<ResourceError> error =
-      image_content ? image_content->GetResourceError() : WTF::nullopt;
+  base::Optional<ResourceError> error =
+      image_content ? image_content->GetResourceError() : base::nullopt;
   SetLayoutDisposition(error && error->ShouldCollapseInitiator()
                            ? LayoutDisposition::kCollapsed
                            : LayoutDisposition::kFallbackContent);

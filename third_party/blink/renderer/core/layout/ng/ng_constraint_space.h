@@ -5,6 +5,7 @@
 #ifndef NGConstraintSpace_h
 #define NGConstraintSpace_h
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
@@ -15,7 +16,6 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -181,7 +181,7 @@ class CORE_EXPORT NGConstraintSpace final
   //
   // This value is calculated *after* an initial pass of the tree, this value
   // should only be present during the second pass.
-  WTF::Optional<NGBfcOffset> FloatsBfcOffset() const {
+  base::Optional<NGBfcOffset> FloatsBfcOffset() const {
     return floats_bfc_offset_;
   }
 
@@ -189,7 +189,7 @@ class CORE_EXPORT NGConstraintSpace final
     return unpositioned_floats_;
   }
 
-  WTF::Optional<LayoutUnit> ClearanceOffset() const {
+  base::Optional<LayoutUnit> ClearanceOffset() const {
     return clearance_offset_;
   }
 
@@ -227,10 +227,10 @@ class CORE_EXPORT NGConstraintSpace final
       bool use_first_line_style,
       const NGMarginStrut& margin_strut,
       const NGBfcOffset& bfc_offset,
-      const WTF::Optional<NGBfcOffset>& floats_bfc_offset,
+      const base::Optional<NGBfcOffset>& floats_bfc_offset,
       const NGExclusionSpace& exclusion_space,
       Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats,
-      const WTF::Optional<LayoutUnit>& clearance_offset,
+      const base::Optional<LayoutUnit>& clearance_offset,
       Vector<NGBaselineRequest>& baseline_requests);
 
   NGLogicalSize available_size_;
@@ -265,10 +265,10 @@ class CORE_EXPORT NGConstraintSpace final
 
   NGMarginStrut margin_strut_;
   NGBfcOffset bfc_offset_;
-  WTF::Optional<NGBfcOffset> floats_bfc_offset_;
+  base::Optional<NGBfcOffset> floats_bfc_offset_;
 
   const std::unique_ptr<const NGExclusionSpace> exclusion_space_;
-  WTF::Optional<LayoutUnit> clearance_offset_;
+  base::Optional<LayoutUnit> clearance_offset_;
   Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats_;
 
   Vector<NGBaselineRequest> baseline_requests_;

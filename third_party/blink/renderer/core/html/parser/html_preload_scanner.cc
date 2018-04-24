@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_preload_scanner.h"
 
 #include <memory>
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
@@ -53,7 +54,6 @@
 #include "third_party/blink/renderer/platform/loader/subresource_integrity.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -204,14 +204,14 @@ class TokenPreloadScanner::StartTagScanner {
       const ReferrerPolicy document_referrer_policy) {
     PreloadRequest::RequestType request_type =
         PreloadRequest::kRequestTypePreload;
-    WTF::Optional<Resource::Type> type;
+    base::Optional<Resource::Type> type;
     if (ShouldPreconnect()) {
       request_type = PreloadRequest::kRequestTypePreconnect;
     } else {
       if (IsLinkRelPreload()) {
         request_type = PreloadRequest::kRequestTypeLinkRelPreload;
         type = ResourceTypeForLinkPreload();
-        if (type == WTF::nullopt)
+        if (type == base::nullopt)
           return nullptr;
       } else if (IsLinkRelModulePreload()) {
         request_type = PreloadRequest::kRequestTypeLinkRelPreload;
@@ -241,7 +241,7 @@ class TokenPreloadScanner::StartTagScanner {
       resource_width.is_set = true;
     }
 
-    if (type == WTF::nullopt)
+    if (type == base::nullopt)
       type = ResourceType();
 
     // The element's 'referrerpolicy' attribute (if present) takes precedence
@@ -467,7 +467,7 @@ class TokenPreloadScanner::StartTagScanner {
     return charset_;
   }
 
-  WTF::Optional<Resource::Type> ResourceTypeForLinkPreload() const {
+  base::Optional<Resource::Type> ResourceTypeForLinkPreload() const {
     DCHECK(link_is_preload_);
     return LinkLoader::GetResourceTypeFromAsAttribute(as_attribute_value_);
   }
@@ -504,7 +504,7 @@ class TokenPreloadScanner::StartTagScanner {
            !url_to_load_.IsEmpty();
   }
 
-  bool ShouldPreloadLink(WTF::Optional<Resource::Type>& type) const {
+  bool ShouldPreloadLink(base::Optional<Resource::Type>& type) const {
     if (link_is_style_sheet_) {
       return type_attribute_value_.IsEmpty() ||
              MIMETypeRegistry::IsSupportedStyleSheetMIMEType(
@@ -532,7 +532,7 @@ class TokenPreloadScanner::StartTagScanner {
     return true;
   }
 
-  bool ShouldPreload(WTF::Optional<Resource::Type>& type) const {
+  bool ShouldPreload(base::Optional<Resource::Type>& type) const {
     if (url_to_load_.IsEmpty())
       return false;
     if (!matched_)

@@ -31,7 +31,7 @@ BluetoothRemoteGATTDescriptor* BluetoothRemoteGATTDescriptor::Create(
 void BluetoothRemoteGATTDescriptor::ReadValueCallback(
     ScriptPromiseResolver* resolver,
     mojom::blink::WebBluetoothResult result,
-    const Optional<Vector<uint8_t>>& value) {
+    const base::Optional<Vector<uint8_t>>& value) {
   if (!resolver->GetExecutionContext() ||
       resolver->GetExecutionContext()->IsContextDestroyed())
     return;

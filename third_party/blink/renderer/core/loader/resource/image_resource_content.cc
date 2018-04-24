@@ -52,8 +52,8 @@ class NullImageResourceInfo final
     return true;
   }
   bool HasCacheControlNoStoreHeader() const override { return false; }
-  Optional<ResourceError> GetResourceError() const override {
-    return WTF::nullopt;
+  base::Optional<ResourceError> GetResourceError() const override {
+    return base::nullopt;
   }
 
   void SetDecodedSize(size_t) override {}
@@ -628,7 +628,7 @@ const ResourceResponse& ImageResourceContent::GetResponse() const {
   return info_->GetResponse();
 }
 
-Optional<ResourceError> ImageResourceContent::GetResourceError() const {
+base::Optional<ResourceError> ImageResourceContent::GetResourceError() const {
   return info_->GetResourceError();
 }
 

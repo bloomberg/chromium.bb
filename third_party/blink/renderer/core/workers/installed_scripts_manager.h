@@ -5,11 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_INSTALLED_SCRIPTS_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_INSTALLED_SCRIPTS_MANAGER_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/box_painter_base.h"
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
@@ -19,7 +20,6 @@
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/scoped_interpolation_quality.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -420,7 +420,7 @@ inline bool PaintFastBottomLayer(const DisplayItemClient& image_client,
   FloatRoundedRect border = info.is_rounded_fill
                                 ? border_rect
                                 : FloatRoundedRect(PixelSnappedIntRect(rect));
-  Optional<RoundedInnerRectClipper> clipper;
+  base::Optional<RoundedInnerRectClipper> clipper;
   if (info.is_rounded_fill && !border.IsRenderable()) {
     // When the rrect is not renderable, we resort to clipping.
     // RoundedInnerRectClipper handles this case via discrete, corner-wise
@@ -542,7 +542,7 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
 
   scoped_refptr<Image> image;
   SkBlendMode composite_op = op;
-  Optional<ScopedInterpolationQuality> interpolation_quality_context;
+  base::Optional<ScopedInterpolationQuality> interpolation_quality_context;
   if (info.should_paint_image) {
     geometry.Calculate(paint_info.PaintContainer(), paint_info.phase,
                        paint_info.GetGlobalPaintFlags(), bg_layer,
@@ -572,7 +572,7 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
     return;
   }
 
-  Optional<RoundedInnerRectClipper> clip_to_border;
+  base::Optional<RoundedInnerRectClipper> clip_to_border;
   if (info.is_rounded_fill) {
     clip_to_border.emplace(display_item_, paint_info, rect, border_rect,
                            kApplyToContext);

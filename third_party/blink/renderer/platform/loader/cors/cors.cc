@@ -68,7 +68,7 @@ std::unique_ptr<net::HttpRequestHeaders> CreateNetHttpRequestHeaders(
 
 namespace CORS {
 
-WTF::Optional<network::mojom::CORSError> CheckAccess(
+base::Optional<network::mojom::CORSError> CheckAccess(
     const KURL& response_url,
     const int response_status_code,
     const HTTPHeaderMap& response_header,
@@ -85,7 +85,7 @@ WTF::Optional<network::mojom::CORSError> CheckAccess(
       !privilege->block_local_access_from_local_origin_);
 }
 
-WTF::Optional<network::mojom::CORSError> CheckRedirectLocation(
+base::Optional<network::mojom::CORSError> CheckRedirectLocation(
     const KURL& url) {
   static const bool run_blink_side_scheme_check =
       !RuntimeEnabledFeatures::OutOfBlinkCORSEnabled();
@@ -99,12 +99,12 @@ WTF::Optional<network::mojom::CORSError> CheckRedirectLocation(
   return network::cors::CheckRedirectLocation(url, run_blink_side_scheme_check);
 }
 
-WTF::Optional<network::mojom::CORSError> CheckPreflight(
+base::Optional<network::mojom::CORSError> CheckPreflight(
     const int preflight_response_status_code) {
   return network::cors::CheckPreflight(preflight_response_status_code);
 }
 
-WTF::Optional<network::mojom::CORSError> CheckExternalPreflight(
+base::Optional<network::mojom::CORSError> CheckExternalPreflight(
     const HTTPHeaderMap& response_header) {
   return network::cors::CheckExternalPreflight(GetHeaderValue(
       response_header, HTTPNames::Access_Control_Allow_External));

@@ -5283,7 +5283,7 @@ static void voidMethodNullableSequenceLongArgMethod(const v8::FunctionCallbackIn
     return;
   }
 
-  Optional<Vector<int32_t>> longSequenceArg;
+  base::Optional<Vector<int32_t>> longSequenceArg;
   if (!info[0]->IsNullOrUndefined()) {
     longSequenceArg = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
     if (exceptionState.HadException())
@@ -5338,7 +5338,7 @@ static void voidMethodTestInterfaceEmptyFrozenArrayMethodMethod(const v8::Functi
 static void nullableLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
-  Optional<int32_t> result = impl->nullableLongMethod();
+  base::Optional<int32_t> result = impl->nullableLongMethod();
   if (!result)
     V8SetReturnValueNull(info);
   else
@@ -5360,7 +5360,7 @@ static void nullableTestInterfaceMethodMethod(const v8::FunctionCallbackInfo<v8:
 static void nullableLongSequenceMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
-  Optional<Vector<int32_t>> result = impl->nullableLongSequenceMethod();
+  base::Optional<Vector<int32_t>> result = impl->nullableLongSequenceMethod();
   if (!result)
     V8SetReturnValueNull(info);
   else
@@ -5719,7 +5719,7 @@ static void testDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
 static void nullableTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
-  Optional<TestDictionary> result;
+  base::Optional<TestDictionary> result;
   impl->nullableTestDictionaryMethod(result);
   if (!result)
     V8SetReturnValueNull(info);
@@ -5734,7 +5734,7 @@ static void staticTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::
 }
 
 static void staticNullableTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Optional<TestDictionary> result;
+  base::Optional<TestDictionary> result;
   TestObject::staticNullableTestDictionaryMethod(result);
   if (!result)
     V8SetReturnValueNull(info);

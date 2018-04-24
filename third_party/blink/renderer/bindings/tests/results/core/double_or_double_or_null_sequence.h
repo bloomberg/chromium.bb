@@ -33,9 +33,9 @@ class CORE_EXPORT DoubleOrDoubleOrNullSequence final {
   static DoubleOrDoubleOrNullSequence FromDouble(double);
 
   bool IsDoubleOrNullSequence() const { return type_ == SpecificType::kDoubleOrNullSequence; }
-  const Vector<Optional<double>>& GetAsDoubleOrNullSequence() const;
-  void SetDoubleOrNullSequence(const Vector<Optional<double>>&);
-  static DoubleOrDoubleOrNullSequence FromDoubleOrNullSequence(const Vector<Optional<double>>&);
+  const Vector<base::Optional<double>>& GetAsDoubleOrNullSequence() const;
+  void SetDoubleOrNullSequence(const Vector<base::Optional<double>>&);
+  static DoubleOrDoubleOrNullSequence FromDoubleOrNullSequence(const Vector<base::Optional<double>>&);
 
   DoubleOrDoubleOrNullSequence(const DoubleOrDoubleOrNullSequence&);
   ~DoubleOrDoubleOrNullSequence();
@@ -51,7 +51,7 @@ class CORE_EXPORT DoubleOrDoubleOrNullSequence final {
   SpecificType type_;
 
   double double_;
-  Vector<Optional<double>> double_or_null_sequence_;
+  Vector<base::Optional<double>> double_or_null_sequence_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const DoubleOrDoubleOrNullSequence&, v8::Local<v8::Object>, v8::Isolate*);
 };

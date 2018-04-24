@@ -168,14 +168,14 @@ LayoutUnit GridBaselineAlignment::BaselineOffsetForChild(
   return LayoutUnit();
 }
 
-Optional<LayoutUnit> GridBaselineAlignment::ExtentForBaselineAlignment(
+base::Optional<LayoutUnit> GridBaselineAlignment::ExtentForBaselineAlignment(
     ItemPosition preference,
     unsigned shared_context,
     const LayoutBox& child,
     GridAxis baseline_axis) const {
   DCHECK(IsBaselinePosition(preference));
   if (!IsBaselineContextComputed(baseline_axis))
-    return WTF::nullopt;
+    return base::nullopt;
 
   auto& group = GetBaselineGroupForChild(preference, shared_context, child,
                                          baseline_axis);

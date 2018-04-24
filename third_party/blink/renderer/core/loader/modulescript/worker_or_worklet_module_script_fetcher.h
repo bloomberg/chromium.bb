@@ -5,10 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_WORKER_OR_WORKLET_MODULE_SCRIPT_FETCHER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_WORKER_OR_WORKLET_MODULE_SCRIPT_FETCHER_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_module_fetch_coordinator.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_module_fetch_coordinator_proxy.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -34,7 +34,7 @@ class CORE_EXPORT WorkerOrWorkletModuleScriptFetcher final
   void Trace(blink::Visitor*) override;
 
  private:
-  void Finalize(const WTF::Optional<ModuleScriptCreationParams>&,
+  void Finalize(const base::Optional<ModuleScriptCreationParams>&,
                 const HeapVector<Member<ConsoleMessage>>& error_messages);
 
   Member<WorkerOrWorkletModuleFetchCoordinatorProxy> coordinator_proxy_;

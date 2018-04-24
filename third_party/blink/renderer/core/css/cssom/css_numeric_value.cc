@@ -293,7 +293,7 @@ CSSMathSum* CSSNumericValue::toSum(const Vector<String>& unit_strings,
     }
   }
 
-  const WTF::Optional<CSSNumericSumValue> sum = SumValue();
+  const base::Optional<CSSNumericSumValue> sum = SumValue();
   if (!sum) {
     exception_state.ThrowTypeError("Invalid value for conversion");
     return nullptr;

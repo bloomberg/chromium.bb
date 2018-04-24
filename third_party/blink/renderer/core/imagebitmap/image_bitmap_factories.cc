@@ -125,7 +125,7 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmapFromBlob(
     ScriptState* script_state,
     EventTarget& event_target,
     ImageBitmapSource* bitmap_source,
-    Optional<IntRect> crop_rect,
+    base::Optional<IntRect> crop_rect,
     const ImageBitmapOptions& options) {
   Blob* blob = static_cast<Blob*>(bitmap_source);
   ImageBitmapLoader* loader = ImageBitmapFactories::ImageBitmapLoader::Create(
@@ -148,7 +148,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(
   if (!bitmap_source_internal)
     return ScriptPromise();
   return createImageBitmap(script_state, event_target, bitmap_source_internal,
-                           Optional<IntRect>(), options);
+                           base::Optional<IntRect>(), options);
 }
 
 ScriptPromise ImageBitmapFactories::createImageBitmap(
@@ -166,7 +166,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(
       ToImageBitmapSourceInternal(bitmap_source, options, true);
   if (!bitmap_source_internal)
     return ScriptPromise();
-  Optional<IntRect> crop_rect = IntRect(sx, sy, sw, sh);
+  base::Optional<IntRect> crop_rect = IntRect(sx, sy, sw, sh);
   return createImageBitmap(script_state, event_target, bitmap_source_internal,
                            crop_rect, options);
 }
@@ -175,7 +175,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(
     ScriptState* script_state,
     EventTarget& event_target,
     ImageBitmapSource* bitmap_source,
-    Optional<IntRect> crop_rect,
+    base::Optional<IntRect> crop_rect,
     const ImageBitmapOptions& options) {
   if (crop_rect && (crop_rect->Width() == 0 || crop_rect->Height() == 0)) {
     return ScriptPromise::Reject(
@@ -240,7 +240,7 @@ void ImageBitmapFactories::DidFinishLoading(ImageBitmapLoader* loader) {
 
 ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(
     ImageBitmapFactories& factory,
-    Optional<IntRect> crop_rect,
+    base::Optional<IntRect> crop_rect,
     ScriptState* script_state,
     const ImageBitmapOptions& options)
     : loader_(

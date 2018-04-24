@@ -513,7 +513,7 @@ class MODULES_EXPORT BaseAudioContext
   // It is somewhat arbitrary and could be increased if necessary.
   enum { kMaxNumberOfChannels = 32 };
 
-  Optional<AutoplayStatus> autoplay_status_;
+  base::Optional<AutoplayStatus> autoplay_status_;
   AudioIOPosition output_position_;
 
   Member<AudioWorklet> audio_worklet_;

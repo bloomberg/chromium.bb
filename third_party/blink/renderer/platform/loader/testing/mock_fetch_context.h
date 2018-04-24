@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_TESTING_MOCK_FETCH_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_TESTING_MOCK_FETCH_CONTEXT_H_
 
+#include "base/optional.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
@@ -14,7 +15,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 #include <memory>
 
@@ -51,7 +51,7 @@ class MockFetchContext : public FetchContext {
   }
 
   // The last ResourceRequest passed to DispatchWillSendRequest.
-  WTF::Optional<ResourceRequest> RequestFromWillSendRequest() const {
+  base::Optional<ResourceRequest> RequestFromWillSendRequest() const {
     return will_send_request_;
   }
 
@@ -158,7 +158,7 @@ class MockFetchContext : public FetchContext {
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
   bool complete_;
   long long transfer_size_;
-  WTF::Optional<ResourceRequest> will_send_request_;
+  base::Optional<ResourceRequest> will_send_request_;
 };
 
 }  // namespace blink

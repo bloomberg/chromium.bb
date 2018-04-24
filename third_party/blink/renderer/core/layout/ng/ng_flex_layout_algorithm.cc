@@ -30,7 +30,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       << "Don't support that yet";
 
   LayoutUnit container_logical_width = ComputeInlineSizeForFragment(
-      ConstraintSpace(), Style(), /* MinMaxSize */ WTF::nullopt);
+      ConstraintSpace(), Style(), /* MinMaxSize */ base::nullopt);
 
   Vector<FlexItem> flex_items;
   for (NGLayoutInputNode child = Node().FirstChild(); child;
@@ -133,10 +133,10 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   return container_builder_.ToBoxFragment();
 }
 
-Optional<MinMaxSize> NGFlexLayoutAlgorithm::ComputeMinMaxSize(
+base::Optional<MinMaxSize> NGFlexLayoutAlgorithm::ComputeMinMaxSize(
     const MinMaxSizeInput& input) const {
   // TODO(dgrogan): Implement this.
-  return WTF::nullopt;
+  return base::nullopt;
 }
 
 }  // namespace blink

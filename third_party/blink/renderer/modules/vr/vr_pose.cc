@@ -9,7 +9,7 @@ namespace blink {
 namespace {
 
 DOMFloat32Array* MojoArrayToFloat32Array(
-    const WTF::Optional<WTF::Vector<float>>& vec) {
+    const base::Optional<WTF::Vector<float>>& vec) {
   if (!vec)
     return nullptr;
 

@@ -32,6 +32,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_LINK_LOADER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_LINK_LOADER_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/link_rel_attribute.h"
 #include "third_party/blink/renderer/core/loader/link_loader_client.h"
@@ -39,7 +40,6 @@
 #include "third_party/blink/renderer/platform/cross_origin_attribute_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/prerender_client.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -129,7 +129,7 @@ class CORE_EXPORT LinkLoader final : public SingleModuleClient,
                                   CanLoadResources,
                                   MediaPreloadPolicy,
                                   ViewportDescriptionWrapper*);
-  static WTF::Optional<Resource::Type> GetResourceTypeFromAsAttribute(
+  static base::Optional<Resource::Type> GetResourceTypeFromAsAttribute(
       const String& as);
 
   Resource* GetResourceForTesting();

@@ -34,6 +34,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
@@ -102,7 +103,6 @@
 #include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -449,7 +449,8 @@ WebScreenInfo ChromeClientImpl::GetScreenInfo() const {
                              : WebScreenInfo();
 }
 
-WTF::Optional<IntRect> ChromeClientImpl::VisibleContentRectForPainting() const {
+base::Optional<IntRect> ChromeClientImpl::VisibleContentRectForPainting()
+    const {
   return web_view_->GetDevToolsEmulator()->VisibleContentRectForPainting();
 }
 

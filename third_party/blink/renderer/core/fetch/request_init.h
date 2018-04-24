@@ -6,12 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_REQUEST_INIT_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/byte_string_sequence_sequence_or_byte_string_byte_string_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits.h"
 #include "third_party/blink/renderer/core/fetch/headers.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -39,8 +39,8 @@ class RequestInit {
   const String& CacheMode() const { return cache_; }
   const String& Redirect() const { return redirect_; }
   const String& Integrity() const { return integrity_; }
-  const WTF::Optional<bool>& Keepalive() const { return keepalive_; }
-  WTF::Optional<AbortSignal*> Signal() const;
+  const base::Optional<bool>& Keepalive() const { return keepalive_; }
+  base::Optional<AbortSignal*> Signal() const;
   bool AreAnyMembersSet() const { return are_any_members_set_; }
 
  private:
@@ -50,8 +50,8 @@ class RequestInit {
   friend struct NativeValueTraits<IDLPassThrough>;
   friend struct NativeValueTraitsBase<IDLPassThrough>;
 
-  void CheckEnumValues(const WTF::Optional<String>& referrer_string,
-                       const WTF::Optional<String>& referrer_policy_string,
+  void CheckEnumValues(const base::Optional<String>& referrer_string,
+                       const base::Optional<String>& referrer_policy_string,
                        ExceptionState&);
   void SetUpBody(ExecutionContext*,
                  v8::Isolate*,
@@ -68,8 +68,8 @@ class RequestInit {
   String cache_;
   String redirect_;
   String integrity_;
-  WTF::Optional<bool> keepalive_;
-  WTF::Optional<Member<AbortSignal>> signal_;
+  base::Optional<bool> keepalive_;
+  base::Optional<Member<AbortSignal>> signal_;
   // True if any members in RequestInit are set and hence the referrer member
   // should be used in the Request constructor.
   bool are_any_members_set_ = false;

@@ -52,7 +52,7 @@ class RequestInit::GetterHelper {
       : src_(src), exception_state_(exception_state) {}
 
   template <typename IDLType>
-  WTF::Optional<typename IDLType::ImplType> Get(const StringView& key) {
+  base::Optional<typename IDLType::ImplType> Get(const StringView& key) {
     auto r = src_.Get<IDLType>(key, exception_state_);
     are_any_members_set_ = are_any_members_set_ || r.has_value();
     return r;
@@ -112,7 +112,7 @@ RequestInit::RequestInit(ExecutionContext* context,
       return;
   }
 
-  WTF::Optional<v8::Local<v8::Value>> v8_signal;
+  base::Optional<v8::Local<v8::Value>> v8_signal;
   if (RuntimeEnabledFeatures::FetchRequestSignalEnabled()) {
     // In order to distinguish between undefined and null, split the steps of
     // looking it up in the dictionary and converting to the native type.
@@ -165,14 +165,14 @@ RequestInit::RequestInit(ExecutionContext* context,
   }
 }
 
-WTF::Optional<AbortSignal*> RequestInit::Signal() const {
-  return signal_.has_value() ? WTF::make_optional(signal_.value().Get())
-                             : WTF::nullopt;
+base::Optional<AbortSignal*> RequestInit::Signal() const {
+  return signal_.has_value() ? base::make_optional(signal_.value().Get())
+                             : base::nullopt;
 }
 
 void RequestInit::CheckEnumValues(
-    const WTF::Optional<String>& referrer_string,
-    const WTF::Optional<String>& referrer_policy_string,
+    const base::Optional<String>& referrer_string,
+    const base::Optional<String>& referrer_policy_string,
     ExceptionState& exception_state) {
   TRACE_EVENT0("blink", "RequestInit::CheckEnumValues");
 

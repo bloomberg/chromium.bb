@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/replaced_painter.h"
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/api/selection_state.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
@@ -17,7 +18,6 @@
 #include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -83,8 +83,8 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info,
     return;
 
   {
-    Optional<RoundedInnerRectClipper> clipper;
-    Optional<ScopedPaintChunkProperties> chunk_properties;
+    base::Optional<RoundedInnerRectClipper> clipper;
+    base::Optional<ScopedPaintChunkProperties> chunk_properties;
     bool completely_clipped_out = false;
     if (layout_replaced_.Style()->HasBorderRadius()) {
       if (border_rect.IsEmpty()) {

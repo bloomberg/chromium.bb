@@ -77,7 +77,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
             base::UnguessableToken::Create(), nullptr /* worker_settings */,
             kV8CacheOptionsDefault,
             new WorkletModuleResponsesMap(document->Fetcher())),
-        WTF::nullopt, WorkerInspectorProxy::PauseOnWorkerStart::kDontPause,
+        base::nullopt, WorkerInspectorProxy::PauseOnWorkerStart::kDontPause,
         ParentExecutionContextTaskRunners::Create());
     return thread;
   }

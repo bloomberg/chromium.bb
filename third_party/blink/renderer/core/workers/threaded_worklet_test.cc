@@ -191,7 +191,7 @@ class ThreadedWorkletMessagingProxyForTest
             base::UnguessableToken::Create(), std::move(worker_settings),
             kV8CacheOptionsDefault,
             new WorkletModuleResponsesMap(document->Fetcher())),
-        WTF::nullopt);
+        base::nullopt);
   }
 
  private:

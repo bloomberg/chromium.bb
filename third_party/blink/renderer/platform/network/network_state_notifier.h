@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_connection_type.h"
@@ -37,7 +38,6 @@
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -59,9 +59,9 @@ class PLATFORM_EXPORT NetworkStateNotifier {
     double max_bandwidth_mbps = kInvalidMaxBandwidth;
     WebEffectiveConnectionType effective_type =
         WebEffectiveConnectionType::kTypeUnknown;
-    Optional<TimeDelta> http_rtt;
-    Optional<TimeDelta> transport_rtt;
-    Optional<double> downlink_throughput_mbps;
+    base::Optional<TimeDelta> http_rtt;
+    base::Optional<TimeDelta> transport_rtt;
+    base::Optional<double> downlink_throughput_mbps;
     bool save_data = false;
   };
 
@@ -72,9 +72,9 @@ class PLATFORM_EXPORT NetworkStateNotifier {
         WebConnectionType,
         double max_bandwidth_mbps,
         WebEffectiveConnectionType,
-        const Optional<TimeDelta>& http_rtt,
-        const Optional<TimeDelta>& transport_rtt,
-        const Optional<double>& downlink_throughput_mbps,
+        const base::Optional<TimeDelta>& http_rtt,
+        const base::Optional<TimeDelta>& transport_rtt,
+        const base::Optional<double>& downlink_throughput_mbps,
         bool save_data) {}
     virtual void OnLineStateChange(bool on_line) {}
   };
@@ -131,7 +131,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
 
   // Returns the current HTTP RTT estimate. If the estimate is unavailable, the
   // returned optional value is null.
-  Optional<TimeDelta> HttpRtt() const {
+  base::Optional<TimeDelta> HttpRtt() const {
     MutexLocker locker(mutex_);
     const NetworkState& state = has_override_ ? override_ : state_;
     // TODO (tbansal): Add a DCHECK to check that |state.on_line_initialized| is
@@ -141,7 +141,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
 
   // Returns the current transport RTT estimate. If the estimate is unavailable,
   // the returned optional value is null.
-  Optional<TimeDelta> TransportRtt() const {
+  base::Optional<TimeDelta> TransportRtt() const {
     MutexLocker locker(mutex_);
     const NetworkState& state = has_override_ ? override_ : state_;
     DCHECK(state.on_line_initialized);
@@ -150,7 +150,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
 
   // Returns the current throughput estimate (in megabits per second). If the
   // estimate is unavailable, the returned optional value is null.
-  Optional<double> DownlinkThroughputMbps() const {
+  base::Optional<double> DownlinkThroughputMbps() const {
     MutexLocker locker(mutex_);
     const NetworkState& state = has_override_ ? override_ : state_;
     // TODO (tbansal): Add a DCHECK to check that |state.on_line_initialized| is
@@ -224,7 +224,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   void SetNetworkConnectionInfoOverride(
       bool on_line,
       WebConnectionType,
-      Optional<WebEffectiveConnectionType> effective_type,
+      base::Optional<WebEffectiveConnectionType> effective_type,
       unsigned long http_rtt_msec,
       double max_bandwidth_mbps);
   void SetSaveDataEnabledOverride(bool enabled);
@@ -247,12 +247,12 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   // Returns |rtt| after adding host-specific random noise, and rounding it as
   // per the NetInfo spec to improve privacy.
   unsigned long RoundRtt(const String& host,
-                         const Optional<TimeDelta>& rtt) const;
+                         const base::Optional<TimeDelta>& rtt) const;
 
   // Returns |downlink_mbps| after adding host-specific random noise, and
   // rounding it as per the NetInfo spec and to improve privacy.
   double RoundMbps(const String& host,
-                   const Optional<double>& downlink_mbps) const;
+                   const base::Optional<double>& downlink_mbps) const;
 
   // Returns the randomization salt (weak and insecure) that should be used when
   // adding noise to the network quality metrics. This is known only to the

@@ -63,7 +63,7 @@ namespace {
 
 // Converts the composite property of a BasePropertyIndexedKeyframe into a
 // vector of EffectModel::CompositeOperation enums.
-Vector<WTF::Optional<EffectModel::CompositeOperation>> ParseCompositeProperty(
+Vector<base::Optional<EffectModel::CompositeOperation>> ParseCompositeProperty(
     const BasePropertyIndexedKeyframe& keyframe) {
   const CompositeOperationOrCompositeOperationOrNullSequence& composite =
       keyframe.composite();
@@ -71,18 +71,18 @@ Vector<WTF::Optional<EffectModel::CompositeOperation>> ParseCompositeProperty(
   // This handles the case where we have 'composite: null'. The null value is
   // lifted to the union level in the bindings code.
   if (composite.IsNull())
-    return {WTF::nullopt};
+    return {base::nullopt};
 
   if (composite.IsCompositeOperation()) {
     return {EffectModel::StringToCompositeOperation(
         composite.GetAsCompositeOperation())};
   }
 
-  Vector<WTF::Optional<EffectModel::CompositeOperation>> result;
+  Vector<base::Optional<EffectModel::CompositeOperation>> result;
   for (const String& composite_operation_string :
        composite.GetAsCompositeOperationOrNullSequence()) {
     if (composite_operation_string.IsNull()) {
-      result.push_back(WTF::nullopt);
+      result.push_back(base::nullopt);
     } else {
       result.push_back(
           EffectModel::StringToCompositeOperation(composite_operation_string));
@@ -453,9 +453,9 @@ StringKeyframeVector ConvertObjectForm(Element* element,
   if (exception_state.HadException())
     return {};
 
-  Vector<WTF::Optional<double>> offsets;
+  Vector<base::Optional<double>> offsets;
   if (property_indexed_keyframe.offset().IsNull())
-    offsets.push_back(WTF::nullopt);
+    offsets.push_back(base::nullopt);
   else if (property_indexed_keyframe.offset().IsDouble())
     offsets.push_back(property_indexed_keyframe.offset().GetAsDouble());
   else
@@ -469,7 +469,7 @@ StringKeyframeVector ConvertObjectForm(Element* element,
   else
     easings = property_indexed_keyframe.easing().GetAsStringSequence();
 
-  Vector<WTF::Optional<EffectModel::CompositeOperation>> composite_operations =
+  Vector<base::Optional<EffectModel::CompositeOperation>> composite_operations =
       ParseCompositeProperty(property_indexed_keyframe);
 
   // Next extract all animatable properties from the input argument and iterate
@@ -560,7 +560,7 @@ StringKeyframeVector ConvertObjectForm(Element* element,
     auto keyframe = keyframes.at(keys[i]);
 
     if (i < offsets.size()) {
-      WTF::Optional<double> offset = offsets[i];
+      base::Optional<double> offset = offsets[i];
       // 6. If processed keyframes is not loosely sorted by offset, throw a
       // TypeError and abort these steps.
       if (offset.has_value()) {
@@ -613,7 +613,7 @@ StringKeyframeVector ConvertObjectForm(Element* element,
       // property keyframes, repeat the elements in composite modes successively
       // starting from the beginning of the list until composite modes has as
       // many items as property keyframes.
-      WTF::Optional<EffectModel::CompositeOperation> composite =
+      base::Optional<EffectModel::CompositeOperation> composite =
           composite_operations[i % composite_operations.size()];
       if (composite) {
         keyframe->SetComposite(

@@ -31,12 +31,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_EFFECT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_EFFECT_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/animation/timing.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -100,7 +100,9 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   double CurrentIteration() const {
     return EnsureCalculated().current_iteration;
   }
-  WTF::Optional<double> Progress() const { return EnsureCalculated().progress; }
+  base::Optional<double> Progress() const {
+    return EnsureCalculated().progress;
+  }
   double TimeToForwardsEffectChange() const {
     return EnsureCalculated().time_to_forwards_effect_change;
   }
@@ -167,7 +169,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
     DISALLOW_NEW();
     Phase phase;
     double current_iteration;
-    WTF::Optional<double> progress;
+    base::Optional<double> progress;
     bool is_current;
     bool is_in_effect;
     bool is_in_play;

@@ -111,10 +111,10 @@ class ImageResource::ImageResourceInfoImpl final
   bool HasCacheControlNoStoreHeader() const override {
     return resource_->HasCacheControlNoStoreHeader();
   }
-  Optional<ResourceError> GetResourceError() const override {
+  base::Optional<ResourceError> GetResourceError() const override {
     if (resource_->LoadFailedOrCanceled())
       return resource_->GetResourceError();
-    return WTF::nullopt;
+    return base::nullopt;
   }
 
   void SetDecodedSize(size_t size) override { resource_->SetDecodedSize(size); }

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/embedded_content_painter.h"
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/frame/embedded_content_view.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
@@ -18,7 +19,6 @@
 #include "third_party/blink/renderer/core/paint/transform_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -36,7 +36,7 @@ void EmbeddedContentPainter::Paint(const PaintInfo& paint_info,
   // they are painted in a fragmented context and may do something bad in a
   // fragmented context, e.g. creating subsequences. Skip cache to avoid that.
   // This will be unnecessary when the contents are fragment aware.
-  Optional<DisplayItemCacheSkipper> cache_skipper;
+  base::Optional<DisplayItemCacheSkipper> cache_skipper;
   DCHECK(layout_embedded_content_.HasLayer());
   if (layout_embedded_content_.Layer()->EnclosingPaginationLayer())
     cache_skipper.emplace(paint_info.context);
@@ -74,8 +74,8 @@ void EmbeddedContentPainter::Paint(const PaintInfo& paint_info,
     return;
 
   if (layout_embedded_content_.GetEmbeddedContentView()) {
-    Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
-    Optional<RoundedInnerRectClipper> clipper;
+    base::Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
+    base::Optional<RoundedInnerRectClipper> clipper;
     if (layout_embedded_content_.Style()->HasBorderRadius()) {
       if (border_rect.IsEmpty())
         return;

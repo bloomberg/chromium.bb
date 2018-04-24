@@ -65,13 +65,13 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetBfcOffset(
 }
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetFloatsBfcOffset(
-    const WTF::Optional<NGBfcOffset>& floats_bfc_offset) {
+    const base::Optional<NGBfcOffset>& floats_bfc_offset) {
   floats_bfc_offset_ = floats_bfc_offset;
   return *this;
 }
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetClearanceOffset(
-    const WTF::Optional<LayoutUnit>& clearance_offset) {
+    const base::Optional<LayoutUnit>& clearance_offset) {
   clearance_offset_ = clearance_offset;
   return *this;
 }
@@ -211,10 +211,10 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
                                                 : *exclusion_space_;
   NGBfcOffset bfc_offset = is_new_fc_ ? NGBfcOffset() : bfc_offset_;
   NGMarginStrut margin_strut = is_new_fc_ ? NGMarginStrut() : margin_strut_;
-  WTF::Optional<LayoutUnit> clearance_offset =
-      is_new_fc_ ? WTF::nullopt : clearance_offset_;
-  WTF::Optional<NGBfcOffset> floats_bfc_offset =
-      is_new_fc_ ? WTF::nullopt : floats_bfc_offset_;
+  base::Optional<LayoutUnit> clearance_offset =
+      is_new_fc_ ? base::nullopt : clearance_offset_;
+  base::Optional<NGBfcOffset> floats_bfc_offset =
+      is_new_fc_ ? base::nullopt : floats_bfc_offset_;
 
   if (floats_bfc_offset) {
     floats_bfc_offset = NGBfcOffset(

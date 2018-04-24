@@ -25,7 +25,7 @@ const CSSValue* Rotate::ParseSingleValue(CSSParserTokenRange& range,
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
 
   CSSValue* rotation = CSSPropertyParserHelpers::ConsumeAngle(
-      range, &context, WTF::Optional<WebFeature>());
+      range, &context, base::Optional<WebFeature>());
 
   CSSValueID axis_id = range.Peek().Id();
   if (axis_id == CSSValueX) {
@@ -67,7 +67,7 @@ const CSSValue* Rotate::ParseSingleValue(CSSParserTokenRange& range,
 
   if (!rotation) {
     rotation = CSSPropertyParserHelpers::ConsumeAngle(
-        range, &context, WTF::Optional<WebFeature>());
+        range, &context, base::Optional<WebFeature>());
     if (!rotation)
       return nullptr;
   }

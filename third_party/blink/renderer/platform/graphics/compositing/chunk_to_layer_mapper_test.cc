@@ -4,12 +4,12 @@
 
 #include "third_party/blink/renderer/platform/graphics/compositing/chunk_to_layer_mapper.h"
 
+#include "base/optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
 #include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
 #include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -18,7 +18,7 @@ class ChunkToLayerMapperTest : public testing::Test {
   static PaintChunk Chunk(const PropertyTreeState& state) {
     DEFINE_STATIC_LOCAL(FakeDisplayItemClient, fake_client, ());
     DEFINE_STATIC_LOCAL(
-        Optional<PaintChunk::Id>, id,
+        base::Optional<PaintChunk::Id>, id,
         (PaintChunk::Id(fake_client, DisplayItem::kDrawingFirst)));
     PaintChunk chunk(0, 0, *id, state);
     return chunk;

@@ -71,7 +71,7 @@ class LayoutBR final : public LayoutText {
   PositionWithAffinity PositionForPoint(const LayoutPoint&) const final;
 
   Position PositionForCaretOffset(unsigned) const final;
-  Optional<unsigned> CaretOffsetForPosition(const Position&) const final;
+  base::Optional<unsigned> CaretOffsetForPosition(const Position&) const final;
 
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;

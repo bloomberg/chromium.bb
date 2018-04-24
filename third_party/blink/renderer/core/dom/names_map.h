@@ -7,10 +7,10 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
@@ -38,7 +38,7 @@ class CORE_EXPORT NamesMap {
   void Clear() { data_.clear(); };
   // Inserts value into the ordered set under key.
   void Add(const AtomicString& key, const AtomicString& value);
-  WTF::Optional<SpaceSplitString> Get(const AtomicString& key) const;
+  base::Optional<SpaceSplitString> Get(const AtomicString& key) const;
 
   size_t size() const { return data_.size(); }
 
@@ -46,7 +46,7 @@ class CORE_EXPORT NamesMap {
   template <typename CharacterType>
   void Set(const AtomicString&, const CharacterType*);
 
-  HashMap<AtomicString, WTF::Optional<SpaceSplitString>> data_;
+  HashMap<AtomicString, base::Optional<SpaceSplitString>> data_;
 
   DISALLOW_COPY_AND_ASSIGN(NamesMap);
 };

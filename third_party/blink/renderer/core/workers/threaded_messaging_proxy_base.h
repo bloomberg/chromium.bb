@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_THREADED_MESSAGING_PROXY_BASE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_THREADED_MESSAGING_PROXY_BASE_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
 #include "third_party/blink/renderer/core/inspector/console_types.h"
@@ -13,7 +14,6 @@
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace base {
 
@@ -75,7 +75,7 @@ class CORE_EXPORT ThreadedMessagingProxyBase
 
   void InitializeWorkerThread(
       std::unique_ptr<GlobalScopeCreationParams>,
-      const WTF::Optional<WorkerBackingThreadStartupData>&);
+      const base::Optional<WorkerBackingThreadStartupData>&);
 
   ThreadableLoadingContext* CreateThreadableLoadingContext() const;
 

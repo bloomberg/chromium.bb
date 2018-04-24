@@ -49,8 +49,8 @@ void ProjectionFromFieldOfView(DOMFloat32Array* out_array,
 // Create a matrix from a rotation and translation.
 void MatrixfromRotationTranslation(
     DOMFloat32Array* out_array,
-    const WTF::Optional<WTF::Vector<float>>& rotation,
-    const WTF::Optional<WTF::Vector<float>>& translation) {
+    const base::Optional<WTF::Vector<float>>& rotation,
+    const base::Optional<WTF::Vector<float>>& translation) {
   // Quaternion math
   float x = !rotation ? 0.0f : rotation.value()[0];
   float y = !rotation ? 0.0f : rotation.value()[1];

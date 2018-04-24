@@ -28,6 +28,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_HTML_MEDIA_ELEMENT_H_
 
 #include <memory>
+#include "base/optional.h"
 #include "third_party/blink/public/platform/web_audio_source_provider_client.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -44,7 +45,6 @@
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -187,7 +187,7 @@ class CORE_EXPORT HTMLMediaElement
   bool Loop() const;
   void SetLoop(bool);
   ScriptPromise playForBindings(ScriptState*);
-  Optional<ExceptionCode> Play();
+  base::Optional<ExceptionCode> Play();
   void pause();
   void RequestRemotePlayback();
   void RequestRemotePlaybackControl();

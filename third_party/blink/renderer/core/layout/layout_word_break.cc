@@ -47,10 +47,10 @@ Position LayoutWordBreak::PositionForCaretOffset(unsigned offset) const {
   return Position::BeforeNode(*GetNode());
 }
 
-Optional<unsigned> LayoutWordBreak::CaretOffsetForPosition(
+base::Optional<unsigned> LayoutWordBreak::CaretOffsetForPosition(
     const Position& position) const {
   if (position.IsNull() || position.AnchorNode() != GetNode())
-    return WTF::nullopt;
+    return base::nullopt;
   DCHECK(position.IsBeforeAnchor() || position.IsAfterAnchor());
   // The only allowed caret offset is 0, since LayoutWordBreak always has
   // |TextLength() == 0|.

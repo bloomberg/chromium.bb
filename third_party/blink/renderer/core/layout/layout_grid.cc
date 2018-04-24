@@ -212,14 +212,14 @@ bool LayoutGrid::NamedGridLinesDefinitionDidChange(
 
 // This method optimizes the gutters computation by skiping the available size
 // call if gaps are fixed size (it's only needed for percentages).
-Optional<LayoutUnit> LayoutGrid::AvailableSpaceForGutters(
+base::Optional<LayoutUnit> LayoutGrid::AvailableSpaceForGutters(
     GridTrackSizingDirection direction) const {
   bool is_row_axis = direction == kForColumns;
 
   const GapLength& gap =
       is_row_axis ? StyleRef().ColumnGap() : StyleRef().RowGap();
   if (!gap.IsNormal() && !gap.GetLength().IsPercent())
-    return WTF::nullopt;
+    return base::nullopt;
 
   return is_row_axis ? AvailableLogicalWidth()
                      : AvailableLogicalHeightForPercentageComputation();
@@ -405,8 +405,9 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
   ClearNeedsLayout();
 }
 
-LayoutUnit LayoutGrid::GridGap(GridTrackSizingDirection direction,
-                               Optional<LayoutUnit> available_size) const {
+LayoutUnit LayoutGrid::GridGap(
+    GridTrackSizingDirection direction,
+    base::Optional<LayoutUnit> available_size) const {
   const GapLength& gap =
       direction == kForColumns ? StyleRef().ColumnGap() : StyleRef().RowGap();
   if (gap.IsNormal())
@@ -434,11 +435,12 @@ LayoutUnit LayoutGrid::GridGap(GridTrackSizingDirection direction) const {
   return ValueForLength(gap.GetLength(), available_size);
 }
 
-LayoutUnit LayoutGrid::GuttersSize(const Grid& grid,
-                                   GridTrackSizingDirection direction,
-                                   size_t start_line,
-                                   size_t span,
-                                   Optional<LayoutUnit> available_size) const {
+LayoutUnit LayoutGrid::GuttersSize(
+    const Grid& grid,
+    GridTrackSizingDirection direction,
+    size_t start_line,
+    size_t span,
+    base::Optional<LayoutUnit> available_size) const {
   if (span <= 1)
     return LayoutUnit();
 
@@ -518,7 +520,7 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
   Grid grid(this);
-  PlaceItemsOnGrid(grid, WTF::nullopt);
+  PlaceItemsOnGrid(grid, base::nullopt);
 
   GridTrackSizingAlgorithm algorithm(this, grid);
   ComputeTrackSizesForIndefiniteSize(algorithm, kForColumns, grid,
@@ -535,7 +537,7 @@ void LayoutGrid::ComputeTrackSizesForIndefiniteSize(
     Grid& grid,
     LayoutUnit& min_intrinsic_size,
     LayoutUnit& max_intrinsic_size) const {
-  algo.Setup(direction, NumTracks(direction, grid), WTF::nullopt);
+  algo.Setup(direction, NumTracks(direction, grid), base::nullopt);
   algo.Run();
 
   min_intrinsic_size = algo.MinContentSize();
@@ -543,7 +545,7 @@ void LayoutGrid::ComputeTrackSizesForIndefiniteSize(
 
   size_t number_of_tracks = algo.Tracks(direction).size();
   LayoutUnit total_gutters_size =
-      GuttersSize(grid, direction, 0, number_of_tracks, WTF::nullopt);
+      GuttersSize(grid, direction, 0, number_of_tracks, base::nullopt);
   min_intrinsic_size += total_gutters_size;
   max_intrinsic_size += total_gutters_size;
 
@@ -589,16 +591,16 @@ LayoutUnit LayoutGrid::OverrideContainingBlockContentSizeForChild(
 }
 
 // Unfortunately there are still many layout methods that return -1 for
-// non-resolvable sizes. We prefer to represent them with WTF::nullopt.
-static Optional<LayoutUnit> ConvertLayoutUnitToOptional(LayoutUnit size) {
+// non-resolvable sizes. We prefer to represent them with base::nullopt.
+static base::Optional<LayoutUnit> ConvertLayoutUnitToOptional(LayoutUnit size) {
   if (size == -1)
-    return WTF::nullopt;
+    return base::nullopt;
   return size;
 }
 
 size_t LayoutGrid::ComputeAutoRepeatTracksCount(
     GridTrackSizingDirection direction,
-    Optional<LayoutUnit> available_size) const {
+    base::Optional<LayoutUnit> available_size) const {
   DCHECK(!available_size || available_size.value() != -1);
   bool is_row_axis = direction == kForColumns;
   const auto& auto_repeat_tracks = is_row_axis
@@ -766,7 +768,7 @@ size_t LayoutGrid::ClampAutoRepeatTracks(GridTrackSizingDirection direction,
 // does know whether the available logical width is indefinite or not.
 void LayoutGrid::PlaceItemsOnGrid(
     Grid& grid,
-    Optional<LayoutUnit> available_logical_width) const {
+    base::Optional<LayoutUnit> available_logical_width) const {
   size_t auto_repeat_rows = ComputeAutoRepeatTracksCount(
       kForRows, ConvertLayoutUnitToOptional(
                     AvailableLogicalHeightForPercentageComputation()));
@@ -1982,7 +1984,7 @@ LayoutUnit LayoutGrid::GridAreaBreadthForOutOfFlowChild(
     end = positions[end_line];
     // These vectors store line positions including gaps, but we shouldn't
     // consider them for the edges of the grid.
-    Optional<LayoutUnit> available_size_for_gutters =
+    base::Optional<LayoutUnit> available_size_for_gutters =
         AvailableSpaceForGutters(direction);
     if (end_line > 0 && end_line < last_line) {
       DCHECK(!grid_.NeedsItemsPlacement());
@@ -2036,7 +2038,7 @@ void LayoutGrid::GridAreaPositionForOutOfFlowChild(
   auto& line_of_positioned_item =
       is_row_axis ? column_of_positioned_item_ : row_of_positioned_item_;
   start = is_row_axis ? BorderLogicalLeft() : BorderBefore();
-  if (Optional<size_t> line = line_of_positioned_item.at(&child)) {
+  if (base::Optional<size_t> line = line_of_positioned_item.at(&child)) {
     auto& positions = is_row_axis ? column_positions_ : row_positions_;
     start = positions[line.value()];
   }

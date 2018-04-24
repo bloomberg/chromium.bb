@@ -93,8 +93,8 @@ class MockBaseFetchContext final : public BaseFetchContext {
   const SecurityOrigin* GetParentSecurityOrigin() const override {
     return nullptr;
   }
-  Optional<mojom::IPAddressSpace> GetAddressSpace() const override {
-    return WTF::make_optional(
+  base::Optional<mojom::IPAddressSpace> GetAddressSpace() const override {
+    return base::make_optional(
         execution_context_->GetSecurityContext().AddressSpace());
   }
   const ContentSecurityPolicy* GetContentSecurityPolicy() const override {

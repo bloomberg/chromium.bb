@@ -59,7 +59,7 @@ class BluetoothRemoteGATTDescriptor final : public ScriptWrappable {
 
   void ReadValueCallback(ScriptPromiseResolver*,
                          mojom::blink::WebBluetoothResult,
-                         const Optional<Vector<uint8_t>>&);
+                         const base::Optional<Vector<uint8_t>>&);
 
   void WriteValueCallback(ScriptPromiseResolver*,
                           const Vector<uint8_t>&,

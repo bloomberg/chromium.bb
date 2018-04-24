@@ -136,8 +136,8 @@ MinMaxSize NGLayoutInputNode::ComputeMinMaxSize(
 
 void NGLayoutInputNode::IntrinsicSize(
     NGLogicalSize* default_intrinsic_size,
-    Optional<LayoutUnit>* computed_inline_size,
-    Optional<LayoutUnit>* computed_block_size,
+    base::Optional<LayoutUnit>* computed_inline_size,
+    base::Optional<LayoutUnit>* computed_block_size,
     NGLogicalSize* aspect_ratio) const {
   DCHECK(IsReplaced());
 

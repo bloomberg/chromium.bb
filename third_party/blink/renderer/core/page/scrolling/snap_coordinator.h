@@ -38,7 +38,7 @@ class CORE_EXPORT SnapCoordinator final
   void SnapAreaDidChange(LayoutBox&, ScrollSnapAlign);
 
   // Returns the SnapContainerData if the snap container has one.
-  Optional<SnapContainerData> GetSnapContainerData(
+  base::Optional<SnapContainerData> GetSnapContainerData(
       const LayoutBox& snap_container) const;
 
   // Calculate the SnapAreaData for the specific snap area in its snap

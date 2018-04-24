@@ -711,8 +711,8 @@ LayoutSize LayoutBoxModelObject::RelativePositionOffset() const {
   // don't use containingBlockLogicalWidthForContent() here, but instead
   // explicitly call availableWidth on our containing block.
   // https://drafts.csswg.org/css-position-3/#rel-pos
-  Optional<LayoutUnit> left;
-  Optional<LayoutUnit> right;
+  base::Optional<LayoutUnit> left;
+  base::Optional<LayoutUnit> right;
   if (!Style()->Left().IsAuto())
     left = ValueForLength(Style()->Left(), containing_block->AvailableWidth());
   if (!Style()->Right().IsAuto())
@@ -753,8 +753,8 @@ LayoutSize LayoutBoxModelObject::RelativePositionOffset() const {
   // the percent offset based on this height.
   // See <https://bugs.webkit.org/show_bug.cgi?id=26396>.
 
-  Optional<LayoutUnit> top;
-  Optional<LayoutUnit> bottom;
+  base::Optional<LayoutUnit> top;
+  base::Optional<LayoutUnit> bottom;
   if (!Style()->Top().IsAuto() &&
       (!containing_block->HasAutoHeightOrContainingBlockWithAutoHeight() ||
        !Style()->Top().IsPercentOrCalc() ||

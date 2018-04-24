@@ -86,7 +86,7 @@ void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
 
   HeapVector<Member<ConsoleMessage>> error_messages;
   if (!WasModuleLoadSuccessful(script_resource, &error_messages)) {
-    Finalize(WTF::nullopt, error_messages);
+    Finalize(base::nullopt, error_messages);
     return;
   }
 
@@ -99,7 +99,7 @@ void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
 }
 
 void DocumentModuleScriptFetcher::Finalize(
-    const WTF::Optional<ModuleScriptCreationParams>& params,
+    const base::Optional<ModuleScriptCreationParams>& params,
     const HeapVector<Member<ConsoleMessage>>& error_messages) {
   NotifyFetchFinished(params, error_messages);
 }

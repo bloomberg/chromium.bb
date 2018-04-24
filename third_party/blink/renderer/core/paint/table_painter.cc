@@ -87,7 +87,7 @@ void TablePainter::PaintMask(const PaintInfo& paint_info,
 
 void TablePainter::PaintCollapsedBorders(const PaintInfo& paint_info,
                                          const LayoutPoint& paint_offset) {
-  Optional<DrawingRecorder> recorder;
+  base::Optional<DrawingRecorder> recorder;
   if (UNLIKELY(layout_table_.ShouldPaintAllCollapsedBorders())) {
     if (DrawingRecorder::UseCachedDrawingIfPossible(
             paint_info.context, layout_table_,

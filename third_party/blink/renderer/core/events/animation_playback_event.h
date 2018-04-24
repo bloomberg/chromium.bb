@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_ANIMATION_PLAYBACK_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_ANIMATION_PLAYBACK_EVENT_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/animation_playback_event_init.h"
-#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -42,8 +42,8 @@ class AnimationPlaybackEvent final : public Event {
   AnimationPlaybackEvent(const AtomicString&,
                          const AnimationPlaybackEventInit&);
 
-  WTF::Optional<double> current_time_;
-  WTF::Optional<double> timeline_time_;
+  base::Optional<double> current_time_;
+  base::Optional<double> timeline_time_;
 };
 
 }  // namespace blink

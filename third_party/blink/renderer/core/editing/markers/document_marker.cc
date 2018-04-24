@@ -44,7 +44,7 @@ DocumentMarker::DocumentMarker(unsigned start_offset, unsigned end_offset)
   DCHECK_LT(start_offset_, end_offset_);
 }
 
-Optional<DocumentMarker::MarkerOffsets>
+base::Optional<DocumentMarker::MarkerOffsets>
 DocumentMarker::ComputeOffsetsAfterShift(unsigned offset,
                                          unsigned old_length,
                                          unsigned new_length) const {
@@ -85,7 +85,7 @@ DocumentMarker::ComputeOffsetsAfterShift(unsigned offset,
   }
 
   if (result.start_offset >= result.end_offset)
-    return WTF::nullopt;
+    return base::nullopt;
 
   return result;
 }

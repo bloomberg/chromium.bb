@@ -60,7 +60,7 @@ class CORE_EXPORT CSSMathNegate : public CSSMathValue {
 
   // From CSSNumericValue
   CSSNumericValue* Negate() final { return value_.Get(); }
-  WTF::Optional<CSSNumericSumValue> SumValue() const final;
+  base::Optional<CSSNumericSumValue> SumValue() const final;
 
   void BuildCSSText(Nested, ParenLess, StringBuilder&) const final;
 

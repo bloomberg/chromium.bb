@@ -57,12 +57,12 @@ void TestDictionary::setDoubleOrNullOrDoubleOrNullSequenceMember(const DoubleOrD
   double_or_null_or_double_or_null_sequence_member_ = value;
 }
 
-void TestDictionary::setDoubleOrNullRecordMember(const Vector<std::pair<String, Optional<double>>>& value) {
+void TestDictionary::setDoubleOrNullRecordMember(const Vector<std::pair<String, base::Optional<double>>>& value) {
   double_or_null_record_member_ = value;
   has_double_or_null_record_member_ = true;
 }
 
-void TestDictionary::setDoubleOrNullSequenceMember(const Vector<Optional<double>>& value) {
+void TestDictionary::setDoubleOrNullSequenceMember(const Vector<base::Optional<double>>& value) {
   double_or_null_sequence_member_ = value;
   has_double_or_null_sequence_member_ = true;
 }
