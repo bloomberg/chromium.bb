@@ -804,29 +804,26 @@ double ParseDateFromNullTerminatedCharacters(const char* date_string) {
 }
 
 // See http://tools.ietf.org/html/rfc2822#section-3.3 for more information.
-String MakeRFC2822DateString(unsigned day_of_week,
-                             unsigned day,
-                             unsigned month,
-                             unsigned year,
-                             unsigned hours,
-                             unsigned minutes,
-                             unsigned seconds,
-                             int utc_offset) {
+String MakeRFC2822DateString(const Time date, int utc_offset) {
+  Time::Exploded time_exploded;
+  date.UTCExplode(&time_exploded);
+
   StringBuilder string_builder;
-  string_builder.Append(kWeekdayName[day_of_week]);
+  string_builder.Append(kWeekdayName[time_exploded.day_of_week]);
   string_builder.Append(", ");
-  string_builder.AppendNumber(day);
+  string_builder.AppendNumber(time_exploded.day_of_month);
   string_builder.Append(' ');
-  string_builder.Append(kMonthName[month]);
+  // |month| is 1-based in Exploded
+  string_builder.Append(kMonthName[time_exploded.month - 1]);
   string_builder.Append(' ');
-  string_builder.AppendNumber(year);
+  string_builder.AppendNumber(time_exploded.year);
   string_builder.Append(' ');
 
-  AppendTwoDigitNumber(string_builder, hours);
+  AppendTwoDigitNumber(string_builder, time_exploded.hour);
   string_builder.Append(':');
-  AppendTwoDigitNumber(string_builder, minutes);
+  AppendTwoDigitNumber(string_builder, time_exploded.minute);
   string_builder.Append(':');
-  AppendTwoDigitNumber(string_builder, seconds);
+  AppendTwoDigitNumber(string_builder, time_exploded.second);
   string_builder.Append(' ');
 
   string_builder.Append(utc_offset > 0 ? '+' : '-');

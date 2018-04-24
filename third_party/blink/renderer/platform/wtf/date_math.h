@@ -46,6 +46,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
@@ -56,25 +57,12 @@ WTF_EXPORT void InitializeDates();
 // these.
 WTF_EXPORT double ParseDateFromNullTerminatedCharacters(
     const char* date_string);
-// dayOfWeek: [0, 6] 0 being Monday
-// day: [1, 31]
-// month: [0, 11]
-// year: ex: 2011
-// hours: [0, 23]
-// minutes: [0, 59]
-// seconds: [0, 59]
-// utcOffset: [-720,720].
-WTF_EXPORT String MakeRFC2822DateString(unsigned day_of_week,
-                                        unsigned day,
-                                        unsigned month,
-                                        unsigned year,
-                                        unsigned hours,
-                                        unsigned minutes,
-                                        unsigned seconds,
-                                        int utc_offset);
 
-const char kWeekdayName[7][4] = {"Mon", "Tue", "Wed", "Thu",
-                                 "Fri", "Sat", "Sun"};
+// utcOffset: [-720,720].
+WTF_EXPORT String MakeRFC2822DateString(const Time date, int utc_offset);
+
+const char kWeekdayName[7][4] = {"Sun", "Mon", "Tue", "Wed",
+                                 "Thu", "Fri", "Sat"};
 const char kMonthName[12][4] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
                                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 const char* const kMonthFullName[12] = {
