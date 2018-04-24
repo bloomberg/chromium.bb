@@ -6,6 +6,7 @@
 #define ASH_ASSISTANT_ASH_ASSISTANT_CONTROLLER_H_
 
 #include <string>
+#include <vector>
 
 #include "ash/assistant/model/assistant_interaction_model_impl.h"
 #include "ash/public/interfaces/ash_assistant_controller.mojom.h"
@@ -51,6 +52,8 @@ class AshAssistantController
       mojom::AssistantCardParamsPtr params,
       mojom::AssistantCardRenderer::RenderCallback callback) override;
   void ReleaseCard(const base::UnguessableToken& id_token) override;
+  void ReleaseCards(
+      const std::vector<base::UnguessableToken>& id_tokens) override;
   void OnSuggestionChipPressed(const std::string& text) override;
 
   // chromeos::assistant::mojom::AssistantEventSubscriber:

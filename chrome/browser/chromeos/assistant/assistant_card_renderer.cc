@@ -155,5 +155,11 @@ void AssistantCardRenderer::Release(const base::UnguessableToken& id_token) {
   assistant_cards_.erase(id_token);
 }
 
+void AssistantCardRenderer::ReleaseAll(
+    const std::vector<base::UnguessableToken>& id_tokens) {
+  for (const base::UnguessableToken& id_token : id_tokens)
+    assistant_cards_.erase(id_token);
+}
+
 }  // namespace assistant
 }  // namespace chromeos

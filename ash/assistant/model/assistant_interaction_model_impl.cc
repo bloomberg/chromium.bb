@@ -5,6 +5,7 @@
 #include "ash/assistant/model/assistant_interaction_model_impl.h"
 
 #include "ui/app_list/assistant_interaction_model_observer.h"
+#include "ui/app_list/assistant_ui_element.h"
 
 namespace ash {
 
@@ -23,20 +24,21 @@ void AssistantInteractionModelImpl::RemoveObserver(
 }
 
 void AssistantInteractionModelImpl::ClearInteraction() {
-  ClearCard();
+  ClearUiElements();
   ClearQuery();
   ClearSuggestions();
-  ClearText();
 }
 
-void AssistantInteractionModelImpl::SetCard(const std::string& html) {
-  card_ = html;
-  NotifyCardChanged();
+void AssistantInteractionModelImpl::AddUiElement(
+    std::unique_ptr<app_list::AssistantUiElement> ui_element) {
+  app_list::AssistantUiElement* ptr = ui_element.get();
+  ui_element_list_.push_back(std::move(ui_element));
+  NotifyUiElementAdded(ptr);
 }
 
-void AssistantInteractionModelImpl::ClearCard() {
-  card_.clear();
-  NotifyCardCleared();
+void AssistantInteractionModelImpl::ClearUiElements() {
+  ui_element_list_.clear();
+  NotifyUiElementsCleared();
 }
 
 void AssistantInteractionModelImpl::SetQuery(const app_list::Query& query) {
@@ -61,24 +63,15 @@ void AssistantInteractionModelImpl::ClearSuggestions() {
   NotifySuggestionsCleared();
 }
 
-void AssistantInteractionModelImpl::AddText(const std::string& text) {
-  text_list_.push_back(text);
-  NotifyTextAdded(text);
-}
-
-void AssistantInteractionModelImpl::ClearText() {
-  text_list_.clear();
-  NotifyTextCleared();
-}
-
-void AssistantInteractionModelImpl::NotifyCardChanged() {
+void AssistantInteractionModelImpl::NotifyUiElementAdded(
+    const app_list::AssistantUiElement* ui_element) {
   for (app_list::AssistantInteractionModelObserver& observer : observers_)
-    observer.OnCardChanged(card_);
+    observer.OnUiElementAdded(ui_element);
 }
 
-void AssistantInteractionModelImpl::NotifyCardCleared() {
+void AssistantInteractionModelImpl::NotifyUiElementsCleared() {
   for (app_list::AssistantInteractionModelObserver& observer : observers_)
-    observer.OnCardCleared();
+    observer.OnUiElementsCleared();
 }
 
 void AssistantInteractionModelImpl::NotifyQueryChanged() {
@@ -100,16 +93,6 @@ void AssistantInteractionModelImpl::NotifySuggestionsAdded(
 void AssistantInteractionModelImpl::NotifySuggestionsCleared() {
   for (app_list::AssistantInteractionModelObserver& observer : observers_)
     observer.OnSuggestionsCleared();
-}
-
-void AssistantInteractionModelImpl::NotifyTextAdded(const std::string& text) {
-  for (app_list::AssistantInteractionModelObserver& observer : observers_)
-    observer.OnTextAdded(text);
-}
-
-void AssistantInteractionModelImpl::NotifyTextCleared() {
-  for (app_list::AssistantInteractionModelObserver& observer : observers_)
-    observer.OnTextCleared();
 }
 
 }  // namespace ash

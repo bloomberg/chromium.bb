@@ -5,25 +5,27 @@
 #ifndef UI_APP_LIST_VIEWS_ASSISTANT_BUBBLE_VIEW_H_
 #define UI_APP_LIST_VIEWS_ASSISTANT_BUBBLE_VIEW_H_
 
+#include <deque>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "ui/app_list/assistant_interaction_model_observer.h"
 #include "ui/app_list/views/suggestion_chip_view.h"
 #include "ui/views/view.h"
 
 namespace app_list {
 
+class AssistantCardElement;
 class AssistantController;
+class AssistantTextElement;
+class AssistantUiElement;
 
 namespace {
-class CardContainer;
 class InteractionContainer;
 class SuggestionsContainer;
-class TextContainer;
+class UiElementContainer;
 }  // namespace
 
 class AssistantBubbleView : public views::View,
@@ -39,14 +41,12 @@ class AssistantBubbleView : public views::View,
   void ChildVisibilityChanged(views::View* child) override;
 
   // AssistantInteractionModelObserver:
-  void OnCardChanged(const std::string& html) override;
-  void OnCardCleared() override;
+  void OnUiElementAdded(const AssistantUiElement* ui_element) override;
+  void OnUiElementsCleared() override;
   void OnQueryChanged(const Query& query) override;
   void OnQueryCleared() override;
   void OnSuggestionsAdded(const std::vector<std::string>& suggestions) override;
   void OnSuggestionsCleared() override;
-  void OnTextAdded(const std::string& text) override;
-  void OnTextCleared() override;
 
   // SuggestionChipListener:
   void OnSuggestionChipPressed(
@@ -55,19 +55,36 @@ class AssistantBubbleView : public views::View,
  private:
   void InitLayout();
 
+  // Assistant cards are rendered asynchronously before being added to the view
+  // hierarchy. For this reason, it is necessary to pend any UI elements that
+  // arrive between the time a render request is sent and the time at which the
+  // view is finally embedded. Failure to do so could result in a mismatch
+  // between the ordering of UI elements received and their corresponding views.
+  void SetProcessingUiElement(bool is_processing);
+  void ProcessPendingUiElements();
+
+  void OnCardAdded(const AssistantCardElement* card_element);
   void OnCardReady(const base::UnguessableToken& embed_token);
-  void OnReleaseCard();
+  void OnReleaseCards();
+  void OnTextAdded(const AssistantTextElement* text_element);
 
   AssistantController* assistant_controller_;    // Owned by Shell.
   InteractionContainer* interaction_container_;  // Owned by view hierarchy.
-  TextContainer* text_container_;                // Owned by view hierarchy.
-  CardContainer* card_container_;                // Owned by view hierarchy.
+  UiElementContainer* ui_element_container_;     // Owned by view hierarchy.
   SuggestionsContainer* suggestions_container_;  // Owned by view hierarchy.
 
-  // Uniquely identifies a card owned by AssistantCardRenderer.
-  base::Optional<base::UnguessableToken> id_token_;
+  // Uniquely identifies cards owned by AssistantCardRenderer.
+  std::vector<base::UnguessableToken> id_token_list_;
 
-  base::WeakPtrFactory<AssistantBubbleView> weak_factory_;
+  // Owned by AssistantInteractionModel.
+  std::deque<const AssistantUiElement*> pending_ui_element_list_;
+
+  // Whether a UI element is currently being processed. If true, new UI elements
+  // are added to |pending_ui_element_list_| and processed later.
+  bool is_processing_ui_element_ = false;
+
+  // Weak pointer factory used for card rendering requests.
+  base::WeakPtrFactory<AssistantBubbleView> render_request_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantBubbleView);
 };

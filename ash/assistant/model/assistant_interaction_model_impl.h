@@ -5,6 +5,7 @@
 #ifndef ASH_ASSISTANT_MODEL_ASSISTANT_INTERACTION_MODEL_IMPL_H_
 #define ASH_ASSISTANT_MODEL_ASSISTANT_INTERACTION_MODEL_IMPL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,7 @@
 
 namespace app_list {
 class AssistantInteractionModelObserver;
+class AssistantUiElement;
 }  // namespace app_list
 
 namespace ash {
@@ -30,29 +32,25 @@ class AssistantInteractionModelImpl
   void RemoveObserver(
       app_list::AssistantInteractionModelObserver* observer) override;
   void ClearInteraction() override;
-  void SetCard(const std::string& html) override;
-  void ClearCard() override;
+  void AddUiElement(
+      std::unique_ptr<app_list::AssistantUiElement> ui_element) override;
+  void ClearUiElements() override;
   void SetQuery(const app_list::Query& query) override;
   void ClearQuery() override;
   void AddSuggestions(const std::vector<std::string>& suggestions) override;
   void ClearSuggestions() override;
-  void AddText(const std::string& text) override;
-  void ClearText() override;
 
  private:
-  void NotifyCardChanged();
-  void NotifyCardCleared();
+  void NotifyUiElementAdded(const app_list::AssistantUiElement* ui_element);
+  void NotifyUiElementsCleared();
   void NotifyQueryChanged();
   void NotifyQueryCleared();
   void NotifySuggestionsAdded(const std::vector<std::string>& suggestions);
   void NotifySuggestionsCleared();
-  void NotifyTextAdded(const std::string& text);
-  void NotifyTextCleared();
 
-  std::string card_;
   app_list::Query query_;
   std::vector<std::string> suggestions_list_;
-  std::vector<std::string> text_list_;
+  std::vector<std::unique_ptr<app_list::AssistantUiElement>> ui_element_list_;
 
   base::ObserverList<app_list::AssistantInteractionModelObserver> observers_;
 

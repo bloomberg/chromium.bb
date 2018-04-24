@@ -5,6 +5,7 @@
 #ifndef UI_APP_LIST_ASSISTANT_INTERACTION_MODEL_H_
 #define UI_APP_LIST_ASSISTANT_INTERACTION_MODEL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -16,6 +17,7 @@
 namespace app_list {
 
 class AssistantInteractionModelObserver;
+class AssistantUiElement;
 
 // Models the state of the query. For a text query, only the high confidence
 // text portion will be populated. At start of a voice query, both the high and
@@ -32,7 +34,7 @@ struct Query {
 };
 
 // Models the Assistant interaction. This includes query state, state of speech
-// recognition, as well as renderable card, suggestions, and text responses.
+// recognition, as well as renderable AssistantUiElements and suggestions.
 class AssistantInteractionModel {
  public:
   // Adds/removes the specified interaction model |observer|.
@@ -42,11 +44,12 @@ class AssistantInteractionModel {
   // Resets the interaction to its initial state.
   virtual void ClearInteraction() = 0;
 
-  // Updates the card that should be rendered for the interaction.
-  virtual void SetCard(const std::string& html) = 0;
+  // Adds the specified |ui_element| that should be rendered for the
+  // interaction.
+  virtual void AddUiElement(std::unique_ptr<AssistantUiElement> ui_element) = 0;
 
-  // Clears the card for the interaction.
-  virtual void ClearCard() = 0;
+  // Clears all UI elements for the interaction.
+  virtual void ClearUiElements() = 0;
 
   // Updates the query state for the interaction.
   virtual void SetQuery(const Query& query) = 0;
@@ -60,12 +63,6 @@ class AssistantInteractionModel {
 
   // Clears all suggestions for the interaction.
   virtual void ClearSuggestions() = 0;
-
-  // Adds the specified |text| that should be rendered for the interaction.
-  virtual void AddText(const std::string& text) = 0;
-
-  // Clears all text for the interaction.
-  virtual void ClearText() = 0;
 
  protected:
   AssistantInteractionModel() = default;

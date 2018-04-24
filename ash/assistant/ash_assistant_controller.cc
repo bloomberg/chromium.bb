@@ -4,11 +4,14 @@
 
 #include "ash/assistant/ash_assistant_controller.h"
 
+#include <memory>
+
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "base/unguessable_token.h"
 #include "ui/app_list/assistant_interaction_model_observer.h"
+#include "ui/app_list/assistant_ui_element.h"
 
 namespace ash {
 
@@ -71,6 +74,12 @@ void AshAssistantController::ReleaseCard(
   assistant_card_renderer_->Release(id_token);
 }
 
+void AshAssistantController::ReleaseCards(
+    const std::vector<base::UnguessableToken>& id_tokens) {
+  DCHECK(assistant_card_renderer_);
+  assistant_card_renderer_->ReleaseAll(id_tokens);
+}
+
 void AshAssistantController::AddInteractionModelObserver(
     app_list::AssistantInteractionModelObserver* observer) {
   assistant_interaction_model_.AddObserver(observer);
@@ -96,7 +105,8 @@ void AshAssistantController::OnHtmlResponse(const std::string& response) {
   if (!is_app_list_shown_)
     return;
 
-  assistant_interaction_model_.SetCard(response);
+  assistant_interaction_model_.AddUiElement(
+      std::make_unique<app_list::AssistantCardElement>(response));
 }
 
 void AshAssistantController::OnSuggestionChipPressed(const std::string& text) {
@@ -122,7 +132,8 @@ void AshAssistantController::OnTextResponse(const std::string& response) {
   if (!is_app_list_shown_)
     return;
 
-  assistant_interaction_model_.AddText(response);
+  assistant_interaction_model_.AddUiElement(
+      std::make_unique<app_list::AssistantTextElement>(response));
 }
 
 void AshAssistantController::OnSpeechRecognitionStarted() {

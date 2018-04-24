@@ -10,6 +10,7 @@
 #include "ui/app_list/answer_card_contents_registry.h"
 #include "ui/app_list/assistant_controller.h"
 #include "ui/app_list/assistant_interaction_model.h"
+#include "ui/app_list/assistant_ui_element.h"
 #include "ui/app_list/views/suggestion_chip_view.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
@@ -27,6 +28,10 @@ constexpr int kCornerRadiusDip = 16;
 constexpr int kPaddingDip = 8;
 constexpr int kPreferredWidthDip = 364;
 constexpr int kSpacingDip = 8;
+constexpr SkColor kTextBackgroundColor = SkColorSetARGB(0x8A, 0x42, 0x85, 0xF4);
+constexpr int kTextCornerRadiusDip = 16;
+constexpr int kTextPaddingHorizontalDip = 12;
+constexpr int kTextPaddingVerticalDip = 4;
 
 // Typography.
 constexpr SkColor kTextColorPrimary = SkColorSetA(SK_ColorBLACK, 0xDE);
@@ -128,51 +133,41 @@ class InteractionContainer : public views::View {
   DISALLOW_COPY_AND_ASSIGN(InteractionContainer);
 };
 
-// TextContainer ---------------------------------------------------------------
+// UiElementContainer ----------------------------------------------------------
 
-class TextContainer : public views::View {
+class UiElementContainer : public views::View {
  public:
-  TextContainer() { InitLayout(); }
+  UiElementContainer() { InitLayout(); }
 
-  ~TextContainer() override = default;
+  ~UiElementContainer() override = default;
+
+  // views::View:
+  void ChildPreferredSizeChanged(views::View* child) override {
+    PreferredSizeChanged();
+  }
 
   void AddText(const std::string& text) {
+    // Container.
+    views::View* text_container = new views::View();
+    text_container->SetBackground(std::make_unique<RoundRectBackground>(
+        kTextBackgroundColor, kTextCornerRadiusDip));
+    text_container->SetBorder(
+        views::CreateEmptyBorder(0, kPaddingDip, 0, kPaddingDip));
+    text_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal,
+        gfx::Insets(kTextPaddingVerticalDip, kTextPaddingHorizontalDip)));
+
+    // Label.
     views::Label* text_view = new views::Label(base::UTF8ToUTF16(text));
     text_view->SetAutoColorReadabilityEnabled(false);
     text_view->SetEnabledColor(kTextColorPrimary);
     text_view->SetFontList(text_view->font_list().DeriveWithSizeDelta(4));
     text_view->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
     text_view->SetMultiLine(true);
-    AddChildView(text_view);
 
-    PreferredSizeChanged();
-  }
+    text_container->AddChildView(text_view);
+    AddChildView(text_container);
 
-  void ClearText() {
-    RemoveAllChildViews(true);
-    PreferredSizeChanged();
-  }
-
- private:
-  void InitLayout() {
-    SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::Orientation::kVertical, gfx::Insets(0, kPaddingDip),
-        kSpacingDip));
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(TextContainer);
-};
-
-// CardContainer ---------------------------------------------------------------
-
-class CardContainer : public views::View {
- public:
-  CardContainer() { InitLayout(); }
-
-  ~CardContainer() override = default;
-
-  // views::View:
-  void ChildPreferredSizeChanged(views::View* child) override {
     PreferredSizeChanged();
   }
 
@@ -185,15 +180,23 @@ class CardContainer : public views::View {
     // TODO(dmblack): Handle Mash case.
   }
 
-  void UnembedCard() { RemoveAllChildViews(true); }
+  void ClearUiElements() {
+    RemoveAllChildViews(true);
+    PreferredSizeChanged();
+  }
 
  private:
   void InitLayout() {
-    SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::Orientation::kVertical));
+    views::BoxLayout* layout =
+        SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+            kSpacingDip));
+
+    layout->set_cross_axis_alignment(
+        views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_START);
   }
 
-  DISALLOW_COPY_AND_ASSIGN(CardContainer);
+  DISALLOW_COPY_AND_ASSIGN(UiElementContainer);
 };
 
 // TODO(dmblack): Container should wrap chips in a horizontal scroll view.
@@ -275,10 +278,9 @@ AssistantBubbleView::AssistantBubbleView(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
       interaction_container_(new InteractionContainer()),
-      text_container_(new TextContainer()),
-      card_container_(new CardContainer()),
+      ui_element_container_(new UiElementContainer()),
       suggestions_container_(new SuggestionsContainer(this)),
-      weak_factory_(this) {
+      render_request_weak_factory_(this) {
   InitLayout();
 
   // Observe changes to interaction model.
@@ -288,7 +290,7 @@ AssistantBubbleView::AssistantBubbleView(
 
 AssistantBubbleView::~AssistantBubbleView() {
   assistant_controller_->RemoveInteractionModelObserver(this);
-  OnReleaseCard();
+  OnReleaseCards();
 }
 
 gfx::Size AssistantBubbleView::CalculatePreferredSize() const {
@@ -316,60 +318,117 @@ void AssistantBubbleView::InitLayout() {
   // Interaction container.
   AddChildView(interaction_container_);
 
-  // Text container.
-  text_container_->SetVisible(false);
-  AddChildView(text_container_);
-
-  // Card container.
-  card_container_->SetVisible(false);
-  AddChildView(card_container_);
+  // UI element container.
+  ui_element_container_->SetVisible(false);
+  AddChildView(ui_element_container_);
 
   // Suggestions container.
   suggestions_container_->SetVisible(false);
   AddChildView(suggestions_container_);
 }
 
-void AssistantBubbleView::OnCardChanged(const std::string& html) {
-  // Clear the previous card.
-  OnCardCleared();
+void AssistantBubbleView::SetProcessingUiElement(bool is_processing) {
+  if (is_processing == is_processing_ui_element_)
+    return;
+
+  is_processing_ui_element_ = is_processing;
+
+  // If we are no longer processing a UI element, we need to handle anything
+  // that was put in the pending queue. Note that the elements left in the
+  // pending queue may themselves require processing that again pends the queue.
+  if (!is_processing_ui_element_)
+    ProcessPendingUiElements();
+}
+
+void AssistantBubbleView::ProcessPendingUiElements() {
+  while (!is_processing_ui_element_ && !pending_ui_element_list_.empty()) {
+    const AssistantUiElement* ui_element = pending_ui_element_list_.front();
+    pending_ui_element_list_.pop_front();
+    OnUiElementAdded(ui_element);
+  }
+}
+
+void AssistantBubbleView::OnUiElementAdded(
+    const AssistantUiElement* ui_element) {
+  // If we are processing a UI element we need to pend the incoming element
+  // instead of handling it immediately.
+  if (is_processing_ui_element_) {
+    pending_ui_element_list_.push_back(ui_element);
+    return;
+  }
+
+  switch (ui_element->GetType()) {
+    case AssistantUiElementType::kCard:
+      OnCardAdded(static_cast<const AssistantCardElement*>(ui_element));
+      break;
+    case AssistantUiElementType::kText:
+      OnTextAdded(static_cast<const AssistantTextElement*>(ui_element));
+      break;
+  }
+}
+
+void AssistantBubbleView::OnUiElementsCleared() {
+  // Prevent any in-flight card rendering requests from returning.
+  render_request_weak_factory_.InvalidateWeakPtrs();
+
+  ui_element_container_->SetVisible(false);
+  ui_element_container_->ClearUiElements();
+
+  OnReleaseCards();
+
+  // We can clear any pending UI elements as they are no longer relevant.
+  pending_ui_element_list_.clear();
+  SetProcessingUiElement(false);
+}
+
+void AssistantBubbleView::OnCardAdded(
+    const AssistantCardElement* card_element) {
+  DCHECK(!is_processing_ui_element_);
+
+  // We need to pend any further UI elements until the card has been rendered.
+  // This insures that views will be added to the view hierarchy in the order in
+  // which they were received.
+  SetProcessingUiElement(true);
 
   // Generate a unique identifier for the card. This will be used to clean up
   // card resources when it is no longer needed.
-  id_token_ = base::UnguessableToken::Create();
+  base::UnguessableToken id_token = base::UnguessableToken::Create();
 
   // Configure parameters for the card.
   ash::mojom::AssistantCardParamsPtr params(
       ash::mojom::AssistantCardParams::New());
-  params->html = html;
+  params->html = card_element->GetHtml();
   params->min_width_dip = kPreferredWidthDip;
   params->max_width_dip = kPreferredWidthDip;
 
   // The card will be rendered by AssistantCardRenderer, running the specified
   // callback when the card is ready for embedding.
   assistant_controller_->RenderCard(
-      id_token_.value(), std::move(params),
+      id_token, std::move(params),
       base::BindOnce(&AssistantBubbleView::OnCardReady,
-                     weak_factory_.GetWeakPtr()));
+                     render_request_weak_factory_.GetWeakPtr()));
+
+  // Cache the card identifier for freeing up resources when it is no longer
+  // needed.
+  id_token_list_.push_back(id_token);
 }
 
 void AssistantBubbleView::OnCardReady(
     const base::UnguessableToken& embed_token) {
-  card_container_->EmbedCard(embed_token);
-  card_container_->SetVisible(true);
+  ui_element_container_->EmbedCard(embed_token);
+  ui_element_container_->SetVisible(true);
+
+  // Once the card has been rendered and embedded, we can resume processing
+  // any UI elements that are in the pending queue.
+  SetProcessingUiElement(false);
 }
 
-void AssistantBubbleView::OnCardCleared() {
-  card_container_->SetVisible(false);
-  card_container_->UnembedCard();
-  OnReleaseCard();
-}
-
-void AssistantBubbleView::OnReleaseCard() {
-  if (id_token_) {
-    // Release any resources associated with the card identified by |id_token_|
-    // owned by AssistantCardRenderer.
-    assistant_controller_->ReleaseCard(id_token_.value());
-    id_token_.reset();
+void AssistantBubbleView::OnReleaseCards() {
+  if (!id_token_list_.empty()) {
+    // Release any resources associated with the cards identified in
+    // |id_token_list_| owned by AssistantCardRenderer.
+    assistant_controller_->ReleaseCards(id_token_list_);
+    id_token_list_.clear();
   }
 }
 
@@ -398,14 +457,12 @@ void AssistantBubbleView::OnSuggestionChipPressed(
       base::UTF16ToUTF8(suggestion_chip_view->GetText()));
 }
 
-void AssistantBubbleView::OnTextAdded(const std::string& text) {
-  text_container_->AddText(text);
-  text_container_->SetVisible(true);
-}
+void AssistantBubbleView::OnTextAdded(
+    const AssistantTextElement* text_element) {
+  DCHECK(!is_processing_ui_element_);
 
-void AssistantBubbleView::OnTextCleared() {
-  text_container_->ClearText();
-  text_container_->SetVisible(false);
+  ui_element_container_->AddText(text_element->GetText());
+  ui_element_container_->SetVisible(true);
 }
 
 }  // namespace app_list
