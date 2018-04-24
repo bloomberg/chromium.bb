@@ -556,7 +556,7 @@
         'args': [
           '--verbose',
         ],
-        'script': '//third_party/WebKit/Tools/Scripts/merge-layout-test-results',
+        'script': '//third_party/blink/tools/merge_web_test_results.py',
       },
       'only_retry_failed_tests': True,
       'results_handler': 'layout tests',
@@ -838,7 +838,7 @@
         'args': [
           '--verbose',
         ],
-        'script': '//third_party/WebKit/Tools/Scripts/merge-layout-test-results',
+        'script': '//third_party/blink/tools/merge_web_test_results.py',
       },
       'only_retry_failed_tests': True,
       'results_handler': 'layout tests',
@@ -1113,7 +1113,7 @@
         'args': [
           '--verbose',
         ],
-        'script': '//third_party/WebKit/Tools/Scripts/merge-layout-test-results',
+        'script': '//third_party/blink/tools/merge_web_test_results.py',
       },
       'only_retry_failed_tests': True,
       'results_handler': 'layout tests',
@@ -1297,7 +1297,7 @@
         'args': [
           '--verbose',
         ],
-        'script': '//third_party/WebKit/Tools/Scripts/merge-layout-test-results',
+        'script': '//third_party/blink/tools/merge_web_test_results.py',
       },
       'results_handler': 'layout tests',
       'swarming': {
@@ -1794,7 +1794,7 @@
         'args': [
           '--verbose'
         ],
-        'script': '//third_party/WebKit/Tools/Scripts/merge-layout-test-results',
+        'script': '//third_party/blink/tools/merge_web_test_results.py',
       },
       'only_retry_failed_tests': True,
       'results_handler': 'layout tests',

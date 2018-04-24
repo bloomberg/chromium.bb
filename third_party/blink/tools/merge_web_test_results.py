@@ -6,7 +6,6 @@
 
 import sys
 
-from webkitpy.common import add_blinkpy  # pylint: disable=unused-import
 from blinkpy.web_tests.merge_results import main
 
 

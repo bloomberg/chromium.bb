@@ -789,7 +789,7 @@ directory. The script will be given the arguments plus
         args.positional = []
 
     # Allow skipping the --input-directories bit, for example,
-    #   merge-layout-test-results -o outputdir shard0 shard1 shard2
+    #   merge_web_test_results.py -o outputdir shard0 shard1 shard2
     if args.positional and not args.input_directories:
         args.input_directories = args.positional
 
