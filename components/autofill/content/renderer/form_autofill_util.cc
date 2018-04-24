@@ -1501,8 +1501,7 @@ void WebFormControlElementToFormField(
       IsTextAreaElement(element) ||
       IsSelectElement(element)) {
     field->is_autofilled = element.IsAutofilled();
-    if (!g_prevent_layout)
-      field->is_focusable = element.IsFocusable();
+    field->is_focusable = IsWebElementVisible(element);
     field->should_autocomplete = element.AutoComplete();
 
     // Use 'text-align: left|right' if set or 'direction' otherwise.
