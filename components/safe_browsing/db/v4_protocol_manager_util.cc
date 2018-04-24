@@ -184,6 +184,7 @@ bool SBThreatTypeSetIsValidForCheckBrowseUrl(const SBThreatTypeSet& set) {
       case SB_THREAT_TYPE_URL_PHISHING:
       case SB_THREAT_TYPE_URL_MALWARE:
       case SB_THREAT_TYPE_URL_UNWANTED:
+      case SB_THREAT_TYPE_SUSPICIOUS_SITE:
         break;
 
       default:

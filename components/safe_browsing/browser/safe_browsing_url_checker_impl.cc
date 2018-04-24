@@ -134,7 +134,10 @@ void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
       "safe_browsing", "CheckUrl", this, "result",
       threat_type == SB_THREAT_TYPE_SAFE ? "safe" : "unsafe");
 
-  if (threat_type == SB_THREAT_TYPE_SAFE) {
+  if (threat_type == SB_THREAT_TYPE_SAFE ||
+      threat_type == SB_THREAT_TYPE_SUSPICIOUS_SITE) {
+    // TODO(lpz): Suspicious sites are treated as safe for now. Trigger
+    // a suspicious site report here instead.
     state_ = STATE_NONE;
 
     if (!RunNextCallback(true, false))

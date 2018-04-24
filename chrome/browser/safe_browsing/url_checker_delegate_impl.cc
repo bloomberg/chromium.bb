@@ -60,10 +60,15 @@ UrlCheckerDelegateImpl::UrlCheckerDelegateImpl(
     scoped_refptr<SafeBrowsingUIManager> ui_manager)
     : database_manager_(std::move(database_manager)),
       ui_manager_(std::move(ui_manager)),
-      threat_types_(
-          CreateSBThreatTypeSet({safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
-                                 safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
-                                 safe_browsing::SB_THREAT_TYPE_URL_UNWANTED})) {
+      threat_types_(CreateSBThreatTypeSet({
+// TODO(crbug.com/835961): Enable on Android when list is available.
+#if defined(SAFE_BROWSING_DB_LOCAL)
+        safe_browsing::SB_THREAT_TYPE_SUSPICIOUS_SITE,
+#endif
+            safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
+            safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
+            safe_browsing::SB_THREAT_TYPE_URL_UNWANTED
+      })) {
 }
 
 UrlCheckerDelegateImpl::~UrlCheckerDelegateImpl() = default;
