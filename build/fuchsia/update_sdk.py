@@ -43,6 +43,16 @@ def Cleanup(path):
     os.remove(hash_file)
 
 
+# Updates the modification timestamps of |path| and its contents to the
+# current time.
+def UpdateTimestampsRecursive(path):
+  for root, dirs, files in os.walk(path):
+    for f in files:
+      os.utime(os.path.join(root, f), None)
+    for d in dirs:
+      os.utime(os.path.join(root, d), None)
+
+
 def main():
   if len(sys.argv) != 1:
     print >>sys.stderr, 'usage: %s' % sys.argv[0]
@@ -91,6 +101,8 @@ def main():
 
   with open(hash_filename, 'w') as f:
     f.write(sdk_hash)
+
+  UpdateTimestampsRecursive(output_dir)
 
   return 0
 
