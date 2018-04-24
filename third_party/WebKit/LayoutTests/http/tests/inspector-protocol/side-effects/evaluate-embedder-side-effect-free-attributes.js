@@ -8,6 +8,8 @@
     div.className = 'bar baz';
     var textNode = document.createTextNode('footext');
     div.appendChild(textNode);
+    var textNode2 = document.createTextNode('bartext');
+    div.appendChild(textNode2);
   `);
 
   // Sanity check: test that setters are not allowed on whitelisted accessors.
@@ -18,6 +20,13 @@
   await checkHasNoSideEffect(`document.referrer`);
   await checkHasNoSideEffect(`document.cookie`);
   await checkHasNoSideEffect(`document.title`);
+  await checkHasNoSideEffect(`document.documentElement`);
+  await checkHasNoSideEffect(`document.scrollingElement`);
+  await checkHasNoSideEffect(`document.body`);
+  await checkHasNoSideEffect(`document.head`);
+
+  // DocumentOrShadowRoot
+  await checkHasNoSideEffect(`document.activeElement`);
 
   // Element
   await checkHasNoSideEffect(`div.tagName`);
@@ -32,11 +41,22 @@
     await checkHasNoSideEffect(`${node}.nodeValue`);
     await checkHasNoSideEffect(`${node}.textContent`);
     await checkHasNoSideEffect(`${node}.isConnected`);
+    await checkHasNoSideEffect(`${node}.parentNode`);
+    await checkHasNoSideEffect(`${node}.parentElement`);
+    await checkHasNoSideEffect(`${node}.childNodes`);
+    await checkHasNoSideEffect(`${node}.firstChild`);
+    await checkHasNoSideEffect(`${node}.lastChild`);
+    await checkHasNoSideEffect(`${node}.previousSibling`);
+    await checkHasNoSideEffect(`${node}.nextSibling`);
   }
 
   // ParentNode
-  await checkHasNoSideEffect(`document.childElementCount`);
-  await checkHasNoSideEffect(`div.childElementCount`);
+  for (var node of testNodes) {
+    await checkHasNoSideEffect(`${node}.childElementCount`);
+    await checkHasNoSideEffect(`${node}.children`);
+    await checkHasNoSideEffect(`${node}.firstElementChild`);
+    await checkHasNoSideEffect(`${node}.lastElementChild`);
+  }
 
   // Window
   await checkHasNoSideEffect(`devicePixelRatio`);

@@ -68,9 +68,9 @@ interface Element : Node {
     [RaisesException, CallWith=ScriptState, MeasureAs=ElementAttachShadow] ShadowRoot attachShadow(ShadowRootInit shadowRootInitDict);
     [PerWorldBindings, ImplementedAs=OpenShadowRoot] readonly attribute ShadowRoot? shadowRoot;
 
-    HTMLCollection getElementsByTagName(DOMString localName);
-    HTMLCollection getElementsByTagNameNS(DOMString? namespaceURI, DOMString localName);
-    HTMLCollection getElementsByClassName(DOMString classNames);
+    [Affects=Nothing] HTMLCollection getElementsByTagName(DOMString localName);
+    [Affects=Nothing] HTMLCollection getElementsByTagNameNS(DOMString? namespaceURI, DOMString localName);
+    [Affects=Nothing] HTMLCollection getElementsByClassName(DOMString classNames);
 
     [RaisesException, CEReactions, CustomElementCallbacks] Element? insertAdjacentElement(DOMString where, Element element);
     [RaisesException] void insertAdjacentText(DOMString where, DOMString data);
