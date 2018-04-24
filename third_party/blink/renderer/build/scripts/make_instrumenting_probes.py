@@ -229,6 +229,12 @@ except Exception:
     sys.stderr.write("\t--output_dir <output_dir>\n")
     exit(1)
 
+match = re.search(r"\bgen[\\/]", output_dirpath)  # pylint: disable=invalid-name
+if match:
+    output_path_in_gen_dir = output_dirpath[match.end():].replace(os.path.sep, '/') + '/'  # pylint: disable=invalid-name
+else:
+    output_path_in_gen_dir = ''  # pylint: disable=invalid-name
+
 config = load_config(config_file_name)
 jinja_env = initialize_jinja_env(output_dirpath)
 base_name = os.path.splitext(os.path.basename(input_path))[0]
@@ -243,7 +249,8 @@ template_context = {
     "config": config,
     "method_name": method_name,
     "name": base_name,
-    "input_files": [os.path.basename(input_path)]
+    "input_files": [os.path.basename(input_path)],
+    "output_path_in_gen_dir": output_path_in_gen_dir
 }
 
 template_context["template_file"] = "/InstrumentingProbesImpl.cpp.tmpl"
