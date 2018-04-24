@@ -46729,6 +46729,13 @@ Full version information for the fingerprint enum values:
   <int value="4" label="Session, Warmup"/>
 </enum>
 
+<enum name="WasmAllocationResult">
+  <int value="0" label="kSuccess"/>
+  <int value="1" label="kSuccessAfterRetry"/>
+  <int value="2" label="kAddressSpaceLimitReachedFailure"/>
+  <int value="3" label="kOtherFailure"/>
+</enum>
+
 <enum name="WebApkGooglePlayInstallResult">
   <int value="0" label="Success"/>
   <int value="1" label="Install delegate unavailable"/>
