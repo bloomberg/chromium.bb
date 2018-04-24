@@ -73,9 +73,9 @@ OmniboxPopupViewMac::~OmniboxPopupViewMac() {
 // Background colors for different states of the popup elements.
 // static
 NSColor* OmniboxPopupViewMac::BackgroundColor(bool is_dark_theme) {
-  const CGFloat kMDDarkControlBackround = 40 / 255.;
+  const CGFloat kMDDarkControlBackground = 40 / 255.;
   return is_dark_theme
-             ? [NSColor colorWithGenericGamma22White:kMDDarkControlBackround
+             ? [NSColor colorWithGenericGamma22White:kMDDarkControlBackground
                                                alpha:1]
              : [NSColor controlBackgroundColor];
 }
