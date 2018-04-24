@@ -1844,6 +1844,7 @@ source_set("unit_tests") {
     "apps/intent_helper/apps_navigation_throttle_unittest.cc",
     "arc/accessibility/arc_accessibility_helper_bridge_unittest.cc",
     "arc/accessibility/ax_tree_source_arc_unittest.cc",
+    "arc/arc_migration_guide_notification_unittest.cc",
     "arc/arc_play_store_enabled_preference_handler_unittest.cc",
     "arc/arc_session_manager_unittest.cc",
     "arc/arc_support_host_unittest.cc",

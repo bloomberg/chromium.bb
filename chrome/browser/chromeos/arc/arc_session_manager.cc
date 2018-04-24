@@ -53,12 +53,10 @@ namespace {
 // Weak pointer.  This class is owned by ArcServiceManager.
 ArcSessionManager* g_arc_session_manager = nullptr;
 
-// Skip creating UI in unit tests
-bool g_disable_ui_for_testing = false;
+// Allows the session manager to skip creating UI in unit tests.
+bool g_ui_enabled = true;
 
-// The Android management check is disabled by default, it's used only for
-// testing.
-bool g_enable_check_android_management_for_testing = false;
+base::Optional<bool> g_enable_check_android_management_in_tests;
 
 // Maximum amount of time we'll wait for ARC to finish booting up. Once this
 // timeout expires, keep ARC running in case the user wants to file feedback,
@@ -179,13 +177,13 @@ ArcSessionManager* ArcSessionManager::Get() {
 }
 
 // static
-void ArcSessionManager::DisableUIForTesting() {
-  g_disable_ui_for_testing = true;
+void ArcSessionManager::SetUiEnabledForTesting(bool enable) {
+  g_ui_enabled = enable;
 }
 
 // static
-void ArcSessionManager::EnableCheckAndroidManagementForTesting() {
-  g_enable_check_android_management_for_testing = true;
+void ArcSessionManager::EnableCheckAndroidManagementForTesting(bool enable) {
+  g_enable_check_android_management_in_tests = enable;
 }
 
 void ArcSessionManager::OnSessionStopped(ArcStopReason reason,
@@ -414,7 +412,7 @@ void ArcSessionManager::Initialize() {
   // be the kiosk app. In case of error the UI will be useless as well, because
   // in typical use case there will be no one nearby the kiosk device, who can
   // do some action to solve the problem be means of UI.
-  if (!g_disable_ui_for_testing && !IsArcOptInVerificationDisabled() &&
+  if (g_ui_enabled && !IsArcOptInVerificationDisabled() &&
       !IsRobotAccountMode()) {
     DCHECK(!support_host_);
     support_host_ = std::make_unique<ArcSupportHost>(profile_);
@@ -427,10 +425,8 @@ void ArcSessionManager::Initialize() {
 
   context_ = std::make_unique<ArcAuthContext>(profile_);
 
-  if (!g_disable_ui_for_testing ||
-      g_enable_check_android_management_for_testing) {
+  if (g_enable_check_android_management_in_tests.value_or(g_ui_enabled))
     ArcAndroidManagementChecker::StartClient();
-  }
 
   // Chrome may be shut down before completing ARC data removal.
   // For such a case, start removing the data now, if necessary.
@@ -628,7 +624,7 @@ bool ArcSessionManager::RequestEnableImpl() {
   if (IsArcBlockedDueToIncompatibleFileSystem(profile_)) {
     // If the next step was the ToS negotiation, show a notification instead.
     // Otherwise, be silent now. Users are notified when clicking ARC app icons.
-    if (!start_arc_directly && !g_disable_ui_for_testing)
+    if (!start_arc_directly && g_ui_enabled)
       arc::ShowArcMigrationGuideNotification(profile_);
     return false;
   }
@@ -750,10 +746,9 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
   }
 
   if (!terms_of_service_negotiator_) {
-    // The only case reached here is when g_disable_ui_for_testing is set
-    // so ARC support host is not created in SetProfile(), for testing purpose.
-    DCHECK(g_disable_ui_for_testing)
-        << "Negotiator is not created on production.";
+    // The only case reached here is when g_ui_enabled is false so ARC support
+    // host is not created in SetProfile(), for testing purpose.
+    DCHECK(!g_ui_enabled) << "Negotiator is not created on production.";
     return;
   }
 
@@ -769,7 +764,7 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
 void ArcSessionManager::OnTermsOfServiceNegotiated(bool accepted) {
   DCHECK_EQ(state_, State::NEGOTIATING_TERMS_OF_SERVICE);
   DCHECK(profile_);
-  DCHECK(terms_of_service_negotiator_ || g_disable_ui_for_testing);
+  DCHECK(terms_of_service_negotiator_ || !g_ui_enabled);
   terms_of_service_negotiator_.reset();
 
   if (!accepted) {
@@ -803,7 +798,7 @@ void ArcSessionManager::StartAndroidManagementCheck() {
   for (auto& observer : observer_list_)
     observer.OnArcOptInManagementCheckStarted();
 
-  if (g_disable_ui_for_testing)
+  if (!g_ui_enabled)
     return;
 
   android_management_checker_ = std::make_unique<ArcAndroidManagementChecker>(
@@ -856,8 +851,8 @@ void ArcSessionManager::StartBackgroundAndroidManagementCheck() {
   // We also skip if Android management check for Kiosk and Public Session mode,
   // because there are no managed human users for them exist.
   if (IsArcOptInVerificationDisabled() || IsRobotAccountMode() ||
-      (g_disable_ui_for_testing &&
-       !g_enable_check_android_management_for_testing)) {
+      (!g_ui_enabled &&
+       !g_enable_check_android_management_in_tests.value_or(false))) {
     return;
   }
 

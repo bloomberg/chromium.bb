@@ -5162,7 +5162,7 @@ class ArcPolicyTest : public PolicyTest {
  protected:
   void SetUpOnMainThread() override {
     PolicyTest::SetUpOnMainThread();
-    arc::ArcSessionManager::DisableUIForTesting();
+    arc::ArcSessionManager::SetUiEnabledForTesting(false);
     arc::ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
         std::make_unique<arc::ArcSessionRunner>(
             base::Bind(arc::FakeArcSession::Create)));

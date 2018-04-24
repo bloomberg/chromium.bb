@@ -230,6 +230,11 @@ class PowerManagerClientTest : public testing::Test {
                      _, _))
         .WillRepeatedly(
             Invoke(this, &PowerManagerClientTest::RegisterSuspendDelay));
+    // Init should also request a fresh power status.
+    EXPECT_CALL(
+        *proxy_.get(),
+        DoCallMethod(HasMember(power_manager::kGetPowerSupplyPropertiesMethod),
+                     _, _));
 
     client_.reset(PowerManagerClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION));
     client_->Init(bus_.get());

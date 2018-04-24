@@ -81,6 +81,11 @@ void FakePowerManagerClient::DecreaseKeyboardBrightness() {}
 
 void FakePowerManagerClient::IncreaseKeyboardBrightness() {}
 
+base::Optional<power_manager::PowerSupplyProperties>
+FakePowerManagerClient::GetLastStatus() {
+  return props_;
+}
+
 void FakePowerManagerClient::RequestStatusUpdate() {
   // RequestStatusUpdate() calls and notifies the observers
   // asynchronously on a real device. On the fake implementation, we call

@@ -135,24 +135,6 @@ class BatteryImageSource : public gfx::CanvasImageSource {
   DISALLOW_COPY_AND_ASSIGN(BatteryImageSource);
 };
 
-// Updates |proto| to ensure that its fields are consistent.
-void SanitizeProto(power_manager::PowerSupplyProperties* proto) {
-  DCHECK(proto);
-
-  if (proto->battery_state() ==
-      power_manager::PowerSupplyProperties_BatteryState_FULL)
-    proto->set_battery_percent(100.0);
-
-  if (!proto->is_calculating_battery_time()) {
-    const bool on_line_power =
-        proto->external_power() !=
-        power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED;
-    if ((on_line_power && proto->battery_time_to_full_sec() < 0) ||
-        (!on_line_power && proto->battery_time_to_empty_sec() < 0))
-      proto->set_is_calculating_battery_time(true);
-  }
-}
-
 base::string16 GetBatteryTimeAccessibilityString(int hour, int min) {
   DCHECK(hour || min);
   if (hour && !min) {
@@ -510,13 +492,11 @@ PowerStatus::~PowerStatus() {
 void PowerStatus::SetProtoForTesting(
     const power_manager::PowerSupplyProperties& proto) {
   proto_ = proto;
-  SanitizeProto(&proto_);
 }
 
 void PowerStatus::PowerChanged(
     const power_manager::PowerSupplyProperties& proto) {
   proto_ = proto;
-  SanitizeProto(&proto_);
   for (auto& observer : observers_)
     observer.OnPowerStatusChanged();
 }

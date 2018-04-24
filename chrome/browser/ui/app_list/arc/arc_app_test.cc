@@ -89,7 +89,7 @@ void ArcAppTest::SetUp(Profile* profile) {
       std::make_unique<arc::ArcSessionRunner>(
           base::Bind(arc::FakeArcSession::Create)));
   DCHECK(arc::ArcSessionManager::Get());
-  arc::ArcSessionManager::DisableUIForTesting();
+  arc::ArcSessionManager::SetUiEnabledForTesting(false);
   arc_session_manager_->SetProfile(profile_);
   arc_session_manager_->Initialize();
   arc_play_store_enabled_preference_handler_ =

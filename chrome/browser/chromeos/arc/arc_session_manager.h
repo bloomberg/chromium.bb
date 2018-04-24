@@ -143,8 +143,8 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   static ArcSessionManager* Get();
 
-  static void DisableUIForTesting();
-  static void EnableCheckAndroidManagementForTesting();
+  static void SetUiEnabledForTesting(bool enabled);
+  static void EnableCheckAndroidManagementForTesting(bool enable);
 
   // Returns true if ARC is allowed to run for the current session.
   // TODO(hidehiko): The name is very close to IsArcAllowedForProfile(), but

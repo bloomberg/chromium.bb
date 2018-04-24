@@ -41,7 +41,7 @@ class ArcProvisionNotificationServiceTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     SetArcAvailableCommandLineForTesting(
         base::CommandLine::ForCurrentProcess());
-    ArcSessionManager::DisableUIForTesting();
+    ArcSessionManager::SetUiEnabledForTesting(false);
 
     arc_service_manager_ = std::make_unique<ArcServiceManager>();
     arc_session_manager_ = std::make_unique<ArcSessionManager>(

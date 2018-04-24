@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/login/ui/fake_login_display_host.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -99,7 +100,7 @@ class ArcSessionManagerInLoginScreenTest : public testing::Test {
 
     chromeos::DBusThreadManager::Initialize();
 
-    ArcSessionManager::DisableUIForTesting();
+    ArcSessionManager::SetUiEnabledForTesting(false);
     SetArcBlockedDueToIncompatibleFileSystemForTesting(false);
 
     arc_service_manager_ = std::make_unique<ArcServiceManager>();
@@ -180,7 +181,7 @@ class ArcSessionManagerTestBase : public testing::Test {
 
     SetArcAvailableCommandLineForTesting(
         base::CommandLine::ForCurrentProcess());
-    ArcSessionManager::DisableUIForTesting();
+    ArcSessionManager::SetUiEnabledForTesting(false);
     SetArcBlockedDueToIncompatibleFileSystemForTesting(false);
 
     arc_service_manager_ = std::make_unique<ArcServiceManager>();
@@ -298,6 +299,27 @@ TEST_F(ArcSessionManagerTest, BaseWorkflow) {
   ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   arc_session_manager()->Shutdown();
+}
+
+// Tests that tying to enable ARC++ with an incompatible file system fails and
+// shows the user a notification to that effect.
+TEST_F(ArcSessionManagerTest, MigrationGuideNotification) {
+  ArcSessionManager::SetUiEnabledForTesting(true);
+  ArcSessionManager::EnableCheckAndroidManagementForTesting(false);
+  SetArcBlockedDueToIncompatibleFileSystemForTesting(true);
+
+  NotificationDisplayServiceTester notification_service(profile());
+
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  arc_session_manager()->RequestEnable();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+  auto notifications = notification_service.GetDisplayedNotificationsForType(
+      NotificationHandler::Type::TRANSIENT);
+  ASSERT_EQ(1U, notifications.size());
+  EXPECT_EQ("arc_fs_migration/suggest", notifications[0].id());
 }
 
 // Tests that OnArcInitialStart is called  after the successful ARC provisioning
