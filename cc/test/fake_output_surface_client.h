@@ -19,6 +19,8 @@ class FakeOutputSurfaceClient : public viz::OutputSurfaceClient {
       const gpu::TextureInUseResponses& responses) override {}
   void DidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override {}
+  void DidFinishLatencyInfo(
+      const std::vector<ui::LatencyInfo>& latency_info) override {}
 
   int swap_count() { return swap_count_; }
 

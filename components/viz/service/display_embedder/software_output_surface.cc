@@ -127,6 +127,7 @@ uint32_t SoftwareOutputSurface::GetFramebufferCopyTextureFormat() {
 void SoftwareOutputSurface::SwapBuffersCallback(uint64_t swap_id) {
   for (const auto& latency : stored_latency_info_)
     latency_tracker_.OnGpuSwapBuffersCompleted(latency);
+  client_->DidFinishLatencyInfo(stored_latency_info_);
   std::vector<ui::LatencyInfo>().swap(stored_latency_info_);
   client_->DidReceiveSwapBuffersAck(swap_id);
   client_->DidReceivePresentationFeedback(

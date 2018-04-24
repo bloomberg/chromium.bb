@@ -77,6 +77,7 @@ viz_static_library("test_support") {
     "//testing/gtest",
     "//ui/gfx/geometry",
     "//ui/gl",
+    "//ui/latency:test_support",
   ]
 }
 

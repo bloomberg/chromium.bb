@@ -153,6 +153,7 @@ void GLOutputSurface::LatencyInfoCompleted(
   for (const auto& latency : latency_info) {
     latency_tracker_.OnGpuSwapBuffersCompleted(latency);
   }
+  client_->DidFinishLatencyInfo(latency_info);
 }
 
 void GLOutputSurface::OnVSyncParametersUpdated(base::TimeTicks timebase,

@@ -109,6 +109,8 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   void DidReceivePresentationFeedback(
       uint64_t swap_id,
       const gfx::PresentationFeedback& feedback) override;
+  void DidFinishLatencyInfo(
+      const std::vector<ui::LatencyInfo>& latency_info) override;
 
   // LatestLocalSurfaceIdLookupDelegate implementation.
   LocalSurfaceId GetSurfaceAtAggregation(
