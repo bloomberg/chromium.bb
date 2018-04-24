@@ -1855,6 +1855,7 @@ void xdg_surface_v6_get_toplevel(wl_client* client,
     return;
   }
 
+  shell_surface->SetCanMinimize(true);
   shell_surface->SetEnabled(true);
 
   wl_resource* xdg_toplevel_resource =
