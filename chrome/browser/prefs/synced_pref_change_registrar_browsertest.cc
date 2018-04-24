@@ -6,7 +6,7 @@
 #include <string>
 
 #include "base/json/json_string_value_serializer.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -42,7 +42,7 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
 
   void UpdateChromePolicy(const policy::PolicyMap& policies) {
     policy_provider_.UpdateChromePolicy(policies);
-    DCHECK(base::MessageLoop::current());
+    DCHECK(base::MessageLoopCurrent::Get());
     base::RunLoop loop;
     loop.RunUntilIdle();
   }
