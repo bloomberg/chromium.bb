@@ -999,6 +999,7 @@
         '--skip=telemetry.internal.actions.action_runner_unittest.ActionRunnerTest.testWaitForElementWithWrongText',
         '--skip=telemetry.internal.actions.action_runner_unittest.ActionRunnerTest.testWaitForJavaScriptCondition',
         '--skip=telemetry.internal.actions.key_event_unittest.KeyPressActionTest.testPressEndAndHome',
+        '--skip=telemetry.internal.actions.repeatable_scroll_unittest.RepeatableScrollActionTest.testRepeatableScrollActionNoRepeats',
         '--skip=telemetry.page.page_run_end_to_end_unittest.ActualPageRunEndToEndTests.testTrafficSettings',
       ],
       'swarming': {
@@ -1342,6 +1343,7 @@
         '--skip=telemetry.internal.actions.action_runner_unittest.ActionRunnerTest.testWaitForElementWithWrongText',
         '--skip=telemetry.internal.actions.action_runner_unittest.ActionRunnerTest.testWaitForJavaScriptCondition',
         '--skip=telemetry.internal.actions.key_event_unittest.KeyPressActionTest.testPressEndAndHome',
+        '--skip=telemetry.internal.actions.repeatable_scroll_unittest.RepeatableScrollActionTest.testRepeatableScrollActionNoRepeats',
         '--skip=telemetry.page.page_run_end_to_end_unittest.ActualPageRunEndToEndTests.testTrafficSettings',
       ],
       'swarming': {
