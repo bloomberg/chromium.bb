@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/strings/string_piece.h"
+#include "content/common/content_export.h"
 
 namespace leveldb {
 class WriteBatch;
@@ -17,7 +18,7 @@ namespace content {
 
 // Wrapper around leveldb::WriteBatch.
 // This class holds a collection of updates to apply atomically to a database.
-class LevelDBWriteBatch {
+class CONTENT_EXPORT LevelDBWriteBatch {
  public:
   static std::unique_ptr<LevelDBWriteBatch> Create();
   ~LevelDBWriteBatch();

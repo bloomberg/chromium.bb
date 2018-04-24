@@ -23,6 +23,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
+#include "base/time/default_clock.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
@@ -239,7 +240,7 @@ LevelDBSnapshot::~LevelDBSnapshot() {
 }
 
 LevelDBDatabase::LevelDBDatabase(size_t max_open_iterators)
-    : iterator_lru_(max_open_iterators) {
+    : clock_(new base::DefaultClock()), iterator_lru_(max_open_iterators) {
   DCHECK(max_open_iterators);
 }
 
@@ -376,6 +377,7 @@ leveldb::Status LevelDBDatabase::Put(const StringPiece& key,
   else
     UMA_HISTOGRAM_TIMES("WebCore.IndexedDB.LevelDB.PutTime",
                         base::TimeTicks::Now() - begin_time);
+  last_modified_ = clock_->Now();
   return s;
 }
 
@@ -387,6 +389,7 @@ leveldb::Status LevelDBDatabase::Remove(const StringPiece& key) {
       db_->Delete(write_options, leveldb_env::MakeSlice(key));
   if (!s.IsNotFound())
     LOG(ERROR) << "LevelDB remove failed: " << s.ToString();
+  last_modified_ = clock_->Now();
   return s;
 }
 
@@ -427,6 +430,7 @@ leveldb::Status LevelDBDatabase::Write(const LevelDBWriteBatch& write_batch) {
     UMA_HISTOGRAM_TIMES("WebCore.IndexedDB.LevelDB.WriteTime",
                         base::TimeTicks::Now() - begin_time);
   }
+  last_modified_ = clock_->Now();
   return s;
 }
 
@@ -517,6 +521,10 @@ bool LevelDBDatabase::OnMemoryDump(
   db_dump->AddString("file_name", "", file_name_for_tracing);
 
   return true;
+}
+
+void LevelDBDatabase::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
+  clock_ = std::move(clock);
 }
 
 std::unique_ptr<leveldb::Iterator> LevelDBDatabase::CreateLevelDBIterator(

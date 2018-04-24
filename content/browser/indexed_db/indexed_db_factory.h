@@ -96,6 +96,10 @@ class CONTENT_EXPORT IndexedDBFactory
 
   virtual size_t GetConnectionCount(const url::Origin& origin) const = 0;
 
+  virtual int64_t GetInMemoryDBSize(const url::Origin& origin) const = 0;
+
+  virtual base::Time GetLastModified(const url::Origin& origin) const = 0;
+
   virtual void NotifyIndexedDBContentChanged(
       const url::Origin& origin,
       const base::string16& database_name,
