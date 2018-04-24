@@ -88,7 +88,7 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
         send_algorithm_(new StrictMock<MockSendAlgorithm>),
         network_change_visitor_(new StrictMock<MockNetworkChangeVisitor>),
         use_path_degrading_alarm_(
-            GetQuicReloadableFlag(quic_path_degrading_alarm)) {
+            GetQuicReloadableFlag(quic_path_degrading_alarm2)) {
     QuicSentPacketManagerPeer::SetSendAlgorithm(&manager_, send_algorithm_);
     // Disable tail loss probes for most tests.
     QuicSentPacketManagerPeer::SetMaxTailLossProbes(&manager_, 0);
@@ -322,7 +322,7 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
   StrictMock<MockSessionNotifier> notifier_;
 
   // Latched value of
-  // quic_reloadable_flag_quic_path_degrading_alarm
+  // quic_reloadable_flag_quic_path_degrading_alarm2.
   bool use_path_degrading_alarm_;
 };
 
