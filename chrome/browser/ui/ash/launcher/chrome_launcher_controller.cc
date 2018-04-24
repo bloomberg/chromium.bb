@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/app_list/app_sync_ui_state.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/app_list/crostini/crostini_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_icon_loader.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
@@ -1148,6 +1149,13 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
       std::make_unique<InternalAppIconLoader>(
           profile_, extension_misc::EXTENSION_ICON_SMALL, this);
   app_icon_loaders_.push_back(std::move(internal_app_icon_loader));
+
+  if (IsExperimentalCrostiniUIAvailable()) {
+    std::unique_ptr<AppIconLoader> crostini_app_icon_loader =
+        std::make_unique<CrostiniAppIconLoader>(
+            profile_, extension_misc::EXTENSION_ICON_SMALL, this);
+    app_icon_loaders_.push_back(std::move(crostini_app_icon_loader));
+  }
 
   pref_change_registrar_.Init(profile()->GetPrefs());
   pref_change_registrar_.Add(
