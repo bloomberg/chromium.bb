@@ -355,6 +355,7 @@ std::string ColorSpace::ToString() const {
   switch (transfer_) {
     PRINT_ENUM_CASE(TransferID, INVALID)
     PRINT_ENUM_CASE(TransferID, BT709)
+    PRINT_ENUM_CASE(TransferID, BT709_APPLE)
     PRINT_ENUM_CASE(TransferID, GAMMA18)
     PRINT_ENUM_CASE(TransferID, GAMMA22)
     PRINT_ENUM_CASE(TransferID, GAMMA24)
@@ -775,6 +776,9 @@ bool ColorSpace::GetTransferFunction(SkColorSpaceTransferFn* fn) const {
       fn->fC = 0.077399380805f;
       fn->fD = 0.040449937172f;
       fn->fG = 2.400000000000f;
+      return true;
+    case ColorSpace::TransferID::BT709_APPLE:
+      fn->fG = 1.961000000000f;
       return true;
     case ColorSpace::TransferID::SMPTEST428_1:
       fn->fA = 0.225615407568f;

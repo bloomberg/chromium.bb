@@ -278,7 +278,7 @@ bool GetImageBufferProperty(CVImageBufferRef image_buffer,
 }
 
 gfx::ColorSpace GetImageBufferColorSpace(CVImageBufferRef image_buffer) {
-  // The named primaries. Default to BT708.
+  // The named primaries. Default to BT709.
   gfx::ColorSpace::PrimaryID primary_id = gfx::ColorSpace::PrimaryID::BT709;
   struct {
     const CFStringRef cfstr;
@@ -311,7 +311,7 @@ gfx::ColorSpace GetImageBufferColorSpace(CVImageBufferRef image_buffer) {
   } transfers[] = {
       {
           kCVImageBufferTransferFunction_ITU_R_709_2,
-          gfx::ColorSpace::TransferID::BT709,
+          gfx::ColorSpace::TransferID::BT709_APPLE,
       },
       {
           kCVImageBufferTransferFunction_SMPTE_240M_1995,
