@@ -21,7 +21,7 @@
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/tracing/common/trace_config_file.h"
+#include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browser_shutdown_profile_dumper.h"
@@ -184,20 +184,16 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     // 1. Startup duration is not reached.
     // 2. Or startup duration is not specified for --trace-config-file flag.
     std::unique_ptr<BrowserShutdownProfileDumper> startup_profiler;
-    if (main_loop_->is_tracing_startup_for_duration()) {
+    if (tracing::TraceStartupConfig::GetInstance()
+            ->IsTracingStartupForDuration()) {
       main_loop_->StopStartupTracingTimer();
       if (main_loop_->startup_trace_file() !=
           base::FilePath().AppendASCII("none")) {
         startup_profiler.reset(
             new BrowserShutdownProfileDumper(main_loop_->startup_trace_file()));
       }
-    } else if (tracing::TraceConfigFile::GetInstance()->IsEnabled()) {
-      base::FilePath result_file;
-#if defined(OS_ANDROID)
-      TracingControllerAndroid::GenerateTracingFilePath(&result_file);
-#else
-      result_file = tracing::TraceConfigFile::GetInstance()->GetResultFile();
-#endif
+    } else if (tracing::TraceStartupConfig::GetInstance()->IsEnabled()) {
+      base::FilePath result_file = main_loop_->GetStartupTraceFileName();
       startup_profiler.reset(new BrowserShutdownProfileDumper(result_file));
     }
 
