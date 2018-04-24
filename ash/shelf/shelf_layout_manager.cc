@@ -680,10 +680,16 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
                               &status_bounds);
     status_widget->SetBounds(status_bounds);
 
-    // For crbug.com/622431, when the shelf alignment is BOTTOM_LOCKED, we
-    // don't set display work area, as it is not real user-set alignment.
+    // Do not update the work area when the alignment changes to BOTTOM_LOCKED
+    // to prevent window movement when the screen is locked: crbug.com/622431
+    // The work area is initialized with BOTTOM_LOCKED insets to prevent window
+    // movement on async preference initialization in tests: crbug.com/834369
+    const display::Display display =
+        display::Screen::GetScreen()->GetDisplayNearestWindow(
+            shelf_widget_->GetNativeWindow());
     if (!state_.IsScreenLocked() && change_work_area &&
-        shelf_->alignment() != SHELF_ALIGNMENT_BOTTOM_LOCKED) {
+        (shelf_->alignment() != SHELF_ALIGNMENT_BOTTOM_LOCKED ||
+         display.work_area() == display.bounds())) {
       gfx::Insets insets;
       // If user session is blocked (login to new user session or add user to
       // the existing session - multi-profile) then give 100% of work area only
