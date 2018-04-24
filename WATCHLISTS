@@ -1167,7 +1167,7 @@
         'content/public/browser/platform_notification|'\
         'content/public/common/platform_notification|'\
         'content/renderer/notification_|'\
-        'notification_helper/|'\
+        'chrome/notification_helper/|'\
         'third_party/WebKit/LayoutTests/external/wpt/notifications|'\
         'third_party/WebKit/LayoutTests/http/tests/notifications|'\
         'third_party/blink/renderer/modules/notifications|'\

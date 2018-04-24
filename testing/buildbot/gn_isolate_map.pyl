@@ -905,7 +905,7 @@
     "type": "additional_compile_target",
   },
   "notification_helper_unittests": {
-    "label": "//notification_helper:notification_helper_unittests",
+    "label": "//chrome/notification_helper:notification_helper_unittests",
     "type": "windowed_test_launcher",
   },
   "ocmock_support_unittests": {
