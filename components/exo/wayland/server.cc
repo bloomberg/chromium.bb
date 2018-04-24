@@ -95,6 +95,8 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_features.h"
 #include "ui/compositor/compositor_vsync_manager.h"
+#include "ui/display/display_switches.h"
+#include "ui/display/manager/display_util.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -2897,7 +2899,21 @@ class AuraOutput : public WaylandDisplayObserver::ScaleObserver {
 
     if (wl_resource_get_version(resource_) >=
         ZAURA_OUTPUT_SCALE_SINCE_VERSION) {
-      if (display_manager->GetDisplayIdForUIScaling() == display.id()) {
+      if (features::IsDisplayZoomSettingEnabled()) {
+        display::ManagedDisplayMode active_mode;
+        bool rv = display_manager->GetActiveModeForDisplayId(display.id(),
+                                                             &active_mode);
+        DCHECK(rv);
+        for (uint32_t zoom_factor :
+             display::GetDisplayZoomFactors(active_mode)) {
+          uint32_t flags = 0;
+          if (zoom_factor == 1.f)
+            flags |= ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED;
+          if (display_info.zoom_factor() == zoom_factor)
+            flags |= ZAURA_OUTPUT_SCALE_PROPERTY_CURRENT;
+          zaura_output_send_scale(resource_, flags, zoom_factor * 1000);
+        }
+      } else if (display_manager->GetDisplayIdForUIScaling() == display.id()) {
         display::ManagedDisplayMode active_mode;
         bool rv = display_manager->GetActiveModeForDisplayId(display.id(),
                                                              &active_mode);
