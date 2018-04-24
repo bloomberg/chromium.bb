@@ -1248,6 +1248,18 @@ Status IndexedDBBackingStore::GetRecord(
   return transaction->GetBlobInfoForRecord(database_id, leveldb_key, record);
 }
 
+int64_t IndexedDBBackingStore::GetInMemoryBlobSize() const {
+  int64_t total_size = 0;
+  for (const auto& kvp : incognito_blob_map_) {
+    for (const IndexedDBBlobInfo& blob_info : kvp.second->blob_info()) {
+      if (!blob_info.is_file()) {
+        total_size += blob_info.size();
+      }
+    }
+  }
+  return total_size;
+}
+
 Status IndexedDBBackingStore::PutRecord(
     IndexedDBBackingStore::Transaction* transaction,
     int64_t database_id,

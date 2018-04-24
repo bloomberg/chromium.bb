@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "base/time/clock.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/comparator.h"
@@ -100,6 +101,10 @@ class CONTENT_EXPORT LevelDBDatabase
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
   leveldb::DB* db() { return db_.get(); }
+  leveldb::Env* env() { return env_.get(); }
+  base::Time LastModified() const { return last_modified_; }
+
+  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 
  protected:
   explicit LevelDBDatabase(size_t max_open_iterators);
@@ -125,6 +130,8 @@ class CONTENT_EXPORT LevelDBDatabase
   std::unique_ptr<leveldb::DB> db_;
   std::unique_ptr<const leveldb::FilterPolicy> filter_policy_;
   const LevelDBComparator* comparator_;
+  base::Time last_modified_;
+  std::unique_ptr<base::Clock> clock_;
 
   struct DetachIteratorOnDestruct {
     DetachIteratorOnDestruct() {}

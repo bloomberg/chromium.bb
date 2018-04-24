@@ -12,9 +12,11 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_piece.h"
+#include "base/test/simple_test_clock.h"
 #include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
+#include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -108,6 +110,43 @@ TEST(LevelDB, Locking) {
 
   status = env->UnlockFile(lock);
   EXPECT_TRUE(status.ok());
+}
+
+TEST(LevelDBDatabaseTest, LastModified) {
+  const std::string key("key");
+  const std::string value("value");
+  std::string put_value;
+  SimpleComparator comparator;
+  auto test_clock = std::make_unique<base::SimpleTestClock>();
+  base::SimpleTestClock* clock_ptr = test_clock.get();
+  clock_ptr->Advance(base::TimeDelta::FromHours(2));
+  std::unique_ptr<LevelDBDatabase> leveldb =
+      LevelDBDatabase::OpenInMemory(&comparator);
+  ASSERT_TRUE(leveldb);
+  leveldb->SetClockForTesting(std::move(test_clock));
+  // Calling |Put| sets time modified.
+  put_value = value;
+  base::Time now_time = clock_ptr->Now();
+  leveldb::Status status = leveldb->Put(key, &put_value);
+  EXPECT_TRUE(status.ok());
+  EXPECT_EQ(now_time, leveldb->LastModified());
+
+  // Calling |Remove| sets time modified.
+  clock_ptr->Advance(base::TimeDelta::FromSeconds(200));
+  now_time = clock_ptr->Now();
+  status = leveldb->Remove(key);
+  EXPECT_TRUE(status.ok());
+  EXPECT_EQ(now_time, leveldb->LastModified());
+
+  // Calling |Write| sets time modified
+  clock_ptr->Advance(base::TimeDelta::FromMinutes(15));
+  now_time = clock_ptr->Now();
+  auto batch = LevelDBWriteBatch::Create();
+  batch->Put(key, value);
+  batch->Remove(key);
+  status = leveldb->Write(*batch);
+  EXPECT_TRUE(status.ok());
+  EXPECT_EQ(now_time, leveldb->LastModified());
 }
 
 }  // namespace leveldb_unittest

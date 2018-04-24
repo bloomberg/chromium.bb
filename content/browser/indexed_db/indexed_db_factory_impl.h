@@ -107,6 +107,10 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
       const base::string16& database_name,
       const base::string16& object_store_name) override;
 
+  int64_t GetInMemoryDBSize(const url::Origin& origin) const override;
+
+  base::Time GetLastModified(const url::Origin& origin) const override;
+
  protected:
   ~IndexedDBFactoryImpl() override;
 

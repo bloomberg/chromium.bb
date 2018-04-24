@@ -87,6 +87,10 @@ class MockIndexedDBFactory : public IndexedDBFactory {
 
   MOCK_CONST_METHOD1(GetConnectionCount, size_t(const url::Origin& origin));
 
+  MOCK_CONST_METHOD1(GetInMemoryDBSize, int64_t(const url::Origin& origin));
+
+  MOCK_CONST_METHOD1(GetLastModified, base::Time(const url::Origin& origin));
+
   MOCK_METHOD2(ReportOutstandingBlobs,
                void(const url::Origin& origin, bool blobs_outstanding));
 
