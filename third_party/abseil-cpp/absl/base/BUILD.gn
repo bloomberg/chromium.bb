@@ -94,27 +94,6 @@ source_set("core_headers") {
   ]
 }
 
-source_set("malloc_extension") {
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "internal/malloc_extension.cc",
-  ]
-  public = [
-    "internal/malloc_extension.h",
-  ]
-  deps = [
-    ":core_headers",
-    ":dynamic_annotations",
-  ]
-  visibility = []
-  visibility += [ "../*" ]
-}
-
 source_set("malloc_internal") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
@@ -124,14 +103,10 @@ source_set("malloc_internal") {
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   sources = [
     "internal/low_level_alloc.cc",
-    "internal/malloc_hook.cc",
-    "internal/malloc_hook_mmap_linux.inc",
   ]
   public = [
+    "internal/direct_mmap.h",
     "internal/low_level_alloc.h",
-    "internal/malloc_hook.h",
-    "internal/malloc_hook_c.h",
-    "internal/malloc_hook_invoke.h",
   ]
   deps = [
     ":base",
@@ -253,7 +228,8 @@ source_set("pretty_function") {
   visibility += [ "../*" ]
 }
 
-# TODO(bugs.webrtc.org/9187): Re-enable when dependencies will be fixed.
+# TODO(mbonadei): This target throws by design. We should probably
+# just remove it.
 # source_set("exception_safety_testing") {
 #   testonly = true
 #   configs -= [ "//build/config/compiler:chromium_code" ]
@@ -276,28 +252,29 @@ source_set("pretty_function") {
 #     "../meta:type_traits",
 #     "../strings",
 #     "../types:optional",
+#     "//testing/gtest",
 #   ]
 # }
 
-# TODO(bugs.webrtc.org/9187): Re-enable when dependencies will be fixed.
-# source_set("spinlock_test_common") {
-#   testonly = true
-#   configs -= [ "//build/config/compiler:chromium_code" ]
-#   configs += [
-#     "//build/config/compiler:no_chromium_code",
-#     "//third_party/abseil-cpp:absl_test_cflags_cc",
-#   ]
-#   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-#   sources = [
-#     "spinlock_test_common.cc",
-#   ]
-#   deps = [
-#     ":base",
-#     ":core_headers",
-#     ":spinlock_wait",
-#     "../synchronization",
-#   ]
-# }
+source_set("spinlock_test_common") {
+  testonly = true
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_test_cflags_cc",
+  ]
+  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+  sources = [
+    "spinlock_test_common.cc",
+  ]
+  deps = [
+    ":base",
+    ":core_headers",
+    ":spinlock_wait",
+    "../synchronization",
+    "//testing/gtest",
+  ]
+}
 
 source_set("endian") {
   configs -= [ "//build/config/compiler:chromium_code" ]

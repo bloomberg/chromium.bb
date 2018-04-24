@@ -1,4 +1,3 @@
-//
 // Copyright 2017 The Abseil Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -94,7 +93,9 @@ using std::nullopt;
 
 namespace absl {
 
-// optional
+// -----------------------------------------------------------------------------
+// absl::optional
+// -----------------------------------------------------------------------------
 //
 // A value of type `absl::optional<T>` holds either a value of `T` or an
 // "empty" value.  When it holds a value of `T`, it stores it as a direct
@@ -773,7 +774,9 @@ class optional : private optional_internal::optional_data<T>,
   //
   // Accesses the underlying `T` value's member `m` of an `optional`. If the
   // `optional` is empty, behavior is undefined.
-  constexpr const T* operator->() const { return this->pointer(); }
+  //
+  // If you need myOpt->foo in constexpr, use (*myOpt).foo instead.
+  const T* operator->() const { return this->pointer(); }
   T* operator->() {
     assert(this->engaged_);
     return this->pointer();
@@ -869,12 +872,12 @@ class optional : private optional_internal::optional_data<T>,
 
  private:
   // Private accessors for internal storage viewed as pointer to T.
-  constexpr const T* pointer() const { return &this->data_; }
-  T* pointer() { return &this->data_; }
+  const T* pointer() const { return std::addressof(this->data_); }
+  T* pointer() { return std::addressof(this->data_); }
 
   // Private accessors for internal storage viewed as reference to T.
-  constexpr const T& reference() const { return *this->pointer(); }
-  T& reference() { return *(this->pointer()); }
+  constexpr const T& reference() const { return this->data_; }
+  T& reference() { return this->data_; }
 
   // T constraint checks.  You can't have an optional of nullopt_t, in_place_t
   // or a reference.
