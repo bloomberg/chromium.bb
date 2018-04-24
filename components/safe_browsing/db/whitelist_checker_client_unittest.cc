@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -55,7 +56,7 @@ class WhitelistCheckerClientTest : public testing::Test {
                                                     base::TimeTicks::Now());
     message_loop_.reset(new base::MessageLoop);
     io_thread_ = std::make_unique<content::TestBrowserThread>(
-        content::BrowserThread::IO, base::MessageLoop::current());
+        content::BrowserThread::IO, base::MessageLoopCurrent::Get());
     message_loop_->SetTaskRunner(task_runner_);
   }
 

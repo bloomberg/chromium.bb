@@ -9,7 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -105,7 +105,7 @@ class FakeV4Database : public V4Database {
       bool stores_available) {
     // Mimics V4Database::Create
     const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner =
-        base::MessageLoop::current()->task_runner();
+        base::MessageLoopCurrent::Get()->task_runner();
     db_task_runner->PostTask(
         FROM_HERE, base::BindOnce(&FakeV4Database::CreateOnTaskRunner,
                                   db_task_runner, std::move(store_map),
