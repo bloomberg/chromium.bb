@@ -183,8 +183,9 @@ bool TabStripModel::ContainsIndex(int index) const {
   return index >= 0 && index < count();
 }
 
-void TabStripModel::AppendWebContents(WebContents* contents, bool foreground) {
-  InsertWebContentsAt(count(), base::WrapUnique(contents),
+void TabStripModel::AppendWebContents(std::unique_ptr<WebContents> contents,
+                                      bool foreground) {
+  InsertWebContentsAt(count(), std::move(contents),
                       foreground ? (ADD_INHERIT_GROUP | ADD_ACTIVE) : ADD_NONE);
 }
 

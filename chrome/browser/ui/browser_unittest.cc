@@ -27,9 +27,9 @@ class BrowserUnitTest : public BrowserWithTestWindowTest {
   ~BrowserUnitTest() override {}
 
   // Caller owns the memory.
-  WebContents* CreateTestWebContents() {
-    return WebContentsTester::CreateTestWebContents(
-        profile(), SiteInstance::Create(profile()));
+  std::unique_ptr<WebContents> CreateTestWebContents() {
+    return base::WrapUnique(WebContentsTester::CreateTestWebContents(
+        profile(), SiteInstance::Create(profile())));
   }
 
  private:
@@ -41,31 +41,33 @@ TEST_F(BrowserUnitTest, ReloadCrashedTab) {
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
 
   // Start with a single foreground tab. |tab_strip_model| owns the memory.
-  WebContents* contents1 = CreateTestWebContents();
-  tab_strip_model->AppendWebContents(contents1, true);
-  WebContentsTester::For(contents1)->NavigateAndCommit(GURL("about:blank"));
-  WebContentsTester::For(contents1)->TestSetIsLoading(false);
+  std::unique_ptr<WebContents> contents1 = CreateTestWebContents();
+  content::WebContents* raw_contents1 = contents1.get();
+  tab_strip_model->AppendWebContents(std::move(contents1), true);
+  WebContentsTester::For(raw_contents1)->NavigateAndCommit(GURL("about:blank"));
+  WebContentsTester::For(raw_contents1)->TestSetIsLoading(false);
   EXPECT_TRUE(tab_strip_model->IsTabSelected(0));
-  EXPECT_FALSE(contents1->IsLoading());
+  EXPECT_FALSE(raw_contents1->IsLoading());
 
   // Add a second tab in the background.
-  WebContents* contents2 = CreateTestWebContents();
-  tab_strip_model->AppendWebContents(contents2, false);
-  WebContentsTester::For(contents2)->NavigateAndCommit(GURL("about:blank"));
-  WebContentsTester::For(contents2)->TestSetIsLoading(false);
+  std::unique_ptr<WebContents> contents2 = CreateTestWebContents();
+  content::WebContents* raw_contents2 = contents2.get();
+  tab_strip_model->AppendWebContents(std::move(contents2), false);
+  WebContentsTester::For(raw_contents2)->NavigateAndCommit(GURL("about:blank"));
+  WebContentsTester::For(raw_contents2)->TestSetIsLoading(false);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_TRUE(tab_strip_model->IsTabSelected(0));
-  EXPECT_FALSE(contents2->IsLoading());
+  EXPECT_FALSE(raw_contents2->IsLoading());
 
   // Simulate the second tab crashing.
-  contents2->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
-  EXPECT_TRUE(contents2->IsCrashed());
+  raw_contents2->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
+  EXPECT_TRUE(raw_contents2->IsCrashed());
 
   // Selecting the second tab does not cause a load or clear the crash.
   tab_strip_model->ActivateTabAt(1, true);
   EXPECT_TRUE(tab_strip_model->IsTabSelected(1));
-  EXPECT_FALSE(contents2->IsLoading());
-  EXPECT_TRUE(contents2->IsCrashed());
+  EXPECT_FALSE(raw_contents2->IsLoading());
+  EXPECT_TRUE(raw_contents2->IsCrashed());
 }
 
 // This tests a workaround which is not necessary on Mac.
@@ -78,41 +80,44 @@ TEST_F(BrowserUnitTest, ReloadCrashedTab) {
 TEST_F(BrowserUnitTest, MAYBE_SetBackgroundColorForNewTab) {
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
 
-  WebContents* contents1 = CreateTestWebContents();
-  tab_strip_model->AppendWebContents(contents1, true);
-  WebContentsTester::For(contents1)->NavigateAndCommit(GURL("about:blank"));
-  WebContentsTester::For(contents1)->TestSetIsLoading(false);
+  std::unique_ptr<WebContents> contents1 = CreateTestWebContents();
+  content::WebContents* raw_contents1 = contents1.get();
+  tab_strip_model->AppendWebContents(std::move(contents1), true);
+  WebContentsTester::For(raw_contents1)->NavigateAndCommit(GURL("about:blank"));
+  WebContentsTester::For(raw_contents1)->TestSetIsLoading(false);
 
-  contents1->GetMainFrame()->GetView()->SetBackgroundColor(SK_ColorRED);
+  raw_contents1->GetMainFrame()->GetView()->SetBackgroundColor(SK_ColorRED);
 
   // Add a second tab in the background.
-  WebContents* contents2 = CreateTestWebContents();
-  tab_strip_model->AppendWebContents(contents2, false);
-  WebContentsTester::For(contents2)->NavigateAndCommit(GURL("about:blank"));
-  WebContentsTester::For(contents2)->TestSetIsLoading(false);
+  std::unique_ptr<WebContents> contents2 = CreateTestWebContents();
+  content::WebContents* raw_contents2 = contents2.get();
+  tab_strip_model->AppendWebContents(std::move(contents2), false);
+  WebContentsTester::For(raw_contents2)->NavigateAndCommit(GURL("about:blank"));
+  WebContentsTester::For(raw_contents2)->TestSetIsLoading(false);
 
   tab_strip_model->ActivateTabAt(1, true);
   EXPECT_EQ(SK_ColorRED,
-            contents2->GetMainFrame()->GetView()->background_color());
+            raw_contents2->GetMainFrame()->GetView()->background_color());
 }
 
 // Ensure the print command gets disabled when a tab crashes.
 TEST_F(BrowserUnitTest, DisablePrintOnCrashedTab) {
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
 
-  WebContents* contents = CreateTestWebContents();
-  tab_strip_model->AppendWebContents(contents, true);
-  WebContentsTester::For(contents)->NavigateAndCommit(GURL("about:blank"));
+  std::unique_ptr<WebContents> contents = CreateTestWebContents();
+  content::WebContents* raw_contents = contents.get();
+  tab_strip_model->AppendWebContents(std::move(contents), true);
+  WebContentsTester::For(raw_contents)->NavigateAndCommit(GURL("about:blank"));
 
   CommandUpdater* command_updater = browser()->command_controller();
 
-  EXPECT_FALSE(contents->IsCrashed());
+  EXPECT_FALSE(raw_contents->IsCrashed());
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_PRINT));
   EXPECT_TRUE(chrome::CanPrint(browser()));
 
-  contents->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
+  raw_contents->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
 
-  EXPECT_TRUE(contents->IsCrashed());
+  EXPECT_TRUE(raw_contents->IsCrashed());
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_PRINT));
   EXPECT_FALSE(chrome::CanPrint(browser()));
 }
@@ -121,30 +126,31 @@ TEST_F(BrowserUnitTest, DisablePrintOnCrashedTab) {
 TEST_F(BrowserUnitTest, DisableZoomOnCrashedTab) {
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
 
-  WebContents* contents = CreateTestWebContents();
-  tab_strip_model->AppendWebContents(contents, true);
-  WebContentsTester::For(contents)->NavigateAndCommit(GURL("about:blank"));
+  std::unique_ptr<WebContents> contents = CreateTestWebContents();
+  content::WebContents* raw_contents = contents.get();
+  tab_strip_model->AppendWebContents(std::move(contents), true);
+  WebContentsTester::For(raw_contents)->NavigateAndCommit(GURL("about:blank"));
   zoom::ZoomController* zoom_controller =
-      zoom::ZoomController::FromWebContents(contents);
+      zoom::ZoomController::FromWebContents(raw_contents);
   EXPECT_TRUE(zoom_controller->SetZoomLevel(zoom_controller->
                                             GetDefaultZoomLevel()));
 
   CommandUpdater* command_updater = browser()->command_controller();
 
   EXPECT_TRUE(zoom_controller->IsAtDefaultZoom());
-  EXPECT_FALSE(contents->IsCrashed());
+  EXPECT_FALSE(raw_contents->IsCrashed());
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_ZOOM_PLUS));
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_ZOOM_MINUS));
-  EXPECT_TRUE(chrome::CanZoomIn(contents));
-  EXPECT_TRUE(chrome::CanZoomOut(contents));
+  EXPECT_TRUE(chrome::CanZoomIn(raw_contents));
+  EXPECT_TRUE(chrome::CanZoomOut(raw_contents));
 
-  contents->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
+  raw_contents->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
 
-  EXPECT_TRUE(contents->IsCrashed());
+  EXPECT_TRUE(raw_contents->IsCrashed());
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_ZOOM_PLUS));
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_ZOOM_MINUS));
-  EXPECT_FALSE(chrome::CanZoomIn(contents));
-  EXPECT_FALSE(chrome::CanZoomOut(contents));
+  EXPECT_FALSE(chrome::CanZoomIn(raw_contents));
+  EXPECT_FALSE(chrome::CanZoomOut(raw_contents));
 }
 
 class BrowserBookmarkBarTest : public BrowserWithTestWindowTest {

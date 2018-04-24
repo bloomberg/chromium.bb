@@ -143,11 +143,12 @@ class TabDesktopMediaListTest : public testing::Test {
         CreateGrayscaleImage(gfx::Size(10, 10), favicon_greyscale);
     entry->GetFavicon() = favicon_info;
 
-    contents_array_.push_back(std::move(contents));
-    tab_strip_model->AppendWebContents(contents_array_.back().get(), false);
+    manually_added_web_contents_.push_back(contents.get());
+    tab_strip_model->AppendWebContents(std::move(contents), false);
   }
 
   void SetUp() override {
+    manually_added_web_contents_.clear();
     rvh_test_enabler_.reset(new content::RenderViewHostTestEnabler());
     // Create a new temporary directory, and store the path.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -176,8 +177,16 @@ class TabDesktopMediaListTest : public testing::Test {
   }
 
   void TearDown() override {
-    for (auto& contents : contents_array_)
-      contents.reset();
+    // TODO(erikchen): Tearing down the TabStripModel should just delete all its
+    // owned WebContents. Then |manually_added_web_contents_| won't be
+    // necessary. https://crbug.com/832879.
+    TabStripModel* tab_strip_model = browser_->tab_strip_model();
+    for (WebContents* contents : manually_added_web_contents_) {
+      tab_strip_model->DetachWebContentsAt(
+          tab_strip_model->GetIndexOfWebContents(contents));
+    }
+    manually_added_web_contents_.clear();
+
     browser_.reset();
     TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
     base::RunLoop().RunUntilIdle();
@@ -233,11 +242,11 @@ class TabDesktopMediaListTest : public testing::Test {
   std::unique_ptr<content::RenderViewHostTestEnabler> rvh_test_enabler_;
   Profile* profile_;
   std::unique_ptr<Browser> browser_;
-  std::vector<std::unique_ptr<WebContents>> contents_array_;
 
   // Must be listed before |list_|, so it's destroyed last.
   MockObserver observer_;
   std::unique_ptr<TabDesktopMediaList> list_;
+  std::vector<WebContents*> manually_added_web_contents_;
 
   content::TestBrowserThreadBundle thread_bundle_;
 
@@ -270,7 +279,15 @@ TEST_F(TabDesktopMediaListTest, RemoveTab) {
 
   TabStripModel* tab_strip_model = browser_->tab_strip_model();
   ASSERT_TRUE(tab_strip_model);
-  tab_strip_model->DetachWebContentsAt(kDefaultSourceCount - 1).release();
+  std::unique_ptr<WebContents> released_web_contents =
+      tab_strip_model->DetachWebContentsAt(kDefaultSourceCount - 1);
+  for (auto it = manually_added_web_contents_.begin();
+       it != manually_added_web_contents_.end(); ++it) {
+    if (*it == released_web_contents.get()) {
+      manually_added_web_contents_.erase(it);
+      break;
+    }
+  }
 
   EXPECT_CALL(observer_, OnSourceRemoved(list_.get(), 0))
       .WillOnce(

@@ -629,15 +629,16 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   // Add a web contents to the browser.
   std::unique_ptr<content::WebContents> contents(
       content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+  content::WebContents* raw_contents = contents.get();
   Browser* browser = GetBrowser();
-  browser->tab_strip_model()->AppendWebContents(contents.get(), true);
-  EXPECT_EQ(browser->tab_strip_model()->GetActiveWebContents(), contents.get());
+  browser->tab_strip_model()->AppendWebContents(std::move(contents), true);
+  EXPECT_EQ(browser->tab_strip_model()->GetActiveWebContents(), raw_contents);
   content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(contents.get());
+      content::WebContentsTester::For(raw_contents);
   web_contents_tester->NavigateAndCommit(kActiveUrl);
 
   ExtensionActionRunner* action_runner =
-      ExtensionActionRunner::GetForWebContents(contents.get());
+      ExtensionActionRunner::GetForWebContents(raw_contents);
   ASSERT_TRUE(action_runner);
 
   // Pretend the extension wants to run.
@@ -778,6 +779,8 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
       ExtensionContextMenuModel::VISIBLE, nullptr);
   EXPECT_EQ(-1, feature_disabled_menu.GetIndexOfCommandId(
                     ExtensionContextMenuModel::PAGE_ACCESS_SUBMENU));
+  browser->tab_strip_model()->DetachWebContentsAt(
+      browser->tab_strip_model()->GetIndexOfWebContents(raw_contents));
 }
 
 TEST_F(ExtensionContextMenuModelTest, TestInspectPopupPresence) {

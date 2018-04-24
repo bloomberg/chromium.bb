@@ -162,22 +162,25 @@ content::WebContents* PasswordDialogViewTest::SetupTabWithTestController(
   // Open a new tab with modified ManagePasswordsUIController.
   content::WebContents* tab =
       browser->tab_strip_model()->GetActiveWebContents();
-  content::WebContents* new_tab = content::WebContents::Create(
-      content::WebContents::CreateParams(tab->GetBrowserContext()));
-  EXPECT_TRUE(new_tab);
+  std::unique_ptr<content::WebContents> new_tab =
+      base::WrapUnique(content::WebContents::Create(
+          content::WebContents::CreateParams(tab->GetBrowserContext())));
+  content::WebContents* raw_new_tab = new_tab.get();
+  EXPECT_TRUE(raw_new_tab);
 
   // ManagePasswordsUIController needs ChromePasswordManagerClient for logging.
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
-      new_tab, nullptr);
-  EXPECT_TRUE(ChromePasswordManagerClient::FromWebContents(new_tab));
-  controller_ = new TestManagePasswordsUIController(new_tab);
-  browser->tab_strip_model()->AppendWebContents(new_tab, true);
+      raw_new_tab, nullptr);
+  EXPECT_TRUE(ChromePasswordManagerClient::FromWebContents(raw_new_tab));
+  controller_ = new TestManagePasswordsUIController(raw_new_tab);
+  browser->tab_strip_model()->AppendWebContents(std::move(new_tab), true);
 
   // Navigate to a Web URL.
   EXPECT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
       browser, GURL("http://www.google.com")));
-  EXPECT_EQ(controller_, ManagePasswordsUIController::FromWebContents(new_tab));
-  return new_tab;
+  EXPECT_EQ(controller_,
+            ManagePasswordsUIController::FromWebContents(raw_new_tab));
+  return raw_new_tab;
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,

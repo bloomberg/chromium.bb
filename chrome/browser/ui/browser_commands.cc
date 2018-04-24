@@ -744,7 +744,7 @@ void ConvertPopupToTabbedBrowser(Browser* browser) {
   std::unique_ptr<content::WebContents> contents =
       tab_strip->DetachWebContentsAt(tab_strip->active_index());
   Browser* b = new Browser(Browser::CreateParams(browser->profile(), true));
-  b->tab_strip_model()->AppendWebContents(contents.release(), true);
+  b->tab_strip_model()->AppendWebContents(std::move(contents), true);
   b->window()->Show();
 }
 
@@ -1204,8 +1204,7 @@ void OpenInChrome(Browser* browser) {
 
   TabStripModel* source_tabstrip = browser->tab_strip_model();
   target_browser->tab_strip_model()->AppendWebContents(
-      source_tabstrip->DetachWebContentsAt(source_tabstrip->active_index())
-          .release(),
+      source_tabstrip->DetachWebContentsAt(source_tabstrip->active_index()),
       true);
   target_browser->window()->Show();
 }

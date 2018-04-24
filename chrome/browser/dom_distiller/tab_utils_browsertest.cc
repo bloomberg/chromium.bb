@@ -140,21 +140,23 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
   // Create destination WebContents.
   content::WebContents::CreateParams create_params(
       source_web_contents->GetBrowserContext());
-  content::WebContents* destination_web_contents =
-      content::WebContents::Create(create_params);
-  DCHECK(destination_web_contents);
+  std::unique_ptr<content::WebContents> destination_web_contents =
+      base::WrapUnique(content::WebContents::Create(create_params));
+  content::WebContents* raw_destination_web_contents =
+      destination_web_contents.get();
+  DCHECK(raw_destination_web_contents);
 
-  browser()->tab_strip_model()->AppendWebContents(destination_web_contents,
-                                                  true);
-  ASSERT_EQ(destination_web_contents,
+  browser()->tab_strip_model()->AppendWebContents(
+      std::move(destination_web_contents), true);
+  ASSERT_EQ(raw_destination_web_contents,
             browser()->tab_strip_model()->GetWebContentsAt(1));
 
-  DistillAndView(source_web_contents, destination_web_contents);
+  DistillAndView(source_web_contents, raw_destination_web_contents);
 
   // Wait until the destination WebContents has fully navigated.
   base::RunLoop new_url_loaded_runner;
   std::unique_ptr<WebContentsMainFrameHelper> distilled_page_loaded(
-      new WebContentsMainFrameHelper(destination_web_contents,
+      new WebContentsMainFrameHelper(raw_destination_web_contents,
                                      new_url_loaded_runner.QuitClosure()));
   new_url_loaded_runner.Run();
 
@@ -166,14 +168,15 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
   EXPECT_EQ("Test Page Title", page_title);
 
   // Verify the destination WebContents is showing distilled content.
-  EXPECT_TRUE(destination_web_contents->GetLastCommittedURL().SchemeIs(
+  EXPECT_TRUE(raw_destination_web_contents->GetLastCommittedURL().SchemeIs(
       kDomDistillerScheme));
-  content::ExecuteScriptAndGetValue(destination_web_contents->GetMainFrame(),
-                                    "document.title")->GetAsString(&page_title);
+  content::ExecuteScriptAndGetValue(
+      raw_destination_web_contents->GetMainFrame(), "document.title")
+      ->GetAsString(&page_title);
   EXPECT_EQ("Test Page Title", page_title);
 
   content::WebContentsDestroyedWatcher destroyed_watcher(
-      destination_web_contents);
+      raw_destination_web_contents);
   browser()->tab_strip_model()->CloseWebContentsAt(1, 0);
   destroyed_watcher.Wait();
 }

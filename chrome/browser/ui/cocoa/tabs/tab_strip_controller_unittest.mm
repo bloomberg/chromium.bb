@@ -170,10 +170,10 @@ class TabStripControllerTest : public CocoaProfileTest {
   }
 
   TabView* CreateTab() {
-    WebContents* web_contents =
-        WebContents::Create(content::WebContents::CreateParams(
-            profile(), SiteInstance::Create(profile())));
-    model_->AppendWebContents(web_contents, true);
+    std::unique_ptr<WebContents> web_contents =
+        base::WrapUnique(WebContents::Create(content::WebContents::CreateParams(
+            profile(), SiteInstance::Create(profile()))));
+    model_->AppendWebContents(std::move(web_contents), true);
     const NSUInteger tab_count = [controller_.get() viewsCount];
     return static_cast<TabView*>([controller_.get() viewAtIndex:tab_count - 1]);
   }

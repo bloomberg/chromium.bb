@@ -1768,17 +1768,19 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab4) {
   // Open a new tab for the download
   content::WebContents* tab =
         browser()->tab_strip_model()->GetActiveWebContents();
-  content::WebContents* new_tab = content::WebContents::Create(
-        content::WebContents::CreateParams(tab->GetBrowserContext()));
-  ASSERT_TRUE(new_tab);
-  ASSERT_TRUE(new_tab->GetController().IsInitialNavigation());
-  browser()->tab_strip_model()->AppendWebContents(new_tab, true);
+  std::unique_ptr<content::WebContents> new_tab =
+      base::WrapUnique(content::WebContents::Create(
+          content::WebContents::CreateParams(tab->GetBrowserContext())));
+  content::WebContents* raw_new_tab = new_tab.get();
+  ASSERT_TRUE(raw_new_tab);
+  ASSERT_TRUE(raw_new_tab->GetController().IsInitialNavigation());
+  browser()->tab_strip_model()->AppendWebContents(std::move(new_tab), true);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 
   // Download a file in that new tab, having it open a file picker
   std::unique_ptr<DownloadUrlParameters> params(
       content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
-          new_tab, slow_download_url, TRAFFIC_ANNOTATION_FOR_TESTS));
+          raw_new_tab, slow_download_url, TRAFFIC_ANNOTATION_FOR_TESTS));
   params->set_prompt(true);
   manager->DownloadUrl(std::move(params));
   observer->WaitForFinished();

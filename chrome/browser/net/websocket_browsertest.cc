@@ -185,19 +185,21 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest,
     // Create a new tab, establish a WebSocket connection and close the tab.
     content::WebContents* tab =
         browser()->tab_strip_model()->GetActiveWebContents();
-    content::WebContents* new_tab = content::WebContents::Create(
-        content::WebContents::CreateParams(tab->GetBrowserContext()));
-    browser()->tab_strip_model()->AppendWebContents(new_tab, true);
-    ASSERT_EQ(new_tab, browser()->tab_strip_model()->GetWebContentsAt(1));
+    std::unique_ptr<content::WebContents> new_tab =
+        base::WrapUnique(content::WebContents::Create(
+            content::WebContents::CreateParams(tab->GetBrowserContext())));
+    content::WebContents* raw_new_tab = new_tab.get();
+    browser()->tab_strip_model()->AppendWebContents(std::move(new_tab), true);
+    ASSERT_EQ(raw_new_tab, browser()->tab_strip_model()->GetWebContentsAt(1));
 
     content::TitleWatcher connected_title_watcher(
-        new_tab, base::ASCIIToUTF16("CONNECTED"));
+        raw_new_tab, base::ASCIIToUTF16("CONNECTED"));
     connected_title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("CLOSED"));
     NavigateToHTTP("counted_connection.html");
     const base::string16 result = connected_title_watcher.WaitAndGetTitle();
     EXPECT_TRUE(base::EqualsASCII(result, "CONNECTED"));
 
-    content::WebContentsDestroyedWatcher destroyed_watcher(new_tab);
+    content::WebContentsDestroyedWatcher destroyed_watcher(raw_new_tab);
     browser()->tab_strip_model()->CloseWebContentsAt(1, 0);
     destroyed_watcher.Wait();
   }

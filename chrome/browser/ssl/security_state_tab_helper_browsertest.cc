@@ -1596,22 +1596,24 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, ConsoleMessage) {
       Browser::CreateParams(browser()->profile(), true));
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::WebContents* contents =
+  std::unique_ptr<content::WebContents> contents = base::WrapUnique(
       content::WebContents::Create(content::WebContents::CreateParams(
-          original_contents->GetBrowserContext()));
-  ASSERT_TRUE(contents);
-  contents->SetDelegate(delegate);
-  delegate->tab_strip_model()->AppendWebContents(contents, true);
-  int index = delegate->tab_strip_model()->GetIndexOfWebContents(contents);
+          original_contents->GetBrowserContext())));
+  content::WebContents* raw_contents = contents.get();
+  ASSERT_TRUE(raw_contents);
+  raw_contents->SetDelegate(delegate);
+  delegate->tab_strip_model()->AppendWebContents(std::move(contents), true);
+  int index = delegate->tab_strip_model()->GetIndexOfWebContents(raw_contents);
   delegate->tab_strip_model()->ActivateTabAt(index, true);
-  ASSERT_EQ(contents, delegate->tab_strip_model()->GetActiveWebContents());
+  ASSERT_EQ(raw_contents, delegate->tab_strip_model()->GetActiveWebContents());
 
   // Navigate to an HTTP page. Use a non-local hostname so that it is
   // not considered secure.
   GURL http_url =
       GetURLWithNonLocalHostname(embedded_test_server(), "/title1.html");
   ui_test_utils::NavigateToURL(delegate, http_url);
-  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  content::NavigationEntry* entry =
+      raw_contents->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(http_url, entry->GetURL());
   EXPECT_TRUE(delegate->console_messages().empty());
@@ -1619,12 +1621,12 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, ConsoleMessage) {
   // Trigger the HTTP_SHOW_WARNING state.
   base::RunLoop first_message;
   delegate->set_console_message_callback(first_message.QuitClosure());
-  SimulatePasswordFieldShown(contents);
+  SimulatePasswordFieldShown(raw_contents);
   first_message.Run();
 
   // Check that the HTTP_SHOW_WARNING state was actually triggered.
   SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
+      SecurityStateTabHelper::FromWebContents(raw_contents);
   ASSERT_TRUE(helper);
   security_state::SecurityInfo security_info;
   helper->GetSecurityInfo(&security_info);
@@ -1637,17 +1639,17 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, ConsoleMessage) {
   // Two subsequent triggers of VisibleSecurityStateChanged -- one on the
   // same navigation and one on another navigation -- should only result
   // in one additional console message.
-  SimulateCreditCardFieldEdit(contents);
+  SimulateCreditCardFieldEdit(raw_contents);
   GURL second_http_url =
       GetURLWithNonLocalHostname(embedded_test_server(), "/title2.html");
   ui_test_utils::NavigateToURL(delegate, second_http_url);
-  entry = contents->GetController().GetVisibleEntry();
+  entry = raw_contents->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(second_http_url, entry->GetURL());
 
   base::RunLoop second_message;
   delegate->set_console_message_callback(second_message.QuitClosure());
-  SimulatePasswordFieldShown(contents);
+  SimulatePasswordFieldShown(raw_contents);
   second_message.Run();
 
   helper->GetSecurityInfo(&security_info);
@@ -1672,22 +1674,24 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
       Browser::CreateParams(browser()->profile(), true));
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::WebContents* contents =
+  std::unique_ptr<content::WebContents> contents = base::WrapUnique(
       content::WebContents::Create(content::WebContents::CreateParams(
-          original_contents->GetBrowserContext()));
-  ASSERT_TRUE(contents);
-  contents->SetDelegate(delegate);
-  delegate->tab_strip_model()->AppendWebContents(contents, true);
-  int index = delegate->tab_strip_model()->GetIndexOfWebContents(contents);
+          original_contents->GetBrowserContext())));
+  content::WebContents* raw_contents = contents.get();
+  ASSERT_TRUE(raw_contents);
+  raw_contents->SetDelegate(delegate);
+  delegate->tab_strip_model()->AppendWebContents(std::move(contents), true);
+  int index = delegate->tab_strip_model()->GetIndexOfWebContents(raw_contents);
   delegate->tab_strip_model()->ActivateTabAt(index, true);
-  ASSERT_EQ(contents, delegate->tab_strip_model()->GetActiveWebContents());
+  ASSERT_EQ(raw_contents, delegate->tab_strip_model()->GetActiveWebContents());
 
   // Navigate to an HTTP page. Use a non-local hostname so that it is
   // not considered secure.
   GURL http_url = GetURLWithNonLocalHostname(embedded_test_server(),
                                              "/ssl/page_with_frame.html");
   ui_test_utils::NavigateToURL(delegate, http_url);
-  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  content::NavigationEntry* entry =
+      raw_contents->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(http_url, entry->GetURL());
   EXPECT_TRUE(delegate->console_messages().empty());
@@ -1695,12 +1699,12 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   // Trigger the HTTP_SHOW_WARNING state.
   base::RunLoop first_message;
   delegate->set_console_message_callback(first_message.QuitClosure());
-  SimulatePasswordFieldShown(contents);
+  SimulatePasswordFieldShown(raw_contents);
   first_message.Run();
 
   // Check that the HTTP_SHOW_WARNING state was actually triggered.
   SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
+      SecurityStateTabHelper::FromWebContents(raw_contents);
   ASSERT_TRUE(helper);
   security_state::SecurityInfo security_info;
   helper->GetSecurityInfo(&security_info);
@@ -1718,12 +1722,13 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   content::WindowedNotificationObserver subframe_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<content::NavigationController>(
-          &contents->GetController()));
+          &raw_contents->GetController()));
   EXPECT_TRUE(content::ExecuteScript(
-      contents, "document.getElementById('navFrame').src = '/title2.html';"));
+      raw_contents,
+      "document.getElementById('navFrame').src = '/title2.html';"));
   subframe_observer.Wait();
 
-  SimulateCreditCardFieldEdit(contents);
+  SimulateCreditCardFieldEdit(raw_contents);
   helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
 
@@ -1733,13 +1738,13 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   GURL second_http_url =
       GetURLWithNonLocalHostname(embedded_test_server(), "/title2.html");
   ui_test_utils::NavigateToURL(delegate, second_http_url);
-  entry = contents->GetController().GetVisibleEntry();
+  entry = raw_contents->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(second_http_url, entry->GetURL());
 
   base::RunLoop second_message;
   delegate->set_console_message_callback(second_message.QuitClosure());
-  SimulatePasswordFieldShown(contents);
+  SimulatePasswordFieldShown(raw_contents);
   second_message.Run();
 
   helper->GetSecurityInfo(&security_info);
@@ -1763,22 +1768,24 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
       Browser::CreateParams(browser()->profile(), true));
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::WebContents* contents =
+  std::unique_ptr<content::WebContents> contents = base::WrapUnique(
       content::WebContents::Create(content::WebContents::CreateParams(
-          original_contents->GetBrowserContext()));
-  ASSERT_TRUE(contents);
-  contents->SetDelegate(delegate);
-  delegate->tab_strip_model()->AppendWebContents(contents, true);
-  int index = delegate->tab_strip_model()->GetIndexOfWebContents(contents);
+          original_contents->GetBrowserContext())));
+  content::WebContents* raw_contents = contents.get();
+  ASSERT_TRUE(raw_contents);
+  raw_contents->SetDelegate(delegate);
+  delegate->tab_strip_model()->AppendWebContents(std::move(contents), true);
+  int index = delegate->tab_strip_model()->GetIndexOfWebContents(raw_contents);
   delegate->tab_strip_model()->ActivateTabAt(index, true);
-  ASSERT_EQ(contents, delegate->tab_strip_model()->GetActiveWebContents());
+  ASSERT_EQ(raw_contents, delegate->tab_strip_model()->GetActiveWebContents());
 
   // Navigate to an HTTP page. Use a non-local hostname so that it is
   // not considered secure.
   GURL http_url =
       GetURLWithNonLocalHostname(embedded_test_server(), "/title1.html");
   ui_test_utils::NavigateToURL(delegate, http_url);
-  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  content::NavigationEntry* entry =
+      raw_contents->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(http_url, entry->GetURL());
   EXPECT_TRUE(delegate->console_messages().empty());
@@ -1786,12 +1793,12 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   // Trigger the HTTP_SHOW_WARNING state.
   base::RunLoop first_message;
   delegate->set_console_message_callback(first_message.QuitClosure());
-  SimulatePasswordFieldShown(contents);
+  SimulatePasswordFieldShown(raw_contents);
   first_message.Run();
 
   // Check that the HTTP_SHOW_WARNING state was actually triggered.
   SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
+      SecurityStateTabHelper::FromWebContents(raw_contents);
   ASSERT_TRUE(helper);
   security_state::SecurityInfo security_info;
   helper->GetSecurityInfo(&security_info);
@@ -1807,8 +1814,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   // already a console message logged for the current main-frame
   // navigation.
   EXPECT_TRUE(content::ExecuteScript(
-      contents, "history.pushState({ foo: 'bar' }, 'foo', 'bar');"));
-  SimulateCreditCardFieldEdit(contents);
+      raw_contents, "history.pushState({ foo: 'bar' }, 'foo', 'bar');"));
+  SimulateCreditCardFieldEdit(raw_contents);
   helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
 
@@ -1818,13 +1825,13 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   GURL second_http_url =
       GetURLWithNonLocalHostname(embedded_test_server(), "/title2.html");
   ui_test_utils::NavigateToURL(delegate, second_http_url);
-  entry = contents->GetController().GetVisibleEntry();
+  entry = raw_contents->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(second_http_url, entry->GetURL());
 
   base::RunLoop second_message;
   delegate->set_console_message_callback(second_message.QuitClosure());
-  SimulatePasswordFieldShown(contents);
+  SimulatePasswordFieldShown(raw_contents);
   second_message.Run();
 
   helper->GetSecurityInfo(&security_info);
@@ -2024,21 +2031,22 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperIncognitoTest,
       Browser::CreateParams(browser()->profile(), true));
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::WebContents* contents =
+  std::unique_ptr<content::WebContents> contents = base::WrapUnique(
       content::WebContents::Create(content::WebContents::CreateParams(
-          original_contents->GetBrowserContext()));
-  ASSERT_TRUE(contents);
-  ASSERT_TRUE(contents->GetBrowserContext()->IsOffTheRecord());
-  contents->SetDelegate(delegate);
-  delegate->tab_strip_model()->AppendWebContents(contents, true);
-  int index = delegate->tab_strip_model()->GetIndexOfWebContents(contents);
+          original_contents->GetBrowserContext())));
+  content::WebContents* raw_contents = contents.get();
+  ASSERT_TRUE(raw_contents);
+  ASSERT_TRUE(raw_contents->GetBrowserContext()->IsOffTheRecord());
+  raw_contents->SetDelegate(delegate);
+  delegate->tab_strip_model()->AppendWebContents(std::move(contents), true);
+  int index = delegate->tab_strip_model()->GetIndexOfWebContents(raw_contents);
   delegate->tab_strip_model()->ActivateTabAt(index, true);
-  ASSERT_EQ(contents, delegate->tab_strip_model()->GetActiveWebContents());
+  ASSERT_EQ(raw_contents, delegate->tab_strip_model()->GetActiveWebContents());
 
-  SecurityStyleTestObserver observer(contents);
+  SecurityStyleTestObserver observer(raw_contents);
 
   SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
+      SecurityStateTabHelper::FromWebContents(raw_contents);
   ASSERT_TRUE(helper);
 
   // Navigate to an HTTP page. Use a non-local hostname so that it is
@@ -2046,7 +2054,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperIncognitoTest,
   GURL http_url =
       GetURLWithNonLocalHostname(embedded_test_server(), "/title1.html");
   ui_test_utils::NavigateToURL(delegate, http_url);
-  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  content::NavigationEntry* entry =
+      raw_contents->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(http_url, entry->GetURL());
 
@@ -2062,7 +2071,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperIncognitoTest,
 
   // Ensure that same-page pushstate does not add another notice.
   EXPECT_TRUE(content::ExecuteScript(
-      contents, "history.pushState({ foo: 'bar' }, 'foo', 'bar');"));
+      raw_contents, "history.pushState({ foo: 'bar' }, 'foo', 'bar');"));
   EXPECT_EQ(1u, observer.latest_explanations().neutral_explanations.size());
   EXPECT_EQ(blink::kWebSecurityStyleNeutral, observer.latest_security_style());
   // Check that no additional console message is present.
@@ -2085,21 +2094,22 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperIncognitoTest,
       Browser::CreateParams(browser()->profile(), true));
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::WebContents* contents =
+  std::unique_ptr<content::WebContents> contents = base::WrapUnique(
       content::WebContents::Create(content::WebContents::CreateParams(
-          original_contents->GetBrowserContext()));
-  ASSERT_TRUE(contents);
-  ASSERT_TRUE(contents->GetBrowserContext()->IsOffTheRecord());
-  contents->SetDelegate(delegate);
-  delegate->tab_strip_model()->AppendWebContents(contents, true);
-  int index = delegate->tab_strip_model()->GetIndexOfWebContents(contents);
+          original_contents->GetBrowserContext())));
+  content::WebContents* raw_contents = contents.get();
+  ASSERT_TRUE(raw_contents);
+  ASSERT_TRUE(raw_contents->GetBrowserContext()->IsOffTheRecord());
+  raw_contents->SetDelegate(delegate);
+  delegate->tab_strip_model()->AppendWebContents(std::move(contents), true);
+  int index = delegate->tab_strip_model()->GetIndexOfWebContents(raw_contents);
   delegate->tab_strip_model()->ActivateTabAt(index, true);
-  ASSERT_EQ(contents, delegate->tab_strip_model()->GetActiveWebContents());
+  ASSERT_EQ(raw_contents, delegate->tab_strip_model()->GetActiveWebContents());
 
-  SecurityStyleTestObserver observer(contents);
+  SecurityStyleTestObserver observer(raw_contents);
 
   SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
+      SecurityStateTabHelper::FromWebContents(raw_contents);
   ASSERT_TRUE(helper);
 
   // Navigate to an HTTP page. Use a non-local hostname so that it is
@@ -2168,21 +2178,22 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
       Browser::CreateParams(guest_browser->profile(), true));
   content::WebContents* original_contents =
       guest_browser->tab_strip_model()->GetActiveWebContents();
-  content::WebContents* contents =
+  std::unique_ptr<content::WebContents> contents = base::WrapUnique(
       content::WebContents::Create(content::WebContents::CreateParams(
-          original_contents->GetBrowserContext()));
-  ASSERT_TRUE(contents);
-  ASSERT_TRUE(contents->GetBrowserContext()->IsOffTheRecord());
-  contents->SetDelegate(delegate);
-  delegate->tab_strip_model()->AppendWebContents(contents, true);
-  int index = delegate->tab_strip_model()->GetIndexOfWebContents(contents);
+          original_contents->GetBrowserContext())));
+  content::WebContents* raw_contents = contents.get();
+  ASSERT_TRUE(raw_contents);
+  ASSERT_TRUE(raw_contents->GetBrowserContext()->IsOffTheRecord());
+  raw_contents->SetDelegate(delegate);
+  delegate->tab_strip_model()->AppendWebContents(std::move(contents), true);
+  int index = delegate->tab_strip_model()->GetIndexOfWebContents(raw_contents);
   delegate->tab_strip_model()->ActivateTabAt(index, true);
-  ASSERT_EQ(contents, delegate->tab_strip_model()->GetActiveWebContents());
+  ASSERT_EQ(raw_contents, delegate->tab_strip_model()->GetActiveWebContents());
 
-  SecurityStyleTestObserver observer(contents);
+  SecurityStyleTestObserver observer(raw_contents);
 
   SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
+      SecurityStateTabHelper::FromWebContents(raw_contents);
   ASSERT_TRUE(helper);
 
   // Navigate to an HTTP page. Use a non-local hostname so that it is

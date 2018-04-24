@@ -430,8 +430,10 @@ void PasswordManagerBrowserTestBase::SetUpOnMainThread() {
   // intercept useful UI events.
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  web_contents_ = content::WebContents::Create(
-      content::WebContents::CreateParams(tab->GetBrowserContext()));
+  std::unique_ptr<content::WebContents> owned_web_contents =
+      base::WrapUnique(content::WebContents::Create(
+          content::WebContents::CreateParams(tab->GetBrowserContext())));
+  web_contents_ = owned_web_contents.get();
   ASSERT_TRUE(web_contents_);
 
   // ManagePasswordsUIController needs ChromePasswordManagerClient for logging.
@@ -442,7 +444,8 @@ void PasswordManagerBrowserTestBase::SetUpOnMainThread() {
   ASSERT_TRUE(ChromePasswordManagerClient::FromWebContents(web_contents_));
   CustomManagePasswordsUIController* controller =
       new CustomManagePasswordsUIController(web_contents_);
-  browser()->tab_strip_model()->AppendWebContents(web_contents_, true);
+  browser()->tab_strip_model()->AppendWebContents(std::move(owned_web_contents),
+                                                  true);
   browser()->tab_strip_model()->CloseWebContentsAt(0,
                                                    TabStripModel::CLOSE_NONE);
   ASSERT_EQ(controller,
