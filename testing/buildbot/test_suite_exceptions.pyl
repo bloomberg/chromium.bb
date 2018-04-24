@@ -303,6 +303,16 @@
           '--gtest_filter=-SaveType/SavePageMultiFrameBrowserTest.ObjectElements/0',
         ],
       },
+      'Mac10.11 Tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
+        ],
+      },
+      'Mac10.12 Tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
+        ],
+      },
       # chromium.memory
       'Linux ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
