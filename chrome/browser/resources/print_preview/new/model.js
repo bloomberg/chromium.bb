@@ -360,12 +360,14 @@ Polymer({
             this.settings.rasterize.available);
     this.set(
         'settings.vendorItems.available', !!caps && !!caps.vendor_capability);
+    this.fire('settings-availability-updated');
   },
 
   /** @private */
   updateHeaderFooterAvailable_: function() {
     this.set(
         'settings.headerFooter.available', this.isHeaderFooterAvailable_());
+    this.fire('settings-availability-updated');
   },
 
   /**

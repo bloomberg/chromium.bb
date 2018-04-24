@@ -2,10 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+(function() {
+'use strict';
+
+/**
+ * Number of settings sections to show when "More settings" is collapsed.
+ * @type {number}
+ */
+const MAX_SECTIONS_TO_SHOW = 6;
+
 Polymer({
   is: 'print-preview-app',
 
   behaviors: [SettingsBehavior],
+
   properties: {
     /**
      * Object containing current settings of Print Preview, for use by Polymer
@@ -88,6 +98,26 @@ Polymer({
       type: Boolean,
       notify: true,
       value: false,
+    },
+
+    /** @private {boolean} */
+    settingsExpanded_: {
+      type: Boolean,
+      notify: true,
+      value: false,
+      observer: 'updateSettingsVisibility_',
+    },
+
+    /** @private {boolean} */
+    shouldShowMoreSettings_: {
+      type: Boolean,
+      notify: true,
+      computed: 'computeShouldShowMoreSettings_(settings.pages.available, ' +
+          'settings.copies.available, settings.layout.available, ' +
+          'settings.color.available, settings.mediaSize.available, ' +
+          'settings.dpi.available, settings.margins.available, ' +
+          'settings.scaling.available, settings.otherOptions.available, ' +
+          'settings.vendorItems.available)',
     },
   },
 
@@ -443,8 +473,37 @@ Polymer({
     }
   },
 
+  /**
+   * @return {boolean} Whether to show the "More settings" link.
+   * @private
+   */
+  computeShouldShowMoreSettings_: function() {
+    // Destination settings is always available. See if the total number of
+    // available sections exceeds the maximum number to show.
+    return [
+      'pages', 'copies', 'layout', 'color', 'mediaSize', 'margins', 'color',
+      'scaling', 'otherOptions', 'vendorItems'
+    ].reduce((count, setting) => {
+      return this.getSetting(setting).available ? count + 1 : count;
+    }, 1) > MAX_SECTIONS_TO_SHOW;
+  },
+
+  /** Changes the visibility of settings sections. */
+  updateSettingsVisibility_: function() {
+    Array.from(this.$.settingsSections.children).forEach(section => {
+      if (!section.available ||
+          (section.collapsible && this.shouldShowMoreSettings_ &&
+           !this.settingsExpanded_)) {
+        section.hide();
+        return;
+      }
+      section.show(this.settingsExpanded_);
+    });
+  },
+
   /** @private */
   close_: function() {
     this.$.state.transitTo(print_preview_new.State.CLOSING);
   },
 });
+})();

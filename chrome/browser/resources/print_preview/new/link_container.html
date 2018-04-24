@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="print_preview_shared_css.html">
+<link rel="import" href="settings_section_behavior.html">
 <link rel="import" href="throbber_css.html">
 
 <dom-module id="print-preview-link-container">
@@ -26,6 +27,10 @@
 
       :host > div > a {
         margin: 8px 20px;
+      }
+
+      :host #systemDialogLink {
+        margin-top: 14px;
       }
     </style>
     <div>

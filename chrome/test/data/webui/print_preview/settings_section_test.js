@@ -103,6 +103,11 @@ cr.define('settings_sections_tests', function() {
       page.set('destination_', saveAsPdfDestination);
     }
 
+    function toggleMoreSettings() {
+      const moreSettingsElement = page.$$('print-preview-more-settings');
+      moreSettingsElement.$$('.label').click();
+    }
+
     test(assert(TestNames.Copies), function() {
       const copiesElement = page.$$('print-preview-copies-settings');
       assertFalse(copiesElement.hidden);
@@ -228,6 +233,10 @@ cr.define('settings_sections_tests', function() {
 
     test(assert(TestNames.MediaSize), function() {
       const mediaSizeElement = page.$$('print-preview-media-size-settings');
+      assertTrue(mediaSizeElement.hidden);
+
+      // Expand more settings to reveal the element.
+      toggleMoreSettings();
       assertFalse(mediaSizeElement.hidden);
 
       // Remove capability.
@@ -262,6 +271,10 @@ cr.define('settings_sections_tests', function() {
 
       // Section is available for HTML (modifiable) documents
       initDocumentInfo(false, false);
+      assertTrue(marginsElement.hidden);
+
+      // Expand more settings to reveal the element.
+      toggleMoreSettings();
       assertFalse(marginsElement.hidden);
 
       // Unavailable for PDFs.
@@ -271,6 +284,10 @@ cr.define('settings_sections_tests', function() {
 
     test(assert(TestNames.Dpi), function() {
       const dpiElement = page.$$('print-preview-dpi-settings');
+      assertTrue(dpiElement.hidden);
+
+      // Expand more settings to reveal the element.
+      toggleMoreSettings();
       assertFalse(dpiElement.hidden);
 
       // Remove capability.
@@ -292,23 +309,31 @@ cr.define('settings_sections_tests', function() {
 
     test(assert(TestNames.Scaling), function() {
       const scalingElement = page.$$('print-preview-scaling-settings');
+      assertTrue(scalingElement.hidden);
+
+      // Expand more settings to reveal the element.
+      toggleMoreSettings();
       assertFalse(scalingElement.hidden);
 
       // HTML to non-PDF destination -> only input shown
       initDocumentInfo(false, false);
       const fitToPageContainer = scalingElement.$$('.checkbox');
-      const scalingInput =
+      const scalingInputWrapper =
           scalingElement.$$('print-preview-number-settings-section')
-              .$$('.user-value');
+              .$$('.input-wrapper');
       assertFalse(scalingElement.hidden);
       assertTrue(fitToPageContainer.hidden);
-      assertFalse(scalingInput.hidden);
+      assertFalse(scalingInputWrapper.hidden);
 
-      // PDF to non-PDF destination -> checkbox and input shown.
+      // PDF to non-PDF destination -> checkbox and input shown. Check that if
+      // more settings is collapsed only the checkbox is shown.
       initDocumentInfo(true, false);
+      toggleMoreSettings();
       assertFalse(scalingElement.hidden);
       assertFalse(fitToPageContainer.hidden);
-      assertFalse(scalingInput.hidden);
+      assertTrue(scalingInputWrapper.hidden);
+      toggleMoreSettings();
+      assertFalse(scalingInputWrapper.hidden);
 
       // PDF to PDF destination -> section disappears.
       setPdfDestination();
@@ -317,11 +342,11 @@ cr.define('settings_sections_tests', function() {
 
     test(assert(TestNames.Other), function() {
       const optionsElement = page.$$('print-preview-other-options-settings');
-      const headerFooter = optionsElement.$$('#header-footer').parentElement;
-      const duplex = optionsElement.$$('#duplex').parentElement;
-      const cssBackground = optionsElement.$$('#css-background').parentElement;
-      const rasterize = optionsElement.$$('#rasterize').parentElement;
-      const selectionOnly = optionsElement.$$('#selection-only').parentElement;
+      const headerFooter = optionsElement.$.headerFooterContainer;
+      const duplex = optionsElement.$.duplexContainer;
+      const cssBackground = optionsElement.$.cssBackgroundContainer;
+      const rasterize = optionsElement.$.rasterizeContainer;
+      const selectionOnly = optionsElement.$.selectionOnlyContainer;
 
       // Start with HTML + duplex capability.
       initDocumentInfo(false, false);
@@ -329,6 +354,14 @@ cr.define('settings_sections_tests', function() {
           print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       page.set('destination_.capabilities', capabilities);
       assertFalse(optionsElement.hidden);
+      assertTrue(headerFooter.hidden);
+      assertFalse(duplex.hidden);
+      assertTrue(cssBackground.hidden);
+      assertTrue(rasterize.hidden);
+      assertTrue(selectionOnly.hidden);
+
+      // Expanding more settings will show header/footer.
+      toggleMoreSettings();
       assertFalse(headerFooter.hidden);
       assertFalse(duplex.hidden);
       assertFalse(cssBackground.hidden);
@@ -337,7 +370,10 @@ cr.define('settings_sections_tests', function() {
 
       // Add a selection - should show selection only.
       initDocumentInfo(false, true);
+      toggleMoreSettings();
       assertFalse(optionsElement.hidden);
+      assertTrue(selectionOnly.hidden);
+      toggleMoreSettings();
       assertFalse(selectionOnly.hidden);
 
       // Remove duplex capability.
@@ -346,18 +382,29 @@ cr.define('settings_sections_tests', function() {
       delete capabilities.printer.duplex;
       page.set('destination_.capabilities', capabilities);
       Polymer.dom.flush();
-      assertFalse(optionsElement.hidden);
+      toggleMoreSettings();
+      assertTrue(optionsElement.hidden);
+      toggleMoreSettings();
       assertTrue(duplex.hidden);
 
       // PDF
       initDocumentInfo(true, false);
       Polymer.dom.flush();
-      expectEquals(cr.isWindows || cr.isMac, optionsElement.hidden);
-      assertTrue(headerFooter.hidden);
-      assertTrue(duplex.hidden);
-      assertTrue(cssBackground.hidden);
-      expectEquals(cr.isWindows || cr.isMac, rasterize.hidden);
-      assertTrue(selectionOnly.hidden);
+      toggleMoreSettings();
+      assertTrue(optionsElement.hidden);
+
+      toggleMoreSettings();
+      if (cr.isWindows || cr.isMac) {
+        // No options
+        assertTrue(optionsElement.hidden);
+      } else {
+        // All setions hidden except rasterize
+        assertTrue(headerFooter.hidden);
+        assertTrue(duplex.hidden);
+        assertTrue(cssBackground.hidden);
+        expectEquals(cr.isWindows || cr.isMac, rasterize.hidden);
+        assertTrue(selectionOnly.hidden);
+      }
 
       // Add a selection - should do nothing for PDFs.
       initDocumentInfo(true, true);
@@ -375,7 +422,7 @@ cr.define('settings_sections_tests', function() {
 
     test(assert(TestNames.HeaderFooter), function() {
       const optionsElement = page.$$('print-preview-other-options-settings');
-      const headerFooter = optionsElement.$$('#header-footer').parentElement;
+      const headerFooter = optionsElement.$.headerFooterContainer;
 
       // HTML page to show Header/Footer option.
       initDocumentInfo(false, false);
@@ -383,6 +430,8 @@ cr.define('settings_sections_tests', function() {
           print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       page.set('destination_.capabilities', capabilities);
       assertFalse(optionsElement.hidden);
+      assertTrue(headerFooter.hidden);
+      toggleMoreSettings();
       assertFalse(headerFooter.hidden);
 
       // Set margins to NONE
@@ -571,6 +620,7 @@ cr.define('settings_sections_tests', function() {
     });
 
     test(assert(TestNames.SetMediaSize), function() {
+      toggleMoreSettings();
       const mediaSizeElement = page.$$('print-preview-media-size-settings');
       assertFalse(mediaSizeElement.hidden);
 
@@ -593,6 +643,7 @@ cr.define('settings_sections_tests', function() {
     });
 
     test(assert(TestNames.SetDpi), function() {
+      toggleMoreSettings();
       const dpiElement = page.$$('print-preview-dpi-settings');
       assertFalse(dpiElement.hidden);
 
@@ -621,6 +672,7 @@ cr.define('settings_sections_tests', function() {
     });
 
     test(assert(TestNames.SetMargins), function() {
+      toggleMoreSettings();
       const marginsElement = page.$$('print-preview-margins-settings');
       assertFalse(marginsElement.hidden);
 
@@ -643,6 +695,7 @@ cr.define('settings_sections_tests', function() {
     });
 
     test(assert(TestNames.SetScaling), function() {
+      toggleMoreSettings();
       const scalingElement = page.$$('print-preview-scaling-settings');
 
       // Default is 100
@@ -716,6 +769,7 @@ cr.define('settings_sections_tests', function() {
     });
 
     test(assert(TestNames.SetOther), function() {
+      toggleMoreSettings();
       const optionsElement = page.$$('print-preview-other-options-settings');
       assertFalse(optionsElement.hidden);
 
@@ -733,7 +787,7 @@ cr.define('settings_sections_tests', function() {
 
       // Check HTML settings
       const ids =
-          ['header-footer', 'duplex', 'css-background', 'selection-only'];
+          ['headerFooter', 'duplex', 'cssBackground', 'selectionOnly'];
       const defaults = [true, true, false, false];
       const optionSettings =
           [page.settings.headerFooter, page.settings.duplex,

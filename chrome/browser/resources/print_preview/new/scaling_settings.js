@@ -5,7 +5,7 @@
 Polymer({
   is: 'print-preview-scaling-settings',
 
-  behaviors: [SettingsBehavior],
+  behaviors: [SettingsBehavior, print_preview_new.SettingsSectionBehavior],
 
   properties: {
     /** @type {Object} */
@@ -16,6 +16,9 @@ Polymer({
 
     /** @private {boolean} */
     inputValid_: Boolean,
+
+    /** @private {boolean} */
+    hideInput_: Boolean,
 
     disabled: Boolean,
   },
@@ -32,6 +35,21 @@ Polymer({
     'onInputChanged_(currentValue_, inputValid_)',
     'onScalingSettingChanged_(settings.scaling.value)',
   ],
+
+  /**
+   * @param {boolean} showCollapsible Whether collapsible content should be
+   *     shown.
+   */
+  show: function(showCollapsible) {
+    const fitToPageAvailable = this.getSetting('fitToPage').available;
+    if (!fitToPageAvailable && !showCollapsible) {
+      this.hidden = true;
+      return;
+    }
+    this.$.fitToPageContainer.hidden = !fitToPageAvailable;
+    this.hideInput_ = !showCollapsible || !this.getSetting('scaling').available;
+    this.hidden = false;
+  },
 
   /** @private */
   onFitToPageSettingChange_: function() {
