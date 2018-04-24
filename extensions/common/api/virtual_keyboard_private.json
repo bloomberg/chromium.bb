@@ -31,7 +31,7 @@
       {
         "id": "KeyboardMode",
         "type": "string",
-        "enum": [ "FULL_WIDTH", "FLOATING" ],
+        "enum": [ "FULL_WIDTH", "FLOATING", "FULLSCREEN" ],
         "description": "The value of the virtual keyboard mode to set to."
       },
       {

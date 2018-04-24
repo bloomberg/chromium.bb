@@ -15,6 +15,9 @@ enum class ContainerType {
 
   // Corresponds to a ContainerFloatingBehavior.
   FLOATING = 1,
+
+  // Corresponds to a ContainerFullscreenBehavior.
+  FULLSCREEN = 2,
 };
 
 }  // namespace keyboard
