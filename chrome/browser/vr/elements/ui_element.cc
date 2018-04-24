@@ -300,10 +300,14 @@ void UiElement::SetVisibleImmediately(bool visible) {
 }
 
 bool UiElement::IsVisible() const {
+  // Many things rely on checking element visibility, including tests.
+  // Therefore, support reporting visibility even if an element sits in an
+  // invisible portion of the tree.  We can infer that if the scene computed
+  // opacities, but this element did not, it must be invisible.
   DCHECK(update_phase_ >= kUpdatedComputedOpacity ||
          FrameLifecycle::phase() >= kUpdatedComputedOpacity);
   // TODO(crbug.com/832216): we shouldn't need to check opacity() here.
-  return update_phase_ != kDirty && opacity() > 0.0f &&
+  return update_phase_ >= kUpdatedComputedOpacity && opacity() > 0.0f &&
          computed_opacity() > 0.0f;
 }
 
@@ -311,7 +315,7 @@ bool UiElement::IsVisibleAndOpaque() const {
   DCHECK(update_phase_ >= kUpdatedComputedOpacity ||
          FrameLifecycle::phase() >= kUpdatedComputedOpacity);
   // TODO(crbug.com/832216): we shouldn't need to check opacity() here.
-  return update_phase_ != kDirty && opacity() == 1.0f &&
+  return update_phase_ >= kUpdatedComputedOpacity && opacity() == 1.0f &&
          computed_opacity() == 1.0f;
 }
 
