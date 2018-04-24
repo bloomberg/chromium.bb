@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -101,7 +102,7 @@ void AccessTokenFetcherTest::OnAccessTokenRetrieved(
 }
 
 void AccessTokenFetcherTest::SetUp() {
-  if (!base::MessageLoop::current()) {
+  if (!base::MessageLoopCurrent::Get()) {
     // Create a temporary message loop if the current thread does not already
     // have one so we can use its task runner to create a request object.
     message_loop_.reset(new base::MessageLoopForIO);

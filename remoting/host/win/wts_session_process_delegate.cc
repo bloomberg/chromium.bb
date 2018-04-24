@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -211,7 +212,7 @@ bool WtsSessionProcessDelegate::Core::Initialize(uint32_t session_id) {
     // the completion port represented by |io_task_runner|. The registration has
     // to be done on the I/O thread because
     // MessageLoopForIO::RegisterJobObject() can only be called via
-    // MessageLoopForIO::current().
+    // MessageLoopCurrentForIO::Get().
     io_task_runner_->PostTask(
         FROM_HERE, base::Bind(&Core::InitializeJob, this, base::Passed(&job)));
   }
@@ -487,7 +488,8 @@ void WtsSessionProcessDelegate::Core::InitializeJob(ScopedHandle job) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   // Register to receive job notifications via the I/O thread's completion port.
-  if (!base::MessageLoopForIO::current()->RegisterJobObject(job.Get(), this)) {
+  if (!base::MessageLoopCurrentForIO::Get()->RegisterJobObject(job.Get(),
+                                                               this)) {
     PLOG(ERROR) << "Failed to associate the job object with a completion port";
     return;
   }
