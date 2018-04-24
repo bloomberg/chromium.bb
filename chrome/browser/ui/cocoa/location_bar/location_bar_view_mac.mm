@@ -84,6 +84,11 @@ const int kMinURLWidth = 120;
 // SkColorSetARGB(0xCC, 0xFF, 0xFF 0xFF);
 const SkColor kMaterialDarkVectorIconColor = SK_ColorWHITE;
 
+void NotReached(const gfx::Image& image) {
+  // Mac Cocoa version should not receive asynchronously delivered favicons.
+  NOTREACHED();
+}
+
 }  // namespace
 
 // TODO(shess): This code is mostly copied from the gtk
@@ -454,15 +459,17 @@ void LocationBarViewMac::UpdateWithoutTabRestore() {
 
 void LocationBarViewMac::UpdateLocationIcon() {
   SkColor vector_icon_color = GetLocationBarIconColor();
-  const gfx::VectorIcon& vector_icon_id =
-      GetPageInfoVerboseType() == PageInfoVerboseType::kEVCert
-          ? toolbar::kHttpsValidIcon
-          : omnibox_view_->GetVectorIcon();
+  gfx::ImageSkia image_skia;
+  if (GetPageInfoVerboseType() == PageInfoVerboseType::kEVCert) {
+    image_skia = gfx::CreateVectorIcon(toolbar::kHttpsValidIcon,
+                                       kDefaultIconSize, vector_icon_color);
+  } else {
+    image_skia = omnibox_view_->GetIcon(kDefaultIconSize, vector_icon_color,
+                                        base::BindOnce(&NotReached));
+  }
 
   NSImage* image = NSImageFromImageSkiaWithColorSpace(
-      gfx::CreateVectorIcon(vector_icon_id, kDefaultIconSize,
-                            vector_icon_color),
-      base::mac::GetSRGBColorSpace());
+      image_skia, base::mac::GetSRGBColorSpace());
   page_info_decoration_->SetImage(image);
   page_info_decoration_->SetLabelColor(vector_icon_color);
 

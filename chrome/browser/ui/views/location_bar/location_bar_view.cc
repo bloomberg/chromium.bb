@@ -193,8 +193,7 @@ LocationBarView::LocationBarView(Browser* browser,
       browser_(browser),
       delegate_(delegate),
       is_popup_mode_(is_popup_mode),
-      tint_(GetTintForProfile(profile)),
-      focus_ring_(nullptr) {
+      tint_(GetTintForProfile(profile)) {
   edit_bookmarks_enabled_.Init(
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
       base::Bind(&LocationBarView::UpdateWithoutTabRestore,
@@ -846,11 +845,24 @@ void LocationBarView::RefreshBackground() {
 }
 
 void LocationBarView::RefreshLocationIcon() {
+  // Cancel any previous outstanding icon requests, as they are now outdated.
+  icon_fetch_weak_ptr_factory_.InvalidateWeakPtrs();
+
   security_state::SecurityLevel security_level =
       GetToolbarModel()->GetSecurityLevel(false);
-  location_icon_view_->SetImage(gfx::CreateVectorIcon(
-      omnibox_view_->GetVectorIcon(), GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-      GetSecurityChipColor(security_level)));
+
+  gfx::ImageSkia icon = omnibox_view_->GetIcon(
+      GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+      GetSecurityChipColor(security_level),
+      base::BindOnce(&LocationBarView::OnLocationIconFetched,
+                     icon_fetch_weak_ptr_factory_.GetWeakPtr()));
+
+  location_icon_view_->SetImage(icon);
+  location_icon_view_->Update();
+}
+
+void LocationBarView::OnLocationIconFetched(const gfx::Image& image) {
+  location_icon_view_->SetImage(image.AsImageSkia());
   location_icon_view_->Update();
 }
 

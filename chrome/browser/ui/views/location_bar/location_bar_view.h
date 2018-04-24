@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
@@ -29,6 +30,7 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/drag_controller.h"
 
@@ -290,6 +292,9 @@ class LocationBarView : public LocationBar,
   // Updates |location_icon_view_| based on the current state and theme.
   void RefreshLocationIcon();
 
+  // Handles the arrival of an asynchronously fetched location bar icon.
+  void OnLocationIconFetched(const gfx::Image& image);
+
   // Updates the visibility state of the Content Blocked icons to reflect what
   // is actually blocked on the current page. Returns true if the visibility
   // of at least one of the views in |content_setting_views_| changed.
@@ -463,7 +468,7 @@ class LocationBarView : public LocationBar,
   bool show_focus_rect_ = false;
 
   // The focus ring view.
-  views::View* focus_ring_;
+  views::View* focus_ring_ = nullptr;
 
   // Tracks this preference to determine whether bookmark editing is allowed.
   BooleanPrefMember edit_bookmarks_enabled_;
@@ -475,6 +480,12 @@ class LocationBarView : public LocationBar,
   // whether to animate security level transitions.
   security_state::SecurityLevel last_update_security_level_ =
       security_state::NONE;
+
+  // Used to scope the lifetime of asynchronous icon fetch callbacks to the
+  // lifetime of the object. Weak pointers issued by this factory are
+  // invalidated whenever we start a new icon fetch, so don't use this weak
+  // factory for any other purposes.
+  base::WeakPtrFactory<LocationBarView> icon_fetch_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarView);
 };
