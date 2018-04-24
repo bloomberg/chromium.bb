@@ -49,6 +49,7 @@
 #include "chrome/browser/chromeos/login/screens/kiosk_enable_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/screens/network_view.h"
+#include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
@@ -129,7 +130,8 @@ const chromeos::OobeScreen kResumableScreens[] = {
     chromeos::OobeScreen::SCREEN_TERMS_OF_SERVICE,
     chromeos::OobeScreen::SCREEN_SYNC_CONSENT,
     chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
-    chromeos::OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK};
+    chromeos::OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
+    chromeos::OobeScreen::SCREEN_RECOMMEND_APPS};
 
 // Checks if device is in tablet mode, and that HID-detection screen is not
 // disabled by flag.
@@ -416,6 +418,9 @@ BaseScreen* WizardController::CreateScreen(OobeScreen screen) {
   } else if (screen == OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE) {
     return new ArcTermsOfServiceScreen(
         this, oobe_ui_->GetArcTermsOfServiceScreenView());
+  } else if (screen == OobeScreen::SCREEN_RECOMMEND_APPS) {
+    return new RecommendAppsScreen(this,
+                                   oobe_ui_->GetRecommendAppsScreenView());
   } else if (screen == OobeScreen::SCREEN_WRONG_HWID) {
     return new WrongHWIDScreen(this, oobe_ui_->GetWrongHWIDScreenView());
   } else if (screen == OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW) {
@@ -613,6 +618,13 @@ void WizardController::ShowArcTermsOfServiceScreen() {
   } else {
     ShowUserImageScreen();
   }
+}
+
+void WizardController::ShowRecommendAppsScreen() {
+  // TODO(rsgingerrs): should maybe check if ToS has been accepted
+  VLOG(1) << "Showing Recommend Apps screen.";
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_RECOMMEND_APPS);
+  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_RECOMMEND_APPS));
 }
 
 void WizardController::ShowWrongHWIDScreen() {
@@ -918,6 +930,10 @@ void WizardController::OnArcTermsOfServiceAccepted() {
   ShowUserImageScreen();
 }
 
+void WizardController::OnRecommendAppsSkipped() {
+  OnOobeFlowFinished(); // TODO(rsgingerrs): there may be a next step?
+}
+
 void WizardController::OnVoiceInteractionValuePropSkipped() {
   OnOobeFlowFinished();
 }
@@ -1192,6 +1208,8 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
     ShowSyncConsentScreen();
   } else if (screen == OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE) {
     ShowArcTermsOfServiceScreen();
+  } else if (screen == OobeScreen::SCREEN_RECOMMEND_APPS) {
+    ShowRecommendAppsScreen();
   } else if (screen == OobeScreen::SCREEN_WRONG_HWID) {
     ShowWrongHWIDScreen();
   } else if (screen == OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK) {
@@ -1343,6 +1361,12 @@ void WizardController::OnExit(BaseScreen& /* screen */,
       break;
     case ScreenExitCode::SYNC_CONSENT_FINISHED:
       ShowArcTermsOfServiceScreen();
+      break;
+    case ScreenExitCode::RECOMMEND_APPS_SKIPPED:
+      OnRecommendAppsSkipped();
+      break;
+    case ScreenExitCode::RECOMMEND_APPS_SELECTED:
+      // TODO(rsgingerrs): Actions if user selects some apps to install
       break;
     case ScreenExitCode::DEMO_MODE_SETUP_CLOSED:
       OnDemoSetupClosed();

@@ -149,6 +149,7 @@ class WizardController : public BaseScreenDelegate,
   void ShowTermsOfServiceScreen();
   void ShowSyncConsentScreen();
   void ShowArcTermsOfServiceScreen();
+  void ShowRecommendAppsScreen();
   void ShowWrongHWIDScreen();
   void ShowAutoEnrollmentCheckScreen();
   void ShowSupervisedUserCreationScreen();
@@ -185,6 +186,7 @@ class WizardController : public BaseScreenDelegate,
   void OnTermsOfServiceAccepted();
   void OnArcTermsOfServiceSkipped();
   void OnArcTermsOfServiceAccepted();
+  void OnRecommendAppsSkipped();
   void OnVoiceInteractionValuePropSkipped();
   void OnVoiceInteractionValuePropAccepted();
   void OnControllerPairingFinished();

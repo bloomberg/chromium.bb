@@ -40,6 +40,7 @@
 /** @const */ var SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE =
     'ad-password-change';
 /** @const */ var SCREEN_SYNC_CONSENT = 'sync-consent';
+/** @const */ var SCREEN_RECOMMEND_APPS = 'recommend-apps';
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
@@ -162,7 +163,8 @@ cr.define('cr.ui.login', function() {
     SCREEN_CONFIRM_PASSWORD,
     SCREEN_UPDATE_REQUIRED,
     SCREEN_FATAL_ERROR,
-    SCREEN_SYNC_CONSENT
+    SCREEN_SYNC_CONSENT,
+    SCREEN_RECOMMEND_APPS
   ];
 
   /**

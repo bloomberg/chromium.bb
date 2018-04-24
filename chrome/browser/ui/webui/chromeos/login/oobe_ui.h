@@ -50,6 +50,7 @@ class NetworkDropdownHandler;
 class NetworkStateInformer;
 class NetworkView;
 class OobeDisplayChooser;
+class RecommendAppsScreenView;
 class SigninScreenHandler;
 class SigninScreenHandlerDelegate;
 class SupervisedUserCreationScreenHandler;
@@ -111,6 +112,7 @@ class OobeUI : public content::WebUIController,
   TermsOfServiceScreenView* GetTermsOfServiceScreenView();
   SyncConsentScreenView* GetSyncConsentScreenView();
   ArcTermsOfServiceScreenView* GetArcTermsOfServiceScreenView();
+  RecommendAppsScreenView* GetRecommendAppsScreenView();
   UserImageView* GetUserImageView();
   ErrorScreen* GetErrorScreen();
   WrongHWIDScreenView* GetWrongHWIDScreenView();

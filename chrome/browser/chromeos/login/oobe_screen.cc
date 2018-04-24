@@ -56,6 +56,7 @@ const char* kScreenNames[] = {
     "test:nowindow",                 // SCREEN_TEST_NO_WINDOW
     "sync-consent",                  // SCREEN_SYNC_CONSENT
     "demo-setup",                    // SCREEN_OOBE_DEMO_SETUP
+    "recommend-apps",                // SCREEN_RECOMMEND_APPS
     "unknown",                       // SCREEN_UNKNOWN
 };
 

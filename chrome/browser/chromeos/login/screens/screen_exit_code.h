@@ -58,6 +58,8 @@ enum class ScreenExitCode {
   WAIT_FOR_CONTAINER_READY_ERROR = 31,
   SYNC_CONSENT_FINISHED = 32,
   DEMO_MODE_SETUP_CLOSED = 33,
+  RECOMMEND_APPS_SKIPPED = 34,
+  RECOMMEND_APPS_SELECTED = 35,
   EXIT_CODES_COUNT  // not a real code, must be the last
 };
 
