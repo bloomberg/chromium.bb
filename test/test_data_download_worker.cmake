@@ -17,8 +17,7 @@ if (NOT AOM_ROOT OR NOT AOM_CONFIG_DIR OR NOT AOM_TEST_FILE
           defined.")
 endif ()
 
-set(AOM_TEST_DATA_URL
-    "http://storage.googleapis.com/downloads.webmproject.org/test_data/libvpx")
+set(AOM_TEST_DATA_URL "http://storage.googleapis.com/aom-test-data")
 
 if (NOT AOM_TEST_DATA_PATH)
   set(AOM_TEST_DATA_PATH "$ENV{LIBAOM_TEST_DATA_PATH}")
