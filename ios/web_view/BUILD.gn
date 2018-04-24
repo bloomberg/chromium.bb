@@ -5,6 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/ios/ios_sdk.gni")
 import("//build/config/ios/rules.gni")
+import("//build/config/locales.gni")
 import("//components/cronet/native/include/headers.gni")
 import("//components/grpc_support/include/headers.gni")
 import("//ios/build/config.gni")
@@ -224,6 +225,7 @@ ios_web_view_deps = [
   "//components/signin/core/browser",
   "//components/signin/ios/browser",
   "//components/signin/ios/browser:active_state_manager",
+  "//components/strings:components_strings_grit",
   "//components/sync",
   "//components/translate/core/browser",
   "//components/translate/core/common",
@@ -362,6 +364,17 @@ js_compile_bundle("web_view_bundle") {
   ]
 }
 
+repack_locales("repack_locales") {
+  visibility = [ ":packed_resources" ]
+  source_patterns = [ "${root_gen_dir}/components/strings/components_strings_" ]
+
+  deps = [
+    "//components/strings:components_strings",
+  ]
+  input_locales = ios_packed_locales
+  output_locales = ios_packed_locales_as_mac_outputs
+}
+
 repack("repack_resources") {
   visibility = [ ":packed_resources" ]
   deps = [
@@ -378,6 +391,7 @@ repack("repack_resources") {
 bundle_data("packed_resources") {
   visibility = [ "//ios/web_view:*" ]
   public_deps = [
+    ":repack_locales",
     ":repack_resources",
   ]
   sources = [
