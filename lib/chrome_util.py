@@ -313,7 +313,6 @@ _COPY_PATHS_COMMON = (
     Path('chrome_sandbox', mode=0o4755, dest=_CHROME_SANDBOX_DEST),
     Path('icudtl.dat'),
     Path('libosmesa.so', exe=True, optional=True),
-    Path('mojo_shell', exe=True, optional=True),
     # Do not strip the nacl_helper_bootstrap binary because the binutils
     # objcopy/strip mangles the ELF program headers.
     Path('nacl_helper_bootstrap',
@@ -347,6 +346,7 @@ _COPY_PATHS_CHROME = (
     Path('dbus/', optional=True),
     Path('keyboard_resources.pak'),
     Path('libassistant.so', exe=True, optional=True),
+    Path('libmojo_core.so', exe=True),
     # Widevine CDM is already pre-stripped.  In addition, it doesn't
     # play well with the binutils stripping tools, so skip stripping.
     Path('libwidevinecdm.so',
