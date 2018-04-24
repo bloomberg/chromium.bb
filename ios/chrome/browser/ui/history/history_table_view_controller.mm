@@ -53,7 +53,9 @@ const int kMaxFetchCount = 100;
 }
 
 @interface HistoryTableViewController ()<HistoryEntriesStatusItemDelegate,
-                                         HistoryEntryInserterDelegate> {
+                                         HistoryEntryInserterDelegate,
+                                         UISearchResultsUpdating,
+                                         UISearchBarDelegate> {
   // Closure to request next page of history.
   base::OnceClosure _query_history_continuation;
 }
@@ -76,8 +78,6 @@ const int kMaxFetchCount = 100;
 @property(nonatomic, assign, getter=hasFinishedLoading) BOOL finishedLoading;
 // YES if the table should be filtered by the next received query result.
 @property(nonatomic, assign) BOOL filterQueryResult;
-// YES if there is a search happening.
-@property(nonatomic, assign, getter=isSearching) BOOL searching;
 // This ViewController's searchController;
 @property(nonatomic, strong) UISearchController* searchController;
 // NavigationController UIToolbar Buttons.
@@ -104,7 +104,6 @@ const int kMaxFetchCount = 100;
 @synthesize loading = _loading;
 @synthesize localDispatcher = _localDispatcher;
 @synthesize searchController = _searchController;
-@synthesize searching = _searching;
 @synthesize shouldShowNoticeAboutOtherFormsOfBrowsingHistory =
     _shouldShowNoticeAboutOtherFormsOfBrowsingHistory;
 
@@ -122,6 +121,7 @@ const int kMaxFetchCount = 100;
   self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
   self.tableView.allowsMultipleSelectionDuringEditing = YES;
   self.clearsSelectionOnViewWillAppear = NO;
+  self.tableView.allowsMultipleSelection = YES;
 
   // ContextMenu gesture recognizer.
   UILongPressGestureRecognizer* longPressRecognizer = [
@@ -154,6 +154,14 @@ const int kMaxFetchCount = 100;
   self.searchController =
       [[UISearchController alloc] initWithSearchResultsController:nil];
   self.searchController.dimsBackgroundDuringPresentation = NO;
+  self.searchController.searchBar.delegate = self;
+  self.searchController.searchResultsUpdater = self;
+  self.searchController.searchBar.backgroundColor = [UIColor whiteColor];
+  // UIKit needs to know which controller will be presenting the
+  // searchController. If we don't add this trying to dismiss while
+  // SearchController is active will fail.
+  self.definesPresentationContext = YES;
+
   // For iOS 11 and later, place the search bar in the navigation bar. Otherwise
   // place the search bar in the table view's header.
   if (@available(iOS 11, *)) {
@@ -167,11 +175,6 @@ const int kMaxFetchCount = 100;
 // TODO(crbug.com/805190): These methods are supposed to be public, though we
 // should consider using a delegate instead.
 #pragma mark - Public Interface
-
-- (void)setSearching:(BOOL)searching {
-  _searching = searching;
-  [self updateEntriesStatusMessage];
-}
 
 - (BOOL)hasSelectedEntries {
   return self.tableView.indexPathsForSelectedRows.count;
@@ -265,14 +268,14 @@ const int kMaxFetchCount = 100;
 
     [self updateToolbarButtons];
 
-    if (([self isSearching] && [searchQuery length] > 0 &&
+    if ((self.searchController.isActive && [searchQuery length] > 0 &&
          [self.currentQuery isEqualToString:searchQuery]) ||
         self.filterQueryResult) {
       // If in search mode, filter out entries that are not part of the
       // search result.
       [self filterForHistoryEntries:resultsItems];
       NSArray* deletedIndexPaths = self.tableView.indexPathsForSelectedRows;
-      [self deleteItemsFromtableViewModelWithIndex:deletedIndexPaths];
+      [self deleteItemsFromTableViewModelWithIndex:deletedIndexPaths];
       self.filterQueryResult = NO;
     }
     // Wait to insert until after the deletions are done, this is needed
@@ -344,6 +347,24 @@ const int kMaxFetchCount = 100;
 // TODO(crbug.com/805190): Migrate once we decide how to handle favicons and the
 // a11y callback on HistoryEntryItem.
 
+#pragma mark UISearchResultsUpdating
+
+- (void)updateSearchResultsForSearchController:
+    (UISearchController*)searchController {
+  DCHECK_EQ(self.searchController, searchController);
+  [self showHistoryMatchingQuery:searchController.searchBar.text];
+}
+
+#pragma mark UISearchBarDelegate
+
+- (void)searchBarTextDidBeginEditing:(UISearchBar*)searchBar {
+  [self updateEntriesStatusMessage];
+}
+
+- (void)searchBarTextDidEndEditing:(UISearchBar*)searchBar {
+  [self updateEntriesStatusMessage];
+}
+
 #pragma mark - History Data Updates
 
 // Search history for text |query| and display the results. |query| may be nil.
@@ -378,17 +399,22 @@ const int kMaxFetchCount = 100;
     [self updateToolbarButtons];
   } else {
     TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+    // Only navigate and record metrics if a ItemTypeHistoryEntry was selected.
     if (item.type == ItemTypeHistoryEntry) {
-      HistoryEntryItem* historyItem =
-          base::mac::ObjCCastStrict<HistoryEntryItem>(item);
-      [self openURL:historyItem.URL];
-      if (self.isSearching) {
+      if (self.searchController.isActive) {
+        // Set the searchController active property to NO or the SearchBar will
+        // cause the navigation controller to linger for a second  when
+        // dismissing.
+        self.searchController.active = NO;
         base::RecordAction(
             base::UserMetricsAction("HistoryPage_SearchResultClick"));
       } else {
         base::RecordAction(
             base::UserMetricsAction("HistoryPage_EntryLinkClick"));
       }
+      HistoryEntryItem* historyItem =
+          base::mac::ObjCCastStrict<HistoryEntryItem>(item);
+      [self openURL:historyItem.URL];
     }
   }
 }
@@ -459,7 +485,7 @@ const int kMaxFetchCount = 100;
 - (void)fetchHistoryForQuery:(NSString*)query continuation:(BOOL)continuation {
   self.loading = YES;
   // Add loading indicator if no items are shown.
-  if (self.empty && !self.isSearching) {
+  if (self.empty && !self.searchController.isActive) {
     [self addLoadingIndicator];
   }
 
@@ -487,6 +513,12 @@ const int kMaxFetchCount = 100;
 // TableView.
 - (void)updateTableViewAfterDeletingEntries {
   // TODO(crbug.com/805190): Migrate.
+  // If only the header section remains, there are no history entries.
+  if ([self.tableViewModel numberOfSections] == 1) {
+    self.empty = YES;
+  }
+  [self updateEntriesStatusMessage];
+  [self updateToolbarButtons];
 }
 
 // Updates header section to provide relevant information about the currently
@@ -495,10 +527,11 @@ const int kMaxFetchCount = 100;
 - (void)updateEntriesStatusMessage {
   NSString* messageText = nil;
   if (self.empty) {
-    messageText = self.isSearching
+    messageText = self.searchController.isActive
                       ? l10n_util::GetNSString(IDS_HISTORY_NO_SEARCH_RESULTS)
                       : l10n_util::GetNSString(IDS_HISTORY_NO_RESULTS);
-  } else if (self.shouldShowNoticeAboutOtherFormsOfBrowsingHistory) {
+  } else if (self.shouldShowNoticeAboutOtherFormsOfBrowsingHistory &&
+             !self.searchController.isActive) {
     messageText =
         l10n_util::GetNSString(IDS_IOS_HISTORY_OTHER_FORMS_OF_HISTORY);
   }
@@ -559,13 +592,54 @@ const int kMaxFetchCount = 100;
 
 // Deletes all items in the tableView which indexes are included in indexArray,
 // needs to be run inside a performBatchUpdates block.
-- (void)deleteItemsFromtableViewModelWithIndex:(NSArray*)indexArray {
-  // TODO(crbug.com/805190): Migrate.
+- (void)deleteItemsFromTableViewModelWithIndex:(NSArray*)indexArray {
+  NSArray* sortedIndexPaths =
+      [indexArray sortedArrayUsingSelector:@selector(compare:)];
+  for (NSIndexPath* indexPath in [sortedIndexPaths reverseObjectEnumerator]) {
+    NSInteger sectionIdentifier =
+        [self.tableViewModel sectionIdentifierForSection:indexPath.section];
+    NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
+    NSUInteger index =
+        [self.tableViewModel indexInItemTypeForIndexPath:indexPath];
+    [self.tableViewModel removeItemWithType:itemType
+                  fromSectionWithIdentifier:sectionIdentifier
+                                    atIndex:index];
+  }
+  [self.tableView deleteRowsAtIndexPaths:indexArray
+                        withRowAnimation:UITableViewRowAnimationNone];
+
+  // Remove any empty sections, except the header section.
+  for (int section = self.tableView.numberOfSections - 1; section > 0;
+       --section) {
+    if (![self.tableViewModel numberOfItemsInSection:section]) {
+      [self.entryInserter removeSection:section];
+    }
+  }
 }
 
 // Selects all items in the tableView that are not included in entries.
 - (void)filterForHistoryEntries:(NSArray*)entries {
-  // TODO(crbug.com/805190): Migrate.
+  for (int section = 1; section < [self.tableViewModel numberOfSections];
+       ++section) {
+    NSInteger sectionIdentifier =
+        [self.tableViewModel sectionIdentifierForSection:section];
+    if ([self.tableViewModel
+            hasSectionForSectionIdentifier:sectionIdentifier]) {
+      NSArray* items =
+          [self.tableViewModel itemsInSectionWithIdentifier:sectionIdentifier];
+      for (id item in items) {
+        HistoryEntryItem* historyItem =
+            base::mac::ObjCCastStrict<HistoryEntryItem>(item);
+        if (![entries containsObject:historyItem]) {
+          NSIndexPath* indexPath =
+              [self.tableViewModel indexPathForItem:historyItem];
+          [self.tableView selectRowAtIndexPath:indexPath
+                                      animated:NO
+                                scrollPosition:UITableViewScrollPositionNone];
+        }
+      }
+    }
+  }
 }
 
 // Adds loading indicator to the top of the history tableView, if one is not
