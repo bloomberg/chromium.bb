@@ -495,7 +495,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // QuicSentPacketManager::NetworkChangeVisitor
   void OnCongestionChange() override;
   // TODO(b/76462614): remove OnPathDegrading() once
-  // FLAGS_quic_reloadable_flag_quic_path_degrading_alarm is deprecated.
+  // FLAGS_quic_reloadable_flag_quic_path_degrading_alarm2 is deprecated.
   void OnPathDegrading() override;
   void OnPathMtuIncreased(QuicPacketLength packet_size) override;
 
@@ -782,6 +782,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   }
 
   bool IsServerProxyEnabled() const { return enable_server_proxy_; }
+
+  bool IsPathDegrading() const { return is_path_degrading_; }
 
  protected:
   // Calls cancel() on all the alarms owned by this connection.
@@ -1304,6 +1306,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Id of latest sent control frame. 0 if no control frame has been sent.
   QuicControlFrameId last_control_frame_id_;
 
+  // True if the peer is unreachable on the current path.
+  bool is_path_degrading_;
+
   // Latched value of
   // quic_reloadable_flag_quic_server_early_version_negotiation.
   const bool negotiate_version_early_;
@@ -1316,7 +1321,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   const bool handle_write_results_for_connectivity_probe_;
 
   // Latched value of
-  // quic_reloadable_flag_quic_path_degrading_alarm
+  // quic_reloadable_flag_quic_path_degrading_alarm2.
   const bool use_path_degrading_alarm_;
 
   // Latched value of quic_reloadable_flag_quic_enable_server_proxy.

@@ -789,7 +789,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
         connection_id_length_(PACKET_8BYTE_CONNECTION_ID),
         notifier_(&connection_),
         use_path_degrading_alarm_(
-            GetQuicReloadableFlag(quic_path_degrading_alarm)) {
+            GetQuicReloadableFlag(quic_path_degrading_alarm2)) {
     SetQuicFlag(&FLAGS_quic_supports_tls_handshake, true);
     connection_.set_defer_send_in_response_to_packets(GetParam().ack_response ==
                                                       AckResponse::kDefer);
@@ -1208,7 +1208,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
   SimpleSessionNotifier notifier_;
 
   // Latched value of
-  // quic_reloadable_flag_quic_path_degrading_alarm
+  // quic_reloadable_flag_quic_path_degrading_alarm2.
   bool use_path_degrading_alarm_;
 
  private:
@@ -6011,6 +6011,7 @@ TEST_P(QuicConnectionTest, PathDegradingAlarm) {
 
   EXPECT_TRUE(connection_.connected());
   EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+  EXPECT_FALSE(connection_.IsPathDegrading());
 
   const char data[] = "data";
   size_t data_size = strlen(data);
@@ -6073,6 +6074,7 @@ TEST_P(QuicConnectionTest, PathDegradingAlarm) {
       EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
     }
   }
+  EXPECT_TRUE(connection_.IsPathDegrading());
 }
 
 TEST_P(QuicConnectionTest, RetransmittableOnWireSetsPathDegradingAlarm) {
@@ -6088,6 +6090,7 @@ TEST_P(QuicConnectionTest, RetransmittableOnWireSetsPathDegradingAlarm) {
   EXPECT_CALL(visitor_, HasOpenDynamicStreams()).WillRepeatedly(Return(true));
 
   EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+  EXPECT_FALSE(connection_.IsPathDegrading());
   EXPECT_FALSE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
 
   const char data[] = "data";
@@ -6135,6 +6138,152 @@ TEST_P(QuicConnectionTest, RetransmittableOnWireSetsPathDegradingAlarm) {
               ->GetPathDegradingDelay();
   EXPECT_EQ(clock_.ApproximateNow() + delay,
             connection_.GetPathDegradingAlarm()->deadline());
+}
+
+// This test verifies that the connection marks path as degrading and does not
+// spin timer to detect path degrading when a new packet is sent on the
+// degraded path.
+TEST_P(QuicConnectionTest, NoPathDegradingAlarmIfPathIsDegrading) {
+  if (!use_path_degrading_alarm_) {
+    return;
+  }
+
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+  EXPECT_FALSE(connection_.IsPathDegrading());
+
+  const char data[] = "data";
+  size_t data_size = strlen(data);
+  QuicStreamOffset offset = 0;
+
+  // Send the first packet. Now there's a retransmittable packet on the wire, so
+  // the path degrading alarm should be set.
+  connection_.SendStreamDataWithString(1, data, offset, NO_FIN);
+  offset += data_size;
+  EXPECT_TRUE(connection_.GetPathDegradingAlarm()->IsSet());
+  // Check the deadline of the path degrading alarm.
+  QuicTime::Delta delay = QuicConnectionPeer::GetSentPacketManager(&connection_)
+                              ->GetPathDegradingDelay();
+  EXPECT_EQ(clock_.ApproximateNow() + delay,
+            connection_.GetPathDegradingAlarm()->deadline());
+
+  // Send a second packet. The path degrading alarm's deadline should remain
+  // the same.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  QuicTime prev_deadline = connection_.GetPathDegradingAlarm()->deadline();
+  connection_.SendStreamDataWithString(1, data, offset, NO_FIN);
+  offset += data_size;
+  EXPECT_TRUE(connection_.GetPathDegradingAlarm()->IsSet());
+  EXPECT_EQ(prev_deadline, connection_.GetPathDegradingAlarm()->deadline());
+
+  // Now receive an ACK of the first packet. This should advance the path
+  // degrading alarm's deadline since forward progress has been made.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
+  QuicAckFrame frame = InitAckFrame({{1u, 2u}});
+  ProcessAckPacket(&frame);
+  EXPECT_TRUE(connection_.GetPathDegradingAlarm()->IsSet());
+  // Check the deadline of the path degrading alarm.
+  delay = QuicConnectionPeer::GetSentPacketManager(&connection_)
+              ->GetPathDegradingDelay();
+  EXPECT_EQ(clock_.ApproximateNow() + delay,
+            connection_.GetPathDegradingAlarm()->deadline());
+
+  // Advance time to the path degrading alarm's deadline and simulate
+  // firing the path degrading alarm. This path will be considered as
+  // degrading.
+  clock_.AdvanceTime(delay);
+  EXPECT_CALL(visitor_, OnPathDegrading()).Times(1);
+  connection_.GetPathDegradingAlarm()->Fire();
+  EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+  EXPECT_TRUE(connection_.IsPathDegrading());
+
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+  // Send a third packet. The path degrading alarm is no longer set but path
+  // should still be marked as degrading.
+  connection_.SendStreamDataWithString(1, data, offset, NO_FIN);
+  offset += data_size;
+  EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+  EXPECT_TRUE(connection_.IsPathDegrading());
+}
+
+// This test verifies that the connection unmarks path as degrarding and spins
+// the timer to detect future path degrading when forward progress is made
+// after path has been marked degrading.
+TEST_P(QuicConnectionTest, UnmarkPathDegradingOnForwardProgress) {
+  if (!use_path_degrading_alarm_) {
+    return;
+  }
+
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+  EXPECT_FALSE(connection_.IsPathDegrading());
+
+  const char data[] = "data";
+  size_t data_size = strlen(data);
+  QuicStreamOffset offset = 0;
+
+  // Send the first packet. Now there's a retransmittable packet on the wire, so
+  // the path degrading alarm should be set.
+  connection_.SendStreamDataWithString(1, data, offset, NO_FIN);
+  offset += data_size;
+  EXPECT_TRUE(connection_.GetPathDegradingAlarm()->IsSet());
+  // Check the deadline of the path degrading alarm.
+  QuicTime::Delta delay = QuicConnectionPeer::GetSentPacketManager(&connection_)
+                              ->GetPathDegradingDelay();
+  EXPECT_EQ(clock_.ApproximateNow() + delay,
+            connection_.GetPathDegradingAlarm()->deadline());
+
+  // Send a second packet. The path degrading alarm's deadline should remain
+  // the same.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  QuicTime prev_deadline = connection_.GetPathDegradingAlarm()->deadline();
+  connection_.SendStreamDataWithString(1, data, offset, NO_FIN);
+  offset += data_size;
+  EXPECT_TRUE(connection_.GetPathDegradingAlarm()->IsSet());
+  EXPECT_EQ(prev_deadline, connection_.GetPathDegradingAlarm()->deadline());
+
+  // Now receive an ACK of the first packet. This should advance the path
+  // degrading alarm's deadline since forward progress has been made.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
+  QuicAckFrame frame = InitAckFrame({{1u, 2u}});
+  ProcessAckPacket(&frame);
+  EXPECT_TRUE(connection_.GetPathDegradingAlarm()->IsSet());
+  // Check the deadline of the path degrading alarm.
+  delay = QuicConnectionPeer::GetSentPacketManager(&connection_)
+              ->GetPathDegradingDelay();
+  EXPECT_EQ(clock_.ApproximateNow() + delay,
+            connection_.GetPathDegradingAlarm()->deadline());
+
+  // Advance time to the path degrading alarm's deadline and simulate
+  // firing the alarm.
+  clock_.AdvanceTime(delay);
+  EXPECT_CALL(visitor_, OnPathDegrading()).Times(1);
+  connection_.GetPathDegradingAlarm()->Fire();
+  EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+  EXPECT_TRUE(connection_.IsPathDegrading());
+
+  // Send a third packet. The path degrading alarm is no longer set but path
+  // should still be marked as degrading.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+  connection_.SendStreamDataWithString(1, data, offset, NO_FIN);
+  offset += data_size;
+  EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+  EXPECT_TRUE(connection_.IsPathDegrading());
+
+  // Now receive an ACK of the second packet. This should unmark the path as
+  // degrading. And will set a timer to detect new path degrading.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
+  frame = InitAckFrame({{2, 3}});
+  ProcessAckPacket(&frame);
+  EXPECT_FALSE(connection_.IsPathDegrading());
+  EXPECT_TRUE(connection_.GetPathDegradingAlarm()->IsSet());
 }
 
 TEST_P(QuicConnectionTest, MultipleCallsToCloseConnection) {

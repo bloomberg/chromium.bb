@@ -216,7 +216,7 @@ QUIC_FLAG(
 
 // If true, a separate QuicAlarm in QuicConnection is used to trigger
 // OnPathDegrading() instead of using retransmission_alarm_.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_path_degrading_alarm, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_path_degrading_alarm2, true)
 
 // Remove special logic for headers stream from QuicWriteBlockedList and
 // replace it with a static streams map.

@@ -94,7 +94,7 @@ QuicSentPacketManager::QuicSentPacketManager(
       rtt_updated_(false),
       acked_packets_iter_(last_ack_frame_.packets.rbegin()),
       use_path_degrading_alarm_(
-          GetQuicReloadableFlag(quic_path_degrading_alarm)),
+          GetQuicReloadableFlag(quic_path_degrading_alarm2)),
       use_better_crypto_retransmission_(
           GetQuicReloadableFlag(quic_better_crypto_retransmission)) {
   QUIC_FLAG_COUNT(quic_reloadable_flag_quic_better_crypto_retransmission);
