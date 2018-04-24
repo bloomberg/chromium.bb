@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // TODO (scroggo): Move this to
-// third_party/WebKit/Source/platform/image-decoders ?
+// third_party/blink/renderer/platform/image-decoders ?
 
 // Compile with:
 // gn gen out/Fuzz '--args=use_libfuzzer=true is_asan=true
