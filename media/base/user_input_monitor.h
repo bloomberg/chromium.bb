@@ -45,7 +45,7 @@ class MEDIA_EXPORT UserInputMonitor {
   // use the difference between the values returned at two times to get the
   // number of keypresses happened within that time period, but should not make
   // any assumption on the initial value.
-  virtual size_t GetKeyPressCount() const = 0;
+  virtual uint32_t GetKeyPressCount() const = 0;
 
  private:
   virtual void StartKeyboardMonitoring() = 0;

@@ -87,7 +87,7 @@ class MockUserInputMonitor : public UserInputMonitor {
  public:
   MockUserInputMonitor() = default;
 
-  size_t GetKeyPressCount() const { return 0; }
+  uint32_t GetKeyPressCount() const { return 0; }
 
   MOCK_METHOD0(StartKeyboardMonitoring, void());
   MOCK_METHOD0(StopKeyboardMonitoring, void());

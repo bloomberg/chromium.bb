@@ -55,7 +55,7 @@ class UserInputMonitorWinCore
   // DestructionObserver overrides.
   void WillDestroyCurrentMessageLoop() override;
 
-  size_t GetKeyPressCount() const;
+  uint32_t GetKeyPressCount() const;
   void StartMonitor();
   void StopMonitor();
 
@@ -85,7 +85,7 @@ class UserInputMonitorWin : public UserInputMonitor {
   ~UserInputMonitorWin() override;
 
   // Public UserInputMonitor overrides.
-  size_t GetKeyPressCount() const override;
+  uint32_t GetKeyPressCount() const override;
 
  private:
   // Private UserInputMonitor overrides.
@@ -111,7 +111,7 @@ void UserInputMonitorWinCore::WillDestroyCurrentMessageLoop() {
   StopMonitor();
 }
 
-size_t UserInputMonitorWinCore::GetKeyPressCount() const {
+uint32_t UserInputMonitorWinCore::GetKeyPressCount() const {
   return counter_.GetKeyPressCount();
 }
 
@@ -231,7 +231,7 @@ UserInputMonitorWin::~UserInputMonitorWin() {
     delete core_;
 }
 
-size_t UserInputMonitorWin::GetKeyPressCount() const {
+uint32_t UserInputMonitorWin::GetKeyPressCount() const {
   return core_->GetKeyPressCount();
 }
 

@@ -4,7 +4,6 @@
 
 #include "media/base/keyboard_event_counter.h"
 
-#include "base/atomicops.h"
 #include "base/logging.h"
 
 namespace media {
@@ -20,17 +19,15 @@ void KeyboardEventCounter::OnKeyboardEvent(ui::EventType event,
     if (pressed_keys_.find(key_code) != pressed_keys_.end())
       return;
     pressed_keys_.insert(key_code);
-    base::subtle::NoBarrier_AtomicIncrement(
-        reinterpret_cast<base::subtle::AtomicWord*>(&total_key_presses_), 1);
+    ++total_key_presses_;
   } else {
     DCHECK_EQ(ui::ET_KEY_RELEASED, event);
     pressed_keys_.erase(key_code);
   }
 }
 
-size_t KeyboardEventCounter::GetKeyPressCount() const {
-  return base::subtle::NoBarrier_Load(
-      reinterpret_cast<const base::subtle::AtomicWord*>(&total_key_presses_));
+uint32_t KeyboardEventCounter::GetKeyPressCount() const {
+  return total_key_presses_.load();
 }
 
 }  // namespace media

@@ -41,7 +41,7 @@ class UserInputMonitorLinuxCore
   // DestructionObserver overrides.
   void WillDestroyCurrentMessageLoop() override;
 
-  size_t GetKeyPressCount() const;
+  uint32_t GetKeyPressCount() const;
   void StartMonitor();
   void StopMonitor();
 
@@ -74,7 +74,7 @@ class UserInputMonitorLinux : public UserInputMonitor {
   ~UserInputMonitorLinux() override;
 
   // Public UserInputMonitor overrides.
-  size_t GetKeyPressCount() const override;
+  uint32_t GetKeyPressCount() const override;
 
  private:
   // Private UserInputMonitor overrides.
@@ -107,7 +107,7 @@ void UserInputMonitorLinuxCore::WillDestroyCurrentMessageLoop() {
   StopMonitor();
 }
 
-size_t UserInputMonitorLinuxCore::GetKeyPressCount() const {
+uint32_t UserInputMonitorLinuxCore::GetKeyPressCount() const {
   return counter_.GetKeyPressCount();
 }
 
@@ -268,7 +268,7 @@ UserInputMonitorLinux::~UserInputMonitorLinux() {
     delete core_;
 }
 
-size_t UserInputMonitorLinux::GetKeyPressCount() const {
+uint32_t UserInputMonitorLinux::GetKeyPressCount() const {
   return core_->GetKeyPressCount();
 }
 
