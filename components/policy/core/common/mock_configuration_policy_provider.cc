@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "components/policy/core/common/policy_bundle.h"
 
@@ -26,7 +26,7 @@ void MockConfigurationPolicyProvider::UpdateChromePolicy(
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .CopyFrom(policy);
   UpdatePolicy(std::move(bundle));
-  if (base::MessageLoop::current())
+  if (base::MessageLoopCurrent::Get())
     base::RunLoop().RunUntilIdle();
 }
 
