@@ -219,16 +219,18 @@ static v8::Maybe<bool> CreateDataProperty(v8::Local<v8::Context> context,
   return object->CreateDataProperty(context, key, value);
 }
 
-static void CreateFunctionPropertyWithData(v8::Local<v8::Context> context,
-                                           v8::Local<v8::Object> object,
-                                           const char* name,
-                                           v8::FunctionCallback callback,
-                                           v8::Local<v8::Value> data,
-                                           const char* description) {
+static void CreateFunctionPropertyWithData(
+    v8::Local<v8::Context> context,
+    v8::Local<v8::Object> object,
+    const char* name,
+    v8::FunctionCallback callback,
+    v8::Local<v8::Value> data,
+    const char* description,
+    v8::SideEffectType side_effect_type) {
   v8::Local<v8::String> func_name = V8String(context->GetIsolate(), name);
   v8::Local<v8::Function> func;
   if (!v8::Function::New(context, callback, data, 0,
-                         v8::ConstructorBehavior::kThrow)
+                         v8::ConstructorBehavior::kThrow, side_effect_type)
            .ToLocal(&func))
     return;
   func->SetName(func_name);
@@ -236,7 +238,8 @@ static void CreateFunctionPropertyWithData(v8::Local<v8::Context> context,
       V8String(context->GetIsolate(), description);
   v8::Local<v8::Function> to_string_function;
   if (v8::Function::New(context, ReturnDataCallback, return_value, 0,
-                        v8::ConstructorBehavior::kThrow)
+                        v8::ConstructorBehavior::kThrow,
+                        v8::SideEffectType::kHasNoSideEffect)
           .ToLocal(&to_string_function))
     CreateDataProperty(context, func,
                        V8AtomicString(context->GetIsolate(), "toString"),
@@ -256,14 +259,16 @@ v8::Maybe<bool> ThreadDebugger::CreateDataPropertyInArray(
   return array->CreateDataProperty(context, index, value);
 }
 
-void ThreadDebugger::CreateFunctionProperty(v8::Local<v8::Context> context,
-                                            v8::Local<v8::Object> object,
-                                            const char* name,
-                                            v8::FunctionCallback callback,
-                                            const char* description) {
+void ThreadDebugger::CreateFunctionProperty(
+    v8::Local<v8::Context> context,
+    v8::Local<v8::Object> object,
+    const char* name,
+    v8::FunctionCallback callback,
+    const char* description,
+    v8::SideEffectType side_effect_type) {
   CreateFunctionPropertyWithData(context, object, name, callback,
                                  v8::External::New(context->GetIsolate(), this),
-                                 description);
+                                 description, side_effect_type);
 }
 
 void ThreadDebugger::installAdditionalCommandLineAPI(
@@ -272,7 +277,8 @@ void ThreadDebugger::installAdditionalCommandLineAPI(
   CreateFunctionProperty(
       context, object, "getEventListeners",
       ThreadDebugger::GetEventListenersCallback,
-      "function getEventListeners(node) { [Command Line API] }");
+      "function getEventListeners(node) { [Command Line API] }",
+      v8::SideEffectType::kHasNoSideEffect);
 
   v8::Local<v8::Value> function_value;
   bool success =
@@ -287,11 +293,13 @@ void ThreadDebugger::installAdditionalCommandLineAPI(
   CreateFunctionPropertyWithData(
       context, object, "monitorEvents", ThreadDebugger::MonitorEventsCallback,
       function_value,
-      "function monitorEvents(object, [types]) { [Command Line API] }");
+      "function monitorEvents(object, [types]) { [Command Line API] }",
+      v8::SideEffectType::kHasSideEffect);
   CreateFunctionPropertyWithData(
       context, object, "unmonitorEvents",
       ThreadDebugger::UnmonitorEventsCallback, function_value,
-      "function unmonitorEvents(object, [types]) { [Command Line API] }");
+      "function unmonitorEvents(object, [types]) { [Command Line API] }",
+      v8::SideEffectType::kHasSideEffect);
 }
 
 static Vector<String> NormalizeEventTypes(

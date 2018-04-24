@@ -81,10 +81,7 @@
     if (exceptionDetails &&
         exceptionDetails.exception.description.startsWith('EvalError: Possible side-effect in debug-evaluate'))
       hasSideEffect = true;
-    if (hasSideEffect !== expectSideEffect) {
-      testRunner.log(`FAIL: "${expression}" hasSideEffect = ${hasSideEffect}, expectSideEffect = ${expectSideEffect}`);
-      testRunner.completeTest();
-      return;
-    }
+    const failed = (hasSideEffect !== expectSideEffect);
+    testRunner.log(`${failed ? 'FAIL: ' : ''}Expression \`${expression}\`\nhas side effect: ${hasSideEffect}, expected: ${expectSideEffect}`);
   }
 })

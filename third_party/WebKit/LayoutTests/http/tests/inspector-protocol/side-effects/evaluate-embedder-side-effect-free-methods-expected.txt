@@ -1,2 +1,88 @@
 Tests that evaluating V8-embedder callbacks allows side-effect-free methods. Should not crash.
+Expression `document.querySelector('div').x = "foo"`
+has side effect: true, expected: true
+Expression `$('div')`
+has side effect: false, expected: false
+Expression `$$('div')`
+has side effect: false, expected: false
+Expression `$x('//div')`
+has side effect: false, expected: false
+Expression `getEventListeners(document)`
+has side effect: false, expected: false
+Expression `$.toString()`
+has side effect: false, expected: false
+Expression `$$.toString()`
+has side effect: false, expected: false
+Expression `$x.toString()`
+has side effect: false, expected: false
+Expression `getEventListeners.toString()`
+has side effect: false, expected: false
+Expression `monitorEvents()`
+has side effect: true, expected: true
+Expression `unmonitorEvents()`
+has side effect: true, expected: true
+Expression `monitorEvents.toString()`
+has side effect: false, expected: false
+Expression `unmonitorEvents.toString()`
+has side effect: false, expected: false
+Expression `document.getElementsByTagName('div')`
+has side effect: false, expected: false
+Expression `document.getElementsByTagNameNS('http://www.w3.org/1999/xhtml', 'div')`
+has side effect: false, expected: false
+Expression `document.getElementsByClassName('foo')`
+has side effect: false, expected: false
+Expression `document.getElementsByName('div-name')`
+has side effect: false, expected: false
+Expression `div.getAttributeNames()`
+has side effect: false, expected: false
+Expression `divNoAttrs.getAttributeNames()`
+has side effect: false, expected: false
+Expression `div.getAttribute()`
+has side effect: false, expected: false
+Expression `div.getAttribute('attr1')`
+has side effect: false, expected: false
+Expression `div.getAttribute({})`
+has side effect: false, expected: false
+Expression `divNoAttrs.getAttribute('attr1')`
+has side effect: false, expected: false
+Expression `div.hasAttribute()`
+has side effect: false, expected: false
+Expression `div.hasAttribute('attr1')`
+has side effect: false, expected: false
+Expression `div.hasAttribute({})`
+has side effect: false, expected: false
+Expression `divNoAttrs.hasAttribute('attr1')`
+has side effect: false, expected: false
+Expression `div.contains(textNode)`
+has side effect: false, expected: false
+Expression `div.contains()`
+has side effect: false, expected: false
+Expression `div.contains({})`
+has side effect: false, expected: false
+Expression `div.querySelector('div')`
+has side effect: false, expected: false
+Expression `div.querySelectorAll('div')`
+has side effect: false, expected: false
+Expression `document.contains(textNode)`
+has side effect: false, expected: false
+Expression `document.contains()`
+has side effect: false, expected: false
+Expression `document.contains({})`
+has side effect: false, expected: false
+Expression `document.querySelector('div')`
+has side effect: false, expected: false
+Expression `document.querySelectorAll('div')`
+has side effect: false, expected: false
+Expression `textNode.contains(textNode)`
+has side effect: false, expected: false
+Expression `textNode.contains()`
+has side effect: false, expected: false
+Expression `textNode.contains({})`
+has side effect: false, expected: false
+Expression `textNode.querySelector('div')`
+has side effect: false, expected: false
+Expression `textNode.querySelectorAll('div')`
+has side effect: false, expected: false
+Expression `global_performance.now()`
+has side effect: false, expected: false
 
