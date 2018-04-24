@@ -160,9 +160,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
                                  embedded_test_server()->port())));
 }
 
+#if defined(OS_CHROMEOS)
+// Flaky: https://crbug.com/836188.
+#define MAYBE_ThrottleRequest_Redirect DISABLED_ThrottleRequest_Redirect
+#else
+#define MAYBE_ThrottleRequest_Redirect ThrottleRequest_Redirect
+#endif
 // Tests that the redirected request is also being throttled.
 IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
-                       ThrottleRequest_Redirect) {
+                       MAYBE_ThrottleRequest_Redirect) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&HandleRequest, false, false));
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -194,11 +200,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
                                  embedded_test_server()->port())));
 }
 
+#if defined(OS_CHROMEOS)
+// Flaky: https://crbug.com/836188.
+#define MAYBE_ThrottleRequest_RedirectCached \
+  DISABLED_ThrottleRequest_RedirectCached
+#else
+#define MAYBE_ThrottleRequest_RedirectCached ThrottleRequest_RedirectCached
+#endif
 // Tests that if the redirect (302) is served from cache, but the non-redirect
 // (503) is not, the extension throttle throttles the requests for the second
 // url.
 IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
-                       ThrottleRequest_RedirectCached) {
+                       MAYBE_ThrottleRequest_RedirectCached) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&HandleRequest, true, false));
   ASSERT_TRUE(embedded_test_server()->Start());
