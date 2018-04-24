@@ -23484,9 +23484,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device4",
+              "id": "build193-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -23515,9 +23515,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device4",
+              "id": "build193-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -23544,9 +23544,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device2",
+              "id": "build193-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -23575,9 +23575,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device2",
+              "id": "build193-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -23604,9 +23604,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device1",
+              "id": "build193-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -23635,9 +23635,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device1",
+              "id": "build193-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -23664,9 +23664,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device2",
+              "id": "build192-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -23695,9 +23695,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device2",
+              "id": "build192-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -23724,9 +23724,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device6",
+              "id": "build193-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -23755,9 +23755,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device6",
+              "id": "build193-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -23784,9 +23784,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device3",
+              "id": "build191-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -23815,9 +23815,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device3",
+              "id": "build191-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -23844,9 +23844,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device6",
+              "id": "build192-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -23875,9 +23875,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device6",
+              "id": "build192-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -23904,9 +23904,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device3",
+              "id": "build191-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -23935,9 +23935,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device3",
+              "id": "build191-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -23964,9 +23964,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device2",
+              "id": "build192-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -23995,9 +23995,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device2",
+              "id": "build192-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24024,9 +24024,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device5",
+              "id": "build193-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24055,9 +24055,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device5",
+              "id": "build193-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24084,9 +24084,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device6",
+              "id": "build192-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24115,9 +24115,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device6",
+              "id": "build192-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24144,9 +24144,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device6",
+              "id": "build193-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24175,9 +24175,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device6",
+              "id": "build193-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24204,9 +24204,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device1",
+              "id": "build192-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24235,9 +24235,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device1",
+              "id": "build192-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24264,9 +24264,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device3",
+              "id": "build192-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24295,9 +24295,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device3",
+              "id": "build192-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24324,9 +24324,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device3",
+              "id": "build192-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24355,9 +24355,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device3",
+              "id": "build192-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24384,9 +24384,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device1",
+              "id": "build193-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24415,9 +24415,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device1",
+              "id": "build193-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24444,9 +24444,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device7",
+              "id": "build192-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24475,9 +24475,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device7",
+              "id": "build192-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24504,9 +24504,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device7",
+              "id": "build191-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24535,9 +24535,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device7",
+              "id": "build191-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24564,9 +24564,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device1",
+              "id": "build193-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24593,9 +24593,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device1",
+              "id": "build193-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24624,9 +24624,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device1",
+              "id": "build193-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24653,9 +24653,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device2",
+              "id": "build192-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24684,9 +24684,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device2",
+              "id": "build192-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24713,9 +24713,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device1",
+              "id": "build192-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24744,9 +24744,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device1",
+              "id": "build192-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24773,9 +24773,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device3",
+              "id": "build192-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24804,9 +24804,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device3",
+              "id": "build192-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24833,9 +24833,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device6",
+              "id": "build192-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24864,9 +24864,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device6",
+              "id": "build192-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24893,9 +24893,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device1",
+              "id": "build192-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24924,9 +24924,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device1",
+              "id": "build192-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24953,9 +24953,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device7",
+              "id": "build191-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -24982,9 +24982,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device6",
+              "id": "build191-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25013,9 +25013,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device6",
+              "id": "build191-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25042,9 +25042,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device4",
+              "id": "build192-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25073,9 +25073,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device4",
+              "id": "build192-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25102,9 +25102,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device5",
+              "id": "build192-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25133,9 +25133,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device5",
+              "id": "build192-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25162,9 +25162,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device7",
+              "id": "build191-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25193,9 +25193,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device7",
+              "id": "build191-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25222,9 +25222,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device6",
+              "id": "build193-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25253,9 +25253,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device6",
+              "id": "build193-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25282,9 +25282,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device4",
+              "id": "build192-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25313,9 +25313,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device4",
+              "id": "build192-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25342,9 +25342,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device6",
+              "id": "build192-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25373,9 +25373,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device6",
+              "id": "build192-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25402,9 +25402,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device4",
+              "id": "build193-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25433,9 +25433,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device4",
+              "id": "build193-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25462,9 +25462,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device3",
+              "id": "build192-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25493,9 +25493,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device3",
+              "id": "build192-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25522,9 +25522,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device5",
+              "id": "build193-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25553,9 +25553,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device5",
+              "id": "build193-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25582,9 +25582,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device1",
+              "id": "build192-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25613,9 +25613,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device1",
+              "id": "build192-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25642,9 +25642,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device4",
+              "id": "build193-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25673,9 +25673,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device4",
+              "id": "build193-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25702,9 +25702,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device7",
+              "id": "build192-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25733,9 +25733,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device7",
+              "id": "build192-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25762,9 +25762,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device6",
+              "id": "build193-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25793,9 +25793,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device6",
+              "id": "build193-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25822,9 +25822,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device1",
+              "id": "build191-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25853,9 +25853,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device1",
+              "id": "build191-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25882,9 +25882,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device5",
+              "id": "build192-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25913,9 +25913,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device5",
+              "id": "build192-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25942,9 +25942,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device3",
+              "id": "build192-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -25973,9 +25973,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device3",
+              "id": "build192-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26002,9 +26002,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device2",
+              "id": "build191-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26033,9 +26033,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device2",
+              "id": "build191-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26062,9 +26062,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device3",
+              "id": "build193-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26093,9 +26093,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device3",
+              "id": "build193-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26122,9 +26122,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device3",
+              "id": "build193-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26153,9 +26153,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device3",
+              "id": "build193-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26182,9 +26182,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device7",
+              "id": "build193-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26213,9 +26213,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device7",
+              "id": "build193-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26242,9 +26242,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device6",
+              "id": "build191-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26273,9 +26273,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device6",
+              "id": "build191-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26302,9 +26302,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device3",
+              "id": "build193-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26333,9 +26333,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device3",
+              "id": "build193-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26362,9 +26362,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device3",
+              "id": "build193-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26393,9 +26393,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device3",
+              "id": "build193-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26422,9 +26422,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device2",
+              "id": "build193-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26453,9 +26453,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device2",
+              "id": "build193-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26482,9 +26482,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device5",
+              "id": "build192-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26513,9 +26513,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device5",
+              "id": "build192-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26542,9 +26542,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device3",
+              "id": "build192-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26573,9 +26573,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device3",
+              "id": "build192-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26602,9 +26602,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device7",
+              "id": "build193-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26633,9 +26633,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device7",
+              "id": "build193-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26662,9 +26662,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device4",
+              "id": "build192-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26693,9 +26693,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device4",
+              "id": "build192-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26722,9 +26722,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device2",
+              "id": "build193-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26753,9 +26753,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device2",
+              "id": "build193-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26782,9 +26782,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device6",
+              "id": "build192-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26813,9 +26813,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device6",
+              "id": "build192-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26842,9 +26842,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device1",
+              "id": "build193-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26871,9 +26871,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device4",
+              "id": "build191-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26902,9 +26902,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device4",
+              "id": "build191-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26933,9 +26933,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device1",
+              "id": "build193-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26962,9 +26962,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device1",
+              "id": "build193-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -26991,9 +26991,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device4",
+              "id": "build191-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27022,9 +27022,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device4",
+              "id": "build191-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27053,9 +27053,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device1",
+              "id": "build193-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27082,9 +27082,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device4",
+              "id": "build192-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27113,9 +27113,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device4",
+              "id": "build192-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27142,9 +27142,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device5",
+              "id": "build193-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27173,9 +27173,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device5",
+              "id": "build193-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27202,9 +27202,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device7",
+              "id": "build192-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27233,9 +27233,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device7",
+              "id": "build192-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27262,9 +27262,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device1",
+              "id": "build191-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27293,9 +27293,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device1",
+              "id": "build191-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27322,9 +27322,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device7",
+              "id": "build193-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27353,9 +27353,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device7",
+              "id": "build193-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27382,9 +27382,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device1",
+              "id": "build192-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27413,9 +27413,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device1",
+              "id": "build192-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27442,9 +27442,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device6",
+              "id": "build191-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27473,9 +27473,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device6",
+              "id": "build191-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27502,9 +27502,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device6",
+              "id": "build192-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27533,9 +27533,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device6",
+              "id": "build192-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27562,9 +27562,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device4",
+              "id": "build193-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27593,9 +27593,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device4",
+              "id": "build193-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27622,9 +27622,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device5",
+              "id": "build192-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27653,9 +27653,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build18-b1--device5",
+              "id": "build192-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27682,9 +27682,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device1",
+              "id": "build193-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27713,9 +27713,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device1",
+              "id": "build193-b7--device1",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27742,9 +27742,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device2",
+              "id": "build193-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27773,9 +27773,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device2",
+              "id": "build193-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27802,9 +27802,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device7",
+              "id": "build193-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27833,9 +27833,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device7",
+              "id": "build193-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27853,9 +27853,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device2",
+              "id": "build191-b7--device2",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27882,9 +27882,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device5",
+              "id": "build191-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27911,9 +27911,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device4",
+              "id": "build191-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27942,9 +27942,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device4",
+              "id": "build191-b7--device4",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -27973,9 +27973,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device5",
+              "id": "build191-b7--device5",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28002,9 +28002,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build47-b1--device7",
+              "id": "build193-b7--device7",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28031,9 +28031,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device3",
+              "id": "build191-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28062,9 +28062,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device3",
+              "id": "build191-b7--device3",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28091,9 +28091,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device6",
+              "id": "build191-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28122,9 +28122,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build17-b1--device6",
+              "id": "build191-b7--device6",
               "os": "Android",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,

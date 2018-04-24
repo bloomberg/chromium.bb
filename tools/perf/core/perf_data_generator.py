@@ -229,21 +229,24 @@ def get_waterfall_config():
     swarming=[
       {
        'os': 'Android',
-       'pool': 'Chrome-perf',
+       'pool': 'chrome.tests.perf',
        'device_ids': [
-           'build17-b1--device1', 'build17-b1--device2', 'build17-b1--device3',
-           'build17-b1--device4', 'build17-b1--device5', 'build17-b1--device6',
-           'build17-b1--device7',
-           'build18-b1--device1', 'build18-b1--device2', 'build18-b1--device3',
-           'build18-b1--device4', 'build18-b1--device5', 'build18-b1--device6',
-           'build18-b1--device7',
-           'build47-b1--device1', 'build47-b1--device2', 'build47-b1--device3',
-           'build47-b1--device4', 'build47-b1--device5', 'build47-b1--device6',
-           'build47-b1--device7',
+           'build191-b7--device1', 'build191-b7--device2',
+           'build191-b7--device3', 'build191-b7--device4',
+           'build191-b7--device5', 'build191-b7--device6',
+           'build191-b7--device7',
+           'build192-b7--device1', 'build192-b7--device2',
+           'build192-b7--device3', 'build192-b7--device4',
+           'build192-b7--device5', 'build192-b7--device6',
+           'build192-b7--device7',
+           'build193-b7--device1', 'build193-b7--device2',
+           'build193-b7--device3', 'build193-b7--device4',
+           'build193-b7--device5', 'build193-b7--device6',
+           'build193-b7--device7',
           ],
        'perf_tests': [
-         ('tracing_perftests', 'build17-b1--device2'),
-         # ('gpu_perftests', 'build18-b1--device2'), https://crbug.com/775219
+         ('tracing_perftests', 'build191-b7--device2'),
+         # ('gpu_perftests', 'build192-b7--device2'), https://crbug.com/775219
         ]
       }
     ])
