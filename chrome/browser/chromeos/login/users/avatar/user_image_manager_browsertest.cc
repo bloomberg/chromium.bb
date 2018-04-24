@@ -239,12 +239,11 @@ class UserImageManagerTest : public LoginManagerTest,
 
   // Completes the download of all non-image profile data for the user
   // |account_id|.  This method must only be called after a profile data
-  // download has been started.  |url_fetcher_factory| will capture
-  // the net::TestURLFetcher created by the ProfileDownloader to
-  // download the profile image.
-  void CompleteProfileMetadataDownload(
-      const AccountId& account_id,
-      net::TestURLFetcherFactory* url_fetcher_factory) {
+  // download has been started.
+  // The net::TestURLFetcherFactory instance installed on the caller
+  // side will capture the net::TestURLFetcher created by the ProfileDownloader
+  // to download the profile image.
+  void CompleteProfileMetadataDownload(const AccountId& account_id) {
     ProfileDownloader* profile_downloader =
         reinterpret_cast<UserImageManagerImpl*>(
             ChromeUserManager::Get()->GetUserImageManager(account_id))
@@ -511,7 +510,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromProfileImage) {
   run_loop_->Run();
 
   net::TestURLFetcherFactory url_fetcher_factory;
-  CompleteProfileMetadataDownload(test_account_id1_, &url_fetcher_factory);
+  CompleteProfileMetadataDownload(test_account_id1_);
   CompleteProfileImageDownload(&url_fetcher_factory);
 
   const gfx::ImageSkia& profile_image =
@@ -563,7 +562,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
   run_loop_->Run();
 
   net::TestURLFetcherFactory url_fetcher_factory;
-  CompleteProfileMetadataDownload(test_account_id1_, &url_fetcher_factory);
+  CompleteProfileMetadataDownload(test_account_id1_);
 
   user_image_manager->SaveUserDefaultImageIndex(
       default_user_image::kFirstDefaultImageIndex);
