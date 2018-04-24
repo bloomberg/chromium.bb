@@ -225,7 +225,10 @@ void MojoBlobReader::OnResponseBodyStreamClosed(MojoResult result) {
 }
 
 void MojoBlobReader::OnResponseBodyStreamReady(MojoResult result) {
-  // TODO(jam): Handle a bad |result| value.
+  if (result == MOJO_RESULT_FAILED_PRECONDITION) {
+    OnResponseBodyStreamClosed(MOJO_RESULT_OK);
+    return;
+  }
   DCHECK_EQ(result, MOJO_RESULT_OK);
   ReadMore();
 }
