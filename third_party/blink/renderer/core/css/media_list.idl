@@ -25,7 +25,6 @@
 
 // https://drafts.csswg.org/cssom/#the-medialist-interface
 
-// TODO(foolip): MediaList should be an [ArrayClass].
 [
     Exposed=Window
 ] interface MediaList {
