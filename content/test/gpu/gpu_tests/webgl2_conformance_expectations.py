@@ -192,44 +192,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=715001)
     self.Fail('conformance/textures/misc/texture-size.html',
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
-    self.Fail('conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html',
-        ['win', 'nvidia', 'opengl'], bug=693090)
-    self.Fail('conformance2/glsl3/' +
-        'vector-dynamic-indexing-swizzled-lvalue.html',
-        ['win', 'nvidia', 'opengl'], bug=709874)
     self.Flaky('conformance2/rendering/attrib-type-match.html',
         ['win', 'nvidia', 'opengl'], bug=782254)
-    self.Flaky('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-2d-r11f_g11f_b10f-rgb-float.html',
-        ['win', 'nvidia', 'opengl'], bug=795030)
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-2d-r16f-red-float.html',
-        ['win', 'nvidia', 'opengl'], bug=786716)
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-2d-r8-red-unsigned_byte.html',
-        ['win', 'nvidia', 'opengl'], bug=784849)
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-2d-rg16f-rg-half_float.html',
-        ['win', 'nvidia', 'opengl'], bug=784849)
-    self.Flaky('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-2d-rg32f-rg-float.html',
-        ['win', 'nvidia', 'opengl'], bug=795030)
-    self.Flaky('conformance2/textures/webgl_canvas/' +
-        'tex-3d-rgba32f-rgba-float.html',
-        ['win', 'nvidia', 'opengl'], bug=795030)
-    self.Fail('conformance2/rendering/instanced-rendering-bug.html',
-        ['win', 'nvidia', 'opengl'], bug=791289)
-    self.Fail('conformance2/rendering/canvas-resizing-with-pbo-bound.html',
-        ['win', 'nvidia', 'opengl'], bug=794613)
-    self.Fail('deqp/functional/gles3/shadercommonfunction.html',
-        ['win', 'nvidia', 'opengl'], bug=795030)
-    self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
-        ['win', 'nvidia', 'opengl'], bug=795030)
-    self.Fail('conformance2/rendering/' +
-        'blitframebuffer-srgb-and-linear-drawbuffers.html',
-        ['win', 'nvidia', 'opengl'], bug=2355) # ANGLE bug ID
-    self.Fail('conformance2/rendering/clipping-wide-points.html',
-        ['win', 'nvidia', 'opengl'], bug=828572)
     self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
         ['win', 'nvidia', 'opengl'], bug=830046)
     self.Flaky('conformance2/transform_feedback/switching-objects.html',
@@ -352,78 +316,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'passthrough', 'd3d11'], bug=602688)
 
     # Passthrough command decoder / OpenGL
-    self.Fail('conformance/extensions/webgl-compressed-texture-s3tc.html',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance/glsl/misc/shader-with-non-reserved-words.html',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance/textures/canvas/*', ['passthrough', 'opengl'],
-        bug=602688)
-    self.Fail('conformance/textures/canvas_sub_rectangle/*',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance/textures/image_bitmap_from_blob/*',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance/textures/image_bitmap_from_canvas/*',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance/textures/image_bitmap_from_image/*',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance/textures/image_bitmap_from_image_bitmap/*',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance/textures/image_bitmap_from_image_data/*',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance/textures/misc/' +
-        'copytexsubimage2d-large-partial-copy-corruption.html',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance/textures/misc/copytexsubimage2d-subrects.html',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance/textures/misc/gl-teximage.html',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance/textures/misc/texture-mips.html',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance/textures/webgl_canvas/*', ['passthrough', 'opengl'],
-        bug=602688)
-    self.Fail('conformance1/textures/image_bitmap_from_image/*',
-        ['passthrough', 'opengl'], bug=602688)
     self.Fail('conformance2/misc/uninitialized-test-2.html',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance2/reading/format-r11f-g11f-b10f.html',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
         ['passthrough', 'opengl'], bug=602688)
     self.Fail('conformance2/rendering/draw-buffers-dirty-state-bug.html',
         ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance2/rendering/framebuffer-unsupported.html',
-        ['passthrough', 'opengl'], bug=602688)
     self.Fail('conformance2/state/gl-get-calls.html', ['passthrough', 'opengl'],
         bug=602688)
-    self.Fail('conformance2/textures/canvas/*', ['passthrough', 'opengl'],
-        bug=602688)
-    self.Fail('conformance2/textures/canvas_sub_rectangle/*',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance2/textures/image_bitmap_from_blob/*',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance2/textures/image_bitmap_from_canvas/*',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance2/textures/image_bitmap_from_image/*',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance2/textures/image_bitmap_from_image_bitmap/*',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance2/textures/image_bitmap_from_image_data/*',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance2/textures/image_bitmap_from_video/*',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance2/textures/misc/angle-stuck-depth-textures.html',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance2/textures/misc/' +
-        'tex-image-with-bad-args-from-dom-elements.html',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance2/textures/misc/tex-storage-2d.html',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance2/textures/video/tex-2d-rgb9_e5-rgb-float.html',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance2/textures/video/tex-2d-rgb9_e5-rgb-half_float.html',
-        ['passthrough', 'opengl'], bug=602688)
-    self.Fail('conformance2/textures/webgl_canvas/*',
-        ['passthrough', 'opengl'], bug=602688)
     self.Fail('deqp/functional/gles3/integerstatequery.html',
         ['passthrough', 'opengl'], bug=602688)
 
