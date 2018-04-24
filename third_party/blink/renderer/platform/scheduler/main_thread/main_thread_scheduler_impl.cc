@@ -694,7 +694,7 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTaskQueue(
   scoped_refptr<MainThreadTaskQueue> task_queue(helper_.NewTaskQueue(params));
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter;
-  if (params.can_be_blocked || params.can_be_paused || params.can_be_stopped)
+  if (params.can_be_deferred || params.can_be_paused || params.can_be_stopped)
     voter = task_queue->CreateQueueEnabledVoter();
 
   auto insert_result =
