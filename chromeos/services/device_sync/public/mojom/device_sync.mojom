@@ -90,6 +90,20 @@ struct FindEligibleDevicesResponse {
   array<RemoteDevice> ineligible_devices;
 };
 
+struct DebugInfo {
+  // Enrollment stats:
+  mojo_base.mojom.Time last_enrollment_time;
+  mojo_base.mojom.TimeDelta time_to_next_enrollment_attempt;
+  bool is_recovering_from_enrollment_failure;
+  bool is_enrollment_in_progress;
+
+  // Sync stats:
+  mojo_base.mojom.Time last_sync_time;
+  mojo_base.mojom.TimeDelta time_to_next_sync_attempt;
+  bool is_recovering_from_sync_failure;
+  bool is_sync_in_progress;
+};
+
 interface DeviceSyncObserver {
   // Invoked when the current device has successfully completed enrollment. Note
   // that enrollment occurs once when the device first starts up, then the
@@ -154,4 +168,10 @@ interface DeviceSync {
   // the reason for failure along with a null response.
   FindEligibleDevices(SoftwareFeature software_feature) =>
       (string? error_code, FindEligibleDevicesResponse? response);
+
+  // Functions below are implemented for chrome://proximity-auth page, which is
+  // intended for debugging purposes only.
+  // TODO(khorimoto): Determine whether a new, debug-only interface should be
+  //                  refactored out of DeviceSync.
+  GetDebugInfo() => (DebugInfo? debug_info);
 };

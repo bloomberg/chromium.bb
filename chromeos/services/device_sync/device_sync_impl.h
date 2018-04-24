@@ -105,6 +105,7 @@ class DeviceSyncImpl : public mojom::DeviceSync,
       SetSoftwareFeatureStateCallback callback) override;
   void FindEligibleDevices(cryptauth::SoftwareFeature software_feature,
                            FindEligibleDevicesCallback callback) override;
+  void GetDebugInfo(GetDebugInfoCallback callback) override;
 
   // cryptauth::CryptAuthEnrollmentManager::Observer:
   void OnEnrollmentFinished(bool success) override;

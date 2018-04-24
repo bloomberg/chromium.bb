@@ -21,6 +21,10 @@ class FakeCryptAuthDeviceManager : public CryptAuthDeviceManager {
 
   bool has_started() { return has_started_; }
 
+  void set_last_sync_time(base::Time last_sync_time) {
+    last_sync_time_ = last_sync_time;
+  }
+
   void set_time_to_next_attempt(base::TimeDelta time_to_next_attempt) {
     time_to_next_attempt_ = time_to_next_attempt;
   }
@@ -33,7 +37,7 @@ class FakeCryptAuthDeviceManager : public CryptAuthDeviceManager {
 
   std::vector<ExternalDeviceInfo>& unlock_keys() { return unlock_keys_; }
 
-  void set_unlock_keys(std::vector<ExternalDeviceInfo> unlock_keys) {
+  void set_unlock_keys(const std::vector<ExternalDeviceInfo>& unlock_keys) {
     unlock_keys_ = unlock_keys;
   }
 
@@ -42,13 +46,13 @@ class FakeCryptAuthDeviceManager : public CryptAuthDeviceManager {
   }
 
   void set_pixel_unlock_keys(
-      std::vector<ExternalDeviceInfo> pixel_unlock_keys) {
+      const std::vector<ExternalDeviceInfo>& pixel_unlock_keys) {
     pixel_unlock_keys_ = pixel_unlock_keys;
   }
 
   std::vector<ExternalDeviceInfo>& tether_hosts() { return tether_hosts_; }
 
-  void set_tether_hosts(std::vector<ExternalDeviceInfo> tether_hosts) {
+  void set_tether_hosts(const std::vector<ExternalDeviceInfo>& tether_hosts) {
     tether_hosts_ = tether_hosts;
   }
 
@@ -57,8 +61,16 @@ class FakeCryptAuthDeviceManager : public CryptAuthDeviceManager {
   }
 
   void set_pixel_tether_hosts(
-      std::vector<ExternalDeviceInfo> pixel_tether_hosts) {
+      const std::vector<ExternalDeviceInfo>& pixel_tether_hosts) {
     pixel_tether_hosts_ = pixel_tether_hosts;
+  }
+
+  void set_is_recovering_from_failure(bool is_recovering_from_failure) {
+    is_recovering_from_failure_ = is_recovering_from_failure;
+  }
+
+  void set_is_sync_in_progress(bool is_sync_in_progress) {
+    is_sync_in_progress_ = is_sync_in_progress;
   }
 
   // Finishes the active sync; should only be called if a sync is in progress
@@ -67,7 +79,7 @@ class FakeCryptAuthDeviceManager : public CryptAuthDeviceManager {
   // returned by future calls to GetLastSyncTime().
   void FinishActiveSync(SyncResult sync_result,
                         DeviceChangeResult device_change_result,
-                        const base::Time& sync_finish_time = base::Time());
+                        base::Time sync_finish_time = base::Time());
 
   // Make these functions public for testing.
   using CryptAuthDeviceManager::NotifySyncStarted;
