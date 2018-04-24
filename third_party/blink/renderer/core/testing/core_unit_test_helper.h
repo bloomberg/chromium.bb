@@ -77,6 +77,8 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
 
   explicit RenderingTest(LocalFrameClient* = nullptr);
 
+  const Node* HitTest(int x, int y);
+
  protected:
   void SetUp() override;
   void TearDown() override;
