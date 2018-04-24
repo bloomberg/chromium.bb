@@ -101,7 +101,7 @@ class CONTENT_EXPORT SessionStorageMetadata {
   // the next available map id.
   // Note: It is invalid to call this method for an area that has a map with
   // only one reference.
-  MapData* RegisterNewMap(
+  scoped_refptr<MapData> RegisterNewMap(
       NamespaceEntry namespace_entry,
       const url::Origin& origin,
       std::vector<leveldb::mojom::BatchedOperationPtr>* save_operations);

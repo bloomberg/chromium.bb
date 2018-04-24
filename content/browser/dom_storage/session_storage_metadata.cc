@@ -206,7 +206,8 @@ std::vector<uint8_t> SessionStorageMetadata::DatabaseVersionAsVector() const {
   return NumberToValue(database_version_);
 }
 
-SessionStorageMetadata::MapData* SessionStorageMetadata::RegisterNewMap(
+scoped_refptr<SessionStorageMetadata::MapData>
+SessionStorageMetadata::RegisterNewMap(
     NamespaceEntry namespace_entry,
     const url::Origin& origin,
     std::vector<leveldb::mojom::BatchedOperationPtr>* save_operations) {
@@ -242,7 +243,7 @@ SessionStorageMetadata::MapData* SessionStorageMetadata::RegisterNewMap(
       BatchOperationType::PUT_KEY, GetAreaKey(namespace_entry->first, origin),
       new_map_data->MapNumberAsBytes()));
 
-  return new_map_data.get();
+  return new_map_data;
 }
 
 void SessionStorageMetadata::RegisterShallowClonedNamespace(
