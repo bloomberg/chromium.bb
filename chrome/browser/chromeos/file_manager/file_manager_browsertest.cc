@@ -22,7 +22,7 @@ namespace file_manager {
 // second is the JS test case name.
 typedef std::tuple<GuestMode, const char*> TestParameter;
 
-// Test class FileManager browser tests.
+// FileManager browser test class.
 class FileManagerBrowserTest :
       public FileManagerBrowserTestBase,
       public ::testing::WithParamInterface<TestParameter> {
@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, Test) {
   StartTest();
 }
 
-// Test class for FileManager browser tests that rely on deprecated event
+// FileManager browser test class for tests that rely on deprecated event
 // dispatch that send tests.
 class FileManagerBrowserTestWithLegacyEventDispatch
     : public FileManagerBrowserTest {
