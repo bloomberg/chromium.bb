@@ -8,6 +8,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/thread.h"
@@ -34,7 +35,7 @@
 namespace service_manager {
 
 void RunStandaloneService(const StandaloneServiceCallback& callback) {
-  DCHECK(!base::MessageLoop::current());
+  DCHECK(!base::MessageLoopCurrent::Get());
 
 #if defined(OS_MACOSX)
   // Send our task port to the parent.

@@ -15,7 +15,7 @@
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
@@ -333,7 +333,7 @@ class ServiceManagerTest : public test::ServiceTest,
     connector()->StartService(identity);
     if (!expect_service_started) {
       // Wait briefly and test no new service was created.
-      base::MessageLoop::current()->task_runner()->PostDelayedTask(
+      base::MessageLoopCurrent::Get()->task_runner()->PostDelayedTask(
           FROM_HERE, loop.QuitClosure(), base::TimeDelta::FromSeconds(1));
     }
 
