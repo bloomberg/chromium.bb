@@ -414,9 +414,14 @@ class ImageScaledBackgroundFilter : public LayerTreeHostFiltersPixelTest {
     filters.Append(FilterOperation::CreateGrayscaleFilter(1.0f));
     filter->SetBackgroundFilters(filters);
 
+#if defined(OS_WIN) || defined(_MIPS_ARCH_LOONGSON)
 #if defined(OS_WIN)
     // Windows has 153 pixels off by at most 2: crbug.com/225027
     float percentage_pixels_large_error = 0.3825f;  // 153px / (200*200)
+#else
+    // Loongson has 2 pixels off by at most 2: crbug.com/819075
+    float percentage_pixels_large_error = 0.005f;  // 2px / (200*200)
+#endif
     float percentage_pixels_small_error = 0.0f;
     float average_error_allowed_in_bad_pixels = 1.f;
     int large_error_allowed = 2;
