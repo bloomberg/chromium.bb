@@ -12,6 +12,10 @@
 struct wl_buffer;
 struct wl_callback;
 struct wl_compositor;
+struct wl_data_device_manager;
+struct wl_data_device;
+struct wl_data_offer;
+struct wl_data_source;
 struct wl_keyboard;
 struct wl_output;
 struct wl_pointer;
@@ -48,6 +52,30 @@ template <>
 struct ObjectTraits<wl_compositor> {
   static const wl_interface* interface;
   static void (*deleter)(wl_compositor*);
+};
+
+template <>
+struct ObjectTraits<wl_data_device_manager> {
+  static const wl_interface* interface;
+  static void (*deleter)(wl_data_device_manager*);
+};
+
+template <>
+struct ObjectTraits<wl_data_device> {
+  static const wl_interface* interface;
+  static void (*deleter)(wl_data_device*);
+};
+
+template <>
+struct ObjectTraits<wl_data_offer> {
+  static const wl_interface* interface;
+  static void (*deleter)(wl_data_offer*);
+};
+
+template <>
+struct ObjectTraits<wl_data_source> {
+  static const wl_interface* interface;
+  static void (*deleter)(wl_data_source*);
 };
 
 template <>
