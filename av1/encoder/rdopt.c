@@ -7726,8 +7726,7 @@ static INLINE int build_cur_mv(int_mv *cur_mv, int this_mode,
 static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                  BLOCK_SIZE bsize, RD_STATS *rd_stats,
                                  RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
-                                 int *disable_skip,
-                                 int_mv (*mode_mv)[REF_FRAMES], int mi_row,
+                                 int *disable_skip, int_mv *cur_mv, int mi_row,
                                  int mi_col, HandleInterModeArgs *args,
                                  const int64_t ref_best_rd) {
   const AV1_COMMON *cm = &cpi->common;
@@ -7737,7 +7736,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   const int is_comp_pred = has_second_ref(mbmi);
   const int this_mode = mbmi->mode;
-  int_mv *frame_mv = mode_mv[this_mode];
   int i;
   int refs[2] = { mbmi->ref_frame[0],
                   (mbmi->ref_frame[1] < 0 ? 0 : mbmi->ref_frame[1]) };
@@ -7822,7 +7820,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       rd_stats->rate += x->comp_idx_cost[comp_index_ctx][0];
     }
 
-    int_mv cur_mv[2];
     if (!build_cur_mv(cur_mv, this_mode, cm, x)) {
       early_terminate = INT64_MAX;
       continue;
@@ -7830,9 +7827,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     if (have_newmv_in_inter_mode(this_mode)) {
       ret_val =
           handle_newmv(cpi, x, bsize, cur_mv, mi_row, mi_col, &rate_mv, args);
-      for (i = 0; i < is_comp_pred + 1; ++i) {
-        frame_mv[refs[i]].as_int = cur_mv[i].as_int;
-      }
       if (ret_val != 0) {
         early_terminate = INT64_MAX;
         continue;
@@ -9552,9 +9546,18 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         args.single_newmv_rate = search_state.single_newmv_rate[0];
         args.single_newmv_valid = search_state.single_newmv_valid[0];
         args.modelled_rd = search_state.modelled_rd;
+
+        int_mv cur_mvs[2];
         this_rd = handle_inter_mode(
             cpi, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv, &disable_skip,
-            search_state.frame_mv, mi_row, mi_col, &args, search_state.best_rd);
+            cur_mvs, mi_row, mi_col, &args, search_state.best_rd);
+        if (have_newmv_in_inter_mode(this_mode)) {
+          for (i = 0; i < comp_pred + 1; ++i) {
+            search_state.frame_mv[this_mode][mbmi->ref_frame[i]].as_int =
+                cur_mvs[i].as_int;
+          }
+        }
+
         rate2 = rd_stats.rate;
         skippable = rd_stats.skip;
         distortion2 = rd_stats.dist;
@@ -9686,10 +9689,17 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             args.single_newmv_valid =
                 search_state.single_newmv_valid[mbmi->ref_mv_idx];
 
-            tmp_alt_rd = handle_inter_mode(
-                cpi, x, bsize, &tmp_rd_stats, &tmp_rd_stats_y, &tmp_rd_stats_uv,
-                &dummy_disable_skip, search_state.frame_mv, mi_row, mi_col,
-                &args, search_state.best_rd);
+            int_mv cur_mvs[2];
+            tmp_alt_rd = handle_inter_mode(cpi, x, bsize, &tmp_rd_stats,
+                                           &tmp_rd_stats_y, &tmp_rd_stats_uv,
+                                           &dummy_disable_skip, cur_mvs, mi_row,
+                                           mi_col, &args, search_state.best_rd);
+            if (have_newmv_in_inter_mode(this_mode)) {
+              for (i = 0; i < comp_pred + 1; ++i) {
+                search_state.frame_mv[this_mode][mbmi->ref_frame[i]].as_int =
+                    cur_mvs[i].as_int;
+              }
+            }
             // Prevent pointers from escaping local scope
             args.single_newmv = search_state.single_newmv[0];
             args.single_newmv_rate = search_state.single_newmv_rate[0];
