@@ -16,8 +16,6 @@ This document will walk you through:
 * An overview of libprotobuf-mutator and how it's used.
 * Writing and building your first fuzzer using libprotobuf-mutator.
 
-[TOC]
-
 ## Overview of libprotobuf-mutator
 libprotobuf-mutator is a package that allows libFuzzer’s mutation engine to
 manipulate protobufs. This allows libFuzzer's mutations to be more specific
@@ -194,6 +192,10 @@ in this guide since it is format-specific. However, a good example of conversion
 code (and a fuzz target) can be found in
 `testing/libfuzzer/fuzzers/url_parse_proto_fuzzer.cc`. That example thoroughly
 documents how it converts the Url protobuf message into a real URL string.
+Note that `DEFINE_TEXT_PROTO_FUZZER` can be used during development instead of
+`DEFINE_BINARY_PROTO_FUZZER`. `DEFINE_TEXT_PROTO_FUZZER` comes with a
+performance penalty but causes the corpus to be stored in a human readable (and
+modifiable) string-based format.
 A good convention is printing the native input when the `LPM_DUMP_NATIVE_INPUT`
 env variable is set. This will make it easy to retreive the actual input that
 causes the code to crash instead of the protobuf version of it (eg you can get
@@ -277,75 +279,6 @@ that it handles strings differently in each because of differences in the way
 the proto library handles strings in each syntax (in short, proto3 strings must
 actually be UTF-8 while in proto2 they do not). See [here] for more details.
 
-## Write a fuzzer for code that accepts multiple inputs
-LPM makes it straightforward to write a fuzzer for a target that needs multiple
-inputs. The steps for doing this are similar to those of writing a grammar based
-fuzzer, except in this case the grammar is very simple. Thus instructions for
-this use case are given below.
-Start by creating the proto file which will define the inputs you want:
-
-```protocol-buffer
-// my_fuzzer_input.proto
-
-syntax = "proto2";
-
-package my_fuzzer;
-
-message FuzzerInput {
-    required bool arg1 = 1;
-    required string arg2 = 2;
-    optional int arg3 = 1;
-}
-
-```
-
-In this example, the function we are fuzzing requires a `bool` and a `string` and
-takes an `int` as an optional argument. Let's define our fuzz target:
-
-```c++
-// my_fuzzer.cc
-
-#include "testing/libfuzzer/proto/lpm_interface.h"
-
-// Assuming the .proto file is path/to/your/proto_file/my_fuzzer_input.proto.
-#include "path/to/your/proto_file/my_proto.pb.h"
-
-DEFINE_BINARY_PROTO_FUZZER(
-  const my_proto::FuzzerInput& fuzzer_input) {
-  if (fuzzer_input.has_arg3())
-    targeted_code(fuzzer_input.arg1(), fuzzer_input.arg2(), fuzzer_input.arg3());
-  else
-    targeted_code(fuzzer_input.arg1(), fuzzer_input.arg2());
-}
-```
-
-Then you must define targets for your fuzzer and proto format in GN, like so:
-```python
-import("//testing/libfuzzer/fuzzer_test.gni")
-import("//third_party/protobuf/proto_library.gni")
-
-fuzzer_test("my_fuzzer") {
-  sources = [ "my_fuzzer.cc" ]
-  deps = [
-    ":my_fuzzer_input",
-    "//third_party/libprotobuf-mutator"
-    ...
-  ]
-}
-
-proto_library("my_fuzzer_input") {
-  sources = [ "my_fuzzer_input.proto" ]
-}
-```
-
-### Tips for fuzzers that accept multiple inputs.
-Protobuf has a field rule `repeated` that is useful when a fuzzer needs to
-accept a non-fixed number of inputs (see [mojo_parse_messages_proto_fuzzer],
-which accepts an unbounded number of mojo messages as an example).
-Protobuf version 2 also has `optional` and `required` field rules that some may
-find useful.
-
-
 ## Wrapping Up
 Once you have written a fuzzer with libprotobuf-mutator, building and running
 it is pretty much the same as if the fuzzer were a standard libFuzzer-based
@@ -357,11 +290,6 @@ format).
 examples, but it is possible that your format is already defined or partially
 defined by an existing proto definition (if you are writing a grammar fuzzer).
 
-* `DEFINE_TEXT_PROTO_FUZZER` can be used instead of `DEFINE_BINARY_PROTO_FUZZER`
-to have a corpus that is human readable and modifiable (ie: not in protobuf's
-binary format).  However, `DEFINE_TEXT_PROTO_FUZZER` does come with a
-performance penalty.
-
 
 [libfuzzer in Chromium]: getting_started.md
 [Protocol Buffers]: https://developers.google.com/protocol-buffers/docs/cpptutorial
@@ -370,4 +298,3 @@ performance penalty.
 [existing proto fuzzers]: https://cs.chromium.org/search/?q=DEFINE_(BINARY_%7CTEXT_)?PROTO_FUZZER+-file:src/third_party/libprotobuf-mutator/src/src/libfuzzer/libfuzzer_macro.h&sq=package:chromium&type=cs
 [here]: https://github.com/google/libprotobuf-mutator/blob/master/README.md#utf-8-strings
 [override_lite_runtime_plugin_test_fuzzer]: https://cs.chromium.org/chromium/src/third_party/libprotobuf-mutator/BUILD.gn?l=78
-[mojo_parse_messages_proto_fuzzer]: https://cs.chromium.org/chromium/src/mojo/public/tools/fuzzers/mojo_parse_message_proto_fuzzer.cc?l=25
