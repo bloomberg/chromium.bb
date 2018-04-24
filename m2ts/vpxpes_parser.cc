@@ -261,7 +261,6 @@ bool VpxPesParser::IsPayloadFragmented(const PesHeader& header) const {
 
 bool VpxPesParser::AccumulateFragmentedPayload(std::size_t pes_packet_length,
                                                std::size_t payload_length) {
-  PesHeader fragment_header;
   const std::size_t first_fragment_length =
       pes_packet_length - kPesOptionalHeaderSize - kBcmvHeaderSize;
   for (std::size_t i = 0; i < first_fragment_length; ++i) {
