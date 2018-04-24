@@ -12,9 +12,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-
-#include <iosfwd>
 
 namespace blink {
 
@@ -35,47 +32,48 @@ using MainThreadScrollingReasons = uint32_t;
 class PLATFORM_EXPORT ScrollPaintPropertyNode
     : public PaintPropertyNode<ScrollPaintPropertyNode> {
  public:
+  // To make it less verbose and more readable to construct and update a node,
+  // a struct with default values is used to represent the state.
+  struct State {
+    IntRect container_rect;
+    IntRect contents_rect;
+    bool user_scrollable_horizontal = false;
+    bool user_scrollable_vertical = false;
+    MainThreadScrollingReasons main_thread_scrolling_reasons =
+        MainThreadScrollingReason::kNotScrollingOnMain;
+    // The scrolling element id is stored directly on the scroll node and not on
+    // the associated TransformPaintPropertyNode used for scroll offset.
+    CompositorElementId compositor_element_id;
+
+    bool operator==(const State& o) const {
+      return container_rect == o.container_rect &&
+             contents_rect == o.contents_rect &&
+             user_scrollable_horizontal == o.user_scrollable_horizontal &&
+             user_scrollable_vertical == o.user_scrollable_vertical &&
+             main_thread_scrolling_reasons == o.main_thread_scrolling_reasons &&
+             compositor_element_id == o.compositor_element_id;
+    }
+  };
+
   // This node is really a sentinel, and does not represent a real scroll.
   static ScrollPaintPropertyNode* Root();
 
   static scoped_refptr<ScrollPaintPropertyNode> Create(
       scoped_refptr<const ScrollPaintPropertyNode> parent,
-      const IntRect& container_rect,
-      const IntRect& contents_rect,
-      bool user_scrollable_horizontal,
-      bool user_scrollable_vertical,
-      MainThreadScrollingReasons main_thread_scrolling_reasons,
-      CompositorElementId compositor_element_id) {
-    return base::AdoptRef(new ScrollPaintPropertyNode(
-        std::move(parent), container_rect, contents_rect,
-        user_scrollable_horizontal, user_scrollable_vertical,
-        main_thread_scrolling_reasons, compositor_element_id));
+      State&& state) {
+    return base::AdoptRef(
+        new ScrollPaintPropertyNode(std::move(parent), std::move(state)));
   }
 
   bool Update(scoped_refptr<const ScrollPaintPropertyNode> parent,
-              const IntRect& container_rect,
-              const IntRect& contents_rect,
-              bool user_scrollable_horizontal,
-              bool user_scrollable_vertical,
-              MainThreadScrollingReasons main_thread_scrolling_reasons,
-              CompositorElementId compositor_element_id) {
-    bool parent_changed = SetParent(std::move(parent));
-
-    if (container_rect == container_rect_ && contents_rect == contents_rect_ &&
-        user_scrollable_horizontal == user_scrollable_horizontal_ &&
-        user_scrollable_vertical == user_scrollable_vertical_ &&
-        main_thread_scrolling_reasons == main_thread_scrolling_reasons_ &&
-        compositor_element_id_ == compositor_element_id)
+              State&& state) {
+    bool parent_changed = SetParent(parent);
+    if (state == state_)
       return parent_changed;
 
     SetChanged();
-    container_rect_ = container_rect;
-    contents_rect_ = contents_rect;
-    user_scrollable_horizontal_ = user_scrollable_horizontal;
-    user_scrollable_vertical_ = user_scrollable_vertical;
-    main_thread_scrolling_reasons_ = main_thread_scrolling_reasons;
-    compositor_element_id_ = compositor_element_id;
-    DCHECK(ElementIdNamespaceIsForScrolling());
+    state_ = std::move(state);
+    Validate();
     return true;
   }
 
@@ -83,97 +81,72 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   // the parent of the associated transform node (ScrollTranslation).
   // It doesn't include non-overlay scrollbars. Overlay scrollbars do not affect
   // the rect.
-  const IntRect& ContainerRect() const { return container_rect_; }
+  const IntRect& ContainerRect() const { return state_.container_rect; }
 
   // Rect of the contents that is scrolled within the container rect, in the
   // space of the associated transform node (ScrollTranslation).
-  const IntRect& ContentsRect() const { return contents_rect_; }
+  const IntRect& ContentsRect() const { return state_.contents_rect; }
 
-  bool UserScrollableHorizontal() const { return user_scrollable_horizontal_; }
-  bool UserScrollableVertical() const { return user_scrollable_vertical_; }
+  bool UserScrollableHorizontal() const {
+    return state_.user_scrollable_horizontal;
+  }
+  bool UserScrollableVertical() const {
+    return state_.user_scrollable_vertical;
+  }
 
   // Return reason bitfield with values from cc::MainThreadScrollingReason.
   MainThreadScrollingReasons GetMainThreadScrollingReasons() const {
-    return main_thread_scrolling_reasons_;
+    return state_.main_thread_scrolling_reasons;
   }
 
   // Main thread scrolling reason for the threaded scrolling disabled setting.
   bool ThreadedScrollingDisabled() const {
-    return main_thread_scrolling_reasons_ &
+    return state_.main_thread_scrolling_reasons &
            MainThreadScrollingReason::kThreadedScrollingDisabled;
   }
 
   // Main thread scrolling reason for background attachment fixed descendants.
   bool HasBackgroundAttachmentFixedDescendants() const {
-    return main_thread_scrolling_reasons_ &
+    return state_.main_thread_scrolling_reasons &
            MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
   }
 
   const CompositorElementId& GetCompositorElementId() const {
-    return compositor_element_id_;
+    return state_.compositor_element_id;
   }
 
 #if DCHECK_IS_ON()
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // a scroll node before it has been updated, to later detect changes.
   scoped_refptr<ScrollPaintPropertyNode> Clone() const {
-    scoped_refptr<ScrollPaintPropertyNode> cloned =
-        base::AdoptRef(new ScrollPaintPropertyNode(
-            Parent(), container_rect_, contents_rect_,
-            user_scrollable_horizontal_, user_scrollable_vertical_,
-            main_thread_scrolling_reasons_, compositor_element_id_));
-    return cloned;
+    return base::AdoptRef(new ScrollPaintPropertyNode(Parent(), State(state_)));
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
   // if a scroll node has changed.
   bool operator==(const ScrollPaintPropertyNode& o) const {
-    return Parent() == o.Parent() && container_rect_ == o.container_rect_ &&
-           contents_rect_ == o.contents_rect_ &&
-           user_scrollable_horizontal_ == o.user_scrollable_horizontal_ &&
-           user_scrollable_vertical_ == o.user_scrollable_vertical_ &&
-           main_thread_scrolling_reasons_ == o.main_thread_scrolling_reasons_ &&
-           compositor_element_id_ == o.compositor_element_id_;
+    return Parent() == o.Parent() && state_ == o.state_;
   }
 #endif
 
   std::unique_ptr<JSONObject> ToJSON() const;
 
  private:
-  ScrollPaintPropertyNode(
-      scoped_refptr<const ScrollPaintPropertyNode> parent,
-      const IntRect& container_rect,
-      const IntRect& contents_rect,
-      bool user_scrollable_horizontal,
-      bool user_scrollable_vertical,
-      MainThreadScrollingReasons main_thread_scrolling_reasons,
-      CompositorElementId compositor_element_id)
-      : PaintPropertyNode(std::move(parent)),
-        container_rect_(container_rect),
-        contents_rect_(contents_rect),
-        user_scrollable_horizontal_(user_scrollable_horizontal),
-        user_scrollable_vertical_(user_scrollable_vertical),
-        main_thread_scrolling_reasons_(main_thread_scrolling_reasons),
-        compositor_element_id_(compositor_element_id) {
+  ScrollPaintPropertyNode(scoped_refptr<const ScrollPaintPropertyNode> parent,
+                          State&& state)
+      : PaintPropertyNode(std::move(parent)), state_(std::move(state)) {
+    Validate();
+  }
+
+  void Validate() const {
 #if DCHECK_IS_ON()
-    DCHECK(ElementIdNamespaceIsForScrolling());
+    DCHECK(!state_.compositor_element_id ||
+           NamespaceFromCompositorElementId(state_.compositor_element_id) ==
+               CompositorElementIdNamespace::kScroll);
 #endif
   }
 
-  bool ElementIdNamespaceIsForScrolling() const {
-    return !compositor_element_id_ ||
-           NamespaceFromCompositorElementId(compositor_element_id_) ==
-               CompositorElementIdNamespace::kScroll;
-  }
-
-  IntRect container_rect_;
-  IntRect contents_rect_;
-  bool user_scrollable_horizontal_ : 1;
-  bool user_scrollable_vertical_ : 1;
-  MainThreadScrollingReasons main_thread_scrolling_reasons_;
-  // The scrolling element id is stored directly on the scroll node and not on
-  // the associated TransformPaintPropertyNode used for scroll offset.
-  CompositorElementId compositor_element_id_;
+  State state_;
 };
 
 }  // namespace blink

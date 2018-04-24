@@ -359,11 +359,11 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeRounded) {
   FloatRoundedRect::Radii radii(FloatSize(1, 2), FloatSize(2, 3),
                                 FloatSize(3, 4), FloatSize(4, 5));
   FloatRoundedRect clip_rect(FloatRect(-1000, -1000, 2000, 2000), radii);
-  scoped_refptr<ClipPaintPropertyNode> clip0 = ClipPaintPropertyNode::Create(
-      ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
-      clip_rect);
-  scoped_refptr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::Create(
-      clip0, TransformPaintPropertyNode::Root(), clip_rect);
+  scoped_refptr<ClipPaintPropertyNode> clip0 =
+      CreateClip(ClipPaintPropertyNode::Root(),
+                 TransformPaintPropertyNode::Root(), clip_rect);
+  scoped_refptr<ClipPaintPropertyNode> clip2 =
+      CreateClip(clip0, TransformPaintPropertyNode::Root(), clip_rect);
 
   PropertyTreeState layer_state(TransformPaintPropertyNode::Root(), clip0.get(),
                                 EffectPaintPropertyNode::Root());
@@ -390,8 +390,12 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeRounded) {
                           .Properties(artifact.PaintChunks()[2].properties)
                           .Build();
   FloatRoundedRect new_clip_rect(FloatRect(-2000, -2000, 4000, 4000), radii);
-  clip0->Update(clip0->Parent(), clip0->LocalTransformSpace(), new_clip_rect);
-  clip2->Update(clip2->Parent(), clip2->LocalTransformSpace(), new_clip_rect);
+  clip0->Update(clip0->Parent(),
+                ClipPaintPropertyNode::State{clip0->LocalTransformSpace(),
+                                             new_clip_rect});
+  clip2->Update(clip2->Parent(),
+                ClipPaintPropertyNode::State{clip2->LocalTransformSpace(),
+                                             new_clip_rect});
 
   GeometryMapperClipCache::ClearCache();
   invalidator.Generate(new_artifact, kDefaultLayerBounds, layer_state);
@@ -427,11 +431,11 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeRounded) {
 TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeSimple) {
   CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
   FloatRoundedRect clip_rect(-1000, -1000, 2000, 2000);
-  scoped_refptr<ClipPaintPropertyNode> clip0 = ClipPaintPropertyNode::Create(
-      ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
-      clip_rect);
-  scoped_refptr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::Create(
-      clip0, TransformPaintPropertyNode::Root(), clip_rect);
+  scoped_refptr<ClipPaintPropertyNode> clip0 =
+      CreateClip(ClipPaintPropertyNode::Root(),
+                 TransformPaintPropertyNode::Root(), clip_rect);
+  scoped_refptr<ClipPaintPropertyNode> clip1 =
+      CreateClip(clip0, TransformPaintPropertyNode::Root(), clip_rect);
 
   PropertyTreeState layer_state = PropertyTreeState::Root();
   auto artifact =
@@ -451,7 +455,9 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeSimple) {
   // Change clip1 to bigger, which is still bound by clip0, resulting no actual
   // visual change.
   FloatRoundedRect new_clip_rect1(-2000, -2000, 4000, 4000);
-  clip1->Update(clip1->Parent(), clip1->LocalTransformSpace(), new_clip_rect1);
+  clip1->Update(clip1->Parent(),
+                ClipPaintPropertyNode::State{clip1->LocalTransformSpace(),
+                                             new_clip_rect1});
   auto new_artifact1 = Chunk(0)
                            .Properties(artifact.PaintChunks()[0].properties)
                            .Bounds(artifact.PaintChunks()[0].bounds)
@@ -467,7 +473,9 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeSimple) {
 
   // Change clip1 to smaller.
   FloatRoundedRect new_clip_rect2(-500, -500, 1000, 1000);
-  clip1->Update(clip1->Parent(), clip1->LocalTransformSpace(), new_clip_rect2);
+  clip1->Update(clip1->Parent(),
+                ClipPaintPropertyNode::State{clip1->LocalTransformSpace(),
+                                             new_clip_rect2});
   auto new_artifact2 = Chunk(0)
                            .Properties(artifact.PaintChunks()[0].properties)
                            .Bounds(artifact.PaintChunks()[0].bounds)
@@ -498,7 +506,9 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeSimple) {
 
   // Change clip1 bigger at one side.
   FloatRoundedRect new_clip_rect3(-500, -500, 2000, 1000);
-  clip1->Update(clip1->Parent(), clip1->LocalTransformSpace(), new_clip_rect3);
+  clip1->Update(clip1->Parent(),
+                ClipPaintPropertyNode::State{clip1->LocalTransformSpace(),
+                                             new_clip_rect3});
   auto new_artifact3 = Chunk(0)
                            .Properties(artifact.PaintChunks()[0].properties)
                            .Bounds(artifact.PaintChunks()[0].bounds)

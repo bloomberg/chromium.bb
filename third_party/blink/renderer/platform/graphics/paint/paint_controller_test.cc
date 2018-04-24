@@ -523,8 +523,8 @@ TEST_P(PaintControllerTest, UpdateClip) {
   FakeDisplayItemClient second("second", LayoutRect(100, 100, 200, 200));
   GraphicsContext context(GetPaintController());
 
-  scoped_refptr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
-      nullptr, nullptr, FloatRoundedRect(1, 1, 2, 2));
+  scoped_refptr<ClipPaintPropertyNode> clip =
+      CreateClip(nullptr, nullptr, FloatRoundedRect(1, 1, 2, 2));
 
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
@@ -583,8 +583,8 @@ TEST_P(PaintControllerTest, UpdateClip) {
   second.SetDisplayItemsUncached();
   DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
 
-  scoped_refptr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::Create(
-      nullptr, nullptr, FloatRoundedRect(1, 1, 2, 2));
+  scoped_refptr<ClipPaintPropertyNode> clip2 =
+      CreateClip(nullptr, nullptr, FloatRoundedRect(1, 1, 2, 2));
 
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {

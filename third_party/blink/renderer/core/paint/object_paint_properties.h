@@ -188,84 +188,99 @@ class CORE_EXPORT ObjectPaintProperties {
     Result result_;
   };
 
-  template <typename... Args>
-  UpdateResult UpdatePaintOffsetTranslation(Args&&... args) {
-    return Update(paint_offset_translation_, std::forward<Args>(args)...);
+  UpdateResult UpdatePaintOffsetTranslation(
+      scoped_refptr<const TransformPaintPropertyNode> parent,
+      TransformPaintPropertyNode::State&& state) {
+    return Update(paint_offset_translation_, std::move(parent),
+                  std::move(state));
   }
-  template <typename... Args>
-  UpdateResult UpdateTransform(Args&&... args) {
-    return Update(transform_, std::forward<Args>(args)...);
+  UpdateResult UpdateTransform(
+      scoped_refptr<const TransformPaintPropertyNode> parent,
+      TransformPaintPropertyNode::State&& state) {
+    return Update(transform_, std::move(parent), std::move(state));
   }
-  template <typename... Args>
-  UpdateResult UpdatePerspective(Args&&... args) {
-    return Update(perspective_, std::forward<Args>(args)...);
+  UpdateResult UpdatePerspective(
+      scoped_refptr<const TransformPaintPropertyNode> parent,
+      TransformPaintPropertyNode::State&& state) {
+    return Update(perspective_, std::move(parent), std::move(state));
   }
-  template <typename... Args>
-  UpdateResult UpdateSvgLocalToBorderBoxTransform(Args&&... args) {
+  UpdateResult UpdateSvgLocalToBorderBoxTransform(
+      scoped_refptr<const TransformPaintPropertyNode> parent,
+      TransformPaintPropertyNode::State&& state) {
     DCHECK(!ScrollTranslation()) << "SVG elements cannot scroll so there "
                                     "should never be both a scroll translation "
                                     "and an SVG local to border box transform.";
-    return Update(svg_local_to_border_box_transform_,
-                  std::forward<Args>(args)...);
+    return Update(svg_local_to_border_box_transform_, std::move(parent),
+                  std::move(state));
   }
-  template <typename... Args>
-  UpdateResult UpdateScroll(Args&&... args) {
-    return Update(scroll_, std::forward<Args>(args)...);
+  UpdateResult UpdateScroll(scoped_refptr<const ScrollPaintPropertyNode> parent,
+                            ScrollPaintPropertyNode::State&& state) {
+    return Update(scroll_, std::move(parent), std::move(state));
   }
-  template <typename... Args>
-  UpdateResult UpdateScrollTranslation(Args&&... args) {
+  UpdateResult UpdateScrollTranslation(
+      scoped_refptr<const TransformPaintPropertyNode> parent,
+      TransformPaintPropertyNode::State&& state) {
     DCHECK(!SvgLocalToBorderBoxTransform())
         << "SVG elements cannot scroll so there should never be both a scroll "
            "translation and an SVG local to border box transform.";
-    return Update(scroll_translation_, std::forward<Args>(args)...);
+    return Update(scroll_translation_, std::move(parent), std::move(state));
   }
-  template <typename... Args>
-  UpdateResult UpdateEffect(Args&&... args) {
-    return Update(effect_, std::forward<Args>(args)...);
+  UpdateResult UpdateEffect(scoped_refptr<const EffectPaintPropertyNode> parent,
+                            EffectPaintPropertyNode::State&& state) {
+    return Update(effect_, std::move(parent), std::move(state));
   }
-  template <typename... Args>
-  UpdateResult UpdateFilter(Args&&... args) {
-    return Update(filter_, std::forward<Args>(args)...);
+  UpdateResult UpdateFilter(scoped_refptr<const EffectPaintPropertyNode> parent,
+                            EffectPaintPropertyNode::State&& state) {
+    return Update(filter_, std::move(parent), std::move(state));
   }
-  template <typename... Args>
-  UpdateResult UpdateMask(Args&&... args) {
-    return Update(mask_, std::forward<Args>(args)...);
+  UpdateResult UpdateMask(scoped_refptr<const EffectPaintPropertyNode> parent,
+                          EffectPaintPropertyNode::State&& state) {
+    return Update(mask_, std::move(parent), std::move(state));
   }
-  template <typename... Args>
-  UpdateResult UpdateClipPath(Args&&... args) {
-    return Update(clip_path_, std::forward<Args>(args)...);
+  UpdateResult UpdateClipPath(
+      scoped_refptr<const EffectPaintPropertyNode> parent,
+      EffectPaintPropertyNode::State&& state) {
+    return Update(clip_path_, std::move(parent), std::move(state));
   }
-  template <typename... Args>
-  UpdateResult UpdateFragmentClip(Args&&... args) {
-    return Update(fragment_clip_, std::forward<Args>(args)...);
+  UpdateResult UpdateFragmentClip(
+      scoped_refptr<const ClipPaintPropertyNode> parent,
+      ClipPaintPropertyNode::State&& state) {
+    return Update(fragment_clip_, std::move(parent), std::move(state));
   }
-  template <typename... Args>
-  UpdateResult UpdateClipPathClip(Args&&... args) {
-    return Update(clip_path_clip_, std::forward<Args>(args)...);
+  UpdateResult UpdateClipPathClip(
+      scoped_refptr<const ClipPaintPropertyNode> parent,
+      ClipPaintPropertyNode::State&& state) {
+    return Update(clip_path_clip_, std::move(parent), std::move(state));
   }
-  template <typename... Args>
-  UpdateResult UpdateMaskClip(Args&&... args) {
-    return Update(mask_clip_, std::forward<Args>(args)...);
+  UpdateResult UpdateMaskClip(scoped_refptr<const ClipPaintPropertyNode> parent,
+                              ClipPaintPropertyNode::State&& state) {
+    return Update(mask_clip_, std::move(parent), std::move(state));
   }
-  template <typename... Args>
-  UpdateResult UpdateCssClip(Args&&... args) {
-    return Update(css_clip_, std::forward<Args>(args)...);
+  UpdateResult UpdateCssClip(scoped_refptr<const ClipPaintPropertyNode> parent,
+                             ClipPaintPropertyNode::State&& state) {
+    return Update(css_clip_, std::move(parent), std::move(state));
   }
-  template <typename... Args>
-  UpdateResult UpdateCssClipFixedPosition(Args&&... args) {
-    return Update(css_clip_fixed_position_, std::forward<Args>(args)...);
+  UpdateResult UpdateCssClipFixedPosition(
+      scoped_refptr<const ClipPaintPropertyNode> parent,
+      ClipPaintPropertyNode::State&& state) {
+    return Update(css_clip_fixed_position_, std::move(parent),
+                  std::move(state));
   }
-  template <typename... Args>
-  UpdateResult UpdateOverflowControlsClip(Args&&... args) {
-    return Update(overflow_controls_clip_, std::forward<Args>(args)...);
+  UpdateResult UpdateOverflowControlsClip(
+      scoped_refptr<const ClipPaintPropertyNode> parent,
+      ClipPaintPropertyNode::State&& state) {
+    return Update(overflow_controls_clip_, std::move(parent), std::move(state));
   }
-  template <typename... Args>
-  UpdateResult UpdateInnerBorderRadiusClip(Args&&... args) {
-    return Update(inner_border_radius_clip_, std::forward<Args>(args)...);
+  UpdateResult UpdateInnerBorderRadiusClip(
+      scoped_refptr<const ClipPaintPropertyNode> parent,
+      ClipPaintPropertyNode::State&& state) {
+    return Update(inner_border_radius_clip_, std::move(parent),
+                  std::move(state));
   }
-  template <typename... Args>
-  UpdateResult UpdateOverflowClip(Args&&... args) {
-    return Update(overflow_clip_, std::forward<Args>(args)...);
+  UpdateResult UpdateOverflowClip(
+      scoped_refptr<const ClipPaintPropertyNode> parent,
+      ClipPaintPropertyNode::State&& state) {
+    return Update(overflow_clip_, std::move(parent), std::move(state));
   }
 
 #if DCHECK_IS_ON()
@@ -335,14 +350,16 @@ class CORE_EXPORT ObjectPaintProperties {
   // Return true if the property tree structure changes (a new node was
   // created), and false otherwise. See the class-level comment ("update & clear
   // implementation note") for details about why this is needed for efficiency.
-  template <typename PaintPropertyNode, typename... Args>
-  UpdateResult Update(scoped_refptr<PaintPropertyNode>& field, Args&&... args) {
+  template <typename PaintPropertyNode>
+  UpdateResult Update(scoped_refptr<PaintPropertyNode>& field,
+                      scoped_refptr<const PaintPropertyNode> parent,
+                      typename PaintPropertyNode::State&& state) {
     if (field) {
-      return field->Update(std::forward<Args>(args)...)
+      return field->Update(std::move(parent), std::move(state))
                  ? UpdateResult::kValueChanged
                  : UpdateResult::kUnchanged;
     }
-    field = PaintPropertyNode::Create(std::forward<Args>(args)...);
+    field = PaintPropertyNode::Create(std::move(parent), std::move(state));
     return UpdateResult::kNewNodeCreated;
   }
 

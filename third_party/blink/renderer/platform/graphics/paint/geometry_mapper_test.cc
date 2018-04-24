@@ -234,13 +234,13 @@ TEST_P(GeometryMapperTest, NestedTransformsFlattening) {
   TransformPaintPropertyNode::State rotate_transform;
   rotate_transform.matrix.Rotate3d(45, 0, 0);
   auto transform1 = TransformPaintPropertyNode::Create(
-      TransformPaintPropertyNode::Root(), rotate_transform);
+      TransformPaintPropertyNode::Root(), std::move(rotate_transform));
 
   TransformPaintPropertyNode::State inverse_rotate_transform;
   inverse_rotate_transform.matrix.Rotate3d(-45, 0, 0);
   inverse_rotate_transform.flattens_inherited_transform = true;
-  auto transform2 =
-      TransformPaintPropertyNode::Create(transform1, inverse_rotate_transform);
+  auto transform2 = TransformPaintPropertyNode::Create(
+      transform1, std::move(inverse_rotate_transform));
   local_state.SetTransform(transform2.get());
 
   input_rect = FloatRect(0, 0, 100, 100);
@@ -292,9 +292,9 @@ TEST_P(GeometryMapperTest, NestedTransformsIntermediateDestination) {
 }
 
 TEST_P(GeometryMapperTest, SimpleClip) {
-  auto clip = ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
-                                            TransformPaintPropertyNode::Root(),
-                                            FloatRoundedRect(10, 10, 50, 50));
+  auto clip = CreateClip(ClipPaintPropertyNode::Root(),
+                         TransformPaintPropertyNode::Root(),
+                         FloatRoundedRect(10, 10, 50, 50));
   local_state.SetClip(clip.get());
 
   input_rect = FloatRect(0, 0, 100, 100);
@@ -305,10 +305,13 @@ TEST_P(GeometryMapperTest, SimpleClip) {
 }
 
 TEST_P(GeometryMapperTest, SimpleClipOverlayScrollbars) {
-  FloatRoundedRect rect_without_overlay_scrollbars(10, 10, 45, 43);
-  auto clip = ClipPaintPropertyNode::Create(
-      ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
-      FloatRoundedRect(10, 10, 50, 50), &rect_without_overlay_scrollbars);
+  ClipPaintPropertyNode::State clip_state;
+  clip_state.local_transform_space = TransformPaintPropertyNode::Root();
+  clip_state.clip_rect = FloatRoundedRect(10, 10, 50, 50);
+  clip_state.clip_rect_excluding_overlay_scrollbars =
+      FloatRoundedRect(10, 10, 45, 43);
+  auto clip = ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
+                                            std::move(clip_state));
   local_state.SetClip(clip.get());
 
   input_rect = FloatRect(0, 0, 100, 100);
@@ -346,8 +349,8 @@ TEST_P(GeometryMapperTest, RoundedClip) {
   FloatRoundedRect rect(FloatRect(10, 10, 50, 50),
                         FloatRoundedRect::Radii(FloatSize(1, 1), FloatSize(),
                                                 FloatSize(), FloatSize()));
-  auto clip = ClipPaintPropertyNode::Create(
-      ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(), rect);
+  auto clip = CreateClip(ClipPaintPropertyNode::Root(),
+                         TransformPaintPropertyNode::Root(), rect);
   local_state.SetClip(clip.get());
 
   input_rect = FloatRect(0, 0, 100, 100);
@@ -364,13 +367,11 @@ TEST_P(GeometryMapperTest, TwoClips) {
       FloatRoundedRect::Radii(FloatSize(1, 1), FloatSize(), FloatSize(),
                               FloatSize()));
 
-  auto clip1 = ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
-                                             TransformPaintPropertyNode::Root(),
-                                             clip_rect1);
+  auto clip1 = CreateClip(ClipPaintPropertyNode::Root(),
+                          TransformPaintPropertyNode::Root(), clip_rect1);
 
-  auto clip2 =
-      ClipPaintPropertyNode::Create(clip1, TransformPaintPropertyNode::Root(),
-                                    FloatRoundedRect(10, 10, 50, 50));
+  auto clip2 = CreateClip(clip1, TransformPaintPropertyNode::Root(),
+                          FloatRoundedRect(10, 10, 50, 50));
   local_state.SetClip(clip2.get());
 
   input_rect = FloatRect(0, 0, 100, 100);
@@ -395,11 +396,11 @@ TEST_P(GeometryMapperTest, TwoClipsTransformAbove) {
       FloatRoundedRect::Radii(FloatSize(1, 1), FloatSize(), FloatSize(),
                               FloatSize()));
 
-  auto clip1 = ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
-                                             transform.get(), clip_rect1);
+  auto clip1 =
+      CreateClip(ClipPaintPropertyNode::Root(), transform.get(), clip_rect1);
 
-  auto clip2 = ClipPaintPropertyNode::Create(clip1, transform.get(),
-                                             FloatRoundedRect(10, 10, 30, 40));
+  auto clip2 =
+      CreateClip(clip1, transform.get(), FloatRoundedRect(10, 10, 30, 40));
   local_state.SetClip(clip2.get());
 
   input_rect = FloatRect(0, 0, 100, 100);
@@ -420,9 +421,8 @@ TEST_P(GeometryMapperTest, ClipBeforeTransform) {
   expected_transform = TransformationMatrix().Rotate(45);
   auto transform =
       CreateTransform(TransformPaintPropertyNode::Root(), expected_transform);
-  auto clip = ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
-                                            transform.get(),
-                                            FloatRoundedRect(10, 10, 50, 50));
+  auto clip = CreateClip(ClipPaintPropertyNode::Root(), transform.get(),
+                         FloatRoundedRect(10, 10, 50, 50));
   local_state.SetClip(clip.get());
   local_state.SetTransform(transform.get());
 
@@ -442,9 +442,9 @@ TEST_P(GeometryMapperTest, ClipAfterTransform) {
   expected_transform = TransformationMatrix().Rotate(45);
   auto transform =
       CreateTransform(TransformPaintPropertyNode::Root(), expected_transform);
-  auto clip = ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
-                                            TransformPaintPropertyNode::Root(),
-                                            FloatRoundedRect(10, 10, 200, 200));
+  auto clip = CreateClip(ClipPaintPropertyNode::Root(),
+                         TransformPaintPropertyNode::Root(),
+                         FloatRoundedRect(10, 10, 200, 200));
   local_state.SetClip(clip.get());
   local_state.SetTransform(transform.get());
 
@@ -460,16 +460,16 @@ TEST_P(GeometryMapperTest, ClipAfterTransform) {
 }
 
 TEST_P(GeometryMapperTest, TwoClipsWithTransformBetween) {
-  auto clip1 = ClipPaintPropertyNode::Create(
-      ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
-      FloatRoundedRect(10, 10, 200, 200));
+  auto clip1 = CreateClip(ClipPaintPropertyNode::Root(),
+                          TransformPaintPropertyNode::Root(),
+                          FloatRoundedRect(10, 10, 200, 200));
 
   expected_transform = TransformationMatrix().Rotate(45);
   auto transform =
       CreateTransform(TransformPaintPropertyNode::Root(), expected_transform);
 
-  auto clip2 = ClipPaintPropertyNode::Create(
-      clip1, transform.get(), FloatRoundedRect(10, 10, 200, 200));
+  auto clip2 =
+      CreateClip(clip1, transform.get(), FloatRoundedRect(10, 10, 200, 200));
 
   input_rect = FloatRect(0, 0, 100, 100);
   expected_transformed_rect = expected_transform.MapRect(input_rect);
@@ -564,9 +564,8 @@ TEST_P(GeometryMapperTest, SiblingTransformsWithClip) {
   auto transform2 =
       CreateTransform(TransformPaintPropertyNode::Root(), rotate_transform2);
 
-  auto clip = ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
-                                            transform2.get(),
-                                            FloatRoundedRect(10, 20, 30, 40));
+  auto clip = CreateClip(ClipPaintPropertyNode::Root(), transform2.get(),
+                         FloatRoundedRect(10, 20, 30, 40));
 
   auto transform1_state = PropertyTreeState::Root();
   transform1_state.SetTransform(transform1.get());
@@ -609,19 +608,18 @@ TEST_P(GeometryMapperTest, FilterWithClipsAndTransforms) {
       transform_above_effect, TransformationMatrix().Translate(20, 30));
 
   // This clip is between transformAboveEffect and the effect.
-  auto clip_above_effect = ClipPaintPropertyNode::Create(
-      ClipPaintPropertyNode::Root(), transform_above_effect,
-      FloatRoundedRect(-100, -100, 200, 200));
+  auto clip_above_effect =
+      CreateClip(ClipPaintPropertyNode::Root(), transform_above_effect,
+                 FloatRoundedRect(-100, -100, 200, 200));
   // This clip is between the effect and transformBelowEffect.
-  auto clip_below_effect =
-      ClipPaintPropertyNode::Create(clip_above_effect, transform_above_effect,
-                                    FloatRoundedRect(10, 10, 100, 100));
+  auto clip_below_effect = CreateClip(clip_above_effect, transform_above_effect,
+                                      FloatRoundedRect(10, 10, 100, 100));
 
   CompositorFilterOperations filters;
   filters.AppendBlurFilter(20);
-  auto effect = EffectPaintPropertyNode::Create(
-      EffectPaintPropertyNode::Root(), transform_above_effect,
-      clip_above_effect, kColorFilterNone, filters, 1.0, SkBlendMode::kSrcOver);
+  auto effect =
+      CreateFilterEffect(EffectPaintPropertyNode::Root(),
+                         transform_above_effect, clip_above_effect, filters);
 
   local_state = PropertyTreeState(transform_below_effect.get(),
                                   clip_below_effect.get(), effect.get());
@@ -656,11 +654,8 @@ TEST_P(GeometryMapperTest, ReflectionWithPaintOffset) {
   CompositorFilterOperations filters;
   filters.AppendReferenceFilter(PaintFilterBuilder::BuildBoxReflectFilter(
       BoxReflection(BoxReflection::kHorizontalReflection, 0), nullptr));
-  auto effect = EffectPaintPropertyNode::Create(
-      EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
-      ClipPaintPropertyNode::Root(), kColorFilterNone, filters, 1.0,
-      SkBlendMode::kSrcOver, CompositingReason::kNone, CompositorElementId(),
-      FloatPoint(100, 100));
+  auto effect = CreateFilterEffect(EffectPaintPropertyNode::Root(), filters,
+                                   FloatPoint(100, 100));
   local_state.SetEffect(effect.get());
 
   input_rect = FloatRect(100, 100, 50, 50);
@@ -676,9 +671,9 @@ TEST_P(GeometryMapperTest, InvertedClip) {
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
 
-  auto clip = ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
-                                            TransformPaintPropertyNode::Root(),
-                                            FloatRoundedRect(10, 10, 50, 50));
+  auto clip = CreateClip(ClipPaintPropertyNode::Root(),
+                         TransformPaintPropertyNode::Root(),
+                         FloatRoundedRect(10, 10, 50, 50));
 
   PropertyTreeState dest(TransformPaintPropertyNode::Root(), clip.get(),
                          EffectPaintPropertyNode::Root());

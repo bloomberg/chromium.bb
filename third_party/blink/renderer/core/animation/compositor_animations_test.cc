@@ -1243,15 +1243,15 @@ void UpdateDummyTransformNode(ObjectPaintProperties& properties,
                               CompositingReasons reasons) {
   TransformPaintPropertyNode::State state;
   state.direct_compositing_reasons = reasons;
-  properties.UpdateTransform(TransformPaintPropertyNode::Root(), state);
+  properties.UpdateTransform(TransformPaintPropertyNode::Root(),
+                             std::move(state));
 }
 
 void UpdateDummyEffectNode(ObjectPaintProperties& properties,
                            CompositingReasons reasons) {
-  properties.UpdateEffect(
-      EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
-      ClipPaintPropertyNode::Root(), kColorFilterNone,
-      CompositorFilterOperations(), 1.0, SkBlendMode::kSrcOver, reasons);
+  EffectPaintPropertyNode::State state;
+  state.direct_compositing_reasons = reasons;
+  properties.UpdateEffect(EffectPaintPropertyNode::Root(), std::move(state));
 }
 
 }  // namespace
@@ -1390,7 +1390,8 @@ TEST_F(AnimationCompositorAnimationsTest, canStartElementOnCompositorEffect) {
   Element* target = document->getElementById("target");
   const ObjectPaintProperties* properties =
       target->GetLayoutObject()->FirstFragment().PaintProperties();
-  EXPECT_TRUE(properties->Transform()->HasDirectCompositingReasons());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    EXPECT_TRUE(properties->Transform()->HasDirectCompositingReasons());
   CompositorAnimations::FailureCode code =
       CompositorAnimations::CheckCanStartElementOnCompositor(*target);
   EXPECT_EQ(code, CompositorAnimations::FailureCode::None());
@@ -1477,7 +1478,8 @@ TEST_F(AnimationCompositorAnimationsTest,
   Element* target = document->getElementById("target");
   const ObjectPaintProperties* properties =
       target->GetLayoutObject()->FirstFragment().PaintProperties();
-  EXPECT_TRUE(properties->Transform()->HasDirectCompositingReasons());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    EXPECT_TRUE(properties->Transform()->HasDirectCompositingReasons());
   LayoutObject* layout_object = target->GetLayoutObject();
   DCHECK(layout_object && layout_object->PaintingLayer());
   // LoadTestData calls ForceFullCompositingUpdate, which have called

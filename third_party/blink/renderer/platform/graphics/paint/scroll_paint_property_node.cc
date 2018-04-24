@@ -8,10 +8,7 @@ namespace blink {
 
 ScrollPaintPropertyNode* ScrollPaintPropertyNode::Root() {
   DEFINE_STATIC_REF(ScrollPaintPropertyNode, root,
-                    (ScrollPaintPropertyNode::Create(
-                        nullptr, IntRect(), IntRect(), false, false,
-                        MainThreadScrollingReason::kNotScrollingOnMain,
-                        CompositorElementId())));
+                    (ScrollPaintPropertyNode::Create(nullptr, State{})));
   return root;
 }
 
@@ -19,25 +16,26 @@ std::unique_ptr<JSONObject> ScrollPaintPropertyNode::ToJSON() const {
   auto json = JSONObject::Create();
   if (Parent())
     json->SetString("parent", String::Format("%p", Parent()));
-  if (container_rect_ != IntRect())
-    json->SetString("containerRect", container_rect_.ToString());
-  if (contents_rect_ != IntRect())
-    json->SetString("contentsRect", contents_rect_.ToString());
-  if (user_scrollable_horizontal_ || user_scrollable_vertical_) {
-    json->SetString("userScrollable",
-                    user_scrollable_horizontal_
-                        ? (user_scrollable_vertical_ ? "both" : "horizontal")
-                        : "vertical");
+  if (state_.container_rect != IntRect())
+    json->SetString("containerRect", state_.container_rect.ToString());
+  if (state_.contents_rect != IntRect())
+    json->SetString("contentsRect", state_.contents_rect.ToString());
+  if (state_.user_scrollable_horizontal || state_.user_scrollable_vertical) {
+    json->SetString(
+        "userScrollable",
+        state_.user_scrollable_horizontal
+            ? (state_.user_scrollable_vertical ? "both" : "horizontal")
+            : "vertical");
   }
-  if (main_thread_scrolling_reasons_) {
+  if (state_.main_thread_scrolling_reasons) {
     json->SetString("mainThreadReasons",
                     MainThreadScrollingReason::mainThreadScrollingReasonsAsText(
-                        main_thread_scrolling_reasons_)
+                        state_.main_thread_scrolling_reasons)
                         .c_str());
   }
-  if (compositor_element_id_) {
+  if (state_.compositor_element_id) {
     json->SetString("compositorElementId",
-                    compositor_element_id_.ToString().c_str());
+                    state_.compositor_element_id.ToString().c_str());
   }
   return json;
 }
