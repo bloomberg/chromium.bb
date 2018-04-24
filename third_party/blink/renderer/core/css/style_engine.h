@@ -97,7 +97,7 @@ class CORE_EXPORT StyleEngine final
     return new StyleEngine(document);
   }
 
-  ~StyleEngine();
+  ~StyleEngine() override;
 
   const HeapVector<TraceWrapperMember<StyleSheet>>&
   StyleSheetsForStyleSheetList(TreeScope&);
@@ -310,7 +310,7 @@ class CORE_EXPORT StyleEngine final
   StyleRuleKeyframes* KeyframeStylesForAnimation(
       const AtomicString& animation_name);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
   void TraceWrappers(const ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override { return "StyleEngine"; }
 

@@ -91,7 +91,7 @@ class CORE_EXPORT VisualViewport final
   static VisualViewport* Create(Page& host) { return new VisualViewport(host); }
   ~VisualViewport() override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   void CreateLayerTree();
   void AttachLayerTree(GraphicsLayer*);
@@ -255,11 +255,12 @@ class CORE_EXPORT VisualViewport final
   void EnqueueResizeEvent();
 
   // GraphicsLayerClient implementation.
-  bool NeedsRepaint(const GraphicsLayer&) const {
+  bool NeedsRepaint(const GraphicsLayer&) const override {
     NOTREACHED();
     return true;
   }
-  IntRect ComputeInterestRect(const GraphicsLayer*, const IntRect&) const;
+  IntRect ComputeInterestRect(const GraphicsLayer*,
+                              const IntRect&) const override;
   void PaintContents(const GraphicsLayer*,
                      GraphicsContext&,
                      GraphicsLayerPaintingPhase,

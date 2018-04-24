@@ -13,7 +13,7 @@ namespace blink {
 
 class CORE_EXPORT FrameView : public EmbeddedContentView {
  public:
-  virtual ~FrameView() = default;
+  ~FrameView() override = default;
   virtual void UpdateViewportIntersectionsForSubtree(
       DocumentLifecycle::LifecycleState) = 0;
 

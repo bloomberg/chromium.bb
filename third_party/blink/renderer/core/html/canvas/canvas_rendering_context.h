@@ -61,7 +61,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   USING_PRE_FINALIZER(CanvasRenderingContext, Dispose);
 
  public:
-  virtual ~CanvasRenderingContext() = default;
+  ~CanvasRenderingContext() override = default;
 
   // A Canvas can either be "2D" or "webgl" but never both. If you request a 2D
   // canvas and the existing context is already 2D, just return that. If the
@@ -188,7 +188,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
     return creation_attributes_;
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
   virtual void Stop() = 0;
 
  protected:

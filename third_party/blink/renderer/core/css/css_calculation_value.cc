@@ -257,22 +257,22 @@ class CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
   CSSPrimitiveValue::UnitType TypeWithCalcResolved() const override {
     return value_->TypeWithCalcResolved();
   }
-  const CSSCalcExpressionNode* LeftExpressionNode() const {
+  const CSSCalcExpressionNode* LeftExpressionNode() const override {
     NOTREACHED();
     return nullptr;
   }
 
-  const CSSCalcExpressionNode* RightExpressionNode() const {
+  const CSSCalcExpressionNode* RightExpressionNode() const override {
     NOTREACHED();
     return nullptr;
   }
 
-  CalcOperator OperatorType() const {
+  CalcOperator OperatorType() const override {
     NOTREACHED();
     return kCalcAdd;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(value_);
     CSSCalcExpressionNode::Trace(visitor);
   }
@@ -575,13 +575,15 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
   }
 
   Type GetType() const override { return kCssCalcBinaryOperation; }
-  const CSSCalcExpressionNode* LeftExpressionNode() const { return left_side_; }
+  const CSSCalcExpressionNode* LeftExpressionNode() const override {
+    return left_side_;
+  }
 
-  const CSSCalcExpressionNode* RightExpressionNode() const {
+  const CSSCalcExpressionNode* RightExpressionNode() const override {
     return right_side_;
   }
 
-  CalcOperator OperatorType() const { return operator_; }
+  CalcOperator OperatorType() const override { return operator_; }
 
   CSSPrimitiveValue::UnitType TypeWithCalcResolved() const override {
     switch (category_) {
@@ -618,7 +620,7 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
     return CSSPrimitiveValue::UnitType::kUnknown;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(left_side_);
     visitor->Trace(right_side_);
     CSSCalcExpressionNode::Trace(visitor);

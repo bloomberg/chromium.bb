@@ -88,7 +88,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
     virtual void Trace(blink::Visitor* visitor) {}
   };
 
-  virtual ~AnimationEffect() = default;
+  ~AnimationEffect() override = default;
 
   virtual bool IsKeyframeEffect() const { return false; }
   virtual bool IsInertEffect() const { return false; }
@@ -132,7 +132,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
 
   const Animation* GetAnimationForTesting() const { return GetAnimation(); }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   explicit AnimationEffect(const Timing&, EventDelegate* = nullptr);

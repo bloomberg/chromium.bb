@@ -143,7 +143,7 @@ class PostMessageTimer final
   // Eager finalization is needed to promptly stop this timer object.
   // (see DOMTimer comment for more.)
   EAGERLY_FINALIZE();
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(event_);
     visitor->Trace(window_);
     PausableTimer::Trace(visitor);

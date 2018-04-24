@@ -70,7 +70,7 @@ class StyleFetchedImage final : public StyleImage,
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const override;
   ImageResourceContent* CachedImage() const override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   StyleFetchedImage(const Document&, FetchParameters&);

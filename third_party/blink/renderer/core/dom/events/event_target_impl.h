@@ -27,7 +27,7 @@ class CORE_EXPORT EventTargetImpl final : public EventTargetWithInlineData,
  public:
   static EventTargetImpl* Create(ScriptState*);
 
-  ~EventTargetImpl() = default;
+  ~EventTargetImpl() override = default;
 
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;

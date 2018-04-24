@@ -57,7 +57,7 @@ class LayerRect final : public ScriptWrappable {
   int associatedNodeOffsetY() const { return associated_node_offset_y_; }
   DOMRectReadOnly* layerRelativeRect() const { return rect_.Get(); }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(layer_associated_node_);
     visitor->Trace(rect_);
     ScriptWrappable::Trace(visitor);

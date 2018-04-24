@@ -30,7 +30,7 @@ class ContentSecurityPolicyTest : public testing::Test {
         secure_origin(SecurityOrigin::Create(secure_url)) {}
 
  protected:
-  virtual void SetUp() { execution_context = CreateExecutionContext(); }
+  void SetUp() override { execution_context = CreateExecutionContext(); }
 
   NullExecutionContext* CreateExecutionContext() {
     NullExecutionContext* context = new NullExecutionContext();

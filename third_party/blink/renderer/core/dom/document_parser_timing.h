@@ -96,7 +96,7 @@ class DocumentParserTiming final
     return parser_blocked_on_script_execution_from_document_write_duration_;
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit DocumentParserTiming(Document&);

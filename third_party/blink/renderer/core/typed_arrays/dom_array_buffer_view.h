@@ -30,7 +30,7 @@ class CORE_EXPORT DOMArrayBufferView : public ScriptWrappable {
   static const ViewType kTypeFloat64 = WTF::ArrayBufferView::kTypeFloat64;
   static const ViewType kTypeDataView = WTF::ArrayBufferView::kTypeDataView;
 
-  virtual ~DOMArrayBufferView() = default;
+  ~DOMArrayBufferView() override = default;
 
   DOMArrayBuffer* buffer() const {
     DCHECK(!IsShared());
@@ -77,7 +77,7 @@ class CORE_EXPORT DOMArrayBufferView : public ScriptWrappable {
     return v8::Local<v8::Object>();
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(dom_array_buffer_);
     ScriptWrappable::Trace(visitor);
   }

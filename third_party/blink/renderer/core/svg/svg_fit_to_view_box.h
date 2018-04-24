@@ -54,7 +54,7 @@ class SVGFitToViewBox : public GarbageCollectedMixin {
     return preserve_aspect_ratio_.Get();
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   explicit SVGFitToViewBox(SVGElement*);

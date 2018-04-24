@@ -110,7 +110,7 @@ class Step final : public ParseNode {
   Step(Axis, const NodeTest&);
   Step(Axis, const NodeTest&, HeapVector<Member<Predicate>>&);
   ~Step() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   void Optimize();
 

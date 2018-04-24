@@ -205,8 +205,8 @@ class KeyframeEffectModel final : public KeyframeEffectModelBase {
     keyframes_.AppendVector(keyframes);
   }
 
-  virtual bool IsStringKeyframeEffectModel() const { return false; }
-  virtual bool IsTransitionKeyframeEffectModel() const { return false; }
+  bool IsStringKeyframeEffectModel() const override { return false; }
+  bool IsTransitionKeyframeEffectModel() const override { return false; }
 };
 
 using KeyframeVector = KeyframeEffectModelBase::KeyframeVector;

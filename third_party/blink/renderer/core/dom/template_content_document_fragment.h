@@ -40,7 +40,7 @@ class TemplateContentDocumentFragment final : public DocumentFragment {
 
   Element* Host() const { return host_; }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(host_);
     DocumentFragment::Trace(visitor);
   }

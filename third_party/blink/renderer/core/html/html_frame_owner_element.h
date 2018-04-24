@@ -123,7 +123,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   // params instead of just hardcoding the value here.
   static constexpr int kLazyLoadRootMarginPx = 800;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   HTMLFrameOwnerElement(const QualifiedName& tag_name, Document&);

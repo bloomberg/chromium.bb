@@ -63,7 +63,7 @@ class FocusEvent final : public UIEvent {
 
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   FocusEvent();

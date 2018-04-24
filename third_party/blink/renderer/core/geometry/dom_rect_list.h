@@ -52,7 +52,7 @@ class CORE_EXPORT DOMRectList final : public ScriptWrappable {
   unsigned length() const;
   DOMRect* item(unsigned index);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   DOMRectList();

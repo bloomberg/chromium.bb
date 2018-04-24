@@ -40,7 +40,7 @@ class CORE_EXPORT CSSRule : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  virtual ~CSSRule() = default;
+  ~CSSRule() override = default;
 
   enum Type {
     kStyleRule = 1,
@@ -66,8 +66,8 @@ class CORE_EXPORT CSSRule : public ScriptWrappable {
 
   void SetParentRule(CSSRule*);
 
-  virtual void Trace(blink::Visitor*);
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
   CSSStyleSheet* parentStyleSheet() const {
     if (parent_is_rule_)

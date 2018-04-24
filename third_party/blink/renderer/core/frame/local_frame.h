@@ -110,7 +110,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   // Frame overrides:
   ~LocalFrame() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
   void Navigate(Document& origin_document,
                 const KURL&,
                 bool replace_current_item,

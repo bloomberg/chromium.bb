@@ -51,7 +51,7 @@ class SVGFEDisplacementMapElement final
     return y_channel_selector_.Get();
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit SVGFEDisplacementMapElement(Document&);

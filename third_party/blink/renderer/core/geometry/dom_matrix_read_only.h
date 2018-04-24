@@ -37,7 +37,7 @@ class CORE_EXPORT DOMMatrixReadOnly : public ScriptWrappable {
   static DOMMatrixReadOnly* fromMatrix(DOMMatrixInit&, ExceptionState&);
   static DOMMatrixReadOnly* fromMatrix2D(DOMMatrix2DInit&, ExceptionState&);
   static DOMMatrixReadOnly* CreateForSerialization(double[], int size);
-  virtual ~DOMMatrixReadOnly();
+  ~DOMMatrixReadOnly() override;
 
   double a() const { return matrix_->M11(); }
   double b() const { return matrix_->M12(); }

@@ -47,7 +47,7 @@ class MockPausableObject final
   explicit MockPausableObject(ExecutionContext* context)
       : PausableObject(context) {}
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     PausableObject::Trace(visitor);
   }
 

@@ -71,7 +71,7 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
                           const FontFaceDescriptors&);
   static FontFace* Create(Document*, const StyleRuleFontFace*);
 
-  virtual ~FontFace();
+  ~FontFace() override;
 
   const AtomicString& family() const { return family_; }
   String style() const;
@@ -109,7 +109,7 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
   CSSFontFace* CssFontFace() { return css_font_face_.Get(); }
   size_t ApproximateBlankCharacterCount() const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   bool HadBlankText() const;
 
@@ -118,7 +118,7 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
     virtual ~LoadFontCallback() = default;
     virtual void NotifyLoaded(FontFace*) = 0;
     virtual void NotifyError(FontFace*) = 0;
-    virtual void Trace(blink::Visitor* visitor) {}
+    void Trace(blink::Visitor* visitor) override {}
   };
   void LoadWithCallback(LoadFontCallback*);
   void AddCallback(LoadFontCallback*);

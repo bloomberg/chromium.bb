@@ -34,7 +34,7 @@ class HTMLImportTreeRoot final : public HTMLImport, public TraceWrapperBase {
   HTMLImportChild* Add(HTMLImportChild*);
   HTMLImportChild* Find(const KURL&) const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
   void TraceWrappers(const ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "HTMLImportTreeRoot";

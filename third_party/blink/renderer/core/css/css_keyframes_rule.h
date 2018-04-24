@@ -113,7 +113,7 @@ class CSSKeyframesRule final : public CSSRule {
 
   void StyleChanged() { keyframes_rule_->StyleChanged(); }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   CSSKeyframesRule(StyleRuleKeyframes*, CSSStyleSheet* parent);

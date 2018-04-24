@@ -35,7 +35,7 @@ class IntersectionObserverEntry final : public ScriptWrappable {
   bool isIntersecting() const { return is_intersecting_; }
   Element* target() const { return target_.Get(); }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   DOMHighResTimeStamp time_;

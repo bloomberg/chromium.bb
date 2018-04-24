@@ -145,7 +145,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetRubberBandingOnCompositorThread(bool) override;
   void SetSansSerifFontFamily(const WebString&,
                               UScriptCode = USCRIPT_COMMON) override;
-  void SetSelectTrailingWhitespaceEnabled(bool override);
+  void SetSelectTrailingWhitespaceEnabled(bool override) override;
   void SetSelectionIncludesAltImageText(bool) override;
   void SetSelectionStrategy(SelectionStrategyType) override;
   void SetSerifFontFamily(const WebString&,

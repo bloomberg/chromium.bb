@@ -53,7 +53,7 @@ class VTTParserClient : public GarbageCollectedMixin {
   virtual void NewCuesParsed() = 0;
   virtual void FileFailedToParse() = 0;
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  void Trace(blink::Visitor* visitor) override {}
 };
 
 // Implementation of the WebVTT parser algorithm.

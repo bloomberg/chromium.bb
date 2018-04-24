@@ -31,7 +31,7 @@ namespace blink {
 
 class CustomElementRegistryTest : public PageTestBase {
  protected:
-  void SetUp() { PageTestBase::SetUp(IntSize(1, 1)); }
+  void SetUp() override { PageTestBase::SetUp(IntSize(1, 1)); }
 
   CustomElementRegistry& Registry() {
     return *GetFrame().DomWindow()->customElements();
@@ -169,7 +169,7 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
                 "attr1", "attr2", HTMLNames::contenteditableAttr.LocalName(),
             }) {}
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     TestCustomElementDefinition::Trace(visitor);
     visitor->Trace(element_);
     visitor->Trace(adopted_);

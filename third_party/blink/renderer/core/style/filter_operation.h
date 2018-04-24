@@ -149,7 +149,7 @@ class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
   void AddClient(SVGResourceClient&);
   void RemoveClient(SVGResourceClient&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   ReferenceFilterOperation(const String& url, SVGResource*);

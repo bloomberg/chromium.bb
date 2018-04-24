@@ -20,7 +20,7 @@ class CORE_EXPORT PerformanceServerTiming final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  ~PerformanceServerTiming();
+  ~PerformanceServerTiming() override;
 
   const String& name() const { return name_; }
   double duration() const { return duration_; }

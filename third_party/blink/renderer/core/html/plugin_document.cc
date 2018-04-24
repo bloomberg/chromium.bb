@@ -53,7 +53,7 @@ class PluginDocumentParser : public RawDataDocumentParser {
     return new PluginDocumentParser(document, background_color);
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(embed_element_);
     RawDataDocumentParser::Trace(visitor);
   }

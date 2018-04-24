@@ -70,7 +70,7 @@ class CORE_EXPORT ScrollingCoordinator final
  public:
   static ScrollingCoordinator* Create(Page*);
 
-  ~ScrollingCoordinator();
+  ~ScrollingCoordinator() override;
   void Trace(blink::Visitor*);
 
   // The LocalFrameView argument is optional, nullptr causes the the scrolling

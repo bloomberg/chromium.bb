@@ -54,7 +54,7 @@ class DOMURL final : public ScriptWrappable, public DOMURLUtils {
                         ExceptionState& exception_state) {
     return new DOMURL(url, KURL(NullURL(), base), exception_state);
   }
-  ~DOMURL();
+  ~DOMURL() override;
 
   CORE_EXPORT static String CreatePublicURL(ExecutionContext*, URLRegistrable*);
 
@@ -68,7 +68,7 @@ class DOMURL final : public ScriptWrappable, public DOMURLUtils {
 
   URLSearchParams* searchParams();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   friend class URLSearchParams;

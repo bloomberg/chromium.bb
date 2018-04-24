@@ -47,7 +47,7 @@ class CSSImportRule final : public CSSRule {
   MediaList* media() const;
   CSSStyleSheet* styleSheet() const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   CSSImportRule(StyleRuleImport*, CSSStyleSheet*);

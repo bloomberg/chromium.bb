@@ -20,7 +20,7 @@ class CSPDirectiveListTest : public testing::Test {
  public:
   CSPDirectiveListTest() : csp(ContentSecurityPolicy::Create()) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     csp->SetupSelf(
         *SecurityOrigin::CreateFromString("https://example.test/image.png"));
   }

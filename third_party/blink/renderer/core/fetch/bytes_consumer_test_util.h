@@ -54,7 +54,7 @@ class BytesConsumerTestUtil {
       return new testing::StrictMock<MockFetchDataLoaderClient>;
     }
 
-    virtual void Trace(blink::Visitor* visitor) {
+    void Trace(blink::Visitor* visitor) override {
       FetchDataLoader::Client::Trace(visitor);
     }
 

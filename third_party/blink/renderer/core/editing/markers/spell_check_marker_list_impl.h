@@ -36,7 +36,7 @@ class CORE_EXPORT SpellCheckMarkerListImpl : public DocumentMarkerList {
                     unsigned old_length,
                     unsigned new_length) final;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   // SpellCheckMarkerListImpl-specific
   // Returns true if a marker was removed, false otherwise.

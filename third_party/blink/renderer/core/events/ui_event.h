@@ -71,7 +71,7 @@ class CORE_EXPORT UIEvent : public Event {
 
   virtual unsigned which() const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   UIEvent();

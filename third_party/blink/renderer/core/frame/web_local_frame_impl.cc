@@ -271,7 +271,7 @@ class ChromePrintContext : public PrintContext {
 
   ~ChromePrintContext() override = default;
 
-  virtual void BeginPrintMode(float width, float height) {
+  void BeginPrintMode(float width, float height) override {
     DCHECK(!printed_page_width_);
     printed_page_width_ = width;
     printed_page_height_ = height;
@@ -458,7 +458,7 @@ class ChromePluginPrintContext final : public ChromePrintContext {
 
   ~ChromePluginPrintContext() override = default;
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(plugin_);
     ChromePrintContext::Trace(visitor);
   }

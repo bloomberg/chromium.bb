@@ -45,7 +45,7 @@ class EmptyNodeList final : public NodeList {
 
   Node& OwnerNode() const { return *owner_; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit EmptyNodeList(Node& root_node) : owner_(root_node) {}

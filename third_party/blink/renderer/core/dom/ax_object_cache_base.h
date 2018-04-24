@@ -23,7 +23,7 @@ class AXObject;
 // new public API methods or similar) and remove this class.
 class CORE_EXPORT AXObjectCacheBase : public AXObjectCache {
  public:
-  virtual ~AXObjectCacheBase();
+  ~AXObjectCacheBase() override;
 
   virtual AXObject* Get(const Node*) = 0;
   virtual AXObject* GetOrCreate(LayoutObject*) = 0;

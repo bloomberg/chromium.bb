@@ -49,7 +49,7 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   bool HadBlankText() override { return histograms_.HadBlankText(); }
   void PaintRequested() { histograms_.FallbackFontPainted(period_); }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   scoped_refptr<SimpleFontData> CreateFontData(

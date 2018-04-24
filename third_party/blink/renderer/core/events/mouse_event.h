@@ -188,7 +188,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   MouseEvent(const AtomicString& type,

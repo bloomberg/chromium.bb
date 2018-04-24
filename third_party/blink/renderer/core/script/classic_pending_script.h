@@ -53,7 +53,7 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
   void SetStreamer(ScriptStreamer*);
   void StreamingFinished();
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   blink::ScriptType GetScriptType() const override {
     return blink::ScriptType::kClassic;

@@ -58,7 +58,7 @@ class CORE_EXPORT PerformanceNavigationTiming final
   DOMHighResTimeStamp redirectEnd() const override;
   DOMHighResTimeStamp responseEnd() const override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   void BuildJSONValue(V8ObjectBuilder&) const override;
@@ -72,12 +72,12 @@ class CORE_EXPORT PerformanceNavigationTiming final
   DocumentLoader* GetDocumentLoader() const;
   DocumentLoadTiming* GetDocumentLoadTiming() const;
 
-  virtual ResourceLoadTiming* GetResourceLoadTiming() const;
-  virtual bool AllowTimingDetails() const;
-  virtual bool DidReuseConnection() const;
-  virtual unsigned long long GetTransferSize() const;
-  virtual unsigned long long GetEncodedBodySize() const;
-  virtual unsigned long long GetDecodedBodySize() const;
+  ResourceLoadTiming* GetResourceLoadTiming() const override;
+  bool AllowTimingDetails() const override;
+  bool DidReuseConnection() const override;
+  unsigned long long GetTransferSize() const override;
+  unsigned long long GetEncodedBodySize() const override;
+  unsigned long long GetDecodedBodySize() const override;
 
   bool GetAllowRedirectDetails() const;
 

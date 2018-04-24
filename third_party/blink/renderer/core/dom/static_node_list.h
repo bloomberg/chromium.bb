@@ -49,8 +49,8 @@ class StaticNodeTypeList final : public NodeList {
   unsigned length() const override;
   NodeType* item(unsigned index) const override;
 
-  virtual void Trace(blink::Visitor*);
-  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
     for (unsigned i = 0; i < length(); i++)
       visitor->TraceWrappers(nodes_[i]);
     NodeList::TraceWrappers(visitor);

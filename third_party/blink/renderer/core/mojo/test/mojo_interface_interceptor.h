@@ -40,14 +40,14 @@ class MojoInterfaceInterceptor final
                                           const String& interface_name,
                                           const String& scope,
                                           ExceptionState&);
-  ~MojoInterfaceInterceptor();
+  ~MojoInterfaceInterceptor() override;
 
   void start(ExceptionState&);
   void stop();
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(interfacerequest);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   // EventTargetWithInlineData
   const AtomicString& InterfaceName() const override;

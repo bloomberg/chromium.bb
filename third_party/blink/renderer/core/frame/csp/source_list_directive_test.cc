@@ -28,7 +28,7 @@ class SourceListDirectiveTest : public testing::Test {
     CSPSource::WildcardDisposition port_wildcard;
   };
 
-  virtual void SetUp() {
+  void SetUp() override {
     KURL secure_url("https://example.test/image.png");
     scoped_refptr<SecurityOrigin> secure_origin(
         SecurityOrigin::Create(secure_url));

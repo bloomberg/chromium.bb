@@ -24,9 +24,9 @@ namespace {
 class ScriptModuleResolverImplTestModulator final : public DummyModulator {
  public:
   ScriptModuleResolverImplTestModulator() {}
-  virtual ~ScriptModuleResolverImplTestModulator() {}
+  ~ScriptModuleResolverImplTestModulator() override {}
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   void SetScriptState(ScriptState* script_state) {
     script_state_ = script_state;

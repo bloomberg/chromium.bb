@@ -28,7 +28,7 @@ class CORE_EXPORT ReportingObserver final : public ScriptWrappable {
   void observe();
   void disconnect();
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit ReportingObserver(ExecutionContext*, V8ReportingObserverCallback*);

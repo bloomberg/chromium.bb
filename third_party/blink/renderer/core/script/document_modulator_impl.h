@@ -27,11 +27,11 @@ class DocumentModulatorImpl final : public ModulatorImplBase {
   // Implements Modulator.
   ModuleScriptFetcher* CreateModuleScriptFetcher() override;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   // Implements ModulatorImplBase.
-  bool IsDynamicImportForbidden(String* reason);
+  bool IsDynamicImportForbidden(String* reason) override;
 
   DocumentModulatorImpl(scoped_refptr<ScriptState>, ResourceFetcher*);
   Member<ResourceFetcher> fetcher_;

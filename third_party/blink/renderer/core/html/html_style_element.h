@@ -44,7 +44,7 @@ class CORE_EXPORT HTMLStyleElement final : public HTMLElement,
   bool disabled() const;
   void setDisabled(bool);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   HTMLStyleElement(Document&, const CreateElementFlags);

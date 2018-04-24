@@ -80,7 +80,7 @@ class XPathResult final : public ScriptWrappable {
 
   const XPath::Value& GetValue() const { return value_; }
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   XPathResult(XPath::EvaluationContext&, const XPath::Value&);

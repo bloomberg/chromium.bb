@@ -24,7 +24,7 @@ class CORE_EXPORT AccessibleNodeList : public ScriptWrappable {
   static AccessibleNodeList* Create(const HeapVector<Member<AccessibleNode>>&);
 
   AccessibleNodeList();
-  virtual ~AccessibleNodeList();
+  ~AccessibleNodeList() override;
 
   void AddOwner(AOMRelationListProperty, AccessibleNode*);
   void RemoveOwner(AOMRelationListProperty, AccessibleNode*);
@@ -36,7 +36,7 @@ class CORE_EXPORT AccessibleNodeList : public ScriptWrappable {
   unsigned length() const;
   void setLength(unsigned);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   void NotifyChanged();

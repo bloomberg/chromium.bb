@@ -38,9 +38,9 @@ class CORE_EXPORT WorkletGlobalScope
   // Always returns false here as PaintWorkletGlobalScope and
   // AnimationWorkletGlobalScope don't have a #close() method on the global.
   // Note that AudioWorkletGlobal overrides this behavior.
-  bool IsClosing() const { return false; }
+  bool IsClosing() const override { return false; }
 
-  ExecutionContext* GetExecutionContext() const;
+  ExecutionContext* GetExecutionContext() const override;
 
   // ExecutionContext
   const KURL& Url() const final { return url_; }

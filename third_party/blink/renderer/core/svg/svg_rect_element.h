@@ -42,7 +42,7 @@ class SVGRectElement final : public SVGGeometryElement {
   SVGAnimatedLength* rx() const { return rx_.Get(); }
   SVGAnimatedLength* ry() const { return ry_.Get(); }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit SVGRectElement(Document&);

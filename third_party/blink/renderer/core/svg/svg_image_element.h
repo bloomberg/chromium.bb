@@ -42,7 +42,7 @@ class CORE_EXPORT SVGImageElement final
 
  public:
   DECLARE_NODE_FACTORY(SVGImageElement);
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   bool CurrentFrameHasSingleSecurityOrigin() const;
 

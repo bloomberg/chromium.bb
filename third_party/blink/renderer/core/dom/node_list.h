@@ -35,7 +35,7 @@ class CORE_EXPORT NodeList : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  virtual ~NodeList() = default;
+  ~NodeList() override = default;
 
   // DOM methods & attributes for NodeList
   virtual unsigned length() const = 0;

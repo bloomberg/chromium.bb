@@ -59,7 +59,7 @@ class CORE_EXPORT PageOverlay : public GraphicsLayerClient,
       WebLocalFrameImpl*,
       std::unique_ptr<PageOverlay::Delegate>);
 
-  ~PageOverlay();
+  ~PageOverlay() override;
 
   void Update();
 
@@ -70,7 +70,7 @@ class CORE_EXPORT PageOverlay : public GraphicsLayerClient,
   LayoutRect VisualRect() const override;
 
   // GraphicsLayerClient implementation
-  bool NeedsRepaint(const GraphicsLayer&) const { return true; }
+  bool NeedsRepaint(const GraphicsLayer&) const override { return true; }
   IntRect ComputeInterestRect(const GraphicsLayer*,
                               const IntRect&) const override;
   void PaintContents(const GraphicsLayer*,

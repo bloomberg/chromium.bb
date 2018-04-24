@@ -42,7 +42,7 @@ class CORE_EXPORT PictureInPictureController
   // controller is allowed to request Picture-in-Picture.
   virtual Status IsElementAllowed(const HTMLVideoElement&) const = 0;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   explicit PictureInPictureController(Document&);

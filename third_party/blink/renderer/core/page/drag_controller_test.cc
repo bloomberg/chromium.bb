@@ -32,7 +32,7 @@ class DragMockChromeClient : public EmptyChromeClient {
                      const WebDragData&,
                      WebDragOperationsMask,
                      const WebImage& drag_image,
-                     const WebPoint& drag_image_offset) {
+                     const WebPoint& drag_image_offset) override {
     last_drag_image_size = drag_image.Size();
     last_drag_image_offset = drag_image_offset;
   }

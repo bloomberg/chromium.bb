@@ -48,7 +48,7 @@ class ReplaceNodeWithSpanCommand final : public SimpleEditCommand {
 
   HTMLSpanElement* SpanElement() { return span_element_.Get(); }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit ReplaceNodeWithSpanCommand(HTMLElement*);

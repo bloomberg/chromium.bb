@@ -51,7 +51,7 @@ class PageTransitionEvent final : public Event {
 
   bool persisted() const { return persisted_; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   PageTransitionEvent();

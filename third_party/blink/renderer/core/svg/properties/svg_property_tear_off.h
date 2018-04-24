@@ -45,7 +45,7 @@ enum PropertyIsAnimValType { kPropertyIsNotAnimVal, kPropertyIsAnimVal };
 
 class SVGPropertyTearOffBase : public ScriptWrappable {
  public:
-  virtual ~SVGPropertyTearOffBase() = default;
+  ~SVGPropertyTearOffBase() override = default;
 
   PropertyIsAnimValType PropertyIsAnimVal() const {
     return property_is_anim_val_;
@@ -109,12 +109,12 @@ class SVGPropertyTearOff : public SVGPropertyTearOffBase {
 
   void SetTarget(Property* target) { target_ = target; }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(target_);
     SVGPropertyTearOffBase::Trace(visitor);
   }
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
     SVGPropertyTearOffBase::TraceWrappers(visitor);
   }
 

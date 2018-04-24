@@ -60,7 +60,7 @@ class NullExecutionContext
   using SecurityContext::GetSecurityOrigin;
   using SecurityContext::GetContentSecurityPolicy;
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(queue_);
     SecurityContext::Trace(visitor);
     ExecutionContext::Trace(visitor);

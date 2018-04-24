@@ -36,7 +36,7 @@ class WebWidgetClient;
 class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
  public:
   explicit WebViewFrameWidget(WebWidgetClient&, WebViewImpl&);
-  virtual ~WebViewFrameWidget();
+  ~WebViewFrameWidget() override;
 
   // WebFrameWidget overrides:
   void Close() override;
@@ -99,7 +99,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   WebHitTestResult HitTestResultAt(const WebPoint&) override;
   HitTestResult CoreHitTestResultAt(const WebPoint&) override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   PageWidgetEventHandler* GetPageWidgetEventHandler() override;

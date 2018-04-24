@@ -63,7 +63,7 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
   Range* DocumentCachedRange() const;
   void ClearDocumentCachedRange();
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit SelectionEditor(LocalFrame&);

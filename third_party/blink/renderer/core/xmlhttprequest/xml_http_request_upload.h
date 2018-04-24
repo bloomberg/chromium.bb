@@ -58,7 +58,7 @@ class XMLHttpRequestUpload final : public XMLHttpRequestEventTarget {
 
   void HandleRequestError(const AtomicString&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit XMLHttpRequestUpload(XMLHttpRequest*);

@@ -66,9 +66,10 @@ class MockThreadableLoaderClient : public ThreadableLoaderClient {
                void(unsigned long,
                     const ResourceResponse&,
                     WebDataConsumerHandle*));
-  void DidReceiveResponse(unsigned long identifier,
-                          const ResourceResponse& response,
-                          std::unique_ptr<WebDataConsumerHandle> handle) {
+  void DidReceiveResponse(
+      unsigned long identifier,
+      const ResourceResponse& response,
+      std::unique_ptr<WebDataConsumerHandle> handle) override {
     DidReceiveResponseMock(identifier, response, handle.get());
   }
   MOCK_METHOD2(DidReceiveData, void(const char*, unsigned));

@@ -122,7 +122,7 @@ class CORE_EXPORT Location final : public ScriptWrappable {
 
   String toString() const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit Location(DOMWindow*);

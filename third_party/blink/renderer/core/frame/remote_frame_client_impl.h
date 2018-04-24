@@ -14,7 +14,7 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
  public:
   static RemoteFrameClientImpl* Create(WebRemoteFrameImpl*);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   // FrameClient overrides:
   bool InShadowTree() const override;

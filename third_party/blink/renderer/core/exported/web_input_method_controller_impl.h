@@ -47,7 +47,7 @@ class CORE_EXPORT WebInputMethodControllerImpl
   WebRange CompositionRange() override;
   bool GetCompositionCharacterBounds(WebVector<WebRect>& bounds) override;
 
-  WebRange GetSelectionOffsets() const;
+  WebRange GetSelectionOffsets() const override;
 
   void Trace(blink::Visitor*);
 

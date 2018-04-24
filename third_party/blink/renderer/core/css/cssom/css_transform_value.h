@@ -47,7 +47,7 @@ class CORE_EXPORT CSSTransformValue final : public CSSStyleValue {
 
   size_t length() const { return transform_components_.size(); }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(transform_components_);
     CSSStyleValue::Trace(visitor);
   }

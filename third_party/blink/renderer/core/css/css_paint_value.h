@@ -69,7 +69,7 @@ class CSSPaintValue : public CSSImageGeneratorValue {
     explicit Observer(CSSPaintValue* owner_value) : owner_value_(owner_value) {}
 
     ~Observer() override = default;
-    virtual void Trace(blink::Visitor* visitor) {
+    void Trace(blink::Visitor* visitor) override {
       visitor->Trace(owner_value_);
       CSSPaintImageGenerator::Observer::Trace(visitor);
     }

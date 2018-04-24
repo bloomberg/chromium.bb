@@ -24,7 +24,7 @@ class CORE_EXPORT StylePropertyMapReadOnly
  public:
   using StylePropertyMapEntry = std::pair<String, CSSStyleValueVector>;
 
-  virtual ~StylePropertyMapReadOnly() = default;
+  ~StylePropertyMapReadOnly() override = default;
 
   CSSStyleValue* get(const String& property_name, ExceptionState&);
   CSSStyleValueVector getAll(const String& property_name, ExceptionState&);

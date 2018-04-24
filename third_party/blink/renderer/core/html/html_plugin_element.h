@@ -67,7 +67,7 @@ class CORE_EXPORT HTMLPlugInElement
 
  public:
   ~HTMLPlugInElement() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   bool IsPlugin() override { return true; }
 

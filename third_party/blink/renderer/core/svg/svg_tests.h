@@ -41,7 +41,7 @@ class CORE_EXPORT SVGTests : public GarbageCollectedMixin {
 
   bool IsKnownAttribute(const QualifiedName&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   explicit SVGTests(SVGElement* context_element);

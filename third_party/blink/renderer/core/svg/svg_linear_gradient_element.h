@@ -42,7 +42,7 @@ class SVGLinearGradientElement final : public SVGGradientElement {
   SVGAnimatedLength* x2() const { return x2_.Get(); }
   SVGAnimatedLength* y2() const { return y2_.Get(); }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit SVGLinearGradientElement(Document&);

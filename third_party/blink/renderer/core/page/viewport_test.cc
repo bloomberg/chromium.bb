@@ -3031,10 +3031,10 @@ TEST_F(ViewportTest, viewportTriggersGpuRasterization) {
 class ConsoleMessageWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
-  virtual void DidAddMessageToConsole(const WebConsoleMessage& msg,
-                                      const WebString& source_name,
-                                      unsigned source_line,
-                                      const WebString& stack_trace) {
+  void DidAddMessageToConsole(const WebConsoleMessage& msg,
+                              const WebString& source_name,
+                              unsigned source_line,
+                              const WebString& stack_trace) override {
     messages.push_back(msg);
   }
 

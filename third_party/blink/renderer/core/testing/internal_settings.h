@@ -135,7 +135,7 @@ class InternalSettings final : public InternalSettingsGenerated,
   void setImageAnimationPolicy(const String&, ExceptionState&);
   void setScrollTopLeftInteropEnabled(bool);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   void setAvailablePointerTypes(const String&, ExceptionState&);
   void setPrimaryPointerType(const String&, ExceptionState&);

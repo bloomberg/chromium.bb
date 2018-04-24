@@ -27,7 +27,7 @@ class CustomLayoutChild : public ScriptWrappable {
 
  public:
   CustomLayoutChild(const CSSLayoutDefinition&, LayoutBox*);
-  virtual ~CustomLayoutChild() = default;
+  ~CustomLayoutChild() override = default;
 
   // LayoutChild.idl
   PrepopulatedComputedStylePropertyMap* styleMap() const { return style_map_; }

@@ -55,7 +55,7 @@ class StyleSheetCSSRuleList final : public CSSRuleList {
     return new StyleSheetCSSRuleList(sheet);
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(style_sheet_);
     CSSRuleList::Trace(visitor);
   }

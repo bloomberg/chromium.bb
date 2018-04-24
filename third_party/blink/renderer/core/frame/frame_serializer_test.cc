@@ -163,7 +163,7 @@ class FrameSerializerTest : public testing::Test,
   }
 
   // FrameSerializer::Delegate implementation.
-  bool RewriteLink(const Element& element, String& rewritten_link) {
+  bool RewriteLink(const Element& element, String& rewritten_link) override {
     String complete_url;
     for (const auto& attribute : element.Attributes()) {
       if (element.HasLegalLinkAttribute(attribute.GetName())) {
@@ -183,7 +183,7 @@ class FrameSerializerTest : public testing::Test,
     return true;
   }
 
-  bool ShouldSkipResourceWithURL(const KURL& url) {
+  bool ShouldSkipResourceWithURL(const KURL& url) override {
     return skip_urls_.Contains(url);
   }
 

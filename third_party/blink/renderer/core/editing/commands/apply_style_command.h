@@ -70,7 +70,7 @@ class CORE_EXPORT ApplyStyleCommand final : public CompositeEditCommand {
         document, style, is_inline_element_to_remove_function, input_type);
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   ApplyStyleCommand(Document&,

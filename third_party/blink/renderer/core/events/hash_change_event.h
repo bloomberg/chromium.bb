@@ -48,7 +48,7 @@ class HashChangeEvent final : public Event {
     return EventNames::HashChangeEvent;
   }
 
-  virtual void Trace(blink::Visitor* visitor) { Event::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }
 
  private:
   HashChangeEvent() = default;

@@ -58,7 +58,7 @@ class CORE_EXPORT ReplaceSelectionCommand final : public CompositeEditCommand {
 
   EphemeralRange InsertedRange() const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   ReplaceSelectionCommand(Document&,

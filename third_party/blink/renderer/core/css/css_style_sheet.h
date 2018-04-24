@@ -181,7 +181,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   bool IsAlternate() const;
   bool CanBeActivated(const String& current_preferrable_name) const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   CSSStyleSheet(StyleSheetContents*, CSSImportRule* owner_rule);

@@ -16,7 +16,7 @@ enum PassiveForcedListenerResultType {
 class EventTargetTest : public RenderingTest {
  public:
   EventTargetTest() = default;
-  ~EventTargetTest() = default;
+  ~EventTargetTest() override = default;
 };
 
 TEST_F(EventTargetTest, PreventDefaultNotCalled) {

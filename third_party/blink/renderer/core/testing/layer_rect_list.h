@@ -56,7 +56,7 @@ class LayerRectList final : public ScriptWrappable {
               int layer_offset_y,
               DOMRectReadOnly* layer_relative_rect);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   LayerRectList();

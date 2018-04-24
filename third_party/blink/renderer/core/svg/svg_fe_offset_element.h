@@ -37,7 +37,7 @@ class SVGFEOffsetElement final : public SVGFilterPrimitiveStandardAttributes {
   SVGAnimatedNumber* dy() { return dy_.Get(); }
   SVGAnimatedString* in1() { return in1_.Get(); }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit SVGFEOffsetElement(Document&);

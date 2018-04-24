@@ -50,7 +50,7 @@ class SVGListPropertyHelper : public SVGPropertyHelper<Derived> {
 
   SVGListPropertyHelper() = default;
 
-  ~SVGListPropertyHelper() = default;
+  ~SVGListPropertyHelper() override = default;
 
   // used from Blink C++ code:
 
@@ -125,7 +125,7 @@ class SVGListPropertyHelper : public SVGPropertyHelper<Derived> {
   ItemPropertyType* AppendItem(ItemPropertyType*);
   ItemPropertyType* ReplaceItem(ItemPropertyType*, size_t, ExceptionState&);
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(values_);
     SVGPropertyHelper<Derived>::Trace(visitor);
   }

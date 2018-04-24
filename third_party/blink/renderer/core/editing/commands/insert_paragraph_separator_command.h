@@ -44,7 +44,7 @@ class CORE_EXPORT InsertParagraphSeparatorCommand final
         paste_blockquote_into_unquoted_area);
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   InsertParagraphSeparatorCommand(Document&,

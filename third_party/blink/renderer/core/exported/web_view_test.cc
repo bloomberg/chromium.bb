@@ -5132,7 +5132,7 @@ TEST_P(WebViewTest, DetachPluginInLayout) {
     void DidAddMessageToConsole(const WebConsoleMessage& message,
                                 const WebString& source_name,
                                 unsigned source_line,
-                                const WebString& stack_trace) {
+                                const WebString& stack_trace) override {
       message_ = message.text;
     }
 
@@ -5325,7 +5325,7 @@ TEST_P(WebViewTest, FirstInputDelayExcludesProcessingTime) {
     void DidAddMessageToConsole(const WebConsoleMessage& message,
                                 const WebString& source_name,
                                 unsigned source_line,
-                                const WebString& stack_trace) {
+                                const WebString& stack_trace) override {
       mock_clock_->Advance(TimeDelta::FromMilliseconds(6000));
     }
 

@@ -150,7 +150,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void ShowContextMenu(WebMenuSourceType) override;
 
   // WebView methods:
-  virtual bool IsWebView() const { return true; }
+  bool IsWebView() const override { return true; }
   void SetPrerendererClient(WebPrerendererClient*) override;
   WebSettings* GetSettings() override;
   WebString PageEncoding() const override;

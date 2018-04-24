@@ -920,7 +920,7 @@ class WebFrameCSSCallbackTest : public testing::Test {
                  ->ToWebLocalFrame();
   }
 
-  ~WebFrameCSSCallbackTest() {
+  ~WebFrameCSSCallbackTest() override {
     EXPECT_EQ(1U, client_.matched_selectors_.size());
   }
 
@@ -4647,7 +4647,7 @@ TEST_P(ParameterizedWebFrameTest, ClearFocusedNodeTest) {
 class ChangedSelectionCounter : public FrameTestHelpers::TestWebFrameClient {
  public:
   ChangedSelectionCounter() : call_count_(0) {}
-  void DidChangeSelection(bool isSelectionEmpty) { ++call_count_; }
+  void DidChangeSelection(bool isSelectionEmpty) override { ++call_count_; }
   int Count() const { return call_count_; }
   void Reset() { call_count_ = 0; }
 
@@ -11027,7 +11027,7 @@ class WebFrameVisibilityChangeTest : public ParameterizedWebFrameTest {
     web_remote_frame_ = FrameTestHelpers::CreateRemote(&remote_frame_client_);
   }
 
-  ~WebFrameVisibilityChangeTest() = default;
+  ~WebFrameVisibilityChangeTest() override = default;
 
   void ExecuteScriptOnMainFrame(const WebScriptSource& script) {
     MainFrame()->ExecuteScript(script);

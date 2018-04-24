@@ -120,7 +120,7 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  virtual ~EventTarget();
+  ~EventTarget() override;
 
   virtual const AtomicString& InterfaceName() const = 0;
   virtual ExecutionContext* GetExecutionContext() const = 0;
@@ -227,12 +227,12 @@ class CORE_EXPORT EventTargetWithInlineData : public EventTarget {
  public:
   ~EventTargetWithInlineData() override = default;
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(event_target_data_);
     EventTarget::Trace(visitor);
   }
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappers(event_target_data_);
     EventTarget::TraceWrappers(visitor);
   }

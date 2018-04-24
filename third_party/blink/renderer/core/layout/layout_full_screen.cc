@@ -45,7 +45,7 @@ class LayoutFullScreenPlaceholder final : public LayoutBlockFlow {
   // Must call setStyleWithWritingModeOfParent() instead.
   void SetStyle(scoped_refptr<ComputedStyle>) = delete;
 
-  bool CreatesNewFormattingContext() const { return true; }
+  bool CreatesNewFormattingContext() const override { return true; }
 
  private:
   bool IsOfType(LayoutObjectType type) const override {

@@ -37,7 +37,7 @@ class CORE_EXPORT CSSURLImageValue final : public CSSStyleImageValue {
   StyleValueType GetType() const final { return kURLImageType; }
   const CSSValue* ToCSSValue() const final;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit CSSURLImageValue(const CSSImageValue& value) : value_(value) {}

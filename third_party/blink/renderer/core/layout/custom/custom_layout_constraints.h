@@ -18,7 +18,7 @@ class CustomLayoutConstraints : public ScriptWrappable {
  public:
   CustomLayoutConstraints(LayoutUnit fixed_inline_size)
       : fixed_inline_size_(fixed_inline_size.ToDouble()) {}
-  virtual ~CustomLayoutConstraints() = default;
+  ~CustomLayoutConstraints() override = default;
 
   // LayoutConstraints.idl
   double fixedInlineSize() const { return fixed_inline_size_; }

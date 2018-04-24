@@ -57,7 +57,7 @@ class StaticCSSRuleList final : public CSSRuleList {
 
   CSSStyleSheet* GetStyleSheet() const override { return nullptr; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   StaticCSSRuleList();
@@ -77,7 +77,7 @@ class LiveCSSRuleList final : public CSSRuleList {
     return new LiveCSSRuleList(rule);
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(rule_);
     CSSRuleList::Trace(visitor);
   }

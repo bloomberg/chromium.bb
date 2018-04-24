@@ -91,7 +91,7 @@ class InspectorBaseAgent : public InspectorAgent,
     instrumenting_agents_ = nullptr;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(instrumenting_agents_);
     InspectorAgent::Trace(visitor);
   }

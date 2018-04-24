@@ -49,8 +49,8 @@ class SVGScriptElement final : public SVGElement,
 
   bool IsScriptElement() const override { return true; }
 
-  virtual void Trace(blink::Visitor*);
-  void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   SVGScriptElement(Document&, const CreateElementFlags);
@@ -69,15 +69,15 @@ class SVGScriptElement final : public SVGElement,
   bool HaveLoadedRequiredResources() override;
 
   // ScriptElementBase overrides:
-  bool AsyncAttributeValue() const { return false; }
-  String CharsetAttributeValue() const { return String(); }
-  String CrossOriginAttributeValue() const { return String(); }
-  bool DeferAttributeValue() const { return false; }
-  String EventAttributeValue() const { return String(); }
-  String ForAttributeValue() const { return String(); }
-  String IntegrityAttributeValue() const { return String(); }
-  String LanguageAttributeValue() const { return String(); }
-  bool NomoduleAttributeValue() const { return false; }
+  bool AsyncAttributeValue() const override { return false; }
+  String CharsetAttributeValue() const override { return String(); }
+  String CrossOriginAttributeValue() const override { return String(); }
+  bool DeferAttributeValue() const override { return false; }
+  String EventAttributeValue() const override { return String(); }
+  String ForAttributeValue() const override { return String(); }
+  String IntegrityAttributeValue() const override { return String(); }
+  String LanguageAttributeValue() const override { return String(); }
+  bool NomoduleAttributeValue() const override { return false; }
   String SourceAttributeValue() const override;
   String TypeAttributeValue() const override;
   String TextFromChildren() override;

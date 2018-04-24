@@ -24,7 +24,7 @@ class CORE_EXPORT DeclaredStylePropertyMap final : public StylePropertyMap {
  public:
   explicit DeclaredStylePropertyMap(CSSStyleRule* owner_rule);
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(owner_rule_);
     StylePropertyMap::Trace(visitor);
   }

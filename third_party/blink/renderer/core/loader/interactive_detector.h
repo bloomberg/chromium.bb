@@ -53,7 +53,7 @@ class CORE_EXPORT InteractiveDetector
   // Exposed for tests. See crbug.com/810381. We must use a consistent address
   // for the supplement name.
   static const char* SupplementName();
-  virtual ~InteractiveDetector();
+  ~InteractiveDetector() override;
 
   // Calls to CurrentTimeTicksInSeconds is expensive, so we try not to call it
   // unless we really have to. If we already have the event time available, we
@@ -93,7 +93,7 @@ class CORE_EXPORT InteractiveDetector
   // first_input_timestamp if needed.
   void HandleForFirstInputDelay(const WebInputEvent&);
 
-  virtual void Trace(Visitor*);
+  void Trace(Visitor*) override;
 
  private:
   friend class InteractiveDetectorTest;

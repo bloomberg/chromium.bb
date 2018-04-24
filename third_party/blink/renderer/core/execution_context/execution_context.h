@@ -79,7 +79,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   MERGE_GARBAGE_COLLECTED_MIXINS();
 
  public:
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   static ExecutionContext* From(const ScriptState*);
 
@@ -214,7 +214,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
  protected:
   ExecutionContext();
-  virtual ~ExecutionContext();
+  ~ExecutionContext() override;
 
  private:
   bool DispatchErrorEventInternal(ErrorEvent*, AccessControlStatus);

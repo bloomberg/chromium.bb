@@ -27,7 +27,7 @@ class DictionaryTest : public ScriptWrappable {
 
  public:
   static DictionaryTest* Create() { return new DictionaryTest(); }
-  virtual ~DictionaryTest();
+  ~DictionaryTest() override;
 
   // Stores all members into corresponding fields
   void set(const InternalDictionary&);
@@ -47,7 +47,7 @@ class DictionaryTest : public ScriptWrappable {
                             Dictionary iterable,
                             ExceptionState&) const;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   DictionaryTest();

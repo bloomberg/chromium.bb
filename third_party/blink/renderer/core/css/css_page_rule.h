@@ -51,7 +51,7 @@ class CORE_EXPORT CSSPageRule final : public CSSRule {
   String selectorText() const;
   void setSelectorText(const ExecutionContext*, const String&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   CSSPageRule(StyleRulePage*, CSSStyleSheet*);

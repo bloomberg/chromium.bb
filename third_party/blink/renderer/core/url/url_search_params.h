@@ -39,7 +39,7 @@ class CORE_EXPORT URLSearchParams final : public ScriptWrappable,
     return new URLSearchParams(query_string, url_object);
   }
 
-  ~URLSearchParams();
+  ~URLSearchParams() override;
 
   // URLSearchParams interface methods
   String toString() const;
@@ -60,7 +60,7 @@ class CORE_EXPORT URLSearchParams final : public ScriptWrappable,
   DOMURL* UrlObject() const;
 #endif
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(URLSearchParamsTest, EncodedFormData);

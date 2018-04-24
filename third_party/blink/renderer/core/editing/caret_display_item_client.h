@@ -44,7 +44,7 @@ struct PaintInvalidatorContext;
 class CaretDisplayItemClient final : public DisplayItemClient {
  public:
   CaretDisplayItemClient();
-  virtual ~CaretDisplayItemClient();
+  ~CaretDisplayItemClient() override;
 
   // TODO(yosin,wangxianzhu): Make these two static functions private or
   // combine them into updateForPaintInvalidation() when the callsites in

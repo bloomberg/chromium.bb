@@ -18,7 +18,7 @@ class SVGPathByteStream;
 class StylePath final : public BasicShape {
  public:
   static scoped_refptr<StylePath> Create(std::unique_ptr<SVGPathByteStream>);
-  ~StylePath();
+  ~StylePath() override;
 
   static StylePath* EmptyPath();
 

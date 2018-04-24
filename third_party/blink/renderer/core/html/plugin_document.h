@@ -50,7 +50,7 @@ class CORE_EXPORT PluginDocument final : public HTMLDocument {
 
   void Shutdown() override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   PluginDocument(const DocumentInit&, Color background_color);

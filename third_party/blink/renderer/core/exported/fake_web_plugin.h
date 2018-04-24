@@ -77,7 +77,7 @@ class FakeWebPlugin : public WebPlugin {
  protected:
   ~FakeWebPlugin() override;
 
-  WebPluginContainer* Container() const { return container_; }
+  WebPluginContainer* Container() const override { return container_; }
 
  private:
   WebPluginContainer* container_;

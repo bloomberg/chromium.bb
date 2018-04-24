@@ -17,7 +17,7 @@ class GarbageCollectedScriptWrappable : public ScriptWrappable {
 
  public:
   GarbageCollectedScriptWrappable(const String&);
-  virtual ~GarbageCollectedScriptWrappable();
+  ~GarbageCollectedScriptWrappable() override;
 
   const String& toString() const { return string_; }
 

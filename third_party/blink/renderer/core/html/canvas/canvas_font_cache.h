@@ -50,7 +50,7 @@ class CORE_EXPORT CanvasFontCache final
   // For testing
   bool IsInCache(const String&);
 
-  ~CanvasFontCache();
+  ~CanvasFontCache() override;
 
  private:
   explicit CanvasFontCache(Document&);

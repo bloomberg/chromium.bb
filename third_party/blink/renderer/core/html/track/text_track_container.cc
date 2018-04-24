@@ -54,7 +54,7 @@ class VideoElementResizeDelegate final : public ResizeObserver::Delegate {
         entries[0]->target()->GetLayoutObject());
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(text_track_container_);
     ResizeObserver::Delegate::Trace(visitor);
   }

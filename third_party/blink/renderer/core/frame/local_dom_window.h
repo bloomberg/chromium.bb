@@ -108,8 +108,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   LocalFrame* GetFrame() const { return ToLocalFrame(DOMWindow::GetFrame()); }
 
-  virtual void Trace(blink::Visitor*);
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
   Document* InstallNewDocument(const String& mime_type,
                                const DocumentInit&,

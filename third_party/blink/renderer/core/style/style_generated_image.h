@@ -61,7 +61,7 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
                                 const FloatSize& target_size) const override;
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   StyleGeneratedImage(const CSSImageGeneratorValue&);

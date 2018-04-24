@@ -35,7 +35,7 @@ class CORE_EXPORT CSSTransformComponent : public ScriptWrappable {
     kTranslationType,
   };
 
-  virtual ~CSSTransformComponent() = default;
+  ~CSSTransformComponent() override = default;
 
   // Blink-internal ways of creating CSSTransformComponents.
   static CSSTransformComponent* FromCSSValue(const CSSValue&);

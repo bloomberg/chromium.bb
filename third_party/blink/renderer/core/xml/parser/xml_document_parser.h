@@ -80,7 +80,7 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
     return new XMLDocumentParser(fragment, element, parser_content_policy);
   }
   ~XMLDocumentParser() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   // Exposed for callbacks:
   void HandleError(XMLErrors::ErrorType, const char* message, TextPosition);

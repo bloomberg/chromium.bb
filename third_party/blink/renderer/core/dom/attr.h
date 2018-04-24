@@ -59,8 +59,8 @@ class CORE_EXPORT Attr final : public Node {
   const AtomicString& namespaceURI() const { return name_.NamespaceURI(); }
   const AtomicString& prefix() const { return name_.Prefix(); }
 
-  virtual void Trace(blink::Visitor*);
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   Attr(Element&, const QualifiedName&);

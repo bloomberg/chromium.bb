@@ -54,7 +54,7 @@ class MockScriptElementBase
                void(HTMLScriptElementOrSVGScriptElement&));
   MOCK_CONST_METHOD0(Loader, ScriptLoader*());
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     ScriptElementBase::Trace(visitor);
   }
 };

@@ -47,7 +47,7 @@ class SVGMaskElement final : public SVGElement, public SVGTests {
     return mask_content_units_.Get();
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit SVGMaskElement(Document&);

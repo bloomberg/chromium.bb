@@ -51,7 +51,7 @@ class CORE_EXPORT PerformanceEntry : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  virtual ~PerformanceEntry();
+  ~PerformanceEntry() override;
 
   enum EntryType : PerformanceEntryType {
     kInvalid = 0,

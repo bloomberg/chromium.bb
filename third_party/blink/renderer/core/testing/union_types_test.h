@@ -18,7 +18,7 @@ class UnionTypesTest final : public ScriptWrappable {
 
  public:
   static UnionTypesTest* Create() { return new UnionTypesTest(); }
-  virtual ~UnionTypesTest() = default;
+  ~UnionTypesTest() override = default;
 
   void doubleOrStringOrStringSequenceAttribute(DoubleOrStringOrStringSequence&);
   void setDoubleOrStringOrStringSequenceAttribute(

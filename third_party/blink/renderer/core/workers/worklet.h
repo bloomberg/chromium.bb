@@ -33,7 +33,7 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
   EAGERLY_FINALIZE();
 
  public:
-  virtual ~Worklet();
+  ~Worklet() override;
 
   // Worklet.idl
   // addModule() imports ES6 module scripts.

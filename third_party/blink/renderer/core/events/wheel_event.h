@@ -76,7 +76,7 @@ class CORE_EXPORT WheelEvent final : public MouseEvent {
   // So we need to override its parent's DispatchEvent.
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   WheelEvent();

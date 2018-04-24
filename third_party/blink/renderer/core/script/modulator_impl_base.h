@@ -28,9 +28,9 @@ class ScriptState;
 // components together.
 class ModulatorImplBase : public Modulator {
  public:
-  virtual ~ModulatorImplBase();
-  void Trace(blink::Visitor*);
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  ~ModulatorImplBase() override;
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
   ExecutionContext* GetExecutionContext() const;
 

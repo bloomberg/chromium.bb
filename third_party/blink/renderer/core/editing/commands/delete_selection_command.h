@@ -52,7 +52,7 @@ class CORE_EXPORT DeleteSelectionCommand final : public CompositeEditCommand {
     return new DeleteSelectionCommand(selection, options, input_type);
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   DeleteSelectionCommand(Document&,

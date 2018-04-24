@@ -55,7 +55,7 @@ class CORE_EXPORT ImageDocument final : public HTMLDocument {
   void UpdateImageStyle();
   bool ShouldShrinkToFit() const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit ImageDocument(const DocumentInit&);

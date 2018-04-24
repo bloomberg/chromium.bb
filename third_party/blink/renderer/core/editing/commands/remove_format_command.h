@@ -40,7 +40,7 @@ class RemoveFormatCommand final : public CompositeEditCommand {
   explicit RemoveFormatCommand(Document&);
 
   void DoApply(EditingState*) override;
-  InputEvent::InputType GetInputType() const;
+  InputEvent::InputType GetInputType() const override;
 };
 
 }  // namespace blink

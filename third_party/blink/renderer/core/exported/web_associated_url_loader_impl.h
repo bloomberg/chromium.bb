@@ -26,7 +26,7 @@ class CORE_EXPORT WebAssociatedURLLoaderImpl final
     : public WebAssociatedURLLoader {
  public:
   WebAssociatedURLLoaderImpl(Document*, const WebAssociatedURLLoaderOptions&);
-  ~WebAssociatedURLLoaderImpl();
+  ~WebAssociatedURLLoaderImpl() override;
 
   void LoadAsynchronously(const WebURLRequest&,
                           WebAssociatedURLLoaderClient*) override;

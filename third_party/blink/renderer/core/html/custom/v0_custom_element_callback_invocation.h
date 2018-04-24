@@ -56,7 +56,7 @@ class V0CustomElementCallbackInvocation : public V0CustomElementProcessingStep {
 
   V0CustomElementLifecycleCallbacks* Callbacks() { return callbacks_.Get(); }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Member<V0CustomElementLifecycleCallbacks> callbacks_;

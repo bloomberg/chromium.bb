@@ -56,9 +56,9 @@ class TreeWalker final : public ScriptWrappable, public NodeIteratorBase {
   Node* previousNode(ExceptionState&);
   Node* nextNode(ExceptionState&);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   TreeWalker(Node*, unsigned what_to_show, V8NodeFilterCondition*);

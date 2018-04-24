@@ -42,7 +42,7 @@ class InsertNodeBeforeCommand final : public SimpleEditCommand {
         should_assume_content_is_always_editable);
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   InsertNodeBeforeCommand(Node* child_to_insert,

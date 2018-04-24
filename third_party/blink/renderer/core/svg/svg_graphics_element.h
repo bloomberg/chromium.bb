@@ -64,7 +64,7 @@ class CORE_EXPORT SVGGraphicsElement : public SVGElement, public SVGTests {
       CTMScope mode,
       const SVGGraphicsElement* ancestor = nullptr) const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   SVGGraphicsElement(const QualifiedName&,

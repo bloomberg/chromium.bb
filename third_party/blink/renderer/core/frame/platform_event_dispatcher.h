@@ -16,7 +16,7 @@ class CORE_EXPORT PlatformEventDispatcher : public GarbageCollectedMixin {
   void AddController(PlatformEventController*);
   void RemoveController(PlatformEventController*);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   PlatformEventDispatcher();

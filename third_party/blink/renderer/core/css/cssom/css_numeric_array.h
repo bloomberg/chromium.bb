@@ -24,7 +24,7 @@ class CORE_EXPORT CSSNumericArray final : public ScriptWrappable {
     return new CSSNumericArray(CSSNumberishesToNumericValues(values));
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(values_);
     ScriptWrappable::Trace(visitor);
   }

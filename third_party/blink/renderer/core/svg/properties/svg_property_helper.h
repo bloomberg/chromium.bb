@@ -12,7 +12,7 @@ namespace blink {
 template <typename Derived>
 class SVGPropertyHelper : public SVGPropertyBase {
  public:
-  virtual SVGPropertyBase* CloneForAnimation(const String& value) const {
+  SVGPropertyBase* CloneForAnimation(const String& value) const override {
     Derived* property = Derived::Create();
     property->SetValueAsString(value);
     return property;

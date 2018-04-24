@@ -50,7 +50,7 @@ class IntersectionObserverDelegateImpl final
 
   ExecutionContext* GetExecutionContext() const override { return context_; }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     IntersectionObserverDelegate::Trace(visitor);
     visitor->Trace(context_);
   }

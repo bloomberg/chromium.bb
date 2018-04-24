@@ -52,13 +52,13 @@ class DOMWindowEventQueueTimer final
   // Eager finalization is needed to promptly stop this timer object.
   // (see DOMTimer comment for more.)
   EAGERLY_FINALIZE();
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(event_queue_);
     PausableTimer::Trace(visitor);
   }
 
  private:
-  virtual void Fired() { event_queue_->PendingEventTimerFired(); }
+  void Fired() override { event_queue_->PendingEventTimerFired(); }
 
   Member<DOMWindowEventQueue> event_queue_;
   DISALLOW_COPY_AND_ASSIGN(DOMWindowEventQueueTimer);

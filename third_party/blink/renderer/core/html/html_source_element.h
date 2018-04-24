@@ -54,7 +54,7 @@ class HTMLSourceElement final : public HTMLElement {
   void RemoveMediaQueryListListener();
   void AddMediaQueryListListener();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit HTMLSourceElement(Document&);

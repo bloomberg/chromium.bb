@@ -494,7 +494,7 @@ class CORE_EXPORT HTMLMediaElement
   void UpdatePlayState();
   bool PotentiallyPlaying() const;
   bool StoppedDueToErrors() const;
-  bool CouldPlayIfEnoughData() const;
+  bool CouldPlayIfEnoughData() const override;
 
   // Generally the presence of the loop attribute should be considered to mean
   // playback has not "ended", as "ended" and "looping" are mutually exclusive.

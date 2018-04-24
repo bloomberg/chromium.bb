@@ -51,7 +51,7 @@ class CORE_EXPORT ValidationMessageClientImpl final
   static ValidationMessageClientImpl* Create(WebViewImpl&);
   ~ValidationMessageClientImpl() override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   ValidationMessageClientImpl(WebViewImpl&);

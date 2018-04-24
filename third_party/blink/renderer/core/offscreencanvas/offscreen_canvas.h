@@ -78,8 +78,8 @@ class CORE_EXPORT OffscreenCanvas final
   static void RegisterRenderingContextFactory(
       std::unique_ptr<CanvasRenderingContextFactory>);
 
-  bool OriginClean() const;
-  void SetOriginTainted() { origin_clean_ = false; }
+  bool OriginClean() const override;
+  void SetOriginTainted() override { origin_clean_ = false; }
   // TODO(crbug.com/630356): apply the flag to WebGL context as well
   void SetDisableReadingFromCanvasTrue() {
     disable_reading_from_canvas_ = true;
@@ -146,7 +146,7 @@ class CORE_EXPORT OffscreenCanvas final
   bool IsOpaque() const final;
   bool IsAccelerated() const final;
 
-  DispatchEventResult HostDispatchEvent(Event* event) {
+  DispatchEventResult HostDispatchEvent(Event* event) override {
     return DispatchEvent(event);
   }
 
@@ -156,7 +156,7 @@ class CORE_EXPORT OffscreenCanvas final
 
   FontSelector* GetFontSelector() override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   friend class OffscreenCanvasTest;

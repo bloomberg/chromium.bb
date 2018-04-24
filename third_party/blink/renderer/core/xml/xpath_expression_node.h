@@ -63,7 +63,7 @@ class CORE_EXPORT Expression : public ParseNode {
  public:
   Expression();
   ~Expression() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   virtual Value Evaluate(EvaluationContext&) const = 0;
 

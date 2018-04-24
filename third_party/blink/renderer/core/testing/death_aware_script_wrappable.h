@@ -21,7 +21,7 @@ class DeathAwareScriptWrappable : public ScriptWrappable {
  public:
   typedef TraceWrapperMember<DeathAwareScriptWrappable> Wrapper;
 
-  virtual ~DeathAwareScriptWrappable() {
+  ~DeathAwareScriptWrappable() override {
     if (this == instance_) {
       has_died_ = true;
     }
@@ -37,14 +37,14 @@ class DeathAwareScriptWrappable : public ScriptWrappable {
     instance_ = instance;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(wrapped_dependency_);
     visitor->Trace(wrapped_vector_dependency_);
     visitor->Trace(wrapped_hash_map_dependency_);
     ScriptWrappable::Trace(visitor);
   }
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappers(wrapped_dependency_);
     for (auto dep : wrapped_vector_dependency_) {
       visitor->TraceWrappers(dep);

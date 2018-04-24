@@ -35,7 +35,7 @@ class BytesConsumerTestClient final
 
 class BytesConsumerTeeTest : public PageTestBase {
  public:
-  virtual void SetUp() { PageTestBase::SetUp(IntSize()); }
+  void SetUp() override { PageTestBase::SetUp(IntSize()); }
 };
 
 class FakeBlobBytesConsumer : public BytesConsumer {

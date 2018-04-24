@@ -31,7 +31,7 @@ class CustomLayoutFragment : public ScriptWrappable {
   CustomLayoutFragment(CustomLayoutFragmentRequest*,
                        const LayoutUnit inline_size,
                        const LayoutUnit block_size);
-  virtual ~CustomLayoutFragment() = default;
+  ~CustomLayoutFragment() override = default;
 
   double inlineSize() const { return inline_size_; }
   double blockSize() const { return block_size_; }

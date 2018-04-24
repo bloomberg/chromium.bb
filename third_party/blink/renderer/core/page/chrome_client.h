@@ -346,7 +346,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
     std::move(callback).Run(false);
   }
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   ~ChromeClient() override = default;

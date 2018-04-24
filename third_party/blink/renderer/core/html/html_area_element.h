@@ -59,7 +59,7 @@ class CORE_EXPORT HTMLAreaElement final : public HTMLAnchorElement {
 
  private:
   explicit HTMLAreaElement(Document&);
-  ~HTMLAreaElement();
+  ~HTMLAreaElement() override;
 
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsKeyboardFocusable() const override;
