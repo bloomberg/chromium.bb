@@ -16,6 +16,11 @@
 #include "components/signin/core/browser/signin_manager.h"
 #endif
 
+// Necessary to declare this class as a friend.
+namespace browser_sync {
+class ProfileSyncServiceStartupCrosTest;
+}
+
 // Necessary to declare these classes as friends.
 namespace chromeos {
 class ChromeSessionManager;
@@ -114,6 +119,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   // These clients needs to call SetPrimaryAccountSynchronously().
   friend chromeos::ChromeSessionManager;
   friend chromeos::UserSessionManager;
+  friend browser_sync::ProfileSyncServiceStartupCrosTest;
 
   // Sets the primary account info synchronously with both the IdentityManager
   // and its backing SigninManager/ProfileOAuth2TokenService instances.

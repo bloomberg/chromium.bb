@@ -88,6 +88,7 @@ source_set("unit_tests") {
     "//components/webdata_services:test_support",
     "//google_apis",
     "//net",
+    "//services/identity/public/cpp:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
