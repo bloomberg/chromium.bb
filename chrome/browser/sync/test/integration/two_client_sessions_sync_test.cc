@@ -192,7 +192,13 @@ IN_PROC_BROWSER_TEST_P(TwoClientSessionsSyncTest, DeleteIdleSession) {
   EXPECT_FALSE(GetSessionData(1, &sessions1));
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientSessionsSyncTest, DeleteActiveSession) {
+// Timeout on win (https://crbug.com/836289).
+#if defined(OS_WIN)
+#define MAYBE_DeleteActiveSession DISABLED_DeleteActiveSession
+#else
+#define MAYBE_DeleteActiveSession DeleteActiveSession
+#endif
+IN_PROC_BROWSER_TEST_P(TwoClientSessionsSyncTest, MAYBE_DeleteActiveSession) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
