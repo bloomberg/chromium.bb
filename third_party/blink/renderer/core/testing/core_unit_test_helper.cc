@@ -41,6 +41,15 @@ ChromeClient& RenderingTest::GetChromeClient() const {
 RenderingTest::RenderingTest(LocalFrameClient* local_frame_client)
     : UseMockScrollbarSettings(), local_frame_client_(local_frame_client) {}
 
+const Node* RenderingTest::HitTest(int x, int y) {
+  HitTestResult result(
+      HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive |
+                     HitTestRequest::kAllowChildFrameContent),
+      IntPoint(x, y));
+  GetLayoutView().HitTest(result);
+  return result.InnerNode();
+}
+
 void RenderingTest::SetUp() {
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);

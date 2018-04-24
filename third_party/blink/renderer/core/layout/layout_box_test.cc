@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -431,6 +432,20 @@ TEST_F(LayoutBoxTest, ContentsVisualOverflowPropagation) {
   EXPECT_EQ(LayoutRect(0, 0, 100, 100), a->SelfVisualOverflowRect());
   EXPECT_EQ(LayoutRect(-70, 50, 230, 160), a->ContentsVisualOverflowRect());
   EXPECT_EQ(LayoutRect(-70, 0, 230, 210), a->VisualOverflowRect());
+}
+
+TEST_F(LayoutBoxTest, HitTestContainPaint) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='width: 100px; height: 200px; contain: paint'>
+      <div id='child' style='width: 300px; height: 400px;'></div>
+    </div>
+  )HTML");
+
+  auto* child = GetDocument().getElementById("child");
+  EXPECT_EQ(GetDocument().documentElement(), HitTest(1, 1));
+  EXPECT_EQ(child, HitTest(10, 10));
+  EXPECT_EQ(GetDocument().FirstBodyElement(), HitTest(150, 10));
+  EXPECT_EQ(GetDocument().documentElement(), HitTest(10, 250));
 }
 
 class AnimatedImage : public StubImage {

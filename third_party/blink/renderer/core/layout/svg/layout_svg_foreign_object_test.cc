@@ -11,15 +11,6 @@ class LayoutSVGForeignObjectTest : public RenderingTest {
  public:
   LayoutSVGForeignObjectTest()
       : RenderingTest(SingleChildLocalFrameClient::Create()) {}
-
-  const Node* HitTest(int x, int y) {
-    HitTestResult result(
-        HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive |
-                       HitTestRequest::kAllowChildFrameContent),
-        IntPoint(x, y));
-    GetLayoutView().HitTest(result);
-    return result.InnerNode();
-  }
 };
 
 TEST_F(LayoutSVGForeignObjectTest, DivInForeignObject) {
