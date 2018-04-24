@@ -623,19 +623,10 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
   return true;
 }
 
-void VTVideoDecodeAccelerator::DecodeTask(const BitstreamBuffer& bitstream,
+void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
                                           Frame* frame) {
   DVLOG(2) << __func__ << "(" << frame->bitstream_id << ")";
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
-
-  // Map the bitstream buffer.
-  SharedMemoryRegion memory(bitstream, true);
-  if (!memory.Map()) {
-    DLOG(ERROR) << "Failed to map bitstream buffer";
-    NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
-    return;
-  }
-  const uint8_t* buf = static_cast<uint8_t*>(memory.memory());
 
   // NALUs are stored with Annex B format in the bitstream buffer (start codes),
   // but VideoToolbox expects AVC format (length headers), so we must rewrite
@@ -645,7 +636,7 @@ void VTVideoDecodeAccelerator::DecodeTask(const BitstreamBuffer& bitstream,
   // record parameter sets for VideoToolbox initialization.
   size_t data_size = 0;
   std::vector<H264NALU> nalus;
-  parser_.SetStream(buf, memory.size());
+  parser_.SetStream(buffer->data(), buffer->data_size());
   H264NALU nalu;
   while (true) {
     H264Parser::Result result = parser_.AdvanceToNextNALU(&nalu);
@@ -998,25 +989,28 @@ void VTVideoDecodeAccelerator::FlushDone(TaskType type) {
 }
 
 void VTVideoDecodeAccelerator::Decode(const BitstreamBuffer& bitstream) {
-  DVLOG(2) << __func__ << "(" << bitstream.id() << ")";
+  Decode(bitstream.ToDecoderBuffer(), bitstream.id());
+}
+
+void VTVideoDecodeAccelerator::Decode(scoped_refptr<DecoderBuffer> buffer,
+                                      int32_t bitstream_id) {
+  DVLOG(2) << __func__ << "(" << bitstream_id << ")";
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
 
-  if (bitstream.id() < 0) {
-    DLOG(ERROR) << "Invalid bitstream, id: " << bitstream.id();
-    if (base::SharedMemory::IsHandleValid(bitstream.handle()))
-      base::SharedMemory::CloseHandle(bitstream.handle());
+  if (!buffer || bitstream_id < 0) {
+    DLOG(ERROR) << "Invalid bitstream, id: " << bitstream_id;
     NotifyError(INVALID_ARGUMENT, SFT_INVALID_STREAM);
     return;
   }
 
-  DCHECK_EQ(0u, assigned_bitstream_ids_.count(bitstream.id()));
-  assigned_bitstream_ids_.insert(bitstream.id());
+  DCHECK_EQ(0u, assigned_bitstream_ids_.count(bitstream_id));
+  assigned_bitstream_ids_.insert(bitstream_id);
 
-  Frame* frame = new Frame(bitstream.id());
-  pending_frames_[frame->bitstream_id] = make_linked_ptr(frame);
+  Frame* frame = new Frame(bitstream_id);
+  pending_frames_[bitstream_id] = make_linked_ptr(frame);
   decoder_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&VTVideoDecodeAccelerator::DecodeTask,
-                            base::Unretained(this), bitstream, frame));
+                            base::Unretained(this), std::move(buffer), frame));
 }
 
 void VTVideoDecodeAccelerator::AssignPictureBuffers(

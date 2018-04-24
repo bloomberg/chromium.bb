@@ -361,41 +361,21 @@ void VdaVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   timestamps_.Put(bitstream_buffer_id, buffer->timestamp());
   decode_cbs_[bitstream_buffer_id] = decode_cb;
 
-  // Copy data into shared memory.
-  //
-  // TODO(sandersd): Change VDA interface to use BitstreamBuffer, which will
-  // eliminate this work. If necessary, BitstreamBuffer can take responsibility
-  // for mapping and unmapping SHM. The old interface may need to exist as long
-  // as GpuVideoDecoder does, since it uses BitstreamBuffer for IPC.
-  size_t size = buffer->data_size();
-  base::SharedMemory mem;
-  if (!mem.CreateAndMapAnonymous(size)) {
-    DLOG(ERROR) << "Failed to map SHM with size " << size;
-    EnterErrorState();
-    return;
-  }
-  memcpy(mem.memory(), buffer->data(), size);
-
-  // Note: Once we take the handle, we must close it ourselves. Since Destroy()
-  // has not already been called, we can be sure that |gpu_weak_this_| will be
-  // valid.
-  BitstreamBuffer bitstream_buffer(bitstream_buffer_id, mem.TakeHandle(), size,
-                                   0, buffer->timestamp());
-  gpu_task_runner_->PostTask(FROM_HERE,
-                             base::BindOnce(&VdaVideoDecoder::DecodeOnGpuThread,
-                                            gpu_weak_this_, bitstream_buffer));
+  gpu_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VdaVideoDecoder::DecodeOnGpuThread, gpu_weak_this_,
+                     std::move(buffer), bitstream_buffer_id));
 }
 
-void VdaVideoDecoder::DecodeOnGpuThread(BitstreamBuffer bitstream_buffer) {
+void VdaVideoDecoder::DecodeOnGpuThread(scoped_refptr<DecoderBuffer> buffer,
+                                        int32_t bitstream_id) {
   DVLOG(3) << __func__;
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
 
-  if (!gpu_weak_vda_) {
-    base::SharedMemory::CloseHandle(bitstream_buffer.handle());
+  if (!gpu_weak_vda_)
     return;
-  }
 
-  vda_->Decode(bitstream_buffer);
+  vda_->Decode(std::move(buffer), bitstream_id);
 }
 
 void VdaVideoDecoder::Reset(const base::RepeatingClosure& reset_cb) {

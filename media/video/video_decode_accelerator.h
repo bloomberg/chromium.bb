@@ -10,12 +10,13 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/cdm_context.h"
+#include "media/base/decoder_buffer.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/overlay_info.h"
 #include "media/base/surface_manager.h"
@@ -266,6 +267,16 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   // Parameters:
   //  |bitstream_buffer| is the input bitstream that is sent for decoding.
   virtual void Decode(const BitstreamBuffer& bitstream_buffer) = 0;
+
+  // Decodes given decoder buffer that contains at most one frame.  Once
+  // decoder is done with processing |buffer| it will call
+  // NotifyEndOfBitstreamBuffer() with the bitstream id.
+  // Parameters:
+  //  |buffer| is the input buffer that is sent for decoding.
+  //  |bitstream_id| identifies the buffer for PictureReady() and
+  //      NotifyEndOfBitstreamBuffer()
+  virtual void Decode(scoped_refptr<DecoderBuffer> buffer,
+                      int32_t bitstream_id);
 
   // Assigns a set of texture-backed picture buffers to the video decoder.
   //
