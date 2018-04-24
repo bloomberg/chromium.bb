@@ -27,6 +27,22 @@
   // Sanity check: test that setters are not allowed on whitelisted methods.
   await checkHasSideEffect(`document.querySelector('div').x = "foo"`);
 
+  // Command Line API
+  await checkHasNoSideEffect(`$('div')`);
+  await checkHasNoSideEffect(`$$('div')`);
+  await checkHasNoSideEffect(`$x('//div')`);
+  await checkHasNoSideEffect(`getEventListeners(document)`);
+  await checkHasNoSideEffect(`$.toString()`);
+  await checkHasNoSideEffect(`$$.toString()`);
+  await checkHasNoSideEffect(`$x.toString()`);
+  await checkHasNoSideEffect(`getEventListeners.toString()`);
+
+  // Unsafe Command Line API
+  await checkHasSideEffect(`monitorEvents()`);
+  await checkHasSideEffect(`unmonitorEvents()`);
+  await checkHasNoSideEffect(`monitorEvents.toString()`);
+  await checkHasNoSideEffect(`unmonitorEvents.toString()`);
+
   // Document
   await checkHasNoSideEffect(`document.getElementsByTagName('div')`);
   await checkHasNoSideEffect(`document.getElementsByTagNameNS('http://www.w3.org/1999/xhtml', 'div')`);
@@ -70,16 +86,13 @@
   }
 
   async function checkExpression(expression, expectSideEffect) {
-    var response = await dp.Runtime.evaluate({expression, throwOnSideEffect: true});
+    var response = await dp.Runtime.evaluate({expression, throwOnSideEffect: true, includeCommandLineAPI: true});
     var hasSideEffect = false;
     var exceptionDetails = response.result.exceptionDetails;
     if (exceptionDetails &&
         exceptionDetails.exception.description.startsWith('EvalError: Possible side-effect in debug-evaluate'))
       hasSideEffect = true;
-    if (hasSideEffect !== expectSideEffect) {
-      testRunner.log(`FAIL: ${expression} hasSideEffect = ${hasSideEffect}, expectSideEffect = ${expectSideEffect}`);
-      testRunner.completeTest();
-      return;
-    }
+    const failed = (hasSideEffect !== expectSideEffect);
+    testRunner.log(`${failed ? 'FAIL: ' : ''}Expression \`${expression}\`\nhas side effect: ${hasSideEffect}, expected: ${expectSideEffect}`);
   }
 })

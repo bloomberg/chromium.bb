@@ -340,13 +340,16 @@ void MainThreadDebugger::installAdditionalCommandLineAPI(
   ThreadDebugger::installAdditionalCommandLineAPI(context, object);
   CreateFunctionProperty(
       context, object, "$", MainThreadDebugger::QuerySelectorCallback,
-      "function $(selector, [startNode]) { [Command Line API] }");
+      "function $(selector, [startNode]) { [Command Line API] }",
+      v8::SideEffectType::kHasNoSideEffect);
   CreateFunctionProperty(
       context, object, "$$", MainThreadDebugger::QuerySelectorAllCallback,
-      "function $$(selector, [startNode]) { [Command Line API] }");
+      "function $$(selector, [startNode]) { [Command Line API] }",
+      v8::SideEffectType::kHasNoSideEffect);
   CreateFunctionProperty(
       context, object, "$x", MainThreadDebugger::XpathSelectorCallback,
-      "function $x(xpath, [startNode]) { [Command Line API] }");
+      "function $x(xpath, [startNode]) { [Command Line API] }",
+      v8::SideEffectType::kHasNoSideEffect);
 }
 
 static Node* SecondArgumentAsNode(

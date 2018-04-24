@@ -69,7 +69,8 @@ class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient,
                               v8::Local<v8::Object>,
                               const char* name,
                               v8::FunctionCallback,
-                              const char* description);
+                              const char* description,
+                              v8::SideEffectType side_effect_type);
   static v8::Maybe<bool> CreateDataPropertyInArray(v8::Local<v8::Context>,
                                                    v8::Local<v8::Array>,
                                                    int index,
