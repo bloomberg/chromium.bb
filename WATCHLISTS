@@ -1548,9 +1548,6 @@
     'vaapi': {
       'filepath': 'media/gpu/vaapi',
     },
-    'valgrind': {
-      'filepath': 'valgrind',
-    },
     'version_assembly': {
       'filepath': 'chrome/app/version_assembly',
     },
@@ -2343,8 +2340,6 @@
             'mattreynolds+watch@chromium.org'],
     'v4l2': ['hiroh+watch@chromium.org'],
     'vaapi': ['vaapi-reviews@chromium.org'],
-    'valgrind': ['bruening+watch@chromium.org',
-                 'glider+watch@chromium.org'],
     'version_assembly': ['caitkp+watch@chromium.org',
                          'gab+watch@chromium.org'],
     'video': ['posciak+watch@chromium.org'],
