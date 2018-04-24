@@ -177,13 +177,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 
 // This test will modify the SDP offer to use no encryption, which should
 // cause SetLocalDescription to fail.
-// Flaky on MAC: http://crbug/810321.
-#if defined(OS_MACOSX)
-#define MAYBE_NegotiateNonCryptoCall DISABLED_NegotiateNonCryptoCall
-#else
-#define MAYBE_NegotiateNonCryptoCall NegotiateNonCryptoCall
-#endif
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, MAYBE_NegotiateNonCryptoCall) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, NegotiateNonCryptoCall) {
   MakeTypicalPeerConnectionCall("negotiateNonCryptoCall();");
 }
 
