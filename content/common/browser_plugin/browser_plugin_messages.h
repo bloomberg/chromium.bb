@@ -189,9 +189,8 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_AdvanceFocus,
 
 // Informs the BrowserPlugin that the guest's auto-resize transaction is
 // complete and it should update with the provided viz::LocalSurfaceId.
-IPC_MESSAGE_CONTROL3(BrowserPluginMsg_ResizeDueToAutoResize,
+IPC_MESSAGE_CONTROL2(BrowserPluginMsg_ResizeDueToAutoResize,
                      int /* browser_plugin_instance_id */,
-                     uint64_t /* sequence_number */,
                      viz::LocalSurfaceId /* child_allocated_surface_id */)
 
 // Requests a viz::LocalSurfaceId to enable auto-resize mode from the parent

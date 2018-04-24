@@ -336,12 +336,9 @@ bool RenderWidgetHostViewBase::IsScrollOffsetAtTop() const {
 
 viz::ScopedSurfaceIdAllocator RenderWidgetHostViewBase::ResizeDueToAutoResize(
     const gfx::Size& new_size,
-    uint64_t sequence_number,
     const viz::LocalSurfaceId& local_surface_id) {
-  // TODO(cblume): This doesn't currently suppress allocation.
-  // It maintains existing behavior while using the suppression style.
-  // This will be addressed in a follow-up patch.
-  // See https://crbug.com/805073
+  // This doesn't suppress allocation. Derived classes that need suppression
+  // should override this function.
   return viz::ScopedSurfaceIdAllocator(base::DoNothing());
 }
 

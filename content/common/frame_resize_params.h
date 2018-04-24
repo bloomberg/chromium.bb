@@ -32,11 +32,6 @@ struct CONTENT_EXPORT FrameResizeParams {
   // The maximum size for Blink if auto-resize is enabled.
   gfx::Size max_size_for_auto_resize;
 
-  // This variable is increased after each auto-resize. If the
-  // renderer receives a ResizeParams with stale auto_resize_seqence_number,
-  // then the resize request is dropped.
-  uint64_t auto_resize_sequence_number = 0u;
-
   gfx::Rect screen_space_rect;
 
   gfx::Size local_frame_size;

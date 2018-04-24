@@ -698,7 +698,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void ResizeDueToAutoResize(
       RenderWidgetHostImpl* render_widget_host,
       const gfx::Size& new_size,
-      uint64_t sequence_number,
       const viz::LocalSurfaceId& local_surface_id) override;
   gfx::Size GetAutoResizeSize() override;
   void ResetAutoResizeSize() override;

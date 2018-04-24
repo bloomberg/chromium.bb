@@ -177,12 +177,10 @@ void BrowserPluginGuest::DisableAutoResize() {
 
 void BrowserPluginGuest::ResizeDueToAutoResize(
     const gfx::Size& new_size,
-    uint64_t sequence_number,
     const viz::LocalSurfaceId& child_allocated_surface_id) {
   SendMessageToEmbedder(
       std::make_unique<BrowserPluginMsg_ResizeDueToAutoResize>(
-          browser_plugin_instance_id_, sequence_number,
-          child_allocated_surface_id));
+          browser_plugin_instance_id_, child_allocated_surface_id));
 }
 
 void BrowserPluginGuest::SizeContents(const gfx::Size& new_size) {

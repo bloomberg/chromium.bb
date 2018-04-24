@@ -2573,23 +2573,39 @@ bool TestChildOrGuestAutoresize(bool is_guest,
     current_id = filter->WaitForSurfaceId();
 
   // Enable auto-resize.
-  guest_rwh_impl->SetAutoResize(true, gfx::Size(10, 10), gfx::Size(100, 100));
+  gfx::Size min_size(10, 10);
+  gfx::Size max_size(100, 100);
+  guest_rwh_impl->SetAutoResize(true, min_size, max_size);
+  guest_rwh_impl->GetView()->EnableAutoResize(min_size, max_size);
+
+  // Enabling auto resize generates a surface ID, wait for it.
+  current_id = filter->WaitForSurfaceId();
 
   // Fake an auto-resize update.
   int routing_id = guest_rwh_impl->GetRoutingID();
   ViewHostMsg_ResizeOrRepaint_ACK_Params params;
   params.view_size = gfx::Size(75, 75);
   params.flags = 0;
-  params.sequence_number = 7;
   params.child_allocated_local_surface_id = viz::LocalSurfaceId(
       current_id.parent_sequence_number(),
       current_id.child_sequence_number() + 1, current_id.embed_token());
   guest_rwh_impl->OnMessageReceived(
       ViewHostMsg_ResizeOrRepaint_ACK(routing_id, params));
 
+  // Auto-resize messages are handled with delayed processing, make sure it's
+  // handled now:
+  base::RunLoop().RunUntilIdle();
+
+  // This won't generate a response, as we short-circuit auto-resizes, so cause
+  // an additional update by disabling auto-resize.
+  guest_rwh_impl->GetView()->DisableAutoResize(params.view_size);
+
   // Get the first delivered surface id and ensure it has the surface id which
   // we expect.
-  return filter->WaitForSurfaceId() == params.child_allocated_local_surface_id;
+  return filter->WaitForSurfaceId() ==
+         viz::LocalSurfaceId(current_id.parent_sequence_number() + 1,
+                             current_id.child_sequence_number() + 1,
+                             current_id.embed_token());
 }
 
 const uint32_t UpdateResizeParamsMessageFilter::kMessageClassesToFilter[2] = {

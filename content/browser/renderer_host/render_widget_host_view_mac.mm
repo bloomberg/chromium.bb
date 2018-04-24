@@ -579,12 +579,10 @@ void RenderWidgetHostViewMac::DisplayTooltipText(
 
 viz::ScopedSurfaceIdAllocator RenderWidgetHostViewMac::ResizeDueToAutoResize(
     const gfx::Size& new_size,
-    uint64_t sequence_number,
     const viz::LocalSurfaceId& child_local_surface_id) {
-  base::OnceCallback<void()> allocation_task =
-      base::BindOnce(&RenderWidgetHostViewMac::OnResizeDueToAutoResizeComplete,
-                     weak_factory_.GetWeakPtr(), new_size, sequence_number,
-                     child_local_surface_id);
+  base::OnceCallback<void()> allocation_task = base::BindOnce(
+      &RenderWidgetHostViewMac::OnResizeDueToAutoResizeComplete,
+      weak_factory_.GetWeakPtr(), new_size, child_local_surface_id);
   return browser_compositor_->GetScopedRendererSurfaceIdAllocator(
       std::move(allocation_task));
 }
@@ -698,7 +696,6 @@ void RenderWidgetHostViewMac::UpdateNeedsBeginFramesInternal() {
 
 void RenderWidgetHostViewMac::OnResizeDueToAutoResizeComplete(
     const gfx::Size& new_size,
-    uint64_t sequence_number,
     const viz::LocalSurfaceId& child_allocated_local_surface_id) {
   browser_compositor_->UpdateRendererLocalSurfaceIdFromChild(
       child_allocated_local_surface_id);

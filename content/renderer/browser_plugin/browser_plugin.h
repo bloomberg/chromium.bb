@@ -92,7 +92,7 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   // Returns the last allocated LocalSurfaceId.
   const viz::LocalSurfaceId& GetLocalSurfaceId() const;
 
-  void WasResized(const viz::LocalSurfaceId& child_allocated_local_surface_id);
+  void WasResized();
 
   // Returns whether a message should be forwarded to BrowserPlugin.
   static bool ShouldForwardToBrowserPlugin(const IPC::Message& message);
@@ -176,10 +176,6 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
     return pending_resize_params_.screen_info;
   }
 
-  uint64_t auto_size_sequence_number() const {
-    return pending_resize_params_.auto_resize_sequence_number;
-  }
-
   void UpdateInternalInstanceId();
 
 #if defined(USE_AURA)
@@ -194,9 +190,9 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
       const base::Optional<viz::LocalSurfaceId>& child_local_surface_id);
   void OnGuestGone(int instance_id);
   void OnGuestReady(int instance_id, const viz::FrameSinkId& frame_sink_id);
-  void OnResizeDueToAutoResize(int browser_plugin_instance_id,
-                               uint64_t sequence_number,
-                               viz::LocalSurfaceId child_allocated_surface_id);
+  void OnResizeDueToAutoResize(
+      int browser_plugin_instance_id,
+      const viz::LocalSurfaceId& child_allocated_surface_id);
   void OnEnableAutoResize(int browser_plugin_instance_id,
                           const gfx::Size& min_size,
                           const gfx::Size& max_size);

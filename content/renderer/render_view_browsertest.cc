@@ -446,7 +446,6 @@ class RenderViewImplScaleFactorTest : public RenderViewImplBlinkSettingsTest {
     params.compositor_viewport_pixel_size = gfx::Size(200, 200);
     params.visible_viewport_size = params.new_size;
     params.auto_resize_enabled = view()->auto_resize_mode();
-    params.auto_resize_sequence_number = view()->auto_resize_sequence_number();
     params.capture_sequence_number = view()->capture_sequence_number();
     params.min_size_for_auto_resize = view()->min_size_for_auto_resize();
     params.max_size_for_auto_resize = view()->max_size_for_auto_resize();

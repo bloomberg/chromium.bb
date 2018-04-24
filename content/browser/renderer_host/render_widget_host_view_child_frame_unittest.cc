@@ -354,7 +354,6 @@ TEST_F(RenderWidgetHostViewChildFrameTest, WasResizedOncePerChange) {
   FrameResizeParams resize_params;
   resize_params.screen_space_rect = screen_space_rect;
   resize_params.local_frame_size = compositor_viewport_pixel_size;
-  resize_params.auto_resize_sequence_number = 1u;
   resize_params.capture_sequence_number = 123u;
   test_frame_connector_->UpdateResizeParams(surface_id, resize_params);
 

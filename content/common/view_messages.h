@@ -305,10 +305,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_ResizeOrRepaint_ACK_Params)
   // request messages.
   IPC_STRUCT_MEMBER(int, flags)
 
-  // A unique monotonically increasing sequence number used to identify this
-  // ACK.
-  IPC_STRUCT_MEMBER(uint64_t, sequence_number)
-
   // The child-allocated local surface id for the parent to use.
   IPC_STRUCT_MEMBER(base::Optional<viz::LocalSurfaceId>,
                     child_allocated_local_surface_id)

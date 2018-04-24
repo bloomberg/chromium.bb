@@ -611,10 +611,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     return last_frame_metadata_;
   }
 
-  uint64_t last_auto_resize_request_number() const {
-    return last_auto_resize_request_number_;
-  }
-
   RenderFrameMetadataProviderImpl* render_frame_metadata_provider() {
     return &render_frame_metadata_provider_;
   }
@@ -950,7 +946,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // The maximum size for the render widget if auto-resize is enabled.
   gfx::Size max_size_for_auto_resize_;
 
-  uint64_t last_auto_resize_request_number_ = 0ul;
   base::Optional<viz::LocalSurfaceId> last_auto_resize_surface_id_;
 
   bool waiting_for_screen_rects_ack_;

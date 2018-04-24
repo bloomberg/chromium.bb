@@ -203,7 +203,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void OnSynchronizedDisplayPropertiesChanged() override;
   viz::ScopedSurfaceIdAllocator ResizeDueToAutoResize(
       const gfx::Size& new_size,
-      uint64_t sequence_number,
       const viz::LocalSurfaceId& local_surface_id) override;
 
   bool IsLocalSurfaceIdAllocationSuppressed() const override;
