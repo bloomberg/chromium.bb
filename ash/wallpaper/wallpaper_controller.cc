@@ -502,7 +502,6 @@ bool WallpaperController::ResizeAndSaveWallpaper(const gfx::ImageSkia& image,
                                                  int preferred_height,
                                                  gfx::ImageSkia* output_skia) {
   if (layout == WALLPAPER_LAYOUT_CENTER) {
-    // TODO(bshe): Generates cropped custom wallpaper for CENTER layout.
     if (base::PathExists(path))
       base::DeleteFile(path, false);
     return false;
@@ -624,8 +623,8 @@ bool WallpaperController::ShouldShowInitialAnimation() {
 }
 
 void WallpaperController::OnWallpaperAnimationFinished() {
-  // TODO(crbug.com/784495, 776464): This is used by a code path in web-UI
-  // login. Remove it if views-based login is not interested in this event.
+  // TODO(wzang|784495): This is used by a code path in web-UI login. Remove it
+  // if views-based login is not interested in this event.
   if (wallpaper_controller_client_ && is_first_wallpaper_) {
     wallpaper_controller_client_->OnFirstWallpaperAnimationFinished();
   }
@@ -1140,8 +1139,6 @@ void WallpaperController::SetCustomizedDefaultWallpaperPaths(
 
   // Customized default wallpapers are subject to the same restrictions as other
   // default wallpapers, e.g. they should not be set during guest sessions.
-  // TODO(crbug.com/776464): Find a way to directly set wallpaper from here, or
-  // combine this method with |SetDefaultWallpaperImpl|.
   SetDefaultWallpaperImpl(EmptyAccountId(), user_manager::USER_TYPE_REGULAR,
                           show_wallpaper);
 }
@@ -1308,7 +1305,6 @@ void WallpaperController::ShowUserWallpaper(
     // Wallpaper is not resized when layout is
     // WALLPAPER_LAYOUT_CENTER.
     // Original wallpaper should be used in this case.
-    // TODO(bshe): Generates cropped custom wallpaper for CENTER layout.
     if (info.layout == WALLPAPER_LAYOUT_CENTER)
       sub_dir = kOriginalWallpaperSubDir;
     wallpaper_path = GetCustomWallpaperDir(sub_dir);
@@ -1690,7 +1686,6 @@ void WallpaperController::SetWallpaperFromInfo(
                    wallpaper_path, info, show_wallpaper),
         sequenced_task_runner_, wallpaper_path);
   } else {
-    // TODO(crbug.com/776464): Remove this branch after refactoring.
     // Default wallpapers are migrated from M21 user profiles. A code
     // refactor overlooked that case and caused these wallpapers not being
     // loaded at all. On some slow devices, it caused login webui not
@@ -1775,7 +1770,6 @@ void WallpaperController::SaveAndSetWallpaper(
         base::CreateSequencedTaskRunnerWithTraits(
             {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
-    // TODO(bshe): This may break if RawImage becomes RefCountedMemory.
     blocking_task_runner->PostTask(
         FROM_HERE,
         base::BindOnce(&SaveCustomWallpaper, wallpaper_files_id, wallpaper_path,

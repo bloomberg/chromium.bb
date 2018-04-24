@@ -505,10 +505,10 @@ void WallpaperControllerClient::OpenWallpaperPicker() {
 }
 
 void WallpaperControllerClient::OnReadyToSetWallpaper() {
-  // TODO(crbug.com/776464, 784495): Consider deprecating this method after
-  // views-based login is enabled. It should be fast enough to request the first
-  // wallpaper so that there's no visible delay. In other scenarios such as
-  // restart after crash, user manager should request the wallpaper.
+  // TODO(wzang|784495): Consider deprecating this method after views-based
+  // login is enabled. It should be fast enough to request the first wallpaper
+  // so that there's no visible delay. In other scenarios such as restart after
+  // crash, user manager should request the wallpaper.
 
   // Apply device customization.
   namespace util = chromeos::customization_wallpaper_util;
