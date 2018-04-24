@@ -60,8 +60,8 @@ class PLATFORM_EXPORT TaskQueueManager {
   virtual base::TimeTicks NowTicks() const = 0;
 
   // Sets the SingleThreadTaskRunner that will be returned by
-  // ThreadTaskRunnerHandle::Get and MessageLoop::current().task_runner() on the
-  // thread associated with this TaskQueueManager.
+  // ThreadTaskRunnerHandle::Get on the thread associated with this
+  // TaskQueueManager.
   virtual void SetDefaultTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) = 0;
 
