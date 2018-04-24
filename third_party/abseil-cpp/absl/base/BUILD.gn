@@ -16,7 +16,11 @@ if (build_with_chromium) {
 }
 
 source_set("spinlock_wait") {
-  configs += [ "//third_party/abseil-cpp:absl_default_cflags_cc" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   sources = [
     "internal/spinlock_akaros.inc",
@@ -36,7 +40,11 @@ source_set("spinlock_wait") {
 }
 
 source_set("config") {
-  configs += [ "//third_party/abseil-cpp:absl_default_cflags_cc" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   public = [
     "config.h",
@@ -49,7 +57,11 @@ config("clang_support_dynamic_annotations") {
 }
 
 source_set("dynamic_annotations") {
-  configs += [ "//third_party/abseil-cpp:absl_default_cflags_cc" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
   public_configs = [
     ":clang_support_dynamic_annotations",
     "//third_party/abseil-cpp:absl_include_config",
@@ -63,7 +75,11 @@ source_set("dynamic_annotations") {
 }
 
 source_set("core_headers") {
-  configs += [ "//third_party/abseil-cpp:absl_default_cflags_cc" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   public = [
     "attributes.h",
@@ -79,7 +95,11 @@ source_set("core_headers") {
 }
 
 source_set("malloc_extension") {
-  configs += [ "//third_party/abseil-cpp:absl_default_cflags_cc" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   sources = [
     "internal/malloc_extension.cc",
@@ -96,7 +116,11 @@ source_set("malloc_extension") {
 }
 
 source_set("malloc_internal") {
-  configs += [ "//third_party/abseil-cpp:absl_default_cflags_cc" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   sources = [
     "internal/low_level_alloc.cc",
@@ -121,7 +145,11 @@ source_set("malloc_internal") {
 }
 
 source_set("base_internal") {
-  configs += [ "//third_party/abseil-cpp:absl_default_cflags_cc" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   public = [
     "internal/identity.h",
@@ -133,7 +161,11 @@ source_set("base_internal") {
 }
 
 source_set("base") {
-  configs += [ "//third_party/abseil-cpp:absl_default_cflags_cc" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   sources = [
     "internal/cycleclock.cc",
@@ -168,7 +200,9 @@ source_set("base") {
 }
 
 source_set("throw_delegate") {
+  configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
+    "//build/config/compiler:no_chromium_code",
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
@@ -189,7 +223,11 @@ source_set("throw_delegate") {
 
 source_set("exception_testing") {
   testonly = true
-  configs += [ "//third_party/abseil-cpp:absl_test_cflags_cc" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_test_cflags_cc",
+  ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   public = [
     "internal/exception_testing.h",
@@ -202,6 +240,11 @@ source_set("exception_testing") {
 }
 
 source_set("pretty_function") {
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   public = [
     "internal/pretty_function.h",
@@ -213,10 +256,11 @@ source_set("pretty_function") {
 # TODO(bugs.webrtc.org/9187): Re-enable when dependencies will be fixed.
 # source_set("exception_safety_testing") {
 #   testonly = true
+#   configs -= [ "//build/config/compiler:chromium_code" ]
 #   configs += [
+#     "//build/config/compiler:no_chromium_code",
 #     "//third_party/abseil-cpp:absl_test_cflags_cc",
 #   ]
-
 #   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
 #   sources = [
 #     "internal/exception_safety_testing.cc",
@@ -238,7 +282,11 @@ source_set("pretty_function") {
 # TODO(bugs.webrtc.org/9187): Re-enable when dependencies will be fixed.
 # source_set("spinlock_test_common") {
 #   testonly = true
-#   configs += [ "//third_party/abseil-cpp:absl_test_cflags_cc" ]
+#   configs -= [ "//build/config/compiler:chromium_code" ]
+#   configs += [
+#     "//build/config/compiler:no_chromium_code",
+#     "//third_party/abseil-cpp:absl_test_cflags_cc",
+#   ]
 #   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
 #   sources = [
 #     "spinlock_test_common.cc",
@@ -252,7 +300,11 @@ source_set("pretty_function") {
 # }
 
 source_set("endian") {
-  configs += [ "//third_party/abseil-cpp:absl_default_cflags_cc" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   public = [
     "internal/endian.h",

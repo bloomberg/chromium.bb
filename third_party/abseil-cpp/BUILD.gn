@@ -29,10 +29,6 @@ config("absl_define_config") {
 config("absl_default_cflags_cc") {
   if (is_clang) {
     cflags_cc = [
-      # All warnings are treated as errors by implicit -Werror flag
-      "-Wall",
-      "-Wextra",
-      "-Weverything",
       # Abseil does not support C++98
       "-Wno-c++98-compat-pedantic",
       # Turns off all implicit conversion warnings. Most are re-enabled below.
@@ -94,18 +90,6 @@ config("absl_default_cflags_cc") {
     if (is_linux) {
       # GCC flags:
       cflags_cc = [
-        "-Wall",
-        "-Wextra",
-        "-Wcast-qual",
-        "-Wconversion-null",
-        "-Wmissing-declarations",
-        "-Woverlength-strings",
-        "-Wpointer-arith",
-        "-Wunused-local-typedefs",
-        "-Wunused-result",
-        "-Wvarargs",
-        "-Wvla",  # variable-length array
-        "-Wwrite-strings",
         # Google style does not use unsigned integers, though STL containers
         # have unsigned types.
         "-Wno-sign-compare",
@@ -114,22 +98,8 @@ config("absl_default_cflags_cc") {
     if (is_win) {
       # MSVC flags:
       cflags_cc = [
-        "/W3",
-        "/WX",
         "/wd4005",  # macro-redefinition
         "/wd4068",  # unknown pragma
-        # conversion from 'type1' to 'type2', possible loss of data
-        "/wd4244",
-        # conversion from 'size_t' to 'type', possible loss of data
-        "/wd4267",
-        # forcing value to bool 'true' or 'false' (performance warning)
-        "/wd4800",
-        # Don't define min and max macros (windows.h)
-        "/DNOMINMAX",
-        # Don't bloat namespace with incompatible winsock versions.
-        "/DWIN32_LEAN_AND_MEAN",
-        # Don't warn about usage of insecure C functions
-        "/D_CRT_SECURE_NO_WARNINGS",
       ]
     }
   }
@@ -170,7 +140,6 @@ config("absl_test_cflags_cc") {
       cflags_cc = [
         "/wd4018",  # signed/unsigned mismatch
         "/wd4101",  # unreferenced local variable
-        "/wd4503",  # decorated name length exceeded, name was truncated
       ]
     }
   }

@@ -16,7 +16,11 @@ if (build_with_chromium) {
 }
 
 source_set("graphcycles_internal") {
-  configs += [ "//third_party/abseil-cpp:absl_default_cflags_cc" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   sources = [
     "internal/graphcycles.cc",
@@ -35,7 +39,11 @@ source_set("graphcycles_internal") {
 
 # TODO(bugs.webrtc.org/9187): Re-enable when dependencies will be fixed.
 # source_set("synchronization") {
-#   configs += [ "//third_party/abseil-cpp:absl_default_cflags_cc" ]
+#   configs -= [ "//build/config/compiler:chromium_code" ]
+#   configs += [
+#     "//build/config/compiler:no_chromium_code",
+#     "//third_party/abseil-cpp:absl_default_cflags_cc",
+#   ]
 #   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
 #   sources = [
 #     "barrier.cc",
@@ -74,6 +82,11 @@ source_set("graphcycles_internal") {
 # TODO(bugs.webrtc.org/9187): Re-enable when dependencies will be fixed.
 # source_set("thread_pool") {
 #   testonly = true
+#   configs -= [ "//build/config/compiler:chromium_code" ]
+#   configs += [
+#     "//build/config/compiler:no_chromium_code",
+#     "//third_party/abseil-cpp:absl_default_cflags_cc",
+#   ]
 #   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
 #   public = [
 #     "internal/thread_pool.h",
@@ -87,7 +100,11 @@ source_set("graphcycles_internal") {
 # TODO(bugs.webrtc.org/9187): Re-enable when dependencies will be fixed.
 # source_set("per_thread_sem_test_common") {
 #   testonly = true
-#   configs += [ "//third_party/abseil-cpp:absl_test_cflags_cc" ]
+#   configs -= [ "//build/config/compiler:chromium_code" ]
+#   configs += [
+#     "//build/config/compiler:no_chromium_code",
+#     "//third_party/abseil-cpp:absl_test_cflags_cc",
+#   ]
 #   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
 #   sources = [
 #     "internal/per_thread_sem_test.cc",
