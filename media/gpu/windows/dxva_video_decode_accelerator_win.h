@@ -128,20 +128,27 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   typedef void* EGLSurface;
   typedef std::list<Microsoft::WRL::ComPtr<IMFSample>> PendingInputs;
 
+  // These are used for histograms, so don't change their numeric value (except
+  // for kMaxValue as described below).
   enum class PictureBufferMechanism {
     // Copy to either a BGRA8 or FP16 texture using the video processor.
-    COPY_TO_RGB,
+    COPY_TO_RGB = 0,
 
     // Copy to another NV12 texture that can be used in ANGLE.
-    COPY_TO_NV12,
+    COPY_TO_NV12 = 1,
 
     // Bind the resulting GLImage to the NV12 texture. If the texture's used
     // in a an overlay than use it directly, otherwise copy it to another NV12
     // texture when necessary.
-    DELAYED_COPY_TO_NV12,
+    DELAYED_COPY_TO_NV12 = 2,
 
     // Bind the NV12 decoder texture directly to the texture used in ANGLE.
-    BIND
+    BIND = 3,
+
+    // For UMA.  Must be the last entry.  It should be initialized to the
+    // numerically largest value above; if you add more entries, then please
+    // update this to be the last one.
+    kMaxValue = BIND
   };
 
   // Creates and initializes an instance of the D3D device and the
