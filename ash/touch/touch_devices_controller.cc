@@ -191,8 +191,8 @@ void TouchDevicesController::UpdateTouchpadEnabled() {
   if (!GetInputDeviceControllerClient())
     return;  // Happens in tests.
 
-  bool enabled = global_touchpad_enabled_ &&
-                 GetActivePrefService()->GetBoolean(prefs::kTouchpadEnabled);
+  bool enabled = GetTouchpadEnabled(TouchDeviceEnabledSource::GLOBAL) &&
+                 GetTouchpadEnabled(TouchDeviceEnabledSource::USER_PREF);
 
   GetInputDeviceControllerClient()->SetInternalTouchpadEnabled(
       enabled, base::BindRepeating(&OnSetTouchpadEnabledDone, enabled));
