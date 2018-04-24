@@ -29,7 +29,7 @@ using storage::kFileSystemTypeNativeLocal;
 
 namespace content {
 
-typedef IsolatedContext::MountPointInfo FileInfo;
+using FileInfo = IsolatedContext::MountPointInfo;
 
 namespace {
 

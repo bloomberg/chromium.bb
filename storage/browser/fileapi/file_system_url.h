@@ -191,7 +191,7 @@ class STORAGE_EXPORT FileSystemURL {
   FileSystemMountOption mount_option_;
 };
 
-typedef std::set<FileSystemURL, FileSystemURL::Comparator> FileSystemURLSet;
+using FileSystemURLSet = std::set<FileSystemURL, FileSystemURL::Comparator>;
 
 }  // namespace storage
 

@@ -35,8 +35,8 @@ const base::FilePath::CharType kDirectoryDatabaseName[] = FPL("Paths");
 
 class SandboxDirectoryDatabaseTest : public testing::Test {
  public:
-  typedef SandboxDirectoryDatabase::FileId FileId;
-  typedef SandboxDirectoryDatabase::FileInfo FileInfo;
+  using FileId = SandboxDirectoryDatabase::FileId;
+  using FileInfo = SandboxDirectoryDatabase::FileInfo;
 
   SandboxDirectoryDatabaseTest() {
     EXPECT_TRUE(base_.CreateUniqueTempDir());

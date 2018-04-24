@@ -196,21 +196,21 @@ std::string ViewBlobInternalsJob::GenerateHTML(
   if (blob_storage_context->registry().blob_map_.empty()) {
     out.append(kEmptyBlobStorageMessage);
   } else {
-    for (auto iter = blob_storage_context->registry().blob_map_.begin();
-         iter != blob_storage_context->registry().blob_map_.end(); ++iter) {
-      AddHTMLBoldText(iter->first, &out);
-      GenerateHTMLForBlobData(*iter->second, iter->second->content_type(),
-                              iter->second->content_disposition(),
-                              iter->second->refcount(), &out);
+    for (const auto& uuid_entry_pair :
+         blob_storage_context->registry().blob_map_) {
+      AddHTMLBoldText(uuid_entry_pair.first, &out);
+      BlobEntry* entry = uuid_entry_pair.second.get();
+      GenerateHTMLForBlobData(*entry, entry->content_type(),
+                              entry->content_disposition(), entry->refcount(),
+                              &out);
     }
     if (!blob_storage_context->registry().url_to_uuid_.empty()) {
       AddHorizontalRule(&out);
-      for (auto iter = blob_storage_context->registry().url_to_uuid_.begin();
-           iter != blob_storage_context->registry().url_to_uuid_.end();
-           ++iter) {
-        AddHTMLBoldText(iter->first.spec(), &out);
+      for (const auto& url_uuid_pair :
+           blob_storage_context->registry().url_to_uuid_) {
+        AddHTMLBoldText(url_uuid_pair.first.spec(), &out);
         StartHTMLList(&out);
-        AddHTMLListItem(kUUID, iter->second, &out);
+        AddHTMLListItem(kUUID, url_uuid_pair.second, &out);
         EndHTMLList(&out);
       }
     }

@@ -21,7 +21,7 @@ class STORAGE_EXPORT CopyOrMoveFileValidator {
  public:
   // Callback that is invoked when validation completes. A result of
   // base::File::FILE_OK means the file validated.
-  typedef base::Callback<void(base::File::Error result)> ResultCallback;
+  using ResultCallback = base::Callback<void(base::File::Error result)>;
 
   virtual ~CopyOrMoveFileValidator() {}
 

@@ -199,16 +199,16 @@ TEST_F(FileSystemUtilTest, VirtualPathGetComponents) {
   };
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     base::FilePath input = base::FilePath(test_cases[i].path);
-    std::vector<base::FilePath::StringType> components;
-    VirtualPath::GetComponents(input, &components);
+    std::vector<base::FilePath::StringType> components =
+        VirtualPath::GetComponents(input);
     EXPECT_EQ(test_cases[i].count, components.size());
     for (size_t j = 0; j < components.size(); ++j)
       EXPECT_EQ(test_cases[i].components[j], components[j]);
   }
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     base::FilePath input = base::FilePath(test_cases[i].path);
-    std::vector<std::string> components;
-    VirtualPath::GetComponentsUTF8Unsafe(input, &components);
+    std::vector<std::string> components =
+        VirtualPath::GetComponentsUTF8Unsafe(input);
     EXPECT_EQ(test_cases[i].count, components.size());
     for (size_t j = 0; j < components.size(); ++j) {
       EXPECT_EQ(base::FilePath(test_cases[i].components[j]).AsUTF8Unsafe(),

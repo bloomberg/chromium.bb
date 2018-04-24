@@ -120,10 +120,10 @@ class STORAGE_EXPORT ExternalMountPoints
   // Represents each file system instance (defined in the .cc).
   class Instance;
 
-  typedef std::map<std::string, std::unique_ptr<Instance>> NameToInstance;
+  using NameToInstance = std::map<std::string, std::unique_ptr<Instance>>;
 
   // Reverse map from registered path to its corresponding mount name.
-  typedef std::map<base::FilePath, std::string> PathToName;
+  using PathToName = std::map<base::FilePath, std::string>;
 
   // Use |GetSystemInstance| of |CreateRefCounted| to get an instance.
   ExternalMountPoints();

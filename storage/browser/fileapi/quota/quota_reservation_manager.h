@@ -33,8 +33,8 @@ class STORAGE_EXPORT QuotaReservationManager {
  public:
   // Callback for ReserveQuota. When this callback returns false, ReserveQuota
   // operation should be reverted.
-  typedef base::Callback<bool(base::File::Error error, int64_t delta)>
-      ReserveQuotaCallback;
+  using ReserveQuotaCallback =
+      base::Callback<bool(base::File::Error error, int64_t delta)>;
 
   // An abstraction of backing quota system.
   class STORAGE_EXPORT QuotaBackend {
@@ -83,8 +83,8 @@ class STORAGE_EXPORT QuotaReservationManager {
       FileSystemType type);
 
  private:
-  typedef std::map<std::pair<GURL, FileSystemType>, QuotaReservationBuffer*>
-      ReservationBufferByOriginAndType;
+  using ReservationBufferByOriginAndType =
+      std::map<std::pair<GURL, FileSystemType>, QuotaReservationBuffer*>;
 
   friend class QuotaReservation;
   friend class QuotaReservationBuffer;

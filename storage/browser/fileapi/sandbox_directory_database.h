@@ -45,7 +45,7 @@ namespace storage {
 // TODO(ericu): Add a method that will give a unique filename for a data file.
 class STORAGE_EXPORT SandboxDirectoryDatabase {
  public:
-  typedef int64_t FileId;
+  using FileId = int64_t;
 
   struct STORAGE_EXPORT FileInfo {
     FileInfo();

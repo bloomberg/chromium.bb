@@ -26,8 +26,8 @@ class WatcherManager {
  public:
   enum ChangeType { CHANGED, DELETED };
 
-  typedef base::Callback<void(base::File::Error result)> StatusCallback;
-  typedef base::Callback<void(ChangeType change_type)> NotificationCallback;
+  using StatusCallback = base::Callback<void(base::File::Error result)>;
+  using NotificationCallback = base::Callback<void(ChangeType change_type)>;
 
   virtual ~WatcherManager() {}
 

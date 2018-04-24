@@ -32,7 +32,7 @@ class FileSystemURL;
 // See http://crbug.com/128136 if you need it.
 class STORAGE_EXPORT FileSystemFileUtil {
  public:
-  typedef FileSystemOperation::CopyOrMoveOption CopyOrMoveOption;
+  using CopyOrMoveOption = FileSystemOperation::CopyOrMoveOption;
 
   // It will be implemented by each subclass such as FileSystemFileEnumerator.
   class STORAGE_EXPORT AbstractFileEnumerator {

@@ -159,8 +159,8 @@ void LocalToRemoteSyncer::RunPreflight(std::unique_ptr<SyncTaskToken> token) {
     }
   }
 
-  std::vector<base::FilePath::StringType> missing_components;
-  storage::VirtualPath::GetComponents(missing_entries, &missing_components);
+  std::vector<base::FilePath::StringType> missing_components =
+      storage::VirtualPath::GetComponents(missing_entries);
 
   if (!missing_components.empty()) {
     if (local_is_missing_) {

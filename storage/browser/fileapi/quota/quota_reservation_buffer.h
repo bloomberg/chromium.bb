@@ -66,8 +66,8 @@ class QuotaReservationBuffer : public base::RefCounted<QuotaReservationBuffer> {
       base::File::Error error,
       int64_t delta);
 
-  typedef std::map<base::FilePath, OpenFileHandleContext*>
-      OpenFileHandleContextByPath;
+  using OpenFileHandleContextByPath =
+      std::map<base::FilePath, OpenFileHandleContext*>;
 
   // Not owned.  The destructor of OpenFileHandler should erase itself from
   // |open_files_|.

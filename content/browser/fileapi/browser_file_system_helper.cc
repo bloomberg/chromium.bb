@@ -96,13 +96,11 @@ scoped_refptr<storage::FileSystemContext> CreateFileSystemContext(
           std::move(additional_backends), url_request_auto_mount_handlers,
           profile_path, CreateBrowserFileSystemOptions(is_incognito));
 
-  std::vector<storage::FileSystemType> types;
-  file_system_context->GetFileSystemTypes(&types);
-  for (size_t i = 0; i < types.size(); ++i) {
+  for (const storage::FileSystemType& type :
+       file_system_context->GetFileSystemTypes()) {
     ChildProcessSecurityPolicyImpl::GetInstance()
         ->RegisterFileSystemPermissionPolicy(
-            types[i],
-            storage::FileSystemContext::GetPermissionPolicy(types[i]));
+            type, storage::FileSystemContext::GetPermissionPolicy(type));
   }
 
   return file_system_context;

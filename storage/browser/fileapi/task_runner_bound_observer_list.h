@@ -74,9 +74,9 @@ class FileAccessObserver;
 class FileChangeObserver;
 class FileUpdateObserver;
 
-typedef TaskRunnerBoundObserverList<FileAccessObserver> AccessObserverList;
-typedef TaskRunnerBoundObserverList<FileChangeObserver> ChangeObserverList;
-typedef TaskRunnerBoundObserverList<FileUpdateObserver> UpdateObserverList;
+using AccessObserverList = TaskRunnerBoundObserverList<FileAccessObserver>;
+using ChangeObserverList = TaskRunnerBoundObserverList<FileChangeObserver>;
+using UpdateObserverList = TaskRunnerBoundObserverList<FileUpdateObserver>;
 
 }  // namespace storage
 

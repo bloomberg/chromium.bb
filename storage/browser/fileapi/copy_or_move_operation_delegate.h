@@ -34,9 +34,9 @@ class CopyOrMoveOperationDelegate
     : public RecursiveOperationDelegate {
  public:
   class CopyOrMoveImpl;
-  typedef FileSystemOperation::CopyProgressCallback CopyProgressCallback;
-  typedef FileSystemOperation::CopyOrMoveOption CopyOrMoveOption;
-  typedef FileSystemOperation::ErrorBehavior ErrorBehavior;
+  using CopyProgressCallback = FileSystemOperation::CopyProgressCallback;
+  using CopyOrMoveOption = FileSystemOperation::CopyOrMoveOption;
+  using ErrorBehavior = FileSystemOperation::ErrorBehavior;
 
   enum OperationType {
     OPERATION_COPY,

@@ -20,7 +20,7 @@
 
 namespace storage {
 
-typedef IsolatedContext::MountPointInfo FileInfo;
+using FileInfo = IsolatedContext::MountPointInfo;
 
 namespace {
 

@@ -36,8 +36,7 @@ class ObfuscatedFileUtil;
 class STORAGE_EXPORT QuotaBackendImpl
     : public QuotaReservationManager::QuotaBackend {
  public:
-  typedef QuotaReservationManager::ReserveQuotaCallback
-      ReserveQuotaCallback;
+  using ReserveQuotaCallback = QuotaReservationManager::ReserveQuotaCallback;
 
   QuotaBackendImpl(base::SequencedTaskRunner* file_task_runner,
                    ObfuscatedFileUtil* obfuscated_file_util,
