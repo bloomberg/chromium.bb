@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/arc/user_session/arc_user_session_service.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -35,7 +35,7 @@ int CountBroadcasts(
 }
 
 void RunUntilIdle() {
-  DCHECK(base::MessageLoop::current());
+  DCHECK(base::MessageLoopCurrent::Get());
   base::RunLoop().RunUntilIdle();
 }
 
