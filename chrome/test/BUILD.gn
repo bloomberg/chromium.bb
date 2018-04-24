@@ -3184,7 +3184,7 @@ test("unit_tests") {
 
       deps += [ "//chrome/installer/util:with_no_strings" ]
 
-      data_deps += [ "//notification_helper" ]
+      data_deps += [ "//chrome/notification_helper" ]
     }
   }
 

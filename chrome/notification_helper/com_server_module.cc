@@ -9,14 +9,14 @@
 #define __WRL_CLASSIC_COM_STRICT__
 #endif  // __WRL_CLASSIC_COM_STRICT__
 
-#include "notification_helper/com_server_module.h"
+#include "chrome/notification_helper/com_server_module.h"
 
 #include <wrl/module.h>
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/install_static/install_util.h"
-#include "notification_helper/notification_activator.h"
-#include "notification_helper/trace_util.h"
+#include "chrome/notification_helper/notification_activator.h"
+#include "chrome/notification_helper/trace_util.h"
 
 namespace {
 
