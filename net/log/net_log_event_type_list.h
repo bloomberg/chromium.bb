@@ -1022,13 +1022,13 @@ EVENT_TYPE(ENTRY_CLOSE)
 EVENT_TYPE(ENTRY_DOOM)
 
 // ------------------------------------------------------------------------
-// HttpStreamFactoryImpl
+// HttpStreamFactory
 // ------------------------------------------------------------------------
 
 // Measures the time taken to fulfill the HttpStreamRequest.
 EVENT_TYPE(HTTP_STREAM_REQUEST)
 
-// Measures the time taken to execute the HttpStreamFactoryImpl::Job
+// Measures the time taken to execute the HttpStreamFactory::Job
 // The event parameters are:
 //   {
 //      "source_dependency": <Source identifier for the Request with started
@@ -1041,8 +1041,7 @@ EVENT_TYPE(HTTP_STREAM_REQUEST)
 //   }
 EVENT_TYPE(HTTP_STREAM_JOB)
 
-// Measures the time and HttpStreamFactoryImpl::Job spends waiting for
-// another job.
+// Measures the time and HttpStreamFactory::Job spends waiting for another job.
 // The event parameters are:
 //   {
 //      "should_wait": <True if the job needs to wait>,
@@ -1074,7 +1073,7 @@ EVENT_TYPE(HTTP_STREAM_JOB_INIT_CONNECTION)
 EVENT_TYPE(HTTP_STREAM_REQUEST_BOUND_TO_JOB)
 
 // Identifies the NetLogSource() for the QuicStreamFactory::Job that the
-// HttpStreamFactoryImpl::Job was attached to.
+// HttpStreamFactory::Job was attached to.
 // The event parameters are:
 //  {
 //      "source_dependency": <Source identifier for the QuicStreamFactory::Job
@@ -1114,7 +1113,7 @@ EVENT_TYPE(HTTP_STREAM_JOB_DELAYED)
 //   }
 EVENT_TYPE(HTTP_STREAM_JOB_RESUMED)
 
-// Marks the start/end of a HttpStreamFactoryImpl::JobController.
+// Marks the start/end of a HttpStreamFactory::JobController.
 // The following parameters are attached:
 //   {
 //      "url": <String of request URL>,
@@ -1641,13 +1640,12 @@ EVENT_TYPE(HTTP2_PROXY_CLIENT_SESSION)
 //   }
 EVENT_TYPE(QUIC_STREAM_FACTORY_JOB)
 
-// Identifies the NetLogSource() for the HttpStreamFactoryImpl::Job that the
-// Job was attached to.
+// Identifies the NetLogSource() for the HttpStreamFactory::Job that the Job was
+// attached to.
 // The event parameters are:
 //  {
-//     "source_dependency": <Source identifier for the
-//                           HttpStreamFactoryImpl::Job to which we were
-//                           attached>,
+//     "source_dependency": <Source identifier for the HttpStreamFactory::Job to
+//                           which we were attached>,
 //  }
 EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_BOUND_TO_HTTP_STREAM_JOB)
 

@@ -16,8 +16,8 @@ MockHttpStreamRequestDelegate::MockHttpStreamRequestDelegate() = default;
 MockHttpStreamRequestDelegate::~MockHttpStreamRequestDelegate() = default;
 
 MockHttpStreamFactoryImplJob::MockHttpStreamFactoryImplJob(
-    HttpStreamFactoryImpl::Job::Delegate* delegate,
-    HttpStreamFactoryImpl::JobType job_type,
+    HttpStreamFactory::Job::Delegate* delegate,
+    HttpStreamFactory::JobType job_type,
     HttpNetworkSession* session,
     const HttpRequestInfo& request_info,
     RequestPriority priority,
@@ -32,22 +32,22 @@ MockHttpStreamFactoryImplJob::MockHttpStreamFactoryImplJob(
     bool is_websocket,
     bool enable_ip_based_pooling,
     NetLog* net_log)
-    : HttpStreamFactoryImpl::Job(delegate,
-                                 job_type,
-                                 session,
-                                 request_info,
-                                 priority,
-                                 proxy_info,
-                                 server_ssl_config,
-                                 proxy_ssl_config,
-                                 destination,
-                                 origin_url,
-                                 alternative_protocol,
-                                 quic_version,
-                                 alternative_proxy_server,
-                                 is_websocket,
-                                 enable_ip_based_pooling,
-                                 net_log) {
+    : HttpStreamFactory::Job(delegate,
+                             job_type,
+                             session,
+                             request_info,
+                             priority,
+                             proxy_info,
+                             server_ssl_config,
+                             proxy_ssl_config,
+                             destination,
+                             origin_url,
+                             alternative_protocol,
+                             quic_version,
+                             alternative_proxy_server,
+                             is_websocket,
+                             enable_ip_based_pooling,
+                             net_log) {
   DCHECK(!is_waiting());
 }
 
@@ -60,9 +60,9 @@ TestJobFactory::TestJobFactory()
 
 TestJobFactory::~TestJobFactory() = default;
 
-std::unique_ptr<HttpStreamFactoryImpl::Job> TestJobFactory::CreateMainJob(
-    HttpStreamFactoryImpl::Job::Delegate* delegate,
-    HttpStreamFactoryImpl::JobType job_type,
+std::unique_ptr<HttpStreamFactory::Job> TestJobFactory::CreateMainJob(
+    HttpStreamFactory::Job::Delegate* delegate,
+    HttpStreamFactory::JobType job_type,
     HttpNetworkSession* session,
     const HttpRequestInfo& request_info,
     RequestPriority priority,
@@ -89,9 +89,9 @@ std::unique_ptr<HttpStreamFactoryImpl::Job> TestJobFactory::CreateMainJob(
   return std::move(main_job);
 }
 
-std::unique_ptr<HttpStreamFactoryImpl::Job> TestJobFactory::CreateAltSvcJob(
-    HttpStreamFactoryImpl::Job::Delegate* delegate,
-    HttpStreamFactoryImpl::JobType job_type,
+std::unique_ptr<HttpStreamFactory::Job> TestJobFactory::CreateAltSvcJob(
+    HttpStreamFactory::Job::Delegate* delegate,
+    HttpStreamFactory::JobType job_type,
     HttpNetworkSession* session,
     const HttpRequestInfo& request_info,
     RequestPriority priority,
@@ -117,9 +117,9 @@ std::unique_ptr<HttpStreamFactoryImpl::Job> TestJobFactory::CreateAltSvcJob(
   return std::move(alternative_job);
 }
 
-std::unique_ptr<HttpStreamFactoryImpl::Job> TestJobFactory::CreateAltProxyJob(
-    HttpStreamFactoryImpl::Job::Delegate* delegate,
-    HttpStreamFactoryImpl::JobType job_type,
+std::unique_ptr<HttpStreamFactory::Job> TestJobFactory::CreateAltProxyJob(
+    HttpStreamFactory::Job::Delegate* delegate,
+    HttpStreamFactory::JobType job_type,
     HttpNetworkSession* session,
     const HttpRequestInfo& request_info,
     RequestPriority priority,

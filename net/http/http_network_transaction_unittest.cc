@@ -11955,8 +11955,8 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortUnrestrictedAllowed2) {
 }
 
 // Ensure that we are not allowed to redirect traffic via an alternate protocol
-// to an unsafe port, and that we resume the second HttpStreamFactoryImpl::Job
-// once the alternate protocol request fails.
+// to an unsafe port, and that we resume the second HttpStreamFactory::Job once
+// the alternate protocol request fails.
 TEST_F(HttpNetworkTransactionTest, AlternateProtocolUnsafeBlocked) {
   HttpRequestInfo request;
   request.method = "GET";
