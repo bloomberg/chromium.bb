@@ -2435,12 +2435,7 @@ InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
         event.GetType() == WebInputEvent::kTouchStart) {
       delegate_->FocusOwningWebContents(this);
     }
-    if (event.GetType() == WebInputEvent::kMouseDown ||
-        event.GetType() == WebInputEvent::kGestureScrollBegin ||
-        event.GetType() == WebInputEvent::kTouchStart ||
-        event.GetType() == WebInputEvent::kRawKeyDown) {
-      delegate_->OnUserInteraction(this, event.GetType());
-    }
+    delegate_->DidReceiveInputEvent(this, event.GetType());
   }
 
   return view_ ? view_->FilterInputEvent(event)
