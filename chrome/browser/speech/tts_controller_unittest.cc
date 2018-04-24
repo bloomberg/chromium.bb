@@ -7,7 +7,11 @@
 #include "base/values.h"
 #include "chrome/browser/speech/tts_controller_impl.h"
 #include "chrome/browser/speech/tts_platform.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_speech_synthesis_constants.h"
 
 class TtsControllerTest : public testing::Test {
 };
@@ -48,12 +52,12 @@ TEST_F(TtsControllerTest, TestTtsControllerShutdown) {
       new TestableTtsController();
   controller->SetPlatformImpl(&platform_impl);
 
-  Utterance* utterance1 = new Utterance(NULL);
+  Utterance* utterance1 = new Utterance(nullptr);
   utterance1->set_can_enqueue(true);
   utterance1->set_src_id(1);
   controller->SpeakOrEnqueue(utterance1);
 
-  Utterance* utterance2 = new Utterance(NULL);
+  Utterance* utterance2 = new Utterance(nullptr);
   utterance2->set_can_enqueue(true);
   utterance2->set_src_id(2);
   controller->SpeakOrEnqueue(utterance2);
@@ -67,7 +71,7 @@ TEST_F(TtsControllerTest, TestGetMatchingVoice) {
   TtsControllerImpl* tts_controller = TtsControllerImpl::GetInstance();
 
   {
-    // Calling GetMatchingVoice with no voices returns -1
+    // Calling GetMatchingVoice with no voices returns -1.
     Utterance utterance(nullptr);
     std::vector<VoiceData> voices;
     EXPECT_EQ(-1, tts_controller->GetMatchingVoice(&utterance, voices));
@@ -149,3 +153,42 @@ TEST_F(TtsControllerTest, TestGetMatchingVoice) {
     EXPECT_EQ(6, tts_controller->GetMatchingVoice(&utterance, voices));
   }
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(TtsControllerTest, TestTtsControllerUtteranceDefaults) {
+  std::unique_ptr<TestableTtsController> controller =
+      std::make_unique<TestableTtsController>();
+
+  std::unique_ptr<Utterance> utterance1 = std::make_unique<Utterance>(nullptr);
+  // Initialized to default (unset constant) values.
+  EXPECT_EQ(blink::SpeechSynthesisConstants::kDoublePrefNotSet,
+            utterance1->continuous_parameters().rate);
+  EXPECT_EQ(blink::SpeechSynthesisConstants::kDoublePrefNotSet,
+            utterance1->continuous_parameters().pitch);
+  EXPECT_EQ(blink::SpeechSynthesisConstants::kDoublePrefNotSet,
+            utterance1->continuous_parameters().volume);
+
+  controller->UpdateUtteranceDefaults(utterance1.get());
+  // Updated to global defaults.
+  EXPECT_EQ(blink::SpeechSynthesisConstants::kDefaultTextToSpeechRate,
+            utterance1->continuous_parameters().rate);
+  EXPECT_EQ(blink::SpeechSynthesisConstants::kDefaultTextToSpeechPitch,
+            utterance1->continuous_parameters().pitch);
+  EXPECT_EQ(blink::SpeechSynthesisConstants::kDefaultTextToSpeechVolume,
+            utterance1->continuous_parameters().volume);
+
+  // Now we will set prefs and expect those to be used as defaults.
+  TestingPrefServiceSimple pref_service_;
+  pref_service_.registry()->RegisterDoublePref(prefs::kTextToSpeechRate, 1.5);
+  pref_service_.registry()->RegisterDoublePref(prefs::kTextToSpeechPitch, 2.0);
+  pref_service_.registry()->RegisterDoublePref(prefs::kTextToSpeechVolume, 0.5);
+
+  controller->pref_service_for_testing_ = &pref_service_;
+  std::unique_ptr<Utterance> utterance2 = std::make_unique<Utterance>(nullptr);
+  controller->UpdateUtteranceDefaults(utterance2.get());
+  // Updated to pref values.
+  EXPECT_EQ(1.5f, utterance2->continuous_parameters().rate);
+  EXPECT_EQ(2.0f, utterance2->continuous_parameters().pitch);
+  EXPECT_EQ(0.5f, utterance2->continuous_parameters().volume);
+}
+#endif  // defined(OS_CHROMEOS)

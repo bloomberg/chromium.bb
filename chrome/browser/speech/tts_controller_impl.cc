@@ -15,7 +15,11 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/tts_platform.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "third_party/blink/public/platform/web_speech_synthesis_constants.h"
 
 namespace {
 // A value to be used to indicate that there is no char index available.
@@ -63,12 +67,10 @@ bool IsFinalTtsEventType(TtsEventType event_type) {
 // UtteranceContinuousParameters
 //
 
-
 UtteranceContinuousParameters::UtteranceContinuousParameters()
-    : rate(-1),
-      pitch(-1),
-      volume(-1) {}
-
+    : rate(blink::SpeechSynthesisConstants::kDoublePrefNotSet),
+      pitch(blink::SpeechSynthesisConstants::kDoublePrefNotSet),
+      volume(blink::SpeechSynthesisConstants::kDoublePrefNotSet) {}
 
 //
 // VoiceData
@@ -120,7 +122,7 @@ void Utterance::OnTtsEvent(TtsEventType event_type,
   if (event_delegate_)
     event_delegate_->OnTtsEvent(this, event_type, char_index, error_message);
   if (finished_)
-    event_delegate_ = NULL;
+    event_delegate_ = nullptr;
 }
 
 void Utterance::Finish() {
@@ -145,11 +147,11 @@ TtsControllerImpl* TtsControllerImpl::GetInstance() {
 }
 
 TtsControllerImpl::TtsControllerImpl()
-    : current_utterance_(NULL),
+    : current_utterance_(nullptr),
       paused_(false),
-      platform_impl_(NULL),
-      tts_engine_delegate_(NULL) {
-}
+      platform_impl_(nullptr),
+      tts_engine_delegate_(nullptr),
+      pref_service_for_testing_(nullptr) {}
 
 TtsControllerImpl::~TtsControllerImpl() {
   if (current_utterance_) {
@@ -196,7 +198,9 @@ void TtsControllerImpl::SpeakNow(Utterance* utterance) {
   if (index >= 0)
     voice = voices[index];
   else
-    voice.native = true;  // Try to let
+    voice.native = true;
+
+  UpdateUtteranceDefaults(utterance);
 
   GetPlatformImpl()->WillSpeakUtteranceWithVoice(utterance, voice);
 
@@ -231,7 +235,7 @@ void TtsControllerImpl::SpeakNow(Utterance* utterance) {
     if (!sends_end_event) {
       utterance->Finish();
       delete utterance;
-      current_utterance_ = NULL;
+      current_utterance_ = nullptr;
       SpeakNextUtterance();
     }
 #endif
@@ -247,7 +251,7 @@ void TtsControllerImpl::SpeakNow(Utterance* utterance) {
         voice,
         utterance->continuous_parameters());
     if (!success)
-      current_utterance_ = NULL;
+      current_utterance_ = nullptr;
 
     // If the native voice wasn't able to process this speech, see if
     // the browser has built-in TTS that isn't loaded yet.
@@ -386,7 +390,7 @@ void TtsControllerImpl::GetVoices(content::BrowserContext* browser_context,
 }
 
 bool TtsControllerImpl::IsSpeaking() {
-  return current_utterance_ != NULL || GetPlatformImpl()->IsSpeaking();
+  return current_utterance_ != nullptr || GetPlatformImpl()->IsSpeaking();
 }
 
 void TtsControllerImpl::FinishCurrentUtterance() {
@@ -395,7 +399,7 @@ void TtsControllerImpl::FinishCurrentUtterance() {
       current_utterance_->OnTtsEvent(TTS_EVENT_INTERRUPTED, kInvalidCharIndex,
                                      std::string());
     delete current_utterance_;
-    current_utterance_ = NULL;
+    current_utterance_ = nullptr;
   }
 }
 
@@ -532,6 +536,49 @@ int TtsControllerImpl::GetMatchingVoice(
   return best_score_index;
 }
 
+void TtsControllerImpl::UpdateUtteranceDefaults(Utterance* utterance) {
+  double rate = utterance->continuous_parameters().rate;
+  double pitch = utterance->continuous_parameters().pitch;
+  double volume = utterance->continuous_parameters().volume;
+#if defined(OS_CHROMEOS)
+  // Update pitch, rate and volume from user prefs if not set explicitly
+  // on this utterance.
+  const PrefService* prefs = nullptr;
+  // The utterance->browser_context() is null in tests.
+  if (utterance->browser_context()) {
+    const Profile* profile =
+        Profile::FromBrowserContext(utterance->browser_context());
+    if (profile)
+      prefs = profile->GetPrefs();
+  } else if (pref_service_for_testing_) {
+    prefs = pref_service_for_testing_;
+  }
+  if (rate == blink::SpeechSynthesisConstants::kDoublePrefNotSet) {
+    rate = prefs ? prefs->GetDouble(prefs::kTextToSpeechRate)
+                 : blink::SpeechSynthesisConstants::kDefaultTextToSpeechRate;
+  }
+  if (pitch == blink::SpeechSynthesisConstants::kDoublePrefNotSet) {
+    pitch = prefs ? prefs->GetDouble(prefs::kTextToSpeechPitch)
+                  : blink::SpeechSynthesisConstants::kDefaultTextToSpeechPitch;
+  }
+  if (volume == blink::SpeechSynthesisConstants::kDoublePrefNotSet) {
+    volume = prefs
+                 ? prefs->GetDouble(prefs::kTextToSpeechVolume)
+                 : blink::SpeechSynthesisConstants::kDefaultTextToSpeechVolume;
+  }
+#else
+  // Update pitch, rate and volume to defaults if not explicity set on
+  // this utterance.
+  if (rate == blink::SpeechSynthesisConstants::kDoublePrefNotSet)
+    rate = blink::SpeechSynthesisConstants::kDefaultTextToSpeechRate;
+  if (pitch == blink::SpeechSynthesisConstants::kDoublePrefNotSet)
+    pitch = blink::SpeechSynthesisConstants::kDefaultTextToSpeechPitch;
+  if (volume == blink::SpeechSynthesisConstants::kDoublePrefNotSet)
+    volume = blink::SpeechSynthesisConstants::kDefaultTextToSpeechVolume;
+#endif  // defined(OS_CHROMEOS)
+  utterance->set_continuous_parameters(rate, pitch, volume);
+}
+
 void TtsControllerImpl::VoicesChanged() {
   // Existence of platform tts indicates explicit requests to tts. Since
   // |VoicesChanged| can occur implicitly, only send if needed.
@@ -570,7 +617,7 @@ void TtsControllerImpl::RemoveUtteranceEventDelegate(
   }
 
   if (current_utterance_ && current_utterance_->event_delegate() == delegate) {
-    current_utterance_->set_event_delegate(NULL);
+    current_utterance_->set_event_delegate(nullptr);
     if (!current_utterance_->extension_id().empty()) {
       if (tts_engine_delegate_)
         tts_engine_delegate_->Stop(current_utterance_);
