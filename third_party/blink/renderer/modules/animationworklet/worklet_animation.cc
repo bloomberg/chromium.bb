@@ -51,6 +51,13 @@ bool ConvertAnimationEffects(
     return false;
   }
 
+  if (keyframe_effects.size() > 1) {
+    // TODO(yigu): We should allow group effects eventually by spec. See
+    // crbug.com/767043.
+    error_string = "Multiple effects are not currently supported";
+    return false;
+  }
+
   // TODO(crbug.com/781816): Allow using effects with no target.
   for (const auto& effect : keyframe_effects) {
     if (!effect->target()) {

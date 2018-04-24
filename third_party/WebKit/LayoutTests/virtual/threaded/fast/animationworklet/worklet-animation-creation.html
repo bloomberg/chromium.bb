@@ -43,10 +43,10 @@ test(function() {
   let effect = CreateKeyframeEffect(document.querySelector('#element'));
   let effect2 = CreateKeyframeEffect(document.querySelector('#element2'));
   let options = { my_param: 'foo', my_other_param: true };
-  let workletAnimation = new WorkletAnimation(
-      'my-animation', [ effect, effect2 ], document.timeline, options);
-  assert_equals(workletAnimation.playState, 'idle');
-}, 'WorkletAnimation can be created from a sequence of effects');
+  let constructorFunc = function() { new WorkletAnimation(
+      'my-animation', [ effect, effect2 ], document.timeline, options); };
+  assert_throws('NotSupportedError', constructorFunc);
+}, 'Multiple effects are not currently supported');
 
 test(function() {
   let effect = CreateKeyframeEffect(document.querySelector('#element'));
