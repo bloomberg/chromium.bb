@@ -34,6 +34,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -878,6 +879,9 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
     config_change_detector_.reset(new VP9ConfigChangeDetector);
 
   SetState(kNormal);
+
+  UMA_HISTOGRAM_ENUMERATION("Media.DXVAVDA.PictureBufferMechanism",
+                            GetPictureBufferMechanism());
 
   return StartDecoderThread();
 }
