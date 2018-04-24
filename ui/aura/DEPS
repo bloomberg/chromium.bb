@@ -8,7 +8,7 @@ include_rules = [
   "+components/viz/common",
   "+components/viz/host",
   "+mojo/common",
-  "+mojo/public/cpp/bindings",
+  "+mojo/public/cpp",
   "+net/base/filename_util.h",
   "+services/service_manager/public/cpp",
   "+services/service_manager/public/mojom",

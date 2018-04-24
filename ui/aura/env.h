@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/supports_user_data.h"
+#include "mojo/public/cpp/system/buffer.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/events/event_handler.h"
@@ -44,6 +45,7 @@ class EnvWindowTreeClientSetter;
 class EnvInputStateController;
 class EnvObserver;
 class InputStateLookup;
+class MouseLocationManager;
 class MusMouseLocationUpdater;
 class Window;
 class WindowPort;
@@ -66,9 +68,15 @@ class AURA_EXPORT Env : public ui::EventTarget,
 
   ~Env() override;
 
+  // Creates a new Env instance. If |create_mouse_location_manager| is true,
+  // then Env creates a MouseLocationManager that is updated any time the
+  // mouse location is updated. This is only useful when hosting the
+  // WindowService on top of Aura (such as Ash).
   // NOTE: if you pass in Mode::MUS it is expected that you call
   // SetWindowTreeClient() before any windows are created.
-  static std::unique_ptr<Env> CreateInstance(Mode mode = Mode::LOCAL);
+  static std::unique_ptr<Env> CreateInstance(
+      Mode mode = Mode::LOCAL,
+      bool create_mouse_location_manager = false);
   static Env* GetInstance();
   static Env* GetInstanceDontCreate();
 
@@ -96,6 +104,11 @@ class AURA_EXPORT Env : public ui::EventTarget,
   // coordinates.
   const gfx::Point& last_mouse_location() const;
   void SetLastMouseLocation(const gfx::Point& last_mouse_location);
+
+  // Returns a read-only handle to the shared memory which contains the global
+  // mouse position. Each call returns a new handle. This is only valid if Env
+  // was configured to create a MouseLocationManager.
+  mojo::ScopedSharedBufferHandle GetLastMouseLocationMemory();
 
   // Whether any touch device is currently down.
   bool is_touch_down() const { return is_touch_down_; }
@@ -144,7 +157,7 @@ class AURA_EXPORT Env : public ui::EventTarget,
   friend class WindowTreeClient;  // For call to WindowTreeClientDestroyed().
   friend class WindowTreeHost;
 
-  explicit Env(Mode mode);
+  Env(Mode mode, bool create_mouse_location_manager);
 
   void Init();
 
@@ -217,6 +230,9 @@ class AURA_EXPORT Env : public ui::EventTarget,
 
   static bool initial_throttle_input_on_resize_;
   bool throttle_input_on_resize_ = initial_throttle_input_on_resize_;
+
+  // Only created if |create_mouse_location_manager| was true.
+  std::unique_ptr<MouseLocationManager> mouse_location_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(Env);
 };
