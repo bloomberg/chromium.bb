@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from contrib.cluster_telemetry import shared_browserless_story
 
 from telemetry.page import traffic_setting as traffic_setting_module
 from telemetry.page import page as page_module
@@ -33,6 +34,27 @@ class CTPage(page_module.Page):
   def RunPageInteractions(self, action_runner):
     if self._run_page_interaction_callback:
       self._run_page_interaction_callback(action_runner)
+
+
+class LocalTracePath(story.Story):
+  def __init__(self, local_file_path, shared_state_class):
+    super(LocalTracePath, self).__init__(
+        shared_state_class=shared_state_class,
+        name=local_file_path)
+  def Run(self, shared_state):
+    pass
+
+
+class CTBrowserLessPageSet(story.StorySet):
+  """Page set used by CT Benchmarks that do not require a browser."""
+  def __init__(self, local_file_paths):
+    super(CTBrowserLessPageSet, self).__init__()
+    shared_state_class = shared_browserless_story.SharedBrowserlessStory
+    for local_file_path in local_file_paths.split(','):
+      self.AddStory(
+          LocalTracePath(
+              local_file_path=local_file_path,
+              shared_state_class=shared_state_class))
 
 
 class CTPageSet(story.StorySet):
