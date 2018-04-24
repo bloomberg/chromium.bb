@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
@@ -71,7 +71,7 @@ class SubframeNavigationFilteringThrottleTest
     // tests, to ensure that the NavigationSimulator properly runs all necessary
     // tasks while waiting for throttle checks to finish.
     dealer_handle_ = std::make_unique<VerifiedRulesetDealer::Handle>(
-        base::MessageLoop::current()->task_runner());
+        base::MessageLoopCurrent::Get()->task_runner());
     dealer_handle_->TryOpenAndSetRulesetFile(test_ruleset_pair_.indexed.path,
                                              base::DoNothing());
     ruleset_handle_ =

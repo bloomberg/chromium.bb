@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
@@ -183,7 +183,7 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
     ASSERT_NO_FATAL_FAILURE(test_ruleset_creator_.CreateRulesetWithRules(
         rules, &test_ruleset_pair_));
     auto ruleset_dealer = std::make_unique<VerifiedRulesetDealer::Handle>(
-        base::MessageLoop::current()->task_runner());
+        base::MessageLoopCurrent::Get()->task_runner());
     ruleset_dealer->TryOpenAndSetRulesetFile(test_ruleset_pair_.indexed.path,
                                              base::DoNothing());
     client_ =
