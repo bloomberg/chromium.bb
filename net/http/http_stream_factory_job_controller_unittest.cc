@@ -65,6 +65,9 @@ namespace {
 const char kServerHostname[] = "www.example.com";
 
 // List of errors that are used in the proxy resolution tests.
+// Note that ERR_MSG_TOO_BIG is tested separately in ReconsiderErrMsgTooBig and
+// DoNotReconsiderErrMsgTooBig, because the behavior is different for QUIC and
+// non-QUIC proxies.
 const int proxy_test_mock_errors[] = {
     ERR_PROXY_CONNECTION_FAILED,
     ERR_NAME_NOT_RESOLVED,
@@ -80,9 +83,6 @@ const int proxy_test_mock_errors[] = {
     ERR_QUIC_PROTOCOL_ERROR,
     ERR_QUIC_HANDSHAKE_FAILED,
     ERR_SSL_PROTOCOL_ERROR,
-    // TODO(crbug.com/826570): Non-QUIC proxies do not fallback on this
-    // error. Figure out how to fix this.
-    // ERR_MSG_TOO_BIG,
 };
 
 class FailingProxyResolverFactory : public ProxyResolverFactory {
@@ -581,6 +581,98 @@ TEST_P(JobControllerReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
     if (set_alternative_proxy_server)
       EXPECT_THAT(retry_info, Contains(Key("quic://badproxy:99")));
   }
+  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+}
+
+// Tests that ERR_MSG_TOO_BIG is retryable for QUIC proxy.
+TEST_F(JobControllerReconsiderProxyAfterErrorTest, ReconsiderErrMsgTooBig) {
+  session_deps_.socket_factory->UseMockProxyClientSockets();
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
+      ProxyResolutionService::CreateFixedFromPacResult(
+          "QUIC badproxy:99; DIRECT", TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  // Before starting the test, verify that there are no proxies marked as bad.
+  ASSERT_TRUE(proxy_resolution_service->proxy_retry_info().empty());
+
+  // Mock data for the QUIC proxy socket.
+  StaticSocketDataProvider quic_proxy_socket;
+  quic_proxy_socket.set_connect_data(MockConnect(ASYNC, ERR_MSG_TOO_BIG));
+  session_deps_.socket_factory->AddSocketDataProvider(&quic_proxy_socket);
+
+  // Mock data for DIRECT.
+  StaticSocketDataProvider socket_data_direct;
+  socket_data_direct.set_connect_data(MockConnect(ASYNC, OK));
+  session_deps_.socket_factory->AddSocketDataProvider(&socket_data_direct);
+
+  // Now request a stream. It should fallback to DIRECT on ERR_MSG_TOO_BIG.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("http://www.example.com");
+
+  Initialize(std::move(proxy_resolution_service),
+             std::make_unique<TestProxyDelegate>());
+
+  ProxyInfo used_proxy_info;
+  EXPECT_CALL(request_delegate_, OnStreamReadyImpl(_, _, _))
+      .Times(1)
+      .WillOnce(::testing::SaveArg<1>(&used_proxy_info));
+
+  std::unique_ptr<HttpStreamRequest> request =
+      CreateJobController(request_info);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(used_proxy_info.is_direct());
+  const ProxyRetryInfoMap& retry_info =
+      session_->proxy_resolution_service()->proxy_retry_info();
+  EXPECT_THAT(retry_info, SizeIs(1));
+  EXPECT_THAT(retry_info, Contains(Key("quic://badproxy:99")));
+
+  request.reset();
+  EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
+}
+
+// Same as test above except that this is testing the retry behavior for
+// non-QUIC proxy on ERR_MSG_TOO_BIG.
+TEST_F(JobControllerReconsiderProxyAfterErrorTest,
+       DoNotReconsiderErrMsgTooBig) {
+  session_deps_.socket_factory->UseMockProxyClientSockets();
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
+      ProxyResolutionService::CreateFixedFromPacResult(
+          "HTTPS badproxy:99; DIRECT", TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  // Before starting the test, verify that there are no proxies marked as bad.
+  ASSERT_TRUE(proxy_resolution_service->proxy_retry_info().empty());
+
+  // Mock data for the HTTPS proxy socket.
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  ProxyClientSocketDataProvider proxy_data(ASYNC, ERR_MSG_TOO_BIG);
+  StaticSocketDataProvider https_proxy_socket;
+  https_proxy_socket.set_connect_data(MockConnect(ASYNC, OK));
+  session_deps_.socket_factory->AddSocketDataProvider(&https_proxy_socket);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
+  session_deps_.socket_factory->AddProxyClientSocketDataProvider(&proxy_data);
+
+  // Now request a stream. It should not fallback to DIRECT on ERR_MSG_TOO_BIG.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("http://www.example.com");
+
+  Initialize(std::move(proxy_resolution_service),
+             std::make_unique<TestProxyDelegate>());
+
+  ProxyInfo used_proxy_info;
+  EXPECT_CALL(request_delegate_, OnStreamFailed(ERR_MSG_TOO_BIG, _, _))
+      .Times(1);
+
+  std::unique_ptr<HttpStreamRequest> request =
+      CreateJobController(request_info);
+  base::RunLoop().RunUntilIdle();
+
+  const ProxyRetryInfoMap& retry_info =
+      session_->proxy_resolution_service()->proxy_retry_info();
+  EXPECT_THAT(retry_info, SizeIs(0));
+
+  request.reset();
   EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
 }
 
