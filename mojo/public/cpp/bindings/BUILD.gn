@@ -69,6 +69,7 @@ component("bindings_base") {
     "map.h",
     "map_data_view.h",
     "map_traits.h",
+    "map_traits_flat_map.h",
     "map_traits_stl.h",
     "message.h",
     "message_header_validator.h",

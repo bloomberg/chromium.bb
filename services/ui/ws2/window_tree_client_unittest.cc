@@ -233,7 +233,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient,
   // Generally you want NewWindow(), but use this if you need to test given
   // a complete window id (NewWindow() ors with the client id).
   Id NewWindowWithCompleteId(Id id) {
-    std::unordered_map<std::string, std::vector<uint8_t>> properties;
+    base::flat_map<std::string, std::vector<uint8_t>> properties;
     const uint32_t change_id = GetAndAdvanceChangeId();
     tree()->NewWindow(change_id, id, std::move(properties));
     return WaitForChangeCompleted(change_id) ? id : 0;
@@ -404,9 +404,8 @@ class TestWindowTreeClient2 : public TestWindowTreeClient,
     tracker_.OnWindowCursorChanged(window_id, cursor);
   }
 
-  void OnDragDropStart(
-      const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data)
-      override {}
+  void OnDragDropStart(const base::flat_map<std::string, std::vector<uint8_t>>&
+                           drag_data) override {}
 
   void OnWindowSurfaceChanged(Id window_id,
                               const viz::SurfaceInfo& surface_info) override {
@@ -480,7 +479,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient,
   void WmCreateTopLevelWindow(
       uint32_t change_id,
       const viz::FrameSinkId& frame_sink_id,
-      const std::unordered_map<std::string, std::vector<uint8_t>>& properties)
+      const base::flat_map<std::string, std::vector<uint8_t>>& properties)
       override {}
   void WmClientJankinessChanged(ClientSpecificId client_id,
                                 bool janky) override {}

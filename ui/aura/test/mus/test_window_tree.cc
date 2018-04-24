@@ -36,7 +36,7 @@ base::Optional<std::vector<uint8_t>> TestWindowTree::GetLastPropertyValue() {
   return std::move(last_property_value_);
 }
 
-base::Optional<std::unordered_map<std::string, std::vector<uint8_t>>>
+base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>
 TestWindowTree::GetLastNewWindowProperties() {
   return std::move(last_new_window_properties_);
 }
@@ -159,7 +159,7 @@ void TestWindowTree::OnChangeReceived(uint32_t change_id,
 void TestWindowTree::NewWindow(
     uint32_t change_id,
     ui::Id window_id,
-    const base::Optional<std::unordered_map<std::string, std::vector<uint8_t>>>&
+    const base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>&
         properties) {
   last_new_window_properties_ = properties;
   OnChangeReceived(change_id, WindowTreeChangeType::NEW_WINDOW);
@@ -168,7 +168,7 @@ void TestWindowTree::NewWindow(
 void TestWindowTree::NewTopLevelWindow(
     uint32_t change_id,
     ui::Id window_id,
-    const std::unordered_map<std::string, std::vector<uint8_t>>& properties) {
+    const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
   last_new_window_properties_.emplace(properties);
   window_id_ = window_id;
   OnChangeReceived(change_id, WindowTreeChangeType::NEW_TOP_LEVEL);
@@ -392,7 +392,7 @@ void TestWindowTree::PerformDragDrop(
     uint32_t change_id,
     ui::Id source_window_id,
     const gfx::Point& screen_location,
-    const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data,
+    const base::flat_map<std::string, std::vector<uint8_t>>& drag_data,
     const SkBitmap& drag_image,
     const gfx::Vector2d& drag_image_offset,
     uint32_t drag_operation,

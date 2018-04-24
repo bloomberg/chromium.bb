@@ -149,8 +149,7 @@ class AuraTestBase : public testing::Test,
   ui::mojom::EventResult OnAccelerator(
       uint32_t id,
       const ui::Event& event,
-      std::unordered_map<std::string, std::vector<uint8_t>>* properties)
-      override;
+      base::flat_map<std::string, std::vector<uint8_t>>* properties) override;
   void OnCursorTouchVisibleChanged(bool enabled) override;
   void OnWmPerformMoveLoop(Window* window,
                            ui::mojom::MoveLoopSource source,

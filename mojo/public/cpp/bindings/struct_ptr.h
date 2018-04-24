@@ -98,6 +98,10 @@ class StructPtr {
 
   explicit operator bool() const { return !is_null(); }
 
+  bool operator<(const StructPtr& other) const {
+    return Hash(internal::kHashSeed) < other.Hash(internal::kHashSeed);
+  }
+
  private:
   friend class internal::StructPtrWTFHelper<Struct>;
   void Take(StructPtr* other) {
@@ -192,6 +196,10 @@ class InlinedStructPtr {
   }
 
   explicit operator bool() const { return !is_null(); }
+
+  bool operator<(const InlinedStructPtr& other) const {
+    return Hash(internal::kHashSeed) < other.Hash(internal::kHashSeed);
+  }
 
  private:
   friend class internal::InlinedStructPtrWTFHelper<Struct>;

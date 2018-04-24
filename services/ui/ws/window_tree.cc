@@ -46,7 +46,7 @@
 
 using mojo::InterfaceRequest;
 
-using EventProperties = std::unordered_map<std::string, std::vector<uint8_t>>;
+using EventProperties = base::flat_map<std::string, std::vector<uint8_t>>;
 
 namespace ui {
 namespace ws {
@@ -1412,7 +1412,7 @@ mojom::WindowDataPtr WindowTree::WindowToWindowData(
       transient_parent ? TransportIdForWindow(transient_parent)
                        : kInvalidTransportId;
   window_data->bounds = window->bounds();
-  window_data->properties = mojo::MapToUnorderedMap(window->properties());
+  window_data->properties = mojo::MapToFlatMap(window->properties());
   window_data->visible = window->visible();
   return window_data;
 }
@@ -1593,11 +1593,11 @@ WindowTree::GetAndRemoveScheduledEmbedWindowTreeClient(
 void WindowTree::NewWindow(
     uint32_t change_id,
     Id transport_window_id,
-    const base::Optional<std::unordered_map<std::string, std::vector<uint8_t>>>&
+    const base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>&
         transport_properties) {
   std::map<std::string, std::vector<uint8_t>> properties;
   if (transport_properties.has_value())
-    properties = mojo::UnorderedMapToMap(transport_properties.value());
+    properties = mojo::FlatMapToMap(transport_properties.value());
 
   client()->OnChangeCompleted(
       change_id,
@@ -1607,7 +1607,7 @@ void WindowTree::NewWindow(
 void WindowTree::NewTopLevelWindow(
     uint32_t change_id,
     Id transport_window_id,
-    const std::unordered_map<std::string, std::vector<uint8_t>>&
+    const base::flat_map<std::string, std::vector<uint8_t>>&
         transport_properties) {
   // TODO(sky): rather than DCHECK, have this kill connection.
   DCHECK(!window_manager_internal_);  // Not valid for the windowmanager.
@@ -2313,7 +2313,7 @@ void WindowTree::PerformDragDrop(
     uint32_t change_id,
     Id source_window_id,
     const gfx::Point& screen_location,
-    const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data,
+    const base::flat_map<std::string, std::vector<uint8_t>>& drag_data,
     const SkBitmap& drag_image,
     const gfx::Vector2d& drag_image_offset,
     uint32_t drag_operation,
@@ -2831,7 +2831,7 @@ DragTargetConnection* WindowTree::GetDragTargetForWindow(
 }
 
 void WindowTree::PerformOnDragDropStart(
-    const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data) {
+    const base::flat_map<std::string, std::vector<uint8_t>>& mime_data) {
   client()->OnDragDropStart(mime_data);
 }
 

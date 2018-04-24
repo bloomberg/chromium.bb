@@ -49,6 +49,10 @@ void BuildObservationsAndNotify(WebIDBDatabaseCallbacks* callbacks,
         IndexedDBCallbacksImpl::ConvertValue(observation->value));
   }
 
+  WebIDBDatabaseCallbacks::ObservationIndexMap observation_index_map(
+      changes->observation_index_map.begin(),
+      changes->observation_index_map.end());
+
   std::unordered_map<int32_t, std::pair<int64_t, std::vector<int64_t>>>
       observer_transactions;
   for (const auto& transaction_pair : changes->transaction_map) {
@@ -60,8 +64,8 @@ void BuildObservationsAndNotify(WebIDBDatabaseCallbacks* callbacks,
             std::move(transaction_pair.second->scope));
   }
 
-  callbacks->OnChanges(changes->observation_index_map,
-                       std::move(web_observations), observer_transactions);
+  callbacks->OnChanges(observation_index_map, std::move(web_observations),
+                       observer_transactions);
 }
 
 }  // namespace

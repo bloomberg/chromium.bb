@@ -10,10 +10,10 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_map.h"
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
@@ -243,7 +243,7 @@ class AURA_EXPORT WindowManagerDelegate {
   virtual ui::mojom::EventResult OnAccelerator(
       uint32_t id,
       const ui::Event& event,
-      std::unordered_map<std::string, std::vector<uint8_t>>* properties);
+      base::flat_map<std::string, std::vector<uint8_t>>* properties);
 
   // Called when the mouse cursor is shown or hidden in response to a touch
   // event or window manager call.

@@ -659,7 +659,7 @@ bool ScreenLocker::IsUserLoggedIn(const AccountId& account_id) const {
 
 void ScreenLocker::OnAuthScanDone(
     uint32_t scan_result,
-    const std::unordered_map<std::string, std::vector<std::string>>& matches) {
+    const base::flat_map<std::string, std::vector<std::string>>& matches) {
   unlock_attempt_type_ = AUTH_FINGERPRINT;
   user_manager::User* active_user =
       user_manager::UserManager::Get()->GetActiveUser();

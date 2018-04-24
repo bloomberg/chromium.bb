@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/containers/flat_map.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "extensions/common/constants.h"
 
@@ -101,7 +102,7 @@ ChromeAppListItem* FakeAppListModelUpdater::FindFolderItem(
 
 void FakeAppListModelUpdater::GetIdToAppListIndexMap(
     GetIdToAppListIndexMapCallback callback) {
-  std::unordered_map<std::string, uint16_t> id_to_app_list_index;
+  base::flat_map<std::string, uint16_t> id_to_app_list_index;
   for (uint16_t i = 0; i < items_.size(); ++i)
     id_to_app_list_index[items_[i]->id()] = i;
   std::move(callback).Run(id_to_app_list_index);

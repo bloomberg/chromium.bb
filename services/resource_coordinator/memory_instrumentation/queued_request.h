@@ -8,8 +8,8 @@
 #include <map>
 #include <memory>
 #include <set>
-#include <unordered_map>
 
+#include "base/containers/flat_map.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
@@ -20,8 +20,8 @@ using base::trace_event::MemoryDumpType;
 namespace memory_instrumentation {
 
 using OSMemDumpMap =
-    std::unordered_map<base::ProcessId,
-                       memory_instrumentation::mojom::RawOSMemDumpPtr>;
+    base::flat_map<base::ProcessId,
+                   memory_instrumentation::mojom::RawOSMemDumpPtr>;
 
 // Holds data for pending requests enqueued via RequestGlobalMemoryDump().
 struct QueuedRequest {

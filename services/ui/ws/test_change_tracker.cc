@@ -215,7 +215,7 @@ TestWindow WindowDataToTestWindow(const mojom::WindowDataPtr& data) {
   window.parent_id = data->parent_id;
   window.window_id = data->window_id;
   window.visible = data->visible;
-  window.properties = mojo::UnorderedMapToMap(data->properties);
+  window.properties = mojo::FlatMapToMap(data->properties);
   return window;
 }
 

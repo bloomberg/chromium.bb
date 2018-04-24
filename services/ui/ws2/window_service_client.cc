@@ -629,7 +629,7 @@ void WindowServiceClient::OnWindowDestroyed(aura::Window* window) {
 void WindowServiceClient::NewWindow(
     uint32_t change_id,
     Id transport_window_id,
-    const base::Optional<std::unordered_map<std::string, std::vector<uint8_t>>>&
+    const base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>&
         transport_properties) {
   // TODO: needs to map and validate |transport_properties|.
   std::map<std::string, std::vector<uint8_t>> properties;
@@ -642,7 +642,7 @@ void WindowServiceClient::NewWindow(
 void WindowServiceClient::NewTopLevelWindow(
     uint32_t change_id,
     Id transport_window_id,
-    const std::unordered_map<std::string, std::vector<uint8_t>>& properties) {
+    const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
   const ClientWindowId client_window_id =
       MakeClientWindowId(transport_window_id);
   DVLOG(3) << "NewTopLevelWindow client_window_id="
@@ -950,7 +950,7 @@ void WindowServiceClient::PerformDragDrop(
     uint32_t change_id,
     Id source_window_id,
     const gfx::Point& screen_location,
-    const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data,
+    const base::flat_map<std::string, std::vector<uint8_t>>& drag_data,
     const SkBitmap& drag_image,
     const gfx::Vector2d& drag_image_offset,
     uint32_t drag_operation,

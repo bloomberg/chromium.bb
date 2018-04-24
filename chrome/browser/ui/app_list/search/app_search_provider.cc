@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 
@@ -397,7 +396,7 @@ void AppSearchProvider::RefreshApps() {
 }
 
 void AppSearchProvider::UpdateRecommendedResults(
-    const std::unordered_map<std::string, uint16_t>& id_to_app_list_index) {
+    const base::flat_map<std::string, uint16_t>& id_to_app_list_index) {
   SearchProvider::Results new_results;
   std::set<std::string> seen_or_filtered_apps;
   const uint16_t apps_size = apps_.size();

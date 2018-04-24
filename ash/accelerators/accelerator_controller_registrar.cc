@@ -65,7 +65,7 @@ AcceleratorControllerRegistrar::~AcceleratorControllerRegistrar() {
 ui::mojom::EventResult AcceleratorControllerRegistrar::OnAccelerator(
     uint32_t id,
     const ui::Event& event,
-    std::unordered_map<std::string, std::vector<uint8_t>>* properties) {
+    base::flat_map<std::string, std::vector<uint8_t>>* properties) {
   const ui::Accelerator accelerator(*event.AsKeyEvent());
   auto iter = accelerator_to_ids_.find(accelerator);
   if (iter == accelerator_to_ids_.end()) {

@@ -202,17 +202,19 @@ void FingerprintChromeOS::BiodAuthScanDoneReceived(
     const chromeos::AuthScanMatches& matches) {
   // Convert ObjectPath to string, since mojom doesn't know definition of
   // dbus ObjectPath.
-  std::unordered_map<std::string, std::vector<std::string>> result;
+  std::vector<std::pair<std::string, std::vector<std::string>>> entries;
   for (auto& item : matches) {
     std::vector<std::string> paths;
     for (auto& object_path : item.second) {
       paths.push_back(object_path.value());
     }
-    result[item.first] = std::move(paths);
+    entries.emplace_back(std::move(item.first), std::move(paths));
   }
 
   for (auto& observer : observers_)
-    observer->OnAuthScanDone(scan_result, result);
+    observer->OnAuthScanDone(
+        scan_result, base::flat_map<std::string, std::vector<std::string>>(
+                         std::move(entries)));
 }
 
 void FingerprintChromeOS::BiodSessionFailedReceived() {
@@ -250,7 +252,7 @@ void FingerprintChromeOS::OnGetRecordsForUser(
     GetRecordsForUserCallback callback,
     const std::vector<dbus::ObjectPath>& records) {
   if (records.size() == 0) {
-    std::move(callback).Run(std::unordered_map<std::string, std::string>());
+    std::move(callback).Run({base::flat_map<std::string, std::string>()});
     StartNextRequest();
     return;
   }

@@ -4,9 +4,9 @@
 
 #include "extensions/browser/api/mime_handler_private/mime_handler_private.h"
 
-#include <unordered_map>
 #include <utility>
 
+#include "base/containers/flat_map.h"
 #include "base/strings/string_util.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
@@ -19,9 +19,9 @@
 namespace extensions {
 namespace {
 
-std::unordered_map<std::string, std::string> CreateResponseHeadersMap(
+base::flat_map<std::string, std::string> CreateResponseHeadersMap(
     const net::HttpResponseHeaders* headers) {
-  std::unordered_map<std::string, std::string> result;
+  base::flat_map<std::string, std::string> result;
   if (!headers)
     return result;
 

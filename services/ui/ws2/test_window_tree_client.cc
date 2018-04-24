@@ -164,7 +164,7 @@ void TestWindowTreeClient::OnWindowCursorChanged(Id window_id,
 }
 
 void TestWindowTreeClient::OnDragDropStart(
-    const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data) {}
+    const base::flat_map<std::string, std::vector<uint8_t>>& drag_data) {}
 
 void TestWindowTreeClient::OnWindowSurfaceChanged(
     Id window_id,

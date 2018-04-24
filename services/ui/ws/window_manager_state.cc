@@ -158,7 +158,7 @@ void WindowManagerState::SetDragDropSourceWindow(
     DragSource* drag_source,
     ServerWindow* window,
     DragTargetConnection* source_connection,
-    const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data,
+    const base::flat_map<std::string, std::vector<uint8_t>>& drag_data,
     uint32_t drag_operation) {
   PointerId drag_pointer = MouseEvent::kMousePointerId;
   const ui::Event* in_flight_event = event_dispatcher_.GetInFlightEvent();

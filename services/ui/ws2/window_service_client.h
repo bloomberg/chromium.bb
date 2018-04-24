@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -192,15 +193,15 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   void OnWindowDestroyed(aura::Window* window) override;
 
   // mojom::WindowTree:
-  void NewWindow(uint32_t change_id,
-                 Id transport_window_id,
-                 const base::Optional<
-                     std::unordered_map<std::string, std::vector<uint8_t>>>&
-                     transport_properties) override;
+  void NewWindow(
+      uint32_t change_id,
+      Id transport_window_id,
+      const base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>&
+          transport_properties) override;
   void NewTopLevelWindow(
       uint32_t change_id,
       Id transport_window_id,
-      const std::unordered_map<std::string, std::vector<uint8_t>>& properties)
+      const base::flat_map<std::string, std::vector<uint8_t>>& properties)
       override;
   void DeleteWindow(uint32_t change_id, Id transport_window_id) override;
   void SetCapture(uint32_t change_id, Id window_id) override;
@@ -300,7 +301,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
       uint32_t change_id,
       Id source_window_id,
       const gfx::Point& screen_location,
-      const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data,
+      const base::flat_map<std::string, std::vector<uint8_t>>& drag_data,
       const SkBitmap& drag_image,
       const gfx::Vector2d& drag_image_offset,
       uint32_t drag_operation,

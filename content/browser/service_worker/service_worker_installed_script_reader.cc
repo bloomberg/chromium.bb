@@ -154,7 +154,7 @@ void ServiceWorkerInstalledScriptReader::OnReadInfoComplete(
   headers->GetCharset(&charset);
 
   // Create a map of response headers.
-  std::unordered_map<std::string, std::string> header_strings;
+  base::flat_map<std::string, std::string> header_strings;
   size_t iter = 0;
   std::string key;
   std::string value;

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/flat_map.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
@@ -162,7 +163,7 @@ void ClientProcessImpl::RequestOSMemoryDump(
 
 void ClientProcessImpl::PerformOSMemoryDump(OSMemoryDumpArgs args) {
   bool global_success = true;
-  std::unordered_map<base::ProcessId, mojom::RawOSMemDumpPtr> results;
+  base::flat_map<base::ProcessId, mojom::RawOSMemDumpPtr> results;
   for (const base::ProcessId& pid : args.pids) {
     mojom::RawOSMemDumpPtr result = mojom::RawOSMemDump::New();
     result->platform_private_footprint = mojom::PlatformPrivateFootprint::New();

@@ -206,7 +206,7 @@ class ScreenLocker : public AuthStatusConsumer,
   // fingerprint::mojom::FingerprintObserver:
   void OnAuthScanDone(
       uint32_t scan_result,
-      const std::unordered_map<std::string, std::vector<std::string>>& matches)
+      const base::flat_map<std::string, std::vector<std::string>>& matches)
       override;
   void OnSessionFailed() override;
   void OnRestarted() override {}

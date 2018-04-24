@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <string>
-#include <unordered_map>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_map.h"
 
 namespace ui {
 class Event;
@@ -50,7 +50,7 @@ class AsyncEventDispatcher {
   // ash/public/interfaces/event_properties.mojom for examples).
   using AcceleratorCallback = base::OnceCallback<void(
       mojom::EventResult,
-      const std::unordered_map<std::string, std::vector<uint8_t>>&)>;
+      const base::flat_map<std::string, std::vector<uint8_t>>&)>;
 
   // Dispatches an accelerator that matches |event|, running the callback with
   // the result and key-value pairs. |accelerator_id| identifies the

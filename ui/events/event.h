@@ -9,10 +9,10 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -827,7 +827,7 @@ class EVENTS_EXPORT PointerEvent : public LocatedEvent {
 //
 class EVENTS_EXPORT KeyEvent : public Event {
  public:
-  using Properties = std::unordered_map<std::string, std::vector<uint8_t>>;
+  using Properties = base::flat_map<std::string, std::vector<uint8_t>>;
 
   // Create a KeyEvent from a NativeEvent. For Windows this native event can
   // be either a keystroke message (WM_KEYUP/WM_KEYDOWN) or a character message

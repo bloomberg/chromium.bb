@@ -7,9 +7,9 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -54,7 +54,7 @@ class AppSearchProvider : public SearchProvider {
   void RefreshApps();
   void UpdateResults();
   void UpdateRecommendedResults(
-      const std::unordered_map<std::string, uint16_t>& id_to_app_list_index);
+      const base::flat_map<std::string, uint16_t>& id_to_app_list_index);
   void UpdateQueriedResults();
 
   AppListControllerDelegate* const list_controller_;

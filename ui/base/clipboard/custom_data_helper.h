@@ -15,6 +15,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "ui/base/ui_base_export.h"
@@ -51,6 +52,10 @@ UI_BASE_EXPORT void ReadCustomDataIntoMap(
 
 UI_BASE_EXPORT void WriteCustomDataToPickle(
     const std::unordered_map<base::string16, base::string16>& data,
+    base::Pickle* pickle);
+
+UI_BASE_EXPORT void WriteCustomDataToPickle(
+    const base::flat_map<base::string16, base::string16>& data,
     base::Pickle* pickle);
 
 }  // namespace ui

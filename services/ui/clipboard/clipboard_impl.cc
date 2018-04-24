@@ -12,7 +12,7 @@
 namespace ui {
 namespace clipboard {
 
-using DataMap = std::unordered_map<std::string, std::vector<uint8_t>>;
+using DataMap = base::flat_map<std::string, std::vector<uint8_t>>;
 
 // ClipboardData contains data copied to the Clipboard for a variety of formats.
 // It mostly just provides APIs to cleanly access and manipulate this data.

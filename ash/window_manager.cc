@@ -513,7 +513,7 @@ void WindowManager::OnWmCancelMoveLoop(aura::Window* window) {
 ui::mojom::EventResult WindowManager::OnAccelerator(
     uint32_t id,
     const ui::Event& event,
-    std::unordered_map<std::string, std::vector<uint8_t>>* properties) {
+    base::flat_map<std::string, std::vector<uint8_t>>* properties) {
   auto iter = accelerator_handlers_.find(GetAcceleratorNamespaceId(id));
   if (iter == accelerator_handlers_.end())
     return ui::mojom::EventResult::HANDLED;

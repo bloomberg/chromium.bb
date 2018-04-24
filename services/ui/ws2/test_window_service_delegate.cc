@@ -16,7 +16,7 @@ TestWindowServiceDelegate::TestWindowServiceDelegate(
 TestWindowServiceDelegate::~TestWindowServiceDelegate() = default;
 
 std::unique_ptr<aura::Window> TestWindowServiceDelegate::NewTopLevel(
-    const std::unordered_map<std::string, std::vector<uint8_t>>& properties) {
+    const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
   std::unique_ptr<aura::Window> window =
       std::make_unique<aura::Window>(nullptr);
   window->Init(LAYER_NOT_DRAWN);

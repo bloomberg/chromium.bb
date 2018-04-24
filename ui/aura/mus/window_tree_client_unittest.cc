@@ -1860,11 +1860,11 @@ TEST_F(WindowTreeClientClientTest, NewWindowGetsProperties) {
   const uint8_t explicitly_set_test_property1_value = 29;
   window.SetProperty(kTestPropertyKey1, explicitly_set_test_property1_value);
   window.Init(ui::LAYER_NOT_DRAWN);
-  base::Optional<std::unordered_map<std::string, std::vector<uint8_t>>>
+  base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>
       transport_properties = window_tree()->GetLastNewWindowProperties();
   ASSERT_TRUE(transport_properties.has_value());
   std::map<std::string, std::vector<uint8_t>> properties =
-      mojo::UnorderedMapToMap(*transport_properties);
+      mojo::FlatMapToMap(*transport_properties);
   ASSERT_EQ(1u, properties.count(kTestPropertyServerKey1));
   // PropertyConverter uses int64_t values, even for smaller types like uint8_t.
   ASSERT_EQ(8u, properties[kTestPropertyServerKey1].size());
@@ -2131,11 +2131,11 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindowGetsProperties) {
       WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
 
   // Verify the properties were sent to the server.
-  base::Optional<std::unordered_map<std::string, std::vector<uint8_t>>>
+  base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>
       transport_properties = window_tree()->GetLastNewWindowProperties();
   ASSERT_TRUE(transport_properties.has_value());
   std::map<std::string, std::vector<uint8_t>> properties2 =
-      mojo::UnorderedMapToMap(*transport_properties);
+      mojo::FlatMapToMap(*transport_properties);
   ASSERT_EQ(1u, properties2.count(kTestPropertyServerKey1));
   // PropertyConverter uses int64_t values, even for smaller types like uint8_t.
   ASSERT_EQ(8u, properties2[kTestPropertyServerKey1].size());

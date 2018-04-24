@@ -122,4 +122,14 @@ void WriteCustomDataToPickle(
   }
 }
 
+void WriteCustomDataToPickle(
+    const base::flat_map<base::string16, base::string16>& data,
+    base::Pickle* pickle) {
+  pickle->WriteUInt32(data.size());
+  for (const auto& it : data) {
+    pickle->WriteString16(it.first);
+    pickle->WriteString16(it.second);
+  }
+}
+
 }  // namespace ui

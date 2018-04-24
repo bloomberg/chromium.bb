@@ -42,8 +42,8 @@ class RefCountedInterfacePtr
 
 scoped_refptr<PrefStore> CreatePrefStoreClient(
     PrefValueStore::PrefStoreType store_type,
-    std::unordered_map<PrefValueStore::PrefStoreType,
-                       mojom::PrefStoreConnectionPtr>* connections) {
+    base::flat_map<PrefValueStore::PrefStoreType,
+                   mojom::PrefStoreConnectionPtr>* connections) {
   auto pref_store_it = connections->find(store_type);
   if (pref_store_it != connections->end()) {
     return base::MakeRefCounted<PrefStoreClient>(
@@ -79,8 +79,8 @@ void OnConnect(
     mojom::PersistentPrefStoreConnectionPtr persistent_pref_store_connection,
     mojom::IncognitoPersistentPrefStoreConnectionPtr incognito_connection,
     std::vector<mojom::PrefRegistrationPtr> defaults,
-    std::unordered_map<PrefValueStore::PrefStoreType,
-                       mojom::PrefStoreConnectionPtr> connections) {
+    base::flat_map<PrefValueStore::PrefStoreType, mojom::PrefStoreConnectionPtr>
+        connections) {
   scoped_refptr<PrefStore> managed_prefs =
       CreatePrefStoreClient(PrefValueStore::MANAGED_STORE, &connections);
   scoped_refptr<PrefStore> supervised_user_prefs = CreatePrefStoreClient(

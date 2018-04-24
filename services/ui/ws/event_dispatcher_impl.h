@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <string>
-#include <unordered_map>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -145,7 +145,7 @@ class EventDispatcherImpl : public EventDispatcher {
   // accelerator.
   void OnAcceleratorDone(
       mojom::EventResult result,
-      const std::unordered_map<std::string, std::vector<uint8_t>>& properties);
+      const base::flat_map<std::string, std::vector<uint8_t>>& properties);
 
   // Schedules an event to be processed later.
   void QueueEvent(const Event& event,

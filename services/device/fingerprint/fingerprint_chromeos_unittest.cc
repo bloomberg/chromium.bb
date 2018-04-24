@@ -31,7 +31,7 @@ class FakeFingerprintObserver : public mojom::FingerprintObserver {
 
   void OnAuthScanDone(
       uint32_t scan_result,
-      const std::unordered_map<std::string, std::vector<std::string>>& matches)
+      const base::flat_map<std::string, std::vector<std::string>>& matches)
       override {
     auth_scan_dones_++;
   }
@@ -106,7 +106,7 @@ class FingerprintChromeOSTest : public testing::Test {
     }
   }
 
-  void OnGetRecords(const std::unordered_map<std::string, std::string>&
+  void OnGetRecords(const base::flat_map<std::string, std::string>&
                         fingerprints_list_mapping) {
     ++get_records_results_;
   }

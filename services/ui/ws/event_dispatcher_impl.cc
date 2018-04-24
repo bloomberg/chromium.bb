@@ -313,7 +313,7 @@ void EventDispatcherImpl::OnDispatchInputEventTimeout() {
       in_flight_event_dispatch_details_->async_event_dispatcher);
   if (in_flight_event_dispatch_details_->phase ==
       EventDispatchPhase::PRE_TARGET_ACCELERATOR) {
-    OnAcceleratorDone(mojom::EventResult::UNHANDLED, KeyEvent::Properties());
+    OnAcceleratorDone(mojom::EventResult::UNHANDLED, {});
   } else {
     OnDispatchInputEventDone(mojom::EventResult::UNHANDLED);
   }
@@ -335,7 +335,7 @@ void EventDispatcherImpl::OnDispatchInputEventDone(mojom::EventResult result) {
 
 void EventDispatcherImpl::OnAcceleratorDone(
     mojom::EventResult result,
-    const std::unordered_map<std::string, std::vector<uint8_t>>& properties) {
+    const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
   DCHECK(in_flight_event_dispatch_details_);
   DCHECK_EQ(EventDispatchPhase::PRE_TARGET_ACCELERATOR,
             in_flight_event_dispatch_details_->phase);

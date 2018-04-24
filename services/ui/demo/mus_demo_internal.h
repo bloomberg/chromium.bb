@@ -60,7 +60,7 @@ class MusDemoInternal : public MusDemo, public aura::WindowManagerDelegate {
   ui::mojom::EventResult OnAccelerator(
       uint32_t id,
       const ui::Event& event,
-      std::unordered_map<std::string, std::vector<uint8_t>>* properties) final;
+      base::flat_map<std::string, std::vector<uint8_t>>* properties) final;
   void OnCursorTouchVisibleChanged(bool enabled) final;
   void OnWmPerformMoveLoop(aura::Window* window,
                            ui::mojom::MoveLoopSource source,

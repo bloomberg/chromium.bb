@@ -541,7 +541,7 @@ class Generator(generator.Generator):
           kind.kind, add_same_module_namespaces=add_same_module_namespaces)
     if mojom.IsMapKind(kind):
       pattern = ("WTF::HashMap<%s, %s>" if self.for_blink else
-                 "std::unordered_map<%s, %s>")
+                 "base::flat_map<%s, %s>")
       if mojom.IsNullableKind(kind):
         pattern = _AddOptional(pattern)
       return pattern % (

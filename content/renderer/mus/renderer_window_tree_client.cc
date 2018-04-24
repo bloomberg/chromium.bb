@@ -348,7 +348,7 @@ void RendererWindowTreeClient::OnWindowSurfaceChanged(
 }
 
 void RendererWindowTreeClient::OnDragDropStart(
-    const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data) {}
+    const base::flat_map<std::string, std::vector<uint8_t>>& mime_data) {}
 
 void RendererWindowTreeClient::OnDragEnter(ui::Id window_id,
                                            uint32_t event_flags,

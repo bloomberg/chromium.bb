@@ -44,8 +44,7 @@ class TestWTFImpl : public TestWTF {
 
   void EchoStringMap(
       const base::Optional<
-          std::unordered_map<std::string, base::Optional<std::string>>>&
-          str_map,
+          base::flat_map<std::string, base::Optional<std::string>>>& str_map,
       const EchoStringMapCallback& callback) override {
     callback.Run(std::move(str_map));
   }
@@ -252,7 +251,7 @@ TEST_F(WTFTypesTest, SendStringMap) {
     // unchanged after the following conversion:
     //   - serialized;
     //   - deserialized as base::Optional<
-    //     std::unordered_map<std::string, base::Optional<std::string>>>;
+    //         base::flat_map<std::string, base::Optional<std::string>>>;
     //   - serialized;
     //   - deserialized as WTF::Optional<WTF::HashMap<WTF::String,
     //     WTF::String>>.

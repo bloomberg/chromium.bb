@@ -183,9 +183,8 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient,
   void OnWindowCursorChanged(ui::Id window_id, ui::CursorData cursor) override;
   void OnWindowSurfaceChanged(ui::Id window_id,
                               const viz::SurfaceInfo& surface_info) override;
-  void OnDragDropStart(
-      const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data)
-      override;
+  void OnDragDropStart(const base::flat_map<std::string, std::vector<uint8_t>>&
+                           mime_data) override;
   void OnDragEnter(ui::Id window_id,
                    uint32_t event_flags,
                    const gfx::Point& position,

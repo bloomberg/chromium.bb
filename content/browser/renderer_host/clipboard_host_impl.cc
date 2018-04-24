@@ -241,7 +241,7 @@ void ClipboardHostImpl::WriteSmartPasteMarker(ui::ClipboardType) {
 
 void ClipboardHostImpl::WriteCustomData(
     ui::ClipboardType,
-    const std::unordered_map<base::string16, base::string16>& data) {
+    const base::flat_map<base::string16, base::string16>& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::Pickle pickle;
   ui::WriteCustomDataToPickle(data, &pickle);

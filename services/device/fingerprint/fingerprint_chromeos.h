@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "chromeos/dbus/biod/biod_client.h"
@@ -92,7 +93,7 @@ class SERVICES_DEVICE_FINGERPRINT_EXPORT FingerprintChromeOS
 
   // Saves record object path to label mapping for current GetRecordsForUser
   // request, and reset after the request is done.
-  std::unordered_map<std::string, std::string> records_path_to_label_;
+  base::flat_map<std::string, std::string> records_path_to_label_;
 
   // Callback for current GetRecordsForUser request.
   GetRecordsForUserCallback on_get_records_;

@@ -326,7 +326,7 @@ void ChromeAppListModelUpdater::GetIdToAppListIndexMap(
     return;
   app_list_controller_->GetIdToAppListIndexMap(base::BindOnce(
       [](GetIdToAppListIndexMapCallback callback,
-         const std::unordered_map<std::string, uint16_t>& indexes) {
+         const base::flat_map<std::string, uint16_t>& indexes) {
         std::move(callback).Run(indexes);
       },
       std::move(callback)));

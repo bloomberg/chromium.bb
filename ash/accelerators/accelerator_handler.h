@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <string>
-#include <unordered_map>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 
 namespace ash {
@@ -22,7 +22,7 @@ class AcceleratorHandler {
   virtual ui::mojom::EventResult OnAccelerator(
       uint32_t id,
       const ui::Event& event,
-      std::unordered_map<std::string, std::vector<uint8_t>>* properties) = 0;
+      base::flat_map<std::string, std::vector<uint8_t>>* properties) = 0;
 
  protected:
   virtual ~AcceleratorHandler() {}

@@ -133,7 +133,7 @@ void FingerprintHandler::OnEnrollScanDone(uint32_t scan_result,
 
 void FingerprintHandler::OnAuthScanDone(
     uint32_t scan_result,
-    const std::unordered_map<std::string, std::vector<std::string>>& matches) {
+    const base::flat_map<std::string, std::vector<std::string>>& matches) {
   if (SessionManager::Get()->session_state() == SessionState::LOCKED)
     return;
 
@@ -183,8 +183,7 @@ void FingerprintHandler::HandleGetFingerprintsList(
 
 void FingerprintHandler::OnGetFingerprintsList(
     const std::string& callback_id,
-    const std::unordered_map<std::string, std::string>&
-        fingerprints_list_mapping) {
+    const base::flat_map<std::string, std::string>& fingerprints_list_mapping) {
   fingerprints_labels_.clear();
   fingerprints_paths_.clear();
   for (auto it = fingerprints_list_mapping.begin();
