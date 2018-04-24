@@ -2342,16 +2342,8 @@ TEST_F(ClientSocketPoolBaseTest, CleanupTimedOutIdleSocketsReuse) {
       entries, 1, NetLogEventType::SOCKET_POOL_REUSED_AN_EXISTING_SOCKET));
 }
 
-#if defined(OS_IOS)
-// TODO(droger): Enable this test (crbug.com/512595).
-#define MAYBE_CleanupTimedOutIdleSocketsNoReuse \
-  DISABLED_CleanupTimedOutIdleSocketsNoReuse
-#else
-#define MAYBE_CleanupTimedOutIdleSocketsNoReuse \
-  CleanupTimedOutIdleSocketsNoReuse
-#endif
 // Make sure we cleanup old unused sockets.
-TEST_F(ClientSocketPoolBaseTest, MAYBE_CleanupTimedOutIdleSocketsNoReuse) {
+TEST_F(ClientSocketPoolBaseTest, CleanupTimedOutIdleSocketsNoReuse) {
   CreatePoolWithIdleTimeouts(
       kDefaultMaxSockets, kDefaultMaxSocketsPerGroup,
       base::TimeDelta(),  // Time out unused sockets immediately
