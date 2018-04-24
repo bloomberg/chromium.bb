@@ -14,6 +14,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
+#include "services/resource_coordinator/public/cpp/system_resource_coordinator.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
 #if defined(OS_MACOSX)
@@ -150,31 +151,11 @@ void ResourceCoordinatorRenderProcessProbe::
   DCHECK(is_gathering_);
   is_gathering_ = false;
 
-  if (HandleMetrics(render_process_info_map_)) {
+  if (DispatchMetrics()) {
     timer_.Start(FROM_HERE, interval_, this,
                  &ResourceCoordinatorRenderProcessProbe::
                      RegisterAliveRenderProcessesOnUIThread);
   }
-}
-
-bool ResourceCoordinatorRenderProcessProbe::HandleMetrics(
-    const RenderProcessInfoMap& render_process_info_map) {
-  for (auto& render_process_info_map_entry : render_process_info_map) {
-    auto& render_process_info = render_process_info_map_entry.second;
-    // TODO(oysteine): Move the multiplier used to avoid precision loss
-    // into a shared location, when this property gets used.
-
-    // Note that the RPH may have been deleted while the CPU metrics were
-    // acquired on a blocking thread.
-    content::RenderProcessHost* host = content::RenderProcessHost::FromID(
-        render_process_info.render_process_host_id);
-    if (host) {
-      host->GetProcessResourceCoordinator()->SetCPUUsage(
-          render_process_info.cpu_usage);
-    }
-  }
-
-  return true;
 }
 
 void ResourceCoordinatorRenderProcessProbe::UpdateWithFieldTrialParams() {
@@ -183,6 +164,50 @@ void ResourceCoordinatorRenderProcessProbe::UpdateWithFieldTrialParams() {
   if (interval_ms > 0) {
     interval_ = base::TimeDelta::FromMilliseconds(interval_ms);
   }
+}
+
+SystemResourceCoordinator*
+ResourceCoordinatorRenderProcessProbe::EnsureSystemResourceCoordinator() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!system_resource_coordinator_) {
+    content::ServiceManagerConnection* connection =
+        content::ServiceManagerConnection::GetForProcess();
+    if (connection)
+      system_resource_coordinator_ =
+          std::make_unique<SystemResourceCoordinator>(
+              connection->GetConnector());
+  }
+
+  return system_resource_coordinator_.get();
+}
+
+bool ResourceCoordinatorRenderProcessProbe::DispatchMetrics() {
+  SystemResourceCoordinator* system_resource_coordinator =
+      EnsureSystemResourceCoordinator();
+
+  if (system_resource_coordinator) {
+    bool dispatched_measurement = false;
+    for (auto& render_process_info_map_entry : render_process_info_map_) {
+      auto& render_process_info = render_process_info_map_entry.second;
+      // TODO(oysteine): Move the multiplier used to avoid precision loss
+      // into a shared location, when this property gets used.
+
+      // Note that the RPH may have been deleted while the CPU metrics were
+      // acquired on a blocking thread.
+      content::RenderProcessHost* host = content::RenderProcessHost::FromID(
+          render_process_info.render_process_host_id);
+      if (host) {
+        dispatched_measurement = true;
+        host->GetProcessResourceCoordinator()->SetCPUUsage(
+            render_process_info.cpu_usage);
+      }
+    }
+
+    if (dispatched_measurement)
+      system_resource_coordinator->OnProcessCPUUsageReady();
+  }
+
+  return true;
 }
 
 }  // namespace resource_coordinator
