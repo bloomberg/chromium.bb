@@ -14,6 +14,9 @@
 
 namespace download {
 
+const base::FilePath::CharType kDownloadMetadataStoreFilename[] =
+    FILE_PATH_LITERAL("in_progress_download_metadata_store");
+
 namespace {
 
 // Helper functions for |entries_| related operations.
