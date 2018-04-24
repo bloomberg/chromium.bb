@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -880,4 +881,12 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, SendHPKPReportServerHangs) {
   ui_test_utils::NavigateToURL(browser(),
                                hpkp_test_server.GetURL("localhost", "/"));
   wait_for_report_loop.Run();
+}
+
+// Verifies the last selected directory has a default value.
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, LastSelectedDirectory) {
+  ProfileImpl* profile_impl = static_cast<ProfileImpl*>(browser()->profile());
+  base::FilePath home;
+  PathService::Get(base::DIR_HOME, &home);
+  ASSERT_EQ(profile_impl->last_selected_directory(), home);
 }

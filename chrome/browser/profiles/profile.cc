@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/path_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -156,7 +157,10 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(extensions::pref_names::kAlertsInitialized,
                                 false);
 #endif
-  registry->RegisterStringPref(prefs::kSelectFileLastDirectory, std::string());
+  base::FilePath home;
+  PathService::Get(base::DIR_HOME, &home);
+  registry->RegisterStringPref(prefs::kSelectFileLastDirectory,
+                               home.MaybeAsASCII());
 #if !defined(OS_ANDROID)
   registry->RegisterDictionaryPref(prefs::kPartitionDefaultZoomLevel);
   registry->RegisterDictionaryPref(prefs::kPartitionPerHostZoomLevels);
