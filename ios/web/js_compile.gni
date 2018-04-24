@@ -196,6 +196,7 @@ template("js_compile_checked") {
     }
   } else {
     bundle_data(target_name) {
+      not_needed(invoker, [ "js_modules" ])
       forward_variables_from(invoker,
                              [
                                "data_deps",
