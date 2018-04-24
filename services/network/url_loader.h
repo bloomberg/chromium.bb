@@ -41,7 +41,8 @@ struct ResourceResponse;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
     : public mojom::URLLoader,
-      public net::URLRequest::Delegate {
+      public net::URLRequest::Delegate,
+      public mojom::AuthChallengeResponder {
  public:
   using DeleteCallback = base::OnceCallback<void(URLLoader* url_loader)>;
 
@@ -85,6 +86,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   void OnResponseStarted(net::URLRequest* url_request, int net_error) override;
   void OnReadCompleted(net::URLRequest* url_request, int bytes_read) override;
 
+  // mojom::AuthChallengeResponder:
+  void OnAuthCredentials(
+      const base::Optional<net::AuthCredentials>& credentials) override;
+
   net::LoadState GetLoadStateForTesting() const;
 
  private:
@@ -107,8 +112,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       const std::vector<uint16_t>& algorithm_preferences,
       mojom::SSLPrivateKeyPtr ssl_private_key,
       bool cancel_certificate_selection);
-  void OnAuthRequiredResponse(
-      const base::Optional<net::AuthCredentials>& credentials);
   bool HasDataPipe() const;
   void RecordBodyReadFromNetBeforePausedIfNeeded();
   void ResumeStart();
@@ -126,6 +129,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   const bool keepalive_;
   std::unique_ptr<net::URLRequest> url_request_;
   mojo::Binding<mojom::URLLoader> binding_;
+  mojo::Binding<mojom::AuthChallengeResponder>
+      auth_challenge_responder_binding_;
   mojom::URLLoaderClientPtr url_loader_client_;
   int64_t total_written_bytes_ = 0;
 

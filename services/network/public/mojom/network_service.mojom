@@ -288,18 +288,25 @@ interface SSLPrivateKey {
        array<uint8> input) => (int32 net_error, array<uint8> signature);
 };
 
+// The |credentials| output parameter is given to URLRequest::SetAuth()
+// through this mojo interface. It is not set when URLRequest::CancelAuth()
+// needs to be called.
+interface AuthChallengeResponder {
+   OnAuthCredentials(AuthCredentials? credentials);
+};
+
 // Network service interface to the browser.
 interface NetworkServiceClient {
   // Called when we receive an authentication failure.
-  // The |credentials| output parameter is given to URLRequest::SetAuth()
-  // through this mojo interface. It is not set when URLRequest::CancelAuth()
-  // needs to be called.
+  // The |auth_challenge_responder| will respond to auth challenge with
+  // credentials.
   OnAuthRequired(uint32 process_id,
                  uint32 routing_id,
                  uint32 request_id,
                  url.mojom.Url url,
                  bool first_auth_attempt,
-                 AuthChallengeInfo auth_info) => (AuthCredentials? credentials);
+                 AuthChallengeInfo auth_info,
+                 AuthChallengeResponder auth_challenge_responder);
   // Called when an SSL certificate requested message is received for client
   // authentication.
   // The |algorithm_preferences| parameter corresponds to the return value
