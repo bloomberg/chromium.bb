@@ -184,6 +184,7 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="2625189173221582860">Şifre kopyalandı</translation>
 <translation id="2631006050119455616">Tasarruf Edilen</translation>
 <translation id="2647434099613338025">Dil ekle</translation>
+<translation id="2650751991977523696">Dosya tekrar indirilsin mi?</translation>
 <translation id="2653659639078652383">Gönder</translation>
 <translation id="2677748264148917807">Çık</translation>
 <translation id="2704606927547763573">Kopyalandı</translation>
@@ -220,6 +221,7 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="3029613699374795922"><ph name="KBS" /> KB indirildi</translation>
 <translation id="3029704984691124060">Parolalar eşleşmiyor</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Yardım alın<ph name="END_LINK" /></translation>
+<translation id="3045654778214005718">Google'dan buna benzer daha fazla içerik görün</translation>
 <translation id="305593374596241526">Konum özelliği kapalı. <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ndan açın.</translation>
 <translation id="307908932405420782">Yakında daha fazla seçenek gösterilecek. Güzel bir sabah geçirmenizi dileriz.</translation>
 <translation id="3089395242580810162">Gizli sekmede aç</translation>
@@ -412,6 +414,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="4876188919622883022">Basitleştirilmiş görünüm</translation>
 <translation id="4878404682131129617">Proxy sunucu üzerinden tünel oluşturulamadı</translation>
 <translation id="4881695831933465202">Aç</translation>
+<translation id="488187801263602086">Dosyayı yeniden adlandırın</translation>
 <translation id="4885273946141277891">Desteklenmeyen sayıda Chrome örneği var.</translation>
 <translation id="4910889077668685004">Ödeme uygulamaları</translation>
 <translation id="4913161338056004800">İstatistikleri sıfırla</translation>
@@ -505,6 +508,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="5676636989614905379">Video <ph name="SCREEN_NAME" /> üzerinde oynatılamıyor.</translation>
 <translation id="5677928146339483299">Engellendi</translation>
 <translation id="5684874026226664614">Hata! Bu sayfa çevrilemedi.</translation>
+<translation id="5686790454216892815">Dosya adı çok uzun</translation>
 <translation id="5689516760719285838">Konum</translation>
 <translation id="5719837394786370183">Gizli sekmelerde görüntülediğiniz sayfalar, gizli sekmelerinizin tamamını kapattıktan sonra tarayıcı geçmişinizde, çerez deponuzda veya arama geçmişinizde kalmaz. İndirdiğiniz dosyalar veya oluşturduğunuz yer işaretleri saklanır.
 
@@ -697,6 +701,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7437998757836447326">Chrome oturumunu kapatma</translation>
 <translation id="7445411102860286510">Sitelerin, sesi kapatılmış videoları otomatik olarak oynatmasına izin ver (önerilen)</translation>
 <translation id="7453467225369441013">Çoğu sitedeki oturumunuz kapatılır. Google Hesabınızdaki oturumunuz kapatılmaz.</translation>
+<translation id="7454641608352164238">Yeterli alan yok</translation>
 <translation id="7455923816558154057">Görüntülemek için dokunun</translation>
 <translation id="7473891865547856676">Hayır, Teşekkürler</translation>
 <translation id="7475192538862203634">Bunu çok sık görüyorsanız bu <ph name="BEGIN_LINK" />önerileri<ph name="END_LINK" /> deneyin.</translation>
@@ -829,6 +834,7 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="8636825310635137004">Diğer cihazlarınızdaki sekmelerinize ulaşmak için senkronizasyonu etkinleştirin.</translation>
 <translation id="8641930654639604085">Yetişkinlere yönelik siteleri engellemeyi dene</translation>
 <translation id="8662811608048051533">Çoğu sitedeki oturumunuz kapatılır.</translation>
+<translation id="8664979001105139458">Dosya adı zaten mevcut</translation>
 <translation id="8676374126336081632">Girişi temizle</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Sinyal Gücü Düzeyi: # çubuk}other{Sinyal Gücü Düzeyi: # çubuk}}</translation>
 <translation id="869891660844655955">Son kullanma tarihi</translation>
@@ -857,6 +863,7 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="8942627711005830162">Yeni pencerede aç</translation>
 <translation id="8951232171465285730">Chrome <ph name="MEGABYTES" /> MB tasarruf sağladı</translation>
 <translation id="8959122750345127698">Gezinme işlevine ulaşılamıyor: <ph name="URL" /></translation>
+<translation id="8972098258593396643">Varsayılan klasöre indirilsin mi?</translation>
 <translation id="8979405271719829084">Videoları daha sonra izlemek üzere indirin</translation>
 <translation id="8981454092730389528">Google Etkinlik Kontrolleri</translation>
 <translation id="8986494364107987395">Kullanım istatistiklerini ve çökme raporlarını otomatik olarak Google'a gönder</translation>

@@ -42,6 +42,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, তারপর <ph name="TAB" /> অথবা <ph name="RIGHT" /></translation>
 <translation id="2699509451653686398">আপনার বর্তমান ওয়েব পৃষ্ঠাটি একটি বুকমার্ক হিসেবে সেভ করুন</translation>
 <translation id="2750942583782703988">আপনার বর্তমান পৃষ্ঠাটি আবার লোড করুন</translation>
+<translation id="2764005613199379871">সার্চ অ্যাড্রেস বারে ফোকাস রাখুন</translation>
 <translation id="2789868185375229787">পৃষ্ঠাটিতে ছোট করুন</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> টিপুন এবং একটি লিঙ্কে ক্লিক করুন</translation>
 <translation id="2830827904629746450">ডান দিকে উইন্ডো ডক করুন</translation>
@@ -53,6 +54,7 @@
 <translation id="3105917916468784889">স্ক্রিনশট নিন</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">ফোকাস ঠিকানা দণ্ড</translation>
+<translation id="3256109297135787951">আপনার শেল্ফে আইটেম থেকে হাইলাইট সরিয়ে দিন</translation>
 <translation id="3288816184963444640">বর্তমান উইন্ডোটি বন্ধ করুন</translation>
 <translation id="3407560819924487926">টাস্ক ম্যানেজার আনুন</translation>
 <translation id="3422679037938588196">আপনার সার্চের জন্য আগের ম্যাচে যান</translation>
@@ -67,6 +69,7 @@
 <translation id="3720939646656082033">একটি নতুন ট্যাবে লিঙ্কটি খুলুন এবং নতুন ট্যাবে পরিবর্তন করুন</translation>
 <translation id="3725795051337497754">বর্তমান ট্যাবটি বন্ধ করুন</translation>
 <translation id="3751033133896282964">আপনার শেষ অ্যাকশনটি আগের অবস্থায় ফেরান</translation>
+<translation id="3792178297143798024">আপনার শেল্ফে হাইলাইট করা আইটেমটি খুলুন</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> ১ থেকে ৮ পর্যন্ত</translation>
 <translation id="3837047332182291558">কীবোর্ডের উজ্জ্বলতা বাড়ান (ব্যাকলিট কীবোর্ডের জন্য)</translation>
 <translation id="3976863468609830880">আপনার শেল্ফে শেষ আইকনটি ক্লিক করুন</translation>
@@ -149,10 +152,12 @@
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, তারপর <ph name="SPACE" /> অথবা <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">ব্রাউজারে একটি ফাইল খুলুন</translation>
 <translation id="7917881398263220094">আমার বর্তমান পৃষ্ঠা লোড হওয়া বন্ধ করুন</translation>
+<translation id="7952165122793773711">১ থেকে ৮ নম্বর পর্যন্ত ট্যাবগুলিতে যান</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> অথবা <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">ব্রাউজ করা ডেটা সাফ করুন</translation>
 <translation id="8130528849632411619">ডকুমেন্টের শুরুতে যান</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> অথবা <ph name="E" /></translation>
+<translation id="8232835244134740473">এগুলির মধ্যে ফোকাস পাল্টান: স্ট্যাটাস এলাকা (যেখানে আপনার অ্যাকাউন্টের ছবি দেখানো হয়), লঞ্চার, অ্যাড্রেস বার, বুকমার্ক বার (যদি দেখা যায়), খোলা ওয়েব পেজ এবং ডাউনলোড বার (যদি দেখা যায়)।</translation>
 <translation id="8234414138295101081">স্ক্রিনকে ৯০ ডিগ্রি ঘোরান</translation>
 <translation id="8264941229485248811">ডেভেলপার টুল পরিদর্শক দেখান বা লুকান</translation>
 <translation id="836869401750819675">ডাউনলোড হওয়া পৃষ্ঠাটি খুলুন</translation>

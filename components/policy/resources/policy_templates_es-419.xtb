@@ -255,6 +255,22 @@
       Si el valor se establece como falso, se inhabilitará el envío de datos de diagnóstico y métricas.
 
       Si esta política no se configura, el envío de datos de diagnóstico y métricas se inhabilitará en los dispositivos no administrados y se habilitará en los dispositivos administrados.</translation>
+<translation id="1929709556673267855">Proporciona configuraciones para las impresoras empresariales vinculadas a dispositivos.
+
+      Esta política te permite proporcionar configuraciones de impresoras a dispositivos <ph name="PRODUCT_OS_NAME" />. El formato es el mismo que el del diccionario NativePrinter, con un campo adicional "id" o "guid" obligatorio por impresora para la lista blanca o negra.
+
+      El tamaño del archivo no debe exceder los 5 MB y debe estar codificado en JSON. Se estima que un archivo con 21,000 impresoras, aproximadamente, se codificará como un archivo de 5 MB. El hash criptográfico se usa para verificar la integridad de la descarga.
+
+      El archivo se descarga y se guarda en la memoria caché. Cada vez que la URL o el hash cambien, volverá a descargarse.
+
+      Si se establece esta política, <ph name="PRODUCT_OS_NAME" /> descargará el archivo para las configuraciones de impresoras y hará que las impresoras estén disponibles según <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> y <ph name="DEVICE_PRINTERS_BLACKLIST" />.
+
+      Esta política no afecta la capacidad del usuario para configurar impresoras en dispositivos individuales. Su objetivo es complementar la configuración de impresoras a cargo de usuarios individuales.
+
+      Esta política se suma a la política <ph name="BULK_PRINTERS_POLICY" />.
+
+      Si no se configura esta política, no habrá impresoras asociadas a dispositivos y se ignorarán las demás políticas <ph name="DEVICE_PRINTERS_POLICY_PATTERN" />.
+      </translation>
 <translation id="193259052151668190">Lista blanca de dispositivos USB que se pueden separar</translation>
 <translation id="1933378685401357864">Imagen de fondo de pantalla</translation>
 <translation id="1956493342242507974">Configura la administración de energía en la pantalla de acceso en <ph name="PRODUCT_OS_NAME" />.
@@ -287,6 +303,21 @@
 
       Ten en cuenta que, si la plataforma es compatible con las notificaciones de política, el retraso de actualización se establecerá en 24 horas (se ignoran todos los valores predeterminados y el valor de esta política), ya que se espera que las notificaciones de política fuercen una actualización de forma automática cada vez que la política cambie. Esto hace que las actualizaciones frecuentes no sean necesarias.</translation>
 <translation id="2024476116966025075">Configurar el nombre de dominio requerido para los clientes de acceso remoto</translation>
+<translation id="202757291638965203">Configura una lista de impresoras.
+
+      Esta política permite que los administradores proporcionen configuraciones de impresoras para sus usuarios administradores proporcionen configuraciones de impresoras para sus usuarios
+.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> y <ph name="PRINTER_DESCRIPTION" /> son strings de formularios gratuitos que pueden personalizarse para facilitar la selección de impresoras. <ph name="PRINTER_MANUFACTURER" /> y <ph name="PRINTER_MODEL" /> sirven para que los usuarios finales puedan identificar las impresoras fácilmente. Representan el fabricante y el modelo de la impresora. <ph name="PRINTER_URI" /> debe ser una dirección que se pueda contactar desde la computadora de un cliente, que incluya <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> y <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> es opcional. Si se proporciona, se usa para ayudar a deduplicar las impresoras <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> debe coincidir con uno de los strings que representan una impresora compatible con <ph name="PRODUCT_NAME" />. El string se usará para identificar e instalar el PPD correspondiente para la impresora. Para obtener más información, visita https://support.google.com/chrome?p=noncloudprint.
+
+      La configuración de la impresora se completa cuando se usa por primera vez. Los PPD no se descargan hasta que se usa la impresora. Luego, los PPD que se usan con mayor frecuencia se almacenan en caché.
+
+      Esta política no tiene efecto en la decisión si los usuarios pueden configurar las impresoras en dispositivos individuales. El objetivo es que complemente la configuración de las impresoras que realicen usuarios individuales.
+
+      Para los dispositivos administrados con Active Directory, esta política es compatible con la expansión de <ph name="MACHINE_NAME_VARIABLE" /> al nombre de la máquina de Active Directory o un substring de él. Por ejemplo, si el nombre de la máquina es <ph name="MACHINE_NAME_EXAMPLE" />, entonces <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> se reemplazará con los 4 caracteres a partir de la sexta posición, es decir, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Ten en cuenta que esta posición tiene en cuenta el cero.
+      </translation>
 <translation id="2030905906517501646">Palabra clave del proveedor de búsqueda predeterminado</translation>
 <translation id="203096360153626918">Esta política no tiene efecto en las apps de Android. Podrán implementar el modo de pantalla completa, incluso si esta política se establece como <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Impresoras empresariales inhabilitadas</translation>
@@ -529,6 +560,20 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si no se establece esta política, el valor predeterminado es verdadero y se habilita NTLMv2.</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
+<translation id="2627554163382448569">Proporciona configuraciones para las impresoras empresariales vinculadas a dispositivos.
+
+      Esta política te permite proporcionar configuraciones de impresoras a dispositivos <ph name="PRODUCT_OS_NAME" />. El formato es el mismo que el del diccionario NativePrinter, con un campo adicional "id" o "guid" obligatorio por impresora para la lista blanca o negra.
+
+      El tamaño del archivo no debe exceder los 5 MB y debe estar codificado en JSON. Se estima que un archivo con 21,000 impresoras, aproximadamente, se codificará como un archivo de 5 MB. El hash criptográfico se usa para verificar la integridad de la descarga.
+
+      El archivo se descarga y se guarda en la memoria caché. Cada vez que la URL o el hash cambien, volverá a descargarse.
+
+      Si se establece esta política, <ph name="PRODUCT_OS_NAME" /> descargará el archivo para las configuraciones de impresoras y hará que las impresoras estén disponibles según <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> y <ph name="BULK_PRINTERS_BLACKLIST" />.
+
+      Si se establece esta política, los usuarios no podrán cambiarla ni anularla.
+
+      Esta política no afecta la capacidad del usuario para configurar impresoras en dispositivos individuales. Su objetivo es complementar la configuración de impresoras a cargo de usuarios individuales.
+      </translation>
 <translation id="2633084400146331575">Habilitar los comentarios de voz</translation>
 <translation id="2646290749315461919">Te permite establecer si los sitios web pueden rastrear la ubicación física de los usuarios. El rastreo de la ubicación física de los usuarios puede autorizarse en forma predeterminada, puede denegarse en forma predeterminada o se le puede preguntar al usuario cada vez que un sitio web solicita la ubicación física. Si esta política no se configura, se usará "AskGeolocation" y el usuario podrá cambiarla.</translation>
 <translation id="2647069081229792812">Habilitar o inhabilitar la edición de favoritos</translation>
@@ -587,6 +632,12 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2823870601012066791">Ubicación del registro de Windows para los clientes de <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Activar el modo de incógnito</translation>
 <translation id="2838830882081735096">No permitir la migración de datos y ARC</translation>
+<translation id="2840269525054388612">Especifica las impresoras que puede utilizar el usuario.
+
+      Esta política solo se usa si se elige <ph name="PRINTERS_WHITELIST" /> para <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
+
+      Si se usa esta política, el usuario podrán acceder solo a las impresoras con ID que coincidan con los valores en esta política. Los ID deben coincidir con los valores de los campos "id" o "guid" en el archivo que se especifica en <ph name="DEVICE_PRINTERS_POLICY" />.
+      </translation>
 <translation id="2844404652289407061">Habilita la disponibilidad de Tocar para buscar en la vista de contenido de <ph name="PRODUCT_NAME" />.
 
       Si se habilita esta configuración, Tocar para buscar estará disponible para el usuario, quien podrá elegir activar o desactivar la función.
@@ -1057,6 +1108,12 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4239720644496144453">Las apps de Android no usan caché. Si varios usuarios instalan la misma app de Android, se descargará una para cada usuario.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Configuración regional de la pantalla de acceso del dispositivo</translation>
+<translation id="427220754384423013">Especifica las impresoras que puede utilizar el usuario.
+
+      Esta política solo se usa si se elige <ph name="PRINTERS_WHITELIST" /> para <ph name="BULK_PRINTERS_ACCESS_MODE" />.
+
+      Si se usa esta política, el usuario podrán acceder solo a las impresoras con ID que coincidan con los valores en esta política. Los ID deben coincidir con los valores de los campos "id" o "guid" en el archivo que se especifica en <ph name="BULK_PRINTERS_POLICY" />.
+      </translation>
 <translation id="427632463972968153">Especifica los parámetros utilizados al realizar una búsqueda de imágenes con POST. Se compone de pares de nombre/valor separados por coma. Si un valor es un parámetro de plantilla, como {imageThumbnail} en el ejemplo anterior, se reemplazará por datos de miniaturas de imágenes reales.
 
           Esta política es opcional. Si no se establece, la solicitud de búsqueda de imágenes se enviará mediante el método GET.
@@ -2060,6 +2117,12 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="749556411189861380">Informa sobre la versión del firmware y del sistema operativo de los dispositivos registrados.
 
       Si esta política no se establece o se establece en "True", los dispositivos registrados informarán periódicamente sobre la versión del firmware y del sistema operativo. Si esta política se establece en "False", no se indicará ninguna información sobre la versión.</translation>
+<translation id="7498946151094347510">Especifica las impresoras que no puede utilizar el usuario.
+
+      Esta política solo se usa si se elige <ph name="PRINTERS_BLACKLIST" /> para <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
+
+      Si se usa esta política, se proporcionarán todas las impresoras al usuario, excepto aquellas con un ID que se enumere en esta política. Los ID deben coincidir con los valores de los campos "id" o "guid" en el archivo que se especifica en <ph name="DEVICE_PRINTERS_POLICY" />.
+      </translation>
 <translation id="7511361072385293666">Si esta política no se configura o se establece en true, se permite el uso del protocolo QUIC en <ph name="PRODUCT_NAME" />.
       Si esta política se establece en false, no se permite el uso del protocolo QUIC.</translation>
 <translation id="7519251620064708155">Permitir la generación de claves en estos sitios</translation>
@@ -2429,6 +2492,12 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8544375438507658205">Procesador HTML predeterminado para <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Advierte cuando se visitan sitios fuera de los paquetes de contenido.</translation>
 <translation id="8566842294717252664">Ocultar ícono de Web Store en la página Nueva pestaña y el Selector de aplicaciones</translation>
+<translation id="8586528890725660268">Especifica las impresoras que no puede utilizar el usuario.
+
+      Esta política solo se usa si se elige <ph name="PRINTERS_BLACKLIST" /> para <ph name="BULK_PRINTERS_ACCESS_MODE" />.
+
+      Si se usa esta política, se proporcionarán todas las impresoras al usuario, excepto aquellas con un ID que se enumere en esta política. Los ID deben coincidir con los valores de los campos "id" o "guid" en el archivo que se especifica en <ph name="BULK_PRINTERS_POLICY" />.
+      </translation>
 <translation id="8587229956764455752">Permitir la creación de nuevas cuentas de usuario</translation>
 <translation id="8598350264853261122">Si se establece esta política como falsa, los usuarios no afiliados no podrán usar ARC.
 

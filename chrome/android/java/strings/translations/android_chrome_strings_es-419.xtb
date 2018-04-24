@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
 <translation id="1006017844123154345">Abrir en línea</translation>
-<translation id="1021684790657589338">No se encontró una tarjeta SD</translation>
 <translation id="1036727731225946849">Agregando <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">De sitios web</translation>
 <translation id="1049743911850919806">Incógnito</translation>
@@ -303,6 +302,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> descargas borradas</translation>
 <translation id="3822502789641063741">¿Borrar el almacenamiento de sitios?</translation>
 <translation id="3859306556332390985">Buscar más adelante</translation>
+<translation id="3871936494901781193">Cuando te desplaces hacia arriba, se mostrarán vínculos rápidos a páginas relacionadas.</translation>
 <translation id="3894427358181296146">Agregar carpeta</translation>
 <translation id="3895926599014793903">Forzar habilitación de zoom</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -310,6 +310,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="393697183122708255">La búsqueda por voz no está habilitada</translation>
 <translation id="3950820424414687140">Acceder</translation>
 <translation id="395206256282351086">Se inhabilitaron las sugerencias de sitios y búsqueda</translation>
+<translation id="3952533382939530115">Esta función usa la <ph name="BEGIN_LINK" />sincronización<ph name="END_LINK" />. Las URL de las páginas que visites se envían a Google.</translation>
 <translation id="3967822245660637423">Descarga completa</translation>
 <translation id="397583555483684758">La sincronización dejó de funcionar</translation>
 <translation id="3976396876660209797">Quita y vuelve a crear este acceso directo</translation>
@@ -779,6 +780,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8087000398470557479">Este contenido es de <ph name="DOMAIN_NAME" />, publicado por Google.</translation>
 <translation id="8100932616285851614">Se cerró el panel de navegación</translation>
 <translation id="8103578431304235997">Pestaña de incógnito</translation>
+<translation id="8105951947646329362">Sugerir páginas relacionadas</translation>
 <translation id="8116925261070264013">Silenciados</translation>
 <translation id="813082847718468539">Consulta la información del sitio</translation>
 <translation id="8137558756159375272">La función Tocar para buscar envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Para desactivarla, accede a <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>

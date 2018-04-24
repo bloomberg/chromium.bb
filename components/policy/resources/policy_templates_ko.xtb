@@ -2369,7 +2369,7 @@
       이 설정이 적용되지 않으면 사용자는 Android 설정 앱에서 Android Backup Service를 사용 설정/사용 중지할 수 있습니다.</translation>
 <translation id="780603170519840350">subjectPublicKeyInfo 해시 목록에 인증서 투명성 요구사항 실행을 사용 중지합니다.
 
-      이 정책을 사용하면 지정된 subjectPublicKeyInfo 해시가 있는 인증서가 포함된 인증서 체인에서 인증서 투명성 요구사항을 사용 중지할 수 있습니다. 이를 통해 적절하게 공개되지 않아 신뢰할 수 없던 인증서를 엔터프라이즈 호스트에서 계속해서 사용할 수 있도록 허용할 수 있습니다.
+      이 정책을 사용하면 지정된 subjectPublicKeyInfo 해시가 있는 인증서가 포함된 인증서 체인에서 인증서 투명성 공개 요구사항을 사용 중지할 수 있습니다. 이를 통해 적절하게 공개되지 않아 신뢰할 수 없던 인증서를 엔터프라이즈 호스트에서 계속해서 사용할 수 있도록 허용할 수 있습니다.
 
       이 정책이 설정된 경우 인증서 투명성 시행이 사용 중지되게 하려면 다음 조건 중 하나가 충족되어야 합니다.
       1. 해시가 서버 인증서의 subjectPublicKeyInfo여야 합니다.
@@ -2417,7 +2417,7 @@
 <translation id="7937766917976512374">동영상 캡처 허용 또는 거부</translation>
 <translation id="7941975817681987555">모든 네트워크 연결의 네트워크 활동 예측 안함</translation>
 <translation id="7953256619080733119">관리 사용자 직접 예외 호스트</translation>
-<translation id="7961779417826583251">기존 인증서 권한 목록에는 인증성 투명성 요구사항 시행 사용 중지</translation>
+<translation id="7961779417826583251">기존 인증서 권한 목록에 인증서 투명성 시행 사용 중지</translation>
 <translation id="7974114691960514888">이 정책은 더 이상 지원되지 않습니다.
           원격 클라이언트에 연결할 때 STUN 및 릴레이 서버를 사용하도록 설정합니다.
 
@@ -2681,7 +2681,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" />은(는) 하나의 기기를 같이 사용하는 여러 사용자가 설치하는 앱 및 확장 프로그램을 캐시하여 각 사용자가 다시 다운로드할 필요가 없게 합니다.
       이 정책이 설정되지 않았거나 값이 1MB 미만인 경우 <ph name="PRODUCT_OS_NAME" />에서 기본 캐시 크기를 사용합니다.</translation>
 <translation id="8858642179038618439">YouTube 안전 모드를 강제로 사용합니다.</translation>
-<translation id="8860342862142842017">subjectPublicKeyInfo 해시 목록에는 인증서 투명성 시행 사용 중지</translation>
+<translation id="8860342862142842017">subjectPublicKeyInfo 해시 목록에 인증서 투명성 시행 사용 중지</translation>
 <translation id="8864975621965365890"><ph name="PRODUCT_FRAME_NAME" />에서 사이트를 렌더링할 때 나타나는 종료 프롬프트를 표시하지 않습니다.</translation>
 <translation id="8867464911288727016"><ph name="PRODUCT_NAME" />에서 통합 Google 번역 서비스를 사용하도록 설정합니다.
 

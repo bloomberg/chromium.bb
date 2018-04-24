@@ -856,6 +856,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Kartı Onayla</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7407424307057130981">&lt;p&gt;Windows bilgisayarınızda Superfish yazılımı varsa bu hatayı görürsünüz.&lt;/p&gt;
+      &lt;p&gt;Web'e ulaşabilmeniz amacıyla yazılımı geçici olarak devre dışı bırakmak için bu adımları uygulayın. Bu adımları gerçekleştirmek için yönetici ayrıcalıklarınızın olması gerekir.&lt;/p&gt;
+      &lt;ol&gt;
+      &lt;li&gt;&lt;strong&gt;Başlat&lt;/strong&gt;'ı tıklayın, ardından &lt;strong&gt;"Yerel hizmetleri görüntüle"&lt;/strong&gt;yi arayın ve seçin
+      &lt;li&gt;&lt;strong&gt;VisualDiscovery&lt;/strong&gt;'yi seçin
+      &lt;li&gt;&lt;strong&gt;Başlatma türü&lt;/strong&gt;'nün altında &lt;strong&gt;Devre dışı&lt;/strong&gt;'yı seçin
+      &lt;li&gt;&lt;strong&gt;Hizmet durumu&lt;/strong&gt;'nun altında &lt;strong&gt;Durdur&lt;/strong&gt;'u seçin
+      &lt;li&gt;&lt;strong&gt;Uygula&lt;/strong&gt;'yı, ardından &lt;strong&gt;Tamam&lt;/strong&gt;'ı tıklayın
+      &lt;li&gt;Yazılımı bilgisayarınızdan kalıcı olarak nasıl kaldıracağınızı öğrenmek için &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome yardım merkezini&lt;/a&gt; ziyaret edin
+      &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">Profil Yolu</translation>
 <translation id="7437289804838430631">İletişim Bilgisi Ekle</translation>
 <translation id="7441627299479586546">Politika konusu yanlış</translation>
