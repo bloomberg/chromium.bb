@@ -2123,7 +2123,7 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
 
   std::unique_ptr<WebContents> new_contents = CreateWebContents();
   WebContents* raw_new_contents = new_contents.get();
-  strip.ReplaceWebContentsAt(0, new_contents.release());
+  strip.ReplaceWebContentsAt(0, std::move(new_contents));
 
   ASSERT_EQ(2, tabstrip_observer.GetStateCount());
 
@@ -2150,7 +2150,7 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
   // And replace it.
   new_contents = CreateWebContents();
   raw_new_contents = new_contents.get();
-  strip.ReplaceWebContentsAt(1, new_contents.release());
+  strip.ReplaceWebContentsAt(1, std::move(new_contents));
 
   ASSERT_EQ(1, tabstrip_observer.GetStateCount());
 

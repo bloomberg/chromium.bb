@@ -516,11 +516,10 @@ class PrerenderManager : public content::NotificationObserver,
   // |web_contents|.  Returns the new WebContents that was swapped in, or NULL
   // if a swap-in was not possible.  If |should_replace_current_entry| is true,
   // the current history entry in |web_contents| is replaced.
-  std::unique_ptr<content::WebContents> SwapInternal(
-      const GURL& url,
-      content::WebContents* web_contents,
-      PrerenderData* prerender_data,
-      bool should_replace_current_entry);
+  content::WebContents* SwapInternal(const GURL& url,
+                                     content::WebContents* web_contents,
+                                     PrerenderData* prerender_data,
+                                     bool should_replace_current_entry);
 
   // The configuration.
   Config config_;

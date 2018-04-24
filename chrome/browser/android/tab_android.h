@@ -130,7 +130,7 @@ class TabAndroid : public CoreTabHelperDelegate,
   // Overridden from CoreTabHelperDelegate:
   std::unique_ptr<content::WebContents> SwapTabContents(
       content::WebContents* old_contents,
-      content::WebContents* new_contents,
+      std::unique_ptr<content::WebContents> new_contents,
       bool did_start_load,
       bool did_finish_load) override;
 

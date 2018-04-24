@@ -1981,7 +1981,7 @@ void Browser::PrintCrossProcessSubframe(
 
 std::unique_ptr<content::WebContents> Browser::SwapTabContents(
     content::WebContents* old_contents,
-    content::WebContents* new_contents,
+    std::unique_ptr<content::WebContents> new_contents,
     bool did_start_load,
     bool did_finish_load) {
   // Copies the background color and contents of the old WebContents to a new
@@ -1998,7 +1998,7 @@ std::unique_ptr<content::WebContents> Browser::SwapTabContents(
 
   int index = tab_strip_model_->GetIndexOfWebContents(old_contents);
   DCHECK_NE(TabStripModel::kNoTab, index);
-  return tab_strip_model_->ReplaceWebContentsAt(index, new_contents);
+  return tab_strip_model_->ReplaceWebContentsAt(index, std::move(new_contents));
 }
 
 bool Browser::CanReloadContents(content::WebContents* web_contents) const {

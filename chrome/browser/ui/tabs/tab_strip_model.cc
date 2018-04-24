@@ -258,28 +258,34 @@ void TabStripModel::InsertWebContentsAt(int index,
 
 std::unique_ptr<content::WebContents> TabStripModel::ReplaceWebContentsAt(
     int index,
-    WebContents* new_contents) {
-  delegate()->WillAddWebContents(new_contents);
+    std::unique_ptr<WebContents> new_contents) {
+  delegate()->WillAddWebContents(new_contents.get());
 
   DCHECK(ContainsIndex(index));
   WebContents* old_contents = GetWebContentsAtImpl(index);
 
   FixOpenersAndGroupsReferencing(index);
 
-  contents_data_[index]->SetWebContents(new_contents);
+  contents_data_[index]->SetWebContents(new_contents.get());
 
   for (auto& observer : observers_)
-    observer.TabReplacedAt(this, old_contents, new_contents, index);
+    observer.TabReplacedAt(this, old_contents, new_contents.get(), index);
 
   // When the active WebContents is replaced send out a selection notification
   // too. We do this as nearly all observers need to treat a replacement of the
   // selected contents as the selection changing.
   if (active_index() == index) {
     for (auto& observer : observers_) {
-      observer.ActiveTabChanged(old_contents, new_contents, active_index(),
+      observer.ActiveTabChanged(old_contents, new_contents.get(),
+                                active_index(),
                                 TabStripModelObserver::CHANGE_REASON_REPLACED);
     }
   }
+
+  // TODO(erikchen): Clean up the internal ownership of TabStripModel once we
+  // move to a world where there's always explicit ownership of WebContents.
+  // https://crbug.com/832879.
+  new_contents.release();
   return base::WrapUnique(old_contents);
 }
 

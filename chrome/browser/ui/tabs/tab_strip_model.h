@@ -186,7 +186,7 @@ class TabStripModel : public WebContentsCloseDelegate {
   // to the caller.
   std::unique_ptr<content::WebContents> ReplaceWebContentsAt(
       int index,
-      content::WebContents* new_contents);
+      std::unique_ptr<content::WebContents> new_contents);
 
   // Detaches the WebContents at the specified index from this strip. The
   // WebContents is not destroyed, just removed from display. The caller
