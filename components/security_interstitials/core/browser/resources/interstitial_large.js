@@ -78,6 +78,9 @@ function setupEvents() {
     $('body').classList.add('captive-portal');
   } else {
     $('body').classList.add('safe-browsing');
+    // Override the default theme color.
+    document.querySelector('meta[name=theme-color]').setAttribute('content',
+      'rgb(206, 52, 38)');
   }
 
   $('icon').classList.add('icon');
