@@ -671,13 +671,29 @@ void AuthenticatorImpl::DidFinishNavigation(
   Cleanup();
 }
 
+void AuthenticatorImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
+  // In tests, the AuthenticatorImpl may outlive the RenderFrameHost, although
+  // this cannot happen in a non-test context because, normally,
+  // AuthenticatorImpl is owned by RenderFrameHost.
+  if (render_frame_host != render_frame_host_) {
+    return;
+  }
+
+  binding_.Close();
+  Cleanup();
+}
+
 // Callback to handle the async registration response from a U2fDevice.
 void AuthenticatorImpl::OnRegisterResponse(
     device::FidoReturnCode status_code,
     base::Optional<device::AuthenticatorMakeCredentialResponse> response_data) {
-  // If callback is called immediately, this code will call |Cleanup| before
-  // |u2f_request_| or |ctap_request_| has been assigned – violating invariants.
-  DCHECK(u2f_request_ || ctap_request_);
+  if (!u2f_request_ && !ctap_request_) {
+    // Either the callback has been called immediately (in which case
+    // |u2f_request_| / |ctap_request_| won't have been set yet), or
+    // |RenderFrameDeleted| / |DidFinishNavigation| noticed that this object has
+    // been orphaned.
+    return;
+  }
 
   switch (status_code) {
     case device::FidoReturnCode::kUserConsentButCredentialExcluded:
@@ -730,6 +746,12 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
   DCHECK(attestation_preference_ !=
          webauth::mojom::AttestationConveyancePreference::NONE);
 
+  if (!u2f_request_ && !ctap_request_) {
+    // |DidFinishNavigation| / |RenderFrameDeleted| noticed that this object has
+    // been orphaned.
+    return;
+  }
+
   if (!attestation_permitted) {
     InvokeCallbackAndCleanup(
         std::move(make_credential_response_callback_),
@@ -770,9 +792,13 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
 void AuthenticatorImpl::OnSignResponse(
     device::FidoReturnCode status_code,
     base::Optional<device::AuthenticatorGetAssertionResponse> response_data) {
-  // If callback is called immediately, this code will call |Cleanup| before
-  // |u2f_request_| or |ctap_request_| has been assigned – violating invariants.
-  DCHECK(u2f_request_ || ctap_request_);
+  if (!u2f_request_ && !ctap_request_) {
+    // Either the callback has been called immediately (in which case
+    // |u2f_request_| / |ctap_request_| won't have been set yet), or
+    // |DidFinishNavigation| / |RenderFrameDeleted| noticed that this object has
+    // been orphaned.
+    return;
+  }
 
   switch (status_code) {
     case device::FidoReturnCode::kUserConsentButCredentialNotRecognized:
