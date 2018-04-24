@@ -118,6 +118,7 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
     case gfx::ColorSpace::TransferID::SMPTEST2084:
     case gfx::ColorSpace::TransferID::SMPTEST428_1:
     case gfx::ColorSpace::TransferID::ARIB_STD_B67:
+    case gfx::ColorSpace::TransferID::BT709_APPLE:
     case gfx::ColorSpace::TransferID::GAMMA18:
     case gfx::ColorSpace::TransferID::GAMMA24:
     case gfx::ColorSpace::TransferID::SMPTEST2084_NON_HDR:

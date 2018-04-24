@@ -57,6 +57,9 @@ class COLOR_SPACE_EXPORT ColorSpace {
   enum class TransferID : uint8_t {
     INVALID,
     BT709,
+    // On macOS, BT709 hardware decoded video frames, when displayed as
+    // overlays, will have a transfer function of gamma=1.961.
+    BT709_APPLE,
     GAMMA18,
     GAMMA22,
     GAMMA24,
