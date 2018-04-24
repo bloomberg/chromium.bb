@@ -261,13 +261,21 @@ Polymer({
    * @private
    */
   handleSyncStatus_: function(syncStatus) {
-    if (!this.syncStatus && syncStatus && !syncStatus.signedIn)
-      chrome.metricsPrivate.recordUserAction('Signin_Impression_FromSettings');
+    // Sign-in impressions should be recorded only if the sign-in promo is
+    // shown. They should be recorder only once, the first time
+    // |this.syncStatus| is set.
+    const shouldRecordSigninImpression =
+        !this.syncStatus && syncStatus && this.showSignin_(syncStatus);
 
     if (!syncStatus.signedIn && this.showDisconnectDialog_)
       this.$$('#disconnectDialog').close();
 
     this.syncStatus = syncStatus;
+
+    if (shouldRecordSigninImpression && !this.shouldShowSyncAccountControl_()) {
+      // SyncAccountControl records the impressions user actions.
+      chrome.metricsPrivate.recordUserAction('Signin_Impression_FromSettings');
+    }
   },
 
   /** @private */
