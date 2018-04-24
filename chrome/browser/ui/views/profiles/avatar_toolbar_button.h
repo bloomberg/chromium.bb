@@ -34,6 +34,9 @@ class AvatarToolbarButton : public ToolbarButton,
                             const base::string16& old_profile_name) override;
 
   bool IsIncognito() const;
+  bool ShouldShowGenericIcon() const;
+  gfx::ImageSkia GetAvatarIcon() const;
+  gfx::Image GetIconImageFromProfile() const;
 
   Profile* const profile_;
 
