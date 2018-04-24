@@ -164,10 +164,8 @@ class NetworkAnnotationTagCallback : public MatchFinder::MatchCallback {
                            const clang::Expr* expr,
                            Location* location) {
     clang::SourceLocation source_location = expr->getLocStart();
-    if (source_location.isMacroID()) {
-      source_location =
-          result.SourceManager->getImmediateMacroCallerLoc(source_location);
-    }
+    if (source_location.isMacroID())
+      source_location = result.SourceManager->getExpansionLoc(source_location);
     location->file_path = result.SourceManager->getFilename(source_location);
     location->line_number =
         result.SourceManager->getSpellingLineNumber(source_location);
