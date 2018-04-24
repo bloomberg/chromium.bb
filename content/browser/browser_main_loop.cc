@@ -1614,6 +1614,8 @@ void BrowserMainLoop::CreateAudioManager() {
 
   audio_manager_ = GetContentClient()->browser()->CreateAudioManager(
       MediaInternals::GetInstance());
+  // TODO(http://crbug/834666): Do not initialize |audio_manager_| if
+  // features::kAudioServiceOutOfProcess is enabled.
   if (!audio_manager_) {
     audio_manager_ =
         media::AudioManager::Create(std::make_unique<media::AudioThreadImpl>(),

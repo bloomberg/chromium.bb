@@ -19,6 +19,8 @@
 #include "content/public/utility/utility_thread.h"
 #include "content/utility/utility_thread_impl.h"
 #include "media/media_buildflags.h"
+#include "services/audio/public/mojom/constants.mojom.h"
+#include "services/audio/service_factory.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/network/network_service.h"
@@ -128,6 +130,10 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
       base::BindRepeating(&video_capture::ServiceImpl::Create);
   services->insert(
       std::make_pair(video_capture::mojom::kServiceName, video_capture_info));
+
+  service_manager::EmbeddedServiceInfo audio_info;
+  audio_info.factory = base::BindRepeating(&audio::CreateStandaloneService);
+  services->insert(std::make_pair(audio::mojom::kServiceName, audio_info));
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   service_manager::EmbeddedServiceInfo info;

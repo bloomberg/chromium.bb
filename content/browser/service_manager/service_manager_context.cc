@@ -541,18 +541,6 @@ ServiceManagerContext::ServiceManagerContext() {
         metrics::mojom::kMetricsServiceName, info);
   }
 
-  if (BrowserMainLoop* bml = BrowserMainLoop::GetInstance()) {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory = base::BindRepeating(
-        [](BrowserMainLoop* bml) -> std::unique_ptr<service_manager::Service> {
-          return audio::CreateEmbeddedService(bml->audio_manager());
-        },
-        bml);
-    info.task_runner = bml->audio_service_runner();
-    packaged_services_connection_->AddEmbeddedService(
-        audio::mojom::kServiceName, info);
-  }
-
   ContentBrowserClient::StaticServiceMap services;
   GetContentClient()->browser()->RegisterInProcessServices(&services);
   for (const auto& entry : services) {
@@ -598,6 +586,26 @@ ServiceManagerContext::ServiceManagerContext() {
     // Create the in-process NetworkService object so that its getter is
     // available on the IO thread.
     GetNetworkService();
+  }
+
+  if (BrowserMainLoop* bml = BrowserMainLoop::GetInstance()) {
+    // TODO((http://crbug/834666):): also check that bml->audio_manager() is not
+    // defined, see BrowserMainLoop::CreateAudioManager().
+    if (base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess)) {
+      out_of_process_services[audio::mojom::kServiceName] =
+          base::ASCIIToUTF16("Audio Service");
+    } else {
+      service_manager::EmbeddedServiceInfo info;
+      info.factory = base::BindRepeating(
+          [](BrowserMainLoop* bml)
+              -> std::unique_ptr<service_manager::Service> {
+            return audio::CreateEmbeddedService(bml->audio_manager());
+          },
+          bml);
+      info.task_runner = bml->audio_service_runner();
+      packaged_services_connection_->AddEmbeddedService(
+          audio::mojom::kServiceName, info);
+    }
   }
 
   if (features::IsVideoCaptureServiceEnabledForOutOfProcess()) {

@@ -11,8 +11,9 @@ namespace audio {
 
 std::unique_ptr<media::AudioSystem> CreateAudioSystem(
     std::unique_ptr<service_manager::Connector> connector) {
+  constexpr auto service_disconnect_timeout = base::TimeDelta::FromSeconds(1);
   return std::make_unique<audio::AudioSystemToServiceAdapter>(
-      std::move(connector));
+      std::move(connector), service_disconnect_timeout);
 }
 
 }  // namespace audio
