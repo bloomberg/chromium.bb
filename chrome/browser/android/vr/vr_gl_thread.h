@@ -46,7 +46,8 @@ class VrGLThread : public base::android::JavaHandlerThread,
       const UiInitialState& ui_initial_state,
       bool reprojected_rendering,
       bool daydream_support,
-      bool pause_content);
+      bool pause_content,
+      bool low_density);
 
   ~VrGLThread() override;
   base::WeakPtr<VrShellGl> GetVrShellGl();
@@ -154,6 +155,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
   bool reprojected_rendering_;
   bool daydream_support_;
   bool pause_content_;
+  bool low_density_;
 
   DISALLOW_COPY_AND_ASSIGN(VrGLThread);
 };

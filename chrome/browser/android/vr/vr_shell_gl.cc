@@ -69,6 +69,9 @@ constexpr float kZFar = 10000.0f;
 constexpr int kMultiSampleBuffer = 0;
 constexpr int kNoMultiSampleBuffer = 1;
 
+constexpr float kDefaultRenderTargetSizeScale = 0.75f;
+constexpr float kLowDpiDefaultRenderTargetSizeScale = 0.9f;
+
 // When display UI on top of WebVR, we use a seperate buffer. Normally, the
 // buffer is set to recommended size to get best visual (i.e the buffer for
 // rendering ChromeVR). We divide the recommended buffer size by this number to
@@ -312,8 +315,10 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser_interface,
                      bool reprojected_rendering,
                      bool daydream_support,
                      bool start_in_web_vr_mode,
-                     bool pause_content)
-    : ui_(std::move(ui)),
+                     bool pause_content,
+                     bool low_density)
+    : low_density_(low_density),
+      ui_(std::move(ui)),
       web_vr_mode_(start_in_web_vr_mode),
       surfaceless_rendering_(reprojected_rendering),
       daydream_support_(daydream_support),
@@ -1110,18 +1115,30 @@ void VrShellGl::InitializeRenderer() {
   specs_.push_back(gvr_api_->CreateBufferSpec());
   specs_.push_back(gvr_api_->CreateBufferSpec());
 
-  gvr::Sizei default_size = specs_[0].GetSize();
-  render_size_default_ = {default_size.width, default_size.height};
-  render_size_webvr_ui_ = {default_size.width / kWebVrBrowserUiSizeFactor,
-                           default_size.height / kWebVrBrowserUiSizeFactor};
+  gvr::Sizei max_size = gvr_api_->GetMaximumEffectiveRenderTargetSize();
+  float scale = low_density_ ? kLowDpiDefaultRenderTargetSizeScale
+                             : kDefaultRenderTargetSizeScale;
+
+  render_size_default_ = {max_size.width * scale, max_size.height * scale};
+  render_size_webvr_ui_ = {max_size.width / kWebVrBrowserUiSizeFactor,
+                           max_size.height / kWebVrBrowserUiSizeFactor};
 
   specs_[kMultiSampleBuffer].SetSamples(2);
   specs_[kMultiSampleBuffer].SetDepthStencilFormat(
       GVR_DEPTH_STENCIL_FORMAT_NONE);
+  if (web_vr_mode_) {
+    specs_[kMultiSampleBuffer].SetSize(render_size_webvr_ui_.width(),
+                                       render_size_webvr_ui_.height());
+  } else {
+    specs_[kMultiSampleBuffer].SetSize(render_size_default_.width(),
+                                       render_size_default_.height());
+  }
 
   specs_[kNoMultiSampleBuffer].SetSamples(1);
   specs_[kNoMultiSampleBuffer].SetDepthStencilFormat(
       GVR_DEPTH_STENCIL_FORMAT_NONE);
+  specs_[kNoMultiSampleBuffer].SetSize(render_size_default_.width(),
+                                       render_size_default_.height());
 
   swap_chain_ = gvr_api_->CreateSwapChain(specs_);
 

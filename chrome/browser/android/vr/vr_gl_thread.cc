@@ -31,7 +31,8 @@ VrGLThread::VrGLThread(
     const UiInitialState& ui_initial_state,
     bool reprojected_rendering,
     bool daydream_support,
-    bool pause_content)
+    bool pause_content,
+    bool low_density)
     : base::android::JavaHandlerThread("VrShellGL"),
       weak_vr_shell_(weak_vr_shell),
       main_thread_task_runner_(std::move(main_thread_task_runner)),
@@ -39,7 +40,8 @@ VrGLThread::VrGLThread(
       ui_initial_state_(ui_initial_state),
       reprojected_rendering_(reprojected_rendering),
       daydream_support_(daydream_support),
-      pause_content_(pause_content) {}
+      pause_content_(pause_content),
+      low_density_(low_density) {}
 
 VrGLThread::~VrGLThread() {
   Stop();
@@ -86,7 +88,7 @@ void VrGLThread::Init() {
 
   vr_shell_gl_ = std::make_unique<VrShellGl>(
       this, std::move(ui), gvr_api_, reprojected_rendering_, daydream_support_,
-      ui_initial_state_.in_web_vr, pause_content_);
+      ui_initial_state_.in_web_vr, pause_content_, low_density_);
 
   weak_browser_ui_ = vr_shell_gl_->GetBrowserUiWeakPtr();
 

@@ -265,7 +265,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
             bool reprojected_rendering,
             bool daydream_support,
             bool start_in_web_vr_mode,
-            bool pause_content);
+            bool pause_content,
+            bool low_density);
   ~VrShellGl() override;
 
   void Initialize();
@@ -477,6 +478,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   // The default size for the render buffers.
   gfx::Size render_size_default_;
   gfx::Size render_size_webvr_ui_;
+  const bool low_density_;
 
   // WebVR currently supports multiple render path choices, with runtime
   // selection based on underlying support being available and feature flags.
