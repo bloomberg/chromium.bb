@@ -344,14 +344,10 @@ void FileReader::abort() {
   // All possible events have fired and we're done, no more pending activity.
   ThrottlingController::FinishReader(GetExecutionContext(), this, final_step);
 
-  // ..but perform the loader cancellation asynchronously as abort() could be
-  // called from the event handler and we do not want the resource loading code
-  // to be on the stack when doing so. The persistent reference keeps the
-  // reader alive until the task has completed.
-  GetExecutionContext()
-      ->GetTaskRunner(TaskType::kFileReading)
-      ->PostTask(FROM_HERE,
-                 WTF::Bind(&FileReader::Terminate, WrapPersistent(this)));
+  // Also synchronously cancel the loader, as script might initiate a new load
+  // right after this method returns, in which case an async termination would
+  // terminate the wrong loader.
+  Terminate();
 }
 
 void FileReader::result(ScriptState* state,
