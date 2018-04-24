@@ -6,7 +6,7 @@
 
 import logging
 
-from webkitpy.common.system.executive import ScriptError
+from blinkpy.common.system.executive import ScriptError
 from blinkpy.w3c.common import WPT_GH_SSH_URL_TEMPLATE, WPT_MIRROR_URL, CHROMIUM_WPT_DIR
 
 _log = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ class LocalWPT(object):
 
     def run(self, command, **kwargs):
         """Runs a command in the local WPT directory."""
-        # TODO(robertma): Migrate to webkitpy.common.checkout.Git. (crbug.com/676399)
+        # TODO(robertma): Migrate to blinkpy.common.checkout.Git. (crbug.com/676399)
         return self.host.executive.run_command(command, cwd=self.path, **kwargs)
 
     def clean(self):

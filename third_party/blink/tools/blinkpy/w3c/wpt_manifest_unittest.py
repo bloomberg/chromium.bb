@@ -4,9 +4,9 @@
 
 import unittest
 
-from webkitpy.common.host_mock import MockHost
-from webkitpy.common.system.executive import ScriptError
-from webkitpy.common.system.executive_mock import MockExecutive
+from blinkpy.common.host_mock import MockHost
+from blinkpy.common.system.executive import ScriptError
+from blinkpy.common.system.executive_mock import MockExecutive
 from blinkpy.w3c.wpt_manifest import WPTManifest
 
 

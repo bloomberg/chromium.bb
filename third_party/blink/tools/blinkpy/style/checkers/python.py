@@ -27,11 +27,11 @@ import re
 import sys
 
 
-from webkitpy.common.path_finder import PathFinder
-from webkitpy.common.path_finder import get_blink_tools_dir
-from webkitpy.common.path_finder import get_blinkpy_thirdparty_dir
-from webkitpy.common.system.filesystem import FileSystem
-from webkitpy.common.system.executive import Executive
+from blinkpy.common.path_finder import PathFinder
+from blinkpy.common.path_finder import get_blink_tools_dir
+from blinkpy.common.path_finder import get_blinkpy_thirdparty_dir
+from blinkpy.common.system.filesystem import FileSystem
+from blinkpy.common.system.executive import Executive
 from blinkpy.third_party import pep8
 
 
@@ -78,10 +78,9 @@ class PythonChecker(object):
         executive = Executive()
         env = os.environ.copy()
         env['PYTHONPATH'] = os.pathsep.join([
-            finder.path_from_tools_scripts(),
+            get_blink_tools_dir(),
             finder.path_from_blink_source('build', 'scripts'),
             get_blinkpy_thirdparty_dir(),
-            get_blink_tools_dir(),
             finder.path_from_blink_source('bindings', 'scripts'),
             finder.path_from_chromium_base('build', 'android'),
             finder.path_from_chromium_base('third_party', 'catapult', 'devil'),
@@ -91,7 +90,7 @@ class PythonChecker(object):
             sys.executable,
             finder.path_from_depot_tools_base('pylint.py'),
             '--output-format=parseable',
-            '--rcfile=' + finder.path_from_tools_scripts('webkitpy', 'pylintrc'),
+            '--rcfile=' + finder.path_from_blink_tools('blinkpy', 'pylintrc'),
             path,
         ], env=env, error_handler=executive.ignore_error)
 

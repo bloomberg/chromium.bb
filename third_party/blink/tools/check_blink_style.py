@@ -39,9 +39,8 @@ find is legitimately a problem."""
 
 import sys
 
-from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
+from blinkpy.common import version_check  # pylint: disable=unused-import
 from blinkpy.style.main import CheckWebKitStyle
-from webkitpy.common import version_check  # pylint: disable=unused-import
 
 
 if __name__ == "__main__":

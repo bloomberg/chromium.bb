@@ -8,8 +8,8 @@ import json
 import logging
 import optparse
 
-from webkitpy.common.net.git_cl import GitCL, TryJobStatus
-from webkitpy.common.path_finder import PathFinder
+from blinkpy.common.net.git_cl import GitCL, TryJobStatus
+from blinkpy.common.path_finder import PathFinder
 from blinkpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
 from blinkpy.tool.commands.rebaseline import TestBaselineSet
 from blinkpy.w3c.wpt_manifest import WPTManifest

@@ -6,16 +6,16 @@ import json
 import optparse
 import textwrap
 
-from webkitpy.common.checkout.git_mock import MockGit
-from webkitpy.common.net.buildbot import Build
-from webkitpy.common.net.git_cl import TryJobStatus
-from webkitpy.common.net.git_cl_mock import MockGitCL
-from webkitpy.common.net.layout_test_results import LayoutTestResults
-from webkitpy.common.system.log_testing import LoggingTestCase
-from webkitpy.layout_tests.builder_list import BuilderList
+from blinkpy.common.checkout.git_mock import MockGit
+from blinkpy.common.net.buildbot import Build
+from blinkpy.common.net.git_cl import TryJobStatus
+from blinkpy.common.net.git_cl_mock import MockGitCL
+from blinkpy.common.net.layout_test_results import LayoutTestResults
+from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.tool.commands.rebaseline import TestBaselineSet
 from blinkpy.tool.commands.rebaseline_cl import RebaselineCL
 from blinkpy.tool.commands.rebaseline_unittest import BaseTestCase
+from blinkpy.web_tests.builder_list import BuilderList
 
 
 class RebaselineCLTest(BaseTestCase, LoggingTestCase):

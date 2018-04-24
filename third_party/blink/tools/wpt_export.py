@@ -8,9 +8,8 @@
 import os
 import sys
 
-from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
-from webkitpy.common import exit_codes
-from webkitpy.common.host import Host
+from blinkpy.common import exit_codes
+from blinkpy.common.host import Host
 from blinkpy.w3c.test_exporter import TestExporter
 
 

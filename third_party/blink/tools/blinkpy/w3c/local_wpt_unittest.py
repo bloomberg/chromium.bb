@@ -4,10 +4,10 @@
 
 import unittest
 
-from webkitpy.common.host_mock import MockHost
-from webkitpy.common.system.executive import ScriptError
-from webkitpy.common.system.executive_mock import MockExecutive, mock_git_commands
-from webkitpy.common.system.filesystem_mock import MockFileSystem
+from blinkpy.common.host_mock import MockHost
+from blinkpy.common.system.executive import ScriptError
+from blinkpy.common.system.executive_mock import MockExecutive, mock_git_commands
+from blinkpy.common.system.filesystem_mock import MockFileSystem
 from blinkpy.w3c.local_wpt import LocalWPT
 
 

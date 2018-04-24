@@ -29,7 +29,7 @@
 import logging
 import optparse
 
-from webkitpy.common.checkout.baseline_optimizer import BaselineOptimizer
+from blinkpy.common.checkout.baseline_optimizer import BaselineOptimizer
 from blinkpy.tool.commands.rebaseline import AbstractRebaseliningCommand
 
 _log = logging.getLogger(__name__)

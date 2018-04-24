@@ -32,8 +32,7 @@ import json
 import optparse
 import sys
 
-from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
-from webkitpy.common.host import Host
+from blinkpy.common.host import Host
 
 
 def main(argv):
@@ -70,7 +69,7 @@ def main(argv):
 
 
 def convert_trie_to_flat_paths(trie, prefix=None):
-    # Cloned from webkitpy.layout_tests.layout_package.json_results_generator
+    # Cloned from blinkpy.web_tests.layout_package.json_results_generator
     # so that this code can stand alone.
     result = {}
     for name, data in trie.iteritems():

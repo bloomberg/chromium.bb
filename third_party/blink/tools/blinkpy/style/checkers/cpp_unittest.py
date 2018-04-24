@@ -40,10 +40,10 @@ import random
 import re
 import unittest
 
+from blinkpy.common.system.filesystem import FileSystem
 from blinkpy.style.checkers import cpp as cpp_style
 from blinkpy.style.checkers.cpp import CppChecker
 from blinkpy.style.filter import FilterConfiguration
-from webkitpy.common.system.filesystem import FileSystem
 
 # This class works as an error collector and replaces cpp_style.Error
 # function for the unit tests.  We also verify each category we see

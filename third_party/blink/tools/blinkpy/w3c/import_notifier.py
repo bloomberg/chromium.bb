@@ -16,7 +16,7 @@ from collections import defaultdict
 import logging
 import re
 
-from webkitpy.common.path_finder import PathFinder
+from blinkpy.common.path_finder import PathFinder
 from blinkpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
 from blinkpy.w3c.monorail import MonorailAPI, MonorailIssue
 from blinkpy.w3c.wpt_expectations_updater import UMBRELLA_BUG

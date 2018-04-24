@@ -11,7 +11,7 @@ import json
 import os
 import sys
 
-from webkitpy.common import path_finder
+from blinkpy.common import path_finder
 path_finder.add_bindings_scripts_dir_to_sys_path()
 
 import utilities

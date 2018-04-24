@@ -29,7 +29,6 @@
 
 import sys
 
-from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
-from webkitpy.layout_tests import bisect_test_ordering
+from blinkpy.web_tests import bisect_test_ordering
 
 sys.exit(bisect_test_ordering.main(sys.argv[1:]))

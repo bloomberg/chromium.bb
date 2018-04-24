@@ -87,7 +87,7 @@ class MonorailIssue(object):
 class MonorailAPI(object):
     """A wrapper of Monorail API.
 
-    Unlike other code in webkitpy, this class uses os, sys and network directly
+    Unlike other code in blinkpy, this class uses os, sys and network directly
     (via oauth2client and googleapiclient).
     """
 

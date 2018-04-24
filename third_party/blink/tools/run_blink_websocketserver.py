@@ -39,9 +39,8 @@ on WebSocket, you can navigate to:
     http://127.0.0.1:8000/websocket/close-unref-websocket.html
 """
 
-from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
-from webkitpy.common import version_check  # pylint: disable=unused-import
-from webkitpy.layout_tests.servers import cli_wrapper
-from webkitpy.layout_tests.servers import pywebsocket
+from blinkpy.common import version_check  # pylint: disable=unused-import
+from blinkpy.web_tests.servers import cli_wrapper
+from blinkpy.web_tests.servers import pywebsocket
 
 cli_wrapper.main(pywebsocket.PyWebSocket, description=__doc__)

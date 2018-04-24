@@ -28,9 +28,9 @@
 
 import logging
 
-from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
-from webkitpy.layout_tests.models.test_expectations import TestExpectations
-from webkitpy.layout_tests.models.test_expectations import TestExpectationsModel
+from blinkpy.web_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
+from blinkpy.web_tests.models.test_expectations import TestExpectations
+from blinkpy.web_tests.models.test_expectations import TestExpectationsModel
 from blinkpy.tool.commands.command import Command
 
 

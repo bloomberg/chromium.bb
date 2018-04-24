@@ -12,9 +12,9 @@ For example, it does not support directives other than email addresses.
 import collections
 import re
 
-from webkitpy.common.memoized import memoized
-from webkitpy.common.path_finder import PathFinder
-from webkitpy.common.system.filesystem import FileSystem
+from blinkpy.common.memoized import memoized
+from blinkpy.common.path_finder import PathFinder
+from blinkpy.common.system.filesystem import FileSystem
 
 
 # Format of OWNERS files can be found at //src/third_party/depot_tools/owners.py

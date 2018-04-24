@@ -30,7 +30,7 @@
 
 import logging
 
-from webkitpy.common.checkout.diff_parser import DiffParser
+from blinkpy.common.checkout.diff_parser import DiffParser
 
 
 _log = logging.getLogger(__name__)

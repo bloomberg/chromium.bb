@@ -25,9 +25,8 @@
 
 import sys
 
-from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
 from blinkpy.bindings.bindings_tests import run_bindings_tests
-from webkitpy.common import path_finder
+from blinkpy.common import path_finder
 path_finder.add_typ_dir_to_sys_path()
 
 import typ

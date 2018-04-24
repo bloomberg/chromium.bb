@@ -28,6 +28,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Wrapper around webkitpy/layout_tests/run_webkit_tests.py"""
-from webkitpy.common import multiprocessing_bootstrap
 
-multiprocessing_bootstrap.run('webkitpy', 'layout_tests', 'run_webkit_tests.py')
+from webkitpy.common import add_blinkpy  # pylint: disable=unused-import
+from blinkpy.common import multiprocessing_bootstrap
+
+multiprocessing_bootstrap.run('blinkpy', 'web_tests', 'run_webkit_tests.py')

@@ -31,8 +31,8 @@ import optparse
 import sys
 import urllib
 
-from webkitpy.common.prettypatch import PrettyPatch
-from webkitpy.common.system.executive import ScriptError
+from blinkpy.common.prettypatch import PrettyPatch
+from blinkpy.common.system.executive import ScriptError
 from blinkpy.tool.commands.command import Command
 
 

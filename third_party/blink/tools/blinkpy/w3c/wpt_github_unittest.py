@@ -6,7 +6,7 @@ import base64
 import json
 import unittest
 
-from webkitpy.common.host_mock import MockHost
+from blinkpy.common.host_mock import MockHost
 from blinkpy.w3c.chromium_commit_mock import MockChromiumCommit
 from blinkpy.w3c.common import EXPORT_PR_LABEL
 from blinkpy.w3c.wpt_github import MAX_PR_HISTORY_WINDOW, GitHubError, MergeError, PullRequest, WPTGitHub

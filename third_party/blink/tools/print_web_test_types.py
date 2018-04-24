@@ -30,8 +30,7 @@
 
 import sys
 
-from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
-from webkitpy.common import host
-from webkitpy.layout_tests import print_layout_test_types
+from blinkpy.common import host
+from blinkpy.web_tests import print_layout_test_types
 
 print_layout_test_types.main(host.Host(), sys.argv[1:])

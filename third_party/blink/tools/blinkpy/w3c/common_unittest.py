@@ -5,7 +5,7 @@
 import json
 import unittest
 
-from webkitpy.common.host_mock import MockHost
+from blinkpy.common.host_mock import MockHost
 from blinkpy.w3c.common import (
     read_credentials,
     is_testharness_baseline,

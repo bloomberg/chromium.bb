@@ -5,12 +5,11 @@
 import argparse
 import lib2to3.refactor
 
-from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
 # Put blinkpy/third_party/ in the import path for autopep8 to import pep8.
-from webkitpy.common.path_finder import add_blinkpy_thirdparty_dir_to_sys_path
+from blinkpy.common.path_finder import add_blinkpy_thirdparty_dir_to_sys_path
 add_blinkpy_thirdparty_dir_to_sys_path()
 
-from webkitpy.common.system.system_host import SystemHost
+from blinkpy.common.system.system_host import SystemHost
 from blinkpy.third_party import autopep8
 
 

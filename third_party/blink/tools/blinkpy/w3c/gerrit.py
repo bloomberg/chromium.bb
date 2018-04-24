@@ -7,7 +7,7 @@ import json
 import logging
 from urllib2 import HTTPError
 
-from webkitpy.common.net.network_transaction import NetworkTimeout
+from blinkpy.common.net.network_transaction import NetworkTimeout
 from blinkpy.w3c.chromium_commit import ChromiumCommit
 from blinkpy.w3c.chromium_finder import absolute_chromium_dir
 from blinkpy.w3c.common import CHROMIUM_WPT_DIR, is_file_exportable

@@ -5,7 +5,7 @@
 import StringIO
 import unittest
 
-from webkitpy.common.system.system_host_mock import MockSystemHost
+from blinkpy.common.system.system_host_mock import MockSystemHost
 from blinkpy.formatter.main import main
 
 

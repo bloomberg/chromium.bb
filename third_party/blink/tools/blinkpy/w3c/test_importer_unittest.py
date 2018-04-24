@@ -5,21 +5,21 @@
 import datetime
 import json
 
-from webkitpy.common.checkout.git_mock import MockGit
-from webkitpy.common.host_mock import MockHost
-from webkitpy.common.net.buildbot import Build
-from webkitpy.common.net.git_cl import CLStatus
-from webkitpy.common.net.git_cl import TryJobStatus
-from webkitpy.common.net.git_cl_mock import MockGitCL
-from webkitpy.common.system.executive_mock import MockCall
-from webkitpy.common.system.executive_mock import MockExecutive
-from webkitpy.common.system.log_testing import LoggingTestCase
-from webkitpy.layout_tests.builder_list import BuilderList
+from blinkpy.common.checkout.git_mock import MockGit
+from blinkpy.common.host_mock import MockHost
+from blinkpy.common.net.buildbot import Build
+from blinkpy.common.net.git_cl import CLStatus
+from blinkpy.common.net.git_cl import TryJobStatus
+from blinkpy.common.net.git_cl_mock import MockGitCL
+from blinkpy.common.system.executive_mock import MockCall
+from blinkpy.common.system.executive_mock import MockExecutive
+from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.w3c.chromium_commit_mock import MockChromiumCommit
 from blinkpy.w3c.local_wpt import LocalWPT
 from blinkpy.w3c.local_wpt_mock import MockLocalWPT
 from blinkpy.w3c.test_importer import TestImporter, ROTATIONS_URL, TBR_FALLBACK
 from blinkpy.w3c.wpt_github_mock import MockWPTGitHub
+from blinkpy.web_tests.builder_list import BuilderList
 
 
 class TestImporterTest(LoggingTestCase):

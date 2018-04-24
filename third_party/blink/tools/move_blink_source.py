@@ -20,16 +20,15 @@ from functools import partial
 sys.path.append(os.path.join(os.path.dirname(__file__),
                              '..', 'renderer', 'build', 'scripts'))
 from blinkbuild.name_style_converter import NameStyleConverter
-from blinkpy.common import add_webkitpy  # pylint: disable=unused-import
+from blinkpy.common.checkout.git import Git
+from blinkpy.common.path_finder import get_chromium_src_dir
+from blinkpy.common.path_finder import get_blink_tools_dir
+from blinkpy.common.system.executive import Executive
+from blinkpy.common.system.executive import ScriptError
+from blinkpy.common.system.filesystem import FileSystem
+from blinkpy.common.system.platform_info import PlatformInfo
 from plan_blink_move import plan_blink_move
 from plan_blink_move import relative_dest
-from webkitpy.common.checkout.git import Git
-from webkitpy.common.path_finder import get_chromium_src_dir
-from webkitpy.common.path_finder import get_scripts_dir
-from webkitpy.common.system.executive import Executive
-from webkitpy.common.system.executive import ScriptError
-from webkitpy.common.system.filesystem import FileSystem
-from webkitpy.common.system.platform_info import PlatformInfo
 
 _log = logging.getLogger('move_blink_source')
 
@@ -278,9 +277,9 @@ Bug: 768828
             'build/get_landmines.py',
             [('\ndef main', '  print \'The Great Blink mv for source files (crbug.com/768828)\'\n\ndef main')])
 
-        _log.info('Run run-bindings-tests ...')
+        _log.info('Run run_bindings_tests.py ...')
         Executive().run_command(['python',
-                                 self._fs.join(get_scripts_dir(), 'run-bindings-tests'),
+                                 self._fs.join(get_blink_tools_dir(), 'run_bindings_tests.py'),
                                  '--reset-results'],
                                 cwd=self._repo_root)
 
