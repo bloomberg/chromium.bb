@@ -230,8 +230,20 @@ Status GetElementBorder(
   base::StringToInt(border_top_str, &border_top_tmp);
   if (border_left_tmp == -1 || border_top_tmp == -1)
     return Status(kUnknownError, "failed to get border width of element");
-  *border_left = border_left_tmp;
-  *border_top = border_top_tmp;
+  std::string padding_left_str;
+  status = GetElementEffectiveStyle(frame, web_view, element_id, "padding-left",
+                                    &padding_left_str);
+  int padding_left = 0;
+  if (status.IsOk())
+    base::StringToInt(padding_left_str, &padding_left);
+  std::string padding_top_str;
+  status = GetElementEffectiveStyle(frame, web_view, element_id, "padding-top",
+                                    &padding_top_str);
+  int padding_top = 0;
+  if (status.IsOk())
+    base::StringToInt(padding_top_str, &padding_top);
+  *border_left = border_left_tmp + padding_left;
+  *border_top = border_top_tmp + padding_top;
   return Status(kOk);
 }
 
