@@ -382,8 +382,9 @@ TEST_F(StaleHostResolverTest, CancelWithStaleCache) {
 // Limited expired time cases are flaky under iOS and MACOS (crbug.com/792173).
 // Disallow other networks cases fail under Fuchsia (crbug.com/816143).
 // TODO(https://crbug.com/829097): Fix memory leaks and re-enable under ASAN.
+// Flaky on Win buildbots. See crbug.com/836106
 #if defined(OS_IOS) || defined(OS_FUCHSIA) || defined(OS_MACOSX) || \
-    defined(ADDRESS_SANITIZER)
+    defined(ADDRESS_SANITIZER) || defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_StaleUsability DISABLED_StaleUsability
 #else
 #define MAYBE_StaleUsability StaleUsability
