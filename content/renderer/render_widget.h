@@ -748,11 +748,6 @@ class CONTENT_EXPORT RenderWidget
   // The maximum size to use for auto-resize.
   gfx::Size max_size_for_auto_resize_;
 
-  // A pending ResizeOrRepaintAck callback in response to an auto-resize
-  // initiated by Blink. If auto-resize mode is canceled with an in-flight
-  // Ack, then the Ack will be canceled.
-  base::CancelableOnceClosure auto_resize_ack_callback_;
-
   // Set to true if we should ignore RenderWidget::Show calls.
   bool did_show_;
 

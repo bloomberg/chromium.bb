@@ -2288,22 +2288,8 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
     UpdateSurfaceAndScreenInfo(
         local_surface_id, new_compositor_viewport_pixel_size, screen_info_);
 
-    if (!resizing_mode_selector_->is_synchronous_mode()) {
+    if (!resizing_mode_selector_->is_synchronous_mode())
       need_resize_ack_for_auto_resize_ = true;
-      // If surface synchronization is off, then ResizeAcks go to the browser in
-      // response to a DidReceiveCompositorFrame. With surface synchronization
-      // on, that notification will not arrive here because the compositor is
-      // deferring commits and thus submission of CompositorFrames.
-      if (!size_.IsEmpty() && compositor_ &&
-          compositor_->IsSurfaceSynchronizationEnabled() &&
-          !auto_resize_ack_callback_.callback()) {
-        auto_resize_ack_callback_.Reset(
-            base::BindOnce(&RenderWidget::DidResizeOrRepaintAck,
-                           weak_ptr_factory_.GetWeakPtr()));
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, auto_resize_ack_callback_.callback());
-      }
-    }
   }
 }
 

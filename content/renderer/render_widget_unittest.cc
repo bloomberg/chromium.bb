@@ -439,7 +439,7 @@ TEST_F(RenderWidgetUnittest, SurfaceSynchronizationAutoResizeThrottling) {
   // Issue an auto-resize.
   widget()->DidAutoResize(auto_size);
   widget()->sink()->ClearMessages();
-  base::RunLoop().RunUntilIdle();
+  widget()->DidCommitCompositorFrame();
   const IPC::Message* message = widget()->sink()->GetUniqueMessageMatching(
       ViewHostMsg_ResizeOrRepaint_ACK::ID);
   ASSERT_TRUE(message);

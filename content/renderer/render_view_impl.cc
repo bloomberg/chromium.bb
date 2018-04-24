@@ -1978,7 +1978,6 @@ void RenderViewImpl::OnResize(const ResizeParams& params) {
                                       params.max_size_for_auto_resize);
     }
   } else if (auto_resize_mode_changed) {
-    auto_resize_ack_callback_.Cancel();
     need_resize_ack_for_auto_resize_ = false;
     webview()->DisableAutoResizeMode();
     if (params.new_size.IsEmpty())
