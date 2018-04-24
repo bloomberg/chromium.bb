@@ -434,6 +434,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[arc::prefs::kSmsConnectEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
+  // Native Printing settings.
+  (*s_whitelist)[::prefs::kUserNativePrintersAllowed] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+
 #else
   (*s_whitelist)[::prefs::kAcceptLanguages] =
       settings_api::PrefType::PREF_TYPE_STRING;
