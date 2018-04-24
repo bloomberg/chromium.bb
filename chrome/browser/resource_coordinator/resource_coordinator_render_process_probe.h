@@ -17,6 +17,8 @@
 
 namespace resource_coordinator {
 
+class SystemResourceCoordinator;
+
 struct RenderProcessInfo {
   RenderProcessInfo();
   ~RenderProcessInfo();
@@ -68,13 +70,17 @@ class ResourceCoordinatorRenderProcessProbe {
   // consists of a delayed call to perform (1) via a timer.
   void HandleRenderProcessMetricsOnUIThread();
 
-  // Handle collected metrics. Returns |true| another metrics collection gather
-  // cycle should be initiated. Virtual for testing.
+  // Allows FieldTrial parameters to override defaults.
+  void UpdateWithFieldTrialParams();
+
+  SystemResourceCoordinator* EnsureSystemResourceCoordinator();
+
+  // Dispatch the collected metrics. Returns |true| if another metrics
+  // collection gather cycle should be initiated. Virtual for testing.
   // Default implementation sends collected metrics back to the resource
   // coordinator service and initiates another render process metrics gather
   // cycle.
-  virtual bool HandleMetrics(
-      const RenderProcessInfoMap& render_process_info_map);
+  virtual bool DispatchMetrics();
 
   // A map of currently running render process host IDs to Process.
   RenderProcessInfoMap render_process_info_map_;
@@ -92,8 +98,8 @@ class ResourceCoordinatorRenderProcessProbe {
   // True while a gathering cycle is underways on a background thread.
   bool is_gathering_ = false;
 
-  // Allows FieldTrial parameters to override defaults.
-  void UpdateWithFieldTrialParams();
+  // Used to signal the end of a CPU measurement cycle to the RC.
+  std::unique_ptr<SystemResourceCoordinator> system_resource_coordinator_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceCoordinatorRenderProcessProbe);
 };

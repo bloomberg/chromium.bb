@@ -30,8 +30,7 @@ class TestingResourceCoordinatorRenderProcessProbe
   TestingResourceCoordinatorRenderProcessProbe() = default;
   ~TestingResourceCoordinatorRenderProcessProbe() override = default;
 
-  bool HandleMetrics(
-      const RenderProcessInfoMap& render_process_info_map) override {
+  bool DispatchMetrics() override {
     current_run_loop_->QuitWhenIdle();
     return false;
   }
