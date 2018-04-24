@@ -4,6 +4,7 @@
 
 #include "components/zucchini/patch_reader.h"
 
+#include <algorithm>
 #include <type_traits>
 #include <utility>
 
@@ -23,7 +24,7 @@ bool ParseElementMatch(BufferSource* source, ElementMatch* element_match) {
   }
   ExecutableType exe_type =
       static_cast<ExecutableType>(element_header.exe_type);
-  if (exe_type >= kNumExeType) {
+  if (CastToExecutableType(exe_type) == kExeTypeUnknown) {
     LOG(ERROR) << "Invalid ExecutableType encountered.";
     LOG(ERROR) << base::debug::StackTrace().ToString();
     return false;

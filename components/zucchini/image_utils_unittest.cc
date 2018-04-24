@@ -14,4 +14,11 @@ TEST(ImageUtilsTest, Bitness) {
   EXPECT_EQ(8U, WidthOf(kBit64));
 }
 
+TEST(ImageUtilsTest, CastExecutableTypeToString) {
+  EXPECT_EQ("NoOp", CastExecutableTypeToString(kExeTypeNoOp));
+  EXPECT_EQ("Px86", CastExecutableTypeToString(kExeTypeWin32X86));
+  EXPECT_EQ("EA64", CastExecutableTypeToString(kExeTypeElfAArch64));
+  EXPECT_EQ("DEX ", CastExecutableTypeToString(kExeTypeDex));
+}
+
 }  // namespace zucchini
