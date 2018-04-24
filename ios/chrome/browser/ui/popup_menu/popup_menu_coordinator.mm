@@ -123,7 +123,9 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 #pragma mark - ContainedPresenterDelegate
 
 - (void)containedPresenterDidPresent:(id<ContainedPresenter>)presenter {
-  DCHECK(presenter == self.presenter);
+  if (presenter != self.presenter)
+    return;
+
   if (self.requestStartTime != 0) {
     base::TimeDelta elapsed = base::TimeDelta::FromSecondsD(
         [NSDate timeIntervalSinceReferenceDate] - self.requestStartTime);
