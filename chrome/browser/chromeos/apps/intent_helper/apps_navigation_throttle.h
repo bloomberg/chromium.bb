@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_APPS_INTENT_HELPER_APPS_NAVIGATION_THROTTLE_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
@@ -147,6 +149,8 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
       content::WebContents* web_contents,
       const GURL& url,
       std::vector<IntentPickerAppInfo> apps);
+
+  static void CloseOrGoBack(content::WebContents* tab);
 
   void CancelNavigation();
 
