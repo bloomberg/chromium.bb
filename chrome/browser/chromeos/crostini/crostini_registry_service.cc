@@ -210,7 +210,6 @@ std::vector<std::string> CrostiniRegistryService::GetRegisteredAppIds() const {
 
 std::unique_ptr<CrostiniRegistryService::Registration>
 CrostiniRegistryService::GetRegistration(const std::string& app_id) const {
-  DCHECK(crx_file::id_util::IdIsValid(app_id));
   const base::DictionaryValue* apps =
       prefs_->GetDictionary(kCrostiniRegistryPref);
   const base::Value* pref_registration =
