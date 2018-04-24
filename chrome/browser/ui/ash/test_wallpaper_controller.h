@@ -11,8 +11,6 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 // Simulates WallpaperController in ash.
-// TODO(crbug.com/776464): Maybe create an enum to represent each function to
-// avoid having lots of counters and getters.
 class TestWallpaperController : ash::mojom::WallpaperController {
  public:
   TestWallpaperController();

@@ -78,8 +78,8 @@ class WallpaperPolicyHandler {
 
   // Observes if user names should be shown on the login screen, which
   // determines whether a user wallpaper or a default wallpaper should be shown.
-  // TODO(crbug.com/776464, 784495): Views-based login should observe this and
-  // send different requests accordingly.
+  // TODO(wzang|784495): Views-based login should observe this and send
+  // different requests accordingly.
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       show_user_names_on_signin_subscription_;
 
