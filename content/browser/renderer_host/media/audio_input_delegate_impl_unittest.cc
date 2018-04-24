@@ -109,7 +109,7 @@ class MockUserInputMonitor : public media::UserInputMonitor {
  public:
   MockUserInputMonitor() {}
 
-  size_t GetKeyPressCount() const { return 0; }
+  uint32_t GetKeyPressCount() const { return 0; }
 
   MOCK_METHOD0(StartKeyboardMonitoring, void());
   MOCK_METHOD0(StopKeyboardMonitoring, void());

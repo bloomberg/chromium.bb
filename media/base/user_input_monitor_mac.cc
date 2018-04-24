@@ -18,7 +18,7 @@ class UserInputMonitorMac : public UserInputMonitor {
   UserInputMonitorMac();
   ~UserInputMonitorMac() override;
 
-  size_t GetKeyPressCount() const override;
+  uint32_t GetKeyPressCount() const override;
 
  private:
   void StartKeyboardMonitoring() override;
@@ -31,7 +31,7 @@ UserInputMonitorMac::UserInputMonitorMac() {}
 
 UserInputMonitorMac::~UserInputMonitorMac() {}
 
-size_t UserInputMonitorMac::GetKeyPressCount() const {
+uint32_t UserInputMonitorMac::GetKeyPressCount() const {
   // Use |kCGEventSourceStateHIDSystemState| since we only want to count
   // hardware generated events.
   return CGEventSourceCounterForEventType(kCGEventSourceStateHIDSystemState,
