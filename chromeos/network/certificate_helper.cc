@@ -83,6 +83,10 @@ std::string GetCertNameOrNickname(CERTCertificate* cert_handle) {
   return name;
 }
 
+std::string GetCertAsciiSubjectCommonName(CERTCertificate* cert_handle) {
+  return Stringize(CERT_GetCommonName(&cert_handle->subject), std::string());
+}
+
 std::string GetCertAsciiNameOrNickname(CERTCertificate* cert_handle) {
   std::string alternative_text = GetNickname(cert_handle);
   return Stringize(CERT_GetCommonName(&cert_handle->subject), alternative_text);

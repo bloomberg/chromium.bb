@@ -35,7 +35,14 @@ CHROMEOS_EXPORT std::string GetIssuerDisplayName(CERTCertificate* cert_handle);
 // value (see GetCertAsciiNameOrNickname instead).
 CHROMEOS_EXPORT std::string GetCertNameOrNickname(CERTCertificate* cert_handle);
 
-// Returns the unformated ASCII common name for |cert_handle|->subject.
+// Returns the unformated ASCII common name for |cert_handle|->subject. Returns
+// an empty string if the subject name is unavailable or empty.
+CHROMEOS_EXPORT std::string GetCertAsciiSubjectCommonName(
+    CERTCertificate* cert_handle);
+
+// Returns the unformatted ASCII common name for |cert_handle|->subject or for
+// |cert_handle|->nickname if the subject name is unavailable or empty. If both
+// are not available, returns an empty string.
 CHROMEOS_EXPORT std::string GetCertAsciiNameOrNickname(
     CERTCertificate* cert_handle);
 

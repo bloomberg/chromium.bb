@@ -36,15 +36,23 @@ class DeviceNetworkConfigurationUpdater : public NetworkConfigurationUpdater {
  public:
   ~DeviceNetworkConfigurationUpdater() override;
 
+  // Fetches the device's administrator-annotated asset ID.
+  using DeviceAssetIDFetcher = base::RepeatingCallback<std::string()>;
+
   // Creates an updater that applies the ONC device policy from |policy_service|
   // once the policy service is completely initialized and on each policy
-  // change. The argument objects must outlive the returned updater.
+  // change. The argument objects passed as pointers must outlive the returned
+  // updater. |device_assed_id_fetcher| should return the
+  // administrator-annotated asset ID of the device and is used for variable
+  // replacement. If a null callback is passed, the asset ID from device policy
+  // will be used.
   static std::unique_ptr<DeviceNetworkConfigurationUpdater>
   CreateForDevicePolicy(
       PolicyService* policy_service,
       chromeos::ManagedNetworkConfigurationHandler* network_config_handler,
       chromeos::NetworkDeviceHandler* network_device_handler,
-      chromeos::CrosSettings* cros_settings);
+      chromeos::CrosSettings* cros_settings,
+      const DeviceAssetIDFetcher& device_asset_id_fetcher);
 
   // Returns all authority certificates from the currently applied ONC device
   // policy.
@@ -55,7 +63,8 @@ class DeviceNetworkConfigurationUpdater : public NetworkConfigurationUpdater {
       PolicyService* policy_service,
       chromeos::ManagedNetworkConfigurationHandler* network_config_handler,
       chromeos::NetworkDeviceHandler* network_device_handler,
-      chromeos::CrosSettings* cros_settings);
+      chromeos::CrosSettings* cros_settings,
+      const DeviceAssetIDFetcher& device_asset_id_fetcher);
 
   void Init() override;
   void ImportCertificates(const base::ListValue& certificates_onc) override;
@@ -68,6 +77,9 @@ class DeviceNetworkConfigurationUpdater : public NetworkConfigurationUpdater {
   chromeos::CrosSettings* cros_settings_;
   std::unique_ptr<base::CallbackList<void(void)>::Subscription>
       data_roaming_setting_subscription_;
+
+  // Returns the device's administrator-set asset id.
+  DeviceAssetIDFetcher device_asset_id_fetcher_;
 
   base::WeakPtrFactory<DeviceNetworkConfigurationUpdater> weak_factory_;
 

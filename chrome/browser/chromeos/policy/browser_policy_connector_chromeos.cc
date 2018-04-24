@@ -201,7 +201,8 @@ void BrowserPolicyConnectorChromeOS::Init(
           chromeos::NetworkHandler::Get()
               ->managed_network_configuration_handler(),
           chromeos::NetworkHandler::Get()->network_device_handler(),
-          chromeos::CrosSettings::Get());
+          chromeos::CrosSettings::Get(),
+          DeviceNetworkConfigurationUpdater::DeviceAssetIDFetcher());
 
   bluetooth_policy_handler_ =
       std::make_unique<BluetoothPolicyHandler>(chromeos::CrosSettings::Get());

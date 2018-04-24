@@ -731,6 +731,16 @@ TEST_F(ClientCertResolverTest, PopulateIdentityFromCert) {
   GetServiceProperty(shill::kEapIdentityProperty, &identity);
   EXPECT_EQ("upn-santest@ad.corp.example.com-suffix", identity);
   EXPECT_EQ(2, network_properties_changed_count_);
+
+  // Verify that after changing the ONC policy to request the subject CommonName
+  // field, the correct value is substituted into the shill service entry.
+  SetupPolicyMatchingIssuerPEM(onc::ONC_SOURCE_USER_POLICY,
+                               "subject-cn-${CERT_SUBJECT_COMMON_NAME}-suffix");
+  scoped_task_environment_.RunUntilIdle();
+
+  GetServiceProperty(shill::kEapIdentityProperty, &identity);
+  EXPECT_EQ("subject-cn-Client Cert F-suffix", identity);
+  EXPECT_EQ(3, network_properties_changed_count_);
 }
 
 // Test for crbug.com/781276. A notification which results in no networks to be

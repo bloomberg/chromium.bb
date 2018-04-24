@@ -323,8 +323,8 @@ void LocalTranslator::TranslateEAP() {
   // password substitution variable is set.
   const base::Value* password_field =
       onc_object_->FindKey(::onc::eap::kPassword);
-  if (password_field &&
-      password_field->GetString() == ::onc::substitutes::kPasswordField) {
+  if (password_field && password_field->GetString() ==
+                            ::onc::substitutes::kPasswordPlaceholderVerbatim) {
     shill_dictionary_->SetKey(shill::kEapUseLoginPasswordProperty,
                               base::Value(true));
   }

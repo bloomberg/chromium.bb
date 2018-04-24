@@ -709,8 +709,9 @@ void ShillToONCTranslator::TranslateEap() {
   if (shill_dictionary_->GetBooleanWithoutPathExpansion(
           shill::kEapUseLoginPasswordProperty, &use_login_password) &&
       use_login_password) {
-    onc_object_->SetKey(::onc::eap::kPassword,
-                        base::Value(::onc::substitutes::kPasswordField));
+    onc_object_->SetKey(
+        ::onc::eap::kPassword,
+        base::Value(::onc::substitutes::kPasswordPlaceholderVerbatim));
   }
 }
 
