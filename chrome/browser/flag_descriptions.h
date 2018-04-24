@@ -386,6 +386,9 @@ extern const char kEnablePixelCanvasRecordingDescription[];
 extern const char kEnablePWAFullCodeCacheName[];
 extern const char kEnablePWAFullCodeCacheDescription[];
 
+extern const char kEnableSyncUSSSessionsName[];
+extern const char kEnableSyncUSSSessionsDescription[];
+
 extern const char kEnableTokenBindingName[];
 extern const char kEnableTokenBindingDescription[];
 

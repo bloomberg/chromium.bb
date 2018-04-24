@@ -3875,6 +3875,9 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnforceMinRequiredFieldsForUpload)},
+    {"enable-sync-uss-sessions", flag_descriptions::kEnableSyncUSSSessionsName,
+     flag_descriptions::kEnableSyncUSSSessionsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(switches::kSyncUSSSessions)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
