@@ -14,6 +14,8 @@
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/app_list/app_list_export.h"
+#include "ui/base/ui_base_types.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace gfx {
 class Size;
@@ -96,6 +98,10 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // Add/remove observer for AppListViewDelegate.
   virtual void AddObserver(AppListViewDelegateObserver* observer) = 0;
   virtual void RemoveObserver(AppListViewDelegateObserver* observer) = 0;
+
+  // Show wallpaper context menu from the specified onscreen location.
+  virtual void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
+                                        ui::MenuSourceType source_type) = 0;
 };
 
 }  // namespace app_list

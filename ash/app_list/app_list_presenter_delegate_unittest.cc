@@ -12,6 +12,7 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -20,6 +21,7 @@
 #include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/root_window_finder.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -1287,6 +1289,47 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, AppListButtonEndOverViewMode) {
   PressAppListButton();
   EXPECT_FALSE(window_selector_controller->IsSelecting());
   GetAppListTestHelper()->CheckVisibility(true);
+}
+
+// Tests that the context menu is triggered in the same way as if we are on
+// the wallpaper.
+TEST_F(AppListPresenterDelegateHomeLauncherTest, WallpaperContextMenu) {
+  // Show app list in tablet mode.
+  EnableTabletMode(true);
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  // Long press on the app list to open the context menu.
+  const gfx::Point onscreen_point(GetPointOutsideSearchbox());
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  ui::GestureEvent long_press(
+      onscreen_point.x(), onscreen_point.y(), 0, base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+  generator.Dispatch(&long_press);
+  GetAppListTestHelper()->WaitUntilIdle();
+  const aura::Window* root = wm::GetRootWindowAt(onscreen_point);
+  const RootWindowController* root_window_controller =
+      RootWindowController::ForWindow(root);
+  EXPECT_TRUE(root_window_controller->IsContextMenuShown());
+
+  // Tap down to close the context menu.
+  ui::GestureEvent tap_down(onscreen_point.x(), onscreen_point.y(), 0,
+                            base::TimeTicks(),
+                            ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN));
+  generator.Dispatch(&tap_down);
+  GetAppListTestHelper()->WaitUntilIdle();
+  EXPECT_FALSE(root_window_controller->IsContextMenuShown());
+
+  // Right click to open the context menu.
+  generator.MoveMouseTo(onscreen_point);
+  generator.PressRightButton();
+  GetAppListTestHelper()->WaitUntilIdle();
+  EXPECT_TRUE(root_window_controller->IsContextMenuShown());
+
+  // Left click to close the context menu.
+  generator.MoveMouseTo(onscreen_point);
+  generator.PressLeftButton();
+  GetAppListTestHelper()->WaitUntilIdle();
+  EXPECT_FALSE(root_window_controller->IsContextMenuShown());
 }
 
 }  // namespace ash

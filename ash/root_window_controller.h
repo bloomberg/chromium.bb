@@ -231,6 +231,7 @@ class ASH_EXPORT RootWindowController {
   void ShowContextMenu(const gfx::Point& location_in_screen,
                        ui::MenuSourceType source_type);
   void HideContextMenu();
+  bool IsContextMenuShown() const;
 
   // Called when the login status changes after login (such as lock/unlock).
   void UpdateAfterLoginStatusChange(LoginStatus status);

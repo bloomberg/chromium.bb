@@ -639,6 +639,10 @@ void RootWindowController::HideContextMenu() {
     menu_runner_->Cancel();
 }
 
+bool RootWindowController::IsContextMenuShown() const {
+  return menu_runner_ && menu_runner_->IsRunning();
+}
+
 void RootWindowController::UpdateAfterLoginStatusChange(LoginStatus status) {
   StatusAreaWidget* status_area_widget =
       shelf_->shelf_widget()->status_area_widget();
