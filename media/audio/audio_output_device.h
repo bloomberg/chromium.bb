@@ -161,8 +161,9 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
 
   void NotifyRenderCallbackOfError();
 
-  // base::MessageLoop::DestructionObserver implementation for the IO loop.
-  // If the IO loop dies before we do, we shut down the audio thread from here.
+  // base::MessageLoopCurrent::DestructionObserver implementation for the IO
+  // loop. If the IO loop dies before we do, we shut down the audio thread from
+  // here.
   void WillDestroyCurrentMessageLoop() override;
 
   AudioParameters audio_parameters_;
