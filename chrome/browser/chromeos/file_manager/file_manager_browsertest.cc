@@ -179,10 +179,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       "deleteMenuItemIsDisabledWhenNoItemIsSelected"),
         TestParameter(NOT_IN_GUEST_MODE, "deleteOneItemFromToolbar")));
 
-// TODO(yamaguchi):Enable after removing root cause of the test flakiness.
-// http://crbug.com/804413.
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_QuickView,
+    QuickView,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "openQuickView"),
                       TestParameter(NOT_IN_GUEST_MODE, "closeQuickView")));
