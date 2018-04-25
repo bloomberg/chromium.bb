@@ -263,10 +263,8 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     viz::ResourceId child_id = resource.id_in_child;
     DCHECK(child_info->child_to_parent_map.count(child_id));
 
-    bool is_lost = resource.lost ||
-                   (resource.is_gpu_resource_type() && lost_context_provider_);
-    if (resource.exported_count > 0 || resource.lock_for_read_count > 0 ||
-        resource.locked_for_external_use) {
+    bool is_lost = (resource.is_gpu_resource_type() && lost_context_provider_);
+    if (resource.lock_for_read_count > 0 || resource.locked_for_external_use) {
       if (style != FOR_SHUTDOWN) {
         // Defer this resource deletion.
         resource.marked_for_deletion = true;
@@ -393,17 +391,15 @@ void DisplayResourceProvider::ReceiveFromChild(
       DCHECK(IsBitmapFormatSupported(it->format));
       resource = InsertResource(
           local_id,
-          viz::internal::Resource(it->size, viz::internal::Resource::DELEGATED,
-                                  viz::ResourceType::kBitmap, it->format,
-                                  it->color_space));
+          viz::internal::Resource(it->size, viz::ResourceType::kBitmap,
+                                  it->format, it->color_space));
       resource->has_shared_bitmap_id = true;
       resource->shared_bitmap_id = it->mailbox_holder.mailbox;
     } else {
       resource = InsertResource(
           local_id,
-          viz::internal::Resource(it->size, viz::internal::Resource::DELEGATED,
-                                  viz::ResourceType::kTexture, it->format,
-                                  it->color_space));
+          viz::internal::Resource(it->size, viz::ResourceType::kTexture,
+                                  it->format, it->color_space));
       resource->target = it->mailbox_holder.texture_target;
       resource->filter = it->filter;
       resource->original_filter = it->filter;
@@ -488,8 +484,7 @@ GLenum DisplayResourceProvider::BindForSampling(viz::ResourceId resource_id,
 
 bool DisplayResourceProvider::InUse(viz::ResourceId id) {
   viz::internal::Resource* resource = GetResource(id);
-  return resource->lock_for_read_count > 0 || resource->lost ||
-         resource->locked_for_external_use;
+  return resource->lock_for_read_count > 0 || resource->locked_for_external_use;
 }
 
 DisplayResourceProvider::ScopedReadLockGL::ScopedReadLockGL(
@@ -519,15 +514,12 @@ const viz::internal::Resource* DisplayResourceProvider::LockForRead(
   if (!resource)
     return nullptr;
 
-  DCHECK_EQ(resource->exported_count, 0);
-
   // Mailbox sync_tokens must be processed by a call to WaitSyncToken() prior to
   // calling LockForRead().
   DCHECK_NE(viz::internal::Resource::NEEDS_WAIT,
             resource->synchronization_state());
 
   if (resource->is_gpu_resource_type() && !resource->gl_id) {
-    DCHECK(resource->origin != viz::internal::Resource::INTERNAL);
     DCHECK(!resource->mailbox.IsZero());
 
     GLES2Interface* gl = ContextGL();
@@ -569,7 +561,6 @@ void DisplayResourceProvider::UnlockForRead(viz::ResourceId id) {
 
   viz::internal::Resource* resource = &it->second;
   DCHECK_GT(resource->lock_for_read_count, 0);
-  DCHECK_EQ(resource->exported_count, 0);
   resource->lock_for_read_count--;
   TryReleaseResource(it);
 }
@@ -582,7 +573,6 @@ viz::ResourceMetadata DisplayResourceProvider::LockForExternalUse(
 
   viz::internal::Resource* resource = &it->second;
   viz::ResourceMetadata metadata;
-  DCHECK_EQ(resource->exported_count, 0);
   // Make sure there is no outstanding LockForExternalUse without calling
   // UnlockForExternalUse.
   DCHECK(!resource->locked_for_external_use);

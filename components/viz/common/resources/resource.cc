@@ -11,12 +11,10 @@ namespace viz {
 namespace internal {
 
 Resource::Resource(const gfx::Size& size,
-                   Origin origin,
                    ResourceType type,
                    ResourceFormat format,
                    const gfx::ColorSpace& color_space)
     : locked_for_external_use(false),
-      lost(false),
       marked_for_deletion(false),
       read_lock_fences_enabled(false),
       has_shared_bitmap_id(false),
@@ -26,7 +24,6 @@ Resource::Resource(const gfx::Size& size,
       wants_promotion_hint(false),
 #endif
       size(size),
-      origin(origin),
       type(type),
       format(format),
       color_space(color_space) {
