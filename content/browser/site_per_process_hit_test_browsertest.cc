@@ -1001,6 +1001,14 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 // overscroll gesture.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        RootConsumesScrollDuringOverscrollGesture) {
+#if defined(OS_ANDROID)
+  // TODO(835058): Fix flakiness on android with viz hit testing.
+  if (features::IsVizHitTestingEnabled()) {
+    LOG(INFO) << "Skipping test due to https://crbug.com/835058";
+    return;
+  }
+#endif
+
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
