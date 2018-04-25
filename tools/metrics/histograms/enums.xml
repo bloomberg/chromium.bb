@@ -11134,6 +11134,15 @@ Called by update_net_error_codes.py.-->
   <int value="29" label="X25519"/>
 </enum>
 
+<enum name="EdidColorSpaceChecksOutcome">
+  <int value="0" label="All checks passed"/>
+  <int value="1" label="Bad primaries coordinates"/>
+  <int value="2" label="Area of primaries' triangle too small"/>
+  <int value="3" label="Blue primary is broken"/>
+  <int value="4" label="Cannot extract toXYZD50 matrix"/>
+  <int value="5" label="Bad gamma value"/>
+</enum>
+
 <enum name="EGLDisplayType">
   <int value="0" label="Default"/>
   <int value="1" label="SwiftShader"/>

@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "base/containers/flat_map.h"
+#include "base/metrics/histogram_macros.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/util/edid_parser.h"
@@ -24,6 +25,13 @@ namespace {
 
 static const size_t kDefaultCursorWidth = 64;
 static const size_t kDefaultCursorHeight = 64;
+
+// Used in the GetColorSpaceFromEdid function to collect data on whether the
+// color space extracted from an EDID blob passed the sanity checks.
+void EmitEdidColorSpaceChecksOutcomeUma(EdidColorSpaceChecksOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION("DrmUtil.GetColorSpaceFromEdid.ChecksOutcome",
+                            outcome);
+}
 
 bool IsCrtcInUse(
     uint32_t crtc,
@@ -402,6 +410,8 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
 
   ScopedDrmPropertyBlobPtr edid_blob(
       GetDrmPropertyBlob(fd, info->connector(), "EDID"));
+  UMA_HISTOGRAM_BOOLEAN("DrmUtil.CreateDisplaySnapshot.HasEdidBlob",
+                        !!edid_blob);
   std::vector<uint8_t> edid;
   if (edid_blob) {
     edid.assign(static_cast<uint8_t*>(edid_blob->data),
@@ -642,6 +652,8 @@ gfx::ColorSpace GetColorSpaceFromEdid(const display::EdidParser& edid_parser) {
   // Rx, to guarantee that the R, G and B colors are each in the correct region.
   if (!(primaries.fBX <= primaries.fRX && primaries.fGX <= primaries.fRX &&
         primaries.fBY <= primaries.fRY && primaries.fRY <= primaries.fGY)) {
+    EmitEdidColorSpaceChecksOutcomeUma(
+        EdidColorSpaceChecksOutcome::kErrorBadCoordinates);
     return gfx::ColorSpace();
   }
 
@@ -652,8 +664,11 @@ gfx::ColorSpace GetColorSpaceFromEdid(const display::EdidParser& edid_parser) {
       (primaries.fRX * primaries.fGY) + (primaries.fBX * primaries.fRY) +
       (primaries.fGX * primaries.fBY) - (primaries.fBX * primaries.fGY) -
       (primaries.fGX * primaries.fRY) - (primaries.fRX * primaries.fBY);
-  if (primaries_area_twice < kBT709PrimariesArea)
+  if (primaries_area_twice < kBT709PrimariesArea) {
+    EmitEdidColorSpaceChecksOutcomeUma(
+        EdidColorSpaceChecksOutcome::kErrorPrimariesAreaTooSmall);
     return gfx::ColorSpace();
+  }
 
   // Sanity check: https://crbug.com/809909, the blue primary coordinates should
   // not be too far left/upwards of the expected location (namely [0.15, 0.06]
@@ -665,18 +680,28 @@ gfx::ColorSpace GetColorSpaceFromEdid(const display::EdidParser& edid_parser) {
   const bool is_blue_primary_broken =
       (std::abs(primaries.fBX - kExpectedBluePrimaryX) > kBluePrimaryXDelta) ||
       (std::abs(primaries.fBY - kExpectedBluePrimaryY) > kBluePrimaryYDelta);
-  if (is_blue_primary_broken)
+  if (is_blue_primary_broken) {
+    EmitEdidColorSpaceChecksOutcomeUma(
+        EdidColorSpaceChecksOutcome::kErrorBluePrimaryIsBroken);
     return gfx::ColorSpace();
+  }
 
   SkMatrix44 color_space_as_matrix;
-  if (!primaries.toXYZD50(&color_space_as_matrix))
+  if (!primaries.toXYZD50(&color_space_as_matrix)) {
+    EmitEdidColorSpaceChecksOutcomeUma(
+        EdidColorSpaceChecksOutcome::kErrorCannotExtractToXYZD50);
     return gfx::ColorSpace();
+  }
 
   const double gamma = edid_parser.gamma();
-  if (gamma < 1.0)
+  if (gamma < 1.0) {
+    EmitEdidColorSpaceChecksOutcomeUma(
+        EdidColorSpaceChecksOutcome::kErrorBadGamma);
     return gfx::ColorSpace();
+  }
 
   SkColorSpaceTransferFn transfer = {gamma, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f};
+  EmitEdidColorSpaceChecksOutcomeUma(EdidColorSpaceChecksOutcome::kSuccess);
   return gfx::ColorSpace::CreateCustom(color_space_as_matrix, transfer);
 }
 
