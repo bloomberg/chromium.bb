@@ -20,6 +20,8 @@
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_model_observer.h"
+#include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf_application_menu_model.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_controller.h"
@@ -48,6 +50,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
+#include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
@@ -339,6 +342,23 @@ SkBitmap GetLastItemImage(TestShelfController* shelf_controller) {
   const SkBitmap* bitmap = shelf_controller->last_item().image.bitmap();
   CHECK(bitmap);
   return *bitmap;
+}
+
+// Creates a window with TYPE_APP shelf item type and the given app_id.
+views::Widget* CreateShelfAppWindow(const std::string& app_id) {
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(5, 5, 20, 20);
+  views::Widget* widget = new views::Widget();
+  widget->Init(params);
+
+  aura::Window* window = widget->GetNativeWindow();
+  const ash::ShelfID shelf_id(app_id);
+  window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
+  window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
+
+  widget->Show();
+  widget->Activate();
+  return widget;
 }
 
 }  // namespace
@@ -4242,25 +4262,92 @@ TEST_F(ChromeLauncherControllerTest, ShelfItemImageSync) {
 }
 
 // Test the Settings can be pinned and unpinned.
-TEST_F(ChromeLauncherControllerTest, PinUnpinInternalApp) {
+TEST_F(ChromeLauncherControllerTest, InternalAppPinUnpin) {
   InitLauncherController();
   // The model should only contain the browser shortcut, app list and back
   // button items.
   EXPECT_EQ(3, model_->item_count());
-  EXPECT_FALSE(
-      launcher_controller_->IsAppPinned(app_list::kInternalAppIdSettings));
+
+  const std::string app_id = app_list::kInternalAppIdSettings;
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(app_id));
 
   // Pin Settings.
-  launcher_controller_->PinAppWithID(app_list::kInternalAppIdSettings);
+  launcher_controller_->PinAppWithID(app_id);
   EXPECT_EQ(4, model_->item_count());
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[3].type);
   EXPECT_EQ(ash::STATUS_CLOSED, model_->items()[3].status);
-  EXPECT_TRUE(
-      launcher_controller_->IsAppPinned(app_list::kInternalAppIdSettings));
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
 
   // Unpin Settings.
-  launcher_controller_->UnpinAppWithID(app_list::kInternalAppIdSettings);
+  launcher_controller_->UnpinAppWithID(app_id);
   EXPECT_EQ(3, model_->item_count());
-  EXPECT_FALSE(
-      launcher_controller_->IsAppPinned(app_list::kInternalAppIdSettings));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(app_id));
+}
+
+// Test that internal app can be added and removed on shelf.
+TEST_F(ChromeLauncherControllerTest, InternalAppWindowRecreation) {
+  InitLauncherController();
+
+  // Only test the first internal app. The others should be the same.
+  const auto& internal_app = app_list::GetInternalAppList().front();
+  const std::string app_id = internal_app.app_id;
+  const ash::ShelfID shelf_id(app_id);
+  EXPECT_FALSE(launcher_controller_->GetItem(shelf_id));
+
+  views::Widget* internal_app_window = CreateShelfAppWindow(app_id);
+  ASSERT_TRUE(internal_app_window);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(launcher_controller_->GetItem(shelf_id));
+
+  internal_app_window->Close();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(launcher_controller_->GetItem(shelf_id));
+
+  // Create and close again.
+  internal_app_window = CreateShelfAppWindow(app_id);
+  ASSERT_TRUE(internal_app_window);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(launcher_controller_->GetItem(shelf_id));
+
+  internal_app_window->Close();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(launcher_controller_->GetItem(shelf_id));
+}
+
+// Test that internal app can be added and removed by SetProperty of
+// ash::kShelfIDKey.
+TEST_F(ChromeLauncherControllerTest, InternalAppWindowPropertyChanged) {
+  InitLauncherController();
+
+  // Only test the first internal app. The others should be the same.
+  const auto& internal_app = app_list::GetInternalAppList().front();
+  std::string app_id;
+  ash::ShelfID shelf_id;
+  EXPECT_FALSE(launcher_controller_->GetItem(shelf_id));
+
+  // Set an empty ash::kShelfIDKey.
+  views::Widget* internal_app_window = CreateShelfAppWindow(app_id);
+  ASSERT_TRUE(internal_app_window);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(launcher_controller_->GetItem(shelf_id));
+
+  // Set an invalid ash::kShelfIDKey.
+  app_id = "An invalid internal app id";
+  shelf_id = ash::ShelfID(app_id);
+  internal_app_window->GetNativeWindow()->SetProperty(
+      ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(launcher_controller_->GetItem(shelf_id));
+
+  // Set a valid ash::kShelfIDKey.
+  app_id = internal_app.app_id;
+  shelf_id = ash::ShelfID(app_id);
+  internal_app_window->GetNativeWindow()->SetProperty(
+      ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(launcher_controller_->GetItem(shelf_id));
+
+  internal_app_window->Close();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(launcher_controller_->GetItem(shelf_id));
 }
