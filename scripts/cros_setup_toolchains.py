@@ -134,6 +134,7 @@ class Crossdev(object):
       'llvm': 'sys-devel',
       'libcxxabi': 'sys-libs',
       'libcxx': 'sys-libs',
+      'elfutils': 'dev-libs',
   }
 
   @classmethod
