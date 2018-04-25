@@ -121,14 +121,14 @@ ScopedDrmFramebufferPtr MockDrmDevice::GetFramebuffer(uint32_t framebuffer) {
 
 bool MockDrmDevice::PageFlip(uint32_t crtc_id,
                              uint32_t framebuffer,
-                             const PageFlipCallback& callback) {
+                             PageFlipCallback callback) {
   page_flip_call_count_++;
   current_framebuffer_ = framebuffer;
   if (page_flip_expectation_) {
     if (use_sync_flips_)
-      callback.Run(0, base::TimeTicks());
+      std::move(callback).Run(0, base::TimeTicks());
     else
-      callbacks_.push(callback);
+      callbacks_.push(std::move(callback));
   }
 
   return page_flip_expectation_;
@@ -221,7 +221,7 @@ bool MockDrmDevice::CloseBufferHandle(uint32_t handle) {
 bool MockDrmDevice::CommitProperties(drmModeAtomicReq* properties,
                                      uint32_t flags,
                                      uint32_t crtc_count,
-                                     const PageFlipCallback& callback) {
+                                     PageFlipCallback callback) {
   return false;
 }
 
@@ -239,9 +239,9 @@ bool MockDrmDevice::SetCapability(uint64_t capability, uint64_t value) {
 
 void MockDrmDevice::RunCallbacks() {
   while (!callbacks_.empty()) {
-    PageFlipCallback callback = callbacks_.front();
+    PageFlipCallback callback = std::move(callbacks_.front());
     callbacks_.pop();
-    callback.Run(0, base::TimeTicks());
+    std::move(callback).Run(0, base::TimeTicks());
   }
 }
 
