@@ -337,8 +337,6 @@ const CGFloat kSearchByImageMaxImageHeight = 400.0;
 enum HeaderBehaviour {
   // The header moves completely out of the screen.
   Hideable = 0,
-  // This header stays on screen and doesn't overlap with the content.
-  Visible,
   // This header stay on screen and covers part of the content.
   Overlap
 };
@@ -358,25 +356,22 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 #pragma mark - HeaderDefinition helper
 
+// Class used to define a header, an object displayed at the top of the browser.
 @interface HeaderDefinition : NSObject
 
 // The header view.
 @property(nonatomic, strong) UIView* view;
 // How to place the view, and its behaviour when the headers move.
 @property(nonatomic, assign) HeaderBehaviour behaviour;
-// Reduces the height of a header to adjust for shadows.
-@property(nonatomic, assign) CGFloat heightAdjustement;
 // Nudges that particular header up by this number of points.
 @property(nonatomic, assign) CGFloat inset;
 
 - (instancetype)initWithView:(UIView*)view
              headerBehaviour:(HeaderBehaviour)behaviour
-            heightAdjustment:(CGFloat)heightAdjustment
                        inset:(CGFloat)inset;
 
 + (instancetype)definitionWithView:(UIView*)view
                    headerBehaviour:(HeaderBehaviour)behaviour
-                  heightAdjustment:(CGFloat)heightAdjustment
                              inset:(CGFloat)inset;
 
 @end
@@ -384,28 +379,23 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @implementation HeaderDefinition
 @synthesize view = _view;
 @synthesize behaviour = _behaviour;
-@synthesize heightAdjustement = _heightAdjustement;
 @synthesize inset = _inset;
 
 + (instancetype)definitionWithView:(UIView*)view
                    headerBehaviour:(HeaderBehaviour)behaviour
-                  heightAdjustment:(CGFloat)heightAdjustment
                              inset:(CGFloat)inset {
   return [[self alloc] initWithView:view
                     headerBehaviour:behaviour
-                   heightAdjustment:heightAdjustment
                               inset:inset];
 }
 
 - (instancetype)initWithView:(UIView*)view
              headerBehaviour:(HeaderBehaviour)behaviour
-            heightAdjustment:(CGFloat)heightAdjustment
                        inset:(CGFloat)inset {
   self = [super init];
   if (self) {
     _view = view;
     _behaviour = behaviour;
-    _heightAdjustement = heightAdjustment;
     _inset = inset;
   }
   return self;
@@ -1325,14 +1315,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                              definitionWithView:self.primaryToolbarCoordinator
                                                     .viewController.view
                                 headerBehaviour:Hideable
-                               heightAdjustment:0.0
                                           inset:0.0]];
     }
   } else {
     if (self.tabStripView) {
       [results addObject:[HeaderDefinition definitionWithView:self.tabStripView
                                               headerBehaviour:Hideable
-                                             heightAdjustment:0.0
                                                         inset:0.0]];
     }
     if (self.primaryToolbarCoordinator.viewController.view) {
@@ -1340,14 +1328,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                              definitionWithView:self.primaryToolbarCoordinator
                                                     .viewController.view
                                 headerBehaviour:Hideable
-                               heightAdjustment:0.0
                                           inset:0.0]];
     }
     if ([_findBarController view]) {
       [results addObject:[HeaderDefinition
                              definitionWithView:[_findBarController view]
                                 headerBehaviour:Overlap
-                               heightAdjustment:0.0
                                           inset:kIPadFindBarOverlap]];
     }
   }
@@ -2550,8 +2536,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   CGFloat height = self.headerOffset;
   for (HeaderDefinition* header in views) {
     if (header.view && header.behaviour == Hideable) {
-      height += CGRectGetHeight([header.view frame]) -
-                header.heightAdjustement - header.inset;
+      height += CGRectGetHeight([header.view frame]) - header.inset;
     }
   }
 
