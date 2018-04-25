@@ -31,6 +31,21 @@ std::unique_ptr<views::Background> CreateUnifiedBackground() {
           kUnifiedTrayCornerRadius));
 }
 
+class DetailedViewContainer : public views::View {
+ public:
+  DetailedViewContainer() = default;
+  ~DetailedViewContainer() override = default;
+
+  void Layout() override {
+    for (int i = 0; i < child_count(); ++i)
+      child_at(i)->SetBoundsRect(GetContentsBounds());
+    views::View::Layout();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DetailedViewContainer);
+};
+
 }  // namespace
 
 UnifiedSlidersContainerView::UnifiedSlidersContainerView(
@@ -89,7 +104,9 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
       top_shortcuts_view_(new TopShortcutsView(controller_)),
       feature_pods_container_(new FeaturePodsContainerView(initially_expanded)),
       sliders_container_(new UnifiedSlidersContainerView(initially_expanded)),
-      system_info_view_(new UnifiedSystemInfoView()) {
+      system_info_view_(new UnifiedSystemInfoView()),
+      system_tray_container_(new views::View()),
+      detailed_view_container_(new DetailedViewContainer()) {
   DCHECK(controller_);
 
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -103,16 +120,18 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   AddChildView(message_center_view_);
   layout->SetFlexForView(message_center_view_, 1);
 
-  auto* system_tray_container = new views::View;
-  system_tray_container->SetLayoutManager(
+  system_tray_container_->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-  system_tray_container->SetBackground(CreateUnifiedBackground());
-  AddChildView(system_tray_container);
+  system_tray_container_->SetBackground(CreateUnifiedBackground());
+  AddChildView(system_tray_container_);
 
-  system_tray_container->AddChildView(top_shortcuts_view_);
-  system_tray_container->AddChildView(feature_pods_container_);
-  system_tray_container->AddChildView(sliders_container_);
-  system_tray_container->AddChildView(system_info_view_);
+  system_tray_container_->AddChildView(top_shortcuts_view_);
+  system_tray_container_->AddChildView(feature_pods_container_);
+  system_tray_container_->AddChildView(sliders_container_);
+  system_tray_container_->AddChildView(system_info_view_);
+
+  detailed_view_container_->SetVisible(false);
+  AddChildView(detailed_view_container_);
 }
 
 UnifiedSystemTrayView::~UnifiedSystemTrayView() = default;
@@ -129,6 +148,18 @@ void UnifiedSystemTrayView::AddSliderView(views::View* slider_view) {
   slider_view->SetPaintToLayer();
   slider_view->layer()->SetFillsBoundsOpaquely(false);
   sliders_container_->AddChildView(slider_view);
+}
+
+void UnifiedSystemTrayView::SetDetailedView(views::View* detailed_view) {
+  auto system_tray_size = system_tray_container_->GetPreferredSize();
+  system_tray_container_->SetVisible(false);
+
+  detailed_view_container_->RemoveAllChildViews(true /* delete_children */);
+  detailed_view_container_->AddChildView(detailed_view);
+  detailed_view_container_->SetPreferredSize(system_tray_size);
+  detailed_view_container_->SetVisible(true);
+  detailed_view->InvalidateLayout();
+  Layout();
 }
 
 void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {

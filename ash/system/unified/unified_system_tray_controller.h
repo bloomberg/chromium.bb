@@ -108,6 +108,17 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   // Unowned. Owned by Views hierarchy.
   UnifiedSystemTrayView* unified_view_ = nullptr;
 
+  // Reference to the SystemTrayItem of the currently shown detailed view.
+  // Unowned.
+  // We have to call SystemTrayItem::OnDetailedViewDestoryed() on bubble close,
+  // because typically each SystemTrayItem observes a model and it calls
+  // Update() method of each detailed view.
+  // To remove this, detailed views should observe models directly so that
+  // UnifiedSystemTrayController can instantiate them directly.
+  // TODO(tetsui): Remove this hack when we implement our own detailed views of
+  // UnifiedSystemTray.
+  SystemTrayItem* detailed_view_item_ = nullptr;
+
   // Controllers of feature pod buttons. Owned by this.
   std::vector<std::unique_ptr<FeaturePodControllerBase>>
       feature_pod_controllers_;
