@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 
@@ -13,15 +14,8 @@
 #endif
 
 namespace {
-
-// The horizontal spacing between text labels.
-const CGFloat kHorizontalSpacing = 8.0;
-
-// THe vertical spacing between text labels.
-const CGFloat kVerticalSpacing = 2.0;
-
-// The display size of the favicon view.
-const CGFloat kFaviconViewSize = 56.0;
+// The width and height of the favicon ImageView.
+const float kFaviconWidth = 28.0f;
 }
 
 @implementation TableViewURLItem
@@ -83,6 +77,7 @@ const CGFloat kFaviconViewSize = 56.0;
     _titleLabel.adjustsFontForContentSizeCategory = YES;
     _URLLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     _URLLabel.adjustsFontForContentSizeCategory = YES;
+    _URLLabel.textColor = [UIColor lightGrayColor];
     _metadataLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     _metadataLabel.adjustsFontForContentSizeCategory = YES;
@@ -91,8 +86,6 @@ const CGFloat kFaviconViewSize = 56.0;
     UIStackView* verticalStack = [[UIStackView alloc]
         initWithArrangedSubviews:@[ _titleLabel, _URLLabel ]];
     verticalStack.axis = UILayoutConstraintAxisVertical;
-
-    verticalStack.spacing = kVerticalSpacing;
     [_metadataLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh
                                       forAxis:UILayoutConstraintAxisHorizontal];
     [_metadataLabel
@@ -100,10 +93,11 @@ const CGFloat kFaviconViewSize = 56.0;
                                         forAxis:
                                             UILayoutConstraintAxisHorizontal];
 
+    // Horizontal stack view holds vertical stack view and favicon.
     UIStackView* horizontalStack = [[UIStackView alloc]
         initWithArrangedSubviews:@[ verticalStack, _metadataLabel ]];
     horizontalStack.axis = UILayoutConstraintAxisHorizontal;
-    horizontalStack.spacing = kHorizontalSpacing;
+    horizontalStack.spacing = kTableViewSubViewHorizontalSpacing;
     horizontalStack.distribution = UIStackViewDistributionFill;
     horizontalStack.alignment = UIStackViewAlignmentFirstBaseline;
 
@@ -116,30 +110,28 @@ const CGFloat kFaviconViewSize = 56.0;
     [NSLayoutConstraint activateConstraints:@[
       // The favicon view is a fixed size, is pinned to the leading edge of the
       // content view, and is centered vertically.
-      [_faviconView.heightAnchor constraintEqualToConstant:kFaviconViewSize],
-      [_faviconView.widthAnchor constraintEqualToConstant:kFaviconViewSize],
+      [_faviconView.heightAnchor constraintEqualToConstant:kFaviconWidth],
+      [_faviconView.widthAnchor constraintEqualToConstant:kFaviconWidth],
       [_faviconView.leadingAnchor
-          constraintEqualToAnchor:self.contentView.leadingAnchor],
+          constraintEqualToAnchor:self.contentView.leadingAnchor
+                         constant:kTableViewHorizontalSpacing],
       [_faviconView.centerYAnchor
           constraintEqualToAnchor:self.contentView.centerYAnchor],
 
       // The stack view fills the remaining space, has an intrinsic height, and
       // is centered vertically.
       [horizontalStack.leadingAnchor
-          constraintEqualToAnchor:_faviconView.trailingAnchor],
+          constraintEqualToAnchor:_faviconView.trailingAnchor
+                         constant:kTableViewSubViewHorizontalSpacing],
       [horizontalStack.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
-                         constant:-kHorizontalSpacing],
-      [horizontalStack.centerYAnchor
-          constraintEqualToAnchor:self.contentView.centerYAnchor],
-
-      // The content view's height is set by the larger of the favicon view or
-      // the stack view.  This maintains a minimum size but allows the cell to
-      // grow if Dynamic Type increases the font size.
-      [self.contentView.heightAnchor
-          constraintGreaterThanOrEqualToAnchor:_faviconView.heightAnchor],
-      [self.contentView.heightAnchor
-          constraintGreaterThanOrEqualToAnchor:horizontalStack.heightAnchor],
+                         constant:-kTableViewHorizontalSpacing],
+      [horizontalStack.topAnchor
+          constraintEqualToAnchor:self.contentView.topAnchor
+                         constant:kTableViewVerticalSpacing],
+      [horizontalStack.bottomAnchor
+          constraintEqualToAnchor:self.contentView.bottomAnchor
+                         constant:-kTableViewVerticalSpacing]
     ]];
   }
   return self;

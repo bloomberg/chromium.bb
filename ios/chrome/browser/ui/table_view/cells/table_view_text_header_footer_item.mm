@@ -71,7 +71,6 @@
     UIStackView* verticalStack = [[UIStackView alloc]
         initWithArrangedSubviews:@[ _textLabel, _subtitleLabel ]];
     verticalStack.axis = UILayoutConstraintAxisVertical;
-    verticalStack.spacing = kTableViewVerticalLabelStackSpacing;
     verticalStack.translatesAutoresizingMaskIntoConstraints = NO;
 
     // Container View.
@@ -87,16 +86,16 @@
       // Container Constraints.
       [containerView.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
-                         constant:kTableViewCellViewSpacing],
+                         constant:kTableViewHorizontalSpacing],
       [containerView.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
-                         constant:-kTableViewCellViewSpacing],
+                         constant:-kTableViewHorizontalSpacing],
       [containerView.topAnchor
           constraintGreaterThanOrEqualToAnchor:self.contentView.topAnchor
-                                      constant:kTableViewCellViewSpacing],
+                                      constant:kTableViewVerticalSpacing],
       [containerView.bottomAnchor
           constraintLessThanOrEqualToAnchor:self.contentView.bottomAnchor
-                                   constant:-kTableViewCellViewSpacing],
+                                   constant:-kTableViewVerticalSpacing],
       [containerView.centerYAnchor
           constraintEqualToAnchor:self.contentView.centerYAnchor],
       // Vertical StackView Constraints.

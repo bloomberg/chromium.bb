@@ -7,11 +7,14 @@
 
 #import <UIKit/UIKit.h>
 
-// The spacing between views inside of a cell.
-extern const CGFloat kTableViewCellViewSpacing;
+// The horizontal spacing between views and the container view of a cell.
+extern const CGFloat kTableViewHorizontalSpacing;
 
-// The vertical spacing between text labels in a stackView.
-extern const CGFloat kTableViewVerticalLabelStackSpacing;
+// The vertical spacing between views and the container view of a cell
+extern const CGFloat kTableViewVerticalSpacing;
+
+// The horizontal spacing between subviews within the container view.
+extern const CGFloat kTableViewSubViewHorizontalSpacing;
 
 // Animation duration for highlighting selected section header.
 extern const CGFloat kTableViewCellSelectionAnimationDuration;
@@ -20,5 +23,9 @@ extern const CGFloat kTableViewCellSelectionAnimationDuration;
 // represent a user tap.
 extern const CGFloat kTableViewHighlightedCellColor;
 extern const CGFloat kTableViewHighlightedCellColorAlpha;
+
+// Setting the font size to 0 for a custom preferred font lets iOS manage
+// sizing.
+extern const CGFloat kUseDefaultFontSize;
 
 #endif  // IOS_CHROME_BROWSER_UI_TABLE_VIEW_CELLS_TABLE_VIEW_CELLS_CONSTANTS_H_

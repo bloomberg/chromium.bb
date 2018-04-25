@@ -47,7 +47,7 @@
 - (void)viewDidLoad {
   [super viewDidLoad];
   [self.tableView setBackgroundColor:self.styler.tableViewBackgroundColor];
-  [self.tableView setSeparatorColor:[UIColor grayColor]];
+  [self.tableView setSeparatorColor:[UIColor lightGrayColor]];
   [self.tableView setSeparatorInset:UIEdgeInsetsMake(0, 56, 0, 0)];
 }
 
