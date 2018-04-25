@@ -40,8 +40,11 @@ bool DownloadStore::IsInitialized() {
 
 void DownloadStore::Initialize(InitCallback callback) {
   DCHECK(!IsInitialized());
-  db_->Init(kDatabaseClientName, database_dir_,
-            leveldb_proto::CreateSimpleOptions(),
+  // These options reduce memory consumption.
+  leveldb_env::Options options = leveldb_proto::CreateSimpleOptions();
+  options.reuse_logs = false;
+  options.write_buffer_size = 64 << 10;  // 64 KiB
+  db_->Init(kDatabaseClientName, database_dir_, options,
             base::BindOnce(&DownloadStore::OnDatabaseInited,
                            weak_factory_.GetWeakPtr(), std::move(callback)));
 }
