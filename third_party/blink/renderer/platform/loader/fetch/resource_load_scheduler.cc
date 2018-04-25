@@ -29,7 +29,11 @@ const char kOutstandingLimitForBackgroundMainFrameName[] = "bg_limit";
 const char kOutstandingLimitForBackgroundSubFrameName[] = "bg_sub_limit";
 
 // Field trial default parameters.
-constexpr size_t kOutstandingLimitForBackgroundFrameDefault = 16u;
+// Note: Giving smaller sub-frame threshold seems to work better for improving
+// foreground loading performance, while setting it to 1u easily breaks some
+// services that have one long-polling request, and needs other resources.
+constexpr size_t kOutstandingLimitForBackgroundMainFrameDefault = 3u;
+constexpr size_t kOutstandingLimitForBackgroundSubFrameDefault = 2u;
 
 // Maximum request count that request count metrics assume.
 constexpr base::HistogramBase::Sample kMaximumReportSize10K = 10000;
@@ -95,18 +99,14 @@ size_t GetOutstandingThrottledLimit(FetchContext* context) {
   if (!RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled())
     return ResourceLoadScheduler::kOutstandingUnlimited;
 
-  uint32_t main_frame_limit = GetFieldTrialUint32Param(
+  static size_t main_frame_limit = GetFieldTrialUint32Param(
       kResourceLoadSchedulerTrial, kOutstandingLimitForBackgroundMainFrameName,
-      kOutstandingLimitForBackgroundFrameDefault);
-  if (context->IsMainFrame())
-    return main_frame_limit;
+      kOutstandingLimitForBackgroundMainFrameDefault);
+  static size_t sub_frame_limit = GetFieldTrialUint32Param(
+      kResourceLoadSchedulerTrial, kOutstandingLimitForBackgroundSubFrameName,
+      kOutstandingLimitForBackgroundSubFrameDefault);
 
-  // We do not have a fixed default limit for sub-frames, but use the limit for
-  // the main frame so that it works as how previous versions that haven't
-  // consider sub-frames' specific limit work.
-  return GetFieldTrialUint32Param(kResourceLoadSchedulerTrial,
-                                  kOutstandingLimitForBackgroundSubFrameName,
-                                  main_frame_limit);
+  return context->IsMainFrame() ? main_frame_limit : sub_frame_limit;
 }
 
 int TakeWholeKilobytes(int64_t& bytes) {
