@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_egtest_util.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_switcher_mode.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -162,7 +163,16 @@ void CloseCurrentIncognitoTab() {
 void CloseAllIncognitoTabs() {
   GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");
   [ChromeEarlGrey waitForIncognitoTabCount:0];
-  if (IsIPadIdiom()) {
+
+  // When the tablet tab switcher is enabled, the user is dropped into the tab
+  // switcher after closing the last incognito tab. Therefore this test must
+  // manually switch back to showing the normal tabs. The stackview and tabgrid
+  // show the normal tabs immediately, without entering the switcher, so when
+  // those are enabled this step is not necessary.
+  //
+  // TODO(crbug.com/836812): This may need to include GRID as well, depending on
+  // how Issue 836812 is resolved.
+  if (GetTabSwitcherMode() == TabSwitcherMode::TABLET_SWITCHER) {
     // Switch to the non-incognito panel and leave the tab switcher.
     [[EarlGrey selectElementWithMatcher:TabletTabSwitcherOpenTabsPanelButton()]
         performAction:grey_tap()];

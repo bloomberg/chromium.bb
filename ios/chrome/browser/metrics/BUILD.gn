@@ -176,6 +176,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/authentication:eg_test_support",
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/browser/ui/tab_switcher:egtest_support",
+    "//ios/chrome/browser/ui/tab_switcher:modes",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/legacy",
     "//ios/chrome/browser/ui/toolbar/public",
