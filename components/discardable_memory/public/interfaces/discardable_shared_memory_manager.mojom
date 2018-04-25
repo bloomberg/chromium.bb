@@ -4,13 +4,15 @@
 
 module discardable_memory.mojom;
 
+import "mojo/public/mojom/base/shared_memory.mojom";
+
 // This interface is used for allocating discardable shared memory from browser
 // process. For mus+ash, this service will live in mus process.
 interface DiscardableSharedMemoryManager {
   // Allocate a locked discardable shared memory segment.
   AllocateLockedDiscardableSharedMemory(
       uint32 size,
-      int32 id) => (handle<shared_buffer>? memory);
+      int32 id) => (mojo_base.mojom.UnsafeSharedMemoryRegion region);
   // Notify manager that a memory segment has been deleted.
   DeletedDiscardableSharedMemory(int32 id);
 };

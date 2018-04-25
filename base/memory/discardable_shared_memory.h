@@ -10,7 +10,8 @@
 #include "base/base_export.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/threading/thread_collision_warner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -49,7 +50,7 @@ class BASE_EXPORT DiscardableSharedMemory {
 
   // Create a new DiscardableSharedMemory object from an existing, open shared
   // memory file. Memory must be locked.
-  explicit DiscardableSharedMemory(SharedMemoryHandle handle);
+  explicit DiscardableSharedMemory(UnsafeSharedMemoryRegion region);
 
   // Closes any open files.
   virtual ~DiscardableSharedMemory();
@@ -71,14 +72,17 @@ class BASE_EXPORT DiscardableSharedMemory {
   // The actual size of the mapped memory (may be larger than requested).
   size_t mapped_size() const { return mapped_size_; }
 
-  // Returns a shared memory handle for this DiscardableSharedMemory object.
-  SharedMemoryHandle handle() const { return shared_memory_.handle(); }
+  // Returns a duplicated shared memory region for this DiscardableSharedMemory
+  // object.
+  UnsafeSharedMemoryRegion DuplicateRegion() const {
+    return shared_memory_region_.Duplicate();
+  }
 
   // Returns an ID for the shared memory region. This is ID of the mapped region
   // consistent across all processes and is valid as long as the region is not
   // unmapped.
   const UnguessableToken& mapped_id() const {
-    return shared_memory_.mapped_id();
+    return shared_memory_mapping_.guid();
   }
 
   // Locks a range of memory so that it will not be purged by the system.
@@ -147,10 +151,24 @@ class BASE_EXPORT DiscardableSharedMemory {
       bool is_owned) const;
 
  private:
+  // LockPages/UnlockPages are platform-native discardable page management
+  // helper functions. Both expect |offset| to be specified relative to the
+  // base address at which |memory| is mapped, and that |offset| and |length|
+  // are page-aligned by the caller.
+  // Returns SUCCESS on platforms which do not support discardable pages.
+  static LockResult LockPages(const UnsafeSharedMemoryRegion& region,
+                              size_t offset,
+                              size_t length);
+  // UnlockPages() is a no-op on platforms not supporting discardable pages.
+  static void UnlockPages(const UnsafeSharedMemoryRegion& region,
+                          size_t offset,
+                          size_t length);
+
   // Virtual for tests.
   virtual Time Now() const;
 
-  SharedMemory shared_memory_;
+  UnsafeSharedMemoryRegion shared_memory_region_;
+  WritableSharedMemoryMapping shared_memory_mapping_;
   size_t mapped_size_;
   size_t locked_page_count_;
 #if DCHECK_IS_ON()

@@ -38,11 +38,14 @@ class BASE_EXPORT SharedMemoryTracker : public trace_event::MemoryDumpProvider {
   static const trace_event::MemoryAllocatorDump* GetOrCreateSharedMemoryDump(
       const SharedMemory* shared_memory,
       trace_event::ProcessMemoryDump* pmd);
+  // We're in the middle of a refactor https://crbug.com/795291. Eventually, the
+  // first call will go away.
+  static const trace_event::MemoryAllocatorDump* GetOrCreateSharedMemoryDump(
+      const SharedMemoryMapping& shared_memory,
+      trace_event::ProcessMemoryDump* pmd);
 
   // Records shared memory usage on valid mapping.
   void IncrementMemoryUsage(const SharedMemory& shared_memory);
-  // We're in the middle of a refactor https://crbug.com/795291. Eventually, the
-  // first call will go away.
   void IncrementMemoryUsage(const SharedMemoryMapping& mapping);
 
   // Records shared memory usage on unmapping.

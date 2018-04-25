@@ -44,6 +44,15 @@ SharedMemoryTracker::GetOrCreateSharedMemoryDump(
                                              shared_memory->mapped_id(), pmd);
 }
 
+const trace_event::MemoryAllocatorDump*
+SharedMemoryTracker::GetOrCreateSharedMemoryDump(
+    const SharedMemoryMapping& shared_memory,
+    trace_event::ProcessMemoryDump* pmd) {
+  return GetOrCreateSharedMemoryDumpInternal(shared_memory.raw_memory_ptr(),
+                                             shared_memory.mapped_size(),
+                                             shared_memory.guid(), pmd);
+}
+
 void SharedMemoryTracker::IncrementMemoryUsage(
     const SharedMemory& shared_memory) {
   AutoLock hold(usages_lock_);
