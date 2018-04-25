@@ -235,7 +235,7 @@ void RecordSigninNotDefaultUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_UNKNOWN:
     case AccessPoint::ACCESS_POINT_FORCE_SIGNIN_WARNING:
       NOTREACHED() << "Signin_SigninNotDefault_From* user actions"
-                   << " are not recorded for access_point "
+                   << " are not recorded for access point "
                    << static_cast<int>(access_point)
                    << " as it does not support a personalized sign-in promo.";
       break;
@@ -299,10 +299,17 @@ void RecordSigninNewAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR:
     case AccessPoint::ACCESS_POINT_UNKNOWN:
     case AccessPoint::ACCESS_POINT_FORCE_SIGNIN_WARNING:
-      NOTREACHED() << "Signin_SigninNewAccount_From* user actions"
-                   << " are not recorded for access_point "
-                   << static_cast<int>(access_point)
-                   << " as it does not support a personalized sign-in promo.";
+      // These access points do not support personalized sign-in promos, so
+      // |Signin_SigninNewAccount_From*| user actions should not be recorded
+      // for them.
+      // Note: To avoid bloating the sign-in APIs, the sign-in metrics simply
+      // ignore if the caller passes |PROMO_ACTION_NEW_ACCOUNT| when a the
+      // sign-in flow is started from any access point instead of treating it
+      // and an error like in the other cases (|WithDefault| and |NotDefault|).
+      VLOG(1) << "Signin_SigninNewAccount_From* user actions"
+              << " are not recorded for access point "
+              << static_cast<int>(access_point)
+              << " as it does not support a personalized sign-in promo.";
       break;
     case AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED();
@@ -685,7 +692,7 @@ void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point) {
     case AccessPoint::ACCESS_POINT_USER_MANAGER:
     case AccessPoint::ACCESS_POINT_UNKNOWN:
       NOTREACHED() << "Signin_Impression_From* user actions"
-                   << " are not recorded for access_point "
+                   << " are not recorded for access point "
                    << static_cast<int>(access_point);
       break;
     case AccessPoint::ACCESS_POINT_MAX:
@@ -795,7 +802,7 @@ void RecordSigninImpressionWithAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_UNKNOWN:
     case AccessPoint::ACCESS_POINT_FORCE_SIGNIN_WARNING:
       NOTREACHED() << "Signin_Impression{With|WithNo}Account_From* user actions"
-                   << " are not recorded for access_point "
+                   << " are not recorded for access point "
                    << static_cast<int>(access_point)
                    << " as it does not support a personalized sign-in promo.";
       break;

@@ -113,6 +113,13 @@ class SigninMetricsTest : public ::testing::Test {
     }
     return access_points;
   }
+
+  static bool AccessPointSupportsPersonalizedPromo(AccessPoint access_point) {
+    return std::find(std::begin(kAccessPointsThatSupportPersonalizedPromos),
+                     std::end(kAccessPointsThatSupportPersonalizedPromos),
+                     access_point) !=
+           std::end(kAccessPointsThatSupportPersonalizedPromos);
+  }
 };
 
 TEST_F(SigninMetricsTest, RecordSigninUserActionForAccessPoint) {
@@ -145,13 +152,21 @@ TEST_F(SigninMetricsTest, RecordSigninUserActionWithPromoAction) {
           1, user_action_tester.GetActionCount("Signin_SigninNotDefault_From" +
                                                GetAccessPointDescription(ap)));
     }
-    {
-      // PROMO_ACTION_NEW_ACCOUNT promo action
-      base::UserActionTester user_action_tester;
-      RecordSigninUserActionForAccessPoint(
-          ap, signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT);
+  }
+}
+
+TEST_F(SigninMetricsTest, RecordSigninUserActionWithNewPromoAction) {
+  for (const AccessPoint& ap : GetAllAccessPoints()) {
+    base::UserActionTester user_action_tester;
+    RecordSigninUserActionForAccessPoint(
+        ap, signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT);
+    if (AccessPointSupportsPersonalizedPromo(ap)) {
       EXPECT_EQ(
           1, user_action_tester.GetActionCount("Signin_SigninNewAccount_From" +
+                                               GetAccessPointDescription(ap)));
+    } else {
+      EXPECT_EQ(
+          0, user_action_tester.GetActionCount("Signin_SigninNewAccount_From" +
                                                GetAccessPointDescription(ap)));
     }
   }
