@@ -1536,16 +1536,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, ComparePhoneNumbers) {
 }
 
 // Test that Autofill does not fill in read-only fields.
-// Flaky on the official cros-trunk. crbug.com/516052
-// TODO(crbug.com/834768): Check if this is also flaky on other platforms after
-//                         re-enabling it on ChromeOS.
-#if defined(OFFICIAL_BUILD)
-#define MAYBE_NoAutofillForReadOnlyFields DISABLED_NoAutofillForReadOnlyFields
-#else
-#define MAYBE_NoAutofillForReadOnlyFields NoAutofillForReadOnlyFields
-#endif  // defined(OFFICIAL_BUILD)
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
-                       MAYBE_NoAutofillForReadOnlyFields) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, NoAutofillForReadOnlyFields) {
   std::string addr_line1("1234 H St.");
 
   AutofillProfile profile;
