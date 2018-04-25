@@ -22,12 +22,12 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.components.autofill.AutofillPopup;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.DropdownPopupWindowInterface;
 import org.chromium.ui.R;
 import org.chromium.ui.UiUtils;
 
@@ -110,8 +110,8 @@ public class AutofillPopupWithKeyboardTest {
                 });
         Object popupObject = ThreadUtils.runOnUiThreadBlocking(
                 () -> viewRef.get().findViewById(R.id.dropdown_popup_window).getTag());
-        Assert.assertTrue(popupObject instanceof AutofillPopup);
-        final AutofillPopup popup = (AutofillPopup) popupObject;
+        Assert.assertTrue(popupObject instanceof DropdownPopupWindowInterface);
+        final DropdownPopupWindowInterface popup = (DropdownPopupWindowInterface) popupObject;
         CriteriaHelper.pollUiThread(new Criteria("Autofill Popup was never shown.") {
             @Override
             public boolean isSatisfied() {
