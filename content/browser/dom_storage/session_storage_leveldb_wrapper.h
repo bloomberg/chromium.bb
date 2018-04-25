@@ -42,14 +42,14 @@ class CONTENT_EXPORT SessionStorageLevelDBWrapper
           const url::Origin& origin)>;
 
   // Creates a wrapper for the given |namespace_entry|-|origin| data area. All
-  // LevelDBWrapper calls are delegated to the |data_map|. The |map_id_callback|
-  // is called when a shared |data_map| needs to be forked for the copy-on-write
-  // behavior and a new map needs to be registered.
+  // LevelDBWrapper calls are delegated to the |data_map|. The
+  // |register_new_map_callback| is called when a shared |data_map| needs to be
+  // forked for the copy-on-write behavior and a new map needs to be registered.
   SessionStorageLevelDBWrapper(
       SessionStorageMetadata::NamespaceEntry namespace_entry,
       url::Origin origin,
       scoped_refptr<SessionStorageDataMap> data_map,
-      RegisterNewAreaMap map_id_callback);
+      RegisterNewAreaMap register_new_map_callback);
   ~SessionStorageLevelDBWrapper() override;
 
   // Creates a shallow copy clone for the new namespace entry.

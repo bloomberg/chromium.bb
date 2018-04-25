@@ -1280,6 +1280,7 @@ test("content_unittests") {
     "../browser/dom_storage/session_storage_database_unittest.cc",
     "../browser/dom_storage/session_storage_leveldb_wrapper_unittest.cc",
     "../browser/dom_storage/session_storage_metadata_unittest.cc",
+    "../browser/dom_storage/session_storage_namespace_impl_mojo_unittest.cc",
     "../browser/download/download_manager_impl_unittest.cc",
     "../browser/download/download_request_core_unittest.cc",
     "../browser/download/save_package_unittest.cc",
