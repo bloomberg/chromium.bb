@@ -105,6 +105,21 @@
       </settings-sync-account-control>
     </template>
 </if>
+    <div class="settings-box first two-line"
+        hidden="[[!unifiedConsentEnabled]]">
+      <div class="start">
+        <div>$i18n{syncUnifiedConsentToggleTitle}</div>
+        <div class="secondary">$i18n{syncUnifiedConsentToggleSubtitle}</div>
+      </div>
+      <!-- For now this toggle only turns on all sync services.
+           TODO(crbug.com/800974): Add custom function for turning
+           on all unified consent services.-->
+      <cr-toggle id="syncAllDataTypesControl"
+          checked="{{syncPrefs.syncAllDataTypes}}"
+          on-change="onSyncAllDataTypesChanged_"
+          aria-labelledby="syncUnifiedConsentToggleTitle">
+      </cr-toggle>
+    </div>
     <div class="settings-box first two-line" id="sync-section-toggle"
         actionable$="[[!syncSectionDisabled_]]"
         on-click="toggleExpandButton_"

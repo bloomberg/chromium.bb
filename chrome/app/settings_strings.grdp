@@ -3029,6 +3029,12 @@
   <message name="IDS_SETTINGS_CHANGE_PICTURE_PROFILE_PHOTO" desc="The text on the Google profile photo of the user.">
     Google Profile photo
   </message>
+  <message name="IDS_SETTINGS_PEOPLE_SYNC_UNIFIED_CONSENT_TOGGLE_TITLE" desc="The title of the toggle to opt into unified consent and enable all its services.">
+    Sync and personalize Chrome across you devices
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_SYNC_UNIFIED_CONSENT_TOGGLE_SUBTITLE" desc="The subtitle of the toggle to opt into unified consent and enable all its services.">
+    Uses content on sites you visit and browser activity and interations.
+  </message>
 
   <if expr="chromeos">
     <message name="IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_CHOOSE_PIN_TITLE" desc="Message shown below the title that tells the user to enter the initial PIN.">
