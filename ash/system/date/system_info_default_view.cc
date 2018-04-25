@@ -6,7 +6,9 @@
 
 #include <memory>
 
+#include "ash/shell.h"
 #include "ash/system/date/date_view.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/power_status_view.h"
 #include "ash/system/tray/tray_constants.h"
@@ -34,7 +36,8 @@ SystemInfoDefaultView::SystemInfoDefaultView(SystemTrayItem* owner)
   AddChildView(tri_view_);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  date_view_ = new tray::DateView(owner);
+  date_view_ =
+      new tray::DateView(owner, Shell::Get()->system_tray_model()->clock());
   tri_view_->AddView(TriView::Container::START, date_view_);
 
   if (PowerStatus::Get()->IsBatteryPresent()) {
