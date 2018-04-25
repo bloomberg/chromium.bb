@@ -1119,16 +1119,24 @@ INSTANTIATE_TEST_CASE_P(
 TEST(CreditCardTest, LastFourDigits) {
   CreditCard card(base::GenerateGUID(), "https://www.example.com/");
   ASSERT_EQ(base::string16(), card.LastFourDigits());
+  ASSERT_EQ(base::UTF8ToUTF16(std::string(kUTF8MidlineEllipsis)),
+            card.ObfuscatedLastFourDigits());
 
   test::SetCreditCardInfo(&card, "Baby Face Nelson", "5212341234123489", "01",
                           "2010", "1");
   ASSERT_EQ(base::ASCIIToUTF16("3489"), card.LastFourDigits());
+  ASSERT_EQ(base::UTF8ToUTF16(std::string(kUTF8MidlineEllipsis) + "3489"),
+            card.ObfuscatedLastFourDigits());
 
   card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("3489"));
   ASSERT_EQ(base::ASCIIToUTF16("3489"), card.LastFourDigits());
+  ASSERT_EQ(base::UTF8ToUTF16(std::string(kUTF8MidlineEllipsis) + "3489"),
+            card.ObfuscatedLastFourDigits());
 
   card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("489"));
   ASSERT_EQ(base::ASCIIToUTF16("489"), card.LastFourDigits());
+  ASSERT_EQ(base::UTF8ToUTF16(std::string(kUTF8MidlineEllipsis) + "489"),
+            card.ObfuscatedLastFourDigits());
 }
 
 // Verifies that a credit card should be updated.

@@ -1277,8 +1277,10 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_NonCCNumber) {
   static const std::string kMcSuggestion =
       std::string("Mastercard") + kUTF8MidlineEllipsis + "8765";
 #else
-  static const std::string kVisaSuggestion = "*3456";
-  static const std::string kMcSuggestion = "*8765";
+  static const std::string kVisaSuggestion =
+      std::string(kUTF8MidlineEllipsis) + "3456";
+  static const std::string kMcSuggestion =
+      std::string(kUTF8MidlineEllipsis) + "8765";
 #endif
 
   // Test that we sent the right values to the external delegate.
@@ -5365,7 +5367,8 @@ TEST_F(AutofillManagerTest, DisplayCreditCardSuggestionsWithMatchingTokens) {
   static const std::string kVisaSuggestion =
       std::string("Visa") + kUTF8MidlineEllipsis + "3456";
 #else
-  static const std::string kVisaSuggestion = "*3456";
+  static const std::string kVisaSuggestion =
+      std::string(kUTF8MidlineEllipsis) + "3456";
 #endif
 
   CheckSuggestions(kDefaultPageID,
