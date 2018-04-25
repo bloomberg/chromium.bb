@@ -83,7 +83,7 @@ class ScopedPromiseResolver {
     //  so go out on a limb and try to provide an actionable error message.
     resolver_->Reject(DOMException::Create(
         kNotSupportedError,
-        "The user agent either does not implement a password store or does"
+        "The user agent either does not implement a password store or does "
         "not support public key credentials."));
   }
 
