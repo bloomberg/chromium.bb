@@ -6556,9 +6556,6 @@ static void do_masked_motion_search_indexed(
   }
 }
 
-// Tuning on this flag may introduce compile error due to the on-going work of
-// codebase cleanup.
-// TODO(angiebird): fix compile error when this flag is on
 #define USE_DISCOUNT_NEWMV_TEST 0
 #if USE_DISCOUNT_NEWMV_TEST
 // In some situations we want to discount the apparent cost of a new motion
@@ -6569,15 +6566,29 @@ static void do_masked_motion_search_indexed(
 // near mv modes to reduce distortion in subsequent blocks and also improve
 // visual quality.
 #define NEW_MV_DISCOUNT_FACTOR 8
-static int discount_newmv_test(const AV1_COMP *const cpi, int this_mode,
-                               int_mv this_mv, int_mv (*mode_mv)[REF_FRAMES],
-                               int ref_frame) {
-  return (!cpi->rc.is_src_frame_alt_ref && (this_mode == NEWMV) &&
-          (this_mv.as_int != 0) &&
-          ((mode_mv[NEARESTMV][ref_frame].as_int == 0) ||
-           (mode_mv[NEARESTMV][ref_frame].as_int == INVALID_MV)) &&
-          ((mode_mv[NEARMV][ref_frame].as_int == 0) ||
-           (mode_mv[NEARMV][ref_frame].as_int == INVALID_MV)));
+static INLINE void get_this_mv(int_mv *this_mv, int this_mode, int ref_idx,
+                               int ref_mv_idx,
+                               const MV_REFERENCE_FRAME *ref_frame,
+                               const MB_MODE_INFO_EXT *mbmi_ext);
+static int discount_newmv_test(const AV1_COMP *const cpi, const MACROBLOCK *x,
+                               int this_mode, int_mv this_mv) {
+  if (this_mode == NEWMV) {
+    const MACROBLOCKD *const xd = &x->e_mbd;
+    const MB_MODE_INFO *const mbmi = xd->mi[0];
+    int_mv nearest_mv;
+    int_mv near_mv;
+    // TODO(angiebird): Check is this ref_mv_idx is set properly
+    int ref_mv_idx = AOMMAX(mbmi->ref_mv_idx - 1, 0);
+    const MV_REFERENCE_FRAME tmp_ref_frames[2] = { mbmi->ref_frame[0],
+                                                   NONE_FRAME };
+    get_this_mv(&nearest_mv, NEARESTMV, 0, ref_mv_idx, tmp_ref_frames,
+                x->mbmi_ext);
+    get_this_mv(&near_mv, NEARMV, 0, ref_mv_idx, tmp_ref_frames, x->mbmi_ext);
+    return (!cpi->rc.is_src_frame_alt_ref && (this_mv.as_int != 0) &&
+            ((nearest_mv.as_int == 0) || (nearest_mv.as_int == INVALID_MV)) &&
+            ((near_mv.as_int == 0) || (near_mv.as_int == INVALID_MV)));
+  }
+  return 0;
 }
 #endif
 
@@ -7109,7 +7120,7 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
     // under certain circumstances where we want to help initiate a weak
     // motion field, where the distortion gain for a single block may not
     // be enough to overcome the cost of a new mv.
-    if (discount_newmv_test(cpi, this_mode, x->best_mv, mode_mv, refs[0])) {
+    if (discount_newmv_test(cpi, x, this_mode, x->best_mv)) {
       *rate_mv = AOMMAX(*rate_mv / NEW_MV_DISCOUNT_FACTOR, 1);
     }
 #endif
@@ -7360,8 +7371,7 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
         single_motion_search(cpi, x, bsize, mi_row, mi_col, 0, &tmp_rate_mv);
         mbmi->mv[0].as_int = x->best_mv.as_int;
 #if USE_DISCOUNT_NEWMV_TEST
-        if (discount_newmv_test(cpi, this_mode, mbmi->mv[0], mode_mv,
-                                refs[0])) {
+        if (discount_newmv_test(cpi, x, this_mode, mbmi->mv[0])) {
           tmp_rate_mv = AOMMAX((tmp_rate_mv / NEW_MV_DISCOUNT_FACTOR), 1);
         }
 #endif
@@ -7415,8 +7425,7 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
               x->pred_mv[ref] = mbmi->mv[0].as_mv;
 
 #if USE_DISCOUNT_NEWMV_TEST
-            if (discount_newmv_test(cpi, this_mode, mbmi->mv[0], mode_mv,
-                                    refs[0])) {
+            if (discount_newmv_test(cpi, x, this_mode, mbmi->mv[0])) {
               tmp_rate_mv = AOMMAX((tmp_rate_mv / NEW_MV_DISCOUNT_FACTOR), 1);
             }
 #endif
@@ -7801,13 +7810,13 @@ static INLINE int is_single_inter_mode(int this_mode) {
          this_mode < SINGLE_INTER_MODE_END;
 }
 
-static INLINE int get_ref_mv_offset(int single_mode, const MB_MODE_INFO *mbmi) {
+static INLINE int get_ref_mv_offset(int single_mode, uint8_t ref_mv_idx) {
   assert(is_single_inter_mode(single_mode));
   int ref_mv_offset;
   if (single_mode == NEARESTMV) {
     ref_mv_offset = 0;
   } else if (single_mode == NEARMV) {
-    ref_mv_offset = mbmi->ref_mv_idx + 1;
+    ref_mv_offset = ref_mv_idx + 1;
   } else {
     ref_mv_offset = -1;
   }
@@ -7815,21 +7824,20 @@ static INLINE int get_ref_mv_offset(int single_mode, const MB_MODE_INFO *mbmi) {
 }
 
 static INLINE void get_this_mv(int_mv *this_mv, int this_mode, int ref_idx,
-                               const MACROBLOCK *x) {
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  const MB_MODE_INFO *const mbmi = xd->mi[0];
-  const uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
-  const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
-  const int is_comp_pred = has_second_ref(mbmi);
+                               int ref_mv_idx,
+                               const MV_REFERENCE_FRAME *ref_frame,
+                               const MB_MODE_INFO_EXT *mbmi_ext) {
+  const uint8_t ref_frame_type = av1_ref_frame_type(ref_frame);
+  const int is_comp_pred = ref_frame[1] > INTRA_FRAME;
   const int single_mode = get_single_mode(this_mode, ref_idx, is_comp_pred);
   assert(is_single_inter_mode(single_mode));
   if (single_mode == NEWMV) {
     this_mv->as_int = INVALID_MV;
   } else if (single_mode == GLOBALMV) {
-    *this_mv = mbmi_ext->global_mvs[mbmi->ref_frame[ref_idx]];
+    *this_mv = mbmi_ext->global_mvs[ref_frame[ref_idx]];
   } else {
     assert(single_mode == NEARMV || single_mode == NEARESTMV);
-    const int ref_mv_offset = get_ref_mv_offset(single_mode, mbmi);
+    const int ref_mv_offset = get_ref_mv_offset(single_mode, ref_mv_idx);
     if (ref_mv_offset < mbmi_ext->ref_mv_count[ref_frame_type]) {
       assert(ref_mv_offset >= 0);
       if (ref_idx == 0) {
@@ -7840,7 +7848,7 @@ static INLINE void get_this_mv(int_mv *this_mv, int this_mode, int ref_idx,
             mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_offset].comp_mv;
       }
     } else {
-      *this_mv = mbmi_ext->global_mvs[mbmi->ref_frame[ref_idx]];
+      *this_mv = mbmi_ext->global_mvs[ref_frame[ref_idx]];
     }
   }
 }
@@ -7854,7 +7862,8 @@ static INLINE int build_cur_mv(int_mv *cur_mv, int this_mode,
   int ret = 1;
   for (int i = 0; i < is_comp_pred + 1; ++i) {
     int_mv this_mv;
-    get_this_mv(&this_mv, this_mode, i, x);
+    get_this_mv(&this_mv, this_mode, i, mbmi->ref_mv_idx, mbmi->ref_frame,
+                x->mbmi_ext);
     const int single_mode = get_single_mode(this_mode, i, is_comp_pred);
     if (single_mode == NEWMV) {
       cur_mv[i] = this_mv;
@@ -8020,12 +8029,11 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     //
     // Under some circumstances we discount the cost of new mv mode to encourage
     // initiation of a motion field.
-    if (discount_newmv_test(cpi, this_mode, frame_mv[refs[0]], mode_mv,
-                            refs[0])) {
-      rd_stats->rate +=
-          AOMMIN(cost_mv_ref(x, this_mode, mode_ctx),
-                 cost_mv_ref(x, is_comp_pred ? NEAREST_NEARESTMV : NEARESTMV,
-                             mode_ctx));
+    if (discount_newmv_test(cpi, x, this_mode, mbmi->mv[0])) {
+      // discount_newmv_test only applies discount on NEWMV mode.
+      assert(this_mode == NEWMV);
+      rd_stats->rate += AOMMIN(cost_mv_ref(x, this_mode, mode_ctx),
+                               cost_mv_ref(x, NEARESTMV, mode_ctx));
     } else {
       rd_stats->rate += cost_mv_ref(x, this_mode, mode_ctx);
     }
@@ -10230,8 +10238,9 @@ PALETTE_EXIT:
   // Therefore, sometimes, NEWMV is chosen instead of NEARESTMV, NEARMV, and
   // GLOBALMV. Here, checks are added for those cases, and the mode decisions
   // are corrected.
-  if (search_state.best_mbmode.mode == NEWMV ||
-      search_state.best_mbmode.mode == NEW_NEWMV) {
+  if ((search_state.best_mbmode.mode == NEWMV ||
+       search_state.best_mbmode.mode == NEW_NEWMV) &&
+      0) {
     const MV_REFERENCE_FRAME refs[2] = {
       search_state.best_mbmode.ref_frame[0],
       search_state.best_mbmode.ref_frame[1]
