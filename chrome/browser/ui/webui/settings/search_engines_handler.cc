@@ -188,6 +188,7 @@ SearchEnginesHandler::CreateDictionaryForEngine(int index, bool is_default) {
   // in @typedef for SearchEngine. Please update it whenever you add or remove
   // any keys here.
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetInteger("id", template_url->id());
   dict->SetString("name", template_url->short_name());
   dict->SetString("displayName",
                   table_model->GetText(

@@ -9,6 +9,8 @@
 Polymer({
   is: 'settings-search-engine-dialog',
 
+  behaviors: [WebUIListenerBehavior],
+
   properties: {
     /**
      * The search engine to be edited. If not populated a new search engine
@@ -69,6 +71,9 @@ Polymer({
     this.addEventListener('cancel', () => {
       this.browserProxy_.searchEngineEditCancelled();
     });
+
+    this.addWebUIListener(
+        'search-engines-changed', this.enginesChanged_.bind(this));
   },
 
   /** @override */
@@ -77,6 +82,25 @@ Polymer({
     this.browserProxy_.searchEngineEditStarted(
         this.model ? this.model.modelIndex : this.DEFAULT_MODEL_INDEX);
     this.$.dialog.showModal();
+  },
+
+  /**
+   * @param {!SearchEnginesInfo} searchEnginesInfo
+   * @private
+   */
+  enginesChanged_: function(searchEnginesInfo) {
+    if (this.model) {
+      const engineWasRemoved = ['defaults', 'others', 'extensions'].every(
+          engineType =>
+              searchEnginesInfo[engineType].every(e => e.id != this.model.id));
+      if (engineWasRemoved) {
+        this.cancel_();
+        return;
+      }
+    }
+
+    [this.$.searchEngine, this.$.keyword, this.$.queryUrl].forEach(
+        element => this.validateElement_(element));
   },
 
   /** @private */
@@ -92,12 +116,10 @@ Polymer({
   },
 
   /**
-   * @param {!Event} event
+   * @param {!Element} inputElement
    * @private
    */
-  validate_: function(event) {
-    const inputElement = Polymer.dom(event).localTarget;
-
+  validateElement_: function(inputElement) {
     // If element is empty, disable the action button, but don't show the red
     // invalid message.
     if (inputElement.value == '') {
@@ -112,6 +134,15 @@ Polymer({
           inputElement.invalid = !isValid;
           this.updateActionButtonState_();
         });
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  validate_: function(event) {
+    const inputElement = /** @type {!Element} */ (event.target);
+    this.validateElement_(inputElement);
   },
 
   /** @private */
