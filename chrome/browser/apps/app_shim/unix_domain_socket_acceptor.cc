@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "mojo/edk/embedder/named_platform_handle_utils.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
 
@@ -32,7 +32,7 @@ bool UnixDomainSocketAcceptor::Listen() {
 
   // Watch the fd for connections, and turn any connections into
   // active sockets.
-  base::MessageLoopForIO::current()->WatchFileDescriptor(
+  base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
       listen_handle_.get().handle, true, base::MessagePumpForIO::WATCH_READ,
       &server_listen_connection_watcher_, this);
   return true;
