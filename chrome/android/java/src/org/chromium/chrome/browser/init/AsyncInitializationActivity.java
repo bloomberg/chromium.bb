@@ -41,7 +41,6 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
-import org.chromium.chrome.browser.metrics.MemoryUma;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
@@ -75,7 +74,6 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     private Bundle mSavedInstanceState;
     private int mCurrentOrientation = Surface.ROTATION_0;
     private boolean mDestroyed;
-    private MemoryUma mMemoryUma;
     private long mLastUserInteractionTime;
     private boolean mIsTablet;
     private boolean mHadWarmStart;
@@ -217,7 +215,6 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
                         checkOrientation();
                     }
                 });
-        mMemoryUma = new MemoryUma();
         mNativeInitializationController.onNativeInitializationComplete();
     }
 
@@ -463,7 +460,6 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     @Override
     public void onStop() {
         super.onStop();
-        if (mMemoryUma != null) mMemoryUma.onStop();
         mNativeInitializationController.onStop();
     }
 
@@ -581,20 +577,6 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mWindowAndroid != null) mWindowAndroid.saveInstanceState(outState);
-    }
-
-    @CallSuper
-    @Override
-    public void onLowMemory() {
-        super.onLowMemory();
-        if (mMemoryUma != null) mMemoryUma.onLowMemory();
-    }
-
-    @CallSuper
-    @Override
-    public void onTrimMemory(int level) {
-        super.onTrimMemory(level);
-        if (mMemoryUma != null) mMemoryUma.onTrimMemory(level);
     }
 
     /**

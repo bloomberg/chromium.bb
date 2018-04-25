@@ -2796,6 +2796,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/process_launcher/FileDescriptorInfo.java",
       "android/java/src/org/chromium/base/memory/MemoryPressureMonitor.java",
       "android/java/src/org/chromium/base/memory/MemoryPressureCallback.java",
+      "android/java/src/org/chromium/base/memory/MemoryPressureUma.java",
     ]
 
     # New versions of BuildConfig.java and NativeLibraries.java

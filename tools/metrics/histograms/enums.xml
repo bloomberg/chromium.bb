@@ -582,6 +582,18 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="5" label="SEARCH"/>
 </enum>
 
+<enum name="Android.MemoryPressureNotification">
+  <int value="0" label="Unknown onTrimMemory() level"/>
+  <int value="1" label="TRIM_MEMORY_COMPLETE"/>
+  <int value="2" label="TRIM_MEMORY_MODERATE"/>
+  <int value="3" label="TRIM_MEMORY_BACKGROUND"/>
+  <int value="4" label="TRIM_MEMORY_UI_HIDDEN"/>
+  <int value="5" label="TRIM_MEMORY_RUNNING_CRITICAL"/>
+  <int value="6" label="TRIM_MEMORY_RUNNING_LOW"/>
+  <int value="7" label="TRIM_MEMORY_RUNNING_MODERATE"/>
+  <int value="8" label="onLowMemory()"/>
+</enum>
+
 <enum name="AndroidActivityId">
   <int value="1" label="Unknown"/>
   <int value="2" label="Main"/>
@@ -923,6 +935,9 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="AndroidMemoryNotificationBackground">
+  <obsolete>
+    Deprecated as of 04/2018 (M67).
+  </obsolete>
   <int value="0" label="TrimMemoryUiHidden"/>
   <int value="1" label="TrimMemoryBackground"/>
   <int value="2" label="TrimMemoryModerate"/>
@@ -930,6 +945,9 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="AndroidMemoryNotificationForeground">
+  <obsolete>
+    Deprecated as of 04/2018 (M67).
+  </obsolete>
   <int value="0" label="TrimMemoryRunningModerate"/>
   <int value="1" label="TrimMemoryRunningLow"/>
   <int value="2" label="TrimMemoryRunningCritical"/>
