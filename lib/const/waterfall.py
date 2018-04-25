@@ -72,31 +72,4 @@ SOM_BUILDS = {
          SOM_SEVERITY_PFQ_FAILURE),
         (WATERFALL_INTERNAL, 'master-release', SOM_SEVERITY_CANARY_FAILURE),
     ],
-
-    # TODO: Once SoM supports alerts being added individually, this should
-    # be changed to a programatically list instead of a hardcoded list.
-    'gardener': [
-        (WATERFALL_INTERNAL, 'master-chromium-pfq', SOM_SEVERITY_PFQ_FAILURE),
-        (WATERFALL_CHROME, 'lumpy-tot-chrome-pfq-informational',
-         SOM_SEVERITY_CHROME_INFORMATIONAL_FAILURE),
-        (WATERFALL_CHROME, 'peach_pit-tot-chrome-pfq-informational',
-         SOM_SEVERITY_CHROME_INFORMATIONAL_FAILURE),
-        (WATERFALL_CHROME, 'cyan-tot-chrome-pfq-informational',
-         SOM_SEVERITY_CHROME_INFORMATIONAL_FAILURE),
-        (WATERFALL_CHROME, 'tricky-tot-chrome-pfq-informational',
-         SOM_SEVERITY_CHROME_INFORMATIONAL_FAILURE),
-        (WATERFALL_CHROME, 'veyron_minnie-tot-chrome-pfq-informational',
-         SOM_SEVERITY_CHROME_INFORMATIONAL_FAILURE),
-        (WATERFALL_CHROMIUM, 'amd64-generic-tot-chromium-pfq-informational',
-         SOM_SEVERITY_CHROMIUM_INFORMATIONAL_FAILURE),
-        (WATERFALL_CHROMIUM, 'daisy-tot-chromium-pfq-informational',
-         SOM_SEVERITY_CHROMIUM_INFORMATIONAL_FAILURE),
-        (WATERFALL_CHROMIUM, 'amd64-generic-tot-asan-informational',
-         SOM_SEVERITY_CHROMIUM_INFORMATIONAL_FAILURE),
-        (WATERFALL_CHROMIUM, 'amd64-generic-telemetry',
-         SOM_SEVERITY_CHROMIUM_INFORMATIONAL_FAILURE),
-        (WATERFALL_CHROMIUM,
-         'amd64-generic-goma-canary-chromium-pfq-informational',
-         SOM_SEVERITY_CHROMIUM_INFORMATIONAL_FAILURE),
-    ],
 }
