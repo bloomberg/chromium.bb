@@ -940,6 +940,12 @@ class ChangeList {
   // Returns the largest change ID number.
   int64_t largest_change_id() const { return largest_change_id_; }
 
+  // Returns the new start page token, only if the end of current change list
+  // was reached.
+  const std::string& new_start_page_token() const {
+    return new_start_page_token_;
+  }
+
   // Returns a set of changes in this list.
   const std::vector<std::unique_ptr<ChangeResource>>& items() const {
     return items_;
@@ -954,6 +960,9 @@ class ChangeList {
   void set_largest_change_id(int64_t largest_change_id) {
     largest_change_id_ = largest_change_id;
   }
+  void set_new_start_page_token(const std::string& new_start_page_token) {
+    new_start_page_token_ = new_start_page_token;
+  }
 
  private:
   friend class DriveAPIParserTest;
@@ -965,6 +974,7 @@ class ChangeList {
 
   GURL next_link_;
   int64_t largest_change_id_;
+  std::string new_start_page_token_;
   std::vector<std::unique_ptr<ChangeResource>> items_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeList);

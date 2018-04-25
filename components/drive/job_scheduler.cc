@@ -392,6 +392,21 @@ void JobScheduler::GetChangeList(
   StartJob(new_job);
 }
 
+void JobScheduler::GetChangeList(
+    const std::string& team_drive_id,
+    const std::string& start_page_token,
+    const google_apis::ChangeListCallback& callback) {
+  JobEntry* new_job = CreateNewJob(TYPE_GET_CHANGE_LIST);
+  new_job->task = base::BindRepeating(
+      &DriveServiceInterface::GetChangeListByToken,
+      base::Unretained(drive_service_), team_drive_id, start_page_token,
+      base::BindRepeating(&JobScheduler::OnGetChangeListJobDone,
+                          weak_ptr_factory_.GetWeakPtr(),
+                          new_job->job_info.job_id, callback));
+  new_job->abort_callback = CreateErrorRunCallback(callback);
+  StartJob(new_job);
+}
+
 void JobScheduler::GetRemainingChangeList(
     const GURL& next_link,
     const google_apis::ChangeListCallback& callback) {

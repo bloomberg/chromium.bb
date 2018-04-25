@@ -128,6 +128,22 @@ google_apis::CancelCallback DriveServiceOnWorker::GetChangeList(
   return google_apis::CancelCallback();
 }
 
+google_apis::CancelCallback DriveServiceOnWorker::GetChangeListByToken(
+    const std::string& team_drive_id,
+    const std::string& start_page_token,
+    const google_apis::ChangeListCallback& callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DriveServiceWrapper::GetChangeListByToken, wrapper_,
+                     team_drive_id, start_page_token,
+                     RelayCallbackToTaskRunner(worker_task_runner_.get(),
+                                               FROM_HERE, callback)));
+
+  return google_apis::CancelCallback();
+}
+
 google_apis::CancelCallback DriveServiceOnWorker::GetRemainingChangeList(
     const GURL& next_link,
     const google_apis::ChangeListCallback& callback) {

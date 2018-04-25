@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/drive/chromeos/drive_test_util.h"
@@ -319,6 +320,38 @@ TEST_F(JobSchedulerTest, GetChangeList) {
   std::unique_ptr<google_apis::ChangeList> change_list;
   scheduler_->GetChangeList(
       old_largest_change_id + 1,
+      google_apis::test_util::CreateCopyResultCallback(&error, &change_list));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(change_list);
+}
+
+TEST_F(JobSchedulerTest, GetChangeListWithStartToken) {
+  ConnectToWifi();
+
+  // TODO(slangley): Find the start page token from the fake drive service
+  const std::string& start_page_token =
+      fake_drive_service_->start_page_token().start_page_token();
+
+  const std::string team_drive_id;  // Empty means users default corpus
+  google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
+
+  // Create a new directory.
+  {
+    std::unique_ptr<google_apis::FileResource> entry;
+    fake_drive_service_->AddNewDirectory(
+        fake_drive_service_->GetRootResourceId(), "new directory",
+        AddNewDirectoryOptions(),
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+    base::RunLoop().RunUntilIdle();
+    ASSERT_EQ(google_apis::HTTP_CREATED, error);
+  }
+
+  error = google_apis::DRIVE_OTHER_ERROR;
+  std::unique_ptr<google_apis::ChangeList> change_list;
+  scheduler_->GetChangeList(
+      team_drive_id, start_page_token,
       google_apis::test_util::CreateCopyResultCallback(&error, &change_list));
   base::RunLoop().RunUntilIdle();
 

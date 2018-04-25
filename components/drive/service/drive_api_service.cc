@@ -134,7 +134,7 @@ const char kChangeListFields[] =
     "lastViewedByMeDate,shared,modifiedByMeDate),"
     "teamDrive(kind,id,name,capabilities),teamDriveId,"
     "deleted,id,fileId,modificationDate),nextLink,"
-    "largestChangeId";
+    "largestChangeId,newStartPageToken";
 const char kTeamDrivesListFields[] =
     "nextPageToken,kind,items(kind,id,name,capabilities)";
 
@@ -450,6 +450,23 @@ CancelCallback DriveAPIService::GetChangeList(
                                            callback);
   request->set_max_results(kMaxNumFilesResourcePerRequest);
   request->set_start_change_id(start_changestamp);
+  request->set_fields(kChangeListFields);
+  return sender_->StartRequestWithAuthRetry(std::move(request));
+}
+
+CancelCallback DriveAPIService::GetChangeListByToken(
+    const std::string& team_drive_id,
+    const std::string& start_page_token,
+    const ChangeListCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!callback.is_null());
+
+  std::unique_ptr<ChangesListRequest> request =
+      std::make_unique<ChangesListRequest>(sender_.get(), url_generator_,
+                                           callback);
+  request->set_max_results(kMaxNumFilesResourcePerRequest);
+  request->set_page_token(start_page_token);
+  request->set_team_drive_id(team_drive_id);
   request->set_fields(kChangeListFields);
   return sender_->StartRequestWithAuthRetry(std::move(request));
 }

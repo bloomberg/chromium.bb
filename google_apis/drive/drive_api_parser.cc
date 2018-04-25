@@ -208,6 +208,7 @@ const char kFile[] = "file";
 const char kTeamDrive[] = "teamDrive";
 const char kTeamDriveId[] = "teamDriveId";
 const char kStartPageToken[] = "startPageToken";
+const char kNewStartPageToken[] = "newStartPageToken";
 
 // Changes List
 // https://developers.google.com/drive/v2/reference/changes/list
@@ -790,9 +791,9 @@ bool ChangeResource::GetType(base::StringPiece type_name,
 ////////////////////////////////////////////////////////////////////////////////
 // ChangeList implementation
 
-ChangeList::ChangeList() : largest_change_id_(0) {}
+ChangeList::ChangeList() = default;
 
-ChangeList::~ChangeList() {}
+ChangeList::~ChangeList() = default;
 
 // static
 void ChangeList::RegisterJSONConverter(
@@ -802,6 +803,8 @@ void ChangeList::RegisterJSONConverter(
                                        GetGURLFromString);
   converter->RegisterCustomField<int64_t>(
       kLargestChangeId, &ChangeList::largest_change_id_, &base::StringToInt64);
+  converter->RegisterStringField(kNewStartPageToken,
+                                 &ChangeList::new_start_page_token_);
   converter->RegisterRepeatedMessage<ChangeResource>(kItems,
                                                      &ChangeList::items_);
 }

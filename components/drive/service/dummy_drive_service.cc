@@ -82,6 +82,13 @@ CancelCallback DummyDriveService::GetChangeList(
   return CancelCallback();
 }
 
+CancelCallback DummyDriveService::GetChangeListByToken(
+    const std::string& team_drive_id,
+    const std::string& start_page_token,
+    const ChangeListCallback& callback) {
+  return CancelCallback();
+}
+
 CancelCallback DummyDriveService::GetRemainingChangeList(
     const GURL& next_link,
     const ChangeListCallback& callback) { return CancelCallback(); }
