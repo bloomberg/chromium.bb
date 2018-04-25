@@ -97,7 +97,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   void SetMainFrameMimeType(const std::string& mime_type) override;
   void SetWasRecentlyAudible(bool audible) override;
   void SetIsCurrentlyAudible(bool audible) override;
-  void TestOnUserInteraction(blink::WebInputEvent::Type type) override;
+  void TestDidReceiveInputEvent(blink::WebInputEvent::Type type) override;
   void TestDidFailLoadWithError(
       const GURL& url,
       int error_code,

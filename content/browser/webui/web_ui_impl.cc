@@ -11,6 +11,7 @@
 
 #include "base/debug/dump_without_crashing.h"
 #include "base/json/json_writer.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -79,7 +80,7 @@ base::string16 WebUI::GetJavascriptCall(
   return result;
 }
 
-WebUIImpl::WebUIImpl(WebContents* contents)
+WebUIImpl::WebUIImpl(WebContentsImpl* contents)
     : bindings_(BINDINGS_POLICY_WEB_UI),
       web_contents_(contents),
       web_contents_observer_(new MainFrameNavigationObserver(this, contents)) {
@@ -120,6 +121,13 @@ void WebUIImpl::OnWebUISend(RenderFrameHost* sender,
     bad_message::ReceivedBadMessage(
         sender->GetProcess(),
         bad_message::WEBUI_SEND_FROM_UNAUTHORIZED_PROCESS);
+    return;
+  }
+
+  if (base::EndsWith(message, "RequiringGesture",
+                     base::CompareCase::SENSITIVE) &&
+      !web_contents_->HasRecentInteractiveInputEvent()) {
+    LOG(ERROR) << message << " received without recent user interaction";
     return;
   }
 
