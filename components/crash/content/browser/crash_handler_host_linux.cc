@@ -35,7 +35,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/crash/content/app/breakpad_linux_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.h"
 #include "third_party/breakpad/breakpad/src/client/linux/minidump_writer/linux_dumper.h"
@@ -499,8 +498,30 @@ bool CrashHandlerHostLinux::IsShuttingDown() const {
 
 namespace crashpad {
 
+void CrashHandlerHost::AddObserver(Observer* observer) {
+  base::AutoLock lock(observers_lock_);
+  bool inserted = observers_.insert(observer).second;
+  DCHECK(inserted);
+}
+
+void CrashHandlerHost::RemoveObserver(Observer* observer) {
+  base::AutoLock lock(observers_lock_);
+  size_t removed = observers_.erase(observer);
+  DCHECK(removed);
+}
+
+// static
+CrashHandlerHost* CrashHandlerHost::Get() {
+  static CrashHandlerHost* instance = new CrashHandlerHost();
+  return instance;
+}
+
+CrashHandlerHost::~CrashHandlerHost() = default;
+
 CrashHandlerHost::CrashHandlerHost()
-    : file_descriptor_watcher_(FROM_HERE),
+    : observers_lock_(),
+      observers_(),
+      file_descriptor_watcher_(FROM_HERE),
       process_socket_(),
       browser_socket_() {
   int fds[2];
@@ -514,12 +535,14 @@ CrashHandlerHost::CrashHandlerHost()
   process_socket_.reset(fds[0]);
   browser_socket_.reset(fds[1]);
 
+  static const int on = 1;
+  CHECK_EQ(0, setsockopt(browser_socket_.get(), SOL_SOCKET, SO_PASSCRED, &on,
+                         sizeof(on)));
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&CrashHandlerHost::Init, base::Unretained(this)));
 }
-
-CrashHandlerHost::~CrashHandlerHost() = default;
 
 void CrashHandlerHost::Init() {
   base::MessageLoopCurrentForIO ml = base::MessageLoopCurrentForIO::Get();
@@ -531,13 +554,18 @@ void CrashHandlerHost::Init() {
 
 bool CrashHandlerHost::ReceiveClientMessage(int client_fd,
                                             base::ScopedFD* handler_fd) {
+  int signo;
+  iovec iov;
+  iov.iov_base = &signo;
+  iov.iov_len = sizeof(signo);
+
   msghdr msg;
   msg.msg_name = nullptr;
   msg.msg_namelen = 0;
-  msg.msg_iov = nullptr;
-  msg.msg_iovlen = 0;
+  msg.msg_iov = &iov;
+  msg.msg_iovlen = 1;
 
-  char cmsg_buf[CMSG_SPACE(sizeof(int))];
+  char cmsg_buf[CMSG_SPACE(sizeof(int)) + CMSG_SPACE(sizeof(ucred))];
   msg.msg_control = cmsg_buf;
   msg.msg_controllen = sizeof(cmsg_buf);
   msg.msg_flags = 0;
@@ -548,17 +576,43 @@ bool CrashHandlerHost::ReceiveClientMessage(int client_fd,
     return false;
   }
 
-  cmsghdr* cmsg = CMSG_FIRSTHDR(&msg);
-  if (!cmsg || cmsg->cmsg_level != SOL_SOCKET ||
-      cmsg->cmsg_type != SCM_RIGHTS || cmsg->cmsg_len < CMSG_LEN(sizeof(int))) {
+  base::ScopedFD child_fd;
+  pid_t child_pid = -1;
+  for (cmsghdr* cmsg = CMSG_FIRSTHDR(&msg); cmsg;
+       cmsg = CMSG_NXTHDR(&msg, cmsg)) {
+    if (cmsg->cmsg_level != SOL_SOCKET) {
+      continue;
+    }
+
+    if (cmsg->cmsg_type == SCM_RIGHTS) {
+      child_fd.reset(*reinterpret_cast<int*>(CMSG_DATA(cmsg)));
+    } else if (cmsg->cmsg_type == SCM_CREDENTIALS) {
+      child_pid = reinterpret_cast<ucred*>(CMSG_DATA(cmsg))->pid;
+    }
+  }
+
+  if (!child_fd.is_valid()) {
     LOG(ERROR) << "Death signal missing descriptor";
     return false;
   }
-  DCHECK(!CMSG_NXTHDR(&msg, cmsg));
 
-  handler_fd->reset(*reinterpret_cast<int*>(CMSG_DATA(cmsg)));
-  DCHECK(handler_fd->is_valid());
+  if (child_pid < 0) {
+    LOG(ERROR) << "Death signal missing pid";
+    return false;
+  }
+
+  NotifyCrashSignalObservers(child_pid, signo);
+
+  handler_fd->reset(child_fd.release());
   return true;
+}
+
+void CrashHandlerHost::NotifyCrashSignalObservers(base::ProcessId pid,
+                                                  int signo) {
+  base::AutoLock lock(observers_lock_);
+  for (Observer* observer : observers_) {
+    observer->ChildReceivedCrashSignal(pid, signo);
+  }
 }
 
 void CrashHandlerHost::OnFileCanWriteWithoutBlocking(int fd) {

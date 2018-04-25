@@ -8,6 +8,7 @@
 #include <sys/types.h>
 
 #include <memory>
+#include <set>
 #include <string>
 
 #include "base/files/file_path.h"
@@ -16,6 +17,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
+#include "base/process/process_handle.h"
+#include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "components/crash/content/app/breakpad_linux_impl.h"
 
@@ -117,16 +120,37 @@ namespace crashpad {
 class CrashHandlerHost : public base::MessagePumpForIO::FdWatcher,
                          public base::MessageLoopCurrent::DestructionObserver {
  public:
-  CrashHandlerHost();
-  ~CrashHandlerHost() override;
+  // An interface for observers to be notified when a child process is crashing.
+  class Observer {
+   public:
+    // Called when a child process is crashing. pid is the child's process ID in
+    // the CrashHandlerHost's PID namespace. signo is the signal the child
+    // received. Observers are notified synchronously while the child process
+    // is blocked in its signal handler. Observers may not call AddObserver()
+    // or RemoveObserver() in this method.
+    virtual void ChildReceivedCrashSignal(base::ProcessId pid, int signo) = 0;
+  };
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  // Return a pointer to the global CrashHandlerHost instance, which is created
+  // by the first call to this method.
+  static CrashHandlerHost* Get();
 
   // Get the file descriptor which processes should be given in order to signal
   // crashes to the browser.
   int GetDeathSignalSocket() const { return process_socket_.get(); }
 
+ protected:
+  ~CrashHandlerHost() override;
+
  private:
+  CrashHandlerHost();
+
   void Init();
   bool ReceiveClientMessage(int client_fd, base::ScopedFD* handler_fd);
+  void NotifyCrashSignalObservers(base::ProcessId pid, int signo);
 
   // MessagePumbLibevent::Watcher impl:
   void OnFileCanWriteWithoutBlocking(int fd) override;
@@ -135,6 +159,8 @@ class CrashHandlerHost : public base::MessagePumpForIO::FdWatcher,
   // MessageLoopCurrent::DestructionObserver impl:
   void WillDestroyCurrentMessageLoop() override;
 
+  base::Lock observers_lock_;
+  std::set<Observer*> observers_;
   base::MessagePumpForIO::FdWatchController file_descriptor_watcher_;
   base::ScopedFD process_socket_;
   base::ScopedFD browser_socket_;
