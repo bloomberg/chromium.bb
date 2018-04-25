@@ -251,8 +251,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
-  GURL pattern = GURL("http://www.example.com/");
-  GURL script_url = GURL("http://www.example.com/service_worker.js");
+  GURL pattern = GURL("https://www.example.com/");
+  GURL script_url = GURL("https://www.example.com/service_worker.js");
   int process_id = helper_->mock_render_process_id();
 
   SendProviderCreated(blink::mojom::ServiceWorkerProviderType::kForWindow,
