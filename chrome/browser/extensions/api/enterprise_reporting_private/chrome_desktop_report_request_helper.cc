@@ -53,7 +53,10 @@ enum Type {
 std::string GetChromePath() {
   base::FilePath path;
   base::PathService::Get(chrome::DIR_APP, &path);
-  return path.AsUTF8Unsafe();
+  // The goal of this function is to return a unique path that will be used to
+  // identify this browser instance. Since the last component is contains the
+  // version number (which changes with every upgrade), it is stripped.
+  return path.DirName().AsUTF8Unsafe();
 }
 
 std::string GetProfileId(const Profile* profile) {
