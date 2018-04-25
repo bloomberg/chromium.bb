@@ -71,7 +71,7 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetFloatsBfcOffset(
 }
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetClearanceOffset(
-    const base::Optional<LayoutUnit>& clearance_offset) {
+    LayoutUnit clearance_offset) {
   clearance_offset_ = clearance_offset;
   return *this;
 }
@@ -211,8 +211,8 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
                                                 : *exclusion_space_;
   NGBfcOffset bfc_offset = is_new_fc_ ? NGBfcOffset() : bfc_offset_;
   NGMarginStrut margin_strut = is_new_fc_ ? NGMarginStrut() : margin_strut_;
-  base::Optional<LayoutUnit> clearance_offset =
-      is_new_fc_ ? base::nullopt : clearance_offset_;
+  LayoutUnit clearance_offset =
+      is_new_fc_ ? LayoutUnit::Min() : clearance_offset_;
   base::Optional<NGBfcOffset> floats_bfc_offset =
       is_new_fc_ ? base::nullopt : floats_bfc_offset_;
 

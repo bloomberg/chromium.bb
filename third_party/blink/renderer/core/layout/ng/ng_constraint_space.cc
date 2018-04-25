@@ -52,7 +52,7 @@ NGConstraintSpace::NGConstraintSpace(
     const base::Optional<NGBfcOffset>& floats_bfc_offset,
     const NGExclusionSpace& exclusion_space,
     Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats,
-    const base::Optional<LayoutUnit>& clearance_offset,
+    LayoutUnit clearance_offset,
     Vector<NGBaselineRequest>& baseline_requests)
     : available_size_(available_size),
       percentage_resolution_size_(percentage_resolution_size),
@@ -259,15 +259,14 @@ bool NGConstraintSpace::operator!=(const NGConstraintSpace& other) const {
 }
 
 String NGConstraintSpace::ToString() const {
-  return String::Format(
-      "Offset: %s,%s Size: %sx%s Clearance: %s",
-      bfc_offset_.line_offset.ToString().Ascii().data(),
-      bfc_offset_.block_offset.ToString().Ascii().data(),
-      AvailableSize().inline_size.ToString().Ascii().data(),
-      AvailableSize().block_size.ToString().Ascii().data(),
-      clearance_offset_.has_value()
-          ? clearance_offset_.value().ToString().Ascii().data()
-          : "none");
+  return String::Format("Offset: %s,%s Size: %sx%s Clearance: %s",
+                        bfc_offset_.line_offset.ToString().Ascii().data(),
+                        bfc_offset_.block_offset.ToString().Ascii().data(),
+                        AvailableSize().inline_size.ToString().Ascii().data(),
+                        AvailableSize().block_size.ToString().Ascii().data(),
+                        HasClearanceOffset()
+                            ? ClearanceOffset().ToString().Ascii().data()
+                            : "none");
 }
 
 }  // namespace blink

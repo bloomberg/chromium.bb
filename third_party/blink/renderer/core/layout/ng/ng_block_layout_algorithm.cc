@@ -424,16 +424,15 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     // We can use the BFC coordinates, as we are a new formatting context.
     DCHECK_EQ(container_builder_.BfcOffset().value(), NGBfcOffset());
 
-    base::Optional<LayoutUnit> float_end_offset =
+    LayoutUnit float_end_offset =
         exclusion_space_->ClearanceOffset(EClear::kBoth);
 
     // We only update the size of this fragment if we need to grow to
     // encapsulate the floats.
-    if (float_end_offset && float_end_offset.value() > end_bfc_block_offset) {
+    if (float_end_offset > end_bfc_block_offset) {
       end_margin_strut = NGMarginStrut();
-      end_bfc_block_offset = float_end_offset.value();
-      intrinsic_block_size_ =
-          std::max(intrinsic_block_size_, float_end_offset.value());
+      end_bfc_block_offset = float_end_offset;
+      intrinsic_block_size_ = std::max(intrinsic_block_size_, float_end_offset);
     }
   }
 
@@ -872,9 +871,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
     // If our BFC offset was updated we may have been affected by clearance
     // ourselves. We need to adjust the origin point to accomodate this.
     if (updated)
-      origin_point_block_offset =
-          std::max(origin_point_block_offset,
-                   ConstraintSpace().ClearanceOffset().value_or(LayoutUnit()));
+      origin_point_block_offset = container_builder_.BfcOffset()->block_offset;
 
     bool positioned_direct_child_floats = !unpositioned_floats_.IsEmpty();
 
@@ -1602,21 +1599,16 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   }
 
   WritingMode writing_mode;
-  base::Optional<LayoutUnit> clearance_offset;
-  if (!constraint_space_.IsNewFormattingContext())
-    clearance_offset = ConstraintSpace().ClearanceOffset();
+  LayoutUnit clearance_offset = constraint_space_.IsNewFormattingContext()
+                                    ? LayoutUnit::Min()
+                                    : ConstraintSpace().ClearanceOffset();
   if (child.IsInline()) {
     writing_mode = Style().GetWritingMode();
   } else {
     const ComputedStyle& child_style = child.Style();
     LayoutUnit child_clearance_offset =
         exclusion_space_->ClearanceOffset(child_style.Clear());
-    if (clearance_offset) {
-      clearance_offset =
-          std::max(clearance_offset.value(), child_clearance_offset);
-    } else {
-      clearance_offset = child_clearance_offset;
-    }
+    clearance_offset = std::max(clearance_offset, child_clearance_offset);
     space_builder.SetIsShrinkToFit(ShouldShrinkToFit(Style(), child_style));
     space_builder.SetTextDirection(child_style.Direction());
     writing_mode = child_style.GetWritingMode();
