@@ -69,10 +69,9 @@ struct SPEED_FEATURES;
 
 int av1_init_search_range(int size);
 
-int av1_refining_search_sad(struct macroblock *x, struct mv *ref_mv,
-                            int sad_per_bit, int distance,
-                            const aom_variance_fn_ptr_t *fn_ptr,
-                            const struct mv *center_mv);
+int av1_refining_search_sad(struct macroblock *x, MV *ref_mv, int sad_per_bit,
+                            int distance, const aom_variance_fn_ptr_t *fn_ptr,
+                            const MV *center_mv);
 
 // Runs sequence of diamond searches in smaller steps for RD.
 int av1_full_pixel_diamond(const struct AV1_COMP *cpi, MACROBLOCK *x,
