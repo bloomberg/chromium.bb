@@ -232,6 +232,7 @@ test("gl_tests") {
     "command_buffer/tests/texture_image_factory.h",
     "ipc/client/gpu_context_tests.h",
     "ipc/client/gpu_in_process_context_tests.cc",
+    "ipc/client/raster_in_process_context_tests.cc",
     "ipc/service/direct_composition_surface_win_unittest.cc",
   ]
 
@@ -249,6 +250,7 @@ test("gl_tests") {
     "//components/viz/test:test_support",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/command_buffer/client:raster",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/ipc:gl_in_process_context",
     "//gpu/ipc/service",
