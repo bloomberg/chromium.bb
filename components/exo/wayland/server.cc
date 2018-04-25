@@ -2905,10 +2905,9 @@ class AuraOutput : public WaylandDisplayObserver::ScaleObserver {
         bool rv = display_manager->GetActiveModeForDisplayId(display.id(),
                                                              &active_mode);
         DCHECK(rv);
-        for (uint32_t zoom_factor :
-             display::GetDisplayZoomFactors(active_mode)) {
+        for (double zoom_factor : display::GetDisplayZoomFactors(active_mode)) {
           uint32_t flags = 0;
-          if (zoom_factor == 1.f)
+          if (zoom_factor == 1.0)
             flags |= ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED;
           if (display_info.zoom_factor() == zoom_factor)
             flags |= ZAURA_OUTPUT_SCALE_PROPERTY_CURRENT;
