@@ -4,10 +4,12 @@
 
 package org.chromium.chrome.browser.contextual_suggestions;
 
+import android.content.Context;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -16,6 +18,7 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.Fullscreen
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -34,7 +37,8 @@ import java.util.List;
  * the contextual suggestions C++ components (via a bridge), updating the model, and communicating
  * with the component coordinator(s).
  */
-class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, FetchHelper.Delegate {
+class ContextualSuggestionsMediator
+        implements EnabledStateMonitor.Observer, FetchHelper.Delegate, ListMenuButton.Delegate {
     private final Profile mProfile;
     private final TabModelSelector mTabModelSelector;
     private final ContextualSuggestionsCoordinator mCoordinator;
@@ -51,6 +55,9 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
 
     private boolean mDidSuggestionsShowForTab;
     private boolean mHasRecordedPeekEventForTab;
+
+    /** Whether the content sheet is observed to be opened for the first time. */
+    private boolean mHasSheetBeenOpened;
 
     /**
      * Construct a new {@link ContextualSuggestionsMediator}.
@@ -191,6 +198,26 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
         }
     }
 
+    // ListMenuButton.Delegate implementation.
+    @Override
+    public ListMenuButton.Item[] getItems() {
+        final Context context = ContextUtils.getApplicationContext();
+        return new ListMenuButton.Item[] {
+                new ListMenuButton.Item(context, R.string.menu_preferences, true),
+                new ListMenuButton.Item(context, R.string.menu_send_feedback, true)};
+    }
+
+    @Override
+    public void onItemSelected(ListMenuButton.Item item) {
+        if (item.getTextId() == R.string.menu_preferences) {
+            mCoordinator.showSettings();
+        } else if (item.getTextId() == R.string.menu_send_feedback) {
+            mCoordinator.showFeedback();
+        } else {
+            assert false : "Unhandled item detected.";
+        }
+    }
+
     /**
      * Called when suggestions are cleared either due to the user explicitly dismissing
      * suggestions via the close button or due to the FetchHelper signaling state should
@@ -200,8 +227,11 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
         // TODO(twellington): Does this signal need to go back to FetchHelper?
         mDidSuggestionsShowForTab = false;
         mHasRecordedPeekEventForTab = false;
+        mHasSheetBeenOpened = false;
         mModel.setClusterList(new ClusterList(Collections.emptyList()));
         mModel.setCloseButtonOnClickListener(null);
+        mModel.setMenuButtonVisibility(false);
+        mModel.setMenuButtonDelegate(null);
         mModel.setDefaultToolbarClickListener(null);
         mModel.setTitle(null);
         mCoordinator.removeSuggestions();
@@ -227,6 +257,8 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
 
             clearSuggestions();
         });
+        mModel.setMenuButtonVisibility(false);
+        mModel.setMenuButtonDelegate(this);
         mModel.setDefaultToolbarClickListener(view -> mCoordinator.expandBottomSheet());
         mModel.setTitle(title);
         mCoordinator.preloadContentInSheet();
@@ -239,6 +271,7 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
             @Override
             public void onSheetFullyPeeked() {
                 if (mHasRecordedPeekEventForTab) return;
+                assert !mHasSheetBeenOpened;
 
                 mHasRecordedPeekEventForTab = true;
                 TrackerFactory.getTrackerForProfile(mProfile).notifyEvent(
@@ -255,14 +288,19 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
 
             @Override
             public void onSheetOpened(@StateChangeReason int reason) {
-                TrackerFactory.getTrackerForProfile(mProfile).notifyEvent(
-                        EventConstants.CONTEXTUAL_SUGGESTIONS_OPENED);
+                if (!mHasSheetBeenOpened) {
+                    mHasSheetBeenOpened = true;
+                    TrackerFactory.getTrackerForProfile(mProfile).notifyEvent(
+                            EventConstants.CONTEXTUAL_SUGGESTIONS_OPENED);
+                    mCoordinator.showSuggestions(mSuggestionsSource);
+                    reportEvent(ContextualSuggestionsEvent.UI_OPENED);
+                }
+                mModel.setMenuButtonVisibility(true);
+            }
 
-                mCoordinator.showSuggestions(mSuggestionsSource);
-                mCoordinator.removeBottomSheetObserver(this);
-                mSheetObserver = null;
-
-                reportEvent(ContextualSuggestionsEvent.UI_OPENED);
+            @Override
+            public void onSheetClosed(int reason) {
+                mModel.setMenuButtonVisibility(false);
             }
         };
 

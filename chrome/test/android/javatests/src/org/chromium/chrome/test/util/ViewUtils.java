@@ -113,4 +113,27 @@ public class ViewUtils {
     public static void waitForView(ViewGroup root, Matcher<View> viewMatcher) {
         waitForView(root, viewMatcher, VIEW_VISIBLE);
     }
+
+    /**
+     * Wait until the specified view has finished layout updates.
+     * @param view The specified view.
+     */
+    public static void waitForStableView(final View view) {
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                if (view.isDirty()) {
+                    updateFailureReason("The view is dirty.");
+                    return false;
+                }
+
+                if (view.isLayoutRequested()) {
+                    updateFailureReason("The view has layout requested.");
+                    return false;
+                }
+
+                return true;
+            }
+        });
+    }
 }

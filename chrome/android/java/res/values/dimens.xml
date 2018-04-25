@@ -556,6 +556,9 @@
     <!-- Padding surrounding the message. -->
     <dimen name="reader_mode_infobar_text_padding">8dp</dimen>
 
+    <!-- Contextual Suggestions Dimensions -->
+    <dimen name="contextual_suggestions_icon_size">48dp</dimen>
+
     <!-- Defaults for TabbedModeFirstRunActivity values. -->
     <item type="dimen" name="dialog_fixed_width_major">100%</item>
     <item type="dimen" name="dialog_fixed_width_minor">100%</item>
