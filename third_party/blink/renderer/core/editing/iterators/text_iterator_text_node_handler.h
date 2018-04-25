@@ -63,6 +63,9 @@ class TextIteratorTextNodeHandler {
     return behavior_.IgnoresStyleVisibility();
   }
 
+  bool ShouldFixLeadingWhiteSpaceForReplacedElement() const;
+
+  // Emit a character before |offset| of characters in |text_node_|.
   void SpliceBuffer(UChar,
                     const Node* text_node,
                     const Node* offset_base_node,
