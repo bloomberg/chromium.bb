@@ -3035,6 +3035,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
           // If no corresponding buffer exists, allocate a new buffer with all
           // pixels set to neutral grey.
           buf_idx = get_free_fb(cm);
+          if (buf_idx == INVALID_IDX) {
+            aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                               "Unable to find free frame buffer");
+          }
           lock_buffer_pool(pool);
           if (aom_realloc_frame_buffer(
                   &frame_bufs[buf_idx].buf, cm->seq_params.max_frame_width,
