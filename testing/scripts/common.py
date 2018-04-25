@@ -19,7 +19,7 @@ SRC_DIR = os.path.abspath(
     os.path.join(SCRIPT_DIR, os.path.pardir, os.path.pardir))
 
 
-# run-webkit-tests returns the number of failures as the return
+# run_web_tests.py returns the number of failures as the return
 # code, but caps the return code at 101 to avoid overflow or colliding
 # with reserved values from the shell.
 MAX_FAILURES_EXIT_STATUS = 101

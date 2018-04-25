@@ -957,7 +957,6 @@ if (!is_ios) {
       "//testing/scripts/run_isolated_script_test.py",
       "//testing/xvfb.py",
       "//third_party/WebKit/LayoutTests/",
-      "//third_party/WebKit/Tools/Scripts/",
       "//third_party/blink/perf_tests/",
       "//third_party/blink/tools/",
       "//third_party/pywebsocket/",

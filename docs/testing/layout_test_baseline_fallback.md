@@ -118,7 +118,7 @@ results).
 In addition, the optimizer also removes redundant all-PASS testharness.js
 results. Such baselines are redundant when there are no other fallbacks later
 on the search path (including if the all-PASS baselines are at root), because
-`run-webkit-tests` assumes all-PASS testharness.js results when baselines can
+`run_web_tests.py` assumes all-PASS testharness.js results when baselines can
 not be found for a platform.
 
 ### Rebaseline

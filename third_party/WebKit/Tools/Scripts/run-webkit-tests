@@ -32,4 +32,5 @@
 from webkitpy.common import add_blinkpy  # pylint: disable=unused-import
 from blinkpy.common import multiprocessing_bootstrap
 
+print '\n    Please use third_party/blink/tools/run_web_tests.*.  This command will be removed.\n'
 multiprocessing_bootstrap.run('blinkpy', 'web_tests', 'run_webkit_tests.py')

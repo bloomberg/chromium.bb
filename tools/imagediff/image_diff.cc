@@ -6,7 +6,7 @@
 // Tools/DumpRenderTree/ImageDiff.m
 
 // The exact format of this tool's output to stdout is important, to match
-// what the run-webkit-tests script expects.
+// what the run_web_tests.py script expects.
 
 #include <stddef.h>
 #include <stdint.h>

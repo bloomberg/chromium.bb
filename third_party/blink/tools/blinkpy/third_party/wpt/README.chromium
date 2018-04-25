@@ -131,14 +131,14 @@ https://github.com/w3c/web-platform-tests/blob/master/README.md
 Also, check out the WPTServe Documentation
 (https://wptserve.readthedocs.org/en/latest/).
 
-Note that editing /etc/hosts is not required for run-webkit-tests since
+Note that editing /etc/hosts is not required for run_web_tests.py since
 content_shell is invoked with flags to map all *.test domains to 127.0.0.1.
 
 **
 
 Running web-platform-tests with enabled WPTServe on a local machine
 
-WPTServe is now enabled by default in run-webkit-tests for tests that live in
+WPTServe is now enabled by default in run_web_tests.py for tests that live in
 LayoutTests/external/wpt.
 
 WPTServe starts HTTP/S and WS/S servers as separate processes.
@@ -149,4 +149,4 @@ LayoutTests/external/wpt. HTTPS tests are enabled by default.
 
 Example run:
 
-./Tools/Scripts/run-webkit-tests external/wpt
+./tools/run_web_tests.py external/wpt

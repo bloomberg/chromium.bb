@@ -13,7 +13,7 @@
             testPanUp(30);
          } else {
             // in manual mode
-            alert("Please use run-webkit-tests.");
+            alert("Please use run_web_tests.py.");
          }
      }
    ]]></script>

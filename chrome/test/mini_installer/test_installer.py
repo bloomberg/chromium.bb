@@ -570,7 +570,7 @@ TEST_SEPARATOR = '.'
 def _FullResults(suite, result, metadata):
   """Convert the unittest results to the Chromium JSON test result format.
 
-  This matches run-webkit-tests (the layout tests) and the flakiness dashboard.
+  This matches run_web_tests.py (the layout tests) and the flakiness dashboard.
   """
 
   full_results = {}

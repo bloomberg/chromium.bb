@@ -26,7 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Package that handles non-debug, non-file output for run_webkit_tests."""
+"""Package that handles non-debug, non-file output for run_web_tests.py."""
 
 import math
 import optparse
@@ -42,7 +42,7 @@ NUM_SLOW_TESTS_TO_LOG = 10
 def print_options():
     return [
         optparse.make_option('--debug-rwt-logging', action='store_true', default=False,
-                             help='print timestamps and debug information for run_webkit_tests itself'),
+                             help='print timestamps and debug information for run_web_tests.py itself'),
         optparse.make_option('--details', action='store_true', default=False,
                              help='print detailed results for every test'),
         optparse.make_option('-q', '--quiet', action='store_true', default=False,
@@ -55,7 +55,7 @@ def print_options():
 
 
 class Printer(object):
-    """Class handling all non-debug-logging printing done by run_webkit_tests."""
+    """Class handling all non-debug-logging printing done by run_web_tests.py."""
 
     def __init__(self, port, options, regular_output, logger=None):
         self.num_completed = 0

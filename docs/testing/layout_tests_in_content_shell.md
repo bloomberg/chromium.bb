@@ -17,11 +17,11 @@ binaries required to run the tests.
 
 ### Running
 
-You can run layout tests using `run-webkit-tests` (in
-`src/third_party/WebKit/Tools/Scripts`).
+You can run layout tests using `run_web_tests.py` (in
+`src/third_party/blink/tools`).
 
 ```bash
-third_party/WebKit/Tools/Scripts/run-webkit-tests storage/indexeddb
+third_party/blink/tools/run_web_tests.py storage/indexeddb
 ```
 
 or execute the shell directly:

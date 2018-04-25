@@ -1,6 +1,6 @@
 # This file should only include tests that we never want to run.
 # There should only be the following categories of tests here:
-#   1. Tests of the test harness (run-webkit-tests) itself.
+#   1. Tests of the test harness (run_web_tests.py) itself.
 #   2. Tests enabled by chromium embedders (e.g. Opera).
 #   3. Tests that apply to some platforms but not others.
 #   4. Tests that are too slow in Debug and so we only want to skip them in Debug.
@@ -1829,7 +1829,7 @@ crbug.com/457718 external/wpt/css/css-pseudo/marker-font-properties.html [ WontF
 external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ WontFix ]
 
 # These directories have manual tests that don't have to run with
-# run-webkit-tests; see https://crbug.com/359838.
+# run_web_tests.py; see https://crbug.com/359838.
 http/tests/ManualTests/ [ WontFix ]
 
 # These test produce invisible different pixels on Win7 Debug.

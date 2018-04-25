@@ -156,7 +156,7 @@ function runTransitionTest(expected, callback)
     }
 
     _endFunction = function() { processEndEvents(expected); };
-    // Add three seconds of fudge. We don't just use the run-webkit-tests timeout
+    // Add three seconds of fudge. We don't just use the run_web_tests.py timeout
     // because processEndEvents gives more information on what failed.
     window.setTimeout(_endFunction, maxTime * 1000 + 3000);
   }

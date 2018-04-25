@@ -1309,7 +1309,7 @@ window.Audit = (function() {
       xhr.responseType = 'arraybuffer';
 
       xhr.onload = () => {
-        // |status = 0| is a workaround for the run-webkit-test server. We are
+        // |status = 0| is a workaround for the run_web_test.py server. We are
         // speculating the server quits the transaction prematurely without
         // completing the request.
         if (xhr.status === 200 || xhr.status === 0) {
@@ -1365,7 +1365,7 @@ window.Audit = (function() {
       if (options && options.requireResultFile == true) {
         _logError(
             'this test requires the explicit comparison with the ' +
-            'expected result when it runs with run-webkit-tests.');
+            'expected result when it runs with run_web_tests.py.');
       }
 
       return new TaskRunner();

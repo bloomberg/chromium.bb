@@ -89,7 +89,7 @@ private
 
     OPENSOURCE_URL = "https://chromium.googlesource.com/chromium/src/+/master/"
 
-    IMAGE_CHECKSUM_ERROR = "INVALID: Image lacks a checksum. This will fail with a MISSING error in run-webkit-tests. Always generate new png files using run-webkit-tests."
+    IMAGE_CHECKSUM_ERROR = "INVALID: Image lacks a checksum. This will fail with a MISSING error in run_web_tests.py. Always generate new png files using run_web_tests.py."
 
     def self.normalize_line_ending(s)
         if RUBY_VERSION >= "1.9"

@@ -16,9 +16,9 @@
 # $ out/gn/unit_tests --gtest_filt<tab>
 # $ out/gn/unit_tests --test-launcher-j<tab>
 #
-# Layout test switches:
-# $ third_party/WebKit/Tools/Scripts/run-webkit-tests --additional-driver-f<tab>
-# $ .../run-webkit-tests --additional-driver-flag=--site-per-pro<tab>
+# Web test switches:
+# $ third_party/blink/tools/run_web_tests.py --additional-driver-f<tab>
+# $ .../run_web_tests.py --additional-driver-flag=--site-per-pro<tab>
 #
 # Blink blink_tool.py sub-commands:
 # $ third_party/blink/tools/blink_tool.py reb<tab>
@@ -53,8 +53,8 @@ _gtest_flag() {
     return 0
 }
 
-_layout_test_flag() {
-    local cur targets webkitpy_dir prev_switch
+_web_test_flag() {
+    local cur targets blinkpy_dir prev_switch
     cur="${COMP_WORDS[COMP_CWORD]}"
 
     # Complete content_shell switches if appropriate.
@@ -72,16 +72,16 @@ _layout_test_flag() {
       fi
     fi
 
-    # Complete run-webkit-tests switches.
-    webkitpy_dir="$chrome_source/third_party/WebKit/Tools/Scripts/webkitpy"
+    # Complete run_web_tests.py switches.
+    blinkpy_dir="$chrome_source/third_party/blink/tools/blinkpy"
     targets=$(sed -ne 's/^[[:space:]]*"\(--[a-z-]\+\)",[[:space:]]*$/\1/p' \
-        "$webkitpy_dir/layout_tests/run_webkit_tests.py")
+        "$blinkpy_dir/web_tests/run_webkit_tests.py")
     COMPREPLY=($(compgen -W "$targets" -- "$cur"))
     return 0
 }
 
 _blink_tool_flag() {
-    local cur targets webkit_scripts_dir
+    local cur targets blink_tools_dir
     cur="${COMP_WORDS[COMP_CWORD]}"
     blink_tools_dir=$chrome_source/third_party/blink/tools
     targets=$($blink_tools_dir/blink_tool.py help | grep '^   [a-z]' | \
@@ -104,5 +104,5 @@ for gtest_test_executable in $(
   complete -F _gtest_flag $gtest_test_executable
 done
 
-complete -F _layout_test_flag run-webkit-tests
+complete -F _web_test_flag run_web_tests.py
 complete -F _blink_tool_flag blink_tool.py

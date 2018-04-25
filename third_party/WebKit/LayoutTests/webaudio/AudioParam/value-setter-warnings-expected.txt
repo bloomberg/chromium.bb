@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 39: [audit.js] this test requires the explicit comparison with the expected result when it runs with run-webkit-tests.
+CONSOLE ERROR: line 39: [audit.js] this test requires the explicit comparison with the expected result when it runs with run_web_tests.py.
 CONSOLE MESSAGE: line 129: Test: test-0
 CONSOLE MESSAGE: line 129: Test: test-1
 CONSOLE MESSAGE: line 129: Test: test-2

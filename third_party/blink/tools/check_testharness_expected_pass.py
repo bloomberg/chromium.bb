@@ -7,7 +7,7 @@
 """Check if a LayoutTest expected file is an all-PASS testharness result.
 
 LayoutTests/PRESUBMIT.py uses this script to identify generic all-PASS
-testharness baselines, which are redundant because run-webkit-tests assumes
+testharness baselines, which are redundant because run_web_tests.py assumes
 all-PASS results for testharness tests when baselines are not found.
 """
 

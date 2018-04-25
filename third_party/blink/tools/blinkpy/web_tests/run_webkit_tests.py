@@ -389,7 +389,7 @@ def parse_args(args):
                 default=None,
                 help=('Number of times to retry failures. Default (when this '
                       'flag is not specified) is to retry 3 times, unless an '
-                      'explicit list of tests is passed to run-webkit-tests. '
+                      'explicit list of tests is passed to run_web_tests.py. '
                       'If a non-zero value is given explicitly, failures are '
                       'retried regardless.')),
             optparse.make_option(
@@ -527,7 +527,7 @@ def parse_args(args):
         ]))
 
     option_parser = optparse.OptionParser(
-        prog='run-webkit-tests',
+        prog='run_web_tests.py',
         usage='%prog [options] [tests]',
         description='Runs Blink layout tests as described in docs/testing/layout_tests.md')
 

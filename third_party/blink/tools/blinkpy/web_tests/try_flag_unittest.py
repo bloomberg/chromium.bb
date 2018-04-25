@@ -43,7 +43,7 @@ class TryFlagTest(unittest.TestCase):
         TryFlag(cmd, host, git_cl).run()
 
         expected_added_paths = {flag_file}
-        expected_commits = [['Flag try job: force --foo for run-webkit-tests.']]
+        expected_commits = [['Flag try job: force --foo for run_web_tests.py.']]
 
         if regenerate:
             expected_added_paths.add(flag_expectations_file)

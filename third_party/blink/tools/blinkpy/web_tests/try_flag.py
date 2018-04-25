@@ -53,7 +53,7 @@ class TryFlag(object):
         self._filesystem.write_text_file(path, flag + '\n')
         self._git.add_list([path])
         self._git.commit_locally_with_message(
-            'Flag try job: force %s for run-webkit-tests.' % flag)
+            'Flag try job: force %s for run_web_tests.py.' % flag)
 
     def _flag_expectations_path(self):
         return self._path_finder.path_from_layout_tests(
@@ -166,7 +166,7 @@ def parse_args(argv):
     parser.add_argument('action', help='"trigger" or "update"')
     parser.add_argument('--bug', help='crbug number for expectation lines')
     parser.add_argument('--flag', required=True,
-                        help='flag to force-enable in run-webkit-tests')
+                        help='flag to force-enable in run_web_tests.py')
     parser.add_argument('--regenerate', action='store_true',
                         help='clear the flag expectations before triggering')
     return parser.parse_args(argv)
