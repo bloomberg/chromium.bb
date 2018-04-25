@@ -32,14 +32,10 @@
 -SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
 -TaskManagerUtilityProcessBrowserTest.UtilityJSHeapMemory
 -WebstoreInstallerBrowserTest.SimultaneousInstall
--WebViewTests/WebViewTest.ClearData/0
--WebViewTests/WebViewTest.ClearData/1
--WebViewTests/WebViewTest.ClearDataCache/0
--WebViewTests/WebViewTest.ClearDataCache/1
--WebViewTests/WebViewTest.WebViewInBackgroundPage/0
--WebViewTests/WebViewTest.WebViewInBackgroundPage/1
--WebViewTests/WebViewTest.DownloadPermission/0
--WebViewTests/WebViewTest.DownloadPermission/1
+-WebViewTest.ClearData
+-WebViewTest.ClearDataCache
+-WebViewTest.WebViewInBackgroundPage
+-WebViewTest.DownloadPermission
 
 # Need a test interface API that allows us to check on the CT status.
 # Then in ssl_browsertest.cc we can use that instead of the direct
@@ -75,10 +71,8 @@
 # http://crbug.com/823297 StoragePartition::ClearData needs to use
 # CookieManager.
 -BrowsingDataRemoverBrowserTest.CookieDeletion
--WebViewTests/WebViewTest.ClearPersistentCookies/0
--WebViewTests/WebViewTest.ClearPersistentCookies/1
--WebViewTests/WebViewTest.ClearSessionCookies/0
--WebViewTests/WebViewTest.ClearSessionCookies/1
+-WebViewTest.ClearPersistentCookies
+-WebViewTest.ClearSessionCookies
 
 # Accessing cookies after they were set in onload handler is flaky:
 # https://crbug.com/820969.

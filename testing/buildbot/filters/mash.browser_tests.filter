@@ -209,6 +209,7 @@
 
 # content::WaitForChildFrameSurfaceReady hangs.
 -SitePerProcessDevToolsSanityTest.InputDispatchEventsToOOPIF
+-WebViewGuestTouchFocusBrowserPluginSpecificTest.TouchFocusesBrowserPluginInEmbedder
 
 # Function under test uses ash::Shell for window list.
 -SortWindowsByZIndexBrowserTest.*
@@ -254,9 +255,9 @@
 -WebViewScrollBubbling/WebViewGuestScrollTouchTest.*
 
 # Also fails with mus. http://crbug.com/755328
--WebViewTests/WebViewFocusTest.*
--WebViewTests/WebViewSizeTest.*
--WebViewTests/WebViewTest.*
+-WebViewFocusBrowserPluginSpecificTest.*
+-WebViewSizeTest.*
+-WebViewTest.*
 
 # Sending invalid FrameSinkIds crbug.com/796999
 -WebviewLoginTest.AllowNewUser
@@ -292,7 +293,7 @@
 
 # RenderFrameMetadata observation not supported: https://crbug.com/820974
 -WebViewGuestScrollLatchingTest.ScrollLatchingPreservedInGuests
--WebViewScrollGuestContent/WebViewScrollGuestContentTest.OverscrollControllerSeesConsumedScrollsInGuest/0
+-WebViewScrollGuestContentBrowserPluginSpecificTest.OverscrollControllerSeesConsumedScrollsInGuest
 
 # Viz is not supported, https://crbug.com/827327
 -*ECKEncryptedMediaTest.*
