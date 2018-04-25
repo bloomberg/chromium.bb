@@ -28,6 +28,11 @@ class UserSessionManager;
 }
 
 // Necessary to declare this class as a friend.
+namespace file_manager {
+class MultiProfileFileManagerBrowserTest;
+}
+
+// Necessary to declare this class as a friend.
 class ProfileSyncServiceHarness;
 
 namespace identity {
@@ -115,6 +120,7 @@ class IdentityManager : public SigninManagerBase::Observer,
       IdentityManager* identity_manager,
       const std::string& email);
   friend ProfileSyncServiceHarness;
+  friend file_manager::MultiProfileFileManagerBrowserTest;
 
   // These clients needs to call SetPrimaryAccountSynchronously().
   friend chromeos::ChromeSessionManager;
