@@ -17,6 +17,7 @@
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_provider.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
@@ -25,6 +26,8 @@ using testing::Mock;
 using testing::Return;
 
 namespace {
+
+using PageLoad = ukm::builders::PageLoad;
 
 const char kTestUrl1[] = "https://www.google.com/";
 const char kTestUrl2[] = "https://www.example.com/";
@@ -106,30 +109,37 @@ TEST_F(UkmPageLoadMetricsObserverTest, Basic) {
   DeleteContents();
 
   std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
-      test_ukm_recorder().GetMergedEntriesByName(
-          internal::kUkmPageLoadEventName);
+      test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
   EXPECT_EQ(1ul, merged_entries.size());
 
   for (const auto& kv : merged_entries) {
     test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
                                                 GURL(kTestUrl1));
-    test_ukm_recorder().ExpectEntryMetric(kv.second.get(),
-                                          internal::kUkmPageTransition,
-                                          ui::PAGE_TRANSITION_LINK);
-    test_ukm_recorder().ExpectEntryMetric(kv.second.get(),
-                                          internal::kUkmParseStartName, 100);
     test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(), internal::kUkmDomContentLoadedName, 200);
-    test_ukm_recorder().ExpectEntryMetric(kv.second.get(),
-                                          internal::kUkmFirstPaintName, 250);
+        kv.second.get(), PageLoad::kNavigation_PageTransitionName,
+        ui::PAGE_TRANSITION_LINK);
     test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(), internal::kUkmFirstContentfulPaintName, 300);
-    test_ukm_recorder().ExpectEntryMetric(kv.second.get(),
-                                          internal::kUkmLoadEventName, 500);
+        kv.second.get(), PageLoad::kParseTiming_NavigationToParseStartName,
+        100);
+    test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(),
+        PageLoad::kDocumentTiming_NavigationToDOMContentLoadedEventFiredName,
+        200);
+    test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), PageLoad::kPaintTiming_NavigationToFirstPaintName,
+        250);
+    test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(),
+        PageLoad::kPaintTiming_NavigationToFirstContentfulPaintName, 300);
+    test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(),
+        PageLoad::kDocumentTiming_NavigationToLoadEventFiredName, 500);
     EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
-        kv.second.get(), internal::kUkmFirstMeaningfulPaintName));
+        kv.second.get(),
+        PageLoad::
+            kExperimental_PaintTiming_NavigationToFirstMeaningfulPaintName));
     EXPECT_TRUE(test_ukm_recorder().EntryHasMetric(
-        kv.second.get(), internal::kUkmForegroundDurationName));
+        kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
   }
 }
 
@@ -149,8 +159,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, FailedProvisionalLoad) {
   DeleteContents();
 
   std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
-      test_ukm_recorder().GetMergedEntriesByName(
-          internal::kUkmPageLoadEventName);
+      test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
   EXPECT_EQ(1ul, merged_entries.size());
 
   // Make sure that only the following metrics are logged. In particular, no
@@ -159,19 +168,21 @@ TEST_F(UkmPageLoadMetricsObserverTest, FailedProvisionalLoad) {
   for (const auto& kv : merged_entries) {
     test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
                                                 GURL(kTestUrl1));
-    test_ukm_recorder().ExpectEntryMetric(kv.second.get(),
-                                          internal::kUkmPageTransition,
-                                          ui::PAGE_TRANSITION_LINK);
     test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(), internal::kUkmEffectiveConnectionType,
+        kv.second.get(), PageLoad::kNavigation_PageTransitionName,
+        ui::PAGE_TRANSITION_LINK);
+    test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(),
+        PageLoad::kNet_EffectiveConnectionType2_OnNavigationStartName,
         metrics::SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_2G);
     test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(), internal::kUkmNetErrorCode,
+        kv.second.get(), PageLoad::kNet_ErrorCode_OnFailedProvisionalLoadName,
         static_cast<int64_t>(net::ERR_TIMED_OUT) * -1);
     EXPECT_TRUE(test_ukm_recorder().EntryHasMetric(
-        kv.second.get(), internal::kUkmForegroundDurationName));
+        kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
     EXPECT_TRUE(test_ukm_recorder().EntryHasMetric(
-        kv.second.get(), internal::kUkmFailedProvisionaLoadName));
+        kv.second.get(),
+        PageLoad::kPageTiming_NavigationToFailedProvisionalLoadName));
   }
 }
 
@@ -190,17 +201,19 @@ TEST_F(UkmPageLoadMetricsObserverTest, FirstMeaningfulPaint) {
   DeleteContents();
 
   std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
-      test_ukm_recorder().GetMergedEntriesByName(
-          internal::kUkmPageLoadEventName);
+      test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
   EXPECT_EQ(1ul, merged_entries.size());
 
   for (const auto& kv : merged_entries) {
     test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
                                                 GURL(kTestUrl1));
     test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(), internal::kUkmFirstMeaningfulPaintName, 600);
+        kv.second.get(),
+        PageLoad::
+            kExperimental_PaintTiming_NavigationToFirstMeaningfulPaintName,
+        600);
     EXPECT_TRUE(test_ukm_recorder().EntryHasMetric(
-        kv.second.get(), internal::kUkmForegroundDurationName));
+        kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
   }
 }
 
@@ -219,17 +232,17 @@ TEST_F(UkmPageLoadMetricsObserverTest, PageInteractive) {
   DeleteContents();
 
   std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
-      test_ukm_recorder().GetMergedEntriesByName(
-          internal::kUkmPageLoadEventName);
+      test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
   EXPECT_EQ(1ul, merged_entries.size());
 
   for (const auto& kv : merged_entries) {
     test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
                                                 GURL(kTestUrl1));
-    test_ukm_recorder().ExpectEntryMetric(kv.second.get(),
-                                          internal::kUkmInteractiveName, 600);
+    test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), PageLoad::kExperimental_NavigationToInteractiveName,
+        600);
     EXPECT_TRUE(test_ukm_recorder().EntryHasMetric(
-        kv.second.get(), internal::kUkmForegroundDurationName));
+        kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
   }
 }
 
@@ -250,17 +263,16 @@ TEST_F(UkmPageLoadMetricsObserverTest, PageInteractiveInputInvalidated) {
   DeleteContents();
 
   std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
-      test_ukm_recorder().GetMergedEntriesByName(
-          internal::kUkmPageLoadEventName);
+      test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
   EXPECT_EQ(1ul, merged_entries.size());
 
   for (const auto& kv : merged_entries) {
     test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
                                                 GURL(kTestUrl1));
     EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
-        kv.second.get(), internal::kUkmInteractiveName));
+        kv.second.get(), PageLoad::kExperimental_NavigationToInteractiveName));
     EXPECT_TRUE(test_ukm_recorder().EntryHasMetric(
-        kv.second.get(), internal::kUkmForegroundDurationName));
+        kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
   }
 }
 
@@ -281,17 +293,17 @@ TEST_F(UkmPageLoadMetricsObserverTest, FirstInputDelayAndTimestamp) {
   DeleteContents();
 
   std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
-      test_ukm_recorder().GetMergedEntriesByName(
-          internal::kUkmPageLoadEventName);
+      test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
   EXPECT_EQ(1ul, merged_entries.size());
 
   for (const auto& kv : merged_entries) {
     test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
                                                 GURL(kTestUrl1));
     test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(), internal::kUkmFirstInputDelayName, 50);
+        kv.second.get(), PageLoad::kInteractiveTiming_FirstInputDelayName, 50);
     test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(), internal::kUkmFirstInputTimestampName, 712);
+        kv.second.get(), PageLoad::kInteractiveTiming_FirstInputTimestampName,
+        712);
   }
 }
 
@@ -319,14 +331,14 @@ TEST_F(UkmPageLoadMetricsObserverTest, MultiplePageLoads) {
   DeleteContents();
 
   std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
-      test_ukm_recorder().GetMergedEntriesByName(
-          internal::kUkmPageLoadEventName);
+      test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
   EXPECT_EQ(2ul, merged_entries.size());
   const ukm::mojom::UkmEntry* entry1 = nullptr;
   const ukm::mojom::UkmEntry* entry2 = nullptr;
   for (const auto& kv : merged_entries) {
     if (test_ukm_recorder().EntryHasMetric(
-            kv.second.get(), internal::kUkmFirstContentfulPaintName)) {
+            kv.second.get(),
+            PageLoad::kPaintTiming_NavigationToFirstContentfulPaintName)) {
       entry1 = kv.second.get();
     } else {
       entry2 = kv.second.get();
@@ -337,21 +349,25 @@ TEST_F(UkmPageLoadMetricsObserverTest, MultiplePageLoads) {
 
   test_ukm_recorder().ExpectEntrySourceHasUrl(entry1, GURL(kTestUrl1));
   test_ukm_recorder().ExpectEntryMetric(
-      entry1, internal::kUkmFirstContentfulPaintName, 200);
+      entry1, PageLoad::kPaintTiming_NavigationToFirstContentfulPaintName, 200);
   EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
-      entry1, internal::kUkmFirstMeaningfulPaintName));
+      entry1,
+      PageLoad::
+          kExperimental_PaintTiming_NavigationToFirstMeaningfulPaintName));
   EXPECT_TRUE(test_ukm_recorder().EntryHasMetric(
-      entry1, internal::kUkmForegroundDurationName));
+      entry1, PageLoad::kPageTiming_ForegroundDurationName));
 
   test_ukm_recorder().ExpectEntrySourceHasUrl(entry2, GURL(kTestUrl2));
-  EXPECT_FALSE(
-      test_ukm_recorder().EntryHasMetric(entry2, internal::kUkmParseStartName));
   EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
-      entry2, internal::kUkmFirstContentfulPaintName));
+      entry2, PageLoad::kParseTiming_NavigationToParseStartName));
   EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
-      entry2, internal::kUkmFirstMeaningfulPaintName));
+      entry2, PageLoad::kPaintTiming_NavigationToFirstContentfulPaintName));
+  EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
+      entry2,
+      PageLoad::
+          kExperimental_PaintTiming_NavigationToFirstMeaningfulPaintName));
   EXPECT_TRUE(test_ukm_recorder().EntryHasMetric(
-      entry2, internal::kUkmForegroundDurationName));
+      entry2, PageLoad::kPageTiming_ForegroundDurationName));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, NetworkQualityEstimates) {
@@ -370,22 +386,25 @@ TEST_F(UkmPageLoadMetricsObserverTest, NetworkQualityEstimates) {
   DeleteContents();
 
   std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
-      test_ukm_recorder().GetMergedEntriesByName(
-          internal::kUkmPageLoadEventName);
+      test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
   EXPECT_EQ(1ul, merged_entries.size());
 
   for (const auto& kv : merged_entries) {
     test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
                                                 GURL(kTestUrl1));
     test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(), internal::kUkmEffectiveConnectionType,
+        kv.second.get(),
+        PageLoad::kNet_EffectiveConnectionType2_OnNavigationStartName,
         metrics::SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_3G);
-    test_ukm_recorder().ExpectEntryMetric(kv.second.get(),
-                                          internal::kUkmHttpRttEstimate, 100);
     test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(), internal::kUkmTransportRttEstimate, 200);
+        kv.second.get(), PageLoad::kNet_HttpRttEstimate_OnNavigationStartName,
+        100);
     test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(), internal::kUkmDownstreamKbpsEstimate, 300);
+        kv.second.get(),
+        PageLoad::kNet_TransportRttEstimate_OnNavigationStartName, 200);
+    test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(),
+        PageLoad::kNet_DownstreamKbpsEstimate_OnNavigationStartName, 300);
   }
 }
 
@@ -398,16 +417,15 @@ TEST_F(UkmPageLoadMetricsObserverTest, PageTransitionReload) {
   DeleteContents();
 
   std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
-      test_ukm_recorder().GetMergedEntriesByName(
-          internal::kUkmPageLoadEventName);
+      test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
   EXPECT_EQ(1ul, merged_entries.size());
 
   for (const auto& kv : merged_entries) {
     test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
                                                 GURL(kTestUrl1));
-    test_ukm_recorder().ExpectEntryMetric(kv.second.get(),
-                                          internal::kUkmPageTransition,
-                                          ui::PAGE_TRANSITION_RELOAD);
+    test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), PageLoad::kNavigation_PageTransitionName,
+        ui::PAGE_TRANSITION_RELOAD);
   }
 }
 
@@ -458,8 +476,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, BodySizeMetrics) {
   int64_t bucketed_cache_bytes = ukm::GetExponentialBucketMin(cache_bytes, 1.3);
 
   std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
-      test_ukm_recorder().GetMergedEntriesByName(
-          internal::kUkmPageLoadEventName);
+      test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
   EXPECT_EQ(1ul, merged_entries.size());
 
   for (const auto& kv : merged_entries) {

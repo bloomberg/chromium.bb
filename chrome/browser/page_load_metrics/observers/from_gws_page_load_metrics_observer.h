@@ -36,8 +36,6 @@ extern const char kHistogramFromGWSForegroundDuration[];
 extern const char kHistogramFromGWSForegroundDurationAfterPaint[];
 extern const char kHistogramFromGWSForegroundDurationNoCommit[];
 
-extern const char kUkmFromGoogleSearchName[];
-
 }  // namespace internal
 
 // FromGWSPageLoadMetricsLogger is a peer class to

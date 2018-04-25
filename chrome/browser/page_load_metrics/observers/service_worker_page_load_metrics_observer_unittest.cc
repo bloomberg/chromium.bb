@@ -10,6 +10,7 @@
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 
 namespace {
 
@@ -207,8 +208,8 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, WithServiceWorker) {
   histogram_tester().ExpectTotalCount(
       internal::kHistogramServiceWorkerParseStartForwardBackNoStore, 0);
 
-  const auto& entries =
-      test_ukm_recorder().GetEntriesByName(internal::kUkmServiceWorkerName);
+  const auto& entries = test_ukm_recorder().GetEntriesByName(
+      ukm::builders::PageLoad_ServiceWorkerControlled::kEntryName);
   EXPECT_EQ(1u, entries.size());
   for (const auto* entry : entries) {
     test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kDefaultTestUrl));
@@ -259,8 +260,8 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, WithServiceWorkerBackground) {
   // histogram_tester().ExpectTotalCount(
   //     internal::kBackgroundHistogramServiceWorkerParseStart, 1);
 
-  const auto& entries =
-      test_ukm_recorder().GetEntriesByName(internal::kUkmServiceWorkerName);
+  const auto& entries = test_ukm_recorder().GetEntriesByName(
+      ukm::builders::PageLoad_ServiceWorkerControlled::kEntryName);
   EXPECT_EQ(1u, entries.size());
   for (const auto* entry : entries) {
     test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kDefaultTestUrl));

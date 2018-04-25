@@ -17,30 +17,6 @@ namespace content {
 class WebContents;
 }
 
-namespace internal {
-
-// Name constants are exposed here so they can be referenced from tests.
-extern const char kUkmPageLoadEventName[];
-extern const char kUkmParseStartName[];
-extern const char kUkmDomContentLoadedName[];
-extern const char kUkmLoadEventName[];
-extern const char kUkmFirstPaintName[];
-extern const char kUkmFirstContentfulPaintName[];
-extern const char kUkmFirstMeaningfulPaintName[];
-extern const char kUkmInteractiveName[];
-extern const char kUkmFirstInputDelayName[];
-extern const char kUkmFirstInputTimestampName[];
-extern const char kUkmForegroundDurationName[];
-extern const char kUkmFailedProvisionaLoadName[];
-extern const char kUkmNetErrorCode[];
-extern const char kUkmEffectiveConnectionType[];
-extern const char kUkmHttpRttEstimate[];
-extern const char kUkmTransportRttEstimate[];
-extern const char kUkmDownstreamKbpsEstimate[];
-extern const char kUkmPageTransition[];
-
-}  // namespace internal
-
 // If URL-Keyed-Metrics (UKM) is enabled in the system, this is used to
 // populate it with top-level page-load metrics.
 class UkmPageLoadMetricsObserver

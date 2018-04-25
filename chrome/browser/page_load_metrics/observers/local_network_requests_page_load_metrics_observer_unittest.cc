@@ -18,6 +18,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "url/gurl.h"
 
 namespace internal {
@@ -177,13 +178,14 @@ class LocalNetworkRequestsPageLoadMetricsObserverTest
 
   void ExpectUkmPageDomainMetric(const internal::PageAddressInfo& page,
                                  const internal::DomainType domain_type) {
-    auto entries =
-        test_ukm_recorder().GetEntriesByName(internal::kUkmPageDomainEventName);
+    auto entries = test_ukm_recorder().GetEntriesByName(
+        ukm::builders::PageDomainInfo::kEntryName);
     EXPECT_EQ(1u, entries.size());
     for (const auto* const entry : entries) {
       test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(page.url));
-      test_ukm_recorder().ExpectEntryMetric(entry, internal::kUkmDomainTypeName,
-                                            static_cast<int>(domain_type));
+      test_ukm_recorder().ExpectEntryMetric(
+          entry, ukm::builders::PageDomainInfo::kDomainTypeName,
+          static_cast<int>(domain_type));
     }
   }
 
@@ -191,24 +193,25 @@ class LocalNetworkRequestsPageLoadMetricsObserverTest
       const internal::PageAddressInfo& page,
       const std::vector<internal::UkmMetricInfo>& expected_metrics,
       const std::map<std::string, int>& expected_histograms) {
-    auto entries = test_ukm_recorder().GetEntriesByName(
-        internal::kUkmLocalNetworkRequestsEventName);
+    using LocalNetworkRequests = ukm::builders::LocalNetworkRequests;
+    auto entries =
+        test_ukm_recorder().GetEntriesByName(LocalNetworkRequests::kEntryName);
     ASSERT_EQ(entries.size(), expected_metrics.size());
     for (size_t i = 0; i < entries.size() && i < expected_metrics.size(); i++) {
       test_ukm_recorder().ExpectEntrySourceHasUrl(entries[i], GURL(page.url));
-      test_ukm_recorder().ExpectEntryMetric(entries[i],
-                                            internal::kUkmResourceTypeName,
-                                            expected_metrics[i].resource_type);
-      test_ukm_recorder().ExpectEntryMetric(entries[i],
-                                            internal::kUkmSuccessfulCountName,
-                                            expected_metrics[i].success_count);
-      test_ukm_recorder().ExpectEntryMetric(entries[i],
-                                            internal::kUkmFailedCountName,
-                                            expected_metrics[i].failed_count);
+      test_ukm_recorder().ExpectEntryMetric(
+          entries[i], LocalNetworkRequests::kResourceTypeName,
+          expected_metrics[i].resource_type);
+      test_ukm_recorder().ExpectEntryMetric(
+          entries[i], LocalNetworkRequests::kCount_SuccessfulName,
+          expected_metrics[i].success_count);
+      test_ukm_recorder().ExpectEntryMetric(
+          entries[i], LocalNetworkRequests::kCount_FailedName,
+          expected_metrics[i].failed_count);
       if (expected_metrics[i].resource_type ==
           internal::RESOURCE_TYPE_LOCALHOST) {
         test_ukm_recorder().ExpectEntryMetric(
-            entries[i], internal::kUkmPortTypeName,
+            entries[i], LocalNetworkRequests::kPortTypeName,
             static_cast<int>(expected_metrics[i].port_type));
       }
     }

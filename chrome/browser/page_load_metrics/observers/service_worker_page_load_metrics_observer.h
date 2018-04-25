@@ -46,7 +46,6 @@ extern const char
     kHistogramServiceWorkerParseStartToFirstContentfulPaintSearch[];
 extern const char kHistogramServiceWorkerDomContentLoadedSearch[];
 extern const char kHistogramServiceWorkerLoadSearch[];
-extern const char kUkmServiceWorkerName[];
 
 extern const char kHistogramNoServiceWorkerFirstContentfulPaintSearch[];
 extern const char kHistogramNoServiceWorkerFirstMeaningfulPaintSearch[];

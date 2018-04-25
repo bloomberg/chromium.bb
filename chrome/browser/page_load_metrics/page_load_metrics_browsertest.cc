@@ -74,6 +74,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_filter.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom.h"
@@ -423,19 +424,23 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramPageTimingForegroundDuration, 1);
 
-  const auto& entries = test_ukm_recorder_->GetMergedEntriesByName(
-      internal::kUkmPageLoadEventName);
+  using PageLoad = ukm::builders::PageLoad;
+  const auto& entries =
+      test_ukm_recorder_->GetMergedEntriesByName(PageLoad::kEntryName);
   EXPECT_EQ(1u, entries.size());
   for (const auto& kv : entries) {
     test_ukm_recorder_->ExpectEntrySourceHasUrl(kv.second.get(), url);
     EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), internal::kUkmDomContentLoadedName));
+        kv.second.get(),
+        PageLoad::kDocumentTiming_NavigationToDOMContentLoadedEventFiredName));
     EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), internal::kUkmLoadEventName));
+        kv.second.get(),
+        PageLoad::kDocumentTiming_NavigationToLoadEventFiredName));
     EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), internal::kUkmFirstPaintName));
+        kv.second.get(), PageLoad::kPaintTiming_NavigationToFirstPaintName));
     EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), internal::kUkmFirstContentfulPaintName));
+        kv.second.get(),
+        PageLoad::kPaintTiming_NavigationToFirstContentfulPaintName));
   }
 
   // Verify that NoPageLoadMetricsRecorded returns false when PageLoad metrics
@@ -1362,14 +1367,14 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   waiter->Wait();
   NavigateToUntrackedUrl();
 
-  const auto& entries =
-      test_ukm_recorder_->GetEntriesByName(internal::kUkmUseCounterEventName);
+  const auto& entries = test_ukm_recorder_->GetEntriesByName(
+      ukm::builders::Blink_UseCounter::kEntryName);
   EXPECT_EQ(3u, entries.size());
   std::vector<int64_t> ukm_features;
   for (const auto* entry : entries) {
     test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, url);
     const auto* metric = test_ukm_recorder_->GetEntryMetric(
-        entry, internal::kUkmUseCounterFeature);
+        entry, ukm::builders::Blink_UseCounter::kFeatureName);
     EXPECT_TRUE(metric);
     ukm_features.push_back(*metric);
   }
@@ -1400,14 +1405,14 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   waiter->Wait();
   NavigateToUntrackedUrl();
 
-  const auto& entries =
-      test_ukm_recorder_->GetEntriesByName(internal::kUkmUseCounterEventName);
+  const auto& entries = test_ukm_recorder_->GetEntriesByName(
+      ukm::builders::Blink_UseCounter::kEntryName);
   EXPECT_EQ(6u, entries.size());
   std::vector<int64_t> ukm_features;
   for (const auto* entry : entries) {
     test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, url);
     const auto* metric = test_ukm_recorder_->GetEntryMetric(
-        entry, internal::kUkmUseCounterFeature);
+        entry, ukm::builders::Blink_UseCounter::kFeatureName);
     EXPECT_TRUE(metric);
     ukm_features.push_back(*metric);
   }

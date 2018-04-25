@@ -17,16 +17,9 @@
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
 #include "url/gurl.h"
 
-class DocumentWritePageLoadMetricsObserver;
-class FromGWSPageLoadMetricsLogger;
 class IOSChromePasswordManagerClient;
-class LocalNetworkRequestsPageLoadMetricsObserver;
 class MediaEngagementSession;
 class PluginInfoHostImpl;
-class ServiceWorkerPageLoadMetricsObserver;
-class SubresourceFilterMetricsObserver;
-class UkmPageLoadMetricsObserver;
-class UseCounterPageLoadMetricsObserver;
 
 namespace autofill {
 class AutofillMetrics;
@@ -63,10 +56,6 @@ class PasswordManagerMetricsRecorder;
 
 namespace payments {
 class JourneyLogger;
-}
-
-namespace previews {
-class PreviewsUKMObserver;
 }
 
 namespace metrics {
@@ -121,17 +110,10 @@ class METRICS_EXPORT UkmRecorder {
  private:
   friend assist_ranker::BasePredictor;
   friend DelegatingUkmRecorder;
-  friend DocumentWritePageLoadMetricsObserver;
-  friend FromGWSPageLoadMetricsLogger;
   friend IOSChromePasswordManagerClient;
-  friend LocalNetworkRequestsPageLoadMetricsObserver;
   friend MediaEngagementSession;
   friend PluginInfoHostImpl;
-  friend ServiceWorkerPageLoadMetricsObserver;
-  friend SubresourceFilterMetricsObserver;
   friend TestRecordingHelper;
-  friend UkmPageLoadMetricsObserver;
-  friend UseCounterPageLoadMetricsObserver;
   friend autofill::AutofillMetrics;
   friend autofill::FormStructure;
   friend blink::AutoplayUmaHelper;
@@ -151,7 +133,6 @@ class METRICS_EXPORT UkmRecorder {
   friend metrics::UkmRecorderInterface;
   friend password_manager::PasswordManagerMetricsRecorder;
   friend payments::JourneyLogger;
-  friend previews::PreviewsUKMObserver;
   friend translate::TranslateRankerImpl;
   friend ui::LatencyTracker;
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryWithEmptyMetrics);
