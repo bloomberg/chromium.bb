@@ -55,10 +55,14 @@ class AutofillAgentTests : public PlatformTest {
   DISALLOW_COPY_AND_ASSIGN(AutofillAgentTests);
 };
 
+// Tests that form's name and fields' identifiers, values, and whether they are
+// autofilled are sent to the JS. Fields with empty values and those that are
+// not autofilled are skipped.
 TEST_F(AutofillAgentTests, OnFormDataFilledTest) {
   autofill::FormData form;
   form.origin = GURL("https://myform.com");
   form.action = GURL("https://myform.com/submit");
+  form.name = base::ASCIIToUTF16("CC form");
 
   autofill::FormFieldData field;
   field.form_control_type = "text";
@@ -66,23 +70,31 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTest) {
   field.name = base::ASCIIToUTF16("number");
   field.id = base::ASCIIToUTF16("number");
   field.value = base::ASCIIToUTF16("number_value");
+  field.is_autofilled = true;
   form.fields.push_back(field);
   field.label = base::ASCIIToUTF16("Name on Card");
   field.name = base::ASCIIToUTF16("name");
   field.id = base::ASCIIToUTF16("name");
   field.value = base::ASCIIToUTF16("name_value");
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+  field.label = base::ASCIIToUTF16("Expiry Month");
+  field.name = base::ASCIIToUTF16("expiry_month");
+  field.id = base::ASCIIToUTF16("expiry_month");
+  field.value = base::ASCIIToUTF16("01");
+  field.is_autofilled = false;
   form.fields.push_back(field);
   field.label = base::ASCIIToUTF16("Unknown field");
   field.name = base::ASCIIToUTF16("unknown");
   field.id = base::ASCIIToUTF16("unknown");
   field.value = base::ASCIIToUTF16("");
+  field.is_autofilled = true;
   form.fields.push_back(field);
   // Fields are in alphabetical order.
   [[mock_js_injection_receiver_ expect]
       executeJavaScript:
           @"__gCrWeb.autofill.fillForm({\"fields\":{\"name\":\"name_value\","
-          @"\"number\":\"number_value\",\"unknown\":\"\"},\"formName\":\"\"}, "
-          @"\"\");"
+          @"\"number\":\"number_value\"},\"formName\":\"CC form\"}, \"\");"
       completionHandler:[OCMArg any]];
   [autofill_agent_ onFormDataFilled:form];
   test_web_state_.WasShown();
@@ -90,33 +102,32 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTest) {
   EXPECT_OCMOCK_VERIFY(mock_js_injection_receiver_);
 }
 
+// Tests that in the case of conflict in fields' identifiers, the last seen
+// value of a given field is used.
 TEST_F(AutofillAgentTests, OnFormDataFilledWithNameCollisionTest) {
   autofill::FormData form;
   form.origin = GURL("https://myform.com");
   form.action = GURL("https://myform.com/submit");
 
   autofill::FormFieldData field;
-  // Check that in case of conflict, the last value of a given field is used.
   field.form_control_type = "text";
   field.label = base::ASCIIToUTF16("State");
   field.name = base::ASCIIToUTF16("region");
   field.id = base::ASCIIToUTF16("region");
   field.value = base::ASCIIToUTF16("California");
-  form.fields.push_back(field);
-  field.label = base::ASCIIToUTF16("Province");
-  field.name = base::ASCIIToUTF16("region");
-  field.id = base::ASCIIToUTF16("region");
-  field.value = base::ASCIIToUTF16("");
+  field.is_autofilled = true;
   form.fields.push_back(field);
   field.label = base::ASCIIToUTF16("Other field");
   field.name = base::ASCIIToUTF16("field1");
   field.id = base::ASCIIToUTF16("field1");
   field.value = base::ASCIIToUTF16("value 1");
+  field.is_autofilled = true;
   form.fields.push_back(field);
   field.label = base::ASCIIToUTF16("Other field");
   field.name = base::ASCIIToUTF16("field1");
   field.id = base::ASCIIToUTF16("field1");
   field.value = base::ASCIIToUTF16("value 2");
+  field.is_autofilled = true;
   form.fields.push_back(field);
   // Fields are in alphabetical order.
   [[mock_js_injection_receiver_ expect]

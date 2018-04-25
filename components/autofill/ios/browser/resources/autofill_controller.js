@@ -17,6 +17,15 @@
   */
 goog.provide('__crWeb.autofill');
 
+/**
+ * The autofill data for a form.
+ * @typedef {{
+ *   formName: string,
+ *   fields: !Object<string, string>,
+ * }}
+ */
+var FormData;
+
 /* Beginning of anonymous object. */
 (function() {
 
@@ -238,7 +247,7 @@ function controlElementInputListener_(evt) {
  * Only empty fields will be filled, except that field named
  * |forceFillFieldName| will always be filled even if non-empty.
  *
- * @param {Object} data Dictionary of data to fill in.
+ * @param {!FormData} data Autofill data to fill in.
  * @param {string} forceFillFieldIdentifier Identified field will always be
  *     filled even if non-empty. May be null.
  */
@@ -270,12 +279,17 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
     if (__gCrWeb.fill.isCheckableElement(element))
       continue;
 
+    // Skip fields if autofill data is missing.
+    var fieldIdentifier = __gCrWeb.form.getFieldIdentifier(element);
+    var value = data.fields[fieldIdentifier];
+    if (!value)
+      continue;
+
     // Skip non-empty fields unless:
     // a) The element's identifier matches |forceFillFieldIdentifier|; or
     // b) The element is a 'select-one' element. 'select-one' elements are
     //    always autofilled; see AutofillManager::FillOrPreviewDataModelForm().
     // c) The "value" or "placeholder" attributes match the value, if any; or
-    var fieldIdentifier = __gCrWeb.form.getFieldIdentifier(element);
     if (element.value &&
         !__gCrWeb.autofill.sanitizedFieldIsEmpty(element.value) &&
         fieldIdentifier !== forceFillFieldIdentifier &&
@@ -288,15 +302,9 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
       continue;
     }
 
-    // Don't fill field if autofill data is empty or missing.
-    var value = data.fields[fieldIdentifier];
-    if (!value) continue;
-
     (function(_element, _value, _delay) {
       window.setTimeout(function() {
-        __gCrWeb.fill.setInputElementValue(_value, _element, function(changed) {
-          if (!changed)
-            return;
+        __gCrWeb.fill.setInputElementValue(_value, _element, function() {
           _element.setAttribute('chrome-autofilled', '');
           _element.isAutofilled = true;
           _element.addEventListener('input', controlElementInputListener_);
