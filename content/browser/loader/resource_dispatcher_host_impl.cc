@@ -1265,9 +1265,8 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
         new RedirectToFileResourceHandler(std::move(handler), request));
   }
 
-  // Prefetches and <a ping> requests outlive their child process.
-  if (request_data.resource_type == RESOURCE_TYPE_PREFETCH ||
-      request_data.keepalive) {
+  // Prefetches outlive their child process.
+  if (request_data.resource_type == RESOURCE_TYPE_PREFETCH) {
     auto detachable_handler = std::make_unique<DetachableResourceHandler>(
         request,
         base::TimeDelta::FromMilliseconds(kDefaultDetachableCancelDelayMs),
@@ -1530,19 +1529,11 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(
     if (IsTransferredNavigation(id))
       any_requests_transferring = true;
     if (cancel_all_routes || route_id == info->GetRenderFrameID()) {
-      if (info->detachable_handler()) {
-        if (info->keepalive()) {
-          // If the feature is enabled, the renderer process's lifetime is
-          // prolonged so there's no need to detach.
-          if (cancel_all_routes) {
-            // If the process is going to shut down for other reasons, we need
-            // to cancel the request.
-            matching_requests.push_back(id);
-          }
-        } else {
-          // Otherwise, use DetachableResourceHandler's functionality.
-          info->detachable_handler()->Detach();
-        }
+      if (info->keepalive() && !cancel_all_routes) {
+        // If the keepalive flag is set, that request will outlive the frame
+        // deliberately, so we don't cancel it here.
+      } else if (info->detachable_handler()) {
+        info->detachable_handler()->Detach();
       } else if (!info->IsDownload() && !info->is_stream() &&
                  !IsTransferredNavigation(id)) {
         matching_requests.push_back(id);
