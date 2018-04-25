@@ -151,7 +151,6 @@ void SetFieldLabelsOnSave(const autofill::ServerFieldType password_type,
                           const autofill::PasswordForm& form,
                           FieldTypeMap* field_types) {
   DCHECK(password_type == autofill::PASSWORD ||
-         password_type == autofill::PROBABLY_ACCOUNT_CREATION_PASSWORD ||
          password_type == autofill::ACCOUNT_CREATION_PASSWORD ||
          password_type == autofill::NOT_ACCOUNT_CREATION_PASSWORD)
       << password_type;
@@ -1393,8 +1392,6 @@ void PasswordFormManager::SendVotesOnSave() {
   // to see if they are valid account creation forms.
   if (pending_credentials_.times_used == 0) {
     autofill::ServerFieldType password_type = autofill::PASSWORD;
-    if (submitted_form_->does_look_like_signup_form)
-      password_type = autofill::PROBABLY_ACCOUNT_CREATION_PASSWORD;
     UploadPasswordVote(pending_credentials_, password_type, std::string());
     if (username_correction_vote_) {
       UploadPasswordVote(

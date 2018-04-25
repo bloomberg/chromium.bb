@@ -93,7 +93,6 @@ FieldTypeGroup GroupTypeOfServerFieldType(ServerFieldType field_type) {
     case NEW_PASSWORD:
     case PROBABLY_NEW_PASSWORD:
     case NOT_NEW_PASSWORD:
-    case PROBABLY_ACCOUNT_CREATION_PASSWORD:
     case CONFIRMATION_PASSWORD:
       return PASSWORD_FIELD;
 
@@ -202,7 +201,7 @@ AutofillType::AutofillType(ServerFieldType field_type)
   if ((field_type < NO_SERVER_DATA || field_type >= MAX_VALID_FIELD_TYPE) ||
       (field_type >= 15 && field_type <= 19) ||
       (field_type >= 25 && field_type <= 29) ||
-      (field_type >= 44 && field_type <= 50)) {
+      (field_type >= 44 && field_type <= 50) || field_type == 94) {
     server_type_ = UNKNOWN_TYPE;
   } else {
     server_type_ = field_type;
@@ -768,8 +767,6 @@ std::string AutofillType::ServerFieldTypeToString(ServerFieldType type) {
       return "PROBABLY_NEW_PASSWORD";
     case NOT_NEW_PASSWORD:
       return "NOT_NEW_PASSWORD";
-    case PROBABLY_ACCOUNT_CREATION_PASSWORD:
-      return "PROBABLY_ACCOUNT_CREATION_PASSWORD";
     case CONFIRMATION_PASSWORD:
       return "CONFIRMATION_PASSWORD";
     case SEARCH_TERM:

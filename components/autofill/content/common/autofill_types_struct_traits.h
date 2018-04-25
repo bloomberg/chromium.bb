@@ -560,10 +560,6 @@ struct StructTraits<autofill::mojom::PasswordFormDataView,
     return r.is_affiliation_based_match;
   }
 
-  static bool does_look_like_signup_form(const autofill::PasswordForm& r) {
-    return r.does_look_like_signup_form;
-  }
-
   static autofill::PasswordForm::SubmissionIndicatorEvent submission_event(
       const autofill::PasswordForm& r) {
     return r.submission_event;

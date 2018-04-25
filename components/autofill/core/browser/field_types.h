@@ -155,9 +155,7 @@ enum ServerFieldType {
 
   PHONE_HOME_EXTENSION = 93,
 
-  // The first password field in a form that looks like account creation form
-  // for local heuristics.
-  PROBABLY_ACCOUNT_CREATION_PASSWORD = 94,
+  // PROBABLY_ACCOUNT_CREATION_PASSWORD value 94 is deprecated.
 
   // The confirmation password field in account creation or change password
   // forms.
