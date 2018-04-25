@@ -65,22 +65,26 @@ void InstallAttributeInternal(
   v8::AccessorNameGetterCallback getter = attribute.getter;
   v8::AccessorNameSetterCallback setter = attribute.setter;
 
-  DCHECK_EQ(attribute.getter_side_effect_type,
-            V8DOMConfiguration::kHasSideEffect);
+  v8::SideEffectType getter_side_effect_type =
+      attribute.getter_side_effect_type == V8DOMConfiguration::kHasNoSideEffect
+          ? v8::SideEffectType::kHasNoSideEffect
+          : v8::SideEffectType::kHasSideEffect;
   DCHECK(attribute.property_location_configuration);
   if (attribute.property_location_configuration &
       V8DOMConfiguration::kOnInstance) {
     instance_template->SetNativeDataProperty(
         name, getter, setter, v8::Local<v8::Value>(),
         static_cast<v8::PropertyAttribute>(attribute.attribute),
-        v8::Local<v8::AccessorSignature>());
+        v8::Local<v8::AccessorSignature>(), v8::AccessControl::DEFAULT,
+        getter_side_effect_type);
   }
   if (attribute.property_location_configuration &
       V8DOMConfiguration::kOnPrototype) {
     prototype_template->SetNativeDataProperty(
         name, getter, setter, v8::Local<v8::Value>(),
         static_cast<v8::PropertyAttribute>(attribute.attribute),
-        v8::Local<v8::AccessorSignature>());
+        v8::Local<v8::AccessorSignature>(), v8::AccessControl::DEFAULT,
+        getter_side_effect_type);
   }
   if (attribute.property_location_configuration &
       V8DOMConfiguration::kOnInterface)
@@ -105,18 +109,23 @@ void InstallAttributeInternal(
   const unsigned location = config.property_location_configuration;
   DCHECK(location);
 
-  DCHECK_EQ(config.getter_side_effect_type, V8DOMConfiguration::kHasSideEffect);
+  v8::SideEffectType getter_side_effect_type =
+      config.getter_side_effect_type == V8DOMConfiguration::kHasNoSideEffect
+          ? v8::SideEffectType::kHasNoSideEffect
+          : v8::SideEffectType::kHasSideEffect;
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   if (location & V8DOMConfiguration::kOnInstance && !instance.IsEmpty()) {
     instance
         ->SetNativeDataProperty(context, name, getter, setter,
-                                v8::Local<v8::Value>(), attribute)
+                                v8::Local<v8::Value>(), attribute,
+                                getter_side_effect_type)
         .ToChecked();
   }
   if (location & V8DOMConfiguration::kOnPrototype && !prototype.IsEmpty()) {
     prototype
         ->SetNativeDataProperty(context, name, getter, setter,
-                                v8::Local<v8::Value>(), attribute)
+                                v8::Local<v8::Value>(), attribute,
+                                getter_side_effect_type)
         .ToChecked();
   }
   if (location & V8DOMConfiguration::kOnInterface)
@@ -134,20 +143,24 @@ void InstallLazyDataAttributeInternal(
   DCHECK(!attribute.setter);
   DCHECK_EQ(attribute.world_configuration, V8DOMConfiguration::kAllWorlds);
 
-  DCHECK_EQ(attribute.getter_side_effect_type,
-            V8DOMConfiguration::kHasSideEffect);
+  v8::SideEffectType getter_side_effect_type =
+      attribute.getter_side_effect_type == V8DOMConfiguration::kHasNoSideEffect
+          ? v8::SideEffectType::kHasNoSideEffect
+          : v8::SideEffectType::kHasSideEffect;
   DCHECK(attribute.property_location_configuration);
   if (attribute.property_location_configuration &
       V8DOMConfiguration::kOnInstance) {
     instance_template->SetLazyDataProperty(
         name, getter, v8::Local<v8::Value>(),
-        static_cast<v8::PropertyAttribute>(attribute.attribute));
+        static_cast<v8::PropertyAttribute>(attribute.attribute),
+        getter_side_effect_type);
   }
   if (attribute.property_location_configuration &
       V8DOMConfiguration::kOnPrototype) {
     prototype_template->SetLazyDataProperty(
         name, getter, v8::Local<v8::Value>(),
-        static_cast<v8::PropertyAttribute>(attribute.attribute));
+        static_cast<v8::PropertyAttribute>(attribute.attribute),
+        getter_side_effect_type);
   }
   if (attribute.property_location_configuration &
       V8DOMConfiguration::kOnInterface)
