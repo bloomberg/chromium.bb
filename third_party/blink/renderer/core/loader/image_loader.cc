@@ -86,8 +86,9 @@ class ImageLoader::Task {
       : loader_(loader),
         should_bypass_main_world_csp_(ShouldBypassMainWorldCSP(loader)),
         update_behavior_(update_behavior),
-        weak_factory_(this),
-        referrer_policy_(referrer_policy) {
+        referrer_policy_(referrer_policy),
+
+        weak_factory_(this) {
     ExecutionContext& context = loader_->GetElement()->GetDocument();
     probe::AsyncTaskScheduled(&context, "Image", this);
     v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
@@ -134,9 +135,9 @@ class ImageLoader::Task {
   BypassMainWorldBehavior should_bypass_main_world_csp_;
   UpdateFromElementBehavior update_behavior_;
   scoped_refptr<ScriptState> script_state_;
-  base::WeakPtrFactory<Task> weak_factory_;
   ReferrerPolicy referrer_policy_;
   KURL request_url_;
+  base::WeakPtrFactory<Task> weak_factory_;
 };
 
 ImageLoader::ImageLoader(Element* element)

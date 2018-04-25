@@ -117,8 +117,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void SetSchedulerKeepActive(bool keep_active) override;
   bool SchedulerKeepActive();
 #if defined(OS_ANDROID)
-  void PauseTimersForAndroidWebView();
-  void ResumeTimersForAndroidWebView();
+  void PauseTimersForAndroidWebView() override;
+  void ResumeTimersForAndroidWebView() override;
 #endif
   std::unique_ptr<RendererPauseHandle> PauseRenderer() override
       WARN_UNUSED_RESULT;

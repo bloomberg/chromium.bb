@@ -259,7 +259,6 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   // Using WeakPtr for GarbageCollected is discouraged. But in this case this is
   // ok because HTMLDocumentParser guarantees to revoke all WeakPtrs in the pre
   // finalizer.
-  base::WeakPtrFactory<HTMLDocumentParser> weak_factory_;
   base::WeakPtr<BackgroundHTMLParser> background_parser_;
   Member<HTMLResourcePreloader> preloader_;
   PreloadRequestStream queued_preloads_;
@@ -285,6 +284,8 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   bool tried_loading_link_headers_;
   bool added_pending_stylesheet_in_body_;
   bool is_waiting_for_stylesheets_;
+
+  base::WeakPtrFactory<HTMLDocumentParser> weak_factory_;
 };
 
 }  // namespace blink

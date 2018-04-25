@@ -48,7 +48,7 @@ class PLATFORM_EXPORT LocaleMac : public Locale {
  public:
   static std::unique_ptr<LocaleMac> Create(const String&);
   static std::unique_ptr<LocaleMac> Create(NSLocale*);
-  ~LocaleMac();
+  ~LocaleMac() override;
 
   const Vector<String>& WeekDayShortLabels() override;
   unsigned FirstDayOfWeek() override;

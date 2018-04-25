@@ -118,7 +118,6 @@ class BackgroundHTMLParser {
   template <typename FunctionType, typename... Ps>
   void RunOnMainThread(FunctionType, Ps&&...);
 
-  base::WeakPtrFactory<BackgroundHTMLParser> weak_factory_;
   BackgroundHTMLInputStream input_;
   HTMLSourceTracker source_tracker_;
   std::unique_ptr<HTMLToken> token_;
@@ -146,6 +145,8 @@ class BackgroundHTMLParser {
   int pending_csp_meta_token_index_;
 
   bool starting_script_;
+
+  base::WeakPtrFactory<BackgroundHTMLParser> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundHTMLParser);
 };

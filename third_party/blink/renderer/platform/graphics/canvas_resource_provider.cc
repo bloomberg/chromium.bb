@@ -357,11 +357,11 @@ CanvasResourceProvider::CanvasResourceProvider(
     const IntSize& size,
     const CanvasColorParams& color_params,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper)
-    : weak_ptr_factory_(this),
-      context_provider_wrapper_(std::move(context_provider_wrapper)),
+    : context_provider_wrapper_(std::move(context_provider_wrapper)),
       size_(size),
       color_params_(color_params),
-      snapshot_paint_image_id_(cc::PaintImage::GetNextId()) {
+      snapshot_paint_image_id_(cc::PaintImage::GetNextId()),
+      weak_ptr_factory_(this) {
   if (context_provider_wrapper_)
     context_provider_wrapper_->AddObserver(this);
 }

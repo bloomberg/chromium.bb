@@ -110,7 +110,7 @@ class ShapeCache {
   };
 
  public:
-  ShapeCache() : weak_factory_(this), version_(0) {
+  ShapeCache() : weak_factory_(this) {
     // TODO(cavalcantii): Investigate tradeoffs of reserving space
     // in short_string_map.
   }
@@ -236,8 +236,8 @@ class ShapeCache {
 
   SingleCharMap single_char_map_;
   SmallStringMap short_string_map_;
+  unsigned version_ = 0;
   base::WeakPtrFactory<ShapeCache> weak_factory_;
-  unsigned version_;
 };
 
 inline bool operator==(const ShapeCache::SmallStringKey& a,

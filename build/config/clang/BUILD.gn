@@ -45,6 +45,13 @@ config("find_bad_constructs") {
       "no-realpath",
     ]
 
+    cflags += [
+      "-Xclang",
+      "-plugin-arg-find-bad-constructs",
+      "-Xclang",
+      "enforce-in-thirdparty-webkit",
+    ]
+
     # TODO(dcheng): remove this once the plugin is updated and rolled again.
     cflags += [
       "-Xclang",

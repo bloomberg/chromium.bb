@@ -139,7 +139,6 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
               ? HTMLParserScheduler::Create(this, loading_task_runner_.get())
               : nullptr),
       xss_auditor_delegate_(&document),
-      weak_factory_(this),
       preloader_(HTMLResourcePreloader::Create(document)),
       tokenized_chunk_queue_(TokenizedChunkQueue::Create()),
       pending_csp_meta_token_(nullptr),
@@ -152,7 +151,8 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
       is_parsing_at_line_number_(false),
       tried_loading_link_headers_(false),
       added_pending_stylesheet_in_body_(false),
-      is_waiting_for_stylesheets_(false) {
+      is_waiting_for_stylesheets_(false),
+      weak_factory_(this) {
   DCHECK(ShouldUseThreading() || (token_ && tokenizer_));
   // Threading is not allowed in prefetch mode.
   DCHECK(!document.IsPrefetchOnly() || !ShouldUseThreading());

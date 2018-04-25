@@ -87,9 +87,10 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   bool is_rendering_;
   media::VideoRotation rotation_;
   gfx::Size current_size_in_pixels_;
-  base::WeakPtrFactory<VideoFrameSubmitter> weak_ptr_factory_;
 
   THREAD_CHECKER(media_thread_checker_);
+
+  base::WeakPtrFactory<VideoFrameSubmitter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameSubmitter);
 };
