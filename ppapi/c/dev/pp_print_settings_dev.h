@@ -68,10 +68,8 @@ struct PP_PrintSettings_Dev {
   PP_Bool grayscale;
   /** Note that Chrome currently only supports PDF printing. */
   PP_PrintOutputFormat_Dev format;
-  /** Note the following parameter is for N-up mode. */
-  uint32_t num_pages_per_sheet;
 };
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_PrintSettings_Dev, 64);
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_PrintSettings_Dev, 60);
 /**
  * @}
  */
