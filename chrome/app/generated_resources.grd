@@ -7358,8 +7358,8 @@ I don't think this site should be blocked!
       <message name="IDS_PROFILES_PROFILE_SIGNOUT_BUTTON" desc="Button in the avatar menu bubble view to sign-out the current profile.">
         Exit and childlock
       </message>
-      <message name="IDS_PROFILES_CLOSE_ALL_WINDOWS_BUTTON" desc="Button in the avatar menu bubble view to close all windows of the current profile.">
-        Close all your windows
+      <message name="IDS_PROFILES_EXIT_PROFILE_BUTTON" desc="Button in the avatar menu bubble view to close all windows of the current profile when there is more than one profile.">
+        Exit <ph name="PROFILE_NAME">$1<ex>User</ex></ph>
       </message>
       <message name="IDS_PROFILES_GAIA_SIGNIN_TITLE" desc="Title of the account removal view in the avatar menu bubble.">
         Sign in
@@ -7440,6 +7440,12 @@ I don't think this site should be blocked!
         <message name="IDS_PROFILES_MANAGE_USERS_BUTTON" desc="Button in the avatar menu bubble view for launching the user manager.">
           Manage people
         </message>
+        <message name="IDS_PROFILES_OPEN_GUEST_PROFILE_BUTTON" desc="Button in the avatar menu bubble view to open a guest window.">
+          Open Guest window
+        </message>
+        <message name="IDS_PROFILES_CLOSE_ALL_WINDOWS_BUTTON" desc="Button in the avatar menu bubble view to close all windows of the current profile.">
+          Close all your windows
+        </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON" desc="Button in the avatar menu bubble view used to add an account to a profile.">
@@ -7462,6 +7468,12 @@ I don't think this site should be blocked!
         </message>
         <message name="IDS_PROFILES_MANAGE_USERS_BUTTON" desc="Button in the avatar menu bubble view for launching the user manager.">
           Manage People
+        </message>
+        <message name="IDS_PROFILES_OPEN_GUEST_PROFILE_BUTTON" desc="Button in the avatar menu bubble view to open a guest window.">
+          Open Guest Window
+        </message>
+        <message name="IDS_PROFILES_CLOSE_ALL_WINDOWS_BUTTON" desc="Button in the avatar menu bubble view to close all windows of the current profile.">
+          Close all your Windows
         </message>
       </if>
       <message name="IDS_PROFILES_EDIT_PROFILE_ACCESSIBLE_NAME" desc="Description of the Edit Profile button. This is used for accessibility.">

@@ -1222,11 +1222,11 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
     PrefService* service = g_browser_process->local_state();
     DCHECK(service);
     if (service->GetBoolean(prefs::kBrowserGuestModeEnabled)) {
-      guest_profile_button_ =
-          new HoverButton(this,
-                          gfx::CreateVectorIcon(kUserMenuGuestIcon, kIconSize,
-                                                gfx::kChromeIconGrey),
-                          l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME));
+      guest_profile_button_ = new HoverButton(
+          this,
+          gfx::CreateVectorIcon(kUserMenuGuestIcon, kIconSize,
+                                gfx::kChromeIconGrey),
+          l10n_util::GetStringUTF16(IDS_PROFILES_OPEN_GUEST_PROFILE_BUTTON));
       layout->StartRow(1, 0);
       layout->AddView(guest_profile_button_);
     }
@@ -1253,10 +1253,15 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
     layout->StartRow(1, 0);
     layout->AddView(lock_button_);
   } else if (!is_guest) {
+    AvatarMenu::Item active_avatar_item =
+        avatar_menu->GetItemAt(ordered_item_indices[0]);
     close_all_windows_button_ = new HoverButton(
         this,
         gfx::CreateVectorIcon(kCloseAllIcon, kIconSize, gfx::kChromeIconGrey),
-        l10n_util::GetStringUTF16(IDS_PROFILES_CLOSE_ALL_WINDOWS_BUTTON));
+        avatar_menu->GetNumberOfItems() >= 2
+            ? l10n_util::GetStringFUTF16(IDS_PROFILES_EXIT_PROFILE_BUTTON,
+                                         active_avatar_item.name)
+            : l10n_util::GetStringUTF16(IDS_PROFILES_CLOSE_ALL_WINDOWS_BUTTON));
     layout->StartRow(1, 0);
     layout->AddView(close_all_windows_button_);
   }
