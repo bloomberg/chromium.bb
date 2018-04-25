@@ -146,6 +146,27 @@ class EmptyDataHandle final : public WebDataConsumerHandle {
 
 }  // namespace
 
+// DetachedClient is a ThreadableLoaderClient for a "detached"
+// DocumentThreadableLoader. It's for fetch requests with keepalive set, so
+// it keeps itself alive during loading.
+class DocumentThreadableLoader::DetachedClient final
+    : public GarbageCollectedFinalized<DetachedClient>,
+      public ThreadableLoaderClient {
+ public:
+  DetachedClient() : self_keep_alive_(this) {}
+  ~DetachedClient() override {}
+
+  void DidFinishLoading(unsigned long identifier, double finish_time) override {
+    self_keep_alive_.Clear();
+  }
+  void DidFail(const ResourceError&) override { self_keep_alive_.Clear(); }
+  void DidFailRedirectCheck() override { self_keep_alive_.Clear(); }
+  void Trace(Visitor* visitor) {}
+
+ private:
+  SelfKeepAlive<DetachedClient> self_keep_alive_;
+};
+
 // Max number of CORS redirects handled in DocumentThreadableLoader. Same number
 // as net/url_request/url_request.cc, and same number as
 // https://fetch.spec.whatwg.org/#concept-http-fetch, Step 4.
@@ -546,9 +567,9 @@ void DocumentThreadableLoader::Cancel() {
 
 void DocumentThreadableLoader::Detach() {
   Resource* resource = GetResource();
-  if (resource)
-    resource->SetDetachable();
-  Clear();
+  if (!resource)
+    return;
+  client_ = new DetachedClient();
 }
 
 void DocumentThreadableLoader::SetDefersLoading(bool value) {

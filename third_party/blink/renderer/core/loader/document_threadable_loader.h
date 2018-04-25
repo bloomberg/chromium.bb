@@ -88,6 +88,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   void Trace(blink::Visitor*) override;
 
  private:
+  class DetachedClient;
   enum BlockingBehavior { kLoadSynchronously, kLoadAsynchronously };
 
   static std::unique_ptr<ResourceRequest> CreateAccessControlPreflightRequest(
