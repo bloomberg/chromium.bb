@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -85,8 +85,8 @@ class AecDumpMessageFilterForTest : public AecDumpMessageFilter {
   // This class is only used for setting |override_aec3_|, so we simply inject
   // the current task runner.
   AecDumpMessageFilterForTest()
-      : AecDumpMessageFilter(base::MessageLoop::current()->task_runner(),
-                             base::MessageLoop::current()->task_runner()) {}
+      : AecDumpMessageFilter(base::MessageLoopCurrent::Get()->task_runner(),
+                             base::MessageLoopCurrent::Get()->task_runner()) {}
 
   void set_override_aec3(base::Optional<bool> override_aec3) {
     override_aec3_ = override_aec3;
