@@ -70,13 +70,18 @@ bool MediaPipelineBackendForMixer::Initialize() {
 
 bool MediaPipelineBackendForMixer::Start(int64_t start_pts) {
   DCHECK_EQ(kStateInitialized, state_);
-  int64_t start_playback_timestamp_us =
-      MonotonicClockNow() + kSyncedPlaybackStartDelayUs;
+  int64_t start_playback_timestamp_us = INT64_MIN;
+  if (params_.sync_type == MediaPipelineDeviceParams::kModeSyncPts) {
+    start_playback_timestamp_us =
+        MonotonicClockNow() + kSyncedPlaybackStartDelayUs;
+  }
 
   if (audio_decoder_ && !audio_decoder_->Start(start_playback_timestamp_us))
     return false;
   if (video_decoder_ && !video_decoder_->Start(start_pts, true))
     return false;
+  // TODO(almasrymina): need to also start video playback at the proper time in
+  // non-kModeSyncPts.
   if (video_decoder_ &&
       !video_decoder_->SetPts(start_playback_timestamp_us, start_pts))
     return false;

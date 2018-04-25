@@ -289,8 +289,7 @@ int BufferingMixerSource::FillAudioPlaybackFrames(
   // playback_start_timestamp_ accurate to +10ms. Improve this to be sample
   // accurate by writing a partial silence buffer when it's time to start
   // playback.
-  if (playback_absolute_timestamp != INT64_MIN &&
-      playback_absolute_timestamp < playback_start_timestamp_) {
+  if (playback_absolute_timestamp < playback_start_timestamp_) {
     return 0;
   }
 
