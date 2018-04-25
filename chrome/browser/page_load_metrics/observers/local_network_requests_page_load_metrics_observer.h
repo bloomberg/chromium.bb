@@ -44,16 +44,6 @@ enum PortType {
   PORT_TYPE_OTHER = 0,
 };
 
-// Exposed for tests.
-extern const char kUkmPageDomainEventName[];
-extern const char kUkmLocalNetworkRequestsEventName[];
-
-extern const char kUkmDomainTypeName[];
-extern const char kUkmResourceTypeName[];
-extern const char kUkmPortTypeName[];
-extern const char kUkmSuccessfulCountName[];
-extern const char kUkmFailedCountName[];
-
 // For simple access during UMA histogram logging, the names are in a
 // multidimensional map indexed by [DomainType][ResourceType][Status].
 const std::map<DomainType, std::map<ResourceType, std::map<bool, std::string>>>&

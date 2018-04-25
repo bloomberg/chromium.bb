@@ -18,7 +18,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/previews_state.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/metrics/public/cpp/ukm_entry_builder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace previews {

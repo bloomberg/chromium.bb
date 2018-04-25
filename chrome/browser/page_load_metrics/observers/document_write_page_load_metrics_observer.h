@@ -16,11 +16,6 @@ extern const char kHistogramDocWriteBlockParseStartToFirstContentfulPaint[];
 extern const char kHistogramDocWriteBlockCount[];
 extern const char kHistogramDocWriteBlockReloadCount[];
 
-extern const char kUkmDocWriteBlockName[];
-extern const char kUkmDocWriteBlockReload[];
-extern const char kUkmParseBlockedOnScriptLoadDocumentWrite[];
-extern const char kUkmParseBlockedOnScriptExecutionDocumentWrite[];
-
 }  // namespace internal
 
 class DocumentWritePageLoadMetricsObserver

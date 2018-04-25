@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 using page_load_metrics::PageAbortReason;
@@ -110,8 +111,6 @@ const char kHistogramFromGWSForegroundDurationWithoutPaint[] =
     "WithoutPaint";
 const char kHistogramFromGWSForegroundDurationNoCommit[] =
     "PageLoad.Clients.FromGoogleSearch.PageTiming.ForegroundDuration.NoCommit";
-
-const char kUkmFromGoogleSearchName[] = "PageLoad.FromGoogleSearch";
 
 }  // namespace internal
 
@@ -445,11 +444,8 @@ void FromGWSPageLoadMetricsLogger::OnCommit(
     ukm::SourceId source_id) {
   if (!ShouldLogPostCommitMetrics(navigation_handle->GetURL()))
     return;
-  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-  if (ukm_recorder) {
-    ukm_recorder->GetEntryBuilder(source_id,
-                                  internal::kUkmFromGoogleSearchName);
-  }
+  ukm::builders::PageLoad_FromGoogleSearch(source_id).Record(
+      ukm::UkmRecorder::Get());
 }
 
 void FromGWSPageLoadMetricsLogger::OnComplete(
