@@ -1029,7 +1029,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowLastFocusedTest,
 }
 #endif  // !defined(OS_MACOSX)
 
-IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, AcceptState) {
+#if defined(OS_MACOSX)
+// https://crbug.com/836327
+#define MAYBE_AcceptState DISABLED_AcceptState
+#else
+#define MAYBE_AcceptState AcceptState
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, MAYBE_AcceptState) {
 #if defined(OS_MACOSX)
   if (base::mac::IsOS10_10())
     return;  // Fails when swarmed. http://crbug.com/660582
