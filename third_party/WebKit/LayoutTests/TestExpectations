@@ -4141,3 +4141,4 @@ crbug.com/836295 [ Win ] svg/animations/reinserting-svg-into-document.html [ Pas
 
 # Sheriff 2018-04-25
 crbug.com/836763 [ Win7 ] external/wpt/websockets/Create-protocols-repeated-case-insensitive.any.js [ Pass Failure ]
+crbug.com/836783 fast/peerconnection/RTCRtpSender-setParameters.html [ Pass Timeout ]
