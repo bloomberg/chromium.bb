@@ -236,6 +236,7 @@ struct FakeDriveService::UploadSession {
 
 FakeDriveService::FakeDriveService()
     : about_resource_(new AboutResource),
+      start_page_token_(new StartPageToken),
       date_seq_(0),
       next_upload_sequence_number_(0),
       default_max_results_(0),
@@ -252,7 +253,7 @@ FakeDriveService::FakeDriveService()
       never_return_all_file_list_(false),
       share_url_base_("https://share_url/"),
       weak_ptr_factory_(this) {
-  about_resource_->set_largest_change_id(654321);
+  UpdateLatestChangelistId(654321);
   about_resource_->set_quota_bytes_total(9876543210);
   about_resource_->set_quota_bytes_used_aggregate(6789012345);
   about_resource_->set_root_folder_id(GetRootResourceId());
@@ -529,6 +530,27 @@ CancelCallback FakeDriveService::GetChangeList(
   return CancelCallback();
 }
 
+CancelCallback FakeDriveService::GetChangeListByToken(
+    const std::string& team_drive_id,
+    const std::string& start_page_token,
+    const ChangeListCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!callback.is_null());
+
+  int64_t changestamp = 0;
+  CHECK(base::StringToInt64(start_page_token, &changestamp));
+
+  // TODO(slangley): Support team drive id.
+  GetChangeListInternal(changestamp,
+                        std::string(),  // empty search query
+                        std::string(),  // no directory resource id,
+                        0,              // start offset
+                        default_max_results_, &change_list_load_count_,
+                        callback);
+
+  return CancelCallback();
+}
+
 CancelCallback FakeDriveService::GetRemainingChangeList(
     const GURL& next_link,
     const ChangeListCallback& callback) {
@@ -702,9 +724,7 @@ CancelCallback FakeDriveService::GetStartPageToken(
   ++start_page_token_load_count_;
   // TODO(slangley): Needs to support team_drive_id.
   std::unique_ptr<StartPageToken> start_page_token =
-      std::make_unique<StartPageToken>();
-  start_page_token->set_start_page_token(
-      base::NumberToString(about_resource_->largest_change_id()));
+      std::make_unique<StartPageToken>(*start_page_token_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(callback, HTTP_SUCCESS, std::move(start_page_token)));
@@ -1657,13 +1677,11 @@ std::string FakeDriveService::GetNewResourceId() {
 }
 
 void FakeDriveService::UpdateETag(google_apis::FileResource* file) {
-  file->set_etag(
-      "etag_" + base::Int64ToString(about_resource_->largest_change_id()));
+  file->set_etag("etag_" + start_page_token_->start_page_token());
 }
 
 void FakeDriveService::AddNewChangestamp(google_apis::ChangeResource* change) {
-  about_resource_->set_largest_change_id(
-      about_resource_->largest_change_id() + 1);
+  UpdateLatestChangelistId(about_resource_->largest_change_id() + 1);
   change->set_change_id(about_resource_->largest_change_id());
 }
 
@@ -1903,4 +1921,8 @@ void FakeDriveService::NotifyObservers() {
     observer.OnNewChangeAvailable();
 }
 
+void FakeDriveService::UpdateLatestChangelistId(int64_t change_list_id) {
+  about_resource_->set_largest_change_id(change_list_id);
+  start_page_token_->set_start_page_token(base::NumberToString(change_list_id));
+}
 }  // namespace drive

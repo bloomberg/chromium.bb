@@ -74,6 +74,15 @@ void DriveServiceWrapper::GetChangeList(
   drive_service_->GetChangeList(start_changestamp, callback);
 }
 
+void DriveServiceWrapper::GetChangeListByToken(
+    const std::string& team_drive_id,
+    const std::string& start_page_token,
+    const google_apis::ChangeListCallback& callback) {
+  DCHECK(sequece_checker_.CalledOnValidSequence());
+  drive_service_->GetChangeListByToken(team_drive_id, start_page_token,
+                                       callback);
+}
+
 void DriveServiceWrapper::GetRemainingChangeList(
     const GURL& next_link,
     const google_apis::ChangeListCallback& callback) {

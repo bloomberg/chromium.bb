@@ -98,6 +98,11 @@ class FakeDriveService : public DriveServiceInterface {
     return *about_resource_;
   }
 
+  // Returns the start page token
+  const google_apis::StartPageToken& start_page_token() const {
+    return *start_page_token_;
+  }
+
   // Returns the number of times the Team Drive list is successfully loaded by
   // GetAllTeamDriveList().
   int team_drive_list_load_count() const { return team_drive_list_load_count_; }
@@ -179,6 +184,10 @@ class FakeDriveService : public DriveServiceInterface {
       const google_apis::FileListCallback& callback) override;
   google_apis::CancelCallback GetChangeList(
       int64_t start_changestamp,
+      const google_apis::ChangeListCallback& callback) override;
+  google_apis::CancelCallback GetChangeListByToken(
+      const std::string& team_drive_id,
+      const std::string& start_page_token,
       const google_apis::ChangeListCallback& callback) override;
   google_apis::CancelCallback GetRemainingChangeList(
       const GURL& next_link,
@@ -374,6 +383,9 @@ class FakeDriveService : public DriveServiceInterface {
   // Update ETag of |file| based on |largest_changestamp_|.
   void UpdateETag(google_apis::FileResource* file);
 
+  // Update the latest changelist id
+  void UpdateLatestChangelistId(int64_t change_list_id);
+
   // Adds a new entry based on the given parameters.
   // |resource_id| can be empty, in the case, the id is automatically generated.
   // Returns a pointer to the newly added entry, or NULL if failed.
@@ -414,6 +426,7 @@ class FakeDriveService : public DriveServiceInterface {
 
   std::map<std::string, std::unique_ptr<EntryInfo>> entries_;
   std::unique_ptr<google_apis::AboutResource> about_resource_;
+  std::unique_ptr<google_apis::StartPageToken> start_page_token_;
   std::unique_ptr<base::DictionaryValue> app_info_value_;
   std::vector<std::unique_ptr<google_apis::TeamDriveResource>>
       team_drive_value_;
