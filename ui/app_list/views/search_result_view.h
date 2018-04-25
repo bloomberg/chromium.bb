@@ -13,6 +13,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/views/search_result_actions_view_delegate.h"
@@ -21,6 +22,10 @@
 
 namespace gfx {
 class RenderText;
+}
+
+namespace ui {
+class MenuModel;
 }
 
 namespace views {
@@ -94,6 +99,12 @@ class APP_LIST_EXPORT SearchResultView
                               const gfx::Point& point,
                               ui::MenuSourceType source_type) override;
 
+  // Bound by ShowContextMenuForView().
+  void OnGetContextMenu(views::View* source,
+                        const gfx::Point& point,
+                        ui::MenuSourceType source_type,
+                        std::unique_ptr<ui::MenuModel> menu_model);
+
   // SearchResultObserver overrides:
   void OnIconChanged() override;
   void OnBadgeIconChanged() override;
@@ -123,10 +134,13 @@ class APP_LIST_EXPORT SearchResultView
   SearchResultActionsView* actions_view_;  // Owned by the views hierarchy.
   views::ProgressBar* progress_bar_;       // Owned by views hierarchy.
 
+  std::unique_ptr<ui::MenuModel> menu_model_;
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
 
   // Whether this view is selected.
   bool selected_ = false;
+
+  base::WeakPtrFactory<SearchResultView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultView);
 };

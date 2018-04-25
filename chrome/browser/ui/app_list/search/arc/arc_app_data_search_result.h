@@ -32,7 +32,7 @@ class ArcAppDataSearchResult : public ChromeSearchResult {
 
   // ChromeSearchResult:
   std::unique_ptr<ChromeSearchResult> Duplicate() const override;
-  ui::MenuModel* GetContextMenuModel() override;
+  void GetContextMenuModel(GetMenuModelCallback callback) override;
   void Open(int event_flags) override;
 
  private:

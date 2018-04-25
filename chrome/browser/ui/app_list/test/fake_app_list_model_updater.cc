@@ -108,9 +108,10 @@ void FakeAppListModelUpdater::GetIdToAppListIndexMap(
   std::move(callback).Run(id_to_app_list_index);
 }
 
-ui::MenuModel* FakeAppListModelUpdater::GetContextMenuModel(
-    const std::string& id) {
-  return nullptr;
+void FakeAppListModelUpdater::GetContextMenuModel(
+    const std::string& id,
+    GetMenuModelCallback callback) {
+  std::move(callback).Run(nullptr);
 }
 
 void FakeAppListModelUpdater::ActivateChromeItem(const std::string& id,

@@ -4,7 +4,11 @@
 
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 
+#include <memory>
+
 #include "base/macros.h"
+#include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -37,7 +41,14 @@ IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, ShowContextMenu) {
   ChromeAppListItem* item = model_updater->FindItem(extensions::kWebStoreAppId);
   EXPECT_TRUE(item);
 
-  ui::MenuModel* menu_model = item->GetContextMenuModel();
+  base::RunLoop run_loop;
+  std::unique_ptr<ui::MenuModel> menu_model;
+  item->GetContextMenuModel(base::BindLambdaForTesting(
+      [&](std::unique_ptr<ui::MenuModel> created_menu) {
+        menu_model = std::move(created_menu);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
   EXPECT_TRUE(menu_model);
 
   int num_items = menu_model->GetItemCount();

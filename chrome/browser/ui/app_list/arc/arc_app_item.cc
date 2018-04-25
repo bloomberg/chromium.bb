@@ -78,12 +78,10 @@ void ArcAppItem::OnIconUpdated(ArcAppIcon* icon) {
   UpdateIcon();
 }
 
-ui::MenuModel* ArcAppItem::GetContextMenuModel() {
-  context_menu_.reset(new ArcAppContextMenu(this,
-                                            profile(),
-                                            id(),
-                                            GetController()));
-  return context_menu_->GetMenuModel();
+void ArcAppItem::GetContextMenuModel(GetMenuModelCallback callback) {
+  context_menu_ = std::make_unique<ArcAppContextMenu>(this, profile(), id(),
+                                                      GetController());
+  context_menu_->GetMenuModel(std::move(callback));
 }
 
 app_list::AppContextMenu* ArcAppItem::GetAppContextMenu() {

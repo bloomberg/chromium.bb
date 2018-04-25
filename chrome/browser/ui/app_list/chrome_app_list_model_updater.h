@@ -10,17 +10,12 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 
 namespace app_list {
 class SearchModel;
 }  // namespace app_list
-
-namespace ui {
-class MenuModel;
-}  // namespace ui
 
 class ChromeAppListItem;
 
@@ -82,7 +77,8 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   bool SearchEngineIsGoogle() override;
   void GetIdToAppListIndexMap(GetIdToAppListIndexMapCallback callback) override;
   size_t BadgedItemCount() override;
-  ui::MenuModel* GetContextMenuModel(const std::string& id) override;
+  void GetContextMenuModel(const std::string& id,
+                           GetMenuModelCallback callback) override;
   void ContextMenuItemSelected(const std::string& id,
                                int command_id,
                                int event_flags) override;

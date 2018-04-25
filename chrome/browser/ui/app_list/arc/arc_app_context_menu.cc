@@ -36,7 +36,8 @@ void ArcAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   }
 
   if (!controller()->IsAppOpen(app_id())) {
-    AddContextMenuOption(LAUNCH_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
+    AddContextMenuOption(menu_model, LAUNCH_NEW,
+                         IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
     if (!features::IsTouchableAppContextMenuEnabled())
       menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
   }
@@ -46,12 +47,13 @@ void ArcAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   if (!features::IsTouchableAppContextMenuEnabled())
     menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
   if (arc_prefs->IsShortcut(app_id()))
-    AddContextMenuOption(UNINSTALL, IDS_APP_LIST_REMOVE_SHORTCUT);
+    AddContextMenuOption(menu_model, UNINSTALL, IDS_APP_LIST_REMOVE_SHORTCUT);
   else if (!app_info->sticky)
-    AddContextMenuOption(UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM);
+    AddContextMenuOption(menu_model, UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM);
 
   // App Info item.
-  AddContextMenuOption(SHOW_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO);
+  AddContextMenuOption(menu_model, SHOW_APP_INFO,
+                       IDS_APP_CONTEXT_MENU_SHOW_INFO);
 }
 
 bool ArcAppContextMenu::IsCommandIdEnabled(int command_id) const {

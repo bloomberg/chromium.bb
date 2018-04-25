@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/search/settings_shortcut/settings_shortcut_result.h"
 
+#include <utility>
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/settings_shortcut/settings_shortcut_metadata.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -50,8 +52,9 @@ std::unique_ptr<ChromeSearchResult> SettingsShortcutResult::Duplicate() const {
   return result;
 }
 
-ui::MenuModel* SettingsShortcutResult::GetContextMenuModel() {
-  return nullptr;
+void SettingsShortcutResult::GetContextMenuModel(
+    GetMenuModelCallback callback) {
+  std::move(callback).Run(nullptr);
 }
 
 }  // namespace app_list

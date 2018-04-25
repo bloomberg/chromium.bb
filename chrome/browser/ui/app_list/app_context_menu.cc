@@ -26,28 +26,25 @@ AppContextMenu::AppContextMenu(AppContextMenuDelegate* delegate,
       controller_(controller) {
 }
 
-AppContextMenu::~AppContextMenu() {
-}
+AppContextMenu::~AppContextMenu() = default;
 
-ui::MenuModel* AppContextMenu::GetMenuModel() {
-  if (menu_model_.get())
-    return menu_model_.get();
-
-  menu_model_.reset(new ui::SimpleMenuModel(this));
-  BuildMenu(menu_model_.get());
-  menu_model_->set_histogram_name("Apps.ContextMenuExecuteCommand.FromApp");
-  return menu_model_.get();
+void AppContextMenu::GetMenuModel(GetMenuModelCallback callback) {
+  auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
+  BuildMenu(menu_model.get());
+  menu_model->set_histogram_name("Apps.ContextMenuExecuteCommand.FromApp");
+  std::move(callback).Run(std::move(menu_model));
 }
 
 void AppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   // Show Pin/Unpin option if shelf is available.
   if (controller_->GetPinnable(app_id()) != AppListControllerDelegate::NO_PIN) {
     if (!features::IsTouchableAppContextMenuEnabled())
-      menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+      menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
 
-    AddContextMenuOption(TOGGLE_PIN, controller_->IsAppPinned(app_id_)
-                                         ? IDS_APP_LIST_CONTEXT_MENU_UNPIN
-                                         : IDS_APP_LIST_CONTEXT_MENU_PIN);
+    AddContextMenuOption(menu_model, TOGGLE_PIN,
+                         controller_->IsAppPinned(app_id_)
+                             ? IDS_APP_LIST_CONTEXT_MENU_UNPIN
+                             : IDS_APP_LIST_CONTEXT_MENU_PIN);
   }
 }
 
@@ -94,7 +91,9 @@ void AppContextMenu::TogglePin(const std::string& shelf_app_id) {
     controller_->PinApp(shelf_app_id);
 }
 
-void AppContextMenu::AddContextMenuOption(CommandId command_id, int string_id) {
+void AppContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
+                                          CommandId command_id,
+                                          int string_id) {
   // Do not include disabled items in touchable menus.
   if (features::IsTouchableAppContextMenuEnabled() &&
       !IsCommandIdEnabled(command_id)) {
@@ -104,7 +103,7 @@ void AppContextMenu::AddContextMenuOption(CommandId command_id, int string_id) {
   const gfx::VectorIcon& icon = GetMenuItemVectorIcon(command_id, string_id);
   if (features::IsTouchableAppContextMenuEnabled() && !icon.is_empty()) {
     const views::MenuConfig& menu_config = views::MenuConfig::instance();
-    menu_model_->AddItemWithStringIdAndIcon(
+    menu_model->AddItemWithStringIdAndIcon(
         command_id, string_id,
         gfx::CreateVectorIcon(icon, menu_config.touchable_icon_size,
                               menu_config.touchable_icon_color));
@@ -115,10 +114,10 @@ void AppContextMenu::AddContextMenuOption(CommandId command_id, int string_id) {
       command_id == USE_LAUNCH_TYPE_REGULAR ||
       command_id == USE_LAUNCH_TYPE_FULLSCREEN ||
       command_id == USE_LAUNCH_TYPE_WINDOW) {
-    menu_model_->AddCheckItemWithStringId(command_id, string_id);
+    menu_model->AddCheckItemWithStringId(command_id, string_id);
     return;
   }
-  menu_model_->AddItemWithStringId(command_id, string_id);
+  menu_model->AddItemWithStringId(command_id, string_id);
 }
 
 const gfx::VectorIcon& AppContextMenu::GetMenuItemVectorIcon(

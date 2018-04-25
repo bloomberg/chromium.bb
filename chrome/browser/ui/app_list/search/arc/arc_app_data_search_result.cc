@@ -115,9 +115,10 @@ std::unique_ptr<ChromeSearchResult> ArcAppDataSearchResult::Duplicate() const {
   return result;
 }
 
-ui::MenuModel* ArcAppDataSearchResult::GetContextMenuModel() {
+void ArcAppDataSearchResult::GetContextMenuModel(
+    GetMenuModelCallback callback) {
   // TODO(warx): Enable Context Menu.
-  return nullptr;
+  std::move(callback).Run(nullptr);
 }
 
 void ArcAppDataSearchResult::Open(int event_flags) {

@@ -52,7 +52,8 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   ChromeAppListItem* FindFolderItem(const std::string& folder_id) override;
   bool FindItemIndexForTest(const std::string& id, size_t* index) override;
   void GetIdToAppListIndexMap(GetIdToAppListIndexMapCallback callback) override;
-  ui::MenuModel* GetContextMenuModel(const std::string& id) override;
+  void GetContextMenuModel(const std::string& id,
+                           GetMenuModelCallback callback) override;
   size_t BadgedItemCount() override;
   // For SearchModel:
   bool SearchEngineIsGoogle() override;

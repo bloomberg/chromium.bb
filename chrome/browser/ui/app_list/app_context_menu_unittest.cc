@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager_factory.h"
@@ -91,6 +93,31 @@ std::unique_ptr<KeyedService> MenuManagerFactory(
     content::BrowserContext* context) {
   return extensions::MenuManagerFactory::BuildServiceInstanceForTesting(
               context);
+}
+
+std::unique_ptr<ui::MenuModel> GetContextMenuModel(ChromeAppListItem* item) {
+  base::RunLoop run_loop;
+  std::unique_ptr<ui::MenuModel> menu;
+  item->GetContextMenuModel(base::BindLambdaForTesting(
+      [&](std::unique_ptr<ui::MenuModel> created_menu) {
+        menu = std::move(created_menu);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  return menu;
+}
+
+std::unique_ptr<ui::MenuModel> GetMenuModel(
+    app_list::AppContextMenu* context_menu) {
+  base::RunLoop run_loop;
+  std::unique_ptr<ui::MenuModel> menu;
+  context_menu->GetMenuModel(base::BindLambdaForTesting(
+      [&](std::unique_ptr<ui::MenuModel> created_menu) {
+        menu = std::move(created_menu);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  return menu;
 }
 
 }  // namespace
@@ -220,7 +247,7 @@ class AppContextMenuTest : public AppListTestBase,
                                            app_id,
                                            controller());
     menu.set_is_platform_app(platform_app);
-    ui::MenuModel* menu_model = menu.GetMenuModel();
+    std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
     ASSERT_NE(nullptr, menu_model);
 
     std::vector<MenuState> states;
@@ -286,7 +313,7 @@ class AppContextMenuTest : public AppListTestBase,
       }
     }
 
-    ValidateMenuState(menu_model, states);
+    ValidateMenuState(menu_model.get(), states);
   }
 
   void TestChromeApp(bool can_show_app_info) {
@@ -296,7 +323,7 @@ class AppContextMenuTest : public AppListTestBase,
                                            profile(),
                                            extension_misc::kChromeAppId,
                                            controller());
-    ui::MenuModel* menu_model = menu.GetMenuModel();
+    std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
     ASSERT_NE(nullptr, menu_model);
 
     std::vector<MenuState> states;
@@ -311,7 +338,7 @@ class AppContextMenuTest : public AppListTestBase,
       AddToStates(menu, MenuState(app_list::AppContextMenu::SHOW_APP_INFO),
                   &states);
     }
-    ValidateMenuState(menu_model, states);
+    ValidateMenuState(menu_model.get(), states);
   }
 
  private:
@@ -372,7 +399,7 @@ TEST_P(AppContextMenuTest, NonExistingExtensionApp) {
                                          profile(),
                                          "some_non_existing_extension_app",
                                          controller());
-  ui::MenuModel* menu_model = menu.GetMenuModel();
+  std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
   EXPECT_EQ(nullptr, menu_model);
 }
 
@@ -389,7 +416,7 @@ TEST_P(AppContextMenuTest, ArcMenu) {
 
   ArcAppItem item(profile(), nullptr, nullptr, app_id, std::string());
 
-  ui::MenuModel* menu = item.GetContextMenuModel();
+  std::unique_ptr<ui::MenuModel> menu = GetContextMenuModel(&item);
   ASSERT_NE(nullptr, menu);
 
   // Separators are not added to touchable app context menus.
@@ -398,17 +425,17 @@ TEST_P(AppContextMenuTest, ArcMenu) {
 
   ASSERT_EQ(expected_items, menu->GetItemCount());
   int index = 0;
-  ValidateItemState(menu, index++,
+  ValidateItemState(menu.get(), index++,
                     MenuState(app_list::AppContextMenu::LAUNCH_NEW));
   if (!features::IsTouchableAppContextMenuEnabled())
-    ValidateItemState(menu, index++, MenuState());  // separator
-  ValidateItemState(menu, index++,
+    ValidateItemState(menu.get(), index++, MenuState());  // separator
+  ValidateItemState(menu.get(), index++,
                     MenuState(app_list::AppContextMenu::TOGGLE_PIN));
   if (!features::IsTouchableAppContextMenuEnabled())
-    ValidateItemState(menu, index++, MenuState());  // separator
-  ValidateItemState(menu, index++,
+    ValidateItemState(menu.get(), index++, MenuState());  // separator
+  ValidateItemState(menu.get(), index++,
                     MenuState(app_list::AppContextMenu::UNINSTALL));
-  ValidateItemState(menu, index++,
+  ValidateItemState(menu.get(), index++,
                     MenuState(app_list::AppContextMenu::SHOW_APP_INFO));
 
   // Test activate request.
@@ -424,20 +451,20 @@ TEST_P(AppContextMenuTest, ArcMenu) {
   controller()->SetAppOpen(app_id, true);
   // It is not expected that menu model is unchanged on GetContextMenuModel.
   // ARC app menu requires model to be recalculated.
-  menu = item.GetContextMenuModel();
+  menu = GetContextMenuModel(&item);
 
   // Separators are not added to touchable app context menus.
   const int expected_items_app_open =
       features::IsTouchableAppContextMenuEnabled() ? 3 : 4;
   ASSERT_EQ(expected_items_app_open, menu->GetItemCount());
   index = 0;
-  ValidateItemState(menu, index++,
+  ValidateItemState(menu.get(), index++,
                     MenuState(app_list::AppContextMenu::TOGGLE_PIN));
   if (!features::IsTouchableAppContextMenuEnabled())
-    ValidateItemState(menu, index++, MenuState());  // separator
-  ValidateItemState(menu, index++,
+    ValidateItemState(menu.get(), index++, MenuState());  // separator
+  ValidateItemState(menu.get(), index++,
                     MenuState(app_list::AppContextMenu::UNINSTALL));
-  ValidateItemState(menu, index++,
+  ValidateItemState(menu.get(), index++,
                     MenuState(app_list::AppContextMenu::SHOW_APP_INFO));
 
   // This makes all apps non-ready.
@@ -446,7 +473,7 @@ TEST_P(AppContextMenuTest, ArcMenu) {
       arc_test.arc_app_list_prefs();
   connection_observer->OnConnectionClosed();
 
-  menu = item.GetContextMenuModel();
+  menu = GetContextMenuModel(&item);
 
   // Separators and disabled options are not added to touchable app context
   // menus.
@@ -454,19 +481,19 @@ TEST_P(AppContextMenuTest, ArcMenu) {
       features::IsTouchableAppContextMenuEnabled() ? 2 : 6;
   ASSERT_EQ(expected_items_reopen, menu->GetItemCount());
   index = 0;
-  ValidateItemState(menu, index++,
+  ValidateItemState(menu.get(), index++,
                     MenuState(app_list::AppContextMenu::LAUNCH_NEW));
   if (!features::IsTouchableAppContextMenuEnabled())
-    ValidateItemState(menu, index++, MenuState());  // separator
-  ValidateItemState(menu, index++,
+    ValidateItemState(menu.get(), index++, MenuState());  // separator
+  ValidateItemState(menu.get(), index++,
                     MenuState(app_list::AppContextMenu::TOGGLE_PIN));
   if (!features::IsTouchableAppContextMenuEnabled()) {
-    ValidateItemState(menu, index++, MenuState());  // separator
+    ValidateItemState(menu.get(), index++, MenuState());  // separator
     ValidateItemState(
-        menu, index++,
+        menu.get(), index++,
         MenuState(app_list::AppContextMenu::UNINSTALL, false, false));
     ValidateItemState(
-        menu, index++,
+        menu.get(), index++,
         MenuState(app_list::AppContextMenu::SHOW_APP_INFO, false, false));
   }
 
@@ -477,7 +504,7 @@ TEST_P(AppContextMenuTest, ArcMenu) {
   controller()->SetAppOpen(app_id, false);
 
   // No app available case.
-  menu = item.GetContextMenuModel();
+  menu = GetContextMenuModel(&item);
   EXPECT_EQ(0, menu->GetItemCount());
 }
 
@@ -493,24 +520,24 @@ TEST_P(AppContextMenuTest, ArcMenuShortcut) {
 
   ArcAppItem item(profile(), nullptr, nullptr, app_id, std::string());
 
-  ui::MenuModel* menu = item.GetContextMenuModel();
+  std::unique_ptr<ui::MenuModel> menu = GetContextMenuModel(&item);
   ASSERT_NE(nullptr, menu);
   // Separators are not added to touchable app context menus.
   const int expected_items =
       features::IsTouchableAppContextMenuEnabled() ? 4 : 6;
   int index = 0;
   ASSERT_EQ(expected_items, menu->GetItemCount());
-  ValidateItemState(menu, index++,
+  ValidateItemState(menu.get(), index++,
                     MenuState(app_list::AppContextMenu::LAUNCH_NEW));
   if (!features::IsTouchableAppContextMenuEnabled())
-    ValidateItemState(menu, index++, MenuState());  // separator
-  ValidateItemState(menu, index++,
+    ValidateItemState(menu.get(), index++, MenuState());  // separator
+  ValidateItemState(menu.get(), index++,
                     MenuState(app_list::AppContextMenu::TOGGLE_PIN));
   if (!features::IsTouchableAppContextMenuEnabled())
-    ValidateItemState(menu, index++, MenuState());  // separator
-  ValidateItemState(menu, index++,
+    ValidateItemState(menu.get(), index++, MenuState());  // separator
+  ValidateItemState(menu.get(), index++,
                     MenuState(app_list::AppContextMenu::UNINSTALL));
-  ValidateItemState(menu, index++,
+  ValidateItemState(menu.get(), index++,
                     MenuState(app_list::AppContextMenu::SHOW_APP_INFO));
 
   // This makes all apps non-ready. Shortcut is still uninstall-able.
@@ -518,26 +545,26 @@ TEST_P(AppContextMenuTest, ArcMenuShortcut) {
       arc_test.arc_app_list_prefs();
   connection_observer->OnConnectionClosed();
 
-  menu = item.GetContextMenuModel();
+  menu = GetContextMenuModel(&item);
   // Separators and disabled options are not added to touchable app context
   // menus.
   const int expected_items_non_ready =
       features::IsTouchableAppContextMenuEnabled() ? 3 : 6;
   ASSERT_EQ(expected_items_non_ready, menu->GetItemCount());
   index = 0;
-  ValidateItemState(menu, index++,
+  ValidateItemState(menu.get(), index++,
                     MenuState(app_list::AppContextMenu::LAUNCH_NEW));
   if (!features::IsTouchableAppContextMenuEnabled())
-    ValidateItemState(menu, index++, MenuState());  // separator
-  ValidateItemState(menu, index++,
+    ValidateItemState(menu.get(), index++, MenuState());  // separator
+  ValidateItemState(menu.get(), index++,
                     MenuState(app_list::AppContextMenu::TOGGLE_PIN));
   if (!features::IsTouchableAppContextMenuEnabled())
-    ValidateItemState(menu, index++, MenuState());  // separator
-  ValidateItemState(menu, index++,
+    ValidateItemState(menu.get(), index++, MenuState());  // separator
+  ValidateItemState(menu.get(), index++,
                     MenuState(app_list::AppContextMenu::UNINSTALL));
   if (!features::IsTouchableAppContextMenuEnabled())
     ValidateItemState(
-        menu, index++,
+        menu.get(), index++,
         MenuState(app_list::AppContextMenu::SHOW_APP_INFO, false, false));
 }
 
@@ -555,22 +582,22 @@ TEST_P(AppContextMenuTest, ArcMenuStickyItem) {
     controller()->SetAppPinnable(store_id,
                                  AppListControllerDelegate::PIN_EDITABLE);
     ArcAppItem item(profile(), nullptr, nullptr, store_id, std::string());
-    ui::MenuModel* menu = item.GetContextMenuModel();
+    std::unique_ptr<ui::MenuModel> menu = GetContextMenuModel(&item);
     ASSERT_NE(nullptr, menu);
 
     // Separators are not added to touchable app context menus.
     int expected_items = features::IsTouchableAppContextMenuEnabled() ? 3 : 5;
     ASSERT_EQ(expected_items, menu->GetItemCount());
     int index = 0;
-    ValidateItemState(menu, index++,
+    ValidateItemState(menu.get(), index++,
                       MenuState(app_list::AppContextMenu::LAUNCH_NEW));
     if (!features::IsTouchableAppContextMenuEnabled())
-      ValidateItemState(menu, index++, MenuState());  // separator
-    ValidateItemState(menu, index++,
+      ValidateItemState(menu.get(), index++, MenuState());  // separator
+    ValidateItemState(menu.get(), index++,
                       MenuState(app_list::AppContextMenu::TOGGLE_PIN));
     if (!features::IsTouchableAppContextMenuEnabled())
-      ValidateItemState(menu, index++, MenuState());  // separator
-    ValidateItemState(menu, index++,
+      ValidateItemState(menu.get(), index++, MenuState());  // separator
+    ValidateItemState(menu.get(), index++,
                       MenuState(app_list::AppContextMenu::SHOW_APP_INFO));
   }
 }
@@ -603,9 +630,10 @@ TEST_P(AppContextMenuTest, InternalAppMenu) {
     controller()->SetAppPinnable(internal_app.app_id,
                                  AppListControllerDelegate::PIN_EDITABLE);
     InternalAppItem item(profile(), nullptr, internal_app);
-    ui::MenuModel* menu = item.GetContextMenuModel();
+    std::unique_ptr<ui::MenuModel> menu = GetContextMenuModel(&item);
     ASSERT_NE(nullptr, menu);
     EXPECT_EQ(1, menu->GetItemCount());
-    ValidateItemState(menu, 0, MenuState(app_list::AppContextMenu::TOGGLE_PIN));
+    ValidateItemState(menu.get(), 0,
+                      MenuState(app_list::AppContextMenu::TOGGLE_PIN));
   }
 }
