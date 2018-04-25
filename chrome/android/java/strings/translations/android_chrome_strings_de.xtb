@@ -221,7 +221,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="3029613699374795922"><ph name="KBS" /> KB heruntergeladen</translation>
 <translation id="3029704984691124060">Passphrasen stimmen nicht überein.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" /></translation>
-<translation id="3045654778214005718">Mehr solche Seiten von Google angezeigt bekommen</translation>
+<translation id="3045654778214005718">Mehr solche Inhalte von Google angezeigt bekommen</translation>
 <translation id="305593374596241526">Die Standortermittlung ist deaktiviert. Sie können sie in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
 <translation id="307908932405420782">Weitere Artikel werden in Kürze erscheinen. Schönen Tag noch!</translation>
 <translation id="3089395242580810162">In Inkognito-Tab öffnen</translation>
@@ -893,6 +893,7 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="932327136139879170">Privat</translation>
 <translation id="932599481871055447">Geringerer Datenverbrauch und schnelleres Surfen</translation>
 <translation id="938850635132480979">Fehler: <ph name="ERROR_CODE" /></translation>
+<translation id="945522503751344254">Feedback geben</translation>
 <translation id="945632385593298557">Mikrofonzugriff</translation>
 <translation id="951339005376969845">Vorhandene Daten werden gelöscht. Wenn Sie Ihre vorhandenen Daten abrufen möchten, wechseln Sie zurück zu <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome kann in China <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> für die Suche verwenden. Sie können dies unter <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> ändern.</translation>

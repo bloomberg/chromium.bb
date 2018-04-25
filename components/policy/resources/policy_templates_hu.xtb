@@ -159,16 +159,6 @@
 
       Ha ez a beállítás le van tiltva, illetve nincs konfigurálva, akkor a vállalati
       felhasználók nem használhatják az ARC szolgáltatást.</translation>
-<translation id="1561183922461862993">
-      Ez a házirend a bejelentkezési képernyőre vonatkozik. Tekintse meg a <ph name="SITE_PER_PROCESS_POLICY_NAME" /> házirendet is, amely a felhasználói munkamenetre vonatkozik. Javasoljuk, hogy a két házirendet azonos értékre állítsa be. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
-      Tekintse át az IsolateOrigins házirend beállításait, és annak érdekében,
-      hogy az izoláció is megvalósuljon, és a felhasználók számára is korlátozottan
-      legyen érzékelhető a hatás, alkalmazza az IsolateOrigins házirendet
-      az izolálni kívánt webhelyek listáján. Ez a SitePerProcess beállítás minden webhelyet izolál.
-      Ha engedélyezi a házirendet, minden webhely önálló folyamatként fut majd.
-      Ha letiltja a házirendet, az előzetes webhely-izolációs folyamatkezelési logika lép életbe, és le lesz tiltva az IsolateOrigins és a SitePerProcess tesztverziója. A felhasználók manuálisan továbbra is engedélyezhetik a SitePerProcess házirendet.
-      Ha nem állítja be a házirendet, a felhasználó módosíthatja ezt a beállítást.
-      </translation>
 <translation id="1561424797596341174">A házirend felülírja a távoli elérésű gazdagép hibakeresés végzésére szolgáló buildjeit</translation>
 <translation id="1561967320164410511">U2F plusz bővítmények az egyéni hitelesítéshez</translation>
 <translation id="1574554504290354326">A beállítást megszüntettük; használja helyette a SafeBrowsingExtendedReportingEnabled házirendet. A SafeBrowsingExtendedReportingEnabled engedélyezése vagy letiltása a SafeBrowsingExtendedReportingOptInAllowed hamis értékre állításával egyezik meg.
@@ -765,16 +755,6 @@
 <translation id="3214164532079860003">Ez a házirend -- ha engedélyezve van -- kikényszeríti a kezdőlap importálását az alapértelmezett böngészőből. Ha le van tiltva, akkor nem kerül sor a kezdőlap importálására. Ha nincs beállítva, akkor előfordulhat, hogy a rendszer a felhasználótól kérdezi meg, hogy megtörténjen-e az importálás, vagy hogy lehet-e automatikus az importálás.</translation>
 <translation id="3219421230122020860">Az inkognitómód elérhető</translation>
 <translation id="3220624000494482595">Ha a kioszkalkalmazás Android-alkalmazás, nem tudja befolyásolni a <ph name="PRODUCT_OS_NAME" />-verziót, még akkor sem, ha a házirend beállítása <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      Tekintse át az IsolateOrigins házirend beállításait, és annak érdekében,
-      hogy az izoláció is megvalósuljon, és a felhasználók számára is korlátozottan
-      legyen érzékelhető a hatás, alkalmazza az IsolateOrigins házirendet
-      az izolálni kívánt webhelyek listáján. Ez a SitePerProcess beállítás minden webhelyet izolál.
-      Ha engedélyezi a házirendet, minden webhely önálló folyamatként fut majd.
-      Ha letiltja a házirendet, az előzetes webhely-izolációs folyamatkezelési logika lép életbe, és le lesz tiltva az IsolateOrigins és a SitePerProcess tesztverziója. A felhasználók manuálisan továbbra is engedélyezhetik a SitePerProcess házirendet.
-      Ha nem állítja be a házirendet, a felhasználó módosíthatja ezt a beállítást.
-      <ph name="PRODUCT_OS_NAME" /> rendszer alatt ajánlott ugyanerre az értékre beállítani a <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> eszközházirendet. Ha a két házirend által meghatározott értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
-      </translation>
 <translation id="3236046242843493070">URL-minták a következő helyről a bővítmények, alkalmazások és felhasználói szkriptek telepítésének lehetővé tételéhez:</translation>
 <translation id="3240609035816615922">Nyomtatóbeállítások hozzáférési házirendje.</translation>
 <translation id="3243309373265599239">Megadja azt a felhasználói bevitel nélküli időtartamot, amely után a rendszer elsötétíti a képernyőt, ha hálózati áramról működik.
@@ -854,16 +834,6 @@
           A házirend csak akkor érvényesül, ha a „DefaultSearchProviderEnabled” házirend engedélyezve van.</translation>
 <translation id="350797926066071931">Fordítás engedélyezése</translation>
 <translation id="3512226956150568738">Ha a kliens eszközmodellje már azelőtt támogatta az ARC-t, hogy az ARC futtatásához az ext4-re való migráció szükséges lett volna, valamint ha az ArcEnabled házirend igaz értékre van beállítva, akkor ez a beállítás az AskUser (3. érték) módjára viselkedik. Az érték minden egyéb esetben (ha az eszköz nem támogatta előtte az ARC-t, vagy ha az ArcEnabled házirend hamis értékre van beállítva) megegyezik a DisallowArc (0. érték) értékével.</translation>
-<translation id="3519934027321156158">
-      Ha engedélyezve van a házirend, a vesszőkkel tagolt listában lévő
-      összes megjelölt forrás önálló folyamatként fut majd. Ez az aldomainek által
-      megjelölt forrásokat is izolálja; például a https://example.com/ megadásával
-      a https://foo.example.com/ is izolálva lesz, mivel a https://example.com/
-      webhely része.
-      Ha letiltja a házirendet, az előzetes webhely-izolációs folyamatkezelési logika lép életbe, és le lesz tiltva az IsolateOrigins és a SitePerProcess tesztverziója. A felhasználók manuálisan továbbra is engedélyezhetik a SitePerProcess házirendet.
-      Ha nem állítja be a házirendet, a felhasználó módosíthatja ezt a beállítást.
-      <ph name="PRODUCT_OS_NAME" /> rendszer alatt ajánlott ugyanerre az értékre beállítani a <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> eszközházirendet. Ha a két házirend által meghatározott értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
-      </translation>
 <translation id="3524204464536655762">Nem engedélyezi, hogy a webhelyek hozzáférést kérjenek az USB-eszközökhöz a WebUSB API-n keresztül</translation>
 <translation id="3528000905991875314">Alternatív hibaoldalak engedélyezése</translation>
 <translation id="3547954654003013442">Proxybeállítások</translation>
@@ -1037,16 +1007,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend értéke igaz, vagy ha nincs beállítva, a felhasználók beválthatnak ajánlatokat Chrome OS-regisztráció útján.
 
       Ha a házirend értéke hamis, a felhasználók nem válthatnak be ajánlatokat.</translation>
-<translation id="4002183184444060875">
-      Ez a házirend a bejelentkezési képernyőre vonatkozik. Tekintse meg az <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> házirendet is, amely a felhasználói munkamenetre vonatkozik. Javasoljuk, hogy a két házirendet azonos értékre állítsa be. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
-      Ha engedélyezi a házirendet, a vesszőkkel tagolt listában lévő
-      összes megjelölt forrás önálló folyamatként fut majd. Ez az aldomainek által
-      megjelölt forrásokat is izolálja; például a https://example.com/ megadásával
-      a https://foo.example.com/ is izolálva lesz, mivel a https://example.com/
-      webhely része.
-      Ha letiltja a házirendet, az előzetes webhely-izolációs folyamatkezelési logika lép életbe, és le lesz tiltva az IsolateOrigins és a SitePerProcess tesztverziója. A felhasználók manuálisan továbbra is engedélyezhetik a SitePerProcess házirendet.
-      Ha nem állítja be a házirendet, az operációs rendszer alapértelmezett webhely-izolációs beállításai lépnek érvénybe a bejelentkezési képernyőnél.
-      </translation>
 <translation id="4010738624545340900">Fájlkiválasztási párbeszédablakok hívásának engedélyezése</translation>
 <translation id="4012737788880122133">Ha igaz értékre van állítva, letiltja az automatikus frissítéseket.
 

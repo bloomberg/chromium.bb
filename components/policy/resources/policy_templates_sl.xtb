@@ -162,16 +162,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
       Če je ta nastavitev onemogočena ali ni nastavljena, uporabniki v velikih poslovnih
       okoljih ne bodo mogli uporabljati ARC-ja.</translation>
-<translation id="1561183922461862993">
-      Ta pravilnik se nanaša na zaslon za prijavo. Oglejte si tudi pravilnik <ph name="SITE_PER_PROCESS_POLICY_NAME" />, ki se nanaša na uporabniško sejo. Priporočljivo je, da za oba pravilnika nastavite enako vrednost. Če se vrednosti ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uporablja vrednost, ki jo določa uporabniški pravilnik.
-      Oglejte si nastavitev pravilnika IsolateOrigins, če želite izkoristiti prednosti
-      obeh nastavitev, osamitve in omejenega vpliva za uporabnike, tako da uporabite pravilnik
-      IsolateOrigins s seznamom spletnih mest, ki jih želite osamiti. Ta nastavitev,
-      SitePerProcess, osami vsa spletna mesta.
-      Če je pravilnik omogočen, se vsako spletno mesto izvaja v svojem procesu.
-      Če je pravilnik onemogočen, se uveljavi logika upravljanja procesov osamitve posameznih spletnih mest in preskusi pravilnikov IsolateOrigins in SitePerProcess bodo onemogočeni. Uporabniki bodo še vedno lahko ročno omogočili pravilnik SitePerProcess.
-      Če pravilnik ni konfiguriran, bo uporabnik lahko spremenil to nastavitev.
-      </translation>
 <translation id="1561424797596341174">Preglasitve pravilnika za delovne različice gostitelja za oddaljeni dostop, namenjene odpravljanju napak</translation>
 <translation id="1561967320164410511">U2F in razširitve za posamezno potrditev</translation>
 <translation id="1574554504290354326">Ta nastavitev je zastarela, uporabite SafeBrowsingExtendedReportingEnabled. Če omogočite ali onemogočite SafeBrowsingExtendedReportingEnabled, je to enakovredno, kot če onemogočite SafeBrowsingExtendedReportingOptInAllowed.
@@ -325,7 +315,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
       Ta pravilnik ne vpliva na to, ali lahko uporabniki konfigurirajo tiskalnike v posameznih napravah. Namenjen je kot dodatek konfiguracijam tiskalnikov, ki jih opravijo posamezni uporabniki.
 
-      Za naprave, ki jih upravlja Active Directory, ta pravilnik podpira razširitev <ph name="MACHINE_NAME_VARIABLE" /> na ime naprave za Active Directory ali njegov podniz. Če je ime naprave na primer <ph name="MACHINE_NAME_EXAMPLE" />, potem <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> zamenjajo 4 znaki po 6. mestu, na primer <ph name="MACHINE_NAME_PART_EXAMPLE" />. Položaj temelji na ničli.
+      Za naprave, ki jih upravlja Active Directory, ta pravilnik podpira razširitev <ph name="MACHINE_NAME_VARIABLE" /> na ime naprave za Active Directory ali njegov podniz. Če je ime naprave na primer <ph name="MACHINE_NAME_EXAMPLE" />, potem <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> zamenjajo 4 znaki po 6. mestu, tj. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Položaj temelji na ničli.
       </translation>
 <translation id="2030905906517501646">Privzeta ključna beseda iskalnika</translation>
 <translation id="203096360153626918">Ta pravilnika ne vpliva na aplikacije za Android. Tudi če je ta pravilnik nastavljen na <ph name="FALSE" />, bodo aplikacije lahko preklopile v celozaslonski način.</translation>
@@ -798,16 +788,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če ni nastavljen, bo uporabnik morda vprašan, ali naj jo uvozi, ali pa bo uvoz izveden samodejno.</translation>
 <translation id="3219421230122020860">Način brez beleženja zgodovine je na voljo</translation>
 <translation id="3220624000494482595">Če je aplikacija za kiosk aplikacija za Android, ne bo imela nadzora nad različico sistema <ph name="PRODUCT_OS_NAME" />, tudi če je ta pravilnik nastavljen na <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      Oglejte si nastavitev pravilnika IsolateOrigins, če želite izkoristiti prednosti
-      obeh nastavitev, osamitve in omejenega vpliva za uporabnike, tako da uporabite pravilnik
-      IsolateOrigins s seznamom spletnih mest, ki jih želite osamiti. Ta nastavitev,
-      SitePerProcess, osami vsa spletna mesta.
-      Če je pravilnik omogočen, se vsako spletno mesto izvaja v svojem procesu.
-      Če je pravilnik onemogočen, se uveljavi logika upravljanja procesov osamitve posameznih spletnih mest in preskusi pravilnikov IsolateOrigins in SitePerProcess bodo onemogočeni. Uporabniki bodo še vedno lahko ročno omogočili pravilnik SitePerProcess.
-      Če pravilnik ni konfiguriran, bo uporabnik lahko spremenil to nastavitev.
-      V sistemu <ph name="PRODUCT_OS_NAME" /> je priporočljivo tudi, da nastavite pravilnik za naprave <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> na isto vrednost. Če se vrednosti, nastavljeni z obema pravilnikoma, ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uporablja vrednost, ki jo določa uporabniški pravilnik.
-      </translation>
 <translation id="3236046242843493070">Vzorci URL-jev, ki omogočajo namestitev razširitev, aplikacij in uporabniških skriptov iz</translation>
 <translation id="3240609035816615922">Pravilnik o dostopu do konfiguracij tiskalnikov.</translation>
 <translation id="3243309373265599239">Določa trajanje uporabnikove nedejavnosti, po preteku katere se zaslon zatemni, če se napaja iz električnega omrežja.
@@ -889,16 +869,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Ta pravilnik se upošteva samo, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="350797926066071931">Omogoči Google Prevajalnik</translation>
 <translation id="3512226956150568738">Če je model odjemalske naprave že podpiral ARC, preden je bila zaradi izvajanja ARC-a potrebna selitev na šifriranje ext4, in je omogočen pravilnik »ArcEnabled«, bo možnost delovala kot »AskUser« (vrednost 3). V vseh drugih primerih (če model naprave prej ni podpiral ARC-ja ali če je pravilnik »ArcEnabled« onemogočen) je ta vrednost enakovredna »DisallowArc« (vrednost 0).</translation>
-<translation id="3519934027321156158">
-      Če je pravilnik omogočen, se bo vsak naveden izvor s seznama,
-      ločenega z vejicami, izvajal v svojem procesu. S tem bodo osamljeni
-      tudi izvori, ki jih navedejo poddomene; če na primer navedete https://example.com/,
-      bo kot del spletnega mesta https://example.com/ osamljeno tudi
-      spletno mesto https://foo.example.com/.
-      Če je pravilnik onemogočen, se uveljavi logika upravljanja procesov osamitve posameznih spletnih mest in preskusi pravilnikov IsolateOrigins in SitePerProcess bodo onemogočeni. Uporabniki bodo še vedno lahko ročno omogočili pravilnik IsolateOrigins.
-      Če pravilnik ni konfiguriran, bo uporabnik lahko spremenil to nastavitev.
-      V sistemu <ph name="PRODUCT_OS_NAME" /> je priporočljivo tudi, da nastavite pravilnik za naprave <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> na isto vrednost. Če se vrednosti, nastavljeni z obema pravilnikoma, ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uporablja vrednost, ki jo določa uporabniški pravilnik.
-      </translation>
 <translation id="3524204464536655762">Ne dovoli nobenemu spletnemu mestu zahtevanja dostopa do naprav USB prek API-ja za WebUSB</translation>
 <translation id="3528000905991875314">Omogoči nadomestne strani za napake</translation>
 <translation id="3547954654003013442">Nastavitve proxyja</translation>
@@ -1083,16 +1053,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je vrednost pravilnika nastavljena na »true« ali pravilnik ni nastavljen, lahko uporabniki unovčijo ponudbe prek registracije sistema Chrome OS.
 
       Če je vrednost pravilnika nastavljena na »false«, uporabniki ne morejo unovčiti ponudb.</translation>
-<translation id="4002183184444060875">
-      Ta pravilnik se nanaša na zaslon za prijavo. Oglejte si tudi pravilnik <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, ki se nanaša na uporabniško sejo. Priporočljivo je, da za oba pravilnika nastavite enako vrednost. Če se vrednosti ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uporablja vrednost, ki jo določa uporabniški pravilnik.
-Če je pravilnik omogočen, se bo vsak naveden izvor s seznama,
-      ločenega z vejicami, izvajal v svojem procesu. S tem bodo osamljeni
-      tudi izvori, ki jih navedejo poddomene; če na primer navedete https://example.com/,
-      bo kot del spletnega mesta https://example.com/ osamljeno tudi
-      spletno mesto https://foo.example.com/.
-      Če je pravilnik onemogočen, se uveljavi logika upravljanja procesov osamitve posameznih spletnih mest in preskusi pravilnikov IsolateOrigins in SitePerProcess bodo onemogočeni. Uporabniki bodo še vedno lahko ročno omogočili pravilnik IsolateOrigins.
-      Če pravilnik ni konfiguriran, se na zaslonu za prijavo uporabijo privzete nastavitve osamitve spletnih mest za okolje.
-      </translation>
 <translation id="4010738624545340900">Dovoli proženje pogovornih oken za izbiro datotek</translation>
 <translation id="4012737788880122133">Če je pravilnik omogočen, so samodejne posodobitve onemogočene.
 

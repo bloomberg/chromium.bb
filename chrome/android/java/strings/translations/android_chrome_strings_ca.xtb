@@ -221,7 +221,7 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="3029613699374795922">S'han baixat <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Les frases de contrasenya no coincideixen</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obteniu ajuda<ph name="END_LINK" /></translation>
-<translation id="3045654778214005718">Mostra més suggeriments com aquest de Google</translation>
+<translation id="3045654778214005718">Mostra més contingut com aquest de Google</translation>
 <translation id="305593374596241526">La ubicació està desactivada; activa-la a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Aviat es mostraran més articles. Que tinguis un bon matí.</translation>
 <translation id="3089395242580810162">Obre en una pestanya d'incògnit</translation>
@@ -763,7 +763,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7999064672810608036">Confirmes que vols esborrar d'aquest lloc web totes les dades locals, incloses les galetes, i restablir-ne tots els permisos?</translation>
 <translation id="8004582292198964060">Navegador</translation>
 <translation id="8007176423574883786">Aquesta ubicació està desactivada per a aquest dispositiu</translation>
-<translation id="8008818777654712271">Envia automàticament algunes dades del sistema i contingut de les pàgines a Google per ajudar a detectar les aplicacions i els llocs perillosos</translation>
+<translation id="8008818777654712271">Envia automàticament algunes dades del sistema i contingut de les pàgines a Google per ajudar a detectar les aplicacions i els llocs web perillosos</translation>
 <translation id="8015452622527143194">Restableix la mida de tots els elements de la pàgina</translation>
 <translation id="802154636333426148">Error de baixada</translation>
 <translation id="8026334261755873520">Esborra les dades de navegació</translation>
@@ -892,6 +892,7 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="932327136139879170">Pàgina d'inici</translation>
 <translation id="932599481871055447">Estalvia dades i navega més de pressa</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
+<translation id="945522503751344254">Envia suggeriments</translation>
 <translation id="945632385593298557">Accés al micròfon</translation>
 <translation id="951339005376969845">Suprimeix les dades existents. Per recuperar-les, torna a <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome pot utilitzar <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> per fer cerques a la Xina. Per canviar-ho, ves a <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>

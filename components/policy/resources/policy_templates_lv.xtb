@@ -162,16 +162,6 @@
 
       Ja šis iestatījums ir atspējots vai nav konfigurēts, korporatīvie lietotāji
       nevar izmantot ARC.</translation>
-<translation id="1561183922461862993">
-      Šī politika attiecas uz pierakstīšanās ekrānu. Lūdzu, skatiet arī politiku <ph name="SITE_PER_PROCESS_POLICY_NAME" />, kas attiecas uz lietotāja sesiju. Ieteicams abām politikām iestatīt vienādu vērtību. Ja norādītās vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
-      Ieteicams izmantot politikas IsolateOrigins iestatījumu, lai
-      gūtu vislabākos rezultātus, izolētu tikai vietnes, kuras vēlaties izolēt,
-      un ierobežotu ietekmi lietotājiem. Izmantojot politiku
-      SitePerProcess, tiek izolētas visas vietnes.
-      Ja politika ir iespējota, katrai vietnei tiks izpildīts atsevišķs process.
-      Ja politika ir atspējota, tiks ievērota iepriekšēja vietnes izolācijas procesa pārvaldības loģika un tiks atspējoti IsolateOrigins un SitePerProcess eksperimenti. Lietotāji joprojām varēs manuāli iespējot politiku SitePerProcess.
-      Ja politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
-      </translation>
 <translation id="1561424797596341174">Politikas ignorēšana attālās piekļuves saimniekdatora atkļūdošanas versijām</translation>
 <translation id="1561967320164410511">Universālā divfaktoru autentificēšana (U2F) un paplašinājumi atsevišķai apstiprināšanai</translation>
 <translation id="1574554504290354326">Šis iestatījums vairs netiek izmantots, tā vietā izmantojiet “SafeBrowsingExtendedReportingEnabled”. “SafeBrowsingExtendedReportingEnabled” iespējošana vai atspējošana ir ekvivalenta “SafeBrowsingExtendedReportingOptInAllowed” vērtības “False” iestatīšanai.
@@ -264,6 +254,22 @@
       Ja politikai ir iestatīta vērtība “False”, lietojuma un diagnostikas datu nosūtīšana tiks atspējota.
 
       Ja politika nav konfigurēta, lietojuma un diagnostikas datu nosūtīšana tiks atspējota nepārvaldītās ierīcēs un iespējota pārvaldītās ierīcēs.</translation>
+<translation id="1929709556673267855">Nodrošina konfigurāciju ar ierīcēm saistītajiem uzņēmuma printeriem.
+
+      Šī politika ļauj nodrošināt printeru konfigurāciju <ph name="PRODUCT_OS_NAME" /> ierīcēm. Formāts ir tāds pats kā NativePrinters vārdnīcā, taču baltā vai melnā saraksta izveidei papildus katram printerim ir jānorāda lauks “id” vai “guid”.
+
+      Fails nedrīkst būt lielāks par 5 MB, un tam ir jābūt JSON kodējumā.  Paredzams, ka fails ar aptuveni 21 000 printeriem tiks kodēts kā 5 MB fails.  Kriptogrāfiskais jaucējkods tiek izmantots, lai pārbaudītu lejupielādes integritāti.
+
+      Fails ir lejupielādēts un saglabāts kešatmiņā. Tas tiks atkārtoti lejupielādēts, tiklīdz tiks mainīts URL vai jaucējkods.
+
+      Ja šī politika ir iestatīta, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiks lejupielādēts printeru konfigurācijas fails un printeri būs pieejami saskaņā ar vērtībām <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> un <ph name="DEVICE_PRINTERS_BLACKLIST" />.
+
+      Šī politika neietekmē to, vai lietotāji var konfigurēt printerus atsevišķās ierīcēs.  Tā ir paredzēta kā papildu konfigurācija atsevišķu lietotāju veiktajai printeru konfigurācijai.
+
+      Šī politika ir papildinājums politikai <ph name="BULK_PRINTERS_POLICY" />.
+
+      Ja šī politika nav iestatīta, nebūs neviena ierīču printera un <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> politikas tiks ignorētas.
+      </translation>
 <translation id="193259052151668190">Atvienojamo USB ierīču baltais saraksts</translation>
 <translation id="1933378685401357864">Fona tapetes attēls</translation>
 <translation id="1956493342242507974">Konfigurējiet barošanas pārvaldību operētājsistēmas <ph name="PRODUCT_OS_NAME" /> pieteikšanās ekrānā.
@@ -295,6 +301,21 @@
 
       Ņemiet vērā: ja platformā tiek atbalstīti politikas paziņojumi, tiks iestatīts atsvaidzināšanas aizkaves laiks 24 stundas (ignorējot visas noklusējuma vērtības un šīs politikas vērtību), jo ir paredzēts, ka ar politikas paziņojumiem atsvaidzināšana tiks veikta piespiedu kārtā katru reizi, kad tiks mainīta politika, un biežāka atsvaidzināšana nebūs nepieciešama.</translation>
 <translation id="2024476116966025075">Nepieciešamā domēna nosaukuma konfigurēšana attālās piekļuves klientiem</translation>
+<translation id="202757291638965203">Konfigurē printeru sarakstu.
+
+      Izmantojot šo politiku, administratori var nodrošināt printeru konfigurāciju
+      lietotājiem.
+
+      Parametri <ph name="PRINTER_DISPLAY_NAME" /> un <ph name="PRINTER_DESCRIPTION" /> ir brīvas formas virknes, ko var pielāgot ērtai printera atlasei. <ph name="PRINTER_MANUFACTURER" /> un <ph name="PRINTER_MODEL" /> ļauj galalietotājiem identificēt printeri. Tie apzīmē printera ražotāju un modeli. Parametram <ph name="PRINTER_URI" /> ir jābūt adresei, ko var sasniegt no klienta datora, tostarp <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> un <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> nav norāda obligāti. Ja tas ir norādīts, tas tiek izmantots, lai novērstu <ph name="ZEROCONF_DISCOVERY" /> printeru dublēšanu.
+
+      Parametram <ph name="PRINTER_EFFECTIVE_MODEL" /> ir jāatbilst vienai no virknēm, kas apzīmē pārlūkā <ph name="PRODUCT_NAME" /> atbalstītu printeri. Šī virkne tiks izmantota, lai identificētu un instalētu printerim atbilstošo PPD failu. Plašāku informāciju skatiet vietnē https://support.google.com/chrome?p=noncloudprint.
+
+      Printera iestatīšana tiek pabeigta, kad printeris tiek izmantots pirmo reizi.  PPD faili netiek lejupielādēti, kamēr printeris netiek izmantots.  Pēc tam bieži izmantoti PPD faili tiek saglabāti kešatmiņā.
+
+      Šī politika neietekmē to, vai lietotāji var konfigurēt printerus atsevišķās ierīcēs.  Tās mērķis ir papildināt printeru konfigurāciju, ko veic individuāli lietotāji.
+
+      Ierīcēs, kuras tiek pārvaldītas pakalpojumā Active Directory, šī politika atbalsta Active Directory ierīces nosaukuma vai tās apakšvirknes iekļaušanu ierīces <ph name="MACHINE_NAME_VARIABLE" /> nosaukumā. Piemēram, ja ierīces nosaukums ir <ph name="MACHINE_NAME_EXAMPLE" />, tad vērtība <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> pēc sestās pozīcijas tiktu aizstāta ar četrām rakstzīmēm: <ph name="MACHINE_NAME_PART_EXAMPLE" />. Pozīciju numurēšana sākas ar nulli.
+      </translation>
 <translation id="2030905906517501646">Noklusējuma meklētājprogrammas atslēgvārds</translation>
 <translation id="203096360153626918">Šī politika neietekmē Android lietotnes. Lietotnes varēs atvērt pilnekrāna režīmā, pat ja šī politika ir iestatīta kā <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Atspējotie uzņēmuma printeri</translation>
@@ -557,6 +578,20 @@
           Ja šai politikai nav iestatīta nekāda vērtība, noklusējums ir “True” un NTLMv2 ir iespējota.</translation>
 <translation id="2623014935069176671">Gaidīt sākotnējo lietotāja darbību</translation>
 <translation id="262740370354162807">Iespējo dokumentu iesniegšanu pakalpojumā <ph name="CLOUD_PRINT_NAME" /></translation>
+<translation id="2627554163382448569">Nodrošina konfigurāciju uzņēmuma printeriem.
+
+      Šī politika ļauj nodrošināt printeru konfigurāciju <ph name="PRODUCT_OS_NAME" /> ierīcēm.  Formāts ir tāds pats kā NativePrinters vārdnīcā, taču baltā vai melnā saraksta izveidei papildus katram printerim ir jānorāda lauks “id” vai “guid”.
+
+      Fails nedrīkst būt lielāks par 5 MB, un tam ir jābūt JSON kodējumā. Paredzams, ka fails ar aptuveni 21 000 printeriem tiks kodēts kā 5 MB fails.  Kriptogrāfiskais jaucējkods tiek izmantots, lai pārbaudītu lejupielādes integritāti.
+
+      Fails ir lejupielādēts un saglabāts kešatmiņā. Tas tiks atkārtoti lejupielādēts, tiklīdz tiks mainīts URL vai jaucējkods.
+
+      Ja šī politika ir iestatīta, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiks lejupielādēts printeru konfigurācijas fails un printeri būs pieejami ar šādiem parametriem: <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> un <ph name="BULK_PRINTERS_BLACKLIST" />.
+
+      Ja iestatīsiet šo politiku, lietotāji nevarēs to mainīt vai ignorēt.
+
+      Šī politika neietekmē to, vai lietotāji var konfigurēt printerus atsevišķās  ierīcēs. Tā ir paredzēta kā papildu konfigurācija atsevišķu lietotāju veiktajai printeru konfigurācijai.
+      </translation>
 <translation id="2633084400146331575">Iespējot izrunu</translation>
 <translation id="2646290749315461919">Ļauj iestatīt, vai vietnēm ir atļauts izsekot lietotāju fizisko atrašanās vietu. Lietotāju fiziskās atrašanās vietas izsekošana var tikt atļauta pēc noklusējuma, noraidīta pēc noklusējuma vai lietotājam var tikt vaicāts katru reizi, kad vietne pieprasa datus par fizisko atrašanās vietu.
 
@@ -621,6 +656,12 @@
 <translation id="2823870601012066791"><ph name="PRODUCT_OS_NAME" /> klientu Windows reģistra vieta:</translation>
 <translation id="2824715612115726353">Iespējo inkognito režīmu</translation>
 <translation id="2838830882081735096">Aizliegt datu migrēšanu un ARC</translation>
+<translation id="2840269525054388612">Norāda printerus, ko lietotājs var izmantot.
+
+      Šī politika tiek izmantota tikai tad, ja parametram <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> ir izvēlēta vērtība <ph name="PRINTERS_WHITELIST" />.
+
+      Ja šī politika tiek izmantota, lietotājam ir pieejami tikai tie printeri, kuru identifikatori atbilst šajā politikā norādītajām vērtībām. Identifikatoriem ir jāatbilst lauku “id” vai “guid” vērtībām failā, kas norādīts politikā <ph name="DEVICE_PRINTERS_POLICY" />.
+      </translation>
 <translation id="2844404652289407061">Izmantojot šo politiku, pārlūka <ph name="PRODUCT_NAME" /> satura skatā var iespējot funkciju “Meklēšana pieskaroties”.
 
       Ja šis iestatījums ir iespējots, funkcija “Meklēšana pieskaroties” ir pieejama lietotājam un lietotājs to var ieslēgt vai izslēgt.
@@ -748,16 +789,6 @@
       Ja tā nav iestatīta, vai nu lietotājam var tikt vaicāts, vai importēt, vai arī importēšana var notikt automātiski.</translation>
 <translation id="3219421230122020860">Inkognito režīms pieejams</translation>
 <translation id="3220624000494482595">Ja kioska lietotne ir Android lietotne, tā nevarēs kontrolēt <ph name="PRODUCT_OS_NAME" /> versiju, pat ja šī politika ir iestatīta kā <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      Ieteicams izmantot politikas IsolateOrigins iestatījumu, lai gūtu vislabākos
-      rezultātus, izolētu tikai vietnes, kuras vēlaties izolēt, un ierobežotu ietekmi
-      lietotājiem. Izmantojot politiku SitePerProcess,
-      tiek izolētas visas vietnes.
-      Ja politika ir iespējota, katrai vietnei tiks izpildīts atsevišķs process.
-      Ja politika ir atspējota, tiks ievērota iepriekšēja vietnes izolācijas procesa pārvaldības loģika un tiks atspējoti IsolateOrigins un SitePerProcess eksperimenti. Lietotāji joprojām varēs manuāli iespējot politiku SitePerProcess.
-      Ja politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
-      Operētājsistēmā <ph name="PRODUCT_OS_NAME" /> ieteicams iestatīt to pašu vērtību arī ierīces politikai <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Ja abās politikās norādītās vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
-      </translation>
 <translation id="3236046242843493070">URL struktūras, no kurām ir atļauts instalēt paplašinājumus, lietotnes un lietotāja skriptus</translation>
 <translation id="3240609035816615922">Printeru konfigurācijas piekļuves politika</translation>
 <translation id="3243309373265599239">Tiek norādīts laika periods, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā ekrāns tiek aptumšots, ja ierīce darbojas ar maiņstrāvu.
@@ -837,16 +868,6 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
 <translation id="350797926066071931">Iespējo Tulkotāju</translation>
 <translation id="3512226956150568738">Ja klienta ierīces modelis jau atbalstīja ARC pirms migrācijas uz ext4, kas bija nepieciešama, lai izpildītu ARC, un ja politika ArcEnabled ir iestatīta kā “true”, šī opcija darbosies kā politikas AskUser vērtība (vērtība 3). Visos citos gadījumos (ja ierīces modelis iepriekš neatbalstīja ARC vai ja politika ArcEnabled ir iestatīta kā “false”), šī vērtība ir ekvivalenta politikas DisallowArc vērtībai (vērtība 0).</translation>
-<translation id="3519934027321156158">
-      Ja politika ir iespējota, katrai komatatdalītā sarakstā norādītajai vietnei tiks izpildīts
-      atsevišķs process. Vietnes tiks arī izolētas pēc apakšdomēniem,
-      piemēram, norādot https://example.com/, tiks izolēta arī vietne
-      https://foo.example.com/ kā daļa no vietnes
-      https://example.com/.
-      Ja politika ir atspējota, tiks ievērota iepriekšēja vietnes izolācijas procesa pārvaldības loģika un tiks atspējoti IsolateOrigins un SitePerProcess eksperimenti. Lietotāji joprojām varēs manuāli iespējot politiku IsolateOrigins.
-      Ja politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
-      Operētājsistēmā <ph name="PRODUCT_OS_NAME" /> ieteicams iestatīt to pašu vērtību arī ierīces politikai <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Ja abās politikās norādītās vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
-      </translation>
 <translation id="3524204464536655762">Neatļaut nevienai vietnei pieprasīt piekļuvi pievienotajām USB ierīcēm, izmantojot WebUSB API</translation>
 <translation id="3528000905991875314">Iespējo alternatīvas kļūdu lapas</translation>
 <translation id="3547954654003013442">Starpniekservera iestatījumi</translation>
@@ -1028,16 +1049,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šai politikai ir iestatīta vērtība Patiesa vai politika nav iestatīta, lietotāji var izpirkt piedāvājumus, izmantojot operētājsistēmas Chrome OS reģistrāciju.
 
       Ja šai politikai ir iestatīta vērtība Nepatiesa, lietotāji nevar izpirkt piedāvājumus.</translation>
-<translation id="4002183184444060875">
-      Šī politika attiecas uz pierakstīšanās ekrānu. Lūdzu, skatiet arī politiku <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, kas attiecas uz lietotāja sesiju. Ieteicams abām politikām iestatīt vienādu vērtību. Ja norādītās vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
-      Ja politika ir iespējota, katrai komatatdalītā sarakstā norādītajai vietnei
-      tiks izpildīts atsevišķs process. Vietnes tiks arī izolētas pēc apakšdomēniem,
-      piemēram, norādot https://example.com/, tiks izolēta arī vietne
-      https://foo.example.com/ kā daļa no vietnes
-      https://example.com/.
-      Ja politika ir atspējota, tiks ievērota iepriekšēja vietnes izolācijas procesa pārvaldības loģika un tiks atspējoti IsolateOrigins un SitePerProcess eksperimenti. Lietotāji joprojām varēs manuāli iespējot politiku IsolateOrigins.
-      Ja politika nav konfigurēta, platformas noklusējuma vietnes izolēšanas iestatījumi tiks izmantoti pierakstīšanās ekrānā.
-      </translation>
 <translation id="4010738624545340900">Atļauj izsaukt failu atlases dialoglodziņus</translation>
 <translation id="4012737788880122133">Atspējo automātiskos atjauninājumus, ja politikai ir iestatīta vērtība “true”.
 
@@ -1102,6 +1113,12 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4239720644496144453">Android lietotnēs netiek izmantota kešatmiņa. Ja vairāki lietotāji instalē vienu Android lietotni, tā tiks no jauna lejupielādēta katram lietotājam.</translation>
 <translation id="4250680216510889253">Nē</translation>
 <translation id="4261820385751181068">Ierīces pierakstīšanās ekrāna lokalizācija</translation>
+<translation id="427220754384423013">Norāda printerus, ko lietotājs var izmantot.
+
+      Šī politika tiek izmantota tikai tad, ja parametram <ph name="BULK_PRINTERS_ACCESS_MODE" /> ir izvēlēta vērtība <ph name="PRINTERS_WHITELIST" />.
+
+      Ja šī politika tiek izmantota, lietotājam ir pieejami tikai tie printeri, kuru identifikatori atbilst šajā politikā norādītajām vērtībām. Identifikatoriem ir jāatbilst lauku “id” vai “guid” vērtībām failā, kas norādīts politikā <ph name="BULK_PRINTERS_POLICY" />.
+      </translation>
 <translation id="427632463972968153">Norāda parametrus, kas tiek izmantoti, veicot attēlu meklēšanu ar metodi POST. Izmantojot šo metodi, tiek meklēti ar komatu atdalītu vārdu/vērtību pāri. Ja vērtība ir veidnes parametrs, piemēram, {imageThumbnail} (iepriekšējā piemērā), tas tiks aizstāts ar īstiem attēla sīktēla datiem.
 
           Šī politika nav obligāta. Ja tā nav iestatīta, attēla meklēšanas pieprasījums tiks nosūtīts, izmantojot metodi GET.
@@ -2175,6 +2192,11 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="749556411189861380">Ziņot par reģistrēto ierīču OS un programmaparatūras versiju.
 
       Ja šī politika nav iestatīta vai tās iestatījums ir “True”, reģistrētās ierīces ik pa laikam ziņos par OS un programmaparatūras versiju. Ja iestatījums ir “False”, informācija par versiju netiek ziņota.</translation>
+<translation id="7498946151094347510">Norāda printerus, ko lietotājs nevar izmantot.
+
+      Šī politika tiek izmantota tikai tad, ja parametram <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> ir izvēlēta vērtība <ph name="PRINTERS_BLACKLIST" />.
+      Ja šī politika tiek izmantota, lietotājam ir pieejami visi printeri, izņemot tos, kuru identifikatori atbilst šajā politikā norādītajām vērtībām. Identifikatoriem ir jāatbilst lauku “id” vai “guid” vērtībām failā, kas norādīts politikā <ph name="DEVICE_PRINTERS_POLICY" />.
+      </translation>
 <translation id="7511361072385293666">Ja politikai ir iestatīta vērtība Patiesa vai tā nav iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> ir atļauts lietot protokolu QUIC.
       Ja politikai ir iestatīta vērtība Nepatiesa, protokolu QUIC nav atļauts lietot.</translation>
 <translation id="7519251620064708155">Atļaut atslēgu ģenerēšanu šajās vietnēs</translation>
@@ -2543,6 +2565,11 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME" /> noklusējuma HTML renderētājs</translation>
 <translation id="8549772397068118889">Brīdināt, kad tiek apmeklētas satura pakotnēs neiekļautas vietnes.</translation>
 <translation id="8566842294717252664">Interneta veikala ikonas nerādīšana jaunas cilnes lapā un lietotņu palaidējā</translation>
+<translation id="8586528890725660268">Norāda printerus, ko lietotājs nevar izmantot.
+
+      Šī politika tiek izmantota tikai tad, ja parametram <ph name="BULK_PRINTERS_ACCESS_MODE" /> ir izvēlēta vērtība <ph name="PRINTERS_BLACKLIST" />.
+      Ja šī politika tiek izmantota, lietotājam ir pieejami visi printeri, izņemot tos, kuru identifikatori atbilst šajā politikā norādītajām vērtībām. Identifikatoriem ir jāatbilst lauku “id” vai “guid” vērtībām failā, kas norādīts politikā <ph name="BULK_PRINTERS_POLICY" />.
+      </translation>
 <translation id="8587229956764455752">Atļaut jaunu lietotāju kontu izveidi</translation>
 <translation id="8598350264853261122">Ja šīs politikas iestatījums ir “False”, nesaistīti lietotāji nevarēs izmantot ARC.
 

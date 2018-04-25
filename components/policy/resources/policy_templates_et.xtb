@@ -162,16 +162,6 @@
 
       Kui see seade on keelatud või seadistamata, siis ei saa ettevõtte
       kasutajad ARC-d kasutada.</translation>
-<translation id="1561183922461862993">
-      See reegel kehtib sisselogimiskuval. Vaadake ka reeglit <ph name="SITE_PER_PROCESS_POLICY_NAME" />, mis kehtib kasutajaseansi puhul. Soovitatav on mõlemale reeglile määrata sama väärtus. Kui väärtused ei ühti, võib kasutajareegliga määratud väärtuse rakendamisel esineda kasutajaseanssi sisenemisel viivitusi.
-      Soovitame teil vaadata reegli IsolateOrigins seadet, et kasutada nii
-      isoleerimist kui ka piirata mõju kasutajate jaoks, kasutades reeglit
-      IsolateOrigins saitide puhul, mille soovite isoleerida. Seade
-      SitePerProcess isoleerib kõik saidid.
-      Kui reegel on lubatud, käitab iga sait siiski oma protsesse.
-      Kui reegel on keelatud, jõustub saidi isoleerimise eelse protsessihalduse loogika ja reeglite IsolateOrigins ning SitePerProcess testid keelatakse. Kasutajad saavad reegli SitePerProcess siiski käsitsi lubada.
-      Kui reegel on seadistamata, saab kasutaja seda seadet muuta.
-      </translation>
 <translation id="1561424797596341174">Kaugjuurdepääsu hosti silumisjärkude reeglite alistused</translation>
 <translation id="1561967320164410511">U2F koos laiendustega individuaalseks atesteerimiseks</translation>
 <translation id="1574554504290354326">Selle seade tugi on katkestatud. Kasutage selle asemel seadet SafeBrowsingExtendedReportingEnabled. Seade SafeBrowsingExtendedReportingEnabled lubamine või keelamine on võrdne seade SafeBrowsingExtendedReportingOptInAllowed määramisega väärtusele Väär.
@@ -793,16 +783,6 @@
 <translation id="3214164532079860003">Kui see reegel on lubatud, siis imporditakse avaleht praegusest vaikebrauserist. Kui reegel on keelatud, siis avalehte ei impordita. Kui reegel ei ole määratud, siis võidakse avaleht automaatselt importida või kasutajalt küsida, kas ta soovib selle importida.</translation>
 <translation id="3219421230122020860">Saadaval on inkognito režiim</translation>
 <translation id="3220624000494482595">Kui kioskirakendus on Androidi rakendus, ei juhi see operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni, isegi kui reegli väärtuseks on määratud <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      Soovitame teil vaadata reegli IsolateOrigins seadet, et kasutada nii
-      isoleerimist kui ka piirata mõju kasutajate jaoks, kasutades reeglit
-      IsolateOrigins saitide puhul, mille soovite isoleerida. Seade
-      SitePerProcess isoleerib kõik saidid.
-      Kui reegel on lubatud, käitab iga sait siiski oma protsesse.
-      Kui reegel on keelatud, jõustub saidi isoleerimise eelse protsessihalduse loogika ja reeglite IsolateOrigins ning SitePerProcess testid keelatakse. Kasutajad saavad reegli SitePerProcess siiski käsitsi lubada.
-      Kui reegel on seadistamata, saab kasutaja seda seadet muuta.
-      Operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> on soovitatav seadistada ka seadmereegel <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> samale väärtusele. Kui kahes reeglis määratud väärtused ei ühti, võib kasutajareegliga määratud väärtuse rakendamisel esineda kasutajaseanssi sisenemisel viivitusi.
-      </translation>
 <translation id="3236046242843493070">URL-ide mustrid, millelt on lubatud installida laiendusi, rakendusi ja kasutaja skripte</translation>
 <translation id="3240609035816615922">Printeri seadistuse juurdepääsu reegel.</translation>
 <translation id="3243309373265599239">Määrab aja, pärast mida hämardatakse võrgutoitega töötamisel ekraan, kui kasutaja pole midagi sisestanud.
@@ -884,16 +864,6 @@
           Reeglit järgitakse ainult siis, kui lubatud on reegel „DefaultSearchProviderEnabled”.</translation>
 <translation id="350797926066071931">Luba Tõlge</translation>
 <translation id="3512226956150568738">Kui kliendi seadme mudel toetas ARC-d juba enne seda, kui üleminek ext4-le oli ARC käitamiseks vajalik, ja kui reegli ArcEnabled väärtuseks on määratud Tõene, siis toimib see valik sarnaselt väärtusega AskUser (väärtus 3). Kõigil muudel juhtudel (kui seadme mudel varem ARC-d ei toetanud või kui reegli ArcEnabled väärtuseks on määratud Väär) on see väärtus võrdne väärtusega DisallowArc (väärtus 0).</translation>
-<translation id="3519934027321156158">
-      Kui reegel on lubatud, käitab iga komadega eraldatud loendis
-      nimetatud lähtekoht oma protsesse. See isoleerib ka alamdomeenide
-      nimetatud lähtekohad; nt aadressi https://example.com/ määramisel
-      isoleeritakse saidi https://example.com/ osana ka aadress
-      https://foo.example.com/.
-      Kui reegel on keelatud, jõustub saidi isoleerimise eelse protsessihalduse loogika ja reeglite IsolateOrigins ning SitePerProcess testid keelatakse. Kasutajad saavad reegli IsolateOrigins siiski käsitsi lubada.
-      Kui reegel on seadistamata, saab kasutaja seda seadet muuta.
-      Operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> on soovitatav seadistada ka seadmereegel <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> samale väärtusele. Kui kahes reeglis määratud väärtused ei ühti, võib kasutajareegliga määratud väärtuse rakendamisel esineda kasutajaseanssi sisenemisel viivitusi.
-      </translation>
 <translation id="3524204464536655762">Ära luba ühelgi seadmel taotleda WebUSB API kaudu juurdepääsu USB-seadmetele</translation>
 <translation id="3528000905991875314">Luba alternatiivsed vealehed</translation>
 <translation id="3547954654003013442">Puhverserveri seaded</translation>
@@ -1072,16 +1042,6 @@
       Kui see reegel määratakse tõeseks või seda ei määrata, saavad kasutajad pakkumisi lunastada Chrome OS-i registreerimise abil.
 
       Kui see reegel määratakse valeks, ei saa kasutajad pakkumisi lunastada.</translation>
-<translation id="4002183184444060875">
-      See reegel kehtib sisselogimiskuval. Vaadake ka reeglit <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, mis kehtib kasutajaseansi puhul. Soovitatav on mõlemale reeglile määrata sama väärtus. Kui väärtused ei ühti, võib kasutajaseanssi sisenemisel kasutaja reegliga määratud reegli rakendamisel esineda viivitusi.
-      Kui reegel on lubatud, käitab iga komadega eraldatud loendis
-      nimetatud lähtekoht oma protsesse. See isoleerib ka alamdomeenide
-      nimetatud lähtekohad; nt aadressi https://example.com/ määramisel
-      isoleeritakse saidi https://example.com/ osana ka aadress
-      https://foo.example.com/.
-      Kui reegel on keelatud, jõustub saidi isoleerimise eelse protsessihalduse loogika ja reeglite IsolateOrigins ning SitePerProcess testid keelatakse. Kasutajad saavad reegli IsolateOrigins siiski käsitsi lubada.
-      Kui reegel on seadistamata, kasutatakse sisselogimiskuval platvormi saitide isoleerimise vaikeseadeid.
-      </translation>
 <translation id="4010738624545340900">Failivalimisdialoogide avamise lubamine</translation>
 <translation id="4012737788880122133">Kui seade on määratud väärtusele Tõene, on automaatsed värskendused keelatud.
 

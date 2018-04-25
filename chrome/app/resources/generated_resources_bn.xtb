@@ -2857,6 +2857,7 @@
 <translation id="5425042808445046667">ডাউনলোড চালিয়ে যান</translation>
 <translation id="5425722269016440406">এই সেটিং আপনার ফোন এবং অন্যান্য ডিভাইসের সাথে সিঙ্ক হওয়ার কারণে Smart Lock বন্ধ করতে আপনাকে অনলাইনে থাকতে হবে। দয়া করে প্রথমে একটি নেটওয়ার্কের সাথে সংযুক্ত হোন।</translation>
 <translation id="5425863515030416387">ডিভাইস জুড়ে সহজে প্রবেশ করুন</translation>
+<translation id="5426179911063097041"><ph name="SITE" /> আপনাকে বিজ্ঞপ্তি পাঠাতে চায়</translation>
 <translation id="5427278936122846523">সর্বদা অনুবাদ করুন</translation>
 <translation id="5427459444770871191">&amp;ঘড়ির কাঁটার দিকে ঘোরান</translation>
 <translation id="542872847390508405">আপনি অতিথি হিসাবে ব্রাউজ করছেন</translation>
@@ -2893,6 +2894,7 @@
 <translation id="5464632865477611176">এখন চালান</translation>
 <translation id="5465662442746197494">সাহায্য চান?</translation>
 <translation id="5469954281417596308">বুকমার্ক পরিচালক</translation>
+<translation id="5471768120198416576">হ্যালো! আমি হলাম আপনার পাঠ্য থেকে ভাষ্য ভয়েস।</translation>
 <translation id="5473333559083690127">নতুন পিন পুনরায় লিখুন</translation>
 <translation id="5480254151128201294">এই ডিভাইসটি মালিকের দ্বারা লক করা ছিল৷</translation>
 <translation id="5481941284378890518">আশেপাশের প্রিন্টারগুলি যোগ করুন</translation>
@@ -3391,6 +3393,7 @@
 <translation id="6238923052227198598">লেটেস্ট নোটটি লক স্ক্রিনে রাখুন</translation>
 <translation id="6239558157302047471">আবার লোড করার &amp;ফ্রেম</translation>
 <translation id="6241530762627360640">আপনার সিস্টেমের সঙ্গে যুক্ত করা ব্লুটুথ ডিভাইসগুলির সম্পর্কে তথ্য অ্যাক্সেস করুন এবং কাছাকাছি  ব্লুটুথ ডিভাইসগুলি খুঁজুন।</translation>
+<translation id="6243280677745499710">বর্তমানে সেট করা রয়েছে</translation>
 <translation id="6243774244933267674">সার্ভার অনুপলব্ধ</translation>
 <translation id="6246413617632217567">তত্বাবধানে থাকা ব্যবহারকারী আমদানি করা যায়নি৷ দয়া করে আপনার হার্ড ডিস্কের সঞ্চয়স্থান ও অনুমতি পরীক্ষা করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
@@ -3901,6 +3904,7 @@
 <translation id="7030031465713069059">পাসওয়ার্ড সেভ করুন</translation>
 <translation id="7031962166228839643">TPM প্রস্তুত করা হচ্ছে, দয়া করে অপেক্ষা করুন (এটি কয়েক মিনিট সময় নিতে পারে)...</translation>
 <translation id="7035437538340499453">Smart Lock প্রস্তুত</translation>
+<translation id="7037509989619051237">প্রিভিউ করার জন্য টেক্সট</translation>
 <translation id="7039326228527141150">USB ডিভাইসগুলি <ph name="VENDOR_NAME" /> থেকে অ্যাক্সেস করুন</translation>
 <translation id="7039912931802252762">Microsoft Smart Card Logon</translation>
 <translation id="7040138676081995583">এর মাধ্যমে খুলুন...</translation>
@@ -4382,6 +4386,7 @@
 <translation id="7792012425874949788">প্রবেশ করার সময় কিছু সমস্যা হয়েছে</translation>
 <translation id="7792388396321542707">শেয়ার করা বন্ধ করুন</translation>
 <translation id="7794058097940213561">ডিভাইস বিন্যাস করুন</translation>
+<translation id="7799299114731150374">ওয়ালপেপার সেট করা হয়েছে</translation>
 <translation id="7799329977874311193"> HTML দস্তাবেজ</translation>
 <translation id="7800518121066352902">ঘড়ির কাঁটার &amp;বিপরীত দিকে ঘোরান</translation>
 <translation id="7801746894267596941">কেবল আপনার পাসফ্রেজ সহ কেউই আপনার এনক্রিপ্ট হওয়া ডেটা পড়তে পারে -- পাসফ্রেজ Google এ প্রেরণ বা এতে সঞ্চয় করতে পারা যায় না৷ যদি আপনি আপনার পাসফ্রেজ ভুলে গিয়ে থাকেন তবে আপনার দরকার হবে</translation>
@@ -4475,6 +4480,7 @@
 <translation id="7928710562641958568">বের করে দেওযার ডিভাইস</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> আপনার স্ক্রীন এবং অডিও শেয়ার করছে।</translation>
 <translation id="7931318309563332511">অজানা</translation>
+<translation id="7934414805353235750"><ph name="URL" /> সুরক্ষিত কন্টেন্ট চালাতে চায়। আপনার ডিভাইসের পরিচয় Google দ্বারা যাচাই করা হবে।</translation>
 <translation id="7938594894617528435">বর্তমানে অফলাইন</translation>
 <translation id="7939062555109487992">অগ্রণী বিকল্পসমূহ</translation>
 <translation id="7939412583708276221">যে কোনও অবস্থাতেই রাখুন</translation>

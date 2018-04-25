@@ -160,16 +160,6 @@
 
       Se esta definição estiver desativada ou por configurar, os utilizadores empresariais
       não podem utilizar o ARC.</translation>
-<translation id="1561183922461862993">
-      Esta política aplica-se ao ecrã de início de sessão. Consulte também a política <ph name="SITE_PER_PROCESS_POLICY_NAME" /> que se aplica à sessão do utilizador. É recomendável definir ambas as políticas para o mesmo valor. Se os valores não corresponderem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
-      Recomendamos que consulte a definição da política IsolateOrigins para obter
-      o melhor de dois mundos: isolamento e impacto limitado para os
-      utilizadores, ao utilizar a IsolateOrigins com uma lista dos sites que pretende
-      isolar. Esta definição, SitePerProcess, isola todos os sites.
-      Se a política estiver ativada, cada site é executado no seu próprio processo.
-      Se a política estiver desativada, aplica-se a lógica de gestão de processos de isolamento por site e os testes de campo IsolateOrigins e SitePerProcess serão desativados. Os utilizadores ainda conseguem ativar SitePerProcess manualmente.
-      Se a política não estiver configurada, o utilizador pode alterar esta definição.
-      </translation>
 <translation id="1561424797596341174">Substituições da política para compilações de Depuração do anfitrião de acesso remoto</translation>
 <translation id="1561967320164410511">U2F mais extensões para comprovação individual</translation>
 <translation id="1574554504290354326">Esta definição foi descontinuada. Em alternativa, utilize SafeBrowsingExtendedReportingEnabled. Ativar ou desativar SafeBrowsingExtendedReportingEnabled é equivalente a definir SafeBrowsingExtendedReportingOptInAllowed como falsa.
@@ -772,16 +762,6 @@
 <translation id="3214164532079860003">Quando esta política está ativada, força a importação da página inicial a partir do navegador predefinido atual. Se estiver desativada, a página inicial não é importada. Se não estiver definida, o utilizador poderá ser questionado se pretende importá-la ou a importação poderá ocorrer automaticamente.</translation>
 <translation id="3219421230122020860">Modo de navegação anónima disponível</translation>
 <translation id="3220624000494482595">Se a aplicação de quiosque for uma aplicação Android, não terá qualquer controlo sobre a versão do <ph name="PRODUCT_OS_NAME" />, mesmo que esta política esteja definida como <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      Recomendamos que consulte a definição da política IsolateOrigins para obter o
-      melhor de dois mundos: isolamento e impacto limitado para os utilizadores,
-      ao utilizar a IsolateOrigins com uma lista dos sites que pretende isolar. Esta 
-      definição, SitePerProcess, isola todos os sites.
-      Se a política estiver ativada, cada site é executado no seu próprio processo.
-      Se a política estiver desativada, aplica-se a lógica de gestão de processos de isolamento por site e os testes de campo IsolateOrigins e SitePerProcess serão desativados. Os utilizadores ainda conseguem ativar SitePerProcess manualmente.
-      Se a política não estiver configurada, o utilizador pode alterar esta definição.
-      No <ph name="PRODUCT_OS_NAME" />, recomenda-se que defina também a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> para o mesmo valor. Se os valores especificados pelas duas políticas não corresponderem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
-      </translation>
 <translation id="3236046242843493070">Padrões de URL para permitir instalações de extensões, aplicações e scripts do utilizador a partir de</translation>
 <translation id="3240609035816615922">Política de acesso à configuração de impressoras.</translation>
 <translation id="3243309373265599239">Especifica o período de tempo sem atividade por parte do utilizador após o qual se escurece o ecrã quando o dispositivo está ligado à eletricidade.
@@ -863,16 +843,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Esta política só será seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="350797926066071931">Ativar Google Tradutor</translation>
 <translation id="3512226956150568738">Se o modelo do dispositivo do cliente já era compatível com ARC antes de a migração para ext4 ser necessária para executar ARC e se a política ArcEnabled estiver definida como verdadeira, esta opção comporta-se como AskUser (valor 3). Em todos os outros casos (se o modelo do dispositivo não era compatível com ARC anteriormente ou se a política ArcEnabled estiver definida como falsa), este valor é equivalente a DisallowArc (valor 0).</translation>
-<translation id="3519934027321156158">
-      Se a política estiver ativada, cada uma das origens nomeadas numa lista
-      separada por vírgulas é executada no seu próprio processo. Deste modo,
-      são também isoladas as origens nomeadas por subdomínios. Por exemplo,
-      ao especificar https://example.com/, https://foo.example.com/ também é
-      isolado como parte do site https://example.com/.
-      Se a política estiver desativada, aplica-se a lógica de gestão de processos de isolamento por site e os testes de campo IsolateOrigins e SitePerProcess serão desativados. Os utilizadores ainda conseguem ativar IsolateOrigins manualmente.
-      Se a política não estiver configurada, o utilizador pode alterar esta definição.
-      No <ph name="PRODUCT_OS_NAME" />, recomenda-se que defina a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> para o mesmo valor. Se os valores especificados pelas duas políticas não corresponderem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
-      </translation>
 <translation id="3524204464536655762">Não permitir que nenhum site solicite acesso a dispositivos USB através da API WebUSB</translation>
 <translation id="3528000905991875314">Ativar páginas de erro alternativas</translation>
 <translation id="3547954654003013442">Definições de proxy</translation>
@@ -1049,16 +1019,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se esta política estiver definida como verdadeira ou não estiver definida, os utilizadores poderão resgatar ofertas através do Registo no Chrome OS.
 
       Se esta política estiver definida como falsa, os utilizadores não poderão resgatar ofertas.</translation>
-<translation id="4002183184444060875">
-      Esta política aplica-se ao ecrã de início de sessão. Consulte também a política <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> que se aplica à sessão do utilizador. É recomendável definir ambas as políticas para o mesmo valor. Se os valores não corresponderem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
-      Se a política estiver ativada, cada uma das origens nomeadas numa lista
-      separada por vírgulas é executada no seu próprio processo. Deste modo,
-      são também isoladas as origens nomeadas por subdomínios. Por exemplo,
-      ao especificar https://example.com/, https://foo.example.com/ também é
-      isolado como parte do site https://example.com/.
-      Se a política estiver desativada, aplica-se a lógica de gestão de processos de isolamento por site e os testes de campo IsolateOrigins e SitePerProcess serão desativados. Os utilizadores ainda conseguem ativar IsolateOrigins manualmente.
-      Se a política não estiver configurada, são utilizadas as predefinições de isolamento de site da plataforma para o ecrã de início de sessão.
-      </translation>
 <translation id="4010738624545340900">Permitir a invocação de caixas de diálogo de seleção de ficheiros</translation>
 <translation id="4012737788880122133">Desativa as atualizações automáticas se estiver definida como Verdadeira.
 

@@ -160,21 +160,11 @@
 
       Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, pengguna perusahaan
       tidak dapat menggunakan ARC.</translation>
-<translation id="1561183922461862993">
-      Kebijakan ini berlaku untuk layar login. Lihat juga kebijakan <ph name="SITE_PER_PROCESS_POLICY_NAME" /> yang berlaku untuk sesi pengguna. Sebaiknya setel kedua kebijakan ini ke nilai yang sama. Jika nilai tidak cocok, mungkin terjadi keterlambatan saat masuk sesi pengguna sementara nilai yang ditentukan oleh kebijakan pengguna sedang diterapkan.
-      Anda dapat mempertimbangkan setelan kebijakan IsolateOrigins untuk mendapatkan
-      yang terbaik dari kedua fungsi, yaitu isolasi dan dampak terbatas bagi pengguna, dengan menggunakan
-      IsolateOrigins yang berisi daftar situs yang ingin Anda isolasi. Setelan ini,
-      SitePerProcess, mengisolasi semua situs.
-      Jika kebijakan diaktifkan, tiap situs akan dijalankan dalam prosesnya sendiri.
-      Jika kebijakan dinonaktifkan, logika pengelolaan proses pra-Isolasi Situs akan berlaku, dan uji coba kolom IsolateOrigins dan SitePerProcess akan dinonaktifkan. Pengguna tetap dapat mengaktifkan SitePerProcess secara manual.
-      Jika kebijakan tidak dikonfigurasi, pengguna dapat mengubah setelan ini.
-      </translation>
 <translation id="1561424797596341174">Penggantian kebijakan untuk versi Debug host akses jarak jauh</translation>
 <translation id="1561967320164410511">U2F ditambah beberapa ekstensi untuk masing-masing pengesahan</translation>
 <translation id="1574554504290354326">Setelan ini tidak digunakan lagi, gunakan SafeBrowsingExtendedReportingEnabled. Mengaktifkan atau menonaktifkan SafeBrowsingExtendedReportingEnabled sama dengan menyetel SafeBrowsingExtendedReportingOptInAllowed ke False.
 
-      Menyetel kebijakan ini ke false akan mencegah agar pengguna tidak memilih untuk mengirimkan beberapa informasi sistem dan konten halaman ke server Google. Jika setelan ini adalah true atau tidak dikonfigurasi, pengguna akan diizinkan untuk mengirimkan beberapa informasi sistem dan konten halaman ke Safe Browsing guna membantu mendeteksi aplikasi dan situs yang berbahaya.
+      Menyetel kebijakan ini ke false akan mencegah pengguna agar tidak memilih untuk mengirimkan beberapa informasi sistem dan konten halaman ke server Google. Jika setelan ini adalah true atau tidak dikonfigurasi, pengguna akan diizinkan untuk mengirimkan beberapa informasi sistem dan konten halaman ke Safe Browsing guna membantu mendeteksi aplikasi dan situs yang berbahaya.
 
       Lihat https://developers.google.com/safe-browsing untuk mengetahui info selengkapnya tentang Safe Browsing.</translation>
 <translation id="1583248206450240930">Gunakan <ph name="PRODUCT_FRAME_NAME" /> jika tidak diubah</translation>
@@ -768,16 +758,6 @@
 <translation id="3214164532079860003">Kebijakan ini memaksa beranda diimpor dari browser default yang sedang digunakan, jika diaktifkan. Jika dinonaktifkan, beranda tidak diimpor. Jika tidak disetel, pengguna mungkin akan ditanya apakah ingin mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
 <translation id="3219421230122020860">Mode penyamaran tersedia</translation>
 <translation id="3220624000494482595">Jika aplikasi kios adalah aplikasi Android, aplikasi tersebut tidak akan memiliki kontrol terhadap versi <ph name="PRODUCT_OS_NAME" />, meski kebijakan ini disetel ke <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      Anda dapat mempertimbangkan setelan kebijakan IsolateOrigins untuk mendapatkan
-      yang terbaik dari kedua fungsi, yaitu isolasi dan dampak terbatas bagi pengguna, dengan menggunakan
-      IsolateOrigins yang berisi daftar situs yang ingin Anda isolasi. Setelan ini,
-      SitePerProcess, mengisolasi semua situs.
-      Jika kebijakan diaktifkan, tiap situs akan dijalankan dalam prosesnya sendiri.
-      Jika kebijakan dinonaktifkan, logika pengelolaan proses pra-Isolasi Situs akan berlaku, dan uji coba kolom IsolateOrigins dan SitePerProcess akan dinonaktifkan. Pengguna tetap dapat mengaktifkan SitePerProcess secara manual.
-      Jika kebijakan tidak dikonfigurasi, pengguna dapat mengubah setelan ini.
-      Di <ph name="PRODUCT_OS_NAME" />, sebaiknya setel juga kebijakan perangkat <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> ke nilai yang sama. Jika nilai yang ditentukan oleh kedua kebijakan tidak cocok, mungkin terjadi keterlambatan saat masuk sesi pengguna sementara nilai yang ditentukan oleh kebijakan pengguna sedang diterapkan.
-      </translation>
 <translation id="3236046242843493070">Pola URL untuk memungkinkan pemasangan skrip pengguna, aplikasi, dan ekstensi dari</translation>
 <translation id="3240609035816615922">Kebijakan akses konfigurasi untuk printer.</translation>
 <translation id="3243309373265599239">Menentukan panjang waktu tanpa masukan pengguna sebelum layar meredup saat menggunakan daya AC.
@@ -859,16 +839,6 @@
           Kebijakan ini hanya dipatuhi jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="350797926066071931">Aktifkan Terjemahan</translation>
 <translation id="3512226956150568738">Jika model perangkat klien sudah mendukung ARC sebelum migrasi ke ext4 diperlukan untuk menjalankan ARC, dan jika kebijakan ArcEnabled disetel ke true, opsi ini akan berperilaku seperti AskUser (nilai 3). Pada semua kasus lainnya (jika sebelumnya model perangkat tidak mendukung ARC, atau jika kebijakan ArcEnabled disetel ke false), nilai ini setara dengan DisallowArc (nilai 0).</translation>
-<translation id="3519934027321156158">
-      Jika kebijakan diaktifkan, tiap asal yang diberi nama dalam
-      daftar yang dipisahkan koma akan dijalankan dalam prosesnya sendiri. Tindakan ini juga akan mengisolasi
-      asal yang diberi nama oleh subdomain; mis., menentukan https://example.com/ juga
-      akan menyebabkan https://foo.example.com/ diisolasi sebagai bagian dari
-      situs https://example.com/.
-      Jika kebijakan dinonaktifkan, logika pengelolaan proses pra-Isolasi Situs akan berlaku, dan uji coba kolom IsolateOrigins dan SitePerProcess akan dinonaktifkan. Pengguna tetap dapat mengaktifkan IsolateOrigins secara manual.
-      Jika kebijakan tidak dikonfigurasi, pengguna dapat mengubah setelan ini.
-      Di <ph name="PRODUCT_OS_NAME" />, sebaiknya setel juga kebijakan perangkat <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> ke nilai yang sama. Jika nilai yang ditentukan oleh kedua kebijakan tidak cocok, mungkin terjadi keterlambatan saat masuk sesi pengguna sementara nilai yang ditentukan oleh kebijakan pengguna sedang diterapkan.
-      </translation>
 <translation id="3524204464536655762">Jangan izinkan situs apa pun meminta akses ke perangkat USB melalui WebUSB API</translation>
 <translation id="3528000905991875314">Mengaktifkan halaman kesalahan alternatif</translation>
 <translation id="3547954654003013442">Setelan proxy</translation>
@@ -918,9 +888,9 @@
 
       Agar penerapan Transparansi Sertifikat dinonaktifkan saat kebijakan ini ditetapkan, hash harus berupa subjectPublicKeyInfo yang muncul di sertifikat CA yang dikenali sebagai Otoritas Sertifikat Lama (CA). CA Lama adalah CA yang telah dipercaya publik secara default oleh 1 atau beberapa sistem operasi yang didukung oleh <ph name="PRODUCT_NAME" />, namun tidak dipercaya oleh Proyek Open Source Android atau <ph name="PRODUCT_OS_NAME" />.
 
-      Hash subjectPublicKeyInfo ditentukan dengan menggabungkan nama algoritme hash, karakter "/", dan encoding Base64 dari algoritme hash tersebut diterapkan ke subjectPublicKeyInfo DER-encoded dari sertifikat yang ditentukan. Encoding Base64 memiliki format yang sama dengan Sidik jari SPKI, seperti yang ditetapkan dalam RFC 7469, Pasal 2.4. Algoritme hash yang tidak dikenali akan diabaikan. Satu-satunya algoritme hash saat ini adalah "sha256".
+      Hash subjectPublicKeyInfo ditentukan dengan menggabungkan nama algoritme hash, karakter "/", dan encoding Base64 dari algoritme hash tersebut diterapkan ke subjectPublicKeyInfo terenkode-DER dari sertifikat yang ditentukan. Encoding Base64 memiliki format yang sama dengan Sidik jari SPKI, seperti yang ditetapkan dalam RFC 7469, Pasal 2.4. Algoritme hash yang tidak dikenali akan diabaikan. Satu-satunya algoritme hash yang saat ini didukung adalah "sha256".
 
-      Jika kebijakan ini tidak disetel, sertifikat yang harus diungkapkan melalui Transaparansi Sertifikat akan dianggap tidak tepercaya jika tidak diungkapkan menurut kebijakan Transparansi Sertifikat.</translation>
+      Jika kebijakan ini tidak disetel, sertifikat yang harus diungkapkan melalui Transparansi Sertifikat akan dianggap tidak tepercaya jika tidak diungkapkan menurut kebijakan Transparansi Sertifikat.</translation>
 <translation id="3765260570442823273">Durasi pesan peringatan proses keluar nganggur</translation>
 <translation id="377044054160169374">Penerapan Pencegahan Pengalaman yang Menyinggung</translation>
 <translation id="3780152581321609624">Sertakan port non-standar di SPN Kerberos</translation>
@@ -1046,16 +1016,6 @@
       Jika kebijakan ini disetel ke true atau tidak disetel, pengguna akan dapat menukarkan penawaran melalui Pendaftaran Chrome OS.
 
       Jika kebijakan ini disetel ke false, pengguna tidak akan dapat menukarkan penawaran.</translation>
-<translation id="4002183184444060875">
-      Kebijakan ini berlaku untuk layar login. Lihat juga kebijakan <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> yang berlaku untuk sesi pengguna. Sebaiknya setel kedua kebijakan ke nilai yang sama. Jika nilai tidak cocok, mungkin terjadi keterlambatan saat masuk sesi pengguna sementara nilai yang ditentukan oleh kebijakan pengguna sedang diterapkan.
-      Jika kebijakan diaktifkan, tiap asal yang diberi nama dalam
-      daftar yang dipisahkan koma akan dijalankan dalam prosesnya sendiri. Tindakan ini juga akan mengisolasi
-      asal yang diberi nama oleh subdomain; mis., menentukan https://example.com/ juga
-      akan menyebabkan https://foo.example.com/ diisolasi sebagai bagian dari
-      situs https://example.com/.
-      Jika kebijakan dinonaktifkan, logika pengelolaan proses pra-Isolasi Situs akan berlaku, dan uji coba kolom IsolateOrigins dan SitePerProcess akan dinonaktifkan. Pengguna tetap dapat mengaktifkan IsolateOrigins secara manual.
-      Jika kebijakan tidak dikonfigurasi, setelan isolasi situs default platform akan digunakan untuk layar login.
-      </translation>
 <translation id="4010738624545340900">Izinkan permintaan dialog pemilihan file</translation>
 <translation id="4012737788880122133">Menonaktifkan update otomatis saat disetel ke True.
 
@@ -2264,16 +2224,16 @@
       Jika setelan ini tidak dikonfigurasi, pengguna dapat mengaktifkan dan menonaktifkan Android Backup Service di aplikasi Setelan Android.</translation>
 <translation id="780603170519840350">Menonaktifkan penerapan persyaratan Transparansi Sertifikat untuk daftar hash subjectPublicKeyInfo.
 
-      Kebijakan ini memungkinkan untuk menonaktifkan persyaratan pengungkapan Transparansi Sertifikat untuk rantai sertifikat yang berisi sertifikat dengan salah satu hash subjectPublicKeyInfo yang ditentukan. Hal ini memungkinkan sertifikat tidak tepercaya terus digunakan untuk host Perusahaan.
+      Kebijakan ini memungkinkan untuk menonaktifkan persyaratan pengungkapan Transparansi Sertifikat untuk rantai sertifikat yang berisi sertifikat dengan salah satu hash subjectPublicKeyInfo yang ditentukan. Hal ini memungkinkan sertifikat yang dapat dianggap tidak tepercaya, karena tidak diungkapkan secara publik dengan sesuai, terus digunakan untuk host Perusahaan.
 
       Agar penerapan Transparansi Sertifikat dinonaktifkan saat kebijakan ini disetel, salah satu ketentuan berikut harus terpenuhi:
       1. Hash berasal dari subjectPublicKeyInfo sertifikat server.
       2. Hash berasal dari subjectPublicKeyInfo yang muncul di sertifikat CA dalam rantai sertifikat, sertifikat CA tersebut dibatasi melalui ekstensi X.509v3 nameConstraints, 1 atau beberapa directoryName nameConstraints ada di permittedSubtrees, dan directoryName berisi atribut organizationName.
-      3. Hash berasal dari subjectPublicKeyInfo yang muncul di sertifikat CA dalam rantai sertifikat, sertifikat CA memiliki 1 atau beberapa atribut organizationName dalam Subyek sertifikat, dan sertifikat server berisi jumlah atribut organizationName yang sama, dalam urutan yang sama, dan dengan nilai identik byte demi byte.
+      3. Hash berasal dari subjectPublicKeyInfo yang muncul di sertifikat CA dalam rantai sertifikat, sertifikat CA memiliki 1 atau beberapa atribut organizationName dalam Subjek sertifikat, dan sertifikat server berisi jumlah atribut organizationName yang sama, dalam urutan yang sama, dan dengan nilai identik byte demi byte.
 
-      Hash subjectPublicKeyInfo ditentukan dengan menggabungkan nama algoritme hash, karakter "/", dan encoding Base64 dari algoritme hash tersebut yang diterapkan ke subjectPublicKeyInfo DER-encoded dari sertifikat yang ditentukan. Encoding Base64 memiliki format yang sama seperti Sidik jari SPKI, seperti yang ditetapkan dalam RFC 7469, Pasal 2.4. Algoritme hash yang tidak dikenali akan diabaikan. Satu-satunya algoritme hash saat ini adalah "sha256".
+      Hash subjectPublicKeyInfo ditentukan dengan menggabungkan nama algoritme hash, karakter "/", dan encoding Base64 dari algoritme hash tersebut yang diterapkan ke subjectPublicKeyInfo terenkode-DER dari sertifikat yang ditentukan. Encoding Base64 memiliki format yang sama seperti Sidik jari SPKI, seperti yang ditetapkan dalam RFC 7469, Pasal 2.4. Algoritme hash yang tidak dikenali akan diabaikan. Satu-satunya algoritme hash yang saat ini didukung adalah "sha256".
 
-      Jika kebijakan ini tidak disetel, sertifikat yang harus diungkapkan melalui Transaparansi Sertifikat akan dianggap tidak tepercaya jika tidak diungkapkan menurut kebijakan Transparansi Sertifikat.</translation>
+      Jika kebijakan ini tidak disetel, sertifikat yang harus diungkapkan melalui Transparansi Sertifikat akan dianggap tidak tepercaya jika tidak diungkapkan menurut kebijakan Transparansi Sertifikat.</translation>
 <translation id="7818131573217430250">Menyetel status default mode kontras tinggi di layar masuk</translation>
 <translation id="7822837118545582721">Jika kebijakan ini disetel ke true, pengguna tidak akan dapat menuliskan apa pun pada perangkat penyimpanan eksternal.
 

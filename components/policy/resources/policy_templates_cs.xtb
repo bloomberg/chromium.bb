@@ -152,13 +152,6 @@ Pokud je tato zásada nastavena na hodnotu false nebo ponechána bez nastavení,
 <translation id="1553684822621013552">Je-li zásada nastavena na hodnotu true, rozšíření ARC bude uživateli povoleno (pokud bude v aktuální uživatelské relaci povolen režim dočasných profilů nebo vícenásobné přihlašování, rozšíření ARC dostupné nebude).
 
 Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživatelé rozšíření ARC nebudou moci používat.</translation>
-<translation id="1561183922461862993">
-      Tato zásada platí pro přihlašovací obrazovku. Prostudujte si také zásadu <ph name="SITE_PER_PROCESS_POLICY_NAME" />, která platí pro uživatelskou relaci. Obě zásady doporučujeme nastavit na stejnou hodnotu. Pokud se hodnoty neshodují, může při zahajování uživatelské relace dojít ke zpoždění způsobenému používáním hodnoty zadané v zásadě pro uživatele.
-Chcete-li využívat izolaci, ale omezit její dopad na uživatele, použijte zásadu IsolateOrigins se seznamem webů, které chcete izolovat. Toto nastavení SitePerProcess izoluje všechny weby.
-Pokud tuto zásadu povolíte, bude se každý web spouštět ve vlastním procesu.
-Pokud je tato zásada zakázána, bude použita logika správy procesů pro předběžnou izolaci webů. Zkušební verze zásad IsolateOrigins a SitePerProcess budou zakázány. Uživatelé budou zásadu SitePerProcess moci povolit ručně.
-Pokud tuto zásadu nenakonfigurujete, uživatel toto nastavení bude moci změnit.
-      </translation>
 <translation id="1561424797596341174">Přepsání zásad pro ladicí sestavení hostitele vzdáleného přístupu</translation>
 <translation id="1561967320164410511">U2F plus rozšíření pro individuální atestaci</translation>
 <translation id="1574554504290354326">Podpora tohoto nastavení byla ukončena, použijte namísto něj zásadu SafeBrowsingExtendedReportingEnabled. Povolení nebo zakázání zásady SafeBrowsingExtendedReportingEnabled je ekvivalentní k nastavení zásady SafeBrowsingExtendedReportingOptInAllowed na hodnotu False.
@@ -769,13 +762,6 @@ Pokud je tato zásada zakázána nebo není nakonfigurována, funkce WebDriver n
      Není-li nastavena, může se uživatelům zobrazit výzva, zda chtějí domovskou stránku importovat, nebo může import probíhat automaticky.</translation>
 <translation id="3219421230122020860">Anonymní režim dostupný</translation>
 <translation id="3220624000494482595">Je-li terminálová aplikace aplikace Android, nebude mít nad verzí systému <ph name="PRODUCT_OS_NAME" /> kontrolu ani v případě, že je tato zásada nastavena na hodnotu <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      Chcete-li využívat izolaci, ale omezit její dopad na uživatele, použijte zásadu IsolateOrigins se seznamem webů, které chcete izolovat. Toto nastavení SitePerProcess izoluje všechny weby.
-Pokud tuto zásadu povolíte, bude se každý web spouštět ve vlastním procesu.
-Pokud je tato zásada zakázána, bude použita logika správy procesů pro předběžnou izolaci webů. Zkušební verze zásad IsolateOrigins a SitePerProcess budou zakázány. Uživatelé budou zásadu SitePerProcess moci povolit ručně.
-Pokud tuto zásadu nenakonfigurujete, uživatel toto nastavení bude moci změnit.
-V systému <ph name="PRODUCT_OS_NAME" /> je doporučeno nastavit na stejnou hodnotu také zásadu zařízení <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Pokud se hodnoty neshodují, může při zahajování uživatelské relace dojít ke zpoždění způsobenému používáním hodnoty zadané v zásadě pro uživatele.
-      </translation>
 <translation id="3236046242843493070">Vzory adres URL, ze kterých je možné instalovat rozšíření, aplikace a uživatelské skripty</translation>
 <translation id="3240609035816615922">Zásada přístupu ke konfiguraci tiskáren.</translation>
 <translation id="3243309373265599239">Udává dobu nečinnosti uživatele, po které bude při napájení ze sítě snížen jas obrazovky.
@@ -855,12 +841,6 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
           Tato zásada je respektována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
 <translation id="350797926066071931">Aktivovat Překladač</translation>
 <translation id="3512226956150568738">Pokud model zařízení klienta podporoval ARC již předtím, než kvůli spuštění ARC bylo potřeba migrovat na ext4, a zásada ArcEnabled je nastavena na hodnotu true, bude se tato možnost chovat jako AskUser (hodnota 3). Ve všech ostatních případech (model zařízení dříve ARC nepodporoval nebo je zásada ArcEnabled nastavena na hodnotu false) se tato možnost bude chovat jako DisallowArc (hodnota 0).</translation>
-<translation id="3519934027321156158">
-      Pokud tuto zásadu povolíte, každý z uvedených zdrojů v seznamu odděleném čárkami bude spouštěn ve vlastním procesu. Budou izolovány i zdroje uvedené v subdoménách – např. pokud zadáte web https://example.com/, bude izolována také subdoména https://foo.example.com/, která je jeho součástí.
-Pokud je tato zásada zakázána, bude použita logika správy procesů pro předběžnou izolaci webů. Zkušební verze zásad IsolateOrigins a SitePerProcess budou zakázány. Uživatelé budou zásadu IsolateOrigins moci povolit ručně.
-Pokud tuto zásadu nenakonfigurujete, uživatel toto nastavení bude moci změnit.
-V systému <ph name="PRODUCT_OS_NAME" /> je doporučeno nastavit na stejnou hodnotu také zásadu zařízení <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Pokud se hodnoty obou zásad nebudou shodovat, při zahájení uživatelské relace může dojít k prodlevě, zatímco se bude přecházet na hodnotu nastavenou zásadou pro uživatele.
-      </translation>
 <translation id="3524204464536655762">Nedovolit žádnému webu požadovat přístup k zařízením USB pomocí rozhraní WebUSB API</translation>
 <translation id="3528000905991875314">Aktivovat alternativní chybové stránky</translation>
 <translation id="3547954654003013442">Nastavení proxy serveru</translation>
@@ -1041,12 +1021,6 @@ V systému <ph name="PRODUCT_OS_NAME" /> je doporučeno nastavit na stejnou hod
       Pokud je tato zásada nastavena na hodnotu true nebo ponechána bez nastavení, uživatelé budou moci při registraci systému Chrome OS uplatňovat zvláštní nabídky.
 
       Pokud je tato zásada nastavena na hodnotu false, uživatelé zvláštní nabídky nebudou moci uplatnit.</translation>
-<translation id="4002183184444060875">
-      Tato zásada platí pro přihlašovací obrazovku. Prostudujte si také zásadu <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, která platí pro uživatelskou relaci. Obě zásady doporučujeme nastavit na stejnou hodnotu. Pokud se hodnoty neshodují, může při zahajování uživatelské relace dojít ke zpoždění způsobenému používáním hodnoty zadané v zásadě pro uživatele.
-Pokud tuto zásadu povolíte, každý z uvedených zdrojů v seznamu odděleném čárkami bude spouštěn ve vlastním procesu. Budou izolovány i zdroje uvedené v subdoménách – např. pokud zadáte web https://example.com/, bude izolována také subdoména https://foo.example.com/, která je jeho součástí.
-Pokud je tato zásada zakázána, bude použita logika správy procesů pro předběžnou izolaci webů. Zkušební verze zásad IsolateOrigins a SitePerProcess budou zakázány. Uživatelé budou zásadu IsolateOrigins moci povolit ručně.
-Pokud tuto zásadu ponecháte nenakonfigurovanou, použije se pro přihlašovací obrazovku výchozí nastavení platformy týkající se izolace webů.
-      </translation>
 <translation id="4010738624545340900">Povolit zobrazování dialogových oken pro výběr souboru</translation>
 <translation id="4012737788880122133">Pokud je tato zásada nastavena na hodnotu True, budou zakázány automatické aktualizace.
 

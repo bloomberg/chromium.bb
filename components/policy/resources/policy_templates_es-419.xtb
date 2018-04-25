@@ -159,16 +159,6 @@
 
       Si esta configuración está inhabilitada o no se configuró, los usuarios
       no podrán usar ARC.</translation>
-<translation id="1561183922461862993">
-      Esta política se aplica a la pantalla de acceso. Consulta también la política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que se aplica a la sesión de usuario. Se recomienda establecer ambas políticas en el mismo valor. Si los valores no coinciden, es posible que se produzca un retraso al ingresar una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
-      Para revisar la configuración de la política IsolateOrigins a fin de aprovechar
-      el aislamiento y reducir el impacto que puedan sufrir los usuarios, utiliza
-      IsolateOrigins con una lista de los sitios que quieras aislar.
-      Esta configuración, SitePerProcess, aísla todos los sitios.
-      Si se habilita la política, cada sitio se ejecutará en su propio proceso.
-      Si se inhabilita, se aplicará la lógica de administración del proceso previo de aislamiento de sitios y se inhabilitarán las pruebas de campo de IsolateOrigins y SitePerProcess. Los usuarios podrán habilitar SitePerProcess de forma manual.
-      Si no se configura, el usuario podrá cambiar esta configuración.
-      </translation>
 <translation id="1561424797596341174">Anulaciones de políticas en compilaciones de depuración del host de acceso remoto</translation>
 <translation id="1561967320164410511">U2F más extensiones para atestación individual</translation>
 <translation id="1574554504290354326">Esta configuración es obsoleta. En su lugar, usa SafeBrowsingExtendedReportingEnabled. Habilitar o inhabilitar SafeBrowsingExtendedReportingEnabled es equivalente a establecer SafeBrowsingExtendedReportingOptInAllowed como falsa.
@@ -759,16 +749,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3214164532079860003">Esta política, si se habilita, fuerza la importación de la página principal del navegador predeterminado actual. Si la política se inhabilita, la página principal no se importará. Si no se configura esta opción, se le puede preguntar al usuario si desea importar la página principal o la importación puede realizarse de forma automática.</translation>
 <translation id="3219421230122020860">Modo incógnito disponible</translation>
 <translation id="3220624000494482595">Si la Aplicación de kiosko es una app de Android, esta no tendrá control sobre la versión de <ph name="PRODUCT_OS_NAME" />, incluso si esta política se establece como <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      Para revisar la configuración de la política IsolateOrigins a fin de aprovechar el
-      aislamiento y reducir el impacto que puedan sufrir los usuarios, utiliza
-      IsolateOrigins con una lista de los sitios que quieras aislar. Esta
-      configuración, SitePerProcess, aísla todos los sitios.
-      Si se habilita la política, cada sitio se ejecutará en su propio proceso.
-      Si se inhabilita, se aplicará la lógica de administración del proceso previo de aislamiento de sitios y se inhabilitarán las pruebas de campo de IsolateOrigins y SitePerProcess. Los usuarios podrán habilitar SitePerProcess de forma manual.
-      Si no se configura, el usuario podrá cambiar esta configuración.
-      En <ph name="PRODUCT_OS_NAME" />, se recomienda también configurar la política de dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> con el mismo valor. Si los valores de ambas políticas no coinciden, es posible que se produzca un retraso al ingresar una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
-      </translation>
 <translation id="3236046242843493070">Patrones de URL desde los que se pueden instalar secuencias de comandos de usuario, aplicaciones y extensiones</translation>
 <translation id="3240609035816615922">Política de acceso para la configuración de las impresoras</translation>
 <translation id="3243309373265599239">Especifica el período de tiempo sin intervención del usuario luego del cual se atenúa la pantalla si se usa alimentación de CA.
@@ -849,16 +829,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="350797926066071931">Habilitar Traductor de Google</translation>
 <translation id="3512226956150568738">Si el modelo del dispositivo del cliente ya era compatible con ARC, la migración a ext4 era necesaria para ejecutar ARC y se establece la política ArcEnabled como verdadera, esta opción se comportará como AskUser (valor 3). En los demás casos (si el modelo del dispositivo no era compatible con ARC o se establece la política ArcEnabled como falsa), este valor es equivalente a DisallowArc (valor 0).</translation>
-<translation id="3519934027321156158">
-      Si se habilita la política, cada origen designado en una lista separada por comas
-      se ejecutará en su propio proceso. Esta acción también aislará los sitios
-      designados a partir de subdominios; p. ej., al especificar https://ejemplo.com/,
-      también se aislará https://foo.ejemplo.com/ como parte del sitio
-      https://ejemplo.com/.
-      Si se inhabilita, se aplicará la lógica de administración del proceso previo de aislamiento de sitios y se inhabilitarán las pruebas de campo de IsolateOrigins y SitePerProcess. Los usuarios podrán habilitar IsolateOrigins de forma manual.
-      Si no se configura, el usuario podrá cambiar esta configuración.
-      En <ph name="PRODUCT_OS_NAME" />, se recomienda también configurar la política de dispositivo <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> con el mismo valor. Si los valores de ambas políticas no coinciden, es posible que se produzca un retraso al ingresar una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
-      </translation>
 <translation id="3524204464536655762">No permitir que ningún sitio solicite acceso a dispositivos USB a través de la API de WebUSB</translation>
 <translation id="3528000905991875314">Habilitar páginas de error alternativas</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
@@ -1036,16 +1006,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si esta política se establece en True o no se establece, los usuarios podrán canjear ofertas a través del registro del Sistema operativo de Chrome.
 
       Si esta política se establece en False, el usuario no podrá canjear ofertas.</translation>
-<translation id="4002183184444060875">
-      Esta política se aplica a la pantalla de acceso. Consulta también la política <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, que se aplica a la sesión de usuario. Se recomienda establecer ambas políticas en el mismo valor. Si los valores no coinciden, es posible que se produzca un retraso al ingresar una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
-      Si se habilita la política, cada origen designado en una lista separada por
-      comas se ejecutará en su propio proceso. Esta acción también aislará los
-      sitios designados a partir de subdominios; p. ej., al especificar
-      https://ejemplo.com/, también se aislará https://foo.ejemplo.com/ como parte
-      del sitio https://ejemplo.com/.
-      Si se inhabilita, se aplicará la lógica de administración del proceso previo de aislamiento de sitios y se inhabilitarán las pruebas de campo de IsolateOrigins y SitePerProcess. Los usuarios podrán habilitar IsolateOrigins de forma manual.
-      Si no se configura, se usará la configuración predeterminada de aislamiento de sitios de la plataforma en la pantalla de acceso.
-      </translation>
 <translation id="4010738624545340900">Permitir la invocación de los diálogos de selección de archivos</translation>
 <translation id="4012737788880122133">Cuando esta política se establece como verdadera, desactiva las actualizaciones automáticas.
 
@@ -1852,11 +1812,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6689792153960219308">Informar estado de hardware</translation>
 <translation id="6698071416141001300">La marca de la protección de la contraseña que indica que la cuenta está en riesgo se activa cuando se vuelve a usar la contraseña</translation>
 <translation id="6699880231565102694">Habilitar autenticación de dos factores para los hosts de acceso remoto.</translation>
-<translation id="6702257826895463228">Permitir la navegación y las ventanas emergentes en los sitios al mismo tiempo.
+<translation id="6702257826895463228">Permite la navegación y las ventanas emergentes en los sitios al mismo tiempo.
 
       Para obtener una explicación completa, consulta https://www.chromestatus.com/features/5675755719622656.
       Si se habilita esta política, se podrá navegar en los sitios y abrir ventanas o pestañas nuevas al mismo tiempo.
-      Si se inhabilita esta política o no se establece, no se podrá navegar en los sitios y abrir ventanas o pestañas nuevas al mismo tiempo.</translation>
+      Si se inhabilita esta política o no se establece, no se podrá navegar en los sitios ni abrir ventanas o pestañas nuevas al mismo tiempo.</translation>
 <translation id="6724842112053619797">Si habilitas esta configuración, los datos almacenados en los perfiles de <ph name="PRODUCT_NAME" />, como los favoritos, los datos de Autocompletar, las contraseñas, etc. también se guardarán en un archivo almacenado en la carpeta de perfil del usuario Roaming o una ubicación que el administrador especifique mediante la política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Si habilitas esta política, se inhabilita la sincronización en la nube.
 
       Si esta política se inhabilita o no se establece, solo se usarán los perfiles locales comunes.
@@ -2172,7 +2132,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Cuando se elige la opción "Bloquear todas las descargas", se bloquean todas las descargas.
 
-      Cuando no se configura esta política (o cuando se elige la opción "Sin restricciones especiales"), se aplicarán las restricciones usuales de seguridad a las descargas, de acuerdo con los resultados del análisis de la Navegación segura.
+      Cuando no se configura esta política (o cuando se elige la opción "Sin restricciones especiales"), se aplicarán las restricciones usuales de seguridad a las descargas de acuerdo con los resultados del análisis de la Navegación segura.
 
       Ten en cuenta que estas restricciones se aplican a las descargas que se inician desde el contenido de páginas web, así como la opción "Vínculo de descarga" del menú contextual. Estas restricciones no se aplican a las acciones de guardar o descargar la página que se muestra actualmente, ni tampoco a la opción para guardar como PDF desde las opciones de impresión.
 

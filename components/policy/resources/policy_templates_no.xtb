@@ -162,16 +162,6 @@
 
       Hvis denne innstillingen er slått av eller ikke konfigurert, kan bedriftsbrukere
       ikke bruke ARC.</translation>
-<translation id="1561183922461862993">
-      Denne regelen gjelder for påloggingsskjermen. Se også <ph name="SITE_PER_PROCESS_POLICY_NAME" />-regelen, som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis dette ikke gjøres, kan det oppstå forsinkelser ved start av brukerøkter når verdien som er angitt i brukerinnstillingene, blir brukt.
-      Det kan være lurt å ta en titt på innstillingen for IsolateOrigins-regelen for
-      å få det beste fra begge verdener – isolering og begrenset innvirkning for
-      brukere – ved å bruke IsolateOrigins sammen med en liste over nettstedene
-      du vil isolere. Denne innstillingen (SitePerProcess) isolerer alle nettsteder.
-      Hvis regelen er aktivert, kjøres alle nettsteder i egne prosesser.
-      Hvis regelen er deaktivert, gjelder logikken for administrering av nettstedsisolering på prosessbasis, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere SitePerProcess manuelt.
-      Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
-      </translation>
 <translation id="1561424797596341174">Overstyring av regler for delversjoner for feilsøking på fjerntilgangsverten</translation>
 <translation id="1561967320164410511">U2F samt utvidelser for individuell attestering</translation>
 <translation id="1574554504290354326">Denne innstillingen er avviklet. Bruk SafeBrowsingExtendedReportingEnabled i stedet. Å aktivere eller deaktivere SafeBrowsingExtendedReportingEnabled tilsvarer å angi SafeBrowsingExtendedReportingOptInAllowed som «false» (usann).
@@ -728,16 +718,6 @@
 <translation id="3214164532079860003">Denne retningslinjen tvinger startsiden til å bli importert fra nåværende standard nettleser hvis den er aktivert. Hvis retningslinjen er deaktivert, importeres ikke startsiden. Hvis retningslinjen ikke er angitt, er det mulig at brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
 <translation id="3219421230122020860">Inkognitomodus er tilgjengelig</translation>
 <translation id="3220624000494482595">Hvis kioskappen er en Android-app, har den ikke kontroll over <ph name="PRODUCT_OS_NAME" />-versjonen – selv ikke hvis regelen er angitt som <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      Det kan være lurt å ta en titt på innstillingen for IsolateOrigins-regelen for å få det
-      beste fra begge verdener – isolering og begrenset innvirkning for brukere – 
-      ved å bruke IsolateOrigins sammen med en liste over nettstedene du
-      vil isolere. Denne innstillingen (SitePerProcess) isolerer alle nettsteder.
-      Hvis regelen er aktivert, kjøres alle nettsteder i egne prosesser.
-      Hvis regelen er deaktivert, gjelder logikken for administrering av nettstedsisolering på prosessbasis, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere SitePerProcess manuelt.
-      Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
-      I <ph name="PRODUCT_OS_NAME" /> bør du også angi den samme verdien for enhetsinnstillingen <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Hvis du ikke gjør det, kan det oppstå forsinkelser ved start av brukerøkter når verdien som er angitt i brukerinnstillingene, blir brukt.
-      </translation>
 <translation id="3236046242843493070">Nettadressemønstre du vil tillate installasjoner av utvidelser, programmer og brukerskript fra</translation>
 <translation id="3240609035816615922">Regel for tilgang til konfigurering av skrivere.</translation>
 <translation id="3243309373265599239">Angir hvor lenge brukeren kan være inaktiv før skjermen nedtones når enheten kjører på batteristrøm.
@@ -817,16 +797,6 @@
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
 <translation id="350797926066071931">Aktiver oversettelse</translation>
 <translation id="3512226956150568738">Hvis klientens enhetsmodell allerede støttet ARC før overføringen til ext4 var nødvendig for å kjøre ARC, og hvis ArcEnabled-regelen er satt til sann, har dette alternativet samme effekt som AskUser (verdi 3). I alle andre tilfeller (hvis enhetsmodellen ikke støttet ARC tidligere, eller hvis ArcEnabled-regelen er satt til usann), tilsvarer denne verdien DisallowArc (verdi 0).</translation>
-<translation id="3519934027321156158">
-      Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i
-      kommadelte lister i egne prosesser. Da isoleres også
-      opprinnelser som har navn basert på underdomener. Hvis for eksempel https://example.com/ angis,
-      isoleres også https://foo.example.com/ som en del av nettstedet
-      https://example.com/.
-      Hvis regelen er deaktivert, gjelder logikken for administrering av nettstedsisolering på prosessbasis, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere IsolateOrigins manuelt.
-      Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
-      I <ph name="PRODUCT_OS_NAME" /> bør du også angi den samme verdien for enhetsinnstillingen <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Hvis du ikke gjør det, kan det oppstå forsinkelser ved start av brukerøkter når verdien som er angitt i brukerinnstillingene, blir brukt.
-      </translation>
 <translation id="3524204464536655762">Ikke la noen nettsteder be om tilgang til USB-enheter via WebUSB API</translation>
 <translation id="3528000905991875314">Aktiver alternative feilsider</translation>
 <translation id="3547954654003013442">Innstillinger for proxy-tjener</translation>
@@ -1004,16 +974,6 @@
       Hvis denne innstillingen angis som sann eller ikke angis, kan brukere innløse tilbud via Chrome OS-registrering.
 
       Hvis denne innstillingen angis som usann, kan ikke brukeren innløse tilbud.</translation>
-<translation id="4002183184444060875">
-      Denne regelen gjelder for påloggingsskjermen. Se også <ph name="ISOLATE_ORIGINS_POLICY_NAME" />-regelen, som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis du ikke gjør det, kan det oppstå en forsinkelse ved start av brukerøkter når verdien som er angitt i brukerinnstillingene, blir brukt.
-      Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i
-      kommadelte lister i egne prosesser. Da isoleres også
-      opprinnelser som har navn basert på underdomener. Hvis for eksempel https://example.com/ angis,
-      isoleres også https://foo.example.com/ som en del av nettstedet
-      https://example.com/.
-      Hvis regelen er deaktivert, gjelder logikken for administrering av nettstedsisolering på prosessbasis, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere IsolateOrigins manuelt.
-      Hvis regelen ikke er konfigurert, brukes plattformens standardinnstillinger for nettstedsisolering for påloggingsskjermen.
-      </translation>
 <translation id="4010738624545340900">Tillat anrop av av filvalgdialoger.</translation>
 <translation id="4012737788880122133">Slår av automatiske oppdateringer når den er angitt som «true» (sann).
 

@@ -160,16 +160,6 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 
       Hvis denne indstilling er deaktiveret eller ikke er konfigureret, kan
       virksomhedsbrugere ikke bruge ARC.</translation>
-<translation id="1561183922461862993">
-      Politikken gælder for loginskærmen. Se også politikken <ph name="SITE_PER_PROCESS_POLICY_NAME" />, som gælder for brugersessionen. Det anbefales, at der angives den samme værdi for begge politikker. Hvis politikkerne har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-      Det er en god idé at kigge på politikindstillingen IsolateOrigins for at få det bedste
-      fra begge verdener (isolering og begrænset indvirkning på brugerne) ved at bruge
-      IsolateOrigins sammen med en liste over de websites, du vil isolere. Denne indstilling,
-      SitePerProcess, isolerer all websites.
-      Hvis politikken er aktiveret, kører hvert website sin egen proces.
-      Hvis politikken er deaktiveret, anvendes processtyringslogikken, som blev brugt før isolering af websites, og brugstest af IsolateOrigins og SitePerProcess deaktiveres. Brugere kan stadig aktivere SitePerProcess manuelt.
-      Hvis politikken ikke konfigureres, kan brugerne ændre denne indstilling.
-      </translation>
 <translation id="1561424797596341174">Tilsidesættelser af politik for fejlretningsbuilds på hosten til fjernadgang</translation>
 <translation id="1561967320164410511">U2F samt udvidelser til individuel attestering</translation>
 <translation id="1574554504290354326">Denne indstilling er forældet. Brug SafeBrowsingExtendedReportingEnabled i stedet. Aktivering eller deaktivering af SafeBrowsingExtendedReportingEnabled svarer til at angive SafeBrowsingExtendedReportingOptInAllowed som Falsk.
@@ -766,16 +756,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3214164532079860003">Denne politik tvinger import af startsiden fra den aktuelle standardbrowser, hvis den er aktiveret. Hvis den er deaktiveret, importeres startsiden ikke. Hvis den ikke er angivet, kan brugeren blive spurgt, om den skal importeres, eller også sker det automatisk.</translation>
 <translation id="3219421230122020860">Inkognitotilstand er tilgængelig</translation>
 <translation id="3220624000494482595">Hvis terminalappen er en Android-app, har den ingen kontrol over <ph name="PRODUCT_OS_NAME" />-versionen, selv hvis denne politik angives som <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      Det er en god idé at kigge på politikindstillingen IsolateOrigins for at få det bedste
-      fra begge verdener (isolering og begrænset indvirkning på brugerne) ved at bruge
-      IsolateOrigins sammen med en liste over de websites, du vil isolere. Denne indstilling,
-      SitePerProcess, isolerer alle websites.
-      Hvis politikken er aktiveret, kører hvert website sin egen proces.
-      Hvis politikken er deaktiveret, anvendes processtyringslogikken, som blev brugt før isolering af websites, og brugstest af IsolateOrigins og SitePerProcess deaktiveres. Brugere kan stadig aktivere SitePerProcess manuelt.
-      Hvis politikken ikke konfigureres, kan brugerne ændre denne indstilling.
-      I <ph name="PRODUCT_OS_NAME" /> anbefales det, at der også angives den samme værdi for enhedspolitikken <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Hvis politikkerne har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-      </translation>
 <translation id="3236046242843493070">Webadressemønstre, der tillader installation af udvidelser, apps og brugerscripts fra</translation>
 <translation id="3240609035816615922">Adgangspolitik for konfiguration af printere.</translation>
 <translation id="3243309373265599239">Angiver den tid uden brugerinput, der aktiverer skærmnedtoning, når strømforsyningen er tilsluttet.
@@ -857,16 +837,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Denne politik respekteres, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="350797926066071931">Aktiver Oversæt</translation>
 <translation id="3512226956150568738">Hvis klientens enhedsmodel allerede understøttede ARC, inden det blev nødvendigt at migrere til ext4 for at køre ARC, og hvis politikken ArcEnabled er angivet som sand, opfører denne valgmulighed sig som AskUser (værdi 3). I alle andre tilfælde (hvis enhedsmodellen ikke tidligere understøttede ARC, eller hvis politikken ArcEnabled er angivet som falsk), svarer denne værdi til DisallowArc (værdi 0).</translation>
-<translation id="3519934027321156158">
-      Hvis politikken er aktiveret, kører hvert af de angivne websites
-      på en kommasepareret liste sin egen proces. Dette isolerer også websites,
-      der er angivet af underdomæner. Hvis f.eks. https://eksempel.dk/ angives,
-      isoleres https://foo.eksempel.dk/ også som en del af
-      websitet https://eksempel.dk/.
-      Hvis politikken er deaktiveret, anvendes processtyringslogikken, som blev brugt før isolering af websites, og brugstest af IsolateOrigins og SitePerProcess deaktiveres. Brugere kan stadig aktivere IsolateOrigins manuelt.
-      Hvis politikken ikke konfigureres, kan brugerne ændre denne indstilling.
-      I <ph name="PRODUCT_OS_NAME" /> anbefales det, at der også angives den samme værdi for enhedspolitikken <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-      </translation>
 <translation id="3524204464536655762">Tillad ikke, at websites anmoder om adgang til USB-enheder via WebUSB API</translation>
 <translation id="3528000905991875314">Aktiver alternative fejlsider</translation>
 <translation id="3547954654003013442">Proxyindstillinger</translation>
@@ -913,7 +883,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
       Politikken tillader, at kravene om offentliggørelse via Certifikatgennemsigtighed ikke håndhæves for certifikatkæder, der indeholder certifikater med en af de angivne hash-koder fra subjectPublicKeyInfo. Dermed kan certifikater, der ellers ikke ville være godkendt, fordi de ikke er blevet offentliggjort korrekt, fortsat anvendes til virksomhedshosts.
 
-      For at håndhævelse af Certifikatgennemsigtighed kan deaktiveres, når politikken er angivet, skal hash-koden være fra subjectPublicKeyInfo og angives i et CA-certifikat, der genkendes som en forældet certifikatautoritet. En forældet certifikatautoritet er en autoritet, der som standard er offentligt godkendt af ét eller flere operativsystemer, som understøttes af <ph name="PRODUCT_NAME" />, men som ikke er godkendt af Android Open Source Project eller <ph name="PRODUCT_OS_NAME" />.
+      For at håndhævelse af Certifikatgennemsigtighed kan deaktiveres, når politikken er angivet, skal hash-koden være fra subjectPublicKeyInfo og angivet i et CA-certifikat, der genkendes som en forældet certifikatautoritet. En forældet certifikatautoritet er en autoritet, der som standard er offentligt godkendt af ét eller flere operativsystemer, som understøttes af <ph name="PRODUCT_NAME" />, men som ikke er godkendt af Android Open Source Project eller <ph name="PRODUCT_OS_NAME" />.
 
       En hash-kode fra subjectPublicKeyInfo angives ved at sammenføje navnet på hash-algoritmen, tegnet "/" og Base64-kodningen for den pågældende hash-algoritme, der anvendes i subjectPublicKeyInfo med DER-kodning i det angivne certifikat. Denne Base64-kodning har samme format som et SPKI-fingeraftryk, som beskrevet i afsnit 2.4 i RFC 7469. Hash-algoritmer, der ikke genkendes, ignoreres. Det er i øjeblikket kun hash-algoritmen "sha256", som understøttes.
 
@@ -1049,16 +1019,6 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
       Hvis denne politik er angivet til Sand eller ikke er angivet, kan brugerne indløse kampagnetilbud via Chrome OS-registrering.
 
       Hvis denne politik er angivet til Falsk, kan brugerne ikke indløse kampagnetilbud.</translation>
-<translation id="4002183184444060875">
-      Politikken gælder for loginskærmen. Se også politikken <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, som gælder for brugersessionen. Det anbefales, at der angives den samme værdi for begge politikker. Hvis politikkerne har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-      Hvis politikken er aktiveret, kører hvert af de angivne websites
-      på en kommasepareret liste sin egen proces. Dette isolerer også websites,
-      der er angivet af underdomæner. Hvis f.eks. https://eksempel.dk/ angives,
-      isoleres https://foo.eksempel.dk/ også som en del af
-      websitet https://eksempel.dk/.
-      Hvis politikken er deaktiveret, anvendes processtyringslogikken, som blev brugt før isolering af websites, og brugstest af IsolateOrigins og SitePerProcess deaktiveres. Brugere kan stadig aktivere IsolateOrigins manuelt.
-      Hvis politikken ikke konfigureres, anvendes platformens standardindstillinger for isolering af websites på loginskærmen.
-      </translation>
 <translation id="4010738624545340900">Tillad aktivering af dialogbokse for filvalg</translation>
 <translation id="4012737788880122133">Deaktiverer automatiske opdateringer, når indstillingen angives til sand.
 
@@ -2182,7 +2142,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Hvis politikken ikke angives, (eller muligheden "Ingen særlige begrænsninger" vælges), går downloads gennem de sædvanlige sikkerhedsbegrænsninger baseret på analyseresultater fra Beskyttet browsing.
 
-      Bemærk, at disse begrænsninger gælder for downloads, der aktiveres af websiteindhold, såvel som genvejsmenuvalget "download link...". Disse begrænsninger gælder ikke i forbindelse med muligheden for at gemme/downloade den aktuelle side. De gælder heller ikke, når der gemmes som PDF-fil fra udskrivningsmulighederne.
+      Bemærk, at disse begrænsninger gælder for downloads, der aktiveres af websiteindhold såvel som genvejsmenuvalget "download link...". Disse begrænsninger gælder ikke i forbindelse med muligheden for at gemme/downloade den aktuelle side. De gælder heller ikke, når der gemmes som PDF-fil fra udskrivningsmulighederne.
 
       Få flere oplysninger om Beskyttet browsing på https://developers.google.com/safe-browsing.</translation>
 <translation id="7643883929273267746">Begræns konti, der er synlige i <ph name="PRODUCT_NAME" /></translation>

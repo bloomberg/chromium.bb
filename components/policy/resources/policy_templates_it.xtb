@@ -62,7 +62,7 @@
 
       L'impostazione predefinita è RollbackDisabled.</translation>
 <translation id="1221359380862872747">Carica gli URL specificati all'accesso demo</translation>
-<translation id="1223789468190631420">Stato attivazione Navigazione sicura per fonti attendibili</translation>
+<translation id="1223789468190631420">Stato attivazione Navigazione sicura per origini attendibili</translation>
 <translation id="123081309365616809">Attiva la trasmissione di contenuti al dispositivo</translation>
 <translation id="1257550411839719984">Imposta directory di download predefinita</translation>
 <translation id="1265053460044691532">Limita il tempo per cui un utente autenticato tramite SAML può eseguire l'accesso offline</translation>
@@ -153,16 +153,6 @@ Se la norma non viene impostata, la modalità ad alto contrasto viene disattivat
 <translation id="1553684822621013552">Quando questo criterio è impostato su true, ARC è attivato (soggetto ad altri controlli delle impostazioni dei criteri - ARC continuerà a essere disattivato se nella sessione utente corrente è attivata la modalità temporanea o l'accesso simultaneo).
 
 Se l'impostazione è disattivata o non è stata configurata, gli utenti aziendali non potranno utilizzare ARC.</translation>
-<translation id="1561183922461862993">
-      Questa norma viene applicata alla schermata di accesso. Vedi anche la norma <ph name="SITE_PER_PROCESS_POLICY_NAME" /> che viene applicata alla sessione utente. È consigliabile impostare lo stesso valore per entrambe le norme. Se i valori non corrispondono, può verificarsi un ritardo durante l'accesso a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
-      Potresti considerare l'impostazione della norma IsolateOrigins per ottenere
-      sia l'isolamento sia un impatto limitato per gli utenti. Usa IsolateOrigins con
-      un elenco dei siti che vuoi isolare. Questa impostazione, SitePerProcess,
-      isola tutti i siti.
-      Se la norma viene attivata, ogni sito verrà eseguito in un proprio processo.
-      Se la norma viene disattivata, viene applicata la logica della gestione del processo di isolamento per sito e le prove sul campo di IsolateOrigins e SitePerProcess saranno disattivate. Gli utenti potranno ancora attivare SitePerProcess manualmente.
-      Se la norma non viene configurata, l'utente potrà modificare questa impostazione.
-      </translation>
 <translation id="1561424797596341174">La norma sostituisce le build di debug dell'host di accesso remoto</translation>
 <translation id="1561967320164410511">U2F più estensioni per singola attestazione</translation>
 <translation id="1574554504290354326">Questa impostazione è obsoleta. Utilizza invece SafeBrowsingExtendedReportingEnabled. L'attivazione o la disattivazione di SafeBrowsingExtendedReportingEnabled equivale a impostare SafeBrowsingExtendedReportingOptInAllowed su False.
@@ -205,7 +195,7 @@ Per la norma dovrebbe essere impostato un URL da cui <ph name="PRODUCT_OS_NAME" 
 <translation id="1797233582739332495">Mostra un messaggio ricorrente all'utente in cui indica che è necessario un riavvio</translation>
 <translation id="1803646570632580723">Elenco di applicazioni bloccate da visualizzare in Avvio applicazioni</translation>
 <translation id="1808715480127969042">Blocca cookie su questi siti</translation>
-<translation id="1810261428246410396">Consenti l'uso del Tethering istantaneo.</translation>
+<translation id="1810261428246410396">Consenti l'uso del tethering istantaneo.</translation>
 <translation id="1827523283178827583">Utilizza server proxy definiti</translation>
 <translation id="1843117931376765605">Frequenza di aggiornamento per norma utente</translation>
 <translation id="1844620919405873871">Consente di configurare le norme relative allo sblocco rapido.</translation>
@@ -566,7 +556,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       </translation>
 <translation id="2633084400146331575">Attiva la funzione di lettura vocale</translation>
 <translation id="2646290749315461919">Permette di stabilire se consentire o meno il monitoraggio della posizione fisica degli utenti da parte dei siti web. Il monitoraggio della posizione fisica degli utenti può essere consentito o negato per impostazione predefinita oppure l'utente può ricevere una richiesta ogni volta che un sito web desidera conoscere la posizione fisica. Se questa norma non viene impostata, verrà utilizzato il valore "AskGeolocation", che potrà essere modificato dagli utenti.</translation>
-<translation id="2647069081229792812">Attiva o disattiva la funzione di modifica dei segnalibri</translation>
+<translation id="2647069081229792812">Attiva o disattiva la funzione di modifica dei preferiti</translation>
 <translation id="2650049181907741121">Azione da compiere quando l'utente chiude il coperchio</translation>
 <translation id="2655233147335439767">Consente di specificare l'URL del motore di ricerca utilizzato per eseguire una ricerca per impostazione predefinita. L'URL deve contenere la stringa "<ph name="SEARCH_TERM_MARKER" />", che verrà sostituita in fase di query dai termini di ricerca inseriti dall'utente.
 
@@ -746,16 +736,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3214164532079860003">Se è attiva, questa norma impone l'importazione della pagina iniziale dal browser predefinito corrente. Se non è attiva, la pagina iniziale non viene importata. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="3219421230122020860">Modalità di navigazione in incognito disponibile</translation>
 <translation id="3220624000494482595">Se l'app kiosk è un'app Android, non avrà controllo sulla versione di <ph name="PRODUCT_OS_NAME" />, anche se la norma viene impostata su <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      Potresti considerare l'impostazione della norma IsolateOrigins per ottenere
-      sia l'isolamento sia un impatto limitato per gli utenti. Usa
-      IsolateOrigins con un elenco dei siti che vuoi isolare. Questa impostazione,
-      SitePerProcess, isola tutti i siti.
-      Se la norma viene attivata, ogni sito verrà eseguito in un proprio processo.
-      Se la norma viene disattivata, viene applicata la logica della gestione del processo di isolamento per sito e le prove sul campo di IsolateOrigins e SitePerProcess saranno disattivate. Gli utenti potranno ancora attivare SitePerProcess manualmente.
-      Se la norma non viene configurata, l'utente potrà modificare questa impostazione.
-      In <ph name="PRODUCT_OS_NAME" />, si consiglia di impostare anche la norma relativa ai dispositivi <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sullo stesso valore. Se i valori specificati dalle due norme non corrispondono, può verificarsi un ritardo durante l'accesso a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
-      </translation>
 <translation id="3236046242843493070">Pattern URL per consentire installazioni di estensioni, applicazioni e script utente da</translation>
 <translation id="3240609035816615922">Norma di accesso alla configurazione delle stampanti.</translation>
 <translation id="3243309373265599239">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene oscurato quando viene utilizzata la corrente alternata.
@@ -835,16 +815,6 @@ Questa norma è facoltativa. Se non viene impostata, non verrà utilizzata la ri
 Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="350797926066071931">Abilita traduzione</translation>
 <translation id="3512226956150568738">Se il modello del dispositivo client supportava già ARC prima che fosse necessaria la migrazione a ext4 per eseguire ARC e se la norma ArcEnabled è impostata su true, questa opzione si comporterà come AskUser (valore 3). In tutti gli altri casi (se il modello del dispositivo non supportava ARC in precedenza o se la norma ArcEnabled è impostata su false), questo valore equivale a DisallowArc (valore 0).</translation>
-<translation id="3519934027321156158">
-      Se la norma viene attivata, ogni origine indicata in un elenco di valori
-      separati da virgole verrà eseguita in un proprio processo.
-      Verranno inoltre isolate le origini indicate dai sottodomini; ad esempio,
-      se viene specificato il sito https://example.com/ viene isolato anche
-      https://foo.example.com/, perché fa parte del sito https://example.com/.
-      Se la norma viene disattivata, viene applicata la logica della gestione del processo di isolamento per sito e le prove sul campo di IsolateOrigins e SitePerProcess saranno disattivate. Gli utenti potranno ancora attivare IsolateOrigins manualmente.
-      Se la norma non viene configurata, l'utente potrà modificare questa impostazione.
-      In <ph name="PRODUCT_OS_NAME" />, si consiglia di impostare anche la norma relativa ai dispositivi <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> sullo stesso valore. Se i valori specificati dalle due norme non corrispondono, può verificarsi un ritardo durante l'accesso a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
-      </translation>
 <translation id="3524204464536655762">Non consentire ai siti di richiedere l'accesso ai dispositivi USB tramite l'API WebUSB</translation>
 <translation id="3528000905991875314">Attiva pagine di errore sostitutive</translation>
 <translation id="3547954654003013442">Impostazioni proxy</translation>
@@ -854,7 +824,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 
       Se la disattivi, la Navigazione sicura non è mai attiva.
 
-      Se attivi o disattivi l'impostazione, gli utenti non possono modificare o sostituire l'impostazione "Attiva protezione contro phishing e malware" in <ph name="PRODUCT_NAME" />.
+      Se attivi o disattivi l'impostazione, gli utenti non possono modificare o sostituire l'opzione "Attiva protezione contro phishing e malware" in <ph name="PRODUCT_NAME" />.
 
       Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utenti potranno modificarla.
 
@@ -887,15 +857,15 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 
       Se queste norme non vengono impostate, gli utenti possono scegliere autonomamente le impostazioni del proxy.</translation>
 <translation id="3758249152301468420">Disabilita Strumenti per sviluppatori</translation>
-<translation id="3764248359515129699">Disattiva l'imposizione dei requisiti di Certificate Transparency per un elenco di autorità di certificazione precedenti.
+<translation id="3764248359515129699">Disattiva l'applicazione dei requisiti di Certificate Transparency per un elenco di autorità di certificazione precedenti.
 
-      Questa norma consente di disattivare i requisiti di divulgazione di Certificate Transparency per le catene di certificati che contengono certificati con uno degli hash subjectPublicKeyInfo specificati. Consente ai certificati che altrimenti sarebbero considerati inattendibili, in quanto non appropriatamente resi pubblici, di continuare a essere utilizzati per gli host aziendali.
+      Questa norma consente di disattivare i requisiti di divulgazione di Certificate Transparency per le catene di certificati che contengono certificati con uno degli hash subjectPublicKeyInfo specificati. Fa sì che i certificati che altrimenti sarebbero considerati non attendibili, in quanto non adeguatamente resi pubblici, continuino a essere utilizzati per gli host aziendali.
 
-      Al fine di disattivare l'imposizione di Certificate Transparency quando viene impostata questa norma, l'hash deve far parte di un subjectPublicKeyInfo che compare in un certificato CA riconosciuto come autorità di certificazione (CA) precedente. Una CA precedente è una CA che è stata considerata attendibile pubblicamente da uno o più sistemi operativi predefiniti supportati da <ph name="PRODUCT_NAME" />, ma che non è considerata attendibile da Android Open Source Project o da <ph name="PRODUCT_OS_NAME" />.
+      Per disattivare l'applicazione dei requisiti di Certificate Transparency quando viene impostata questa norma, l'hash deve far parte di un subjectPublicKeyInfo che compare in un certificato CA riconosciuto come autorità di certificazione (CA) precedente. Una CA precedente è una CA che, per impostazione predefinita, è stata considerata attendibile pubblicamente da uno o più sistemi operativi supportati da <ph name="PRODUCT_NAME" />, ma che non è considerata attendibile da Android Open Source Project o da <ph name="PRODUCT_OS_NAME" />.
 
-      Per specificare un hash subjectPublicKeyInfo è necessario concatenare il nome dell'algoritmo hash, il carattere "/" e la codifica Base64 di quell'algoritmo hash applicato al subjectPublicKeyInfo con codifica DER del certificato specificato. Tale codifica Base64 è nello stesso formato di un'impronta SPKI, come stabilito nella Sezione 2.4 dell'RFC 7469. Gli algoritmi hash non riconosciuti vengono ignorati. Attualmente l'unico algoritmo supportato è "sha256".
+      Per specificare un hash subjectPublicKeyInfo è necessario concatenare il nome dell'algoritmo hash, il carattere "/" e la codifica Base64 dell'algoritmo hash applicato al subjectPublicKeyInfo con codifica DER del certificato specificato. La codifica Base64 è nello stesso formato di un'impronta SPKI, come stabilito nella Sezione 2.4 dell'RFC 7469. Gli algoritmi hash non riconosciuti vengono ignorati. Attualmente l'unico algoritmo hash supportato è "sha256".
 
-      Se questa norma non viene impostata, i certificati che devono essere resi pubblici tramite Certificate Transparency verranno considerati come inaffidabili in quanto non sono resi pubblici come previsto dalle norme di Certificate Transparency.</translation>
+      Se questa norma non viene impostata, i certificati che devono essere resi pubblici tramite Certificate Transparency verranno considerati non attendibili nel caso in cui non vengano resi pubblici secondo quanto previsto dalle norme di Certificate Transparency.</translation>
 <translation id="3765260570442823273">Durata del messaggio di avviso di uscita per inattività</translation>
 <translation id="377044054160169374">Applicazione dell'intervento in caso di esperienza intrusiva</translation>
 <translation id="3780152581321609624">Includi porta non standard in Kerberos SPN</translation>
@@ -1018,16 +988,6 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
       Se questa norma viene impostata su true o non viene impostata, gli utenti potranno utilizzare le offerte tramite la registrazione a Chrome OS.
 
       Se questa norma viene impostata su false, gli utenti non potranno utilizzare le offerte.</translation>
-<translation id="4002183184444060875">
-      Questa norma viene applicata alla schermata di accesso. Vedi anche la norma <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> che viene applicata alla sessione utente. È consigliabile impostare lo stesso valore per entrambe le norme. Se i valori non coincidono, può verificarsi un ritardo durante l'accesso a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
-      Se la norma viene attivata, ogni origine indicata in un elenco di valori
-      separati da virgole verrà eseguita in un proprio processo. Verranno inoltre
-      isolate le origini indicate dai sottodomini; ad esempio, se viene specificato
-      il sito https://example.com/ viene isolato anche https://foo.example.com/,
-      perché fa parte del sito https://example.com/.
-      Se la norma viene disattivata, viene applicata la logica della gestione del processo di isolamento per sito e le prove sul campo di IsolateOrigins e SitePerProcess saranno disattivate. Gli utenti potranno ancora attivare IsolateOrigins manualmente.
-      Se la norma non viene configurata, per la schermata di accesso verranno usate le impostazioni di isolamento dei siti predefinite della piattaforma.
-      </translation>
 <translation id="4010738624545340900">Consenti richiamo di finestre di dialogo di selezione file</translation>
 <translation id="4012737788880122133">Se questa norma viene impostata su True, gli aggiornamenti automatici vengono disattivati.
 
@@ -1137,7 +1097,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="437791893267799639">Norma non impostata. Non consentire migrazione dei dati e ARC</translation>
 <translation id="4389091865841123886">Configura l'attestazione da remoto con meccanismo TPM.</translation>
 <translation id="4410236409016356088">Attiva la limitazione della larghezza di banda della rete</translation>
-<translation id="441217499641439905">Disattiva Google Drive su connessioni alla rete dati nell'app File di <ph name="PRODUCT_OS_NAME" /></translation>
+<translation id="441217499641439905">Disattiva Google Drive su reti cellulari nell'app File di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4418726081189202489">Se questa norma viene impostata su false, <ph name="PRODUCT_NAME" /> non può più inviare query occasionali a un server di Google per recuperare un timestamp preciso. Queste query vengono attivate se questa norma viene impostata su True o non viene configurata.</translation>
 <translation id="4423597592074154136">Specifica manualmente le impostazioni proxy</translation>
 <translation id="4429220551923452215">Attiva o disattiva la scorciatoia per le app nella barra dei Preferiti. Se questa norma non è impostata, l'utente può scegliere di mostrare o nascondere la scorciatoia per le app dal menu contestuale della barra dei Preferiti. Se la norma è configurata, l'utente non può modificarla e la scorciatoia per le app viene mostrata sempre oppure non viene mostrata mai.</translation>
@@ -1366,7 +1326,7 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
 <translation id="5159469559091666409">Consente di stabilire la frequenza di invio, in millisecondi, dei pacchetti di rete di monitoraggio.
 
       Se la norma non viene impostata, l'intervallo predefinito è pari a tre minuti. L'intervallo minimo è pari a 30 secondi, il massimo a 24 ore. I valori che non rientrano in questo intervallo verranno fatti rientrare.</translation>
-<translation id="5163002264923337812">Attiva il vecchio flusso di accesso basato sul Web</translation>
+<translation id="5163002264923337812">Attiva il flusso di accesso basato sul Web precedente</translation>
 <translation id="5182055907976889880">Configura Google Drive in <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="5183383917553127163">Consente di specificare le estensioni da non includere nella blacklist. Un valore di * riportato nella blacklist indica che tutte le estensioni sono state inserite nella blacklist e che gli utenti possono installare solo quelle elencate nella whitelist. Per impostazione predefinita, tutte le estensioni si trovano nella whitelist, ma se in base alla norma applicata tutte le estensioni sono state inserite nella blacklist, la whitelist può essere utilizzata per annullare tale norma.</translation>
 <translation id="519247340330463721">Configura le norme relative alla Navigazione sicura.</translation>
@@ -2211,18 +2171,18 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
       Se questa impostazione viene configurata, gli utenti non potranno modificarla.
 
       Se questa impostazione non viene configurata, gli utenti potranno attivare e disattivare Android Backup Service nell'app Impostazioni di Android.</translation>
-<translation id="780603170519840350">Disattiva l'imposizione dei requisiti di Certificate Transparency per un elenco di hash subjectPublicKeyInfo.
+<translation id="780603170519840350">Disattiva l'applicazione dei requisiti di Certificate Transparency per un elenco di hash subjectPublicKeyInfo.
 
-      Questa norma consente di disattivare i requisiti di divulgazione di Certificate Transparency per le catene di certificati che contengono certificati con uno degli hash subjectPublicKeyInfo specificati. Consente ai certificati che altrimenti sarebbero considerati inattendibili, in quanto non appropriatamente resi pubblici, di continuare a essere utilizzati per gli host aziendali.
+      Questa norma consente di disattivare i requisiti di divulgazione di Certificate Transparency per le catene di certificati che contengono certificati con uno degli hash subjectPublicKeyInfo specificati. Fa sì che i certificati che altrimenti sarebbero considerati non attendibili, in quanto non adeguatamente resi pubblici, continuino a essere utilizzati per gli host aziendali.
 
-      Al fine di disattivare l'imposizione di Certificate Transparency quando viene impostata questa norma, deve essere soddisfatta una delle seguenti condizioni:
+      Per disattivare l'applicazione dei requisiti di Certificate Transparency quando viene impostata questa norma, deve essere soddisfatta una delle seguenti condizioni:
       1. L'hash fa parte del subjectPublicKeyInfo del certificato del server.
-      2. L'hash fa parte di un subjectPublicKeyInfo che compare in un certificato CA nella catena di certificati; tale certificato CA è limitato dall'estensione X.509v3 nameConstraints, uno o più directoryName nameConstraints sono presenti nel permittedSubtrees e il directoryName contiene un attributo organizationName.
-      3. L'hash fa parte di un subjectPublicKeyInfo che compare in un certificato CA nella catena di certificati; tale certificato possiede uno o più attributi organizationName nel Subject del certificato e il certificato del server contiene lo stesso numero di attributi organizationName nello stesso ordine e con gli stessi identici valori byte-for-byte.
+      2. L'hash fa parte di un subjectPublicKeyInfo che compare in un certificato CA nella catena di certificati; tale certificato CA è limitato dall'estensione X.509v3 nameConstraints, uno o più nameConstraints del directoryName sono presenti nel permittedSubtrees e il directoryName contiene un attributo organizationName.
+      3. L'hash fa parte di un subjectPublicKeyInfo che compare in un certificato CA nella catena di certificati; tale certificato possiede uno o più attributi organizationName nel Subject del certificato e il certificato del server contiene lo stesso numero di attributi organizationName nello stesso ordine e con identici valori byte per byte.
 
-      Un hash subjectPublicKeyInfo viene specificato quando si concatenano il nome dell'algoritmo hash, il carattere "/" e la codifica Base64 di quell'algoritmo hash applicato al subjectPublicKeyInfo con codifica DER del certificato specificato. Tale codifica Base64 è nello stesso formato di un'impronta SPKI, come stabilito nella Sezione 2.4 dell'RFC 7469. Gli algoritmi hash non riconosciuti vengono ignorati. Attualmente l'unico algoritmo supportato è "sha256".
+      Un hash subjectPublicKeyInfo viene specificato concatenando il nome dell'algoritmo hash, il carattere "/" e la codifica Base64 dell'algoritmo hash applicato al subjectPublicKeyInfo con codifica DER del certificato specificato. La codifica Base64 è nello stesso formato di un'impronta SPKI, come stabilito nella Sezione 2.4 dell'RFC 7469. Gli algoritmi hash non riconosciuti vengono ignorati. Attualmente l'unico algoritmo hash supportato è "sha256".
 
-      Se questa norma non viene impostata, i certificati che devono essere resi pubblici tramite Certificate Transparency verranno considerati come inaffidabili in quanto non sono resi pubblici come previsto dalle norme di Certificate Transparency.</translation>
+      Se questa norma non viene impostata, i certificati che devono essere resi pubblici tramite Certificate Transparency verranno considerati non attendibili nel caso in cui non vengano resi pubblici secondo quanto previsto dalle norme di Certificate Transparency.</translation>
 <translation id="7818131573217430250">Impostazione stato predefinito modalità ad alto contrasto nella schermata di accesso</translation>
 <translation id="7822837118545582721">Se la norma è impostata su true, gli utenti non possono scrivere su dispositivi di archiviazione esterni.
 
@@ -2261,7 +2221,7 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
 <translation id="7937766917976512374">Consenti o nega acquisizione video</translation>
 <translation id="7941975817681987555">Non prevedere le azioni di rete su qualsiasi connessione di rete</translation>
 <translation id="7953256619080733119">Host delle eccezioni manuali per gli utenti gestiti</translation>
-<translation id="7961779417826583251">Disattiva l'imposizione di Certificate Transparency per un elenco di autorità di certificazione precedenti</translation>
+<translation id="7961779417826583251">Disattiva l'applicazione di Certificate Transparency per un elenco di autorità di certificazione precedenti</translation>
 <translation id="7974114691960514888">Questa norma non è più supportata. Consente di attivare l'utilizzo di server relay e STUN durante la connessione a un client remoto. Se questa impostazione viene attivata, questo computer potrà rilevare i computer host remoti e collegarsi a essi anche se sono separati da un firewall. Se questa impostazione viene disattivata e le connessioni UDP in uscita vengono filtrate dal firewall, questo computer potrà collegarsi ai computer host soltanto all'interno della rete locale.</translation>
 <translation id="7976157349247117979">Nome della destinazione di <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Nessuna limitazione speciale</translation>
@@ -2467,7 +2427,7 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 
       Se l'impostazione è configurata su False, i rapporti non vengono inviati.
 
-      Se la norma è impostata su true o False, l'utente non potrà modificare l'impostazione.
+      Se la norma è impostata su True o False, l'utente non potrà modificare l'impostazione.
 
       Se la norma non viene impostata, l'utente potrà modificare l'impostazione e decidere se inviare rapporti o meno.
 
@@ -2501,7 +2461,7 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> memorizza nella cache app ed estensioni per consentire a più utenti di uno stesso dispositivo di installarle senza doverle riscaricare.
       Se questa norma non viene configurata o se il valore è inferiore a 1 MB, <ph name="PRODUCT_OS_NAME" /> utilizzerà le dimensioni della cache predefinite.</translation>
 <translation id="8858642179038618439">Forza la Modalità di protezione di YouTube</translation>
-<translation id="8860342862142842017">Disattiva l'imposizione di Certificate Transparency per un elenco di hash subjectPublicKeyInfo</translation>
+<translation id="8860342862142842017">Disattiva l'applicazione di Certificate Transparency per un elenco di hash subjectPublicKeyInfo</translation>
 <translation id="8864975621965365890">Consente di eliminare il messaggio di richiesta di turndown che compare quando un sito viene visualizzato da <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8867464911288727016">Consente di attivare il servizio Google Traduttore integrato su <ph name="PRODUCT_NAME" />.
 

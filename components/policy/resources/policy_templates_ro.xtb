@@ -161,16 +161,6 @@
 
       Dacă această setare este dezactivată sau neconfigurată, utilizatorii din companie
       nu pot folosi ARC.</translation>
-<translation id="1561183922461862993">
-      Această politică se aplică pentru ecranul de conectare. Consultă și politica <ph name="SITE_PER_PROCESS_POLICY_NAME" />, care se aplică pentru sesiunea utilizatorului. Se recomandă setarea ambelor politici la aceeași valoare. Dacă valorile nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
-      Îți recomandăm să verifici setarea pentru politica IsolateOrigins pentru a beneficia
-      la maximum de fiecare, de izolare și de impact limitat asupra utilizatorilor, dacă folosești
-      IsolateOrigins cu o listă a site-urilor pe care vrei să le izolezi. Această setare,
-      SitePerProcess, izolează toate site-urile.
-      Dacă politica este activată, fiecare site va rula propriul proces.
-      Dacă politica este dezactivată, va fi aplicată logica de gestionare a proceselor prealabilă Izolării site-ului, iar testările pentru IsolateOrigins și SitePerProcess vor fi dezactivate. Utilizatorii vor putea în continuare să activeze manual SitePerProcess.
-      Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
-      </translation>
 <translation id="1561424797596341174">Suprascrieri de politici pentru versiunile de depanare ale gazdei de acces la distanță</translation>
 <translation id="1561967320164410511">U2F și extensii pentru atestarea individuală</translation>
 <translation id="1574554504290354326">Această setare este învechită; folosește SafeBrowsingExtendedReportingEnabled. Activarea sau dezactivarea SafeBrowsingExtendedReportingEnabled este echivalentă cu dezactivarea SafeBrowsingExtendedReportingOptInAllowed.
@@ -718,15 +708,6 @@
 <translation id="3214164532079860003">Dacă este activată, această politică forțează importarea paginii de pornire din browserul prestabilit actual. Dacă este dezactivată, pagina de pornire nu este importată. Dacă nu este setată, este posibil ca utilizatorul să fie întrebat dacă se efectuează importarea sau aceasta ar putea avea loc în mod automat.</translation>
 <translation id="3219421230122020860">Modul incognito este disponibil</translation>
 <translation id="3220624000494482595">Dacă aplicația chioșc este o aplicație Android, aceasta nu va avea control asupra versiunii <ph name="PRODUCT_OS_NAME" />, chiar dacă această politică este setată la <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      Îți recomandăm să verifici setarea pentru politica IsolateOrigins pentru a
-      beneficia la maximum de fiecare, de izolare și de impact limitat asupra utilizatorilor,
-      dacă folosești IsolateOrigins cu o listă a site-urilor pe care vrei să le izolezi. Această setare, SitePerProcess, izolează toate site-urile. 
-      Dacă politica este activată, fiecare site va rula propriul proces.
-      Dacă politica este dezactivată, va fi aplicată logica de gestionare a proceselor prealabilă Izolării site-ului, iar testările pentru IsolateOrigins și SitePerProcess vor fi dezactivate. Utilizatorii vor putea în continuare să activeze manual SitePerProcess.
-      Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
-      În <ph name="PRODUCT_OS_NAME" />, se recomandă setarea politicii privind dispozitivele <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate în cele două politici nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
-      </translation>
 <translation id="3236046242843493070">Modele de adrese URL de la care se permite instalarea extensiilor, a aplicațiilor și a scripturilor de utilizator</translation>
 <translation id="3240609035816615922">Politica privind accesul la configurarea imprimantelor.</translation>
 <translation id="3243309373265599239">Indică intervalul de timp fără intervenția utilizatorului după care luminozitatea ecranului este redusă atunci când dispozitivul funcționează pe c.a.
@@ -808,16 +789,6 @@
           Această politică este urmată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="350797926066071931">Activează Google Traducere</translation>
 <translation id="3512226956150568738">Dacă modelul de dispozitiv al clientului era compatibil deja cu ARC înainte ca migrarea la ext4 să fie necesară pentru rularea ARC și dacă politica ArcEnabled este activată, această opțiune va funcționa ca AskUser (valoarea 3). În restul cazurilor (dacă modelul de dispozitiv nu era compatibil cu ARC înainte sau dacă politica ArcEnabled este dezactivată), această valoare este echivalentă cu DisallowArc (valoarea 0).</translation>
-<translation id="3519934027321156158">
-      Dacă politica este activată, fiecare dintre originile indicate într-o
-      listă de valori separate prin virgulă va rula propriul proces. Aceasta va izola,
-      de asemenea, originile denumite după subdomenii; de exemplu, specificarea
-      https://example.com/ va cauza și izolarea https://foo.example.com/ ca parte a site-ului
-      https://example.com/.
-      Dacă politica este dezactivată, va fi aplicată logica de gestionare a proceselor prealabilă Izolării site-ului, iar testările pentru IsolateOrigins și SitePerProcess vor fi dezactivate. Utilizatorii vor putea în continuare să activeze manual SitePerProcess.
-      Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
-      În <ph name="PRODUCT_OS_NAME" />, se recomandă setarea politicii privind dispozitivele <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate în cele două politici nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
-      </translation>
 <translation id="3524204464536655762">Nu permite niciunui site să solicite acces la dispozitivele USB prin API-ul WebUSB</translation>
 <translation id="3528000905991875314">Activează pagini de eroare alternative</translation>
 <translation id="3547954654003013442">Setări proxy</translation>
@@ -1000,16 +971,6 @@
       Dacă politica este activată sau nu este configurată, utilizatorii pot valorifica oferte prin înregistrarea sistemului de operare Chrome.
 
       Dacă politica nu este activată, utilizatorii nu vor putea valorifica oferte.</translation>
-<translation id="4002183184444060875">
-      Această politică se aplică pentru ecranul de conectare. Consultă și politica <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, care se aplică pentru sesiunea utilizatorului. Se recomandă setarea ambelor politici la aceeași valoare. Dacă valorile nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
-      Dacă politica este activată, fiecare dintre originile indicate într-o
-      listă de valori separate prin virgulă va rula propriul proces. Aceasta va izola,
-      de asemenea, originile denumite după subdomenii; de exemplu, specificarea
-      https://example.com/ va cauza și izolarea https://foo.example.com/ ca parte a site-ului
-      https://example.com/.
-      Dacă politica este dezactivată, va fi aplicată logica de gestionare a proceselor prealabilă Izolării site-ului, iar testările pentru IsolateOrigins și SitePerProcess vor fi dezactivate. Utilizatorii vor putea în continuare să activeze manual SitePerProcess.
-      Dacă politica nu este configurată, pentru ecranul de conectare vor fi folosite setările de izolare a site-ului prestabilite pentru platforma respectivă.
-      </translation>
 <translation id="4010738624545340900">Permiteți invocarea casetelor de dialog pentru selectarea fișierelor</translation>
 <translation id="4012737788880122133">Când politica este activată, se dezactivează actualizările automate.
 

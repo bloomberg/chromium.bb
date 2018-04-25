@@ -154,15 +154,6 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 
       Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, können
       Enterprise-Nutzer kein ARC verwenden.</translation>
-<translation id="1561183922461862993">Diese Richtlinie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="SITE_PER_PROCESS_POLICY_NAME" />" an, die auf die Nutzersitzung angewendet wird. Es wird empfohlen, beide Richtlinien auf denselben Wert zu setzen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
-      Es ist sinnvoll, sich die Einstellung der Richtlinie "IsolateOrigins" anzusehen,
-      um die Auswirkungen auf die Nutzer bei der Isolierung von Websites gering
-      zu halten. Verwenden Sie dazu "IsolateOrigins" mit einer Liste von Websites,
-      die Sie isolieren möchten. Mit der Einstellung "SitePerProcess" werden alle
-      Websites isoliert.
-      Wenn die Richtlinie aktiviert ist, wird für jede Website ein eigener Prozess ausgeführt.
-      Wenn die Richtlinie deaktiviert ist, wird die Verwaltungslogik des Prozesses zur Isolierung einzelner Websites wirksam und Praxistests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "SitePerProcess" manuell aktivieren.
-      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.</translation>
 <translation id="1561424797596341174">Überschreiben von Richtlinien für Fehlerbehebungs-Builds des Hosts für den Remotezugriff</translation>
 <translation id="1561967320164410511">U2F plus Erweiterungen zur individuellen Bestätigung</translation>
 <translation id="1574554504290354326">Diese Einstellung ist veraltet. Verwenden Sie stattdessen "SafeBrowsingExtendedReportingEnabled". Das Aktivieren oder Deaktivieren von "SafeBrowsingExtendedReportingEnabled" entspricht dem Festlegen von "false" für "SafeBrowsingExtendedReportingOptInAllowed".
@@ -757,14 +748,6 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
 <translation id="3214164532079860003">Bei Aktivierung erzwingt diese Richtlinie, dass die Startseite vom aktuellen Standardbrowser importiert wird. Wenn sie deaktiviert ist, wird die Startseite nicht importiert. Sollte sie nicht konfiguriert sein, so wird der Nutzer gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="3219421230122020860">Inkognitomodus verfügbar</translation>
 <translation id="3220624000494482595">Wenn die Kiosk-App eine Android-App ist, hat sie keine Kontrolle über die <ph name="PRODUCT_OS_NAME" />-Version, auch wenn diese Richtlinie auf <ph name="TRUE" /> gesetzt ist.</translation>
-<translation id="3229833076897893450">Es ist sinnvoll, sich die Einstellung der Richtlinie "IsolateOrigins" anzusehen,
-      um die Auswirkungen auf die Nutzer bei der Isolierung von Websites gering zu halten.
-      Verwenden Sie dazu "IsolateOrigins" mit einer Liste von Websites, die Sie isolieren möchten.
-      Mit der Einstellung "SitePerProcess" werden alle Websites isoliert.
-      Wenn die Richtlinie aktiviert ist, wird für jede Website ein eigener Prozess ausgeführt.
-      Wenn die Richtlinie deaktiviert ist, wird die Verwaltungslogik des Prozesses zur Isolierung einzelner Websites wirksam und Praxistests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "SitePerProcess" manuell aktivieren.
-      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
-      Es wird empfohlen, unter <ph name="PRODUCT_OS_NAME" /> die Geräterichtlinie "<ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />" auf denselben Wert zu setzen. Wenn die von den beiden Richtlinien angegebenen Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.</translation>
 <translation id="3236046242843493070">URL-Muster für die Installation von Erweiterungen, Apps und Nutzerskripten von</translation>
 <translation id="3240609035816615922">Richtlinie für den Zugriff auf die Konfiguration von Druckern.</translation>
 <translation id="3243309373265599239">Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Netzbetrieb abgedunkelt wird.
@@ -843,14 +826,6 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
           Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="350797926066071931">Übersetzung aktivieren</translation>
 <translation id="3512226956150568738">Wenn das Client-Gerätemodell ARC bereits unterstützt hat, bevor die Migration zu ext4 für die ARC-Ausführung erforderlich war, verhält sich diese Option so, als ob "AskUser" (Wert 3) festgelegt wurde. Beachten Sie, dass die ArcEnabled-Richtlinie hierbei auf "true" festgelegt werden muss. In allen anderen Fällen entspricht dieser Wert "DisallowArc" (Wert 0) – beispielsweise, wenn das Gerätemodell ARC zuvor nicht unterstützt hat, oder wenn die ArcEnabled-Richtlinie auf "false" gesetzt wird.</translation>
-<translation id="3519934027321156158">Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge in einer
-      durch Kommas getrennten Liste ein eigener Prozess ausgeführt.
-      Dadurch werden auch durch Subdomains benannte Ursprünge isoliert.
-      Wenn Sie z. B. https://example.com/ angeben, wird auch https://foo.example.com/ als Teil der
-      Website https://example.com/ isoliert.
-      Wenn die Richtlinie deaktiviert ist, wird die Verwaltungslogik des Prozesses zur Isolierung einzelner Websites wirksam und Praxistests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "IsolateOrigins" manuell aktivieren.
-      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
-      Es wird empfohlen, unter <ph name="PRODUCT_OS_NAME" /> die Geräterichtlinie "<ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />" auf denselben Wert zu setzen. Wenn die von den beiden Richtlinien angegebenen Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.</translation>
 <translation id="3524204464536655762">Websites dürfen nie Zugriff auf USB-Geräte über die WebUSB API anfordern</translation>
 <translation id="3528000905991875314">Alternative Fehlerseiten aktivieren</translation>
 <translation id="3547954654003013442">Proxy-Einstellungen</translation>
@@ -1027,13 +1002,6 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
       Wenn diese Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, können Nutzer Angebote über die Chrome OS-Registrierung einlösen.
 
       Ist die Richtlinie auf "False" eingestellt, können Nutzer keine Angebote einlösen.</translation>
-<translation id="4002183184444060875">Diese Richtlinie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="ISOLATE_ORIGINS_POLICY_NAME" />" an, die auf die Nutzersitzung angewendet wird. Es wird empfohlen, beide Richtlinien auf denselben Wert zu setzen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
-      Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge in
-      einer durch Kommas getrennten Liste ein eigener Prozess ausgeführt.
-      Dadurch werden auch durch Subdomains benannte Ursprünge isoliert.
-      Wenn Sie z. B. https://example.com/ angeben, wird auch https://foo.example.com/ als Teil der Website https://example.com/ isoliert.
-      Wenn die Richtlinie deaktiviert ist, wird die Verwaltungslogik des Prozesses zur Isolierung einzelner Websites wirksam und Praxistests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "IsolateOrigins" manuell aktivieren.
-      Wenn die Richtlinie nicht konfiguriert ist, werden für die Anmeldeseite die standardmäßigen Website-Isolierungseinstellungen der Plattform verwendet.</translation>
 <translation id="4010738624545340900">Aufrufen von Dialogfeldern zur Dateiauswahl zulassen</translation>
 <translation id="4012737788880122133">Bei Festlegung auf "true" werden automatische Updates deaktiviert.
 
@@ -1775,7 +1743,7 @@ Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf fr
           Wenn Sie "Proxyserver automatisch erkennen" wählen, erhalten Android-Apps die Skript-URL "http://wpad/wpad.dat". Kein anderer Teil des Protokolls zur automatischen Proxyerkennung wird verwendet.
 
           Wenn Sie ein PAC-Proxyskript wählen, erhalten Android-Apps die Skript-URL.</translation>
-<translation id="6440051664870270040">Websites erlauben, Pop-ups gleichzeitig zu öffnen</translation>
+<translation id="6440051664870270040">Websites erlauben, gleichzeitig auf andere Websites weiterzuleiten und Pop-ups zu öffnen</translation>
 <translation id="645425387487868471">Erzwungene Anmeldung für <ph name="PRODUCT_NAME" /> aktivieren</translation>
 <translation id="6473623140202114570">Hiermit wird die Liste der Domains konfiguriert, auf denen durch Safe Browsing keine Warnungen ausgelöst werden.</translation>
 <translation id="6491139795995924304">Bluetooth auf Gerät zulassen</translation>

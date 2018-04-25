@@ -160,13 +160,6 @@
 
       Ako se ta postavka onemogući ili ne konfigurira, poslovni korisnici
       ne mogu upotrebljavati ARC.</translation>
-<translation id="1561183922461862993">
-      To se pravilo primjenjuje na zaslon za prijavu. Pogledajte i pravilo <ph name="SITE_PER_PROCESS_POLICY_NAME" /> koje se primjenjuje na korisničku sesiju. Preporučujemo da oba pravila postavite na istu vrijednost. Ako se vrijednosti ne podudaraju, možda će prilikom otvaranja korisničke sesije biti potrebno pričekati dok se ne primijeni vrijednost koja je određena korisničkim pravilom.
-      Možda biste trebali razmisliti o postavci pravila IsolateOrigins da biste iskoristili prednosti obje značajke, izolacije i ograničenog utjecaja za korisnike, koristeći IsolateOrigins s popisom web-lokacija koje želite izolirati. Ova postavka, SitePerProcess, izolira sve web-lokacije.
-      Ako se to pravilo omogući, svaka će se web-lokacija izvoditi u svojem procesu.
-      Ako se to pravilo onemogući, djelovat će logika upravljanja procesom izolacije po web-lokaciji i onemogućit će se radne verzije postavki IsolateOrigins i SitePerProcess. Korisnici će i dalje moći ručno omogućiti SitePerProcess.
-      Ako se to pravilo ne konfigurira, korisnik će moći promijeniti tu postavku.
-      </translation>
 <translation id="1561424797596341174">Nadjačavanja pravila za međuverzije za otklanjanje pogrešaka hosta daljinskog pristupa</translation>
 <translation id="1561967320164410511">U2F i proširenja za pojedinačno atestiranje</translation>
 <translation id="1574554504290354326">Ta je postavka obustavljena, upotrijebite SafeBrowsingExtendedReportingEnabled. Omogućivanje ili onemogućivanje postavke SafeBrowsingExtendedReportingEnabled ekvivalentno je postavljanju SafeBrowsingExtendedReportingOptInAllowed na False.
@@ -763,13 +756,6 @@
 <translation id="3214164532079860003">Ako je omogućeno, ovo pravilo prisilno uvozi početnu stranicu iz trenutačno zadanog preglednika. Ako je onemogućeno, početna se stranica ne uvozi. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti stranicu ili do uvoza može doći automatski.</translation>
 <translation id="3219421230122020860">Dostupan je anoniman način rada</translation>
 <translation id="3220624000494482595">Ako je kiosk aplikacija Android aplikacija, neće imati kontrolu nad <ph name="PRODUCT_OS_NAME" /> verzijom, čak i ako se to pravilo postavi na <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      Možda biste trebali razmisliti o postavci pravila IsolateOrigins da biste iskoristili prednosti obje značajke, izolacije i ograničenog utjecaja za korisnike, koristeći IsolateOrigins s popisom web-lokacija koje želite izolirati. Ova postavka, SitePerProcess, izolira sve web-lokacije.
-      Ako se to pravilo omogući, svaka će se web-lokacija izvoditi u svojem procesu.
-      Ako se to pravilo onemogući, djelovat će logika upravljanja procesom izolacije po web-lokaciji i onemogućit će se radne verzije postavki IsolateOrigins i SitePerProcess. Korisnici će i dalje moći ručno omogućiti SitePerProcess.
-      Ako se to pravilo ne konfigurira, korisnik će moći promijeniti tu postavku.
-      U sustavu <ph name="PRODUCT_OS_NAME" /> preporučujemo da pravilo za uređaje <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> također postavite na istu vrijednost. Ako se vrijednosti koje navode ta dva pravila ne podudaraju, može doći do čekanja prilikom otvaranja korisničke sesije dok se ne primijeni vrijednost koja je određena korisničkim pravilom.
-      </translation>
 <translation id="3236046242843493070">Obrasci URL-ova za dopuštanje instalacija proširenja, aplikacija i korisničkih skripti iz izvora</translation>
 <translation id="3240609035816615922">Pravila za pristup konfiguraciji pisača.</translation>
 <translation id="3243309373265599239">Određuje koliko vremena treba proteći bez aktivnosti korisnika da bi se zaslon zatamnio tijekom napajanja izmjeničnom strujom.
@@ -848,12 +834,6 @@
           To se pravilo poštuje samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="350797926066071931">Omogući Prevoditelj</translation>
 <translation id="3512226956150568738">Ako je klijentov model uređaja već podržavao ARC prije nego što je premještanje na ext4 bilo obavezno za izvođenje ARC-a i ako je pravilo ArcEnabled postavljeno na true, ta će se opcija ponašati kao AskUser (vrijednost 3). U svim ostalim slučajevima (ako model uređaja nije podržavao ARC ili ako je pravilo ArcEnabled postavljeno na false), ta je vrijednost ekvivalentna pravilu DisallowArc (vrijednost 0).</translation>
-<translation id="3519934027321156158">
-      Ako se to pravilo omogući, svaki od navedenih izvora na popisu odijeljenom zarezima izvodit će se u svojem procesu. Time će se također izolirati izvori navedeni prema poddomenama, npr. ako se navede https://example.com/, izolirat će se i https://foo.example.com/ kao dio web-lokacije https://example.com/.
-      Ako se to pravilo onemogući, djelovat će logika upravljanja procesom izolacije po web-lokaciji i onemogućit će se radne verzije postavki IsolateOrigins i SitePerProcess. Korisnici će i dalje moći ručno omogućiti IsolateOrigins.
-      Ako se pravilo ne konfigurira, korisnik će moći promijeniti tu postavku.
-      U sustavu <ph name="PRODUCT_OS_NAME" /> preporučujemo da pravilo za uređaje <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> također postavite na istu vrijednost. Ako se vrijednosti koje navode ta dva pravila ne podudaraju, može doći do čekanja prilikom otvaranja korisničke sesije dok se ne primijeni vrijednost koja je određena korisničkim pravilom.
-      </translation>
 <translation id="3524204464536655762">Ne dopuštaj nijednoj web-lokaciji da traži pristup USB uređajima putem API-ja WebUSB</translation>
 <translation id="3528000905991875314">Omogući alternativne stranice pogrešaka</translation>
 <translation id="3547954654003013442">Proxy postavke</translation>
@@ -1030,13 +1010,6 @@
       Ako je ovo pravilo postavljeno na istinito ili ako nije postavljeno, korisnici će moći iskoristiti ponude registracijom OS-a Chrome.
 
       Ako je pravilo postavljeno na neistinito, korisnici neće moći iskoristiti ponude.</translation>
-<translation id="4002183184444060875">
-      To se pravilo primjenjuje na zaslon za prijavu. Pogledajte i pravilo <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> koje se primjenjuje na korisničku sesiju. Preporučujemo da oba pravila postavite na istu vrijednost. Ako se vrijednosti ne podudaraju, može doći do čekanja prilikom otvaranja korisničke sesije dok se ne primijeni vrijednost koja je određena korisničkim pravilom.
-      
-Ako se to pravilo omogući, svaki od navedenih izvora na popisu odijeljenom zarezima izvodit će se u svojem procesu. Time će se također izolirati izvori navedeni prema poddomenama, npr. ako se navede https://example.com/, izolirat će se i https://foo.example.com/ kao dio web-lokacije https://example.com.
-      Ako se to pravilo onemogući, djelovat će logika upravljanja procesom izolacije po web-lokaciji i onemogućit će se radne verzije postavki IsolateOrigins i SitePerProcess. Korisnici će i dalje moći ručno omogućiti IsolateOrigins.
-      Ako se pravilo ne konfigurira, za zaslon za prijavu upotrebljavat će se zadane postavke platforme za izolaciju web-lokacija.
-      </translation>
 <translation id="4010738624545340900">Omogućavanje pozivanja dijaloga za odabir datoteka</translation>
 <translation id="4012737788880122133">Kada se pravilo postavi na True, onemogućuju se automatska ažuriranja.
 

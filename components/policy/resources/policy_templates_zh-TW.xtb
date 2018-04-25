@@ -160,15 +160,6 @@
 
       如果停用或未設定這項政策，企業使用者將
       無法使用 ARC。</translation>
-<translation id="1561183922461862993">
-      這項政策適用於登入畫面；另請參閱適用於使用者工作階段的 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 政策。建議你為這兩項政策設定相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
-      為了盡可能減少隔離功能對使用者的影響，建議你先查看 IsolateOrigins 政策
-      設定，瞭解如何使用 IsolateOrigins 設定需要隔離的網站清單。
-      SitePerProcess 這項設定會隔離所有網站。
-      如果啟用這項政策，每個網站就會以獨立程序執行。
-      如果停用這項政策，原先的網站隔離程序管理邏輯就會生效，IsolateOrigins 和SitePerProcess 的實場測試也會停用。使用者還是可以手動啟用 SitePerProcess。
-      如果沒有設定這項政策，使用者就能變更這項設定。
-      </translation>
 <translation id="1561424797596341174">針對遠端存取主機的偵錯版本覆寫政策</translation>
 <translation id="1561967320164410511">用於個人認證的 U2F 和擴充功能</translation>
 <translation id="1574554504290354326">這項設定已遭淘汰，請改用 SafeBrowsingExtendedReportingEnabled。啟用或停用 SafeBrowsingExtendedReportingEnabled 等同於將 SafeBrowsingExtendedReportingOptInAllowed 設為 False。
@@ -765,15 +756,6 @@
 <translation id="3214164532079860003">如果啟用這項政策，則會強制從目前的預設瀏覽器匯入首頁。如果停用這項政策，則不會匯入首頁。如果未設定這項政策，系統會自動匯入首頁，或詢問使用者是否要匯入首頁。</translation>
 <translation id="3219421230122020860">可使用無痕模式</translation>
 <translation id="3220624000494482595">如果資訊站應用程式是 Android 應用程式，即使將這項政策設為 <ph name="TRUE" />，仍無法控制 <ph name="PRODUCT_OS_NAME" />版本。</translation>
-<translation id="3229833076897893450">
-      為了盡可能減少隔離功能對使用者的影響， 建議你先查看 IsolateOrigins
-      政策設定， 瞭解如何使用 IsolateOrigins 設定需要隔離的網站清單。
-      SitePerProcess 這項設定會隔離所有網站。
-      如果啟用這項政策，每個網站就會以獨立程序執行。
-      如果停用這項政策，原先的網站隔離程序管理邏輯就會生效，IsolateOrigins 和 SitePerProcess 的實場測試也會停用。使用者還是可以手動啟用 SitePerProcess。
-      如果沒有設定這項政策，使用者就能變更這項設定。
-      在 <ph name="PRODUCT_OS_NAME" /> 上，建議你也將「<ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />」裝置政策設為相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
-      </translation>
 <translation id="3236046242843493070">允許安裝擴充功能、應用程式和使用者指令碼的來源網址模式清單</translation>
 <translation id="3240609035816615922">印表機設定存取權政策。</translation>
 <translation id="3243309373265599239">指定時間長度，如果系統在 AC 供電環境下執行且未偵測到使用者輸入行為，就會在這段時間過後將螢幕調暗。
@@ -854,15 +836,6 @@
           只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="350797926066071931">啟用翻譯</translation>
 <translation id="3512226956150568738">如果用戶端裝置型號在必須遷移至 Ext4 才能執行 ARC 之前已支援 ARC，且 ArcEnabled 政策設為 True，這個選項的行為會與 AskUser 相同 (值 3)。在所有其他情況下 (如果用戶端裝置型號之前不支援 ARC，或 ArcEnabled 政策設為 False)，這個值會等同於 DisallowArc (值 0)。</translation>
-<translation id="3519934027321156158">
-      如果啟用這項政策，逗號分隔清單中指出的來源就會以獨立程序執行。
-      這也會隔離使用子網域名稱的來源；例如指定 https://example.com/
-      也會造成 https://foo.example.com/ 受到隔離，因為後者同樣屬於
-      https://example.com/ 網站。
-      如果停用這項政策，原先的網站隔離程序管理邏輯就會生效，IsolateOrigins 和SitePerProcess 的實場測試也會停用。使用者還是可以手動啟用 IsolateOrigins。
-      如果沒有設定這項政策，使用者就能變更這項設定。
-      在 <ph name="PRODUCT_OS_NAME" /> 上，建議你也將「<ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />」裝置政策設為相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
-      </translation>
 <translation id="3524204464536655762">不允許任何網站透過 WebUSB API 要求存取 USB 裝置</translation>
 <translation id="3528000905991875314">啟用替代的錯誤網頁</translation>
 <translation id="3547954654003013442">Proxy 設定</translation>
@@ -1038,15 +1011,6 @@
       如果將這項政策設為 True 或未設定這項政策，使用者將可透過註冊 Chrome 作業系統來兌換優惠。
 
       如果將這項政策設為 False，使用者將無法兌換優惠。</translation>
-<translation id="4002183184444060875">
-      這項政策適用於登入畫面；另請參閱適用於使用者工作階段的 <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> 政策。建議你為這兩項政策設定相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
-      如果啟用這項政策，逗號分隔清單中指出的來源就會以獨立程序執行。
-      這也會隔離使用子網域名稱的來源；例如指定 https://example.com/
-      也會造成 https://foo.example.com/ 受到隔離，因為後者同樣屬於
-      https://example.com/ 網站。
-      如果停用這項政策，原先的網站隔離程序管理邏輯就會生效，IsolateOrigins 和 SitePerProcess 的實場測試也會停用。使用者還是可以手動啟用 IsolateOrigins。
-      如果沒有設定這項政策，登入畫面就會採用平台的預設網站隔離設定。
-      </translation>
 <translation id="4010738624545340900">允許調用檔案選項對話方塊</translation>
 <translation id="4012737788880122133">在設為 True 時，停用自動更新。
 

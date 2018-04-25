@@ -221,7 +221,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="3029613699374795922"><ph name="KBS" /> Ko téléchargé(s)</translation>
 <translation id="3029704984691124060">Les phrases secrètes ne correspondent pas.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /></translation>
-<translation id="3045654778214005718">Afficher plus de suggestions</translation>
+<translation id="3045654778214005718">Afficher plus de suggestions de ce type</translation>
 <translation id="305593374596241526">La localisation est désactivée. Activez-la dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">D'autres articles vous seront bientôt proposés. Bonne matinée !</translation>
 <translation id="3089395242580810162">Ouvrir dans un onglet de nav. privée</translation>
@@ -892,6 +892,7 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="932327136139879170">Accueil</translation>
 <translation id="932599481871055447">Consommez moins de données et naviguez plus vite</translation>
 <translation id="938850635132480979">Erreur <ph name="ERROR_CODE" />.</translation>
+<translation id="945522503751344254">Envoyer le commentaire</translation>
 <translation id="945632385593298557">Accéder à votre micro</translation>
 <translation id="951339005376969845">Supprimer les données actuelles. Vous pouvez les récupérer en repassant sur le compte <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome peut utiliser <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> pour les recherches effectuées en Chine. Vous pouvez modifier cette option dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>

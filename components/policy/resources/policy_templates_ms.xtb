@@ -162,16 +162,6 @@
 
       Jika tetapan ini dilumpuhkan atau tidak dikonfigurasikan, maka pengguna
       perusahaan tidak dapat menggunakan ARC.</translation>
-<translation id="1561183922461862993">
-      Dasar ini digunakan pada skrin log masuk. Sila lihat dasar <ph name="SITE_PER_PROCESS_POLICY_NAME" /> juga yang dikenakan pada sesi pengguna. Anda disyorkan agar menetapkan kedua-dua dasar pada nilai yang sama. Jika nilai tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
-      Anda mungkin mahu meneliti tetapan dasar IsolateOrigins untuk memanfaatkan
-      kedua-dua keadaan, pengasingan dan kesan yang terhad untuk pengguna,
-      dengan menggunakan IsolateOrigins dengan senarai tapak yang hendak
-      diasingkan. Tetapan ini, SitePerProcess, mengasingkan semua tapak.
-      Jika dasar ini didayakan, setiap tapak akan dijalankan dalam prosesnya sendiri.
-      Jika dasar ini dilumpuhkan, logik pengurusan proses Pengasingan pra-Tapak akan dikuatkuasakan dan medan percubaan IsolateOrigins serta SitePerProcess akan dilumpuhkan. Pengguna masih boleh mendayakan SitePerProcess secara manual.
-      Jika dasar ini tidak dikonfigurasi, pengguna boleh mengubah tetapan ini.
-      </translation>
 <translation id="1561424797596341174">Pembatalan dasar untuk binaan Nyahpepijat bagi hos akses jauh</translation>
 <translation id="1561967320164410511">Sambungan U2F tambah untuk pembuktian individu</translation>
 <translation id="1574554504290354326">Tetapan ini sudah ditamatkan, gunakan SafeBrowsingExtendedReportingEnabled sebagai ganti. Tindakan mendayakan atau melumpuhkan SafeBrowsingExtendedReportingEnabled adalah sama seperti menetapkan SafeBrowsingExtendedReportingOptInAllowed kepada Palsu.
@@ -317,13 +307,13 @@
       Dasar ini membolehkan pentadbir menyediakan konfigurasi pencetak untuk pengguna mereka.
 .
 
-      <ph name="PRINTER_DISPLAY_NAME" /> dan <ph name="PRINTER_DESCRIPTION" /> ialah rentetan bentuk bebas yang boleh disesuaikan untuk memudahkan pemilihan pencetak. <ph name="PRINTER_MANUFACTURER" /> dan <ph name="PRINTER_MODEL" /> bertujuan untuk memudahkan pengenalan pencetak oleh pengguna akhir. Dua butiran ini mewakili pengilang dan model pencetak. <ph name="PRINTER_URI" /> haruslah alamat yang boleh dicapai daripada komputer pelanggan termasuk <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> dan <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> adalah pilihan. Jika disediakan, pencetak ini digunakan untuk membantu menyahgandaduaan pencetak <ph name="ZEROCONF_DISCOVERY" />.
+      <ph name="PRINTER_DISPLAY_NAME" /> dan <ph name="PRINTER_DESCRIPTION" /> ialah rentetan bentuk bebas yang boleh disesuaikan untuk memudahkan pemilihan pencetak. <ph name="PRINTER_MANUFACTURER" /> dan <ph name="PRINTER_MODEL" /> bertujuan untuk memudahkan pengenalan pencetak oleh pengguna akhir. Dua butiran ini mewakili pengilang dan model pencetak. <ph name="PRINTER_URI" /> haruslah alamat yang boleh dicapai daripada komputer pelanggan termasuk <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> dan <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> adalah pilihan. Jika disediakan, pencetak ini digunakan untuk membantu menyahpenduaan pencetak <ph name="ZEROCONF_DISCOVERY" />.
 
       <ph name="PRINTER_EFFECTIVE_MODEL" /> mesti sepadan dengan satu daripada rentetan yang mewakili pencetak yang menyokong <ph name="PRODUCT_NAME" />. Rentetan itu akan digunakan untuk mengenal pasti dan memasang PPD yang sesuai untuk pencetak. Maklumat lanjut boleh ditemui di https://support.google.com/chrome?p=noncloudprint.
 
       Persediaan pencetak selesai pada penggunaan pertama pencetak. PPD tidak boleh dimuat turun sehinggalah pencetak digunakan. Selepas waktu itu, PPD yang kerap digunakan akan dicache.
 
-      Dasar ini tidak mempengaruhi sama ada pengguna boleh mengkonfigurasi pencetak pada peranti individu atau tidak. Dasar ini bertujuan menjadi pelengkap kepada pengkonfigurasian pencetak oleh pengguna.
+      Dasar ini tidak mempengaruhi sama ada pengguna boleh mengkonfigurasi pencetak pada peranti individu atau tidak. Dasar ini bertujuan menjadi pelengkap kepada pengkonfigurasian pencetak oleh pengguna individu.
 
       Untuk peranti diurus Active Directory, dasar ini menyokong pengembangan <ph name="MACHINE_NAME_VARIABLE" /> kepada nama mesin Active Directory atau subrentetannya. Sebagai contoh, jika nama mesin ialah <ph name="MACHINE_NAME_EXAMPLE" />, maka <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> akan digantikan oleh 4 aksara yang bermula selepas kedudukan ke-6, iaitu <ph name="MACHINE_NAME_PART_EXAMPLE" />. Sila ambil perhatian bahawa kedudukan adalah berasaskan sifar.
       </translation>
@@ -796,17 +786,6 @@
       Jika ia tidak ditetapkan, pengguna mungkin ditanya sama ada mahu mengimport atau tidak, atau pengimportan mungkin berlaku secara automatik.</translation>
 <translation id="3219421230122020860">Mod Inkognito tersedia</translation>
 <translation id="3220624000494482595">Jika apl kios adalah apl Android, dasar ini tiada kawalan ke atas versi <ph name="PRODUCT_OS_NAME" />, walaupun jika dasar ini ditetapkan kepada <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      Anda mungkin mahu meneliti tetapan dasar IsolateOrigins untuk
-      memanfaatkan kedua-dua keadaan, pengasingan dan kesan yang
-      terhad untuk pengguna, dengan menggunakan IsolateOrigins dengan
-      senarai tapak yang hendak diasingkan. Tetapan ini, SitePerProcess,
-      mengasingkan semua tapak.
-      Jika dasar ini didayakan, setiap tapak akan dijalankan dalam prosesnya sendiri.
-      Jika dasar ini dilumpuhkan, logik pengurusan proses Pengasingan pra-Tapak akan dikuatkuasakan dan medan percubaan IsolateOrigins serta SitePerProcess akan dilumpuhkan. Pengguna masih boleh mendayakan SitePerProcess secara manual.
-      Jika dasar ini tidak dikonfigurasi, pengguna boleh mengubah tetapan ini.
-      Pada <ph name="PRODUCT_OS_NAME" />, anda disyorkan untuk turut menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> pada nilai yang sama. Jika nilai yang dinyatakan oleh kedua-dua dasar tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
-      </translation>
 <translation id="3236046242843493070">Pola URL untuk membenarkan pemasangan sambungan, aplikasi dan skrip pengguna</translation>
 <translation id="3240609035816615922">Dasar akses konfigurasi pencetak.</translation>
 <translation id="3243309373265599239">Menyatakan panjang masa tanpa input pengguna dan skrin akan dimalapkan selepas tamat masa ini apabila dijalankan dengan kuasa AC.
@@ -888,17 +867,6 @@
           Dasar ini hanya dipatuhi jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="350797926066071931">Dayakan Terjemahan</translation>
 <translation id="3512226956150568738">Jika model peranti pelanggan sudah menyokong ARC sebelum penghijrahan kepada ext4 yang diperlukan untuk menjalankan ARC dan jika dasar ArcEnabled ditetapkan kepada benar, pilihan ini akan berkelakuan seperti AskUser (nilai 3). Dalam semua keadaan lain, (jika model peranti tidak menyokong ARC sebelum ini atau jika dasar ArcEnabled ditetapkan kepada palsu), nilai ini bersamaan dengan DisallowArc (nilai 0).</translation>
-<translation id="3519934027321156158">
-      Jika dasar ini didayakan, setiap tempat asal yang dinamakan dalam
-      senarai yang dipisahkan koma akan dijalankan dalam prosesnya sendiri.
-      Tindakan ini turut akan mengasingkan tempat asal yang dinamakan oleh
-      subdomain; mis. menentukan https://example.com/ akan turut menyebabkan
-      https://foo.example.com/ diasingkan sebagai sebahagian daripada tapak
-      https://example.com/.
-      Jika dasar ini dilumpuhkan, logik pengurusan proses Pengasingan pra-Tapak akan dikuatkuasakan dan medan percubaan IsolateOrigins serta SitePerProcess akan dilumpuhkan. Pengguna masih boleh mendayakan IsolateOrigins secara manual.
-      Jika dasar ini tidak dikonfigurasi, pengguna boleh mengubah tetapan ini.
-      Pada <ph name="PRODUCT_OS_NAME" />, anda disyorkan untuk turut menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> pada nilai yang sama. Jika nilai yang dinyatakan oleh kedua-dua dasar tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
-      </translation>
 <translation id="3524204464536655762">Jangan benarkan mana-mana tapak meminta akses kepada peranti USB melalui API WebUSB</translation>
 <translation id="3528000905991875314">Dayakan halaman ralat ganti</translation>
 <translation id="3547954654003013442">Tetapan proksi</translation>
@@ -1082,17 +1050,6 @@
       Jika dasar ini ditetapkan kepada benar atau dibiarkan tanpa ditetapkan, pengguna dapat menebus tawaran melalui Pendaftaran OS Chrome.
 
       Jika dasar ini ditetapkan kepada palsu, pengguna tidak akan dapat menebus tawaran.</translation>
-<translation id="4002183184444060875">
-      Dasar ini digunakan pada skrin log masuk. Sila lihat dasar <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> juga yang digunakan pada sesi pengguna. Anda disyorkan untuk menetapkan kedua-dua dasar pada nilai yang sama. Jika nilai tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
-      Jika dasar didayakan, setiap tempat asal yang dinamakan dalam senarai
-      yang dipisahkan koma akan dijalankan dalam prosesnya sendiri. Tindakan
-      ini turut mengasingkan tempat asal yang dinamakan mengikut subdomain,
-      mis. menyatakan https://example.com/ turut menyebabkan
-      https://foo.example.com/ diasingkan sebagai sebahagian daripada tapak
-      https://example.com/. 
-      Jika dasar ini dilumpuhkan, logik pengurusan proses Pengasingan pra-Tapak akan dikuatkuasakan dan medan percubaan IsolateOrigins serta SitePerProcess akan dilumpuhkan. Pengguna masih boleh mendayakan IsolateOrigins secara manual.
-      Jika dasar ini tidak dikonfigurasi, tetapan pengasingan tapak lalai platform akan digunakan untuk skrin log masuk.
-      </translation>
 <translation id="4010738624545340900">Membenarkan permohonan dialog pemilihan fail</translation>
 <translation id="4012737788880122133">Melumpuhkan kemas kini automatik apabila ditetapkan kepada Benar.
 
@@ -1533,7 +1490,7 @@
 
           Jika dasar ini dibiarkan tanpa ditetapkan, 'AskNotifications' akan digunakan dan pengguna akan boleh mengubahnya.</translation>
 <translation id="538108065117008131">Benarkan <ph name="PRODUCT_FRAME_NAME" /> untuk menguruskan jenis kandungan berikut.</translation>
-<translation id="5391363090783552279">Jka dasar ini ditetapkan kepada benar, <ph name="PRODUCT_NAME" /> akan menyambung ke peranti Cast pada semua alamat IP, bukan alamat peribadi RFC1918/RFC4913 semata-mata.
+<translation id="5391363090783552279">Jika dasar ini ditetapkan kepada benar, <ph name="PRODUCT_NAME" /> akan menyambung ke peranti Cast pada semua alamat IP, bukan alamat peribadi RFC1918/RFC4913 semata-mata.
 
           Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_NAME" /> akan menyambung ke peranti Cast pada alamat peribadi RFC1918/RFC4913 sahaja.
 
@@ -2646,7 +2603,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="8731693562790917685">Tetapan Kandungan membenarkan anda untuk menentukan cara kandungan bagi jenis tertentu (contohnya Kuki, Imej atau JavaScript) dikendalikan.</translation>
 <translation id="8733448613597049197">Mendayakan Pelaporan Lanjutan Penyemakan Imbas Selamat <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan ini.
 
-      Pelaporan Lanjutan menghantar maklumat sistem dan kandungan halaman ke pelayan Google untuk membantu anda mengesan apl dan tapak berbahaya.
+      Pelaporan Lanjutan menghantar beberapa maklumat sistem dan kandungan halaman ke pelayan Google untuk membantu anda mengesan apl dan tapak berbahaya.
 
       Jika tetapan ditetapkan kepada benar, maka laporan akan dibuat dan dihantar apabila perlu (seperti apabila ruang antara keselamatan ditunjukkan).
 

@@ -2871,6 +2871,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5425042808445046667">Turpināt lejupielādi</translation>
 <translation id="5425722269016440406">Lai izslēgtu Smart Lock, jums ir jābūt tiešsaistē, jo šis iestatījums ir sinhronizēts ar jūsu tālruni un citām ierīcēm. Lūdzu, vispirms izveidojiet savienojumu ar tīklu.</translation>
 <translation id="5425863515030416387">Ērta pierakstīšanās vairākās ierīcēs</translation>
+<translation id="5426179911063097041">No vietnes <ph name="SITE" /> tiek mēģināts nosūtīt paziņojumus.</translation>
 <translation id="5427278936122846523">Vienmēr tulkot</translation>
 <translation id="5427459444770871191">Pagriezt &amp;pulksteņrādītāju kustības virzienā</translation>
 <translation id="542872847390508405">Jūs veicat pārlūkošanu viesa režīmā</translation>
@@ -2907,6 +2908,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5464632865477611176">Izpildīt šajā reizē</translation>
 <translation id="5465662442746197494">Vai nepieciešama palīdzība?</translation>
 <translation id="5469954281417596308">Grāmatzīmju pārvaldnieks</translation>
+<translation id="5471768120198416576">Sveiki! Šī ir balss jūsu teksta pārvēršanai runā.</translation>
 <translation id="5473333559083690127">Atkārtoti ievadiet jauno PIN.</translation>
 <translation id="5480254151128201294">Šo ierīci bloķēja tās īpašnieks.</translation>
 <translation id="5481941284378890518">Pievienot tuvumā esošus printerus</translation>
@@ -3405,6 +3407,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6238923052227198598">Paturēt pēdējo piezīmi bloķēšanas ekrānā</translation>
 <translation id="6239558157302047471">Atkārtoti ielādēt &amp;ietvaru</translation>
 <translation id="6241530762627360640">Piekļūt informācijai par Bluetooth ierīcēm, kuras savienotas pārī ar jūsu sistēmu, un atrast tuvumā esošas Bluetooth ierīces.</translation>
+<translation id="6243280677745499710">Šobrīd iestatīta</translation>
 <translation id="6243774244933267674">Serveris nav pieejams.</translation>
 <translation id="6246413617632217567">Nevarēja importēt uzraudzīto lietotāju. Lūdzu, pārbaudiet vietu cietajā diskā un atļaujas un mēģiniet vēlreiz.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
@@ -3917,6 +3920,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7030031465713069059">Saglabāt paroli</translation>
 <translation id="7031962166228839643">Notiek TPM sagatavošana. Lūdzu, uzgaidiet (tas var aizņemt dažas minūtes)...</translation>
 <translation id="7035437538340499453">Smart Lock ir iestatīta</translation>
+<translation id="7037509989619051237">Teksta priekšskatījums</translation>
 <translation id="7039326228527141150">Piekļūt USB ierīcēm, ko piedāvā <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Microsoft viedkartes pieteikšanās</translation>
 <translation id="7040138676081995583">Atvērt ar...</translation>
@@ -4399,6 +4403,7 @@ Lietotnes <ph name="APP_NAME" /> instalēšana patērēs <ph name="DOWNLOAD_SIZE
 <translation id="7792012425874949788">Pierakstīšanās neizdevās</translation>
 <translation id="7792388396321542707">Pārtraukt kopīgošanu</translation>
 <translation id="7794058097940213561">Formatēt ierīci</translation>
+<translation id="7799299114731150374">Fona tapete sekmīgi iestatīta</translation>
 <translation id="7799329977874311193">HTML dokuments</translation>
 <translation id="7800518121066352902">Pagriezt &amp;pretēji pulksteņrādītāju kustības virzienam</translation>
 <translation id="7801746894267596941">Jūsu šifrētos datus var lasīt tikai personas, kurām ir zināma jūsu ieejas frāze. Ieejas frāze netiek sūtīta uzņēmumam Google, un uzņēmums Google to neglabā. Ja esat aizmirsis ieejas frāzi, jums ir</translation>
@@ -4492,6 +4497,7 @@ Lietotnes <ph name="APP_NAME" /> instalēšana patērēs <ph name="DOWNLOAD_SIZE
 <translation id="7928710562641958568">Ierīces atvienošana</translation>
 <translation id="79312157130859720">Lietotne <ph name="APP_NAME" /> koplieto jūsu ekrānu un audio.</translation>
 <translation id="7931318309563332511">Nezināma</translation>
+<translation id="7934414805353235750">Vietne <ph name="URL" /> vēlas atskaņot aizsargātu saturu. Google verificēs jūsu ierīces identitāti.</translation>
 <translation id="7938594894617528435">Pašlaik atrodas bezsaistē</translation>
 <translation id="7939062555109487992">Papildopcijas</translation>
 <translation id="7939412583708276221">Tik un tā saglabāt</translation>
