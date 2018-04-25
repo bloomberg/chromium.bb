@@ -29,18 +29,15 @@ class StoragePartition;
 class CONTENT_EXPORT WebSocketManager
     : public net::URLRequestContextGetterObserver {
  public:
-  // Called on the UI thread: create a websocket for a frame.
-  static void CreateWebSocketForFrame(int process_id,
-                                      int frame_id,
-                                      network::mojom::WebSocketRequest request);
-
-  // Called on the UI thread: create a websocket for a worker. Web workers of
-  // any type (dedicated, shared, service worker) do not have a frame.
-  static void CreateWebSocketWithOrigin(
-      int process_id,
-      url::Origin origin,
-      network::mojom::WebSocketRequest request,
-      int frame_id = MSG_ROUTING_NONE);
+  // Called on the UI thread: create a websocket.
+  // - For frames, |frame_id| should be their own id.
+  // - For dedicated workers, |frame_id| should be its parent frame's id.
+  // - For shared workers and service workers, |frame_id| should be
+  //   MSG_ROUTING_NONE because they do not have a frame.
+  static void CreateWebSocket(int process_id,
+                              int frame_id,
+                              url::Origin origin,
+                              network::mojom::WebSocketRequest request);
 
   // net::URLRequestContextGetterObserver implementation.
   void OnContextShuttingDown() override;

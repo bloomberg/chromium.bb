@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -23,6 +24,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/storage_partition.h"
+#include "services/network/network_context.h"
+#include "services/network/public/cpp/features.h"
 
 namespace content {
 
@@ -157,30 +160,24 @@ class WebSocketManager::Handle : public base::SupportsUserData::Data,
 };
 
 // static
-void WebSocketManager::CreateWebSocketForFrame(
+void WebSocketManager::CreateWebSocket(
     int process_id,
     int frame_id,
-    network::mojom::WebSocketRequest request) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // ForFrame() implies a frame: DCHECK this pre-condition.
-  RenderFrameHost* frame = RenderFrameHost::FromID(process_id, frame_id);
-  DCHECK(frame);
-
-  CreateWebSocketWithOrigin(process_id, frame->GetLastCommittedOrigin(),
-                            std::move(request), frame_id);
-}
-
-// static
-void WebSocketManager::CreateWebSocketWithOrigin(
-    int process_id,
     url::Origin origin,
-    network::mojom::WebSocketRequest request,
-    int frame_id) {
+    network::mojom::WebSocketRequest request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   RenderProcessHost* host = RenderProcessHost::FromID(process_id);
   DCHECK(host);
+
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    StoragePartition* storage_partition = host->GetStoragePartition();
+    network::mojom::NetworkContext* network_context =
+        storage_partition->GetNetworkContext();
+    network_context->CreateWebSocket(std::move(request), process_id, frame_id,
+                                     origin);
+    return;
+  }
 
   // Maintain a WebSocketManager per RenderProcessHost. While the instance of
   // WebSocketManager is allocated on the UI thread, it must only be used and

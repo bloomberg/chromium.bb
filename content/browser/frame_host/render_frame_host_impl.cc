@@ -4581,21 +4581,11 @@ void RenderFrameHostImpl::BindMediaInterfaceFactoryRequest(
 
 void RenderFrameHostImpl::CreateWebSocket(
     network::mojom::WebSocketRequest request) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    auto* context = GetSiteInstance()->GetBrowserContext();
-    auto* storage_partition = static_cast<StoragePartitionImpl*>(
-        BrowserContext::GetStoragePartition(context, GetSiteInstance()));
-    storage_partition->GetNetworkContext()->CreateWebSocket(
-        std::move(request), process_->GetID(), routing_id_,
-        last_committed_origin_);
-  } else {
-    // This is to support usage of WebSockets in cases in which there is an
-    // associated RenderFrame. This is important for showing the correct
-    // security state of the page and also honoring user override of bad
-    // certificates.
-    WebSocketManager::CreateWebSocketForFrame(process_->GetID(), routing_id_,
-                                              std::move(request));
-  }
+  // This is to support usage of WebSockets in cases in which there is an
+  // associated RenderFrame. This is important for showing the correct security
+  // state of the page and also honoring user override of bad certificates.
+  WebSocketManager::CreateWebSocket(process_->GetID(), routing_id_,
+                                    last_committed_origin_, std::move(request));
 }
 
 void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {
