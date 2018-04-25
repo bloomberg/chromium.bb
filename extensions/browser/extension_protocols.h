@@ -18,10 +18,6 @@ class FilePath;
 class Time;
 }
 
-namespace content {
-class RenderFrameHost;
-}
-
 namespace net {
 class HttpResponseHeaders;
 }
@@ -54,19 +50,27 @@ CreateExtensionProtocolHandler(bool is_incognito, InfoMap* extension_info_map);
 void SetExtensionProtocolTestHandler(ExtensionProtocolTestHandler* handler);
 
 // Creates a new network::mojom::URLLoaderFactory implementation suitable for
-// handling navigation requests to extension URLs.
+// handling navigation requests to extension URLs. This function can also be
+// used to make a factory for other non-subresource requests to extension URLs,
+// such as for the service worker script when starting a service worker.
+// |render_process_id| and |render_frame_id| identify the process and frame that
+// the requests are for.  The frame id may be MSG_ROUTING_NONE if there is no
+// frame, e.g., if the factory is for service worker requests.
 std::unique_ptr<network::mojom::URLLoaderFactory>
 CreateExtensionNavigationURLLoaderFactory(
-    content::RenderFrameHost* frame_host,
+    int render_process_id,
+    int render_frame_id,
     scoped_refptr<extensions::InfoMap> extension_info_map);
 
 // Attempts to create a network::mojom::URLLoaderFactory implementation suitable
-// for handling subresource requests for extension URLs from |frame_host|. May
-// return null if |frame_host| is never allowed to load extension subresources
-// from its current navigation URL.
+// for handling subresource requests for extension URLs for the frame identified
+// by |render_process_id| and |render_frame_id|. May return null if that frame
+// is never allowed to load extension subresources from its current navigation
+// URL.
 std::unique_ptr<network::mojom::URLLoaderFactory>
 MaybeCreateExtensionSubresourceURLLoaderFactory(
-    content::RenderFrameHost* frame_host,
+    int render_process_id,
+    int render_frame_id,
     const GURL& frame_url,
     scoped_refptr<extensions::InfoMap> extension_info_map);
 

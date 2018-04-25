@@ -667,7 +667,8 @@ void ServiceWorkerProviderHost::CompleteNavigationInitialized(
 mojom::ServiceWorkerProviderInfoForStartWorkerPtr
 ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
     int process_id,
-    scoped_refptr<ServiceWorkerVersion> hosted_version) {
+    scoped_refptr<ServiceWorkerVersion> hosted_version,
+    network::mojom::URLLoaderFactoryPtr non_network_loader_factory) {
   DCHECK(context_);
   DCHECK_EQ(kInvalidEmbeddedWorkerThreadId, render_thread_id_);
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
@@ -705,7 +706,8 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   if (ServiceWorkerUtils::IsServicificationEnabled()) {
     mojo::MakeStrongAssociatedBinding(
         std::make_unique<ServiceWorkerScriptLoaderFactory>(
-            context_, AsWeakPtr(), context_->loader_factory_getter()),
+            context_, AsWeakPtr(), context_->loader_factory_getter(),
+            std::move(non_network_loader_factory)),
         mojo::MakeRequest(&script_loader_factory_ptr_info));
     provider_info->script_loader_factory_ptr_info =
         std::move(script_loader_factory_ptr_info);

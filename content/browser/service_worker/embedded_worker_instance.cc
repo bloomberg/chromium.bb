@@ -26,6 +26,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_message.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "url/gurl.h"
@@ -75,7 +76,8 @@ using SetupProcessCallback = base::OnceCallback<void(
     ServiceWorkerStatusCode,
     mojom::EmbeddedWorkerStartParamsPtr,
     std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>,
-    std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy)>;
+    std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy>,
+    network::mojom::URLLoaderFactoryPtrInfo)>;
 
 // Allocates a renderer process for starting a worker and does setup like
 // registering with DevTools. Called on the UI thread. Calls |callback| on the
@@ -92,12 +94,15 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   auto process_info =
       std::make_unique<ServiceWorkerProcessManager::AllocatedProcessInfo>();
   std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy;
+  network::mojom::URLLoaderFactoryPtr non_network_loader_factory;
+
   if (!process_manager) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_ABORT,
                        std::move(params), std::move(process_info),
-                       std::move(devtools_proxy)));
+                       std::move(devtools_proxy),
+                       non_network_loader_factory.PassInterface()));
     return;
   }
 
@@ -109,7 +114,8 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(std::move(callback), status, std::move(params),
-                       std::move(process_info), std::move(devtools_proxy)));
+                       std::move(process_info), std::move(devtools_proxy),
+                       non_network_loader_factory.PassInterface()));
     return;
   }
   const int process_id = process_info->process_id;
@@ -123,6 +129,25 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   // will be called on the IO thread.
   if (request.is_pending()) {
     BindInterface(rph, std::move(request));
+  }
+
+  // S13nServiceWorker:
+  // Create the script loader factory for non HTTP(S) URLs since we can't use
+  // NetworkService in that case.
+  if (ServiceWorkerUtils::IsServicificationEnabled() &&
+      !params->script_url.SchemeIsHTTPOrHTTPS()) {
+    ContentBrowserClient::NonNetworkURLLoaderFactoryMap factories;
+    GetContentClient()
+        ->browser()
+        ->RegisterNonNetworkNavigationURLLoaderFactories(
+            rph->GetID(), MSG_ROUTING_NONE, &factories);
+    auto iter = factories.find(params->script_url.scheme());
+    if (iter != factories.end()) {
+      std::unique_ptr<network::mojom::URLLoaderFactory> factory_impl =
+          std::move(iter->second);
+      mojo::MakeStrongBinding(std::move(factory_impl),
+                              mojo::MakeRequest(&non_network_loader_factory));
+    }
   }
 
   // Register to DevTools and update params accordingly.
@@ -152,7 +177,8 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(std::move(callback), status, std::move(params),
-                     std::move(process_info), std::move(devtools_proxy)));
+                     std::move(process_info), std::move(devtools_proxy),
+                     non_network_loader_factory.PassInterface()));
 }
 
 bool HasSentStartWorker(EmbeddedWorkerInstance::StartingPhase phase) {
@@ -385,7 +411,8 @@ class EmbeddedWorkerInstance::StartTask {
       mojom::EmbeddedWorkerStartParamsPtr params,
       std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>
           process_info,
-      std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy) {
+      std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy,
+      network::mojom::URLLoaderFactoryPtrInfo non_network_loader_factory_info) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     if (status != SERVICE_WORKER_OK) {
       TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "ALLOCATING_PROCESS",
@@ -423,7 +450,10 @@ class EmbeddedWorkerInstance::StartTask {
     instance_->OnRegisteredToDevToolsManager(std::move(devtools_proxy),
                                              params->wait_for_debugger);
 
-    status = instance_->SendStartWorker(std::move(params));
+    network::mojom::URLLoaderFactoryPtr non_network_loader_factory(
+        std::move(non_network_loader_factory_info));
+    status = instance_->SendStartWorker(std::move(params),
+                                        std::move(non_network_loader_factory));
     if (status != SERVICE_WORKER_OK) {
       StatusCallback callback = std::move(start_callback_);
       start_callback_.Reset();
@@ -601,7 +631,8 @@ void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
 }
 
 ServiceWorkerStatusCode EmbeddedWorkerInstance::SendStartWorker(
-    mojom::EmbeddedWorkerStartParamsPtr params) {
+    mojom::EmbeddedWorkerStartParamsPtr params,
+    network::mojom::URLLoaderFactoryPtr non_network_loader_factory) {
   if (!context_)
     return SERVICE_WORKER_ERROR_ABORT;
   if (!context_->GetDispatcherHost(process_id())) {
@@ -629,7 +660,9 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::SendStartWorker(
 
   const bool is_script_streaming = !params->installed_scripts_info.is_null();
   inflight_start_task_->set_start_worker_sent_time(base::TimeTicks::Now());
-  params->provider_info = std::move(provider_info_getter_).Run(process_id());
+  params->provider_info =
+      std::move(provider_info_getter_)
+          .Run(process_id(), std::move(non_network_loader_factory));
   client_->StartWorker(std::move(params));
   registry_->BindWorkerToProcess(process_id(), embedded_worker_id());
   OnStartWorkerMessageSent(is_script_streaming);

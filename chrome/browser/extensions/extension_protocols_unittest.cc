@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/test/mock_resource_context.h"
@@ -221,7 +222,8 @@ class ExtensionProtocolsTest
     switch (request_handler()) {
       case RequestHandlerType::kURLLoader:
         loader_factory_ = extensions::CreateExtensionNavigationURLLoaderFactory(
-            main_rfh(), extension_info_map_.get());
+            main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
+            extension_info_map_.get());
         break;
       case RequestHandlerType::kURLRequest:
         job_factory_.SetProtocolHandler(

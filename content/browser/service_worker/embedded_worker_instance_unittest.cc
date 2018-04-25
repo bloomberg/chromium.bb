@@ -207,7 +207,8 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
   }
 
   mojom::ServiceWorkerProviderInfoForStartWorkerPtr CreateProviderInfo(
-      int /* process_id */) {
+      int /* process_id */,
+      network::mojom::URLLoaderFactoryPtr /* non_network_loader_factory */) {
     provider_host_endpoints_.emplace_back(
         std::make_unique<ProviderHostEndpoints>());
     return provider_host_endpoints_.back()->CreateProviderInfoPtr();
@@ -236,7 +237,8 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
   ServiceWorkerStatusCode SimulateSendStartWorker(
       EmbeddedWorkerInstance* worker,
       mojom::EmbeddedWorkerStartParamsPtr params) {
-    return worker->SendStartWorker(std::move(params));
+    return worker->SendStartWorker(std::move(params),
+                                   nullptr /* non_network_loader_factory */);
   }
 
   blink::mojom::ServiceWorkerInstalledScriptsInfoPtr

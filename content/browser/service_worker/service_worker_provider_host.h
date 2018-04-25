@@ -364,22 +364,30 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // |registration| claims the document to be controlled.
   void ClaimedByRegistration(ServiceWorkerRegistration* registration);
 
-  // Completes initialization of provider hosts used for navigation requests.
+  // For service worker clients. Completes initialization of
+  // provider hosts used for navigation requests.
   void CompleteNavigationInitialized(
       int process_id,
       ServiceWorkerProviderHostInfo info,
       base::WeakPtr<ServiceWorkerDispatcherHost> dispatcher_host);
 
-  // Completes initialization of this provider host (which is for hosting a
-  // service worker). It is called once a renderer process has been found to
-  // host the worker. Returns the info needed for creating a
-  // ServiceWorkerNetworkProvider on the renderer which will be connected to
-  // this instance. This instance will keep the reference to |hosted_version|,
-  // so please be careful not to create a reference cycle.
+  // For service worker execution contexts. Completes initialization of this
+  // provider host. It is called once a renderer process has been found to host
+  // the worker. Returns the info needed for creating a provider on the renderer
+  // which will be connected to this provider host. This instance will take the
+  // reference to |hosted_version|, so be careful not to create a reference
+  // cycle.
+  //
+  // S13nServiceWorker:
+  // |non_network_loader_factory| is non-null if the service worker script URL
+  // has a non-http(s) scheme. The service worker script request is loaded
+  // using this factory, since the usual network factory cannot be used in that
+  // case.
   mojom::ServiceWorkerProviderInfoForStartWorkerPtr
   CompleteStartWorkerPreparation(
       int process_id,
-      scoped_refptr<ServiceWorkerVersion> hosted_version);
+      scoped_refptr<ServiceWorkerVersion> hosted_version,
+      network::mojom::URLLoaderFactoryPtr non_network_loader_factory);
 
   // Called when the shared worker main script resource has finished loading.
   // After this is called, is_execution_ready() returns true.

@@ -591,7 +591,8 @@ ContentBrowserClient::CreateURLLoaderThrottles(
 }
 
 void ContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
-    RenderFrameHost* frame_host,
+    int render_process_id,
+    int render_frame_id,
     NonNetworkURLLoaderFactoryMap* factories) {}
 
 void ContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(

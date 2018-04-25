@@ -171,12 +171,13 @@ CompleteProviderHostPreparation(
     ServiceWorkerVersion* version,
     std::unique_ptr<ServiceWorkerProviderHost> provider_host,
     base::WeakPtr<ServiceWorkerContextCore> context,
-    int process_id) {
+    int process_id,
+    network::mojom::URLLoaderFactoryPtr non_network_loader_factory) {
   // Caller should ensure |context| is alive when completing StartWorker
   // preparation.
   DCHECK(context);
-  auto info =
-      provider_host->CompleteStartWorkerPreparation(process_id, version);
+  auto info = provider_host->CompleteStartWorkerPreparation(
+      process_id, version, std::move(non_network_loader_factory));
   context->AddProviderHost(std::move(provider_host));
   return info;
 }

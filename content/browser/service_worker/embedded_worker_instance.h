@@ -73,7 +73,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   using ProviderInfoGetter =
       base::OnceCallback<mojom::ServiceWorkerProviderInfoForStartWorkerPtr(
-          int /* process_id */)>;
+          int /* process_id */,
+          network::mojom::
+              URLLoaderFactoryPtr /* non_network_loader_factory */)>;
 
   class Listener {
    public:
@@ -236,9 +238,15 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
       std::unique_ptr<DevToolsProxy> devtools_proxy,
       bool wait_for_debugger);
 
-  // Sends StartWorker message via Mojo.
+  // Sends the StartWorker message to the renderer.
+  //
+  // S13nServiceWorker:
+  // |non_network_loader_factory| is non-null when the service worker script URL
+  // has a non-http(s) scheme. In that case, it is used to load the script since
+  // the usual network factory can't be used.
   ServiceWorkerStatusCode SendStartWorker(
-      mojom::EmbeddedWorkerStartParamsPtr params);
+      mojom::EmbeddedWorkerStartParamsPtr params,
+      network::mojom::URLLoaderFactoryPtr non_network_loader_factory);
 
   // Called back from StartTask after a start worker message is sent.
   void OnStartWorkerMessageSent(bool is_script_streaming);

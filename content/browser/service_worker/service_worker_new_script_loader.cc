@@ -36,6 +36,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
     network::mojom::URLLoaderClientPtr client,
     scoped_refptr<ServiceWorkerVersion> version,
     scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
+    network::mojom::URLLoaderFactoryPtr non_network_loader_factory,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
     : request_url_(original_request.url),
       resource_type_(static_cast<ResourceType>(original_request.resource_type)),
@@ -111,9 +112,17 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
 
   network::mojom::URLLoaderClientPtr network_client;
   network_client_binding_.Bind(mojo::MakeRequest(&network_client));
-  loader_factory_getter->GetNetworkFactory()->CreateLoaderAndStart(
-      mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
-      *resource_request_.get(), std::move(network_client), traffic_annotation);
+  if (non_network_loader_factory) {
+    non_network_loader_factory->CreateLoaderAndStart(
+        mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
+        *resource_request_.get(), std::move(network_client),
+        traffic_annotation);
+  } else {
+    loader_factory_getter->GetNetworkFactory()->CreateLoaderAndStart(
+        mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
+        *resource_request_.get(), std::move(network_client),
+        traffic_annotation);
+  }
 }
 
 ServiceWorkerNewScriptLoader::~ServiceWorkerNewScriptLoader() = default;
