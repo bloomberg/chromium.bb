@@ -119,7 +119,7 @@ struct CORE_EXPORT PaintInvalidatorContext {
   // force a full invalidation and invalidation check in subtree.
   // The points do *not* account for composited scrolling. See
   // LayoutObject::adjustVisualRectForCompositedScrolling().
-  // This field will be removed for SPv2.
+  // This field will be removed for SPv175.
   LayoutPoint old_location;
   // Use LayoutObject::LocationInBacking() to get the new location.
 
@@ -155,6 +155,12 @@ class PaintInvalidator {
  private:
   friend struct PaintInvalidatorContext;
   friend class PrePaintTreeWalk;
+
+  template <typename Rect, typename Point>
+  static void ExcludeCompositedLayerSubpixelAccumulation(
+      const LayoutObject&,
+      const PaintInvalidatorContext&,
+      Rect&);
   template <typename Rect, typename Point>
   static LayoutRect MapLocalRectToVisualRectInBacking(
       const LayoutObject&,
