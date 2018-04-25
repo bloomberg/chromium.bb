@@ -48,6 +48,7 @@ source_set("tests") {
   deps = [
     ":lib",
     "//base",
+    "//base/test:test_support",
     "//gin",
     "//gin:gin_test",
     "//services/data_decoder/public/cpp",
