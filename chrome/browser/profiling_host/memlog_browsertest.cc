@@ -76,15 +76,9 @@ class MemlogBrowserTest : public InProcessBrowserTest,
   }
 };
 
-// Disabled due to https://crbug.com/835826.
-#if defined(OS_CHROMEOS)
-#define MAYBE_EndToEnd DISABLED_EndToEnd
-#else
-#define MAYBE_EndToEnd EndToEnd
-#endif
 // Ensure invocations via TracingController can generate a valid JSON file with
 // expected data.
-IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, MAYBE_EndToEnd) {
+IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
   LOG(INFO) << "Memlog mode: " << static_cast<int>(GetParam().mode);
   LOG(INFO) << "Memlog stack mode: " << static_cast<int>(GetParam().stack_mode);
   LOG(INFO) << "Started via command line flag: "
