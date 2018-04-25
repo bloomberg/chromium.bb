@@ -34,6 +34,7 @@ jumbo_component("wm") {
     "core/native_cursor_manager_delegate.h",
     "core/shadow_controller.cc",
     "core/shadow_controller.h",
+    "core/shadow_controller_delegate.h",
     "core/shadow_types.cc",
     "core/shadow_types.h",
     "core/transient_window_controller.cc",

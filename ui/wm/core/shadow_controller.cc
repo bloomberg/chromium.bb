@@ -20,6 +20,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor_extra/shadow.h"
+#include "ui/wm/core/shadow_controller_delegate.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -98,6 +99,12 @@ class ShadowController::Impl :
   // Returns the singleton instance, destroyed when there are no more refs.
   static Impl* GetInstance();
 
+  void set_delegate(std::unique_ptr<ShadowControllerDelegate> delegate) {
+    delegate_ = std::move(delegate);
+  }
+  bool IsShadowVisibleForWindow(aura::Window* window);
+  void UpdateShadowForWindow(aura::Window* window);
+
   // aura::EnvObserver override:
   void OnWindowInitialized(aura::Window* window) override;
 
@@ -142,6 +149,8 @@ class ShadowController::Impl :
 
   ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
 
+  std::unique_ptr<ShadowControllerDelegate> delegate_;
+
   static Impl* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(Impl);
@@ -155,6 +164,18 @@ ShadowController::Impl* ShadowController::Impl::GetInstance() {
   if (!instance_)
     instance_ = new Impl();
   return instance_;
+}
+
+bool ShadowController::Impl::IsShadowVisibleForWindow(aura::Window* window) {
+  if (!observer_manager_.IsObserving(window))
+    return false;
+  ui::Shadow* shadow = GetShadowForWindow(window);
+  return shadow && shadow->layer()->visible();
+}
+
+void ShadowController::Impl::UpdateShadowForWindow(aura::Window* window) {
+  DCHECK(observer_manager_.IsObserving(window));
+  HandlePossibleShadowVisibilityChange(window);
 }
 
 void ShadowController::Impl::OnWindowInitialized(aura::Window* window) {
@@ -235,6 +256,9 @@ void ShadowController::Impl::OnWindowActivated(ActivationReason reason,
 
 bool ShadowController::Impl::ShouldShowShadowForWindow(
     aura::Window* window) const {
+  if (delegate_ && !delegate_->ShouldShowShadowForWindow(window))
+    return false;
+
   ui::WindowShowState show_state =
       window->GetProperty(aura::client::kShowStateKey);
   if (show_state == ui::SHOW_STATE_FULLSCREEN ||
@@ -290,14 +314,26 @@ ui::Shadow* ShadowController::GetShadowForWindow(aura::Window* window) {
   return window->GetProperty(kShadowLayerKey);
 }
 
-ShadowController::ShadowController(ActivationClient* activation_client)
+ShadowController::ShadowController(
+    ActivationClient* activation_client,
+    std::unique_ptr<ShadowControllerDelegate> delegate)
     : activation_client_(activation_client), impl_(Impl::GetInstance()) {
   // Watch for window activation changes.
   activation_client_->AddObserver(this);
+  if (delegate)
+    impl_->set_delegate(std::move(delegate));
 }
 
 ShadowController::~ShadowController() {
   activation_client_->RemoveObserver(this);
+}
+
+bool ShadowController::IsShadowVisibleForWindow(aura::Window* window) {
+  return impl_->IsShadowVisibleForWindow(window);
+}
+
+void ShadowController::UpdateShadowForWindow(aura::Window* window) {
+  impl_->UpdateShadowForWindow(window);
 }
 
 void ShadowController::OnWindowActivated(ActivationReason reason,

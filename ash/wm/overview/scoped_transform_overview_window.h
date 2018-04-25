@@ -242,8 +242,6 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // The original mask layer of the window before entering overview mode.
   ui::Layer* original_mask_layer_ = nullptr;
 
-  int original_shadow_elevation_ = 0;
-
   base::WeakPtrFactory<ScopedTransformOverviewWindow> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedTransformOverviewWindow);

@@ -148,6 +148,7 @@
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_shadow_controller_delegate.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -1179,7 +1180,8 @@ void Shell::Init(ui::ContextFactory* context_factory,
   shell_port_->CreatePointerWatcherAdapter();
 
   resize_shadow_controller_.reset(new ResizeShadowController());
-  shadow_controller_.reset(new ::wm::ShadowController(focus_controller_.get()));
+  shadow_controller_.reset(new ::wm::ShadowController(
+      focus_controller_.get(), std::make_unique<WmShadowControllerDelegate>()));
 
   logout_confirmation_controller_ =
       std::make_unique<LogoutConfirmationController>();

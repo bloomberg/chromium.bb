@@ -683,6 +683,14 @@ bool WindowSelector::ShouldAnimateWallpaper(aura::Window* root_window) {
   return true;
 }
 
+bool WindowSelector::IsWindowInOverview(const aura::Window* window) {
+  for (const std::unique_ptr<WindowGrid>& grid : grid_list_) {
+    if (grid->GetWindowSelectorItemContaining(window))
+      return true;
+  }
+  return false;
+}
+
 bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
                                     const ui::KeyEvent& key_event) {
   // Do not do anything with the events if none of the window grids have windows

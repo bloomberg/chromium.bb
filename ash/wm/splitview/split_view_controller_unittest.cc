@@ -30,6 +30,7 @@
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -1425,6 +1426,41 @@ TEST_F(SplitViewControllerTest, ResizabilityChangeTest) {
   window1->SetProperty(aura::client::kResizeBehaviorKey,
                        ui::mojom::kResizeBehaviorNone);
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+}
+
+// Tests that shadows on windows disappear when the window is snapped, and
+// reappear when unsnapped.
+TEST_F(SplitViewControllerTest, ShadowDisappearsWhenSnapped) {
+  const gfx::Rect bounds(200, 200);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+
+  ::wm::ShadowController* shadow_controller = Shell::Get()->shadow_controller();
+  EXPECT_TRUE(shadow_controller->IsShadowVisibleForWindow(window1.get()));
+  EXPECT_TRUE(shadow_controller->IsShadowVisibleForWindow(window2.get()));
+  EXPECT_TRUE(shadow_controller->IsShadowVisibleForWindow(window3.get()));
+
+  // Snap |window1| to the left. Its shadow should disappear.
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  EXPECT_FALSE(shadow_controller->IsShadowVisibleForWindow(window1.get()));
+  EXPECT_TRUE(shadow_controller->IsShadowVisibleForWindow(window2.get()));
+  EXPECT_TRUE(shadow_controller->IsShadowVisibleForWindow(window3.get()));
+
+  // Snap |window2| to the right. Its shadow should also disappear.
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_FALSE(shadow_controller->IsShadowVisibleForWindow(window1.get()));
+  EXPECT_FALSE(shadow_controller->IsShadowVisibleForWindow(window2.get()));
+  EXPECT_TRUE(shadow_controller->IsShadowVisibleForWindow(window3.get()));
+
+  // Snap |window3| to the right. Its shadow should disappear and |window2|'s
+  // shadow should reappear.
+  split_view_controller()->SnapWindow(window3.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_FALSE(shadow_controller->IsShadowVisibleForWindow(window1.get()));
+  EXPECT_TRUE(shadow_controller->IsShadowVisibleForWindow(window2.get()));
+  EXPECT_FALSE(shadow_controller->IsShadowVisibleForWindow(window3.get()));
 }
 
 }  // namespace ash
