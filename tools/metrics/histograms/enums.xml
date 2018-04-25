@@ -48506,6 +48506,10 @@ Full version information for the fingerprint enum values:
   <int value="8" label="BYPASS">
     The &quot;frame-ancestors&quot; CSP directive should take effect instead.
   </int>
+  <int value="9" label="REDIRECT_BLOCKED">
+    A redirect response specified an &quot;X-Frame-Options&quot; header that
+    would block the response.
+  </int>
 </enum>
 
 <enum name="XHRPageDismissalState">
