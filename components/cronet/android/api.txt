@@ -295,3 +295,4 @@ public abstract class org.chromium.net.UrlResponseInfo {
   public abstract java.lang.String getProxyServer();
   public abstract long getReceivedByteCount();
 }
+Stamp: f4909b6572d83edd28472e7087b0e6f2

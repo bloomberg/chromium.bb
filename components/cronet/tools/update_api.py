@@ -8,6 +8,7 @@
 import argparse
 import filecmp
 import fileinput
+import md5
 import os
 import re
 import shutil
@@ -65,6 +66,7 @@ def generate_api(api_jar, output_filename):
   # Strip out pieces we don't need to compare.
   output_file = fileinput.FileInput(output_filename, inplace=True)
   skip_to_next_class = False
+  md5_hash = md5.new()
   for line in output_file:
     # Skip 'Compiled from ' lines as they're not part of the API.
     if line.startswith('Compiled from "'):
@@ -79,8 +81,11 @@ def generate_api(api_jar, output_filename):
     if skip_to_next_class:
       skip_to_next_class = line != '}'
       continue
+    md5_hash.update(line)
     sys.stdout.write(line)
   output_file.close()
+  with open(output_filename, 'a') as output_file:
+    output_file.write('Stamp: %s\n' % md5_hash.hexdigest())
   return True
 
 
@@ -97,17 +102,40 @@ def check_up_to_date(api_jar):
 
 def check_api_update(old_api, new_api):
   # Enforce that lines are only added when updating API.
+  new_hash = md5.new()
+  old_hash = md5.new()
+  seen_stamp = False
   with open(old_api, 'r') as old_api_file, open(new_api, 'r') as new_api_file:
     for old_line in old_api_file:
       while True:
         new_line = new_api_file.readline()
+        if seen_stamp:
+          print 'ERROR: Stamp is not the last line.'
+          return False
+        if new_line.startswith('Stamp: ') and old_line.startswith('Stamp: '):
+          if old_line != 'Stamp: %s\n' % old_hash.hexdigest():
+            print 'ERROR: Prior api.txt not stamped by update_api.py'
+            return False
+          if new_line != 'Stamp: %s\n' % new_hash.hexdigest():
+            print 'ERROR: New api.txt not stamped by update_api.py'
+            return False
+          seen_stamp = True
+          break
+        new_hash.update(new_line)
         if new_line == old_line:
           break
         if not new_line:
-          print 'ERROR: This API was modified or removed:'
-          print '           ' + old_line
-          print '       Cronet API methods and classes cannot be modified.'
+          if old_line.startswith('Stamp: '):
+            print 'ERROR: New api.txt not stamped by update_api.py'
+          else:
+            print 'ERROR: This API was modified or removed:'
+            print '           ' + old_line
+            print '       Cronet API methods and classes cannot be modified.'
           return False
+      old_hash.update(old_line)
+  if not seen_stamp:
+    print 'ERROR: api.txt not stamped by update_api.py.'
+    return False
   return True
 
 
