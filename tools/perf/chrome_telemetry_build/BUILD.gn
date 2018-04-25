@@ -73,7 +73,7 @@ group("telemetry_chrome_test") {
   }
 }
 
-group("telemetry_chrome_test_experimental") {
+group("telemetry_chrome_test_without_chrome") {
   testonly = true
 
   if (is_android) {

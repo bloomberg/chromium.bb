@@ -2148,10 +2148,10 @@ group("telemetry_perf_tests") {
 
 # Temporary target for running benchmarks without building Chrome
 # Will be removed as a part of crbug.com/758632
-group("telemetry_perf_tests_experimental") {
+group("telemetry_perf_tests_without_chrome") {
   testonly = true
   deps = [
-    "//tools/perf/:perf_experimental",
+    "//tools/perf/:perf_without_chrome",
   ]
 
   data_deps = [

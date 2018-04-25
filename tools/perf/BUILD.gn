@@ -42,12 +42,11 @@ if (is_android) {
   }
 }
 
-# Temporary group for running benchmarks without building Chrome
-# Will be removed as a part of crbug.com/758632
-group("perf_experimental") {
+# Group for running benchmarks without building Chrome
+group("perf_without_chrome") {
   testonly = true
   deps = [
-    "//tools/perf/chrome_telemetry_build:telemetry_chrome_test_experimental",
+    "//tools/perf/chrome_telemetry_build:telemetry_chrome_test_without_chrome",
   ]
 
   data = [

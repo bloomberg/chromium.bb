@@ -1072,8 +1072,8 @@
       "../../tools/perf/run_benchmark",
     ],
   },
-  "telemetry_perf_tests_experimental": {
-    "label": "//chrome/test:telemetry_perf_tests_experimental",
+  "telemetry_perf_tests_without_chrome": {
+    "label": "//chrome/test:telemetry_perf_tests_without_chrome",
     "type": "script",
     "script": "//testing/scripts/run_performance_tests.py",
     "args": [
