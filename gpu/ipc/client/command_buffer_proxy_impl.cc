@@ -840,7 +840,9 @@ void CommandBufferProxyImpl::OnBufferPresented(
     presentation_callback_.Run(swap_id, feedback);
 
   if (update_vsync_parameters_completion_callback_ &&
-      feedback.timestamp != base::TimeTicks()) {
+      feedback.flags & gfx::PresentationFeedback::kVSync &&
+      feedback.timestamp != base::TimeTicks() &&
+      feedback.interval != base::TimeDelta()) {
     update_vsync_parameters_completion_callback_.Run(feedback.timestamp,
                                                      feedback.interval);
   }
