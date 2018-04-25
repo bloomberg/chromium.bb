@@ -5,13 +5,18 @@
 # This file contains common system config stuff for the Android build.
 
 if (is_android) {
-  import("//build/config/gclient_args.gni")
   import("//build_overrides/build.gni")
   import("abi.gni")
 
-  if (defined(checkout_android)) {
-    assert(checkout_android,
-           "target_os in your .gclient configuration must include android.")
+  if (build_with_chromium) {
+    # Some non-chromium projects (e.g. WebRTC) use our build configs
+    # heavily but don't write gclient args files.
+
+    import("//build/config/gclient_args.gni")
+    if (defined(checkout_android)) {
+      assert(checkout_android,
+             "target_os in your .gclient configuration must include android.")
+    }
   }
 
   has_chrome_android_internal =
