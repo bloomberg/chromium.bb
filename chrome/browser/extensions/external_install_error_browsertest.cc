@@ -22,8 +22,6 @@ class ExternalInstallErrorTest : public ExtensionBrowserTest {
   ExternalInstallErrorTest() = default;
   ~ExternalInstallErrorTest() override = default;
 
-  bool ShouldAllowLegacyExtensionManifests() override { return true; }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ExternalInstallErrorTest);
 };
