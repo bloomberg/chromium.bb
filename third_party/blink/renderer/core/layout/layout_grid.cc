@@ -325,7 +325,7 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     // Grid never uses the override width, that's why we don't need to clear it.
     for (auto* child = FirstInFlowChildBox(); child;
          child = child->NextInFlowSiblingBox())
-      child->ClearOverrideContentLogicalHeight();
+      child->ClearOverrideLogicalHeight();
 
     UpdateLogicalWidth();
 
@@ -1461,9 +1461,7 @@ void LayoutGrid::ApplyStretchAlignmentToChildIfNeeded(LayoutBox& child) {
             child);
     LayoutUnit desired_logical_height = child.ConstrainLogicalHeightByMinMax(
         stretched_logical_height, LayoutUnit(-1));
-    child.SetOverrideContentLogicalHeight(
-        (desired_logical_height - child.BorderAndPaddingLogicalHeight())
-            .ClampNegativeToZero());
+    child.SetOverrideLogicalHeight(desired_logical_height);
     if (desired_logical_height != child.LogicalHeight()) {
       // TODO (lajava): Can avoid laying out here in some cases. See
       // https://webkit.org/b/87905.

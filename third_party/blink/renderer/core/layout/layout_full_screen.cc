@@ -201,7 +201,7 @@ void LayoutFullScreen::UnwrapLayoutObject() {
       // may have set one on the child, and we don't want to leave that
       // lying around on the child.
       if (child->IsBox())
-        ToLayoutBox(child)->ClearOverrideContentSize();
+        ToLayoutBox(child)->ClearOverrideSize();
       child->Remove();
       Parent()->AddChild(child, this);
       Parent()->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(

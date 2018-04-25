@@ -2152,7 +2152,7 @@ LayoutUnit LayoutBlock::AvailableLogicalHeightForPercentageComputation() const {
 
   if (stretched_flex_height != LayoutUnit(-1)) {
     available_height = stretched_flex_height;
-  } else if (IsGridItem() && HasOverrideContentLogicalHeight()) {
+  } else if (IsGridItem() && HasOverrideLogicalHeight()) {
     available_height = OverrideContentLogicalHeight();
   } else if (style.LogicalHeight().IsFixed()) {
     LayoutUnit content_box_height = AdjustContentBoxLogicalHeightForBoxSizing(

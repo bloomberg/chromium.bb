@@ -549,18 +549,11 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
     box_->SetOverrideContainingBlockContentLogicalHeight(inline_size);
   }
 
-  // TODO(layout-ng): Does this handle scrollbars correctly?
   if (constraint_space.IsFixedSizeInline()) {
-    box_->SetOverrideContentLogicalWidth(
-        (constraint_space.AvailableSize().inline_size -
-         box_->BorderAndPaddingLogicalWidth())
-            .ClampNegativeToZero());
+    box_->SetOverrideLogicalWidth(constraint_space.AvailableSize().inline_size);
   }
   if (constraint_space.IsFixedSizeBlock()) {
-    box_->SetOverrideContentLogicalHeight(
-        (constraint_space.AvailableSize().block_size -
-         box_->BorderAndPaddingLogicalHeight())
-            .ClampNegativeToZero());
+    box_->SetOverrideLogicalHeight(constraint_space.AvailableSize().block_size);
   }
 
   if (box_->IsLayoutNGMixin() && box_->NeedsLayout()) {
