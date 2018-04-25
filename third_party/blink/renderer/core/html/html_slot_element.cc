@@ -151,7 +151,7 @@ const HeapVector<Member<Node>> HTMLSlotElement::FlattenedAssignedNodes() {
   }
   if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
     return CollectFlattenedAssignedNodes(*this);
-  UpdateDistribution();
+  UpdateDistributionForLegacyDistributedNodes();
   return GetDistributedNodes();
 }
 
@@ -165,7 +165,7 @@ const HeapVector<Member<Node>> HTMLSlotElement::AssignedNodesForBinding(
     DCHECK(assigned_nodes_.IsEmpty());
     return assigned_nodes_;
   }
-  UpdateDistribution();
+  UpdateDistributionForLegacyDistributedNodes();
   return assigned_nodes_;
 }
 

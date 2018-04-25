@@ -188,7 +188,7 @@ bool V0InsertionPoint::IsContentInsertionPoint() const {
 }
 
 StaticNodeList* V0InsertionPoint::getDistributedNodes() {
-  UpdateDistribution();
+  UpdateDistributionForLegacyDistributedNodes();
 
   HeapVector<Member<Node>> nodes;
   nodes.ReserveInitialCapacity(distributed_nodes_.size());

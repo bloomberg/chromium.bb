@@ -1045,7 +1045,7 @@ void HTMLElement::AdjustDirectionalityIfNeededAfterChildrenChanged(
   if (!SelfOrAncestorHasDirAutoAttribute())
     return;
 
-  UpdateDistribution();
+  UpdateDistributionForFlatTreeTraversal();
 
   for (Element* element_to_adjust = this; element_to_adjust;
        element_to_adjust =
@@ -1320,7 +1320,7 @@ void HTMLElement::OnDirAttrChanged(const AttributeModificationParams& params) {
   // changes to dir attribute may affect the ancestor.
   if (!CanParticipateInFlatTree())
     return;
-  UpdateDistribution();
+  UpdateDistributionForFlatTreeTraversal();
   Element* parent = FlatTreeTraversal::ParentElement(*this);
   if (parent && parent->IsHTMLElement() &&
       ToHTMLElement(parent)->SelfOrAncestorHasDirAutoAttribute()) {
@@ -1334,7 +1334,7 @@ void HTMLElement::OnDirAttrChanged(const AttributeModificationParams& params) {
 
 void HTMLElement::OnInertAttrChanged(
     const AttributeModificationParams& params) {
-  UpdateDistribution();
+  UpdateDistributionForUnknownReasons();
   if (GetDocument().GetFrame()) {
     GetDocument().GetFrame()->SetIsInert(GetDocument().LocalOwner() &&
                                          GetDocument().LocalOwner()->IsInert());

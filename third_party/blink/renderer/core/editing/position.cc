@@ -398,9 +398,9 @@ int ComparePositions(const PositionInFlatTree& position_a,
   DCHECK(position_a.IsNotNull());
   DCHECK(position_b.IsNotNull());
 
-  position_a.AnchorNode()->UpdateDistribution();
+  position_a.AnchorNode()->UpdateDistributionForFlatTreeTraversal();
   Node* container_a = position_a.ComputeContainerNode();
-  position_b.AnchorNode()->UpdateDistribution();
+  position_b.AnchorNode()->UpdateDistributionForFlatTreeTraversal();
   Node* container_b = position_b.ComputeContainerNode();
   int offset_a = position_a.ComputeOffsetInContainerNode();
   int offset_b = position_b.ComputeOffsetInContainerNode();
@@ -601,7 +601,7 @@ PositionInFlatTree ToPositionInFlatTree(const Position& pos) {
                                   PositionAnchorType::kAfterChildren);
       return PositionInFlatTree(anchor, PositionAnchorType::kAfterChildren);
     }
-    child->UpdateDistribution();
+    child->UpdateDistributionForFlatTreeTraversal();
     if (!child->CanParticipateInFlatTree()) {
       if (anchor->IsShadowRoot())
         return PositionInFlatTree(anchor->OwnerShadowHost(), offset);

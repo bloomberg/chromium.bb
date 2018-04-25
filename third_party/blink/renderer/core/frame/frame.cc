@@ -256,7 +256,7 @@ void Frame::SetOwner(FrameOwner* owner) {
 
 void Frame::UpdateInertIfPossible() {
   if (owner_ && owner_->IsLocal()) {
-    ToHTMLFrameOwnerElement(owner_)->UpdateDistribution();
+    ToHTMLFrameOwnerElement(owner_)->UpdateDistributionForFlatTreeTraversal();
     if (ToHTMLFrameOwnerElement(owner_)->IsInert())
       SetIsInert(true);
   }

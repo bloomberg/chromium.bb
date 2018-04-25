@@ -310,7 +310,9 @@ ScopedFocusNavigation ScopedFocusNavigation::OwnedByIFrame(
     FocusController::OwnerMap& owner_map) {
   DCHECK(frame.ContentFrame());
   DCHECK(frame.ContentFrame()->IsLocalFrame());
-  ToLocalFrame(frame.ContentFrame())->GetDocument()->UpdateDistribution();
+  ToLocalFrame(frame.ContentFrame())
+      ->GetDocument()
+      ->UpdateDistributionForLegacyDistributedNodes();
   return ScopedFocusNavigation(
       *ToLocalFrame(frame.ContentFrame())->GetDocument(), nullptr, owner_map);
 }
@@ -989,7 +991,7 @@ bool FocusController::AdvanceFocusInDocumentOrder(
     InputDeviceCapabilities* source_capabilities) {
   DCHECK(frame);
   Document* document = frame->GetDocument();
-  document->UpdateDistribution();
+  document->UpdateDistributionForLegacyDistributedNodes();
   OwnerMap owner_map;
 
   Element* current = start;

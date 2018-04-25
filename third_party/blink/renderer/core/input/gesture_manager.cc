@@ -283,7 +283,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
       // tappedNonTextNode and currentHitTest.innerNode()) don't need to be
       // updated because commonAncestor() will exit early if their documents are
       // different.
-      tapped_element->UpdateDistribution();
+      tapped_element->UpdateDistributionForFlatTreeTraversal();
       Node* click_target_node = current_hit_test.InnerNode()->CommonAncestor(
           *tapped_element, EventHandlingUtil::ParentForClickEvent);
       click_event_result =
