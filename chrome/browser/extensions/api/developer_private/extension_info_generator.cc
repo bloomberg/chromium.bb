@@ -10,6 +10,7 @@
 
 #include "base/base64.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -39,8 +40,8 @@
 #include "extensions/browser/image_loader.h"
 #include "extensions/browser/path_util.h"
 #include "extensions/browser/warning_service.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -536,7 +537,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   ScriptingPermissionsModifier permissions_modifier(
       browser_context_, base::WrapRefCounted(&extension));
   info->run_on_all_urls.is_enabled =
-      (FeatureSwitch::scripts_require_action()->IsEnabled() &&
+      (base::FeatureList::IsEnabled(features::kRuntimeHostPermissions) &&
        permissions_modifier.CanAffectExtension(
            extension.permissions_data()->active_permissions())) ||
       permissions_modifier.HasAffectedExtension();

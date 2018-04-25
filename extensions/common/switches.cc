@@ -26,8 +26,11 @@ const char kEnableBLEAdvertising[] = "enable-ble-advertising-in-apps";
 const char kDisableDesktopCaptureAudio[] =
     "disable-audio-support-for-desktop-share";
 
-// Hack so that feature switch can work with about_flags. See
-// kEnableScriptsRequireAction.
+// FeatureSwitch and about_flags don't play nice. Feature switch expects either
+// --enable-<feature> or --<feature>=1, but about_flags expects the command
+// line argument to enable it (or a selection). Hack this in, so enabling it
+// in about_flags enables the feature. Appending this flag has the same effect
+// as --embedded-extension-options=1.
 const char kEnableEmbeddedExtensionOptions[] =
     "enable-embedded-extension-options";
 
@@ -62,17 +65,6 @@ const char kLoadApps[] = "load-apps";
 
 // Comma-separated list of paths to extensions to load at startup.
 const char kLoadExtension[] = "load-extension";
-
-// Notify the user and require consent for extensions running scripts.
-// Appending --scripts-require-action=1 has the same effect as
-// --enable-scripts-require-action (see below).
-const char kScriptsRequireAction[] = "scripts-require-action";
-// FeatureSwitch and about_flags don't play nice. Feature switch expects either
-// --enable-<feature> or --<feature>=1, but about_flags expects the command
-// line argument to enable it (or a selection). Hack this in, so enabling it
-// in about_flags enables the feature. Appending this flag has the same effect
-// as --scripts-require-action=1.
-const char kEnableScriptsRequireAction[] = "enable-scripts-require-action";
 
 #if defined(CHROMIUM_BUILD)
 // Should we prompt the user before allowing external extensions to install?

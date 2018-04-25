@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
@@ -35,7 +36,7 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/feature_switch.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
@@ -613,9 +614,8 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextUninstall) {
 
 TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   // This test relies on the click-to-script feature.
-  std::unique_ptr<FeatureSwitch::ScopedOverride> enable_scripts_require_action(
-      new FeatureSwitch::ScopedOverride(FeatureSwitch::scripts_require_action(),
-                                        true));
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(features::kRuntimeHostPermissions);
   InitializeEmptyExtensionService();
 
   // Add an extension with all urls.
@@ -767,10 +767,9 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   // Disable the click-to-script feature, and install a new extension requiring
   // all hosts. Since the feature isn't on, it shouldn't have the page access
   // submenu either.
-  enable_scripts_require_action.reset();
-  enable_scripts_require_action.reset(
-      new FeatureSwitch::ScopedOverride(FeatureSwitch::scripts_require_action(),
-                                        false));
+  scoped_feature_list.reset();  // Need to delete the old list first.
+  scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndDisableFeature(features::kRuntimeHostPermissions);
   const Extension* feature_disabled_extension = AddExtensionWithHostPermission(
       "feature_disabled_extension", manifest_keys::kBrowserAction,
       Manifest::INTERNAL, "http://www.google.com/*");
