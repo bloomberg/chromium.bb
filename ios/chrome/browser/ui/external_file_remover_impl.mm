@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/url_and_title.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -142,7 +143,7 @@ NSSet* ExternalFileRemoverImpl::GetReferencedExternalFiles() {
     return referenced_external_files;
 
   // Add files from Bookmarks.
-  std::vector<bookmarks::BookmarkModel::URLAndTitle> bookmarks;
+  std::vector<bookmarks::UrlAndTitle> bookmarks;
   bookmark_model->GetBookmarks(&bookmarks);
   for (const auto& bookmark : bookmarks) {
     GURL bookmark_url = bookmark.url;

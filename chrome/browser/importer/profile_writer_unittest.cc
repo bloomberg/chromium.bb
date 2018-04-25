@@ -19,6 +19,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/titled_url_match.h"
+#include "components/bookmarks/browser/url_and_title.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
@@ -26,6 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::UrlAndTitle;
 using bookmarks::TitledUrlMatch;
 
 class TestProfileWriter : public ProfileWriter {
@@ -77,10 +79,9 @@ class ProfileWriterTest : public testing::Test {
     pages_.push_back(row2);
   }
 
-  void VerifyBookmarksCount(
-      const std::vector<BookmarkModel::URLAndTitle>& bookmarks_record,
-      BookmarkModel* bookmark_model,
-      size_t expected) {
+  void VerifyBookmarksCount(const std::vector<UrlAndTitle>& bookmarks_record,
+                            BookmarkModel* bookmark_model,
+                            size_t expected) {
     std::vector<TitledUrlMatch> matches;
     for (size_t i = 0; i < bookmarks_record.size(); ++i) {
       bookmark_model->GetBookmarksMatching(
@@ -155,11 +156,11 @@ TEST_F(ProfileWriterTest, CheckBookmarksWithMultiProfile) {
   profile_writer->AddBookmarks(bookmarks_,
                                base::ASCIIToUTF16("Imported from Firefox"));
 
-  std::vector<BookmarkModel::URLAndTitle> url_record1;
+  std::vector<UrlAndTitle> url_record1;
   bookmark_model1->GetBookmarks(&url_record1);
   EXPECT_EQ(2u, url_record1.size());
 
-  std::vector<BookmarkModel::URLAndTitle> url_record2;
+  std::vector<UrlAndTitle> url_record2;
   bookmark_model2->GetBookmarks(&url_record2);
   EXPECT_EQ(1u, url_record2.size());
 }
@@ -178,7 +179,7 @@ TEST_F(ProfileWriterTest, CheckBookmarksAfterWritingDataTwice) {
       new TestProfileWriter(&profile));
   profile_writer->AddBookmarks(bookmarks_,
                                base::ASCIIToUTF16("Imported from Firefox"));
-  std::vector<BookmarkModel::URLAndTitle> bookmarks_record;
+  std::vector<UrlAndTitle> bookmarks_record;
   bookmark_model->GetBookmarks(&bookmarks_record);
   EXPECT_EQ(2u, bookmarks_record.size());
 

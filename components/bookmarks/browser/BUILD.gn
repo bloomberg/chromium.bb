@@ -43,6 +43,7 @@ static_library("browser") {
     "titled_url_node_sorter.h",
     "typed_count_sorter.cc",
     "typed_count_sorter.h",
+    "url_and_title.h",
   ]
 
   public_deps = [

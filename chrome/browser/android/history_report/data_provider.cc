@@ -19,16 +19,18 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/url_and_title.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/browser_thread.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::UrlAndTitle;
 
 namespace {
 static bool g_is_debug = false;
 
-using BookmarkMap = std::map<std::string, BookmarkModel::URLAndTitle*>;
+using BookmarkMap = std::map<std::string, UrlAndTitle*>;
 
 struct Context {
   history::HistoryService* history_service;
@@ -129,7 +131,7 @@ std::unique_ptr<std::vector<DeltaFileEntryWithData>> DataProvider::Query(
           base::Bind(&QueryUrlsHistoryInUiThread,
                      base::Unretained(&context),
                      base::Unretained(entries.get())));
-      std::vector<BookmarkModel::URLAndTitle> bookmarks;
+      std::vector<UrlAndTitle> bookmarks;
       bookmark_model_->BlockTillLoaded();
       bookmark_model_->GetBookmarks(&bookmarks);
       BookmarkMap bookmark_map;
@@ -192,7 +194,7 @@ void DataProvider::RecreateLog() {
     finished.Wait();
   }
 
-  std::vector<BookmarkModel::URLAndTitle> bookmarks;
+  std::vector<UrlAndTitle> bookmarks;
   bookmark_model_->BlockTillLoaded();
   bookmark_model_->GetBookmarks(&bookmarks);
   urls.reserve(urls.size() + bookmarks.size());

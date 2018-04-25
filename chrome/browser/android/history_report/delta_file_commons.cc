@@ -10,10 +10,13 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/url_and_title.h"
 #include "crypto/sha2.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::UrlAndTitle;
 using net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES;
 using net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES;
 using net::registry_controlled_domains::GetCanonicalHostRegistryLength;
@@ -142,8 +145,7 @@ void DeltaFileEntryWithData::SetData(const history::URLRow& data) {
   data_ = data;
 }
 
-void DeltaFileEntryWithData::MarkAsBookmark(
-    const BookmarkModel::URLAndTitle& bookmark) {
+void DeltaFileEntryWithData::MarkAsBookmark(const UrlAndTitle& bookmark) {
   is_bookmark_ = true;
   bookmark_title_ = bookmark.title;
 }

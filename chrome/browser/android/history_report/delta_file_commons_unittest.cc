@@ -9,10 +9,13 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/url_and_title.h"
 #include "components/history/core/browser/history_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using bookmarks::BookmarkModel;
+using bookmarks::UrlAndTitle;
 
 namespace history_report {
 
@@ -82,7 +85,7 @@ TEST_F(DeltaFileEntryWithDataTest, NoBookmarkScore) {
 }
 
 TEST_F(DeltaFileEntryWithDataTest, BookmarkScore) {
-  BookmarkModel::URLAndTitle bookmark;
+  UrlAndTitle bookmark;
   history::URLRow row;
   row.set_hidden(false);
   row.set_typed_count(2);
@@ -112,7 +115,7 @@ TEST_F(DeltaFileEntryWithDataTest, NoBookmarkNonEmptyTitle) {
 }
 
 TEST_F(DeltaFileEntryWithDataTest, BookmarkTitle) {
-  BookmarkModel::URLAndTitle bookmark;
+  UrlAndTitle bookmark;
   bookmark.title = base::UTF8ToUTF16("bookmark_title");
   history::URLRow row(GURL("http://host.org/path?query=param"));
   row.set_title(base::UTF8ToUTF16("title"));

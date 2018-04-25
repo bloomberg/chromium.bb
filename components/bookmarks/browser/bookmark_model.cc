@@ -26,6 +26,7 @@
 #include "components/bookmarks/browser/titled_url_index.h"
 #include "components/bookmarks/browser/titled_url_match.h"
 #include "components/bookmarks/browser/typed_count_sorter.h"
+#include "components/bookmarks/browser/url_and_title.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -557,8 +558,7 @@ bool BookmarkModel::IsBookmarked(const GURL& url) {
   return IsBookmarkedNoLock(url);
 }
 
-void BookmarkModel::GetBookmarks(
-    std::vector<BookmarkModel::URLAndTitle>* bookmarks) {
+void BookmarkModel::GetBookmarks(std::vector<UrlAndTitle>* bookmarks) {
   base::AutoLock url_lock(url_lock_);
   const GURL* last_url = nullptr;
   for (NodesOrderedByURLSet::iterator i = nodes_ordered_by_url_set_.begin();
@@ -566,7 +566,7 @@ void BookmarkModel::GetBookmarks(
     const GURL* url = &((*i)->url());
     // Only add unique URLs.
     if (!last_url || *url != *last_url) {
-      BookmarkModel::URLAndTitle bookmark;
+      UrlAndTitle bookmark;
       bookmark.url = *url;
       bookmark.title = (*i)->GetTitle();
       bookmarks->push_back(bookmark);

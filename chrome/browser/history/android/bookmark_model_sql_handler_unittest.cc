@@ -13,6 +13,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/url_and_title.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_database.h"
@@ -24,6 +25,7 @@
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
+using bookmarks::UrlAndTitle;
 using content::BrowserThread;
 
 namespace history {
@@ -138,7 +140,7 @@ TEST_F(BookmarkModelSQLHandlerTest, UpdateHistoryToBookmark) {
   ASSERT_TRUE(handler.Update(row, id_rows));
   RunMessageLoopForUI();
   // Get all bookmarks and verify there is only one.
-  std::vector<BookmarkModel::URLAndTitle> bookmarks;
+  std::vector<UrlAndTitle> bookmarks;
   bookmark_model_->GetBookmarks(&bookmarks);
   ASSERT_EQ(1u, bookmarks.size());
   EXPECT_EQ(url_row.url(), bookmarks[0].url);
