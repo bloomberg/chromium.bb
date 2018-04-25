@@ -225,8 +225,7 @@ SyncOperationResult CheckTemporaryPageConsistencySync(
 }
 
 void ReportStorageUsageSync(sql::Connection* db,
-                            const std::vector<std::string>& namespaces,
-                            ArchiveManager* archive_manager) {
+                            const std::vector<std::string>& namespaces) {
   static const char kSql[] =
       "SELECT sum(file_size) FROM " OFFLINE_PAGES_TABLE_NAME
       " WHERE client_namespace = ?";
@@ -243,33 +242,31 @@ void ReportStorageUsageSync(sql::Connection* db,
   }
 }
 
-bool StartupMaintenanceSync(OfflinePageMetadataStoreSQL* store,
-                            ArchiveManager* archive_manager,
-                            ClientPolicyController* policy_controller,
-                            sql::Connection* db) {
+bool StartupMaintenanceSync(
+    const std::vector<std::string>& persistent_namespaces,
+    const std::vector<std::string>& temporary_namespaces,
+    const base::FilePath& temporary_archives_dir,
+    const base::FilePath& private_archives_dir,
+    sql::Connection* db) {
   if (!db)
     return false;
-
-  std::vector<std::string> temporary_namespaces =
-      policy_controller->GetNamespacesRemovedOnCacheReset();
-  std::vector<std::string> persistent_namespaces =
-      policy_controller->GetNamespacesForUserRequestedDownload();
 
   // Clear temporary pages that are in legacy directory, which is also the
   // directory that serves as the 'private' directory.
   SyncOperationResult result = ClearLegacyPagesInPrivateDirSync(
-      db, temporary_namespaces, persistent_namespaces,
-      archive_manager->GetPrivateArchivesDir());
+      db, temporary_namespaces, persistent_namespaces, private_archives_dir);
 
   // Clear temporary pages in cache directory.
-  result = CheckTemporaryPageConsistencySync(
-      db, temporary_namespaces, archive_manager->GetTemporaryArchivesDir());
+  result = CheckTemporaryPageConsistencySync(db, temporary_namespaces,
+                                             temporary_archives_dir);
   UMA_HISTOGRAM_ENUMERATION("OfflinePages.ConsistencyCheck.Temporary.Result",
                             result, SyncOperationResult::RESULT_COUNT);
 
-  // Report storage usage UMA.
-  std::vector<std::string> namespaces = policy_controller->GetAllNamespaces();
-  ReportStorageUsageSync(db, namespaces, archive_manager);
+  // Report storage usage UMA, |temporary_namespaces| + |persistent_namespaces|
+  // should be all namespaces. This is implicitly checked by the
+  // TestReportStorageUsage unit test.
+  ReportStorageUsageSync(db, temporary_namespaces);
+  ReportStorageUsageSync(db, persistent_namespaces);
 
   return true;
 }
@@ -294,9 +291,18 @@ StartupMaintenanceTask::~StartupMaintenanceTask() = default;
 void StartupMaintenanceTask::Run() {
   TRACE_EVENT_ASYNC_BEGIN0("offline_pages", "StartupMaintenanceTask running",
                            this);
+  std::vector<std::string> all_namespaces =
+      policy_controller_->GetAllNamespaces();
+  std::vector<std::string> temporary_namespaces =
+      policy_controller_->GetNamespacesRemovedOnCacheReset();
+  std::vector<std::string> persistent_namespaces =
+      policy_controller_->GetNamespacesForUserRequestedDownload();
+
   store_->Execute(
-      base::BindOnce(&StartupMaintenanceSync, store_, archive_manager_,
-                     policy_controller_),
+      base::BindOnce(&StartupMaintenanceSync, persistent_namespaces,
+                     temporary_namespaces,
+                     archive_manager_->GetTemporaryArchivesDir(),
+                     archive_manager_->GetPrivateArchivesDir()),
       base::BindOnce(&StartupMaintenanceTask::OnStartupMaintenanceDone,
                      weak_ptr_factory_.GetWeakPtr()));
 }
