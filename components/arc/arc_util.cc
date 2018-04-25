@@ -176,8 +176,7 @@ bool IsArcAllowedForUser(const user_manager::User* user) {
 }
 
 bool IsArcOptInVerificationDisabled() {
-  const auto* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kDisableArcOptInVerification);
 }
 
@@ -200,6 +199,11 @@ void SetArcCpuRestriction(bool do_restrict) {
                   : login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND;
   session_manager_client->SetArcCpuRestriction(
       state, base::BindOnce(SetArcCpuRestrictionCallback, state));
+}
+
+bool IsArcDataCleanupOnStartRequested() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kArcDataCleanupOnStart);
 }
 
 }  // namespace arc

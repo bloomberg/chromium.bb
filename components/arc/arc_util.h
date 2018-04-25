@@ -97,6 +97,9 @@ bool IsArcOptInVerificationDisabled();
 // |window| is nullptr, returns false.
 bool IsArcAppWindow(aura::Window* window);
 
+// Returns true if data clean up is requested for each ARC start.
+bool IsArcDataCleanupOnStartRequested();
+
 // Adjusts the amount of CPU the ARC instance is allowed to use. When
 // |do_restrict| is true, the limit is adjusted so ARC can only use tightly
 // restricted CPU resources.
