@@ -24,6 +24,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread.h"
@@ -1772,6 +1773,33 @@ INSTANTIATE_TEST_CASE_P(
     MessageLoopTypedTest::ParamInfoToString);
 
 #if defined(OS_WIN)
+// Verifies that the MessageLoop ignores WM_QUIT, rather than quitting.
+// Users of MessageLoop typically expect to control when their RunLoops stop
+// Run()ning explicitly, via QuitClosure() etc (see https://crbug.com/720078)
+TEST_P(MessageLoopTest, WmQuitIsIgnored) {
+  MessageLoop loop(MessageLoop::TYPE_UI);
+  RunLoop run_loop;
+  // Post a WM_QUIT message to the current thread.
+  ::PostQuitMessage(0);
+
+  // Post a task to the current thread, with a small delay to make it less
+  // likely that we process the posted task before looking for WM_* messages.
+  bool task_was_run = false;
+  loop.task_runner()->PostDelayedTask(
+      FROM_HERE,
+      BindOnce(
+          [](bool* flag, OnceClosure closure) {
+            *flag = true;
+            std::move(closure).Run();
+          },
+          &task_was_run, run_loop.QuitClosure()),
+      TestTimeouts::tiny_timeout());
+
+  // Run the loop, and ensure that the posted task is processed before we quit.
+  run_loop.Run();
+  EXPECT_TRUE(task_was_run);
+}
+
 TEST_P(MessageLoopTest, PostDelayedTask_SharedTimer_SubPump) {
   RunTest_PostDelayedTask_SharedTimer_SubPump();
 }
