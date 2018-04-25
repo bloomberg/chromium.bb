@@ -57,7 +57,12 @@ class CORE_EXPORT V8GCController {
 
   static Node* OpaqueRootForGC(v8::Isolate*, Node*);
 
+  // Called when Oilpan traces references from V8 wrappers to DOM wrappables.
   static void TraceDOMWrappers(v8::Isolate*, Visitor*);
+
+  // Called upon terminating a thread when Oilpan clears references from V8
+  // wrappers to DOM wrappables.
+  static void ClearDOMWrappers(v8::Isolate*);
 };
 
 }  // namespace blink

@@ -318,32 +318,68 @@ void V8GCController::CollectAllGarbageForTesting(v8::Isolate* isolate) {
         v8::Isolate::kFullGarbageCollection);
 }
 
-class DOMWrapperTracer : public v8::PersistentHandleVisitor {
+namespace {
+
+// Traces all DOM persistent handles using the provided visitor.
+class DOMWrapperTracer final : public v8::PersistentHandleVisitor {
  public:
   explicit DOMWrapperTracer(Visitor* visitor) : visitor_(visitor) {
     DCHECK(visitor_);
   }
 
   void VisitPersistentHandle(v8::Persistent<v8::Value>* value,
-                             uint16_t class_id) override {
+                             uint16_t class_id) final {
     if (class_id != WrapperTypeInfo::kNodeClassId &&
         class_id != WrapperTypeInfo::kObjectClassId)
       return;
 
-    const v8::Persistent<v8::Object>& wrapper =
-        v8::Persistent<v8::Object>::Cast(*value);
-
-    ScriptWrappable* script_wrappable = ToScriptWrappable(wrapper);
-    visitor_->Trace(script_wrappable);
+    visitor_->Trace(
+        ToScriptWrappable(v8::Persistent<v8::Object>::Cast(*value)));
   }
 
  private:
-  Visitor* visitor_;
+  Visitor* const visitor_;
 };
+
+// Purges all DOM persistent handles.
+class DOMWrapperPurger final : public v8::PersistentHandleVisitor {
+ public:
+  explicit DOMWrapperPurger(v8::Isolate* isolate)
+      : isolate_(isolate), scope_(isolate) {}
+
+  void VisitPersistentHandle(v8::Persistent<v8::Value>* value,
+                             uint16_t class_id) final {
+    if (class_id != WrapperTypeInfo::kNodeClassId &&
+        class_id != WrapperTypeInfo::kObjectClassId)
+      return;
+
+    // Clear out wrapper type information, essentially disconnecting the Blink
+    // wrappable from the V8 wrapper. This way, V8 cannot find the C++ object
+    // anymore.
+    int indices[] = {kV8DOMWrapperObjectIndex, kV8DOMWrapperTypeIndex};
+    void* values[] = {nullptr, nullptr};
+    v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(
+        isolate_, v8::Persistent<v8::Object>::Cast(*value));
+    wrapper->SetAlignedPointerInInternalFields(arraysize(indices), indices,
+                                               values);
+    value->Reset();
+  }
+
+ private:
+  v8::Isolate* isolate_;
+  v8::HandleScope scope_;
+};
+
+}  // namespace
 
 void V8GCController::TraceDOMWrappers(v8::Isolate* isolate, Visitor* visitor) {
   DOMWrapperTracer tracer(visitor);
   isolate->VisitHandlesWithClassIds(&tracer);
+}
+
+void V8GCController::ClearDOMWrappers(v8::Isolate* isolate) {
+  DOMWrapperPurger purger(isolate);
+  isolate->VisitHandlesWithClassIds(&purger);
 }
 
 }  // namespace blink
