@@ -35,6 +35,7 @@ constexpr SkColor kGoogleYellow300 = SkColorSetRGB(0xFD, 0xD6, 0x63);
 constexpr SkColor kGoogleYellow700 = SkColorSetRGB(0xF2, 0x99, 0x00);
 constexpr SkColor kGoogleYellow900 = SkColorSetRGB(0xE3, 0x74, 0x00);
 constexpr SkColor kGoogleGrey100 = SkColorSetRGB(0xF1, 0xF3, 0xF4);
+constexpr SkColor kGoogleGrey200 = SkColorSetRGB(0xE8, 0xEA, 0xED);
 constexpr SkColor kGoogleGrey400 = SkColorSetRGB(0xBD, 0xC1, 0xC6);
 constexpr SkColor kGoogleGrey700 = SkColorSetRGB(0x5F, 0x63, 0x68);
 constexpr SkColor kGoogleGrey800 = SkColorSetRGB(0x3C, 0x40, 0x43);
