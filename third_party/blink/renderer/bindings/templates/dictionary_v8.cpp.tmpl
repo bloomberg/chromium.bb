@@ -2,7 +2,7 @@
 
 {% from 'utilities.cpp.tmpl' import declare_enum_validation_variable %}
 {% include 'copyright_block.txt' %}
-#include "{{this_include_header_name}}"
+#include "{{this_include_header_path}}"
 
 {% for filename in cpp_includes if filename != '%s.h' % v8_class %}
 #include "{{filename}}"

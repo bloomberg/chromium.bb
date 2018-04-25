@@ -21,7 +21,7 @@ if (V8{{member.type_name}}::hasInstance(v8Value, isolate)) {
 {#############################################################################}
 {% filter format_blink_cpp_source_code %}
 {% include 'copyright_block.txt' %}
-#include "{{this_include_header_name}}.h"
+#include "{{this_include_header_path}}"
 
 {% for filename in cpp_includes %}
 #include "{{filename}}"
