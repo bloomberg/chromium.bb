@@ -173,7 +173,6 @@ constexpr ExecutableType CastToExecutableType(uint32_t possible_exe_type) {
     case kExeTypeUnknown:
       return static_cast<ExecutableType>(possible_exe_type);
     default:
-      NOTREACHED() << "Unknown type.";
       return kExeTypeUnknown;
   }
 }
