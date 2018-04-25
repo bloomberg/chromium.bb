@@ -556,7 +556,8 @@ public class CompositorViewHolder extends FrameLayout
         int actionMasked = SPenSupport.convertSPenEventAction(e.getActionMasked());
 
         if (actionMasked == MotionEvent.ACTION_DOWN
-                || actionMasked == MotionEvent.ACTION_HOVER_ENTER) {
+                || actionMasked == MotionEvent.ACTION_HOVER_ENTER
+                || actionMasked == MotionEvent.ACTION_HOVER_MOVE) {
             if (mLayoutManager != null) mLayoutManager.getViewportPixel(mCacheViewport);
             webContents.getEventForwarder().setCurrentTouchEventOffsets(
                     -mCacheViewport.left, -mCacheViewport.top);
