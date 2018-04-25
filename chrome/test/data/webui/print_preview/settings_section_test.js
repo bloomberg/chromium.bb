@@ -56,7 +56,8 @@ cr.define('settings_sections_tests', function() {
       PolymerTest.clearBody();
       page = document.createElement('print-preview-app');
       const previewArea = page.$$('print-preview-preview-area');
-      previewArea.plugin_ = new print_preview.PDFPluginStub(previewArea);
+      previewArea.plugin_ = new print_preview.PDFPluginStub(
+          previewArea.onPluginLoad_.bind(previewArea));
       document.body.appendChild(page);
 
       // Wait for initialization to complete.
