@@ -424,11 +424,9 @@ void Shell::RegisterUserProfilePrefs(PrefRegistrySimple* registry,
   PowerPrefs::RegisterUserProfilePrefs(registry, for_test);
 }
 
-void Shell::InitWaylandServer(
-    exo::NotificationSurfaceManager* notification_surface_manager,
-    std::unique_ptr<exo::FileHelper> file_helper) {
-  wayland_server_controller_ = WaylandServerController::CreateIfNecessary(
-      notification_surface_manager, std::move(file_helper));
+void Shell::InitWaylandServer(std::unique_ptr<exo::FileHelper> file_helper) {
+  wayland_server_controller_ =
+      WaylandServerController::CreateIfNecessary(std::move(file_helper));
 }
 
 void Shell::DestroyWaylandServer() {

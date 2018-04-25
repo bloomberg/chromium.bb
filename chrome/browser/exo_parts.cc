@@ -23,7 +23,6 @@
 #include "content/public/common/drop_data.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
-#include "ui/arc/notification/arc_notification_surface_manager_impl.h"
 
 namespace {
 
@@ -123,10 +122,7 @@ ExoParts::~ExoParts() {
 
 ExoParts::ExoParts() {
   DCHECK(!ash_util::IsRunningInMash());
-  arc_notification_surface_manager_ =
-      std::make_unique<arc::ArcNotificationSurfaceManagerImpl>();
   std::unique_ptr<ChromeFileHelper> file_helper =
       std::make_unique<ChromeFileHelper>();
-  ash::Shell::Get()->InitWaylandServer(arc_notification_surface_manager_.get(),
-                                       std::move(file_helper));
+  ash::Shell::Get()->InitWaylandServer(std::move(file_helper));
 }

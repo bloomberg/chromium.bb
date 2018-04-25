@@ -46,7 +46,6 @@ class DisplayManager;
 
 namespace exo {
 class FileHelper;
-class NotificationSurfaceManager;
 }  // namespace exo
 
 namespace gfx {
@@ -290,9 +289,7 @@ class ASH_EXPORT Shell : public SessionObserver,
                                        bool for_test = false);
 
   // If necessary, initializes the Wayland server.
-  void InitWaylandServer(
-      exo::NotificationSurfaceManager* notification_surface_manager,
-      std::unique_ptr<exo::FileHelper> file_helper);
+  void InitWaylandServer(std::unique_ptr<exo::FileHelper> file_helper);
   void DestroyWaylandServer();
 
   // Creates a default views::NonClientFrameView for use by windows in the

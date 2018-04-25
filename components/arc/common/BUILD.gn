@@ -17,7 +17,6 @@ if (is_chromeos) {
       "audio.mojom",
       "auth.mojom",
       "backup_settings.mojom",
-      "bitmap.mojom",
       "bluetooth.mojom",
       "boot_phase_monitor.mojom",
       "cast_receiver.mojom",
@@ -33,7 +32,6 @@ if (is_chromeos) {
       "metrics.mojom",
       "midis.mojom",
       "net.mojom",
-      "notifications.mojom",
       "obb_mounter.mojom",
       "oemcrypto.mojom",
       "oemcrypto_daemon.mojom",
@@ -58,10 +56,22 @@ if (is_chromeos) {
 
     public_deps = [
       ":media",
+      ":notifications",
       "//device/usb/public/mojom",
       "//mojo/common:common_custom_types",
       "//mojo/public/mojom/base",
       "//ui/gfx/geometry/mojo",
+    ]
+  }
+
+  mojom("notifications") {
+    sources = [
+      "bitmap.mojom",
+      "notifications.mojom",
+    ]
+
+    deps = [
+      ":media",  # for gfx.mojom
     ]
   }
 }

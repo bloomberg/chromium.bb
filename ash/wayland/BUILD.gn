@@ -16,5 +16,6 @@ source_set("wayland") {
     "//components/exo",
     "//components/exo/wayland",
     "//skia",
+    "//ui/arc",
   ]
 }

@@ -28,11 +28,10 @@ static_library("arc") {
   ]
 
   deps = [
-    "//ash",
     "//base",
-    "//components/arc:arc_base",
+    "//components/arc:connection_holder",
+    "//components/arc/common:notifications",
     "//components/exo",
-    "//components/keyed_service/content:content",
     "//components/signin/core/account_id",
     "//mojo/public/cpp/system",
     "//skia",

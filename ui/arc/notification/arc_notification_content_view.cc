@@ -4,7 +4,8 @@
 
 #include "ui/arc/notification/arc_notification_content_view.h"
 
-#include "ash/wm/window_util.h"
+// TODO(https://crbug.com/768439): Remove nogncheck when moved to ash.
+#include "ash/wm/window_util.h"  // nogncheck
 #include "base/auto_reset.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/surface.h"

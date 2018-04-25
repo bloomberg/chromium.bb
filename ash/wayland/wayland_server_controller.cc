@@ -15,6 +15,7 @@
 #include "components/exo/file_helper.h"
 #include "components/exo/wayland/server.h"
 #include "components/exo/wm_helper.h"
+#include "ui/arc/notification/arc_notification_surface_manager_impl.h"
 
 namespace ash {
 
@@ -46,15 +47,13 @@ class WaylandServerController::WaylandWatcher
 // static
 std::unique_ptr<WaylandServerController>
 WaylandServerController::CreateIfNecessary(
-    exo::NotificationSurfaceManager* notification_surface_manager,
     std::unique_ptr<exo::FileHelper> file_helper) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshEnableWaylandServer)) {
     return nullptr;
   }
 
-  return base::WrapUnique(new WaylandServerController(
-      notification_surface_manager, std::move(file_helper)));
+  return base::WrapUnique(new WaylandServerController(std::move(file_helper)));
 }
 
 WaylandServerController::~WaylandServerController() {
@@ -66,12 +65,13 @@ WaylandServerController::~WaylandServerController() {
 }
 
 WaylandServerController::WaylandServerController(
-    exo::NotificationSurfaceManager* notification_surface_manager,
     std::unique_ptr<exo::FileHelper> file_helper) {
+  arc_notification_surface_manager_ =
+      std::make_unique<arc::ArcNotificationSurfaceManagerImpl>();
   wm_helper_ = std::make_unique<exo::WMHelper>();
   exo::WMHelper::SetInstance(wm_helper_.get());
-  display_ = std::make_unique<exo::Display>(notification_surface_manager,
-                                            std::move(file_helper));
+  display_ = std::make_unique<exo::Display>(
+      arc_notification_surface_manager_.get(), std::move(file_helper));
   wayland_server_ = exo::wayland::Server::Create(display_.get());
   // Wayland server creation can fail if XDG_RUNTIME_DIR is not set correctly.
   if (wayland_server_)

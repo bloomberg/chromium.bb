@@ -11,8 +11,10 @@
 #include "ash/system/web_notification/inactive_user_notification_blocker.h"
 #include "ash/system/web_notification/session_state_notification_blocker.h"
 #include "base/macros.h"
+#include "components/arc/common/notifications.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "ui/arc/notification/arc_notification_manager.h"
 
 namespace message_center {
 struct NotifierId;
@@ -37,6 +39,8 @@ class ASH_EXPORT MessageCenterController
   // mojom::AshMessageCenterController:
   void SetClient(
       mojom::AshMessageCenterClientAssociatedPtrInfo client) override;
+  void SetArcNotificationsInstance(
+      arc::mojom::NotificationsInstancePtr arc_notification_instance) override;
   void ShowClientNotification(
       const message_center::Notification& notification,
       const base::UnguessableToken& display_token) override;
@@ -87,6 +91,8 @@ class ASH_EXPORT MessageCenterController
   mojo::BindingSet<mojom::AshMessageCenterController> binding_set_;
 
   mojom::AshMessageCenterClientAssociatedPtr client_;
+
+  std::unique_ptr<arc::ArcNotificationManager> arc_notification_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterController);
 };

@@ -6,9 +6,12 @@
 
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "ash/session/session_controller.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/command_line.h"
 #include "base/unguessable_token.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -146,6 +149,19 @@ void MessageCenterController::SetClient(
     mojom::AshMessageCenterClientAssociatedPtrInfo client) {
   DCHECK(!client_.is_bound());
   client_.Bind(std::move(client));
+}
+
+void MessageCenterController::SetArcNotificationsInstance(
+    arc::mojom::NotificationsInstancePtr arc_notification_instance) {
+  if (!arc_notification_manager_) {
+    arc_notification_manager_ = std::make_unique<arc::ArcNotificationManager>(
+        Shell::Get()
+            ->session_controller()
+            ->GetPrimaryUserSession()
+            ->user_info->account_id,
+        message_center::MessageCenter::Get());
+  }
+  arc_notification_manager_->SetInstance(std::move(arc_notification_instance));
 }
 
 void MessageCenterController::ShowClientNotification(
