@@ -1249,10 +1249,15 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   //
   // When applying offsets and not clips, the TransformAccumulation is
   // respected. If there is a clip, the TransformState is flattened first.
-  bool MapScrollingContentsRectToBoxSpace(
+  bool MapContentsRectToBoxSpace(
       TransformState&,
       TransformState::TransformAccumulation,
+      const LayoutObject& contents,
       VisualRectFlags = kDefaultVisualRectFlags) const;
+
+  // True if the contents scroll relative to this object. |this| must be a
+  // containing block for |contents|.
+  bool ContainedContentsScroll(const LayoutObject& contents) const;
 
   // Applies the box clip. This is like mapScrollingContentsRectToBoxSpace,
   // except it does not apply scroll.
