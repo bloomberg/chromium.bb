@@ -189,7 +189,6 @@ bool SurfacelessSkiaGlRenderer::Initialize() {
   }
 
   disable_primary_plane_ = command_line->HasSwitch(kDisablePrimaryPlane);
-  PostRenderFrameTask(gfx::SwapResult::SWAP_ACK);
   return true;
 }
 
