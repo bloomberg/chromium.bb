@@ -31,6 +31,8 @@ class ExtensionRequestProtocolHandler
  private:
   content::BrowserContext* const browser_context_;
   mutable const extensions::InfoMap* info_map_ = nullptr;
+  mutable std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>
+      default_handler_;
 };
 
 }  // namespace chromecast
