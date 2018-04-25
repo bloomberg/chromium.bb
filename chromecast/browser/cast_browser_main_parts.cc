@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -391,7 +392,7 @@ void CastBrowserMainParts::PostMainMessageLoopStart() {
           base::ThreadTaskRunnerHandle::Get()));
 
 #if defined(OS_ANDROID)
-  base::MessageLoopForUI::current()->Start();
+  base::MessageLoopCurrentForUI::Get()->Start();
 #endif  // defined(OS_ANDROID)
 }
 
@@ -591,7 +592,8 @@ bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
 
   // If parameters_.ui_task is not NULL, we are running browser tests.
   if (parameters_.ui_task) {
-    base::MessageLoop* message_loop = base::MessageLoopForUI::current();
+    base::MessageLoopCurrent message_loop =
+        base::MessageLoopCurrentForUI::Get();
     message_loop->task_runner()->PostTask(FROM_HERE, *parameters_.ui_task);
     message_loop->task_runner()->PostTask(FROM_HERE, quit_closure);
   }
