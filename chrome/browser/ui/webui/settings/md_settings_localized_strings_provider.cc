@@ -1549,6 +1549,10 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"syncSignInPrompt", IDS_SETTINGS_SYNC_SIGN_IN_PROMPT},
     {"syncSignInPromptSecondary", IDS_SETTINGS_SYNC_SIGN_IN_PROMPT_SECONDARY},
 #endif
+    {"syncUnifiedConsentToggleTitle",
+     IDS_SETTINGS_PEOPLE_SYNC_UNIFIED_CONSENT_TOGGLE_TITLE},
+    {"syncUnifiedConsentToggleSubtitle",
+     IDS_SETTINGS_PEOPLE_SYNC_UNIFIED_CONSENT_TOGGLE_SUBTITLE},
     {"syncOverview", IDS_SETTINGS_SYNC_OVERVIEW},
     {"syncDisabledByAdministrator",
      IDS_SETTINGS_SYNC_DISABLED_BY_ADMINISTRATOR},
