@@ -177,8 +177,6 @@ class ExtensionServiceTestBase : public testing::Test {
   // The associated ExtensionRegistry, for convenience.
   extensions::ExtensionRegistry* registry_;
 
-  Extension::ScopedAllowLegacyExtensions allow_legacy_extensions_;
-
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;

@@ -195,7 +195,7 @@ const char good2048[] = "nmgjhmhbleinmjpbdhgajfjkbijcmgbh";
 const char good_crx[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char minimal_platform_app_crx[] = "jjeoclcdfjddkdjokiejckgcildcflpp";
 const char hosted_app[] = "kbmnembihfiondgfjekmnmcbddelicoi";
-const char page_action[] = "obcimlgaoabeegjmmpldobjndiealpln";
+const char page_action[] = "dpfmafkdlbmopmcepgpjkpldjbghdibm";
 const char theme_crx[] = "iamefpfkojoapidjnbafmgkgncegbkad";
 const char theme2_crx[] = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
 const char permissions_crx[] = "eagpmdpfmaekmmcejjbmjoecnejeiiin";
@@ -262,17 +262,10 @@ size_t GetExternalInstallBubbleCount(ExtensionService* service) {
   return bubble_count;
 }
 
-scoped_refptr<Extension> CreateExtension(const base::string16& name,
+scoped_refptr<Extension> CreateExtension(const std::string& name,
                                          const base::FilePath& path,
                                          Manifest::Location location) {
-  base::DictionaryValue manifest;
-  manifest.SetString(extensions::manifest_keys::kVersion, "1.0.0.0");
-  manifest.SetString(extensions::manifest_keys::kName, name);
-  std::string error;
-  scoped_refptr<Extension> extension =
-      Extension::Create(path, location, manifest, Extension::NO_FLAGS, &error);
-  EXPECT_TRUE(extension.get() != nullptr) << error;
-  return extension;
+  return ExtensionBuilder(name).SetPath(path).SetLocation(location).Build();
 }
 
 std::unique_ptr<ExternalInstallInfoFile> CreateExternalExtension(
@@ -3932,6 +3925,7 @@ TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsLoadFromPrefs) {
   base::DictionaryValue manifest;
   manifest.SetString(keys::kName, "simple_extension");
   manifest.SetString(keys::kVersion, "1");
+  manifest.SetInteger(keys::kManifestVersion, 2);
   // UNPACKED is for extensions loaded from a directory. We use it here, even
   // though we're testing loading from prefs, so that we don't need to provide
   // an extension key.
@@ -6613,7 +6607,7 @@ TEST_F(ExtensionServiceTest, DisablingComponentExtensions) {
   service_->Init();
 
   scoped_refptr<Extension> external_component_extension = CreateExtension(
-      base::ASCIIToUTF16("external_component_extension"),
+      "external_component_extension",
       base::FilePath(FILE_PATH_LITERAL("//external_component_extension")),
       Manifest::EXTERNAL_COMPONENT);
   service_->AddExtension(external_component_extension.get());
@@ -6625,7 +6619,7 @@ TEST_F(ExtensionServiceTest, DisablingComponentExtensions) {
       external_component_extension->id()));
 
   scoped_refptr<Extension> component_extension = CreateExtension(
-      base::ASCIIToUTF16("component_extension"),
+      "component_extension",
       base::FilePath(FILE_PATH_LITERAL("//component_extension")),
       Manifest::COMPONENT);
   service_->AddExtension(component_extension.get());

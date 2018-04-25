@@ -416,16 +416,8 @@ class SupervisedUserServiceExtensionTestBase
   }
 
   scoped_refptr<extensions::Extension> MakeExtension(bool by_custodian) {
-    std::unique_ptr<base::DictionaryValue> manifest =
-        extensions::DictionaryBuilder()
-            .Set(extensions::manifest_keys::kName, "Extension")
-            .Set(extensions::manifest_keys::kVersion, "1.0")
-            .Build();
-
-    extensions::ExtensionBuilder builder;
     scoped_refptr<extensions::Extension> extension =
-        builder.SetManifest(std::move(manifest))
-            .Build();
+        extensions::ExtensionBuilder("Extension").Build();
     extensions::util::SetWasInstalledByCustodian(extension->id(),
                                                  profile_.get(), by_custodian);
 
