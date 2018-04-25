@@ -15,7 +15,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
@@ -29,6 +28,8 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     static final String DEPRECATED_PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR =
             "crash_dump_upload_no_cellular";
     private static final String DEPRECATED_PREF_CELLULAR_EXPERIMENT = "cellular_experiment";
+    private static final String DEPRECATED_PREF_PHYSICAL_WEB = "physical_web";
+    private static final String DEPRECATED_PREF_PHYSICAL_WEB_SHARING = "physical_web_sharing";
 
     public static final String PREF_METRICS_REPORTING = "metrics_reporting";
     private static final String PREF_METRICS_IN_SAMPLE = "in_metrics_sample";
@@ -36,10 +37,6 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     private static final String PREF_BANDWIDTH_OLD = "prefetch_bandwidth";
     private static final String PREF_BANDWIDTH_NO_CELLULAR_OLD = "prefetch_bandwidth_no_cellular";
     private static final String ALLOW_PRERENDER_OLD = "allow_prefetch";
-    private static final String PREF_PHYSICAL_WEB = "physical_web";
-    private static final int PHYSICAL_WEB_OFF = 0;
-    private static final int PHYSICAL_WEB_ON = 1;
-    private static final int PHYSICAL_WEB_ONBOARDING = 2;
 
     @SuppressLint("StaticFieldLeak")
     private static PrivacyPreferencesManager sInstance;
@@ -52,6 +49,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
         mContext = context;
         mSharedPreferences = ContextUtils.getAppSharedPreferences();
 
+        migratePhysicalWebPreferences();
         migrateUsageAndCrashPreferences();
     }
 
@@ -60,6 +58,14 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
             sInstance = new PrivacyPreferencesManager(ContextUtils.getApplicationContext());
         }
         return sInstance;
+    }
+
+    // TODO(https://crbug.com/826540): Remove some time after 4/2019.
+    public void migratePhysicalWebPreferences() {
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.remove(DEPRECATED_PREF_PHYSICAL_WEB)
+                .remove(DEPRECATED_PREF_PHYSICAL_WEB_SHARING)
+                .apply();
     }
 
     public void migrateUsageAndCrashPreferences() {
@@ -304,38 +310,5 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     public boolean isMetricsUploadPermitted() {
         return isNetworkAvailable()
                 && (isUsageAndCrashReportingPermittedByUser() || isUploadEnabledForTests());
-    }
-
-    /**
-     * Sets the Physical Web preference, which enables background scanning for bluetooth beacons
-     * and displays a notification when beacons are found.
-     *
-     * @param enabled A boolean indicating whether to notify on nearby beacons.
-     */
-    public void setPhysicalWebEnabled(boolean enabled) {
-        mSharedPreferences.edit()
-            .putInt(PREF_PHYSICAL_WEB, enabled ? PHYSICAL_WEB_ON : PHYSICAL_WEB_OFF)
-            .apply();
-        PhysicalWeb.updateScans();
-    }
-
-    /**
-     * Check whether the user is still in the Physical Web onboarding flow.
-     *
-     * @return boolean {@code true} if onboarding is not yet complete.
-     */
-    public boolean isPhysicalWebOnboarding() {
-        int state = mSharedPreferences.getInt(PREF_PHYSICAL_WEB, PHYSICAL_WEB_ONBOARDING);
-        return (state == PHYSICAL_WEB_ONBOARDING);
-    }
-
-    /**
-     * Check whether Physical Web is configured to notify on nearby beacons.
-     *
-     * @return boolean {@code true} if the feature is enabled.
-     */
-    public boolean isPhysicalWebEnabled() {
-        int state = mSharedPreferences.getInt(PREF_PHYSICAL_WEB, PHYSICAL_WEB_ONBOARDING);
-        return (state == PHYSICAL_WEB_ON);
     }
 }
