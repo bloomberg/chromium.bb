@@ -77,6 +77,10 @@ bool AwUrlCheckerDelegateImpl::ShouldSkipRequestCheck(
   return client && !client->GetSafeBrowsingEnabled();
 }
 
+void AwUrlCheckerDelegateImpl::NotifySuspiciousSiteDetected(
+    const base::RepeatingCallback<content::WebContents*()>&
+        web_contents_getter) {}
+
 const safe_browsing::SBThreatTypeSet&
 AwUrlCheckerDelegateImpl::GetThreatTypes() {
   return threat_types_;

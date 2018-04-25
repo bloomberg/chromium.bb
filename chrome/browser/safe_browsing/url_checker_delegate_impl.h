@@ -40,6 +40,9 @@ class UrlCheckerDelegateImpl : public UrlCheckerDelegate {
                               int render_process_id,
                               int render_frame_id,
                               bool originated_from_service_worker) override;
+  void NotifySuspiciousSiteDetected(
+      const base::RepeatingCallback<content::WebContents*()>&
+          web_contents_getter) override;
   const SBThreatTypeSet& GetThreatTypes() override;
   SafeBrowsingDatabaseManager* GetDatabaseManager() override;
   BaseUIManager* GetUIManager() override;

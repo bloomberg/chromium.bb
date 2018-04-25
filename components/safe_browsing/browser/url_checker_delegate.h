@@ -68,6 +68,13 @@ class UrlCheckerDelegate
       int render_frame_id,
       bool originated_from_service_worker) = 0;
 
+  // Notifies the SafeBrowsing Trigger Manager that a suspicious site has been
+  // detected. |web_contents_getter| is used to determine which tab the site
+  // was detected on.
+  virtual void NotifySuspiciousSiteDetected(
+      const base::RepeatingCallback<content::WebContents*()>&
+          web_contents_getter) = 0;
+
   virtual const SBThreatTypeSet& GetThreatTypes() = 0;
   virtual SafeBrowsingDatabaseManager* GetDatabaseManager() = 0;
   virtual BaseUIManager* GetUIManager() = 0;

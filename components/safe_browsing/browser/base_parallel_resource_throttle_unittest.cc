@@ -126,6 +126,9 @@ class TestUrlCheckerDelegate : public UrlCheckerDelegate {
     return false;
   }
 
+  void NotifySuspiciousSiteDetected(
+      const base::RepeatingCallback<content::WebContents*()>&
+          web_contents_getter) override {}
   const SBThreatTypeSet& GetThreatTypes() override { return threat_types_; }
   SafeBrowsingDatabaseManager* GetDatabaseManager() override {
     return database_manager_.get();
