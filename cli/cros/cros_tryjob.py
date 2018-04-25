@@ -219,6 +219,10 @@ def DisplayLabel(site_config, options, build_config_name):
   Returns:
     String to use as the cbb_build_label value.
   """
+  # Production tryjobs always display as production tryjobs.
+  if options.production:
+    return config_lib.DISPLAY_LABEL_PRODUCTION_TRYJOB
+
   # Our site_config is only valid for the current branch. If the build
   # config is known and has an explicit display_label, use it.
   # to be 'master'.
@@ -227,10 +231,7 @@ def DisplayLabel(site_config, options, build_config_name):
       site_config[build_config_name].display_label):
     return site_config[build_config_name].display_label
 
-  # Fall back to defaults.
-  if options.production:
-    return config_lib.DISPLAY_LABEL_UNKNOWN_PRODUCTION
-
+  # Fall back to default.
   return config_lib.DISPLAY_LABEL_TRYJOB
 
 

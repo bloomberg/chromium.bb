@@ -698,7 +698,7 @@ class TryjobTestDisplayLabel(TryjobTest):
 
   def testMasterKnownProduction(self):
     label = self.FindLabel(['--production', 'eve-paladin'])
-    self.assertEqual(label, 'cq')
+    self.assertEqual(label, 'production_tryjob')
 
   def testMasterUnknownProduction(self):
     label = self.FindLabel(['--production', 'bogus-config'])
