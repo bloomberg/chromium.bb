@@ -8,14 +8,12 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/net/dns_probe_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/dns/dns_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::MessageLoopForIO;
 using base::RunLoop;
 using content::TestBrowserThreadBundle;
 using net::DnsClient;
