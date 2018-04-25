@@ -27,7 +27,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -42,34 +41,6 @@ namespace {
 constexpr char kUser1Email[] = "user1@dockedmagnifier";
 constexpr char kUser2Email[] = "user2@dockedmagnifier";
 
-// Mock mojo client of the Docked Magnifier.
-class DockedMagnifierTestClient : public mojom::DockedMagnifierClient {
- public:
-  DockedMagnifierTestClient() : binding_(this) {}
-  ~DockedMagnifierTestClient() override = default;
-
-  bool docked_magnifier_enabled() const { return docked_magnifier_enabled_; }
-
-  // Connects to the DockedMagnifierController.
-  void Start() {
-    ash::mojom::DockedMagnifierClientPtr client;
-    binding_.Bind(mojo::MakeRequest(&client));
-    Shell::Get()->docked_magnifier_controller()->SetClient(std::move(client));
-  }
-
-  // ash::mojom::DockedMagnifierClient:
-  void OnEnabledStatusChanged(bool enabled) override {
-    docked_magnifier_enabled_ = enabled;
-  }
-
- private:
-  mojo::Binding<ash::mojom::DockedMagnifierClient> binding_;
-
-  bool docked_magnifier_enabled_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(DockedMagnifierTestClient);
-};
-
 class DockedMagnifierTest : public NoSessionAshTestBase {
  public:
   DockedMagnifierTest() = default;
@@ -78,8 +49,6 @@ class DockedMagnifierTest : public NoSessionAshTestBase {
   DockedMagnifierController* controller() const {
     return Shell::Get()->docked_magnifier_controller();
   }
-
-  DockedMagnifierTestClient* test_client() { return &test_client_; }
 
   PrefService* user1_pref_service() {
     return Shell::Get()->session_controller()->GetUserPrefServiceForUser(
@@ -109,8 +78,6 @@ class DockedMagnifierTest : public NoSessionAshTestBase {
     // Create user 2 session.
     GetSessionControllerClient()->AddUserSession(kUser2Email);
 
-    test_client_.Start();
-
     // Place the cursor in the first display.
     GetEventGenerator().MoveMouseTo(gfx::Point(0, 0));
   }
@@ -121,8 +88,6 @@ class DockedMagnifierTest : public NoSessionAshTestBase {
   }
 
  private:
-  DockedMagnifierTestClient test_client_;
-
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DockedMagnifierTest);
@@ -154,37 +119,17 @@ TEST_F(DockedMagnifierTest, MutuallyExclusiveMagnifiers) {
   EXPECT_FALSE(controller()->GetFullscreenMagnifierEnabled());
 }
 
-// Tests the changes in the magnifier's status, user switches and the
-// interaction with the client.
+// Tests the changes in the magnifier's status, user switches.
 TEST_F(DockedMagnifierTest, TestEnableAndDisable) {
-  // Client should receive status updates.
-  EXPECT_FALSE(controller()->GetEnabled());
-  EXPECT_FALSE(test_client()->docked_magnifier_enabled());
+  // Enable for user 1, and switch to user 2. User 2 should have it disabled.
   controller()->SetEnabled(true);
-  controller()->FlushClientPtrForTesting();
   EXPECT_TRUE(controller()->GetEnabled());
-  EXPECT_TRUE(test_client()->docked_magnifier_enabled());
-  controller()->SetEnabled(false);
-  controller()->FlushClientPtrForTesting();
-  EXPECT_FALSE(controller()->GetEnabled());
-  EXPECT_FALSE(test_client()->docked_magnifier_enabled());
-
-  // Enable again for user 1, and switch to user 2. User 2 should have it
-  // disabled, the client should be updated accordingly.
-  controller()->SetEnabled(true);
-  controller()->FlushClientPtrForTesting();
-  EXPECT_TRUE(controller()->GetEnabled());
-  EXPECT_TRUE(test_client()->docked_magnifier_enabled());
   SwitchActiveUser(kUser2Email);
-  controller()->FlushClientPtrForTesting();
   EXPECT_FALSE(controller()->GetEnabled());
-  EXPECT_FALSE(test_client()->docked_magnifier_enabled());
 
   // Switch back to user 1, expect it to be enabled.
   SwitchActiveUser(kUser1Email);
-  controller()->FlushClientPtrForTesting();
   EXPECT_TRUE(controller()->GetEnabled());
-  EXPECT_TRUE(test_client()->docked_magnifier_enabled());
 }
 
 // Tests the magnifier's scale changes.
@@ -211,17 +156,12 @@ TEST_F(DockedMagnifierTest, TestScale) {
 // DockedMagnifierController (such as Settings UI) are observed and applied.
 TEST_F(DockedMagnifierTest, TestOutsidePrefsUpdates) {
   EXPECT_FALSE(controller()->GetEnabled());
-  EXPECT_FALSE(test_client()->docked_magnifier_enabled());
   user1_pref_service()->SetBoolean(prefs::kDockedMagnifierEnabled, true);
-  controller()->FlushClientPtrForTesting();
   EXPECT_TRUE(controller()->GetEnabled());
-  EXPECT_TRUE(test_client()->docked_magnifier_enabled());
   user1_pref_service()->SetDouble(prefs::kDockedMagnifierScale, 7.3f);
   EXPECT_FLOAT_EQ(7.3f, controller()->GetScale());
   user1_pref_service()->SetBoolean(prefs::kDockedMagnifierEnabled, false);
-  controller()->FlushClientPtrForTesting();
   EXPECT_FALSE(controller()->GetEnabled());
-  EXPECT_FALSE(test_client()->docked_magnifier_enabled());
 }
 
 // Tests that the workareas of displays are adjusted properly when the Docked
