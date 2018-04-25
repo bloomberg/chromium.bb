@@ -61,10 +61,9 @@ class UiScene {
   typedef std::vector<UiElement*> MutableElements;
 
   std::vector<UiElement*>& GetAllElements();
-  Elements GetVisibleElements();
-  MutableElements GetVisibleElementsMutable();
-  Elements GetVisibleElementsToDraw();
-  Elements GetVisibleWebVrOverlayElementsToDraw();
+  Elements GetElementsToHitTest();
+  Elements GetElementsToDraw();
+  Elements GetWebVrOverlayElementsToDraw();
 
   float background_distance() const { return background_distance_; }
   void set_background_distance(float d) { background_distance_ = d; }
@@ -80,6 +79,8 @@ class UiScene {
 
  private:
   void InitializeElement(UiElement* element);
+
+  MutableElements GetVisibleElementsMutable();
 
   std::unique_ptr<UiElement> root_element_;
 

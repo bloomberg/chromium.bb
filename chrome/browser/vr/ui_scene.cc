@@ -212,9 +212,10 @@ std::vector<UiElement*>& UiScene::GetAllElements() {
   return all_elements_;
 }
 
-UiScene::Elements UiScene::GetVisibleElements() {
+UiScene::Elements UiScene::GetElementsToHitTest() {
   return GetVisibleElementsWithPredicate(
-      root_element_.get(), [](UiElement* element) { return true; });
+      root_element_.get(),
+      [](UiElement* element) { return element->IsHitTestable(); });
 }
 
 UiScene::MutableElements UiScene::GetVisibleElementsMutable() {
@@ -222,7 +223,7 @@ UiScene::MutableElements UiScene::GetVisibleElementsMutable() {
       root_element_.get(), [](UiElement* element) { return true; });
 }
 
-UiScene::Elements UiScene::GetVisibleElementsToDraw() {
+UiScene::Elements UiScene::GetElementsToDraw() {
   return GetVisibleElementsWithPredicate(
       root_element_.get(), [](UiElement* element) {
         return element->draw_phase() == kPhaseForeground ||
@@ -231,7 +232,7 @@ UiScene::Elements UiScene::GetVisibleElementsToDraw() {
       });
 }
 
-UiScene::Elements UiScene::GetVisibleWebVrOverlayElementsToDraw() {
+UiScene::Elements UiScene::GetWebVrOverlayElementsToDraw() {
   auto* webvr_root = GetUiElementByName(kWebVrRoot);
   return GetVisibleElementsWithPredicate(webvr_root, [](UiElement* element) {
     return element->draw_phase() == kPhaseOverlayForeground;

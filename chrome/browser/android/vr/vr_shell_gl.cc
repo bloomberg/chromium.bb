@@ -1658,7 +1658,7 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
 
   std::vector<const UiElement*> overlay_elements;
   if (is_webvr_frame) {
-    overlay_elements = ui_->scene()->GetVisibleWebVrOverlayElementsToDraw();
+    overlay_elements = ui_->scene()->GetWebVrOverlayElementsToDraw();
   }
 
   TRACE_COUNTER1("gpu", "VR overlay element count", overlay_elements.size());
