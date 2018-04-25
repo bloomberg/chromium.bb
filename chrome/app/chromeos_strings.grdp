@@ -2642,7 +2642,7 @@
     <ph name="BR">&lt;br&gt;</ph>
     <ph name="BR">&lt;br&gt;</ph>
     For more information about the debugging features see:<ph name="BR">&lt;br&gt;</ph>
-    http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-features
+    https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-features
     <ph name="BR">&lt;br&gt;</ph>
     <ph name="BR">&lt;br&gt;</ph>
     <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Note:<ph name="END_BOLD">&lt;/b&gt;</ph>  The system will reboot during the process.
