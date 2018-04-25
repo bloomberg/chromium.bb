@@ -25,7 +25,8 @@ class DemoWindow;
 
 class WindowManager : public display::NativeDisplayObserver {
  public:
-  explicit WindowManager(base::OnceClosure quit_closure);
+  explicit WindowManager(std::unique_ptr<RendererFactory> renderer_factory,
+                         base::OnceClosure quit_closure);
   ~WindowManager() override;
 
   void Quit();
@@ -44,7 +45,7 @@ class WindowManager : public display::NativeDisplayObserver {
 
   std::unique_ptr<display::NativeDisplayDelegate> delegate_;
   base::OnceClosure quit_closure_;
-  RendererFactory renderer_factory_;
+  std::unique_ptr<RendererFactory> renderer_factory_;
   std::vector<std::unique_ptr<DemoWindow>> windows_;
 
   // Flags used to keep track of the current state of display configuration.

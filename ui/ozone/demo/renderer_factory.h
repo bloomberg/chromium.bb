@@ -7,7 +7,6 @@
 
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/public/ozone_gpu_test_helper.h"
 
 namespace ui {
 
@@ -15,25 +14,13 @@ class Renderer;
 
 class RendererFactory {
  public:
-  enum RendererType {
-    SKIA,
-    SOFTWARE,
-  };
+  virtual ~RendererFactory();
 
-  RendererFactory();
-  ~RendererFactory();
+  virtual bool Initialize() = 0;
 
-  bool Initialize();
-  std::unique_ptr<Renderer> CreateRenderer(gfx::AcceleratedWidget widget,
-                                           const gfx::Size& size);
-
- private:
-  RendererType type_ = SOFTWARE;
-
-  // Helper for applications that do GL on main thread.
-  OzoneGpuTestHelper gpu_helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(RendererFactory);
+  virtual std::unique_ptr<Renderer> CreateRenderer(
+      gfx::AcceleratedWidget widget,
+      const gfx::Size& size) = 0;
 };
 
 }  // namespace ui

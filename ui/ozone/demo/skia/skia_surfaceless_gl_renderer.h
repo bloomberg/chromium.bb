@@ -2,30 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_DEMO_SURFACELESS_SKIA_RENDERER_H_
-#define UI_OZONE_DEMO_SURFACELESS_SKIA_RENDERER_H_
+#ifndef UI_OZONE_DEMO_SKIA_SKIA_SURFACELESS_GL_RENDERER_H_
+#define UI_OZONE_DEMO_SKIA_SKIA_SURFACELESS_GL_RENDERER_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/ozone/demo/skia_renderer.h"
+#include "ui/ozone/demo/skia/skia_gl_renderer.h"
 
 namespace ui {
 class OverlayCandidatesOzone;
 
-class SurfacelessSkiaRenderer : public SkiaRenderer {
+class SurfacelessSkiaGlRenderer : public SkiaGlRenderer {
  public:
-  SurfacelessSkiaRenderer(gfx::AcceleratedWidget widget,
-                          const scoped_refptr<gl::GLSurface>& surface,
-                          const gfx::Size& size);
-  ~SurfacelessSkiaRenderer() override;
+  SurfacelessSkiaGlRenderer(gfx::AcceleratedWidget widget,
+                            const scoped_refptr<gl::GLSurface>& surface,
+                            const gfx::Size& size);
+  ~SurfacelessSkiaGlRenderer() override;
 
   // Renderer:
   bool Initialize() override;
 
  private:
-  // SkiaRenderer:
+  // SkiaGlRenderer:
   void RenderFrame() override;
   void PostRenderFrameTask(gfx::SwapResult result) override;
 
@@ -41,11 +41,11 @@ class SurfacelessSkiaRenderer : public SkiaRenderer {
 
   int back_buffer_ = 0;
 
-  base::WeakPtrFactory<SurfacelessSkiaRenderer> weak_ptr_factory_;
+  base::WeakPtrFactory<SurfacelessSkiaGlRenderer> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SurfacelessSkiaRenderer);
+  DISALLOW_COPY_AND_ASSIGN(SurfacelessSkiaGlRenderer);
 };
 
 }  // namespace ui
 
-#endif  // UI_OZONE_DEMO_SURFACELESS_SKIA_RENDERER_H_
+#endif  // UI_OZONE_DEMO_SKIA_SKIA_SURFACELESS_GL_RENDERER_H_

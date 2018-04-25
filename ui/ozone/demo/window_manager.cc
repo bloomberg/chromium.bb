@@ -21,11 +21,13 @@ const char kWindowSize[] = "window-size";
 
 }  // namespace
 
-WindowManager::WindowManager(base::OnceClosure quit_closure)
+WindowManager::WindowManager(std::unique_ptr<RendererFactory> renderer_factory,
+                             base::OnceClosure quit_closure)
     : delegate_(
           ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate()),
-      quit_closure_(std::move(quit_closure)) {
-  if (!renderer_factory_.Initialize())
+      quit_closure_(std::move(quit_closure)),
+      renderer_factory_(std::move(renderer_factory)) {
+  if (!renderer_factory_->Initialize())
     LOG(FATAL) << "Failed to initialize renderer factory";
 
   if (delegate_) {
@@ -41,7 +43,7 @@ WindowManager::WindowManager(base::OnceClosure quit_closure)
                .c_str(),
            "%dx%d", &width, &height);
 
-    DemoWindow* window = new DemoWindow(this, &renderer_factory_,
+    DemoWindow* window = new DemoWindow(this, renderer_factory_.get(),
                                         gfx::Rect(gfx::Size(width, height)));
     window->Start();
   }
@@ -101,7 +103,7 @@ void WindowManager::OnDisplaysAquired(
 void WindowManager::OnDisplayConfigured(const gfx::Rect& bounds, bool success) {
   if (success) {
     std::unique_ptr<DemoWindow> window(
-        new DemoWindow(this, &renderer_factory_, bounds));
+        new DemoWindow(this, renderer_factory_.get(), bounds));
     window->Start();
     windows_.push_back(std::move(window));
   } else {
