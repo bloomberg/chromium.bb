@@ -425,7 +425,7 @@ _BANNED_CPP_FUNCTIONS = (
         'Please migrate away from RunLoop::QuitCurrent*() methods. Use member',
         'methods of a specific RunLoop instance instead.',
       ),
-      True,
+      False,
       (),
     ),
     (
