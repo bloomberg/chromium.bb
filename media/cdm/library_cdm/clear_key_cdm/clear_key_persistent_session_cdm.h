@@ -17,8 +17,8 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/content_decryption_module.h"
 #include "media/cdm/aes_decryptor.h"
+#include "media/cdm/library_cdm/cdm_host_proxy.h"
 #include "media/cdm/library_cdm/clear_key_cdm/cdm_file_adapter.h"
-#include "media/cdm/library_cdm/clear_key_cdm/cdm_host_proxy.h"
 
 namespace media {
 

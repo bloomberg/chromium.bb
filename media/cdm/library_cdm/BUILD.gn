@@ -1,0 +1,19 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//media/media_options.gni")
+
+if (enable_library_cdms) {
+  source_set("cdm_host_proxy") {
+    sources = [
+      "cdm_host_proxy.h",
+      "cdm_host_proxy_impl.h",
+    ]
+
+    deps = [
+      "//base",
+      "//media/cdm:cdm_api",
+    ]
+  }
+}

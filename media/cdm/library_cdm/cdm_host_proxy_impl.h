@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CDM_LIBRARY_CDM_CLEAR_KEY_CDM_CDM_HOST_PROXY_IMPL_H_
-#define MEDIA_CDM_LIBRARY_CDM_CLEAR_KEY_CDM_CDM_HOST_PROXY_IMPL_H_
+#ifndef MEDIA_CDM_LIBRARY_CDM_CDM_HOST_PROXY_IMPL_H_
+#define MEDIA_CDM_LIBRARY_CDM_CDM_HOST_PROXY_IMPL_H_
+
+#include "media/cdm/library_cdm/cdm_host_proxy.h"
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "media/cdm/api/content_decryption_module.h"
-#include "media/cdm/library_cdm/clear_key_cdm/cdm_host_proxy.h"
 
 namespace media {
 
@@ -149,4 +149,4 @@ cdm::CdmProxy* CdmHostProxyImpl<cdm::Host_10>::RequestCdmProxy(
 
 }  // namespace media
 
-#endif  // MEDIA_CDM_LIBRARY_CDM_CLEAR_KEY_CDM_CDM_HOST_PROXY_IMPL_H_
+#endif  // MEDIA_CDM_LIBRARY_CDM_CDM_HOST_PROXY_IMPL_H_

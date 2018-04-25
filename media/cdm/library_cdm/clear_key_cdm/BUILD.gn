@@ -14,8 +14,6 @@ loadable_module("clear_key_cdm") {
     "cdm_file_adapter.h",
     "cdm_file_io_test.cc",
     "cdm_file_io_test.h",
-    "cdm_host_proxy.h",
-    "cdm_host_proxy_impl.h",
     "cdm_proxy_test.cc",
     "cdm_proxy_test.h",
     "cdm_video_decoder.cc",
@@ -38,6 +36,7 @@ loadable_module("clear_key_cdm") {
     "//media",  # For media::AudioTimestampHelper
     "//media:shared_memory_support",  # For media::AudioBus.
     "//media/cdm:cdm_api",  # For content_decryption_module.h
+    "//media/cdm/library_cdm:cdm_host_proxy",
     "//url",
   ]
 
