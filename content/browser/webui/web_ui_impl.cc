@@ -109,6 +109,11 @@ bool WebUIImpl::OnMessageReceived(const IPC::Message& message,
 void WebUIImpl::OnWebUISend(RenderFrameHost* sender,
                             const std::string& message,
                             const base::ListValue& args) {
+  // Ignore IPCs from frames that are pending deletion.  See also
+  // https://crbug.com/780920.
+  if (!sender->IsCurrent())
+    return;
+
   const GURL& source_url = sender->GetLastCommittedURL();
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           sender->GetProcess()->GetID()) ||
@@ -119,10 +124,6 @@ void WebUIImpl::OnWebUISend(RenderFrameHost* sender,
         bad_message::WEBUI_SEND_FROM_UNAUTHORIZED_PROCESS);
     return;
   }
-
-  // Ignore IPCs from swapped-out frames.  See also https://crbug.com/780920.
-  if (!sender->IsCurrent())
-    return;
 
   if (base::EndsWith(message, "RequiringGesture",
                      base::CompareCase::SENSITIVE) &&
