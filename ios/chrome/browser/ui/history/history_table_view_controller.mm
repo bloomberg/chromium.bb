@@ -172,18 +172,6 @@ const int kMaxFetchCount = 100;
   }
 }
 
-// TODO(crbug.com/805190): These methods are supposed to be public, though we
-// should consider using a delegate instead.
-#pragma mark - Public Interface
-
-- (BOOL)hasSelectedEntries {
-  return self.tableView.indexPathsForSelectedRows.count;
-}
-
-- (void)deleteSelectedItemsFromHistory {
-  // TODO(crbug.com/805190): Migrate.
-}
-
 #pragma mark - TableViewModel
 
 - (void)loadModel {
@@ -320,7 +308,8 @@ const int kMaxFetchCount = 100;
 
 - (void)historyEntriesStatusItem:(HistoryEntriesStatusItem*)item
                didRequestOpenURL:(const GURL&)URL {
-  // TODO(crbug.com/805190): Migrate.
+  // TODO(crbug.com/805190): Migrate. This will navigate to the status message
+  // "Show Full History" URL.
 }
 
 #pragma mark HistoryEntryInserterDelegate
@@ -377,8 +366,39 @@ const int kMaxFetchCount = 100;
 
 // Deletes selected items from browser history and removes them from the
 // tableView.
-- (void)deleteSelectedItems {
-  // TODO(crbug.com/805190): Migrate.
+- (void)deleteSelectedItemsFromHistory {
+  NSArray* toDeleteIndexPaths = self.tableView.indexPathsForSelectedRows;
+
+  // Delete items from Browser History.
+  std::vector<BrowsingHistoryService::HistoryEntry> entries;
+  for (NSIndexPath* indexPath in toDeleteIndexPaths) {
+    HistoryEntryItem* object = base::mac::ObjCCastStrict<HistoryEntryItem>(
+        [self.tableViewModel itemAtIndexPath:indexPath]);
+    BrowsingHistoryService::HistoryEntry entry;
+    entry.url = object.URL;
+    // TODO(crbug.com/634507) Remove base::TimeXXX::ToInternalValue().
+    entry.all_timestamps.insert(object.timestamp.ToInternalValue());
+    entries.push_back(entry);
+  }
+  self.historyService->RemoveVisits(entries);
+
+  // Delete items from |self.tableView|.
+  // If iOS11+ use performBatchUpdates: instead of beginUpdates/endUpdates.
+  if (@available(iOS 11, *)) {
+    [self.tableView performBatchUpdates:^{
+      [self deleteItemsFromTableViewModelWithIndex:toDeleteIndexPaths];
+    }
+        completion:^(BOOL) {
+          [self updateTableViewAfterDeletingEntries];
+          [self configureViewsForNonEditModeWithAnimation:YES];
+        }];
+  } else {
+    [self.tableView beginUpdates];
+    [self deleteItemsFromTableViewModelWithIndex:toDeleteIndexPaths];
+    [self updateTableViewAfterDeletingEntries];
+    [self configureViewsForNonEditModeWithAnimation:YES];
+    [self.tableView endUpdates];
+  }
 }
 
 #pragma mark - UITableViewDelegate
@@ -512,7 +532,6 @@ const int kMaxFetchCount = 100;
 // Updates various elements after history items have been deleted from the
 // TableView.
 - (void)updateTableViewAfterDeletingEntries {
-  // TODO(crbug.com/805190): Migrate.
   // If only the header section remains, there are no history entries.
   if ([self.tableViewModel numberOfSections] == 1) {
     self.empty = YES;
@@ -582,12 +601,6 @@ const int kMaxFetchCount = 100;
     [self.tableView insertRowsAtIndexPaths:@[ statusMessageIndexPath ]
                           withRowAnimation:UITableViewRowAnimationNone];
   }
-}
-
-// Removes selected items from the tableView, but does not delete them from
-// browser history.
-- (void)removeSelectedItemsFromTableView {
-  // TODO(crbug.com/805190): Migrate.
 }
 
 // Deletes all items in the tableView which indexes are included in indexArray,
@@ -844,11 +857,11 @@ const int kMaxFetchCount = 100;
   if (!_deleteButton) {
     NSString* titleString =
         l10n_util::GetNSString(IDS_HISTORY_DELETE_SELECTED_ENTRIES_BUTTON);
-    _deleteButton =
-        [[UIBarButtonItem alloc] initWithTitle:titleString
-                                         style:UIBarButtonItemStylePlain
-                                        target:nil
-                                        action:nil];
+    _deleteButton = [[UIBarButtonItem alloc]
+        initWithTitle:titleString
+                style:UIBarButtonItemStylePlain
+               target:self
+               action:@selector(deleteSelectedItemsFromHistory)];
     _deleteButton.tintColor = [UIColor redColor];
   }
   return _deleteButton;
