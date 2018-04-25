@@ -58,8 +58,7 @@ class PpapiPluginSandboxedProcessLauncherDelegate
     : public content::SandboxedProcessLauncherDelegate {
  public:
   explicit PpapiPluginSandboxedProcessLauncherDelegate(bool is_broker)
-#if (defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)) || \
-    defined(OS_WIN)
+#if BUILDFLAG(USE_ZYGOTE_HANDLE) || defined(OS_WIN)
       : is_broker_(is_broker)
 #endif
   {
@@ -124,8 +123,7 @@ class PpapiPluginSandboxedProcessLauncherDelegate
   }
 
  private:
-#if (defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)) || \
-    defined(OS_WIN)
+#if BUILDFLAG(USE_ZYGOTE_HANDLE) || defined(OS_WIN)
   bool is_broker_;
 #endif
 
