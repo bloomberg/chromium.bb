@@ -35,6 +35,7 @@
 namespace blink {
 
 class BackwardsTextBuffer;
+class Text;
 
 class CORE_EXPORT TextIteratorTextState {
   STACK_ALLOCATED();
@@ -61,7 +62,7 @@ class CORE_EXPORT TextIteratorTextState {
                     const Node* offset_base_node,
                     unsigned text_start_offset,
                     unsigned text_end_offset);
-  void EmitText(const Node*,
+  void EmitText(const Text&,
                 unsigned position_start_offset,
                 unsigned position_end_offset,
                 const String&,

@@ -149,15 +149,18 @@ void TextIteratorTextState::SpliceBuffer(UChar c,
   last_character_ = c;
 }
 
-void TextIteratorTextState::EmitText(const Node* text_node,
+void TextIteratorTextState::EmitText(const Text& text_node,
                                      unsigned position_start_offset,
                                      unsigned position_end_offset,
                                      const String& string,
                                      unsigned text_start_offset,
                                      unsigned text_end_offset) {
-  DCHECK(text_node);
+  DCHECK_LE(position_start_offset, position_end_offset);
+  // TODO(editing-dev): text-transform:uppercase can make text longer, e.g.
+  // "U+00DF" to "SS". See "fast/css/case-transform.html"
+  // DCHECK_LE(position_end_offset, text_node.length());
   text_ =
-      behavior_.EmitsSmallXForTextSecurity() && IsTextSecurityNode(*text_node)
+      behavior_.EmitsSmallXForTextSecurity() && IsTextSecurityNode(text_node)
           ? RepeatString("x", string.length())
           : string,
 
@@ -166,7 +169,7 @@ void TextIteratorTextState::EmitText(const Node* text_node,
   DCHECK_LE(text_end_offset, text_.length());
   DCHECK_LE(text_start_offset, text_end_offset);
 
-  position_node_ = text_node;
+  position_node_ = &text_node;
   position_offset_base_node_ = nullptr;
   position_start_offset_ = position_start_offset;
   position_end_offset_ = position_end_offset;

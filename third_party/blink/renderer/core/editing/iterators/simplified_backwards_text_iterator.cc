@@ -241,8 +241,9 @@ bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::HandleTextNode() {
   const int text_length = position_end_offset - position_start_offset;
   const int text_offset = position_start_offset - offset_in_node;
   CHECK_LE(static_cast<unsigned>(text_offset + text_length), text.length());
-  text_state_.EmitText(node_, position_start_offset, position_end_offset, text,
-                       text_offset, text_offset + text_length);
+  text_state_.EmitText(ToText(*node_), position_start_offset,
+                       position_end_offset, text, text_offset,
+                       text_offset + text_length);
   return !should_handle_first_letter_;
 }
 
