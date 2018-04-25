@@ -98,16 +98,26 @@ void FeedImageDatabase::LoadImage(const std::string& url,
   }
 }
 
-void FeedImageDatabase::GarbageCollectImages(base::Time expired_time) {
+void FeedImageDatabase::DeleteImage(const std::string& url) {
+  DeleteImageImpl(url, base::BindOnce(&FeedImageDatabase::OnImageUpdated,
+                                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void FeedImageDatabase::GarbageCollectImages(
+    base::Time expired_time,
+    FeedImageDatabaseOperationCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // If database is not initiailzed yet, ignore the request.
-  if (!IsInitialized())
+  // If database is not initialized yet, ignore the request.
+  if (!IsInitialized()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
+  }
 
-  image_database_->LoadEntries(
-      base::BindOnce(&FeedImageDatabase::GarbageCollectImagesImpl,
-                     weak_ptr_factory_.GetWeakPtr(), expired_time));
+  image_database_->LoadEntries(base::BindOnce(
+      &FeedImageDatabase::GarbageCollectImagesImpl,
+      weak_ptr_factory_.GetWeakPtr(), expired_time, std::move(callback)));
 }
 
 void FeedImageDatabase::OnDatabaseInitialized(bool success) {
@@ -180,28 +190,53 @@ void FeedImageDatabase::OnImageUpdated(bool success) {
   DVLOG_IF(1, !success) << "FeedImageDatabase update failed.";
 }
 
+void FeedImageDatabase::DeleteImageImpl(
+    const std::string& url,
+    FeedImageDatabaseOperationCallback callback) {
+  image_database_->UpdateEntries(
+      std::make_unique<ImageKeyEntryVector>(),
+      std::make_unique<std::vector<std::string>>(1, url), std::move(callback));
+}
+
 void FeedImageDatabase::GarbageCollectImagesImpl(
     base::Time expired_time,
+    FeedImageDatabaseOperationCallback callback,
     bool load_entries_success,
     std::unique_ptr<std::vector<CachedImageProto>> image_entries) {
   if (!load_entries_success) {
-    DVLOG(1) << "FeedImageDatabase garbage collection failed.";
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&FeedImageDatabase::OnGarbageCollectionDone,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  std::move(callback), false));
     return;
   }
 
   int64_t expired_database_time = ToDatabaseTime(expired_time);
   auto keys_to_remove = std::make_unique<std::vector<std::string>>();
   for (const CachedImageProto& image : *image_entries) {
-    if (image.last_used_time() < expired_database_time)
+    if (image.last_used_time() < expired_database_time) {
       keys_to_remove->emplace_back(image.url());
+    }
   }
-  if (keys_to_remove->empty())
+
+  if (keys_to_remove->empty()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), true));
     return;
+  }
 
   image_database_->UpdateEntries(
       std::make_unique<ImageKeyEntryVector>(), std::move(keys_to_remove),
-      base::BindOnce(&FeedImageDatabase::OnImageUpdated,
-                     weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&FeedImageDatabase::OnGarbageCollectionDone,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void FeedImageDatabase::OnGarbageCollectionDone(
+    FeedImageDatabaseOperationCallback callback,
+    bool success) {
+  DVLOG_IF(1, !success) << "FeedImageDatabase garbage collection failed.";
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), success));
 }
 
 }  // namespace feed

@@ -64,6 +64,7 @@ class FeedImageDatabaseTest : public testing::Test {
   void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
   MOCK_METHOD1(OnImageLoaded, void(std::string));
+  MOCK_METHOD1(OnGarbageCollected, void(bool));
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -214,6 +215,36 @@ TEST_F(FeedImageDatabaseTest, LoadUpdatesTime) {
   EXPECT_TRUE(old_time != GetImageLastUsedTime(kImageURL));
 }
 
+TEST_F(FeedImageDatabaseTest, Delete) {
+  CreateDatabase();
+  image_db()->InitCallback(true);
+  ASSERT_TRUE(db()->IsInitialized());
+
+  // Store the image.
+  db()->SaveImage(kImageURL, kImageData);
+  image_db()->UpdateCallback(true);
+
+  // Make sure the image is there.
+  EXPECT_CALL(*this, OnImageLoaded(kImageData));
+  db()->LoadImage(kImageURL,
+                  base::BindOnce(&FeedImageDatabaseTest::OnImageLoaded,
+                                 base::Unretained(this)));
+  image_db()->GetCallback(true);
+
+  Mock::VerifyAndClearExpectations(this);
+
+  // Delete the image.
+  db()->DeleteImage(kImageURL);
+  image_db()->UpdateCallback(true);
+
+  // Make sure the image is gone.
+  EXPECT_CALL(*this, OnImageLoaded(std::string()));
+  db()->LoadImage(kImageURL,
+                  base::BindOnce(&FeedImageDatabaseTest::OnImageLoaded,
+                                 base::Unretained(this)));
+  image_db()->GetCallback(true);
+}
+
 TEST_F(FeedImageDatabaseTest, GarbageCollectImagesTest) {
   CreateDatabase();
   image_db()->InitCallback(true);
@@ -229,10 +260,14 @@ TEST_F(FeedImageDatabaseTest, GarbageCollectImagesTest) {
   InjectImageProto("url3", "data3", very_old_time);
 
   // Garbage collect all except the second.
-  db()->GarbageCollectImages(expired_time);
+  EXPECT_CALL(*this, OnGarbageCollected(true));
+  db()->GarbageCollectImages(
+      expired_time, base::BindOnce(&FeedImageDatabaseTest::OnGarbageCollected,
+                                   base::Unretained(this)));
   // This will first load all images, then delete the expired ones.
   image_db()->LoadCallback(true);
   image_db()->UpdateCallback(true);
+  RunUntilIdle();
 
   // Make sure the images are gone.
   EXPECT_CALL(*this, OnImageLoaded(std::string()));
