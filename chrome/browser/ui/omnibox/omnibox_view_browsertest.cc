@@ -34,6 +34,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.cc"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -373,6 +374,8 @@ class OmniboxViewTest : public InProcessBrowserTest,
   }
 
  private:
+  test::ScopedMacViewsBrowserMode views_mode_{true};
+
   // Non-owning pointer.
   TestToolbarModel* test_toolbar_model_ = nullptr;
 
@@ -815,7 +818,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BasicTextOperations) {
 
   size_t start, end;
   omnibox_view->GetSelectionBounds(&start, &end);
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(TOOLKIT_VIEWS)
   // Views textfields select-all in reverse to show the leading text.
   std::swap(start, end);
 #endif
@@ -847,7 +850,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BasicTextOperations) {
   omnibox_view->SelectAll(true);
   EXPECT_TRUE(omnibox_view->IsSelectAll());
   omnibox_view->GetSelectionBounds(&start, &end);
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(TOOLKIT_VIEWS)
   // Views textfields select-all in reverse to show the leading text.
   std::swap(start, end);
 #endif
@@ -1394,11 +1397,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_TabAcceptKeyword) {
   ASSERT_TRUE(omnibox_view->GetText().empty());
 
   // Revert to keyword hint mode with SHIFT+TAB.
-#if defined(OS_MACOSX)
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACKTAB, 0));
-#else
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN));
-#endif
   ASSERT_TRUE(omnibox_view->model()->is_keyword_hint());
   ASSERT_EQ(text, omnibox_view->model()->keyword());
   ASSERT_EQ(text, omnibox_view->GetText());
@@ -1605,16 +1604,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, UndoRedo) {
       SendKey(ui::VKEY_Z, kCtrlOrCmdMask | ui::EF_SHIFT_DOWN));
   EXPECT_TRUE(omnibox_view->GetText().empty());
 
-  // The toolkit-views undo manager doesn't support restoring selection. Cocoa
-  // does, so it needs to be cleared.
+  // Perform an undo.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_Z, kCtrlOrCmdMask));
-#if defined(OS_MACOSX)
-  // TODO(tapted): This next line may fail if running a toolkit-views browser
-  // window on Mac. We should fix the toolkit-views undo manager to restore
-  // selection rather than deleting this #ifdef.
-  EXPECT_TRUE(omnibox_view->IsSelectAll());
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RIGHT, 0));
-#endif
   EXPECT_FALSE(omnibox_view->IsSelectAll());
 
   // The cursor should be at the end.
