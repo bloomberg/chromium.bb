@@ -20,7 +20,7 @@ function SignalFailure() {
 }
 
 function CreateDummyRequest() {
-  dummy_request = NewXHR("http://mock.http/title2.html");
+  dummy_request = NewXHR("/title2.html");
   dummy_request.onload = SignalSuccess;
   dummy_request.send(null);
 }
@@ -46,7 +46,8 @@ function RedirectSucceeded() {
 }
 
 // Kick off a request that will attempt a cross-origin redirect.
-request = NewXHR("http://mock.http/redirect-to-title2.html");
+var redirect_url = "/server-redirect-302?http://a.com:" + location.port + "/title2.html";
+request = NewXHR(redirect_url);
 request.onerror = RedirectFailed;
 request.onload = RedirectSucceeded;
 request.send(null);
