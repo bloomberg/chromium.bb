@@ -194,6 +194,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
     self.Flaky('conformance2/rendering/attrib-type-match.html',
         ['win', 'nvidia', 'opengl'], bug=782254)
+    self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
+        ['win', 'nvidia', 'opengl'], bug=795030)
     self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
         ['win', 'nvidia', 'opengl'], bug=830046)
     self.Flaky('conformance2/transform_feedback/switching-objects.html',
@@ -323,6 +325,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/state/gl-get-calls.html', ['passthrough', 'opengl'],
         bug=602688)
     self.Fail('deqp/functional/gles3/integerstatequery.html',
+        ['passthrough', 'opengl'], bug=602688)
+    self.Fail('conformance/textures/canvas/' +
+        'tex-2d-alpha-alpha-unsigned_byte.html',
+        ['passthrough', 'opengl'], bug=602688)
+    self.Fail('conformance/textures/canvas/' +
+        'tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html',
         ['passthrough', 'opengl'], bug=602688)
 
     # Passthrough command decoder / OpenGL / Windows
