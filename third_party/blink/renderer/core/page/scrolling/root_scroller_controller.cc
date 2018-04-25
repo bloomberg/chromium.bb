@@ -38,14 +38,13 @@ bool FillsViewport(const Element& element) {
   // TODO(bokan): Broken for OOPIF. crbug.com/642378.
   Document& top_document = element.GetDocument().TopDocument();
 
-  Vector<FloatQuad> quads;
-  layout_object->AbsoluteQuads(quads);
-  DCHECK_EQ(quads.size(), 1u);
+  FloatQuad quad = layout_object->LocalToAbsoluteQuad(
+      FloatRect(ToLayoutBox(layout_object)->PaddingBoxRect()));
 
-  if (!quads[0].IsRectilinear())
+  if (!quad.IsRectilinear())
     return false;
 
-  LayoutRect bounding_box(quads[0].BoundingBox());
+  LayoutRect bounding_box(quad.BoundingBox());
 
   return bounding_box.Location() == LayoutPoint::Zero() &&
          bounding_box.Size() == top_document.GetLayoutView()->GetLayoutSize();
