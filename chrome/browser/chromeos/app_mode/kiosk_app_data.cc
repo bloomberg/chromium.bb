@@ -370,10 +370,6 @@ void KioskAppData::SetStatus(Status status) {
   }
 }
 
-net::URLRequestContextGetter* KioskAppData::GetRequestContextGetter() {
-  return g_browser_process->system_request_context();
-}
-
 network::mojom::URLLoaderFactory* KioskAppData::GetURLLoaderFactory() {
   return g_browser_process->system_network_context_manager()
       ->GetURLLoaderFactory();
@@ -464,10 +460,11 @@ void KioskAppData::StartFetch() {
     return;
   }
 
-  webstore_fetcher_.reset(new extensions::WebstoreDataFetcher(
-      this, GetRequestContextGetter(), GURL(), app_id()));
+  webstore_fetcher_.reset(
+      new extensions::WebstoreDataFetcher(this, GURL(), app_id()));
   webstore_fetcher_->set_max_auto_retries(3);
-  webstore_fetcher_->Start();
+  webstore_fetcher_->Start(g_browser_process->system_network_context_manager()
+                               ->GetURLLoaderFactory());
 }
 
 void KioskAppData::OnWebstoreRequestFailure() {
