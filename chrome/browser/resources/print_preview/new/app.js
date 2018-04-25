@@ -100,6 +100,12 @@ Polymer({
       value: false,
     },
 
+    /** @private {!print_preview_new.PreviewAreaState} */
+    previewState_: {
+      type: String,
+      observer: 'onPreviewAreaStateChanged_',
+    },
+
     /** @private {boolean} */
     settingsExpanded_: {
       type: Boolean,
@@ -301,6 +307,10 @@ Polymer({
 
   /** @private */
   onDestinationSelect_: function() {
+    // If the plugin does not exist do not attempt to load the preview.
+    if (this.state == print_preview_new.State.FATAL_ERROR)
+      return;
+
     this.$.state.transitTo(print_preview_new.State.NOT_READY);
     this.destination_ = this.destinationStore_.selectedDestination;
   },
@@ -310,8 +320,10 @@ Polymer({
     this.set(
         'destination_.capabilities',
         this.destinationStore_.selectedDestination.capabilities);
-    if (this.state != print_preview_new.State.READY)
+    if (this.state != print_preview_new.State.READY &&
+        this.state != print_preview_new.State.FATAL_ERROR) {
       this.$.state.transitTo(print_preview_new.State.READY);
+    }
     if (!this.$.model.initialized())
       this.$.model.applyStickySettings();
   },
@@ -351,12 +363,6 @@ Polymer({
             this.onPrintToCloud_.bind(this), this.onPrintFailed_.bind(this));
       }
     }
-  },
-
-  /** @private */
-  onPreviewLoaded_: function() {
-    if (this.state == print_preview_new.State.HIDDEN)
-      this.$.state.transitTo(print_preview_new.State.PRINTING);
   },
 
   /** @private */
@@ -439,13 +445,30 @@ Polymer({
   },
 
   /** @private */
-  onPreviewFailed_: function() {
-    this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
+  onInvalidPrinter_: function() {
+    this.previewState_ =
+        print_preview_new.PreviewAreaState.UNSUPPORTED_CLOUD_PRINTER;
   },
 
   /** @private */
-  onInvalidPrinter_: function() {
-    this.$.state.transitTo(print_preview_new.State.INVALID_PRINTER);
+  onPreviewAreaStateChanged_: function() {
+    switch (this.previewState_) {
+      case print_preview_new.PreviewAreaState.PREVIEW_FAILED:
+      case print_preview_new.PreviewAreaState.NO_PLUGIN:
+        this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
+        break;
+      case print_preview_new.PreviewAreaState.INVALID_SETTINGS:
+      case print_preview_new.PreviewAreaState.UNSUPPORTED_CLOUD_PRINTER:
+        this.$.state.transitTo(print_preview_new.State.INVALID_PRINTER);
+        break;
+      case print_preview_new.PreviewAreaState.DISPLAY_PREVIEW:
+      case print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADED:
+        if (this.state == print_preview_new.State.HIDDEN)
+          this.$.state.transitTo(print_preview_new.State.PRINTING);
+        break;
+      default:
+        break;
+    }
   },
 
   /**

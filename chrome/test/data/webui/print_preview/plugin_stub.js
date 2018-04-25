@@ -8,23 +8,14 @@ cr.define('print_preview', function() {
    */
   class PDFPluginStub {
     /**
-     * @param {!print_preview.PreviewArea} The PreviewArea that owns this
-     *     plugin.
-     */
-    constructor(area) {
-      /**
-       * @private {?Function} The callback to run when the plugin has loaded.
-       */
-      this.loadCallback_ = null;
-
-    }
-
-    /**
-     * @param {!Function} callback The callback to run when the plugin has
+     * @param {!Function} loadCallback The function to call when the plugin has
      *     loaded.
      */
-    setLoadCallback(callback) {
-      this.loadCallback_ = callback;
+    constructor(loadCallback) {
+      /**
+       * @private {!Function} The callback to run when the plugin has loaded.
+       */
+      this.loadCallback_ = loadCallback;
     }
 
     /**

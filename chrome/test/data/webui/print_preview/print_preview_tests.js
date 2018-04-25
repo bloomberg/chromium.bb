@@ -202,31 +202,6 @@ cr.define('print_preview_test', function() {
   }
 
   /**
-   * Get the default media size for |device|.
-   * @param {!print_preview.PrinterCapabilitiesResponse} device
-   * @return {{width_microns: number,
-   *           height_microns: number}} The width and height of the default
-   *     media.
-   */
-  function getDefaultMediaSize(device) {
-    const size = device.capabilities.printer.media_size.option.find(
-        function(opt) { return opt.is_default; });
-    return { width_microns: size.width_microns,
-             height_microns: size.height_microns };
-  }
-
-  /**
-   * Get the default page orientation for |device|.
-   * @param {!print_preview.PrinterCapabilitiesResponse} device
-   * @return {string} The default orientation.
-   */
-  function getDefaultOrientation(device) {
-    return device.capabilities.printer.page_orientation.option.find(
-        function(opt) { return opt.is_default; }).type;
-  }
-
-
-  /**
    * @param {string} printerId
    * @return {!Object}
    */
@@ -322,26 +297,6 @@ cr.define('print_preview_test', function() {
   }
 
   /**
-   * Creates a destination with a certificate status tag.
-   * @param {string} id Printer id
-   * @param {string} name Printer display name
-   * @param {boolean} invalid Whether printer has an invalid certificate.
-   * @return {!print_preview.Destination}
-   */
-  function getDestinationWithCertificateStatus(id, name, invalid) {
-    const tags = {
-      certificateStatus: invalid ?
-          print_preview.DestinationCertificateStatus.NO :
-          print_preview.DestinationCertificateStatus.UNKNOWN,
-    };
-    const dest = new print_preview.Destination(
-        id, print_preview.DestinationType.GOOGLE,
-        print_preview.DestinationOrigin.COOKIES, name, true /* isRecent */,
-        print_preview.DestinationConnectionStatus.ONLINE, tags);
-    return dest;
-  }
-
-  /**
    * Performs some setup for invalid certificate tests using 2 destinations
    * in |printers|. printers[0] will be set as the most recent destination,
    * and printers[1] will be the second most recent destination. Sets up
@@ -413,8 +368,7 @@ cr.define('print_preview_test', function() {
       print_preview.NativeLayer.setInstance(nativeLayer);
       printPreview = new print_preview.PrintPreview();
       previewArea = printPreview.getPreviewArea();
-      previewArea.plugin_ = new print_preview.PDFPluginStub(previewArea);
-      previewArea.plugin_.setLoadCallback(
+      previewArea.plugin_ = new print_preview.PDFPluginStub(
           previewArea.onPluginLoad_.bind(previewArea));
     });
 
@@ -1493,10 +1447,12 @@ cr.define('print_preview_test', function() {
             const ticket = JSON.parse(printTicket);
             expectEquals(barDevice.printer.deviceName, ticket.deviceName);
             expectEquals(
-                getDefaultOrientation(barDevice) == 'LANDSCAPE',
+                print_preview_test_utils.getDefaultOrientation(barDevice) ==
+                    'LANDSCAPE',
                 ticket.landscape);
             expectEquals(1, ticket.copies);
-            const mediaDefault = getDefaultMediaSize(barDevice);
+            const mediaDefault =
+                print_preview_test_utils.getDefaultMediaSize(barDevice);
             expectEquals(
                 mediaDefault.width_microns, ticket.mediaSize.width_microns);
             expectEquals(
@@ -1512,9 +1468,11 @@ cr.define('print_preview_test', function() {
     // default.
     test('InvalidCertificateError', function() {
       const invalidPrinter =
-          getDestinationWithCertificateStatus('FooDevice', 'FooName', true);
+          print_preview_test_utils.createDestinationWithCertificateStatus(
+              'FooDevice', 'FooName', true);
       const validPrinter =
-          getDestinationWithCertificateStatus('BarDevice', 'BarName', false);
+          print_preview_test_utils.createDestinationWithCertificateStatus(
+              'BarDevice', 'BarName', false);
       setupInvalidCertificateTest([invalidPrinter, validPrinter]);
 
       // Get references to a few elements for testing.
@@ -1573,9 +1531,11 @@ cr.define('print_preview_test', function() {
     // was previously selected, the error is cleared.
     test('InvalidCertificateErrorReselectDestination', function() {
       const invalidPrinter =
-          getDestinationWithCertificateStatus('FooDevice', 'FooName', true);
+          print_preview_test_utils.createDestinationWithCertificateStatus(
+              'FooDevice', 'FooName', true);
       const validPrinter =
-          getDestinationWithCertificateStatus('BarDevice', 'BarName', false);
+          print_preview_test_utils.createDestinationWithCertificateStatus(
+              'BarDevice', 'BarName', false);
       setupInvalidCertificateTest([validPrinter, invalidPrinter]);
 
       // Get references to a few elements for testing.
@@ -1634,9 +1594,11 @@ cr.define('print_preview_test', function() {
     // preview from regenerating when settings are toggled.
     test('InvalidCertificateErrorNoPreview', function() {
       const invalidPrinter =
-          getDestinationWithCertificateStatus('FooDevice', 'FooName', true);
+          print_preview_test_utils.createDestinationWithCertificateStatus(
+              'FooDevice', 'FooName', true);
       const validPrinter =
-          getDestinationWithCertificateStatus('BarDevice', 'BarName', false);
+          print_preview_test_utils.createDestinationWithCertificateStatus(
+              'BarDevice', 'BarName', false);
 
       // Set the valid printer first. If the invalid printer is the first
       // printer loaded the bug does not occur since the print ticket store is
