@@ -319,7 +319,12 @@ void ThreadState::VisitStack(MarkingVisitor* visitor) {
 }
 
 void ThreadState::VisitPersistents(Visitor* visitor) {
-  ProcessHeap::GetCrossThreadPersistentRegion().TracePersistentNodes(visitor);
+  {
+    // See ProcessHeap::CrossThreadPersistentMutex().
+    RecursiveMutexLocker persistent_lock(
+        ProcessHeap::CrossThreadPersistentMutex());
+    ProcessHeap::GetCrossThreadPersistentRegion().TracePersistentNodes(visitor);
+  }
   persistent_region_->TracePersistentNodes(visitor);
   if (trace_dom_wrappers_) {
     TRACE_EVENT0("blink_gc", "V8GCController::traceDOMWrappers");
@@ -1269,8 +1274,6 @@ void ThreadState::IncrementalMarkingStart() {
           << "IncrementalMarking: Start";
   CompleteSweep();
   AtomicPauseScope atomic_pause_scope(this);
-  RecursiveMutexLocker persistent_lock(
-      ProcessHeap::CrossThreadPersistentMutex());
   MarkPhasePrologue(BlinkGC::kNoHeapPointersOnStack,
                     BlinkGC::kIncrementalMarking, BlinkGC::kIdleGC);
   MarkPhaseVisitRoots();
@@ -1284,8 +1287,6 @@ void ThreadState::IncrementalMarkingStep() {
           << "IncrementalMarking: Step";
   AtomicPauseScope atomic_pause_scope(this);
   DCHECK(IsMarkingInProgress());
-  RecursiveMutexLocker persistent_lock(
-      ProcessHeap::CrossThreadPersistentMutex());
   bool complete = MarkPhaseAdvanceMarking(
       CurrentTimeTicksInSeconds() + kIncrementalMarkingStepDurationInSeconds);
   if (complete)
@@ -1302,8 +1303,6 @@ void ThreadState::IncrementalMarkingFinalize() {
   DisableIncrementalMarkingBarrier();
   AtomicPauseScope atomic_pause_scope(this);
   DCHECK(IsMarkingInProgress());
-  RecursiveMutexLocker persistent_lock(
-      ProcessHeap::CrossThreadPersistentMutex());
   MarkPhaseVisitRoots();
   bool complete =
       MarkPhaseAdvanceMarking(std::numeric_limits<double>::infinity());
@@ -1355,14 +1354,6 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
       TRACE_EVENT2("blink_gc,devtools.timeline", "BlinkGCMarking",
                    "lazySweeping", sweeping_type == BlinkGC::kLazySweeping,
                    "gcReason", GcReasonString(reason));
-      // Access to the CrossThreadPersistentRegion has to be prevented
-      // while in the marking phase because otherwise other threads may
-      // allocate or free PersistentNodes and we can't handle
-      // that. Grabbing this lock also prevents non-attached threads
-      // from accessing any GCed heap while a GC runs.
-      RecursiveMutexLocker persistent_lock(
-          ProcessHeap::CrossThreadPersistentMutex());
-
       MarkPhasePrologue(stack_state, marking_type, reason);
       MarkPhaseVisitRoots();
       CHECK(MarkPhaseAdvanceMarking(std::numeric_limits<double>::infinity()));
@@ -1481,8 +1472,13 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
   CHECK(Heap().AdvanceMarkingStackProcessing(
       visitor, std::numeric_limits<double>::infinity()));
 
-  VisitWeakPersistents(visitor);
-  Heap().WeakProcessing(visitor);
+  {
+    // See ProcessHeap::CrossThreadPersistentMutex().
+    RecursiveMutexLocker persistent_lock(
+        ProcessHeap::CrossThreadPersistentMutex());
+    VisitWeakPersistents(visitor);
+    Heap().WeakProcessing(visitor);
+  }
   Heap().DecommitCallbackStacks();
 
   current_gc_data_.visitor.reset();
