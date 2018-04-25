@@ -49,13 +49,7 @@ class ArcPlayStoreSearchProviderTest : public AppListTestBase {
   }
 
   scoped_refptr<extensions::Extension> CreateExtension(const std::string& id) {
-    return extensions::ExtensionBuilder()
-        .SetManifest(extensions::DictionaryBuilder()
-                         .Set("name", "test")
-                         .Set("version", "0.1")
-                         .Build())
-        .SetID(id)
-        .Build();
+    return extensions::ExtensionBuilder("test").SetID(id).Build();
   }
 
   void AddExtension(const extensions::Extension* extension) {

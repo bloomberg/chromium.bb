@@ -551,6 +551,7 @@ class ArcPlayStoreAppTest : public ArcDefaulAppTest {
     manifest.SetString(extensions::manifest_keys::kName,
                        "Play Store");
     manifest.SetString(extensions::manifest_keys::kVersion, "1");
+    manifest.SetInteger(extensions::manifest_keys::kManifestVersion, 2);
     manifest.SetString(extensions::manifest_keys::kDescription,
                        "Play Store for testing");
 

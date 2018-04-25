@@ -32,7 +32,9 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/install_flag.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/value_builder.h"
 #include "ppapi/buildflags/buildflags.h"
 
 namespace {
@@ -118,17 +120,13 @@ class ExtensionGarbageCollectorChromeOSUnitTest
   scoped_refptr<Extension> CreateExtension(const std::string& id,
                                            const std::string& version,
                                            const base::FilePath& path) {
-    base::DictionaryValue manifest;
-    manifest.SetString(manifest_keys::kName, "test");
-    manifest.SetString(manifest_keys::kVersion, version);
-
-    std::string error;
-    scoped_refptr<Extension> extension = Extension::Create(
-        path, Manifest::INTERNAL, manifest, Extension::NO_FLAGS, id, &error);
-    CHECK(extension.get()) << error;
-    CHECK_EQ(id, extension->id());
-
-    return extension;
+    return ExtensionBuilder("test")
+        .MergeManifest(
+            DictionaryBuilder().Set(manifest_keys::kVersion, version).Build())
+        .SetID(id)
+        .SetPath(path)
+        .SetLocation(Manifest::INTERNAL)
+        .Build();
   }
 
   ExtensionPrefs* GetExtensionPrefs() {

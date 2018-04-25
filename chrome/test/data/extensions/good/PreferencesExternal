@@ -17,6 +17,7 @@
                "description": "The first extension that I made.",
                "format_version": 1,
                "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC8c4fBSPZ6utYoZ8NiWF/DSaimBhihjwgOsskyleFGaurhi3TDClTVSGPxNkgCzrz0wACML7M4aNjpd05qupdbR2d294jkDuI7caxEGUucpP7GJRRHnm8Sx+y0ury28n8jbN0PnInKKWcxpIXXmNQyC19HBuO3QIeUq9Dqc+7YFQIDAQAB",
+               "manifest_version": 2,
                "name": "My extension 1",
                "version": "1.0.0.0"
             },

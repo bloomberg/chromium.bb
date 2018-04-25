@@ -220,6 +220,7 @@ class MDnsAPITest : public extensions::ExtensionServiceTestBase {
     base::DictionaryValue manifest;
     manifest.SetString(extensions::manifest_keys::kVersion, "1.0.0.0");
     manifest.SetString(extensions::manifest_keys::kName, name);
+    manifest.SetInteger(extensions::manifest_keys::kManifestVersion, 2);
     if (is_platform_app) {
       // Setting app.background.page = "background.html" is sufficient to make
       // the extension type TYPE_PLATFORM_APP.

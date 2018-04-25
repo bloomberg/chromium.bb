@@ -25,11 +25,7 @@ const char kOldId[] = "oooooooooooooooooooooooooooooooo";
 const char kNewId[] = "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn";
 
 scoped_refptr<Extension> CreateExtension(const std::string& id) {
-  return ExtensionBuilder()
-      .SetManifest(
-          DictionaryBuilder().Set("name", "test").Set("version", "0.1").Build())
-      .SetID(id)
-      .Build();
+  return ExtensionBuilder("test").SetID(id).Build();
 }
 
 }  // namespace
