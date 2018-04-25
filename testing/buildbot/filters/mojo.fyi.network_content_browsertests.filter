@@ -41,15 +41,6 @@
 -PowerMonitorTest.TestRendererProcess
 -PowerMonitorTest.TestUtilityProcess
 -RenderViewBrowserTest.ConfirmCacheInformationPlumbed
--RequestDataResourceDispatcherHostBrowserTest.Basic
--RequestDataResourceDispatcherHostBrowserTest.BasicCrossSite
--RequestDataResourceDispatcherHostBrowserTest.CrossOriginAuxiliary
--RequestDataResourceDispatcherHostBrowserTest.CrossOriginNested
--RequestDataResourceDispatcherHostBrowserTest.FailedNavigation
--RequestDataResourceDispatcherHostBrowserTest.LinkRelPrefetch
--RequestDataResourceDispatcherHostBrowserTest.LinkRelPrefetchReferrerPolicy
--RequestDataResourceDispatcherHostBrowserTest.SameOriginAuxiliary
--RequestDataResourceDispatcherHostBrowserTest.SameOriginNested
 -WebContentsImplBrowserTest.DownloadImage_Deny_FileImage
 
 # services/network/url_loader.cc should handle failure in
@@ -100,3 +91,5 @@
 
 # https://crbug.com/808759
 -DownloadContentTest.DownloadAttributeBlobURL
+
+# NOTE: before adding new exclusions, please reach out to network-service-dev@.

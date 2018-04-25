@@ -328,3 +328,5 @@
 # https://crbug.com/803871
 -CertificateTransparencyBrowserTest.ProfileRequest
 -CertificateTransparencyBrowserTest.SystemRequest
+
+# NOTE: before adding new exclusions, please reach out to network-service-dev@.
