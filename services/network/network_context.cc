@@ -109,6 +109,16 @@ bool MatchesClearChannelIdFilter(mojom::ClearDataFilter_Type filter_type,
          found_domain;
 }
 
+void OnClearedChannelIds(net::SSLConfigService* ssl_config_service,
+                         base::OnceClosure callback) {
+  // Need to close open SSL connections which may be using the channel ids we
+  // deleted.
+  // TODO(mattm): http://crbug.com/166069 Make the server bound cert
+  // service/store have observers that can notify relevant things directly.
+  ssl_config_service->NotifySSLConfigChange();
+  std::move(callback).Run();
+}
+
 }  // namespace
 
 constexpr bool NetworkContext::enable_resource_scheduler_;
@@ -555,8 +565,12 @@ void NetworkContext::ClearChannelIds(base::Time start_time,
 
   url_request_context_->channel_id_service()
       ->GetChannelIDStore()
-      ->DeleteForDomainsCreatedBetween(std::move(filter_predicate), start_time,
-                                       end_time, std::move(callback));
+      ->DeleteForDomainsCreatedBetween(
+          std::move(filter_predicate), start_time, end_time,
+          base::BindOnce(
+              &OnClearedChannelIds,
+              base::RetainedRef(url_request_context_->ssl_config_service()),
+              std::move(callback)));
 }
 
 void NetworkContext::SetNetworkConditions(

@@ -78,7 +78,8 @@ mojom::NetworkContextParamsPtr CreateContextParams() {
   return params;
 }
 
-class NetworkContextTest : public testing::Test {
+class NetworkContextTest : public testing::Test,
+                           public net::SSLConfigService::Observer {
  public:
   NetworkContextTest()
       : scoped_task_environment_(
@@ -118,6 +119,8 @@ class NetworkContextTest : public testing::Test {
     return network_service_.get();
   }
 
+  void OnSSLConfigChanged() override { ++ssl_config_changed_count_; }
+
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<NetworkService> network_service_;
@@ -126,6 +129,7 @@ class NetworkContextTest : public testing::Test {
   // the NetworkContext. These tests are probably fine anyways, since the
   // message loop must be spun for that to happen.
   mojom::NetworkContextPtr network_context_ptr_;
+  int ssl_config_changed_count_ = 0;
 };
 
 TEST_F(NetworkContextTest, DestroyContextWithLiveRequest) {
@@ -874,6 +878,24 @@ TEST_F(NetworkContextTest, ClearChannelIdsWithTimeRange) {
   }
   EXPECT_THAT(identifiers,
               testing::UnorderedElementsAre("google.com", "gmail.com"));
+}
+
+TEST_F(NetworkContextTest, ClearChannelIdTriggersSslChangeNotification) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  network_context->url_request_context()->ssl_config_service()->AddObserver(
+      this);
+
+  ASSERT_EQ(0, ssl_config_changed_count_);
+
+  base::RunLoop run_loop;
+  network_context->ClearChannelIds(base::Time(), base::Time(),
+                                   nullptr /* filter */,
+                                   base::BindOnce(run_loop.QuitClosure()));
+  run_loop.Run();
+
+  EXPECT_EQ(1, ssl_config_changed_count_);
 }
 
 void SetCookieCallback(base::RunLoop* run_loop, bool* result_out, bool result) {

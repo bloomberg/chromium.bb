@@ -119,33 +119,6 @@ void ClearHttpAuthCacheOnIOThread(
   http_session->CloseAllConnections();
 }
 
-void OnClearedChannelIDsOnIOThread(
-    net::URLRequestContextGetter* request_context,
-    base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // Need to close open SSL connections which may be using the channel ids we
-  // are deleting.
-  // TODO(mattm): http://crbug.com/166069 Make the server bound cert
-  // service/store have observers that can notify relevant things directly.
-  // TODO(ericorth): http://crbug.com/824970 Move this over to the network
-  // service and handle within ClearChannelIds().
-  request_context->GetURLRequestContext()
-      ->ssl_config_service()
-      ->NotifySSLConfigChange();
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(callback));
-}
-
-void OnClearedChannelIDs(
-    scoped_refptr<net::URLRequestContextGetter> request_context,
-    base::OnceClosure callback) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&OnClearedChannelIDsOnIOThread,
-                     base::RetainedRef(std::move(request_context)),
-                     std::move(callback)));
-}
-
 }  // namespace
 
 BrowsingDataRemoverImpl::BrowsingDataRemoverImpl(
@@ -356,16 +329,10 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     DCHECK(service_filter->origins.empty())
         << "Origin-based deletion is not suitable for channel IDs.";
 
-    // Since we are running on the UI thread don't call GetURLRequestContext().
-    scoped_refptr<net::URLRequestContextGetter> request_context =
-        BrowserContext::GetDefaultStoragePartition(browser_context_)
-            ->GetURLRequestContext();
     BrowserContext::GetDefaultStoragePartition(browser_context_)
         ->GetNetworkContext()
-        ->ClearChannelIds(
-            delete_begin, delete_end, std::move(service_filter),
-            base::BindOnce(&OnClearedChannelIDs, std::move(request_context),
-                           CreatePendingTaskCompletionClosureForMojo()));
+        ->ClearChannelIds(delete_begin, delete_end, std::move(service_filter),
+                          CreatePendingTaskCompletionClosureForMojo());
   }
 
   //////////////////////////////////////////////////////////////////////////////
