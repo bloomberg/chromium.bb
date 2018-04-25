@@ -60,9 +60,12 @@ class FakeRunResults(object):
         self.total = total
         self.expected = expected
         self.expected_failures = 0
-        self.unexpected = unexpected
         self.expected_skips = 0
+        self.unexpected = unexpected
         self.results_by_name = {}
+        self.unexpected_results_by_name = {}
+        for i in range(unexpected):
+            self.unexpected_results_by_name['test%d' % i] = None
         total_run_time = 0
         for result in fake_results:
             self.results_by_name[result.shard_name] = result
@@ -142,52 +145,26 @@ class Testprinter(unittest.TestCase):
         printer.print_config('/tmp')
         self.assertNotIn('Baseline search path: test-mac-mac10.10 -> test-mac-mac10.11 -> generic', err.getvalue())
 
-    def test_print_directory_timings(self):
-        printer, err = self.get_printer()
-        printer._options.debug_rwt_logging = True
-
-        run_results = FakeRunResults()
-        run_results.results_by_name = {
-            'slowShard': FakeShard('slowShard', 16),
-            'borderlineShard': FakeShard('borderlineShard', 15),
-            'fastShard': FakeShard('fastShard', 1),
-        }
-
-        printer._print_directory_timings(run_results)
-        self.assertWritten(err, ['Time to process slowest subdirectories:\n',
-                                 '  slowShard took 16.0 seconds to run 1 tests.\n', '\n'])
-
-        printer, err = self.get_printer()
-        printer._options.debug_rwt_logging = True
-
-        run_results.results_by_name = {
-            'borderlineShard': FakeShard('borderlineShard', 15),
-            'fastShard': FakeShard('fastShard', 1),
-        }
-
-        printer._print_directory_timings(run_results)
-        self.assertWritten(err, [])
-
-    def test_print_one_line_summary(self):
+    def test_print_summary(self):
         def run_test(total, exp, unexp, shards, result):
             printer, err = self.get_printer(['--timing'] if shards else None)
             fake_results = FakeRunResults(total, exp, unexp, shards)
             total_time = fake_results.run_time + 1
-            printer._print_one_line_summary(total_time, fake_results)
+            printer.print_summary(total_time, fake_results)
             self.assertWritten(err, result)
 
         # Without times:
-        run_test(1, 1, 0, [], ['The test ran as expected.\n', '\n'])
-        run_test(2, 1, 1, [], ['\n', "1 test ran as expected, 1 didn't:\n", '\n'])
-        run_test(3, 2, 1, [], ['\n', "2 tests ran as expected, 1 didn't:\n", '\n'])
-        run_test(3, 2, 0, [], ['\n', "2 tests ran as expected (1 didn't run).\n", '\n'])
+        run_test(1, 1, 0, [], ['The test ran as expected.\n'])
+        run_test(2, 1, 1, [], ['\n', "1 test ran as expected, 1 didn't:\n", '    test0\n'])
+        run_test(3, 2, 1, [], ['\n', "2 tests ran as expected, 1 didn't:\n", '    test0\n'])
+        run_test(3, 2, 0, [], ['\n', "2 tests ran as expected (1 didn't run).\n"])
 
         # With times:
         fake_shards = [FakeShard('foo', 1), FakeShard('bar', 2)]
-        run_test(1, 1, 0, fake_shards, ['The test ran as expected in 5.00s (2.00s in rwt, 1x).\n', '\n'])
-        run_test(2, 1, 1, fake_shards, ['\n', "1 test ran as expected, 1 didn't in 5.00s (2.00s in rwt, 1x):\n", '\n'])
-        run_test(3, 2, 1, fake_shards, ['\n', "2 tests ran as expected, 1 didn't in 5.00s (2.00s in rwt, 1x):\n", '\n'])
-        run_test(3, 2, 0, fake_shards, ['\n', "2 tests ran as expected (1 didn't run) in 5.00s (2.00s in rwt, 1x).\n", '\n'])
+        run_test(1, 1, 0, fake_shards, ['The test ran as expected in 5.00s (2.00s in rwt, 1x).\n'])
+        run_test(2, 1, 1, fake_shards, ['\n', "1 test ran as expected, 1 didn't in 5.00s (2.00s in rwt, 1x):\n", '    test0\n'])
+        run_test(3, 2, 1, fake_shards, ['\n', "2 tests ran as expected, 1 didn't in 5.00s (2.00s in rwt, 1x):\n", '    test0\n'])
+        run_test(3, 2, 0, fake_shards, ['\n', "2 tests ran as expected (1 didn't run) in 5.00s (2.00s in rwt, 1x).\n"])
 
     def test_test_status_line(self):
         printer, _ = self.get_printer()
