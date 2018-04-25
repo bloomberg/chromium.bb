@@ -82,9 +82,10 @@ class SessionStorageLevelDBWrapperTest : public testing::Test {
 
     metadata_.SetupNewDatabase(1);
     std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
-    metadata_.RegisterNewMap(
+    auto map_id = metadata_.RegisterNewMap(
         metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
         &save_operations);
+    DCHECK(map_id->KeyPrefix() == StdStringToUint8Vector("map-0-"));
     leveldb_database_->Write(std::move(save_operations), base::DoNothing());
   }
   ~SessionStorageLevelDBWrapperTest() override = default;
