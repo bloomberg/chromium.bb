@@ -157,7 +157,6 @@ bool SurfacelessGlRenderer::Initialize() {
   }
 
   disable_primary_plane_ = command_line->HasSwitch("disable-primary-plane");
-  PostRenderFrameTask(gfx::SwapResult::SWAP_ACK);
   return true;
 }
 
