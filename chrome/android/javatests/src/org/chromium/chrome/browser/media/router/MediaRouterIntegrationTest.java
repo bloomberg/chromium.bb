@@ -214,7 +214,7 @@ public class MediaRouterIntegrationTest {
     @RetryOnFailure
     public void testBasic() throws InterruptedException, TimeoutException {
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
-        WebContents webContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        WebContents webContents = mActivityTestRule.getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
         View testRouteButton = RouterTestUtils.waitForRouteButton(
@@ -236,7 +236,7 @@ public class MediaRouterIntegrationTest {
     @LargeTest
     public void testSendAndOnMessage() throws InterruptedException, TimeoutException {
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
-        WebContents webContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        WebContents webContents = mActivityTestRule.getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
         View testRouteButton = RouterTestUtils.waitForRouteButton(
@@ -258,7 +258,7 @@ public class MediaRouterIntegrationTest {
     public void testOnClose() throws InterruptedException, TimeoutException {
         MockMediaRouteProvider.Factory.sProvider.setCloseRouteWithErrorOnSend(true);
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
-        WebContents webContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        WebContents webContents = mActivityTestRule.getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
         View testRouteButton = RouterTestUtils.waitForRouteButton(
@@ -280,7 +280,7 @@ public class MediaRouterIntegrationTest {
     public void testFailNoProvider() throws InterruptedException, TimeoutException {
         MockMediaRouteProvider.Factory.sProvider.setIsSupportsSource(false);
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
-        WebContents webContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        WebContents webContents = mActivityTestRule.getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
         View testRouteButton = RouterTestUtils.waitForRouteButton(
@@ -299,7 +299,7 @@ public class MediaRouterIntegrationTest {
     public void testFailCreateRoute() throws InterruptedException, TimeoutException {
         MockMediaRouteProvider.Factory.sProvider.setCreateRouteErrorMessage("Unknown sink");
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
-        WebContents webContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        WebContents webContents = mActivityTestRule.getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
         View testRouteButton = RouterTestUtils.waitForRouteButton(
@@ -317,7 +317,7 @@ public class MediaRouterIntegrationTest {
     @RetryOnFailure
     public void testReconnectSession() throws InterruptedException, TimeoutException {
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
-        WebContents webContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        WebContents webContents = mActivityTestRule.getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
         View testRouteButton = RouterTestUtils.waitForRouteButton(
@@ -328,8 +328,7 @@ public class MediaRouterIntegrationTest {
         String sessionId = getJavaScriptVariable(webContents, "startedConnection.id");
 
         mActivityTestRule.loadUrlInNewTab(mTestServer.getURL(TEST_PAGE));
-        WebContents newWebContents =
-                mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        WebContents newWebContents = mActivityTestRule.getWebContents();
         Assert.assertTrue(webContents != newWebContents);
         executeJavaScriptApi(newWebContents, String.format("reconnectSession(\'%s\');", sessionId));
         String reconnectedSessionId =
@@ -345,7 +344,7 @@ public class MediaRouterIntegrationTest {
     @RetryOnFailure
     public void testFailReconnectSession() throws InterruptedException, TimeoutException {
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
-        WebContents webContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        WebContents webContents = mActivityTestRule.getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
         View testRouteButton = RouterTestUtils.waitForRouteButton(
@@ -357,8 +356,7 @@ public class MediaRouterIntegrationTest {
 
         MockMediaRouteProvider.Factory.sProvider.setJoinRouteErrorMessage("Unknown route");
         mActivityTestRule.loadUrlInNewTab(mTestServer.getURL(TEST_PAGE_RECONNECT_FAIL));
-        WebContents newWebContents =
-                mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        WebContents newWebContents = mActivityTestRule.getWebContents();
         Assert.assertTrue(webContents != newWebContents);
         executeJavaScriptApi(newWebContents,
                 String.format("checkReconnectSessionFails('%s');", sessionId));
@@ -371,7 +369,7 @@ public class MediaRouterIntegrationTest {
     @RetryOnFailure
     public void testFailStartCancelled() throws InterruptedException, TimeoutException {
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
-        WebContents webContents = mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        WebContents webContents = mActivityTestRule.getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
         final Dialog routeSelectionDialog = RouterTestUtils.waitForDialog(

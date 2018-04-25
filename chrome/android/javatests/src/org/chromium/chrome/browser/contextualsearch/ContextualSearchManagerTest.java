@@ -2124,8 +2124,7 @@ public class ContextualSearchManagerTest {
     }
 
     private SelectionPopupController getSelectionPopupController() {
-        return SelectionPopupController.fromWebContents(
-                mActivityTestRule.getActivity().getActivityTab().getWebContents());
+        return SelectionPopupController.fromWebContents(mActivityTestRule.getWebContents());
     }
 
     /**

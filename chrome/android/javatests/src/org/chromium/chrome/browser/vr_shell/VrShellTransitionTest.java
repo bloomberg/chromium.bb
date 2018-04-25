@@ -184,8 +184,7 @@ public class VrShellTransitionTest {
 
         VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
         Assert.assertTrue(VrShellDelegate.isInVr());
-        Assert.assertEquals("Url correct", url,
-                mTestRule.getActivity().getActivityTab().getWebContents().getVisibleUrl());
+        Assert.assertEquals("Url correct", url, mTestRule.getWebContents().getVisibleUrl());
     }
 
     /**

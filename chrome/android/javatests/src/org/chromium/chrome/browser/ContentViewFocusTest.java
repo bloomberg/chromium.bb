@@ -199,8 +199,7 @@ public class ContentViewFocusTest {
     public void testPauseTriggersBlur() throws Exception {
         final CallbackHelper onTitleUpdatedHelper = new CallbackHelper();
         final WebContentsObserver observer =
-                new WebContentsObserver(
-                        mActivityTestRule.getActivity().getActivityTab().getWebContents()) {
+                new WebContentsObserver(mActivityTestRule.getWebContents()) {
                     @Override
                     public void titleWasSet(String title) {
                         mTitle = title;
@@ -223,7 +222,7 @@ public class ContentViewFocusTest {
         ThreadUtils.runOnUiThread(() -> cvc.onResume());
         onTitleUpdatedHelper.waitForCallback(callCount);
         Assert.assertEquals("focused", mTitle);
-        mActivityTestRule.getActivity().getActivityTab().getWebContents().removeObserver(observer);
+        mActivityTestRule.getWebContents().removeObserver(observer);
     }
 
     @Before

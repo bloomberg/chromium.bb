@@ -54,6 +54,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.RenderProcessLimit;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
 
 import java.lang.reflect.AnnotatedElement;
@@ -609,6 +610,13 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
 
     public String getTestName() {
         return mCurrentTestName;
+    }
+
+    /**
+     * @return {@link WebContents} of the active tab of the activity.
+     */
+    public WebContents getWebContents() {
+        return getActivity().getActivityTab().getWebContents();
     }
 
     public void setActivity(T chromeActivity) {

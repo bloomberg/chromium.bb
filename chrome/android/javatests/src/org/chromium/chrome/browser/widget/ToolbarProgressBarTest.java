@@ -118,8 +118,7 @@ public class ToolbarProgressBarTest {
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 
-        final WebContents webContents =
-                mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        final WebContents webContents = mActivityTestRule.getWebContents();
 
         TestWebContentsObserver observer = new TestWebContentsObserver(webContents);
         // Start and stop load events are carefully tracked; there should be two start-stop pairs

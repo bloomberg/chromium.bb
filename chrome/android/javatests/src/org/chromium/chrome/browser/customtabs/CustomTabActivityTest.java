@@ -862,9 +862,7 @@ public class CustomTabActivityTest {
                         && currentTab.getContentViewCore() != null;
             }
         });
-        DOMUtils.clickNode(
-                mCustomTabActivityTestRule.getActivity().getActivityTab().getWebContents(),
-                "select");
+        DOMUtils.clickNode(mCustomTabActivityTestRule.getWebContents(), "select");
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -1212,9 +1210,7 @@ public class CustomTabActivityTest {
                 }
             });
         });
-        DOMUtils.clickNode(
-                mCustomTabActivityTestRule.getActivity().getActivityTab().getWebContents(),
-                "new_window");
+        DOMUtils.clickNode(mCustomTabActivityTestRule.getWebContents(), "new_window");
 
         openTabHelper.waitForCallback(0, 1);
         Assert.assertEquals(
@@ -1578,8 +1574,7 @@ public class CustomTabActivityTest {
                 connection.postMessage(token, "Message", null) == CustomTabsService.RESULT_SUCCESS);
 
         final CallbackHelper renderProcessCallback = new CallbackHelper();
-        new WebContentsObserver(
-                mCustomTabActivityTestRule.getActivity().getActivityTab().getWebContents()) {
+        new WebContentsObserver(mCustomTabActivityTestRule.getWebContents()) {
             @Override
             public void renderProcessGone(boolean wasOomProtected) {
                 renderProcessCallback.notifyCalled();

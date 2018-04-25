@@ -85,8 +85,8 @@ public class DistillabilityServiceTest {
                     InfoBarContainer container, float shownRatio) {}
         });
 
-        TestWebContentsObserver observer = new TestWebContentsObserver(
-                mActivityTestRule.getActivity().getActivityTab().getWebContents());
+        TestWebContentsObserver observer =
+                new TestWebContentsObserver(mActivityTestRule.getWebContents());
         OnPageFinishedHelper finishHelper = observer.getOnPageFinishedHelper();
 
         // Navigate to a native page.
