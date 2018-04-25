@@ -298,7 +298,7 @@ class VideoCaptureTest : public testing::Test,
   }
 
   // |media_stream_manager_| needs to outlive |thread_bundle_| because it is a
-  // MessageLoop::DestructionObserver.
+  // MessageLoopCurrent::DestructionObserver.
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   const content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<media::AudioManager> audio_manager_;
