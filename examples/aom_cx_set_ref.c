@@ -125,7 +125,8 @@ static void testing_decode(aom_codec_ctx_t *encoder, aom_codec_ctx_t *decoder,
 static int encode_frame(aom_codec_ctx_t *ecodec, aom_image_t *img,
                         unsigned int frame_in, AvxVideoWriter *writer,
                         int test_decode, aom_codec_ctx_t *dcodec,
-                        unsigned int *frame_out, int *mismatch_seen) {
+                        unsigned int *frame_out, int *mismatch_seen,
+                        aom_image_t *ext_ref) {
   int got_pkts = 0;
   aom_codec_iter_t iter = NULL;
   const aom_codec_cx_pkt_t *pkt = NULL;
@@ -159,6 +160,11 @@ static int encode_frame(aom_codec_ctx_t *ecodec, aom_image_t *img,
         if (aom_codec_decode(dcodec, pkt->data.frame.buf,
                              (unsigned int)pkt->data.frame.sz, NULL))
           die_codec(dcodec, "Failed to decode frame.");
+
+        // Copy out first decoded frame, and use it as reference later.
+        if (*frame_out == 1 && ext_ref != NULL)
+          if (aom_codec_control(dcodec, AV1_GET_NEW_FRAME_IMAGE, ext_ref))
+            die_codec(dcodec, "Failed to get decoder new frame");
       }
     }
   }
@@ -291,17 +297,16 @@ int main(int argc, char **argv) {
   }
 
   // Encode frames.
-  aom_image_t *img_frm = &ext_ref;
-  while (aom_img_read(img_frm, infile)) {
+  while (aom_img_read(&raw, infile)) {
     if (limit && frame_in >= limit) break;
     if (update_frame_num > 1 && frame_out + 1 == update_frame_num) {
       av1_ref_frame_t ref;
       ref.idx = 0;
       ref.use_external_ref = 0;
-      ref.img = *img_frm;
+      ref.img = ext_ref;
       // Set reference frame in encoder.
       if (aom_codec_control(&ecodec, AV1_SET_REFERENCE, &ref))
-        die_codec(&ecodec, "Failed to set reference frame");
+        die_codec(&ecodec, "Failed to set encoder reference frame");
       printf(" <SET_REF>");
 
       // If set_reference in decoder is commented out, the enc/dec mismatch
@@ -309,21 +314,20 @@ int main(int argc, char **argv) {
       if (test_decode) {
         ref.use_external_ref = 1;
         if (aom_codec_control(&dcodec, AV1_SET_REFERENCE, &ref))
-          die_codec(&dcodec, "Failed to set reference frame");
+          die_codec(&dcodec, "Failed to set decoder reference frame");
       }
     }
 
-    encode_frame(&ecodec, img_frm, frame_in, writer, test_decode, &dcodec,
-                 &frame_out, &mismatch_seen);
+    encode_frame(&ecodec, &raw, frame_in, writer, test_decode, &dcodec,
+                 &frame_out, &mismatch_seen, &ext_ref);
     frame_in++;
     if (mismatch_seen) break;
-    if (frame_out >= update_frame_num) img_frm = &raw;
   }
 
   // Flush encoder.
   if (!mismatch_seen)
     while (encode_frame(&ecodec, NULL, frame_in, writer, test_decode, &dcodec,
-                        &frame_out, &mismatch_seen)) {
+                        &frame_out, &mismatch_seen, NULL)) {
     }
 
   printf("\n");

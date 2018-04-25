@@ -774,6 +774,27 @@ static aom_codec_err_t ctrl_get_new_frame_image(aom_codec_alg_priv_t *ctx,
   }
 }
 
+static aom_codec_err_t ctrl_copy_new_frame_image(aom_codec_alg_priv_t *ctx,
+                                                 va_list args) {
+  aom_image_t *img = va_arg(args, aom_image_t *);
+  if (img) {
+    YV12_BUFFER_CONFIG new_frame;
+    AVxWorker *const worker = ctx->frame_workers;
+    FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
+
+    if (av1_get_frame_to_show(frame_worker_data->pbi, &new_frame) == 0) {
+      YV12_BUFFER_CONFIG sd;
+      image2yuvconfig(img, &sd);
+      return av1_copy_new_frame_dec(&frame_worker_data->pbi->common, &new_frame,
+                                    &sd);
+    } else {
+      return AOM_CODEC_ERROR;
+    }
+  } else {
+    return AOM_CODEC_INVALID_PARAM;
+  }
+}
+
 static aom_codec_err_t ctrl_set_postproc(aom_codec_alg_priv_t *ctx,
                                          va_list args) {
   (void)ctx;
@@ -1027,6 +1048,7 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { AV1D_GET_FRAME_SIZE, ctrl_get_frame_size },
   { AV1_GET_ACCOUNTING, ctrl_get_accounting },
   { AV1_GET_NEW_FRAME_IMAGE, ctrl_get_new_frame_image },
+  { AV1_COPY_NEW_FRAME_IMAGE, ctrl_copy_new_frame_image },
   { AV1_GET_REFERENCE, ctrl_get_reference },
 
   { -1, NULL },

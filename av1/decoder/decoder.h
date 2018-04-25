@@ -117,6 +117,9 @@ aom_codec_err_t av1_copy_reference_dec(struct AV1Decoder *pbi, int idx,
 aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm, int idx,
                                       int use_external_ref,
                                       YV12_BUFFER_CONFIG *sd);
+aom_codec_err_t av1_copy_new_frame_dec(AV1_COMMON *cm,
+                                       YV12_BUFFER_CONFIG *new_frame,
+                                       YV12_BUFFER_CONFIG *sd);
 
 struct AV1Decoder *av1_decoder_create(BufferPool *const pool);
 

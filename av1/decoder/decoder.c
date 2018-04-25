@@ -233,10 +233,22 @@ aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm, int idx,
       ref_buf->u_buffer = sd->u_buffer;
       ref_buf->v_buffer = sd->v_buffer;
       ref_buf->use_external_refernce_buffers = 1;
-      // TODO(yunqing): This will be removed later.
-      aom_yv12_extend_frame_borders_c(ref_buf, num_planes);
     }
   }
+
+  return cm->error.error_code;
+}
+
+aom_codec_err_t av1_copy_new_frame_dec(AV1_COMMON *cm,
+                                       YV12_BUFFER_CONFIG *new_frame,
+                                       YV12_BUFFER_CONFIG *sd) {
+  const int num_planes = av1_num_planes(cm);
+
+  if (!equal_dimensions_and_border(new_frame, sd))
+    aom_internal_error(&cm->error, AOM_CODEC_ERROR,
+                       "Incorrect buffer dimensions");
+  else
+    aom_yv12_copy_frame(new_frame, sd, num_planes);
 
   return cm->error.error_code;
 }

@@ -63,6 +63,8 @@ enum aom_com_control_id {
   AOM_COMMON_CTRL_ID_MAX,
 
   AV1_GET_NEW_FRAME_IMAGE = 192, /**< get a pointer to the new frame */
+  AV1_COPY_NEW_FRAME_IMAGE =
+      193, /**< copy the new frame to an external buffer */
 
   AOM_DECODER_CTRL_ID_START = 256
 };
@@ -132,6 +134,8 @@ AOM_CTRL_USE_TYPE(AV1_COPY_REFERENCE, av1_ref_frame_t *)
 #define AOM_CTRL_AV1_COPY_REFERENCE
 AOM_CTRL_USE_TYPE(AV1_GET_NEW_FRAME_IMAGE, aom_image_t *)
 #define AOM_CTRL_AV1_GET_NEW_FRAME_IMAGE
+AOM_CTRL_USE_TYPE(AV1_COPY_NEW_FRAME_IMAGE, aom_image_t *)
+#define AOM_CTRL_AV1_COPY_NEW_FRAME_IMAGE
 
 /*!\endcond */
 /*! @} - end defgroup aom */
