@@ -89,6 +89,14 @@ class VideoCaptureFactory {
     }
 
     @CalledByNative
+    static int getFacingMode(int id) {
+        if (isLReleaseOrLater() && !VideoCaptureCamera2.isLegacyDevice(id)) {
+            return VideoCaptureCamera2.getFacingMode(id);
+        }
+        return VideoCaptureCamera.getFacingMode(id);
+    }
+
+    @CalledByNative
     static String getDeviceName(int id) {
         if (isLReleaseOrLater() && !VideoCaptureCamera2.isLegacyDevice(id)) {
             return VideoCaptureCamera2.getName(id);

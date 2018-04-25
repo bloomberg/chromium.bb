@@ -188,6 +188,22 @@ public class VideoCaptureCamera
         return VideoCaptureApi.ANDROID_API1;
     }
 
+    static int getFacingMode(int id) {
+        android.hardware.Camera.CameraInfo cameraInfo = VideoCaptureCamera.getCameraInfo(id);
+        if (cameraInfo == null) {
+            return VideoFacingMode.MEDIA_VIDEO_FACING_NONE;
+        }
+
+        switch (cameraInfo.facing) {
+            case android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT:
+                return VideoFacingMode.MEDIA_VIDEO_FACING_USER;
+            case android.hardware.Camera.CameraInfo.CAMERA_FACING_BACK:
+                return VideoFacingMode.MEDIA_VIDEO_FACING_ENVIRONMENT;
+            default:
+                return VideoFacingMode.MEDIA_VIDEO_FACING_NONE;
+        }
+    }
+
     static String getName(int id) {
         android.hardware.Camera.CameraInfo cameraInfo = VideoCaptureCamera.getCameraInfo(id);
         if (cameraInfo == null) return null;
