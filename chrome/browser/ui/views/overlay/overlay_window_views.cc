@@ -10,10 +10,14 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
 #include "media/base/video_util.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/vector_icons.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -26,6 +30,11 @@ std::unique_ptr<content::OverlayWindow> content::OverlayWindow::Create(
 namespace {
 const int kBorderThickness = 5;
 const int kResizeAreaCornerSize = 16;
+
+// TODO(apacible): Update sizes per UX feedback and when scaling is determined.
+// http://crbug.com/836389
+const gfx::Size kCloseIconSize = gfx::Size(50, 50);
+const gfx::Size kPlayPauseIconSize = gfx::Size(120, 120);
 }  // namespace
 
 // OverlayWindow implementation of NonClientFrameView.
@@ -97,7 +106,10 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
 
 OverlayWindowViews::OverlayWindowViews(
     content::PictureInPictureWindowController* controller)
-    : controller_(controller) {
+    : controller_(controller),
+      video_view_(new views::View()),
+      close_controls_view_(new views::ImageButton(nullptr)),
+      play_pause_controls_view_(new views::ToggleImageButton(nullptr)) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = CalculateAndUpdateBounds();
@@ -109,6 +121,7 @@ OverlayWindowViews::OverlayWindowViews(
   params.delegate = new OverlayWindowWidgetDelegate(this);
 
   Init(params);
+  SetUpViews();
 }
 
 OverlayWindowViews::~OverlayWindowViews() = default;
@@ -157,6 +170,40 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateBounds() {
       current_size_);
 }
 
+void OverlayWindowViews::SetUpViews() {
+  // Set up views::View that closes the window.
+  close_controls_view_->SetSize(kCloseIconSize);
+  close_controls_view_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                                          views::ImageButton::ALIGN_MIDDLE);
+  close_controls_view_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(views::kPictureInPictureCloseIcon, SK_ColorWHITE));
+
+  // Set up views::View that toggles play/pause.
+  play_pause_controls_view_->SetSize(kPlayPauseIconSize);
+  play_pause_controls_view_->SetImageAlignment(
+      views::ImageButton::ALIGN_CENTER, views::ImageButton::ALIGN_MIDDLE);
+  play_pause_controls_view_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(views::kPictureInPicturePlayIcon,
+                            kPlayPauseIconSize.width(), SK_ColorWHITE));
+  gfx::ImageSkia pause_icon =
+      gfx::CreateVectorIcon(views::kPictureInPicturePauseIcon,
+                            kPlayPauseIconSize.width(), SK_ColorWHITE);
+  play_pause_controls_view_->SetToggledImage(views::Button::STATE_NORMAL,
+                                             &pause_icon);
+  play_pause_controls_view_->SetToggled(false);
+
+  // Paint to ui::Layers to use in the OverlaySurfaceEmbedder.
+  video_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+  close_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+  play_pause_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+
+  // Don't show the controls until the mouse hovers over the window.
+  GetCloseControlsLayer()->SetVisible(false);
+  GetPlayPauseControlsLayer()->SetVisible(false);
+}
+
 bool OverlayWindowViews::IsActive() const {
   return views::Widget::IsActive();
 }
@@ -193,6 +240,32 @@ void OverlayWindowViews::UpdateVideoSize(const gfx::Size& natural_size) {
   SetBounds(CalculateAndUpdateBounds());
 }
 
+ui::Layer* OverlayWindowViews::GetVideoLayer() {
+  return video_view_->layer();
+}
+
+ui::Layer* OverlayWindowViews::GetCloseControlsLayer() {
+  return close_controls_view_->layer();
+}
+
+ui::Layer* OverlayWindowViews::GetPlayPauseControlsLayer() {
+  return play_pause_controls_view_->layer();
+}
+
+gfx::Rect OverlayWindowViews::GetCloseControlsBounds() {
+  return gfx::Rect(
+      gfx::Point(GetBounds().size().width() - kCloseIconSize.width(), 0),
+      kCloseIconSize);
+}
+
+gfx::Rect OverlayWindowViews::GetPlayPauseControlsBounds() {
+  return gfx::Rect(
+      gfx::Point(
+          (GetBounds().size().width() - kPlayPauseIconSize.width()) / 2,
+          (GetBounds().size().height() - kPlayPauseIconSize.height()) / 2),
+      kPlayPauseIconSize);
+}
+
 gfx::Size OverlayWindowViews::GetMinimumSize() const {
   return min_size_;
 }
@@ -208,15 +281,38 @@ void OverlayWindowViews::OnNativeWidgetWorkspaceChanged() {
 }
 
 void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() != ui::ET_MOUSE_RELEASED)
-    return;
+  // TODO(apacible): Handle tab focusing and touch screen events.
+  // http://crbug.com/836389
+  switch (event->type()) {
+    // Only show the media controls when the mouse is hovering over the window.
+    case ui::ET_MOUSE_ENTERED:
+      GetCloseControlsLayer()->SetVisible(true);
+      GetPlayPauseControlsLayer()->SetVisible(true);
+      break;
 
-  if (event->IsOnlyLeftMouseButton()) {
-    controller_->TogglePlayPause();
-    event->SetHandled();
-  } else if (event->IsOnlyRightMouseButton()) {
-    controller_->Close();
-    event->SetHandled();
+    case ui::ET_MOUSE_EXITED:
+      GetCloseControlsLayer()->SetVisible(false);
+      GetPlayPauseControlsLayer()->SetVisible(false);
+      break;
+
+    case ui::ET_MOUSE_RELEASED:
+      if (!event->IsOnlyLeftMouseButton())
+        return;
+
+      // TODO(apacible): Clip the clickable areas to where the button icons are
+      // drawn. http://crbug.com/836389
+      if (GetCloseControlsBounds().Contains(event->location())) {
+        controller_->Close();
+        event->SetHandled();
+      } else if (GetPlayPauseControlsBounds().Contains(event->location())) {
+        bool is_active = controller_->TogglePlayPause();
+        play_pause_controls_view_->SetToggled(is_active);
+        event->SetHandled();
+      }
+      break;
+
+    default:
+      break;
   }
 }
 

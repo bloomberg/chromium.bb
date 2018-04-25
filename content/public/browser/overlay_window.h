@@ -45,6 +45,15 @@ class OverlayWindow {
   virtual gfx::Rect GetBounds() const = 0;
   virtual void UpdateVideoSize(const gfx::Size& natural_size) = 0;
 
+  // Retrieve the ui::Layers corresponding to the video and controls.
+  virtual ui::Layer* GetVideoLayer() = 0;
+  virtual ui::Layer* GetCloseControlsLayer() = 0;
+  virtual ui::Layer* GetPlayPauseControlsLayer() = 0;
+
+  // Retrieves the bounds of the media controls.
+  virtual gfx::Rect GetCloseControlsBounds() = 0;
+  virtual gfx::Rect GetPlayPauseControlsBounds() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(OverlayWindow);
 };

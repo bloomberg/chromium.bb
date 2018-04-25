@@ -11,17 +11,19 @@ namespace content {
 OverlaySurfaceEmbedder::OverlaySurfaceEmbedder(OverlayWindow* window)
     : window_(window) {
   DCHECK(window_);
-  surface_layer_ = std::make_unique<ui::Layer>(ui::LAYER_TEXTURED);
-  surface_layer_->SetMasksToBounds(true);
+  video_layer_ = window_->GetVideoLayer();
+  video_layer_->SetMasksToBounds(true);
 
   // The frame provided by the parent window's layer needs to show through
-  // |surface_layer_|.
-  surface_layer_->SetFillsBoundsOpaquely(false);
-  // |surface_layer_| bounds are set with the (0, 0) origin point. The
+  // |video_layer_|.
+  video_layer_->SetFillsBoundsOpaquely(false);
+  // |video_layer_| bounds are set with the (0, 0) origin point. The
   // positioning of |window_| is dictated by itself.
-  surface_layer_->SetBounds(
+  video_layer_->SetBounds(
       gfx::Rect(gfx::Point(0, 0), window_->GetBounds().size()));
-  window_->GetLayer()->Add(surface_layer_.get());
+  window_->GetLayer()->Add(video_layer_);
+
+  AddControlsLayers();
 }
 
 OverlaySurfaceEmbedder::~OverlaySurfaceEmbedder() = default;
@@ -29,16 +31,34 @@ OverlaySurfaceEmbedder::~OverlaySurfaceEmbedder() = default;
 void OverlaySurfaceEmbedder::SetPrimarySurfaceId(
     const viz::SurfaceId& surface_id) {
   // SurfaceInfo has information about the embedded surface.
-  surface_layer_->SetShowPrimarySurface(
+  video_layer_->SetShowPrimarySurface(
       surface_id, window_->GetBounds().size(), SK_ColorBLACK,
       cc::DeadlinePolicy::UseDefaultDeadline(),
       true /* stretch_content_to_fill_bounds */);
 }
 
 void OverlaySurfaceEmbedder::UpdateLayerBounds() {
-  surface_layer_->SetBounds(
-      gfx::Rect(gfx::Point(0, 0), window_->GetBounds().size()));
-  surface_layer_->SetSurfaceSize(window_->GetBounds().size());
+  // Update the size and position of the video to stretch on the entire window.
+  gfx::Size window_size = window_->GetBounds().size();
+  video_layer_->SetBounds(gfx::Rect(gfx::Point(0, 0), window_size));
+  video_layer_->SetSurfaceSize(window_size);
+
+  // Update the size and position of controls.
+  close_controls_layer_->SetBounds(window_->GetCloseControlsBounds());
+  play_pause_controls_layer_->SetBounds(window_->GetPlayPauseControlsBounds());
+}
+
+void OverlaySurfaceEmbedder::AddControlsLayers() {
+  close_controls_layer_ = window_->GetCloseControlsLayer();
+  close_controls_layer_->SetFillsBoundsOpaquely(false);
+  close_controls_layer_->SetBounds(window_->GetCloseControlsBounds());
+
+  play_pause_controls_layer_ = window_->GetPlayPauseControlsLayer();
+  play_pause_controls_layer_->SetFillsBoundsOpaquely(false);
+  play_pause_controls_layer_->SetBounds(window_->GetPlayPauseControlsBounds());
+
+  window_->GetLayer()->Add(close_controls_layer_);
+  window_->GetLayer()->Add(play_pause_controls_layer_);
 }
 
 }  // namespace content
