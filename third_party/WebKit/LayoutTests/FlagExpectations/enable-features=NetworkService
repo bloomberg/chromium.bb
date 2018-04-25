@@ -64,6 +64,9 @@ Bug(none) http/tests/security/mixedContent/filesystem-url-in-iframe.html [ Failu
 Bug(none) http/tests/security/offscreen-canvas-worker-read-blocked-by-setting.html [ Crash Pass Timeout ]
 Bug(none) plugins/iframe-plugin-bgcolor.html [ Timeout ]
 
+# Cross-Origin Read Blocking is not implemented.
+crbug.com/792546 http/tests/inspector-protocol/network/block_cross_site_document_load.js [ Failure ]
+
 # Plugin throttle is not implemented.
 crbug.com/764474 http/tests/security/contentSecurityPolicy/object-src-url-allowed.html [ Failure ]
 crbug.com/764474 http/tests/security/contentSecurityPolicy/1.1/plugintypes-affects-cross-site-child-disallowed.html [ Failure ]

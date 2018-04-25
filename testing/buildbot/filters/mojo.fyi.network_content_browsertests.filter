@@ -52,6 +52,7 @@
 # service.
 # https://crbug.com/786505 (cross site document blocking)
 # https://crbug.com/792546 (cross site document blocking in network service)
+-CrossSiteDocumentBlockingBaseTest.BlockDocumentsByDefault
 -CrossSiteDocumentBlockingTest.BlockDocuments
 -CrossSiteDocumentBlockingTest.BlockHeaders
 -CrossSiteDocumentBlockingTest.BlockRequestFromErrorPage

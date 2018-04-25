@@ -98,7 +98,7 @@ const base::Feature kCompositorTouchAction{"CompositorTouchAction",
 // Enables blocking cross-site document responses (not paying attention to
 // whether a site isolation mode is also enabled).
 const base::Feature kCrossSiteDocumentBlockingAlways{
-    "CrossSiteDocumentBlockingAlways", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CrossSiteDocumentBlockingAlways", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables blocking cross-site document responses if one of site isolation modes
 // is (e.g. site-per-process or isolate-origins) is enabled.
