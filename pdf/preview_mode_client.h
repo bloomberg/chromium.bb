@@ -27,7 +27,6 @@ class PreviewModeClient : public PDFEngine::Client {
   ~PreviewModeClient() override {}
 
   // PDFEngine::Client implementation.
-  void DocumentSizeUpdated(const pp::Size& size) override;
   void Invalidate(const pp::Rect& rect) override;
   void DidScroll(const pp::Point& point) override;
   void ScrollToX(int x_in_screen_coords) override;
@@ -40,8 +39,6 @@ class PreviewModeClient : public PDFEngine::Client {
   void UpdateTickMarks(const std::vector<pp::Rect>& tickmarks) override;
   void NotifyNumberOfFindResultsChanged(int total, bool final_result) override;
   void NotifySelectedFindResultChanged(int current_find_index) override;
-  void NotifyPageBecameVisible(
-      const PDFEngine::PageFeatures* page_features) override;
   void GetDocumentPassword(
       pp::CompletionCallbackWithOutput<pp::Var> callback) override;
   void Alert(const std::string& message) override;
@@ -72,10 +69,8 @@ class PreviewModeClient : public PDFEngine::Client {
   void FontSubstituted() override;
   pp::Instance* GetPluginInstance() override;
   void DocumentHasUnsupportedFeature(const std::string& feature) override;
-  void DocumentLoadProgress(uint32_t available, uint32_t doc_size) override;
   void FormTextFieldFocusChange(bool in_focus) override;
   bool IsPrintPreview() override;
-  void CancelBrowserDownload() override;
   float GetToolbarHeightInScreenCoords() override;
   uint32_t GetBackgroundColor() override;
 
