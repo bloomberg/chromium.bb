@@ -16,8 +16,7 @@ import argparse
 import collections
 import multiprocessing.pool
 import os
-import re
-import shutil
+faydimport shutil
 import subprocess
 import sys
 import zipfile
@@ -55,8 +54,8 @@ _PNG_WEBP_BLACKLIST_PATTERN = re.compile('|'.join([
     r'.*star_gray\.png',
     # Android requires pngs for 9-patch images.
     r'.*\.9\.png',
-    # Daydream (*.dd) requires pngs for icon files.
-    r'.*\.dd\.png']))
+    # Daydream requires pngs for icon files.
+    r'.*daydream_icon_.*\.png']))
 
 # Regular expression for package declaration in 'aapt dump resources' output.
 _RE_PACKAGE_DECLARATION = re.compile(
