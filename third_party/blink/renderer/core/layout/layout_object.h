@@ -1211,8 +1211,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void SetStyleWithWritingModeOf(scoped_refptr<ComputedStyle>,
                                  LayoutObject* parent);
   void SetStyleWithWritingModeOfParent(scoped_refptr<ComputedStyle>);
-  void AddChildWithWritingModeOfParent(LayoutObject* new_child,
-                                       LayoutObject* before_child);
 
   void FirstLineStyleDidChange(const ComputedStyle& old_style,
                                const ComputedStyle& new_style);

@@ -54,7 +54,6 @@ class CORE_EXPORT LayoutFullScreen final : public LayoutFlexibleBox {
   void UnwrapLayoutObject();
 
   void UpdateStyle();
-  void UpdateStyle(LayoutObject* parent);
   bool AnonymousHasStylePropagationOverride() override { return true; }
 
   // Must call setStyleWithWritingModeOfParent() instead.
@@ -63,6 +62,7 @@ class CORE_EXPORT LayoutFullScreen final : public LayoutFlexibleBox {
  private:
   LayoutFullScreen();
   void WillBeDestroyed() override;
+  scoped_refptr<ComputedStyle> CreateAnonymousStyle();
 
  protected:
   LayoutBlockFlow* placeholder_;

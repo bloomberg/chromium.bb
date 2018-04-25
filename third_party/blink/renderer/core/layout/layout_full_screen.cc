@@ -42,7 +42,7 @@ class LayoutFullScreenPlaceholder final : public LayoutBlockFlow {
     SetDocumentForAnonymous(&owner->GetDocument());
   }
 
-  // Must call setStyleWithWritingModeOfParent() instead.
+  // Must call SetStyleWithWritingModeOfParent() instead.
   void SetStyle(scoped_refptr<ComputedStyle>) = delete;
 
   bool CreatesNewFormattingContext() const override { return true; }
@@ -97,7 +97,7 @@ void LayoutFullScreen::WillBeDestroyed() {
   LayoutFlexibleBox::WillBeDestroyed();
 }
 
-void LayoutFullScreen::UpdateStyle(LayoutObject* parent) {
+scoped_refptr<ComputedStyle> LayoutFullScreen::CreateAnonymousStyle() {
   scoped_refptr<ComputedStyle> fullscreen_style = ComputedStyle::Create();
 
   // Create a stacking context:
@@ -123,19 +123,19 @@ void LayoutFullScreen::UpdateStyle(LayoutObject* parent) {
   fullscreen_style->SetHeight(Length(viewport_size.Height(), blink::kFixed));
 
   fullscreen_style->SetBackgroundColor(StyleColor(Color::kBlack));
-
-  SetStyleWithWritingModeOf(fullscreen_style, parent);
+  return fullscreen_style;
 }
 
 void LayoutFullScreen::UpdateStyle() {
-  UpdateStyle(Parent());
+  scoped_refptr<ComputedStyle> style = CreateAnonymousStyle();
+  SetStyleWithWritingModeOf(style, Parent());
 }
 
 LayoutObject* LayoutFullScreen::WrapLayoutObject(LayoutObject* object,
                                                  LayoutObject* parent,
                                                  Document* document) {
-  // FIXME: We should not modify the structure of the layout tree during
-  // layout. crbug.com/370459
+  // TODO: We should not modify the structure of the layout tree during layout.
+  // crbug.com/370459
   DeprecatedDisableModifyLayoutTreeStructureAsserts disabler;
 
   // A fullscreen <html> element should not be wrapped (see crbug.com/676432).
@@ -143,37 +143,41 @@ LayoutObject* LayoutFullScreen::WrapLayoutObject(LayoutObject* object,
 
   LayoutFullScreen* fullscreen_layout_object =
       LayoutFullScreen::CreateAnonymous(document);
-  fullscreen_layout_object->UpdateStyle(parent);
-  if (parent && !parent->IsChildAllowed(fullscreen_layout_object,
-                                        fullscreen_layout_object->StyleRef())) {
+  scoped_refptr<ComputedStyle> fullscreen_style =
+      fullscreen_layout_object->CreateAnonymousStyle();
+
+  if (parent &&
+      !parent->IsChildAllowed(fullscreen_layout_object, *fullscreen_style)) {
     fullscreen_layout_object->Destroy();
     return nullptr;
   }
+  parent = object ? object->Parent() : nullptr;
+  fullscreen_layout_object->SetStyleWithWritingModeOf(fullscreen_style, parent);
+
+  // |object->Parent()| can be null if the object is not yet attached
+  // to |parent|.
+  if (parent) {
+    LayoutBlock* containing_block = object->ContainingBlock();
+    DCHECK(containing_block);
+    // Since we are moving the |object| to a new parent
+    // |fullscreen_layout_object|, the line box tree underneath our
+    // |containing_block| is not longer valid.
+    if (containing_block->IsLayoutBlockFlow())
+      ToLayoutBlockFlow(containing_block)->DeleteLineBoxTree();
+
+    parent->AddChild(fullscreen_layout_object, object);
+    object->Remove();
+
+    // Always just do a full layout to ensure that line boxes get deleted
+    // properly.
+    // Because objects moved from |parent| to |fullscreen_layout_object|, we
+    // want to make new line boxes instead of leaving the old ones around.
+    parent->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+        LayoutInvalidationReason::kFullscreen);
+    containing_block->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+        LayoutInvalidationReason::kFullscreen);
+  }
   if (object) {
-    // |object->parent()| can be null if the object is not yet attached
-    // to |parent|.
-    if (LayoutObject* parent = object->Parent()) {
-      LayoutBlock* containing_block = object->ContainingBlock();
-      DCHECK(containing_block);
-      // Since we are moving the |object| to a new parent
-      // |fullscreenLayoutObject|, the line box tree underneath our
-      // |containingBlock| is not longer valid.
-      if (containing_block->IsLayoutBlockFlow())
-        ToLayoutBlockFlow(containing_block)->DeleteLineBoxTree();
-
-      parent->AddChildWithWritingModeOfParent(fullscreen_layout_object, object);
-      object->Remove();
-
-      // Always just do a full layout to ensure that line boxes get deleted
-      // properly.
-      // Because objects moved from |parent| to |fullscreenLayoutObject|, we
-      // want to make new line boxes instead of leaving the old ones around.
-      parent->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-          LayoutInvalidationReason::kFullscreen);
-      containing_block
-          ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-              LayoutInvalidationReason::kFullscreen);
-    }
     fullscreen_layout_object->AddChild(object);
     fullscreen_layout_object
         ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
@@ -217,17 +221,17 @@ void LayoutFullScreen::CreatePlaceholder(scoped_refptr<ComputedStyle> style,
   if (style->Height().IsAuto())
     style->SetHeight(Length(frame_rect.Height(), kFixed));
 
-  if (!placeholder_) {
-    placeholder_ = new LayoutFullScreenPlaceholder(this);
+  if (placeholder_) {
     placeholder_->SetStyleWithWritingModeOfParent(std::move(style));
-    if (Parent()) {
-      Parent()->AddChildWithWritingModeOfParent(placeholder_, this);
-      Parent()->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-          LayoutInvalidationReason::kFullscreen);
-    }
-  } else {
-    placeholder_->SetStyle(std::move(style));
-    placeholder_->SetStyleWithWritingModeOfParent(std::move(style));
+    return;
+  }
+
+  placeholder_ = new LayoutFullScreenPlaceholder(this);
+  placeholder_->SetStyleWithWritingModeOf(std::move(style), Parent());
+  if (Parent()) {
+    Parent()->AddChild(placeholder_, this);
+    Parent()->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+        LayoutInvalidationReason::kFullscreen);
   }
 }
 

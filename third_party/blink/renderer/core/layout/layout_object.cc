@@ -2305,18 +2305,6 @@ void LayoutObject::SetStyleWithWritingModeOfParent(
   SetStyleWithWritingModeOf(std::move(style), Parent());
 }
 
-void LayoutObject::AddChildWithWritingModeOfParent(LayoutObject* new_child,
-                                                   LayoutObject* before_child) {
-  const WritingMode old_writing_mode =
-      new_child->MutableStyleRef().GetWritingMode();
-  const WritingMode new_writing_mode = StyleRef().GetWritingMode();
-  if (old_writing_mode != new_writing_mode && new_child->IsBoxModelObject()) {
-    new_child->MutableStyleRef().SetWritingMode(new_writing_mode);
-    new_child->SetHorizontalWritingMode(IsHorizontalWritingMode());
-  }
-  AddChild(new_child, before_child);
-}
-
 void LayoutObject::UpdateFillImages(const FillLayer* old_layers,
                                     const FillLayer& new_layers) {
   // Optimize the common case
