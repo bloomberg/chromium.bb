@@ -27,20 +27,13 @@
 # WaitForChildFrameSurfaceReady crashes crbug.com/787945
 -PDFExtensionHitTestTest.ContextMenuCoordinates*
 -SitePerProcessDevToolsSanityTest.InputDispatchEventsToOOPIF
--WebViewTests/WebViewTest.InterstitialPageFocusedWidget/1
--WebViewTests/WebViewTest.ReloadAfterCrash/1
-
-#### FrameSinkManager Crashes
-# FrameSinkManagerImpl::RegisterFrameSinkHierarchy Crash crbug.com/796344
-# Linux and Windows failures
--WebViewTests/WebViewTest.Shim_TestAssignSrcAfterCrash/0
--WebViewTests/WebViewTest.Shim_TestContentScriptIsInjectedAfterTerminateAndReloadWebView/0
--WebViewTests/WebViewTest.Shim_TestReloadAfterTerminate/0
--WebViewTests/WebViewTest.Shim_TestTerminateAfterExit/0
+-WebViewTest.InterstitialPageFocusedWidget
+-WebViewTest.ReloadAfterCrash
+-WebViewGuestTouchFocusBrowserPluginSpecificTest.TouchFocusesBrowserPluginInEmbedder
 
 #### Hit Testing
 # Incorrect Focus State crbug.com/818205
--WebViewTests/WebViewFocusTest.TouchFocusesEmbedder/0
+-WebViewFocusBrowserPluginSpecificTest.TouchFocusesEmbedder
 
 #### Surface Invariants
 # Surface Invariants Failure on Mac http://crbug.com/817827
