@@ -64,7 +64,6 @@
     UIStackView* verticalStack = [[UIStackView alloc]
         initWithArrangedSubviews:@[ self.titleLabel, self.subtitleLabel ]];
     verticalStack.axis = UILayoutConstraintAxisVertical;
-    verticalStack.spacing = kTableViewVerticalLabelStackSpacing;
 
     // Activity Indicator.
     MDCActivityIndicator* activityIndicator =
@@ -79,7 +78,7 @@
     UIStackView* horizontalStack = [[UIStackView alloc]
         initWithArrangedSubviews:@[ verticalStack, activityIndicator ]];
     horizontalStack.axis = UILayoutConstraintAxisHorizontal;
-    horizontalStack.spacing = kTableViewCellViewSpacing;
+    horizontalStack.spacing = kTableViewSubViewHorizontalSpacing;
     horizontalStack.translatesAutoresizingMaskIntoConstraints = NO;
     horizontalStack.alignment = UIStackViewAlignmentCenter;
 
@@ -88,19 +87,18 @@
 
     // Set and activate constraints.
     [NSLayoutConstraint activateConstraints:@[
-      // Horizontal Stack Constraints.
       [horizontalStack.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
-                         constant:kTableViewCellViewSpacing],
+                         constant:kTableViewHorizontalSpacing],
       [horizontalStack.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
-                         constant:-kTableViewCellViewSpacing],
+                         constant:-kTableViewHorizontalSpacing],
       [horizontalStack.topAnchor
           constraintGreaterThanOrEqualToAnchor:self.contentView.topAnchor
-                                      constant:kTableViewCellViewSpacing],
+                                      constant:kTableViewVerticalSpacing],
       [horizontalStack.bottomAnchor
           constraintLessThanOrEqualToAnchor:self.contentView.bottomAnchor
-                                   constant:-kTableViewCellViewSpacing],
+                                   constant:-kTableViewVerticalSpacing],
       [horizontalStack.centerYAnchor
           constraintEqualToAnchor:self.contentView.centerYAnchor]
     ]];

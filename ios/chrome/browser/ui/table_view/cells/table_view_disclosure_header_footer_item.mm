@@ -75,8 +75,13 @@ constexpr float kRotationNinetyCCW = (90 / 180.0) * M_PI;
   if (self) {
     // Labels, set font sizes using dynamic type.
     _titleLabel = [[UILabel alloc] init];
+    UIFontDescriptor* baseDescriptor = [UIFontDescriptor
+        preferredFontDescriptorWithTextStyle:UIFontTextStyleSubheadline];
+    UIFontDescriptor* styleDescriptor = [baseDescriptor
+        fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
+
     _titleLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+        [UIFont fontWithDescriptor:styleDescriptor size:kUseDefaultFontSize];
     _subtitleLabel = [[UILabel alloc] init];
     _subtitleLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
@@ -86,7 +91,6 @@ constexpr float kRotationNinetyCCW = (90 / 180.0) * M_PI;
     UIStackView* verticalStack = [[UIStackView alloc]
         initWithArrangedSubviews:@[ _titleLabel, _subtitleLabel ]];
     verticalStack.axis = UILayoutConstraintAxisVertical;
-    verticalStack.spacing = kTableViewVerticalLabelStackSpacing;
 
     // Disclosure ImageView. Initial pointing direction is to the right.
     _disclosureImageView = [[UIImageView alloc]
@@ -99,7 +103,7 @@ constexpr float kRotationNinetyCCW = (90 / 180.0) * M_PI;
     UIStackView* horizontalStack = [[UIStackView alloc]
         initWithArrangedSubviews:@[ verticalStack, _disclosureImageView ]];
     horizontalStack.axis = UILayoutConstraintAxisHorizontal;
-    horizontalStack.spacing = kTableViewCellViewSpacing;
+    horizontalStack.spacing = kTableViewSubViewHorizontalSpacing;
     horizontalStack.translatesAutoresizingMaskIntoConstraints = NO;
     horizontalStack.alignment = UIStackViewAlignmentCenter;
 
@@ -108,24 +112,60 @@ constexpr float kRotationNinetyCCW = (90 / 180.0) * M_PI;
 
     // Set and activate constraints.
     [NSLayoutConstraint activateConstraints:@[
-      // Horizontal Stack Constraints.
       [horizontalStack.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
-                         constant:kTableViewCellViewSpacing],
+                         constant:kTableViewHorizontalSpacing],
       [horizontalStack.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
-                         constant:-kTableViewCellViewSpacing],
+                         constant:-kTableViewHorizontalSpacing],
       [horizontalStack.topAnchor
           constraintGreaterThanOrEqualToAnchor:self.contentView.topAnchor
-                                      constant:kTableViewCellViewSpacing],
+                                      constant:kTableViewVerticalSpacing],
       [horizontalStack.bottomAnchor
           constraintLessThanOrEqualToAnchor:self.contentView.bottomAnchor
-                                   constant:-kTableViewCellViewSpacing],
+                                   constant:-kTableViewVerticalSpacing],
       [horizontalStack.centerYAnchor
           constraintEqualToAnchor:self.contentView.centerYAnchor]
     ]];
   }
   return self;
+}
+
+#pragma mark - View LifeCycle
+
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  if (self.cellAnimator.isRunning)
+    [self.cellAnimator stopAnimation:YES];
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  if (previousTraitCollection.preferredContentSizeCategory !=
+      self.traitCollection.preferredContentSizeCategory) {
+    UIFontDescriptor* baseDescriptor = [UIFontDescriptor
+        preferredFontDescriptorWithTextStyle:UIFontTextStyleHeadline];
+    UIFontDescriptor* styleDescriptor = [baseDescriptor
+        fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
+    self.titleLabel.font =
+        [UIFont fontWithDescriptor:styleDescriptor size:kUseDefaultFontSize];
+  }
+}
+
+#pragma mark - public methods
+
+- (void)animateHighlight {
+  [self addAnimationHighlightToAnimator];
+  [self.cellAnimator startAnimation];
+}
+
+- (void)setInitialDirection:(DisclosureDirection)direction {
+  [self rotateToDirection:direction animate:NO];
+}
+
+- (void)animateHighlightAndRotateToDirection:(DisclosureDirection)direction {
+  [self addAnimationHighlightToAnimator];
+  [self rotateToDirection:direction animate:YES];
+  [self.cellAnimator startAnimation];
 }
 
 #pragma mark - internal methods
@@ -167,29 +207,6 @@ constexpr float kRotationNinetyCCW = (90 / 180.0) * M_PI;
           CGAffineTransformRotate(CGAffineTransformIdentity, angle);
     }
   }
-}
-
-#pragma mark - public methods
-
-- (void)animateHighlight {
-  [self addAnimationHighlightToAnimator];
-  [self.cellAnimator startAnimation];
-}
-
-- (void)setInitialDirection:(DisclosureDirection)direction {
-  [self rotateToDirection:direction animate:NO];
-}
-
-- (void)animateHighlightAndRotateToDirection:(DisclosureDirection)direction {
-  [self addAnimationHighlightToAnimator];
-  [self rotateToDirection:direction animate:YES];
-  [self.cellAnimator startAnimation];
-}
-
-- (void)prepareForReuse {
-  [super prepareForReuse];
-  if (self.cellAnimator.isRunning)
-    [self.cellAnimator stopAnimation:YES];
 }
 
 @end
