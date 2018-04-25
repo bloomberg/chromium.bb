@@ -28,6 +28,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.consent_auditor.ConsentAuditorFeature;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -80,12 +81,14 @@ public abstract class SigninFragmentBase
     private ProfileDataCache mProfileDataCache;
     private List<String> mAccountNames;
     private boolean mResumed;
+    private boolean mDestroyed;
     // TODO(https://crbug.com/814728): Ignore button clicks if GMS reported an error.
     private boolean mHasGmsError;
 
     private UserRecoverableErrorHandler.ModalDialog mGooglePlayServicesUpdateErrorHandler;
     private AlertDialog mGmsIsUpdatingDialog;
     private long mGmsIsUpdatingDialogShowTime;
+    private ConfirmSyncDataStateMachine mConfirmSyncDataStateMachine;
 
     /**
      * Creates an argument bundle for the default SigninFragmentBase flow (default account will be
@@ -203,6 +206,11 @@ public abstract class SigninFragmentBase
         super.onDestroy();
         dismissGmsErrorDialog();
         dismissGmsUpdatingDialog();
+        if (mConfirmSyncDataStateMachine != null) {
+            mConfirmSyncDataStateMachine.cancel(/* isBeingDestroyed = */ true);
+            mConfirmSyncDataStateMachine = null;
+        }
+        mDestroyed = true;
     }
 
     @Override
@@ -212,7 +220,9 @@ public abstract class SigninFragmentBase
 
         mView.getAccountPickerView().setOnClickListener(view -> onAccountPickerClicked());
 
+        mView.getRefuseButton().setOnClickListener(this::onRefuseButtonClicked);
         mView.getAcceptButton().setVisibility(View.GONE);
+        mView.getAcceptButton().setOnClickListener(this::onAcceptButtonClicked);
         mView.getMoreButton().setVisibility(View.VISIBLE);
         mView.getMoreButton().setOnClickListener(view -> {
             mView.getScrollView().smoothScrollBy(0, mView.getScrollView().getHeight());
@@ -220,11 +230,6 @@ public abstract class SigninFragmentBase
             RecordUserAction.record("Signin_MoreButton_Shown");
         });
         mView.getScrollView().setScrolledToBottomObserver(this::showAcceptButton);
-
-        mView.getRefuseButton().setOnClickListener(view -> {
-            setButtonsEnabled(false);
-            onSigninRefused();
-        });
 
         if (mForceSignin) {
             mView.getAccountPickerEndImageView().setImageResource(
@@ -256,12 +261,7 @@ public abstract class SigninFragmentBase
         NoUnderlineClickableSpan settingsSpan = new NoUnderlineClickableSpan() {
             @Override
             public void onClick(View widget) {
-                // TODO(https://crbug.com/814728): Ignore clicks until account is preselected.
-                onSigninAccepted(mSelectedAccountName, mIsDefaultAccountSelected, true);
-                RecordUserAction.record("Signin_Signin_WithAdvancedSyncSettings");
-
-                // Record the fact that the user consented to the consent text by clicking on a link
-                recordConsent((TextView) widget);
+                onSettingsLinkClicked(widget);
             }
         };
         mConsentTextTracker.setText(
@@ -298,14 +298,91 @@ public abstract class SigninFragmentBase
         mView.getScrollView().setScrolledToBottomObserver(null);
     }
 
-    private void setButtonsEnabled(boolean enabled) {
-        mView.getAcceptButton().setEnabled(enabled);
-        mView.getRefuseButton().setEnabled(enabled);
-    }
-
     private void onAccountPickerClicked() {
         // TODO(https://crbug.com/814728): Ignore clicks if GMS reported an error.
         showAccountPicker();
+    }
+
+    private void onRefuseButtonClicked(View button) {
+        // TODO(https://crbug.com/814728): Disable controls.
+        onSigninRefused();
+    }
+
+    private void onAcceptButtonClicked(View button) {
+        // TODO(https://crbug.com/814728): Disable controls.
+        RecordUserAction.record("Signin_Signin_WithDefaultSyncSettings");
+
+        // Record the fact that the user consented to the consent text by clicking on a button
+        recordConsent((TextView) button);
+        seedAccountsAndSignin(false);
+    }
+
+    private void onSettingsLinkClicked(View view) {
+        // TODO(https://crbug.com/814728): Disable controls.
+        RecordUserAction.record("Signin_Signin_WithAdvancedSyncSettings");
+
+        // Record the fact that the user consented to the consent text by clicking on a link
+        recordConsent((TextView) view);
+        seedAccountsAndSignin(true);
+    }
+
+    private void seedAccountsAndSignin(boolean settingsClicked) {
+        // Ensure that the AccountTrackerService has a fully up to date GAIA id <-> email mapping,
+        // as this is needed for the previous account check.
+        final long seedingStartTime = SystemClock.elapsedRealtime();
+        if (AccountTrackerService.get().checkAndSeedSystemAccounts()) {
+            recordAccountTrackerServiceSeedingTime(seedingStartTime);
+            runStateMachineAndSignin(settingsClicked);
+            return;
+        }
+
+        AccountTrackerService.OnSystemAccountsSeededListener listener =
+                new AccountTrackerService.OnSystemAccountsSeededListener() {
+                    @Override
+                    public void onSystemAccountsSeedingComplete() {
+                        AccountTrackerService.get().removeSystemAccountsSeededListener(this);
+                        recordAccountTrackerServiceSeedingTime(seedingStartTime);
+
+                        // Don't start sign-in if this fragment has been destroyed.
+                        if (mDestroyed) return;
+                        runStateMachineAndSignin(settingsClicked);
+                    }
+
+                    @Override
+                    public void onSystemAccountsChanged() {}
+                };
+        AccountTrackerService.get().addSystemAccountsSeededListener(listener);
+    }
+
+    private void runStateMachineAndSignin(boolean settingsClicked) {
+        mConfirmSyncDataStateMachine = new ConfirmSyncDataStateMachine(getContext(),
+                getChildFragmentManager(),
+                ConfirmImportSyncDataDialog.ImportSyncType.PREVIOUS_DATA_FOUND,
+                PrefServiceBridge.getInstance().getSyncLastAccountName(), mSelectedAccountName,
+                new ConfirmImportSyncDataDialog.Listener() {
+                    @Override
+                    public void onConfirm(boolean wipeData) {
+                        mConfirmSyncDataStateMachine = null;
+
+                        // Don't start sign-in if this fragment has been destroyed.
+                        if (mDestroyed) return;
+                        SigninManager.wipeSyncUserDataIfRequired(wipeData).then((Void v) -> {
+                            onSigninAccepted(mSelectedAccountName, mIsDefaultAccountSelected,
+                                    settingsClicked);
+                        });
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        mConfirmSyncDataStateMachine = null;
+                        // TODO(https://crbug.com/814728): Re-enable controls.
+                    }
+                });
+    }
+
+    private static void recordAccountTrackerServiceSeedingTime(long seedingStartTime) {
+        RecordHistogram.recordTimesHistogram("Signin.AndroidAccountSigninViewSeedingTime",
+                SystemClock.elapsedRealtime() - seedingStartTime, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -405,12 +482,18 @@ public abstract class SigninFragmentBase
 
         if (mSelectedAccountName != null && mAccountNames.contains(mSelectedAccountName)) return;
 
-        // No selected account
+        if (mConfirmSyncDataStateMachine != null) {
+            // Any dialogs that may have been showing are now invalid (they were created
+            // for the previously selected account).
+            mConfirmSyncDataStateMachine.cancel(/* isBeingDestroyed = */ false);
+            mConfirmSyncDataStateMachine = null;
+        }
+
+        // Account for forced sign-in flow disappeared before the sign-in was completed.
         if (mForceSignin) {
             onSigninRefused();
             return;
         }
-        // TODO(https://crbug.com/814728): Cancel ConfirmSyncDataStateMachine.
 
         selectAccount(mAccountNames.get(0), true);
         showAccountPicker(); // Show account picker so user can confirm the account selection.
