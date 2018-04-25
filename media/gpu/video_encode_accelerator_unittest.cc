@@ -136,15 +136,21 @@ const unsigned int kFlushTimeoutMs = 2000;
 // - |requested_subsequent_framerate| framerate to switch to in the middle
 //                                    of the stream.
 //   Bitrate is only forced for tests that test bitrate.
-const char* g_default_in_filename = "bear_320x192_40frames.yuv";
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
+const char* g_default_in_filename = "bear_320x192_40frames.yuv";
 const base::FilePath::CharType* g_default_in_parameters =
     FILE_PATH_LITERAL(":320:192:1:out.h264:200000");
-#elif defined(OS_MACOSX) || defined(OS_WIN)
+#elif defined(OS_MACOSX)
+// VideoToolbox falls back to SW encoder with resolutions lower than this.
+const char* g_default_in_filename = "bear_640x384_40frames.yuv";
+const base::FilePath::CharType* g_default_in_parameters =
+    FILE_PATH_LITERAL(":640:384:1:out.h264:200000");
+#elif defined(OS_WIN)
+const char* g_default_in_filename = "bear_320x192_40frames.yuv";
 const base::FilePath::CharType* g_default_in_parameters =
     FILE_PATH_LITERAL(",320,192,0,out.h264,200000");
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 // Default params that can be overriden via command line.
 std::unique_ptr<base::FilePath::StringType> g_test_stream_data(
