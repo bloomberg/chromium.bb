@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">Nascondi per ora</translation>
 <translation id="1211530540767271776">Nessun dispositivo USB qui</translation>
 <translation id="123724288017357924">Ricarica pag. corr. Ignora i contenuti nella cache</translation>
-<translation id="1240668123557180468">Consente di trovare le pagine web inviate da oggetti vicini. Chrome raccoglie le pagine web associate agli oggetti nelle vicinanze, le invia in forma anonima a un servizio di Google per individuare le pagine più utili a te, quindi le visualizza.
-
-Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocalizzazione.</translation>
 <translation id="124116460088058876">Altre lingue</translation>
 <translation id="124678866338384709">Chiudi scheda corrente</translation>
 <translation id="1258753120186372309">Doodle di Google: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -643,7 +640,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6864459304226931083">Scarica immagine</translation>
 <translation id="6865313869410766144">Dati della Compilazione automatica dei moduli</translation>
 <translation id="6868088497967843822">Accedi per visualizzare i tuoi Preferiti, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi</translation>
-<translation id="6875705348083140572">Scopri cosa c'è nelle vicinanze</translation>
 <translation id="688738109438487280">Aggiungi dati esistenti a <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Sblocca per copiare la password</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d scheda aperta}other{%1$d schede aperte}}</translation>
@@ -716,7 +712,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7542481630195938534">Impossibile ricevere suggerimenti</translation>
 <translation id="7562080006725997899">Cancellazione dei dati di navigazione in corso</translation>
 <translation id="756809126120519699">Dati di Chrome cancellati</translation>
-<translation id="7588950540487816470">Physical Web</translation>
 <translation id="7589445247086920869">Blocca motore di ricerca corrente</translation>
 <translation id="7593557518625677601">Apri le impostazioni di Android e abilita nuovamente la sincronizzazione del sistema Android per poter avviare la Sicronizzazione Chrome</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>

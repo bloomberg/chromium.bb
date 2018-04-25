@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">अभी छिपाएं</translation>
 <translation id="1211530540767271776">यहां कोई USB डिवाइस नहीं है</translation>
 <translation id="123724288017357924">कैश सामग्री को अनदेखा कर, मौजूदा पेज फिर लोड करें</translation>
-<translation id="1240668123557180468">आस-पास के ऑब्जेक्ट द्वारा भेजे गए वेब पेज खोजें. Chrome आपके आस-पास मौजूद ऑब्जेक्ट से संबद्ध वेब पेज एकत्र करता है, उन्हें अनाम रूप से किसी Google सेवा पर भेजता है ताकि उनमें से आपके लिए सर्वाधिक उपयोगी पेज खोजे जा सकें, फिर उन्हें प्रदर्शित करता है.
-
-जीते-जागते वेब का उपयोग करने के लिए आपके पास ब्लूटूथ और स्थान चालू किया हुआ होना चाहिए.</translation>
 <translation id="124116460088058876">अधिक भाषाएं</translation>
 <translation id="124678866338384709">वर्तमान टैब को बंद करें</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -643,7 +640,6 @@
 <translation id="6864459304226931083">चित्र डाउनलोड करें</translation>
 <translation id="6865313869410766144">ऑटोमैटिक भरने वाला फ़ॉर्म डेटा</translation>
 <translation id="6868088497967843822">अपने सभी डिवाइस पर अपने बुकमार्क, इतिहास, पासवर्ड और अन्‍य सेटिंग प्राप्त करने के लिए प्रवेश करें</translation>
-<translation id="6875705348083140572">देखें कि आस-पास क्या है</translation>
 <translation id="688738109438487280">मौजूदा डेटा <ph name="TO_ACCOUNT" /> में जोड़ें.</translation>
 <translation id="6891726759199484455">अपना पासवर्ड कॉपी करने के लिए अनलॉक करें</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d खुला टैब}one{%1$d खुले टैब}other{%1$d खुले टैब}}</translation>
@@ -716,7 +712,6 @@
 <translation id="7542481630195938534">सुझाव नहीं मिल पा रहे हैं</translation>
 <translation id="7562080006725997899">ब्राउज़िंग डेटा साफ़ हो रहा है</translation>
 <translation id="756809126120519699">साफ़ किया गया Chrome डेटा</translation>
-<translation id="7588950540487816470">जीता-जागता वेब</translation>
 <translation id="7589445247086920869">वर्तमान खोज इंजन के लिए अवरुद्ध करें</translation>
 <translation id="7593557518625677601">Android सेटिंग खोलें व Chrome सिंक शुरू करने हेतु Android सिस्टम समन्वयन फिर से सक्षम करें</translation>
 <translation id="7596558890252710462">ऑपरेटिंग सिस्टम</translation>

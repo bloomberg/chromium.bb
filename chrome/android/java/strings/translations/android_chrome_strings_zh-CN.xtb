@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">暂时隐藏</translation>
 <translation id="1211530540767271776">没有任何 USB 设备</translation>
 <translation id="123724288017357924">重新加载当前网页（忽略缓存的内容）</translation>
-<translation id="1240668123557180468">发现附近物体发送的网页。Chrome 会收集与您附近物体相关联的网页，并将这些网页以匿名方式发送给 Google 服务，以找到并显示对您而言最实用的网页。
-
-您必须开启蓝牙和位置信息功能才能使用实物网。</translation>
 <translation id="124116460088058876">更多语言</translation>
 <translation id="124678866338384709">关闭当前标签页</translation>
 <translation id="1258753120186372309">Google 涂鸦：<ph name="DOODLE_DESCRIPTION" /></translation>
@@ -643,7 +640,6 @@
 <translation id="6864459304226931083">下载图片</translation>
 <translation id="6865313869410766144">自动填充表单数据</translation>
 <translation id="6868088497967843822">登录后可获取您所有设备上保存的书签、历史记录、密码和其他设置</translation>
-<translation id="6875705348083140572">查看附近的网址</translation>
 <translation id="688738109438487280">将现有数据添加到 <ph name="TO_ACCOUNT" />。</translation>
 <translation id="6891726759199484455">需解锁才能复制您的密码</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d 个打开的标签页}other{%1$d 个打开的标签页}}</translation>
@@ -716,7 +712,6 @@
 <translation id="7542481630195938534">无法获取建议</translation>
 <translation id="7562080006725997899">正在清除浏览数据</translation>
 <translation id="756809126120519699">已清除 Chrome 数据</translation>
-<translation id="7588950540487816470">实物网</translation>
 <translation id="7589445247086920869">不适用于当前的搜索引擎</translation>
 <translation id="7593557518625677601">打开 Android 设置，重新启用 Android 系统同步功能以开始 Chrome 同步</translation>
 <translation id="7596558890252710462">操作系统</translation>

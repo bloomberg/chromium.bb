@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">Masquer pour le moment</translation>
 <translation id="1211530540767271776">Aucun appareil USB ici</translation>
 <translation id="123724288017357924">Actualiser page active et ignorer contenu en cache</translation>
-<translation id="1240668123557180468">Découvrez des pages Web envoyées par des objets à proximité. Chrome réunit les pages Web associées aux objets qui vous entourent, les envoie de manière anonyme à un service Google pour déterminer celles qui vous sont les plus utiles, puis les affiche.
-
-Vous devez activer le Bluetooth et les services de localisation pour utiliser le Web physique.</translation>
 <translation id="124116460088058876">Plus de langues</translation>
 <translation id="124678866338384709">Fermer l'onglet actuel</translation>
 <translation id="1258753120186372309">Doodle : <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -643,7 +640,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6864459304226931083">Télécharger l'image</translation>
 <translation id="6865313869410766144">Données de saisie automatique</translation>
 <translation id="6868088497967843822">Connectez-vous pour récupérer vos favoris, votre historique, vos mots de passe et d'autres paramètres sur tous vos appareils.</translation>
-<translation id="6875705348083140572">Voir les URL à proximité</translation>
 <translation id="688738109438487280">Ajoutez les données existantes au compte <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Déverrouillez pour copier votre mot de passe</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d onglet ouvert}one{%1$d onglet ouvert}other{%1$d onglets ouverts}}</translation>
@@ -716,7 +712,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7542481630195938534">Impossible d'obtenir des suggestions</translation>
 <translation id="7562080006725997899">Effacement des données de navigation en cours</translation>
 <translation id="756809126120519699">Données de Chrome effacées</translation>
-<translation id="7588950540487816470">Web physique</translation>
 <translation id="7589445247086920869">Bloquer l'accès pour le moteur de recherche actuel</translation>
 <translation id="7593557518625677601">Ouvrez paramètres Android et réactivez synchro système Android pour démarrer synchro Chrome.</translation>
 <translation id="7596558890252710462">Système d'exploitation</translation>

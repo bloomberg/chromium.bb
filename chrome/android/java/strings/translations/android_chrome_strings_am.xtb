@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">ለአሁን ደብቅ</translation>
 <translation id="1211530540767271776">እዚህ ምንም ዩኤስቢ መሣሪያዎች የሉም</translation>
 <translation id="123724288017357924">የተሸጎጠ ይዘትን ችላ በማለት የአሁኑን ገጽ ዳግም ጫን</translation>
-<translation id="1240668123557180468">በአቅራቢያ ባሉ ነገሮች የተላኩ ድረ-ገጾችን ያግኙ። Chrome በእርስዎ ዙሪያ ካሉ ነገሮች ጋር ተያያዥነት ያላቸውን ድረ-ገጾችን ይሰበስባል፣ ለእርስዎ በጣም አስፈላጊ የሆነውን ለማግኘት ወደ Google አገልግሎት ስም-አልባ አድርጎ ይልካቸዋል፣ ከዚያ ያሳያቸዋል።
-
-አካላዊ ድርን ለመጠቀም ብሉቱዝ እና አካባቢን ማብራት አለብዎት።</translation>
 <translation id="124116460088058876">ተጨማሪ ቋንቋዎች</translation>
 <translation id="124678866338384709">የአሁኑን ትር ዝጋ</translation>
 <translation id="1258753120186372309">Google doodle፦ <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -643,7 +640,6 @@
 <translation id="6864459304226931083">ምስል አውርድ</translation>
 <translation id="6865313869410766144">የራስ-ሙላ ቅጽ ውሂብ</translation>
 <translation id="6868088497967843822">የእርስዎን ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች በሁሉም መሣሪያዎችዎ ላይ ለማግኘት ወደ መለያ ይግቡ</translation>
-<translation id="6875705348083140572">አቅራቢያ ምን እንዳለ ይመልከቱ</translation>
 <translation id="688738109438487280">ነባሩን ውሂብ ወደ <ph name="TO_ACCOUNT" /> ያክሉ።</translation>
 <translation id="6891726759199484455">የይለፍ ቃልዎን ለመቅዳት ይክፈቱ</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d ክፍት ትር}one{%1$d ክፍት ትሮች}other{%1$d ክፍት ትሮች}}</translation>
@@ -716,7 +712,6 @@
 <translation id="7542481630195938534">የአስተያየት ጥቆማዎችን ማግኘት አልተቻለም</translation>
 <translation id="7562080006725997899">የአሰሳ ውሂብን በማጽዳት ላይ</translation>
 <translation id="756809126120519699">የChrome ውሂብ ጸድቷል</translation>
-<translation id="7588950540487816470">አካላዊ ድር</translation>
 <translation id="7589445247086920869">አሁን ላለው የፍለጋ ፕሮግራም አግድ</translation>
 <translation id="7593557518625677601">የChrome ስምረትን ለመጀመር የAndroid ቅንብሮችን ይክፈቱና የAndroid ስርዓት ስምረትን ዳግም ያንቁ</translation>
 <translation id="7596558890252710462">ስርዓተ ክወና</translation>

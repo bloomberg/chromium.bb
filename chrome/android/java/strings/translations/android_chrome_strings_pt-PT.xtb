@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">Ocultar para já</translation>
 <translation id="1211530540767271776">Nenhum dispositivo USB aqui</translation>
 <translation id="123724288017357924">Atualizar página atual e ignorar conteúdo em cache</translation>
-<translation id="1240668123557180468">Descubra páginas Web enviadas por objetos próximos. O Chrome reúne páginas Web associadas a objetos à sua volta, envia-as anonimamente para um serviço Google para procurar as que lhe são mais úteis e, em seguida, apresenta-as.
-
-Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web física.</translation>
 <translation id="124116460088058876">Mais idiomas</translation>
 <translation id="124678866338384709">Fechar o separador atual</translation>
 <translation id="1258753120186372309">Doodle da Google: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -643,7 +640,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6864459304226931083">Transferir imagem</translation>
 <translation id="6865313869410766144">Dados de formulário de Preenchimento automático</translation>
 <translation id="6868088497967843822">Iniciar sessão para aceder aos marcadores, ao histórico, às palavras-passe e a outras definições em todos os dispositivos</translation>
-<translation id="6875705348083140572">Ver o que há nas proximidades</translation>
 <translation id="688738109438487280">Adicionar dados existentes a <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Desbloqueie para copiar a palavra-passe.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d separador aberto}other{%1$d separadores abertos}}</translation>
@@ -716,7 +712,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7542481630195938534">Não é possível obter sugestões</translation>
 <translation id="7562080006725997899">A limpar dados de navegação</translation>
 <translation id="756809126120519699">Dados do Chrome limpos</translation>
-<translation id="7588950540487816470">Web física</translation>
 <translation id="7589445247086920869">Bloquear no motor de pesquisa atual</translation>
 <translation id="7593557518625677601">Abrir definiç. Android e reativar sinc. sistema Android p/ iniciar sinc. Chrome</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>

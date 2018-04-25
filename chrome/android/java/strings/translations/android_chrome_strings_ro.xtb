@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">Ascunde momentan</translation>
 <translation id="1211530540767271776">Aici nu există dispozitive USB</translation>
 <translation id="123724288017357924">Reîncarcă pagina, ignorând conținutul din cache</translation>
-<translation id="1240668123557180468">Descoperă paginile web trimise de obiectele din apropiere. Chrome preia paginile web asociate cu obiectele din jurul tău, le trimite anonim la un serviciu Google pentru a afla care sunt cele mai utile pentru tine, apoi le afișează.
-
-Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</translation>
 <translation id="124116460088058876">Mai multe limbi</translation>
 <translation id="124678866338384709">Închide fila actuală</translation>
 <translation id="1258753120186372309">Doodle Google: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -641,7 +638,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6864459304226931083">Descarcă imaginea</translation>
 <translation id="6865313869410766144">Datele salvate pentru completarea automată a formularelor</translation>
 <translation id="6868088497967843822">Conectează-te pentru a avea marcajele, istoricul, parolele și alte setări pe toate dispozitivele</translation>
-<translation id="6875705348083140572">Vezi ce este în apropiere</translation>
 <translation id="688738109438487280">Adaugă datele existente în <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Deblochează pentru a copia parola</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d filă deschisă}few{%1$d file deschise}other{%1$d de file deschise}}</translation>
@@ -714,7 +710,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7542481630195938534">Nu se pot obține sugestii</translation>
 <translation id="7562080006725997899">Se șterg datele de navigare</translation>
 <translation id="756809126120519699">Datele Chrome au fost șterse</translation>
-<translation id="7588950540487816470">Web material</translation>
 <translation id="7589445247086920869">Blochează pentru motorul de căutare actual</translation>
 <translation id="7593557518625677601">Deschide setările Android și reactivează sincronizarea sistemului Android pentru a porni sincronizarea Chrome</translation>
 <translation id="7596558890252710462">Sistem de operare</translation>

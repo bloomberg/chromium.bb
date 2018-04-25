@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">Pagaidām slēpt</translation>
 <translation id="1211530540767271776">Nav USB ierīču</translation>
 <translation id="123724288017357924">Atkārtoti ielādēt lapu, ignorējot saturu kešatmiņā</translation>
-<translation id="1240668123557180468">Atklājiet tīmekļa lapas, ko nosūtījuši tuvumā esoši objekti. Chrome apkopo tīmekļa lapas, kas ir saistītas ar jums apkārt esošajiem objektiem, un anonīmi nosūta tās uz Google pakalpojumu, lai noskaidrotu jums visnoderīgākās lapas, un pēc tam tās parāda.
-
-Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un atrašanās vietas noteikšanai.</translation>
 <translation id="124116460088058876">Citas valodas…</translation>
 <translation id="124678866338384709">Aizvērt pašreizējo cilni</translation>
 <translation id="1258753120186372309">Google svētku logotips: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -643,7 +640,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6864459304226931083">Lejupielādēt attēlu</translation>
 <translation id="6865313869410766144">Automātiskās aizpildes veidlapas dati</translation>
 <translation id="6868088497967843822">Pierakstieties, lai jūsu grāmatzīmes, vēsture, paroles un citi iestatījumi būtu pieejami visās jūsu ierīcēs.</translation>
-<translation id="6875705348083140572">Skatīt tuvumā esošos objektus</translation>
 <translation id="688738109438487280">Pievienot esošos datus kontam <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Atbloķējiet, lai kopētu paroli</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d atvērta cilne}zero{%1$d atvērtas cilnes}one{%1$d atvērta cilne}other{%1$d atvērtas cilnes}}</translation>
@@ -716,7 +712,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7542481630195938534">Nevar iegūt ieteikumus.</translation>
 <translation id="7562080006725997899">Notiek pārlūkošanas datu notīrīšana</translation>
 <translation id="756809126120519699">Chrome dati tika notīrīti</translation>
-<translation id="7588950540487816470">Fiziskais tīmeklis</translation>
 <translation id="7589445247086920869">Aizliegšana pašreizējai meklētājprogrammai</translation>
 <translation id="7593557518625677601">Lai sāktu Chrome sinhronizēšanu, atveriet Android iestatījumus un atkārtoti iespējojiet Android sistēmas sinhronizēšanu</translation>
 <translation id="7596558890252710462">Operētājsistēma</translation>

@@ -857,10 +857,10 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">التأكد من البطاقة</translation>
 <translation id="7400418766976504921">‏عنوان URL</translation>
-<translation id="7407424307057130981">‏&lt;p&gt;سيظهر لك هذا الخطأ إذا كان لديك برنامج Superfish على جهاز الكمبيوتر المزوَّد بنظام التشغيل Windows.&lt;/p&gt;
-    &lt;p&gt;يُرجى اتِّباع هذه الخطوات لإيقاف البرامج مؤقّتًا ليتسنى لك الوصول إلى الويب، وستحتاج إلى امتيازات المُشرف لإجراء ذلك.&lt;/p&gt;
+<translation id="7407424307057130981">‏&lt;p&gt;سيظهر هذا الخطأ إذا كان لديك برنامج Superfish على جهاز الكمبيوتر المزوَّد بنظام التشغيل Windows.&lt;/p&gt;
+    &lt;p&gt;يُرجى اتِّباع الخطوات التالية لإيقاف البرنامج مؤقّتًا ليتسنى لك الوصول إلى الويب. ستحتاج إلى امتيازات المُشرف لإجراء ذلك.&lt;/p&gt;
     &lt;ol&gt;
-    &lt;li&gt;انقر على &lt;strong&gt;"البدء"&lt;/strong&gt;، ثم ابحث عن الخيار &lt;strong&gt;"عرض الخدمات المحلية"&lt;/strong&gt; واختره
+    &lt;li&gt;انقر على &lt;strong&gt;"البدء"&lt;/strong&gt;، ثم ابحث عن خيار&lt;strong&gt;"عرض الخدمات المحلية"&lt;/strong&gt; واختره
     &lt;li&gt;اختر &lt;strong&gt;VisualDiscovery&lt;/strong&gt;
     &lt;li&gt;ضمن &lt;strong&gt;"نوع التشغيل"&lt;/strong&gt;، اختر &lt;strong&gt;"متوقّف"&lt;/strong&gt;
     &lt;li&gt;ضمن &lt;strong&gt;"حالة الخدمة"&lt;/strong&gt;، انقر على &lt;strong&gt;"إيقاف"&lt;/strong&gt;

@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">Şimdilik gizle</translation>
 <translation id="1211530540767271776">Burada USB cihaz yok</translation>
 <translation id="123724288017357924">Önbelleğe alınmış içeriği yoksayarak geçerli sayfayı yeniden yükler</translation>
-<translation id="1240668123557180468">Yakındaki nesneler tarafından gönderilen web sayfalarını keşfedin. Chrome, çevrenizdeki nesnelerle ilişkilendirilen web sayfalarını toplar, sizin için en faydalı olanlarını bulmak üzere bunları anonim bir şekilde Google hizmetine gönderir ve ardından görüntüler.
-
-Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık olması gerekir.</translation>
 <translation id="124116460088058876">Diğer diller</translation>
 <translation id="124678866338384709">Geçerli sekmeyi kapatır</translation>
 <translation id="1258753120186372309">Google doodle'ı: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -643,7 +640,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6864459304226931083">Resmi indir</translation>
 <translation id="6865313869410766144">Form otomatik doldurma verileri</translation>
 <translation id="6868088497967843822">Yer işaretlerinize, geçmişinize ve diğer ayarlarınıza tüm cihazlarınızdan erişmek için oturum açın.</translation>
-<translation id="6875705348083140572">Yakınlarda nelerin olduğunu görün</translation>
 <translation id="688738109438487280">Mevcut veriler <ph name="TO_ACCOUNT" /> hesabına eklenir.</translation>
 <translation id="6891726759199484455">Şifrenizi kopyalamak için kilidi açın</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d açık sekme}other{%1$d açık sekme}}</translation>
@@ -716,7 +712,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7542481630195938534">Öneriler alınamıyor</translation>
 <translation id="7562080006725997899">Göz atma verileri temizleniyor</translation>
 <translation id="756809126120519699">Chrome verileri temizlendi</translation>
-<translation id="7588950540487816470">Fiziksel Web</translation>
 <translation id="7589445247086920869">Geçerli arama motoru için engelleyin</translation>
 <translation id="7593557518625677601">Chrome Senkronizasyonu'nu başlatmak için Android ayarlarını açın ve Android sistem senkronizasyonunu yeniden etkinleştirin</translation>
 <translation id="7596558890252710462">İşletim sistemi</translation>

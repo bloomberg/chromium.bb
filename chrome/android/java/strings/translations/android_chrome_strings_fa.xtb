@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">فعلاً پنهان شود</translation>
 <translation id="1211530540767271776">‏هیچ دستگاه USB در اینجا وجود ندارد</translation>
 <translation id="123724288017357924">تازه‌سازی صفحه اصلی با نادیده گرفتن محتوای حافظه پنهان</translation>
-<translation id="1240668123557180468">‏صفحات وبی را که توسط اشیای اطراف ارسال می‌شوند کشف کنید. Chrome صفحات وب مرتبط با اشیای اطراف شما را جمع‌آوری می‌کند، آن‌ها را به‌صورت ناشناس به یک سرویس Google ارسال می‌کند تا مفیدترین آن‌ها را برای شما پیدا کند، سپس آن‌ها را نمایش می‌دهد.
-
-برای استفاده از «وب فیزیکی»، باید بلوتوث و «مکان» شما روشن باشد.</translation>
 <translation id="124116460088058876">زبان‌های بیشتر</translation>
 <translation id="124678866338384709">بستن برگه کنونی</translation>
 <translation id="1258753120186372309">‏Google doodle: ‏<ph name="DOODLE_DESCRIPTION" /></translation>
@@ -640,7 +637,6 @@
 <translation id="6864459304226931083">بارگیری تصویر</translation>
 <translation id="6865313869410766144">تکمیل خودکار داده‌های فرم</translation>
 <translation id="6868088497967843822">برای دریافت نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیماتتان در همه دستگاه‌هایتان، به سیستم وارد شوید</translation>
-<translation id="6875705348083140572">مشاهده چیزهایی که در نزدیکی است</translation>
 <translation id="688738109438487280">افزودن داده‌های موجود به <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">برای کپی کردن گذرواژه‌تان، قفل صفحه را باز کنید</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{‏%1$d برگه باز}one{‏%1$d برگه باز}other{‏%1$d برگه باز}}</translation>
@@ -713,7 +709,6 @@
 <translation id="7542481630195938534">دریافت پیشنهادها امکان‌پذیر نیست</translation>
 <translation id="7562080006725997899">پاک کردن داده‌های مرور</translation>
 <translation id="756809126120519699">‏داده‌های Chrome پاک شد</translation>
-<translation id="7588950540487816470">وب فیزیکی</translation>
 <translation id="7589445247086920869">مسدود کردن موتور جستجوی کنونی</translation>
 <translation id="7593557518625677601">‏برای شروع همگام‌سازی Chrome، تنظیمات Android را باز کنید و همگام‌سازی سیستم Android را دوباره فعال کنید</translation>
 <translation id="7596558890252710462">سیستم عامل</translation>

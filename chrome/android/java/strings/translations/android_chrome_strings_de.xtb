@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">Vorerst ausblenden</translation>
 <translation id="1211530540767271776">Kein USB-Gerät vorhanden</translation>
 <translation id="123724288017357924">Aktuelle Seite neu laden, Cache-Inhalte ignorieren</translation>
-<translation id="1240668123557180468">Entdecken Sie Webseiten, die von Objekten in Ihrer Nähe übermittelt werden. Chrome trägt Webseiten zusammen, die sich auf Objekte in Ihrer Nähe beziehen, und schickt diese anonym an einen Google-Dienst. Die Webseiten, die für Sie besonders nützlich sind, werden Ihnen dann angezeigt.
-
-Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktiviert sein.</translation>
 <translation id="124116460088058876">Weitere Sprachen</translation>
 <translation id="124678866338384709">Aktuellen Tab schließen</translation>
 <translation id="1258753120186372309">Google-Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -644,7 +641,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6864459304226931083">Bild herunterladen</translation>
 <translation id="6865313869410766144">AutoFill-Formulardaten</translation>
 <translation id="6868088497967843822">Melden Sie sich an, um Ihre Lesezeichen, Ihren Verlauf, Ihre Passwörter und andere Einstellungen auf allen Ihren Geräten aufzurufen.</translation>
-<translation id="6875705348083140572">URLs in der Nähe</translation>
 <translation id="688738109438487280">Vorhandene Daten werden zu <ph name="TO_ACCOUNT" /> hinzugefügt.</translation>
 <translation id="6891726759199484455">Entsperren, um Ihr Passwort zu kopieren</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d geöffneter Tab}other{%1$d geöffnete Tabs}}</translation>
@@ -717,7 +713,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7542481630195938534">Vorschläge können nicht abgerufen werden</translation>
 <translation id="7562080006725997899">Browserdaten werden gelöscht</translation>
 <translation id="756809126120519699">Gelöschte Chrome-Daten</translation>
-<translation id="7588950540487816470">Physical Web</translation>
 <translation id="7589445247086920869">Für aktuelle Suchmaschine blockieren</translation>
 <translation id="7593557518625677601">Einstellungen öffnen und Systemsynchr. aktivieren, um Chrome-Synchr. zu starten</translation>
 <translation id="7596558890252710462">Betriebssystem</translation>
