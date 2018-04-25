@@ -30,6 +30,18 @@ class Point;
 
 namespace ui {
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class EdidColorSpaceChecksOutcome {
+  kSuccess = 0,
+  kErrorBadCoordinates = 1,
+  kErrorPrimariesAreaTooSmall = 2,
+  kErrorBluePrimaryIsBroken = 3,
+  kErrorCannotExtractToXYZD50 = 4,
+  kErrorBadGamma = 5,
+  kMaxValue = kErrorBadGamma
+};
+
 // Representation of the information required to initialize and configure a
 // native display. |index| is the position of the connection and will be
 // used to generate a unique identifier for the display.
