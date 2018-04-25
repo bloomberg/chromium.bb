@@ -152,14 +152,33 @@ For questions and general discussions, please join [chrome-code-coverage group].
 Yes, code coverage instrumentation works with both component and non-component
 builds. Component build is usually faster to compile, but can be up to several
 times slower to run with code coverage instrumentation. For more information,
-see [crbug.com/831939](https://crbug.com/831939).
+see [crbug.com/831939].
+
+### I am getting some warnings while using the script, is that fine?
+
+Usually that is not a critical issue, but in general we tend not to have any
+warnings. Please check the list of [known issues], and if there is a similar
+bug, leave a comment with the command you run, the output you get, and Chromium
+revision you use. Otherwise, please [file a new issue] providing the same
+information.
+
+### How do crashes affect code coverage?
+
+If a crash of any type occurs (Segmentation Fault, CHECK failure, ASan error),
+the crashing process will not dump coverage information necessary to generate
+code coverage report. For single-process applications (e.g. fuzz targets), that
+means no coverage will be reported at all. For multi-process applications, the
+report will be incomplete.
 
 
-[documentation]: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
+[chrome-code-coverage group]: https://groups.google.com/a/google.com/forum/#!forum/chrome-code-coverage
 [coverage script]: https://cs.chromium.org/chromium/src/tools/code_coverage/coverage.py
 [code coverage report directory view]: images/code_coverage_directory_view.png
 [code coverage report component view]: images/code_coverage_component_view.png
-[link]: https://storage.googleapis.com/chromium-browser-clang-staging/
-[guide]: http://llvm.org/docs/CommandGuide/llvm-cov.html
+[crbug.com/831939]: https://crbug.com/831939
+[documentation]: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
 [file a bug]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3ECodeCoverage
-[chrome-code-coverage group]: https://groups.google.com/a/google.com/forum/#!forum/chrome-code-coverage
+[file a new issue]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3ECodeCoverage
+[guide]: http://llvm.org/docs/CommandGuide/llvm-cov.html
+[known issues]: https://bugs.chromium.org/p/chromium/issues/list?q=component:Tools%3ECodeCoverage
+[link]: https://storage.googleapis.com/chromium-browser-clang-staging/
