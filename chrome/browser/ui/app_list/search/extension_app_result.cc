@@ -21,8 +21,8 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_switches.h"
-#include "ui/app_list/app_list_util.h"
 #include "ui/events/event_constants.h"
 
 namespace app_list {
