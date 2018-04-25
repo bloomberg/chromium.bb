@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
@@ -454,6 +455,13 @@ bool ScriptModifiedUsernameAcceptable(
   }
 
   return false;
+}
+
+bool StringMatchesCVC(const base::string16& str) {
+  static const base::NoDestructor<base::string16> kCardCvcReCached(
+      base::UTF8ToUTF16(kCardCvcRe));
+
+  return MatchesPattern(str, *kCardCvcReCached);
 }
 
 // Get information about a login form encapsulated in a PasswordForm struct.
@@ -974,11 +982,8 @@ bool IsCreditCardVerificationPasswordField(
     const blink::WebInputElement& field) {
   if (!field.IsPasswordFieldForAutofill())
     return false;
-
-  static const base::string16 kCardCvcReCached = base::UTF8ToUTF16(kCardCvcRe);
-
-  return MatchesPattern(field.GetAttribute("id").Utf16(), kCardCvcReCached) ||
-         MatchesPattern(field.GetAttribute("name").Utf16(), kCardCvcReCached);
+  return StringMatchesCVC(field.GetAttribute("id").Utf16()) ||
+         StringMatchesCVC(field.GetAttribute("name").Utf16());
 }
 
 std::string GetSignOnRealm(const GURL& origin) {
