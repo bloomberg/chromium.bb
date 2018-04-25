@@ -12,6 +12,7 @@ import android.os.Bundle;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
@@ -34,21 +35,30 @@ import java.lang.ref.WeakReference;
  * intent we don't yet want to fire.
  */
 public class VrMainActivity extends Activity {
+    private static final String TAG = "VrMainActivity";
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         TraceEvent.begin("VrMainActivity.onCreate");
         try {
             super.onCreate(savedInstanceState);
 
-            // TODO(mthiesse, https://crbug.com/831175): Support WebVR launches on standalone VR
-            // devices.
-            if (!VrShellDelegate.deviceSupportsVrLaunches()) {
-                // If the device doesn't support VR launches, forward the intent back to the 2D
-                // launcher. We should only get here on standalone VR devices, or from bad intents
-                // probably sent by testers.
+            boolean hasDaydreamCategory = getIntent().hasCategory(VrIntentUtils.DAYDREAM_CATEGORY);
+
+            if (!VrShellDelegate.deviceSupportsVrLaunches()
+                    || (!hasDaydreamCategory && !VrShellDelegate.isInVrSession())) {
+                StringBuilder error = new StringBuilder("Attempted to launch Chrome into VR ");
+                if (!VrShellDelegate.deviceSupportsVrLaunches()) {
+                    error.append("on a device that doesn't support Chrome in VR.");
+                } else {
+                    error.append("without first being in a VR session or supplying the Daydream "
+                            + "category. Did you mean to use DaydreamApi#launchInVr()?");
+                }
+                Log.e(TAG, error.toString());
+
+                // Remove VR flags and re-target back to the 2D launcher.
                 VrIntentUtils.removeVrExtras(getIntent());
-                getIntent().setComponent(null);
-                getIntent().setPackage(getPackageName());
+                getIntent().setClass(this, ChromeLauncherActivity.class);
 
                 // Daydream drops the MAIN action for unknown reasons...
                 if (getIntent().getAction() == null) getIntent().setAction(Intent.ACTION_MAIN);
