@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/media_router/media_router_ui_service_factory.h"
 
 #include "chrome/browser/media/router/media_router_factory.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui_service.h"
@@ -46,7 +47,9 @@ BrowserContext* MediaRouterUIServiceFactory::GetBrowserContextToUse(
 
 KeyedService* MediaRouterUIServiceFactory::BuildServiceInstanceFor(
     BrowserContext* context) const {
-  return new MediaRouterUIService(Profile::FromBrowserContext(context));
+  return MediaRouterEnabled(context)
+             ? new MediaRouterUIService(Profile::FromBrowserContext(context))
+             : nullptr;
 }
 
 bool MediaRouterUIServiceFactory::ServiceIsCreatedWithBrowserContext() const {
