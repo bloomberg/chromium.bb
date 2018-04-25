@@ -412,6 +412,8 @@
     "wait",
     "help",
     "all-scroll",
+    "grab",
+    "grabbing",
     "-webkit-grab",
     "-webkit-grabbing",
     "-webkit-zoom-in",

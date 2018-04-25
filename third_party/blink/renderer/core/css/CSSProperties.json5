@@ -1398,7 +1398,7 @@
         "n-resize", "ne-resize", "nw-resize", "s-resize", "se-resize",
         "sw-resize", "w-resize", "ew-resize", "ns-resize", "nesw-resize",
         "nwse-resize", "col-resize", "row-resize", "all-scroll", "zoom-in",
-        "zoom-out", "-webkit-grab", "-webkit-grabbing"
+        "zoom-out", "grab", "grabbing"
       ],
       default_value: "auto",
       custom_apply_functions_all: true,
