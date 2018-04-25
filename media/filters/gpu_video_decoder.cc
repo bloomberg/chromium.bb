@@ -29,6 +29,7 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/surface_manager.h"
 #include "media/base/video_decoder_config.h"
+#include "media/base/video_util.h"
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -651,7 +652,8 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
       BindToCurrentLoop(base::Bind(
           &GpuVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
           factories_, picture.picture_buffer_id(), pb.client_texture_ids())),
-      pb.size(), visible_rect, natural_size, timestamp));
+      pb.size(), visible_rect,
+      GetNaturalSizeWithDAR(visible_rect.size(), natural_size), timestamp));
   if (!frame) {
     DLOG(ERROR) << "Create frame failed for: " << picture.picture_buffer_id();
     NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);

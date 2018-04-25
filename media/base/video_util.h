@@ -16,10 +16,21 @@ namespace media {
 
 class VideoFrame;
 
-// Computes the size of |visible_size| for a given aspect ratio.
+// Computes the size of |visible_size| for a given sample aspect ratio.
+//
+// TODO(sandersd): Rename as GetNaturalSizeWithSAR() to make it more clear
+// at the call site what this does. Perhaps some wrapper classes would be
+// best:
+//   GetNaturalSize(visible_size, SampleAspectRatio(n, d))
+//   GetNaturalSize(visible_size, DisplayAspectRatio(w, h))
 MEDIA_EXPORT gfx::Size GetNaturalSize(const gfx::Size& visible_size,
                                       int aspect_ratio_numerator,
                                       int aspect_ratio_denominator);
+
+// Increases (at most) one of the dimensions of |visible_size| such that
+// the display aspect ratio matches |display_aspect|.
+MEDIA_EXPORT gfx::Size GetNaturalSizeWithDAR(const gfx::Size& visible_size,
+                                             const gfx::Size& display_aspect);
 
 // Fills |frame| containing YUV data to the given color values.
 MEDIA_EXPORT void FillYUV(VideoFrame* frame, uint8_t y, uint8_t u, uint8_t v);

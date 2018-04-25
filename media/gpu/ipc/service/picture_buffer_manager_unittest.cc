@@ -47,7 +47,14 @@ class PictureBufferManagerImplTest : public testing::Test {
     pbm_ = PictureBufferManager::Create(reuse_cb_.Get());
   }
 
-  ~PictureBufferManagerImplTest() override {}
+  ~PictureBufferManagerImplTest() override {
+    // Drop ownership of anything that may have an async destruction process,
+    // then allow destruction to complete.
+    cbh_->StubLost();
+    cbh_ = nullptr;
+    pbm_ = nullptr;
+    environment_.RunUntilIdle();
+  }
 
  protected:
   void Initialize() {

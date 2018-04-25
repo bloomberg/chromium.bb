@@ -19,6 +19,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_types.h"
+#include "media/base/video_util.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
 #include "media/video/picture.h"
@@ -527,7 +528,8 @@ void VdaVideoDecoder::PictureReadyOnParentThread(Picture picture) {
 
   // Create a VideoFrame for the picture.
   scoped_refptr<VideoFrame> frame = picture_buffer_manager_->CreateVideoFrame(
-      picture, timestamp_it->second, visible_rect, config_.natural_size());
+      picture, timestamp_it->second, visible_rect,
+      GetNaturalSizeWithDAR(visible_rect.size(), config_.natural_size()));
   if (!frame) {
     EnterErrorState();
     return;

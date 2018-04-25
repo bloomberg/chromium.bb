@@ -73,6 +73,32 @@ gfx::Size GetNaturalSize(const gfx::Size& visible_size,
                    round(visible_size.height() / aspect_ratio));
 }
 
+gfx::Size GetNaturalSizeWithDAR(const gfx::Size& visible_size,
+                                const gfx::Size& display_aspect) {
+  // No reasonable aspect interpretation, return an empty size.
+  // TODO(sandersd): Is it more useful to return the original |visible_size|?
+  if (visible_size.width() <= 0 || visible_size.height() <= 0 ||
+      display_aspect.width() <= 0 || display_aspect.height() <= 0) {
+    return gfx::Size();
+  }
+
+  double visible_aspect_ratio =
+      visible_size.width() / static_cast<double>(visible_size.height());
+
+  double display_aspect_ratio =
+      display_aspect.width() / static_cast<double>(display_aspect.height());
+
+  if (display_aspect_ratio > visible_aspect_ratio) {
+    // |display_aspect| is wider than |visible_size|; increase width.
+    return gfx::Size(round(visible_size.height() * display_aspect_ratio),
+                     visible_size.height());
+  }
+
+  // |display_aspect| is narrower than |visible_size|; increase height.
+  return gfx::Size(visible_size.width(),
+                   round(visible_size.width() / display_aspect_ratio));
+}
+
 void FillYUV(VideoFrame* frame, uint8_t y, uint8_t u, uint8_t v) {
   // Fill the Y plane.
   uint8_t* y_plane = frame->data(VideoFrame::kYPlane);

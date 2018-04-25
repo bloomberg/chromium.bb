@@ -219,6 +219,38 @@ TEST_F(VideoUtilTest, GetNaturalSize) {
   EXPECT_EQ(gfx::Size(320, 371), GetNaturalSize(visible_size, 11, 17));
 }
 
+TEST_F(VideoUtilTest, GetNaturalSizeWithDAR) {
+  gfx::Size visible_size(320, 240);
+
+  // Test 0 sizes.
+  EXPECT_EQ(gfx::Size(), GetNaturalSizeWithDAR(gfx::Size(0, 0), visible_size));
+  EXPECT_EQ(gfx::Size(), GetNaturalSizeWithDAR(gfx::Size(0, 1), visible_size));
+  EXPECT_EQ(gfx::Size(), GetNaturalSizeWithDAR(gfx::Size(1, 0), visible_size));
+
+  // Test abnormal ratios.
+  EXPECT_EQ(gfx::Size(), GetNaturalSizeWithDAR(visible_size, gfx::Size(0, 0)));
+  EXPECT_EQ(gfx::Size(), GetNaturalSizeWithDAR(visible_size, gfx::Size(0, 1)));
+  EXPECT_EQ(gfx::Size(), GetNaturalSizeWithDAR(visible_size, gfx::Size(1, 0)));
+  EXPECT_EQ(gfx::Size(), GetNaturalSizeWithDAR(visible_size, gfx::Size(1, -1)));
+  EXPECT_EQ(gfx::Size(), GetNaturalSizeWithDAR(visible_size, gfx::Size(-1, 1)));
+
+  // Test normal sizes and ratios.
+  EXPECT_EQ(gfx::Size(320, 320),
+            GetNaturalSizeWithDAR(visible_size, gfx::Size(1, 1)));
+  EXPECT_EQ(gfx::Size(480, 240),
+            GetNaturalSizeWithDAR(visible_size, gfx::Size(2, 1)));
+  EXPECT_EQ(gfx::Size(320, 640),
+            GetNaturalSizeWithDAR(visible_size, gfx::Size(1, 2)));
+  EXPECT_EQ(gfx::Size(320, 240),
+            GetNaturalSizeWithDAR(visible_size, gfx::Size(4, 3)));
+  EXPECT_EQ(gfx::Size(320, 427),
+            GetNaturalSizeWithDAR(visible_size, gfx::Size(3, 4)));
+  EXPECT_EQ(gfx::Size(427, 240),
+            GetNaturalSizeWithDAR(visible_size, gfx::Size(16, 9)));
+  EXPECT_EQ(gfx::Size(320, 569),
+            GetNaturalSizeWithDAR(visible_size, gfx::Size(9, 16)));
+}
+
 namespace {
 
 uint8_t src6x4[] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11,

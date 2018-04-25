@@ -121,6 +121,7 @@ class VdaVideoDecoderTest : public testing::Test {
   ~VdaVideoDecoderTest() override {
     // Drop ownership of anything that may have an async destruction process,
     // then allow destruction to complete.
+    cbh_->StubLost();
     cbh_ = nullptr;
     owned_vda_ = nullptr;
     pbm_ = nullptr;
@@ -351,6 +352,36 @@ TEST_F(VdaVideoDecoderTest, Decode_OutputAndDismiss) {
   // But the VDA should not be notified when it completes.
   cbh_->ReleaseSyncToken(sync_token);
   environment_.RunUntilIdle();
+}
+
+TEST_F(VdaVideoDecoderTest, Decode_Output_MaintainsAspect) {
+  Initialize();
+  int32_t bitstream_id = Decode(base::TimeDelta());
+  NotifyEndOfBitstreamBuffer(bitstream_id);
+  int32_t picture_buffer_id = ProvidePictureBuffer();
+
+  // Ask VdaVideoDecoder to produce a frame with:
+  //   - |natural_size| = 1920x1080 (VideoDecoderConfig)
+  //   - |coded_size| = 1920x1088 (PictureBuffer)
+  //   - |visible_rect| = 640x480 (Picture)
+  // VdaVideoDecoder should produce a frame with:
+  //   - |natural_size| = 853x480 (picture aspect ratio matches |natural_size|)
+  //   - |coded_size| = 1920x1088 (must match PictureBuffer)
+  //   - |visible_rect| = 640x480 (must match Picture)
+  scoped_refptr<VideoFrame> frame;
+  EXPECT_CALL(output_cb_, Run(_)).WillOnce(SaveArg<0>(&frame));
+  client_->PictureReady(Picture(picture_buffer_id, bitstream_id,
+                                gfx::Rect(640, 480),
+                                gfx::ColorSpace::CreateSRGB(), true));
+  environment_.RunUntilIdle();
+
+  ASSERT_TRUE(frame);
+  EXPECT_EQ(frame->natural_size().width(), 853);
+  EXPECT_EQ(frame->natural_size().height(), 480);
+  EXPECT_EQ(frame->coded_size().width(), 1920);
+  EXPECT_EQ(frame->coded_size().height(), 1088);
+  EXPECT_EQ(frame->visible_rect().width(), 640);
+  EXPECT_EQ(frame->visible_rect().height(), 480);
 }
 
 TEST_F(VdaVideoDecoderTest, Flush) {
