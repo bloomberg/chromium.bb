@@ -16,7 +16,6 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
@@ -29,11 +28,12 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/fake_auth_status_provider.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 static const char kTestAccountId[] = "id-testuser@test.com";
@@ -50,9 +50,6 @@ class SigninGlobalErrorTest : public testing::Test {
 
     // Create a signed-in profile.
     TestingProfile::TestingFactories testing_factories;
-    testing_factories.push_back(std::make_pair(
-        ProfileOAuth2TokenServiceFactory::GetInstance(),
-        BuildFakeProfileOAuth2TokenService));
     testing_factories.push_back(std::make_pair(
         SigninManagerFactory::GetInstance(), BuildFakeSigninManagerBase));
     profile_ = profile_manager_.CreateTestingProfile(
@@ -77,6 +74,16 @@ class SigninGlobalErrorTest : public testing::Test {
   SigninGlobalError* global_error() { return global_error_; }
   SigninErrorController* error_controller() { return error_controller_; }
 
+  void SetAuthError(GoogleServiceAuthError::State state) {
+    ProfileOAuth2TokenService* token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
+    token_service->UpdateCredentials(kTestAccountId, "refresh_token");
+    // TODO(https://crbug.com/836212): Do not use the delegate directly, because
+    // it is internal API.
+    token_service->GetDelegate()->UpdateAuthError(
+        kTestAccountId, GoogleServiceAuthError(state));
+  }
+
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager profile_manager_;
@@ -85,40 +92,14 @@ class SigninGlobalErrorTest : public testing::Test {
   SigninErrorController* error_controller_;
 };
 
-TEST_F(SigninGlobalErrorTest, NoErrorAuthStatusProviders) {
-  std::unique_ptr<FakeAuthStatusProvider> provider;
-
+TEST_F(SigninGlobalErrorTest, Basic) {
   ASSERT_FALSE(global_error()->HasMenuItem());
 
-  // Add a provider.
-  provider.reset(new FakeAuthStatusProvider(error_controller()));
-  ASSERT_FALSE(global_error()->HasMenuItem());
+  SetAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  EXPECT_TRUE(global_error()->HasMenuItem());
 
-  // Remove the provider.
-  provider.reset();
-  ASSERT_FALSE(global_error()->HasMenuItem());
-}
-
-TEST_F(SigninGlobalErrorTest, ErrorAuthStatusProvider) {
-  std::unique_ptr<FakeAuthStatusProvider> provider;
-  std::unique_ptr<FakeAuthStatusProvider> error_provider;
-
-  provider.reset(new FakeAuthStatusProvider(error_controller()));
-  ASSERT_FALSE(global_error()->HasMenuItem());
-
-  error_provider.reset(new FakeAuthStatusProvider(error_controller()));
-  error_provider->SetAuthError(
-      kTestAccountId,
-      GoogleServiceAuthError(
-          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-  ASSERT_TRUE(global_error()->HasMenuItem());
-
-  error_provider.reset();
-  ASSERT_FALSE(global_error()->HasMenuItem());
-
-  provider.reset();
-  error_provider.reset();
-  ASSERT_FALSE(global_error()->HasMenuItem());
+  SetAuthError(GoogleServiceAuthError::NONE);
+  EXPECT_FALSE(global_error()->HasMenuItem());
 }
 
 // Verify that SigninGlobalError ignores certain errors.
@@ -153,10 +134,10 @@ TEST_F(SigninGlobalErrorTest, AuthStatusEnumerateAllErrors) {
   for (size_t i = 0; i < arraysize(table); ++i) {
     if (GoogleServiceAuthError::IsDeprecated(table[i].error_state))
       continue;
+    SetAuthError(GoogleServiceAuthError::NONE);
+
     base::HistogramTester histogram_tester;
-    FakeAuthStatusProvider provider(error_controller());
-    provider.SetAuthError(kTestAccountId,
-                          GoogleServiceAuthError(table[i].error_state));
+    SetAuthError(table[i].error_state);
 
     EXPECT_EQ(global_error()->HasMenuItem(), table[i].is_error);
     EXPECT_EQ(global_error()->MenuItemLabel().empty(), !table[i].is_error);

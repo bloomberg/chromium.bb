@@ -11,23 +11,23 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/signin/signin_error_controller_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/browser_sync/test_profile_sync_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/fake_auth_status_provider.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-
-typedef GoogleServiceAuthError AuthError;
+#include "google_apis/gaia/oauth2_token_service_delegate.h"
 
 namespace {
 
@@ -64,13 +64,11 @@ constexpr int kSMSEntrypointBookmarksBubble =
 
 class DesktopIOSPromotionUtilTest : public testing::Test {
  public:
-  DesktopIOSPromotionUtilTest() {}
+  DesktopIOSPromotionUtilTest()
+      : local_state_(TestingBrowserProcess::GetGlobal()) {}
   ~DesktopIOSPromotionUtilTest() override {}
 
   void SetUp() override {
-    local_state_.reset(new TestingPrefServiceSimple);
-    TestingBrowserProcess::GetGlobal()->SetLocalState(local_state_.get());
-    desktop_ios_promotion::RegisterLocalPrefs(local_state_->registry());
     auto pref_service =
         std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
     RegisterUserProfilePrefs(pref_service->registry());
@@ -87,12 +85,9 @@ class DesktopIOSPromotionUtilTest : public testing::Test {
 
   void TearDown() override {
     profile_.reset();
-    // Ensure that g_accept_requests gets set back to true after test execution.
-    TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
-    local_state_.reset();
   }
 
-  PrefService* local_state() { return local_state_.get(); }
+  PrefService* local_state() { return local_state_.Get(); }
 
   TestSyncService* sync_service() { return sync_service_; }
 
@@ -109,7 +104,7 @@ class DesktopIOSPromotionUtilTest : public testing::Test {
  private:
   TestSyncService* sync_service_ = nullptr;
   content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<TestingPrefServiceSimple> local_state_;
+  ScopedTestingLocalState local_state_;
   SigninManagerBase* mock_signin_ = nullptr;
   std::unique_ptr<TestingProfile> profile_;
   DISALLOW_COPY_AND_ASSIGN(DesktopIOSPromotionUtilTest);
@@ -178,8 +173,6 @@ TEST_F(DesktopIOSPromotionUtilTest, IsEligibleForIOSPromotionForSavePassword) {
        false, true},
   };
   std::string locale = base::i18n::GetConfiguredLocale();
-  FakeAuthStatusProvider auth_provider(
-      SigninErrorControllerFactory::GetForProfile(profile()));
 
   for (const auto& test_case : kTestData) {
     SCOPED_TRACE(testing::Message("#test_case = ") << (&test_case - kTestData));
@@ -189,7 +182,12 @@ TEST_F(DesktopIOSPromotionUtilTest, IsEligibleForIOSPromotionForSavePassword) {
             ? GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS
             : GoogleServiceAuthError::NONE);
 
-    auth_provider.SetAuthError("test", error);
+    ProfileOAuth2TokenService* token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
+    token_service->UpdateCredentials("test", "refresh_token");
+    // TODO(https://crbug.com/836212): Do not use the delegate directly, because
+    // it is internal API.
+    token_service->GetDelegate()->UpdateAuthError("test", error);
 
     local_state()->SetBoolean(prefs::kSavePasswordsBubbleIOSPromoDismissed,
                               test_case.is_dismissed);

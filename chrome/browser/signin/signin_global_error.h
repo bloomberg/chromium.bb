@@ -32,8 +32,7 @@ class SigninGlobalError : public GlobalErrorWithStandardBubble,
   void AttemptToFixError(Browser* browser);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SigninGlobalErrorTest, NoErrorAuthStatusProviders);
-  FRIEND_TEST_ALL_PREFIXES(SigninGlobalErrorTest, ErrorAuthStatusProvider);
+  FRIEND_TEST_ALL_PREFIXES(SigninGlobalErrorTest, Basic);
   FRIEND_TEST_ALL_PREFIXES(SigninGlobalErrorTest, AuthStatusEnumerateAllErrors);
 
   // KeyedService:

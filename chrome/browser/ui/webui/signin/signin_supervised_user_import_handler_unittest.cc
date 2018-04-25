@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/grit/generated_resources.h"
@@ -14,9 +15,9 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/signin/core/browser/fake_auth_status_provider.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_web_ui.h"
+#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -120,9 +121,12 @@ TEST_F(SigninSupervisedUserImportHandlerTest, AuthError) {
   // Set Auth Error.
   const GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  FakeAuthStatusProvider provider(
-      SigninErrorControllerFactory::GetForProfile(profile()));
-  provider.SetAuthError(kTestGaiaId, error);
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
+  token_service->UpdateCredentials(kTestGaiaId, "refresh_token");
+  // TODO(https://crbug.com/836212): Do not use the delegate directly, because
+  // it is internal API.
+  token_service->GetDelegate()->UpdateAuthError(kTestGaiaId, error);
 
   // Test the JS -> C++ -> JS callback path.
   base::ListValue list_args;

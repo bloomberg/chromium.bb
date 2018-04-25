@@ -21,7 +21,6 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/signin/core/browser/fake_auth_status_provider.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/model/sync_error_factory_mock.h"
