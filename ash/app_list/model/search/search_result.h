@@ -13,6 +13,7 @@
 
 #include "ash/app_list/model/app_list_model_export.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -123,9 +124,11 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   virtual void InvokeAction(int action_index, int event_flags);
 
   // Returns the context menu model for this item, or NULL if there is currently
-  // no menu for the item (e.g. during install).
-  // Note the returned menu model is owned by this item.
-  virtual ui::MenuModel* GetContextMenuModel();
+  // no menu for the item (e.g. during install). |callback| takes the ownership
+  // of the returned menu model.
+  using GetMenuModelCallback =
+      base::OnceCallback<void(std::unique_ptr<ui::MenuModel>)>;
+  virtual void GetContextMenuModel(GetMenuModelCallback callback);
 
   // Returns a string showing |text| marked up with brackets indicating the
   // tag positions in |tags|. Useful for debugging and testing.

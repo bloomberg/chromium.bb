@@ -35,7 +35,7 @@ class ArcPlayStoreSearchResult : public ChromeSearchResult,
 
   // ChromeSearchResult overrides:
   std::unique_ptr<ChromeSearchResult> Duplicate() const override;
-  ui::MenuModel* GetContextMenuModel() override;
+  void GetContextMenuModel(GetMenuModelCallback callback) override;
   void Open(int event_flags) override;
 
   // app_list::AppContextMenuDelegate overrides:

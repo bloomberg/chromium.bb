@@ -19,7 +19,7 @@ class Profile;
 // ArcAppItem represents an ARC app in app list.
 class ArcAppItem : public ChromeAppListItem,
                    public ArcAppIcon::Observer,
-                   app_list::AppContextMenuDelegate {
+                   public app_list::AppContextMenuDelegate {
  public:
   static const char kItemType[];
 
@@ -34,7 +34,7 @@ class ArcAppItem : public ChromeAppListItem,
 
   // ChromeAppListItem overrides:
   void Activate(int event_flags) override;
-  ui::MenuModel* GetContextMenuModel() override;
+  void GetContextMenuModel(GetMenuModelCallback callback) override;
   const char* GetItemType() const override;
 
   // app_list::AppContextMenuDelegate overrides:

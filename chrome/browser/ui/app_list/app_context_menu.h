@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -53,8 +54,9 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
                  AppListControllerDelegate* controller);
   ~AppContextMenu() override;
 
-  // Note this could return nullptr if corresponding app item is gone.
-  virtual ui::MenuModel* GetMenuModel();
+  using GetMenuModelCallback =
+      base::OnceCallback<void(std::unique_ptr<ui::MenuModel>)>;
+  virtual void GetMenuModel(GetMenuModelCallback callback);
 
   // ui::SimpleMenuModel::Delegate overrides:
   bool IsItemForCommandIdDynamic(int command_id) const override;
@@ -73,7 +75,9 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
   void TogglePin(const std::string& shelf_app_id);
 
   // Helper method to add touchable or normal context menu options.
-  void AddContextMenuOption(CommandId command_id, int string_id);
+  void AddContextMenuOption(ui::SimpleMenuModel* menu_model,
+                            CommandId command_id,
+                            int string_id);
 
   // Helper method to get the gfx::VectorIcon for a |command_id|. Returns an
   // empty gfx::VectorIcon if there is no icon for this |command_id|.
@@ -90,8 +94,6 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
   Profile* profile_;
   const std::string app_id_;
   AppListControllerDelegate* controller_;
-
-  std::unique_ptr<ui::SimpleMenuModel> menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(AppContextMenu);
 };

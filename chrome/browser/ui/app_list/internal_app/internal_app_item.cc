@@ -36,12 +36,12 @@ void InternalAppItem::Activate(int event_flags) {
   app_list::OpenInternalApp(id(), profile());
 }
 
-ui::MenuModel* InternalAppItem::GetContextMenuModel() {
+void InternalAppItem::GetContextMenuModel(GetMenuModelCallback callback) {
   if (!context_menu_) {
     context_menu_ = std::make_unique<app_list::AppContextMenu>(
         nullptr, profile(), id(), GetController());
   }
-  return context_menu_->GetMenuModel();
+  context_menu_->GetMenuModel(std::move(callback));
 }
 
 app_list::AppContextMenu* InternalAppItem::GetAppContextMenu() {

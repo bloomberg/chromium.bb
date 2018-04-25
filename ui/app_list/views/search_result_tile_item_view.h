@@ -12,6 +12,10 @@
 #include "ui/app_list/views/search_result_base_view.h"
 #include "ui/views/context_menu_controller.h"
 
+namespace ui {
+class MenuModel;
+}  // namespace ui
+
 namespace views {
 class ImageView;
 class MenuRunner;
@@ -71,6 +75,12 @@ class APP_LIST_EXPORT SearchResultTileItemView
                               ui::MenuSourceType source_type) override;
 
  private:
+  // Bound by ShowContextMenuForView().
+  void OnGetContextMenuModel(views::View* source,
+                             const gfx::Point& point,
+                             ui::MenuSourceType source_type,
+                             std::unique_ptr<ui::MenuModel> menu_model);
+
   void SetIcon(const gfx::ImageSkia& icon);
   void SetBadgeIcon(const gfx::ImageSkia& badge_icon);
   void SetTitle(const base::string16& title);
@@ -108,6 +118,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
 
   SkColor parent_background_color_ = SK_ColorTRANSPARENT;
 
+  std::unique_ptr<ui::MenuModel> menu_model_;
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
 
   const bool is_play_store_app_search_enabled_;

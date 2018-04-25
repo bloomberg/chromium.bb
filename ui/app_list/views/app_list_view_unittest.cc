@@ -82,17 +82,16 @@ void CheckView(views::View* subview) {
 
 class TestStartPageSearchResult : public TestSearchResult {
  public:
-  TestStartPageSearchResult() : menu_model_(nullptr) {
+  TestStartPageSearchResult() {
     set_display_type(ash::SearchResultDisplayType::kRecommendation);
   }
-  ~TestStartPageSearchResult() override {}
+  ~TestStartPageSearchResult() override = default;
 
-  ui::MenuModel* GetContextMenuModel() override { return &menu_model_; }
+  void GetContextMenuModel(GetMenuModelCallback callback) override {
+    std::move(callback).Run(std::make_unique<ui::SimpleMenuModel>(nullptr));
+  }
 
  private:
-  // A fake menu mode for context menu test.
-  ui::SimpleMenuModel menu_model_;
-
   DISALLOW_COPY_AND_ASSIGN(TestStartPageSearchResult);
 };
 

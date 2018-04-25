@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/app_list/model/search/search_result.h"
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_switches.h"
@@ -56,7 +57,8 @@ SearchResultView::SearchResultView(SearchResultListView* list_view)
       icon_(new views::ImageView),
       badge_icon_(new views::ImageView),
       actions_view_(new SearchResultActionsView(this)),
-      progress_bar_(new views::ProgressBar) {
+      progress_bar_(new views::ProgressBar),
+      weak_ptr_factory_(this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
   icon_->set_can_process_events_within_subtree(false);
   badge_icon_->set_can_process_events_within_subtree(false);
@@ -413,13 +415,23 @@ void SearchResultView::ShowContextMenuForView(views::View* source,
   if (!result_)
     return;
 
-  ui::MenuModel* menu_model = result_->GetContextMenuModel();
+  result_->GetContextMenuModel(base::BindOnce(
+      &SearchResultView::OnGetContextMenu, weak_ptr_factory_.GetWeakPtr(),
+      source, point, source_type));
+}
+
+void SearchResultView::OnGetContextMenu(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type,
+    std::unique_ptr<ui::MenuModel> menu_model) {
   if (!menu_model)
     return;
 
-  context_menu_runner_.reset(
-      new views::MenuRunner(menu_model, views::MenuRunner::HAS_MNEMONICS));
-  context_menu_runner_->RunMenuAt(GetWidget(), NULL,
+  menu_model_ = std::move(menu_model);
+  context_menu_runner_ = std::make_unique<views::MenuRunner>(
+      menu_model_.get(), views::MenuRunner::HAS_MNEMONICS);
+  context_menu_runner_->RunMenuAt(GetWidget(), nullptr,
                                   gfx::Rect(point, gfx::Size()),
                                   views::MENU_ANCHOR_TOPLEFT, source_type);
 

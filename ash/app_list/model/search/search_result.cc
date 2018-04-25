@@ -9,6 +9,7 @@
 #include "ash/app_list/model/search/search_result_observer.h"
 #include "ash/public/cpp/app_list/tokenized_string.h"
 #include "ash/public/cpp/app_list/tokenized_string_match.h"
+#include "ui/base/models/menu_model.h"
 
 namespace app_list {
 
@@ -98,8 +99,8 @@ void SearchResult::Open(int event_flags) {}
 
 void SearchResult::InvokeAction(int action_index, int event_flags) {}
 
-ui::MenuModel* SearchResult::GetContextMenuModel() {
-  return NULL;
+void SearchResult::GetContextMenuModel(GetMenuModelCallback callback) {
+  std::move(callback).Run(nullptr);
 }
 
 // static

@@ -69,12 +69,10 @@ std::unique_ptr<ChromeSearchResult> ArcAppResult::Duplicate() const {
   return copy;
 }
 
-ui::MenuModel* ArcAppResult::GetContextMenuModel() {
-  if (!context_menu_) {
-    context_menu_.reset(
-        new ArcAppContextMenu(this, profile(), app_id(), controller()));
-  }
-  return context_menu_->GetMenuModel();
+void ArcAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
+  context_menu_ = std::make_unique<ArcAppContextMenu>(this, profile(), app_id(),
+                                                      controller());
+  context_menu_->GetMenuModel(std::move(callback));
 }
 
 }  // namespace app_list

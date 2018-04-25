@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
@@ -163,13 +164,11 @@ void ExtensionAppItem::Activate(int event_flags) {
                                event_flags);
 }
 
-ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
-  context_menu_.reset(new app_list::ExtensionAppContextMenu(this,
-                                                            profile(),
-                                                            extension_id(),
-                                                            GetController()));
+void ExtensionAppItem::GetContextMenuModel(GetMenuModelCallback callback) {
+  context_menu_ = std::make_unique<app_list::ExtensionAppContextMenu>(
+      this, profile(), extension_id(), GetController());
   context_menu_->set_is_platform_app(is_platform_app_);
-  return context_menu_->GetMenuModel();
+  context_menu_->GetMenuModel(std::move(callback));
 }
 
 // static

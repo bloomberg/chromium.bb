@@ -27,7 +27,7 @@ class CrostiniAppItem : public ChromeAppListItem {
   // ChromeAppListItem:
   void Activate(int event_flags) override;
   const char* GetItemType() const override;
-  ui::MenuModel* GetContextMenuModel() override;
+  void GetContextMenuModel(GetMenuModelCallback callback) override;
   app_list::AppContextMenu* GetAppContextMenu() override;
 
   std::unique_ptr<CrostiniAppContextMenu> context_menu_;

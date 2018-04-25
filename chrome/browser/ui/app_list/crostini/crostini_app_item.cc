@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/crostini/crostini_app_item.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -45,10 +47,10 @@ void CrostiniAppItem::Activate(int event_flags) {
   // the app launcher remains open and there's no feedback.
 }
 
-ui::MenuModel* CrostiniAppItem::GetContextMenuModel() {
-  context_menu_.reset(
-      new CrostiniAppContextMenu(profile(), id(), GetController()));
-  return context_menu_->GetMenuModel();
+void CrostiniAppItem::GetContextMenuModel(GetMenuModelCallback callback) {
+  context_menu_ = std::make_unique<CrostiniAppContextMenu>(profile(), id(),
+                                                           GetController());
+  context_menu_->GetMenuModel(std::move(callback));
 }
 
 app_list::AppContextMenu* CrostiniAppItem::GetAppContextMenu() {

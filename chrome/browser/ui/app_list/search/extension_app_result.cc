@@ -89,14 +89,14 @@ std::unique_ptr<ChromeSearchResult> ExtensionAppResult::Duplicate() const {
   return copy;
 }
 
-ui::MenuModel* ExtensionAppResult::GetContextMenuModel() {
+void ExtensionAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
   if (!context_menu_) {
-    context_menu_.reset(new ExtensionAppContextMenu(
-        this, profile(), app_id(), controller()));
+    context_menu_ = std::make_unique<ExtensionAppContextMenu>(
+        this, profile(), app_id(), controller());
     context_menu_->set_is_platform_app(is_platform_app_);
   }
 
-  return context_menu_->GetMenuModel();
+  context_menu_->GetMenuModel(std::move(callback));
 }
 
 void ExtensionAppResult::StartObservingExtensionRegistry() {

@@ -341,14 +341,17 @@ size_t ChromeAppListModelUpdater::BadgedItemCount() {
   return count;
 }
 
-ui::MenuModel* ChromeAppListModelUpdater::GetContextMenuModel(
-    const std::string& id) {
+void ChromeAppListModelUpdater::GetContextMenuModel(
+    const std::string& id,
+    GetMenuModelCallback callback) {
   ChromeAppListItem* item = FindItem(id);
   // TODO(stevenjb/jennyz): Implement this for folder items.
   // TODO(newcomer): Add histograms for folder items.
-  if (!item || item->is_folder())
-    return nullptr;
-  return item->GetContextMenuModel();
+  if (!item || item->is_folder()) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+  item->GetContextMenuModel(std::move(callback));
 }
 
 void ChromeAppListModelUpdater::ContextMenuItemSelected(const std::string& id,

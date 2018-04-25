@@ -4,8 +4,11 @@
 
 #include "ui/app_list/views/search_result_tile_item_view.h"
 
+#include <utility>
+
 #include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/model/search/search_result.h"
+#include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -379,9 +382,19 @@ void SearchResultTileItemView::ShowContextMenuForView(
   if (!item_)
     return;
 
-  ui::MenuModel* menu_model = item_->GetContextMenuModel();
+  item_->GetContextMenuModel(base::BindOnce(
+      &SearchResultTileItemView::OnGetContextMenuModel,
+      weak_ptr_factory_.GetWeakPtr(), source, point, source_type));
+}
+
+void SearchResultTileItemView::OnGetContextMenuModel(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type,
+    std::unique_ptr<ui::MenuModel> menu_model) {
   if (!menu_model)
     return;
+  menu_model_ = std::move(menu_model);
 
   if (IsSuggestedAppTile()) {
     if (view_delegate_->GetModel()->state_fullscreen() ==
@@ -420,10 +433,10 @@ void SearchResultTileItemView::ShowContextMenuForView(
           gfx::Size(kGridSelectedSize, kGridSelectedSize));
     }
   }
-  context_menu_runner_.reset(new views::MenuRunner(
-      menu_model, run_types,
+  context_menu_runner_ = std::make_unique<views::MenuRunner>(
+      menu_model_.get(), run_types,
       base::Bind(&SearchResultTileItemView::OnContextMenuClosed,
-                 weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now())));
+                 weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()));
   context_menu_runner_->RunMenuAt(GetWidget(), nullptr, anchor_rect,
                                   anchor_type, source_type);
 

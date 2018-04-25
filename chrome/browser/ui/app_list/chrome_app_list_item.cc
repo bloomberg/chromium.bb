@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 
+#include <utility>
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
@@ -87,8 +89,8 @@ const char* ChromeAppListItem::GetItemType() const {
   return "";
 }
 
-ui::MenuModel* ChromeAppListItem::GetContextMenuModel() {
-  return nullptr;
+void ChromeAppListItem::GetContextMenuModel(GetMenuModelCallback callback) {
+  std::move(callback).Run(nullptr);
 }
 
 bool ChromeAppListItem::IsBadged() const {

@@ -35,8 +35,8 @@ class ExtensionAppContextMenu : public AppContextMenu {
   // Returns the string id based on launch type.
   int GetLaunchStringId() const;
 
-  // AppListContextMenu overrides:
-  ui::MenuModel* GetMenuModel() override;
+  // AppContextMenu overrides:
+  void GetMenuModel(GetMenuModelCallback callback) override;
   void BuildMenu(ui::SimpleMenuModel* menu_model) override;
 
   // ui::SimpleMenuModel::Delegate overrides:

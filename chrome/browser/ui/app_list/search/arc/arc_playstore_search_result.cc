@@ -104,12 +104,13 @@ void ArcPlayStoreSearchResult::Open(int event_flags) {
                                    : PLAY_STORE_UNINSTALLED_APP);
 }
 
-ui::MenuModel* ArcPlayStoreSearchResult::GetContextMenuModel() {
+void ArcPlayStoreSearchResult::GetContextMenuModel(
+    GetMenuModelCallback callback) {
   context_menu_ = std::make_unique<ArcPlayStoreAppContextMenu>(
       this, profile_, list_controller_);
   // TODO(755701): Enable context menu once Play Store API starts returning both
   // install and launch intents.
-  return nullptr;
+  std::move(callback).Run(nullptr);
 }
 
 void ArcPlayStoreSearchResult::ExecuteLaunchCommand(int event_flags) {

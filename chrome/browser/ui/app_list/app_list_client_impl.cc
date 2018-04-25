@@ -11,6 +11,7 @@
 
 #include "ash/public/cpp/menu_utils.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -100,10 +101,19 @@ void AppListClientImpl::ActivateItem(const std::string& id, int event_flags) {
 void AppListClientImpl::GetContextMenuModel(
     const std::string& id,
     GetContextMenuModelCallback callback) {
-  if (!model_updater_)
+  if (!model_updater_) {
+    std::move(callback).Run(std::vector<ash::mojom::MenuItemPtr>());
     return;
-  ui::MenuModel* menu = model_updater_->GetContextMenuModel(id);
-  std::move(callback).Run(ash::menu_utils::GetMojoMenuItemsFromModel(menu));
+  }
+  model_updater_->GetContextMenuModel(
+      id,
+      base::BindOnce(
+          [](GetContextMenuModelCallback callback,
+             std::unique_ptr<ui::MenuModel> menu_model) {
+            std::move(callback).Run(
+                ash::menu_utils::GetMojoMenuItemsFromModel(menu_model.get()));
+          },
+          std::move(callback)));
 }
 
 void AppListClientImpl::ContextMenuItemSelected(const std::string& id,
