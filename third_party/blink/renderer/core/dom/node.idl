@@ -39,10 +39,10 @@ interface Node : EventTarget {
     readonly attribute USVString baseURI;
 
     [Affects=Nothing, Measure] readonly attribute boolean isConnected;
-    [PerWorldBindings] readonly attribute Document? ownerDocument;
+    [Affects=Nothing, PerWorldBindings] readonly attribute Document? ownerDocument;
     [Affects=Nothing, PerWorldBindings] readonly attribute Node? parentNode;
     [Affects=Nothing, PerWorldBindings] readonly attribute Element? parentElement;
-    [ImplementedAs=hasChildren] boolean hasChildNodes();
+    [Affects=Nothing, ImplementedAs=hasChildren] boolean hasChildNodes();
     [Affects=Nothing, SameObject, PerWorldBindings] readonly attribute NodeList childNodes;
     [Affects=Nothing, PerWorldBindings] readonly attribute Node? firstChild;
     [Affects=Nothing, PerWorldBindings] readonly attribute Node? lastChild;

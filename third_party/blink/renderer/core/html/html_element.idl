@@ -29,9 +29,9 @@ interface HTMLElement : Element {
     [SameObject, PerWorldBindings] readonly attribute DOMStringMap dataset;
 
     // user interaction
-    [CEReactions, Reflect] attribute boolean hidden;
+    [Affects=Nothing, CEReactions, Reflect] attribute boolean hidden;
     [RuntimeCallStatsCounter=HTMLElementClick] void click();
-    [CEReactions, CustomElementCallbacks] attribute long tabIndex;
+    [Affects=Nothing, CEReactions, CustomElementCallbacks] attribute long tabIndex;
     [CEReactions, RuntimeEnabled=InertAttribute, Reflect] attribute boolean inert;
     void focus(optional FocusOptions options);
     void blur();
@@ -56,7 +56,7 @@ interface HTMLElement : Element {
 
     // CSS Object Model (CSSOM)
     // https://drafts.csswg.org/cssom/#the-elementcssinlinestyle-interface
-    [SameObject, PerWorldBindings, PutForwards=cssText] readonly attribute CSSStyleDeclaration style;
+    [Affects=Nothing, SameObject, PerWorldBindings, PutForwards=cssText] readonly attribute CSSStyleDeclaration style;
 
     // Non-standard APIs
     [CEReactions, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementInnerText] attribute [TreatNullAs=NullString] DOMString innerText;

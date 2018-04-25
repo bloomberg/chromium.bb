@@ -27,11 +27,21 @@ Expression `unmonitorEvents.toString()`
 has side effect: false, expected: false
 Expression `document.getElementsByTagName('div')`
 has side effect: false, expected: false
-Expression `document.getElementsByTagNameNS('http://www.w3.org/1999/xhtml', 'div')`
+Expression `document.getElementsByTagNameNS(namespace, 'div')`
 has side effect: false, expected: false
 Expression `document.getElementsByClassName('foo')`
 has side effect: false, expected: false
 Expression `document.getElementsByName('div-name')`
+has side effect: false, expected: false
+Expression `document.hasFocus()`
+has side effect: false, expected: false
+Expression `document.getSelection()`
+has side effect: false, expected: false
+Expression `domTokenList.contains('foo')`
+has side effect: false, expected: false
+Expression `domTokenList.contains({})`
+has side effect: false, expected: false
+Expression `domTokenList.contains()`
 has side effect: false, expected: false
 Expression `div.getAttributeNames()`
 has side effect: false, expected: false
@@ -53,6 +63,26 @@ Expression `div.hasAttribute({})`
 has side effect: false, expected: false
 Expression `divNoAttrs.hasAttribute('attr1')`
 has side effect: false, expected: false
+Expression `div.getAttributeNS(namespace, 'attr1')`
+has side effect: false, expected: false
+Expression `div.getAttributeNS(namespace)`
+has side effect: false, expected: false
+Expression `div.getAttributeNS()`
+has side effect: false, expected: false
+Expression `divNoAttrs.getAttributeNS(namespace, 'attr1')`
+has side effect: false, expected: false
+Expression `div.hasAttributeNS(namespace, 'attr1')`
+has side effect: false, expected: false
+Expression `div.hasAttributeNS(namespace)`
+has side effect: false, expected: false
+Expression `div.hasAttributeNS()`
+has side effect: false, expected: false
+Expression `divNoAttrs.hasAttributeNS(namespace, 'attr1')`
+has side effect: false, expected: false
+Expression `divNoAttrs.hasAttributeNS(namespace)`
+has side effect: false, expected: false
+Expression `div.hasAttributes()`
+has side effect: false, expected: false
 Expression `div.contains(textNode)`
 has side effect: false, expected: false
 Expression `div.contains()`
@@ -62,6 +92,8 @@ has side effect: false, expected: false
 Expression `div.querySelector('div')`
 has side effect: false, expected: false
 Expression `div.querySelectorAll('div')`
+has side effect: false, expected: false
+Expression `div.hasChildNodes()`
 has side effect: false, expected: false
 Expression `document.contains(textNode)`
 has side effect: false, expected: false
@@ -73,6 +105,8 @@ Expression `document.querySelector('div')`
 has side effect: false, expected: false
 Expression `document.querySelectorAll('div')`
 has side effect: false, expected: false
+Expression `document.hasChildNodes()`
+has side effect: false, expected: false
 Expression `textNode.contains(textNode)`
 has side effect: false, expected: false
 Expression `textNode.contains()`
@@ -83,7 +117,11 @@ Expression `textNode.querySelector('div')`
 has side effect: false, expected: false
 Expression `textNode.querySelectorAll('div')`
 has side effect: false, expected: false
-Expression `global_performance.now()`
+Expression `textNode.hasChildNodes()`
+has side effect: false, expected: false
+Expression `performance.now()`
+has side effect: false, expected: false
+Expression `global_getSelection()`
 has side effect: false, expected: false
 Expression `htmlCollection[0]`
 has side effect: false, expected: false
