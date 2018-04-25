@@ -9,7 +9,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "media/base/limits.h"
-#include "media/cdm/library_cdm/clear_key_cdm/cdm_host_proxy.h"
+#include "media/cdm/library_cdm/cdm_host_proxy.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/ffmpeg/ffmpeg_decoding_loop.h"
 

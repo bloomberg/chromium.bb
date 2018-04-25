@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "media/cdm/library_cdm/clear_key_cdm/cdm_host_proxy.h"
+#include "media/cdm/library_cdm/cdm_host_proxy.h"
 
 namespace media {
 

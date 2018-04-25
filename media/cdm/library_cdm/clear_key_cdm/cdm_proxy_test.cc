@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "media/cdm/library_cdm/clear_key_cdm/cdm_host_proxy.h"
+#include "media/cdm/library_cdm/cdm_host_proxy.h"
 #include "media/cdm/library_cdm/clear_key_cdm/cdm_proxy_common.h"
 
 namespace media {

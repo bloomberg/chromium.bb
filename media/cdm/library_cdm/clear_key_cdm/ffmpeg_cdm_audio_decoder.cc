@@ -16,7 +16,7 @@
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/data_buffer.h"
 #include "media/base/limits.h"
-#include "media/cdm/library_cdm/clear_key_cdm/cdm_host_proxy.h"
+#include "media/cdm/library_cdm/cdm_host_proxy.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/ffmpeg/ffmpeg_decoding_loop.h"
 
