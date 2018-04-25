@@ -27,6 +27,8 @@ class FeedImageDatabase {
   // Returns the resulting raw image data as std::string of a |LoadImage| call.
   using FeedImageDatabaseCallback = base::OnceCallback<void(std::string)>;
 
+  using FeedImageDatabaseOperationCallback = base::OnceCallback<void(bool)>;
+
   // Initializes the database with |database_dir|.
   explicit FeedImageDatabase(const base::FilePath& database_dir);
   // Initializes the database with |database_dir|. Creates storage using the
@@ -54,9 +56,15 @@ class FeedImageDatabase {
   // request will be pending until the database has been initialized.
   void LoadImage(const std::string& url, FeedImageDatabaseCallback callback);
 
-  // Deletes all images which are older than |expired_time|.
-  // If database is not initialized, the call will be ignored.
-  void GarbageCollectImages(base::Time expired_time);
+  // Deletes the image data for the |url|.
+  void DeleteImage(const std::string& url);
+
+  // Delete all images whose |last_used_time| is older than |expired_time| and
+  // passes the result to |callback|. |callback| will be called in the same
+  // thread as this function called. If database is not initialized, or failed
+  // to delete expired entry, false will be passed to |callback|.
+  void GarbageCollectImages(base::Time expired_time,
+                            FeedImageDatabaseOperationCallback callback);
 
  private:
   friend class FeedImageDatabaseTest;
@@ -80,11 +88,18 @@ class FeedImageDatabase {
                      bool success,
                      std::unique_ptr<CachedImageProto> entry);
 
+  // Deleting
+  void DeleteImageImpl(const std::string& url,
+                       FeedImageDatabaseOperationCallback callback);
+
   // Garbage collection
   void GarbageCollectImagesImpl(
       base::Time expired_time,
+      FeedImageDatabaseOperationCallback callback,
       bool load_entries_success,
       std::unique_ptr<std::vector<CachedImageProto>> image_entries);
+  void OnGarbageCollectionDone(FeedImageDatabaseOperationCallback callback,
+                               bool success);
 
   State database_status_;
 

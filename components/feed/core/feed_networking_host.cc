@@ -163,7 +163,6 @@ std::unique_ptr<network::SimpleURLLoader> NetworkFetch::MakeLoader(
             }
           }
         })");
-
   GURL url(url_);
   if (access_token.empty() && !api_key_.empty())
     url = net::AppendQueryParameter(url_, kApiKeyQueryParam, api_key_);
