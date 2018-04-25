@@ -69,19 +69,6 @@ void DevToolsStreamBlob::ReadRequest::Fail() {
                                          Stream::StatusFailure));
 }
 
-// static
-bool DevToolsStreamBlob::IsTextMimeType(const std::string& mime_type) {
-  static const char* kTextMIMETypePrefixes[] = {
-      "text/", "application/x-javascript", "application/json",
-      "application/xml"};
-  for (size_t i = 0; i < arraysize(kTextMIMETypePrefixes); ++i) {
-    if (base::StartsWith(mime_type, kTextMIMETypePrefixes[i],
-                         base::CompareCase::INSENSITIVE_ASCII))
-      return true;
-  }
-  return false;
-}
-
 void DevToolsStreamBlob::Open(scoped_refptr<ChromeBlobStorageContext> context,
                               StoragePartition* partition,
                               const std::string& handle,
@@ -114,7 +101,7 @@ void DevToolsStreamBlob::OpenOnIO(
     FailOnIO(std::move(callback));
     return;
   }
-  is_binary_ = !IsTextMimeType(blob_handle_->content_type());
+  is_binary_ = !DevToolsIOContext::IsTextMimeType(blob_handle_->content_type());
   open_callback_ = std::move(callback);
   blob_handle_->RunOnConstructionComplete(
       base::BindOnce(&DevToolsStreamBlob::OnBlobConstructionComplete, this));

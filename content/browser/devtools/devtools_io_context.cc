@@ -30,6 +30,10 @@ void DevToolsIOContext::Stream::Register(DevToolsIOContext* context,
   context->RegisterStream(this, handle);
 }
 
+bool DevToolsIOContext::Stream::SupportsSeek() const {
+  return true;
+}
+
 DevToolsIOContext::Stream::~Stream() = default;
 
 DevToolsIOContext::DevToolsIOContext() = default;
@@ -55,6 +59,19 @@ bool DevToolsIOContext::Close(const std::string& handle) {
 
 void DevToolsIOContext::DiscardAllStreams() {
   streams_.clear();
+}
+
+// static
+bool DevToolsIOContext::IsTextMimeType(const std::string& mime_type) {
+  static const char* kTextMIMETypePrefixes[] = {
+      "text/", "application/x-javascript", "application/json",
+      "application/xml"};
+  for (size_t i = 0; i < arraysize(kTextMIMETypePrefixes); ++i) {
+    if (base::StartsWith(mime_type, kTextMIMETypePrefixes[i],
+                         base::CompareCase::INSENSITIVE_ASCII))
+      return true;
+  }
+  return false;
 }
 
 }  // namespace content

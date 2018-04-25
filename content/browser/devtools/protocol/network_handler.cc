@@ -19,7 +19,9 @@
 #include "base/time/time.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/devtools/devtools_interceptor_controller.h"
+#include "content/browser/devtools/devtools_io_context.h"
 #include "content/browser/devtools/devtools_session.h"
+#include "content/browser/devtools/devtools_stream_pipe.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/devtools/protocol/page.h"
 #include "content/browser/devtools/protocol/security.h"
@@ -917,16 +919,19 @@ class BackgroundSyncRestorer {
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncRestorer);
 };
 
-NetworkHandler::NetworkHandler(const std::string& host_id)
+NetworkHandler::NetworkHandler(const std::string& host_id,
+                               DevToolsIOContext* io_context)
     : DevToolsDomainHandler(Network::Metainfo::domainName),
+      host_id_(host_id),
+      io_context_(io_context),
       browser_context_(nullptr),
       storage_partition_(nullptr),
       host_(nullptr),
       enabled_(false),
-      host_id_(host_id),
       bypass_service_worker_(false),
       cache_disabled_(false),
       weak_factory_(this) {
+  DCHECK(io_context_);
   static bool have_configured_service_worker_context = false;
   if (have_configured_service_worker_context)
     return;
@@ -1783,6 +1788,38 @@ void NetworkHandler::GetResponseBodyForInterception(
     return;
   }
   interceptor->GetResponseBody(interception_id, std::move(callback));
+}
+
+void NetworkHandler::TakeResponseBodyForInterceptionAsStream(
+    const String& interception_id,
+    std::unique_ptr<TakeResponseBodyForInterceptionAsStreamCallback> callback) {
+  if (url_loader_interceptor_) {
+    url_loader_interceptor_->TakeResponseBodyPipe(
+        interception_id,
+        base::BindOnce(&NetworkHandler::OnResponseBodyPipeTaken,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
+    return;
+  }
+  callback->sendFailure(Response::Error(
+      "Network.takeResponseBodyForInterceptionAsStream is only "
+      "currently supported with --enable-features=NetworkService"));
+}
+
+void NetworkHandler::OnResponseBodyPipeTaken(
+    std::unique_ptr<TakeResponseBodyForInterceptionAsStreamCallback> callback,
+    Response response,
+    mojo::ScopedDataPipeConsumerHandle pipe,
+    const std::string& mime_type) {
+  DCHECK_EQ(response.isSuccess(), pipe.is_valid());
+  if (!response.isSuccess()) {
+    callback->sendFailure(std::move(response));
+    return;
+  }
+  // The pipe stream is owned only by io_context after we return.
+  bool is_binary = !DevToolsIOContext::IsTextMimeType(mime_type);
+  auto stream =
+      DevToolsStreamPipe::Create(io_context_, std::move(pipe), is_binary);
+  callback->sendSuccess(stream->handle());
 }
 
 // static

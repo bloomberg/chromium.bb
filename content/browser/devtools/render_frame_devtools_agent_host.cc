@@ -387,7 +387,8 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(base::WrapUnique(new protocol::IOHandler(
       GetIOContext())));
   session->AddHandler(base::WrapUnique(new protocol::MemoryHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::NetworkHandler(GetId())));
+  session->AddHandler(
+      base::WrapUnique(new protocol::NetworkHandler(GetId(), GetIOContext())));
   session->AddHandler(base::WrapUnique(new protocol::SchemaHandler()));
   session->AddHandler(base::WrapUnique(new protocol::ServiceWorkerHandler()));
   session->AddHandler(base::WrapUnique(new protocol::StorageHandler()));

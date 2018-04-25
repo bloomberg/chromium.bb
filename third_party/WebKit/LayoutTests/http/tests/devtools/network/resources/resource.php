@@ -12,6 +12,7 @@
     $nosniff = $_GET["nosniff"];
     $download = $_GET["download"];
     $mime_type = $_GET["mime_type"];
+    $body_pattern = $_GET["body_pattern"];
 
     # Wait before sending response
     if ($wait)
@@ -110,12 +111,13 @@ __foo(<?php echo($jsdelay)?>);
     } else {
         # Generate dummy text/html.
         if ($size) {
+            $str = $body_pattern ? $body_pattern : "*";
             for ($i = 0; $i < $size; ++$i) {
                 if ($chunked && (1 == $i)) {
                     ob_flush();
                     flush();
                 }
-                echo("*");
+                echo($str[$i % strlen($str)]);
             }
         } else {
             echo("Hello ");

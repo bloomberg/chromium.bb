@@ -79,8 +79,6 @@ class DevToolsStreamBlob : public DevToolsIOContext::Stream {
   void OnBlobConstructionComplete(storage::BlobStatus status);
   void OnCalculateSizeComplete(int net_error);
 
-  static bool IsTextMimeType(const std::string& mime_type);
-
   std::unique_ptr<storage::BlobDataHandle> blob_handle_;
   OpenCallback open_callback_;
   std::unique_ptr<storage::BlobReader> blob_reader_;
