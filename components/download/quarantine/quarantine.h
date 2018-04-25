@@ -66,8 +66,9 @@ enum class QuarantineFileResult {
 //
 // Parameters:
 //   |file| : Final name of the file.
-//   |source_url|: URL from which the file content was downloaded.
-//   |referrer_url|: Referring URL.
+//   |source_url|: URL from which the file content was downloaded. This is empty
+//     for off-the-record download.
+//   |referrer_url|: Referring URL. This is empty for off-the-record download.
 //   |client_guid|: Only used on Windows. Identifies the client application
 //     that downloaded the file.
 QuarantineFileResult QuarantineFile(const base::FilePath& file,
