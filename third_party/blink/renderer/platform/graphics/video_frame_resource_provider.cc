@@ -113,7 +113,7 @@ void VideoFrameResourceProvider::ReleaseFrameResources() {
 }
 
 void VideoFrameResourceProvider::PrepareSendToParent(
-    const cc::LayerTreeResourceProvider::ResourceIdArray& resource_ids,
+    const std::vector<viz::ResourceId>& resource_ids,
     std::vector<viz::TransferableResource>* transferable_resources) {
   resource_provider_->PrepareSendToParent(resource_ids, transferable_resources);
 }

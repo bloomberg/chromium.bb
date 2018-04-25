@@ -519,8 +519,8 @@ base::TimeTicks ResourcePool::GetUsageTimeForLRUResource() const {
 bool ResourcePool::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                                 base::trace_event::ProcessMemoryDump* pmd) {
   if (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND) {
-    std::string dump_name = base::StringPrintf(
-        "cc/tile_memory/provider_%d", resource_provider_->tracing_id());
+    std::string dump_name =
+        base::StringPrintf("cc/tile_memory/provider_%d", tracing_id_);
     MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(MemoryAllocatorDump::kNameSize,
                     MemoryAllocatorDump::kUnitsBytes,

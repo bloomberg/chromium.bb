@@ -44,7 +44,7 @@ class PLATFORM_EXPORT VideoFrameResourceProvider {
   virtual void ReleaseFrameResources();
 
   virtual void PrepareSendToParent(
-      const cc::LayerTreeResourceProvider::ResourceIdArray& resource_ids,
+      const std::vector<viz::ResourceId>& resource_ids,
       std::vector<viz::TransferableResource>* transferable_resources);
   virtual void ReceiveReturnsFromParent(
       const std::vector<viz::ReturnedResource>& transferable_resources);

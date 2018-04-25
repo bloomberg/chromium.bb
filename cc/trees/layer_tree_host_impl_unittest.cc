@@ -4884,11 +4884,9 @@ class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
       bool tile_missing,
       bool had_incomplete_tile,
       bool animating,
-      ResourceProvider* resource_provider,
       scoped_refptr<AnimationTimeline> timeline) {
     return base::WrapUnique(new MissingTextureAnimatingLayer(
-        tree_impl, id, tile_missing, had_incomplete_tile, animating,
-        resource_provider, timeline));
+        tree_impl, id, tile_missing, had_incomplete_tile, animating, timeline));
   }
 
   void AppendQuads(viz::RenderPass* render_pass,
@@ -4906,7 +4904,6 @@ class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
                                bool tile_missing,
                                bool had_incomplete_tile,
                                bool animating,
-                               ResourceProvider* resource_provider,
                                scoped_refptr<AnimationTimeline> timeline)
       : DidDrawCheckLayer(tree_impl, id),
         tile_missing_(tile_missing),
@@ -4946,8 +4943,7 @@ static void CreateLayerFromState(
   static int layer_id = 2;
   root->test_properties()->AddChild(MissingTextureAnimatingLayer::Create(
       root->layer_tree_impl(), layer_id++, state.has_missing_tile,
-      state.has_incomplete_tile, state.is_animating,
-      root->layer_tree_impl()->resource_provider(), timeline));
+      state.has_incomplete_tile, state.is_animating, timeline));
   auto* layer =
       static_cast<DidDrawCheckLayer*>(root->test_properties()->children.back());
   if (state.has_copy_request)
