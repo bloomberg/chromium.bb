@@ -14,6 +14,3 @@ per-file ChildProcessLauncher.java=jcivelli@chromium.org
 
 # BackgroundSync related
 per-file BackgroundSync*.java=jkarlin@chromium.org
-
-# ContentViewCore related
-per-file ContentView*.java=jinsukkim@chromium.org
