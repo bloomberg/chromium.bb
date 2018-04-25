@@ -22,10 +22,6 @@ import sys
 import tempfile
 
 
-# Path to file describing the services to be made available to the process.
-SANDBOX_POLICY_PATH = 'build/config/fuchsia/sandbox_policy'
-
-
 def MakePackagePath(file_path, roots):
   """Computes a path for |file_path| that is relative to one of the directory
   paths in |roots|.
@@ -93,7 +89,7 @@ def _IsBinary(path):
 
 
 def BuildManifest(root_dir, out_dir, app_name, app_filename,
-                  runtime_deps_file, output_path):
+                  sandbox_policy_path, runtime_deps_file, output_path):
   with open(output_path, 'w') as output:
     # Process the runtime deps file for file paths, recursively walking
     # directories as needed.
@@ -138,7 +134,7 @@ def BuildManifest(root_dir, out_dir, app_name, app_filename,
                    os.path.relpath(package_json.name, out_dir))
 
     output.write('meta/sandbox=%s\n' %
-                 os.path.relpath(os.path.join(root_dir, SANDBOX_POLICY_PATH),
+                 os.path.relpath(os.path.join(root_dir, sandbox_policy_path),
                                  out_dir))
 
   return 0

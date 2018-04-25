@@ -10,6 +10,7 @@ import("//build/config/fuchsia/config.gni")
 # package_name: The name of the package to build.
 # binary: The name of the executable which should be launched by the package.
 #         Will be renamed as "bin/app" in the package contents.
+# sandbox_policy: A path to the sandbox_policy applied to this package.
 # deps: A list of targets whose output will be included in the package.
 template("package") {
   pkg = {
@@ -60,6 +61,7 @@ template("package") {
       rebase_path(root_out_dir),
       pkg.package_name,
       pkg.binary,
+      rebase_path(pkg.sandbox_policy),
       rebase_path(_runtime_deps_file),
       rebase_path(_manifest_file),
     ]
