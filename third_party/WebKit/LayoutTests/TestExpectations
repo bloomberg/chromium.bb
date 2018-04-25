@@ -2299,10 +2299,6 @@ crbug.com/832071 virtual/navigation-mojo-response/external/wpt/service-workers/s
 crbug.com/833215 [ Mac10.12 Mac10.13 Retina ] external/wpt/accelerometer/Accelerometer.https.html [ Pass Timeout ]
 crbug.com/833215 [ Linux ] external/wpt/accelerometer/Accelerometer.https.html [ Pass Failure ]
 
-# TODO(robertma): Remove these once https://github.com/w3c/web-platform-tests/pull/10613 is imported.
-crbug.com/836377 external/wpt/service-workers/service-worker/worker-interception-redirect.https.html [ Timeout ]
-crbug.com/836377 virtual/outofblink-cors/external/wpt/service-workers/service-worker/worker-interception-redirect.https.html [ Timeout ]
-
 crbug.com/836627 external/wpt/content-security-policy/inside-worker/dedicated-inheritance.html [ Pass Failure ]
 crbug.com/836627 external/wpt/content-security-policy/inside-worker/shared-inheritance.html [ Pass Failure ]
 
