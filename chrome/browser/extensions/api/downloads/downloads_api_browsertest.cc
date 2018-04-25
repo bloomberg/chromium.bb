@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
@@ -1722,7 +1723,7 @@ class CustomResponse : public net::test_server::HttpResponse {
 
     if (first_request_) {
       *callback_ = std::move(done);
-      *task_runner_ = base::MessageLoop::current()->task_runner().get();
+      *task_runner_ = base::MessageLoopCurrent::Get()->task_runner().get();
       send.Run(response, base::BindRepeating([]() {}));
     } else {
       send.Run(response, std::move(done));
