@@ -801,7 +801,7 @@ void RenderThreadImpl::Init(
 
   metrics::InitializeSingleSampleMetricsFactory(
       base::BindRepeating(&CreateSingleSampleMetricsProvider,
-                          message_loop()->task_runner(), GetConnector()));
+                          main_thread_runner(), GetConnector()));
 
   gpu_ = ui::Gpu::Create(GetConnector(),
                          base::FeatureList::IsEnabled(features::kMash)
@@ -853,14 +853,13 @@ void RenderThreadImpl::Init(
   peer_connection_factory_.reset(
       new PeerConnectionDependencyFactory(p2p_socket_dispatcher_.get()));
 
-  aec_dump_message_filter_ = new AecDumpMessageFilter(
-      GetIOTaskRunner(), message_loop()->task_runner());
+  aec_dump_message_filter_ =
+      new AecDumpMessageFilter(GetIOTaskRunner(), main_thread_runner());
 
   AddFilter(aec_dump_message_filter_.get());
 
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
-  audio_input_ipc_factory_.emplace(message_loop()->task_runner(),
-                                   GetIOTaskRunner());
+  audio_input_ipc_factory_.emplace(main_thread_runner(), GetIOTaskRunner());
 
   audio_output_ipc_factory_.emplace(GetIOTaskRunner());
 
@@ -2397,7 +2396,7 @@ void RenderThreadImpl::RecordPurgeMemory(RendererMemoryMetrics before) {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 RenderThreadImpl::GetMediaThreadTaskRunner() {
-  DCHECK(message_loop()->task_runner()->BelongsToCurrentThread());
+  DCHECK(main_thread_runner()->BelongsToCurrentThread());
   if (!media_thread_) {
     media_thread_.reset(new base::Thread("Media"));
     media_thread_->Start();

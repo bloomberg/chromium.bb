@@ -101,13 +101,13 @@ void ChildProcess::set_main_thread(ChildThreadImpl* thread) {
 
 void ChildProcess::AddRefProcess() {
   DCHECK(!main_thread_.get() ||  // null in unittests.
-         main_thread_->message_loop()->task_runner()->BelongsToCurrentThread());
+         main_thread_->main_thread_runner()->BelongsToCurrentThread());
   ref_count_++;
 }
 
 void ChildProcess::ReleaseProcess() {
   DCHECK(!main_thread_.get() ||  // null in unittests.
-         main_thread_->message_loop()->task_runner()->BelongsToCurrentThread());
+         main_thread_->main_thread_runner()->BelongsToCurrentThread());
   DCHECK(ref_count_);
   if (--ref_count_)
     return;
