@@ -127,7 +127,7 @@ base::string16 LauncherControllerHelper::GetAppTitle(
 
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
-  if (registry_service->IsCrostiniShelfAppId(app_id)) {
+  if (registry_service && registry_service->IsCrostiniShelfAppId(app_id)) {
     std::unique_ptr<crostini::CrostiniRegistryService::Registration>
         registration = registry_service->GetRegistration(app_id);
     if (!registration)
@@ -204,7 +204,7 @@ void LauncherControllerHelper::LaunchApp(const ash::ShelfID& id,
 
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile_);
-  if (registry_service->IsCrostiniShelfAppId(app_id)) {
+  if (registry_service && registry_service->IsCrostiniShelfAppId(app_id)) {
     // This expects a valid app list id, which is fine as we only get here for
     // shelf entries associated with an actual app and not arbitrary Crostini
     // windows.

@@ -43,9 +43,11 @@ std::unique_ptr<LauncherContextMenu> LauncherContextMenu::Create(
   }
 
   // Create an CrostiniShelfContextMenu if the item is Crostini app.
-  if (crostini::CrostiniRegistryServiceFactory::GetForProfile(
-          controller->profile())
-          ->IsCrostiniShelfAppId(item->id.app_id)) {
+  crostini::CrostiniRegistryService* crostini_registry_service =
+      crostini::CrostiniRegistryServiceFactory::GetForProfile(
+          controller->profile());
+  if (crostini_registry_service &&
+      crostini_registry_service->IsCrostiniShelfAppId(item->id.app_id)) {
     return std::make_unique<CrostiniShelfContextMenu>(controller, item,
                                                       display_id);
   }
