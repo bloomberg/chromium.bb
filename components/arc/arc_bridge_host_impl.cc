@@ -7,10 +7,14 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/mojo_channel.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace arc {
 
@@ -139,8 +143,13 @@ void ArcBridgeHostImpl::OnNetInstanceReady(mojom::NetInstancePtr net_ptr) {
 
 void ArcBridgeHostImpl::OnNotificationsInstanceReady(
     mojom::NotificationsInstancePtr notifications_ptr) {
-  OnInstanceReady(arc_bridge_service_->notifications(),
-                  std::move(notifications_ptr));
+  // Forward notification instance to ash.
+  ash::mojom::AshMessageCenterControllerPtr ash_message_center_controller;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &ash_message_center_controller);
+  ash_message_center_controller->SetArcNotificationsInstance(
+      std::move(notifications_ptr));
 }
 
 void ArcBridgeHostImpl::OnObbMounterInstanceReady(

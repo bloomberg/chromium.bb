@@ -9,10 +9,6 @@
 
 #include "base/macros.h"
 
-namespace arc {
-class ArcNotificationSurfaceManagerImpl;
-}
-
 class ExoParts {
  public:
   // Creates ExoParts. Returns null if exo should not be created.
@@ -22,9 +18,6 @@ class ExoParts {
 
  private:
   ExoParts();
-
-  std::unique_ptr<arc::ArcNotificationSurfaceManagerImpl>
-      arc_notification_surface_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ExoParts);
 };

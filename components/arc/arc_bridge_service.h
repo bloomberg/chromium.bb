@@ -51,8 +51,6 @@ class MidisHost;
 class MidisInstance;
 class NetHost;
 class NetInstance;
-class NotificationsHost;
-class NotificationsInstance;
 class ObbMounterHost;
 class ObbMounterInstance;
 class OemCryptoHost;
@@ -163,10 +161,6 @@ class ArcBridgeService {
     return &midis_;
   }
   ConnectionHolder<mojom::NetInstance, mojom::NetHost>* net() { return &net_; }
-  ConnectionHolder<mojom::NotificationsInstance, mojom::NotificationsHost>*
-  notifications() {
-    return &notifications_;
-  }
   ConnectionHolder<mojom::ObbMounterInstance, mojom::ObbMounterHost>*
   obb_mounter() {
     return &obb_mounter_;
@@ -257,8 +251,6 @@ class ArcBridgeService {
   ConnectionHolder<mojom::MetricsInstance, mojom::MetricsHost> metrics_;
   ConnectionHolder<mojom::MidisInstance, mojom::MidisHost> midis_;
   ConnectionHolder<mojom::NetInstance, mojom::NetHost> net_;
-  ConnectionHolder<mojom::NotificationsInstance, mojom::NotificationsHost>
-      notifications_;
   ConnectionHolder<mojom::ObbMounterInstance, mojom::ObbMounterHost>
       obb_mounter_;
   ConnectionHolder<mojom::OemCryptoInstance, mojom::OemCryptoHost> oemcrypto_;

@@ -62,7 +62,6 @@
 #include "components/arc/volume_mounter/arc_volume_mounter_bridge.h"
 #include "components/arc/wake_lock/arc_wake_lock_bridge.h"
 #include "components/prefs/pref_member.h"
-#include "ui/arc/notification/arc_notification_manager.h"
 
 namespace arc {
 namespace {
@@ -156,10 +155,6 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcMetricsService::GetForBrowserContext(profile);
   ArcMidisBridge::GetForBrowserContext(profile);
   ArcNetHostImpl::GetForBrowserContext(profile);
-  // TODO(https://crbug.com/816441): Remove the callback workaround.
-  ArcNotificationManager::GetForBrowserContext(profile)
-      ->set_get_app_id_callback(
-          ArcAppListPrefs::Get(profile)->GetAppIdByPackageNameCallback());
   ArcObbMounterBridge::GetForBrowserContext(profile);
   ArcOemCryptoBridge::GetForBrowserContext(profile);
   ArcPolicyBridge::GetForBrowserContext(profile);

@@ -111,6 +111,9 @@ specific_include_rules = {
   "app_launch_unittest.cc": [
     "+ash/components/quick_launch/public",
   ],
+  "message_center_controller\.*": [
+    "+components/arc/common/notifications.mojom.h"
+  ],
   "root_window_controller\.*": [
     "+ash/host"
   ],

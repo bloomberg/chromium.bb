@@ -103,7 +103,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
 
-  ash::Shell::Get()->InitWaylandServer(nullptr, nullptr);
+  ash::Shell::Get()->InitWaylandServer(nullptr);
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {

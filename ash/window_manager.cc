@@ -340,10 +340,8 @@ void WindowManager::OnWmConnected() {
 
   // We only create controller in the ash process for mash.
   if (Shell::GetAshConfig() == Config::MASH) {
-    // TODO(penghuang): wire up notification surface manager.
-    // https://crbug.com/768439
     // TODO(hirono): wire up the file helper. http://crbug.com/768395
-    Shell::Get()->InitWaylandServer(nullptr, nullptr);
+    Shell::Get()->InitWaylandServer(nullptr);
   }
 }
 

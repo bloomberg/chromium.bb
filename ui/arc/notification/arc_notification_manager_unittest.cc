@@ -10,10 +10,11 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/connection_holder.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_notifications_instance.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/arc/notification/arc_notification_manager.h"
 #include "ui/message_center/fake_message_center.h"
@@ -63,8 +64,8 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
 
 class ArcNotificationManagerTest : public testing::Test {
  public:
-  ArcNotificationManagerTest() {}
-  ~ArcNotificationManagerTest() override { base::RunLoop().RunUntilIdle(); }
+  ArcNotificationManagerTest() = default;
+  ~ArcNotificationManagerTest() override = default;
 
  protected:
   FakeNotificationsInstance* arc_notifications_instance() {
@@ -91,31 +92,39 @@ class ArcNotificationManagerTest : public testing::Test {
     return key;
   }
 
- private:
-  base::MessageLoop loop_;
-  std::unique_ptr<ArcBridgeService> service_;
-  std::unique_ptr<FakeNotificationsInstance> arc_notifications_instance_;
-  std::unique_ptr<ArcNotificationManager> arc_notification_manager_;
-  std::unique_ptr<MockMessageCenter> message_center_;
+  void FlushInstanceCall() { binding_->FlushForTesting(); }
 
+ private:
   void SetUp() override {
     arc_notifications_instance_ = std::make_unique<FakeNotificationsInstance>();
-    service_ = std::make_unique<ArcBridgeService>();
     message_center_ = std::make_unique<MockMessageCenter>();
 
-    arc_notification_manager_ = ArcNotificationManager::CreateForTesting(
-        service_.get(), EmptyAccountId(), message_center_.get());
+    arc_notification_manager_ = std::make_unique<ArcNotificationManager>(
+        EmptyAccountId(), message_center_.get());
 
-    service_->notifications()->SetInstance(arc_notifications_instance_.get());
-    WaitForInstanceReady(service_->notifications());
+    binding_ = std::make_unique<mojo::Binding<mojom::NotificationsInstance>>(
+        arc_notifications_instance_.get());
+    mojom::NotificationsInstancePtr instance_ptr;
+    binding_->Bind(mojo::MakeRequest(&instance_ptr));
+
+    arc_notification_manager_->SetInstance(std::move(instance_ptr));
+    WaitForInstanceReady(
+        arc_notification_manager_->GetConnectionHolderForTest());
   }
 
   void TearDown() override {
     arc_notification_manager_.reset();
     message_center_.reset();
-    service_.reset();
+    binding_.reset();
     arc_notifications_instance_.reset();
+    base::RunLoop().RunUntilIdle();
   }
+
+  base::MessageLoop loop_;
+  std::unique_ptr<FakeNotificationsInstance> arc_notifications_instance_;
+  std::unique_ptr<mojo::Binding<mojom::NotificationsInstance>> binding_;
+  std::unique_ptr<ArcNotificationManager> arc_notification_manager_;
+  std::unique_ptr<MockMessageCenter> message_center_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationManagerTest);
 };
@@ -141,6 +150,8 @@ TEST_F(ArcNotificationManagerTest, NotificationRemovedByChrome) {
     notification->delegate()->Close(true /* by_user */);
     // |notification| gets stale here.
   }
+
+  FlushInstanceCall();
 
   ASSERT_EQ(1u, arc_notifications_instance()->events().size());
   EXPECT_EQ(key, arc_notifications_instance()->events().at(0).first);

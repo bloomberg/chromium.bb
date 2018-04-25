@@ -7,7 +7,8 @@
 #include <utility>
 #include <vector>
 
-#include "ash/shelf/shelf_constants.h"
+// TODO(https://crbug.com/768439): Remove nogncheck when moved to ash.
+#include "ash/shelf/shelf_constants.h"  // nogncheck
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/arc/notification/arc_notification_delegate.h"
