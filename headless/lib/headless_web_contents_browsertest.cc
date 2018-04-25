@@ -322,14 +322,8 @@ IN_PROC_BROWSER_TEST_F(HeadlessNoDevToolsTabSocketTest, Test) {
   RunAsynchronousTest();
 }
 
-#if defined(OS_WIN)
-// crbug.com/828042
-#define MAYBE_Focus DISABLED_Focus
-#else
-#define MAYBE_Focus Focus
-#endif
-
-IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, MAYBE_Focus) {
+IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest,
+                       FocusOfHeadlessWebContents_IsIndependent) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   HeadlessBrowserContext* browser_context =
@@ -340,6 +334,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, MAYBE_Focus) {
           .SetInitialURL(embedded_test_server()->GetURL("/hello.html"))
           .Build();
   EXPECT_TRUE(WaitForLoad(web_contents));
+  WaitForFocus(web_contents);
 
   std::unique_ptr<runtime::EvaluateResult> has_focus =
       EvaluateScript(web_contents, "document.hasFocus()");
@@ -350,6 +345,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, MAYBE_Focus) {
           .SetInitialURL(embedded_test_server()->GetURL("/hello.html"))
           .Build();
   EXPECT_TRUE(WaitForLoad(web_contents2));
+  WaitForFocus(web_contents2);
 
   // Focus of different WebContents is independent.
   has_focus = EvaluateScript(web_contents, "document.hasFocus()");

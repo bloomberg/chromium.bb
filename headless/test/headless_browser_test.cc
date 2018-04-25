@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
@@ -186,6 +187,14 @@ bool HeadlessBrowserTest::WaitForLoad(HeadlessWebContents* web_contents) {
                                            1);
   observer.Wait();
   return observer.last_navigation_succeeded();
+}
+
+void HeadlessBrowserTest::WaitForFocus(HeadlessWebContents* web_contents) {
+  HeadlessWebContentsImpl* web_contents_impl =
+      HeadlessWebContentsImpl::From(web_contents);
+  content::FrameFocusedObserver observer(
+      web_contents_impl->web_contents()->GetMainFrame());
+  observer.Wait();
 }
 
 std::unique_ptr<runtime::EvaluateResult> HeadlessBrowserTest::EvaluateScript(
