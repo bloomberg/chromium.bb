@@ -165,8 +165,7 @@ AudioDeviceFactory::NewAudioCapturerSource(int render_frame_id) {
   }
 
   return base::MakeRefCounted<media::AudioInputDevice>(
-      AudioInputIPCFactory::get()->CreateAudioInputIPC(render_frame_id),
-      AudioInputIPCFactory::get()->io_task_runner());
+      AudioInputIPCFactory::get()->CreateAudioInputIPC(render_frame_id));
 }
 
 // static
