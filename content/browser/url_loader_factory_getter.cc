@@ -5,8 +5,10 @@
 #include "content/browser/url_loader_factory_getter.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "content/browser/storage_partition_impl.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
@@ -107,20 +109,35 @@ URLLoaderFactoryGetter::URLLoaderFactoryGetter() {}
 
 void URLLoaderFactoryGetter::Initialize(StoragePartitionImpl* partition) {
   DCHECK(partition);
+  DCHECK(!pending_network_factory_request_.is_pending());
+  DCHECK(!pending_blob_factory_request_.is_pending());
+
   partition_ = partition;
-
   network::mojom::URLLoaderFactoryPtr network_factory;
-  HandleNetworkFactoryRequestOnUIThread(MakeRequest(&network_factory));
-
   network::mojom::URLLoaderFactoryPtr blob_factory;
-  partition_->GetBlobURLLoaderFactory()->HandleRequest(
-      mojo::MakeRequest(&blob_factory));
+  pending_network_factory_request_ = MakeRequest(&network_factory);
+  pending_blob_factory_request_ = mojo::MakeRequest(&blob_factory);
+
+  // If NetworkService is disabled, HandleFactoryRequests should be called after
+  // NetworkContext in |partition_| is ready.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    HandleFactoryRequests();
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&URLLoaderFactoryGetter::InitializeOnIOThread, this,
                      network_factory.PassInterface(),
                      blob_factory.PassInterface()));
+}
+
+void URLLoaderFactoryGetter::HandleFactoryRequests() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(pending_network_factory_request_.is_pending());
+  DCHECK(pending_blob_factory_request_.is_pending());
+  HandleNetworkFactoryRequestOnUIThread(
+      std::move(pending_network_factory_request_));
+  partition_->GetBlobURLLoaderFactory()->HandleRequest(
+      std::move(pending_blob_factory_request_));
 }
 
 void URLLoaderFactoryGetter::OnStoragePartitionDestroyed() {
