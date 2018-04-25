@@ -5,10 +5,8 @@
 #ifndef UI_GFX_MAC_SCOPED_COCOA_DISABLE_SCREEN_UPDATES_H_
 #define UI_GFX_MAC_SCOPED_COCOA_DISABLE_SCREEN_UPDATES_H_
 
-#import <Cocoa/Cocoa.h>
-
-#include "base/mac/mac_util.h"
 #include "base/macros.h"
+#include "ui/gfx/gfx_export.h"
 
 namespace gfx {
 
@@ -17,25 +15,10 @@ namespace gfx {
 // can be nested, and there is a time-maximum (about 1 second) after which
 // Cocoa will automatically re-enable updating. This class doesn't attempt to
 // overrule that.
-class ScopedCocoaDisableScreenUpdates {
+class GFX_EXPORT ScopedCocoaDisableScreenUpdates {
  public:
-  ScopedCocoaDisableScreenUpdates() {
-    if (base::mac::IsAtLeastOS10_11()) {
-      // Beginning with OS X 10.11, [NSAnimationContext beginGrouping] is the
-      // preferred way of disabling screen updates. Use of
-      // NSDisableScreenUpdates() is discouraged.
-      [NSAnimationContext beginGrouping];
-    } else {
-      NSDisableScreenUpdates();
-    }
-  }
-  ~ScopedCocoaDisableScreenUpdates() {
-    if (base::mac::IsAtLeastOS10_11()) {
-      [NSAnimationContext endGrouping];
-    } else {
-      NSEnableScreenUpdates();
-    }
-  }
+  ScopedCocoaDisableScreenUpdates();
+  ~ScopedCocoaDisableScreenUpdates();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScopedCocoaDisableScreenUpdates);
