@@ -278,14 +278,12 @@ FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
     params.hinting = FontRenderParams::HINTING_FULL;
     params.subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_NONE;
     params.subpixel_positioning = false;
-#if !defined(OS_CHROMEOS)
   } else {
     params.subpixel_positioning = actual_query.device_scale_factor > 1.0f;
 
     // To enable subpixel positioning, we need to disable hinting.
     if (params.subpixel_positioning)
       params.hinting = FontRenderParams::HINTING_NONE;
-#endif  //  !defined(OS_CHROMEOS)
   }
 
   // Use the first family from the list if Fontconfig didn't suggest a family.
