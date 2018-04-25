@@ -212,8 +212,6 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testCanClickAlertInIframes',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2081
         'ChromeDriverTest.testCloseWindowUsingJavascript',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2108
-        'ChromeLoggingCapabilityTest.testPerformanceLogger',
         # Android doesn't support headless mode
         'HeadlessInvalidCertificateTest.*',
     ]
@@ -253,7 +251,6 @@ _ANDROID_NEGATIVE_FILTER['chromium'] = (
 )
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
     _ANDROID_NEGATIVE_FILTER['chrome_stable'] + [
-        'ChromeLoggingCapabilityTest.testPerformanceLogger',
         # WebView doesn't support emulating network conditions.
         'ChromeDriverTest.testEmulateNetworkConditions',
         'ChromeDriverTest.testEmulateNetworkConditionsNameSpeed',
