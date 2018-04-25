@@ -99,10 +99,12 @@ public class PartnerHomepageUnitTest {
 
     /**
      * Everything is enabled for using partner homepage, except that there is no flag file.
+     * Flaky: crbug.com/836700
      */
     @Test
     @SmallTest
     @Feature({"Homepage"})
+    @DisabledTest
     public void testProviderNotFromSystemPackage() throws InterruptedException {
         mHomepageManager.setPrefHomepageEnabled(true);
         mHomepageManager.setPrefHomepageUseDefaultUri(true);
