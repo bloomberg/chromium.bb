@@ -52,15 +52,19 @@ class SnapFlingControllerTest : public testing::Test {
 };
 
 TEST_F(SnapFlingControllerTest, DoesNotFilterGSBWhenIdle) {
-  blink::WebGestureEvent event(blink::WebInputEvent::kGestureScrollBegin, 0, 0);
+  blink::WebGestureEvent event(
+      blink::WebInputEvent::kGestureScrollBegin, 0,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   EXPECT_FALSE(controller_->FilterEventForSnap(event));
 }
 
 TEST_F(SnapFlingControllerTest, FiltersGSUAndGSEDependingOnState) {
   blink::WebGestureEvent scroll_update(
-      blink::WebInputEvent::kGestureScrollUpdate, 0, 0);
-  blink::WebGestureEvent scroll_end(blink::WebInputEvent::kGestureScrollEnd, 0,
-                                    0);
+      blink::WebInputEvent::kGestureScrollUpdate, 0,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  blink::WebGestureEvent scroll_end(
+      blink::WebInputEvent::kGestureScrollEnd, 0,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   // Should not filter GSU and GSE if the fling is not active.
   EXPECT_FALSE(controller_->FilterEventForSnap(scroll_update));
   EXPECT_FALSE(controller_->FilterEventForSnap(scroll_end));
@@ -72,8 +76,9 @@ TEST_F(SnapFlingControllerTest, FiltersGSUAndGSEDependingOnState) {
 }
 
 TEST_F(SnapFlingControllerTest, CreatesAndAnimatesCurveOnFirstInertialGSU) {
-  blink::WebGestureEvent event(blink::WebInputEvent::kGestureScrollUpdate, 0,
-                               0);
+  blink::WebGestureEvent event(
+      blink::WebInputEvent::kGestureScrollUpdate, 0,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   event.data.scroll_update.delta_x = 0;
   event.data.scroll_update.delta_y = -10;
   event.data.scroll_update.inertial_phase =
@@ -91,8 +96,9 @@ TEST_F(SnapFlingControllerTest, CreatesAndAnimatesCurveOnFirstInertialGSU) {
 }
 
 TEST_F(SnapFlingControllerTest, DoesNotHandleNonInertialGSU) {
-  blink::WebGestureEvent event(blink::WebInputEvent::kGestureScrollUpdate, 0,
-                               0);
+  blink::WebGestureEvent event(
+      blink::WebInputEvent::kGestureScrollUpdate, 0,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   event.data.scroll_update.delta_x = 0;
   event.data.scroll_update.delta_y = -10;
   event.data.scroll_update.inertial_phase =
@@ -149,14 +155,16 @@ TEST_F(SnapFlingControllerTest, FinishesTheCurve) {
 TEST_F(SnapFlingControllerTest, GSBNotFilteredAndResetsStateWhenActive) {
   SetActiveState();
   blink::WebGestureEvent update_event(
-      blink::WebInputEvent::kGestureScrollUpdate, 0, 0);
+      blink::WebInputEvent::kGestureScrollUpdate, 0,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   update_event.data.scroll_update.inertial_phase =
       blink::WebGestureEvent::kMomentumPhase;
   EXPECT_TRUE(controller_->FilterEventForSnap(update_event));
 
   EXPECT_CALL(mock_client_, ScrollEndForSnapFling()).Times(1);
-  blink::WebGestureEvent begin_event(blink::WebInputEvent::kGestureScrollBegin,
-                                     0, 0);
+  blink::WebGestureEvent begin_event(
+      blink::WebInputEvent::kGestureScrollBegin, 0,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   EXPECT_FALSE(controller_->FilterEventForSnap(begin_event));
   testing::Mock::VerifyAndClearExpectations(&mock_client_);
 

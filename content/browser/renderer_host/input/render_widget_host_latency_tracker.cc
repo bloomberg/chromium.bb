@@ -221,13 +221,11 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
                            latency_component_id_, nullptr);
   DCHECK(!found_component);
 
-  if (event.TimeStampSeconds() &&
+  if (!event.TimeStamp().is_null() &&
       !latency->FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0,
                             nullptr)) {
     base::TimeTicks timestamp_now = base::TimeTicks::Now();
-    base::TimeTicks timestamp_original =
-        base::TimeTicks() +
-        base::TimeDelta::FromSecondsD(event.TimeStampSeconds());
+    base::TimeTicks timestamp_original = event.TimeStamp();
 
     // Timestamp from platform input can wrap, e.g. 32 bits timestamp
     // for Xserver and Window MSG time will wrap about 49.6 days. Do a

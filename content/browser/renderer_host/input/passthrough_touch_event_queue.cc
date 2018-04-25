@@ -75,7 +75,7 @@ void PassthroughTouchEventQueue::SendTouchCancelEventForTouchEvent(
   WebTouchEventTraits::ResetTypeAndTouchStates(
       WebInputEvent::kTouchCancel,
       // TODO(rbyers): Shouldn't we use a fresh timestamp?
-      event.event.TimeStampSeconds(), &event.event);
+      event.event.TimeStamp(), &event.event);
   SendTouchEventImmediately(&event, false);
 }
 
@@ -104,9 +104,9 @@ void PassthroughTouchEventQueue::PrependTouchScrollNotification() {
   TRACE_EVENT0("input",
                "PassthroughTouchEventQueue::PrependTouchScrollNotification");
 
-  TouchEventWithLatencyInfo touch(
-      WebInputEvent::kTouchScrollStarted, WebInputEvent::kNoModifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()), LatencyInfo());
+  TouchEventWithLatencyInfo touch(WebInputEvent::kTouchScrollStarted,
+                                  WebInputEvent::kNoModifiers,
+                                  ui::EventTimeForNow(), LatencyInfo());
   touch.event.dispatch_type = WebInputEvent::kEventNonBlocking;
   SendTouchEventImmediately(&touch, true);
 }

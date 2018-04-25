@@ -135,7 +135,7 @@ class PassthroughTouchEventQueueTest : public testing::Test,
 
   void SendGestureEvent(WebInputEvent::Type type) {
     WebGestureEvent event(type, WebInputEvent::kNoModifiers,
-                          ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+                          ui::EventTimeForNow());
     queue_->OnGestureScrollEvent(
         GestureEventWithLatencyInfo(event, ui::LatencyInfo()));
   }
@@ -165,9 +165,8 @@ class PassthroughTouchEventQueueTest : public testing::Test,
 
   void SendGestureEventAck(WebInputEvent::Type type,
                            InputEventAckState ack_result) {
-    GestureEventWithLatencyInfo event(
-        type, blink::WebInputEvent::kNoModifiers,
-        ui::EventTimeStampToSeconds(ui::EventTimeForNow()), ui::LatencyInfo());
+    GestureEventWithLatencyInfo event(type, blink::WebInputEvent::kNoModifiers,
+                                      ui::EventTimeForNow(), ui::LatencyInfo());
     queue_->OnGestureEventAck(event, ack_result);
   }
 
@@ -213,8 +212,7 @@ class PassthroughTouchEventQueueTest : public testing::Test,
     touch_event_.touches[index].state = WebTouchPoint::kStateMoved;
     touch_event_.moved_beyond_slop_region = true;
     WebTouchEventTraits::ResetType(WebInputEvent::kTouchMove,
-                                   touch_event_.TimeStampSeconds(),
-                                   &touch_event_);
+                                   touch_event_.TimeStamp(), &touch_event_);
     SendTouchEvent();
   }
 
@@ -226,8 +224,7 @@ class PassthroughTouchEventQueueTest : public testing::Test,
     touch_event_.touches[index].state = WebTouchPoint::kStateMoved;
     touch_event_.moved_beyond_slop_region = true;
     WebTouchEventTraits::ResetType(WebInputEvent::kTouchMove,
-                                   touch_event_.TimeStampSeconds(),
-                                   &touch_event_);
+                                   touch_event_.TimeStamp(), &touch_event_);
     SendTouchEvent();
   }
 
@@ -239,8 +236,7 @@ class PassthroughTouchEventQueueTest : public testing::Test,
     touch_event_.touches[index].state = WebTouchPoint::kStateMoved;
     touch_event_.moved_beyond_slop_region = true;
     WebTouchEventTraits::ResetType(WebInputEvent::kTouchMove,
-                                   touch_event_.TimeStampSeconds(),
-                                   &touch_event_);
+                                   touch_event_.TimeStamp(), &touch_event_);
     SendTouchEvent();
   }
 
@@ -259,7 +255,8 @@ class PassthroughTouchEventQueueTest : public testing::Test,
   }
 
   void AdvanceTouchTime(double seconds) {
-    touch_event_.SetTimeStampSeconds(touch_event_.TimeStampSeconds() + seconds);
+    touch_event_.SetTimeStamp(touch_event_.TimeStamp() +
+                              base::TimeDelta::FromSecondsD(seconds));
   }
 
   void ResetTouchEvent() { touch_event_ = SyntheticWebTouchEvent(); }
@@ -699,9 +696,9 @@ TEST_F(PassthroughTouchEventQueueTest, AckWithFollowupEvents) {
 
   // Create a touch event that will be queued synchronously by a touch ack.
   // Note, this will be triggered by all subsequent touch acks.
-  WebTouchEvent followup_event(
-      WebInputEvent::kTouchMove, WebInputEvent::kNoModifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  WebTouchEvent followup_event(WebInputEvent::kTouchMove,
+                               WebInputEvent::kNoModifiers,
+                               ui::EventTimeForNow());
   followup_event.touches_length = 1;
   followup_event.touches[0].id = 0;
   followup_event.touches[0].state = WebTouchPoint::kStateMoved;
@@ -786,9 +783,9 @@ TEST_F(PassthroughTouchEventQueueTest, SynchronousAcksInOrder) {
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 
   // Create a touch event that will be queued synchronously by a touch ack.
-  WebTouchEvent followup_event(
-      WebInputEvent::kTouchMove, WebInputEvent::kNoModifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  WebTouchEvent followup_event(WebInputEvent::kTouchMove,
+                               WebInputEvent::kNoModifiers,
+                               ui::EventTimeForNow());
   followup_event.touches_length = 1;
   followup_event.touches[0].id = 0;
   followup_event.unique_touch_event_id = 100;
@@ -809,9 +806,9 @@ TEST_F(PassthroughTouchEventQueueTest, SynchronousAcksInOrder) {
 // TouchEventQueue::QueueEvent() are properly handled.
 TEST_F(PassthroughTouchEventQueueTest, ImmediateAckWithFollowupEvents) {
   // Create a touch event that will be queued synchronously by a touch ack.
-  WebTouchEvent followup_event(
-      WebInputEvent::kTouchStart, WebInputEvent::kNoModifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  WebTouchEvent followup_event(WebInputEvent::kTouchStart,
+                               WebInputEvent::kNoModifiers,
+                               ui::EventTimeForNow());
   followup_event.touches_length = 1;
   followup_event.touches[0].id = 1;
   followup_event.touches[0].state = WebTouchPoint::kStatePressed;
@@ -820,9 +817,9 @@ TEST_F(PassthroughTouchEventQueueTest, ImmediateAckWithFollowupEvents) {
   // Now, enqueue a stationary touch that will not be forwarded.  This should be
   // immediately ack'ed with "NO_CONSUMER_EXISTS".  The followup event should
   // then be enqueued and immediately sent to the renderer.
-  WebTouchEvent stationary_event(
-      WebInputEvent::kTouchMove, WebInputEvent::kNoModifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  WebTouchEvent stationary_event(WebInputEvent::kTouchMove,
+                                 WebInputEvent::kNoModifiers,
+                                 ui::EventTimeForNow());
   stationary_event.touches_length = 1;
   stationary_event.touches[0].id = 1;
   stationary_event.touches[0].state = WebTouchPoint::kStateStationary;
@@ -1143,9 +1140,9 @@ TEST_F(PassthroughTouchEventQueueTest, TouchTimeoutWithFollowupGesture) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // The cancelled sequence may turn into a scroll gesture.
-  WebGestureEvent followup_scroll(
-      WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  WebGestureEvent followup_scroll(WebInputEvent::kGestureScrollBegin,
+                                  WebInputEvent::kNoModifiers,
+                                  ui::EventTimeForNow());
   SetFollowupEvent(followup_scroll);
 
   // Delay the ack.
@@ -1200,9 +1197,9 @@ TEST_F(PassthroughTouchEventQueueTest,
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // The cancelled sequence may turn into a scroll gesture.
-  WebGestureEvent followup_scroll(
-      WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  WebGestureEvent followup_scroll(WebInputEvent::kGestureScrollBegin,
+                                  WebInputEvent::kNoModifiers,
+                                  ui::EventTimeForNow());
   SetFollowupEvent(followup_scroll);
 
   // Delay the ack.

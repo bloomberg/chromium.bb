@@ -504,7 +504,7 @@ IPC_MESSAGE_ROUTED1(ViewMsg_PpapiBrokerPermissionResult,
 // inside the popup, instruct the renderer to generate a synthetic tap at that
 // offset.
 IPC_MESSAGE_ROUTED3(ViewMsg_ResolveTapDisambiguation,
-                    double /* timestamp_seconds */,
+                    base::TimeTicks /* timestamp */,
                     gfx::Point /* tap_viewport_offset */,
                     bool /* is_long_press */)
 

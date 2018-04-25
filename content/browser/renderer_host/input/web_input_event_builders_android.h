@@ -8,6 +8,7 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -38,7 +39,7 @@ class CONTENT_EXPORT WebKeyboardEventBuilder {
       const base::android::JavaRef<jobject>& android_key_event,
       blink::WebInputEvent::Type type,
       int modifiers,
-      double time_sec,
+      base::TimeTicks time,
       int keycode,
       int scancode,
       int unicode_character,
@@ -48,7 +49,7 @@ class CONTENT_EXPORT WebKeyboardEventBuilder {
 class WebGestureEventBuilder {
  public:
   static blink::WebGestureEvent Build(blink::WebInputEvent::Type type,
-                                      double time_sec,
+                                      base::TimeTicks time,
                                       float x,
                                       float y);
 };

@@ -2380,8 +2380,7 @@ void Node::DispatchMouseEvent(const WebMouseEvent& event,
                                 : nullptr);
 
   DispatchEvent(MouseEvent::Create(
-      mouse_event_type, initializer,
-      TimeTicksFromSeconds(event.TimeStampSeconds()),
+      mouse_event_type, initializer, event.TimeStamp(),
       event.FromTouch() ? MouseEvent::kFromTouch
                         : MouseEvent::kRealOrIndistinguishable,
       event.menu_source_type));

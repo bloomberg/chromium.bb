@@ -38,7 +38,7 @@ std::unique_ptr<WebActiveGestureAnimation>
 WebActiveGestureAnimation::CreateWithTimeOffset(
     std::unique_ptr<WebGestureCurve> curve,
     WebGestureCurveTarget* target,
-    double start_time) {
+    base::TimeTicks start_time) {
   return base::WrapUnique(
       new WebActiveGestureAnimation(std::move(curve), target, start_time));
 }
@@ -48,13 +48,16 @@ WebActiveGestureAnimation::~WebActiveGestureAnimation() = default;
 WebActiveGestureAnimation::WebActiveGestureAnimation(
     std::unique_ptr<WebGestureCurve> curve,
     WebGestureCurveTarget* target,
-    double start_time)
+    base::TimeTicks start_time)
     : start_time_(start_time), curve_(std::move(curve)), target_(target) {}
 
-bool WebActiveGestureAnimation::Animate(double time) {
+bool WebActiveGestureAnimation::Animate(base::TimeTicks time) {
   // All WebGestureCurves assume zero-based time, so we subtract
   // the animation start time before passing to the curve.
-  return curve_->AdvanceAndApplyToTarget(time - start_time_, target_);
+  // TODO(dcheng): WebGestureCurve should be using base::TimeDelta to represent
+  // this.
+  return curve_->AdvanceAndApplyToTarget((time - start_time_).InSecondsF(),
+                                         target_);
 }
 
 }  // namespace blink

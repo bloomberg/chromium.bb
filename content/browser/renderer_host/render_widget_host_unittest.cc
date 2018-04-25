@@ -19,6 +19,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
@@ -617,7 +618,7 @@ class RenderWidgetHostTest : public testing::Test {
       : process_(nullptr),
         handle_key_press_event_(false),
         handle_mouse_event_(false),
-        simulated_event_time_delta_seconds_(0),
+        last_simulated_event_time_(ui::EventTimeForNow()),
         wheel_scroll_latching_enabled_(wheel_scrolling_mode !=
                                        kWheelScrollingModeNone) {
     std::vector<base::StringPiece> features;
@@ -643,9 +644,6 @@ class RenderWidgetHostTest : public testing::Test {
 
     feature_list_.InitFromCommandLine(base::JoinString(features, ","),
                                       base::JoinString(disabled_features, ","));
-
-    last_simulated_event_time_seconds_ =
-        ui::EventTimeStampToSeconds(ui::EventTimeForNow());
   }
   ~RenderWidgetHostTest() override {}
 
@@ -748,9 +746,9 @@ class RenderWidgetHostTest : public testing::Test {
 
   int64_t GetLatencyComponentId() { return host_->GetLatencyComponentId(); }
 
-  double GetNextSimulatedEventTimeSeconds() {
-    last_simulated_event_time_seconds_ += simulated_event_time_delta_seconds_;
-    return last_simulated_event_time_seconds_;
+  base::TimeTicks GetNextSimulatedEventTime() {
+    last_simulated_event_time_ += simulated_event_time_delta_;
+    return last_simulated_event_time_;
   }
 
   void SimulateKeyboardEvent(WebInputEvent::Type type) {
@@ -759,13 +757,12 @@ class RenderWidgetHostTest : public testing::Test {
 
   void SimulateKeyboardEvent(WebInputEvent::Type type, int modifiers) {
     NativeWebKeyboardEvent native_event(type, modifiers,
-                                        GetNextSimulatedEventTimeSeconds());
+                                        GetNextSimulatedEventTime());
     host_->ForwardKeyboardEvent(native_event);
   }
 
   void SimulateKeyboardEventWithCommands(WebInputEvent::Type type) {
-    NativeWebKeyboardEvent native_event(type, 0,
-                                        GetNextSimulatedEventTimeSeconds());
+    NativeWebKeyboardEvent native_event(type, 0, GetNextSimulatedEventTime());
     EditCommands commands;
     commands.emplace_back("name", "value");
     host_->ForwardKeyboardEventWithCommands(native_event, ui::LatencyInfo(),
@@ -836,7 +833,7 @@ class RenderWidgetHostTest : public testing::Test {
         SyntheticWebMouseEventBuilder::Build(type, x, y, modifiers);
     if (pressed)
       event.button = WebMouseEvent::Button::kLeft;
-    event.SetTimeStampSeconds(GetNextSimulatedEventTimeSeconds());
+    event.SetTimeStamp(GetNextSimulatedEventTime());
     host_->ForwardMouseEvent(event);
   }
 
@@ -903,8 +900,8 @@ class RenderWidgetHostTest : public testing::Test {
   std::unique_ptr<display::Screen> screen_;
   bool handle_key_press_event_;
   bool handle_mouse_event_;
-  double last_simulated_event_time_seconds_;
-  double simulated_event_time_delta_seconds_;
+  base::TimeTicks last_simulated_event_time_;
+  base::TimeDelta simulated_event_time_delta_;
   IPC::TestSink* sink_;
   std::unique_ptr<FakeRendererCompositorFrameSink>
       renderer_compositor_frame_sink_;
@@ -1689,7 +1686,7 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
 }
 
 TEST_F(RenderWidgetHostTest, TouchEmulator) {
-  simulated_event_time_delta_seconds_ = 0.1;
+  simulated_event_time_delta_ = base::TimeDelta::FromMilliseconds(100);
   // Immediately ack all touches instead of sending them to the renderer.
   host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
   host_->GetTouchEmulator()->Enable(

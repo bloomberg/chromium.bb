@@ -42,6 +42,9 @@ class WebGestureCurve {
   // Returns false if curve has finished and can no longer be applied.
   // TODO(sahel): This will get removed once touchscreen and autoscroll flings
   // are handled on browser side (crbug.com/249063).
+  // TODO(dcheng): This parameter should be a base::TimeDelta, but there is
+  // incorrect usage of base::TimeTicks throughout the gesture code. Fix in a
+  // followup.
   bool AdvanceAndApplyToTarget(double time, WebGestureCurveTarget* target) {
     gfx::Vector2dF velocity, delta;
     bool still_active = Advance(time, velocity, delta);
@@ -61,6 +64,9 @@ class WebGestureCurve {
 
   // Returns false if curve has finished and can no longer advance.
   // This function is used for browser side fling.
+  // TODO(dcheng): This parameter should be a base::TimeDelta, but there is
+  // incorrect usage of base::TimeTicks throughout the gesture code. Fix in a
+  // followup.
   virtual bool Advance(double time,
                        gfx::Vector2dF& out_current_velocity,
                        gfx::Vector2dF& out_delta_to_scroll) = 0;

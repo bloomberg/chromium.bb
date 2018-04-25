@@ -1068,9 +1068,9 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
 
   if (AutoscrollController* controller =
           scroll_manager_->GetAutoscrollController()) {
-    controller->UpdateDragAndDrop(
-        new_target, FlooredIntPoint(event.PositionInRootFrame()),
-        TimeTicksFromSeconds(event.TimeStampSeconds()));
+    controller->UpdateDragAndDrop(new_target,
+                                  FlooredIntPoint(event.PositionInRootFrame()),
+                                  event.TimeStamp());
   }
 
   if (drag_target_ != new_target) {
@@ -1600,7 +1600,7 @@ void EventHandler::UpdateGestureTargetNodeForMouseEvent(
       WebPointerProperties::Button::kNoButton,
       /* clickCount */ 0,
       modifiers | WebInputEvent::Modifiers::kIsCompatibilityEventForTouch,
-      gesture_event.TimeStampSeconds());
+      gesture_event.TimeStamp());
 
   // Update the mouseout/mouseleave event
   size_t index_exited_frame_chain = exited_frame_chain.size();
@@ -1926,7 +1926,7 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
       WebFloatPoint(location_in_root_frame.X(), location_in_root_frame.Y()),
       WebFloatPoint(global_position.X(), global_position.Y()),
       WebPointerProperties::Button::kNoButton, /* clickCount */ 0,
-      WebInputEvent::kNoModifiers, CurrentTimeTicksInSeconds(), source_type);
+      WebInputEvent::kNoModifiers, CurrentTimeTicks(), source_type);
 
   // TODO(dtapuska): Transition the mouseEvent to be created really in viewport
   // coordinates instead of root frame coordinates.

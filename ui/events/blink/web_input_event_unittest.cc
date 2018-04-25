@@ -255,8 +255,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
         MakeWebMouseEvent(ui_event, base::Bind(&GetScreenLocationFromEvent));
     EXPECT_EQ(EventFlagsToWebEventModifiers(ui_event.flags()),
               webkit_event.GetModifiers());
-    EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
-                    webkit_event.TimeStampSeconds());
+    EXPECT_EQ(timestamp, webkit_event.TimeStamp());
     EXPECT_EQ(blink::WebMouseEvent::Button::kLeft, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::kMouseDown, webkit_event.GetType());
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.click_count);
@@ -273,8 +272,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
         MakeWebMouseEvent(ui_event, base::Bind(&GetScreenLocationFromEvent));
     EXPECT_EQ(EventFlagsToWebEventModifiers(ui_event.flags()),
               webkit_event.GetModifiers());
-    EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
-                    webkit_event.TimeStampSeconds());
+    EXPECT_EQ(timestamp, webkit_event.TimeStamp());
     EXPECT_EQ(blink::WebMouseEvent::Button::kLeft, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::kMouseUp, webkit_event.GetType());
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.click_count);
@@ -291,8 +289,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
         MakeWebMouseEvent(ui_event, base::Bind(&GetScreenLocationFromEvent));
     EXPECT_EQ(EventFlagsToWebEventModifiers(ui_event.flags()),
               webkit_event.GetModifiers());
-    EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
-                    webkit_event.TimeStampSeconds());
+    EXPECT_EQ(timestamp, webkit_event.TimeStamp());
     EXPECT_EQ(blink::WebMouseEvent::Button::kMiddle, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::kMouseDown, webkit_event.GetType());
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.click_count);
@@ -309,8 +306,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
         MakeWebMouseEvent(ui_event, base::Bind(&GetScreenLocationFromEvent));
     EXPECT_EQ(EventFlagsToWebEventModifiers(ui_event.flags()),
               webkit_event.GetModifiers());
-    EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
-                    webkit_event.TimeStampSeconds());
+    EXPECT_EQ(timestamp, webkit_event.TimeStamp());
     EXPECT_EQ(blink::WebMouseEvent::Button::kMiddle, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::kMouseUp, webkit_event.GetType());
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.click_count);
@@ -327,8 +323,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
         MakeWebMouseEvent(ui_event, base::Bind(&GetScreenLocationFromEvent));
     EXPECT_EQ(EventFlagsToWebEventModifiers(ui_event.flags()),
               webkit_event.GetModifiers());
-    EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
-                    webkit_event.TimeStampSeconds());
+    EXPECT_EQ(timestamp, webkit_event.TimeStamp());
     EXPECT_EQ(blink::WebMouseEvent::Button::kRight, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::kMouseDown, webkit_event.GetType());
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.click_count);
@@ -345,8 +340,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
         MakeWebMouseEvent(ui_event, base::Bind(&GetScreenLocationFromEvent));
     EXPECT_EQ(EventFlagsToWebEventModifiers(ui_event.flags()),
               webkit_event.GetModifiers());
-    EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
-                    webkit_event.TimeStampSeconds());
+    EXPECT_EQ(timestamp, webkit_event.TimeStamp());
     EXPECT_EQ(blink::WebMouseEvent::Button::kRight, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::kMouseUp, webkit_event.GetType());
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.click_count);
@@ -362,8 +356,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
         MakeWebMouseEvent(ui_event, base::Bind(&GetScreenLocationFromEvent));
     EXPECT_EQ(EventFlagsToWebEventModifiers(ui_event.flags()),
               webkit_event.GetModifiers());
-    EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
-                    webkit_event.TimeStampSeconds());
+    EXPECT_EQ(timestamp, webkit_event.TimeStamp());
     EXPECT_EQ(blink::WebMouseEvent::Button::kNoButton, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::kMouseMove, webkit_event.GetType());
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.click_count);
@@ -380,8 +373,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
         MakeWebMouseEvent(ui_event, base::Bind(&GetScreenLocationFromEvent));
     EXPECT_EQ(EventFlagsToWebEventModifiers(ui_event.flags()),
               webkit_event.GetModifiers());
-    EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
-                    webkit_event.TimeStampSeconds());
+    EXPECT_EQ(timestamp, webkit_event.TimeStamp());
     EXPECT_EQ(blink::WebMouseEvent::Button::kLeft, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::kMouseMove, webkit_event.GetType());
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.click_count);
@@ -398,8 +390,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
         MakeWebMouseEvent(ui_event, base::Bind(&GetScreenLocationFromEvent));
     EXPECT_EQ(EventFlagsToWebEventModifiers(ui_event.flags()),
               webkit_event.GetModifiers());
-    EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
-                    webkit_event.TimeStampSeconds());
+    EXPECT_EQ(timestamp, webkit_event.TimeStamp());
     EXPECT_EQ(blink::WebMouseEvent::Button::kLeft, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::kMouseDown, webkit_event.GetType());
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.click_count);
@@ -468,8 +459,7 @@ TEST(WebInputEventTest, TestMakeWebMouseWheelEvent) {
         ui_event, base::Bind(&GetScreenLocationFromEvent));
     EXPECT_EQ(EventFlagsToWebEventModifiers(ui_event.flags()),
               webkit_event.GetModifiers());
-    EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
-                    webkit_event.TimeStampSeconds());
+    EXPECT_EQ(timestamp, webkit_event.TimeStamp());
     EXPECT_EQ(blink::WebMouseEvent::Button::kNoButton, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::kMouseWheel, webkit_event.GetType());
     EXPECT_FLOAT_EQ(ui_event.x_offset() / MouseWheelEvent::kWheelDelta,

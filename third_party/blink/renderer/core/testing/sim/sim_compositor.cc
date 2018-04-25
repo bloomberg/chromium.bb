@@ -24,8 +24,7 @@ SimCompositor::SimCompositor()
     : needs_begin_frame_(false),
       defer_commits_(true),
       has_selection_(false),
-      web_view_(nullptr),
-      last_frame_time_monotonic_(0) {
+      web_view_(nullptr) {
   LocalFrameView::SetInitialTracksPaintInvalidationsForTesting(true);
 }
 
@@ -60,9 +59,9 @@ SimCanvas::Commands SimCompositor::BeginFrame(double time_delta_in_seconds) {
   DCHECK_GT(time_delta_in_seconds, 0);
   needs_begin_frame_ = false;
 
-  last_frame_time_monotonic_ += time_delta_in_seconds;
+  last_frame_time_ += base::TimeDelta::FromSecondsD(time_delta_in_seconds);
 
-  web_view_->BeginFrame(last_frame_time_monotonic_);
+  web_view_->BeginFrame(last_frame_time_);
   web_view_->UpdateAllLifecyclePhases();
 
   return PaintFrame();

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"

@@ -37,8 +37,9 @@ WebKeyboardEvent CreateFakeWebKeyboardEvent(JNIEnv* env,
       ui::events::android::CreateKeyEvent(env, 0, key_code);
 
   WebKeyboardEvent web_event = content::WebKeyboardEventBuilder::Build(
-      env, keydown_event, WebKeyboardEvent::kKeyDown, web_modifier, 0, key_code,
-      0, unicode_character, false);
+      env, keydown_event, WebKeyboardEvent::kKeyDown, web_modifier,
+      blink::WebInputEvent::GetStaticTimeStampForTests(), key_code, 0,
+      unicode_character, false);
   return web_event;
 }
 
@@ -161,7 +162,8 @@ TEST(WebInputEventBuilderAndroidTest, LastChannelKey) {
 // Synthetic key event should produce DomKey::UNIDENTIFIED.
 TEST(WebInputEventBuilderAndroidTest, DomKeySyntheticEvent) {
   WebKeyboardEvent web_event = content::WebKeyboardEventBuilder::Build(
-      nullptr, nullptr, WebKeyboardEvent::kKeyDown, 0, 0, kCompositionKeyCode,
+      nullptr, nullptr, WebKeyboardEvent::kKeyDown, 0,
+      blink::WebInputEvent::GetStaticTimeStampForTests(), kCompositionKeyCode,
       0, 0, false);
   EXPECT_EQ(kCompositionKeyCode, web_event.native_key_code);
   EXPECT_EQ(ui::KeyboardCode::VKEY_UNKNOWN, web_event.windows_key_code);
@@ -197,9 +199,9 @@ TEST(WebInputEventBuilderAndroidTest, CutCopyPasteKey) {
 }
 
 TEST(WebInputEventBuilderAndroidTest, WebMouseEventCoordinates) {
-  const int event_time_ms = 5;
-  base::TimeTicks event_time =
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(event_time_ms);
+  constexpr int kEventTimeMs = 5;
+  const base::TimeTicks event_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(kEventTimeMs);
 
   ui::test::ScopedEventTestTickClock clock;
   clock.SetNowTicks(event_time);
@@ -212,7 +214,7 @@ TEST(WebInputEventBuilderAndroidTest, WebMouseEventCoordinates) {
   const float kPixToDip = 0.5f;
 
   ui::MotionEventAndroid motion_event(
-      AttachCurrentThread(), nullptr, kPixToDip, 0.f, 0.f, 0.f, event_time_ms,
+      AttachCurrentThread(), nullptr, kPixToDip, 0.f, 0.f, 0.f, kEventTimeMs,
       AMOTION_EVENT_ACTION_DOWN, 1, 0, -1, 0, 1, AMETA_ALT_ON, raw_offset_x,
       raw_offset_y, false, &p0, nullptr);
 
@@ -226,7 +228,7 @@ TEST(WebInputEventBuilderAndroidTest, WebMouseEventCoordinates) {
   EXPECT_EQ(web_event.PositionInScreen().y,
             (p0.pos_y_pixels + raw_offset_y) * kPixToDip);
   EXPECT_EQ(web_event.button, blink::WebPointerProperties::Button::kLeft);
-  EXPECT_EQ(web_event.TimeStampSeconds(), event_time_ms * 0.001);
+  EXPECT_EQ(web_event.TimeStamp(), event_time);
 }
 
 // TODO(crbug.com/781404): Add more tests for WebMouseEventBuilder

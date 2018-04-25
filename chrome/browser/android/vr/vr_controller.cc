@@ -389,8 +389,7 @@ std::unique_ptr<GestureList> VrController::DetectGestures() {
 }
 
 void VrController::UpdateGestureFromTouchInfo(blink::WebGestureEvent* gesture) {
-  gesture->SetTimeStampSeconds(
-      (GetLastTouchTimestamp() - base::TimeTicks()).InSecondsF());
+  gesture->SetTimeStamp(GetLastTouchTimestamp());
   switch (state_) {
     // User has not put finger on touch pad.
     case WAITING:

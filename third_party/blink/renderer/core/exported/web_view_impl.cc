@@ -34,6 +34,7 @@
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -780,12 +781,12 @@ void RecordTapDisambiguation(TapDisambiguationResult result) {
 
 }  // namespace
 
-void WebViewImpl::ResolveTapDisambiguation(double timestamp_seconds,
+void WebViewImpl::ResolveTapDisambiguation(base::TimeTicks timestamp,
                                            WebPoint tap_viewport_offset,
                                            bool is_long_press) {
   WebGestureEvent event(is_long_press ? WebInputEvent::kGestureLongPress
                                       : WebInputEvent::kGestureTap,
-                        WebInputEvent::kNoModifiers, timestamp_seconds,
+                        WebInputEvent::kNoModifiers, timestamp,
                         blink::kWebGestureDeviceTouchscreen);
 
   event.SetPositionInWidget(FloatPoint(tap_viewport_offset));
@@ -823,7 +824,7 @@ WebInputEventResult WebViewImpl::HandleSyntheticWheelFromTouchpadPinchEvent(
   WebMouseWheelEvent wheel_event(
       WebInputEvent::kMouseWheel,
       pinch_event.GetModifiers() | WebInputEvent::kControlKey,
-      pinch_event.TimeStampSeconds());
+      pinch_event.TimeStamp());
   wheel_event.SetPositionInWidget(pinch_event.PositionInWidget().x,
                                   pinch_event.PositionInWidget().y);
   wheel_event.SetPositionInScreen(pinch_event.PositionInScreen().x,
@@ -1803,20 +1804,22 @@ void WebViewImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
   page_->Animator().SetSuppressFrameRequestsWorkaroundFor704763Only(
       suppress_frame_requests);
 }
-void WebViewImpl::BeginFrame(double last_frame_time_monotonic) {
+void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time) {
   TRACE_EVENT1("blink", "WebViewImpl::beginFrame", "frameTime",
-               last_frame_time_monotonic);
-  DCHECK(last_frame_time_monotonic);
+               last_frame_time);
+  DCHECK(!last_frame_time.is_null());
 
   if (!MainFrameImpl())
     return;
 
   if (WebFrameWidgetBase* widget = MainFrameImpl()->FrameWidgetImpl())
-    widget->UpdateGestureAnimation(last_frame_time_monotonic);
+    widget->UpdateGestureAnimation(last_frame_time);
 
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());
-  PageWidgetDelegate::Animate(*page_, last_frame_time_monotonic);
+  // TODO(dcheng): This should be a base::TimeTicks.
+  PageWidgetDelegate::Animate(*page_,
+                              last_frame_time.since_origin().InSecondsF());
   if (auto* client = GetValidationMessageClient())
     client->LayoutOverlay();
 }
@@ -2026,8 +2029,7 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
     InteractiveDetector* interactive_detector(
         InteractiveDetector::From(main_frame_document));
     if (interactive_detector) {
-      interactive_detector->OnInvalidatingInputEvent(
-          TimeTicksFromSeconds(input_event.TimeStampSeconds()));
+      interactive_detector->OnInvalidatingInputEvent(input_event.TimeStamp());
     }
   }
 
@@ -3478,7 +3480,7 @@ WebHitTestResult WebViewImpl::HitTestResultForTap(
 
   WebGestureEvent tap_event(
       WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
-      WTF::CurrentTimeTicksInSeconds(), kWebGestureDeviceTouchscreen);
+      WTF::CurrentTimeTicks(), kWebGestureDeviceTouchscreen);
   // GestureTap is only ever from a touchscreen.
   tap_event.SetPositionInWidget(FloatPoint(tap_point_window_pos));
   tap_event.data.tap.tap_count = 1;

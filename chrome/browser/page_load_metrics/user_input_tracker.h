@@ -38,7 +38,6 @@ class UserInputTracker {
  public:
   // Only public for tests.
   static constexpr size_t kMaxTrackedEvents = 100;
-  static base::TimeTicks GetEventTime(const blink::WebInputEvent& event);
 
   // Given a time, round to the nearest rate-limited offset. UserInputTracker
   // rate limits events, such that at most one event will be recorded per every

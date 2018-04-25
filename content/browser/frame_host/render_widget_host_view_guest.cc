@@ -605,8 +605,7 @@ void RenderWidgetHostViewGuest::MaybeSendSyntheticTapGesture(
         GetOwnerRenderWidgetHostView()->GetBoundsInRootWindow().origin();
     blink::WebGestureEvent gesture_tap_event(
         blink::WebGestureEvent::kGestureTapDown,
-        blink::WebInputEvent::kNoModifiers,
-        ui::EventTimeStampToSeconds(ui::EventTimeForNow()),
+        blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow(),
         blink::kWebGestureDeviceTouchscreen);
     gesture_tap_event.SetPositionInWidget(
         blink::WebFloatPoint(position.x + offset.x(), position.y + offset.y()));

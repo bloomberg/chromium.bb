@@ -429,15 +429,6 @@ class TimeBase {
     return us_ >= other.us_;
   }
 
-  // Converts an integer value representing TimeClass to a class. This may be
-  // used when deserializing a |TimeClass| structure, using a value known to be
-  // compatible. It is not provided as a constructor because the integer type
-  // may be unclear from the perspective of a caller.
-  //
-  // DEPRECATED - Do not use in new code. For deserializing Time values, prefer
-  // Time::FromDeltaSinceWindowsEpoch(). http://crbug.com/634507
-  static TimeClass FromInternalValue(int64_t us) { return TimeClass(us); }
-
  protected:
   constexpr explicit TimeBase(int64_t us) : us_(us) {}
 
@@ -674,10 +665,19 @@ class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
   // midnight on that day.
   Time LocalMidnight() const;
 
+  // Converts an integer value representing Time to a class. This may be used
+  // when deserializing a |Time| structure, using a value known to be
+  // compatible. It is not provided as a constructor because the integer type
+  // may be unclear from the perspective of a caller.
+  //
+  // DEPRECATED - Do not use in new code. For deserializing Time values, prefer
+  // Time::FromDeltaSinceWindowsEpoch(). http://crbug.com/634507
+  static constexpr Time FromInternalValue(int64_t us) { return Time(us); }
+
  private:
   friend class time_internal::TimeBase<Time>;
 
-  explicit Time(int64_t us) : TimeBase(us) {}
+  constexpr explicit Time(int64_t us) : TimeBase(us) {}
 
   // Explodes the given time to either local time |is_local = true| or UTC
   // |is_local = false|.
@@ -885,6 +885,17 @@ class BASE_EXPORT TimeTicks : public time_internal::TimeBase<TimeTicks> {
   // logging purposes.
   static Clock GetClock();
 
+  // Converts an integer value representing TimeTicks to a class. This may be
+  // used when deserializing a |TimeTicks| structure, using a value known to be
+  // compatible. It is not provided as a constructor because the integer type
+  // may be unclear from the perspective of a caller.
+  //
+  // DEPRECATED - Do not use in new code. For deserializing TimeTicks values,
+  // prefer TimeTicks + TimeDelta(). http://crbug.com/634507
+  static constexpr TimeTicks FromInternalValue(int64_t us) {
+    return TimeTicks(us);
+  }
+
 #if defined(OS_WIN)
  protected:
   typedef DWORD (*TickFunctionType)(void);
@@ -896,7 +907,7 @@ class BASE_EXPORT TimeTicks : public time_internal::TimeBase<TimeTicks> {
 
   // Please use Now() to create a new object. This is for internal use
   // and testing.
-  explicit TimeTicks(int64_t us) : TimeBase(us) {}
+  constexpr explicit TimeTicks(int64_t us) : TimeBase(us) {}
 };
 
 // For logging use only.
@@ -948,12 +959,23 @@ class BASE_EXPORT ThreadTicks : public time_internal::TimeBase<ThreadTicks> {
   static ThreadTicks GetForThread(const PlatformThreadHandle& thread_handle);
 #endif
 
+  // Converts an integer value representing ThreadTicks to a class. This may be
+  // used when deserializing a |ThreadTicks| structure, using a value known to
+  // be compatible. It is not provided as a constructor because the integer type
+  // may be unclear from the perspective of a caller.
+  //
+  // DEPRECATED - Do not use in new code. For deserializing ThreadTicks values,
+  // prefer ThreadTicks + TimeDelta(). http://crbug.com/634507
+  static constexpr ThreadTicks FromInternalValue(int64_t us) {
+    return ThreadTicks(us);
+  }
+
  private:
   friend class time_internal::TimeBase<ThreadTicks>;
 
   // Please use Now() or GetForThread() to create a new object. This is for
   // internal use and testing.
-  explicit ThreadTicks(int64_t us) : TimeBase(us) {}
+  constexpr explicit ThreadTicks(int64_t us) : TimeBase(us) {}
 
 #if defined(OS_WIN)
   FRIEND_TEST_ALL_PREFIXES(TimeTicks, TSCTicksPerSecond);

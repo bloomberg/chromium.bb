@@ -256,8 +256,8 @@ std::unique_ptr<blink::WebMouseEvent> ContentInputDelegate::MakeMouseEvent(
       NOTREACHED();
   }
 
-  auto mouse_event = std::make_unique<blink::WebMouseEvent>(
-      type, modifiers, (timestamp - base::TimeTicks()).InSecondsF());
+  auto mouse_event =
+      std::make_unique<blink::WebMouseEvent>(type, modifiers, timestamp);
   mouse_event->pointer_type = blink::WebPointerProperties::PointerType::kMouse;
   mouse_event->button = blink::WebPointerProperties::Button::kLeft;
   mouse_event->SetPositionInWidget(location.x(), location.y());

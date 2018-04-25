@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_VIEW_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_VIEW_H_
 
+#include "base/time/time.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-shared.h"
 #include "third_party/blink/public/platform/web_color.h"
 #include "third_party/blink/public/platform/web_display_mode.h"
@@ -363,7 +364,7 @@ class WebView : protected WebWidget {
 
   // Generate a synthetic touch event applying the result of a tap
   // disambiguation popup.
-  virtual void ResolveTapDisambiguation(double timestamp_seconds,
+  virtual void ResolveTapDisambiguation(base::TimeTicks timestamp,
                                         WebPoint tap_viewport_offset,
                                         bool is_long_press) = 0;
 

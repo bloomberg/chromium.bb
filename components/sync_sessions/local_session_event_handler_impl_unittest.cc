@@ -47,9 +47,6 @@ const base::Time kTime0 = base::Time::FromInternalValue(100);
 const base::Time kTime1 = base::Time::FromInternalValue(110);
 const base::Time kTime2 = base::Time::FromInternalValue(120);
 const base::Time kTime3 = base::Time::FromInternalValue(130);
-const base::Time kTime4 = base::Time::FromInternalValue(140);
-const base::Time kTime5 = base::Time::FromInternalValue(150);
-const base::Time kTime6 = base::Time::FromInternalValue(190);
 
 const int kWindowId1 = 1000001;
 const int kWindowId2 = 1000002;

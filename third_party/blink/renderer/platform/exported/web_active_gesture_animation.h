@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_EXPORTED_WEB_ACTIVE_GESTURE_ANIMATION_H_
 
 #include <memory>
+#include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
@@ -49,18 +50,18 @@ class PLATFORM_EXPORT WebActiveGestureAnimation {
   static std::unique_ptr<WebActiveGestureAnimation> CreateWithTimeOffset(
       std::unique_ptr<WebGestureCurve>,
       WebGestureCurveTarget*,
-      double start_time);
+      base::TimeTicks start_time);
   ~WebActiveGestureAnimation();
 
-  bool Animate(double time);
+  bool Animate(base::TimeTicks);
 
  private:
   // Assumes a valid WebGestureCurveTarget that outlives the animation.
   WebActiveGestureAnimation(std::unique_ptr<WebGestureCurve>,
                             WebGestureCurveTarget*,
-                            double start_time);
+                            base::TimeTicks start_time);
 
-  double start_time_;
+  base::TimeTicks start_time_;
   std::unique_ptr<WebGestureCurve> curve_;
   WebGestureCurveTarget* target_;
 };

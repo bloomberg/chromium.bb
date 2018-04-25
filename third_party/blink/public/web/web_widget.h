@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_WIDGET_H_
 
 #include "base/callback.h"
+#include "base/time/time.h"
 #include "third_party/blink/public/platform/web_browser_controls_state.h"
 #include "third_party/blink/public/platform/web_canvas.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -84,7 +85,7 @@ class WebWidget {
   // Called to update imperative animation state. This should be called before
   // paint, although the client can rate-limit these calls.
   // |lastFrameTimeMonotonic| is in seconds.
-  virtual void BeginFrame(double last_frame_time_monotonic) {}
+  virtual void BeginFrame(base::TimeTicks last_frame_time) {}
 
   // Called to run through the entire set of document lifecycle phases needed
   // to render a frame of the web widget. This MUST be called before Paint,

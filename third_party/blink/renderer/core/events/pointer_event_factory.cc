@@ -235,9 +235,8 @@ PointerEvent* PointerEventFactory::Create(
       coalesced_event_init.setBubbles(false);
       UpdateCommonPointerEventInit(coalesced_event, view,
                                    &coalesced_event_init);
-      PointerEvent* event = PointerEvent::Create(
-          type, coalesced_event_init,
-          TimeTicksFromSeconds(coalesced_event.TimeStampSeconds()));
+      PointerEvent* event = PointerEvent::Create(type, coalesced_event_init,
+                                                 coalesced_event.TimeStamp());
       // Set the trusted flag for the coalesced events at the creation time
       // as oppose to the normal events which is done at the dispatch time. This
       // is because we don't want to go over all the coalesced events at every
@@ -249,9 +248,8 @@ PointerEvent* PointerEventFactory::Create(
     pointer_event_init.setCoalescedEvents(coalesced_pointer_events);
   }
 
-  return PointerEvent::Create(
-      type, pointer_event_init,
-      TimeTicksFromSeconds(web_pointer_event.TimeStampSeconds()));
+  return PointerEvent::Create(type, pointer_event_init,
+                              web_pointer_event.TimeStamp());
 }
 
 PointerEvent* PointerEventFactory::CreatePointerCancelEvent(

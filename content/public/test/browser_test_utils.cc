@@ -694,9 +694,8 @@ void SimulateMouseClickAt(WebContents* web_contents,
                           int modifiers,
                           blink::WebMouseEvent::Button button,
                           const gfx::Point& point) {
-  blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::kMouseDown, modifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseDown, modifiers,
+                                   ui::EventTimeForNow());
   mouse_event.button = button;
   mouse_event.SetPositionInWidget(point.x(), point.y());
   // Mac needs positionInScreen for events to plugins.
@@ -720,9 +719,8 @@ void SimulateRoutedMouseClickAt(WebContents* web_contents,
   content::RenderWidgetHostViewBase* rwhvb =
       static_cast<content::RenderWidgetHostViewBase*>(
           web_contents->GetRenderWidgetHostView());
-  blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::kMouseDown, modifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseDown, modifiers,
+                                   ui::EventTimeForNow());
   mouse_event.button = button;
   mouse_event.SetPositionInWidget(point.x(), point.y());
   // Mac needs positionInScreen for events to plugins.
@@ -740,9 +738,8 @@ void SimulateRoutedMouseClickAt(WebContents* web_contents,
 void SimulateMouseEvent(WebContents* web_contents,
                         blink::WebInputEvent::Type type,
                         const gfx::Point& point) {
-  blink::WebMouseEvent mouse_event(
-      type, blink::WebInputEvent::kNoModifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  blink::WebMouseEvent mouse_event(type, blink::WebInputEvent::kNoModifiers,
+                                   ui::EventTimeForNow());
   mouse_event.SetPositionInWidget(point.x(), point.y());
   web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
       mouse_event);
@@ -752,9 +749,9 @@ void SimulateMouseWheelEvent(WebContents* web_contents,
                              const gfx::Point& point,
                              const gfx::Vector2d& delta,
                              const blink::WebMouseWheelEvent::Phase phase) {
-  blink::WebMouseWheelEvent wheel_event(
-      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  blink::WebMouseWheelEvent wheel_event(blink::WebInputEvent::kMouseWheel,
+                                        blink::WebInputEvent::kNoModifiers,
+                                        ui::EventTimeForNow());
 
   wheel_event.SetPositionInWidget(point.x(), point.y());
   wheel_event.delta_x = delta.x();
@@ -770,9 +767,9 @@ void SimulateMouseWheelCtrlZoomEvent(WebContents* web_contents,
                                      const gfx::Point& point,
                                      bool zoom_in,
                                      blink::WebMouseWheelEvent::Phase phase) {
-  blink::WebMouseWheelEvent wheel_event(
-      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kControlKey,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  blink::WebMouseWheelEvent wheel_event(blink::WebInputEvent::kMouseWheel,
+                                        blink::WebInputEvent::kControlKey,
+                                        ui::EventTimeForNow());
 
   wheel_event.SetPositionInWidget(point.x(), point.y());
   wheel_event.delta_y =
@@ -793,10 +790,9 @@ void SimulateGesturePinchSequence(WebContents* web_contents,
   RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(
       web_contents->GetRenderViewHost()->GetWidget());
 
-  blink::WebGestureEvent pinch_begin(
-      blink::WebInputEvent::kGesturePinchBegin,
-      blink::WebInputEvent::kNoModifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()), source_device);
+  blink::WebGestureEvent pinch_begin(blink::WebInputEvent::kGesturePinchBegin,
+                                     blink::WebInputEvent::kNoModifiers,
+                                     ui::EventTimeForNow(), source_device);
   pinch_begin.SetPositionInWidget(gfx::PointF(point));
   pinch_begin.SetPositionInScreen(gfx::PointF(point));
   widget_host->ForwardGestureEvent(pinch_begin);
@@ -819,8 +815,7 @@ void SimulateGestureScrollSequence(WebContents* web_contents,
 
   blink::WebGestureEvent scroll_begin(
       blink::WebGestureEvent::kGestureScrollBegin,
-      blink::WebInputEvent::kNoModifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()),
+      blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow(),
       blink::kWebGestureDeviceTouchpad);
   scroll_begin.SetPositionInWidget(gfx::PointF(point));
   scroll_begin.data.scroll_begin.delta_x_hint = delta.x();
@@ -829,8 +824,7 @@ void SimulateGestureScrollSequence(WebContents* web_contents,
 
   blink::WebGestureEvent scroll_update(
       blink::WebGestureEvent::kGestureScrollUpdate,
-      blink::WebInputEvent::kNoModifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()),
+      blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow(),
       blink::kWebGestureDeviceTouchpad);
   scroll_update.SetPositionInWidget(gfx::PointF(point));
   scroll_update.data.scroll_update.delta_x = delta.x();
@@ -839,11 +833,10 @@ void SimulateGestureScrollSequence(WebContents* web_contents,
   scroll_update.data.scroll_update.velocity_y = 0;
   widget_host->ForwardGestureEvent(scroll_update);
 
-  blink::WebGestureEvent scroll_end(
-      blink::WebGestureEvent::kGestureScrollEnd,
-      blink::WebInputEvent::kNoModifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()),
-      blink::kWebGestureDeviceTouchpad);
+  blink::WebGestureEvent scroll_end(blink::WebGestureEvent::kGestureScrollEnd,
+                                    blink::WebInputEvent::kNoModifiers,
+                                    ui::EventTimeForNow(),
+                                    blink::kWebGestureDeviceTouchpad);
   scroll_end.SetPositionInWidget(gfx::PointF(point));
   widget_host->ForwardGestureEvent(scroll_end);
 }
@@ -856,25 +849,22 @@ void SimulateGestureFlingSequence(WebContents* web_contents,
 
   blink::WebGestureEvent scroll_begin(
       blink::WebGestureEvent::kGestureScrollBegin,
-      blink::WebInputEvent::kNoModifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()),
+      blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow(),
       blink::kWebGestureDeviceTouchpad);
   scroll_begin.SetPositionInWidget(gfx::PointF(point));
   widget_host->ForwardGestureEvent(scroll_begin);
 
-  blink::WebGestureEvent scroll_end(
-      blink::WebGestureEvent::kGestureScrollEnd,
-      blink::WebInputEvent::kNoModifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()),
-      blink::kWebGestureDeviceTouchpad);
+  blink::WebGestureEvent scroll_end(blink::WebGestureEvent::kGestureScrollEnd,
+                                    blink::WebInputEvent::kNoModifiers,
+                                    ui::EventTimeForNow(),
+                                    blink::kWebGestureDeviceTouchpad);
   scroll_end.SetPositionInWidget(gfx::PointF(point));
   widget_host->ForwardGestureEvent(scroll_end);
 
-  blink::WebGestureEvent fling_start(
-      blink::WebGestureEvent::kGestureFlingStart,
-      blink::WebInputEvent::kNoModifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()),
-      blink::kWebGestureDeviceTouchpad);
+  blink::WebGestureEvent fling_start(blink::WebGestureEvent::kGestureFlingStart,
+                                     blink::WebInputEvent::kNoModifiers,
+                                     ui::EventTimeForNow(),
+                                     blink::kWebGestureDeviceTouchpad);
   fling_start.SetPositionInWidget(gfx::PointF(point));
   fling_start.data.fling_start.target_viewport = false;
   fling_start.data.fling_start.velocity_x = velocity.x();
@@ -892,7 +882,7 @@ void SimulateGestureEvent(WebContents* web_contents,
 
 void SimulateTapAt(WebContents* web_contents, const gfx::Point& point) {
   blink::WebGestureEvent tap(blink::WebGestureEvent::kGestureTap, 0,
-                             ui::EventTimeStampToSeconds(ui::EventTimeForNow()),
+                             ui::EventTimeForNow(),
                              blink::kWebGestureDeviceTouchscreen);
   tap.SetPositionInWidget(gfx::PointF(point));
   RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(
@@ -904,7 +894,7 @@ void SimulateTapWithModifiersAt(WebContents* web_contents,
                                 unsigned modifiers,
                                 const gfx::Point& point) {
   blink::WebGestureEvent tap(blink::WebGestureEvent::kGestureTap, modifiers,
-                             ui::EventTimeStampToSeconds(ui::EventTimeForNow()),
+                             ui::EventTimeForNow(),
                              blink::kWebGestureDeviceTouchpad);
   tap.SetPositionInWidget(gfx::PointF(point));
   RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(

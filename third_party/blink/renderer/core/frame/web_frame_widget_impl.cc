@@ -265,19 +265,21 @@ void WebFrameWidgetImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
   GetPage()->Animator().SetSuppressFrameRequestsWorkaroundFor704763Only(
       suppress_frame_requests);
 }
-void WebFrameWidgetImpl::BeginFrame(double last_frame_time_monotonic) {
+void WebFrameWidgetImpl::BeginFrame(base::TimeTicks last_frame_time) {
   TRACE_EVENT1("blink", "WebFrameWidgetImpl::beginFrame", "frameTime",
-               last_frame_time_monotonic);
-  DCHECK(last_frame_time_monotonic);
+               last_frame_time);
+  DCHECK(!last_frame_time.is_null());
 
   if (!LocalRootImpl())
     return;
 
-  UpdateGestureAnimation(last_frame_time_monotonic);
+  UpdateGestureAnimation(last_frame_time);
 
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       LocalRootImpl()->GetFrame()->GetDocument()->Lifecycle());
-  PageWidgetDelegate::Animate(*GetPage(), last_frame_time_monotonic);
+  // TODO(dcheng): Plumb this through as base::TimeTicks.
+  PageWidgetDelegate::Animate(*GetPage(),
+                              last_frame_time.since_origin().InSecondsF());
   // Animate can cause the local frame to detach.
   if (LocalRootImpl())
     GetPage()->GetValidationMessageClient().LayoutOverlay();

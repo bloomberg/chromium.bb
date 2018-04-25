@@ -50,7 +50,7 @@ bool WebTouchEventTraits::IsTouchSequenceEnd(const WebTouchEvent& event) {
 }
 
 void WebTouchEventTraits::ResetType(WebInputEvent::Type type,
-                                    double timestamp_sec,
+                                    base::TimeTicks timestamp,
                                     WebTouchEvent* event) {
   DCHECK(WebInputEvent::IsTouchEventType(type));
   DCHECK(type != WebInputEvent::kTouchScrollStarted);
@@ -59,13 +59,13 @@ void WebTouchEventTraits::ResetType(WebInputEvent::Type type,
   event->dispatch_type = type == WebInputEvent::kTouchCancel
                              ? WebInputEvent::kEventNonBlocking
                              : WebInputEvent::kBlocking;
-  event->SetTimeStampSeconds(timestamp_sec);
+  event->SetTimeStamp(timestamp);
 }
 
 void WebTouchEventTraits::ResetTypeAndTouchStates(WebInputEvent::Type type,
-                                                  double timestamp_sec,
+                                                  base::TimeTicks timestamp,
                                                   WebTouchEvent* event) {
-  ResetType(type, timestamp_sec, event);
+  ResetType(type, timestamp, event);
 
   WebTouchPoint::State newState = WebTouchPoint::kStateUndefined;
   switch (event->GetType()) {

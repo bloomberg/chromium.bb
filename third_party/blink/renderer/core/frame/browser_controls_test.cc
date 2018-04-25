@@ -101,6 +101,7 @@ class BrowserControlsTest : public testing::Test {
                                        int delta_x = 0,
                                        int delta_y = 0) {
     WebGestureEvent event(type, WebInputEvent::kNoModifiers,
+                          WebInputEvent::GetStaticTimeStampForTests(),
                           kWebGestureDeviceTouchscreen);
     event.SetPositionInWidget(FloatPoint(100, 100));
     if (type == WebInputEvent::kGestureScrollUpdate) {

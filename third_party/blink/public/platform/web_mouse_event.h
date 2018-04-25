@@ -32,13 +32,13 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
                 Button button_param,
                 int click_count_param,
                 int modifiers_param,
-                double time_stamp_seconds_param,
+                base::TimeTicks time_stamp_param,
                 WebMenuSourceType menu_source_type_param = kMenuSourceNone,
                 PointerId id_param = kMousePointerId)
       : WebInputEvent(sizeof(WebMouseEvent),
                       type_param,
                       modifiers_param,
-                      time_stamp_seconds_param),
+                      time_stamp_param),
         WebPointerProperties(id_param,
                              PointerType::kMouse,
                              button_param,
@@ -52,12 +52,12 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
 
   WebMouseEvent(Type type_param,
                 int modifiers_param,
-                double time_stamp_seconds_param,
+                base::TimeTicks time_stamp_param,
                 PointerId id_param = kMousePointerId)
       : WebMouseEvent(sizeof(WebMouseEvent),
                       type_param,
                       modifiers_param,
-                      time_stamp_seconds_param,
+                      time_stamp_param,
                       id_param) {}
 
   WebMouseEvent() : WebMouseEvent(sizeof(WebMouseEvent), kMousePointerId) {}
@@ -72,7 +72,7 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
                                       Button button_param,
                                       int click_count_param,
                                       int modifiers_param,
-                                      double time_stamp_seconds_param,
+                                      base::TimeTicks time_stamp_param,
                                       PointerId id_param = kMousePointerId);
 
   BLINK_PLATFORM_EXPORT WebFloatPoint MovementInRootFrame() const;
@@ -90,9 +90,9 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
   WebMouseEvent(unsigned size_param,
                 Type type,
                 int modifiers,
-                double time_stamp_seconds,
+                base::TimeTicks time_stamp,
                 PointerId id_param)
-      : WebInputEvent(size_param, type, modifiers, time_stamp_seconds),
+      : WebInputEvent(size_param, type, modifiers, time_stamp),
         WebPointerProperties(id_param) {}
 
   void FlattenTransformSelf();

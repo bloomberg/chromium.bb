@@ -220,7 +220,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
       auto wheel = SyntheticWebMouseWheelEventBuilder::Build(
           blink::WebMouseWheelEvent::kPhaseChanged);
       base::TimeTicks now = base::TimeTicks::Now();
-      wheel.SetTimeStampSeconds((now - base::TimeTicks()).InSecondsF());
+      wheel.SetTimeStamp(now);
       ui::LatencyInfo wheel_latency(ui::SourceEventType::WHEEL);
       wheel_latency.AddLatencyNumberWithTimestamp(
           ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
@@ -316,7 +316,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
       auto wheel = SyntheticWebMouseWheelEventBuilder::Build(
           blink::WebMouseWheelEvent::kPhaseChanged);
       base::TimeTicks now = base::TimeTicks::Now();
-      wheel.SetTimeStampSeconds((now - base::TimeTicks()).InSecondsF());
+      wheel.SetTimeStamp(now);
       ui::LatencyInfo wheel_latency(ui::SourceEventType::WHEEL);
       wheel_latency.AddLatencyNumberWithTimestamp(
           ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
@@ -413,7 +413,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
       auto scroll = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
           5.f, -5.f, 0, blink::kWebGestureDeviceTouchscreen);
       base::TimeTicks now = base::TimeTicks::Now();
-      scroll.SetTimeStampSeconds((now - base::TimeTicks()).InSecondsF());
+      scroll.SetTimeStamp(now);
       ui::LatencyInfo scroll_latency;
       scroll_latency.AddLatencyNumberWithTimestamp(
           ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
@@ -515,7 +515,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
       auto scroll = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
           5.f, -5.f, 0, blink::kWebGestureDeviceTouchscreen);
       base::TimeTicks now = base::TimeTicks::Now();
-      scroll.SetTimeStampSeconds((now - base::TimeTicks()).InSecondsF());
+      scroll.SetTimeStamp(now);
       ui::LatencyInfo scroll_latency;
       scroll_latency.AddLatencyNumberWithTimestamp(
           ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,

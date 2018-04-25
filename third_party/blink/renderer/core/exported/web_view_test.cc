@@ -5199,7 +5199,7 @@ TEST_P(WebViewTest, FirstInputDelayReported) {
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event1.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
   key_event1.windows_key_code = VKEY_SPACE;
-  key_event1.SetTimeStampSeconds(CurrentTimeTicksInSeconds());
+  key_event1.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(50));
   web_view->HandleInputEvent(WebCoalescedInputEvent(key_event1));
 
@@ -5216,7 +5216,7 @@ TEST_P(WebViewTest, FirstInputDelayReported) {
   key_event2.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
   key_event2.windows_key_code = VKEY_SPACE;
   clock.Advance(TimeDelta::FromMilliseconds(60));
-  key_event2.SetTimeStampSeconds(CurrentTimeTicksInSeconds());
+  key_event2.SetTimeStamp(CurrentTimeTicks());
   web_view->HandleInputEvent(WebCoalescedInputEvent(key_event2));
 
   EXPECT_NEAR(50, interactive_detector->GetFirstInputDelay().InMillisecondsF(),
@@ -5250,7 +5250,7 @@ TEST_P(WebViewTest, PointerDownUpFirstInputDelay) {
   WebPointerEvent pointer_down(
       WebInputEvent::kPointerDown,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
-  pointer_down.SetTimeStampSeconds(CurrentTimeTicksInSeconds());
+  pointer_down.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(50));
   web_view->HandleInputEvent(WebCoalescedInputEvent(pointer_down));
 
@@ -5263,7 +5263,7 @@ TEST_P(WebViewTest, PointerDownUpFirstInputDelay) {
       WebInputEvent::kPointerUp,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
   clock.Advance(TimeDelta::FromMilliseconds(60));
-  pointer_up.SetTimeStampSeconds(CurrentTimeTicksInSeconds());
+  pointer_up.SetTimeStamp(CurrentTimeTicks());
   web_view->HandleInputEvent(WebCoalescedInputEvent(pointer_up));
 
   EXPECT_NEAR(50, interactive_detector->GetFirstInputDelay().InMillisecondsF(),
@@ -5296,7 +5296,7 @@ TEST_P(WebViewTest, PointerDownCancelFirstInputDelay) {
   WebPointerEvent pointer_down(
       WebInputEvent::kPointerDown,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
-  pointer_down.SetTimeStampSeconds(CurrentTimeTicksInSeconds());
+  pointer_down.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(50));
   web_view->HandleInputEvent(WebCoalescedInputEvent(pointer_down));
 
@@ -5309,7 +5309,7 @@ TEST_P(WebViewTest, PointerDownCancelFirstInputDelay) {
       WebInputEvent::kPointerCancel,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
   clock.Advance(TimeDelta::FromMilliseconds(60));
-  pointer_cancel.SetTimeStampSeconds(CurrentTimeTicksInSeconds());
+  pointer_cancel.SetTimeStamp(CurrentTimeTicks());
   web_view->HandleInputEvent(WebCoalescedInputEvent(pointer_cancel));
 
   // We received a pointer cancel, so this is a scroll gesture. No meaningful
@@ -5369,7 +5369,7 @@ TEST_P(WebViewTest, FirstInputDelayExcludesProcessingTime) {
                              WebInputEvent::GetStaticTimeStampForTests());
   key_event.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
   key_event.windows_key_code = VKEY_SPACE;
-  key_event.SetTimeStampSeconds(CurrentTimeTicksInSeconds());
+  key_event.SetTimeStamp(CurrentTimeTicks());
 
   clock.Advance(TimeDelta::FromMilliseconds(5000));
 

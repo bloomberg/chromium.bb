@@ -59,8 +59,8 @@ void WebViewFrameWidget::SetSuppressFrameRequestsWorkaroundFor704763Only(
   return web_view_->SetSuppressFrameRequestsWorkaroundFor704763Only(
       suppress_frame_requests);
 }
-void WebViewFrameWidget::BeginFrame(double last_frame_time_monotonic) {
-  return web_view_->BeginFrame(last_frame_time_monotonic);
+void WebViewFrameWidget::BeginFrame(base::TimeTicks last_frame_time) {
+  return web_view_->BeginFrame(last_frame_time);
 }
 
 void WebViewFrameWidget::UpdateLifecycle(LifecycleUpdate requested_update) {

@@ -156,7 +156,7 @@ int ConvertEventModifiers(int modifiers) {
 InputEventData GetEventWithCommonFieldsAndType(const WebInputEvent& web_event) {
   InputEventData result;
   result.event_type = ConvertEventTypes(web_event);
-  result.event_time_stamp = web_event.TimeStampSeconds();
+  result.event_time_stamp = web_event.TimeStamp().since_origin().InSecondsF();
   return result;
 }
 
@@ -396,7 +396,9 @@ WebTouchEvent* BuildTouchEvent(const InputEventData& event) {
       NOTREACHED();
   }
   WebTouchEventTraits::ResetType(
-      type, event.event_time_stamp, web_event);
+      type,
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(event.event_time_stamp),
+      web_event);
   web_event->touches_length = 0;
 
   // First add all changed touches, then add only the remaining unset
@@ -424,15 +426,19 @@ WebKeyboardEvent* BuildKeyEvent(const InputEventData& event) {
     default:
       NOTREACHED();
   }
-  WebKeyboardEvent* key_event =
-      new WebKeyboardEvent(type, event.event_modifiers, event.event_time_stamp);
+  WebKeyboardEvent* key_event = new WebKeyboardEvent(
+      type, event.event_modifiers,
+      base::TimeTicks() +
+          base::TimeDelta::FromSecondsD(event.event_time_stamp));
   key_event->windows_key_code = event.key_code;
   return key_event;
 }
 
 WebKeyboardEvent* BuildCharEvent(const InputEventData& event) {
   WebKeyboardEvent* key_event = new WebKeyboardEvent(
-      WebInputEvent::kChar, event.event_modifiers, event.event_time_stamp);
+      WebInputEvent::kChar, event.event_modifiers,
+      base::TimeTicks() +
+          base::TimeDelta::FromSecondsD(event.event_time_stamp));
 
   // Make sure to not read beyond the buffer in case some bad code doesn't
   // NULL-terminate it (this is called from plugins).
@@ -470,8 +476,10 @@ WebMouseEvent* BuildMouseEvent(const InputEventData& event) {
     default:
       NOTREACHED();
   }
-  WebMouseEvent* mouse_event =
-      new WebMouseEvent(type, event.event_modifiers, event.event_time_stamp);
+  WebMouseEvent* mouse_event = new WebMouseEvent(
+      type, event.event_modifiers,
+      base::TimeTicks() +
+          base::TimeDelta::FromSecondsD(event.event_time_stamp));
   mouse_event->pointer_type = blink::WebPointerProperties::PointerType::kMouse;
   mouse_event->button = static_cast<WebMouseEvent::Button>(event.mouse_button);
   if (mouse_event->GetType() == WebInputEvent::kMouseMove) {
@@ -491,9 +499,10 @@ WebMouseEvent* BuildMouseEvent(const InputEventData& event) {
 }
 
 WebMouseWheelEvent* BuildMouseWheelEvent(const InputEventData& event) {
-  WebMouseWheelEvent* mouse_wheel_event =
-      new WebMouseWheelEvent(WebInputEvent::kMouseWheel, event.event_modifiers,
-                             event.event_time_stamp);
+  WebMouseWheelEvent* mouse_wheel_event = new WebMouseWheelEvent(
+      WebInputEvent::kMouseWheel, event.event_modifiers,
+      base::TimeTicks() +
+          base::TimeDelta::FromSecondsD(event.event_time_stamp));
   mouse_wheel_event->delta_x = event.wheel_delta.x;
   mouse_wheel_event->delta_y = event.wheel_delta.y;
   mouse_wheel_event->wheel_ticks_x = event.wheel_ticks.x;
@@ -737,7 +746,7 @@ std::vector<std::unique_ptr<WebInputEvent>> CreateSimulatedWebInputEvents(
           WebInputEvent::kRawKeyDown,
           needs_shift_modifier ? WebInputEvent::kShiftKey
                                : WebInputEvent::kNoModifiers,
-          web_char_event->TimeStampSeconds()));
+          web_char_event->TimeStamp()));
       std::unique_ptr<WebKeyboardEvent> key_up_event(new WebKeyboardEvent());
 
       key_down_event->windows_key_code = code;

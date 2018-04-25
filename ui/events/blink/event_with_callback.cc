@@ -4,6 +4,7 @@
 
 #include "ui/events/blink/event_with_callback.h"
 
+#include "base/time/time.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -53,9 +54,9 @@ void EventWithCallback::CoalesceWith(EventWithCallback* other,
 
   // New events get coalesced into older events, and the newer timestamp
   // should always be preserved.
-  const double time_stamp_seconds = other->event().TimeStampSeconds();
+  const base::TimeTicks time_stamp = other->event().TimeStamp();
   Coalesce(other->event(), event_.get());
-  event_->SetTimeStampSeconds(time_stamp_seconds);
+  event_->SetTimeStamp(time_stamp);
 
   // When coalescing two input events, we keep the oldest LatencyInfo
   // since it will represent the longest latency.

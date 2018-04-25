@@ -170,12 +170,9 @@ class WebGestureEvent : public WebInputEvent {
  public:
   WebGestureEvent(Type type,
                   int modifiers,
-                  double time_stamp_seconds,
+                  base::TimeTicks time_stamp,
                   WebGestureDevice device = kWebGestureDeviceUninitialized)
-      : WebInputEvent(sizeof(WebGestureEvent),
-                      type,
-                      modifiers,
-                      time_stamp_seconds),
+      : WebInputEvent(sizeof(WebGestureEvent), type, modifiers, time_stamp),
         resending_plugin_id(-1),
         source_device_(device) {}
 

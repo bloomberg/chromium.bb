@@ -983,10 +983,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
                                                             ui::LatencyInfo());
     WaitAFrame();
 
-    blink::WebGestureEvent scroll_end(
-        blink::WebInputEvent::kGestureScrollEnd,
-        blink::WebInputEvent::kNoModifiers,
-        ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+    blink::WebGestureEvent scroll_end(blink::WebInputEvent::kGestureScrollEnd,
+                                      blink::WebInputEvent::kNoModifiers,
+                                      ui::EventTimeForNow());
     GetRenderWidgetHost()->ForwardGestureEventWithLatencyInfo(
         scroll_end, ui::LatencyInfo());
     WaitAFrame();

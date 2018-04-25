@@ -95,7 +95,7 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
        scrolling_device_ == blink::kWebGestureDeviceTouchpad)) {
     WebGestureEvent scroll_update(
         WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
-        event_sent_for_gesture_ack_->event.TimeStampSeconds(),
+        event_sent_for_gesture_ack_->event.TimeStamp(),
         blink::kWebGestureDeviceTouchpad);
 
     scroll_update.SetPositionInWidget(
@@ -311,8 +311,7 @@ void MouseWheelEventQueue::SendScrollEnd(WebGestureEvent update_event,
   scroll_in_progress_ = false;
 
   WebGestureEvent scroll_end(update_event);
-  scroll_end.SetTimeStampSeconds(
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  scroll_end.SetTimeStamp(ui::EventTimeForNow());
   scroll_end.SetType(WebInputEvent::kGestureScrollEnd);
   scroll_end.resending_plugin_id = -1;
   scroll_end.data.scroll_end.synthetic = synthetic;

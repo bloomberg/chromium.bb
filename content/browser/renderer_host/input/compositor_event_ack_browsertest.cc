@@ -248,8 +248,7 @@ IN_PROC_BROWSER_TEST_F(CompositorEventAckBrowserTest,
   // Send GSB to start scrolling sequence.
   blink::WebGestureEvent gesture_scroll_begin(
       blink::WebGestureEvent::kGestureScrollBegin,
-      blink::WebInputEvent::kNoModifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+      blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
   gesture_scroll_begin.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
   gesture_scroll_begin.data.scroll_begin.delta_hint_units =
       blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
@@ -261,8 +260,7 @@ IN_PROC_BROWSER_TEST_F(CompositorEventAckBrowserTest,
   //  has started.
   blink::WebGestureEvent gesture_fling_start(
       blink::WebGestureEvent::kGestureFlingStart,
-      blink::WebInputEvent::kNoModifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+      blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
   gesture_fling_start.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
   gesture_fling_start.data.fling_start.velocity_x = 0.f;
   gesture_fling_start.data.fling_start.velocity_y = -2000.f;
@@ -283,8 +281,7 @@ IN_PROC_BROWSER_TEST_F(CompositorEventAckBrowserTest,
                                                WebInputEvent::kTouchStart);
   SyntheticWebTouchEvent touch_event;
   touch_event.PressPoint(50, 50);
-  touch_event.SetTimeStampSeconds(
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  touch_event.SetTimeStamp(ui::EventTimeForNow());
   GetWidgetHost()->ForwardTouchEventWithLatencyInfo(touch_event,
                                                     ui::LatencyInfo());
   touch_start_ack_observer.Wait();

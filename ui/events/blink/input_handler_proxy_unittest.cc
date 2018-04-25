@@ -74,10 +74,6 @@ static const InputHandlerProxyTestType test_types[] = {
     ROOT_SCROLL_NORMAL_HANDLER, ROOT_SCROLL_SYNCHRONOUS_HANDLER,
     CHILD_SCROLL_NORMAL_HANDLER, CHILD_SCROLL_SYNCHRONOUS_HANDLER};
 
-double InSecondsF(const base::TimeTicks& time) {
-  return (time - base::TimeTicks()).InSecondsF();
-}
-
 MATCHER_P(WheelEventsMatch, expected, "") {
   return WheelEventsMatch(arg, expected);
 }
@@ -88,8 +84,7 @@ WebGestureEvent CreateFling(base::TimeTicks timestamp,
                             WebFloatPoint point,
                             WebFloatPoint global_point,
                             int modifiers) {
-  WebGestureEvent fling(WebInputEvent::kGestureFlingStart, modifiers,
-                        (timestamp - base::TimeTicks()).InSecondsF(),
+  WebGestureEvent fling(WebInputEvent::kGestureFlingStart, modifiers, timestamp,
                         source_device);
   // Touchpad fling is handled on broswer.
   DCHECK(source_device != blink::kWebGestureDeviceTouchpad);
@@ -456,7 +451,7 @@ class InputHandlerProxyTest
   }
 
   void CancelFling(base::TimeTicks timestamp) {
-    gesture_.SetTimeStampSeconds(InSecondsF(timestamp));
+    gesture_.SetTimeStamp(timestamp);
     gesture_.SetType(WebInputEvent::kGestureFlingCancel);
     EXPECT_EQ(expected_disposition_,
               input_handler_->HandleInputEvent(gesture_));

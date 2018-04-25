@@ -73,10 +73,7 @@ class TranslatedKeyEvent : public ui::KeyEvent {
         type, static_cast<ui::KeyboardCode>(web_event.windows_key_code),
         ui::KeycodeConverter::NativeKeycodeToDomCode(web_event.native_key_code),
         WebEventModifiersToEventFlags(web_event.GetModifiers()),
-        web_event.dom_key,
-        base::TimeTicks() +
-            base::TimeDelta::FromSecondsD(web_event.TimeStampSeconds()),
-        is_char);
+        web_event.dom_key, web_event.TimeStamp(), is_char);
   }
 
  private:
@@ -101,14 +98,7 @@ namespace content {
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
                                                int modifiers,
                                                base::TimeTicks timestamp)
-    : NativeWebKeyboardEvent(type,
-                             modifiers,
-                             ui::EventTimeStampToSeconds(timestamp)) {}
-
-NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
-                                               int modifiers,
-                                               double timestampSeconds)
-    : WebKeyboardEvent(type, modifiers, timestampSeconds),
+    : WebKeyboardEvent(type, modifiers, timestamp),
       os_event(nullptr),
       skip_in_browser(false) {}
 

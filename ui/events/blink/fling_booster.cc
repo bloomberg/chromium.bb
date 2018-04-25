@@ -49,7 +49,8 @@ bool FlingBooster::FilterGestureEventForFlingBoosting(
       return false;
 
     deferred_fling_cancel_time_seconds_ =
-        gesture_event.TimeStampSeconds() + kFlingBoostTimeoutDelaySeconds;
+        gesture_event.TimeStamp().since_origin().InSecondsF() +
+        kFlingBoostTimeoutDelaySeconds;
     return true;
   }
 
@@ -161,15 +162,15 @@ bool FlingBooster::ShouldSuppressScrollForFlingBoosting(
   if (gfx::DotProduct(current_fling_velocity_, dx) <= 0)
     return false;
 
-  const double time_since_last_fling_animate =
-      std::max(0.0, scroll_update_event.TimeStampSeconds() -
-                        last_fling_animate_time_seconds_);
+  const double time_since_last_fling_animate = std::max(
+      0.0, scroll_update_event.TimeStamp().since_origin().InSecondsF() -
+               last_fling_animate_time_seconds_);
   if (time_since_last_fling_animate > kFlingBoostTimeoutDelaySeconds)
     return false;
 
   const double time_since_last_boost_event =
-      scroll_update_event.TimeStampSeconds() -
-      last_fling_boost_event_.TimeStampSeconds();
+      (scroll_update_event.TimeStamp() - last_fling_boost_event_.TimeStamp())
+          .InSecondsF();
   if (time_since_last_boost_event < 0.001)
     return true;
 
@@ -186,7 +187,8 @@ bool FlingBooster::ShouldSuppressScrollForFlingBoosting(
 void FlingBooster::ExtendBoostedFlingTimeout(
     const blink::WebGestureEvent& event) {
   deferred_fling_cancel_time_seconds_ =
-      event.TimeStampSeconds() + kFlingBoostTimeoutDelaySeconds;
+      event.TimeStamp().since_origin().InSecondsF() +
+      kFlingBoostTimeoutDelaySeconds;
   last_fling_boost_event_ = event;
 }
 

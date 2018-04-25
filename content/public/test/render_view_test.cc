@@ -487,8 +487,7 @@ bool RenderViewTest::SimulateElementClick(const std::string& element_id) {
 
 void RenderViewTest::SimulatePointClick(const gfx::Point& point) {
   WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
-                            WebInputEvent::kNoModifiers,
-                            ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+                            WebInputEvent::kNoModifiers, ui::EventTimeForNow());
   mouse_event.button = WebMouseEvent::Button::kLeft;
   mouse_event.SetPositionInWidget(point.x(), point.y());
   mouse_event.click_count = 1;
@@ -511,8 +510,7 @@ bool RenderViewTest::SimulateElementRightClick(const std::string& element_id) {
 
 void RenderViewTest::SimulatePointRightClick(const gfx::Point& point) {
   WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
-                            WebInputEvent::kNoModifiers,
-                            ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+                            WebInputEvent::kNoModifiers, ui::EventTimeForNow());
   mouse_event.button = WebMouseEvent::Button::kRight;
   mouse_event.SetPositionInWidget(point.x(), point.y());
   mouse_event.click_count = 1;
@@ -527,8 +525,7 @@ void RenderViewTest::SimulatePointRightClick(const gfx::Point& point) {
 void RenderViewTest::SimulateRectTap(const gfx::Rect& rect) {
   WebGestureEvent gesture_event(
       WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()),
-      blink::kWebGestureDeviceTouchscreen);
+      ui::EventTimeForNow(), blink::kWebGestureDeviceTouchscreen);
   gesture_event.SetPositionInWidget(gfx::PointF(rect.CenterPoint()));
   gesture_event.data.tap.tap_count = 1;
   gesture_event.data.tap.width = rect.width();
@@ -586,9 +583,8 @@ void RenderViewTest::SimulateUserTypingASCIICharacter(char ascii_character,
     modifiers = blink::WebKeyboardEvent::kShiftKey;
   }
 
-  blink::WebKeyboardEvent event(
-      blink::WebKeyboardEvent::kRawKeyDown, modifiers,
-      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  blink::WebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown, modifiers,
+                                ui::EventTimeForNow());
   event.text[0] = ascii_character;
   ASSERT_TRUE(GetWindowsKeyCode(ascii_character, &event.windows_key_code));
   SendWebKeyboardEvent(event);

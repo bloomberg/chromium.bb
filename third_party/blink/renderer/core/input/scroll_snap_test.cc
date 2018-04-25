@@ -85,8 +85,7 @@ void ScrollSnapTest::ScrollBegin(double x,
                                  double hint_x,
                                  double hint_y) {
   WebGestureEvent event(WebInputEvent::kGestureScrollBegin,
-                        WebInputEvent::kNoModifiers,
-                        CurrentTimeTicksInSeconds(),
+                        WebInputEvent::kNoModifiers, CurrentTimeTicks(),
                         WebGestureDevice::kWebGestureDeviceTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(x, y));
   event.SetPositionInScreen(WebFloatPoint(x, y));
@@ -102,8 +101,7 @@ void ScrollSnapTest::ScrollUpdate(double x,
                                   double delta_x,
                                   double delta_y) {
   WebGestureEvent event(WebInputEvent::kGestureScrollUpdate,
-                        WebInputEvent::kNoModifiers,
-                        CurrentTimeTicksInSeconds(),
+                        WebInputEvent::kNoModifiers, CurrentTimeTicks(),
                         WebGestureDevice::kWebGestureDeviceTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(x, y));
   event.SetPositionInScreen(WebFloatPoint(x, y));
@@ -115,8 +113,7 @@ void ScrollSnapTest::ScrollUpdate(double x,
 
 void ScrollSnapTest::ScrollEnd(double x, double y) {
   WebGestureEvent event(WebInputEvent::kGestureScrollEnd,
-                        WebInputEvent::kNoModifiers,
-                        CurrentTimeTicksInSeconds(),
+                        WebInputEvent::kNoModifiers, CurrentTimeTicks(),
                         WebGestureDevice::kWebGestureDeviceTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(x, y));
   event.SetPositionInScreen(WebFloatPoint(x, y));

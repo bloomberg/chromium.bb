@@ -16,7 +16,7 @@ SyntheticMouseDriver::~SyntheticMouseDriver() {}
 
 void SyntheticMouseDriver::DispatchEvent(SyntheticGestureTarget* target,
                                          const base::TimeTicks& timestamp) {
-  mouse_event_.SetTimeStampSeconds(ConvertTimestampToSeconds(timestamp));
+  mouse_event_.SetTimeStamp(timestamp);
   if (mouse_event_.GetType() != blink::WebInputEvent::kUndefined) {
     target->DispatchInputEventToPlatform(mouse_event_);
     mouse_event_.SetType(blink::WebInputEvent::kUndefined);

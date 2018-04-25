@@ -68,11 +68,11 @@ class WebMouseWheelEvent : public WebMouseEvent {
   // listeners were passive or was forced to be non-blocking.
   DispatchType dispatch_type;
 
-  WebMouseWheelEvent(Type type, int modifiers, double time_stamp_seconds)
+  WebMouseWheelEvent(Type type, int modifiers, base::TimeTicks time_stamp)
       : WebMouseEvent(sizeof(WebMouseWheelEvent),
                       type,
                       modifiers,
-                      time_stamp_seconds,
+                      time_stamp,
                       kMousePointerId),
         delta_x(0.0f),
         delta_y(0.0f),
