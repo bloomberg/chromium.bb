@@ -450,7 +450,8 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_PanXYMainThreadJanky) {
                 gfx::Vector2d(45, 45), kShortJankTime);
 }
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+// Flaky: https://crbug.com/833015
 #define MAYBE_PanXYAtXAreaMainThreadJanky DISABLED_PanXYAtXAreaMainThreadJanky
 #else
 #define MAYBE_PanXYAtXAreaMainThreadJanky PanXYAtXAreaMainThreadJanky
@@ -463,8 +464,8 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
                 gfx::Vector2d(45, 0), kShortJankTime);
 }
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
-    defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+// Flaky: https://crbug.com/833015
 #define MAYBE_PanXYAtYAreaMainThreadJanky DISABLED_PanXYAtYAreaMainThreadJanky
 #else
 #define MAYBE_PanXYAtYAreaMainThreadJanky PanXYAtYAreaMainThreadJanky
