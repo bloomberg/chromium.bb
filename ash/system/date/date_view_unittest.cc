@@ -4,8 +4,6 @@
 
 #include "ash/system/date/date_view.h"
 
-#include "ash/shell.h"
-#include "ash/system/model/system_tray_model.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/views/controls/label.h"
 
@@ -32,8 +30,7 @@ class TimeViewTest : public AshTestBase {
 
   // Creates a time view with horizontal or vertical |clock_layout|.
   void CreateTimeView(TimeView::ClockLayout clock_layout) {
-    time_view_.reset(
-        new TimeView(clock_layout, Shell::Get()->system_tray_model()->clock()));
+    time_view_.reset(new TimeView(clock_layout));
   }
 
  private:
