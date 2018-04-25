@@ -667,7 +667,7 @@ TEST_F(CSPDirectiveListTest, SubsumesBasedOnCSPSourcesOnly) {
 
   for (const auto& test : cases) {
     HeapVector<Member<CSPDirectiveList>> list_b;
-    for (const auto& policy : test.policies) {
+    for (auto* const policy : test.policies) {
       list_b.push_back(
           CreateList(policy, kContentSecurityPolicyHeaderTypeEnforce));
     }
@@ -774,7 +774,7 @@ TEST_F(CSPDirectiveListTest, SubsumesIfNoneIsPresent) {
         CreateList(test.policy_a, kContentSecurityPolicyHeaderTypeEnforce);
 
     HeapVector<Member<CSPDirectiveList>> list_b;
-    for (const auto& policy_b : test.policies_b)
+    for (auto* const policy_b : test.policies_b)
       list_b.push_back(
           CreateList(policy_b, kContentSecurityPolicyHeaderTypeEnforce));
 
@@ -856,7 +856,7 @@ TEST_F(CSPDirectiveListTest, SubsumesPluginTypes) {
         CreateList(test.policy_a, kContentSecurityPolicyHeaderTypeEnforce);
 
     HeapVector<Member<CSPDirectiveList>> list_b;
-    for (const auto& policy_b : test.policies_b)
+    for (auto* const policy_b : test.policies_b)
       list_b.push_back(
           CreateList(policy_b, kContentSecurityPolicyHeaderTypeEnforce));
 
@@ -1001,7 +1001,7 @@ TEST_F(CSPDirectiveListTest, GetSourceVector) {
 
   // Check expectations on the initial set-up.
   HeapVector<Member<CSPDirectiveList>> policy_vector;
-  for (const auto& policy : policies) {
+  for (auto* const policy : policies) {
     policy_vector.push_back(
         CreateList(policy, kContentSecurityPolicyHeaderTypeEnforce));
   }
@@ -1055,7 +1055,7 @@ TEST_F(CSPDirectiveListTest, GetSourceVector) {
   for (const auto& test : cases) {
     // Initial set-up.
     HeapVector<Member<CSPDirectiveList>> policy_vector;
-    for (const auto& policy : policies) {
+    for (auto* const policy : policies) {
       policy_vector.push_back(
           CreateList(policy, kContentSecurityPolicyHeaderTypeEnforce));
     }

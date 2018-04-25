@@ -146,7 +146,7 @@ class LinkSelectionTest : public LinkSelectionTestBase {
     ASSERT_NE(nullptr, link_to_select);
     // We get larger range that we actually want to select, because we need a
     // slightly larger rect to include the last character to the selection.
-    const auto range_to_select =
+    auto* const range_to_select =
         Range::Create(*document, link_to_select, 5, link_to_select, 16);
 
     const auto& selection_rect = range_to_select->BoundingBox();

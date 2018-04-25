@@ -53,7 +53,7 @@ std::ostream& operator<<(std::ostream& os,
       FOR_EACH_BACKSPACE_STATE_MACHINE_STATE(V)
 #undef V
   };
-  const auto& it = std::begin(kTexts) + static_cast<size_t>(state);
+  auto* const* const it = std::begin(kTexts) + static_cast<size_t>(state);
   DCHECK_GE(it, std::begin(kTexts)) << "Unknown backspace value";
   DCHECK_LT(it, std::end(kTexts)) << "Unknown backspace value";
   return os << *it;

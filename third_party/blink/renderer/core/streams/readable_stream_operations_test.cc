@@ -254,7 +254,7 @@ TEST(ReadableStreamOperationsTest,
      CreateReadableStreamWithCustomUnderlyingSourceAndStrategy) {
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
-  auto underlying_source = new TestUnderlyingSource(scope.GetScriptState());
+  auto* underlying_source = new TestUnderlyingSource(scope.GetScriptState());
 
   ScriptValue strategy = ReadableStreamOperations::CreateCountQueuingStrategy(
       scope.GetScriptState(), 10);
@@ -325,7 +325,7 @@ TEST(ReadableStreamOperationsTest,
      UnderlyingSourceShouldHavePendingActivityWhenLockedAndControllerIsActive) {
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
-  auto underlying_source = new TestUnderlyingSource(scope.GetScriptState());
+  auto* underlying_source = new TestUnderlyingSource(scope.GetScriptState());
 
   ScriptValue strategy = ReadableStreamOperations::CreateCountQueuingStrategy(
       scope.GetScriptState(), 10);

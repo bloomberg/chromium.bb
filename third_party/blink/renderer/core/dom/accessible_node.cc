@@ -1022,10 +1022,10 @@ void AccessibleNode::removeChild(AccessibleNode* old_child,
         kInvalidAccessError, "Node to remove is not a child of this node.");
     return;
   }
-  auto ix = std::find_if(children_.begin(), children_.end(),
-                         [old_child](const Member<AccessibleNode> child) {
-                           return child.Get() == old_child;
-                         });
+  auto* ix = std::find_if(children_.begin(), children_.end(),
+                          [old_child](const Member<AccessibleNode> child) {
+                            return child.Get() == old_child;
+                          });
   if (ix == children_.end()) {
     exception_state.ThrowDOMException(
         kInvalidAccessError, "Node to remove is not a child of this node.");

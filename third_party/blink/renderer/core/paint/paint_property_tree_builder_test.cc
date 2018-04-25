@@ -5111,8 +5111,8 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameClipWhenPrinting) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // When not printing, both main and child frame views have content clip.
-  const auto& main_frame_view = GetDocument().View();
-  const auto& child_frame_view = ChildDocument().View();
+  auto* const main_frame_view = GetDocument().View();
+  auto* const child_frame_view = ChildDocument().View();
   ASSERT_NE(nullptr, FrameContentClip(main_frame_view));
   EXPECT_NE(FloatRect(LayoutRect::InfiniteIntRect()),
             FrameContentClip(main_frame_view)->ClipRect().Rect());

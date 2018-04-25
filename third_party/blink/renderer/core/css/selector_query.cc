@@ -285,7 +285,7 @@ void SelectorQuery::ExecuteForTraverseRoot(
 
 bool SelectorQuery::SelectorListMatches(ContainerNode& root_node,
                                         Element& element) const {
-  for (const auto& selector : selectors_) {
+  for (auto* const selector : selectors_) {
     if (SelectorMatches(*selector, element, root_node))
       return true;
   }

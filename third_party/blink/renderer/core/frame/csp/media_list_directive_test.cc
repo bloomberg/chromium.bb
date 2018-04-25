@@ -49,14 +49,14 @@ TEST_F(MediaListDirectiveTest, GetIntersect) {
     HashSet<String> result = a.GetIntersect(b.plugin_types_);
     EXPECT_EQ(result.size(), test.expected.size());
 
-    for (const auto& type : test.expected)
+    for (auto* const type : test.expected)
       EXPECT_TRUE(result.Contains(type));
 
     // If we change the order of `A` and `B`, intersection should not change.
     result = b.GetIntersect(a.plugin_types_);
     EXPECT_EQ(result.size(), test.expected.size());
 
-    for (const auto& type : test.expected)
+    for (auto* const type : test.expected)
       EXPECT_TRUE(result.Contains(type));
 
     // When `A` is empty, there should not be any intersection.
@@ -138,7 +138,7 @@ TEST_F(MediaListDirectiveTest, Subsumes) {
 
   for (const auto& test : cases) {
     HeapVector<Member<MediaListDirective>> policies_b;
-    for (const auto& policy : test.policies_b) {
+    for (auto* const policy : test.policies_b) {
       policies_b.push_back(
           new MediaListDirective("plugin-types", policy, csp.Get()));
     }

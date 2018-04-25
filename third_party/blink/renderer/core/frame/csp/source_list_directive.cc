@@ -408,7 +408,7 @@ bool SourceListDirective::ParseHash(
       {"'csp3-sha-512-", kContentSecurityPolicyHashAlgorithmSha512},
       {"'csp3-ed25519-", kContentSecurityPolicyHashAlgorithmEd25519}};
 
-  const auto supportedPrefixes =
+  auto* const supportedPrefixes =
       RuntimeEnabledFeatures::ExperimentalContentSecurityPolicyFeaturesEnabled()
           ? kSupportedPrefixesExperimental
           : kSupportedPrefixes;

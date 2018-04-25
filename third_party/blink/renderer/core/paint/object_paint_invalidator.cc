@@ -145,7 +145,7 @@ static void InvalidateDisplayItemClients(const LayoutObject& layout_object,
     ObjectPaintInvalidator paint_invalidator(layout_object);
     Vector<NGPaintFragment*> paint_fragments =
         block_flow->GetPaintFragments(layout_object);
-    for (const auto& paint_fragment : paint_fragments)
+    for (auto* const paint_fragment : paint_fragments)
       paint_invalidator.InvalidateDisplayItemClient(*paint_fragment, reason);
     return;
   }

@@ -165,7 +165,7 @@ class CaptureErrorFunction final : public ScriptFunction {
 class DynamicModuleResolverTestNotReached final : public ScriptFunction {
  public:
   static v8::Local<v8::Function> CreateFunction(ScriptState* script_state) {
-    auto not_reached = new DynamicModuleResolverTestNotReached(script_state);
+    auto* not_reached = new DynamicModuleResolverTestNotReached(script_state);
     return not_reached->BindToV8Function();
   }
 
@@ -183,20 +183,21 @@ class DynamicModuleResolverTestNotReached final : public ScriptFunction {
 
 TEST(DynamicModuleResolverTest, ResolveSuccess) {
   V8TestingScope scope;
-  auto modulator =
+  auto* modulator =
       new DynamicModuleResolverTestModulator(scope.GetScriptState());
   modulator->SetExpectedFetchTreeURL(TestDependencyURL());
 
-  auto promise_resolver = ScriptPromiseResolver::Create(scope.GetScriptState());
+  auto* promise_resolver =
+      ScriptPromiseResolver::Create(scope.GetScriptState());
   ScriptPromise promise = promise_resolver->Promise();
 
-  auto capture =
+  auto* capture =
       new CaptureExportedStringFunction(scope.GetScriptState(), "foo");
   promise.Then(capture->Bind(),
                DynamicModuleResolverTestNotReached::CreateFunction(
                    scope.GetScriptState()));
 
-  auto resolver = DynamicModuleResolver::Create(modulator);
+  auto* resolver = DynamicModuleResolver::Create(modulator);
   resolver->ResolveDynamically("./dependency.js", TestReferrerURL(),
                                ReferrerScriptInfo(), promise_resolver);
 
@@ -219,19 +220,20 @@ TEST(DynamicModuleResolverTest, ResolveSuccess) {
 
 TEST(DynamicModuleResolverTest, ResolveSpecifierFailure) {
   V8TestingScope scope;
-  auto modulator =
+  auto* modulator =
       new DynamicModuleResolverTestModulator(scope.GetScriptState());
   modulator->SetExpectedFetchTreeURL(TestDependencyURL());
 
-  auto promise_resolver = ScriptPromiseResolver::Create(scope.GetScriptState());
+  auto* promise_resolver =
+      ScriptPromiseResolver::Create(scope.GetScriptState());
   ScriptPromise promise = promise_resolver->Promise();
 
-  auto capture = new CaptureErrorFunction(scope.GetScriptState());
+  auto* capture = new CaptureErrorFunction(scope.GetScriptState());
   promise.Then(DynamicModuleResolverTestNotReached::CreateFunction(
                    scope.GetScriptState()),
                capture->Bind());
 
-  auto resolver = DynamicModuleResolver::Create(modulator);
+  auto* resolver = DynamicModuleResolver::Create(modulator);
   resolver->ResolveDynamically("invalid-specifier", TestReferrerURL(),
                                ReferrerScriptInfo(), promise_resolver);
 
@@ -243,19 +245,20 @@ TEST(DynamicModuleResolverTest, ResolveSpecifierFailure) {
 
 TEST(DynamicModuleResolverTest, FetchFailure) {
   V8TestingScope scope;
-  auto modulator =
+  auto* modulator =
       new DynamicModuleResolverTestModulator(scope.GetScriptState());
   modulator->SetExpectedFetchTreeURL(TestDependencyURL());
 
-  auto promise_resolver = ScriptPromiseResolver::Create(scope.GetScriptState());
+  auto* promise_resolver =
+      ScriptPromiseResolver::Create(scope.GetScriptState());
   ScriptPromise promise = promise_resolver->Promise();
 
-  auto capture = new CaptureErrorFunction(scope.GetScriptState());
+  auto* capture = new CaptureErrorFunction(scope.GetScriptState());
   promise.Then(DynamicModuleResolverTestNotReached::CreateFunction(
                    scope.GetScriptState()),
                capture->Bind());
 
-  auto resolver = DynamicModuleResolver::Create(modulator);
+  auto* resolver = DynamicModuleResolver::Create(modulator);
   resolver->ResolveDynamically("./dependency.js", TestReferrerURL(),
                                ReferrerScriptInfo(), promise_resolver);
 
@@ -271,19 +274,20 @@ TEST(DynamicModuleResolverTest, FetchFailure) {
 
 TEST(DynamicModuleResolverTest, ExceptionThrown) {
   V8TestingScope scope;
-  auto modulator =
+  auto* modulator =
       new DynamicModuleResolverTestModulator(scope.GetScriptState());
   modulator->SetExpectedFetchTreeURL(TestDependencyURL());
 
-  auto promise_resolver = ScriptPromiseResolver::Create(scope.GetScriptState());
+  auto* promise_resolver =
+      ScriptPromiseResolver::Create(scope.GetScriptState());
   ScriptPromise promise = promise_resolver->Promise();
 
-  auto capture = new CaptureErrorFunction(scope.GetScriptState());
+  auto* capture = new CaptureErrorFunction(scope.GetScriptState());
   promise.Then(DynamicModuleResolverTestNotReached::CreateFunction(
                    scope.GetScriptState()),
                capture->Bind());
 
-  auto resolver = DynamicModuleResolver::Create(modulator);
+  auto* resolver = DynamicModuleResolver::Create(modulator);
   resolver->ResolveDynamically("./dependency.js", TestReferrerURL(),
                                ReferrerScriptInfo(), promise_resolver);
 
@@ -308,20 +312,21 @@ TEST(DynamicModuleResolverTest, ResolveWithNullReferrerScriptSuccess) {
   V8TestingScope scope;
   scope.GetDocument().SetURL(KURL("https://example.com"));
 
-  auto modulator =
+  auto* modulator =
       new DynamicModuleResolverTestModulator(scope.GetScriptState());
   modulator->SetExpectedFetchTreeURL(TestDependencyURL());
 
-  auto promise_resolver = ScriptPromiseResolver::Create(scope.GetScriptState());
+  auto* promise_resolver =
+      ScriptPromiseResolver::Create(scope.GetScriptState());
   ScriptPromise promise = promise_resolver->Promise();
 
-  auto capture =
+  auto* capture =
       new CaptureExportedStringFunction(scope.GetScriptState(), "foo");
   promise.Then(capture->Bind(),
                DynamicModuleResolverTestNotReached::CreateFunction(
                    scope.GetScriptState()));
 
-  auto resolver = DynamicModuleResolver::Create(modulator);
+  auto* resolver = DynamicModuleResolver::Create(modulator);
   resolver->ResolveDynamically("./dependency.js", /* null referrer */ KURL(),
                                ReferrerScriptInfo(), promise_resolver);
 
@@ -346,13 +351,14 @@ TEST(DynamicModuleResolverTest, ResolveWithReferrerScriptInfoBaseURL) {
   V8TestingScope scope;
   scope.GetDocument().SetURL(KURL("https://example.com"));
 
-  auto modulator =
+  auto* modulator =
       new DynamicModuleResolverTestModulator(scope.GetScriptState());
   modulator->SetExpectedFetchTreeURL(
       KURL("https://example.com/correct/dependency.js"));
 
-  auto promise_resolver = ScriptPromiseResolver::Create(scope.GetScriptState());
-  auto resolver = DynamicModuleResolver::Create(modulator);
+  auto* promise_resolver =
+      ScriptPromiseResolver::Create(scope.GetScriptState());
+  auto* resolver = DynamicModuleResolver::Create(modulator);
   KURL wrong_base_url("https://example.com/wrong/bar.js");
   KURL correct_base_url("https://example.com/correct/baz.js");
   resolver->ResolveDynamically(

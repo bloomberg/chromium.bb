@@ -1521,7 +1521,7 @@ Response InspectorNetworkAgent::replayXHR(const String& request_id) {
   String actual_request_id = request_id;
 
   XHRReplayData* xhr_replay_data = resources_data_->XhrReplayData(request_id);
-  auto data = resources_data_->Data(request_id);
+  auto* data = resources_data_->Data(request_id);
   if (!xhr_replay_data || !data)
     return Response::Error("Given id does not correspond to XHR");
 

@@ -23,7 +23,7 @@ const SecurityOrigin* WorkletModulatorImpl::GetSecurityOriginForFetch() {
 }
 
 ModuleScriptFetcher* WorkletModulatorImpl::CreateModuleScriptFetcher() {
-  auto global_scope = ToWorkletGlobalScope(GetExecutionContext());
+  auto* global_scope = ToWorkletGlobalScope(GetExecutionContext());
   return new WorkerOrWorkletModuleScriptFetcher(
       global_scope->ModuleFetchCoordinatorProxy());
 }

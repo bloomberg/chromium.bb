@@ -21,7 +21,7 @@ char MachineStateToChar(TextSegmentationMachineState state) {
       'S',  // NeedFollowingCodeUnit (Switch)
       'F',  // Finished
   };
-  const auto& it = std::begin(kIndicators) + static_cast<size_t>(state);
+  auto* const it = std::begin(kIndicators) + static_cast<size_t>(state);
   DCHECK_GE(it, std::begin(kIndicators)) << "Unknown backspace value";
   DCHECK_LT(it, std::end(kIndicators)) << "Unknown backspace value";
   return *it;

@@ -210,7 +210,7 @@ StyleInvalidator::RecursionData::MatchesCurrentInvalidationSets(
   if (insertion_point_crossing_ && element.IsV0InsertionPoint())
     return true;
 
-  for (const auto& invalidation_set : invalidation_sets_) {
+  for (auto* const invalidation_set : invalidation_sets_) {
     if (invalidation_set->InvalidatesElement(element))
       return true;
   }
@@ -222,7 +222,7 @@ bool StyleInvalidator::RecursionData::MatchesCurrentInvalidationSetsAsSlotted(
     Element& element) const {
   DCHECK(invalidates_slotted_);
 
-  for (const auto& invalidation_set : invalidation_sets_) {
+  for (auto* const invalidation_set : invalidation_sets_) {
     if (!invalidation_set->InvalidatesSlotted())
       continue;
     if (invalidation_set->InvalidatesElement(element))

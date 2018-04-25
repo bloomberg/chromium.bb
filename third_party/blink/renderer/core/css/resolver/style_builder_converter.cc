@@ -792,7 +792,7 @@ GridPosition StyleBuilderConverter::ConvertGridPosition(StyleResolverState&,
   int grid_line_number = 1;
   AtomicString grid_line_name;
 
-  auto it = values.begin();
+  auto* it = values.begin();
   const CSSValue* current_value = it->Get();
   if (current_value->IsIdentifierValue() &&
       ToCSSIdentifierValue(current_value)->GetValueID() == CSSValueSpan) {

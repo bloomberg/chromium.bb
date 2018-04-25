@@ -50,7 +50,7 @@ void ResizeObserver::observe(Element* target) {
   if (observer_map.Contains(this))
     return;  // Already registered.
 
-  auto observation = new ResizeObservation(target, this);
+  auto* observation = new ResizeObservation(target, this);
   observations_.insert(observation);
   observer_map.Set(this, observation);
 
@@ -59,7 +59,7 @@ void ResizeObserver::observe(Element* target) {
 }
 
 void ResizeObserver::unobserve(Element* target) {
-  auto observer_map = target ? target->ResizeObserverData() : nullptr;
+  auto* observer_map = target ? target->ResizeObserverData() : nullptr;
   if (!observer_map)
     return;
   auto observation = observer_map->find(this);
@@ -141,7 +141,7 @@ void ResizeObserver::DeliverObservations() {
       content_rect.SetHeight(AdjustForAbsoluteZoom::AdjustLayoutUnit(
           content_rect.Height(), style));
     }
-    auto entry = new ResizeObserverEntry(observation->Target(), content_rect);
+    auto* entry = new ResizeObserverEntry(observation->Target(), content_rect);
     entries.push_back(entry);
   }
 

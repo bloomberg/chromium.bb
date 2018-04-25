@@ -1698,7 +1698,7 @@ void LocalFrameView::MarkViewportConstrainedObjectsForLayout(
   if (!HasViewportConstrainedObjects() || !(width_changed || height_changed))
     return;
 
-  for (const auto& viewport_constrained_object :
+  for (auto* const viewport_constrained_object :
        *viewport_constrained_objects_) {
     LayoutObject* layout_object = viewport_constrained_object;
     const ComputedStyle& style = layout_object->StyleRef();
@@ -1748,7 +1748,7 @@ void LocalFrameView::ScrollContentsIfNeededRecursive() {
 
 void LocalFrameView::InvalidateBackgroundAttachmentFixedDescendants(
     const LayoutObject& object) {
-  for (const auto& layout_object : background_attachment_fixed_objects_) {
+  for (auto* const layout_object : background_attachment_fixed_objects_) {
     if (object != GetLayoutView() && !layout_object->IsDescendantOf(&object))
       continue;
 
@@ -1791,7 +1791,7 @@ bool LocalFrameView::HasBackgroundAttachmentFixedDescendants(
 
 bool LocalFrameView::InvalidateViewportConstrainedObjects() {
   bool fast_path_allowed = true;
-  for (const auto& viewport_constrained_object :
+  for (auto* const viewport_constrained_object :
        *viewport_constrained_objects_) {
     LayoutObject* layout_object = viewport_constrained_object;
     DCHECK(layout_object->Style()->HasViewportConstrainedPosition() ||
@@ -2085,7 +2085,7 @@ void LocalFrameView::UpdateLayersAndCompositingAfterScrollIfNeeded() {
   // Update sticky position objects which are stuck to the viewport. In order to
   // correctly compute the sticky position offsets the layers must be visited
   // top-down, so start at the 'root' sticky elements and recurse downwards.
-  for (const auto& viewport_constrained_object :
+  for (auto* const viewport_constrained_object :
        *viewport_constrained_objects_) {
     LayoutObject* layout_object = viewport_constrained_object;
     if (layout_object->Style()->GetPosition() != EPosition::kSticky)

@@ -111,7 +111,7 @@ class TestReaction : public CustomElementReaction {
       : CustomElementReaction(nullptr) {
     // TODO(dominicc): Simply pass the initializer list when
     // HeapVector supports initializer lists like Vector.
-    for (auto& command : commands)
+    for (auto* const command : commands)
       commands_.push_back(command);
   }
   ~TestReaction() override = default;

@@ -1634,7 +1634,7 @@ String Internals::idleTimeSpellCheckerState(Document* document,
                                             ->GetSpellChecker()
                                             .GetIdleSpellCheckCallback()
                                             .GetState();
-  const auto& it = std::begin(kTexts) + static_cast<size_t>(state);
+  auto* const* const it = std::begin(kTexts) + static_cast<size_t>(state);
   DCHECK_GE(it, std::begin(kTexts)) << "Unknown state value";
   DCHECK_LT(it, std::end(kTexts)) << "Unknown state value";
   return *it;
@@ -2505,7 +2505,7 @@ void Internals::forceStaleStateForMediaElement(HTMLMediaElement* media_element,
     return;
   }
 
-  if (auto wmp = media_element->GetWebMediaPlayer()) {
+  if (auto* wmp = media_element->GetWebMediaPlayer()) {
     wmp->ForceStaleStateForTesting(
         static_cast<WebMediaPlayer::ReadyState>(target_state));
   }
@@ -2513,7 +2513,7 @@ void Internals::forceStaleStateForMediaElement(HTMLMediaElement* media_element,
 
 bool Internals::isMediaElementSuspended(HTMLMediaElement* media_element) {
   DCHECK(media_element);
-  if (auto wmp = media_element->GetWebMediaPlayer())
+  if (auto* wmp = media_element->GetWebMediaPlayer())
     return wmp->IsSuspendedForTesting();
   return false;
 }

@@ -530,7 +530,7 @@ TEST_F(SourceListDirectiveTest, SubsumesWithSelf) {
     ContentSecurityPolicy* csp_b = SetUpWithOrigin(String(test.origin_b));
 
     HeapVector<Member<SourceListDirective>> vector_b;
-    for (const auto& sources : test.sources_b) {
+    for (auto* const sources : test.sources_b) {
       SourceListDirective* member =
           new SourceListDirective("script-src", sources, csp_b);
       vector_b.push_back(member);
@@ -1296,7 +1296,7 @@ TEST_F(SourceListDirectiveTest, SubsumesListWildcard) {
         SetUpWithOrigin("https://another.test/image.png");
 
     HeapVector<Member<SourceListDirective>> vector_b;
-    for (const auto& sources : test.sources_b) {
+    for (auto* const sources : test.sources_b) {
       SourceListDirective* member =
           new SourceListDirective("script-src", sources, csp_b);
       vector_b.push_back(member);

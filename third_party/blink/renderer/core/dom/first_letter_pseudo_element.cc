@@ -205,7 +205,7 @@ void FirstLetterPseudoElement::UpdateTextFragments() {
       old_text.length() - length);
   remaining_text_layout_object_->DirtyLineBoxes();
 
-  for (auto child = GetLayoutObject()->SlowFirstChild(); child;
+  for (auto* child = GetLayoutObject()->SlowFirstChild(); child;
        child = child->NextSibling()) {
     if (!child->IsText() || !ToLayoutText(child)->IsTextFragment())
       continue;

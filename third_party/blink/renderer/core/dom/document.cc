@@ -1908,7 +1908,7 @@ void Document::PropagateStyleToViewport() {
   Color background_color =
       background_style->VisitedDependentColor(GetCSSPropertyBackgroundColor());
   FillLayer background_layers = background_style->BackgroundLayers();
-  for (auto current_layer = &background_layers; current_layer;
+  for (auto* current_layer = &background_layers; current_layer;
        current_layer = current_layer->Next()) {
     // http://www.w3.org/TR/css3-background/#root-background
     // The root element background always have painting area of the whole
@@ -5910,7 +5910,7 @@ Vector<IconURL> Document::IconURLs(int icon_types_mask) {
 }
 
 Color Document::ThemeColor() const {
-  auto root_element = documentElement();
+  auto* root_element = documentElement();
   if (!root_element)
     return Color();
   for (HTMLMetaElement& meta_element :

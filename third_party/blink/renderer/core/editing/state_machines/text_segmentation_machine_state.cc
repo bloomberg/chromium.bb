@@ -14,7 +14,7 @@ std::ostream& operator<<(std::ostream& os, TextSegmentationMachineState state) {
       "Invalid", "NeedMoreCodeUnit", "NeedFollowingCodeUnit", "Finished",
   };
 
-  const auto& it = std::begin(kTexts) + static_cast<size_t>(state);
+  auto* const* const it = std::begin(kTexts) + static_cast<size_t>(state);
   DCHECK_GE(it, std::begin(kTexts)) << "Unknown state value";
   DCHECK_LT(it, std::end(kTexts)) << "Unknown state value";
   return os << *it;

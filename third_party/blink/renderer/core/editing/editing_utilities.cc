@@ -86,7 +86,7 @@ namespace {
 std::ostream& operator<<(std::ostream& os, PositionMoveType type) {
   static const char* const kTexts[] = {"CodeUnit", "BackwardDeletion",
                                        "GraphemeCluster"};
-  const auto& it = std::begin(kTexts) + static_cast<size_t>(type);
+  auto* const* const it = std::begin(kTexts) + static_cast<size_t>(type);
   DCHECK_GE(it, std::begin(kTexts)) << "Unknown PositionMoveType value";
   DCHECK_LT(it, std::end(kTexts)) << "Unknown PositionMoveType value";
   return os << *it;
