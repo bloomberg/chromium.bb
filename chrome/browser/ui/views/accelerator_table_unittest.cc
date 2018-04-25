@@ -76,7 +76,7 @@ TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
         ash_entry.action == ash::OPEN_FEEDBACK_PAGE ||
 #endif
         ash_entry.action == ash::RESTORE_TAB ||
-        ash_entry.action == ash::NEW_TAB || ash_entry.action == ash::EXIT) {
+        ash_entry.action == ash::NEW_TAB) {
       AcceleratorMapping entry;
       entry.keycode = ash_entry.keycode;
       entry.modifiers = ash_entry.modifiers;
