@@ -437,6 +437,8 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form,
       title += base::UTF16ToUTF8(truncated_label);
       title += "\nparseable name: ";
       title += field.parseable_name;
+      title += "\nsection: ";
+      title += field.section;
       title += "\nfield signature: ";
       title += field.signature;
       title += "\nform signature: ";
