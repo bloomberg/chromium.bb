@@ -7,6 +7,10 @@
 -->
 
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="DropdownPopupWindow" parent="@android:style/Widget.ListPopupWindow">
+        <item name="android:popupBackground">@drawable/dropdown_popup_background</item>
+    </style>
+
     <!-- Buttons -->
     <style name="ButtonCompatOverlay">
         <item name="android:buttonStyle">@style/ButtonCompat</item>
