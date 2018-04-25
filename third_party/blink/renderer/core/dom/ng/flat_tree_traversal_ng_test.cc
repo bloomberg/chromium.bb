@@ -57,7 +57,7 @@ void FlatTreeTraversalNgTest::SetupSampleHTML(const char* main_html,
   Element* shadow_host = ToElement(NodeTraversal::ChildAt(*body, index));
   ShadowRoot& shadow_root = shadow_host->CreateShadowRootInternal();
   shadow_root.SetInnerHTMLFromString(String::FromUTF8(shadow_html));
-  body->UpdateDistribution();
+  body->UpdateDistributionForFlatTreeTraversal();
 }
 
 void FlatTreeTraversalNgTest::SetupDocumentTree(const char* main_html) {
@@ -70,7 +70,7 @@ void FlatTreeTraversalNgTest::AttachV0ShadowRoot(
     const char* shadow_inner_html) {
   ShadowRoot& shadow_root = shadow_host.CreateShadowRootInternal();
   shadow_root.SetInnerHTMLFromString(String::FromUTF8(shadow_inner_html));
-  GetDocument().body()->UpdateDistribution();
+  GetDocument().body()->UpdateDistributionForFlatTreeTraversal();
 }
 
 void FlatTreeTraversalNgTest::AttachOpenShadowRoot(
@@ -79,7 +79,7 @@ void FlatTreeTraversalNgTest::AttachOpenShadowRoot(
   ShadowRoot& shadow_root =
       shadow_host.AttachShadowRootInternal(ShadowRootType::kOpen);
   shadow_root.SetInnerHTMLFromString(String::FromUTF8(shadow_inner_html));
-  GetDocument().body()->UpdateDistribution();
+  GetDocument().body()->UpdateDistributionForFlatTreeTraversal();
 }
 
 namespace {

@@ -708,12 +708,12 @@ bool AXObject::AccessibilityIsIgnored() const {
   }
 
   if (node)
-    node->UpdateDistribution();
+    node->UpdateDistributionForFlatTreeTraversal();
 
   // TODO(aboxhall): Instead of this, propagate inert down through frames
   Document* document = GetDocument();
   while (document && document->LocalOwner()) {
-    document->LocalOwner()->UpdateDistribution();
+    document->LocalOwner()->UpdateDistributionForFlatTreeTraversal();
     document = document->LocalOwner()->ownerDocument();
   }
 

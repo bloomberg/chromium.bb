@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/get_root_node_options.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
+#include "third_party/blink/renderer/core/dom/ng/slot_assignment_engine.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
@@ -621,7 +622,7 @@ Node* Node::cloneNode(bool deep) const {
 }
 
 void Node::normalize() {
-  UpdateDistribution();
+  UpdateDistributionForFlatTreeTraversal();
 
   // Go through the subtree beneath us, normalizing all nodes. This means that
   // any two adjacent text nodes are merged and any empty text nodes are
@@ -775,7 +776,15 @@ bool Node::MayContainLegacyNodeTreeWhereDistributionShouldBeSupported() const {
   return true;
 }
 
-void Node::UpdateDistribution() {
+void Node::UpdateDistributionForUnknownReasons() {
+  UpdateDistributionInternal();
+  // For the sake of safety, call RecalcSlotAssignments as well as
+  // UpdateDistribution().
+  if (isConnected())
+    GetDocument().GetSlotAssignmentEngine().RecalcSlotAssignments();
+}
+
+void Node::UpdateDistributionInternal() {
   if (!MayContainLegacyNodeTreeWhereDistributionShouldBeSupported())
     return;
   // Extra early out to avoid spamming traces.
@@ -2525,7 +2534,7 @@ void Node::DecrementConnectedSubframeCount() {
 }
 
 StaticNodeList* Node::getDestinationInsertionPoints() {
-  UpdateDistribution();
+  UpdateDistributionForLegacyDistributedNodes();
   HeapVector<Member<V0InsertionPoint>, 8> insertion_points;
   CollectDestinationInsertionPoints(*this, insertion_points);
   HeapVector<Member<Node>> filtered_insertion_points;

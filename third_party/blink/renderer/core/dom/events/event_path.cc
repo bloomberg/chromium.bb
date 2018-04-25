@@ -90,7 +90,7 @@ void EventPath::Initialize() {
 void EventPath::CalculatePath() {
   DCHECK(node_);
   DCHECK(node_event_contexts_.IsEmpty());
-  node_->UpdateDistribution();
+  node_->UpdateDistributionForLegacyDistributedNodes();
 
   // For performance and memory usage reasons we want to store the
   // path using as few bytes as possible and with as few allocations

@@ -307,8 +307,8 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
     // Updates distribution because a 'mouseup' event listener can make the
     // tree dirty at dispatchMouseEvent() invocation above.
     // Unless distribution is updated, commonAncestor would hit ASSERT.
-    mouse_down_element_->UpdateDistribution();
-    mouse_release_target.UpdateDistribution();
+    mouse_down_element_->UpdateDistributionForFlatTreeTraversal();
+    mouse_release_target.UpdateDistributionForFlatTreeTraversal();
     click_target_node = mouse_release_target.CommonAncestor(
         *mouse_down_element_, EventHandlingUtil::ParentForClickEvent);
   }

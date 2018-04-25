@@ -2120,7 +2120,7 @@ void Document::UpdateStyleAndLayoutTree() {
   UpdateUseShadowTreesIfNeeded();
 
   // For V0 Shadow DOM or V1 Shadow DOM without IncrementalShadowDOM
-  UpdateDistribution();
+  UpdateDistributionForLegacyDistributedNodes();
 
   if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
     GetSlotAssignmentEngine().RecalcSlotAssignments();
@@ -2487,7 +2487,7 @@ Document::StyleForElementIgnoringPendingStylesheets(Element* element) {
 }
 
 scoped_refptr<ComputedStyle> Document::StyleForPage(int page_index) {
-  UpdateDistribution();
+  UpdateDistributionForUnknownReasons();
   return EnsureStyleResolver().StyleForPage(page_index);
 }
 
@@ -4421,7 +4421,7 @@ void Document::HoveredElementDetached(Element& element) {
   if (element != hover_element_)
     return;
 
-  hover_element_->UpdateDistribution();
+  hover_element_->UpdateDistributionForUnknownReasons();
   hover_element_ = SkipDisplayNoneAncestors(&element);
 
   // If the mouse cursor is not visible, do not clear existing
@@ -4469,7 +4469,7 @@ bool Document::SetFocusedElement(Element* new_focused_element,
   Element* old_focused_element = focused_element_;
   focused_element_ = nullptr;
 
-  UpdateDistribution();
+  UpdateDistributionForFlatTreeTraversal();
   Node* ancestor = (old_focused_element && old_focused_element->isConnected() &&
                     new_focused_element)
                        ? FlatTreeTraversal::CommonAncestor(*old_focused_element,
@@ -6740,7 +6740,7 @@ void Document::UpdateHoverActiveState(const HitTestRequest& request,
         inner_element_in_document->GetDocument().LocalOwner();
   }
 
-  UpdateDistribution();
+  UpdateDistributionForFlatTreeTraversal();
 
   UpdateActiveState(request, inner_element_in_document);
   UpdateHoverState(request, inner_element_in_document);
@@ -6785,8 +6785,7 @@ void Document::UpdateActiveState(const HitTestRequest& request,
   // chain that we froze at the time the mouse went down.
   bool must_be_in_active_chain = request.Active() && request.Move();
 
-  Element* new_element =
-      SkipDisplayNoneAncestors(inner_element_in_document);
+  Element* new_element = SkipDisplayNoneAncestors(inner_element_in_document);
 
   // Now set the active state for our new object up to the root.
   for (Element* curr = new_element; curr;

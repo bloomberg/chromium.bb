@@ -28,7 +28,7 @@ TEST_F(SelectionSampleTest, GetSelectionTextFlatTree) {
       "  </template>"
       "  <b slot=two>tw|o</b><b slot=one>one</b>"
       "</p>");
-  GetDocument().body()->UpdateDistribution();
+  GetDocument().body()->UpdateDistributionForFlatTreeTraversal();
   EXPECT_EQ(
       "<p>"
       "    ze^ro <slot name=\"one\"><b slot=\"one\">one</b></slot> <slot "

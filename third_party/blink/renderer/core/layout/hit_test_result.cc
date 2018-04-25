@@ -252,7 +252,7 @@ String HitTestResult::Title(TextDirection& dir) const {
   // For <area> tags in image maps, walk the tree for the <area>, not the <img>
   // using it.
   if (inner_node_.Get())
-    inner_node_->UpdateDistribution();
+    inner_node_->UpdateDistributionForFlatTreeTraversal();
   for (Node* title_node = inner_node_.Get(); title_node;
        title_node = FlatTreeTraversal::Parent(*title_node)) {
     if (title_node->IsElementNode()) {

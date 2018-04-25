@@ -105,7 +105,7 @@ void HTMLOListElement::setStart(int start) {
 void HTMLOListElement::UpdateItemValues() {
   if (!GetLayoutObject())
     return;
-  UpdateDistribution();
+  UpdateDistributionForFlatTreeTraversal();
   ListItemOrdinal::InvalidateAllItemsForOrderedList(this);
 }
 

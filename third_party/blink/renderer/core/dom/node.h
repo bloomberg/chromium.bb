@@ -349,12 +349,8 @@ class CORE_EXPORT Node : public EventTarget {
 
   // These low-level calls give the caller responsibility for maintaining the
   // integrity of the tree.
-  void SetPreviousSibling(Node* previous) {
-    previous_ = previous;
-  }
-  void SetNextSibling(Node* next) {
-    next_ = next;
-  }
+  void SetPreviousSibling(Node* previous) { previous_ = previous; }
+  void SetNextSibling(Node* next) { next_ = next; }
 
   virtual bool CanContainRangeEndPoint() const { return false; }
 
@@ -481,7 +477,29 @@ class CORE_EXPORT Node : public EventTarget {
   void ClearNeedsStyleInvalidation() { ClearFlag(kNeedsStyleInvalidationFlag); }
   void SetNeedsStyleInvalidation();
 
-  void UpdateDistribution();
+  // This needs to be called before using FlatTreeTraversal.
+  // Once 1) IncrementalShadowDOM is launched, and 2) Shadow DOM v0 is removed,
+  // this function can be removed.
+  void UpdateDistributionForFlatTreeTraversal() {
+    UpdateDistributionInternal();
+  }
+
+  // This is not what you might want to call in most cases.
+  // You should call UpdateDistributionForFlatTreeTraversal, instead.
+  // Only the implementation of v0 shadow trees uses this.
+  void UpdateDistributionForLegacyDistributedNodes() {
+    // The implementation is same to UpdateDistributionForFlatTreeTraversal.
+    UpdateDistributionInternal();
+  }
+
+  // Please don't use this function.
+  // Background: When we investigated the usage of (old) UpdateDistribution,
+  // some caller's intents were unclear. Thus, we had to introduce this funtion
+  // for the sake of safety. If we can figure out the intent of each caller, we
+  // can replace that with calling UpdateDistributionForFlatTreeTraversal (or
+  // just RecalcSlotAssignments()) on a case-by-case basis.
+  void UpdateDistributionForUnknownReasons();
+
   bool MayContainLegacyNodeTreeWhereDistributionShouldBeSupported() const;
 
   void SetIsLink(bool f);
@@ -952,6 +970,7 @@ class CORE_EXPORT Node : public EventTarget {
   bool IsUserActionElementHasFocusWithin() const;
   bool IsUserActionElementWasFocusedByMouse() const;
 
+  void UpdateDistributionInternal();
   void RecalcDistribution();
 
   void SetStyleChange(StyleChangeType);

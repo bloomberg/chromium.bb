@@ -962,7 +962,7 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
   // Matched rules.
   StyleResolver& style_resolver = owner_document->EnsureStyleResolver();
 
-  element->UpdateDistribution();
+  element->UpdateDistributionForUnknownReasons();
   CSSRuleList* matched_rules = style_resolver.PseudoCSSRulesForElement(
       element, element_pseudo_id, StyleResolver::kAllCSSRules);
   *matched_css_rules = BuildArrayForMatchedRuleList(
@@ -2159,7 +2159,7 @@ HeapVector<Member<CSSStyleDeclaration>> InspectorCSSAgent::MatchingStyles(
     element = element->parentElement();
   StyleResolver& style_resolver =
       element->ownerDocument()->EnsureStyleResolver();
-  element->UpdateDistribution();
+  element->UpdateDistributionForUnknownReasons();
 
   HeapVector<Member<CSSStyleRule>> rules =
       FilterDuplicateRules(style_resolver.PseudoCSSRulesForElement(
