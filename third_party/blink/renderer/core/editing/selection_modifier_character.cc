@@ -243,9 +243,6 @@ bool IsAfterAtomicInlineOrLineBreak(const InlineBox& box, int offset) {
   return box.GetLineLayoutItem().IsAtomicInlineLevel();
 }
 
-// TODO(yosin): We should rename local variables and comments in
-// |TraverseInternalAlgorithm()| to generic name based on |Traversal| instead of
-// assuming right-to-left traversal.
 template <typename Strategy, typename Traversal>
 static PositionTemplate<Strategy> TraverseInternalAlgorithm(
     const VisiblePositionTemplate<Strategy>& visible_position) {
@@ -300,39 +297,40 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
         break;
 
       if (Traversal::IsOvershot(offset, *box)) {
-        // Overshot to the left.
-        InlineBox* const prev_box =
+        // Overshot forwardly.
+        InlineBox* const forward_box =
             Traversal::ForwardLeafChildIgnoringLineBreakOf(*box);
-        if (!prev_box) {
-          const PositionTemplate<Strategy>& position_on_left =
+        if (!forward_box) {
+          const PositionTemplate<Strategy>& forward_position =
               Traversal::ForwardVisuallyDistinctCandidateOf(
                   primary_direction, visible_position.DeepEquivalent());
-          if (position_on_left.IsNull())
+          if (forward_position.IsNull())
             return PositionTemplate<Strategy>();
 
-          const InlineBox* box_on_left =
+          const InlineBox* forward_position_box =
               ComputeInlineBoxPosition(PositionWithAffinityTemplate<Strategy>(
-                                           position_on_left, affinity))
+                                           forward_position, affinity))
                   .inline_box;
-          if (box_on_left && box_on_left->Root() == box->Root())
+          if (forward_position_box &&
+              forward_position_box->Root() == box->Root())
             return PositionTemplate<Strategy>();
-          return position_on_left;
+          return forward_position;
         }
 
         // Reposition at the other logical position corresponding to our
         // edge's visual position and go for another round.
-        box = prev_box;
-        offset = Traversal::CaretEndOffsetOf(*prev_box);
+        box = forward_box;
+        offset = Traversal::CaretEndOffsetOf(*forward_box);
         continue;
       }
 
       DCHECK_EQ(offset, Traversal::CaretStartOffsetOf(*box));
 
       unsigned char level = box->BidiLevel();
-      InlineBox* prev_box = Traversal::ForwardLeafChildOf(*box);
+      InlineBox* forward_box = Traversal::ForwardLeafChildOf(*box);
 
       if (box->Direction() == primary_direction) {
-        if (!prev_box) {
+        if (!forward_box) {
           InlineBox* logical_start = nullptr;
           if (Traversal::LogicalStartBoxOf(primary_direction, *box,
                                            logical_start)) {
@@ -341,31 +339,32 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
           }
           break;
         }
-        if (prev_box->BidiLevel() >= level)
+        if (forward_box->BidiLevel() >= level)
           break;
 
-        level = prev_box->BidiLevel();
+        level = forward_box->BidiLevel();
 
-        InlineBox* const next_box = Traversal::FindBackwardBidiRun(*box, level);
-        if (next_box && next_box->BidiLevel() == level)
+        InlineBox* const backward_box =
+            Traversal::FindBackwardBidiRun(*box, level);
+        if (backward_box && backward_box->BidiLevel() == level)
           break;
 
-        box = prev_box;
+        box = forward_box;
         offset = Traversal::CaretEndOffsetOf(*box);
         if (box->Direction() == primary_direction)
           break;
         continue;
       }
 
-      while (prev_box && !prev_box->GetLineLayoutItem().GetNode())
-        prev_box = Traversal::ForwardLeafChildOf(*prev_box);
+      while (forward_box && !forward_box->GetLineLayoutItem().GetNode())
+        forward_box = Traversal::ForwardLeafChildOf(*forward_box);
 
-      if (prev_box) {
-        box = prev_box;
+      if (forward_box) {
+        box = forward_box;
         offset = Traversal::CaretEndOffsetOf(*box);
         if (box->BidiLevel() > level) {
-          prev_box = Traversal::FindForwardBidiRun(*prev_box, level);
-          if (!prev_box || prev_box->BidiLevel() < level)
+          forward_box = Traversal::FindForwardBidiRun(*forward_box, level);
+          if (!forward_box || forward_box->BidiLevel() < level)
             continue;
         }
         break;
