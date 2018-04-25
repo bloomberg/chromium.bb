@@ -24,7 +24,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/switches.h"
 
 using extensions::Extension;
 using extensions::TestManagementPolicyProvider;
@@ -38,14 +37,6 @@ ExtensionSettingsUIBrowserTest::ExtensionSettingsUIBrowserTest()
 }
 
 ExtensionSettingsUIBrowserTest::~ExtensionSettingsUIBrowserTest() {}
-
-void ExtensionSettingsUIBrowserTest::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  WebUIBrowserTest::SetUpCommandLine(command_line);
-  // TODO(devlin): Remove this. See https://crbug.com/816679.
-  command_line->AppendSwitch(
-      extensions::switches::kAllowLegacyExtensionManifests);
-}
 
 void ExtensionSettingsUIBrowserTest::InstallGoodExtension() {
   EXPECT_TRUE(InstallExtension(test_data_dir_.AppendASCII("good.crx")));
