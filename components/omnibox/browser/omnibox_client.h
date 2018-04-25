@@ -28,9 +28,10 @@ namespace gfx {
 class Image;
 }
 
-typedef base::Callback<void(const SkBitmap& bitmap)> BitmapFetchedCallback;
-typedef base::OnceCallback<void(const gfx::Image& favicon)>
-    FaviconFetchedCallback;
+using BitmapFetchedCallback =
+    base::RepeatingCallback<void(const SkBitmap& bitmap)>;
+using FaviconFetchedCallback =
+    base::OnceCallback<void(const gfx::Image& favicon)>;
 
 // Interface that allows the omnibox component to interact with its embedder
 // (e.g., getting information about the current page, retrieving objects
@@ -125,13 +126,15 @@ class OmniboxClient {
                                const BitmapFetchedCallback& on_bitmap_fetched) {
   }
 
-  // Fetches the favicon for |page_url| if the embedder supports fetching
-  // favicons (not all embedders do). Returns the favicon if it is synchronously
-  // available. Otherwise, this method returns an empty gfx::Image and
-  // |on_favicon_fetched| may or may not be called asynchronously later.
-  // |on_favicon_fetched| will never be run synchronously.
+  // These two methods fetch favicons if the embedder supports it. Not all
+  // embedders do. These methods return the favicon synchronously if possible.
+  // Otherwise, they return an empty gfx::Image and |on_favicon_fetched| may or
+  // may not be called asynchronously later. |on_favicon_fetched| will never be
+  // run synchronously.
   virtual gfx::Image GetFaviconForPageUrl(
       const GURL& page_url,
+      FaviconFetchedCallback on_favicon_fetched);
+  virtual gfx::Image GetFaviconForDefaultSearchProvider(
       FaviconFetchedCallback on_favicon_fetched);
 
   // Called when the current autocomplete match has changed.

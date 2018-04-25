@@ -119,13 +119,14 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
                            : AutocompleteMatchType::URL_WHAT_YOU_TYPED;
   if (ui::MaterialDesignController::IsNewerMaterialUi() &&
       AutocompleteMatch::IsSearchType(type)) {
-    // TODO(tommycli): Implement fetching the default search provider and
-    // starting the async request for its favicon here. This will also need
-    // caching to provide good performance.
+    gfx::Image favicon = model_->client()->GetFaviconForDefaultSearchProvider(
+        std::move(on_icon_fetched));
+    if (!favicon.IsEmpty())
+      return favicon.AsImageSkia();
 
-    // Fall through to provide the vector icon until we receive the favicon.
-    // Note that the FaviconService can fail to fetch the favicon, in which
-    // the default vector icon we provide below should remain.
+    // If the client returns an empty favicon, fall through to provide the
+    // generic vector icon. |on_icon_fetched| may or may not be called later.
+    // If it's never called, the vector icon we provide below should remain.
   }
 
   const gfx::VectorIcon& vector_icon =
