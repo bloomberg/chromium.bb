@@ -214,7 +214,7 @@ class PannerNode final : public AudioNode {
                             ExceptionState&);
   PannerHandler& GetPannerHandler() const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   // Uses a 3D cartesian coordinate system
   AudioParam* positionX() const { return position_x_; };

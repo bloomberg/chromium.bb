@@ -27,7 +27,7 @@ class NavigationPreloadManager final : public ScriptWrappable {
   ScriptPromise setHeaderValue(ScriptState*, const String& value);
   ScriptPromise getState(ScriptState*);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit NavigationPreloadManager(ServiceWorkerRegistration*);

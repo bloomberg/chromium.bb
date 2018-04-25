@@ -115,7 +115,7 @@ class OscillatorNode final : public AudioScheduledSourceNode {
   static OscillatorNode* Create(BaseAudioContext*,
                                 const OscillatorOptions&,
                                 ExceptionState&);
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   String type() const;
   void setType(const String&, ExceptionState&);

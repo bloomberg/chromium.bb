@@ -567,9 +567,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   unsigned MaxVertexAttribs() const { return max_vertex_attribs_; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
   // Returns approximate gpu memory allocated per pixel.
   int ExternallyAllocatedBufferCountPerPixel() override;

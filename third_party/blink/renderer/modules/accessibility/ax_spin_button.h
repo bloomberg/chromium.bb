@@ -38,7 +38,7 @@ class AXSpinButton final : public AXMockObject {
  public:
   static AXSpinButton* Create(AXObjectCacheImpl&);
   ~AXSpinButton() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   void SetSpinButtonElement(SpinButtonElement* spin_button) {
     spin_button_element_ = spin_button;

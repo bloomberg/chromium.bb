@@ -52,7 +52,7 @@ class Database final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  virtual ~Database();
+  ~Database() override;
   void Trace(blink::Visitor*) override;
 
   bool OpenAndVerifyVersion(bool set_version_in_new_database,

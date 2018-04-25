@@ -42,7 +42,7 @@ class WebGLUniformLocation final : public ScriptWrappable {
 
   GLint Location() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   WebGLUniformLocation(WebGLProgram*, GLint location);

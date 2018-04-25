@@ -66,7 +66,7 @@ class FakeImageSource : public CanvasImageSource {
     return FloatSize(size_);
   }
   bool IsOpaque() const override { return is_opaque_; }
-  bool IsAccelerated() const { return false; }
+  bool IsAccelerated() const override { return false; }
 
   ~FakeImageSource() override = default;
 

@@ -63,7 +63,7 @@ class MODULES_EXPORT AXTableRow : public AXLayoutObject {
 
  protected:
   AccessibilityRole DetermineAccessibilityRole() final;
-  virtual bool CanSetSelectedAttribute() const { return false; }
+  bool CanSetSelectedAttribute() const override { return false; }
 
  private:
   int row_index_;

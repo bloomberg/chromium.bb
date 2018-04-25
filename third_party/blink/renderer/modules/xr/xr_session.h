@@ -114,7 +114,7 @@ class XRSession final : public EventTargetWithInlineData {
   void OnSelect(XRInputSource*);
 
   void Trace(blink::Visitor*) override;
-  virtual void TraceWrappers(const blink::ScriptWrappableVisitor*) const;
+  void TraceWrappers(const blink::ScriptWrappableVisitor*) const override;
 
  private:
   class XRSessionResizeObserverDelegate;

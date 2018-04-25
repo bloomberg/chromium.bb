@@ -17,10 +17,10 @@ class MODULES_EXPORT AXVirtualObject : public AXObject {
  public:
   AXVirtualObject(AXObjectCacheImpl&, AccessibleNode*);
   ~AXVirtualObject() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   // AXObject overrides.
-  void Detach();
+  void Detach() override;
   AXObject* ComputeParent() const override { return parent_; }
   bool IsVirtualObject() const override { return true; }
   void AddChildren() override;

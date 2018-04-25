@@ -25,7 +25,7 @@ class USBIsochronousInTransferPacket final : public ScriptWrappable {
     return new USBIsochronousInTransferPacket(status, data);
   }
 
-  ~USBIsochronousInTransferPacket() = default;
+  ~USBIsochronousInTransferPacket() override = default;
 
   String status() const { return status_; }
   DOMDataView* data() const { return data_; }

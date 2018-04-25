@@ -32,7 +32,7 @@ class USB final : public EventTargetWithInlineData,
  public:
   static USB* Create(LocalFrame& frame) { return new USB(frame); }
 
-  virtual ~USB();
+  ~USB() override;
 
   void Dispose();
 
@@ -61,13 +61,13 @@ class USB final : public EventTargetWithInlineData,
                        device::mojom::blink::UsbDeviceInfoPtr);
 
   // DeviceManagerClient implementation.
-  void OnDeviceAdded(device::mojom::blink::UsbDeviceInfoPtr);
-  void OnDeviceRemoved(device::mojom::blink::UsbDeviceInfoPtr);
+  void OnDeviceAdded(device::mojom::blink::UsbDeviceInfoPtr) override;
+  void OnDeviceRemoved(device::mojom::blink::UsbDeviceInfoPtr) override;
 
   void OnDeviceManagerConnectionError();
   void OnChooserServiceConnectionError();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   // EventTarget protected overrides.

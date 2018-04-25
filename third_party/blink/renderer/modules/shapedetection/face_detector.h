@@ -23,7 +23,7 @@ class MODULES_EXPORT FaceDetector final : public ShapeDetector {
  public:
   static FaceDetector* Create(ExecutionContext*, const FaceDetectorOptions&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   FaceDetector(ExecutionContext*, const FaceDetectorOptions&);

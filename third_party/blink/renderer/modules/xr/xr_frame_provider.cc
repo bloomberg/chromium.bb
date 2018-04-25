@@ -37,7 +37,7 @@ class XRFrameProviderRequestCallback
     frame_provider_->OnNonExclusiveVSync(high_res_time_ms / 1000.0);
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(frame_provider_);
 
     FrameRequestCallbackCollection::FrameCallback::Trace(visitor);

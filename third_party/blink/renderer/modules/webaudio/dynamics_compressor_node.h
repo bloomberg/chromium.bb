@@ -49,7 +49,7 @@ class MODULES_EXPORT DynamicsCompressorHandler final : public AudioHandler {
       AudioParamHandler& attack,
       AudioParamHandler& release);
 
-  ~DynamicsCompressorHandler();
+  ~DynamicsCompressorHandler() override;
 
   // AudioHandler
   void Process(size_t frames_to_process) override;
@@ -92,7 +92,7 @@ class MODULES_EXPORT DynamicsCompressorNode final : public AudioNode {
   static DynamicsCompressorNode* Create(BaseAudioContext*,
                                         const DynamicsCompressorOptions&,
                                         ExceptionState&);
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   AudioParam* threshold() const;
   AudioParam* knee() const;

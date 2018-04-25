@@ -62,7 +62,7 @@ class MODULES_EXPORT NavigatorContentUtils final
 
   static void ProvideTo(Navigator&, NavigatorContentUtilsClient*);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   void SetClientForTest(NavigatorContentUtilsClient* client) {
     client_ = client;

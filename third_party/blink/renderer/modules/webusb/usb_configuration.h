@@ -34,7 +34,7 @@ class USBConfiguration : public ScriptWrappable {
   String configurationName() const { return Info().configuration_name; }
   HeapVector<Member<USBInterface>> interfaces() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Member<const USBDevice> device_;

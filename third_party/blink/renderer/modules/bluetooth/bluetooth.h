@@ -32,7 +32,7 @@ class Bluetooth final : public ScriptWrappable {
   mojom::blink::WebBluetoothService* Service() { return service_.get(); }
 
   // Interface required by Garbage Collection:
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Bluetooth();

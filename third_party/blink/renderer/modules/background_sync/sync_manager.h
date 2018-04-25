@@ -28,7 +28,7 @@ class SyncManager final : public ScriptWrappable {
   ScriptPromise registerFunction(ScriptState*, const String& tag);
   ScriptPromise getTags(ScriptState*);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   enum { kUnregisteredSyncID = -1 };
 

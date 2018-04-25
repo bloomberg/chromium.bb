@@ -64,7 +64,7 @@ class MODULES_EXPORT AXTableCell : public AXLayoutObject {
   virtual AXObject* ParentTable() const;
   virtual AXObject* ParentRow() const;
   AccessibilityRole DetermineAccessibilityRole() final;
-  virtual bool CanSetSelectedAttribute() const { return false; }
+  bool CanSetSelectedAttribute() const override { return false; }
 
  private:
   bool IsTableHeaderCell() const;

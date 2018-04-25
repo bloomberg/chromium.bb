@@ -37,7 +37,7 @@ class MediaControlTimelineElement : public MediaControlSliderElement {
   void OnControlsShown();
   void OnControlsHidden();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   const char* GetNameForHistograms() const override;

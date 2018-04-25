@@ -30,7 +30,7 @@ class MODULES_EXPORT ServiceWorkerClient : public ScriptWrappable {
                                    std::unique_ptr<WebServiceWorkerClientInfo>);
   static ServiceWorkerClient* Create(const WebServiceWorkerClientInfo&);
 
-  virtual ~ServiceWorkerClient();
+  ~ServiceWorkerClient() override;
 
   // Client.idl
   String url() const { return url_; }

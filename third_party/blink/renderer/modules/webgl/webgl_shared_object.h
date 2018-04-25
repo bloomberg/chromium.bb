@@ -52,9 +52,9 @@ class WebGLSharedObject : public WebGLObject {
   bool Validate(const WebGLContextGroup* context_group,
                 const WebGLRenderingContextBase*) const final;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  protected:
   explicit WebGLSharedObject(WebGLRenderingContextBase*);

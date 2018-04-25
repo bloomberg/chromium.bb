@@ -55,13 +55,13 @@ class MediaControlPanelElement::TransitionEventListener final
     return this == &other;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     EventListener::Trace(visitor);
     visitor->Trace(element_);
   }
 
  private:
-  void handleEvent(ExecutionContext* context, Event* event) {
+  void handleEvent(ExecutionContext* context, Event* event) override {
     if (event->type() == EventTypeNames::transitionend) {
       callback_.Run();
       return;

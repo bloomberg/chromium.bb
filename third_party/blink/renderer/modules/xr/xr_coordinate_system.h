@@ -20,7 +20,7 @@ class XRCoordinateSystem : public ScriptWrappable {
 
  public:
   explicit XRCoordinateSystem(XRSession*);
-  virtual ~XRCoordinateSystem();
+  ~XRCoordinateSystem() override;
 
   DOMFloat32Array* getTransformTo(XRCoordinateSystem*) const;
 
@@ -32,7 +32,7 @@ class XRCoordinateSystem : public ScriptWrappable {
       const TransformationMatrix& base_input_pose,
       const TransformationMatrix& base_pose) = 0;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   const Member<XRSession> session_;

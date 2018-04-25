@@ -55,7 +55,7 @@ class WebGLRenderbuffer final : public WebGLSharedPlatform3DObject {
 
   void SetHasEverBeenBound() { has_ever_been_bound_ = true; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   explicit WebGLRenderbuffer(WebGLRenderingContextBase*);

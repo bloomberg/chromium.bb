@@ -50,7 +50,7 @@ class MODULES_EXPORT MediaMetadata final : public ScriptWrappable {
   // Called by MediaSession to associate or de-associate itself.
   void SetSession(MediaSession*);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   MediaMetadata(ScriptState*, const MediaMetadataInit&, ExceptionState&);

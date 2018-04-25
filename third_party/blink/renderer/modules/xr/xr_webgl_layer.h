@@ -31,7 +31,7 @@ class XRWebGLLayer final : public XRLayer,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  virtual ~XRWebGLLayer();
+  ~XRWebGLLayer() override;
 
   static XRWebGLLayer* Create(
       XRSession*,
@@ -76,8 +76,8 @@ class XRWebGLLayer final : public XRLayer,
       scoped_refptr<StaticBitmapImage>,
       std::unique_ptr<viz::SingleReleaseCallback>) override;
 
-  virtual void Trace(blink::Visitor*);
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   XRWebGLLayer(XRSession*,

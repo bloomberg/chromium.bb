@@ -41,14 +41,14 @@ class USBIsochronousInTransferResult final : public ScriptWrappable {
       const HeapVector<Member<USBIsochronousInTransferPacket>>& packets)
       : data_(data), packets_(packets) {}
 
-  virtual ~USBIsochronousInTransferResult() = default;
+  ~USBIsochronousInTransferResult() override = default;
 
   DOMDataView* data() const { return data_; }
   const HeapVector<Member<USBIsochronousInTransferPacket>>& packets() const {
     return packets_;
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(data_);
     visitor->Trace(packets_);
     ScriptWrappable::Trace(visitor);

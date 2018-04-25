@@ -38,7 +38,7 @@ class MODULES_EXPORT PushEvent final : public ExtendableEvent {
 
   PushMessageData* data();
 
-  virtual void Trace(blink::Visitor* visitor);
+  void Trace(blink::Visitor* visitor) override;
 
  private:
   PushEvent(const AtomicString& type,

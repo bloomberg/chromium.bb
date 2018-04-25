@@ -18,7 +18,7 @@ class BoolAttributeSetter : public AXSparseAttributeSetter {
 
   void Run(const AXObject& obj,
            AXSparseAttributeClient& attribute_map,
-           const AtomicString& value) {
+           const AtomicString& value) override {
     // ARIA booleans are true if not "false" and not specifically undefined.
     bool is_true = !AccessibleNode::IsUndefinedAttrValue(value) &&
                    !EqualIgnoringASCIICase(value, "false");
@@ -36,7 +36,7 @@ class StringAttributeSetter : public AXSparseAttributeSetter {
 
   void Run(const AXObject& obj,
            AXSparseAttributeClient& attribute_map,
-           const AtomicString& value) {
+           const AtomicString& value) override {
     attribute_map.AddStringAttribute(attribute_, value);
   }
 };
@@ -50,7 +50,7 @@ class ObjectAttributeSetter : public AXSparseAttributeSetter {
 
   void Run(const AXObject& obj,
            AXSparseAttributeClient& attribute_map,
-           const AtomicString& value) {
+           const AtomicString& value) override {
     if (value.IsNull() || value.IsEmpty())
       return;
 
@@ -76,7 +76,7 @@ class ObjectVectorAttributeSetter : public AXSparseAttributeSetter {
 
   void Run(const AXObject& obj,
            AXSparseAttributeClient& attribute_map,
-           const AtomicString& value) {
+           const AtomicString& value) override {
     Node* node = obj.GetNode();
     if (!node || !node->IsElementNode())
       return;

@@ -42,7 +42,7 @@ class PresentationConnection : public EventTargetWithInlineData,
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   const String& id() const { return id_; }
   const String& url() const { return url_; }
@@ -170,7 +170,7 @@ class ControllerPresentationConnection final : public PresentationConnection {
                                    const KURL&);
   ~ControllerPresentationConnection() override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   // Initializes Mojo message pipes and registers with the PresentationService.
   void Init();
@@ -201,7 +201,7 @@ class ReceiverPresentationConnection final : public PresentationConnection {
                                  const KURL&);
   ~ReceiverPresentationConnection() override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   void Init(
       mojom::blink::PresentationConnectionPtr controller_connection_ptr,

@@ -55,8 +55,8 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
                                 IDBTransaction* transaction) {
     return new IDBObjectStore(std::move(metadata), transaction);
   }
-  ~IDBObjectStore() = default;
-  void Trace(blink::Visitor*);
+  ~IDBObjectStore() override = default;
+  void Trace(blink::Visitor*) override;
 
   const IDBObjectStoreMetadata& Metadata() const { return *metadata_; }
   const IDBKeyPath& IdbKeyPath() const { return Metadata().key_path; }

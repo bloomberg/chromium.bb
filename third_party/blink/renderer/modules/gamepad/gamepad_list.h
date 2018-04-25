@@ -43,7 +43,7 @@ class GamepadList final : public ScriptWrappable {
   Gamepad* item(unsigned index);
   unsigned length() const { return device::Gamepads::kItemsLengthCap; }
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   GamepadList();

@@ -111,14 +111,14 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   ImageBitmap* TransferToImageBitmap(ScriptState*) final;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   OffscreenCanvasRenderingContext2D(
       OffscreenCanvas*,
       const CanvasContextCreationAttributesCore& attrs);
 
-  virtual void NeedsFinalizeFrame() {
+  void NeedsFinalizeFrame() override {
     CanvasRenderingContext::NeedsFinalizeFrame();
   }
 

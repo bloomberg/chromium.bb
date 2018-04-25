@@ -81,7 +81,7 @@ class MODULES_EXPORT MediaDevices final
     device_change_test_callback_ = std::move(test_callback);
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange);
 

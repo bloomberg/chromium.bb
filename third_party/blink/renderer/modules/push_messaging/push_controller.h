@@ -30,7 +30,7 @@ class PushController final : public GarbageCollected<PushController>,
   }
   static WebPushClient& ClientFrom(LocalFrame*);
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     Supplement<LocalFrame>::Trace(visitor);
   }
 

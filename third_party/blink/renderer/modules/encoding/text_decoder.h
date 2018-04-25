@@ -54,7 +54,7 @@ class TextDecoder final : public ScriptWrappable {
   static TextDecoder* Create(const String& label,
                              const TextDecoderOptions&,
                              ExceptionState&);
-  ~TextDecoder();
+  ~TextDecoder() override;
 
   // Implement the IDL
   String encoding() const;

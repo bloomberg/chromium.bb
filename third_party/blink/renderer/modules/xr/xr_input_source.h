@@ -23,7 +23,7 @@ class XRInputSource : public ScriptWrappable {
   enum PointerOrigin { kOriginHead = 1, kOriginHand = 2, kOriginScreen = 3 };
 
   XRInputSource(XRSession*, uint32_t source_id);
-  virtual ~XRInputSource() = default;
+  ~XRInputSource() override = default;
 
   XRSession* session() const { return session_; }
 
@@ -39,7 +39,7 @@ class XRInputSource : public ScriptWrappable {
   void SetBasePoseMatrix(std::unique_ptr<TransformationMatrix>);
   void SetPointerTransformMatrix(std::unique_ptr<TransformationMatrix>);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   int16_t active_frame_id = -1;
   bool primary_input_pressed = false;

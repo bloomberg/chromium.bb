@@ -67,7 +67,7 @@ class ScriptProcessorHandler final : public AudioHandler {
   void SetChannelCount(unsigned long, ExceptionState&) override;
   void SetChannelCountMode(const String&, ExceptionState&) override;
 
-  virtual unsigned NumberOfOutputChannels() const {
+  unsigned NumberOfOutputChannels() const override {
     return number_of_output_channels_;
   }
 
@@ -144,7 +144,7 @@ class ScriptProcessorNode final
   // ScriptWrappable
   bool HasPendingActivity() const final;
 
-  virtual void Trace(blink::Visitor* visitor) { AudioNode::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) override { AudioNode::Trace(visitor); }
 
  private:
   ScriptProcessorNode(BaseAudioContext&,

@@ -31,7 +31,7 @@ class MODULES_EXPORT PaymentRequestRespondWithObserver final
   void OnResponseFulfilled(const ScriptValue&) override;
   void OnNoResponse() override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   PaymentRequestRespondWithObserver(ExecutionContext*,

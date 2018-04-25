@@ -151,7 +151,9 @@ class GetDatabaseNamesCallback final : public EventListener {
     request_callback_->sendSuccess(std::move(database_names));
   }
 
-  virtual void Trace(blink::Visitor* visitor) { EventListener::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) override {
+    EventListener::Trace(visitor);
+  }
 
  private:
   GetDatabaseNamesCallback(
@@ -189,7 +191,9 @@ class DeleteCallback final : public EventListener {
     request_callback_->sendSuccess();
   }
 
-  virtual void Trace(blink::Visitor* visitor) { EventListener::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) override {
+    EventListener::Trace(visitor);
+  }
 
  private:
   DeleteCallback(std::unique_ptr<DeleteDatabaseCallback> request_callback,
@@ -513,7 +517,7 @@ static std::unique_ptr<IDBKey> IdbKeyFromInspectorObject(
     idb_key = IDBKey::CreateDate(key->getDate(0));
   } else if (type == array) {
     IDBKey::KeyArray key_array;
-    auto array = key->getArray(nullptr);
+    auto* array = key->getArray(nullptr);
     for (size_t i = 0; array && i < array->length(); ++i)
       key_array.push_back(IdbKeyFromInspectorObject(array->get(i)));
     idb_key = IDBKey::CreateArray(std::move(key_array));
@@ -642,7 +646,9 @@ class OpenCursorCallback final : public EventListener {
     request_callback_->sendSuccess(std::move(result_), has_more);
   }
 
-  virtual void Trace(blink::Visitor* visitor) { EventListener::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) override {
+    EventListener::Trace(visitor);
+  }
 
  private:
   OpenCursorCallback(v8_inspector::V8InspectorSession* v8_session,
@@ -885,7 +891,9 @@ class DeleteObjectStoreEntriesListener final : public EventListener {
     request_callback_->sendSuccess();
   }
 
-  virtual void Trace(blink::Visitor* visitor) { EventListener::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) override {
+    EventListener::Trace(visitor);
+  }
 
  private:
   DeleteObjectStoreEntriesListener(
@@ -993,7 +1001,9 @@ class ClearObjectStoreListener final : public EventListener {
     request_callback_->sendSuccess();
   }
 
-  virtual void Trace(blink::Visitor* visitor) { EventListener::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) override {
+    EventListener::Trace(visitor);
+  }
 
  private:
   ClearObjectStoreListener(

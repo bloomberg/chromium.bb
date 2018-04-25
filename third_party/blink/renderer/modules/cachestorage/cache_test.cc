@@ -88,7 +88,7 @@ class ScopedFetcherForTests final
 
   int FetchCount() const { return fetch_count_; }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(response_);
     GlobalFetch::ScopedFetcher::Trace(visitor);
   }

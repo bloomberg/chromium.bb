@@ -28,7 +28,7 @@ class MODULES_EXPORT PaymentManager final : public ScriptWrappable {
   const String& userHint();
   void setUserHint(const String&);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit PaymentManager(ServiceWorkerRegistration*);

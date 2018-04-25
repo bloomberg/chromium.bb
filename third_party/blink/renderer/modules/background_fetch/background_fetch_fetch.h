@@ -21,7 +21,7 @@ class BackgroundFetchFetch : public ScriptWrappable {
   // Web Exposed attribute defined in the IDL file.
   Request* request() const;
 
-  virtual void Trace(blink::Visitor* visitor);
+  void Trace(blink::Visitor* visitor) override;
 
  protected:
   explicit BackgroundFetchFetch(Request* request);

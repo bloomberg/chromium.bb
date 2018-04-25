@@ -45,14 +45,14 @@ class MODULES_EXPORT AXTable : public AXLayoutObject {
  public:
   static AXTable* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AXTable() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   void Init() final;
 
   bool IsAXTable() const final;
   bool IsDataTable() const final;
 
-  AccessibilityRole RoleValue() const;
+  AccessibilityRole RoleValue() const override;
 
   void AddChildren() override;
   void ClearChildren() final;

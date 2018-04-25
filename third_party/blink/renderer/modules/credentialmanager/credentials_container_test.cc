@@ -32,7 +32,7 @@ class MockCredentialManager
 
  public:
   MockCredentialManager() : binding_(this) {}
-  ~MockCredentialManager() {}
+  ~MockCredentialManager() override {}
 
   void Bind(
       ::password_manager::mojom::blink::CredentialManagerRequest request) {
@@ -66,15 +66,14 @@ class MockCredentialManager
   }
 
  protected:
-  virtual void Store(
-      password_manager::mojom::blink::CredentialInfoPtr credential,
-      StoreCallback callback) {}
-  virtual void PreventSilentAccess(PreventSilentAccessCallback callback) {}
-  virtual void Get(
+  void Store(password_manager::mojom::blink::CredentialInfoPtr credential,
+             StoreCallback callback) override {}
+  void PreventSilentAccess(PreventSilentAccessCallback callback) override {}
+  void Get(
       password_manager::mojom::blink::CredentialMediationRequirement mediation,
       bool include_passwords,
       const WTF::Vector<::blink::KURL>& federations,
-      GetCallback callback) {
+      GetCallback callback) override {
     get_callback_ = std::move(callback);
     test::ExitRunLoop();
   }

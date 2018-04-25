@@ -59,7 +59,7 @@ class MIDIMessageEvent final : public Event {
     return EventNames::MIDIMessageEvent;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(data_);
     Event::Trace(visitor);
   }

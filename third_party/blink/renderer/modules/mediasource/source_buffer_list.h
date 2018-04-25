@@ -76,7 +76,7 @@ class SourceBufferList final : public EventTargetWithInlineData,
     return ContextClient::GetExecutionContext();
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   SourceBufferList(ExecutionContext*, MediaElementEventQueue*);

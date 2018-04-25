@@ -65,7 +65,7 @@ class DeprecatedStorageInfo final : public ScriptWrappable {
                     V8StorageQuotaCallback* = nullptr,
                     V8StorageErrorCallback* = nullptr);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   DeprecatedStorageInfo();

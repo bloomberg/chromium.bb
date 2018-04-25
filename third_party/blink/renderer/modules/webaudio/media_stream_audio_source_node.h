@@ -91,7 +91,7 @@ class MediaStreamAudioSourceNode final : public AudioNode,
       const MediaStreamAudioSourceOptions&,
       ExceptionState&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   MediaStream* getMediaStream() const;
 

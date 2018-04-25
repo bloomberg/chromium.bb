@@ -24,7 +24,7 @@ class MODULES_EXPORT DetectedFace final : public ScriptWrappable {
   DOMRect* boundingBox() const;
   const HeapVector<Landmark>& landmarks() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit DetectedFace(DOMRect*);

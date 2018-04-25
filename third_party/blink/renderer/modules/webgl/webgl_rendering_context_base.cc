@@ -7588,7 +7588,7 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
   // ensure its resources were freed.
   DCHECK(!GetDrawingBuffer());
 
-  auto execution_context = Host()->GetTopExecutionContext();
+  auto* execution_context = Host()->GetTopExecutionContext();
   Platform::ContextAttributes attributes = ToPlatformContextAttributes(
       CreationAttributes(), Version(),
       SupportOwnOffscreenSurface(execution_context));

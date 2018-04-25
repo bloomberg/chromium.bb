@@ -681,7 +681,7 @@ class IndexPopulator final : public EventListener {
     return this == &other;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(database_);
     EventListener::Trace(visitor);
   }

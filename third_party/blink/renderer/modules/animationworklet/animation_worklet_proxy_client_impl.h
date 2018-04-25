@@ -45,7 +45,7 @@ class MODULES_EXPORT AnimationWorkletProxyClientImpl final
   // CompositorAnimator:
   // These methods are invoked on the animation worklet thread.
   std::unique_ptr<CompositorMutatorOutputState> Mutate(
-      const CompositorMutatorInputState&);
+      const CompositorMutatorInputState&) override;
 
   static AnimationWorkletProxyClientImpl* FromDocument(Document*);
 

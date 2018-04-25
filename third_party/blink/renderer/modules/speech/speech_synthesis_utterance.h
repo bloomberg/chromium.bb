@@ -85,7 +85,7 @@ class SpeechSynthesisUtterance final
     return platform_utterance_;
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   SpeechSynthesisUtterance(ExecutionContext*, const String&);

@@ -52,8 +52,8 @@ class IDBIndex final : public ScriptWrappable {
                           IDBTransaction* transaction) {
     return new IDBIndex(std::move(metadata), object_store, transaction);
   }
-  ~IDBIndex();
-  void Trace(blink::Visitor*);
+  ~IDBIndex() override;
+  void Trace(blink::Visitor*) override;
 
   // Implement the IDL
   const String& name() const { return Metadata().name; }

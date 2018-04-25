@@ -254,7 +254,7 @@ class MediaControlsImpl::MediaControlsResizeObserverDelegate final
     controls_->NotifyElementSizeChanged(entries[0]->contentRect());
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(controls_);
     ResizeObserver::Delegate::Trace(visitor);
   }
@@ -313,7 +313,7 @@ class MediaControlsImpl::MediaElementMutationCallback
 
   void Disconnect() { observer_->disconnect(); }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(controls_);
     visitor->Trace(observer_);
     MutationObserver::Delegate::Trace(visitor);
@@ -1797,7 +1797,7 @@ void MediaControlsImpl::MaybeRecordElementsDisplayed() const {
   };
 
   // Record which controls are used.
-  for (const auto& element : elements) {
+  for (auto* const element : elements) {
     if (element)
       element->MaybeRecordDisplayed();
   }

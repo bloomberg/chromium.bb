@@ -40,7 +40,7 @@ class DeviceRotationRate final : public ScriptWrappable {
       DeviceMotionData::RotationRate* rotation_rate) {
     return new DeviceRotationRate(rotation_rate);
   }
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   double alpha(bool& is_null) const;
   double beta(bool& is_null) const;

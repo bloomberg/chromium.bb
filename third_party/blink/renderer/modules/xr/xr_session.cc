@@ -74,7 +74,7 @@ class XRSession::XRSessionResizeObserverDelegate final
     session_->UpdateCanvasDimensions(entries[0]->target());
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(session_);
     ResizeObserver::Delegate::Trace(visitor);
   }

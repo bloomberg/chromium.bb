@@ -68,7 +68,7 @@ class MediaControlSliderElement::MediaControlSliderElementResizeObserverDelegate
     element_->NotifyElementSizeChanged();
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(element_);
     ResizeObserver::Delegate::Trace(visitor);
   }

@@ -100,7 +100,7 @@ ScriptPromise WebGLGetBufferSubDataAsync::getBufferSubDataAsync(
     return promise;
   }
 
-  auto callback_object = new WebGLGetBufferSubDataAsyncCallback(
+  auto* callback_object = new WebGLGetBufferSubDataAsyncCallback(
       context, resolver, mapped_data, query_id, dst_data.View(),
       destination_data_ptr, destination_byte_length);
   context->RegisterGetBufferSubDataAsyncCallback(callback_object);

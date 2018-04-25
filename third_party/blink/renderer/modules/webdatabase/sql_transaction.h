@@ -138,8 +138,8 @@ class SQLTransaction final : public ScriptWrappable,
                                 OnSuccessCallback*,
                                 OnErrorCallback*,
                                 bool read_only);
-  ~SQLTransaction();
-  void Trace(blink::Visitor*);
+  ~SQLTransaction() override;
+  void Trace(blink::Visitor*) override;
 
   void PerformPendingCallback();
 

@@ -516,7 +516,7 @@ class CachedResponseFileReaderLoaderClient final
     dispose();
   }
 
-  void DidFail(FileError::ErrorCode error) {
+  void DidFail(FileError::ErrorCode error) override {
     callback_->sendFailure(ProtocolResponse::Error(String::Format(
         "Unable to read the cached response, error code: %d", error)));
     dispose();
@@ -538,7 +538,7 @@ class CachedResponseFileReaderLoaderClient final
     loader_->Start(std::move(blob));
   }
 
-  ~CachedResponseFileReaderLoaderClient() = default;
+  ~CachedResponseFileReaderLoaderClient() override = default;
 
   void dispose() { delete this; }
 

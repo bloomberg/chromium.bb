@@ -35,7 +35,7 @@ class USBDevice : public ScriptWrappable, public ContextLifecycleObserver {
   explicit USBDevice(device::mojom::blink::UsbDeviceInfoPtr,
                      device::mojom::blink::UsbDevicePtr,
                      ExecutionContext*);
-  virtual ~USBDevice();
+  ~USBDevice() override;
 
   const device::mojom::blink::UsbDeviceInfo& Info() const {
     return *device_info_;
@@ -102,7 +102,7 @@ class USBDevice : public ScriptWrappable, public ContextLifecycleObserver {
   // ContextLifecycleObserver interface.
   void ContextDestroyed(ExecutionContext*) override;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   int FindConfigurationIndex(uint8_t configuration_value) const;

@@ -87,9 +87,7 @@ class AudioContextTest : public PageTestBase {
   AudioContextTest() :
       platform_(new ScopedTestingPlatformSupport<AudioContextTestPlatform>) {}
 
-  ~AudioContextTest() {
-    platform_.reset();
-  }
+  ~AudioContextTest() override { platform_.reset(); }
 
   void SetUp() override { PageTestBase::SetUp(IntSize()); }
 

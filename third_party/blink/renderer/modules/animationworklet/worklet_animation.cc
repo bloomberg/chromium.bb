@@ -27,7 +27,7 @@ bool ConvertAnimationEffects(
 
   // Currently we only support KeyframeEffect.
   if (effects.IsAnimationEffect()) {
-    const auto& effect = effects.GetAsAnimationEffect();
+    auto* const effect = effects.GetAsAnimationEffect();
     if (!effect->IsKeyframeEffect()) {
       error_string = "Effect must be a KeyframeEffect object";
       return false;

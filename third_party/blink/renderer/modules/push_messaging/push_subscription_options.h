@@ -38,7 +38,7 @@ class PushSubscriptionOptions final : public ScriptWrappable {
     return application_server_key_;
   }
 
-  void Trace(blink::Visitor* visitor);
+  void Trace(blink::Visitor* visitor) override;
 
  private:
   explicit PushSubscriptionOptions(const WebPushSubscriptionOptions& options);

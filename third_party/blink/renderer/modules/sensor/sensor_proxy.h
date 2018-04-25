@@ -47,7 +47,7 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
                                const String& unsanitized_message) {}
   };
 
-  ~SensorProxy();
+  ~SensorProxy() override;
 
   void Dispose();
 
@@ -78,7 +78,7 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
     return frequency_limits_;
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   friend class SensorProviderProxy;

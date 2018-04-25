@@ -42,7 +42,7 @@ class Gamepad final : public ScriptWrappable {
 
  public:
   static Gamepad* Create() { return new Gamepad; }
-  ~Gamepad();
+  ~Gamepad() override;
 
   typedef Vector<double> DoubleVector;
 
@@ -83,7 +83,7 @@ class Gamepad final : public ScriptWrappable {
   unsigned displayId() const { return display_id_; }
   void SetDisplayId(unsigned val) { display_id_ = val; }
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Gamepad();

@@ -29,7 +29,7 @@ class SetSinkIdResolver : public ScriptPromiseResolver {
   ~SetSinkIdResolver() override = default;
   void StartAsync();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   SetSinkIdResolver(ScriptState*, HTMLMediaElement&, const String& sink_id);

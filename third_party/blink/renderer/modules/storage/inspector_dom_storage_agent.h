@@ -50,7 +50,7 @@ class MODULES_EXPORT InspectorDOMStorageAgent final
   }
 
   ~InspectorDOMStorageAgent() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   void DidDispatchDOMStorageEvent(const String& key,
                                   const String& old_value,

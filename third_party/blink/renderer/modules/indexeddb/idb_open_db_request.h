@@ -45,7 +45,7 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
                                   int64_t version,
                                   IDBRequest::AsyncTraceState metrics);
   ~IDBOpenDBRequest() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   void EnqueueBlocked(int64_t existing_version) override;
   void EnqueueUpgradeNeeded(int64_t old_version,

@@ -177,7 +177,7 @@ void Sensor::InitSensorProxyIfNeeded() {
   if (!document || !document->GetFrame())
     return;
 
-  auto provider = SensorProviderProxy::From(document->GetFrame());
+  auto* provider = SensorProviderProxy::From(document->GetFrame());
   sensor_proxy_ = provider->GetSensorProxy(type_);
 
   if (!sensor_proxy_)
@@ -324,7 +324,7 @@ void Sensor::HandleError(ExceptionCode code,
 
   Deactivate();
 
-  auto error =
+  auto* error =
       DOMException::Create(code, sanitized_message, unsanitized_message);
   pending_error_notification_ = PostCancellableTask(
       *GetExecutionContext()->GetTaskRunner(TaskType::kSensor), FROM_HERE,

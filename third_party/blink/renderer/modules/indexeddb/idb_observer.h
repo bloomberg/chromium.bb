@@ -35,8 +35,8 @@ class MODULES_EXPORT IDBObserver final : public ScriptWrappable {
                ExceptionState&);
   void unobserve(IDBDatabase*, ExceptionState&);
 
-  void Trace(blink::Visitor*);
-  void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   explicit IDBObserver(V8IDBObserverCallback*);

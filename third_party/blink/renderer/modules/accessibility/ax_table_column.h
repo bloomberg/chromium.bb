@@ -58,7 +58,7 @@ class MODULES_EXPORT AXTableColumn final : public AXMockObject {
   void SetParent(AXObject*) override;
 
  protected:
-  virtual bool CanSetSelectedAttribute() const { return false; }
+  bool CanSetSelectedAttribute() const override { return false; }
 
   // Set the role via RoleValue() instead of DetermineAccessibilityRole(),
   // because the role depends on the parent, and DetermineAccessibilityRole()

@@ -82,7 +82,7 @@ class AudioWorkletHandler final : public AudioHandler {
 
   // TODO(): Adjust this if needed based on the result of the process
   // method or the value of |tail_time_|.
-  bool RequiresTailProcessing() const { return true; }
+  bool RequiresTailProcessing() const override { return true; }
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 };
@@ -111,7 +111,7 @@ class AudioWorkletNode final : public AudioNode,
 
   void FireProcessorError();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   AudioWorkletNode(BaseAudioContext&,

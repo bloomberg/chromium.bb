@@ -28,7 +28,7 @@ class MODULES_EXPORT PushMessageData final : public ScriptWrappable {
   static PushMessageData* Create(
       const ArrayBufferOrArrayBufferViewOrUSVString& data);
 
-  virtual ~PushMessageData();
+  ~PushMessageData() override;
 
   DOMArrayBuffer* arrayBuffer() const;
   Blob* blob() const;

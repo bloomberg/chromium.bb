@@ -29,7 +29,7 @@ class CacheStorage final : public ScriptWrappable {
  public:
   static CacheStorage* Create(GlobalFetch::ScopedFetcher*,
                               std::unique_ptr<WebServiceWorkerCacheStorage>);
-  ~CacheStorage();
+  ~CacheStorage() override;
   void Dispose();
 
   ScriptPromise open(ScriptState*, const String& cache_name);
@@ -41,7 +41,7 @@ class CacheStorage final : public ScriptWrappable {
                       const CacheQueryOptions&,
                       ExceptionState&);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   class Callbacks;

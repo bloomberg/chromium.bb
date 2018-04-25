@@ -44,7 +44,7 @@ class MODULES_EXPORT CanMakePaymentEvent final : public ExtendableEvent {
 
   void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   CanMakePaymentEvent(const AtomicString& type,

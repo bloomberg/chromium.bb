@@ -107,7 +107,7 @@ class MODULES_EXPORT MediaStreamTrack
 
   std::unique_ptr<AudioSourceProvider> CreateWebAudioSource();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   friend class CanvasCaptureMediaStreamTrack;

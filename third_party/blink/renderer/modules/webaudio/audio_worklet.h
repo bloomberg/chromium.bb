@@ -28,7 +28,7 @@ class MODULES_EXPORT AudioWorklet final : public Worklet {
   // |nullptr|.
   static AudioWorklet* Create(BaseAudioContext*);
 
-  ~AudioWorklet() = default;
+  ~AudioWorklet() override = default;
 
   void CreateProcessor(AudioWorkletHandler*,
                        MessagePortChannel,

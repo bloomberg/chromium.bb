@@ -40,7 +40,7 @@ class DeviceAcceleration final : public ScriptWrappable {
       DeviceMotionData::Acceleration* acceleration) {
     return new DeviceAcceleration(acceleration);
   }
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   double x(bool& is_null) const;
   double y(bool& is_null) const;

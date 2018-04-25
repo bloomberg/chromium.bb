@@ -29,7 +29,7 @@ class MODULES_EXPORT CanMakePaymentRespondWithObserver final
   void OnResponseFulfilled(const ScriptValue&) override;
   void OnNoResponse() override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 };
 
 }  // namespace blink

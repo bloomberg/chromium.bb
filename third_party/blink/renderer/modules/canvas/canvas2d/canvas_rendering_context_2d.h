@@ -193,10 +193,10 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   void WillDrawImage(CanvasImageSource*) const final;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
-  virtual void NeedsFinalizeFrame() {
+  void NeedsFinalizeFrame() override {
     CanvasRenderingContext::NeedsFinalizeFrame();
   }
 
@@ -248,7 +248,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void SetIsHidden(bool) override;
   void Stop() final;
 
-  virtual bool IsTransformInvertible() const;
+  bool IsTransformInvertible() const override;
 
   WebLayer* PlatformLayer() const override;
   bool IsCanvas2DBufferValid() const override;

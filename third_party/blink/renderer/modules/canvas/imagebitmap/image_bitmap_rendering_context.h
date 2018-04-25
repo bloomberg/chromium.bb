@@ -44,7 +44,7 @@ class MODULES_EXPORT ImageBitmapRenderingContext final
 
   void SetCanvasGetContextResult(RenderingContext&) final;
 
-  virtual ~ImageBitmapRenderingContext();
+  ~ImageBitmapRenderingContext() override;
 
  private:
   ImageBitmapRenderingContext(CanvasRenderingContextHost*,

@@ -49,7 +49,7 @@ class Crypto final : public ScriptWrappable {
 
   SubtleCrypto* subtle();
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Crypto() = default;

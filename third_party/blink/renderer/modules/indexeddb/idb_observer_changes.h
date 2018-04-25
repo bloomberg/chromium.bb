@@ -28,7 +28,7 @@ class IDBObserverChanges final : public ScriptWrappable {
       const HeapVector<Member<IDBObservation>>& observations,
       const WebVector<int32_t>& observation_indices);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   // Implement IDL
   IDBTransaction* transaction() const { return transaction_.Get(); }

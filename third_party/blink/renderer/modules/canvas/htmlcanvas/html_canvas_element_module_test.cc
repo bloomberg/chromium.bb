@@ -18,7 +18,7 @@ namespace blink {
 
 class HTMLCanvasElementModuleTest : public PageTestBase {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     Page::PageClients page_clients;
     FillWithEmptyClients(page_clients);
     SetupPageWithClients(&page_clients);

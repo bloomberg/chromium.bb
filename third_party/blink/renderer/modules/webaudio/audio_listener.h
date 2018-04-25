@@ -49,7 +49,7 @@ class AudioListener : public ScriptWrappable {
   static AudioListener* Create(BaseAudioContext& context) {
     return new AudioListener(context);
   }
-  virtual ~AudioListener();
+  ~AudioListener() override;
 
   // Location of the listener
   AudioParam* positionX() const { return position_x_; };
@@ -128,7 +128,7 @@ class AudioListener : public ScriptWrappable {
   bool IsHRTFDatabaseLoaded();
   void WaitForHRTFDatabaseLoaderThreadCompletion();
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   AudioListener(BaseAudioContext&);

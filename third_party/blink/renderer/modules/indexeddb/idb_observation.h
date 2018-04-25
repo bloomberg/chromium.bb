@@ -28,9 +28,9 @@ class IDBObservation final : public ScriptWrappable {
   // Consumes the WebIDBObservation.
   static IDBObservation* Create(WebIDBObservation, v8::Isolate*);
 
-  ~IDBObservation();
+  ~IDBObservation() override;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   // Implement the IDL
   ScriptValue key(ScriptState*);

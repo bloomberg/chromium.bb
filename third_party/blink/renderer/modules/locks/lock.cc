@@ -32,7 +32,7 @@ class Lock::ThenFunction final : public ScriptFunction {
     return self->BindToV8Function();
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(lock_);
     ScriptFunction::Trace(visitor);
   }

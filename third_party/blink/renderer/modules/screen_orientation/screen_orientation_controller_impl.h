@@ -47,7 +47,7 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
   void SetScreenOrientationAssociatedPtrForTests(
       ScreenOrientationAssociatedPtr);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   friend class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest;

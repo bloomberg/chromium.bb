@@ -28,7 +28,7 @@ class VRPose final : public ScriptWrappable {
 
   void SetPose(const device::mojom::blink::VRPosePtr&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   VRPose();

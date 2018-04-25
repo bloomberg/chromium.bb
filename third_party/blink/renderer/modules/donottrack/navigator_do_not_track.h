@@ -52,7 +52,7 @@ class NavigatorDoNotTrack final : public GarbageCollected<NavigatorDoNotTrack>,
 
   String doNotTrack();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit NavigatorDoNotTrack(Navigator&);

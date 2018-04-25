@@ -58,7 +58,7 @@ class AudioWorkletMessagingProxy final : public ThreadedWorkletMessagingProxy {
   // Returns a WorkerThread object backs the AudioWorkletThread instance.
   WorkerThread* GetBackingWorkerThread();
 
-  void Trace(Visitor*);
+  void Trace(Visitor*) override;
 
  private:
   // Implements ThreadedWorkletMessagingProxy.

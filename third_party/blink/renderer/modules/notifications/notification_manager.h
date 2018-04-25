@@ -78,7 +78,7 @@ class NotificationManager final
       const WebString& filter_tag,
       ScriptPromiseResolver* resolver);
 
-  virtual void Trace(blink::Visitor* visitor);
+  void Trace(blink::Visitor* visitor) override;
 
  private:
   explicit NotificationManager(ExecutionContext& context);

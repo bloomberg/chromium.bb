@@ -58,7 +58,7 @@ class NavigatorStorageQuota final
   DeprecatedStorageQuota* webkitPersistentStorage() const;
   StorageManager* storage() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit NavigatorStorageQuota(Navigator&);

@@ -89,8 +89,8 @@ TEST_F(RemotePlaybackTest, PromptCancelledRejectsWithNotAllowedError) {
   RemotePlayback* remote_playback =
       HTMLMediaElementRemotePlayback::remote(*element);
 
-  auto resolve = MockFunction::Create(scope.GetScriptState());
-  auto reject = MockFunction::Create(scope.GetScriptState());
+  auto* resolve = MockFunction::Create(scope.GetScriptState());
+  auto* reject = MockFunction::Create(scope.GetScriptState());
 
   EXPECT_CALL(*resolve, Call(testing::_)).Times(0);
   EXPECT_CALL(*reject, Call(testing::_)).Times(1);
@@ -120,8 +120,8 @@ TEST_F(RemotePlaybackTest, PromptConnectedRejectsWhenCancelled) {
   RemotePlayback* remote_playback =
       HTMLMediaElementRemotePlayback::remote(*element);
 
-  auto resolve = MockFunction::Create(scope.GetScriptState());
-  auto reject = MockFunction::Create(scope.GetScriptState());
+  auto* resolve = MockFunction::Create(scope.GetScriptState());
+  auto* reject = MockFunction::Create(scope.GetScriptState());
 
   EXPECT_CALL(*resolve, Call(testing::_)).Times(0);
   EXPECT_CALL(*reject, Call(testing::_)).Times(1);
@@ -153,8 +153,8 @@ TEST_F(RemotePlaybackTest, PromptConnectedResolvesWhenDisconnected) {
   RemotePlayback* remote_playback =
       HTMLMediaElementRemotePlayback::remote(*element);
 
-  auto resolve = MockFunction::Create(scope.GetScriptState());
-  auto reject = MockFunction::Create(scope.GetScriptState());
+  auto* resolve = MockFunction::Create(scope.GetScriptState());
+  auto* reject = MockFunction::Create(scope.GetScriptState());
 
   EXPECT_CALL(*resolve, Call(testing::_)).Times(1);
   EXPECT_CALL(*reject, Call(testing::_)).Times(0);
@@ -187,11 +187,11 @@ TEST_F(RemotePlaybackTest, StateChangeEvents) {
   RemotePlayback* remote_playback =
       HTMLMediaElementRemotePlayback::remote(*element);
 
-  auto connecting_handler =
+  auto* connecting_handler =
       new testing::StrictMock<MockEventListenerForRemotePlayback>();
-  auto connect_handler =
+  auto* connect_handler =
       new testing::StrictMock<MockEventListenerForRemotePlayback>();
-  auto disconnect_handler =
+  auto* disconnect_handler =
       new testing::StrictMock<MockEventListenerForRemotePlayback>();
 
   remote_playback->addEventListener(EventTypeNames::connecting,
@@ -306,8 +306,8 @@ TEST_F(RemotePlaybackTest, PromptThrowsWhenBackendDisabled) {
   RemotePlayback* remote_playback =
       HTMLMediaElementRemotePlayback::remote(*element);
 
-  auto resolve = MockFunction::Create(scope.GetScriptState());
-  auto reject = MockFunction::Create(scope.GetScriptState());
+  auto* resolve = MockFunction::Create(scope.GetScriptState());
+  auto* reject = MockFunction::Create(scope.GetScriptState());
 
   EXPECT_CALL(*resolve, Call(testing::_)).Times(0);
   EXPECT_CALL(*reject, Call(testing::_)).Times(1);

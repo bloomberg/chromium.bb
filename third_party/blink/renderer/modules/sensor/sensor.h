@@ -61,7 +61,7 @@ class Sensor : public EventTargetWithInlineData,
   // ActiveScriptWrappable overrides.
   bool HasPendingActivity() const override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   Sensor(ExecutionContext*,

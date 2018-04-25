@@ -81,9 +81,9 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   void SetCanvasGetContextResult(RenderingContext&) final;
   void SetOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   WebGLRenderingContext(CanvasRenderingContextHost*,

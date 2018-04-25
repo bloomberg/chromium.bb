@@ -42,7 +42,7 @@ class SpeechRecognitionResultList : public ScriptWrappable {
   unsigned length() { return results_.size(); }
   SpeechRecognitionResult* item(unsigned index);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit SpeechRecognitionResultList(

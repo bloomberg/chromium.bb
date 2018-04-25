@@ -72,7 +72,7 @@ class Storage final : public ScriptWrappable, public ContextClient {
   void NamedPropertyEnumerator(Vector<String>&, ExceptionState&);
   bool NamedPropertyQuery(const AtomicString&, ExceptionState&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Storage(LocalFrame*, StorageArea*);

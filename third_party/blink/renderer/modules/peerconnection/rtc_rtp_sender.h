@@ -47,7 +47,7 @@ class RTCRtpSender final : public ScriptWrappable {
   void SetTrack(MediaStreamTrack*);
   MediaStreamVector streams() const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Member<RTCPeerConnection> pc_;

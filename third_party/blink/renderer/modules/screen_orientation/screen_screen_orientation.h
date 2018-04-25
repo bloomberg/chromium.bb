@@ -27,7 +27,7 @@ class ScreenScreenOrientation final
 
   static ScreenOrientation* orientation(ScriptState*, Screen&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Member<ScreenOrientation> orientation_;

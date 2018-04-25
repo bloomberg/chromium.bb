@@ -77,7 +77,7 @@ class CryptoResultImpl::Resolver final : public ScriptPromiseResolver {
     ScriptPromiseResolver::ContextDestroyed(destroyed_context);
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(result_);
     ScriptPromiseResolver::Trace(visitor);
   }

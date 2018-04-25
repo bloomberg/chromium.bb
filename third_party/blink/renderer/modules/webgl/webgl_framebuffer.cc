@@ -39,7 +39,7 @@ class WebGLRenderbufferAttachment final
  public:
   static WebGLFramebuffer::WebGLAttachment* Create(WebGLRenderbuffer*);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
   void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappers(renderbuffer_);
   }
@@ -113,7 +113,7 @@ class WebGLTextureAttachment final : public WebGLFramebuffer::WebGLAttachment {
                                                    GLint level,
                                                    GLint layer);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
   void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappers(texture_);
   }

@@ -69,7 +69,7 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
   static const char kIsolatedPathPrefix[];
   static const char kExternalPathPrefix[];
 
-  virtual ~DOMFileSystemBase();
+  ~DOMFileSystemBase() override;
 
   // These are called when a new callback is created and resolved in
   // FileSystem API, so that subclasses can track the number of pending
@@ -156,7 +156,7 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
                     SynchronousType = kAsynchronous);
   bool WaitForAdditionalResult(int callbacks_id);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   DOMFileSystemBase(ExecutionContext*,

@@ -30,7 +30,7 @@ class ServiceWorkerRegistrationPush final
   static PushManager* pushManager(ServiceWorkerRegistration& registration);
   PushManager* pushManager();
 
-  virtual void Trace(blink::Visitor* visitor);
+  void Trace(blink::Visitor* visitor) override;
 
  private:
   explicit ServiceWorkerRegistrationPush(

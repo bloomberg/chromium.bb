@@ -131,7 +131,7 @@ class MODULES_EXPORT Notification final
   // ScriptWrappable interface.
   bool HasPendingActivity() const final;
 
-  virtual void Trace(blink::Visitor* visitor);
+  void Trace(blink::Visitor* visitor) override;
 
  protected:
   // EventTarget interface.

@@ -31,7 +31,7 @@ class BudgetService final : public ScriptWrappable {
     return new BudgetService(interface_provider);
   }
 
-  ~BudgetService();
+  ~BudgetService() override;
 
   // Implementation of the Budget API interface.
   ScriptPromise getCost(ScriptState* script_state,

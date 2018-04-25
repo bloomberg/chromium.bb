@@ -24,7 +24,7 @@ class XRDevicePose final : public ScriptWrappable {
   DOMFloat32Array* poseModelMatrix() const;
   DOMFloat32Array* getViewMatrix(XRView*);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   const Member<XRSession> session_;

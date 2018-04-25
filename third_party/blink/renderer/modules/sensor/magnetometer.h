@@ -23,7 +23,7 @@ class Magnetometer final : public Sensor {
   double y(bool& is_null) const;
   double z(bool& is_null) const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Magnetometer(ExecutionContext*, const SpatialSensorOptions&, ExceptionState&);

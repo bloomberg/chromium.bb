@@ -98,7 +98,7 @@ void AudioWorkletHandler::Process(size_t frames_to_process) {
       output_buses.push_back(Output(i).Bus());
 
     for (const auto& param_name : param_value_map_.Keys()) {
-      const auto param_handler = param_handler_map_.at(param_name);
+      auto* const param_handler = param_handler_map_.at(param_name);
       AudioFloatArray* param_values = param_value_map_.at(param_name);
       if (param_handler->HasSampleAccurateValues()) {
         param_handler->CalculateSampleAccurateValues(

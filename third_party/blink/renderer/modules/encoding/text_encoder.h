@@ -49,7 +49,7 @@ class TextEncoder final : public ScriptWrappable {
 
  public:
   static TextEncoder* Create(ExecutionContext*, ExceptionState&);
-  ~TextEncoder();
+  ~TextEncoder() override;
 
   // Implement the IDL
   String encoding() const;

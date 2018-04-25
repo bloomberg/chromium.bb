@@ -52,7 +52,7 @@ class MODULES_EXPORT DOMError : public ScriptWrappable {
     return new DOMError(DOMException::GetErrorName(ec), message);
   }
 
-  virtual ~DOMError();
+  ~DOMError() override;
 
   const String& name() const { return name_; }
   const String& message() const { return message_; }

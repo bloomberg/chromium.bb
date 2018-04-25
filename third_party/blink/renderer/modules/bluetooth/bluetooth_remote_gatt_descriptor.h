@@ -47,7 +47,7 @@ class BluetoothRemoteGATTDescriptor final : public ScriptWrappable {
   ScriptPromise writeValue(ScriptState*, const DOMArrayPiece&);
 
   // Interface required by garbage collection.
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   friend class DescriptorReadValueCallback;

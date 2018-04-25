@@ -57,7 +57,7 @@ class MODULES_EXPORT CryptoResultImpl final : public CryptoResult {
  public:
   static CryptoResultImpl* Create(ScriptState*);
 
-  ~CryptoResultImpl();
+  ~CryptoResultImpl() override;
 
   void CompleteWithError(WebCryptoErrorType, const WebString&) override;
   void CompleteWithBuffer(const void* bytes, unsigned bytes_size) override;
@@ -73,7 +73,7 @@ class MODULES_EXPORT CryptoResultImpl final : public CryptoResult {
 
   WebCryptoResult Result() { return WebCryptoResult(this, cancel_.get()); }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   class Resolver;

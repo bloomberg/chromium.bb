@@ -28,7 +28,7 @@ class MODULES_EXPORT PresentationRequest final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  ~PresentationRequest() = default;
+  ~PresentationRequest() override = default;
 
   static PresentationRequest* Create(ExecutionContext*,
                                      const String& url,
@@ -54,7 +54,7 @@ class MODULES_EXPORT PresentationRequest final
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connectionavailable);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   // EventTarget implementation.

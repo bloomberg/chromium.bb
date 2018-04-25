@@ -40,7 +40,7 @@ class LockManager final : public ScriptWrappable,
 
   ScriptPromise query(ScriptState*, ExceptionState&);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   // Wrapper tracing is needed for callbacks. The reference chain is
   // NavigatorLocksImpl -> LockManager -> LockRequestImpl ->

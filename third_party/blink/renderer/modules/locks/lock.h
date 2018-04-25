@@ -32,7 +32,7 @@ class Lock final : public ScriptWrappable, public PausableObject {
 
   ~Lock() override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
   EAGERLY_FINALIZE();
 
   // Lock.idl

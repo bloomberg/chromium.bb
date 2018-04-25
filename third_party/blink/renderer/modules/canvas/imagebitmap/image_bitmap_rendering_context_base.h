@@ -21,9 +21,9 @@ class MODULES_EXPORT ImageBitmapRenderingContextBase
  public:
   ImageBitmapRenderingContextBase(CanvasRenderingContextHost*,
                                   const CanvasContextCreationAttributesCore&);
-  virtual ~ImageBitmapRenderingContextBase();
+  ~ImageBitmapRenderingContextBase() override;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   HTMLCanvasElement* canvas() {
     DCHECK(!Host() || !Host()->IsOffscreenCanvas());

@@ -39,7 +39,7 @@ class PresentationConnectionCloseEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   PresentationConnectionCloseEvent(const AtomicString& event_type,
