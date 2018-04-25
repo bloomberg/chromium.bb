@@ -10,11 +10,11 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_browsertest_base.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/session_manager/core/session_manager.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user_manager.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace file_manager {
 
@@ -602,8 +602,13 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
   // This is used for preparing all accounts in PRE_ test setup, and for testing
   // actual login behavior.
   void AddAllUsers() {
-    for (size_t i = 0; i < arraysize(kTestAccounts); ++i)
+    for (size_t i = 0; i < arraysize(kTestAccounts); ++i) {
+      // The primary account was already set up in SetUpOnMainThread, so skip it
+      // here.
+      if (i == PRIMARY_ACCOUNT_INDEX)
+        continue;
       AddUser(kTestAccounts[i], i >= SECONDARY_ACCOUNT_INDEX_START);
+    }
   }
 
   // Returns primary profile (if it is already created.)
@@ -628,9 +633,16 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
     }
     user_manager::UserManager::Get()->SaveUserDisplayName(
         account_id, base::UTF8ToUTF16(info.display_name));
-    SigninManagerFactory::GetForProfile(
-        chromeos::ProfileHelper::GetProfileByUserIdHashForTest(info.hash))
-        ->SetAuthenticatedAccountInfo(info.gaia_id, info.email);
+    Profile* profile =
+        chromeos::ProfileHelper::GetProfileByUserIdHashForTest(info.hash);
+    // TODO(https://crbug.com/814307): We can't use
+    // identity::MakePrimaryAccountAvailable from identity_test_utils.h here
+    // because that DCHECKs that the SigninManager isn't authenticated yet.
+    // Here, it *can* be already authenticated if a PRE_ test previously set up
+    // the user.
+    IdentityManagerFactory::GetForProfile(profile)
+        ->SetPrimaryAccountSynchronouslyForTests(info.gaia_id, info.email,
+                                                 "refresh_token");
   }
 
  private:
