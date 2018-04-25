@@ -1905,6 +1905,7 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   SetRenderFrameCreated(false);
   InvalidateMojoConnection();
   document_scoped_interface_provider_binding_.Close();
+  SetLastCommittedUrl(GURL());
 
   // Execute any pending AX tree snapshot callbacks with an empty response,
   // since we're never going to get a response from this renderer.
