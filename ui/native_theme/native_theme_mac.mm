@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #import "skia/ext/skia_utils_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/common_theme.h"
@@ -129,16 +130,7 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_SelectedMenuItemForegroundColor:
       return SK_ColorBLACK;
     case kColorId_FocusedMenuItemBackgroundColor:
-      // It's necessary to use a different alpha for Aqua mode vs Graphite mode,
-      // because the black used as the graphite base shows up well even at low
-      // alphas, but the blue used for Aqua needs a bit more alpha to show up
-      // properly. At the same alpha as the graphite uses, it's difficult to
-      // pick out clearly and looks somewhat like faint lilac instead of blue.
-      return ([NSColor currentControlTint] == NSGraphiteControlTint)
-                 ? SkColorSetA(SK_ColorBLACK, 21)
-                 : SkColorSetA(
-                       NSSystemColorToSkColor([NSColor selectedMenuItemColor]),
-                       45);
+      return gfx::kGoogleGrey200;
     case kColorId_MenuBackgroundColor:
       return kMenuPopupBackgroundColor;
     case kColorId_MenuSeparatorColor:
