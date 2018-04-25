@@ -271,6 +271,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   gfx::Rect ComputeCompositingRect(const gfx::Rect& intersection_rect);
 
+  const viz::LocalSurfaceId& GetLocalSurfaceId() const;
+
   // The routing ID by which this RenderFrameProxy is known.
   const int routing_id_;
 
@@ -304,7 +306,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   bool crashed_ = false;
 
   viz::FrameSinkId frame_sink_id_;
-  viz::LocalSurfaceId local_surface_id_;
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
 
   bool enable_surface_synchronization_ = false;
