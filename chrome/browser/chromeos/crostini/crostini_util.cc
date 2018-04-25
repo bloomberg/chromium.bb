@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
@@ -14,6 +15,28 @@
 #include "chrome/common/chrome_features.h"
 
 namespace {
+
+const char kCrostiniAppLaunchHistogram[] = "Crostini.AppLaunch";
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class CrostiniAppLaunchAppType {
+  // An app which isn't in the CrostiniAppRegistry. This shouldn't happen.
+  kUnknownApp = 0,
+
+  // The main terminal app.
+  kTerminal = 1,
+
+  // An app for which there is something in the CrostiniAppRegistry.
+  kRegisteredApp = 2,
+
+  kCount
+};
+
+void RecordAppLaunchHistogram(CrostiniAppLaunchAppType app_type) {
+  base::UmaHistogramEnumeration(kCrostiniAppLaunchHistogram, app_type,
+                                CrostiniAppLaunchAppType::kCount);
+}
 
 void MaybeLaunchTerminal(Profile* profile,
                          crostini::ConciergeClientResult result) {
@@ -48,18 +71,12 @@ bool IsExperimentalCrostiniUIAvailable() {
          base::FeatureList::IsEnabled(features::kExperimentalCrostiniUI);
 }
 
-bool IsCrostiniInstalled() {
-  return false;
-}
-
-bool IsCrostiniRunning() {
-  return false;
-}
-
 void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
   auto* crostini_manager = crostini::CrostiniManager::GetInstance();
 
   if (app_id == kCrostiniTerminalId) {
+    RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kTerminal);
+
     if (!crostini_manager->IsCrosTerminaInstalled()) {
       CrostiniInstallerView::Show(profile);
     } else {
@@ -75,9 +92,12 @@ void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
   std::unique_ptr<crostini::CrostiniRegistryService::Registration>
       registration = registry_service->GetRegistration(app_id);
   if (!registration) {
+    RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kUnknownApp);
     LOG(ERROR) << "LaunchCrostiniApp called with an unknown app_id: " << app_id;
     return;
   }
+
+  RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
   crostini_manager->RestartCrostini(
       profile, registration->vm_name, registration->container_name,
       base::BindOnce(&MaybeLaunchContainerAppplication,
