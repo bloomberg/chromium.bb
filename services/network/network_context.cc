@@ -9,7 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
@@ -283,7 +283,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
     net::CookieCryptoDelegate* crypto_delegate = nullptr;
 
     scoped_refptr<base::SequencedTaskRunner> client_task_runner =
-        base::MessageLoop::current()->task_runner();
+        base::MessageLoopCurrent::Get()->task_runner();
     scoped_refptr<base::SequencedTaskRunner> background_task_runner =
         base::CreateSequencedTaskRunnerWithTraits(
             {base::MayBlock(), base::TaskPriority::BACKGROUND,
