@@ -4,6 +4,7 @@
 
 #include "chromecast/browser/extension_request_protocol_handler.h"
 
+#include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/extension.h"
@@ -265,6 +266,8 @@ net::URLRequestJob* ExtensionRequestProtocolHandler::MaybeCreateJob(
     // This can't be done in the constructor as extensions::ExtensionSystem::Get
     // will fail until after this is constructed.
     info_map_ = extensions::ExtensionSystem::Get(browser_context_)->info_map();
+    default_handler_ = extensions::CreateExtensionProtocolHandler(
+        false, const_cast<extensions::InfoMap*>(info_map_));
   }
 
   const extensions::Extension* extension =
@@ -277,8 +280,8 @@ net::URLRequestJob* ExtensionRequestProtocolHandler::MaybeCreateJob(
 
   std::string cast_url;
   if (!extension->manifest()->GetString("cast_url", &cast_url)) {
-    LOG(ERROR) << "No 'cast_url' value for extension";
-    return nullptr;
+    // Defer to the default handler to load from disk.
+    return default_handler_->MaybeCreateJob(request, network_delegate);
   }
 
   // Replace chrome-extension://<id> with whatever the extension wants to go to.
