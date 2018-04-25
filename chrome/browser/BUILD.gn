@@ -726,8 +726,6 @@ jumbo_split_static_library("browser") {
     "metrics/thread_watcher_report_hang.h",
     "metrics/variations/chrome_variations_service_client.cc",
     "metrics/variations/chrome_variations_service_client.h",
-    "mod_pagespeed/mod_pagespeed_metrics.cc",
-    "mod_pagespeed/mod_pagespeed_metrics.h",
     "native_window_notification_source.h",
     "net/chrome_accept_language_settings.cc",
     "net/chrome_accept_language_settings.h",

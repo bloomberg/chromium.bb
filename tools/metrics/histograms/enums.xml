@@ -34208,6 +34208,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PagespeedHeaderServerType">
+  <obsolete>
+    Deprecated April 2018
+  </obsolete>
   <int value="0" label="Total responses"/>
   <int value="1" label="mod_pagespeed server"/>
   <int value="2" label="ngx_pagespeed server"/>
@@ -34216,6 +34219,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PagespeedVersion">
+  <obsolete>
+    Deprecated April 2018
+  </obsolete>
   <summary>
     The version of PageSpeed. Values up to 1.6.29.x are in use as of 2013-10-01
     while later values may adjust 'a' and/or 'b' arbitrarily.

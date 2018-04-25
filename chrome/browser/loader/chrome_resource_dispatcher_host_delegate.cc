@@ -26,7 +26,6 @@
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/loader/predictor_resource_throttle.h"
 #include "chrome/browser/loader/safe_browsing_resource_throttle.h"
-#include "chrome/browser/mod_pagespeed/mod_pagespeed_metrics.h"
 #include "chrome/browser/net/loading_predictor_observer.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -695,9 +694,6 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
       LogCommittedPreviewsDecision(io_data, request->url(), previews_user_data);
     }
   }
-
-  mod_pagespeed::RecordMetrics(info->GetResourceType(), request->url(),
-                               request->response_headers());
 }
 
 void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
