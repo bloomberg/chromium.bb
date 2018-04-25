@@ -217,8 +217,8 @@ FtpNetworkTransaction::FtpNetworkTransaction(
     HostResolver* resolver,
     ClientSocketFactory* socket_factory)
     : command_sent_(COMMAND_NONE),
-      io_callback_(base::Bind(&FtpNetworkTransaction::OnIOComplete,
-                              base::Unretained(this))),
+      io_callback_(base::BindRepeating(&FtpNetworkTransaction::OnIOComplete,
+                                       base::Unretained(this))),
       request_(nullptr),
       resolver_(resolver),
       read_ctrl_buf_(new IOBuffer(kCtrlBufLen)),

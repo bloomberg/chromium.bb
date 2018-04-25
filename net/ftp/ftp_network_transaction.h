@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/address_list.h"
 #include "net/base/auth.h"
+#include "net/base/completion_repeating_callback.h"
 #include "net/base/net_export.h"
 #include "net/dns/host_resolver.h"
 #include "net/ftp/ftp_ctrl_response_buffer.h"
@@ -201,7 +202,7 @@ class NET_EXPORT_PRIVATE FtpNetworkTransaction : public FtpTransaction {
 
   Command command_sent_;
 
-  CompletionCallback io_callback_;
+  CompletionRepeatingCallback io_callback_;
   CompletionCallback user_callback_;
 
   NetLogWithSource net_log_;

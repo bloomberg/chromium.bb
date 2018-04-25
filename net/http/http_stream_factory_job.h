@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_repeating_callback.h"
 #include "net/base/net_export.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
@@ -410,7 +410,7 @@ class HttpStreamFactory::Job {
   SSLConfig proxy_ssl_config_;
   const NetLogWithSource net_log_;
 
-  const CompletionCallback io_callback_;
+  const CompletionRepeatingCallback io_callback_;
   std::unique_ptr<ClientSocketHandle> connection_;
   HttpNetworkSession* const session_;
 

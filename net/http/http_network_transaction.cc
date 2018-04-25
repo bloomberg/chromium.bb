@@ -94,8 +94,8 @@ namespace net {
 HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
                                                HttpNetworkSession* session)
     : pending_auth_target_(HttpAuth::AUTH_NONE),
-      io_callback_(base::Bind(&HttpNetworkTransaction::OnIOComplete,
-                              base::Unretained(this))),
+      io_callback_(base::BindRepeating(&HttpNetworkTransaction::OnIOComplete,
+                                       base::Unretained(this))),
       session_(session),
       request_(NULL),
       priority_(priority),

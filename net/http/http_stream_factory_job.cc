@@ -175,7 +175,8 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
       proxy_ssl_config_(proxy_ssl_config),
       net_log_(
           NetLogWithSource::Make(net_log, NetLogSourceType::HTTP_STREAM_JOB)),
-      io_callback_(base::Bind(&Job::OnIOComplete, base::Unretained(this))),
+      io_callback_(
+          base::BindRepeating(&Job::OnIOComplete, base::Unretained(this))),
       connection_(new ClientSocketHandle),
       session_(session),
       next_state_(STATE_NONE),

@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/completion_callback.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/completion_repeating_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_export.h"
@@ -128,7 +129,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocket : public ProxyClientSocket {
   int DoDrainBody();
   int DoDrainBodyComplete(int result);
 
-  CompletionCallback io_callback_;
+  CompletionRepeatingCallback io_callback_;
   State next_state_;
 
   // Stores the callback provided by the caller of async operations.
