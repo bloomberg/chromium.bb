@@ -4,6 +4,7 @@
 
 cr.define('settings_search_engines_page', function() {
   /**
+   * @param {number} id
    * @param {string} name
    * @param {boolean} canBeDefault
    * @param {boolean} canBeEdited
@@ -11,19 +12,20 @@ cr.define('settings_search_engines_page', function() {
    * @return {!SearchEngine}
    */
   function createSampleSearchEngine(
-      name, canBeDefault, canBeEdited, canBeRemoved) {
+      id, name, canBeDefault, canBeEdited, canBeRemoved) {
     return {
       canBeDefault: canBeDefault,
       canBeEdited: canBeEdited,
       canBeRemoved: canBeRemoved,
       default: false,
-      displayName: name + " displayName",
-      iconURL: "http://www.google.com/favicon.ico",
+      displayName: name + ' displayName',
+      iconURL: 'http://www.google.com/favicon.ico',
+      id: id,
       isOmniboxExtension: false,
       keyword: name,
       modelIndex: 0,
       name: name,
-      url: "https://" + name + ".com/search?p=%s",
+      url: 'https://' + name + '.com/search?p=%s',
       urlLocked: false,
     };
   }
@@ -35,17 +37,18 @@ cr.define('settings_search_engines_page', function() {
       canBeEdited: false,
       canBeRemoved: false,
       default: false,
-      displayName: "Omnibox extension displayName",
+      displayName: 'Omnibox extension displayName',
       extension: {
-        icon: "chrome://extension-icon/some-extension-icon",
-        id: "dummyextensionid",
-        name: "Omnibox extension"
+        icon: 'chrome://extension-icon/some-extension-icon',
+        id: 'dummyextensionid',
+        name: 'Omnibox extension'
       },
+      id: 0,
       isOmniboxExtension: true,
-      keyword: "oe",
+      keyword: 'oe',
       modelIndex: 6,
-      name: "Omnibox extension",
-      url: "chrome-extension://dummyextensionid/?q=%s",
+      name: 'Omnibox extension',
+      url: 'chrome-extension://dummyextensionid/?q=%s',
       urlLocked: false
     };
   }
@@ -134,6 +137,29 @@ cr.define('settings_search_engines_page', function() {
               return browserProxy.whenCalled('searchEngineEditCompleted');
             });
       });
+
+      test('DialogCloseWhenEnginesChangedModelEngineNotFound', function() {
+        dialog.set(
+            'model', createSampleSearchEngine(0, 'G', false, false, false));
+        cr.webUIListenerCallback('search-engines-changed', {
+          defaults: [],
+          others: [createSampleSearchEngine(1, 'H', false, false, false)],
+          extensions: [],
+        });
+        return browserProxy.whenCalled('searchEngineEditCancelled');
+      });
+
+      test('DialogValidateInputsWhenEnginesChanged', function() {
+        dialog.set(
+            'model', createSampleSearchEngine(0, 'G', false, false, false));
+        dialog.set('keyword_', 'G');
+        cr.webUIListenerCallback('search-engines-changed', {
+          defaults: [],
+          others: [createSampleSearchEngine(0, 'G', false, false, false)],
+          extensions: [],
+        });
+        return browserProxy.whenCalled('validateSearchEngineInput');
+      });
     });
   }
 
@@ -146,7 +172,7 @@ cr.define('settings_search_engines_page', function() {
       let browserProxy = null;
 
       /** @type {!SearchEngine} */
-      const searchEngine = createSampleSearchEngine('G', true, true, true);
+      const searchEngine = createSampleSearchEngine(0, 'G', true, true, true);
 
       setup(function() {
         browserProxy = new settings_search.TestSearchEnginesBrowserProxy();
@@ -244,25 +270,25 @@ cr.define('settings_search_engines_page', function() {
 
       test('Remove_Disabled', function() {
         testButtonDisabled(
-            createSampleSearchEngine('G', true, true, false), 'delete');
+            createSampleSearchEngine(0, 'G', true, true, false), 'delete');
       });
 
       test('MakeDefault_Disabled', function() {
         testButtonDisabled(
-            createSampleSearchEngine('G', false, true, true), 'makeDefault');
+            createSampleSearchEngine(0, 'G', false, true, true), 'makeDefault');
       });
 
       test('Edit_Disabled', function() {
         testButtonDisabled(
-            createSampleSearchEngine('G', true, false, true), 'edit');
+            createSampleSearchEngine(0, 'G', true, false, true), 'edit');
       });
 
       test('All_Disabled', function() {
-        entry.engine = createSampleSearchEngine('G', true, false, false);
+        entry.engine = createSampleSearchEngine(0, 'G', true, false, false);
         Polymer.dom.flush();
         assertTrue(entry.hasAttribute('show-dots_'));
 
-        entry.engine = createSampleSearchEngine('G', false, false, false);
+        entry.engine = createSampleSearchEngine(1, 'G', false, false, false);
         Polymer.dom.flush();
         assertFalse(entry.hasAttribute('show-dots_'));
       });
@@ -279,10 +305,10 @@ cr.define('settings_search_engines_page', function() {
       /** @type {!SearchEnginesInfo} */
       const searchEnginesInfo = {
         defaults: [createSampleSearchEngine(
-            'search_engine_G', false, false, false)],
+            0, 'search_engine_G', false, false, false)],
         others: [
-          createSampleSearchEngine('search_engine_B', false, false, false),
-          createSampleSearchEngine('search_engine_A', false, false, false),
+          createSampleSearchEngine(1, 'search_engine_B', false, false, false),
+          createSampleSearchEngine(2, 'search_engine_A', false, false, false),
         ],
         extensions: [createSampleOmniboxExtension()],
       };
@@ -356,7 +382,7 @@ cr.define('settings_search_engines_page', function() {
 
         cr.webUIListenerCallback('search-engines-changed', {
           defaults: [],
-          others: [createSampleSearchEngine('G', false, false, false)],
+          others: [createSampleSearchEngine(0, 'G', false, false, false)],
           extensions: [],
         });
         assertTrue(message.hasAttribute('hidden'));

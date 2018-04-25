@@ -18,6 +18,7 @@
  *                         canBeDisabled: boolean,
  *                         icon: string}|undefined),
  *            iconURL: (string|undefined),
+ *            id: number,
  *            isOmniboxExtension: boolean,
  *            keyword: string,
  *            modelIndex: number,
