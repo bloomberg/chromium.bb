@@ -43,6 +43,13 @@ void CastMediaShlib::RemoveDirectAudioSource(DirectAudioSourceToken* token) {
   source->Remove();
 }
 
+// static
+void CastMediaShlib::SetDirectAudioSourceVolume(DirectAudioSourceToken* token,
+                                                float multiplier) {
+  DirectMixerSource* source = static_cast<DirectMixerSource*>(token);
+  source->SetVolumeMultiplier(multiplier);
+}
+
 DirectMixerSource::DirectMixerSource(DirectAudioSource* direct_source,
                                      const MediaPipelineDeviceParams& params,
                                      int playout_channel)

@@ -159,6 +159,8 @@ void MixerInput::SetVolumeMultiplier(float multiplier) {
 
 void MixerInput::SetContentTypeVolume(float volume, int fade_ms) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(content_type_ != AudioContentType::kOther);
+
   type_volume_multiplier_ = std::max(0.0f, std::min(volume, 1.0f));
   float target_volume = TargetVolume();
   LOG(INFO) << device_id_ << "(" << source_
@@ -175,6 +177,8 @@ void MixerInput::SetContentTypeVolume(float volume, int fade_ms) {
 
 void MixerInput::SetMuted(bool muted) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(content_type_ != AudioContentType::kOther);
+
   mute_volume_multiplier_ = muted ? 0.0f : 1.0f;
   float target_volume = TargetVolume();
   LOG(INFO) << device_id_ << "(" << source_

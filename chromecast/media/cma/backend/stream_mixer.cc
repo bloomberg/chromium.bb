@@ -219,6 +219,10 @@ StreamMixer::StreamMixer(
       weak_factory_(this) {
   VLOG(1) << __func__;
 
+  volume_info_[AudioContentType::kOther].volume = 1.0f;
+  volume_info_[AudioContentType::kOther].limit = 1.0f;
+  volume_info_[AudioContentType::kOther].muted = false;
+
   if (mixer_thread_) {
     base::Thread::Options options;
     options.priority = base::ThreadPriority::REALTIME_AUDIO;
@@ -547,13 +551,15 @@ void StreamMixer::AddInputOnThread(MixerInput::Source* input_source) {
   }
 
   auto type = input->content_type();
-  if (input->primary()) {
-    input->SetContentTypeVolume(volume_info_[type].GetEffectiveVolume(),
-                                kUseDefaultFade);
-  } else {
-    input->SetContentTypeVolume(volume_info_[type].volume, kUseDefaultFade);
+  if (type != AudioContentType::kOther) {
+    if (input->primary()) {
+      input->SetContentTypeVolume(volume_info_[type].GetEffectiveVolume(),
+                                  kUseDefaultFade);
+    } else {
+      input->SetContentTypeVolume(volume_info_[type].volume, kUseDefaultFade);
+    }
+    input->SetMuted(volume_info_[type].muted);
   }
-  input->SetMuted(volume_info_[type].muted);
 
   inputs_[input_source] = std::move(input);
   UpdatePlayoutChannel();
@@ -793,6 +799,8 @@ void StreamMixer::SetVolume(AudioContentType type, float level) {
 
 void StreamMixer::SetVolumeOnThread(AudioContentType type, float level) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
+  DCHECK(type != AudioContentType::kOther);
+
   volume_info_[type].volume = level;
   float effective_volume = volume_info_[type].GetEffectiveVolume();
   for (const auto& input : inputs_) {
@@ -816,6 +824,8 @@ void StreamMixer::SetMuted(AudioContentType type, bool muted) {
 
 void StreamMixer::SetMutedOnThread(AudioContentType type, bool muted) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
+  DCHECK(type != AudioContentType::kOther);
+
   volume_info_[type].muted = muted;
   for (const auto& input : inputs_) {
     if (input.second->content_type() == type) {
@@ -833,6 +843,8 @@ void StreamMixer::SetOutputLimit(AudioContentType type, float limit) {
 
 void StreamMixer::SetOutputLimitOnThread(AudioContentType type, float limit) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
+  DCHECK(type != AudioContentType::kOther);
+
   LOG(INFO) << "Set volume limit for " << static_cast<int>(type) << " to "
             << limit;
   volume_info_[type].limit = limit;

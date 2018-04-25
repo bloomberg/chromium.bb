@@ -22,12 +22,14 @@ import org.chromium.chromecast.media.AudioContentType;
 
 /**
  * Implements the java-side of the volume control logic running on Android when using CMA backend by
- * setting the volume levels and mute states directly in the OS using AudioManager. The following
- * mapping is used between Cast's native AudioContentType and Android's internal stream types:
+ * setting the volume levels and mute states directly in the OS using AudioManager. kOther is mostly
+ * used for voice calls, so use Android's STREAM_VOICE_CALL. The following mapping is used between
+ * Cast's native AudioContentType and Android's internal stream types:
  *
  *   AudioContentType::kMedia         -> AudioManager.STREAM_MUSIC
  *   AudioContentType::kAlarm         -> AudioManager.STREAM_ALARM
  *   AudioContentType::kCommunication -> AudioManager.STREAM_SYSTEM
+ *   AudioContentType::kOther         -> AudioManager.STREAM_VOICE_CALL
  *
  * In addition it listens to volume and mute state changes broadcasted by the system via (hidden)
  * intents and reports detected changes back to the native volume controller code.
@@ -120,11 +122,12 @@ class VolumeControl {
     private static final String EXTRA_VOLUME_STREAM_TYPE = "android.media.EXTRA_VOLUME_STREAM_TYPE";
 
     // Mapping from Android's stream_type to Cast's AudioContentType (used for callback).
-    private static final SparseIntArray ANDROID_TYPE_TO_CAST_TYPE_MAP = new SparseIntArray(3) {
+    private static final SparseIntArray ANDROID_TYPE_TO_CAST_TYPE_MAP = new SparseIntArray(4) {
         {
             append(AudioManager.STREAM_MUSIC, AudioContentType.MEDIA);
             append(AudioManager.STREAM_ALARM, AudioContentType.ALARM);
             append(AudioManager.STREAM_SYSTEM, AudioContentType.COMMUNICATION);
+            append(AudioManager.STREAM_VOICE_CALL, AudioContentType.OTHER);
         }
     };
 
@@ -158,10 +161,11 @@ class VolumeControl {
         mAudioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
 
         // Populate settings.
-        mSettings = new SparseArray<Settings>(3);
+        mSettings = new SparseArray<Settings>(4);
         mSettings.append(AudioContentType.MEDIA, new Settings(AudioManager.STREAM_MUSIC));
         mSettings.append(AudioContentType.ALARM, new Settings(AudioManager.STREAM_ALARM));
         mSettings.append(AudioContentType.COMMUNICATION, new Settings(AudioManager.STREAM_SYSTEM));
+        mSettings.append(AudioContentType.OTHER, new Settings(AudioManager.STREAM_VOICE_CALL));
 
         registerIntentListeners();
     }
@@ -174,7 +178,8 @@ class VolumeControl {
                 String action = intent.getAction();
                 int type = intent.getIntExtra(EXTRA_VOLUME_STREAM_TYPE, -1);
                 if (type != AudioManager.STREAM_MUSIC && type != AudioManager.STREAM_ALARM
-                        && type != AudioManager.STREAM_SYSTEM) {
+                        && type != AudioManager.STREAM_SYSTEM
+                        && type != AudioManager.STREAM_VOICE_CALL) {
                     return;
                 }
                 if (DEBUG_LEVEL >= 1) Log.i(TAG, "Got intent:" + action + " for type:" + type);

@@ -31,15 +31,16 @@ public final class VolumeMap {
     private static AudioManager sAudioManager = null;
 
     // Mapping from Android's stream_type to Cast's AudioContentType (used for callback).
-    private static final SparseIntArray ANDROID_TYPE_TO_CAST_TYPE_MAP = new SparseIntArray(3) {
+    private static final SparseIntArray ANDROID_TYPE_TO_CAST_TYPE_MAP = new SparseIntArray(4) {
         {
             append(AudioManager.STREAM_MUSIC, AudioContentType.MEDIA);
             append(AudioManager.STREAM_ALARM, AudioContentType.ALARM);
             append(AudioManager.STREAM_SYSTEM, AudioContentType.COMMUNICATION);
+            append(AudioManager.STREAM_VOICE_CALL, AudioContentType.OTHER);
         }
     };
 
-    private static final SparseIntArray MAX_VOLUME_INDEX = new SparseIntArray(3) {
+    private static final SparseIntArray MAX_VOLUME_INDEX = new SparseIntArray(4) {
         {
             append(AudioManager.STREAM_MUSIC,
                     getAudioManager().getStreamMaxVolume(AudioManager.STREAM_MUSIC));
@@ -47,6 +48,8 @@ public final class VolumeMap {
                     getAudioManager().getStreamMaxVolume(AudioManager.STREAM_ALARM));
             append(AudioManager.STREAM_SYSTEM,
                     getAudioManager().getStreamMaxVolume(AudioManager.STREAM_SYSTEM));
+            append(AudioManager.STREAM_VOICE_CALL,
+                    getAudioManager().getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL));
         }
     };
 

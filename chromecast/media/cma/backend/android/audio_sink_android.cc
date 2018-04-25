@@ -19,6 +19,8 @@ const char* GetAudioContentTypeName(const AudioContentType type) {
       return "kAlarm";
     case AudioContentType::kCommunication:
       return "kCommunication";
+    case AudioContentType::kOther:
+      return "kOther";
     default:
       return "Unknown";
   }

@@ -20,11 +20,14 @@ enum class AudioContentType {
   kMedia,          // Normal audio playback; also used for system sound effects.
   kAlarm,          // Alarm sounds.
   kCommunication,  // Voice communication, eg assistant TTS.
+  kOther,          // No content type volume control (only per-stream control).
 };
 
 // Observer for volume/mute state changes. This is useful to detect volume
 // changes that occur outside of cast_shell. Add/RemoveVolumeObserver() must not
-// be called synchronously from OnVolumeChange() or OnMuteChange().
+// be called synchronously from OnVolumeChange() or OnMuteChange(). Note that
+// no volume/mute changes will occur for AudioContentType::kOther, so no
+// observer methods will be called with that type.
 class VolumeObserver {
  public:
   // Called whenever the volume changes for a given stream |type|. May be called
@@ -64,12 +67,14 @@ class CHROMECAST_EXPORT VolumeControl {
       __attribute__((__weak__));
 
   // Gets/sets the output volume for a given audio stream |type|. The volume
-  // |level| is in the range [0.0, 1.0].
+  // |level| is in the range [0.0, 1.0]. AudioContentType::kOther is not a valid
+  // |type| for these methods.
   static float GetVolume(AudioContentType type) __attribute__((__weak__));
   static void SetVolume(AudioContentType type, float level)
       __attribute__((__weak__));
 
   // Gets/sets the mute state for a given audio stream |type|.
+  // AudioContentType::kOther is not a valid |type| for these methods.
   static bool IsMuted(AudioContentType type) __attribute__((__weak__));
   static void SetMuted(AudioContentType type, bool muted)
       __attribute__((__weak__));
@@ -77,7 +82,8 @@ class CHROMECAST_EXPORT VolumeControl {
   // Limits the output volume for a given stream |type| to no more than |limit|.
   // This does not affect the logical volume for the stream type; the volume
   // returned by GetVolume() should not change, and no OnVolumeChange() event
-  // should be sent to observers.
+  // should be sent to observers. AudioContentType::kOther is not a valid |type|
+  // for this method.
   static void SetOutputLimit(AudioContentType type, float limit)
       __attribute__((__weak__));
 

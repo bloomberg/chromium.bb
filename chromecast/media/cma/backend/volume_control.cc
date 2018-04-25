@@ -150,6 +150,11 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
   }
 
   void SetVolume(AudioContentType type, float level) {
+    if (type == AudioContentType::kOther) {
+      NOTREACHED() << "Can't set volume for content type kOther";
+      return;
+    }
+
     level = std::max(0.0f, std::min(level, 1.0f));
     thread_.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&VolumeControlInternal::SetVolumeOnThread,
@@ -163,6 +168,11 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
   }
 
   void SetMuted(AudioContentType type, bool muted) {
+    if (type == AudioContentType::kOther) {
+      NOTREACHED() << "Can't set mute state for content type kOther";
+      return;
+    }
+
     thread_.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&VolumeControlInternal::SetMutedOnThread,
                                   base::Unretained(this), type, muted,
@@ -170,6 +180,11 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
   }
 
   void SetOutputLimit(AudioContentType type, float limit) {
+    if (type == AudioContentType::kOther) {
+      NOTREACHED() << "Can't set output limit for content type kOther";
+      return;
+    }
+
     if (BUILDFLAG(SYSTEM_OWNS_VOLUME)) {
       return;
     }
@@ -219,12 +234,17 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
       system_volume_control_->SetMuted(false);
     }
 
+    volumes_[AudioContentType::kOther] = 1.0;
+    muted_[AudioContentType::kOther] = false;
+
     initialize_complete_event_.Signal();
   }
 
   void SetVolumeOnThread(AudioContentType type, float level, bool from_system) {
     DCHECK(thread_.task_runner()->BelongsToCurrentThread());
+    DCHECK(type != AudioContentType::kOther);
     DCHECK(!from_system || type == AudioContentType::kMedia);
+
     {
       base::AutoLock lock(volume_lock_);
       if (from_system && system_volume_control_->GetRoundtripVolume(
@@ -259,6 +279,8 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
 
   void SetMutedOnThread(AudioContentType type, bool muted, bool from_system) {
     DCHECK(thread_.task_runner()->BelongsToCurrentThread());
+    DCHECK(type != AudioContentType::kOther);
+
     {
       base::AutoLock lock(volume_lock_);
       if (muted == muted_[type]) {
