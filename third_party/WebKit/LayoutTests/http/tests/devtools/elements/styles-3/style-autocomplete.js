@@ -13,86 +13,84 @@
       </style>
       <div id="outer">
           <div id="middle">
-              <div id="inner"></div>
+              <div id="inner" style="color:initial;-webkit-transform: initial; transform: initial;"></div>
           </div>
       </div>
     `);
 
-  var node =
-      ElementsTestRunner.nodeWithId('inner', node => TestRunner.cssModel.cachedMatchedCascadeForNode(node).then(step1));
-  function step1(matchedStyles) {
-    var inlineStyle = matchedStyles.nodeStyles()[0];
-    var namePrompt = new Elements.StylesSidebarPane.CSSPropertyPrompt(
-        SDK.cssMetadata().allProperties(), matchedStyles.availableCSSVariables(inlineStyle), null, true);
-    var valuePrompt = valuePromptFor('color');
-    function valuePromptFor(name) {
-      return new Elements.StylesSidebarPane.CSSPropertyPrompt(
-          SDK.cssMetadata().propertyValues(name), matchedStyles.availableCSSVariables(inlineStyle), null, false);
-    }
-    TestRunner.runTestSuite([
-      function testEmptyName(next) {
-        testAgainstGolden(namePrompt, '', false, [], ['width'], next);
-      },
+  await ElementsTestRunner.selectNodeAndWaitForStylesPromise('inner');
 
-      function testEmptyNameForce(next) {
-        testAgainstGolden(namePrompt, '', true, ['width'], [], next);
-      },
+  var colorTreeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem('color');
+  var namePrompt = new Elements.StylesSidebarPane.CSSPropertyPrompt(colorTreeElement, true /* isEditingName */);
+  var valuePrompt = valuePromptFor('color');
 
-      function testSingleCharName(next) {
-        testAgainstGolden(namePrompt, 'w', false, ['width'], [], next);
-      },
-
-      function testSubstringName(next) {
-        testAgainstGolden(namePrompt, 'size', false, ['font-size', 'background-size', 'resize'], ['font-align'], next);
-      },
-
-      function testEmptyValue(next) {
-        testAgainstGolden(valuePrompt, '', false, ['aliceblue', 'red', 'inherit'], [], next);
-      },
-
-      function testImportantDeclarationDoNotToggleOnExclamationMark(next) {
-        testAgainstGolden(valuePrompt, 'red !', false, [], ['!important'], next);
-      },
-
-      function testImportantDeclaration(next) {
-        testAgainstGolden(valuePrompt, 'red !i', false, ['!important'], [], next);
-      },
-
-      function testValueR(next) {
-        testAgainstGolden(valuePrompt, 'R', false, ['RED', 'ROSYBROWN'], ['aliceblue', 'inherit'], next);
-      },
-
-      function testValueWithParenthesis(next) {
-        testAgainstGolden(valuePrompt, 'saturate(0%)', false, [], ['inherit'], next);
-      },
-
-      function testValuePrefixed(next) {
-        testAgainstGolden(
-            valuePromptFor('-webkit-transform'), 'tr', false, ['translate', 'translateY', 'translate3d'],
-            ['initial', 'inherit'], next);
-      },
-
-      function testValueUnprefixed(next) {
-        testAgainstGolden(
-            valuePromptFor('transform'), 'tr', false, ['translate', 'translateY', 'translate3d'],
-            ['initial', 'inherit'], next);
-      },
-
-      function testValueSubstring(next) {
-        testAgainstGolden(
-            valuePromptFor('color'), 'blue', false, ['blue', 'darkblue', 'lightblue'],
-            ['darkred', 'yellow', 'initial', 'inherit'], next);
-      },
-
-      function testNameVariables(next) {
-        testAgainstGolden(namePrompt, '', true, ['--red-color', '--blue-color'], [], next);
-      },
-
-      function testValueVariables(next) {
-        testAgainstGolden(valuePromptFor('color'), 'var(', true, ['--red-color)', '--blue-color)'], ['width'], next);
-      }
-    ]);
+  function valuePromptFor(name) {
+    var treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem(name);
+    return new Elements.StylesSidebarPane.CSSPropertyPrompt(treeElement, false /* isEditingName */);
   }
+  TestRunner.runTestSuite([
+    function testEmptyName(next) {
+      testAgainstGolden(namePrompt, '', false, [], ['width'], next);
+    },
+
+    function testEmptyNameForce(next) {
+      testAgainstGolden(namePrompt, '', true, ['width'], [], next);
+    },
+
+    function testSingleCharName(next) {
+      testAgainstGolden(namePrompt, 'w', false, ['width'], [], next);
+    },
+
+    function testSubstringName(next) {
+      testAgainstGolden(namePrompt, 'size', false, ['font-size', 'background-size', 'resize'], ['font-align'], next);
+    },
+
+    function testEmptyValue(next) {
+      testAgainstGolden(valuePrompt, '', false, ['aliceblue', 'red', 'inherit'], [], next);
+    },
+
+    function testImportantDeclarationDoNotToggleOnExclamationMark(next) {
+      testAgainstGolden(valuePrompt, 'red !', false, [], ['!important'], next);
+    },
+
+    function testImportantDeclaration(next) {
+      testAgainstGolden(valuePrompt, 'red !i', false, ['!important'], [], next);
+    },
+
+    function testValueR(next) {
+      testAgainstGolden(valuePrompt, 'R', false, ['RED', 'ROSYBROWN'], ['aliceblue', 'inherit'], next);
+    },
+
+    function testValueWithParenthesis(next) {
+      testAgainstGolden(valuePrompt, 'saturate(0%)', false, [], ['inherit'], next);
+    },
+
+    function testValuePrefixed(next) {
+      testAgainstGolden(
+          valuePromptFor('-webkit-transform'), 'tr', false, ['translate', 'translateY', 'translate3d'],
+          ['initial', 'inherit'], next);
+    },
+
+    function testValueUnprefixed(next) {
+      testAgainstGolden(
+          valuePromptFor('transform'), 'tr', false, ['translate', 'translateY', 'translate3d'],
+          ['initial', 'inherit'], next);
+    },
+
+    function testValueSubstring(next) {
+      testAgainstGolden(
+          valuePromptFor('color'), 'blue', false, ['blue', 'darkblue', 'lightblue'],
+          ['darkred', 'yellow', 'initial', 'inherit'], next);
+    },
+
+    function testNameVariables(next) {
+      testAgainstGolden(namePrompt, '', true, ['--red-color', '--blue-color'], [], next);
+    },
+
+    function testValueVariables(next) {
+      testAgainstGolden(valuePromptFor('color'), 'var(', true, ['--red-color)', '--blue-color)'], ['width'], next);
+    }
+  ]);
 
   function testAgainstGolden(prompt, inputText, force, golden, antiGolden, callback) {
     var proxyElement = document.createElement('div');
