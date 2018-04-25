@@ -815,6 +815,10 @@ cvox.CommandStore.CMD_WHITELIST = {
   'pauseAllMedia':
       {announce: false, msgId: 'pause_all_media', category: 'information'},
 
+  // Scrolling actions.
+  'scrollBackward': {msgId: 'action_scroll_backward'},
+  'scrollForward': {msgId: 'action_scroll_forward'},
+
   // Math specific commands.
   'toggleSemantics':
       {announce: false, msgId: 'toggle_semantics', category: 'information'},

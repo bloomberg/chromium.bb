@@ -220,6 +220,9 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onHover: function(evt) {
+    if (!GestureCommandHandler.getEnabled())
+      return;
+
     var target = evt.target;
     if (!AutomationPredicate.object(target)) {
       target = AutomationUtil.findNodePre(

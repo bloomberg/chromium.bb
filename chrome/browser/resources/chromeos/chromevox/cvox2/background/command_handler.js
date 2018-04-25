@@ -711,6 +711,12 @@ CommandHandler.onCommand = function(command) {
       if (end)
         current = cursors.Range.fromNode(end);
       break;
+    case 'scrollBackward':
+      current.start.node.scrollBackward();
+      break;
+    case 'scrollForward':
+      current.start.node.scrollForward();
+      break;
     default:
       return true;
   }

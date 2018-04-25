@@ -18,6 +18,7 @@ goog.require('ChromeVoxState');
 goog.require('CommandHandler');
 goog.require('DesktopAutomationHandler');
 goog.require('FindHandler');
+goog.require('GestureCommandHandler');
 goog.require('LiveRegions');
 goog.require('MediaAutomationHandler');
 goog.require('NextEarcons');
@@ -122,9 +123,6 @@ Background = function() {
   /** @type {!LiveRegions} @private */
   this.liveRegions_ = new LiveRegions(this);
 
-  chrome.accessibilityPrivate.onAccessibilityGesture.addListener(
-      this.onAccessibilityGesture_);
-
   document.addEventListener('copy', this.onClipboardEvent_);
   document.addEventListener('cut', this.onClipboardEvent_);
   document.addEventListener('paste', this.onClipboardEvent_);
@@ -149,23 +147,6 @@ Background = function() {
   FindHandler.init();
 
   Notifications.onStartup();
-};
-
-/**
- * Map from gesture names (ax::mojom::Gesture defined in ui/accessibility/ax_enums.idl)
- *     to commands.
- * @type {Object<string, string>}
- * @const
- */
-Background.GESTURE_COMMAND_MAP = {
-  'click': 'forceClickOnCurrentItem',
-  'swipeUp1': 'previousLine',
-  'swipeDown1': 'nextLine',
-  'swipeLeft1': 'previousObject',
-  'swipeRight1': 'nextObject',
-  'swipeUp2': 'jumpToTop',
-  'swipeDown2': 'readFromHere',
-  'tap2': 'stopSpeech',
 };
 
 Background.prototype = {
@@ -312,111 +293,7 @@ Background.prototype = {
    * @override
    */
   onBrailleKeyEvent: function(evt, content) {
-    // Note: panning within content occurs earlier in event dispatch.
-    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
-    switch (evt.command) {
-      case cvox.BrailleKeyCommand.PAN_LEFT:
-        CommandHandler.onCommand('previousObject');
-        break;
-      case cvox.BrailleKeyCommand.PAN_RIGHT:
-        CommandHandler.onCommand('nextObject');
-        break;
-      case cvox.BrailleKeyCommand.LINE_UP:
-        CommandHandler.onCommand('previousLine');
-        break;
-      case cvox.BrailleKeyCommand.LINE_DOWN:
-        CommandHandler.onCommand('nextLine');
-        break;
-      case cvox.BrailleKeyCommand.TOP:
-        CommandHandler.onCommand('jumpToTop');
-        break;
-      case cvox.BrailleKeyCommand.BOTTOM:
-        CommandHandler.onCommand('jumpToBottom');
-        break;
-      case cvox.BrailleKeyCommand.ROUTING:
-        this.brailleRoutingCommand_(
-            content.text,
-            // Cast ok since displayPosition is always defined in this case.
-            /** @type {number} */ (evt.displayPosition));
-        break;
-      case cvox.BrailleKeyCommand.CHORD:
-        if (!evt.brailleDots)
-          return false;
-
-        var command = BrailleCommandData.getCommand(evt.brailleDots);
-        if (command) {
-          if (BrailleCommandHandler.onEditCommand(command))
-            CommandHandler.onCommand(command);
-        }
-        break;
-      default:
-        return false;
-    }
-    return true;
-  },
-
-  /**
-   * @param {!Spannable} text
-   * @param {number} position
-   * @private
-   */
-  brailleRoutingCommand_: function(text, position) {
-    var actionNodeSpan = null;
-    var selectionSpan = null;
-    var selSpans = text.getSpansInstanceOf(Output.SelectionSpan);
-    var nodeSpans = text.getSpansInstanceOf(Output.NodeSpan);
-    for (var i = 0, selSpan; selSpan = selSpans[i]; i++) {
-      if (text.getSpanStart(selSpan) <= position &&
-          position < text.getSpanEnd(selSpan)) {
-        selectionSpan = selSpan;
-        break;
-      }
-    }
-
-    var interval;
-    for (var j = 0, nodeSpan; nodeSpan = nodeSpans[j]; j++) {
-      var intervals = text.getSpanIntervals(nodeSpan);
-      var tempInterval = intervals.find(function(innerInterval) {
-        return innerInterval.start <= position &&
-            position <= innerInterval.end;
-      });
-      if (tempInterval) {
-        actionNodeSpan = nodeSpan;
-        interval = tempInterval;
-      }
-    }
-
-    if (!actionNodeSpan)
-      return;
-
-    var actionNode = actionNodeSpan.node;
-    var offset = actionNodeSpan.offset;
-    if (actionNode.role === RoleType.INLINE_TEXT_BOX)
-      actionNode = actionNode.parent;
-    actionNode.doDefault();
-
-    if (actionNode.role != RoleType.STATIC_TEXT &&
-        actionNode.role != RoleType.TEXT_FIELD &&
-        !actionNode.state[StateType.RICHLY_EDITABLE])
-      return;
-
-    if (!selectionSpan)
-      selectionSpan = actionNodeSpan;
-
-    if (actionNode.state.richlyEditable) {
-      var start = interval ? interval.start : text.getSpanStart(selectionSpan);
-      var targetPosition = position - start + offset;
-      chrome.automation.setDocumentSelection({
-        anchorObject: actionNode,
-        anchorOffset: targetPosition,
-        focusObject: actionNode,
-        focusOffset: targetPosition
-      });
-    } else {
-      var start = text.getSpanStart(selectionSpan);
-      var targetPosition = position - start + offset;
-      actionNode.setSelection(targetPosition, targetPosition);
-    }
+    return BrailleCommandHandler.onBrailleKeyEvent(evt, content);
   },
 
   /**
@@ -454,19 +331,6 @@ Background.prototype = {
     var root = AutomationUtil.getTopLevelRoot(this.currentRange.start.node);
     if (root)
       this.focusRecoveryMap_.set(root, this.currentRange);
-  },
-
-  /**
-   * Handles accessibility gestures from the touch screen.
-   * @param {string} gesture The gesture to handle, based on the ax::mojom::Gesture enum
-   *     defined in ui/accessibility/ax_enums.idl
-   * @private
-   */
-  onAccessibilityGesture_: function(gesture) {
-    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
-    var command = Background.GESTURE_COMMAND_MAP[gesture];
-    if (command)
-      CommandHandler.onCommand(command);
   },
 
   /**
