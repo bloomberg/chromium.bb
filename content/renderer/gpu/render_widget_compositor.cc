@@ -546,7 +546,7 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     if (!cmd.HasSwitch(switches::kDisableRGBA4444Textures) &&
         base::SysInfo::AmountOfPhysicalMemoryMB() <= 512 &&
         !using_synchronous_compositor) {
-      settings.preferred_tile_format = viz::RGBA_4444;
+      settings.use_rgba_4444 = viz::RGBA_4444;
 
       // If we are going to unpremultiply and dither these tiles, we need to
       // allocate an additional RGBA_8888 intermediate for each tile
@@ -568,11 +568,7 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 
   if (cmd.HasSwitch(switches::kEnableRGBA4444Textures) &&
       !cmd.HasSwitch(switches::kDisableRGBA4444Textures)) {
-    settings.preferred_tile_format = viz::RGBA_4444;
-  }
-
-  if (cmd.HasSwitch(cc::switches::kEnableTileCompression)) {
-    settings.preferred_tile_format = viz::ETC1;
+    settings.use_rgba_4444 = true;
   }
 
   settings.max_staging_buffer_usage_in_bytes = 32 * 1024 * 1024;  // 32MB

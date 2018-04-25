@@ -20,6 +20,10 @@ class OutputSurface;
 class RenderPassDrawQuad;
 }  // namespace cc
 
+namespace gpu {
+struct Capabilities;
+}
+
 namespace viz {
 class DebugBorderDrawQuad;
 class PictureDrawQuad;
@@ -113,9 +117,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
     bool mipmap;
     gfx::ColorSpace color_space;
     RenderPassBacking(GrContext* gr_context,
+                      const gpu::Capabilities& caps,
                       const gfx::Size& size,
                       bool mipmap,
-                      bool capability_bgra8888,
                       const gfx::ColorSpace& color_space);
     ~RenderPassBacking();
     RenderPassBacking(RenderPassBacking&&);

@@ -60,13 +60,13 @@ class LayerTreeHostTilesPixelTest : public LayerTreePixelTest {
       case PARTIAL_GPU_LOW_BIT_DEPTH:
         settings->gpu_rasterization_forced = true;
         settings->use_partial_raster = true;
-        settings->preferred_tile_format = viz::RGBA_4444;
+        settings->use_rgba_4444 = true;
         settings->unpremultiply_and_dither_low_bit_depth_tiles = true;
         break;
       case FULL_GPU_LOW_BIT_DEPTH:
         settings->gpu_rasterization_forced = true;
         settings->use_partial_raster = false;
-        settings->preferred_tile_format = viz::RGBA_4444;
+        settings->use_rgba_4444 = true;
         settings->unpremultiply_and_dither_low_bit_depth_tiles = true;
         break;
     }

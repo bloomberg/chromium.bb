@@ -57,6 +57,7 @@ void RasterBufferProvider::PlaybackToMemory(
     const gfx::Rect& canvas_playback_rect,
     const gfx::AxisTransform2d& transform,
     const gfx::ColorSpace& target_color_space,
+    bool gpu_compositing,
     const RasterSource::PlaybackSettings& playback_settings) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "RasterBufferProvider::PlaybackToMemory");
@@ -97,8 +98,7 @@ void RasterBufferProvider::PlaybackToMemory(
                                       playback_settings);
       return;
     }
-    case viz::RGBA_4444:
-    case viz::ETC1: {
+    case viz::RGBA_4444: {
       sk_sp<SkSurface> surface = SkSurface::MakeRaster(info, &surface_props);
       // TODO(reveman): Improve partial raster support by reducing the size of
       // playback rect passed to PlaybackToCanvas. crbug.com/519070
@@ -122,13 +122,14 @@ void RasterBufferProvider::PlaybackToMemory(
       } else {
         TRACE_EVENT0("cc",
                      "RasterBufferProvider::PlaybackToMemory::ConvertRGBA4444");
-        SkImageInfo dst_info =
-            info.makeColorType(ResourceFormatToClosestSkColorType(format));
+        SkImageInfo dst_info = info.makeColorType(
+            ResourceFormatToClosestSkColorType(gpu_compositing, format));
         bool rv = surface->readPixels(dst_info, memory, stride, 0, 0);
         DCHECK(rv);
       }
       return;
     }
+    case viz::ETC1:
     case viz::ALPHA_8:
     case viz::LUMINANCE_8:
     case viz::RGB_565:
@@ -140,29 +141,6 @@ void RasterBufferProvider::PlaybackToMemory(
   }
 
   NOTREACHED();
-}
-
-bool RasterBufferProvider::ResourceFormatRequiresSwizzle(
-    viz::ResourceFormat format) {
-  switch (format) {
-    case viz::RGBA_8888:
-    case viz::BGRA_8888:
-      // Initialize resource using the preferred viz::PlatformColor component
-      // order and swizzle in the shader instead of in software.
-      return !viz::PlatformColor::SameComponentOrder(format);
-    case viz::RGBA_4444:
-    case viz::ETC1:
-    case viz::ALPHA_8:
-    case viz::LUMINANCE_8:
-    case viz::RGB_565:
-    case viz::RED_8:
-    case viz::LUMINANCE_F16:
-    case viz::RGBA_F16:
-    case viz::R16_EXT:
-      return false;
-  }
-  NOTREACHED();
-  return false;
 }
 
 }  // namespace cc

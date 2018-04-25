@@ -194,7 +194,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
       ResourcePool::InUsePoolResource resource =
           resource_pool_->AcquireResource(
               tiles[i]->desired_texture_size(),
-              raster_buffer_provider_->GetResourceFormat(false),
+              raster_buffer_provider_->GetResourceFormat(),
               client_->GetRasterColorSpace().color_space);
       raster_buffer_provider_->AcquireBufferForRaster(resource, 0, 0);
       // The raster here never really happened, cuz tests. So just add an

@@ -585,7 +585,8 @@ viz::ResourceMetadata DisplayResourceProvider::LockForExternalUse(
   metadata.size = resource->size;
   metadata.mip_mapped = GrMipMapped::kNo;
   metadata.origin = kTopLeft_GrSurfaceOrigin;
-  metadata.color_type = ResourceFormatToClosestSkColorType(resource->format);
+  metadata.color_type =
+      ResourceFormatToClosestSkColorType(!IsSoftware(), resource->format);
   metadata.alpha_type = kPremul_SkAlphaType;
   metadata.color_space = nullptr;
   metadata.sync_token = resource->sync_token();
@@ -694,7 +695,8 @@ DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
     sk_image_ = SkImage::MakeFromTexture(
         resource_provider->compositor_context_provider_->GrContext(),
         backend_texture, kTopLeft_GrSurfaceOrigin,
-        ResourceFormatToClosestSkColorType(resource->format),
+        ResourceFormatToClosestSkColorType(!resource_provider->IsSoftware(),
+                                           resource->format),
         kPremul_SkAlphaType, nullptr);
   } else if (resource->pixels) {
     SkBitmap sk_bitmap;

@@ -28,6 +28,7 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"

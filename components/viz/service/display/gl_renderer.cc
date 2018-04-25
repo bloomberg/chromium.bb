@@ -3614,8 +3614,7 @@ ResourceFormat GLRenderer::BackbufferFormat() const {
     DCHECK(caps.color_buffer_half_float_rgba);
     return RGBA_F16;
   }
-  return PlatformColor::BestSupportedTextureFormat(
-      caps.texture_format_bgra8888);
+  return PlatformColor::BestSupportedTextureFormat(caps);
 }
 
 void GLRenderer::AllocateRenderPassResourceIfNeeded(

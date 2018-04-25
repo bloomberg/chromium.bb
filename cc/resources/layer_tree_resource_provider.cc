@@ -8,7 +8,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/context_provider.h"
-#include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/common/resources/returned_resource.h"
@@ -36,7 +35,6 @@ LayerTreeResourceProvider::Settings::Settings(
   if (!compositor_context_provider) {
     // Pick an arbitrary limit here similar to what hardware might.
     max_texture_size = 16 * 1024;
-    best_texture_format = viz::RGBA_8888;
     return;
   }
 
@@ -55,11 +53,6 @@ LayerTreeResourceProvider::Settings::Settings(
 
   GLES2Interface* gl = compositor_context_provider->ContextGL();
   gl->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
-
-  best_texture_format = viz::PlatformColor::BestSupportedTextureFormat(
-      caps.texture_format_bgra8888);
-  best_render_buffer_format = viz::PlatformColor::BestSupportedTextureFormat(
-      caps.render_buffer_format_bgra8888);
 }
 
 namespace {
@@ -339,9 +332,12 @@ LayerTreeResourceProvider::ScopedSkSurface::ScopedSkSurface(
   GrBackendTexture backend_texture(size.width(), size.height(),
                                    GrMipMapped::kNo, texture_info);
   SkSurfaceProps surface_props = ComputeSurfaceProps(can_use_lcd_text);
+  // This type is used only for gpu raster, which implies gpu compositing.
+  bool gpu_compositing = true;
   surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
       gr_context, backend_texture, kTopLeft_GrSurfaceOrigin, msaa_sample_count,
-      ResourceFormatToClosestSkColorType(format), nullptr, &surface_props);
+      ResourceFormatToClosestSkColorType(gpu_compositing, format), nullptr,
+      &surface_props);
 }
 
 LayerTreeResourceProvider::ScopedSkSurface::~ScopedSkSurface() {

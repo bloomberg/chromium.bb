@@ -31,6 +31,9 @@ class CC_EXPORT RasterBufferProvider {
   // that will cover the resulting |memory|. The |canvas_playback_rect| can be a
   // smaller contained rect inside the |canvas_bitmap_rect| if the |memory| is
   // already partially complete, and only the subrect needs to be played back.
+  // Set |gpu_compositing| to true if the compositor is using gpu, as we respect
+  // the format more accurately, vs in software compositing where the format is
+  // a placeholder for the skia native format.
   static void PlaybackToMemory(
       void* memory,
       viz::ResourceFormat format,
@@ -41,6 +44,7 @@ class CC_EXPORT RasterBufferProvider {
       const gfx::Rect& canvas_playback_rect,
       const gfx::AxisTransform2d& transform,
       const gfx::ColorSpace& target_color_space,
+      bool gpu_compositing,
       const RasterSource::PlaybackSettings& playback_settings);
 
   // Acquire raster buffer.
@@ -56,14 +60,13 @@ class CC_EXPORT RasterBufferProvider {
   virtual void Flush() = 0;
 
   // Returns the format to use for the tiles.
-  virtual viz::ResourceFormat GetResourceFormat(
-      bool must_support_alpha) const = 0;
+  virtual viz::ResourceFormat GetResourceFormat() const = 0;
 
   // Determine if the resource requires swizzling.
-  virtual bool IsResourceSwizzleRequired(bool must_support_alpha) const = 0;
+  virtual bool IsResourceSwizzleRequired() const = 0;
 
   // Determines if the resource is premultiplied.
-  virtual bool IsResourcePremultiplied(bool must_support_alpha) const = 0;
+  virtual bool IsResourcePremultiplied() const = 0;
 
   // Determine if the RasterBufferProvider can handle partial raster into
   // the Resource provided in AcquireBufferForRaster.
@@ -86,10 +89,6 @@ class CC_EXPORT RasterBufferProvider {
 
   // Shutdown for doing cleanup.
   virtual void Shutdown() = 0;
-
- protected:
-  // Check if resource format matches output format.
-  static bool ResourceFormatRequiresSwizzle(viz::ResourceFormat format);
 };
 
 }  // namespace cc

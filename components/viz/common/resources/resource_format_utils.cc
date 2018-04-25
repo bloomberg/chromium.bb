@@ -12,7 +12,15 @@
 
 namespace viz {
 
-SkColorType ResourceFormatToClosestSkColorType(ResourceFormat format) {
+SkColorType ResourceFormatToClosestSkColorType(bool gpu_compositing,
+                                               ResourceFormat format) {
+  if (!gpu_compositing) {
+    // In software compositing we lazily use RGBA_8888 throughout the system,
+    // but actual pixel encodings are the native skia bit ordering, which can be
+    // RGBA or BGRA.
+    return kN32_SkColorType;
+  }
+
   // Use kN32_SkColorType if there is no corresponding SkColorType.
   switch (format) {
     case RGBA_4444:
@@ -169,26 +177,6 @@ gfx::BufferFormat BufferFormat(ResourceFormat format) {
 
 bool IsResourceFormatCompressed(ResourceFormat format) {
   return format == ETC1;
-}
-
-bool DoesResourceFormatSupportAlpha(ResourceFormat format) {
-  switch (format) {
-    case RGBA_4444:
-    case RGBA_8888:
-    case BGRA_8888:
-    case ALPHA_8:
-    case RGBA_F16:
-      return true;
-    case LUMINANCE_8:
-    case RGB_565:
-    case ETC1:
-    case RED_8:
-    case LUMINANCE_F16:
-    case R16_EXT:
-      return false;
-  }
-  NOTREACHED();
-  return false;
 }
 
 unsigned int TextureStorageFormat(ResourceFormat format) {

@@ -43,9 +43,6 @@ const char kBrowserControlsShowThreshold[] = "top-controls-show-threshold";
 // complete, such as --slow-down-raster-scale-factor=25.
 const char kSlowDownRasterScaleFactor[] = "slow-down-raster-scale-factor";
 
-// Compress tile textures for GPUs supporting it.
-const char kEnableTileCompression[] = "enable-tile-compression";
-
 // Checks damage early and aborts the frame if no damage, so that clients like
 // Android WebView don't invalidate unnecessarily.
 const char kCheckDamageEarly[] = "check-damage-early";

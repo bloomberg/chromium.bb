@@ -942,25 +942,25 @@ void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
   GrContext* gr_context =
       output_surface_->vulkan_context_provider()->GetGrContext();
   // TODO(penghuang): check supported format correctly.
-  bool capability_bgra8888 = true;
+  gpu::Capabilities caps;
+  caps.texture_format_bgra8888 = true;
 #else
   ContextProvider* context_provider = output_surface_->context_provider();
-  bool capability_bgra8888 =
-      context_provider->ContextCapabilities().texture_format_bgra8888;
+  const gpu::Capabilities& caps = context_provider->ContextCapabilities();
   GrContext* gr_context = context_provider->GrContext();
 #endif
   render_pass_backings_.insert(std::pair<RenderPassId, RenderPassBacking>(
       render_pass_id,
-      RenderPassBacking(gr_context, requirements.size, requirements.mipmap,
-                        capability_bgra8888,
+      RenderPassBacking(gr_context, caps, requirements.size,
+                        requirements.mipmap,
                         current_frame()->current_render_pass->color_space)));
 }
 
 SkiaRenderer::RenderPassBacking::RenderPassBacking(
     GrContext* gr_context,
+    const gpu::Capabilities& caps,
     const gfx::Size& size,
     bool mipmap,
-    bool capability_bgra8888,
     const gfx::ColorSpace& color_space)
     : mipmap(mipmap), color_space(color_space) {
   ResourceFormat format;
@@ -971,9 +971,12 @@ SkiaRenderer::RenderPassBacking::RenderPassBacking(
     // DCHECK(caps.color_buffer_half_float_rgba);
     format = RGBA_F16;
   } else {
-    format = PlatformColor::BestSupportedTextureFormat(capability_bgra8888);
+    format = PlatformColor::BestSupportedTextureFormat(caps);
   }
-  SkColorType color_type = ResourceFormatToClosestSkColorType(format);
+  // TODO(weiliangc): Use the right format for software compositing by checking
+  // the mode and passing it here.
+  SkColorType color_type =
+      ResourceFormatToClosestSkColorType(/*gpu_compositing=*/true, format);
 
   constexpr uint32_t flags = 0;
   // LegacyFontHost will get LCD text and skia figures out what type to use.

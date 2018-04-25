@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "cc/raster/raster_buffer_provider.h"
-#include "cc/resources/layer_tree_resource_provider.h"
 #include "gpu/command_buffer/common/sync_token.h"
 
 namespace viz {
@@ -23,10 +22,9 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
  public:
   GpuRasterBufferProvider(viz::ContextProvider* compositor_context_provider,
                           viz::RasterContextProvider* worker_context_provider,
-                          LayerTreeResourceProvider* resource_provider,
                           bool use_gpu_memory_buffer_resources,
                           int gpu_rasterization_msaa_sample_count,
-                          viz::ResourceFormat preferred_tile_format,
+                          viz::ResourceFormat tile_format,
                           const gfx::Size& max_tile_size,
                           bool unpremultiply_and_dither_low_bit_depth_tiles,
                           bool enable_oop_rasterization);
@@ -38,9 +36,9 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
       uint64_t resource_content_id,
       uint64_t previous_content_id) override;
   void Flush() override;
-  viz::ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
-  bool IsResourceSwizzleRequired(bool must_support_alpha) const override;
-  bool IsResourcePremultiplied(bool must_support_alpha) const override;
+  viz::ResourceFormat GetResourceFormat() const override;
+  bool IsResourceSwizzleRequired() const override;
+  bool IsResourcePremultiplied() const override;
   bool CanPartialRasterIntoProvidedResource() const override;
   bool IsResourceReadyToDraw(
       const ResourcePool::InUsePoolResource& resource) const override;
@@ -115,10 +113,9 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
 
   viz::ContextProvider* const compositor_context_provider_;
   viz::RasterContextProvider* const worker_context_provider_;
-  LayerTreeResourceProvider* const resource_provider_;
   const bool use_gpu_memory_buffer_resources_;
   const int msaa_sample_count_;
-  const viz::ResourceFormat preferred_tile_format_;
+  const viz::ResourceFormat tile_format_;
   const gfx::Size max_tile_size_;
   const bool unpremultiply_and_dither_low_bit_depth_tiles_;
   const bool enable_oop_rasterization_;

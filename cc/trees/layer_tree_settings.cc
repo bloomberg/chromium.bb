@@ -15,8 +15,7 @@ LayerTreeSettings::LayerTreeSettings()
       minimum_occlusion_tracking_size(gfx::Size(160, 160)),
       memory_policy(64 * 1024 * 1024,
                     gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
-                    ManagedMemoryPolicy::kDefaultNumResourcesLimit),
-      preferred_tile_format(viz::PlatformColor::BestTextureFormat()) {}
+                    ManagedMemoryPolicy::kDefaultNumResourcesLimit) {}
 
 LayerTreeSettings::LayerTreeSettings(const LayerTreeSettings& other) = default;
 LayerTreeSettings::~LayerTreeSettings() = default;
