@@ -91,6 +91,8 @@ source_set("internal") {
     "external_data_fetcher.cc",
     "external_data_fetcher.h",
     "external_data_manager.h",
+    "plist_writer.cc",
+    "plist_writer.h",
     "policy_bundle.cc",
     "policy_bundle.h",
     "policy_details.h",
@@ -156,6 +158,7 @@ source_set("internal") {
     "//extensions/buildflags",
     "//google_apis",
     "//net",
+    "//third_party/libxml",
     "//third_party/re2",
     "//url",
   ]
@@ -306,6 +309,7 @@ source_set("unit_tests") {
     "cloud/policy_header_service_unittest.cc",
     "cloud/user_info_fetcher_unittest.cc",
     "generate_policy_source_unittest.cc",
+    "plist_writer_unittest.cc",
     "policy_bundle_unittest.cc",
     "policy_loader_ios_unittest.mm",
     "policy_loader_mac_unittest.cc",
@@ -375,6 +379,7 @@ source_set("unit_tests") {
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/libxml",
   ]
 }
 
