@@ -1096,8 +1096,26 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // should have been one.
     if (root_view != touchscreen_gesture_target_.target &&
         !rwhi->is_in_touchscreen_gesture_scroll()) {
-      gesture_pinch_did_send_scroll_begin_ = true;
-      SendGestureScrollBegin(root_view, gesture_event);
+      cc::TouchAction target_allowed_touch_action =
+          cc::TouchAction::kTouchActionAuto;
+      if (touchscreen_gesture_target_.target) {
+        target_allowed_touch_action =
+            (static_cast<RenderWidgetHostImpl*>(
+                 touchscreen_gesture_target_.target->GetRenderWidgetHost()))
+                ->input_router()
+                ->AllowedTouchAction();
+      }
+      if (target_allowed_touch_action &
+          cc::TouchAction::kTouchActionPinchZoom) {
+        gesture_pinch_did_send_scroll_begin_ = true;
+        SendGestureScrollBegin(root_view, gesture_event);
+      } else {
+        // When target does not allow touch-action: pinch, instead of sending
+        // pinch gestures to the root frame, we send all gesture pinch events
+        // to the subframe target so the target can look after disposing of
+        // them.
+        in_touchscreen_gesture_pinch_ = false;
+      }
     }
   }
 
