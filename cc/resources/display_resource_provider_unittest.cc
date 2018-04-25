@@ -488,11 +488,14 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
   if (!use_gpu())
     return;
 
-  gfx::Size size(1, 1);
-  viz::ResourceFormat format = viz::RGBA_8888;
-
-  viz::ResourceId id1 = child_resource_provider_->CreateGpuTextureResource(
-      size, format, gfx::ColorSpace());
+  gpu::SyncToken sync_token1(gpu::CommandBufferNamespace::GPU_IO,
+                             gpu::CommandBufferId::FromUnsafeValue(0x123),
+                             0x42);
+  auto mailbox = gpu::Mailbox::Generate();
+  viz::TransferableResource gl_resource = viz::TransferableResource::MakeGL(
+      mailbox, GL_LINEAR, GL_TEXTURE_2D, sync_token1);
+  viz::ResourceId id1 = child_resource_provider_->ImportResource(
+      gl_resource, viz::SingleReleaseCallback::Create(base::DoNothing()));
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
@@ -519,8 +522,7 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
       resource_provider_.get());
 
   viz::ResourceMetadata metadata = lock_set.LockResource(parent_id);
-  ASSERT_EQ(size, metadata.size);
-  ASSERT_FALSE(metadata.mailbox.IsZero());
+  ASSERT_EQ(metadata.mailbox, mailbox);
   ASSERT_TRUE(metadata.sync_token.HasData());
 
   resource_provider_->DeclareUsedResourcesFromChild(child_id,
@@ -528,19 +530,18 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
   // The resource should not be returned due to the external use lock.
   EXPECT_EQ(0u, returned_to_child.size());
 
-  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
-                            gpu::CommandBufferId::FromUnsafeValue(0x234),
-                            0x456);
-  sync_token.SetVerifyFlush();
-  lock_set.UnlockResources(sync_token);
+  gpu::SyncToken sync_token2(gpu::CommandBufferNamespace::GPU_IO,
+                             gpu::CommandBufferId::FromUnsafeValue(0x234),
+                             0x456);
+  sync_token2.SetVerifyFlush();
+  lock_set.UnlockResources(sync_token2);
   resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                     viz::ResourceIdSet());
   // The resource should be returned after the lock is released.
   EXPECT_EQ(1u, returned_to_child.size());
-  EXPECT_EQ(sync_token, returned_to_child[0].sync_token);
+  EXPECT_EQ(sync_token2, returned_to_child[0].sync_token);
   child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
-  child_resource_provider_->DeleteResource(id1);
-  EXPECT_EQ(0u, child_resource_provider_->num_resources());
+  child_resource_provider_->RemoveImportedResource(id1);
 }
 
 }  // namespace

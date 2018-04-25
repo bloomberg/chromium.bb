@@ -72,8 +72,7 @@ void AddRenderPassQuad(viz::RenderPass* to_pass,
 
 void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
                            LayerTreeResourceProvider* resource_provider,
-                           viz::RenderPassId child_pass_id,
-                           gpu::SyncToken* sync_token_for_mailbox_texture);
+                           viz::RenderPassId child_pass_id);
 
 // Adds a render pass quad with the given mask resource, filter, and transform.
 // The resource used in render pass is created by LayerTreeResourceProvider,

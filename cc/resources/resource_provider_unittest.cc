@@ -59,31 +59,35 @@ MATCHER_P(MatchesSyncToken, sync_token, "") {
   return other == sync_token;
 }
 
-static void ReleaseCallback(gpu::SyncToken* release_sync_token,
-                            bool* release_lost_resource,
-                            const gpu::SyncToken& sync_token,
-                            bool lost_resource) {
+void ReleaseCallback(gpu::SyncToken* release_sync_token,
+                     bool* release_lost_resource,
+                     const gpu::SyncToken& sync_token,
+                     bool lost_resource) {
   *release_sync_token = sync_token;
   *release_lost_resource = lost_resource;
 }
 
-static void ReleaseSharedBitmapCallback(
-    const viz::SharedBitmapId& shared_bitmap_id,
-    bool* release_called,
-    gpu::SyncToken* release_sync_token,
-    bool* lost_resource_result,
-    const gpu::SyncToken& sync_token,
-    bool lost_resource) {
+void ReleaseSharedBitmapCallback(const viz::SharedBitmapId& shared_bitmap_id,
+                                 bool* release_called,
+                                 gpu::SyncToken* release_sync_token,
+                                 bool* lost_resource_result,
+                                 const gpu::SyncToken& sync_token,
+                                 bool lost_resource) {
   *release_called = true;
   *release_sync_token = sync_token;
   *lost_resource_result = lost_resource;
 }
 
-static viz::SharedBitmapId CreateAndFillSharedBitmap(
-    viz::SharedBitmapManager* manager,
-    const gfx::Size& size,
-    viz::ResourceFormat format,
-    uint32_t value) {
+void CountingReleaseCallback(int* count,
+                             const gpu::SyncToken& sync_token,
+                             bool lost_resource) {
+  ++*count;
+}
+
+viz::SharedBitmapId CreateAndFillSharedBitmap(viz::SharedBitmapManager* manager,
+                                              const gfx::Size& size,
+                                              viz::ResourceFormat format,
+                                              uint32_t value) {
   viz::SharedBitmapId shared_bitmap_id = viz::SharedBitmap::GenerateId();
 
   std::unique_ptr<base::SharedMemory> shm =
@@ -97,7 +101,7 @@ static viz::SharedBitmapId CreateAndFillSharedBitmap(
   return shared_bitmap_id;
 }
 
-static viz::ResourceSettings CreateResourceSettings() {
+viz::ResourceSettings CreateResourceSettings() {
   viz::ResourceSettings resource_settings;
   resource_settings.use_gpu_memory_buffer_resources =
       kUseGpuMemoryBufferResources;
@@ -232,27 +236,6 @@ class ResourceProviderContext : public viz::TestWebGraphicsContext3D {
     return last_waited_sync_token_;
   }
 
-  void texStorage2DEXT(GLenum target,
-                       GLint levels,
-                       GLuint internalformat,
-                       GLint width,
-                       GLint height) override {
-    CheckTextureIsBound(target);
-    ASSERT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
-    ASSERT_EQ(1, levels);
-    GLenum format = GL_RGBA;
-    switch (internalformat) {
-      case GL_RGBA8_OES:
-        break;
-      case GL_BGRA8_EXT:
-        format = GL_BGRA_EXT;
-        break;
-      default:
-        NOTREACHED();
-    }
-    AllocateTexture(gfx::Size(width, height), format);
-  }
-
   void texImage2D(GLenum target,
                   GLint level,
                   GLenum internalformat,
@@ -271,27 +254,6 @@ class ResourceProviderContext : public viz::TestWebGraphicsContext3D {
     AllocateTexture(gfx::Size(width, height), format);
     if (pixels)
       SetPixels(0, 0, width, height, pixels);
-  }
-
-  void texSubImage2D(GLenum target,
-                     GLint level,
-                     GLint xoffset,
-                     GLint yoffset,
-                     GLsizei width,
-                     GLsizei height,
-                     GLenum format,
-                     GLenum type,
-                     const void* pixels) override {
-    CheckTextureIsBound(target);
-    ASSERT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
-    ASSERT_FALSE(level);
-    ASSERT_EQ(static_cast<unsigned>(GL_UNSIGNED_BYTE), type);
-    {
-      base::AutoLock lock_for_texture_access(namespace_->lock);
-      ASSERT_EQ(GLDataFormat(BoundTexture(target)->format), format);
-    }
-    ASSERT_TRUE(pixels);
-    SetPixels(xoffset, yoffset, width, height, pixels);
   }
 
   void genMailboxCHROMIUM(GLbyte* mailbox) override {
@@ -485,6 +447,30 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
     }
   }
 
+  viz::ResourceId CreateChildGpuMailboxWithCallback(
+      viz::ReleaseCallback callback,
+      bool enable_read_lock_fences = false) {
+    DCHECK(use_gpu());
+    unsigned texture = child_context_->createTexture();
+    gpu::Mailbox gpu_mailbox;
+    child_context_->genMailboxCHROMIUM(gpu_mailbox.name);
+    child_context_->produceTextureDirectCHROMIUM(texture, gpu_mailbox.name);
+    gpu::SyncToken sync_token;
+    child_context_->genSyncToken(sync_token.GetData());
+    EXPECT_TRUE(sync_token.HasData());
+
+    viz::TransferableResource gl_resource = viz::TransferableResource::MakeGL(
+        gpu_mailbox, GL_LINEAR, GL_TEXTURE_2D, sync_token);
+    gl_resource.read_lock_fences_enabled = enable_read_lock_fences;
+    return child_resource_provider_->ImportResource(
+        gl_resource, viz::SingleReleaseCallback::Create(std::move(callback)));
+  }
+
+  viz::ResourceId CreateChildGpuMailbox(bool enable_read_lock_fences = false) {
+    return CreateChildGpuMailboxWithCallback(base::DoNothing(),
+                                             enable_read_lock_fences);
+  }
+
   viz::ResourceId MakeGpuResourceAndSendToDisplay(
       char c,
       GLuint filter,
@@ -628,14 +614,6 @@ TEST_P(ResourceProviderTest, TransferGLResources_NoSyncToken) {
       child_context_provider_.get(), nullptr, need_sync_tokens,
       CreateResourceSettings());
 
-  gfx::Size size(1, 1);
-  viz::ResourceFormat format = viz::RGBA_8888;
-  size_t pixel_size = TextureSizeBytes(size, format);
-  ASSERT_EQ(4U, pixel_size);
-
-  viz::ResourceId id1 = no_token_resource_provider->CreateGpuTextureResource(
-      size, format, gfx::ColorSpace());
-
   GLuint external_texture_id = child_context_->createExternalTexture();
 
   // A sync point is specified directly and should be used.
@@ -646,7 +624,7 @@ TEST_P(ResourceProviderTest, TransferGLResources_NoSyncToken) {
   gpu::SyncToken external_sync_token;
   child_context_->genSyncToken(external_sync_token.GetData());
   EXPECT_TRUE(external_sync_token.HasData());
-  viz::ResourceId id2 = no_token_resource_provider->ImportResource(
+  viz::ResourceId id = no_token_resource_provider->ImportResource(
       viz::TransferableResource::MakeGL(external_mailbox, GL_LINEAR,
                                         GL_TEXTURE_EXTERNAL_OES,
                                         external_sync_token),
@@ -659,21 +637,17 @@ TEST_P(ResourceProviderTest, TransferGLResources_NoSyncToken) {
   {
     // Transfer some resources to the parent.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
-    resource_ids_to_transfer.push_back(id1);
-    resource_ids_to_transfer.push_back(id2);
+    resource_ids_to_transfer.push_back(id);
     std::vector<viz::TransferableResource> list;
     no_token_resource_provider->PrepareSendToParent(resource_ids_to_transfer,
                                                     &list);
-    ASSERT_EQ(2u, list.size());
-    // Standard resources shouldn't require creating and sending a sync point.
-    EXPECT_FALSE(list[0].mailbox_holder.sync_token.HasData());
+    ASSERT_EQ(1u, list.size());
     // A given sync point should be passed through.
-    EXPECT_EQ(external_sync_token, list[1].mailbox_holder.sync_token);
+    EXPECT_EQ(external_sync_token, list[0].mailbox_holder.sync_token);
     resource_provider_->ReceiveFromChild(child_id, list);
 
     viz::ResourceIdSet resource_ids_to_receive;
-    resource_ids_to_receive.insert(id1);
-    resource_ids_to_receive.insert(id2);
+    resource_ids_to_receive.insert(id);
     resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                       resource_ids_to_receive);
   }
@@ -686,20 +660,15 @@ TEST_P(ResourceProviderTest, TransferGLResources_NoSyncToken) {
     viz::ResourceIdSet no_resources;
     resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
 
-    ASSERT_EQ(2u, returned_to_child.size());
+    ASSERT_EQ(1u, returned_to_child.size());
     std::map<viz::ResourceId, gpu::SyncToken> returned_sync_tokens;
     for (const auto& returned : returned_to_child)
       returned_sync_tokens[returned.id] = returned.sync_token;
 
-    ASSERT_TRUE(returned_sync_tokens.find(id1) != returned_sync_tokens.end());
-    // No new sync point should be created transferring back.
-    ASSERT_TRUE(returned_sync_tokens.find(id1) != returned_sync_tokens.end());
-    EXPECT_FALSE(returned_sync_tokens[id1].HasData());
     // Original sync point given should be returned.
-    ASSERT_TRUE(returned_sync_tokens.find(id2) != returned_sync_tokens.end());
-    EXPECT_EQ(external_sync_token, returned_sync_tokens[id2]);
+    ASSERT_TRUE(returned_sync_tokens.find(id) != returned_sync_tokens.end());
+    EXPECT_EQ(external_sync_token, returned_sync_tokens[id]);
     EXPECT_FALSE(returned_to_child[0].lost);
-    EXPECT_FALSE(returned_to_child[1].lost);
     no_token_resource_provider->ReceiveReturnsFromParent(returned_to_child);
     returned_to_child.clear();
   }
@@ -711,19 +680,19 @@ TEST_P(ResourceProviderTest, TransferGLResources_NoSyncToken) {
 TEST_P(ResourceProviderTest, SetBatchPreventsReturn) {
   if (!use_gpu())
     return;
-  gfx::Size size(1, 1);
-  viz::ResourceFormat format = viz::RGBA_8888;
 
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
 
+  int release_count = 0;
+
   // Transfer some resources to the parent.
   ResourceProvider::ResourceIdArray resource_ids_to_transfer;
   viz::ResourceId ids[2];
   for (size_t i = 0; i < arraysize(ids); i++) {
-    ids[i] = child_resource_provider_->CreateGpuTextureResource(
-        size, format, gfx::ColorSpace());
+    ids[i] = CreateChildGpuMailboxWithCallback(
+        base::BindOnce(&CountingReleaseCallback, &release_count));
     resource_ids_to_transfer.push_back(ids[i]);
   }
 
@@ -767,19 +736,18 @@ TEST_P(ResourceProviderTest, SetBatchPreventsReturn) {
   EXPECT_EQ(returned_to_child[0].sync_token, returned_to_child[1].sync_token);
 
   child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
-  child_resource_provider_->DeleteResource(ids[0]);
-  child_resource_provider_->DeleteResource(ids[1]);
-  EXPECT_EQ(0u, child_resource_provider_->num_resources());
+  child_resource_provider_->RemoveImportedResource(ids[0]);
+  child_resource_provider_->RemoveImportedResource(ids[1]);
+  EXPECT_EQ(2, release_count);
 }
 
 TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
   if (!use_gpu())
     return;
-  gfx::Size size(1, 1);
-  viz::ResourceFormat format = viz::RGBA_8888;
 
-  viz::ResourceId id1 = child_resource_provider_->CreateGpuTextureResource(
-      size, format, gfx::ColorSpace());
+  int release_count = 0;
+  viz::ResourceId id1 = CreateChildGpuMailboxWithCallback(
+      base::BindOnce(&CountingReleaseCallback, &release_count));
 
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
@@ -815,9 +783,8 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
 
   // No need to wait for the sync token here -- it will be returned to the
   // client on delete.
-  EXPECT_EQ(1u, child_resource_provider_->num_resources());
-  child_resource_provider_->DeleteResource(id1);
-  EXPECT_EQ(0u, child_resource_provider_->num_resources());
+  child_resource_provider_->RemoveImportedResource(id1);
+  EXPECT_EQ(1, release_count);
 
   resource_provider_->DestroyChild(child_id);
 }
@@ -840,12 +807,12 @@ class TestFence : public viz::ResourceFence {
 TEST_P(ResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
   if (!use_gpu())
     return;
-  gfx::Size size(1, 1);
-  viz::ResourceFormat format = viz::RGBA_8888;
 
-  viz::ResourceId id1 = child_resource_provider_->CreateGpuTextureResource(
-      size, format, gfx::ColorSpace());
-  child_resource_provider_->EnableReadLockFencesForTesting(id1);
+  constexpr bool enable_read_lock_fences = true;
+  int release_count = 0;
+  viz::ResourceId id1 = CreateChildGpuMailboxWithCallback(
+      base::BindOnce(&CountingReleaseCallback, &release_count),
+      enable_read_lock_fences);
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
@@ -889,22 +856,21 @@ TEST_P(ResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
   EXPECT_EQ(1u, returned_to_child.size());
 
   child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
-  child_resource_provider_->DeleteResource(id1);
-  EXPECT_EQ(0u, child_resource_provider_->num_resources());
+  child_resource_provider_->RemoveImportedResource(id1);
+  EXPECT_EQ(1, release_count);
 }
 
 TEST_P(ResourceProviderTest, ReadLockFenceDestroyChild) {
   if (!use_gpu())
     return;
-  gfx::Size size(1, 1);
-  viz::ResourceFormat format = viz::RGBA_8888;
 
-  viz::ResourceId id1 = child_resource_provider_->CreateGpuTextureResource(
-      size, format, gfx::ColorSpace());
-  child_resource_provider_->EnableReadLockFencesForTesting(id1);
-
-  viz::ResourceId id2 = child_resource_provider_->CreateGpuTextureResource(
-      size, format, gfx::ColorSpace());
+  constexpr bool enable_read_lock_fences = true;
+  int release_count = 0;
+  viz::ResourceId id1 = CreateChildGpuMailboxWithCallback(
+      base::BindOnce(&CountingReleaseCallback, &release_count),
+      enable_read_lock_fences);
+  viz::ResourceId id2 = CreateChildGpuMailboxWithCallback(
+      base::BindOnce(&CountingReleaseCallback, &release_count));
 
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
@@ -952,23 +918,18 @@ TEST_P(ResourceProviderTest, ReadLockFenceDestroyChild) {
   EXPECT_EQ(returned_to_child[1].lost, returned_to_child[1].id == id1);
 
   child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
-  child_resource_provider_->DeleteResource(id1);
-  child_resource_provider_->DeleteResource(id2);
-  EXPECT_EQ(0u, child_resource_provider_->num_resources());
+  child_resource_provider_->RemoveImportedResource(id1);
+  child_resource_provider_->RemoveImportedResource(id2);
+  EXPECT_EQ(2, release_count);
 }
 
 TEST_P(ResourceProviderTest, ReadLockFenceContextLost) {
   if (!use_gpu())
     return;
-  gfx::Size size(1, 1);
-  viz::ResourceFormat format = viz::RGBA_8888;
 
-  viz::ResourceId id1 = child_resource_provider_->CreateGpuTextureResource(
-      size, format, gfx::ColorSpace());
-  child_resource_provider_->EnableReadLockFencesForTesting(id1);
-
-  viz::ResourceId id2 = child_resource_provider_->CreateGpuTextureResource(
-      size, format, gfx::ColorSpace());
+  constexpr bool enable_read_lock_fences = true;
+  viz::ResourceId id1 = CreateChildGpuMailbox(enable_read_lock_fences);
+  viz::ResourceId id2 = CreateChildGpuMailbox();
 
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =

@@ -24,6 +24,21 @@
 
 namespace cc {
 
+namespace {
+
+viz::ResourceId CreateAndImportResource(
+    LayerTreeResourceProvider* resource_provider,
+    const gpu::SyncToken& sync_token,
+    gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB()) {
+  auto transfer_resource = viz::TransferableResource::MakeGL(
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, sync_token);
+  transfer_resource.color_space = std::move(color_space);
+  return resource_provider->ImportResource(
+      transfer_resource, viz::SingleReleaseCallback::Create(base::DoNothing()));
+}
+
+}  // anonymous namespace
+
 viz::RenderPass* AddRenderPass(viz::RenderPassList* pass_list,
                                int render_pass_id,
                                const gfx::Rect& output_rect,
@@ -119,47 +134,30 @@ void AddRenderPassQuad(viz::RenderPass* to_pass,
 
 void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
                            LayerTreeResourceProvider* resource_provider,
-                           viz::RenderPassId child_pass_id,
-                           gpu::SyncToken* sync_token_for_mailbox_tebxture) {
+                           viz::RenderPassId child_pass_id) {
   gfx::Rect rect(0, 0, 100, 100);
   gfx::Rect visible_rect(0, 0, 100, 100);
   bool needs_blending = true;
   const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
 
-  static const gpu::SyncToken kSyncTokenForMailboxTextureQuad(
+  static const gpu::SyncToken kSyncToken(
       gpu::CommandBufferNamespace::GPU_IO,
       gpu::CommandBufferId::FromUnsafeValue(0x123), 30);
-  *sync_token_for_mailbox_tebxture = kSyncTokenForMailboxTextureQuad;
 
-  viz::ResourceId resource1 = resource_provider->CreateGpuTextureResource(
-      gfx::Size(45, 5), resource_provider->best_texture_format(),
-      gfx::ColorSpace::CreateSRGB());
-  viz::ResourceId resource2 = resource_provider->CreateGpuTextureResource(
-      gfx::Size(346, 61), resource_provider->best_texture_format(),
-      gfx::ColorSpace::CreateSRGB());
-  viz::ResourceId resource3 = resource_provider->CreateGpuTextureResource(
-      gfx::Size(12, 134), resource_provider->best_texture_format(),
-      gfx::ColorSpace::CreateSRGB());
-  viz::ResourceId resource4 = resource_provider->CreateGpuTextureResource(
-      gfx::Size(56, 12), resource_provider->best_texture_format(),
-      gfx::ColorSpace::CreateSRGB());
-  gfx::Size resource5_size(73, 26);
-  viz::ResourceId resource5 = resource_provider->CreateGpuTextureResource(
-      resource5_size, resource_provider->best_texture_format(),
-      gfx::ColorSpace::CreateSRGB());
-  viz::ResourceId resource6 = resource_provider->CreateGpuTextureResource(
-      gfx::Size(64, 92), resource_provider->best_texture_format(),
-      gfx::ColorSpace::CreateSRGB());
-
-  unsigned target = GL_TEXTURE_2D;
-  gpu::Mailbox gpu_mailbox;
-  memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
-  std::unique_ptr<viz::SingleReleaseCallback> callback =
-      viz::SingleReleaseCallback::Create(base::DoNothing());
-  auto transfer_resource = viz::TransferableResource::MakeGL(
-      gpu_mailbox, GL_LINEAR, target, kSyncTokenForMailboxTextureQuad);
+  viz::ResourceId resource1 =
+      CreateAndImportResource(resource_provider, kSyncToken);
+  viz::ResourceId resource2 =
+      CreateAndImportResource(resource_provider, kSyncToken);
+  viz::ResourceId resource3 =
+      CreateAndImportResource(resource_provider, kSyncToken);
+  viz::ResourceId resource4 =
+      CreateAndImportResource(resource_provider, kSyncToken);
+  viz::ResourceId resource5 =
+      CreateAndImportResource(resource_provider, kSyncToken);
+  viz::ResourceId resource6 =
+      CreateAndImportResource(resource_provider, kSyncToken);
   viz::ResourceId resource8 =
-      resource_provider->ImportResource(transfer_resource, std::move(callback));
+      CreateAndImportResource(resource_provider, kSyncToken);
 
   viz::SharedQuadState* shared_state =
       to_pass->CreateAndAppendSharedQuadState();
@@ -174,7 +172,7 @@ void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
     auto* render_pass_quad =
         to_pass->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
     render_pass_quad->SetNew(shared_state, rect, visible_rect, child_pass_id,
-                             resource5, gfx::RectF(rect), resource5_size,
+                             resource5, gfx::RectF(rect), gfx::Size(73, 26),
                              gfx::Vector2dF(), gfx::PointF(), gfx::RectF(),
                              false);
   }
@@ -234,9 +232,8 @@ void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
 
   viz::ResourceId plane_resources[4];
   for (int i = 0; i < 4; ++i) {
-    plane_resources[i] = resource_provider->CreateGpuTextureResource(
-        gfx::Size(20, 12), resource_provider->best_texture_format(),
-        gfx::ColorSpace::CreateREC601());
+    plane_resources[i] = CreateAndImportResource(
+        resource_provider, kSyncToken, gfx::ColorSpace::CreateREC601());
   }
 
   auto* yuv_quad = to_pass->CreateAndAppendDrawQuad<viz::YUVVideoDrawQuad>();
@@ -263,43 +260,30 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
   bool needs_blending = true;
   const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
 
+  static const gpu::SyncToken kDefaultSyncToken(
+      gpu::CommandBufferNamespace::GPU_IO,
+      gpu::CommandBufferId::FromUnsafeValue(0x111), 42);
   static const gpu::SyncToken kSyncTokenForMailboxTextureQuad(
       gpu::CommandBufferNamespace::GPU_IO,
       gpu::CommandBufferId::FromUnsafeValue(0x123), 30);
   *sync_token_for_mailbox_tebxture = kSyncTokenForMailboxTextureQuad;
 
-  viz::ResourceId resource1 = child_resource_provider->CreateGpuTextureResource(
-      gfx::Size(45, 5), child_resource_provider->best_texture_format(),
-      gfx::ColorSpace::CreateSRGB());
-  viz::ResourceId resource2 = child_resource_provider->CreateGpuTextureResource(
-      gfx::Size(346, 61), child_resource_provider->best_texture_format(),
-      gfx::ColorSpace::CreateSRGB());
-  viz::ResourceId resource3 = child_resource_provider->CreateGpuTextureResource(
-      gfx::Size(12, 134), child_resource_provider->best_texture_format(),
-      gfx::ColorSpace::CreateSRGB());
-  viz::ResourceId resource4 = child_resource_provider->CreateGpuTextureResource(
-      gfx::Size(56, 12), child_resource_provider->best_texture_format(),
-      gfx::ColorSpace::CreateSRGB());
-  gfx::Size resource5_size(73, 26);
-  viz::ResourceId resource5 = child_resource_provider->CreateGpuTextureResource(
-      resource5_size, child_resource_provider->best_texture_format(),
-      gfx::ColorSpace::CreateSRGB());
-  viz::ResourceId resource6 = child_resource_provider->CreateGpuTextureResource(
-      gfx::Size(64, 92), child_resource_provider->best_texture_format(),
-      gfx::ColorSpace::CreateSRGB());
-  viz::ResourceId resource7 = child_resource_provider->CreateGpuTextureResource(
-      gfx::Size(9, 14), child_resource_provider->best_texture_format(),
-      gfx::ColorSpace::CreateSRGB());
-
-  unsigned target = GL_TEXTURE_2D;
-  gpu::Mailbox gpu_mailbox;
-  memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
-  std::unique_ptr<viz::SingleReleaseCallback> callback =
-      viz::SingleReleaseCallback::Create(base::DoNothing());
-  auto transfer_resource = viz::TransferableResource::MakeGL(
-      gpu_mailbox, GL_LINEAR, target, kSyncTokenForMailboxTextureQuad);
-  viz::ResourceId resource8 = child_resource_provider->ImportResource(
-      transfer_resource, std::move(callback));
+  viz::ResourceId resource1 =
+      CreateAndImportResource(child_resource_provider, kDefaultSyncToken);
+  viz::ResourceId resource2 =
+      CreateAndImportResource(child_resource_provider, kDefaultSyncToken);
+  viz::ResourceId resource3 =
+      CreateAndImportResource(child_resource_provider, kDefaultSyncToken);
+  viz::ResourceId resource4 =
+      CreateAndImportResource(child_resource_provider, kDefaultSyncToken);
+  viz::ResourceId resource5 =
+      CreateAndImportResource(child_resource_provider, kDefaultSyncToken);
+  viz::ResourceId resource6 =
+      CreateAndImportResource(child_resource_provider, kDefaultSyncToken);
+  viz::ResourceId resource7 =
+      CreateAndImportResource(child_resource_provider, kDefaultSyncToken);
+  viz::ResourceId resource8 = CreateAndImportResource(
+      child_resource_provider, kSyncTokenForMailboxTextureQuad);
 
   // Transfer resource to the parent.
   ResourceProvider::ResourceIdArray resource_ids_to_transfer;
@@ -314,9 +298,9 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
 
   viz::ResourceId plane_resources[4];
   for (int i = 0; i < 4; ++i) {
-    plane_resources[i] = child_resource_provider->CreateGpuTextureResource(
-        gfx::Size(20, 12), child_resource_provider->best_texture_format(),
-        gfx::ColorSpace::CreateREC601());
+    plane_resources[i] =
+        CreateAndImportResource(child_resource_provider, kDefaultSyncToken,
+                                gfx::ColorSpace::CreateREC601());
     resource_ids_to_transfer.push_back(plane_resources[i]);
   }
 
@@ -357,9 +341,9 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
     viz::RenderPassDrawQuad* render_pass_quad =
         to_pass->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
     render_pass_quad->SetNew(shared_state, rect, visible_rect, child_pass_id,
-                             mapped_resource5, gfx::RectF(rect), resource5_size,
-                             gfx::Vector2dF(), gfx::PointF(), gfx::RectF(),
-                             false);
+                             mapped_resource5, gfx::RectF(rect),
+                             gfx::Size(73, 26), gfx::Vector2dF(), gfx::PointF(),
+                             gfx::RectF(), false);
   }
 
   viz::SolidColorDrawQuad* solid_color_quad =
