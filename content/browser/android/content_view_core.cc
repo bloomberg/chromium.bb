@@ -137,7 +137,7 @@ void ContentViewCore::SendScreenRectsAndResizeWidget() {
   if (view) {
     // |SendScreenRects()| indirectly calls GetViewSize() that asks Java layer.
     web_contents_->SendScreenRects();
-    view->WasResized();
+    view->SynchronizeVisualProperties();
   }
 }
 

@@ -48,7 +48,7 @@ void FrameConnectorDelegate::UpdateResizeParams(
                                     resize_params.min_size_for_auto_resize,
                                     resize_params.max_size_for_auto_resize);
 
-  render_widget_host->WasResized();
+  render_widget_host->SynchronizeVisualProperties();
 }
 
 gfx::PointF FrameConnectorDelegate::TransformPointToRootCoordSpace(

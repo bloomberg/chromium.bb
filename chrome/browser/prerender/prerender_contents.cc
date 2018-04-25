@@ -399,7 +399,7 @@ void PrerenderContents::Observe(int type,
         // thread of the browser process.  When the RenderView receives its
         // size, is also sets itself to be visible, which would then break the
         // visibility API.
-        new_render_view_host->GetWidget()->WasResized();
+        new_render_view_host->GetWidget()->SynchronizeVisualProperties();
         prerender_contents_->WasHidden();
       }
       break;

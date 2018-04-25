@@ -3207,8 +3207,8 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
   widget_host_->ResetSizeAndRepaintPendingFlags();
   sink_->ClearMessages();
 
-  // Call WasResized to flush the old screen info.
-  view_->GetRenderWidgetHost()->WasResized();
+  // Call SynchronizeVisualProperties to flush the old screen info.
+  view_->GetRenderWidgetHost()->SynchronizeVisualProperties();
   {
     // 0 is CreatingNew message.
     const IPC::Message* msg = sink_->GetMessageAt(0);

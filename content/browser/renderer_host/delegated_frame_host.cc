@@ -87,8 +87,9 @@ void DelegatedFrameHost::WasShown(
 
   // Use the default deadline to synchronize web content with browser UI.
   // TODO(fsamuel): Investigate if there is a better deadline to use here.
-  WasResized(new_pending_local_surface_id, new_pending_dip_size,
-             cc::DeadlinePolicy::UseDefaultDeadline());
+  SynchronizeVisualProperties(new_pending_local_surface_id,
+                              new_pending_dip_size,
+                              cc::DeadlinePolicy::UseDefaultDeadline());
 }
 
 bool DelegatedFrameHost::HasSavedFrame() const {
@@ -265,7 +266,7 @@ bool DelegatedFrameHost::ShouldSkipFrame(const gfx::Size& size_in_dip) {
   return size_in_dip != resize_lock_->expected_size();
 }
 
-void DelegatedFrameHost::WasResized(
+void DelegatedFrameHost::SynchronizeVisualProperties(
     const viz::LocalSurfaceId& new_pending_local_surface_id,
     const gfx::Size& new_pending_dip_size,
     cc::DeadlinePolicy deadline_policy) {
@@ -288,7 +289,8 @@ void DelegatedFrameHost::WasResized(
       }
       // Don't update the SurfaceLayer when invisible to avoid blocking on
       // renderers that do not submit CompositorFrames. Next time the renderer
-      // is visible, WasResized will be called again. See WasShown.
+      // is visible, SynchronizeVisualProperties will be called again. See
+      // WasShown.
       return;
     }
 
@@ -553,7 +555,8 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
   active_local_surface_id_ = surface_info.id().local_surface_id();
   active_device_scale_factor_ = surface_info.device_scale_factor();
 
-  // Surface synchronization deals with resizes in WasResized().
+  // Surface synchronization deals with resizes in
+  // SynchronizeVisualProperties().
   if (!enable_surface_synchronization_) {
     released_front_lock_ = nullptr;
     current_frame_size_in_dip_ = frame_size_in_dip;

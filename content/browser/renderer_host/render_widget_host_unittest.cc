@@ -948,14 +948,14 @@ TEST_F(RenderWidgetHostTest, Resize) {
   // The initial bounds is the empty rect, so setting it to the same thing
   // shouldn't send the resize message.
   view_->SetBounds(gfx::Rect());
-  host_->WasResized();
+  host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // No resize ack if the physical backing gets set, but the view bounds are
   // zero.
   view_->SetMockCompositorViewportPixelSize(gfx::Size(200, 200));
-  host_->WasResized();
+  host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
 
   // Setting the view bounds to nonzero should send out the notification.
@@ -964,7 +964,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   process_->sink().ClearMessages();
   view_->SetBounds(original_size);
   view_->SetMockCompositorViewportPixelSize(gfx::Size());
-  host_->WasResized();
+  host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->old_resize_params_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
@@ -973,7 +973,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   // the notification and expect an ack.
   process_->sink().ClearMessages();
   view_->ClearMockCompositorViewportPixelSize();
-  host_->WasResized();
+  host_->SynchronizeVisualProperties();
   EXPECT_TRUE(host_->resize_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->old_resize_params_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
@@ -989,7 +989,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   gfx::Rect second_size(0, 0, 110, 110);
   EXPECT_FALSE(host_->resize_ack_pending_);
   view_->SetBounds(second_size);
-  host_->WasResized();
+  host_->SynchronizeVisualProperties();
   EXPECT_TRUE(host_->resize_ack_pending_);
   params.flags = 0;
   params.view_size = gfx::Size(100, 100);
@@ -1002,7 +1002,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   gfx::Rect third_size(0, 0, 120, 120);
   process_->sink().ClearMessages();
   view_->SetBounds(third_size);
-  host_->WasResized();
+  host_->SynchronizeVisualProperties();
   EXPECT_TRUE(host_->resize_ack_pending_);
   EXPECT_EQ(second_size.size(), host_->old_resize_params_->new_size);
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
@@ -1032,7 +1032,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   // should contain the new size (0x0) and not the previous one that we skipped
   process_->sink().ClearMessages();
   view_->SetBounds(gfx::Rect());
-  host_->WasResized();
+  host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_EQ(gfx::Size(), host_->old_resize_params_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
@@ -1040,28 +1040,28 @@ TEST_F(RenderWidgetHostTest, Resize) {
   // Send a rect that has no area but has either width or height set.
   process_->sink().ClearMessages();
   view_->SetBounds(gfx::Rect(0, 0, 0, 30));
-  host_->WasResized();
+  host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_EQ(gfx::Size(0, 30), host_->old_resize_params_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Set the same size again. It should not be sent again.
   process_->sink().ClearMessages();
-  host_->WasResized();
+  host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_EQ(gfx::Size(0, 30), host_->old_resize_params_->new_size);
   EXPECT_FALSE(process_->sink().GetFirstMessageMatching(ViewMsg_Resize::ID));
 
   // A different size should be sent again, however.
   view_->SetBounds(gfx::Rect(0, 0, 0, 31));
-  host_->WasResized();
+  host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_EQ(gfx::Size(0, 31), host_->old_resize_params_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 }
 
-// Test that a resize event is sent if WasResized() is called after a
-// ScreenInfo change.
+// Test that a resize event is sent if SynchronizeVisualProperties() is called
+// after a ScreenInfo change.
 TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   ScreenInfo screen_info;
   screen_info.device_scale_factor = 1.f;
@@ -1071,7 +1071,7 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
 
   view_->SetScreenInfo(screen_info);
-  host_->WasResized();
+  host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
   process_->sink().ClearMessages();
@@ -1080,7 +1080,7 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
 
   view_->SetScreenInfo(screen_info);
-  host_->WasResized();
+  host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
   process_->sink().ClearMessages();
@@ -1088,14 +1088,14 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   screen_info.device_scale_factor = 2.f;
 
   view_->SetScreenInfo(screen_info);
-  host_->WasResized();
+  host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
   process_->sink().ClearMessages();
 
   // No screen change.
   view_->SetScreenInfo(screen_info);
-  host_->WasResized();
+  host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 }
@@ -1109,7 +1109,7 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
   // Setting the bounds to a "real" rect should send out the notification.
   gfx::Rect original_size(0, 0, 100, 100);
   view_->SetBounds(original_size);
-  host_->WasResized();
+  host_->SynchronizeVisualProperties();
   EXPECT_TRUE(host_->resize_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->old_resize_params_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
@@ -2165,7 +2165,7 @@ TEST_F(RenderWidgetHostTest, ResizeParamsDeviceScale) {
   screen_info.device_scale_factor = device_scale;
 
   view_->SetScreenInfo(screen_info);
-  host_->WasResized();
+  host_->SynchronizeVisualProperties();
 
   float top_controls_height = 10.0f;
   float bottom_controls_height = 20.0f;
@@ -2219,9 +2219,10 @@ class RenderWidgetHostInitialSizeTest : public RenderWidgetHostTest {
 
 TEST_F(RenderWidgetHostInitialSizeTest, InitialSize) {
   // Having an initial size set means that the size information had been sent
-  // with the reqiest to new up the RenderView and so subsequent WasResized
-  // calls should not result in new IPC (unless the size has actually changed).
-  host_->WasResized();
+  // with the reqiest to new up the RenderView and so subsequent
+  // SynchronizeVisualProperties calls should not result in new IPC (unless the
+  // size has actually changed).
+  host_->SynchronizeVisualProperties();
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
   EXPECT_EQ(initial_size_, host_->old_resize_params_->new_size);
   EXPECT_TRUE(host_->resize_ack_pending_);

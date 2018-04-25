@@ -1128,7 +1128,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ChangeDisplayMode) {
 
   delegate.set_mode(blink::kWebDisplayModeFullscreen);
   // Simulate widget is entering fullscreen (changing size is enough).
-  shell()->web_contents()->GetRenderViewHost()->GetWidget()->WasResized();
+  shell()
+      ->web_contents()
+      ->GetRenderViewHost()
+      ->GetWidget()
+      ->SynchronizeVisualProperties();
 
   ASSERT_TRUE(ExecuteScript(shell(),
                             "document.title = "

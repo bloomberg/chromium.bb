@@ -433,7 +433,9 @@ void Shell::ToggleFullscreenModeForTab(WebContents* web_contents,
     return;
   if (is_fullscreen_ != enter_fullscreen) {
     is_fullscreen_ = enter_fullscreen;
-    web_contents->GetRenderViewHost()->GetWidget()->WasResized();
+    web_contents->GetRenderViewHost()
+        ->GetWidget()
+        ->SynchronizeVisualProperties();
   }
 }
 

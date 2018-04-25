@@ -92,8 +92,8 @@ void RenderWidgetHostViewMac::DestroyCompositorForShutdown() {
   Destroy();
 }
 
-void RenderWidgetHostViewMac::WasResized() {
-  host()->WasResized();
+void RenderWidgetHostViewMac::SynchronizeVisualProperties() {
+  host()->SynchronizeVisualProperties();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

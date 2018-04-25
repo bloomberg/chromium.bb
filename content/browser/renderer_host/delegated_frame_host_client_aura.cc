@@ -92,7 +92,7 @@ DelegatedFrameHostClientAura::GetCompositorLock(
 void DelegatedFrameHostClientAura::CompositorResizeLockEnded() {
   auto* window_host = render_widget_host_view_->window_->GetHost();
   window_host->dispatcher()->ReleasePointerMoves();
-  render_widget_host_view_->host_->WasResized();
+  render_widget_host_view_->host_->SynchronizeVisualProperties();
 }
 
 void DelegatedFrameHostClientAura::DidReceiveFirstFrameAfterNavigation() {

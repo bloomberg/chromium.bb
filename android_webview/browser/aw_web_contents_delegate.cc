@@ -244,14 +244,14 @@ void AwWebContentsDelegate::EnterFullscreenModeForTab(
     const GURL& origin) {
   WebContentsDelegateAndroid::EnterFullscreenModeForTab(web_contents, origin);
   is_fullscreen_ = true;
-  web_contents->GetRenderViewHost()->GetWidget()->WasResized();
+  web_contents->GetRenderViewHost()->GetWidget()->SynchronizeVisualProperties();
 }
 
 void AwWebContentsDelegate::ExitFullscreenModeForTab(
     content::WebContents* web_contents) {
   WebContentsDelegateAndroid::ExitFullscreenModeForTab(web_contents);
   is_fullscreen_ = false;
-  web_contents->GetRenderViewHost()->GetWidget()->WasResized();
+  web_contents->GetRenderViewHost()->GetWidget()->SynchronizeVisualProperties();
 }
 
 bool AwWebContentsDelegate::IsFullscreenForTabOrPending(

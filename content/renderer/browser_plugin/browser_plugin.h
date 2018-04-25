@@ -92,7 +92,7 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   // Returns the last allocated LocalSurfaceId.
   const viz::LocalSurfaceId& GetLocalSurfaceId() const;
 
-  void WasResized();
+  void SynchronizeVisualProperties();
 
   // Returns whether a message should be forwarded to BrowserPlugin.
   static bool ShouldForwardToBrowserPlugin(const IPC::Message& message);
@@ -167,13 +167,13 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   ~BrowserPlugin() override;
 
   const gfx::Rect& screen_space_rect() const {
-    return pending_resize_params_.screen_space_rect;
+    return pending_visual_properties_.screen_space_rect;
   }
   gfx::Rect FrameRectInPixels() const;
   float GetDeviceScaleFactor() const;
 
   const ScreenInfo& screen_info() const {
-    return pending_resize_params_.screen_info;
+    return pending_visual_properties_.screen_info;
   }
 
   void UpdateInternalInstanceId();
@@ -257,11 +257,11 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   bool enable_surface_synchronization_ = false;
 
   // The last ResizeParams sent to the browser process, if any.
-  base::Optional<FrameResizeParams> sent_resize_params_;
+  base::Optional<FrameResizeParams> sent_visual_properties_;
 
   // The current set of ResizeParams. This may or may not match
-  // |sent_resize_params_|.
-  FrameResizeParams pending_resize_params_;
+  // |sent_visual_properties_|.
+  FrameResizeParams pending_visual_properties_;
 
   // We call lifetime managing methods on |delegate_|, but we do not directly
   // own this. The delegate destroys itself.

@@ -272,10 +272,10 @@ void RenderWidgetHostViewAndroid::InitAsFullscreen(
   NOTIMPLEMENTED();
 }
 
-void RenderWidgetHostViewAndroid::WasResized() {
+void RenderWidgetHostViewAndroid::SynchronizeVisualProperties() {
   if (delegated_frame_host_)
-    delegated_frame_host_->WasResized();
-  host()->WasResized();
+    delegated_frame_host_->SynchronizeVisualProperties();
+  host()->SynchronizeVisualProperties();
 }
 
 void RenderWidgetHostViewAndroid::SetSize(const gfx::Size& size) {
@@ -832,7 +832,7 @@ void RenderWidgetHostViewAndroid::CopyFromSurface(
 
 void RenderWidgetHostViewAndroid::EnsureSurfaceSynchronizedForLayoutTest() {
   ++latest_capture_sequence_number_;
-  WasResized();
+  SynchronizeVisualProperties();
 }
 
 uint32_t RenderWidgetHostViewAndroid::GetCaptureSequenceNumber() const {
@@ -1901,7 +1901,7 @@ void RenderWidgetHostViewAndroid::UpdateNativeViewTree(
     StartObservingRootWindow();
 
   if (resize)
-    WasResized();
+    SynchronizeVisualProperties();
 
   if (!touch_selection_controller_) {
     ui::TouchSelectionControllerClient* client =
@@ -1982,7 +1982,7 @@ void RenderWidgetHostViewAndroid::OnSizeChanged() {
 
 void RenderWidgetHostViewAndroid::OnPhysicalBackingSizeChanged() {
   EvictFrameIfNecessary();
-  WasResized();
+  SynchronizeVisualProperties();
 }
 
 void RenderWidgetHostViewAndroid::OnRootWindowVisibilityChanged(bool visible) {

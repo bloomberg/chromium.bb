@@ -285,7 +285,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetDoubleTapSupportEnabled(bool enabled);
   void SetMultiTouchZoomSupportEnabled(bool enabled);
 
-  void WasResized();
+  void SynchronizeVisualProperties();
 
   bool HasValidFrame() const;
 
