@@ -1334,8 +1334,8 @@ void RenderThreadImpl::InitializeWebKit(
       thread_safe_sender(), GetWebMainThreadScheduler()->IPCTaskRunner());
   AddFilter(service_worker_message_filter_->GetFilter());
 
-  main_thread_scheduler_->SetStoppingWhenBackgroundedEnabled(
-      GetContentClient()->renderer()->AllowStoppingWhenProcessBackgrounded());
+  main_thread_scheduler_->SetFreezingWhenBackgroundedEnabled(
+      GetContentClient()->renderer()->AllowFreezingWhenProcessBackgrounded());
 
   SkGraphics::SetResourceCacheSingleAllocationByteLimit(
       kImageCacheSingleAllocationByteLimit);

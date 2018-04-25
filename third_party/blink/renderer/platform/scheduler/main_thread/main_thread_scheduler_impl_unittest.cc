@@ -700,9 +700,9 @@ class MainThreadSchedulerImplTest : public testing::Test {
         MainThreadSchedulerImpl::kEndIdleWhenHiddenDelayMillis);
   }
 
-  static base::TimeDelta delay_for_background_tab_stopping() {
+  static base::TimeDelta delay_for_background_tab_freezing() {
     return base::TimeDelta::FromMilliseconds(
-        MainThreadSchedulerImpl::kDelayForBackgroundTabStoppingMillis);
+        MainThreadSchedulerImpl::kDelayForBackgroundTabFreezingMillis);
   }
 
   static base::TimeDelta rails_response_time() {
@@ -2526,7 +2526,7 @@ TEST_F(MainThreadSchedulerImplTest, ShutdownPreventsPostingOfNewTasks) {
 }
 
 TEST_F(MainThreadSchedulerImplTest, TestRendererBackgroundedTimerSuspension) {
-  scheduler_->SetStoppingWhenBackgroundedEnabled(true);
+  scheduler_->SetFreezingWhenBackgroundedEnabled(true);
 
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "T1 T2");
@@ -2550,7 +2550,7 @@ TEST_F(MainThreadSchedulerImplTest, TestRendererBackgroundedTimerSuspension) {
   EXPECT_THAT(run_order, testing::ElementsAre(std::string("T3")));
 
   // Advance the time until after the scheduled timer queue suspension.
-  now = base::TimeTicks() + delay_for_background_tab_stopping() +
+  now = base::TimeTicks() + delay_for_background_tab_freezing() +
         base::TimeDelta::FromMilliseconds(10);
   run_order.clear();
   clock_.SetNowTicks(now);

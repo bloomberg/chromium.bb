@@ -151,7 +151,7 @@ class ChromeContentRendererClient
   void PostCompositorThreadCreated(
       base::SingleThreadTaskRunner* compositor_thread_task_runner) override;
   bool RunIdleHandlerWhenWidgetsHidden() override;
-  bool AllowStoppingWhenProcessBackgrounded() override;
+  bool AllowFreezingWhenProcessBackgrounded() override;
   bool AllowPopup() override;
   bool ShouldFork(blink::WebLocalFrame* frame,
                   const GURL& url,

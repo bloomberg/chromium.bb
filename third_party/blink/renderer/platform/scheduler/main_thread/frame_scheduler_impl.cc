@@ -358,7 +358,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::ThrottleableTaskQueue() {
         MainThreadTaskQueue::QueueCreationParams(
             MainThreadTaskQueue::QueueType::kFrameThrottleable)
             .SetCanBeThrottled(true)
-            .SetCanBeStopped(true)
+            .SetCanBeFrozen(true)
             .SetFreezeWhenKeepActive(true)
             .SetCanBeDeferred(true)
             .SetCanBePaused(true));
@@ -387,7 +387,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::DeferrableTaskQueue() {
         MainThreadTaskQueue::QueueCreationParams(
             MainThreadTaskQueue::QueueType::kFrameDeferrable)
             .SetCanBeDeferred(true)
-            .SetCanBeStopped(
+            .SetCanBeFrozen(
                 RuntimeEnabledFeatures::StopNonTimersInBackgroundEnabled())
             .SetCanBePaused(true));
     deferrable_task_queue_->SetBlameContext(blame_context_);
@@ -405,7 +405,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::PausableTaskQueue() {
     pausable_task_queue_ = main_thread_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
             MainThreadTaskQueue::QueueType::kFramePausable)
-            .SetCanBeStopped(
+            .SetCanBeFrozen(
                 RuntimeEnabledFeatures::StopNonTimersInBackgroundEnabled())
             .SetCanBePaused(true));
     pausable_task_queue_->SetBlameContext(blame_context_);
@@ -552,7 +552,7 @@ void FrameSchedulerImpl::SetKeepActive(bool keep_active) {
 }
 
 void FrameSchedulerImpl::UpdateTaskQueues() {
-  // Per-frame (stoppable) task queues will be stopped after 5mins in
+  // Per-frame (stoppable) task queues will be frozen after 5mins in
   // background. They will be resumed when the page is visible.
   UpdateTaskQueue(throttleable_task_queue_,
                   throttleable_queue_enabled_voter_.get());
@@ -571,7 +571,7 @@ void FrameSchedulerImpl::UpdateTaskQueue(
   if (!queue || !voter)
     return;
   bool queue_paused = frame_paused_ && queue->CanBePaused();
-  bool queue_frozen = page_frozen_ && queue->CanBeStopped();
+  bool queue_frozen = page_frozen_ && queue->CanBeFrozen();
   // Override freezing if keep-active is true.
   if (queue_frozen && !queue->FreezeWhenKeepActive())
     queue_frozen = !keep_active_;

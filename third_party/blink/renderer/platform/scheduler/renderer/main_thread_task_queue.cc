@@ -100,7 +100,7 @@ MainThreadTaskQueue::MainThreadTaskQueue(
       can_be_deferred_(params.can_be_deferred),
       can_be_throttled_(params.can_be_throttled),
       can_be_paused_(params.can_be_paused),
-      can_be_stopped_(params.can_be_stopped),
+      can_be_frozen_(params.can_be_frozen),
       freeze_when_keep_active_(params.freeze_when_keep_active),
       used_for_important_tasks_(params.used_for_important_tasks),
       main_thread_scheduler_(main_thread_scheduler),
