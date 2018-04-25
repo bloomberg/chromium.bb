@@ -4192,11 +4192,6 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Revoked"/>
 </enum>
 
-<enum name="BooleanSafeBrowsingUserOptIn">
-  <int value="0" label="User has opted-out"/>
-  <int value="1" label="User has opted-in"/>
-</enum>
-
 <enum name="BooleanSafeMode">
   <int value="0" label="Regular mode"/>
   <int value="1" label="Safe mode"/>
@@ -39221,18 +39216,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Kill (He's dead, Jim!)"/>
 </enum>
 
+<enum name="SafeBrowsingAppOptIn">
+  <int value="0" label="No opt-in preference in manifest"/>
+  <int value="1" label="Explicit opt-in via manifest"/>
+  <int value="2" label="Explicit opt-out via manifest"/>
+</enum>
+
 <enum name="SafeBrowsingAttributionResultTypes">
   <int value="1" label="SUCCESS"/>
   <int value="2" label="SUCCESS_LANDING_PAGE"/>
   <int value="3" label="SUCCESS_LANDING_REFERRER"/>
   <int value="4" label="INVALID_URL"/>
   <int value="5" label="NAVIGATION_EVENT_NOT_FOUND"/>
-</enum>
-
-<enum name="SafeBrowsingOptIn">
-  <int value="0" label="No opt-in preference in manifest"/>
-  <int value="1" label="Explicit opt-in via manifest"/>
-  <int value="2" label="Explicit opt-out via manifest"/>
 </enum>
 
 <enum name="SafeBrowsingParseV4HashResult">
@@ -39258,6 +39253,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="NOT_BLACKLISTED"/>
   <int value="1" label="TIMEOUT"/>
   <int value="2" label="BLACKLISTED"/>
+</enum>
+
+<enum name="SafeBrowsingUserOptIn">
+  <int value="0" label="User has opted-out"/>
+  <int value="1" label="User has opted-in"/>
+  <int value="2" label="Unable to determine user opt-in"/>
 </enum>
 
 <enum name="SafeBrowsingV4ApplyUpdateResult">

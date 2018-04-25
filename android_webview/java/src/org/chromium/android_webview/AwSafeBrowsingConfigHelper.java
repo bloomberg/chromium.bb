@@ -39,11 +39,28 @@ public class AwSafeBrowsingConfigHelper {
         int COUNT = 3;
     }
 
+    // Used to record the UMA histogram SafeBrowsing.WebView.UserOptIn. Since these values are
+    // persisted to logs, they should never be renumbered nor reused.
+    @IntDef({UserOptIn.UNABLE_TO_DETERMINE, UserOptIn.OPT_IN, UserOptIn.OPT_OUT})
+    @interface UserOptIn {
+        int OPT_OUT = 0;
+        int OPT_IN = 1;
+        int UNABLE_TO_DETERMINE = 2;
+
+        int COUNT = 3;
+    }
+
     private static void recordAppOptIn(@AppOptIn int value) {
         RecordHistogram.recordEnumeratedHistogram(
                 "SafeBrowsing.WebView.AppOptIn", value, AppOptIn.COUNT);
     }
 
+    private static void recordUserOptIn(@UserOptIn int value) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "SafeBrowsing.WebView.UserOptIn", value, UserOptIn.COUNT);
+    }
+
+    // Should only be called once during startup. Calling this multiple times will skew UMA metrics.
     public static void maybeEnableSafeBrowsingFromManifest(final Context appContext) {
         try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped(
                      "AwSafeBrowsingConfigHelper.maybeEnableSafeBrowsingFromManifest")) {
@@ -61,8 +78,18 @@ public class AwSafeBrowsingConfigHelper {
             AwContentsStatics.setSafeBrowsingEnabledByManifest(
                     appOptIn == null ? !isDisabledByCommandLine() : appOptIn);
 
-            Callback<Boolean> cb =
-                    optin -> setSafeBrowsingUserOptIn(optin == null ? DEFAULT_USER_OPT_IN : optin);
+            Callback<Boolean> cb = verifyAppsValue -> {
+                setSafeBrowsingUserOptIn(
+                        verifyAppsValue == null ? DEFAULT_USER_OPT_IN : verifyAppsValue);
+
+                if (verifyAppsValue == null) {
+                    recordUserOptIn(UserOptIn.UNABLE_TO_DETERMINE);
+                } else if (verifyAppsValue) {
+                    recordUserOptIn(UserOptIn.OPT_IN);
+                } else {
+                    recordUserOptIn(UserOptIn.OPT_OUT);
+                }
+            };
             PlatformServiceBridge.getInstance().querySafeBrowsingUserConsent(appContext, cb);
         }
     }
@@ -104,12 +131,8 @@ public class AwSafeBrowsingConfigHelper {
         return sSafeBrowsingUserOptIn;
     }
 
-    // Should only be called once during startup after we receive the result of the underlying GMS
-    // API.
     public static void setSafeBrowsingUserOptIn(boolean optin) {
         sSafeBrowsingUserOptIn = optin;
-
-        RecordHistogram.recordBooleanHistogram("SafeBrowsing.WebView.UserOptIn", optin);
     }
 
     // Not meant to be instantiated.
