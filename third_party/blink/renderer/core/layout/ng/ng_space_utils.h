@@ -21,9 +21,8 @@ bool ShouldShrinkToFit(const ComputedStyle& parent_style,
                        const ComputedStyle& style);
 
 // Adjusts {@code offset} to the clearance line.
-CORE_EXPORT bool AdjustToClearance(
-    const base::Optional<LayoutUnit>& clearance_offset,
-    NGBfcOffset* offset);
+CORE_EXPORT bool AdjustToClearance(LayoutUnit clearance_offset,
+                                   NGBfcOffset* offset);
 
 }  // namespace blink
 

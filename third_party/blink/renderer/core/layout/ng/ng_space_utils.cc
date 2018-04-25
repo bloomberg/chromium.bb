@@ -21,11 +21,10 @@ bool ShouldShrinkToFit(const ComputedStyle& parent_style,
          !is_in_parallel_flow;
 }
 
-bool AdjustToClearance(const base::Optional<LayoutUnit>& clearance_offset,
-                       NGBfcOffset* offset) {
+bool AdjustToClearance(LayoutUnit clearance_offset, NGBfcOffset* offset) {
   DCHECK(offset);
-  if (clearance_offset && clearance_offset.value() > offset->block_offset) {
-    offset->block_offset = clearance_offset.value();
+  if (clearance_offset > offset->block_offset) {
+    offset->block_offset = clearance_offset;
     return true;
   }
 

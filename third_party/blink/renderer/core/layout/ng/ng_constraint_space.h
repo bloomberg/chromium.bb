@@ -189,9 +189,10 @@ class CORE_EXPORT NGConstraintSpace final
     return unpositioned_floats_;
   }
 
-  base::Optional<LayoutUnit> ClearanceOffset() const {
-    return clearance_offset_;
+  bool HasClearanceOffset() const {
+    return clearance_offset_ != LayoutUnit::Min();
   }
+  LayoutUnit ClearanceOffset() const { return clearance_offset_; }
 
   const Vector<NGBaselineRequest>& BaselineRequests() const {
     return baseline_requests_;
@@ -230,7 +231,7 @@ class CORE_EXPORT NGConstraintSpace final
       const base::Optional<NGBfcOffset>& floats_bfc_offset,
       const NGExclusionSpace& exclusion_space,
       Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats,
-      const base::Optional<LayoutUnit>& clearance_offset,
+      LayoutUnit clearance_offset,
       Vector<NGBaselineRequest>& baseline_requests);
 
   NGLogicalSize available_size_;
@@ -268,7 +269,7 @@ class CORE_EXPORT NGConstraintSpace final
   base::Optional<NGBfcOffset> floats_bfc_offset_;
 
   const std::unique_ptr<const NGExclusionSpace> exclusion_space_;
-  base::Optional<LayoutUnit> clearance_offset_;
+  LayoutUnit clearance_offset_;
   Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats_;
 
   Vector<NGBaselineRequest> baseline_requests_;

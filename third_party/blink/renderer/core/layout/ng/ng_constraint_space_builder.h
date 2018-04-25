@@ -72,8 +72,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   NGConstraintSpaceBuilder& SetFloatsBfcOffset(
       const base::Optional<NGBfcOffset>& floats_bfc_offset);
 
-  NGConstraintSpaceBuilder& SetClearanceOffset(
-      const base::Optional<LayoutUnit>& clearance_offset);
+  NGConstraintSpaceBuilder& SetClearanceOffset(LayoutUnit clearance_offset);
 
   NGConstraintSpaceBuilder& SetExclusionSpace(
       const NGExclusionSpace& exclusion_space);
@@ -118,7 +117,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   NGBfcOffset bfc_offset_;
   base::Optional<NGBfcOffset> floats_bfc_offset_;
   const NGExclusionSpace* exclusion_space_;
-  base::Optional<LayoutUnit> clearance_offset_;
+  LayoutUnit clearance_offset_;
   Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats_;
   Vector<NGBaselineRequest> baseline_requests_;
 };

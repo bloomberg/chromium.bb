@@ -37,7 +37,7 @@ NGLayoutOpportunity FindLayoutOpportunityForFloat(
     LayoutUnit inline_size) {
   NGBfcOffset adjusted_origin_point =
       AdjustToTopEdgeAlignmentRule(exclusion_space, origin_offset);
-  base::Optional<LayoutUnit> clearance_offset =
+  LayoutUnit clearance_offset =
       exclusion_space.ClearanceOffset(unpositioned_float.ClearType());
 
   AdjustToClearance(clearance_offset, &adjusted_origin_point);
