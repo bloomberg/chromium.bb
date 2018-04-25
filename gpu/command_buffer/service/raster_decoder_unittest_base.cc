@@ -48,10 +48,13 @@ using namespace gpu::gles2;
 namespace gpu {
 namespace raster {
 
+RasterDecoderTestBase::InitState::InitState() = default;
+RasterDecoderTestBase::InitState::~InitState() = default;
+
 RasterDecoderTestBase::RasterDecoderTestBase()
-    : surface_(NULL),
-      context_(NULL),
-      memory_tracker_(NULL),
+    : surface_(nullptr),
+      context_(nullptr),
+      memory_tracker_(nullptr),
       client_texture_id_(106),
       shared_memory_id_(0),
       shared_memory_offset_(0),
@@ -77,7 +80,7 @@ void RasterDecoderTestBase::OnDescheduleUntilFinished() {}
 void RasterDecoderTestBase::OnRescheduleAfterFinished() {}
 
 void RasterDecoderTestBase::SetUp() {
-  InitDecoderWithWorkarounds({"GL_ARB_sync"});
+  InitDecoder(InitState());
 }
 
 void RasterDecoderTestBase::AddExpectationsForVertexAttribManager() {
@@ -164,15 +167,13 @@ void RasterDecoderTestBase::ExpectEnableDisable(GLenum cap, bool enable) {
   }
 }
 
-void RasterDecoderTestBase::InitDecoderWithWorkarounds(
-    std::initializer_list<std::string> extensions) {
+void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   std::string all_extensions;
-  for (const std::string& extension : extensions) {
+  for (const std::string& extension : init.extensions) {
     all_extensions += extension + " ";
   }
   const std::string gl_version("2.1");
   const bool bind_generates_resource(false);
-  const bool lose_context_when_out_of_memory(false);
   const ContextType context_type(CONTEXT_TYPE_OPENGLES2);
 
   // For easier substring/extension matching
@@ -182,8 +183,7 @@ void RasterDecoderTestBase::InitDecoderWithWorkarounds(
   gl_.reset(new StrictMock<MockGLInterface>());
   ::gl::MockGLInterface::SetGLInterface(gl_.get());
 
-  gpu::GpuDriverBugWorkarounds workarounds;
-  scoped_refptr<FeatureInfo> feature_info = new FeatureInfo(workarounds);
+  scoped_refptr<FeatureInfo> feature_info = new FeatureInfo(init.workarounds);
 
   group_ = scoped_refptr<ContextGroup>(new ContextGroup(
       gpu_preferences_, false, &mailbox_manager_, memory_tracker_,
@@ -229,7 +229,8 @@ void RasterDecoderTestBase::InitDecoderWithWorkarounds(
   ClearSharedMemory();
 
   ContextCreationAttribs attribs;
-  attribs.lose_context_when_out_of_memory = lose_context_when_out_of_memory;
+  attribs.lose_context_when_out_of_memory =
+      init.lose_context_when_out_of_memory;
   attribs.context_type = context_type;
 
   if (group_->feature_info()->feature_flags().native_vertex_array_object) {
@@ -311,7 +312,7 @@ void RasterDecoderTestBase::ResetDecoder() {
   decoder_.reset();
   group_->Destroy(mock_decoder_.get(), false);
   command_buffer_service_.reset();
-  ::gl::MockGLInterface::SetGLInterface(NULL);
+  ::gl::MockGLInterface::SetGLInterface(nullptr);
   gl_.reset();
   gl::init::ShutdownGL(false);
 }
