@@ -110,6 +110,10 @@ base::string16 GetLastFourDigits(const base::string16& number) {
   return stripped.substr(stripped.size() - kNumLastDigits, kNumLastDigits);
 }
 
+base::string16 GetObfuscatedStringForCardDigits(const base::string16& digits) {
+  return base::string16(kMidlineEllipsis) + digits;
+}
+
 }  // namespace
 
 CreditCard::CreditCard(const std::string& guid, const std::string& origin)
@@ -735,6 +739,10 @@ base::string16 CreditCard::NetworkForDisplay() const {
   return CreditCard::NetworkForDisplay(network_);
 }
 
+base::string16 CreditCard::ObfuscatedLastFourDigits() const {
+  return GetObfuscatedStringForCardDigits(LastFourDigits());
+}
+
 base::string16 CreditCard::NetworkAndLastFourDigits() const {
   base::string16 network = NetworkForDisplay();
   // TODO(crbug.com/734197): truncate network.
@@ -744,7 +752,7 @@ base::string16 CreditCard::NetworkAndLastFourDigits() const {
     return network;
 
   // TODO(estade): i18n?
-  return network + base::string16(kMidlineEllipsis) + digits;
+  return network + GetObfuscatedStringForCardDigits(digits);
 }
 
 base::string16 CreditCard::BankNameAndLastFourDigits() const {
@@ -752,7 +760,7 @@ base::string16 CreditCard::BankNameAndLastFourDigits() const {
   // TODO(crbug.com/734197): truncate bank name.
   if (digits.empty())
     return ASCIIToUTF16(bank_name_);
-  return ASCIIToUTF16(bank_name_) + base::string16(kMidlineEllipsis) + digits;
+  return ASCIIToUTF16(bank_name_) + GetObfuscatedStringForCardDigits(digits);
 }
 
 base::string16 CreditCard::NetworkOrBankNameAndLastFourDigits() const {

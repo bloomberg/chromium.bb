@@ -1679,12 +1679,11 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
       } else {
 #if defined(OS_ANDROID)
         // Since Android places the label on its own row, there's more
-        // horizontal
-        // space to work with. Show "Amex - 1234" rather than desktop's "*1234".
+        // horizontal space to work with. Show "Amex - 1234" rather than
+        // desktop's "****1234".
         suggestion->label = credit_card->NetworkOrBankNameAndLastFourDigits();
 #else
-        suggestion->label = base::ASCIIToUTF16("*");
-        suggestion->label.append(credit_card->LastFourDigits());
+        suggestion->label = credit_card->ObfuscatedLastFourDigits();
 #endif
       }
     }
