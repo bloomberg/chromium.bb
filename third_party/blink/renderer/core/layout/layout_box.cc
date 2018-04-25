@@ -2127,11 +2127,8 @@ LayoutUnit LayoutBox::PerpendicularContainingBlockLogicalHeight() const {
     return OverrideContainingBlockContentLogicalHeight();
 
   LayoutBlock* cb = ContainingBlock();
-  if (cb->HasOverrideLogicalHeight()) {
-    // TODO(rego): Shouldn't we use OverrideContentLogicalHeight() directly, so
-    // scrollbar size gets subtracted?
-    return cb->OverrideContentAndScrollbarLogicalHeight();
-  }
+  if (cb->HasOverrideLogicalHeight())
+    return cb->OverrideContentLogicalHeight();
 
   const ComputedStyle& containing_block_style = cb->StyleRef();
   Length logical_height_length = containing_block_style.LogicalHeight();
