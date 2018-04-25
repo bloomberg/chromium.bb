@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -52,7 +53,7 @@ class WiFiTest {
   void Finish(Result result) {
     DCHECK_NE(RESULT_PENDING, result);
     result_ = result;
-    if (base::MessageLoop::current())
+    if (base::MessageLoopCurrent::Get())
       base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
