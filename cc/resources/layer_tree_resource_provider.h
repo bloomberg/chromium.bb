@@ -98,16 +98,6 @@ class CC_EXPORT LayerTreeResourceProvider {
 
   int max_texture_size() const { return settings_.max_texture_size; }
 
-  // Use this format for making resources that will be rastered and uploaded to
-  // from software bitmaps.
-  viz::ResourceFormat best_texture_format() const {
-    return settings_.best_texture_format;
-  }
-  // Use this format for making resources that will be rastered to on the Gpu.
-  viz::ResourceFormat best_render_buffer_format() const {
-    return settings_.best_render_buffer_format;
-  }
-
   viz::ResourceFormat YuvResourceFormat(int bits) const;
 
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager() {
@@ -146,8 +136,6 @@ class CC_EXPORT LayerTreeResourceProvider {
     bool use_sync_query = false;
     viz::ResourceFormat yuv_resource_format = viz::LUMINANCE_8;
     viz::ResourceFormat yuv_highbit_resource_format = viz::LUMINANCE_8;
-    viz::ResourceFormat best_texture_format = viz::RGBA_8888;
-    viz::ResourceFormat best_render_buffer_format = viz::RGBA_8888;
     bool delegated_sync_points_required = false;
   } const settings_;
 

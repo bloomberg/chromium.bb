@@ -17,6 +17,7 @@
 #include "cc/paint/paint_recorder.h"
 #include "cc/raster/raster_source.h"
 #include "cc/raster/scoped_gpu_raster.h"
+#include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/resource.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
@@ -138,11 +139,11 @@ static void RasterizeSourceOOP(
 
   // TODO(enne): Use the |texture_target|? GpuMemoryBuffer backed textures don't
   // use GL_TEXTURE_2D.
-  ri->BeginRasterCHROMIUM(
-      texture_id, raster_source->background_color(), msaa_sample_count,
-      playback_settings.use_lcd_text,
-      viz::ResourceFormatToClosestSkColorType(resource_format),
-      playback_settings.raster_color_space);
+  ri->BeginRasterCHROMIUM(texture_id, raster_source->background_color(),
+                          msaa_sample_count, playback_settings.use_lcd_text,
+                          viz::ResourceFormatToClosestSkColorType(
+                              /*gpu_compositing=*/true, resource_format),
+                          playback_settings.raster_color_space);
   float recording_to_raster_scale =
       transform.scale() / raster_source->recording_scale_factor();
   gfx::Size content_size = raster_source->GetContentSize(transform.scale());
@@ -341,19 +342,17 @@ void GpuRasterBufferProvider::RasterBufferImpl::Playback(
 GpuRasterBufferProvider::GpuRasterBufferProvider(
     viz::ContextProvider* compositor_context_provider,
     viz::RasterContextProvider* worker_context_provider,
-    LayerTreeResourceProvider* resource_provider,
     bool use_gpu_memory_buffer_resources,
     int gpu_rasterization_msaa_sample_count,
-    viz::ResourceFormat preferred_tile_format,
+    viz::ResourceFormat tile_format,
     const gfx::Size& max_tile_size,
     bool unpremultiply_and_dither_low_bit_depth_tiles,
     bool enable_oop_rasterization)
     : compositor_context_provider_(compositor_context_provider),
       worker_context_provider_(worker_context_provider),
-      resource_provider_(resource_provider),
       use_gpu_memory_buffer_resources_(use_gpu_memory_buffer_resources),
       msaa_sample_count_(gpu_rasterization_msaa_sample_count),
-      preferred_tile_format_(preferred_tile_format),
+      tile_format_(tile_format),
       max_tile_size_(max_tile_size),
       unpremultiply_and_dither_low_bit_depth_tiles_(
           unpremultiply_and_dither_low_bit_depth_tiles),
@@ -409,28 +408,17 @@ void GpuRasterBufferProvider::Flush() {
   compositor_context_provider_->ContextSupport()->FlushPendingWork();
 }
 
-viz::ResourceFormat GpuRasterBufferProvider::GetResourceFormat(
-    bool must_support_alpha) const {
-  if (resource_provider_->IsRenderBufferFormatSupported(
-          preferred_tile_format_) &&
-      (DoesResourceFormatSupportAlpha(preferred_tile_format_) ||
-       !must_support_alpha)) {
-    return preferred_tile_format_;
-  }
-
-  return resource_provider_->best_render_buffer_format();
+viz::ResourceFormat GpuRasterBufferProvider::GetResourceFormat() const {
+  return tile_format_;
 }
 
-bool GpuRasterBufferProvider::IsResourceSwizzleRequired(
-    bool must_support_alpha) const {
+bool GpuRasterBufferProvider::IsResourceSwizzleRequired() const {
   // This doesn't require a swizzle because we rasterize to the correct format.
   return false;
 }
 
-bool GpuRasterBufferProvider::IsResourcePremultiplied(
-    bool must_support_alpha) const {
-  return !ShouldUnpremultiplyAndDitherResource(
-      GetResourceFormat(must_support_alpha));
+bool GpuRasterBufferProvider::IsResourcePremultiplied() const {
+  return !ShouldUnpremultiplyAndDitherResource(GetResourceFormat());
 }
 
 bool GpuRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {

@@ -164,8 +164,8 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   // doesn't currently support partial raster.
   settings.use_partial_raster = !settings.use_zero_copy;
 
-  if (command_line->HasSwitch(switches::kUIEnableRGBA4444Textures))
-    settings.preferred_tile_format = viz::RGBA_4444;
+  settings.use_rgba_4444 =
+      command_line->HasSwitch(switches::kUIEnableRGBA4444Textures);
 
 #if defined(OS_MACOSX)
   // Using CoreAnimation to composite requires using GpuMemoryBuffers, which

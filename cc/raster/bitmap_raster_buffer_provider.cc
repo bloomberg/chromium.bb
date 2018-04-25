@@ -70,7 +70,7 @@ class BitmapRasterBufferImpl : public RasterBuffer {
     RasterBufferProvider::PlaybackToMemory(
         pixels_, viz::RGBA_8888, resource_size_, stride, raster_source,
         raster_full_rect, playback_rect, transform, color_space_,
-        playback_settings);
+        /*gpu_compositing=*/false, playback_settings);
   }
 
  private:
@@ -124,19 +124,18 @@ BitmapRasterBufferProvider::AcquireBufferForRaster(
 
 void BitmapRasterBufferProvider::Flush() {}
 
-viz::ResourceFormat BitmapRasterBufferProvider::GetResourceFormat(
-    bool must_support_alpha) const {
+viz::ResourceFormat BitmapRasterBufferProvider::GetResourceFormat() const {
   return viz::RGBA_8888;
 }
 
-bool BitmapRasterBufferProvider::IsResourceSwizzleRequired(
-    bool must_support_alpha) const {
-  // GetResourceFormat() returns a constant so use it directly.
-  return ResourceFormatRequiresSwizzle(viz::RGBA_8888);
+bool BitmapRasterBufferProvider::IsResourceSwizzleRequired() const {
+  // This value only used by gpu compositing. Software compositing resources
+  // are all in the native skia byte ordering, and the display compositor will
+  // do its drawing in the same order.
+  return false;
 }
 
-bool BitmapRasterBufferProvider::IsResourcePremultiplied(
-    bool must_support_alpha) const {
+bool BitmapRasterBufferProvider::IsResourcePremultiplied() const {
   return true;
 }
 

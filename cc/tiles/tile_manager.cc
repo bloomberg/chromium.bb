@@ -1267,10 +1267,8 @@ void TileManager::OnRasterTaskCompleted(
   }
 
   TileDrawInfo& draw_info = tile->draw_info();
-  bool needs_swizzle =
-      raster_buffer_provider_->IsResourceSwizzleRequired(!tile->is_opaque());
-  bool is_premultiplied =
-      raster_buffer_provider_->IsResourcePremultiplied(!tile->is_opaque());
+  bool needs_swizzle = raster_buffer_provider_->IsResourceSwizzleRequired();
+  bool is_premultiplied = raster_buffer_provider_->IsResourcePremultiplied();
   draw_info.SetResource(std::move(resource),
                         raster_task_was_scheduled_with_checker_images,
                         needs_swizzle, is_premultiplied);
@@ -1519,7 +1517,7 @@ void TileManager::NeedsInvalidationForCheckerImagedTiles() {
 
 viz::ResourceFormat TileManager::DetermineResourceFormat(
     const Tile* tile) const {
-  return raster_buffer_provider_->GetResourceFormat(!tile->is_opaque());
+  return raster_buffer_provider_->GetResourceFormat();
 }
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>

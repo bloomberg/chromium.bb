@@ -350,9 +350,8 @@ class RasterBufferProviderPerfTest
         Create3dResourceProvider();
         raster_buffer_provider_ =
             std::make_unique<ZeroCopyRasterBufferProvider>(
-                resource_provider_.get(), &gpu_memory_buffer_manager_,
-                compositor_context_provider_.get(),
-                viz::PlatformColor::BestTextureFormat());
+                &gpu_memory_buffer_manager_, compositor_context_provider_.get(),
+                viz::RGBA_8888);
         resource_pool_ = std::make_unique<ResourcePool>(
             resource_provider_.get(), task_runner_,
             ResourcePool::kDefaultExpirationDelay, ResourcePool::Mode::kGpu,
@@ -364,8 +363,7 @@ class RasterBufferProviderPerfTest
             task_runner_.get(), compositor_context_provider_.get(),
             worker_context_provider_.get(), resource_provider_.get(),
             std::numeric_limits<int>::max(), false, false,
-            std::numeric_limits<int>::max(),
-            viz::PlatformColor::BestTextureFormat());
+            std::numeric_limits<int>::max(), viz::RGBA_8888);
         resource_pool_ = std::make_unique<ResourcePool>(
             resource_provider_.get(), task_runner_,
             ResourcePool::kDefaultExpirationDelay, ResourcePool::Mode::kGpu,
@@ -375,8 +373,7 @@ class RasterBufferProviderPerfTest
         Create3dResourceProvider();
         raster_buffer_provider_ = std::make_unique<GpuRasterBufferProvider>(
             compositor_context_provider_.get(), worker_context_provider_.get(),
-            resource_provider_.get(), false, 0,
-            viz::PlatformColor::BestTextureFormat(), gfx::Size(), true, false);
+            false, 0, viz::RGBA_8888, gfx::Size(), true, false);
         resource_pool_ = std::make_unique<ResourcePool>(
             resource_provider_.get(), task_runner_,
             ResourcePool::kDefaultExpirationDelay, ResourcePool::Mode::kGpu,

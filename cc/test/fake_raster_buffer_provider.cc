@@ -34,18 +34,15 @@ FakeRasterBufferProviderImpl::AcquireBufferForRaster(
 
 void FakeRasterBufferProviderImpl::Flush() {}
 
-viz::ResourceFormat FakeRasterBufferProviderImpl::GetResourceFormat(
-    bool must_support_alpha) const {
+viz::ResourceFormat FakeRasterBufferProviderImpl::GetResourceFormat() const {
   return viz::ResourceFormat::RGBA_8888;
 }
 
-bool FakeRasterBufferProviderImpl::IsResourceSwizzleRequired(
-    bool must_support_alpha) const {
-  return ResourceFormatRequiresSwizzle(GetResourceFormat(must_support_alpha));
+bool FakeRasterBufferProviderImpl::IsResourceSwizzleRequired() const {
+  return false;
 }
 
-bool FakeRasterBufferProviderImpl::IsResourcePremultiplied(
-    bool must_support_alpha) const {
+bool FakeRasterBufferProviderImpl::IsResourcePremultiplied() const {
   return true;
 }
 

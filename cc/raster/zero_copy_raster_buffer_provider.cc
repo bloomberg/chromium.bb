@@ -183,7 +183,8 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
     RasterBufferProvider::PlaybackToMemory(
         gpu_memory_buffer_->memory(0), resource_format_, resource_size_,
         gpu_memory_buffer_->stride(0), raster_source, raster_full_rect,
-        raster_full_rect, transform, resource_color_space_, playback_settings);
+        raster_full_rect, transform, resource_color_space_,
+        /*gpu_compositing=*/true, playback_settings);
     gpu_memory_buffer_->Unmap();
   }
 
@@ -204,14 +205,12 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
 }  // namespace
 
 ZeroCopyRasterBufferProvider::ZeroCopyRasterBufferProvider(
-    LayerTreeResourceProvider* resource_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     viz::ContextProvider* compositor_context_provider,
-    viz::ResourceFormat preferred_tile_format)
-    : resource_provider_(resource_provider),
-      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
+    viz::ResourceFormat tile_format)
+    : gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       compositor_context_provider_(compositor_context_provider),
-      preferred_tile_format_(preferred_tile_format) {}
+      tile_format_(tile_format) {}
 
 ZeroCopyRasterBufferProvider::~ZeroCopyRasterBufferProvider() = default;
 
@@ -235,24 +234,15 @@ ZeroCopyRasterBufferProvider::AcquireBufferForRaster(
 
 void ZeroCopyRasterBufferProvider::Flush() {}
 
-viz::ResourceFormat ZeroCopyRasterBufferProvider::GetResourceFormat(
-    bool must_support_alpha) const {
-  if (resource_provider_->IsTextureFormatSupported(preferred_tile_format_)) {
-    if (!must_support_alpha)
-      return preferred_tile_format_;
-    if (DoesResourceFormatSupportAlpha(preferred_tile_format_))
-      return preferred_tile_format_;
-  }
-  return resource_provider_->best_texture_format();
+viz::ResourceFormat ZeroCopyRasterBufferProvider::GetResourceFormat() const {
+  return tile_format_;
 }
 
-bool ZeroCopyRasterBufferProvider::IsResourceSwizzleRequired(
-    bool must_support_alpha) const {
-  return ResourceFormatRequiresSwizzle(GetResourceFormat(must_support_alpha));
+bool ZeroCopyRasterBufferProvider::IsResourceSwizzleRequired() const {
+  return !viz::PlatformColor::SameComponentOrder(GetResourceFormat());
 }
 
-bool ZeroCopyRasterBufferProvider::IsResourcePremultiplied(
-    bool must_support_alpha) const {
+bool ZeroCopyRasterBufferProvider::IsResourcePremultiplied() const {
   return true;
 }
 

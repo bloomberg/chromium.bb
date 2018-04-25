@@ -1365,8 +1365,6 @@ TEST_F(TileManagerTilePriorityQueueTest,
   EXPECT_FALSE(queue->IsEmpty());
   EXPECT_TRUE(queue->Top().tile()->required_for_draw());
   EXPECT_EQ(gfx::Size(256, 256), queue->Top().tile()->desired_texture_size());
-  EXPECT_EQ(viz::RGBA_8888,
-            host_impl()->resource_provider()->best_texture_format());
 
   ManagedMemoryPolicy policy = host_impl()->ActualManagedMemoryPolicy();
   policy.bytes_limit_when_visible =
@@ -1570,7 +1568,7 @@ class TestSoftwareRasterBufferProvider : public FakeRasterBufferProviderImpl {
       RasterBufferProvider::PlaybackToMemory(
           pixels_, viz::RGBA_8888, size_, /*stride=*/0, raster_source,
           raster_full_rect, /*playback_rect=*/raster_full_rect, transform,
-          gfx::ColorSpace(), playback_settings);
+          gfx::ColorSpace(), /*gpu_compositing=*/true, playback_settings);
     }
 
    private:

@@ -133,7 +133,7 @@ OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
     bool use_partial_raster,
     bool use_gpu_memory_buffer_resources,
     int max_staging_buffer_usage_in_bytes,
-    viz::ResourceFormat preferred_tile_format)
+    viz::ResourceFormat tile_format)
     : compositor_context_provider_(compositor_context_provider),
       worker_context_provider_(worker_context_provider),
       resource_provider_(resource_provider),
@@ -145,7 +145,7 @@ OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
       use_partial_raster_(use_partial_raster),
       use_gpu_memory_buffer_resources_(use_gpu_memory_buffer_resources),
       bytes_scheduled_since_last_flush_(0),
-      preferred_tile_format_(preferred_tile_format),
+      tile_format_(tile_format),
       staging_pool_(std::move(task_runner),
                     worker_context_provider,
                     resource_provider,
@@ -208,24 +208,15 @@ void OneCopyRasterBufferProvider::Flush() {
   compositor_context_provider_->ContextSupport()->FlushPendingWork();
 }
 
-viz::ResourceFormat OneCopyRasterBufferProvider::GetResourceFormat(
-    bool must_support_alpha) const {
-  if (resource_provider_->IsTextureFormatSupported(preferred_tile_format_) &&
-      (DoesResourceFormatSupportAlpha(preferred_tile_format_) ||
-       !must_support_alpha)) {
-    return preferred_tile_format_;
-  }
-
-  return resource_provider_->best_texture_format();
+viz::ResourceFormat OneCopyRasterBufferProvider::GetResourceFormat() const {
+  return tile_format_;
 }
 
-bool OneCopyRasterBufferProvider::IsResourceSwizzleRequired(
-    bool must_support_alpha) const {
-  return ResourceFormatRequiresSwizzle(GetResourceFormat(must_support_alpha));
+bool OneCopyRasterBufferProvider::IsResourceSwizzleRequired() const {
+  return !viz::PlatformColor::SameComponentOrder(GetResourceFormat());
 }
 
-bool OneCopyRasterBufferProvider::IsResourcePremultiplied(
-    bool must_support_alpha) const {
+bool OneCopyRasterBufferProvider::IsResourcePremultiplied() const {
   // TODO(ericrk): Handle unpremultiply/dither in one-copy case as well.
   // https://crbug.com/789153
   return true;
@@ -371,7 +362,7 @@ void OneCopyRasterBufferProvider::PlaybackToStagingBuffer(
     RasterBufferProvider::PlaybackToMemory(
         buffer->memory(0), format, staging_buffer->size, buffer->stride(0),
         raster_source, raster_full_rect, playback_rect, transform,
-        dst_color_space, playback_settings);
+        dst_color_space, /*gpu_compositing=*/true, playback_settings);
     buffer->Unmap();
     staging_buffer->content_id = new_content_id;
   }

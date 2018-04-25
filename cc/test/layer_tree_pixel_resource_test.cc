@@ -55,6 +55,19 @@ LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
   int max_bytes_per_copy_operation = 1024 * 1024;
   int max_staging_buffer_usage_in_bytes = 32 * 1024 * 1024;
 
+  viz::ResourceFormat gpu_raster_format;
+  viz::ResourceFormat sw_raster_format;
+  if (compositor_context_provider) {
+    if (host_impl->settings().use_rgba_4444) {
+      gpu_raster_format = sw_raster_format = viz::RGBA_4444;
+    } else {
+      gpu_raster_format = viz::PlatformColor::BestSupportedRenderBufferFormat(
+          compositor_context_provider->ContextCapabilities());
+      sw_raster_format = viz::PlatformColor::BestSupportedTextureFormat(
+          compositor_context_provider->ContextCapabilities());
+    }
+  }
+
   switch (test_case_) {
     case SOFTWARE:
       EXPECT_FALSE(compositor_context_provider);
@@ -68,17 +81,16 @@ LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
       EXPECT_EQ(PIXEL_TEST_GL, test_type_);
 
       return std::make_unique<GpuRasterBufferProvider>(
-          compositor_context_provider, worker_context_provider,
-          resource_provider, false, 0, viz::PlatformColor::BestTextureFormat(),
-          gfx::Size(), true, false);
+          compositor_context_provider, worker_context_provider, false, 0,
+          gpu_raster_format, gfx::Size(), true, false);
     case ZERO_COPY:
       EXPECT_TRUE(compositor_context_provider);
       EXPECT_TRUE(gpu_memory_buffer_manager);
       EXPECT_EQ(PIXEL_TEST_GL, test_type_);
 
       return std::make_unique<ZeroCopyRasterBufferProvider>(
-          resource_provider, gpu_memory_buffer_manager,
-          compositor_context_provider, viz::PlatformColor::BestTextureFormat());
+          gpu_memory_buffer_manager, compositor_context_provider,
+          sw_raster_format);
     case ONE_COPY:
       EXPECT_TRUE(compositor_context_provider);
       EXPECT_TRUE(worker_context_provider);
@@ -87,8 +99,7 @@ LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
       return std::make_unique<OneCopyRasterBufferProvider>(
           task_runner, compositor_context_provider, worker_context_provider,
           resource_provider, max_bytes_per_copy_operation, false, false,
-          max_staging_buffer_usage_in_bytes,
-          viz::PlatformColor::BestTextureFormat());
+          max_staging_buffer_usage_in_bytes, sw_raster_format);
   }
   return {};
 }
