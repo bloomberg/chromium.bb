@@ -250,15 +250,10 @@ bool StartupMaintenanceSync(OfflinePageMetadataStoreSQL* store,
   if (!db)
     return false;
 
-  std::vector<std::string> namespaces = policy_controller->GetAllNamespaces();
-  std::vector<std::string> temporary_namespaces;
-  std::vector<std::string> persistent_namespaces;
-  for (const auto& name_space : namespaces) {
-    if (!policy_controller->IsRemovedOnCacheReset(name_space))
-      persistent_namespaces.push_back(name_space);
-    else
-      temporary_namespaces.push_back(name_space);
-  }
+  std::vector<std::string> temporary_namespaces =
+      policy_controller->GetNamespacesRemovedOnCacheReset();
+  std::vector<std::string> persistent_namespaces =
+      policy_controller->GetNamespacesForUserRequestedDownload();
 
   // Clear temporary pages that are in legacy directory, which is also the
   // directory that serves as the 'private' directory.
@@ -273,6 +268,7 @@ bool StartupMaintenanceSync(OfflinePageMetadataStoreSQL* store,
                             result, SyncOperationResult::RESULT_COUNT);
 
   // Report storage usage UMA.
+  std::vector<std::string> namespaces = policy_controller->GetAllNamespaces();
   ReportStorageUsageSync(db, namespaces, archive_manager);
 
   return true;

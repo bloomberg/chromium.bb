@@ -220,12 +220,8 @@ PersistentPageConsistencyCheckTask::~PersistentPageConsistencyCheckTask() =
     default;
 
 void PersistentPageConsistencyCheckTask::Run() {
-  std::vector<std::string> namespaces = policy_controller_->GetAllNamespaces();
-  std::vector<std::string> persistent_namespaces;
-  for (const auto& name_space : namespaces) {
-    if (!policy_controller_->IsRemovedOnCacheReset(name_space))
-      persistent_namespaces.push_back(name_space);
-  }
+  std::vector<std::string> persistent_namespaces =
+      policy_controller_->GetNamespacesForUserRequestedDownload();
 
   store_->Execute(base::BindOnce(&PersistentPageConsistencyCheckSync, store_,
                                  archive_manager_->GetPrivateArchivesDir(),
