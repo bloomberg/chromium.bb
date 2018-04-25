@@ -2,17 +2,17 @@
 <html>
   <head>
     <title>
-      Test Constructor: MediaStreamAudioDestinationNode
+      Test Constructor: ConstantSource
     </title>
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
-    <script src="audionodeoptions.js"></script>
+    <script src="../resources/audionodeoptions.js"></script>
   </head>
   <body>
     <script id="layout-test-code">
-      let context = new AudioContext();
+      let context;
 
       let audit = Audit.createTaskRunner();
 
@@ -22,36 +22,25 @@
       });
 
       audit.define('invalid constructor', (task, should) => {
-        testInvalidConstructor(
-            should, 'MediaStreamAudioDestinationNode', context);
+        testInvalidConstructor(should, 'ConstantSourceNode', context);
         task.done();
       });
 
       audit.define('default constructor', (task, should) => {
         let prefix = 'node0';
-        let node = testDefaultConstructor(
-            should, 'MediaStreamAudioDestinationNode', context, {
+        let node =
+            testDefaultConstructor(should, 'ConstantSourceNode', context, {
               prefix: prefix,
-              numberOfInputs: 1,
+              numberOfInputs: 0,
               numberOfOutputs: 1,
               channelCount: 2,
-              channelCountMode: 'explicit',
+              channelCountMode: 'max',
               channelInterpretation: 'speakers'
             });
 
-        testDefaultAttributes(should, node, prefix, []);
+        testDefaultAttributes(
+            should, node, prefix, [{name: 'offset', value: 1}]);
 
-        task.done();
-      });
-
-      audit.define('test AudioNodeOptions', (task, should) => {
-        testAudioNodeOptions(
-            should, context, 'MediaStreamAudioDestinationNode', {
-              channelCount: {
-                // An arbitrary but valid, non-default count for this node.
-                value: 7
-              }
-            });
         task.done();
       });
 
