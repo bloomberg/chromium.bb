@@ -321,7 +321,7 @@ Vector<WebMouseEvent> TransformWebMouseEventVector(
     LocalFrameView* frame_view,
     const std::vector<const WebInputEvent*>& coalesced_events) {
   Vector<WebMouseEvent> result;
-  for (const auto& event : coalesced_events) {
+  for (auto* const event : coalesced_events) {
     DCHECK(WebInputEvent::IsMouseEventType(event->GetType()));
     result.push_back(TransformWebMouseEvent(
         frame_view, static_cast<const WebMouseEvent&>(*event)));
@@ -335,7 +335,7 @@ Vector<WebPointerEvent> TransformWebPointerEventVector(
   float scale = FrameScale(frame_view);
   FloatPoint translation = FrameTranslation(frame_view);
   Vector<WebPointerEvent> result;
-  for (const auto& event : coalesced_events) {
+  for (auto* const event : coalesced_events) {
     DCHECK(WebInputEvent::IsPointerEventType(event->GetType()));
     result.push_back(TransformWebPointerEvent(
         scale, translation, static_cast<const WebPointerEvent&>(*event)));

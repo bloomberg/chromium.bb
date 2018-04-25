@@ -102,7 +102,7 @@ TEST(CSSSelectorParserTest, InvalidANPlusB) {
       "12n- +34", "23n-+43", "10n 5", "10n + +5", "10n + -5",
   };
 
-  for (auto test_case : test_cases) {
+  for (auto* test_case : test_cases) {
     SCOPED_TRACE(test_case);
 
     std::pair<int, int> ab;
@@ -122,7 +122,7 @@ TEST(CSSSelectorParserTest, ShadowDomPseudoInCompound) {
                                  {".a::content.b", ".a::content.b"},
                                  {"::content:not(#id)", "::content:not(#id)"}};
 
-  for (auto test_case : test_cases) {
+  for (auto** test_case : test_cases) {
     SCOPED_TRACE(test_case[0]);
     CSSTokenizer tokenizer(test_case[0]);
     const auto tokens = tokenizer.TokenizeToEOF();
@@ -146,7 +146,7 @@ TEST(CSSSelectorParserTest, PseudoElementsInCompoundLists) {
                               ":-webkit-any(::after, ::before)",
                               ":-webkit-any(::content, span)"};
 
-  for (auto test_case : test_cases) {
+  for (auto* test_case : test_cases) {
     CSSTokenizer tokenizer(test_case);
     const auto tokens = tokenizer.TokenizeToEOF();
     CSSParserTokenRange range(tokens);
@@ -168,7 +168,7 @@ TEST(CSSSelectorParserTest, ValidSimpleAfterPseudoElementInCompound) {
                               "::slotted(span)::before",
                               "::slotted(div)::after"};
 
-  for (auto test_case : test_cases) {
+  for (auto* test_case : test_cases) {
     CSSTokenizer tokenizer(test_case);
     const auto tokens = tokenizer.TokenizeToEOF();
     CSSParserTokenRange range(tokens);
@@ -202,7 +202,7 @@ TEST(CSSSelectorParserTest, InvalidSimpleAfterPseudoElementInCompound) {
       "::slotted(.class)::first-line",
       "::slotted([attr])::-webkit-scrollbar"};
 
-  for (auto test_case : test_cases) {
+  for (auto* test_case : test_cases) {
     CSSTokenizer tokenizer(test_case);
     const auto tokens = tokenizer.TokenizeToEOF();
     CSSParserTokenRange range(tokens);
@@ -221,7 +221,7 @@ TEST(CSSSelectorParserTest, WorkaroundForInvalidCustomPseudoInUAStyle) {
       "video::-webkit-media-text-track-region-container.scrolling",
       "input[type=\"range\" i]::-webkit-media-slider-container > div"};
 
-  for (auto test_case : test_cases) {
+  for (auto* test_case : test_cases) {
     CSSTokenizer tokenizer(test_case);
     const auto tokens = tokenizer.TokenizeToEOF();
     CSSParserTokenRange range(tokens);
@@ -237,7 +237,7 @@ TEST(CSSSelectorParserTest, WorkaroundForInvalidCustomPseudoInUAStyle) {
 TEST(CSSSelectorParserTest, ValidPseudoElementInNonRightmostCompound) {
   const char* test_cases[] = {"::content *", "::content div::before"};
 
-  for (auto test_case : test_cases) {
+  for (auto* test_case : test_cases) {
     CSSTokenizer tokenizer(test_case);
     const auto tokens = tokenizer.TokenizeToEOF();
     CSSParserTokenRange range(tokens);
@@ -255,7 +255,7 @@ TEST(CSSSelectorParserTest, InvalidPseudoElementInNonRightmostCompound) {
                               "::-webkit-scrollbar *", "::cue *",
                               "::selection *"};
 
-  for (auto test_case : test_cases) {
+  for (auto* test_case : test_cases) {
     CSSTokenizer tokenizer(test_case);
     const auto tokens = tokenizer.TokenizeToEOF();
     CSSParserTokenRange range(tokens);
@@ -275,7 +275,7 @@ TEST(CSSSelectorParserTest, UnresolvedNamespacePrefix) {
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
   StyleSheetContents* sheet = StyleSheetContents::Create(context);
 
-  for (auto test_case : test_cases) {
+  for (auto* test_case : test_cases) {
     CSSTokenizer tokenizer(test_case);
     const auto tokens = tokenizer.TokenizeToEOF();
     CSSParserTokenRange range(tokens);
@@ -303,7 +303,7 @@ TEST(CSSSelectorParserTest, SerializedUniversal) {
   StyleSheetContents* sheet = StyleSheetContents::Create(context);
   sheet->ParserAddNamespace("ns", "http://ns.org");
 
-  for (auto test_case : test_cases) {
+  for (auto** test_case : test_cases) {
     SCOPED_TRACE(test_case[0]);
     CSSTokenizer tokenizer(test_case[0]);
     const auto tokens = tokenizer.TokenizeToEOF();
@@ -323,7 +323,7 @@ TEST(CSSSelectorParserTest, InvalidDescendantCombinatorInLiveProfile) {
       CSSParserContext::kLiveProfile);
   StyleSheetContents* sheet = StyleSheetContents::Create(context);
 
-  for (auto test_case : test_cases) {
+  for (auto* test_case : test_cases) {
     SCOPED_TRACE(test_case);
     CSSTokenizer tokenizer(test_case);
     const auto tokens = tokenizer.TokenizeToEOF();
@@ -343,7 +343,7 @@ TEST(CSSSelectorParserTest, InvalidDescendantCombinatorInSnapshotProfile) {
       CSSParserContext::kSnapshotProfile);
   StyleSheetContents* sheet = StyleSheetContents::Create(context);
 
-  for (auto test_case : test_cases) {
+  for (auto* test_case : test_cases) {
     SCOPED_TRACE(test_case);
     CSSTokenizer tokenizer(test_case);
     const auto tokens = tokenizer.TokenizeToEOF();
@@ -365,7 +365,7 @@ TEST(CSSSelectorParserTest, ShadowPiercingCombinatorInSnapshotProfile) {
       CSSParserContext::kSnapshotProfile);
   StyleSheetContents* sheet = StyleSheetContents::Create(context);
 
-  for (auto test_case : test_cases) {
+  for (auto** test_case : test_cases) {
     SCOPED_TRACE(test_case[0]);
     CSSTokenizer tokenizer(test_case[0]);
     const auto tokens = tokenizer.TokenizeToEOF();
@@ -384,7 +384,7 @@ TEST(CSSSelectorParserTest, AttributeSelectorUniversalInvalid) {
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
   StyleSheetContents* sheet = StyleSheetContents::Create(context);
 
-  for (auto test_case : test_cases) {
+  for (auto* test_case : test_cases) {
     SCOPED_TRACE(test_case);
     CSSTokenizer tokenizer(test_case);
     const auto tokens = tokenizer.TokenizeToEOF();
@@ -403,7 +403,7 @@ TEST(CSSSelectorParserTest, InternalPseudo) {
                               ":-internal-spatial-navigation-focus",
                               ":-internal-video-persistent",
                               ":-internal-video-persistent-ancestor"};
-  for (auto test_case : test_cases) {
+  for (auto* test_case : test_cases) {
     SCOPED_TRACE(test_case);
     CSSTokenizer tokenizer(test_case);
     const auto tokens = tokenizer.TokenizeToEOF();
@@ -448,7 +448,7 @@ TEST(CSSSelectorParserTest, InvalidNestingPseudoMatches) {
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
   StyleSheetContents* sheet = StyleSheetContents::Create(context);
 
-  for (auto test_case : test_cases) {
+  for (auto* test_case : test_cases) {
     SCOPED_TRACE(test_case);
     CSSTokenizer tokenizer(test_case);
     const auto tokens = tokenizer.TokenizeToEOF();
@@ -488,7 +488,7 @@ TEST(CSSSelectorParserTest, InvalidPseudoMatchesArguments) {
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
   StyleSheetContents* sheet = StyleSheetContents::Create(context);
 
-  for (auto test_case : test_cases) {
+  for (auto* test_case : test_cases) {
     SCOPED_TRACE(test_case);
     CSSTokenizer tokenizer(test_case);
     const auto tokens = tokenizer.TokenizeToEOF();
@@ -576,7 +576,7 @@ TEST(CSSSelectorParserTest, ShadowPartPseudoElementValid) {
                               "host::part(ident)",
                               "host::part(ident):hover"};
 
-  for (auto test_case : test_cases) {
+  for (auto* test_case : test_cases) {
     SCOPED_TRACE(test_case);
     CSSTokenizer tokenizer(test_case);
     const auto tokens = tokenizer.TokenizeToEOF();

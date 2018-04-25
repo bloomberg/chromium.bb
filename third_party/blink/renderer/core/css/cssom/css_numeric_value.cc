@@ -148,7 +148,7 @@ CSSNumericValue* CalcToNumericValue(const CSSCalcExpressionNode& root) {
     DCHECK(cur_node->LeftExpressionNode());
     DCHECK(cur_node->RightExpressionNode());
 
-    const auto& value = CalcToNumericValue(*cur_node->RightExpressionNode());
+    auto* const value = CalcToNumericValue(*cur_node->RightExpressionNode());
 
     // If the current node is a '-' or '/', it's really just a '+' or '*' with
     // the right child negated or inverted, respectively.
@@ -427,7 +427,7 @@ CSSNumericValue* CSSNumericValue::div(
     ExceptionState& exception_state) {
   auto values = CSSNumberishesToNumericValues(numberishes);
   for (auto& v : values) {
-    auto invert_value = v->Invert();
+    auto* invert_value = v->Invert();
     if (!invert_value) {
       exception_state.ThrowRangeError("Can't divide-by-zero");
       return nullptr;

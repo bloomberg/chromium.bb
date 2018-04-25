@@ -93,7 +93,7 @@ DocumentMarker* UnsortedDocumentMarkerListEditor::FirstMarkerIntersectingRange(
     unsigned end_offset) {
   DCHECK_LE(start_offset, end_offset);
 
-  const auto it =
+  auto* const it =
       std::find_if(list.begin(), list.end(),
                    [start_offset, end_offset](const DocumentMarker* marker) {
                      return marker->StartOffset() < end_offset &&

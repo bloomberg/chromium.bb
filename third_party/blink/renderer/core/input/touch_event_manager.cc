@@ -223,7 +223,7 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
     available_ids.push_back(id);
   std::sort(available_ids.begin(), available_ids.end());
   for (const int& touch_point_id : available_ids) {
-    const auto& touch_point_attribute = touch_attribute_map_.at(touch_point_id);
+    auto* const touch_point_attribute = touch_attribute_map_.at(touch_point_id);
     const WebPointerEvent& touch_pointer_event = touch_point_attribute->event_;
     event.touches[event.touches_length++] =
         CreateWebTouchPointFromWebPointerEvent(touch_pointer_event,
@@ -390,7 +390,7 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
     available_ids.push_back(id);
   std::sort(available_ids.begin(), available_ids.end());
   for (const int& touch_point_id : available_ids) {
-    const auto& touch_point_attribute = touch_attribute_map_.at(touch_point_id);
+    auto* const touch_point_attribute = touch_attribute_map_.at(touch_point_id);
     WebInputEvent::Type event_type = touch_point_attribute->event_.GetType();
     bool known_target;
 

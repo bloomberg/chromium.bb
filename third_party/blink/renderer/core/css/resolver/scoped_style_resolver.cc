@@ -85,7 +85,7 @@ void ScopedStyleResolver::AddFontFaceRules(const RuleSet& rule_set) {
 void ScopedStyleResolver::AppendActiveStyleSheets(
     unsigned index,
     const ActiveStyleSheetVector& active_sheets) {
-  for (auto active_iterator = active_sheets.begin() + index;
+  for (auto* active_iterator = active_sheets.begin() + index;
        active_iterator != active_sheets.end(); active_iterator++) {
     CSSStyleSheet* sheet = active_iterator->first;
     viewport_dependent_media_query_results_.AppendVector(

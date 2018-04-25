@@ -33,7 +33,7 @@ const CSSValue* WebkitTextEmphasisPosition::ParseSingleValue(
   CSSIdentifierValue* over_under = nullptr;
   CSSIdentifierValue* left_right = nullptr;
 
-  for (auto value : values) {
+  for (auto* value : values) {
     if (!value)
       break;
     switch (value->GetValueID()) {

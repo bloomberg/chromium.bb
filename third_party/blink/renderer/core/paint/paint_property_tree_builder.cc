@@ -2210,7 +2210,8 @@ ObjectPaintPropertyTreeBuilder::ContextForFragment(
     }
   } else {
     bool parent_is_under_same_flow_thread;
-    auto pagination_layer = context_.painting_layer->EnclosingPaginationLayer();
+    auto* pagination_layer =
+        context_.painting_layer->EnclosingPaginationLayer();
     if (object_.IsColumnSpanAll()) {
       parent_is_under_same_flow_thread = false;
     } else if (object_.IsOutOfFlowPositioned()) {

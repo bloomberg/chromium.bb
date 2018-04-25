@@ -64,7 +64,7 @@ static_assert(
     "must handle all InputEvent::InputType");
 
 String ConvertInputTypeToString(InputEvent::InputType input_type) {
-  const auto& it =
+  auto* const it =
       std::begin(kInputTypeStringNameMap) + static_cast<size_t>(input_type);
   if (it >= std::begin(kInputTypeStringNameMap) &&
       it < std::end(kInputTypeStringNameMap))

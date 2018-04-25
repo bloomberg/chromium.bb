@@ -64,7 +64,7 @@ TEST_F(NGInlineFragmentTraversalTest, DescendantsOf) {
       "<div id=t>foo<b id=b>bar</b><br>baz</div>");
   const auto descendants =
       NGInlineFragmentTraversal::DescendantsOf(GetRootFragmentById("t"));
-  auto iter = descendants.begin();
+  auto* iter = descendants.begin();
 
   EXPECT_NEXT_LINE_BOX(iter);
   EXPECT_NEXT_TEXT(iter, "foo");
@@ -82,7 +82,7 @@ TEST_F(NGInlineFragmentTraversalTest, InclusiveDescendantsOf) {
       "<div id=t>foo<b id=b>bar</b><br>baz</div>");
   auto descendants = NGInlineFragmentTraversal::InclusiveDescendantsOf(
       GetRootFragmentById("t"));
-  auto iter = descendants.begin();
+  auto* iter = descendants.begin();
 
   EXPECT_NEXT_BOX(iter, "t");
   EXPECT_NEXT_LINE_BOX(iter);
@@ -102,7 +102,7 @@ TEST_F(NGInlineFragmentTraversalTest, SelfFragmentsOf) {
   const auto descendants = NGInlineFragmentTraversal::SelfFragmentsOf(
       GetRootFragmentById("t"), GetLayoutObjectByElementId("filter"));
 
-  auto iter = descendants.begin();
+  auto* iter = descendants.begin();
 
   // <b> generates two box fragments since its content is in two lines.
   EXPECT_NEXT_BOX(iter, "filter");
@@ -123,7 +123,7 @@ TEST_F(NGInlineFragmentTraversalTest, AncestorsOf) {
   const NGPhysicalFragment& target =
       GetFragmentOfNode(root, GetElementById("target")->firstChild());
   auto ancestors = NGInlineFragmentTraversal::AncestorsOf(root, target);
-  auto iter = ancestors.begin();
+  auto* iter = ancestors.begin();
 
   EXPECT_NEXT_BOX(iter, "target");
   EXPECT_NEXT_BOX(iter, "i");
@@ -143,7 +143,7 @@ TEST_F(NGInlineFragmentTraversalTest, InclusiveAncestorsOf) {
       GetFragmentOfNode(root, GetElementById("target")->firstChild());
   auto ancestors =
       NGInlineFragmentTraversal::InclusiveAncestorsOf(root, target);
-  auto iter = ancestors.begin();
+  auto* iter = ancestors.begin();
 
   EXPECT_NEXT_TEXT(iter, "foo");
   EXPECT_NEXT_BOX(iter, "target");

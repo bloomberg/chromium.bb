@@ -560,7 +560,7 @@ static Resource* PrefetchIfNeeded(const LinkLoadParameters& params,
 
     ResourceLoaderOptions options;
     options.initiator_info.name = FetchInitiatorTypeNames::link;
-    auto service = document.GetFrame()->PrefetchURLLoaderService();
+    auto* service = document.GetFrame()->PrefetchURLLoaderService();
     if (service) {
       network::mojom::blink::URLLoaderFactoryPtr prefetch_url_loader_factory;
       service->GetFactory(mojo::MakeRequest(&prefetch_url_loader_factory));

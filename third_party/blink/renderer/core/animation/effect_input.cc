@@ -557,7 +557,7 @@ StringKeyframeVector ConvertObjectForm(Element* element,
   StringKeyframeVector results;
   double previous_offset = 0.0;
   for (size_t i = 0; i < keys.size(); i++) {
-    auto keyframe = keyframes.at(keys[i]);
+    auto* keyframe = keyframes.at(keys[i]);
 
     if (i < offsets.size()) {
       base::Optional<double> offset = offsets[i];

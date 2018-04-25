@@ -449,11 +449,11 @@ Vector<NGLayoutOpportunity> NGExclusionSpace::AllLayoutOpportunities(
     const LayoutUnit available_inline_size) const {
   Vector<NGLayoutOpportunity> opportunities;
 
-  auto shelves_it = shelves_.begin();
-  auto opps_it = opportunities_.begin();
+  auto* shelves_it = shelves_.begin();
+  auto* opps_it = opportunities_.begin();
 
-  const auto shelves_end = shelves_.end();
-  const auto opps_end = opportunities_.end();
+  auto* const shelves_end = shelves_.end();
+  auto* const opps_end = opportunities_.end();
 
   while (shelves_it != shelves_end || opps_it != opps_end) {
     // We should never exhaust the opportunities list before the shelves list,

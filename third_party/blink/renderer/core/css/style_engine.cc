@@ -1281,8 +1281,8 @@ void StyleEngine::ApplyRuleSetChanges(
       if (change == kActiveSheetsChanged)
         ClearKeyframeRules();
 
-      for (auto it = new_style_sheets.begin();
-           it != new_style_sheets.end(); it++) {
+      for (auto* it = new_style_sheets.begin(); it != new_style_sheets.end();
+           it++) {
         DCHECK(it->second);
         AddKeyframeRules(*it->second);
       }
