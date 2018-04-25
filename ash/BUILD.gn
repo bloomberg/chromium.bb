@@ -1121,6 +1121,8 @@ component("ash") {
     "wm/window_util.h",
     "wm/wm_event.cc",
     "wm/wm_event.h",
+    "wm/wm_shadow_controller_delegate.cc",
+    "wm/wm_shadow_controller_delegate.h",
     "wm/wm_snap_to_pixel_layout_manager.cc",
     "wm/wm_snap_to_pixel_layout_manager.h",
     "wm/wm_toplevel_window_event_handler.cc",

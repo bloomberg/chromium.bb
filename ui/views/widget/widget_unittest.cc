@@ -51,6 +51,7 @@
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/focus_controller.h"
 #include "ui/wm/core/shadow_controller.h"
+#include "ui/wm/core/shadow_controller_delegate.h"
 #endif
 
 namespace views {
@@ -3775,8 +3776,8 @@ class WidgetShadowTest : public WidgetTest {
 
     focus_controller_ =
         std::make_unique<wm::FocusController>(new TestFocusRules);
-    shadow_controller_ =
-        std::make_unique<wm::ShadowController>(focus_controller_.get());
+    shadow_controller_ = std::make_unique<wm::ShadowController>(
+        focus_controller_.get(), nullptr);
   }
 
   std::unique_ptr<wm::FocusController> focus_controller_;

@@ -65,6 +65,7 @@
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -3019,6 +3020,24 @@ TEST_F(WindowSelectorTest, DISABLED_DraggingWithTwoFingers) {
   EXPECT_NE(last_center_point, item1->target_bounds().CenterPoint());
   EXPECT_EQ(original_bounds2.CenterPoint(),
             item2->target_bounds().CenterPoint());
+}
+
+// Verify that shadows on windows disappear for the duration of overview mode.
+TEST_F(WindowSelectorTest, ShadowDisappearsInOverview) {
+  const gfx::Rect bounds(200, 200);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+
+  // Verify that the shadow is initially visible.
+  ::wm::ShadowController* shadow_controller = Shell::Get()->shadow_controller();
+  EXPECT_TRUE(shadow_controller->IsShadowVisibleForWindow(window.get()));
+
+  // Verify that the shadow is invisible after entering overview mode.
+  ToggleOverview();
+  EXPECT_FALSE(shadow_controller->IsShadowVisibleForWindow(window.get()));
+
+  // Verify that the shadow is visible again after exiting overview mode.
+  ToggleOverview();
+  EXPECT_TRUE(shadow_controller->IsShadowVisibleForWindow(window.get()));
 }
 
 class SplitViewWindowSelectorTest : public WindowSelectorTest {

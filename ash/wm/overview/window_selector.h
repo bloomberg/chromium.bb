@@ -135,6 +135,8 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // the entire workspace, true otherwise.
   bool ShouldAnimateWallpaper(aura::Window* root_window);
 
+  bool IsWindowInOverview(const aura::Window* window);
+
   WindowSelectorDelegate* delegate() { return delegate_; }
 
   bool restoring_minimized_windows() const {

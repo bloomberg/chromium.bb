@@ -17,6 +17,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/wm/core/default_activation_client.h"
+#include "ui/wm/core/shadow_controller_delegate.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -32,7 +33,7 @@ class ShadowControllerTest : public aura::test::AuraTestBase {
     AuraTestBase::SetUp();
     new wm::DefaultActivationClient(root_window());
     ActivationClient* activation_client = GetActivationClient(root_window());
-    shadow_controller_.reset(new ShadowController(activation_client));
+    shadow_controller_.reset(new ShadowController(activation_client, nullptr));
   }
   void TearDown() override {
     shadow_controller_.reset();

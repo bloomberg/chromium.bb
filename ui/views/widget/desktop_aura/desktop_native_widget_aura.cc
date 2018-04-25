@@ -52,6 +52,7 @@
 #include "ui/wm/core/focus_controller.h"
 #include "ui/wm/core/native_cursor_manager.h"
 #include "ui/wm/core/shadow_controller.h"
+#include "ui/wm/core/shadow_controller_delegate.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/visibility_controller.h"
 #include "ui/wm/core/window_animations.h"
@@ -534,8 +535,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   event_client_.reset(new DesktopEventClient);
   aura::client::SetEventClient(host_->window(), event_client_.get());
 
-  shadow_controller_.reset(
-      new wm::ShadowController(wm::GetActivationClient(host_->window())));
+  shadow_controller_.reset(new wm::ShadowController(
+      wm::GetActivationClient(host_->window()), nullptr));
 
   OnSizeConstraintsChanged();
 

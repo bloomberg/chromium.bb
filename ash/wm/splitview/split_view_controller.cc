@@ -43,6 +43,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -221,13 +222,13 @@ void SplitViewController::SnapWindow(aura::Window* window,
 
   if (snap_position == LEFT) {
     if (left_window_ != window) {
-      StopObserving(left_window_);
+      StopObserving(LEFT);
       left_window_ = window;
     }
     right_window_ = (window == right_window_) ? nullptr : right_window_;
   } else if (snap_position == RIGHT) {
     if (right_window_ != window) {
-      StopObserving(right_window_);
+      StopObserving(RIGHT);
       right_window_ = window;
     }
     left_window_ = (window == left_window_) ? nullptr : left_window_;
@@ -467,10 +468,8 @@ void SplitViewController::EndSplitView() {
   Shell::Get()->activation_client()->RemoveObserver(this);
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
 
-  StopObserving(left_window_);
-  StopObserving(right_window_);
-  left_window_ = nullptr;
-  right_window_ = nullptr;
+  StopObserving(LEFT);
+  StopObserving(RIGHT);
   split_view_divider_.reset();
   black_scrim_layer_.reset();
   default_snap_position_ = NONE;
@@ -589,11 +588,9 @@ void SplitViewController::OnOverviewModeStarting() {
   // If split view mode is active, reset |state_| to make it be able to select
   // another window from overview window grid.
   if (default_snap_position_ == LEFT) {
-    StopObserving(right_window_);
-    right_window_ = nullptr;
+    StopObserving(RIGHT);
   } else if (default_snap_position_ == RIGHT) {
-    StopObserving(left_window_);
-    left_window_ = nullptr;
+    StopObserving(LEFT);
   }
   UpdateSplitViewStateAndNotifyObservers();
 }
@@ -691,17 +688,24 @@ void SplitViewController::OnTabletModeEnding() {
 
 void SplitViewController::StartObserving(aura::Window* window) {
   if (window && !window->HasObserver(this)) {
+    Shell::Get()->shadow_controller()->UpdateShadowForWindow(window);
     window->AddObserver(this);
     wm::GetWindowState(window)->AddObserver(this);
     split_view_divider_->AddObservedWindow(window);
   }
 }
 
-void SplitViewController::StopObserving(aura::Window* window) {
+void SplitViewController::StopObserving(SnapPosition snap_position) {
+  aura::Window* window = snap_position == LEFT ? left_window_ : right_window_;
   if (window && window->HasObserver(this)) {
     window->RemoveObserver(this);
     wm::GetWindowState(window)->RemoveObserver(this);
     split_view_divider_->RemoveObservedWindow(window);
+    if (window == left_window_)
+      left_window_ = nullptr;
+    else
+      right_window_ = nullptr;
+    Shell::Get()->shadow_controller()->UpdateShadowForWindow(window);
   }
 }
 
@@ -980,11 +984,9 @@ void SplitViewController::OnSnappedWindowMinimizedOrDestroyed(
   DCHECK(window);
   DCHECK(window == left_window_ || window == right_window_);
   if (left_window_ == window) {
-    StopObserving(left_window_);
-    left_window_ = nullptr;
+    StopObserving(LEFT);
   } else {
-    StopObserving(right_window_);
-    right_window_ = nullptr;
+    StopObserving(RIGHT);
   }
 
   if (is_resizing_) {

@@ -459,6 +459,9 @@ class ASH_EXPORT Shell : public SessionObserver,
     return screen_pinning_controller_.get();
   }
   SessionController* session_controller() { return session_controller_.get(); }
+  ::wm::ShadowController* shadow_controller() {
+    return shadow_controller_.get();
+  }
   ShelfController* shelf_controller() { return shelf_controller_.get(); }
   ShelfModel* shelf_model();
   ShellDelegate* shell_delegate() { return shell_delegate_.get(); }

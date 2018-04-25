@@ -184,9 +184,11 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   friend class SplitViewControllerTest;
   friend class SplitViewWindowSelectorTest;
 
-  // Starts/Stops observing |window|.
+  // Start observing |window|.
   void StartObserving(aura::Window* window);
-  void StopObserving(aura::Window* window);
+  // Stop observing the window at associated with |snap_position|. Also updates
+  // shadows and sets |left_window_| or |right_window_| to nullptr.
+  void StopObserving(SnapPosition snap_position);
 
   // Update split view state and notify its observer about the change.
   void UpdateSplitViewStateAndNotifyObservers();
