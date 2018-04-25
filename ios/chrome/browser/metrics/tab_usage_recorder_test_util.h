@@ -10,8 +10,8 @@ namespace tab_usage_recorder_test_util {
 // Opens a new incognito tab using the UI and evicts any main tab model tabs.
 void OpenNewIncognitoTabUsingUIAndEvictMainTabs();
 
-// Switches to normal mode using swith button (iPad) or stack view (iPhone).
-// Assumes current mode is Incognito.
+// Switches to normal mode using the tab switcher and selects the
+// previously-selected normal tab. Assumes current mode is Incognito.
 void SwitchToNormalMode();
 
 }  // namespace tab_usage_recorder_test_util

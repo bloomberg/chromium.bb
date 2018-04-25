@@ -83,12 +83,6 @@ void Wait(id<GREYMatcher> matcher, NSString* name) {
       @"Waiting for matcher %@ failed.", name);
 }
 
-// Wait until |matcher| is accessible (not nil) and tap on it.
-void WaitAndTap(id<GREYMatcher> matcher, NSString* name) {
-  Wait(matcher, name);
-  [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
-}
-
 // Creates a new main tab and load |url|. Wait until |word| is visible on the
 // page.
 void NewMainTabWithURL(const GURL& url, const std::string& word) {
@@ -110,19 +104,6 @@ void OpenTwoTabs() {
   const GURL url2 = web::test::HttpServer::MakeUrl(kTestUrl2);
   NewMainTabWithURL(url1, kURL1FirstWord);
   NewMainTabWithURL(url2, kURL2FirstWord);
-}
-
-// Opens a new main tab using the UI. This method is using ad-hoc
-// synchronization.
-void OpenNewMainTabUsingUIUnsynced() {
-  int nb_main_tab = chrome_test_util::GetMainTabCount();
-  id<GREYMatcher> tool_menu_matcher =
-      grey_accessibilityID(kToolbarToolsMenuButtonIdentifier);
-  WaitAndTap(tool_menu_matcher, @"Tool menu");
-  id<GREYMatcher> new_main_tab_button_matcher =
-      grey_accessibilityID(kToolsMenuNewTabId);
-  WaitAndTap(new_main_tab_button_matcher, @"New tab button");
-  [ChromeEarlGrey waitForMainTabCount:(nb_main_tab + 1)];
 }
 
 // Closes a tab in the current tab model. Synchronize on tab number afterwards.
@@ -458,6 +439,9 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
 
   SwitchToNormalMode();
 
+  // Letting page load start.
+  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.5));
+
   // TODO(crbug.com/640977): EarlGrey synchronize on some animations when a
   // page is loading. Need to handle synchronization manually for this test.
   [[GREYConfiguration sharedInstance]
@@ -465,12 +449,11 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
   // Make sure the button is here and displayed before tapping it.
   id<GREYMatcher> toolMenuMatcher =
-      grey_accessibilityID(kToolbarToolsMenuButtonIdentifier);
+      grey_allOf(grey_accessibilityID(kToolbarToolsMenuButtonIdentifier),
+                 grey_sufficientlyVisible(), nil);
   Wait(toolMenuMatcher, @"Tool Menu");
-  // Letting page load start.
-  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.5));
 
-  OpenNewMainTabUsingUIUnsynced();
+  chrome_test_util::OpenNewTab();
   [[GREYConfiguration sharedInstance]
           setValue:@(YES)
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
@@ -531,16 +514,18 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
       std::make_unique<HtmlResponseProvider>(responses), kSlowURLDelay));
   SwitchToNormalMode();
 
+  // Letting page load start.
+  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.5));
+
   // TODO(crbug.com/640977): EarlGrey synchronize on some animations when a
   // page is loading. Need to handle synchronization manually for this test.
   [[GREYConfiguration sharedInstance]
           setValue:@(NO)
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
   id<GREYMatcher> toolMenuMatcher =
-      grey_accessibilityID(kToolbarToolsMenuButtonIdentifier);
+      grey_allOf(grey_accessibilityID(kToolbarToolsMenuButtonIdentifier),
+                 grey_sufficientlyVisible(), nil);
   Wait(toolMenuMatcher, @"Tool Menu");
-  // Letting page load start.
-  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.5));
 
   GREYAssertTrue(chrome_test_util::SimulateTabsBackgrounding(),
                  @"Failed to simulate tab backgrounding.");
