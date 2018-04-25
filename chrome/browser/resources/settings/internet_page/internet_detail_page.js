@@ -246,7 +246,7 @@ Polymer({
     if (!this.didSetFocus_) {
       // Focus a button once the initial state is set.
       this.didSetFocus_ = true;
-      const button = this.$$('#titleDiv .primary-button:not([hidden])') ||
+      const button = this.$$('#titleDiv .action-button:not([hidden])') ||
           this.$$('#titleDiv paper-button:not([hidden])');
       if (button)
         button.focus();

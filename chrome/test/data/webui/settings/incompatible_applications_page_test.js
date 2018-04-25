@@ -164,7 +164,7 @@ suite('incompatibleApplicationsHandler', function() {
           // visible.
           let item = incompatibleApplicationsPage.$$(
               '.incompatible-application:not([hidden])');
-          item.$$('.primary-button').click();
+          item.$$('.action-button').click();
 
           return incompatibleApplicationsBrowserProxy.whenCalled(
               'startProgramUninstallation');
@@ -190,7 +190,7 @@ suite('incompatibleApplicationsHandler', function() {
           // visible.
           let item = incompatibleApplicationsPage.$$(
               '.incompatible-application:not([hidden])');
-          item.$$('.primary-button').click();
+          item.$$('.action-button').click();
 
           return incompatibleApplicationsBrowserProxy.whenCalled('openURL');
         })

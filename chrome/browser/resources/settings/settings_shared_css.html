@@ -69,13 +69,6 @@
         flex-direction: column;
       }
 
-      /* Customize the disabled state of paper buttons within a settings box. */
-      .settings-box paper-button[disabled] {
-        background: none;
-        color: black;
-        opacity: 0.26;
-      }
-
       /* For "Advanced" toggle button. */
       paper-button[toggles][active] {
         background-color: var(--paper-grey-300);
@@ -101,16 +94,6 @@
        * .action-button since it has a background thus is visually different. */
       .separator + paper-button:not(.action-button) {
         -webkit-margin-start: calc(var(--cr-button-edge-spacing) * -1);
-      }
-
-      /* There are two settings button styles, .primary-button and normal
-       * buttons. The primary is the action button (e.g. "edit", "delete")
-       * while the normal (secondary-button) is often a "Cancel" button. */
-      .primary-button:not([disabled]) {
-        --paper-button-flat-keyboard-focus: {
-          background: rgba(51, 103, 214, .12);  /* --google-blue-700 */
-        };
-        color: var(--google-blue-500);
       }
 
       paper-toggle-button {
