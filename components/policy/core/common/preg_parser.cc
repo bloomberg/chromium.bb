@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <functional>
 #include <iterator>
 #include <limits>
 #include <memory>
@@ -146,7 +145,7 @@ bool DecodePRegStringValue(const std::vector<uint8_t>& data,
       reinterpret_cast<const base::char16*>(data.data());
   base::string16 utf16_str;
   std::transform(chars, chars + len - 1, std::back_inserter(utf16_str),
-                 std::ptr_fun(base::ByteSwapToLE16));
+                 base::ByteSwapToLE16);
   // Note: UTF16ToUTF8() only checks whether all chars are valid code points,
   // but not whether they're valid characters. IsStringUTF8(), however, does.
   *value = base::UTF16ToUTF8(utf16_str);
