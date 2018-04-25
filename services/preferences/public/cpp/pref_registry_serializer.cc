@@ -15,7 +15,7 @@ mojom::PrefRegistryPtr SerializePrefRegistry(
     auto flags = pref_registry.GetRegistrationFlags(pref.first);
     if (flags & PrefRegistry::PUBLIC) {
       registry->public_registrations.emplace_back(mojom::PrefRegistration::New(
-          pref.first, pref.second->CreateDeepCopy(), flags));
+          pref.first, pref.second->Clone(), flags));
     } else {
       registry->private_registrations.push_back(pref.first);
     }

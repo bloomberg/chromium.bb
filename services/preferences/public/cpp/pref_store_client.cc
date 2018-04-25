@@ -9,8 +9,9 @@
 namespace prefs {
 
 PrefStoreClient::PrefStoreClient(mojom::PrefStoreConnectionPtr connection) {
-  Init(std::move(connection->initial_prefs), connection->is_initialized,
-       std::move(connection->observer));
+  Init(base::DictionaryValue::From(
+           base::Value::ToUniquePtrValue(std::move(connection->initial_prefs))),
+       connection->is_initialized, std::move(connection->observer));
 }
 
 PrefStoreClient::~PrefStoreClient() = default;
