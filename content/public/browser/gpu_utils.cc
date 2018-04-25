@@ -4,20 +4,21 @@
 
 #include "content/public/browser/gpu_utils.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/service_utils.h"
-#include "gpu/config/gpu_switches.h"
 #include "media/media_buildflags.h"
-#include "ui/gl/gl_switches.h"
 
 namespace {
 
+#if defined(OS_WIN)
 bool GetUintFromSwitch(const base::CommandLine* command_line,
                        const base::StringPiece& switch_string,
                        uint32_t* value) {
@@ -26,6 +27,7 @@ bool GetUintFromSwitch(const base::CommandLine* command_line,
   std::string switch_value(command_line->GetSwitchValueASCII(switch_string));
   return base::StringToUint(switch_value, value);
 }
+#endif  // defined(OS_WIN)
 
 void RunTaskOnTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -49,7 +51,8 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
   DCHECK(base::CommandLine::InitializedForCurrentProcess());
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  gpu::GpuPreferences gpu_preferences;
+  gpu::GpuPreferences gpu_preferences =
+      gpu::gles2::ParseGpuPreferences(command_line);
   gpu_preferences.single_process =
       command_line->HasSwitch(switches::kSingleProcess);
   gpu_preferences.in_process_gpu =
@@ -78,50 +81,6 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
       command_line->HasSwitch(switches::kDisableSoftwareRasterizer);
   gpu_preferences.log_gpu_control_list_decisions =
       command_line->HasSwitch(switches::kLogGpuControlListDecisions);
-  gpu_preferences.compile_shader_always_succeeds =
-      command_line->HasSwitch(switches::kCompileShaderAlwaysSucceeds);
-  gpu_preferences.disable_gl_error_limit =
-      command_line->HasSwitch(switches::kDisableGLErrorLimit);
-  gpu_preferences.disable_glsl_translator =
-      command_line->HasSwitch(switches::kDisableGLSLTranslator);
-  gpu_preferences.disable_shader_name_hashing =
-      command_line->HasSwitch(switches::kDisableShaderNameHashing);
-  gpu_preferences.enable_gpu_command_logging =
-      command_line->HasSwitch(switches::kEnableGPUCommandLogging);
-  gpu_preferences.enable_gpu_debugging =
-      command_line->HasSwitch(switches::kEnableGPUDebugging);
-  gpu_preferences.enable_gpu_service_logging_gpu =
-      command_line->HasSwitch(switches::kEnableGPUServiceLoggingGPU);
-  gpu_preferences.enable_gpu_driver_debug_logging =
-      command_line->HasSwitch(switches::kEnableGPUDriverDebugLogging);
-  gpu_preferences.disable_gpu_program_cache =
-      command_line->HasSwitch(switches::kDisableGpuProgramCache);
-  gpu_preferences.enforce_gl_minimums =
-      command_line->HasSwitch(switches::kEnforceGLMinimums);
-  if (GetUintFromSwitch(command_line, switches::kForceGpuMemAvailableMb,
-                        &gpu_preferences.force_gpu_mem_available)) {
-    gpu_preferences.force_gpu_mem_available *= 1024 * 1024;
-  }
-  if (GetUintFromSwitch(command_line, switches::kGpuProgramCacheSizeKb,
-                        &gpu_preferences.gpu_program_cache_size)) {
-    gpu_preferences.gpu_program_cache_size *= 1024;
-  }
-  gpu_preferences.disable_gpu_shader_disk_cache =
-      command_line->HasSwitch(switches::kDisableGpuShaderDiskCache);
-  gpu_preferences.enable_threaded_texture_mailboxes =
-      command_line->HasSwitch(switches::kEnableThreadedTextureMailboxes);
-  gpu_preferences.gl_shader_interm_output =
-      command_line->HasSwitch(switches::kGLShaderIntermOutput);
-  gpu_preferences.emulate_shader_precision =
-      command_line->HasSwitch(switches::kEmulateShaderPrecision);
-  gpu_preferences.enable_raster_decoder =
-      command_line->HasSwitch(switches::kEnableRasterDecoder);
-  gpu_preferences.enable_gpu_service_logging =
-      command_line->HasSwitch(switches::kEnableGPUServiceLogging);
-  gpu_preferences.enable_gpu_service_tracing =
-      command_line->HasSwitch(switches::kEnableGPUServiceTracing);
-  gpu_preferences.use_passthrough_cmd_decoder =
-      gpu::gles2::UsePassthroughCommandDecoder(command_line);
   gpu_preferences.gpu_startup_dialog =
       command_line->HasSwitch(switches::kGpuStartupDialog);
   gpu_preferences.disable_gpu_watchdog =
@@ -129,10 +88,6 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
       (gpu_preferences.single_process || gpu_preferences.in_process_gpu);
   gpu_preferences.gpu_sandbox_start_early =
       command_line->HasSwitch(switches::kGpuSandboxStartEarly);
-  gpu_preferences.disable_gpu_driver_bug_workarounds =
-      command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds);
-  gpu_preferences.ignore_gpu_blacklist =
-      command_line->HasSwitch(switches::kIgnoreGpuBlacklist);
   // Some of these preferences are set or adjusted in
   // GpuDataManagerImplPrivate::AppendGpuCommandLine.
   return gpu_preferences;
