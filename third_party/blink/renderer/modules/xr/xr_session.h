@@ -99,8 +99,7 @@ class XRSession final : public EventTargetWithInlineData {
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
 
-  void OnFocus();
-  void OnBlur();
+  void OnFocusChanged();
   void OnFrame(std::unique_ptr<TransformationMatrix>,
                const base::Optional<gpu::MailboxHolder>&);
   void OnInputStateChange(
@@ -128,6 +127,10 @@ class XRSession final : public EventTargetWithInlineData {
   XRInputSourceEvent* CreateInputSourceEvent(const AtomicString&,
                                              XRInputSource*);
 
+  void OnFocus();
+  void OnBlur();
+  bool HasAppropriateFocus();
+
   const Member<XRDevice> device_;
   const bool exclusive_;
   const Member<XRPresentationContext> output_context_;
@@ -142,7 +145,7 @@ class XRSession final : public EventTargetWithInlineData {
 
   double depth_near_ = 0.1;
   double depth_far_ = 1000.0;
-  bool blurred_ = false;
+  bool blurred_;
   bool ended_ = false;
   bool pending_frame_ = false;
   bool resolving_frame_ = false;

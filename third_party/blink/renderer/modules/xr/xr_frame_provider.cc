@@ -84,7 +84,8 @@ std::unique_ptr<TransformationMatrix> getPoseMatrix(
 
 }  // namespace
 
-XRFrameProvider::XRFrameProvider(XRDevice* device) : device_(device) {}
+XRFrameProvider::XRFrameProvider(XRDevice* device)
+    : device_(device), last_has_focus_(device->HasDeviceAndFrameFocus()) {}
 
 void XRFrameProvider::BeginExclusiveSession(XRSession* session,
                                             ScriptPromiseResolver* resolver) {
@@ -145,6 +146,21 @@ void XRFrameProvider::OnPresentComplete(
   }
 
   pending_exclusive_session_resolver_ = nullptr;
+}
+
+void XRFrameProvider::OnFocusChanged() {
+  bool focus = device_->HasDeviceAndFrameFocus();
+
+  // If we are gaining focus, schedule a frame for magic window.  This accounts
+  // for skipping RAFs in ProcessScheduledFrame.  Only do this when there are
+  // magic window sessions but no exclusive session. Note that exclusive
+  // sessions don't stop scheduling RAFs when focus is lost, so there is no need
+  // to schedule exclusive frames when focus is acquired.
+  if (focus && !last_has_focus_ && requesting_sessions_.size() > 0 &&
+      !exclusive_session_) {
+    ScheduleNonExclusiveFrame();
+  }
+  last_has_focus_ = focus;
 }
 
 void XRFrameProvider::OnPresentationProviderConnectionError() {
@@ -296,6 +312,11 @@ void XRFrameProvider::ProcessScheduledFrame(double timestamp) {
 
   TRACE_EVENT1("gpu", "XRFrameProvider::ProcessScheduledFrame", "frame",
                frame_id_);
+
+  if (!device_->HasDeviceAndFrameFocus() && !exclusive_session_) {
+    return;  // Not currently focused, so we won't expose poses (except to
+             // exclusive sessions).
+  }
 
   if (exclusive_session_can_send_frames_) {
     if (frame_pose_ && frame_pose_->input_state.has_value()) {

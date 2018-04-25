@@ -18,6 +18,7 @@ namespace blink {
 
 class XR;
 class XRFrameProvider;
+class XRSession;
 
 class XRDevice final : public EventTargetWithInlineData,
                        public device::mojom::blink::VRDisplayClient {
@@ -40,6 +41,7 @@ class XRDevice final : public EventTargetWithInlineData,
   // EventTarget overrides.
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
+  void Trace(blink::Visitor*) override;
 
   // XRDisplayClient
   void OnChanged(device::mojom::blink::VRDisplayInfoPtr) override;
@@ -68,17 +70,31 @@ class XRDevice final : public EventTargetWithInlineData,
   // depend on it can know when they need to update.
   unsigned int xrDisplayInfoPtrId() const { return display_info_id_; }
 
-  void Trace(blink::Visitor*) override;
+  void OnFrameFocusChanged();
+  // The device may report focus to us - for example if another application is
+  // using the headset, or some browsing UI is shown, we may not have device
+  // focus.
+  bool HasDeviceFocus() { return has_device_focus_; }
+  bool HasDeviceAndFrameFocus() { return IsFrameFocused() && HasDeviceFocus(); }
 
  private:
   void SetXRDisplayInfo(device::mojom::blink::VRDisplayInfoPtr);
 
   const char* checkSessionSupport(const XRSessionCreationOptions&) const;
 
+  // There are two components to focus - whether the frame itself has
+  // traditional focus and whether the device reports that we have focus. These
+  // are aggregated so we can hand out focus/blur events on sessions and
+  // determine when to call animation frame callbacks.
+  void OnFocusChanged();
+  bool IsFrameFocused();
+
   Member<XR> xr_;
   Member<XRFrameProvider> frame_provider_;
+  HeapHashSet<WeakMember<XRSession>> sessions_;
   bool is_external_;
   bool supports_exclusive_;
+  bool has_device_focus_ = true;
 
   device::mojom::blink::VRMagicWindowProviderPtr magic_window_provider_;
   device::mojom::blink::VRDisplayHostPtr display_;

@@ -128,6 +128,7 @@ ScriptPromise XRDevice::requestSession(
   }
 
   XRSession* session = new XRSession(this, options.exclusive(), output_context);
+  sessions_.insert(session);
 
   if (options.exclusive()) {
     frameProvider()->BeginExclusiveSession(session, resolver);
@@ -138,20 +139,48 @@ ScriptPromise XRDevice::requestSession(
   return promise;
 }
 
+void XRDevice::OnFrameFocusChanged() {
+  OnFocusChanged();
+}
+
+void XRDevice::OnFocusChanged() {
+  // Tell all sessions that focus changed.
+  for (const auto& session : sessions_) {
+    session->OnFocusChanged();
+  }
+
+  if (frame_provider_)
+    frame_provider_->OnFocusChanged();
+}
+
+bool XRDevice::IsFrameFocused() {
+  return xr_->IsFrameFocused();
+}
+
 // TODO: Forward these calls on to the sessions once they've been implemented.
 void XRDevice::OnChanged(device::mojom::blink::VRDisplayInfoPtr display_info) {
   SetXRDisplayInfo(std::move(display_info));
 }
 void XRDevice::OnExitPresent() {}
-void XRDevice::OnBlur() {}
-void XRDevice::OnFocus() {}
+void XRDevice::OnBlur() {
+  // The device is reporting to us that it is blurred.  This could happen for a
+  // variety of reasons, such as browser UI, a different application using the
+  // headset, or another page entering an exclusive session.
+  has_device_focus_ = false;
+  OnFocusChanged();
+}
+void XRDevice::OnFocus() {
+  has_device_focus_ = true;
+  OnFocusChanged();
+}
 void XRDevice::OnActivate(device::mojom::blink::VRDisplayEventReason,
                           OnActivateCallback on_handled) {}
 void XRDevice::OnDeactivate(device::mojom::blink::VRDisplayEventReason) {}
 
 XRFrameProvider* XRDevice::frameProvider() {
-  if (!frame_provider_)
+  if (!frame_provider_) {
     frame_provider_ = new XRFrameProvider(this);
+  }
 
   return frame_provider_;
 }
@@ -173,6 +202,7 @@ void XRDevice::SetXRDisplayInfo(
 void XRDevice::Trace(blink::Visitor* visitor) {
   visitor->Trace(xr_);
   visitor->Trace(frame_provider_);
+  visitor->Trace(sessions_);
   EventTargetWithInlineData::Trace(visitor);
 }
 
