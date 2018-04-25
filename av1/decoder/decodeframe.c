@@ -2511,6 +2511,7 @@ static void av1_read_tu_pts_info(AV1_COMMON *const cm,
 #endif
 
 void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
+  av1_zero(cm->seq_params);
   SequenceHeader *seq_params = &cm->seq_params;
   int num_bits_width = aom_rb_read_literal(rb, 4) + 1;
   int num_bits_height = aom_rb_read_literal(rb, 4) + 1;
