@@ -18,6 +18,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -241,7 +242,7 @@ class TestDistillerURLFetcher : public DistillerURLFetcher {
   }
 
   void PostCallbackTask() {
-    ASSERT_TRUE(base::MessageLoop::current());
+    ASSERT_TRUE(base::MessageLoopCurrent::Get());
     ASSERT_FALSE(callback_.is_null());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback_, responses_[url_]));
