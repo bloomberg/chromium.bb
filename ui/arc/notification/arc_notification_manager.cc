@@ -100,6 +100,9 @@ ArcNotificationManager::ArcNotificationManager(
 ArcNotificationManager::~ArcNotificationManager() {
   instance_owner_->holder()->RemoveObserver(this);
   instance_owner_->holder()->SetHost(nullptr);
+
+  // Ensures that any callback tied to |instance_owner_| is not invoked.
+  instance_owner_.reset();
 }
 
 void ArcNotificationManager::SetInstance(
@@ -149,9 +152,10 @@ void ArcNotificationManager::OnNotificationPosted(
     DCHECK(result.second);
     it = result.first;
   }
-  const std::string app_id =
-      data->package_name ? GetAppId(data->package_name.value()) : std::string();
-  it->second->OnUpdatedFromAndroid(std::move(data), app_id);
+
+  GetAppId(data->package_name.value_or(std::string()),
+           base::BindOnce(&ArcNotificationManager::OnGotAppId,
+                          weak_ptr_factory_.GetWeakPtr(), std::move(data)));
 }
 
 void ArcNotificationManager::OnNotificationUpdated(
@@ -166,8 +170,9 @@ void ArcNotificationManager::OnNotificationUpdated(
   if (it == items_.end())
     return;
 
-  const std::string app_id = GetAppId(data->package_name.value());
-  it->second->OnUpdatedFromAndroid(std::move(data), app_id);
+  GetAppId(data->package_name.value_or(std::string()),
+           base::BindOnce(&ArcNotificationManager::OnGotAppId,
+                          weak_ptr_factory_.GetWeakPtr(), std::move(data)));
 }
 
 void ArcNotificationManager::OnNotificationRemoved(const std::string& key) {
@@ -369,12 +374,24 @@ bool ArcNotificationManager::ShouldIgnoreNotification(
   return false;
 }
 
-std::string ArcNotificationManager::GetAppId(
-    const std::string& package_name) const {
-  if (get_app_id_callback_.is_null())
-    return std::string();
+void ArcNotificationManager::GetAppId(const std::string& package_name,
+                                      GetAppIdResponseCallback callback) const {
+  if (get_app_id_callback_.is_null() || package_name.empty()) {
+    std::move(callback).Run(std::string());
+    return;
+  }
 
-  return get_app_id_callback_.Run(package_name);
+  get_app_id_callback_.Run(package_name, std::move(callback));
+}
+
+void ArcNotificationManager::OnGotAppId(mojom::ArcNotificationDataPtr data,
+                                        const std::string& app_id) {
+  const std::string& key = data->key;
+  auto it = items_.find(key);
+  if (it == items_.end())
+    return;
+
+  it->second->OnUpdatedFromAndroid(std::move(data), app_id);
 }
 
 }  // namespace arc

@@ -78,6 +78,11 @@ class ASH_EXPORT MessageCenterController
   // Callback for GetNotifierList.
   void OnGotNotifierList(std::vector<mojom::NotifierUiDataPtr> ui_data);
 
+  // Handles get app id calls from ArcNotificationManager.
+  void GetArcAppIdByPackageName(
+      const std::string& package_name,
+      arc::ArcNotificationManager::GetAppIdResponseCallback callback);
+
   std::unique_ptr<FullscreenNotificationBlocker>
       fullscreen_notification_blocker_;
   std::unique_ptr<InactiveUserNotificationBlocker>

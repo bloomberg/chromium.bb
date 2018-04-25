@@ -89,4 +89,7 @@ interface AshMessageCenterClient {
   // Asks the client for a list of notifiers and associated UI information to be
   // displayed in a settings panel.
   GetNotifierList() => (array<NotifierUiData> notifiers);
+
+  // Gets ARC app id from a given package name.
+  GetArcAppIdByPackageName(string package_name) => (string app_id);
 };
