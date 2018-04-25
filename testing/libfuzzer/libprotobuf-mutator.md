@@ -277,7 +277,7 @@ that it handles strings differently in each because of differences in the way
 the proto library handles strings in each syntax (in short, proto3 strings must
 actually be UTF-8 while in proto2 they do not). See [here] for more details.
 
-## Write a fuzzer for code that accepts multiple inputs
+## Write a fuzz target for code that accepts multiple inputs
 LPM makes it straightforward to write a fuzzer for code that needs multiple
 inputs. The steps for doing this are similar to those of writing a grammar based
 fuzzer, except in this case the grammar is very simple. Thus instructions for
@@ -339,7 +339,7 @@ proto_library("my_fuzzer_input") {
 }
 ```
 
-### Tips for fuzz targets that accept multiple inputs.
+### Tips for fuzz targets that accept multiple inputs
 Protobuf has a field rule `repeated` that is useful when a fuzzer needs to
 accept a non-fixed number of inputs (see [mojo_parse_messages_proto_fuzzer],
 which accepts an unbounded number of mojo messages as an example).
