@@ -326,7 +326,16 @@ class PDFiumEngine : public PDFEngine,
                                  uint32_t page_range_count,
                                  const PP_PrintSettings_Dev& print_settings);
 
+  bool FlattenPrintData(FPDF_DOCUMENT doc);
+  pp::Buffer_Dev GetPrintData(FPDF_DOCUMENT doc);
   pp::Buffer_Dev GetFlattenedPrintData(FPDF_DOCUMENT doc);
+
+  // Perform N-up PDF generation from |doc| based on the parameters in
+  // |print_settings|. On success, the returned buffer contains the N-up version
+  // of |doc|. On failure, the returned buffer is empty.
+  pp::Buffer_Dev NupPdfToPdf(FPDF_DOCUMENT doc,
+                             const PP_PrintSettings_Dev& print_settings);
+
   void FitContentsToPrintableAreaIfRequired(
       FPDF_DOCUMENT doc,
       const PP_PrintSettings_Dev& print_settings);
