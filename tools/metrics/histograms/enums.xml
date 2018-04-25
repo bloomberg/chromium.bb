@@ -8725,6 +8725,11 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Non-DRP proxy server with DRP via header"/>
 </enum>
 
+<enum name="DataReductionProxySavingsClearedReason">
+  <int value="0" label="System clock moved back &gt; 24 hours"/>
+  <int value="1" label="Parsing error loading prefs from disk"/>
+</enum>
+
 <enum name="DataReductionProxySettingsConversion">
   <int value="0" label="OFF to OFF"/>
   <int value="1" label="OFF to ON"/>

@@ -852,73 +852,6 @@ TEST_F(DataReductionProxyCompressionStatsTest, PartialDayTimeChange) {
       received2, 2, kNumDaysInHistory);
 }
 
-TEST_F(DataReductionProxyCompressionStatsTest, ForwardMultipleDays) {
-  base::HistogramTester histogram_tester;
-  const int64_t kOriginalLength = 200;
-  const int64_t kReceivedLength = 100;
-  RecordContentLengthPrefs(
-      kReceivedLength, kOriginalLength, true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow());
-  histogram_tester.ExpectUniqueSample(
-      "DataReductionProxy.SavingsCleared.NegativeSystemClock", false, 1);
-
-  // Forward three days.
-  SetFakeTimeDeltaInHours(3 * 24);
-
-  RecordContentLengthPrefs(
-      kReceivedLength, kOriginalLength, true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow());
-  histogram_tester.ExpectUniqueSample(
-      "DataReductionProxy.SavingsCleared.NegativeSystemClock", false, 2);
-
-  int64_t original[] = {kOriginalLength, 0, 0, kOriginalLength};
-  int64_t received[] = {kReceivedLength, 0, 0, kReceivedLength};
-  VerifyDailyDataSavingContentLengthPrefLists(
-      original, 4, received, 4, original, 4, received, 4, original, 4, received,
-      4, kNumDaysInHistory);
-
-  // Forward four more days.
-  AddFakeTimeDeltaInHours(4 * 24);
-  RecordContentLengthPrefs(
-      kReceivedLength, kOriginalLength, true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow());
-  int64_t original2[] = {
-      kOriginalLength, 0, 0, kOriginalLength, 0, 0, 0, kOriginalLength,
-  };
-  int64_t received2[] = {
-      kReceivedLength, 0, 0, kReceivedLength, 0, 0, 0, kReceivedLength,
-  };
-  VerifyDailyDataSavingContentLengthPrefLists(
-      original2, 8, received2, 8, original2, 8, received2, 8, original2, 8,
-      received2, 8, kNumDaysInHistory);
-  histogram_tester.ExpectUniqueSample(
-      "DataReductionProxy.SavingsCleared.NegativeSystemClock", false, 3);
-
-  // Forward |kNumDaysInHistory| more days.
-  AddFakeTimeDeltaInHours(kNumDaysInHistory * 24);
-  RecordContentLengthPrefs(
-      kReceivedLength, kOriginalLength, true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow());
-  int64_t original3[] = {kOriginalLength};
-  int64_t received3[] = {kReceivedLength};
-  VerifyDailyDataSavingContentLengthPrefLists(
-      original3, 1, received3, 1, original3, 1, received3, 1, original3, 1,
-      received3, 1, kNumDaysInHistory);
-  histogram_tester.ExpectUniqueSample(
-      "DataReductionProxy.SavingsCleared.NegativeSystemClock", false, 4);
-
-  // Forward |kNumDaysInHistory| + 1 more days.
-  AddFakeTimeDeltaInHours((kNumDaysInHistory + 1)* 24);
-  RecordContentLengthPrefs(
-      kReceivedLength, kOriginalLength, true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow());
-  VerifyDailyDataSavingContentLengthPrefLists(
-      original3, 1, received3, 1, original3, 1, received3, 1, original3, 1,
-      received3, 1, kNumDaysInHistory);
-  histogram_tester.ExpectUniqueSample(
-      "DataReductionProxy.SavingsCleared.NegativeSystemClock", false, 5);
-}
-
 TEST_F(DataReductionProxyCompressionStatsTest, BackwardAndForwardOneDay) {
   base::HistogramTester histogram_tester;
   const int64_t kOriginalLength = 200;
@@ -929,10 +862,8 @@ TEST_F(DataReductionProxyCompressionStatsTest, BackwardAndForwardOneDay) {
   RecordContentLengthPrefs(
       kReceivedLength, kOriginalLength, true, VIA_DATA_REDUCTION_PROXY,
       FakeNow());
-  histogram_tester.ExpectUniqueSample(
-      "DataReductionProxy.SavingsCleared.NegativeSystemClock", false, 1);
 
-  // Backward one day.
+  // Backward one day, expect no count.
   SetFakeTimeDeltaInHours(-24);
   RecordContentLengthPrefs(
       kReceivedLength, kOriginalLength, true, VIA_DATA_REDUCTION_PROXY,
@@ -942,10 +873,10 @@ TEST_F(DataReductionProxyCompressionStatsTest, BackwardAndForwardOneDay) {
   VerifyDailyDataSavingContentLengthPrefLists(
       original, 1, received, 1, original, 1, received, 1, original, 1, received,
       1, kNumDaysInHistory);
-  histogram_tester.ExpectUniqueSample(
-      "DataReductionProxy.SavingsCleared.NegativeSystemClock", false, 2);
+  histogram_tester.ExpectTotalCount("DataReductionProxy.SavingsCleared.Reason",
+                                    0);
 
-  // Then, Forward one day
+  // Then forward one day, expect no count.
   AddFakeTimeDeltaInHours(24);
   RecordContentLengthPrefs(
       kReceivedLength, kOriginalLength, true, VIA_DATA_REDUCTION_PROXY,
@@ -955,8 +886,8 @@ TEST_F(DataReductionProxyCompressionStatsTest, BackwardAndForwardOneDay) {
   VerifyDailyDataSavingContentLengthPrefLists(
       original2, 2, received2, 2, original2, 2, received2, 2, original2, 2,
       received2, 2, kNumDaysInHistory);
-  histogram_tester.ExpectUniqueSample(
-      "DataReductionProxy.SavingsCleared.NegativeSystemClock", false, 3);
+  histogram_tester.ExpectTotalCount("DataReductionProxy.SavingsCleared.Reason",
+                                    0);
 }
 
 TEST_F(DataReductionProxyCompressionStatsTest, BackwardTwoDays) {
@@ -969,10 +900,8 @@ TEST_F(DataReductionProxyCompressionStatsTest, BackwardTwoDays) {
   RecordContentLengthPrefs(
       kReceivedLength, kOriginalLength, true, VIA_DATA_REDUCTION_PROXY,
       FakeNow());
-  histogram_tester.ExpectUniqueSample(
-      "DataReductionProxy.SavingsCleared.NegativeSystemClock", false, 1);
 
-  // Backward two days.
+  // Backward two days, expect kSystemClockMovedBack.
   SetFakeTimeDeltaInHours(-2 * 24);
   RecordContentLengthPrefs(
       kReceivedLength, kOriginalLength, true, VIA_DATA_REDUCTION_PROXY,
@@ -980,30 +909,33 @@ TEST_F(DataReductionProxyCompressionStatsTest, BackwardTwoDays) {
   VerifyDailyDataSavingContentLengthPrefLists(
       original, 1, received, 1, original, 1, received, 1, original, 1, received,
       1, kNumDaysInHistory);
-  histogram_tester.ExpectTotalCount(
-      "DataReductionProxy.SavingsCleared.NegativeSystemClock", 2);
-  histogram_tester.ExpectBucketCount(
-      "DataReductionProxy.SavingsCleared.NegativeSystemClock", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.SavingsCleared.Reason",
+      DataReductionProxyCompressionStats::
+          DataReductionProxySavingsClearedReason::kSystemClockMovedBack,
+      1);
   VerifyPrefInt64(prefs::kDataReductionProxySavingsClearedNegativeSystemClock,
                   FakeNow().ToInternalValue());
 
-  // Backward two days.
+  // Backward another two days, expect kSystemClockMovedBack.
   SetFakeTimeDeltaInHours(-4 * 24);
   RecordContentLengthPrefs(kReceivedLength, kOriginalLength, true,
                            VIA_DATA_REDUCTION_PROXY, FakeNow());
-  histogram_tester.ExpectTotalCount(
-      "DataReductionProxy.SavingsCleared.NegativeSystemClock", 3);
-  histogram_tester.ExpectBucketCount(
-      "DataReductionProxy.SavingsCleared.NegativeSystemClock", true, 2);
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.SavingsCleared.Reason",
+      DataReductionProxyCompressionStats::
+          DataReductionProxySavingsClearedReason::kSystemClockMovedBack,
+      2);
 
-  // Forward 10 days.
-  AddFakeTimeDeltaInHours(10 * 24);
+  // Forward 2 days, expect no change.
+  AddFakeTimeDeltaInHours(2 * 24);
   RecordContentLengthPrefs(kReceivedLength, kOriginalLength, true,
                            VIA_DATA_REDUCTION_PROXY, FakeNow());
-  histogram_tester.ExpectTotalCount(
-      "DataReductionProxy.SavingsCleared.NegativeSystemClock", 4);
-  histogram_tester.ExpectBucketCount(
-      "DataReductionProxy.SavingsCleared.NegativeSystemClock", false, 2);
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.SavingsCleared.Reason",
+      DataReductionProxyCompressionStats::
+          DataReductionProxySavingsClearedReason::kSystemClockMovedBack,
+      2);
 }
 
 TEST_F(DataReductionProxyCompressionStatsTest, NormalizeHostname) {

@@ -202,11 +202,15 @@ void RecordDailyContentLengthHistograms(
       percent_savings_via_data_reduction_proxy);
 }
 
-void RecordSavingsClearedNegativeClockMetric(int days_since_last_update) {
-  // Data savings are cleared if the system clock moved back by more than
-  // one day.
-  UMA_HISTOGRAM_BOOLEAN("DataReductionProxy.SavingsCleared.NegativeSystemClock",
-                        days_since_last_update < -1);
+void RecordSavingsClearedMetric(
+    DataReductionProxyCompressionStats::DataReductionProxySavingsClearedReason
+        reason) {
+  DCHECK_GT(DataReductionProxyCompressionStats::
+                DataReductionProxySavingsClearedReason::kCount,
+            reason);
+  UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.SavingsCleared.Reason", reason,
+                            DataReductionProxyCompressionStats::
+                                DataReductionProxySavingsClearedReason::kCount);
 }
 
 }  // namespace
@@ -963,7 +967,10 @@ void DataReductionProxyCompressionStats::RecordRequestSizePrefs(
           "Net.DailyContentLength_ViaDataReductionProxy_UnknownMime");
     }
 
-    RecordSavingsClearedNegativeClockMetric(days_since_last_update);
+    if (days_since_last_update < -1) {
+      RecordSavingsClearedMetric(
+          DataReductionProxySavingsClearedReason::kSystemClockMovedBack);
+    }
 
     // The system may go backwards in time by up to a day for legitimate
     // reasons, such as with changes to the time zone. In such cases, we

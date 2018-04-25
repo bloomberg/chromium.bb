@@ -46,6 +46,15 @@ class DataReductionProxyCompressionStats {
   typedef std::unordered_map<std::string, std::unique_ptr<PerSiteDataUsage>>
       SiteUsageMap;
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class DataReductionProxySavingsClearedReason {
+    kSystemClockMovedBack = 0,
+    // TODO(robertogden): Use this. Temp added to appease the DCHECK gods.
+    kPrefsParseError = 1,
+    kCount
+  };
+
   // Collects and store data usage and compression statistics. Basic data usage
   // stats are stored in browser preferences. More detailed stats broken down
   // by site and internet type are stored in |DataReductionProxyStore|.
