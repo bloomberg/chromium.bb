@@ -59,7 +59,7 @@ class CountUseForBindings : public ScriptFunction {
       return ScriptValue();
     }
 
-    const auto it =
+    auto* const it =
         std::find_if(std::begin(web_feature_id_name_lookup_table),
                      std::end(web_feature_id_name_lookup_table),
                      [&string_id](const WebFeatureIdNameLookupEntry& entry) {

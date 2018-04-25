@@ -41,9 +41,9 @@ class CORE_EXPORT ScriptCustomElementDefinition final
       HashSet<AtomicString>&& observed_attributes,
       CSSStyleSheet*);
 
-  virtual ~ScriptCustomElementDefinition() = default;
+  ~ScriptCustomElementDefinition() override = default;
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
   v8::Local<v8::Object> Constructor() const;
 

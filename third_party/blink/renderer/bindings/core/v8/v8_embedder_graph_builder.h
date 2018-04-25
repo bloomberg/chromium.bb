@@ -89,7 +89,7 @@ class V8EmbedderGraphBuilder : public ScriptWrappableVisitor,
     explicit EmbedderRootNode(const char* name)
         : EmbedderNode(name, nullptr, DomTreeState::kUnknown) {}
     // Graph::Node override.
-    bool IsRootNode() { return true; }
+    bool IsRootNode() override { return true; }
   };
 
   class ParentScope {

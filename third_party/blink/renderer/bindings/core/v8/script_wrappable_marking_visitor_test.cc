@@ -150,7 +150,7 @@ TEST(ScriptWrappableMarkingVisitorTest, OilpanClearsHeadersWhenObjectDied) {
       V8PerIsolateData::From(scope.GetIsolate())
           ->GetScriptWrappableMarkingVisitor();
   visitor->TracePrologue();
-  auto header = HeapObjectHeader::FromPayload(object);
+  auto* header = HeapObjectHeader::FromPayload(object);
   visitor->HeadersToUnmark()->push_back(header);
 
   PreciselyCollectGarbage();
@@ -248,7 +248,7 @@ class HandleContainer
   virtual ~HandleContainer() = default;
 
   void Trace(blink::Visitor* visitor) {}
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappers(handle_.Cast<v8::Value>());
   }
   const char* NameInHeapSnapshot() const override { return "HandleContainer"; }
@@ -269,7 +269,9 @@ class InterceptingScriptWrappableMarkingVisitor
   InterceptingScriptWrappableMarkingVisitor(v8::Isolate* isolate)
       : ScriptWrappableMarkingVisitor(isolate),
         marked_wrappers_(new size_t(0)) {}
-  ~InterceptingScriptWrappableMarkingVisitor() { delete marked_wrappers_; }
+  ~InterceptingScriptWrappableMarkingVisitor() override {
+    delete marked_wrappers_;
+  }
 
   void Visit(const TraceWrapperV8Reference<v8::Value>&) const override {
     *marked_wrappers_ += 1;

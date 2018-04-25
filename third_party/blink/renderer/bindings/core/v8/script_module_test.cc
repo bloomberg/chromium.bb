@@ -23,7 +23,7 @@ namespace {
 class TestScriptModuleResolver final : public ScriptModuleResolver {
  public:
   TestScriptModuleResolver() = default;
-  virtual ~TestScriptModuleResolver() = default;
+  ~TestScriptModuleResolver() override = default;
 
   size_t ResolveCount() const { return specifiers_.size(); }
   const Vector<String>& Specifiers() const { return specifiers_; }
@@ -55,9 +55,9 @@ class TestScriptModuleResolver final : public ScriptModuleResolver {
 class ScriptModuleTestModulator final : public DummyModulator {
  public:
   ScriptModuleTestModulator();
-  virtual ~ScriptModuleTestModulator() = default;
+  ~ScriptModuleTestModulator() override = default;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   TestScriptModuleResolver* GetTestScriptModuleResolver() {
     return resolver_.Get();
@@ -168,8 +168,8 @@ TEST(ScriptModuleTest, moduleRequests) {
 TEST(ScriptModuleTest, instantiateNoDeps) {
   V8TestingScope scope;
 
-  auto modulator = new ScriptModuleTestModulator();
-  auto resolver = modulator->GetTestScriptModuleResolver();
+  auto* modulator = new ScriptModuleTestModulator();
+  auto* resolver = modulator->GetTestScriptModuleResolver();
 
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
@@ -188,8 +188,8 @@ TEST(ScriptModuleTest, instantiateNoDeps) {
 TEST(ScriptModuleTest, instantiateWithDeps) {
   V8TestingScope scope;
 
-  auto modulator = new ScriptModuleTestModulator();
-  auto resolver = modulator->GetTestScriptModuleResolver();
+  auto* modulator = new ScriptModuleTestModulator();
+  auto* resolver = modulator->GetTestScriptModuleResolver();
 
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
@@ -226,8 +226,8 @@ TEST(ScriptModuleTest, instantiateWithDeps) {
 TEST(ScriptModuleTest, EvaluationErrrorIsRemembered) {
   V8TestingScope scope;
 
-  auto modulator = new ScriptModuleTestModulator();
-  auto resolver = modulator->GetTestScriptModuleResolver();
+  auto* modulator = new ScriptModuleTestModulator();
+  auto* resolver = modulator->GetTestScriptModuleResolver();
 
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
@@ -263,7 +263,7 @@ TEST(ScriptModuleTest, EvaluationErrrorIsRemembered) {
 TEST(ScriptModuleTest, Evaluate) {
   V8TestingScope scope;
 
-  auto modulator = new ScriptModuleTestModulator();
+  auto* modulator = new ScriptModuleTestModulator();
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
   const KURL js_url("https://example.com/foo.js");
@@ -296,7 +296,7 @@ TEST(ScriptModuleTest, Evaluate) {
 TEST(ScriptModuleTest, EvaluateCaptureError) {
   V8TestingScope scope;
 
-  auto modulator = new ScriptModuleTestModulator();
+  auto* modulator = new ScriptModuleTestModulator();
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
   const KURL js_url("https://example.com/foo.js");

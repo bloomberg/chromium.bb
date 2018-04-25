@@ -101,7 +101,7 @@ class CORE_EXPORT ScriptPromiseResolver
   // promise is pending and the associated ExecutionContext isn't stopped.
   void KeepAliveWhilePending();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   // You need to call suspendIfNeeded after the construction because
