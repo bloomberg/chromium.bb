@@ -615,6 +615,23 @@ public class VideoCaptureCamera2 extends VideoCapture {
         }
     }
 
+    static int getFacingMode(int id) {
+        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(id);
+        if (cameraCharacteristics == null) {
+            return VideoFacingMode.MEDIA_VIDEO_FACING_NONE;
+        }
+
+        final int facing = cameraCharacteristics.get(CameraCharacteristics.LENS_FACING);
+        switch (facing) {
+            case CameraCharacteristics.LENS_FACING_FRONT:
+                return VideoFacingMode.MEDIA_VIDEO_FACING_USER;
+            case CameraCharacteristics.LENS_FACING_BACK:
+                return VideoFacingMode.MEDIA_VIDEO_FACING_ENVIRONMENT;
+            default:
+                return VideoFacingMode.MEDIA_VIDEO_FACING_NONE;
+        }
+    }
+
     static String getName(int id) {
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(id);
         if (cameraCharacteristics == null) return null;
