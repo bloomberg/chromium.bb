@@ -284,6 +284,8 @@ _OS_NEGATIVE_FILTER['android:chromium'] = (
         'ElementAttributeTest.testShouldCorrectlyReportValueOfColspan',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2376
         'ImplicitWaitTest.*',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2401
+        'ObjectStateAssumptionsTest.testinitializedWebDriverDoesNotThrowNPE',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
