@@ -14,6 +14,8 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include <cutils/native_handle.h>
 #include <hardware/gralloc.h>
