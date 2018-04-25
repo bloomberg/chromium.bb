@@ -74,8 +74,9 @@ Response TargetHandler::CloseTarget(const std::string& target_id,
 }
 
 Response TargetHandler::CreateBrowserContext(std::string* out_context_id) {
-  HeadlessBrowserContext* browser_context =
-      browser()->CreateBrowserContextBuilder().Build();
+  auto builder = browser()->CreateBrowserContextBuilder();
+  builder.SetIncognitoMode(true);
+  HeadlessBrowserContext* browser_context = builder.Build();
 
   *out_context_id = browser_context->Id();
   return Response::OK();
