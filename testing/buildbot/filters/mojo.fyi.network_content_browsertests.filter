@@ -37,9 +37,6 @@
 -IsolatedDevToolsProtocolTest.ControlNavigationsChildFrames
 -NavigationHandleImplBrowserTest.ErrorCodeOnRedirect
 -NavigationHandleImplBrowserTest.RedirectToRendererDebugUrl
--PowerMonitorTest.TestGpuProcess
--PowerMonitorTest.TestRendererProcess
--PowerMonitorTest.TestUtilityProcess
 -RenderViewBrowserTest.ConfirmCacheInformationPlumbed
 -WebContentsImplBrowserTest.DownloadImage_Deny_FileImage
 
