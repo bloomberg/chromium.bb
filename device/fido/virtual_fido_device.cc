@@ -9,7 +9,6 @@
 
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
-#include "crypto/sha2.h"
 #include "device/fido/fido_parsing_utils.h"
 
 namespace device {
@@ -63,10 +62,8 @@ VirtualFidoDevice::State::~State() = default;
 bool VirtualFidoDevice::State::InjectRegistration(
     const std::vector<uint8_t>& credential_id,
     const std::string& relying_party_id) {
-  std::vector<uint8_t> application_parameter(crypto::kSHA256Length);
-  crypto::SHA256HashString(relying_party_id, application_parameter.data(),
-                           application_parameter.size());
-
+  auto application_parameter =
+      fido_parsing_utils::CreateSHA256Hash(relying_party_id);
   auto private_key = crypto::ECPrivateKey::Create();
   if (!private_key)
     return false;

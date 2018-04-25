@@ -4,6 +4,7 @@
 
 #include "device/fido/fido_parsing_utils.h"
 
+#include "device/fido/fido_test_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -246,6 +247,11 @@ TEST(U2fParsingUtils, SplitSpan) {
   EXPECT_THAT(
       SplitSpan(kOneTwoThree, 6),
       ::testing::ElementsAre(::testing::ElementsAreArray(kOneTwoThree)));
+}
+
+TEST(U2fParsingUtils, CreateSHA256Hash) {
+  EXPECT_THAT(CreateSHA256Hash("acme.com"),
+              ::testing::ElementsAreArray(test_data::kApplicationParameter));
 }
 
 }  // namespace fido_parsing_utils
