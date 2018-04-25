@@ -24,6 +24,7 @@
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/service/display/skia_renderer.h"
 #include "components/viz/service/display/software_renderer.h"
 #include "components/viz/service/display/surface_aggregator.h"
@@ -44,10 +45,12 @@ Display::Display(
     const FrameSinkId& frame_sink_id,
     std::unique_ptr<OutputSurface> output_surface,
     std::unique_ptr<DisplayScheduler> scheduler,
-    scoped_refptr<base::SingleThreadTaskRunner> current_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> current_task_runner,
+    SkiaOutputSurface* skia_output_surface)
     : bitmap_manager_(bitmap_manager),
       settings_(settings),
       frame_sink_id_(frame_sink_id),
+      skia_output_surface_(skia_output_surface),
       output_surface_(std::move(output_surface)),
       scheduler_(std::move(scheduler)),
       current_task_runner_(std::move(current_task_runner)) {
@@ -214,8 +217,10 @@ void Display::InitializeRenderer() {
           &settings_, output_surface_.get(), resource_provider_.get(),
           current_task_runner_);
     } else {
+      DCHECK(output_surface_);
       renderer_ = std::make_unique<SkiaRenderer>(
-          &settings_, output_surface_.get(), resource_provider_.get());
+          &settings_, output_surface_.get(), resource_provider_.get(),
+          skia_output_surface_);
     }
   } else if (output_surface_->vulkan_context_provider()) {
 #if BUILDFLAG(ENABLE_VULKAN)

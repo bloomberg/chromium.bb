@@ -280,7 +280,7 @@ void VizMainImpl::CreateFrameSinkManagerOnCompositorThread(
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   display_provider_ = std::make_unique<GpuDisplayProvider>(
-      params->restart_id, gpu_command_service_,
+      params->restart_id, gpu_service_.get(), gpu_command_service_,
       gpu_service_->gpu_channel_manager(),
       command_line->HasSwitch(switches::kHeadless),
       command_line->HasSwitch(switches::kRunAllCompositorStagesBeforeDraw));

@@ -15,11 +15,6 @@
 
 class SkNWayCanvas;
 
-namespace cc {
-class OutputSurface;
-class RenderPassDrawQuad;
-}  // namespace cc
-
 namespace gpu {
 struct Capabilities;
 }
@@ -27,16 +22,18 @@ struct Capabilities;
 namespace viz {
 class DebugBorderDrawQuad;
 class PictureDrawQuad;
+class SkiaOutputSurface;
 class SolidColorDrawQuad;
 class TextureDrawQuad;
 class TileDrawQuad;
 
 class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
  public:
+  // TODO(penghuang): Remove skia_output_surface when DDL is used everywhere.
   SkiaRenderer(const RendererSettings* settings,
                OutputSurface* output_surface,
-               cc::DisplayResourceProvider* resource_provider);
-
+               cc::DisplayResourceProvider* resource_provider,
+               SkiaOutputSurface* skia_output_surface = nullptr);
   ~SkiaRenderer() override;
 
   void SwapBuffers(std::vector<ui::LatencyInfo> latency_info) override;
@@ -77,6 +74,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
  private:
   struct DrawRenderPassDrawQuadParams;
+  class ScopedSkImageBuilder;
 
   void ClearCanvas(SkColor color);
   void ClearFramebuffer();
@@ -127,9 +125,10 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   };
   base::flat_map<RenderPassId, RenderPassBacking> render_pass_backings_;
 
+  SkiaOutputSurface* const skia_output_surface_ = nullptr;
   bool disable_picture_quad_image_filtering_ = false;
-
   bool is_scissor_enabled_ = false;
+
   gfx::Rect scissor_rect_;
 
   sk_sp<SkSurface> root_surface_;
@@ -147,6 +146,19 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
   gfx::Rect swap_buffer_rect_;
   std::vector<gfx::Rect> swap_content_bounds_;
+
+  // Lock set for resources that are used for the current frame. All resources
+  // in this set will be unlocked with a sync token when the frame is done in
+  // the compositor thread. And the sync token will be released when the DDL
+  // for the current frame is replayed on the GPU thread.
+  // It is only used with DDL.
+  cc::DisplayResourceProvider::LockSetForExternalUse lock_set_for_external_use_;
+
+  // Promise images created from resources used in the current frame. This map
+  // will be cleared when the frame is done and before all resources in
+  // |lock_set_for_external_use_| are unlocked on the compositor thread.
+  // It is only used with DDL.
+  base::flat_map<ResourceId, sk_sp<SkImage>> promise_images_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaRenderer);
 };
