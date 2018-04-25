@@ -6,8 +6,13 @@
   TestRunner.addResult(`Tests that text prompt suggestions' casing follows that of the user input.\n`);
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+    <div id="inner" style="color:initial;"></div>
+  `);
 
-  var prompt = new Elements.StylesSidebarPane.CSSPropertyPrompt(SDK.cssMetadata().allProperties(), [], null, true);
+  await ElementsTestRunner.selectNodeAndWaitForStylesPromise('inner');
+  var colorTreeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem('color');
+  var prompt = new Elements.StylesSidebarPane.CSSPropertyPrompt(colorTreeElement, true /* isEditingName */);
 
   TestRunner.runTestSuite([
     function testForUpperCase(next) {
