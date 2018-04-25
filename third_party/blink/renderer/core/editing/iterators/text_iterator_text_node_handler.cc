@@ -125,7 +125,7 @@ void TextIteratorTextNodeHandler::HandleTextNodeWithLayoutNG() {
       const String& string = string_and_offsets.string;
       const unsigned text_content_start = string_and_offsets.start;
       const unsigned text_content_end = string_and_offsets.end;
-      text_state_.EmitText(text_node_, run_start, run_end, string,
+      text_state_.EmitText(*text_node_, run_start, run_end, string,
                            text_content_start, text_content_end);
       offset_ = run_end;
       return;
@@ -568,7 +568,7 @@ void TextIteratorTextNodeHandler::EmitText(const LayoutText* layout_object,
                                                 : layout_object->GetText();
   if (behavior_.EmitsSpaceForNbsp())
     string.Replace(kNoBreakSpaceCharacter, kSpaceCharacter);
-  text_state_.EmitText(text_node_,
+  text_state_.EmitText(*text_node_,
                        text_start_offset + layout_object->TextStartOffset(),
                        text_end_offset + layout_object->TextStartOffset(),
                        string, text_start_offset, text_end_offset);
