@@ -49,10 +49,9 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
   // External API.
   void AddDelegate(DrmNativeDisplayDelegate* delegate);
   void RemoveDelegate(DrmNativeDisplayDelegate* delegate);
-  void TakeDisplayControl(const display::DisplayControlCallback& callback);
-  void RelinquishDisplayControl(
-      const display::DisplayControlCallback& callback);
-  void UpdateDisplays(const display::GetDisplaysCallback& callback);
+  void TakeDisplayControl(display::DisplayControlCallback callback);
+  void RelinquishDisplayControl(display::DisplayControlCallback callback);
+  void UpdateDisplays(display::GetDisplaysCallback callback);
 
   // DeviceEventObserver overrides:
   void OnDeviceEvent(const DeviceEvent& event) override;
@@ -95,8 +94,7 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
   void OnUpdateGraphicsDevice();
   void OnRemoveGraphicsDevice(const base::FilePath& path);
 
-  void RunUpdateDisplaysCallback(
-      const display::GetDisplaysCallback& callback) const;
+  void RunUpdateDisplaysCallback(display::GetDisplaysCallback callback) const;
 
   void NotifyDisplayDelegate() const;
 

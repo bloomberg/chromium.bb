@@ -82,19 +82,18 @@ class DISPLAY_MANAGER_EXPORT FakeDisplayDelegate
 
   // NativeDisplayDelegate overrides:
   void Initialize() override;
-  void TakeDisplayControl(const DisplayControlCallback& callback) override;
-  void RelinquishDisplayControl(
-      const DisplayControlCallback& callback) override;
-  void GetDisplays(const GetDisplaysCallback& callback) override;
+  void TakeDisplayControl(DisplayControlCallback callback) override;
+  void RelinquishDisplayControl(DisplayControlCallback callback) override;
+  void GetDisplays(GetDisplaysCallback callback) override;
   void Configure(const DisplaySnapshot& output,
                  const DisplayMode* mode,
                  const gfx::Point& origin,
-                 const ConfigureCallback& callback) override;
+                 ConfigureCallback callback) override;
   void GetHDCPState(const DisplaySnapshot& output,
-                    const GetHDCPStateCallback& callback) override;
+                    GetHDCPStateCallback callback) override;
   void SetHDCPState(const DisplaySnapshot& output,
                     HDCPState state,
-                    const SetHDCPStateCallback& callback) override;
+                    SetHDCPStateCallback callback) override;
   bool SetColorCorrection(const DisplaySnapshot& output,
                           const std::vector<GammaRampRGBEntry>& degamma_lut,
                           const std::vector<GammaRampRGBEntry>& gamma_lut,
@@ -120,7 +119,7 @@ class DISPLAY_MANAGER_EXPORT FakeDisplayDelegate
 
   // Add delay before finishing Configure() and running callback.
   base::OneShotTimer configure_timer_;
-  base::queue<base::Closure> configure_callbacks_;
+  base::queue<base::OnceClosure> configure_callbacks_;
 
   // If Initialize() has been called.
   bool initialized_ = false;
