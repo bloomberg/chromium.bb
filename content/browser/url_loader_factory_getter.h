@@ -31,9 +31,18 @@ class URLLoaderFactoryGetter
   CONTENT_EXPORT URLLoaderFactoryGetter();
 
   // Initializes this object on the UI thread. The |partition| is used to
-  // initialize the URLLoaderFactories for the network service and AppCache, and
-  // will be cached to recover from connection error.
+  // initialize the URLLoaderFactories for the network service, AppCache, and
+  // ServiceWorkers, and will be cached to recover from connection error.
+  // After Initialize(), you can get URLLoaderFactories from this
+  // getter. However, any messages on it will be queued until
+  // HandleFactoryRequests() is called.
   void Initialize(StoragePartitionImpl* partition);
+
+  // Called on the UI thread to actually instantiate factories whose pointers
+  // are to be exposed by this getter.  This must be called after NetworkContext
+  // is initialized.
+  // TODO(shimazu): Remove this once NetworkService is shipped.
+  void HandleFactoryRequests();
 
   // Clear the cached pointer to |StoragePartitionImpl| on the UI thread. Should
   // be called when the partition is going away.
@@ -105,6 +114,10 @@ class URLLoaderFactoryGetter
 
   // Call |network_factory_.FlushForTesting()|. For test use only.
   void FlushNetworkInterfaceForTesting();
+
+  // Bound with appropriate URLLoaderFactories at HandleFactoryRequests().
+  network::mojom::URLLoaderFactoryRequest pending_network_factory_request_;
+  network::mojom::URLLoaderFactoryRequest pending_blob_factory_request_;
 
   // Only accessed on IO thread.
   network::mojom::URLLoaderFactoryPtr network_factory_;
