@@ -36,8 +36,10 @@
         hidden="[[!matchingDefaultEngines_.length]]"
         engines="[[matchingDefaultEngines_]]">
     </settings-search-engines-list>
-    <template is="dom-if" if="[[showAddSearchEngineDialog_]]" restamp>
-      <settings-search-engine-dialog></settings-search-engine-dialog>
+    <template is="dom-if" if="[[showDialog_]]" restamp>
+      <settings-search-engine-dialog model="[[dialogModel_]]"
+          on-close="onCloseDialog_">
+      </settings-search-engine-dialog>
     </template>
 
     <div class="settings-box first">
