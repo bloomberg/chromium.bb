@@ -905,7 +905,8 @@ bool ShellSurfaceBase::CanMaximize() const {
 }
 
 bool ShellSurfaceBase::CanMinimize() const {
-  return can_minimize_;
+  // Non-transient shell surfaces can be minimized.
+  return !parent_ && can_minimize_;
 }
 
 base::string16 ShellSurfaceBase::GetWindowTitle() const {

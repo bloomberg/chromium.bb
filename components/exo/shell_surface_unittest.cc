@@ -170,6 +170,8 @@ TEST_F(ShellSurfaceTest, Minimize) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
+  EXPECT_TRUE(shell_surface->CanMinimize());
+
   // Minimizing can be performed before the surface is committed.
   shell_surface->Minimize();
   EXPECT_TRUE(shell_surface->GetWidget()->IsMinimized());
@@ -182,8 +184,15 @@ TEST_F(ShellSurfaceTest, Minimize) {
   shell_surface->Restore();
   EXPECT_FALSE(shell_surface->GetWidget()->IsMinimized());
 
-  shell_surface->Minimize();
-  EXPECT_TRUE(shell_surface->GetWidget()->IsMinimized());
+  std::unique_ptr<Surface> child_surface(new Surface);
+  std::unique_ptr<ShellSurface> child_shell_surface(
+      new ShellSurface(child_surface.get()));
+
+  // Transient shell surfaces cannot be minimized.
+  child_surface->SetParent(surface.get(), gfx::Point());
+  child_surface->Attach(buffer.get());
+  child_surface->Commit();
+  EXPECT_FALSE(child_shell_surface->CanMinimize());
 }
 
 TEST_F(ShellSurfaceTest, Restore) {
