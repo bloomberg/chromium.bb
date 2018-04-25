@@ -188,11 +188,6 @@ void MediaWebContentsObserver::OnMediaDestroyed(
     RenderFrameHost* render_frame_host,
     int delegate_id) {
   OnMediaPaused(render_frame_host, delegate_id, true);
-
-  if (pip_player_ &&
-      pip_player_ == MediaPlayerId(render_frame_host, delegate_id)) {
-    pip_player_.reset();
-  }
 }
 
 void MediaWebContentsObserver::OnMediaPaused(RenderFrameHost* render_frame_host,
