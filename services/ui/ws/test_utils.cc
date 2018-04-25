@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
@@ -577,7 +578,7 @@ TestWindowServerDelegate::GetThreadedImageCursorsFactory() {
 WindowServerTestHelper::WindowServerTestHelper()
     : cursor_(ui::CursorType::kNull), platform_display_factory_(&cursor_) {
   // Some tests create their own message loop, for example to add a task runner.
-  if (!base::MessageLoop::current())
+  if (!base::MessageLoopCurrent::Get())
     message_loop_ = std::make_unique<base::MessageLoop>();
   PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
   window_server_ = std::make_unique<WindowServer>(&window_server_delegate_,
@@ -666,7 +667,7 @@ void WindowEventTargetingHelper::CreateSecondaryTree(
 
 void WindowEventTargetingHelper::SetTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  base::MessageLoop::current()->SetTaskRunner(task_runner);
+  base::MessageLoopCurrent::Get()->SetTaskRunner(task_runner);
 }
 
 // ----------------------------------------------------------------------------
