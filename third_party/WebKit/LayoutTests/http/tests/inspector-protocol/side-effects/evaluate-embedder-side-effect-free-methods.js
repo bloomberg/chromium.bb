@@ -3,9 +3,10 @@
       `Tests that evaluating V8-embedder callbacks allows side-effect-free methods. Should not crash.`);
 
   await session.evaluate(`
-    var global_performance = window.performance;
+    var global_getSelection = window.getSelection;
 
-    document.documentElement.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+    var namespace = 'http://www.w3.org/1999/xhtml';
+    document.documentElement.setAttribute('xmlns', namespace);
 
     var div = document.createElement('div');
     div.setAttribute('attr1', 'attr1-value');
@@ -52,9 +53,18 @@
 
   // Document
   await checkHasNoSideEffect(`document.getElementsByTagName('div')`);
-  await checkHasNoSideEffect(`document.getElementsByTagNameNS('http://www.w3.org/1999/xhtml', 'div')`);
+  await checkHasNoSideEffect(`document.getElementsByTagNameNS(namespace, 'div')`);
   await checkHasNoSideEffect(`document.getElementsByClassName('foo')`);
   await checkHasNoSideEffect(`document.getElementsByName('div-name')`);
+  await checkHasNoSideEffect(`document.hasFocus()`);
+
+  // DocumentOrShadowRoot
+  await checkHasNoSideEffect(`document.getSelection()`);
+
+  // DOMTokenList
+  await checkHasNoSideEffect(`domTokenList.contains('foo')`);
+  await checkHasNoSideEffect(`domTokenList.contains({})`);
+  await checkHasNoSideEffect(`domTokenList.contains()`);
 
   // Element
   await checkHasNoSideEffect(`div.getAttributeNames()`);
@@ -68,6 +78,18 @@
   await checkHasNoSideEffect(`div.hasAttribute({})`);
   await checkHasNoSideEffect(`divNoAttrs.hasAttribute('attr1')`);
 
+  await checkHasNoSideEffect(`div.getAttributeNS(namespace, 'attr1')`);
+  await checkHasNoSideEffect(`div.getAttributeNS(namespace)`);
+  await checkHasNoSideEffect(`div.getAttributeNS()`);
+  await checkHasNoSideEffect(`divNoAttrs.getAttributeNS(namespace, 'attr1')`);
+  await checkHasNoSideEffect(`div.hasAttributeNS(namespace, 'attr1')`);
+  await checkHasNoSideEffect(`div.hasAttributeNS(namespace)`);
+  await checkHasNoSideEffect(`div.hasAttributeNS()`);
+  await checkHasNoSideEffect(`divNoAttrs.hasAttributeNS(namespace, 'attr1')`);
+  await checkHasNoSideEffect(`divNoAttrs.hasAttributeNS(namespace)`);
+
+  await checkHasNoSideEffect(`div.hasAttributes()`);
+
   // Node
   var testNodes = ['div', 'document', 'textNode'];
   for (var node of testNodes) {
@@ -76,10 +98,14 @@
     await checkHasNoSideEffect(`${node}.contains({})`);
     await checkHasNoSideEffect(`${node}.querySelector('div')`);
     await checkHasNoSideEffect(`${node}.querySelectorAll('div')`);
+    await checkHasNoSideEffect(`${node}.hasChildNodes()`);
   }
 
+  // Performance
+  await checkHasNoSideEffect(`performance.now()`);
+
   // Window
-  await checkHasNoSideEffect(`global_performance.now()`);
+  await checkHasNoSideEffect(`global_getSelection()`);
 
   // Collection getters (e.g. HTMLCollection, NodeList)
   var indexedCollections = [

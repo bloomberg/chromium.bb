@@ -6,10 +6,19 @@
     var div = document.createElement('div');
     div.id = 'foo';
     div.className = 'bar baz';
+    div.setAttribute('attr1', 'attr1-value');
+    div.tabIndex = -1;
+    div.style.color = 'red';
+
     var textNode = document.createTextNode('footext');
     div.appendChild(textNode);
     var textNode2 = document.createTextNode('bartext');
     div.appendChild(textNode2);
+
+    var shadowContainer = document.createElement('div');
+    var shadowRoot = shadowContainer.attachShadow({mode: 'open'});
+    var divInShadow = document.createElement('div');
+    shadowRoot.appendChild(divInShadow);
   `);
 
   // Sanity check: test that setters are not allowed on whitelisted accessors.
@@ -24,6 +33,8 @@
   await checkHasNoSideEffect(`document.scrollingElement`);
   await checkHasNoSideEffect(`document.body`);
   await checkHasNoSideEffect(`document.head`);
+  await checkHasNoSideEffect(`document.location`);
+  await checkHasNoSideEffect(`document.defaultView`);
 
   // DocumentOrShadowRoot
   await checkHasNoSideEffect(`document.activeElement`);
@@ -32,6 +43,16 @@
   await checkHasNoSideEffect(`div.tagName`);
   await checkHasNoSideEffect(`div.id`);
   await checkHasNoSideEffect(`div.className`);
+  await checkHasNoSideEffect(`div.classList`);
+  await checkHasNoSideEffect(`div.attributes`);
+  await checkHasNoSideEffect(`shadowContainer.shadowRoot`);
+  await checkHasNoSideEffect(`div.innerHTML`);
+  await checkHasNoSideEffect(`div.outerHTML`);
+
+  // HTMLElement
+  await checkHasNoSideEffect(`div.hidden`);
+  await checkHasNoSideEffect(`div.tabIndex`);
+  await checkHasNoSideEffect(`div.style`);
 
   // Node
   var testNodes = ['div', 'document', 'textNode'];
@@ -48,6 +69,7 @@
     await checkHasNoSideEffect(`${node}.lastChild`);
     await checkHasNoSideEffect(`${node}.previousSibling`);
     await checkHasNoSideEffect(`${node}.nextSibling`);
+    await checkHasNoSideEffect(`${node}.ownerDocument`);
   }
 
   // ParentNode
@@ -62,6 +84,14 @@
   await checkHasNoSideEffect(`devicePixelRatio`);
   await checkHasNoSideEffect(`screenX`);
   await checkHasNoSideEffect(`screenY`);
+  await checkHasNoSideEffect(`document`);
+  await checkHasNoSideEffect(`history`);
+  await checkHasNoSideEffect(`navigator`);
+  await checkHasNoSideEffect(`performance`);
+
+  // TODO(luoe): add support for LazyData properties.
+  await checkHasSideEffect(`window`);
+  await checkHasSideEffect(`window.location`);
 
   testRunner.completeTest();
 

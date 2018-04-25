@@ -17,6 +17,10 @@ Expression `document.body`
 has side effect: false, expected: false
 Expression `document.head`
 has side effect: false, expected: false
+Expression `document.location`
+has side effect: false, expected: false
+Expression `document.defaultView`
+has side effect: false, expected: false
 Expression `document.activeElement`
 has side effect: false, expected: false
 Expression `div.tagName`
@@ -24,6 +28,22 @@ has side effect: false, expected: false
 Expression `div.id`
 has side effect: false, expected: false
 Expression `div.className`
+has side effect: false, expected: false
+Expression `div.classList`
+has side effect: false, expected: false
+Expression `div.attributes`
+has side effect: false, expected: false
+Expression `shadowContainer.shadowRoot`
+has side effect: false, expected: false
+Expression `div.innerHTML`
+has side effect: false, expected: false
+Expression `div.outerHTML`
+has side effect: false, expected: false
+Expression `div.hidden`
+has side effect: false, expected: false
+Expression `div.tabIndex`
+has side effect: false, expected: false
+Expression `div.style`
 has side effect: false, expected: false
 Expression `div.nodeType`
 has side effect: false, expected: false
@@ -49,6 +69,8 @@ Expression `div.previousSibling`
 has side effect: false, expected: false
 Expression `div.nextSibling`
 has side effect: false, expected: false
+Expression `div.ownerDocument`
+has side effect: false, expected: false
 Expression `document.nodeType`
 has side effect: false, expected: false
 Expression `document.nodeName`
@@ -73,6 +95,8 @@ Expression `document.previousSibling`
 has side effect: false, expected: false
 Expression `document.nextSibling`
 has side effect: false, expected: false
+Expression `document.ownerDocument`
+has side effect: false, expected: false
 Expression `textNode.nodeType`
 has side effect: false, expected: false
 Expression `textNode.nodeName`
@@ -96,6 +120,8 @@ has side effect: false, expected: false
 Expression `textNode.previousSibling`
 has side effect: false, expected: false
 Expression `textNode.nextSibling`
+has side effect: false, expected: false
+Expression `textNode.ownerDocument`
 has side effect: false, expected: false
 Expression `div.childElementCount`
 has side effect: false, expected: false
@@ -127,4 +153,16 @@ Expression `screenX`
 has side effect: false, expected: false
 Expression `screenY`
 has side effect: false, expected: false
+Expression `document`
+has side effect: false, expected: false
+Expression `history`
+has side effect: false, expected: false
+Expression `navigator`
+has side effect: false, expected: false
+Expression `performance`
+has side effect: false, expected: false
+Expression `window`
+has side effect: true, expected: true
+Expression `window.location`
+has side effect: true, expected: true
 

@@ -10,7 +10,7 @@
 ] interface DocumentOrShadowRoot {
     // Selection API
     // https://w3c.github.io/selection-api/#extensions-to-document-interface
-    Selection? getSelection();
+    [Affects=Nothing] Selection? getSelection();
     // CSSOM View Module
     // https://drafts.csswg.org/cssom-view/#extensions-to-the-document-interface
     Element? elementFromPoint(double x, double y);

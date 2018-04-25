@@ -92,7 +92,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
 
     // resource metadata management
 
-    [PutForwards=href, Unforgeable] readonly attribute Location? location;
+    [Affects=Nothing, PutForwards=href, Unforgeable] readonly attribute Location? location;
     [Affects=Nothing, RaisesException=Setter] attribute USVString domain;
     [Affects=Nothing] readonly attribute USVString referrer;
     [Affects=Nothing, RaisesException, RuntimeCallStatsCounter=DocumentCookie] attribute DOMString cookie;
@@ -129,8 +129,8 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     [RuntimeEnabled=TrustedDOMTypes, CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException] void writeln(TrustedHTML text);
 
     // user interaction
-    readonly attribute Window? defaultView;
-    boolean hasFocus();
+    [Affects=Nothing] readonly attribute Window? defaultView;
+    [Affects=Nothing] boolean hasFocus();
     [CEReactions, CustomElementCallbacks, MeasureAs=DocumentDesignMode] attribute DOMString designMode;
     [CEReactions, CustomElementCallbacks, RaisesException] boolean execCommand(DOMString commandId, optional boolean showUI = false, optional DOMString value = "");
     [RaisesException] boolean queryCommandEnabled(DOMString commandId);
