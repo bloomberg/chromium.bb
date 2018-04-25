@@ -12,8 +12,6 @@ namespace chrome_pdf {
 
 PreviewModeClient::PreviewModeClient(Client* client) : client_(client) {}
 
-void PreviewModeClient::DocumentSizeUpdated(const pp::Size& size) {}
-
 void PreviewModeClient::Invalidate(const pp::Rect& rect) {
   NOTREACHED();
 }
@@ -62,9 +60,6 @@ void PreviewModeClient::NotifySelectedFindResultChanged(
     int current_find_index) {
   NOTREACHED();
 }
-
-void PreviewModeClient::NotifyPageBecameVisible(
-    const PDFEngine::PageFeatures* page_features) {}
 
 void PreviewModeClient::GetDocumentPassword(
     pp::CompletionCallbackWithOutput<pp::Var> callback) {
@@ -158,9 +153,6 @@ void PreviewModeClient::FontSubstituted() {
   NOTREACHED();
 }
 
-void PreviewModeClient::DocumentLoadProgress(uint32_t available,
-                                             uint32_t doc_size) {}
-
 void PreviewModeClient::FormTextFieldFocusChange(bool in_focus) {
   NOTREACHED();
 }
@@ -169,8 +161,6 @@ bool PreviewModeClient::IsPrintPreview() {
   NOTREACHED();
   return false;
 }
-
-void PreviewModeClient::CancelBrowserDownload() {}
 
 float PreviewModeClient::GetToolbarHeightInScreenCoords() {
   return 0.0f;
