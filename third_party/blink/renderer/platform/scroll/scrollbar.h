@@ -74,7 +74,7 @@ class PLATFORM_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   IntSize Size() const override { return frame_rect_.Size(); }
   IntPoint Location() const override { return frame_rect_.Location(); }
 
-  void SetFrameRect(const IntRect&);
+  void SetFrameRect(const IntRect&) override;
   IntRect FrameRect() const override { return frame_rect_; }
 
   ScrollbarOverlayColorTheme GetScrollbarOverlayColorTheme() const override;

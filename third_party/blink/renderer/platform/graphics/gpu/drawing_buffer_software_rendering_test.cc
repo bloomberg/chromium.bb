@@ -21,9 +21,9 @@ namespace blink {
 namespace {
 
 class TestSharedBitmapIdRegistar : public cc::SharedBitmapIdRegistrar {
-  virtual cc::SharedBitmapIdRegistration RegisterSharedBitmapId(
+  cc::SharedBitmapIdRegistration RegisterSharedBitmapId(
       const viz::SharedBitmapId& id,
-      scoped_refptr<cc::CrossThreadSharedBitmap> bitmap) {
+      scoped_refptr<cc::CrossThreadSharedBitmap> bitmap) override {
     return {};
   }
 };

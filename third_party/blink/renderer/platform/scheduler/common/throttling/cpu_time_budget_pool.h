@@ -26,7 +26,7 @@ class PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
                     TraceableVariableController* tracing_controller,
                     base::TimeTicks now);
 
-  ~CPUTimeBudgetPool();
+  ~CPUTimeBudgetPool() override;
 
   // Set max budget level, base::nullopt represent absence of max level.
   // Max budget level prevents accumulating arbitrary large budgets when

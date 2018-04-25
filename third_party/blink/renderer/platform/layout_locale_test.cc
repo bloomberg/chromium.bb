@@ -145,7 +145,7 @@ TEST(LayoutLocaleTest, ExistingKeywordName) {
   const char* tests[] = {
       "en@x=", "en@lb=xyz", "en@ =",
   };
-  for (const auto& test : tests) {
+  for (auto* const test : tests) {
     scoped_refptr<LayoutLocale> locale = LayoutLocale::CreateForTesting(test);
     EXPECT_EQ(test,
               locale->LocaleWithBreakKeyword(LineBreakIteratorMode::kNormal));

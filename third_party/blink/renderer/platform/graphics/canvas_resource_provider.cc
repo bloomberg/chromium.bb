@@ -41,7 +41,7 @@ class CanvasResourceProvider_Texture : public CanvasResourceProvider {
                                std::move(context_provider_wrapper)),
         msaa_sample_count_(msaa_sample_count) {}
 
-  virtual ~CanvasResourceProvider_Texture() = default;
+  ~CanvasResourceProvider_Texture() override = default;
 
   bool IsValid() const final { return GetSkSurface() && !IsGpuContextLost(); }
   bool IsAccelerated() const final { return true; }
@@ -66,7 +66,7 @@ class CanvasResourceProvider_Texture : public CanvasResourceProvider {
     if (IsGpuContextLost())
       return nullptr;
 
-    auto gl = ContextGL();
+    auto* gl = ContextGL();
     DCHECK(gl);
 
     if (ContextProviderWrapper()
@@ -101,10 +101,10 @@ class CanvasResourceProvider_Texture : public CanvasResourceProvider {
     return resource;
   }
 
-  virtual sk_sp<SkSurface> CreateSkSurface() const {
+  sk_sp<SkSurface> CreateSkSurface() const override {
     if (IsGpuContextLost())
       return nullptr;
-    auto gr = GetGrContext();
+    auto* gr = GetGrContext();
     DCHECK(gr);
 
     SkImageInfo info = SkImageInfo::Make(
@@ -139,7 +139,7 @@ class CanvasResourceProvider_Texture_GpuMemoryBuffer final
                                        color_params,
                                        std::move(context_provider_wrapper)) {}
 
-  virtual ~CanvasResourceProvider_Texture_GpuMemoryBuffer() = default;
+  ~CanvasResourceProvider_Texture_GpuMemoryBuffer() override = default;
 
  protected:
   scoped_refptr<CanvasResource> CreateResource() final {
@@ -195,7 +195,7 @@ class CanvasResourceProvider_Bitmap final : public CanvasResourceProvider {
                                color_params,
                                nullptr /*context_provider_wrapper*/) {}
 
-  ~CanvasResourceProvider_Bitmap() = default;
+  ~CanvasResourceProvider_Bitmap() override = default;
 
   bool IsValid() const final { return GetSkSurface(); }
   bool IsAccelerated() const final { return false; }
@@ -494,7 +494,7 @@ scoped_refptr<CanvasResource> CanvasResourceProvider::NewOrRecycledResource() {
 }
 
 bool CanvasResourceProvider::IsGpuContextLost() const {
-  auto gl = ContextGL();
+  auto* gl = ContextGL();
   return !gl || gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
 }
 

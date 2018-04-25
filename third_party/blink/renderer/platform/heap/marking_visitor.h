@@ -38,7 +38,7 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
   inline static void WriteBarrier(void* value);
 
   MarkingVisitor(ThreadState*, MarkingMode);
-  virtual ~MarkingVisitor();
+  ~MarkingVisitor() override;
 
   // Marking implementation.
 

@@ -50,7 +50,7 @@ class PLATFORM_EXPORT PaintChunker final {
   PaintChunk& LastChunk() { return data_.chunks.back(); }
 
   PaintChunk& FindChunkByDisplayItemIndex(size_t index) {
-    auto chunk = FindChunkInVectorByDisplayItemIndex(data_.chunks, index);
+    auto* chunk = FindChunkInVectorByDisplayItemIndex(data_.chunks, index);
     DCHECK(chunk != data_.chunks.end());
     return *chunk;
   }

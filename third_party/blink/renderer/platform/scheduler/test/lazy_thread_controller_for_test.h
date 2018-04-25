@@ -22,7 +22,7 @@ namespace scheduler {
 class LazyThreadControllerForTest : public internal::ThreadControllerImpl {
  public:
   LazyThreadControllerForTest();
-  ~LazyThreadControllerForTest();
+  ~LazyThreadControllerForTest() override;
 
   // internal::ThreadControllerImpl:
   void AddNestingObserver(base::RunLoop::NestingObserver* observer) override;

@@ -51,7 +51,7 @@ class PLATFORM_EXPORT MediaStreamDescriptorClient
   virtual void StreamEnded() = 0;
   virtual void AddTrackByComponent(MediaStreamComponent*) = 0;
   virtual void RemoveTrackByComponent(MediaStreamComponent*) = 0;
-  virtual void Trace(blink::Visitor* visitor) {}
+  void Trace(blink::Visitor* visitor) override {}
 };
 
 class PLATFORM_EXPORT MediaStreamDescriptor final

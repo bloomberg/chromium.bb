@@ -55,7 +55,7 @@ class PLATFORM_EXPORT ScrollAnimatorBase
  public:
   static ScrollAnimatorBase* Create(ScrollableArea*);
 
-  virtual ~ScrollAnimatorBase();
+  ~ScrollAnimatorBase() override;
 
   virtual void Dispose() {}
 
@@ -111,7 +111,7 @@ class PLATFORM_EXPORT ScrollAnimatorBase
 
   virtual bool SetScrollbarsVisibleForTesting(bool) { return false; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   explicit ScrollAnimatorBase(ScrollableArea*);

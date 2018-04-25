@@ -45,15 +45,15 @@ class GCTaskObserver final : public WebThread::TaskObserver {
  public:
   GCTaskObserver() : nesting_(0) {}
 
-  ~GCTaskObserver() {
+  ~GCTaskObserver() override {
     // m_nesting can be 1 if this was unregistered in a task and
     // didProcessTask was not called.
     DCHECK(!nesting_ || nesting_ == 1);
   }
 
-  virtual void WillProcessTask() { nesting_++; }
+  void WillProcessTask() override { nesting_++; }
 
-  virtual void DidProcessTask() {
+  void DidProcessTask() override {
     // In the production code WebKit::initialize is called from inside the
     // message loop so we can get didProcessTask() without corresponding
     // willProcessTask once. This is benign.

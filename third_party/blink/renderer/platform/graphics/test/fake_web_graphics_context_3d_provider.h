@@ -45,7 +45,7 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
   bool BindToCurrentThread() override { return false; }
   void SetLostContextCallback(base::Closure) override {}
   void SetErrorMessageCallback(
-      base::RepeatingCallback<void(const char*, int32_t id)>) {}
+      base::RepeatingCallback<void(const char*, int32_t id)>) override {}
   void SignalQuery(uint32_t, base::OnceClosure) override {}
   cc::ImageDecodeCache* ImageDecodeCache() override {
     return image_decode_cache_;

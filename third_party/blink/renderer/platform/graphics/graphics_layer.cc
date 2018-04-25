@@ -720,7 +720,7 @@ class GraphicsLayer::LayersAsJSONArray {
     FloatPoint position = parent_position + layer.position_;
     int transform_id = parent_transform_id;
     AddLayer(layer, transform_id, position);
-    for (auto& child : layer.children_)
+    for (auto* const child : layer.children_)
       Walk(*child, transform_id, position);
   }
 

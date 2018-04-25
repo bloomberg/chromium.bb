@@ -535,7 +535,7 @@ TaskQueueManagerImpl::AsValueWithSelectorResult(
   base::TimeTicks now =
       main_thread_only().real_time_domain->CreateLazyNow().Now();
   state->BeginArray("active_queues");
-  for (auto& queue : main_thread_only().active_queues)
+  for (auto* const queue : main_thread_only().active_queues)
     queue->AsValueInto(now, state.get());
   state->EndArray();
   state->BeginArray("queues_to_gracefully_shutdown");
@@ -580,7 +580,7 @@ void TaskQueueManagerImpl::OnTaskQueueEnabled(internal::TaskQueueImpl* queue) {
 
 void TaskQueueManagerImpl::SweepCanceledDelayedTasks() {
   std::map<TimeDomain*, base::TimeTicks> time_domain_now;
-  for (const auto& queue : main_thread_only().active_queues)
+  for (auto* const queue : main_thread_only().active_queues)
     SweepCanceledDelayedTasksInQueue(queue, &time_domain_now);
   for (const auto& pair : main_thread_only().queues_to_gracefully_shutdown)
     SweepCanceledDelayedTasksInQueue(pair.first, &time_domain_now);

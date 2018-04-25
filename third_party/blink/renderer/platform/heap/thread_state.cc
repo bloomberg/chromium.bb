@@ -1032,7 +1032,7 @@ void ThreadState::PostSweep() {
 
   gc_age_++;
 
-  for (const auto& observer : observers_)
+  for (auto* const observer : observers_)
     observer->OnCompleteSweepDone();
 }
 

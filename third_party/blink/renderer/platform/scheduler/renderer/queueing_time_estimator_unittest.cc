@@ -40,8 +40,9 @@ class TestQueueingTimeEstimatorClient : public QueueingTimeEstimator::Client {
           MainThreadSchedulerImpl::kNumberExpectedQueueingTimeBuckets);
     }
   }
-  void OnReportFineGrainedExpectedQueueingTime(const char* split_description,
-                                               base::TimeDelta queueing_time) {
+  void OnReportFineGrainedExpectedQueueingTime(
+      const char* split_description,
+      base::TimeDelta queueing_time) override {
     if (split_eqts_.find(split_description) == split_eqts_.end())
       split_eqts_[split_description] = std::vector<base::TimeDelta>();
     split_eqts_[split_description].push_back(queueing_time);
@@ -822,7 +823,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
   MainThreadTaskQueue* queues_for_thousand[] = {frame_loading_queue.get(),
                                                 frame_throttleable_queue.get(),
                                                 unthrottled_queue.get()};
-  for (auto queue : queues_for_thousand) {
+  for (auto* queue : queues_for_thousand) {
     estimator.OnTopLevelTaskStarted(time, queue);
     time += base::TimeDelta::FromMilliseconds(1000);
     estimator.OnTopLevelTaskCompleted(time);
@@ -840,7 +841,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
       frame_pausable_queue.get(),
       unthrottled_queue.get(),
       compositor_queue.get()};
-  for (auto queue : queues_for_six_hundred) {
+  for (auto* queue : queues_for_six_hundred) {
     estimator.OnTopLevelTaskStarted(time, queue);
     time += base::TimeDelta::FromMilliseconds(600);
     estimator.OnTopLevelTaskCompleted(time);
@@ -1066,7 +1067,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
           .Build();
   FakeFrameScheduler* schedulers_for_thousand[] = {frame5.get(), frame6.get(),
                                                    frame7.get()};
-  for (auto scheduler : schedulers_for_thousand) {
+  for (auto* scheduler : schedulers_for_thousand) {
     queue1->SetFrameScheduler(scheduler);
     estimator.OnTopLevelTaskStarted(time, queue1.get());
     time += base::TimeDelta::FromMilliseconds(1000);
@@ -1102,7 +1103,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
   FakeFrameScheduler* schedulers_for_four_hundred[] = {
       frame2.get(), frame1.get(), frame8.get(),  frame5.get(), frame6.get(),
       frame9.get(), frame7.get(), frame10.get(), frame11.get()};
-  for (auto scheduler : schedulers_for_four_hundred) {
+  for (auto* scheduler : schedulers_for_four_hundred) {
     queue1->SetFrameScheduler(scheduler);
     estimator.OnTopLevelTaskStarted(time, queue1.get());
     time += base::TimeDelta::FromMilliseconds(400);

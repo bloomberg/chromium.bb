@@ -62,7 +62,7 @@ class PLATFORM_EXPORT BeginFrameProvider
     NOTIMPLEMENTED();
   }
 
-  ~BeginFrameProvider() = default;
+  ~BeginFrameProvider() override = default;
 
  private:
   bool needs_begin_frame_ = false;

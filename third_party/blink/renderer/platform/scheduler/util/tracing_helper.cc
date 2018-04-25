@@ -92,7 +92,7 @@ void TraceableVariableController::DeregisterTraceableVariable(
 }
 
 void TraceableVariableController::OnTraceLogEnabled() {
-  for (auto tracer : traceable_variables_) {
+  for (auto* tracer : traceable_variables_) {
     tracer->OnTraceLogEnabled();
   }
 }

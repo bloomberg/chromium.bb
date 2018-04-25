@@ -80,7 +80,7 @@ void MediaStreamDescriptor::AddComponent(MediaStreamComponent* component) {
       break;
   }
 
-  for (auto& observer : observers_) {
+  for (auto*& observer : observers_) {
     observer->TrackAdded(component);
   }
 }
@@ -100,7 +100,7 @@ void MediaStreamDescriptor::RemoveComponent(MediaStreamComponent* component) {
       break;
   }
 
-  for (auto& observer : observers_) {
+  for (auto*& observer : observers_) {
     observer->TrackRemoved(component);
   }
 }

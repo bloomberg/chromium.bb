@@ -40,7 +40,7 @@ class PLATFORM_EXPORT Matrix3DTransformOperation final
 
   TransformationMatrix Matrix() const { return matrix_; }
 
-  virtual bool CanBlendWith(const TransformOperation& other) const {
+  bool CanBlendWith(const TransformOperation& other) const override {
     return false;
   }
 

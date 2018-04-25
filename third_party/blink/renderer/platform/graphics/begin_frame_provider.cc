@@ -29,7 +29,7 @@ void BeginFrameProvider::CreateCompositorFrameSink() {
       mojo::MakeRequest(&canvas_provider));
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner;
-  auto scheduler = blink::Platform::Current()->CurrentThread()->Scheduler();
+  auto* scheduler = blink::Platform::Current()->CurrentThread()->Scheduler();
   if (scheduler)
     task_runner = scheduler->CompositorTaskRunner();
 

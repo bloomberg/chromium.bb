@@ -91,7 +91,7 @@ WebCoalescedInputEvent::WebCoalescedInputEvent(
     const WebInputEvent& event,
     const std::vector<const WebInputEvent*>& coalesced_events) {
   event_ = MakeWebScopedInputEvent(event);
-  for (const auto& coalesced_event : coalesced_events)
+  for (auto* const coalesced_event : coalesced_events)
     coalesced_events_.push_back(MakeWebScopedInputEvent(*coalesced_event));
 }
 

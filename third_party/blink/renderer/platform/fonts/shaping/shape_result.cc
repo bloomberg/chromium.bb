@@ -270,7 +270,7 @@ scoped_refptr<ShapeResult> ShapeResult::MutableUnique() const {
 }
 
 unsigned ShapeResult::NextSafeToBreakOffset(unsigned index) const {
-  for (auto it = runs_.begin(); it != runs_.end(); ++it) {
+  for (auto* it = runs_.begin(); it != runs_.end(); ++it) {
     const auto& run = *it;
     if (!run)
       continue;

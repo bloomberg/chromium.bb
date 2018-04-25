@@ -43,18 +43,18 @@ class WebSpeechSynthesizerClientImpl final
  public:
   WebSpeechSynthesizerClientImpl(PlatformSpeechSynthesizer*,
                                  PlatformSpeechSynthesizerClient*);
-  virtual ~WebSpeechSynthesizerClientImpl();
+  ~WebSpeechSynthesizerClientImpl() override;
 
-  virtual void SetVoiceList(const WebVector<WebSpeechSynthesisVoice>& voices);
-  virtual void DidStartSpeaking(const WebSpeechSynthesisUtterance&);
-  virtual void DidFinishSpeaking(const WebSpeechSynthesisUtterance&);
-  virtual void DidPauseSpeaking(const WebSpeechSynthesisUtterance&);
-  virtual void DidResumeSpeaking(const WebSpeechSynthesisUtterance&);
-  virtual void SpeakingErrorOccurred(const WebSpeechSynthesisUtterance&);
-  virtual void WordBoundaryEventOccurred(const WebSpeechSynthesisUtterance&,
-                                         unsigned char_index);
-  virtual void SentenceBoundaryEventOccurred(const WebSpeechSynthesisUtterance&,
-                                             unsigned char_index);
+  void SetVoiceList(const WebVector<WebSpeechSynthesisVoice>& voices) override;
+  void DidStartSpeaking(const WebSpeechSynthesisUtterance&) override;
+  void DidFinishSpeaking(const WebSpeechSynthesisUtterance&) override;
+  void DidPauseSpeaking(const WebSpeechSynthesisUtterance&) override;
+  void DidResumeSpeaking(const WebSpeechSynthesisUtterance&) override;
+  void SpeakingErrorOccurred(const WebSpeechSynthesisUtterance&) override;
+  void WordBoundaryEventOccurred(const WebSpeechSynthesisUtterance&,
+                                 unsigned char_index) override;
+  void SentenceBoundaryEventOccurred(const WebSpeechSynthesisUtterance&,
+                                     unsigned char_index) override;
 
   void Trace(blink::Visitor*);
 

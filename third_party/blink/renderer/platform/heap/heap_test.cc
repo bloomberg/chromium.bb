@@ -866,7 +866,7 @@ class Foo : public Bar {
 
   static Foo* Create(Foo* foo) { return new Foo(foo); }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     if (points_to_foo_)
       visitor->Trace(static_cast<Foo*>(bar_));
     else
@@ -888,7 +888,7 @@ class Bars : public Bar {
  public:
   static Bars* Create() { return new Bars(); }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     for (unsigned i = 0; i < width_; i++)
       visitor->Trace(bars_[i]);
   }
@@ -1036,7 +1036,7 @@ class Weak : public Bar {
  public:
   static Weak* Create(Bar* strong, Bar* weak) { return new Weak(strong, weak); }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(strong_bar_);
     visitor->template RegisterWeakMembers<Weak, &Weak::ZapWeakMembers>(this);
   }
@@ -1065,7 +1065,7 @@ class WithWeakMember : public Bar {
     return new WithWeakMember(strong, weak);
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(strong_bar_);
     visitor->Trace(weak_bar_);
   }
@@ -1162,7 +1162,7 @@ class PreFinalizerMixin : public GarbageCollectedMixin {
 
  public:
   ~PreFinalizerMixin() { was_destructed_ = true; }
-  virtual void Trace(blink::Visitor* visitor) {}
+  void Trace(blink::Visitor* visitor) override {}
   void Dispose() {
     EXPECT_FALSE(g_dispose_was_called_for_pre_finalizer_base);
     EXPECT_TRUE(g_dispose_was_called_for_pre_finalizer_sub_class);
@@ -1182,8 +1182,8 @@ class PreFinalizerSubClass : public PreFinalizerBase, public PreFinalizerMixin {
 
  public:
   static PreFinalizerSubClass* Create() { return new PreFinalizerSubClass(); }
-  ~PreFinalizerSubClass() { was_destructed_ = true; }
-  virtual void Trace(blink::Visitor* visitor) {}
+  ~PreFinalizerSubClass() override { was_destructed_ = true; }
+  void Trace(blink::Visitor* visitor) override {}
   void Dispose() {
     EXPECT_FALSE(g_dispose_was_called_for_pre_finalizer_base);
     EXPECT_FALSE(g_dispose_was_called_for_pre_finalizer_sub_class);
@@ -1352,7 +1352,7 @@ class SubClass : public SuperClass {
 
   ~SubClass() override { --alive_count_; }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(data_);
     SuperClass::Trace(visitor);
   }
@@ -1373,7 +1373,7 @@ int SubClass::alive_count_ = 0;
 
 class Mixin : public GarbageCollectedMixin {
  public:
-  virtual void Trace(blink::Visitor* visitor) {}
+  void Trace(blink::Visitor* visitor) override {}
 
   virtual char GetPayload(int i) { return padding_[i]; }
 
@@ -1387,7 +1387,7 @@ class UseMixin : public SimpleObject, public Mixin {
   static UseMixin* Create() { return new UseMixin(); }
 
   static int trace_count_;
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     SimpleObject::Trace(visitor);
     Mixin::Trace(visitor);
     ++trace_count_;
@@ -4721,7 +4721,7 @@ TEST(HeapTest, DestructorsCalled) {
 class MixinA : public GarbageCollectedMixin {
  public:
   MixinA() : obj_(IntWrapper::Create(100)) {}
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     trace_count_++;
     visitor->Trace(obj_);
   }
@@ -4736,7 +4736,7 @@ int MixinA::trace_count_ = 0;
 class MixinB : public GarbageCollectedMixin {
  public:
   MixinB() : obj_(IntWrapper::Create(101)) {}
-  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(obj_); }
+  void Trace(blink::Visitor* visitor) override { visitor->Trace(obj_); }
   Member<IntWrapper> obj_;
 };
 
@@ -4747,7 +4747,7 @@ class MultipleMixins : public GarbageCollected<MultipleMixins>,
 
  public:
   MultipleMixins() : obj_(IntWrapper::Create(102)) {}
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(obj_);
     MixinA::Trace(visitor);
     MixinB::Trace(visitor);
@@ -4759,7 +4759,7 @@ class DerivedMultipleMixins : public MultipleMixins {
  public:
   DerivedMultipleMixins() : obj_(IntWrapper::Create(103)) {}
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     trace_called_++;
     visitor->Trace(obj_);
     MultipleMixins::Trace(visitor);
@@ -5772,7 +5772,7 @@ class ClassWithGarbageCollectingMixinConstructor
       : trace_counter_(TraceCounter::Create()),
         wrapper_(IntWrapper::Create(32)) {}
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     trace_called_++;
     visitor->Trace(trace_counter_);
     visitor->Trace(wrapper_);
@@ -6338,7 +6338,7 @@ class TestMixinAllocationA : public GarbageCollected<TestMixinAllocationA>,
     DCHECK(ThreadState::Current()->IsGCForbidden());
   }
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  void Trace(blink::Visitor* visitor) override {}
 };
 
 class TestMixinAllocationB : public TestMixinAllocationA {
@@ -6354,7 +6354,7 @@ class TestMixinAllocationB : public TestMixinAllocationA {
     DCHECK(ThreadState::Current()->IsGCForbidden());
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(a_);
     TestMixinAllocationA::Trace(visitor);
   }
@@ -6369,7 +6369,9 @@ class TestMixinAllocationC final : public TestMixinAllocationB {
  public:
   TestMixinAllocationC() { DCHECK(!ThreadState::Current()->IsGCForbidden()); }
 
-  void Trace(blink::Visitor* visitor) { TestMixinAllocationB::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) override {
+    TestMixinAllocationB::Trace(visitor);
+  }
 };
 
 TEST(HeapTest, NestedMixinConstruction) {
@@ -6405,7 +6407,7 @@ class TestMixinAllocatingObject final
     return new TestMixinAllocatingObject(member);
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(trace_counter_);
     TestMixinAllocationB::Trace(visitor);
   }

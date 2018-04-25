@@ -89,7 +89,9 @@ class BlobDataHandleTest : public testing::Test {
     BlobDataHandle::SetBlobRegistryForTesting(blob_registry_ptr_.get());
   }
 
-  ~BlobDataHandleTest() { BlobDataHandle::SetBlobRegistryForTesting(nullptr); }
+  ~BlobDataHandleTest() override {
+    BlobDataHandle::SetBlobRegistryForTesting(nullptr);
+  }
 
   void SetUp() override {
     small_test_data_.resize(1024);

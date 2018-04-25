@@ -53,7 +53,7 @@ class PLATFORM_EXPORT ScaleTransformOperation final
   double Y() const { return y_; }
   double Z() const { return z_; }
 
-  virtual bool CanBlendWith(const TransformOperation& other) const;
+  bool CanBlendWith(const TransformOperation& other) const override;
 
   void Apply(TransformationMatrix& transform, const FloatSize&) const override {
     transform.Scale3d(x_, y_, z_);
@@ -80,7 +80,7 @@ class PLATFORM_EXPORT ScaleTransformOperation final
     return x_ == s->x_ && y_ == s->y_ && z_ == s->z_;
   }
 
-  virtual bool HasNonTrivial3DComponent() const { return z_ != 1.0; }
+  bool HasNonTrivial3DComponent() const override { return z_ != 1.0; }
 
   scoped_refptr<TransformOperation> Zoom(double factor) final { return this; }
 

@@ -32,7 +32,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl
                                      int height);
 
   // OffscreenCanvasFrameDispatcher implementation.
-  virtual ~OffscreenCanvasFrameDispatcherImpl();
+  ~OffscreenCanvasFrameDispatcherImpl() override;
   void SetNeedsBeginFrame(bool) final;
   void SetSuspendAnimation(bool) final;
   bool NeedsBeginFrame() const final { return needs_begin_frame_; }

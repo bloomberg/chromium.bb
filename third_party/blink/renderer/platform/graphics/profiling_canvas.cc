@@ -43,7 +43,7 @@ CanvasInterceptor<ProfilingCanvas>::~CanvasInterceptor() {
   if (!TopLevelCall())
     return;
   double delta = WTF::CurrentTimeTicksInSeconds() - start_time_;
-  if (auto timings = Canvas()->timings_) {
+  if (auto* timings = Canvas()->timings_) {
     DCHECK_EQ(timings->size(), Canvas()->CallCount());
     timings->push_back(delta);
   }

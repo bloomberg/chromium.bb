@@ -106,7 +106,9 @@ class LoggingCanvas : public InterceptingCanvasBase {
   void onClipRRect(const SkRRect&, SkClipOp, ClipEdgeStyle) override;
   void onClipPath(const SkPath&, SkClipOp, ClipEdgeStyle) override;
   void onClipRegion(const SkRegion&, SkClipOp) override;
-  virtual void onDrawPicture(const SkPicture*, const SkMatrix*, const SkPaint*);
+  void onDrawPicture(const SkPicture*,
+                     const SkMatrix*,
+                     const SkPaint*) override;
   void didSetMatrix(const SkMatrix&) override;
   void didConcat(const SkMatrix&) override;
   void willSave() override;

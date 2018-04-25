@@ -16,7 +16,7 @@ namespace blink {
 class PLATFORM_EXPORT TracedValue final
     : public base::trace_event::ConvertableToTraceFormat {
  public:
-  ~TracedValue();
+  ~TracedValue() override;
 
   static std::unique_ptr<TracedValue> Create();
 

@@ -168,7 +168,7 @@ FontPlatformData* FontCache::GetFontPlatformData(
     }
     if (result) {
       // Cache the result under the old name.
-      auto adding =
+      auto* adding =
           &font_platform_data_cache_.insert(key, SizedFontPlatformDataSet())
                .stored_value->value;
       adding->Set(rounded_size, std::make_unique<FontPlatformData>(*result));

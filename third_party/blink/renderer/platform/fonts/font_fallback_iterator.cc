@@ -33,7 +33,7 @@ FontFallbackIterator::FontFallbackIterator(
       font_fallback_priority_(font_fallback_priority) {}
 
 bool FontFallbackIterator::AlreadyLoadingRangeForHintChar(UChar32 hint_char) {
-  for (auto it = tracked_loading_range_sets_.begin();
+  for (auto* it = tracked_loading_range_sets_.begin();
        it != tracked_loading_range_sets_.end(); ++it) {
     if ((*it)->Contains(hint_char))
       return true;
@@ -44,7 +44,7 @@ bool FontFallbackIterator::AlreadyLoadingRangeForHintChar(UChar32 hint_char) {
 bool FontFallbackIterator::RangeSetContributesForHint(
     const Vector<UChar32> hint_list,
     const FontDataForRangeSet* segmented_face) {
-  for (auto it = hint_list.begin(); it != hint_list.end(); ++it) {
+  for (auto* it = hint_list.begin(); it != hint_list.end(); ++it) {
     if (segmented_face->Contains(*it)) {
       if (!AlreadyLoadingRangeForHintChar(*it))
         return true;

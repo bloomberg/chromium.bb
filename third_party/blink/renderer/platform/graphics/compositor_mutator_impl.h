@@ -42,7 +42,7 @@ class PLATFORM_EXPORT CompositorMutatorImpl final : public CompositorMutator {
       scoped_refptr<base::SingleThreadTaskRunner>* mutatee_runner);
 
   CompositorMutatorImpl();
-  ~CompositorMutatorImpl();
+  ~CompositorMutatorImpl() override;
 
   // CompositorMutator implementation.
   void Mutate(std::unique_ptr<CompositorMutatorInputState>) override;

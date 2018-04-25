@@ -22,7 +22,7 @@ class MainThreadTaskQueueForTest : public MainThreadTaskQueue {
                                 MainThreadTaskQueue::QueueType::kTest)),
                             QueueCreationParams(queue_type),
                             nullptr) {}
-  ~MainThreadTaskQueueForTest() = default;
+  ~MainThreadTaskQueueForTest() override = default;
 };
 
 // A dummy FrameScheduler for tests.
@@ -123,7 +123,7 @@ class FakeFrameScheduler : public FrameScheduler {
   PageScheduler* GetPageScheduler() const override { return page_scheduler_; }
   WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
       const WTF::String& name,
-      WebScopedVirtualTimePauser::VirtualTaskDuration duration) {
+      WebScopedVirtualTimePauser::VirtualTaskDuration duration) override {
     return WebScopedVirtualTimePauser();
   }
   void DidStartProvisionalLoad(bool is_main_frame) override {}

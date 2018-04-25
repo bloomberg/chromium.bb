@@ -63,7 +63,7 @@ bool TaskQueueManagerForTest::HasImmediateWork() const {
 
 size_t TaskQueueManagerForTest::PendingTasksCount() const {
   size_t task_count = 0;
-  for (auto& queue : main_thread_only().active_queues)
+  for (auto* const queue : main_thread_only().active_queues)
     task_count += queue->GetNumberOfPendingTasks();
   return task_count;
 }

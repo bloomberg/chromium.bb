@@ -231,7 +231,7 @@ TEST_P(GraphicsLayerTest, PaintRecursively) {
     return;
 
   IntRect interest_rect(1, 2, 3, 4);
-  auto transform_root = TransformPaintPropertyNode::Root();
+  auto* transform_root = TransformPaintPropertyNode::Root();
   auto transform1 =
       CreateTransform(transform_root, TransformationMatrix().Translate(10, 20));
   auto transform2 =

@@ -18,7 +18,7 @@ class CompositorTest : public testing::Test {
 
  public:
   CompositorTest();
-  virtual ~CompositorTest();
+  ~CompositorTest() override;
 
  protected:
   // Mock task runner is initialized here because tests create

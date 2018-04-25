@@ -51,7 +51,7 @@ class WebGraphicsContext3DProviderForTests
   viz::GLHelper* GetGLHelper() override { return nullptr; }
   void SetLostContextCallback(base::Closure) override {}
   void SetErrorMessageCallback(
-      base::RepeatingCallback<void(const char*, int32_t id)>) {}
+      base::RepeatingCallback<void(const char*, int32_t id)>) override {}
   void SignalQuery(uint32_t, base::OnceClosure) override {}
   cc::ImageDecodeCache* ImageDecodeCache() override { return nullptr; }
 

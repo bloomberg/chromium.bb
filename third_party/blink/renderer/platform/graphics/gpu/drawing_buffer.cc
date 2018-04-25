@@ -264,10 +264,10 @@ bool DrawingBuffer::DefaultBufferRequiresAlphaChannelToBePreserved() {
 
 DrawingBuffer::RegisteredBitmap DrawingBuffer::CreateOrRecycleBitmap(
     cc::SharedBitmapIdRegistrar* bitmap_registrar) {
-  auto it = std::remove_if(recycled_bitmaps_.begin(), recycled_bitmaps_.end(),
-                           [this](const RegisteredBitmap& registered) {
-                             return registered.bitmap->size() != size_;
-                           });
+  auto* it = std::remove_if(recycled_bitmaps_.begin(), recycled_bitmaps_.end(),
+                            [this](const RegisteredBitmap& registered) {
+                              return registered.bitmap->size() != size_;
+                            });
   recycled_bitmaps_.Shrink(it - recycled_bitmaps_.begin());
 
   if (!recycled_bitmaps_.IsEmpty()) {

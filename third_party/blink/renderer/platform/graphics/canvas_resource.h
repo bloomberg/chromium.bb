@@ -82,7 +82,7 @@ class PLATFORM_EXPORT CanvasResource_Bitmap final : public CanvasResource {
       scoped_refptr<StaticBitmapImage>,
       base::WeakPtr<CanvasResourceProvider>,
       SkFilterQuality);
-  virtual ~CanvasResource_Bitmap() { Abandon(); }
+  ~CanvasResource_Bitmap() override { Abandon(); }
 
   // Not recyclable: Skia handles texture recycling internally and bitmaps are
   // cheap to allocate.
@@ -117,9 +117,11 @@ class PLATFORM_EXPORT CanvasResource_GpuMemoryBuffer final
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       base::WeakPtr<CanvasResourceProvider>,
       SkFilterQuality);
-  virtual ~CanvasResource_GpuMemoryBuffer();
+  ~CanvasResource_GpuMemoryBuffer() override;
   bool IsRecycleable() const final { return IsValid(); }
-  bool IsValid() const { return context_provider_wrapper_ && image_id_; }
+  bool IsValid() const override {
+    return context_provider_wrapper_ && image_id_;
+  }
   void Abandon() final { TearDown(); }
   IntSize Size() const final;
 

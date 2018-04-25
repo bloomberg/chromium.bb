@@ -48,7 +48,7 @@ class PLATFORM_EXPORT InterpolatedTransformOperation final
         new InterpolatedTransformOperation(from, to, progress));
   }
 
-  virtual bool CanBlendWith(const TransformOperation& other) const {
+  bool CanBlendWith(const TransformOperation& other) const override {
     return IsSameType(other);
   }
 

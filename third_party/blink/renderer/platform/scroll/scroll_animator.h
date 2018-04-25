@@ -124,7 +124,7 @@ class PLATFORM_EXPORT ScrollAnimator : public ScrollAnimatorBase {
   void LayerForCompositedScrollingDidChange(
       CompositorAnimationTimeline*) override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   // Returns whether or not the animation was sent to the compositor.

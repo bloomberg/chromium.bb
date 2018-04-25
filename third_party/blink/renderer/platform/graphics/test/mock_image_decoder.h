@@ -77,7 +77,7 @@ class MockImageDecoder : public ImageDecoder {
                      kNoDecodedImageByteLimit),
         client_(client) {}
 
-  ~MockImageDecoder() { client_->DecoderBeingDestroyed(); }
+  ~MockImageDecoder() override { client_->DecoderBeingDestroyed(); }
 
   IntSize DecodedSize() const override {
     return client_->DecodedSize().IsEmpty() ? Size() : client_->DecodedSize();

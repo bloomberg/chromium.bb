@@ -112,7 +112,7 @@ inline bool ChunkLessThanIndex(const PaintChunk& chunk, size_t index) {
 inline Vector<PaintChunk>::iterator FindChunkInVectorByDisplayItemIndex(
     Vector<PaintChunk>& chunks,
     size_t index) {
-  auto chunk =
+  auto* chunk =
       std::lower_bound(chunks.begin(), chunks.end(), index, ChunkLessThanIndex);
   DCHECK(chunk == chunks.end() ||
          (index >= chunk->begin_index && index < chunk->end_index));
