@@ -246,11 +246,6 @@
 -ChromeResourceDispatcherHostDelegateBrowserTest.PolicyHeader
 -ChromeResourceDispatcherHostDelegateBrowserTest.PolicyHeaderForRedirect
 
-# http://crbug.com/787614
--ChromeResourceDispatcherHostDelegateBrowserTest.ThrottlesAddedExactlyOnceToADownloads
--ChromeResourceDispatcherHostDelegateBrowserTest.ThrottlesAddedExactlyOnceToLargeSniffedDownloads
--ChromeResourceDispatcherHostDelegateBrowserTest.ThrottlesAddedExactlyOnceToTinySniffedDownloads
-
 # Add support of download_to_file for URLLoader.
 # http://crbug.com/791702
 -OutOfProcessPPAPITest.FileRef1

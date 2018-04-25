@@ -58,6 +58,7 @@
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 
 using content::ResourceType;
@@ -590,6 +591,10 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
 // See https://crbug.com/640545
 IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
                        ThrottlesAddedExactlyOnceToTinySniffedDownloads) {
+  // This code path isn't used when the network service is enabled.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   GURL url = embedded_test_server()->GetURL("/downloads/tiny_binary.bin");
   DownloadTestObserverNotInProgress download_observer(
       content::BrowserContext::GetDownloadManager(browser()->profile()), 1);
@@ -603,6 +608,10 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
 // have their mime type determined before the end of the response is reported.
 IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
                        ThrottlesAddedExactlyOnceToLargeSniffedDownloads) {
+  // This code path isn't used when the network service is enabled.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   GURL url = embedded_test_server()->GetURL("/downloads/thisdayinhistory.xls");
   DownloadTestObserverNotInProgress download_observer(
       content::BrowserContext::GetDownloadManager(browser()->profile()), 1);
@@ -616,6 +625,10 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
 // <a download> click.
 IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
                        ThrottlesAddedExactlyOnceToADownloads) {
+  // This code path isn't used when the network service is enabled.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   DownloadTestObserverNotInProgress download_observer(
       content::BrowserContext::GetDownloadManager(browser()->profile()), 1);
   download_observer.StartObserving();
