@@ -10,7 +10,6 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.content.browser.ContentViewCoreImpl;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
@@ -187,31 +186,4 @@ public interface ContentViewCore {
      * (0, 0). This is critical for drawing ContentView correctly.
      */
     void scrollBy(float dxPix, float dyPix);
-
-    /**
-     * Enable or disable multi-touch zoom support.
-     * @param supportsMultiTouchZoom {@code true} if the feature is enabled.
-     */
-    void updateMultiTouchZoomSupport(boolean supportsMultiTouchZoom);
-
-    /**
-     * Enable or disable double tap support.
-     * @param supportsDoubleTap {@code true} if the feature is enabled.
-     */
-    void updateDoubleTapSupport(boolean supportsDoubleTap);
-
-    // Test-only methods
-
-    /**
-     * @return The amount of the top controls height if controls are in the state
-     *    of shrinking Blink's view size, otherwise 0.
-     */
-    @VisibleForTesting
-    int getTopControlsShrinkBlinkHeightForTesting();
-
-    /**
-     * @return {@code true} if select popup is being shown.
-     */
-    @VisibleForTesting
-    boolean isSelectPopupVisibleForTest();
 }

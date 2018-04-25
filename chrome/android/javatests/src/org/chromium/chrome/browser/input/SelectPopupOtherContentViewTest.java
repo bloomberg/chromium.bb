@@ -63,9 +63,10 @@ public class SelectPopupOtherContentViewTest {
 
         @Override
         public boolean isSatisfied() {
-            ContentViewCore contentViewCore =
-                    mActivityTestRule.getActivity().getActivityTab().getContentViewCore();
-            return contentViewCore.isSelectPopupVisibleForTest();
+            return mActivityTestRule.getActivity()
+                    .getActivityTab()
+                    .getWebContents()
+                    .isSelectPopupVisibleForTesting();
         }
     }
 
@@ -110,6 +111,9 @@ public class SelectPopupOtherContentViewTest {
                 mActivityTestRule.getActivity().getActivityTab().getContentViewCore();
 
         Assert.assertTrue("The select popup got hidden by destroying of unrelated ContentViewCore.",
-                viewCore.isSelectPopupVisibleForTest());
+                mActivityTestRule.getActivity()
+                        .getActivityTab()
+                        .getWebContents()
+                        .isSelectPopupVisibleForTesting());
     }
 }

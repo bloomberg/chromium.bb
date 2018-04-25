@@ -42,25 +42,10 @@ class ContentViewCore : public WebContentsObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
-  // Returns the amount of the top controls height if controls are in the state
-  // of shrinking Blink's view size, otherwise 0.
-  int GetTopControlsShrinkBlinkHeightPixForTesting(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-
   void SendOrientationChangeEvent(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jint orientation);
-
-  void SetDoubleTapSupportEnabled(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      jboolean enabled);
-  void SetMultiTouchZoomSupportEnabled(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      jboolean enabled);
 
   void SetFocus(JNIEnv* env,
                 const base::android::JavaParamRef<jobject>& obj,

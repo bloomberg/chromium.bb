@@ -27,6 +27,7 @@ import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl;
 import org.chromium.content.browser.framehost.RenderFrameHostDelegate;
 import org.chromium.content.browser.framehost.RenderFrameHostImpl;
+import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
@@ -577,6 +578,24 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
         }
     }
 
+    /**
+     * @return The amount of the top controls height if controls are in the state
+     *    of shrinking Blink's view size, otherwise 0.
+     */
+    @VisibleForTesting
+    public int getTopControlsShrinkBlinkHeightForTesting() {
+        // TODO(jinsukkim): Let callsites provide with its own top controls height to remove
+        //                  the test-only method in content layer.
+        if (mNativeWebContentsAndroid == 0) return 0;
+        return nativeGetTopControlsShrinkBlinkHeightPixForTesting(mNativeWebContentsAndroid);
+    }
+
+    @VisibleForTesting
+    @Override
+    public boolean isSelectPopupVisibleForTesting() {
+        return SelectPopup.fromWebContents(this).isVisibleForTesting();
+    }
+
     // root node can be null if parsing fails.
     @CalledByNative
     private static void onAccessibilitySnapshot(AccessibilitySnapshotNode root,
@@ -858,4 +877,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
     private native int nativeGetWidth(long nativeWebContentsAndroid);
     private native int nativeGetHeight(long nativeWebContentsAndroid);
     private native EventForwarder nativeGetOrCreateEventForwarder(long nativeWebContentsAndroid);
+    private native int nativeGetTopControlsShrinkBlinkHeightPixForTesting(
+            long nativeWebContentsAndroid);
 }

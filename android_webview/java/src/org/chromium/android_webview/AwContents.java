@@ -846,8 +846,10 @@ public class AwContents implements SmartClipProvider {
             AwSettings.ZoomSupportChangeListener zoomListener =
                     (supportsDoubleTapZoom, supportsMultiTouchZoom) -> {
                 if (isDestroyedOrNoOperation(NO_WARN)) return;
-                mContentViewCore.updateDoubleTapSupport(supportsDoubleTapZoom);
-                mContentViewCore.updateMultiTouchZoomSupport(supportsMultiTouchZoom);
+                GestureListenerManager gestureManager =
+                        GestureListenerManager.fromWebContents(mWebContents);
+                gestureManager.updateDoubleTapSupport(supportsDoubleTapZoom);
+                gestureManager.updateMultiTouchZoomSupport(supportsMultiTouchZoom);
             };
             mSettings.setZoomListener(zoomListener);
             mDefaultVideoPosterRequestHandler =

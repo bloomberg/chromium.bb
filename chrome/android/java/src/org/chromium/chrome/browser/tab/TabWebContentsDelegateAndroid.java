@@ -45,7 +45,7 @@ import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
 import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentVideoViewEmbedder;
-import org.chromium.content_public.browser.ContentViewCore;
+import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ResourceRequestBody;
@@ -536,11 +536,7 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
                 FullscreenManager fullscreenManager = mTab.getFullscreenManager();
                 if (fullscreenManager != null) {
                     fullscreenManager.setOverlayVideoMode(true);
-                    // Disable double tap for video.
-                    ContentViewCore cvc = mTab.getContentViewCore();
-                    if (cvc != null) {
-                        cvc.updateDoubleTapSupport(false);
-                    }
+                    enableDoubleTap(false);
                 }
             }
 
@@ -549,15 +545,18 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
                 FullscreenManager fullscreenManager = mTab.getFullscreenManager();
                 if (fullscreenManager != null) {
                     fullscreenManager.setOverlayVideoMode(false);
-                    // Disable double tap for video.
-                    ContentViewCore cvc = mTab.getContentViewCore();
-                    if (cvc != null) {
-                        cvc.updateDoubleTapSupport(true);
-                    }
+                    enableDoubleTap(true);
                 }
                 super.exitFullscreenVideo();
             }
         };
+    }
+
+    private void enableDoubleTap(boolean enable) {
+        WebContents wc = mTab.getWebContents();
+        GestureListenerManager gestureManager =
+                wc != null ? GestureListenerManager.fromWebContents(wc) : null;
+        if (gestureManager != null) gestureManager.updateDoubleTapSupport(enable);
     }
 
     public void showFramebustBlockInfobarForTesting(String url) {

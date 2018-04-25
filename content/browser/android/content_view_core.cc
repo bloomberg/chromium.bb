@@ -179,15 +179,6 @@ void ContentViewCore::SetFocusInternal(bool focused) {
     GetRenderWidgetHostViewAndroid()->LostFocus();
 }
 
-int ContentViewCore::GetTopControlsShrinkBlinkHeightPixForTesting(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
-  return !rwhv || !rwhv->DoBrowserControlsShrinkBlinkSize()
-             ? 0
-             : rwhv->GetTopControlsHeight() * dpi_scale_;
-}
-
 void ContentViewCore::SendOrientationChangeEvent(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -197,24 +188,6 @@ void ContentViewCore::SendOrientationChangeEvent(
     device_orientation_ = orientation;
     SendOrientationChangeEventInternal();
   }
-}
-
-void ContentViewCore::SetDoubleTapSupportEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean enabled) {
-  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
-  if (rwhv)
-    rwhv->SetDoubleTapSupportEnabled(enabled);
-}
-
-void ContentViewCore::SetMultiTouchZoomSupportEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean enabled) {
-  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
-  if (rwhv)
-    rwhv->SetMultiTouchZoomSupportEnabled(enabled);
 }
 
 void ContentViewCore::SendOrientationChangeEventInternal() {

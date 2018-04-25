@@ -78,20 +78,4 @@ public class TestContentViewCore implements ContentViewCore {
 
     @Override
     public void scrollBy(float dxPix, float dyPix) {}
-
-    @Override
-    public void updateMultiTouchZoomSupport(boolean supportsMultiTouchZoom) {}
-
-    @Override
-    public void updateDoubleTapSupport(boolean supportsDoubleTap) {}
-
-    @Override
-    public boolean isSelectPopupVisibleForTest() {
-        return false;
-    }
-
-    @Override
-    public int getTopControlsShrinkBlinkHeightForTesting() {
-        return 0;
-    }
 }
