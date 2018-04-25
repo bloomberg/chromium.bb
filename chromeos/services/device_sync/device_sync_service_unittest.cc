@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/null_task_runner.h"
 #include "base/test/scoped_task_environment.h"
@@ -45,6 +46,7 @@ namespace {
 const char kTestEmail[] = "example@gmail.com";
 const char kTestGcmDeviceInfoLongDeviceId[] = "longDeviceId";
 const char kTestCryptAuthGCMRegistrationId[] = "cryptAuthRegistrationId";
+const char kLocalDevicePublicKey[] = "localDevicePublicKey";
 const size_t kNumTestDevices = 5u;
 
 const cryptauth::GcmDeviceInfo& GetTestGcmDeviceInfo() {
@@ -60,6 +62,11 @@ const cryptauth::GcmDeviceInfo& GetTestGcmDeviceInfo() {
 cryptauth::RemoteDeviceList GenerateTestRemoteDevices() {
   cryptauth::RemoteDeviceList devices =
       cryptauth::GenerateTestRemoteDevices(kNumTestDevices);
+
+  // One of the synced devices refers to the current (i.e., local) device.
+  // Arbitrarily choose the 0th device as the local one and set its public key
+  // accordingly.
+  devices[0].public_key = kLocalDevicePublicKey;
 
   // Load an empty set of BeaconSeeds for each device.
   // TODO(khorimoto): Adjust device_sync_mojom_traits.h/cc to allow passing
@@ -236,6 +243,7 @@ class FakeCryptAuthEnrollmentManagerFactory
 
     auto instance =
         std::make_unique<cryptauth::FakeCryptAuthEnrollmentManager>();
+    instance->set_user_public_key(kLocalDevicePublicKey);
     instance->set_is_enrollment_valid(device_already_enrolled_in_cryptauth_);
     instance_ = instance.get();
 
@@ -684,6 +692,10 @@ class DeviceSyncServiceTest : public testing::Test {
     // GetSyncedDevices() returns a null list before initialization.
     EXPECT_FALSE(CallGetSyncedDevices());
 
+    // GetLocalDeviceMetadata() returns a null RemoteDevice before
+    // initialization.
+    EXPECT_FALSE(CallGetLocalDeviceMetadata());
+
     // SetSoftwareFeatureState() should return a struct with the special
     // kErrorNotInitialized error code.
     CallSetSoftwareFeatureState(
@@ -743,6 +755,15 @@ class DeviceSyncServiceTest : public testing::Test {
     }
 
     return last_force_sync_now_result_;
+  }
+
+  const base::Optional<cryptauth::RemoteDevice>& CallGetLocalDeviceMetadata() {
+    base::RunLoop run_loop;
+    device_sync_->GetLocalDeviceMetadata(base::BindOnce(
+        &DeviceSyncServiceTest::OnGetLocalDeviceMetadataCompleted,
+        base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    return last_local_device_metadata_result_;
   }
 
   const base::Optional<cryptauth::RemoteDeviceList>& CallGetSyncedDevices() {
@@ -844,6 +865,13 @@ class DeviceSyncServiceTest : public testing::Test {
     std::move(quit_closure).Run();
   }
 
+  void OnGetLocalDeviceMetadataCompleted(
+      base::OnceClosure quit_closure,
+      const base::Optional<cryptauth::RemoteDevice>& local_device_metadata) {
+    last_local_device_metadata_result_ = local_device_metadata;
+    std::move(quit_closure).Run();
+  }
+
   void OnGetSyncedDevicesCompleted(
       base::OnceClosure quit_closure,
       const base::Optional<cryptauth::RemoteDeviceList>& synced_devices) {
@@ -926,6 +954,7 @@ class DeviceSyncServiceTest : public testing::Test {
   bool last_force_enrollment_now_result_;
   bool last_force_sync_now_result_;
   base::Optional<cryptauth::RemoteDeviceList> last_synced_devices_result_;
+  base::Optional<cryptauth::RemoteDevice> last_local_device_metadata_result_;
   std::unique_ptr<base::Optional<std::string>>
       last_set_software_feature_state_response_;
   std::unique_ptr<std::pair<base::Optional<std::string>,
@@ -1037,6 +1066,17 @@ TEST_F(DeviceSyncServiceTest, EnrollAgainAfterInitialization) {
   SimulateEnrollment(true /* success */);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, fake_device_sync_observer()->num_enrollment_events());
+}
+
+TEST_F(DeviceSyncServiceTest, GetLocalDeviceMetadata) {
+  InitializeServiceSuccessfully();
+
+  const auto& result = CallGetLocalDeviceMetadata();
+  EXPECT_TRUE(result);
+  EXPECT_EQ(kLocalDevicePublicKey, result->public_key);
+  // Note: In GenerateTestRemoteDevices(), the 0th test device is arbitrarily
+  // chosen as the local device.
+  EXPECT_EQ(test_devices()[0], *result);
 }
 
 TEST_F(DeviceSyncServiceTest, SyncedDeviceUpdates) {

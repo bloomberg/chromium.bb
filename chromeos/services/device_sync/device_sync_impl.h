@@ -96,6 +96,7 @@ class DeviceSyncImpl : public mojom::DeviceSync,
                    AddObserverCallback callback) override;
   void ForceEnrollmentNow(ForceEnrollmentNowCallback callback) override;
   void ForceSyncNow(ForceSyncNowCallback callback) override;
+  void GetLocalDeviceMetadata(GetLocalDeviceMetadataCallback callback) override;
   void GetSyncedDevices(GetSyncedDevicesCallback callback) override;
   void SetSoftwareFeatureState(
       const std::string& device_public_key,

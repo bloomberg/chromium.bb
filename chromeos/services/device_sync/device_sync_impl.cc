@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
+#include "base/optional.h"
 #include "base/time/default_clock.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/device_sync/cryptauth_client_factory_impl.h"
@@ -160,6 +161,21 @@ void DeviceSyncImpl::ForceSyncNow(ForceSyncNowCallback callback) {
 
   cryptauth_device_manager_->ForceSyncNow(cryptauth::INVOCATION_REASON_MANUAL);
   std::move(callback).Run(true /* success */);
+}
+
+void DeviceSyncImpl::GetLocalDeviceMetadata(
+    GetLocalDeviceMetadataCallback callback) {
+  if (status_ != Status::READY) {
+    PA_LOG(WARNING) << "DeviceSyncImpl::GetLocalDeviceMetadata() invoked "
+                    << "before initialization was complete. Cannot return "
+                    << "local device metadata.";
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  std::string public_key = cryptauth_enrollment_manager_->GetUserPublicKey();
+  DCHECK(!public_key.empty());
+  std::move(callback).Run(GetSyncedDeviceWithPublicKey(public_key));
 }
 
 void DeviceSyncImpl::GetSyncedDevices(GetSyncedDevicesCallback callback) {
