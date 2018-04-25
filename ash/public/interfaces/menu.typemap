@@ -6,7 +6,6 @@ mojom = "//ash/public/interfaces/menu.mojom"
 public_headers = [ "//ui/base/models/menu_model.h" ]
 traits_headers = [ "//ash/public/cpp/menu_struct_mojom_traits.h" ]
 public_deps = [
-  "//mojo/common:common_custom_types",
   "//ui/base",
   "//ui/gfx/image/mojo:struct_traits",
 ]

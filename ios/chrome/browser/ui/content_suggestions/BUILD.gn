@@ -158,6 +158,7 @@ source_set("content_suggestions_ui_util") {
   deps = [
     ":content_suggestions_constant",
     "//base",
+    "//base:i18n",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
@@ -167,7 +168,6 @@ source_set("content_suggestions_ui_util") {
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/third_party/material_components_ios",
-    "//mojo/common:common_custom_types",
     "//ui/base",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

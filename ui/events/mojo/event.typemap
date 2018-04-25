@@ -6,7 +6,6 @@ mojom = "//ui/events/mojo/event.mojom"
 public_headers = [ "//ui/events/event.h" ]
 traits_headers = [ "//ui/events/mojo/event_struct_traits.h" ]
 public_deps = [
-  "//mojo/common:common_custom_types",
   "//ui/events",
   "//ui/events:dom_keycode_converter",
   "//ui/latency/mojo:interfaces",

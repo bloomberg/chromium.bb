@@ -45,7 +45,6 @@ android_library("content_java") {
     "//media/midi:midi_java",
     "//media/mojo/interfaces:interfaces_java",
     "//mojo/android:system_java",
-    "//mojo/common:common_custom_types_java",
     "//mojo/public/java:base_java",
     "//mojo/public/java:bindings_java",
     "//mojo/public/java:system_java",

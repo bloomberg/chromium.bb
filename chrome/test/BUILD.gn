@@ -2199,7 +2199,6 @@ if (is_mac) {
     ]
     public_deps = [
       "//components/autofill/content/common:mojo_types",
-      "//mojo/common:common_custom_types",
       "//mojo/public/mojom/base",
     ]
   }

@@ -93,7 +93,6 @@ mojom("test_interfaces") {
     "time_to_first_present_recorder_test_api.mojom",
   ]
   deps = [
-    "//mojo/common:common_custom_types",
     "//mojo/public/mojom/base",
   ]
 }

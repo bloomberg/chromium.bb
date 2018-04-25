@@ -49,6 +49,7 @@ component("embedder") {
 
   deps = [
     "//base:base_static",
+    "//base:i18n",
   ]
 
   public_deps = [

@@ -58,7 +58,6 @@ if (is_chromeos) {
       ":media",
       ":notifications",
       "//device/usb/public/mojom",
-      "//mojo/common:common_custom_types",
       "//mojo/public/mojom/base",
       "//ui/gfx/geometry/mojo",
     ]
@@ -91,7 +90,6 @@ mojom("media") {
   ]
 
   public_deps = [
-    "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
   ]
 }

@@ -13,7 +13,6 @@ sources = [
   "//ash/public/cpp/shelf_struct_mojom_traits.cc",
 ]
 public_deps = [
-  "//mojo/common:common_custom_types",
   "//ui/gfx/image/mojo:struct_traits",
 ]
 type_mappings = [
