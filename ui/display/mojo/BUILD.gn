@@ -22,6 +22,5 @@ mojom("interfaces") {
     "//ui/gfx/mojo",
   ]
 
-  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
-  use_once_callback = false
+  use_once_callback = true
 }

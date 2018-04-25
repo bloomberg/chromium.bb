@@ -180,20 +180,20 @@ void DrmDisplayHostManager::RemoveDelegate(DrmNativeDisplayDelegate* delegate) {
 }
 
 void DrmDisplayHostManager::TakeDisplayControl(
-    const display::DisplayControlCallback& callback) {
+    display::DisplayControlCallback callback) {
   if (display_control_change_pending_) {
     LOG(ERROR) << "TakeDisplayControl called while change already pending";
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
   if (!display_externally_controlled_) {
     LOG(ERROR) << "TakeDisplayControl called while display already owned";
-    callback.Run(true);
+    std::move(callback).Run(true);
     return;
   }
 
-  take_display_control_callback_ = callback;
+  take_display_control_callback_ = std::move(callback);
   display_control_change_pending_ = true;
 
   if (!proxy_->GpuTakeDisplayControl())
@@ -201,21 +201,21 @@ void DrmDisplayHostManager::TakeDisplayControl(
 }
 
 void DrmDisplayHostManager::RelinquishDisplayControl(
-    const display::DisplayControlCallback& callback) {
+    display::DisplayControlCallback callback) {
   if (display_control_change_pending_) {
     LOG(ERROR)
         << "RelinquishDisplayControl called while change already pending";
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
   if (display_externally_controlled_) {
     LOG(ERROR) << "RelinquishDisplayControl called while display not owned";
-    callback.Run(true);
+    std::move(callback).Run(true);
     return;
   }
 
-  relinquish_display_control_callback_ = callback;
+  relinquish_display_control_callback_ = std::move(callback);
   display_control_change_pending_ = true;
 
   if (!proxy_->GpuRelinquishDisplayControl())
@@ -223,11 +223,11 @@ void DrmDisplayHostManager::RelinquishDisplayControl(
 }
 
 void DrmDisplayHostManager::UpdateDisplays(
-    const display::GetDisplaysCallback& callback) {
-  get_displays_callback_ = callback;
+    display::GetDisplaysCallback callback) {
+  get_displays_callback_ = std::move(callback);
   if (!proxy_->GpuRefreshNativeDisplays()) {
+    RunUpdateDisplaysCallback(std::move(get_displays_callback_));
     get_displays_callback_.Reset();
-    RunUpdateDisplaysCallback(callback);
   }
 }
 
@@ -346,7 +346,8 @@ void DrmDisplayHostManager::OnGpuThreadReady() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&DrmDisplayHostManager::RunUpdateDisplaysCallback,
-                       weak_ptr_factory_.GetWeakPtr(), get_displays_callback_));
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(get_displays_callback_)));
     get_displays_callback_.Reset();
   }
 
@@ -387,7 +388,8 @@ void DrmDisplayHostManager::GpuHasUpdatedNativeDisplays(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&DrmDisplayHostManager::RunUpdateDisplaysCallback,
-                       weak_ptr_factory_.GetWeakPtr(), get_displays_callback_));
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(get_displays_callback_)));
     get_displays_callback_.Reset();
   }
 }
@@ -437,7 +439,8 @@ void DrmDisplayHostManager::GpuTookDisplayControl(bool status) {
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(take_display_control_callback_, status));
+      FROM_HERE,
+      base::BindOnce(std::move(take_display_control_callback_), status));
   take_display_control_callback_.Reset();
   display_control_change_pending_ = false;
 }
@@ -457,18 +460,19 @@ void DrmDisplayHostManager::GpuRelinquishedDisplayControl(bool status) {
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(relinquish_display_control_callback_, status));
+      FROM_HERE,
+      base::BindOnce(std::move(relinquish_display_control_callback_), status));
   relinquish_display_control_callback_.Reset();
   display_control_change_pending_ = false;
 }
 
 void DrmDisplayHostManager::RunUpdateDisplaysCallback(
-    const display::GetDisplaysCallback& callback) const {
+    display::GetDisplaysCallback callback) const {
   std::vector<display::DisplaySnapshot*> snapshots;
   for (const auto& display : displays_)
     snapshots.push_back(display->snapshot());
 
-  callback.Run(snapshots);
+  std::move(callback).Run(snapshots);
 }
 
 void DrmDisplayHostManager::NotifyDisplayDelegate() const {

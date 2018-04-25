@@ -53,20 +53,19 @@ class ScreenManagerForwarding : public ScreenManager,
 
   // mojom::NativeDisplayDelegate:
   void Initialize(mojom::NativeDisplayObserverPtr observer,
-                  const InitializeCallback& callback) override;
-  void TakeDisplayControl(const TakeDisplayControlCallback& callback) override;
+                  InitializeCallback callback) override;
+  void TakeDisplayControl(TakeDisplayControlCallback callback) override;
   void RelinquishDisplayControl(
-      const RelinquishDisplayControlCallback& callback) override;
-  void GetDisplays(const GetDisplaysCallback& callback) override;
+      RelinquishDisplayControlCallback callback) override;
+  void GetDisplays(GetDisplaysCallback callback) override;
   void Configure(int64_t display_id,
                  base::Optional<std::unique_ptr<display::DisplayMode>> mode,
                  const gfx::Point& origin,
-                 const ConfigureCallback& callback) override;
-  void GetHDCPState(int64_t display_id,
-                    const GetHDCPStateCallback& callback) override;
+                 ConfigureCallback callback) override;
+  void GetHDCPState(int64_t display_id, GetHDCPStateCallback callback) override;
   void SetHDCPState(int64_t display_id,
                     display::HDCPState state,
-                    const SetHDCPStateCallback& callback) override;
+                    SetHDCPStateCallback callback) override;
   void SetColorCorrection(
       int64_t display_id,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
@@ -85,7 +84,7 @@ class ScreenManagerForwarding : public ScreenManager,
       const service_manager::BindSourceInfo& source_info);
 
   // Forwards results from GetDisplays() back with |callback|.
-  void ForwardGetDisplays(const GetDisplaysCallback& callback,
+  void ForwardGetDisplays(GetDisplaysCallback callback,
                           const std::vector<DisplaySnapshot*>& displays);
 
   // Forwards results from call to Configure() back with |callback|.
@@ -93,7 +92,7 @@ class ScreenManagerForwarding : public ScreenManager,
       DisplaySnapshot* snapshot,
       const DisplayMode* mode,
       const gfx::Point& origin,
-      const mojom::NativeDisplayDelegate::ConfigureCallback& callback,
+      mojom::NativeDisplayDelegate::ConfigureCallback callback,
       bool status);
 
   // True if the UI Service runs inside WM's process, false if it runs inside

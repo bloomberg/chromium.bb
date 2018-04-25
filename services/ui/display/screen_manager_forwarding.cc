@@ -94,7 +94,7 @@ void ScreenManagerForwarding::OnDisplaySnapshotsInvalidated() {
 
 void ScreenManagerForwarding::Initialize(
     mojom::NativeDisplayObserverPtr observer,
-    const InitializeCallback& callback) {
+    InitializeCallback callback) {
   DCHECK(!native_display_delegate_);
   observer_ = std::move(observer);
 
@@ -112,42 +112,41 @@ void ScreenManagerForwarding::Initialize(
   // Provide the list of display snapshots initially. ForwardingDisplayDelegate
   // will wait synchronously for this.
   native_display_delegate_->GetDisplays(
-      base::Bind(&ScreenManagerForwarding::ForwardGetDisplays,
-                 base::Unretained(this), callback));
-
+      base::BindOnce(&ScreenManagerForwarding::ForwardGetDisplays,
+                     base::Unretained(this), std::move(callback)));
   // When ForwardingDisplayDelegate receives this it will start asynchronous
   // operation and redo any configuration that was skipped.
   observer_->OnConfigurationChanged();
 }
 
 void ScreenManagerForwarding::TakeDisplayControl(
-    const TakeDisplayControlCallback& callback) {
+    TakeDisplayControlCallback callback) {
   DCHECK(native_display_delegate_);
-  native_display_delegate_->TakeDisplayControl(callback);
+  native_display_delegate_->TakeDisplayControl(std::move(callback));
 }
 
 void ScreenManagerForwarding::RelinquishDisplayControl(
-    const RelinquishDisplayControlCallback& callback) {
+    RelinquishDisplayControlCallback callback) {
   DCHECK(native_display_delegate_);
-  native_display_delegate_->RelinquishDisplayControl(callback);
+  native_display_delegate_->RelinquishDisplayControl(std::move(callback));
 }
 
-void ScreenManagerForwarding::GetDisplays(const GetDisplaysCallback& callback) {
+void ScreenManagerForwarding::GetDisplays(GetDisplaysCallback callback) {
   DCHECK(native_display_delegate_);
   native_display_delegate_->GetDisplays(
-      base::Bind(&ScreenManagerForwarding::ForwardGetDisplays,
-                 base::Unretained(this), callback));
+      base::BindOnce(&ScreenManagerForwarding::ForwardGetDisplays,
+                     base::Unretained(this), std::move(callback)));
 }
 
 void ScreenManagerForwarding::Configure(
     int64_t display_id,
     base::Optional<std::unique_ptr<display::DisplayMode>> mode,
     const gfx::Point& origin,
-    const ConfigureCallback& callback) {
+    ConfigureCallback callback) {
   DCHECK(native_display_delegate_);
   DisplaySnapshot* snapshot = snapshot_map_[display_id];
   if (!snapshot) {
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
@@ -157,36 +156,34 @@ void ScreenManagerForwarding::Configure(
       mode ? GetCorrespondingMode(*snapshot, mode->get()) : nullptr;
   native_display_delegate_->Configure(
       *snapshot, snapshot_mode, origin,
-      base::Bind(&ScreenManagerForwarding::ForwardConfigure,
-                 base::Unretained(this), snapshot, snapshot_mode, origin,
-                 callback));
+      base::BindOnce(&ScreenManagerForwarding::ForwardConfigure,
+                     base::Unretained(this), snapshot, snapshot_mode, origin,
+                     std::move(callback)));
 }
 
-void ScreenManagerForwarding::GetHDCPState(
-    int64_t display_id,
-    const GetHDCPStateCallback& callback) {
+void ScreenManagerForwarding::GetHDCPState(int64_t display_id,
+                                           GetHDCPStateCallback callback) {
   DCHECK(native_display_delegate_);
   const DisplaySnapshot* snapshot = snapshot_map_[display_id];
   if (!snapshot) {
-    callback.Run(false, HDCP_STATE_UNDESIRED);
+    std::move(callback).Run(false, HDCP_STATE_UNDESIRED);
     return;
   }
 
-  native_display_delegate_->GetHDCPState(*snapshot, callback);
+  native_display_delegate_->GetHDCPState(*snapshot, std::move(callback));
 }
 
-void ScreenManagerForwarding::SetHDCPState(
-    int64_t display_id,
-    display::HDCPState state,
-    const SetHDCPStateCallback& callback) {
+void ScreenManagerForwarding::SetHDCPState(int64_t display_id,
+                                           display::HDCPState state,
+                                           SetHDCPStateCallback callback) {
   DCHECK(native_display_delegate_);
   const DisplaySnapshot* snapshot = snapshot_map_[display_id];
   if (!snapshot) {
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
-  native_display_delegate_->SetHDCPState(*snapshot, state, callback);
+  native_display_delegate_->SetHDCPState(*snapshot, state, std::move(callback));
 }
 
 void ScreenManagerForwarding::SetColorCorrection(
@@ -243,7 +240,7 @@ void ScreenManagerForwarding::BindDevDisplayControllerRequest(
 }
 
 void ScreenManagerForwarding::ForwardGetDisplays(
-    const GetDisplaysCallback& callback,
+    GetDisplaysCallback callback,
     const std::vector<DisplaySnapshot*>& snapshots) {
   snapshot_map_.clear();
 
@@ -255,14 +252,14 @@ void ScreenManagerForwarding::ForwardGetDisplays(
     snapshot_clones.push_back(snapshot->Clone());
   }
 
-  callback.Run(std::move(snapshot_clones));
+  std::move(callback).Run(std::move(snapshot_clones));
 }
 
 void ScreenManagerForwarding::ForwardConfigure(
     DisplaySnapshot* snapshot,
     const DisplayMode* mode,
     const gfx::Point& origin,
-    const mojom::NativeDisplayDelegate::ConfigureCallback& callback,
+    mojom::NativeDisplayDelegate::ConfigureCallback callback,
     bool status) {
   if (status) {
     // Modify display snapshot similar to how ConfigureDisplaysTask would. Ozone
@@ -270,7 +267,7 @@ void ScreenManagerForwarding::ForwardConfigure(
     snapshot->set_current_mode(mode);
     snapshot->set_origin(origin);
   }
-  callback.Run(status);
+  std::move(callback).Run(status);
 }
 
 }  // namespace display

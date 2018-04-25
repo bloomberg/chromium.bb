@@ -26,11 +26,11 @@ class NativeDisplayObserver;
 struct GammaRampRGBEntry;
 
 using GetDisplaysCallback =
-    base::Callback<void(const std::vector<DisplaySnapshot*>&)>;
-using ConfigureCallback = base::Callback<void(bool)>;
-using GetHDCPStateCallback = base::Callback<void(bool, HDCPState)>;
-using SetHDCPStateCallback = base::Callback<void(bool)>;
-using DisplayControlCallback = base::Callback<void(bool)>;
+    base::OnceCallback<void(const std::vector<DisplaySnapshot*>&)>;
+using ConfigureCallback = base::OnceCallback<void(bool)>;
+using GetHDCPStateCallback = base::OnceCallback<void(bool, HDCPState)>;
+using SetHDCPStateCallback = base::OnceCallback<void(bool)>;
+using DisplayControlCallback = base::OnceCallback<void(bool)>;
 
 // Interface for classes that perform display configuration actions on behalf
 // of DisplayConfigurator.
@@ -45,15 +45,14 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
   virtual void Initialize() = 0;
 
   // Take control of the display from any other controlling process.
-  virtual void TakeDisplayControl(const DisplayControlCallback& callback) = 0;
+  virtual void TakeDisplayControl(DisplayControlCallback callback) = 0;
 
   // Let others control the display.
-  virtual void RelinquishDisplayControl(
-      const DisplayControlCallback& callback) = 0;
+  virtual void RelinquishDisplayControl(DisplayControlCallback callback) = 0;
 
   // Queries for a list of fresh displays and returns them via |callback|.
   // Note the query operation may be expensive and take over 60 milliseconds.
-  virtual void GetDisplays(const GetDisplaysCallback& callback) = 0;
+  virtual void GetDisplays(GetDisplaysCallback callback) = 0;
 
   // Configures the display represented by |output| to use |mode| and positions
   // the display to |origin| in the framebuffer. |mode| can be NULL, which
@@ -62,16 +61,16 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
   virtual void Configure(const DisplaySnapshot& output,
                          const DisplayMode* mode,
                          const gfx::Point& origin,
-                         const ConfigureCallback& callback) = 0;
+                         ConfigureCallback callback) = 0;
 
   // Gets HDCP state of output.
   virtual void GetHDCPState(const DisplaySnapshot& output,
-                            const GetHDCPStateCallback& callback) = 0;
+                            GetHDCPStateCallback callback) = 0;
 
   // Sets HDCP state of output.
   virtual void SetHDCPState(const DisplaySnapshot& output,
                             HDCPState state,
-                            const SetHDCPStateCallback& callback) = 0;
+                            SetHDCPStateCallback callback) = 0;
 
   // Set the gamma tables and corection matrix for the display.
   virtual bool SetColorCorrection(

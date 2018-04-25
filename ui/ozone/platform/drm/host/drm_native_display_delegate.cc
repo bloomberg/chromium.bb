@@ -35,42 +35,41 @@ void DrmNativeDisplayDelegate::Initialize() {
 }
 
 void DrmNativeDisplayDelegate::TakeDisplayControl(
-    const display::DisplayControlCallback& callback) {
-  display_manager_->TakeDisplayControl(callback);
+    display::DisplayControlCallback callback) {
+  display_manager_->TakeDisplayControl(std::move(callback));
 }
 
 void DrmNativeDisplayDelegate::RelinquishDisplayControl(
-    const display::DisplayControlCallback& callback) {
-  display_manager_->RelinquishDisplayControl(callback);
+    display::DisplayControlCallback callback) {
+  display_manager_->RelinquishDisplayControl(std::move(callback));
 }
 
 void DrmNativeDisplayDelegate::GetDisplays(
-    const display::GetDisplaysCallback& callback) {
-  display_manager_->UpdateDisplays(callback);
+    display::GetDisplaysCallback callback) {
+  display_manager_->UpdateDisplays(std::move(callback));
 }
 
-void DrmNativeDisplayDelegate::Configure(
-    const display::DisplaySnapshot& output,
-    const display::DisplayMode* mode,
-    const gfx::Point& origin,
-    const display::ConfigureCallback& callback) {
+void DrmNativeDisplayDelegate::Configure(const display::DisplaySnapshot& output,
+                                         const display::DisplayMode* mode,
+                                         const gfx::Point& origin,
+                                         display::ConfigureCallback callback) {
   DrmDisplayHost* display = display_manager_->GetDisplay(output.display_id());
-  display->Configure(mode, origin, callback);
+  display->Configure(mode, origin, std::move(callback));
 }
 
 void DrmNativeDisplayDelegate::GetHDCPState(
     const display::DisplaySnapshot& output,
-    const display::GetHDCPStateCallback& callback) {
+    display::GetHDCPStateCallback callback) {
   DrmDisplayHost* display = display_manager_->GetDisplay(output.display_id());
-  display->GetHDCPState(callback);
+  display->GetHDCPState(std::move(callback));
 }
 
 void DrmNativeDisplayDelegate::SetHDCPState(
     const display::DisplaySnapshot& output,
     display::HDCPState state,
-    const display::SetHDCPStateCallback& callback) {
+    display::SetHDCPStateCallback callback) {
   DrmDisplayHost* display = display_manager_->GetDisplay(output.display_id());
-  display->SetHDCPState(state, callback);
+  display->SetHDCPState(state, std::move(callback));
 }
 
 bool DrmNativeDisplayDelegate::SetColorCorrection(

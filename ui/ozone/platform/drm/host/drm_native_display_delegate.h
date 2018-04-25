@@ -25,20 +25,19 @@ class DrmNativeDisplayDelegate : public display::NativeDisplayDelegate {
 
   // display::NativeDisplayDelegate overrides:
   void Initialize() override;
-  void TakeDisplayControl(
-      const display::DisplayControlCallback& callback) override;
+  void TakeDisplayControl(display::DisplayControlCallback callback) override;
   void RelinquishDisplayControl(
-      const display::DisplayControlCallback& callback) override;
-  void GetDisplays(const display::GetDisplaysCallback& callback) override;
+      display::DisplayControlCallback callback) override;
+  void GetDisplays(display::GetDisplaysCallback callback) override;
   void Configure(const display::DisplaySnapshot& output,
                  const display::DisplayMode* mode,
                  const gfx::Point& origin,
-                 const display::ConfigureCallback& callback) override;
+                 display::ConfigureCallback callback) override;
   void GetHDCPState(const display::DisplaySnapshot& output,
-                    const display::GetHDCPStateCallback& callback) override;
+                    display::GetHDCPStateCallback callback) override;
   void SetHDCPState(const display::DisplaySnapshot& output,
                     display::HDCPState state,
-                    const display::SetHDCPStateCallback& callback) override;
+                    display::SetHDCPStateCallback callback) override;
   bool SetColorCorrection(
       const display::DisplaySnapshot& output,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
