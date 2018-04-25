@@ -251,7 +251,7 @@ TEST(EquivalenceMapTest, PruneEquivalencesAndSortBySource) {
   auto PruneEquivalencesAndSortBySourceTest =
       [](std::vector<Equivalence>&& equivalences) {
         OffsetMapper::PruneEquivalencesAndSortBySource(&equivalences);
-        return equivalences;
+        return std::move(equivalences);
       };
 
   EXPECT_EQ(std::vector<Equivalence>(),
