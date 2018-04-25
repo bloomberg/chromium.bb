@@ -179,6 +179,7 @@ bool PrintSettingsFromJobSettings(const base::DictionaryValue& job_settings,
   int copies = 1;
   int scale_factor = 100;
   bool rasterize_pdf = false;
+  int num_pages_per_sheet = 1;
 
   if (!job_settings.GetBoolean(kSettingCollate, &collate) ||
       !job_settings.GetInteger(kSettingCopies, &copies) ||
@@ -215,6 +216,9 @@ bool PrintSettingsFromJobSettings(const base::DictionaryValue& job_settings,
     settings->set_print_text_with_gdi(is_modifiable);
 #endif
   }
+
+  // TODO(xlou): Add logic to get |num_pages_per_sheet| from |job_settings|.
+  settings->set_num_pages_per_sheet(num_pages_per_sheet);
 
   return true;
 }

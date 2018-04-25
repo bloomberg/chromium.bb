@@ -49,6 +49,7 @@
 #include "ppapi/cpp/url_response_info.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/var_dictionary.h"
+#include "printing/nup_parameters.h"
 #include "printing/units.h"
 #include "third_party/pdfium/public/cpp/fpdf_deleters.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
@@ -703,6 +704,30 @@ std::string ConvertViewIntToViewString(unsigned long view_int) {
       NOTREACHED();
       return "";
   }
+}
+
+// UI should have done parameter sanity check, when execution
+// reaches here, |num_pages_per_sheet| should be a positive integer.
+bool ShouldDoNup(int num_pages_per_sheet) {
+  return num_pages_per_sheet > 1;
+}
+
+// Check the source doc orientation.  Returns true if the doc is landscape.
+// For now the orientation of the doc is determined by its first page's
+// orientation.  Improvement can be added in the future to better determine the
+// orientation of the source docs that have mixed orientation.
+// TODO(xlou): rotate pages if the source doc has mixed orientation.  So that
+// the orientation of all pages of the doc are uniform.  Pages of square size
+// will not be rotated.
+bool IsSourcePdfLandscape(FPDF_DOCUMENT doc) {
+  DCHECK(doc);
+
+  std::unique_ptr<void, FPDFPageDeleter> pdf_page(FPDF_LoadPage(doc, 0));
+  DCHECK(pdf_page);
+
+  bool is_source_landscape =
+      FPDF_GetPageWidth(pdf_page.get()) > FPDF_GetPageHeight(pdf_page.get());
+  return is_source_landscape;
 }
 
 }  // namespace
@@ -1692,16 +1717,21 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPDF(
   pp::Buffer_Dev buffer;
   if (i == pages_to_print.size()) {
     FPDF_CopyViewerPreferences(output_doc, doc_);
-    FitContentsToPrintableAreaIfRequired(output_doc, print_settings);
-    // Now flatten all the output pages.
-    buffer = GetFlattenedPrintData(output_doc);
+    if (ShouldDoNup(print_settings.num_pages_per_sheet)) {
+      buffer = NupPdfToPdf(output_doc, print_settings);
+    } else {
+      FitContentsToPrintableAreaIfRequired(output_doc, print_settings);
+      buffer = GetPrintData(output_doc);
+    }
   }
+
   FPDF_CloseDocument(output_doc);
   return buffer;
 }
 
-pp::Buffer_Dev PDFiumEngine::GetFlattenedPrintData(FPDF_DOCUMENT doc) {
-  pp::Buffer_Dev buffer;
+bool PDFiumEngine::FlattenPrintData(FPDF_DOCUMENT doc) {
+  DCHECK(doc);
+
   ScopedSubstFont scoped_subst_font(this);
   int page_count = FPDF_GetPageCount(doc);
   for (int i = 0; i < page_count; ++i) {
@@ -1710,9 +1740,15 @@ pp::Buffer_Dev PDFiumEngine::GetFlattenedPrintData(FPDF_DOCUMENT doc) {
     int flatten_ret = FPDFPage_Flatten(page, FLAT_PRINT);
     FPDF_ClosePage(page);
     if (flatten_ret == FLATTEN_FAIL)
-      return buffer;
+      return false;
   }
+  return true;
+}
 
+pp::Buffer_Dev PDFiumEngine::GetPrintData(FPDF_DOCUMENT doc) {
+  DCHECK(doc);
+
+  pp::Buffer_Dev buffer;
   PDFiumMemBufferFileWrite output_file_write;
   if (FPDF_SaveAsCopy(doc, &output_file_write, 0)) {
     size_t size = output_file_write.size();
@@ -1723,6 +1759,42 @@ pp::Buffer_Dev PDFiumEngine::GetFlattenedPrintData(FPDF_DOCUMENT doc) {
   return buffer;
 }
 
+pp::Buffer_Dev PDFiumEngine::GetFlattenedPrintData(FPDF_DOCUMENT doc) {
+  DCHECK(doc);
+
+  pp::Buffer_Dev buffer;
+  if (FlattenPrintData(doc))
+    buffer = GetPrintData(doc);
+  return buffer;
+}
+
+pp::Buffer_Dev PDFiumEngine::NupPdfToPdf(
+    FPDF_DOCUMENT doc,
+    const PP_PrintSettings_Dev& print_settings) {
+  DCHECK(doc);
+
+  PP_Size page_size = print_settings.paper_size;
+
+  printing::NupParameters nup_params;
+  bool is_landscape = IsSourcePdfLandscape(doc);
+  nup_params.SetParameters(print_settings.num_pages_per_sheet, is_landscape);
+
+  // Import n pages to one.
+  bool paper_is_landscape = page_size.width > page_size.height;
+  if (nup_params.landscape() != paper_is_landscape)
+    std::swap(page_size.width, page_size.height);
+
+  std::unique_ptr<void, FPDFDocumentDeleter> output_doc_nup(
+      FPDF_ImportNPagesToOne(doc, page_size.width, page_size.height,
+                             nup_params.num_pages_on_x_axis(),
+                             nup_params.num_pages_on_y_axis()));
+  if (!output_doc_nup)
+    return pp::Buffer_Dev();
+
+  FitContentsToPrintableAreaIfRequired(output_doc_nup.get(), print_settings);
+  return GetPrintData(output_doc_nup.get());
+}
+
 pp::Buffer_Dev PDFiumEngine::PrintPagesAsPDF(
     const PP_PrintPageNumberRange_Dev* page_ranges,
     uint32_t page_range_count,
@@ -1731,7 +1803,8 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsPDF(
     return pp::Buffer_Dev();
 
   DCHECK(doc_);
-  FPDF_DOCUMENT output_doc = FPDF_CreateNewDocument();
+  std::unique_ptr<void, FPDFDocumentDeleter> output_doc(
+      FPDF_CreateNewDocument());
   if (!output_doc)
     return pp::Buffer_Dev();
 
@@ -1757,17 +1830,24 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsPDF(
       pages_[page_number]->Unload();
   }
 
-  FPDF_CopyViewerPreferences(output_doc, doc_);
-  if (!FPDF_ImportPages(output_doc, doc_, page_number_str.c_str(), 0)) {
-    FPDF_CloseDocument(output_doc);
+  FPDF_CopyViewerPreferences(output_doc.get(), doc_);
+  if (!FPDF_ImportPages(output_doc.get(), doc_, page_number_str.c_str(), 0)) {
     return pp::Buffer_Dev();
   }
 
-  FitContentsToPrintableAreaIfRequired(output_doc, print_settings);
-
   // Now flatten all the output pages.
-  pp::Buffer_Dev buffer = GetFlattenedPrintData(output_doc);
-  FPDF_CloseDocument(output_doc);
+  if (!FlattenPrintData(output_doc.get())) {
+    return pp::Buffer_Dev();
+  }
+
+  pp::Buffer_Dev buffer;
+  if (ShouldDoNup(print_settings.num_pages_per_sheet)) {
+    buffer = NupPdfToPdf(output_doc.get(), print_settings);
+  } else {
+    FitContentsToPrintableAreaIfRequired(output_doc.get(), print_settings);
+    buffer = GetPrintData(output_doc.get());
+  }
+
   return buffer;
 }
 

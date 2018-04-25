@@ -61,10 +61,14 @@ struct WebPrintParams {
   // Specifies whether printing layout needs to be applied.
   bool use_printing_layout;
 
+  // Specifies how many pages per sheet. This parameter is for N-up mode.
+  size_t num_pages_per_sheet;
+
   WebPrintParams()
       : printer_dpi(72),
         print_scaling_option(kWebPrintScalingOptionFitToPrintableArea),
-        use_printing_layout(true) {}
+        use_printing_layout(true),
+        num_pages_per_sheet(1) {}
 
   WebPrintParams(const WebSize& paper_size)
       : WebPrintParams(paper_size, true) {}
@@ -75,20 +79,23 @@ struct WebPrintParams {
         paper_size(paper_size),
         printer_dpi(72),
         print_scaling_option(kWebPrintScalingOptionSourceSize),
-        use_printing_layout(use_printing_layout) {}
+        use_printing_layout(use_printing_layout),
+        num_pages_per_sheet(1) {}
 
   WebPrintParams(const WebRect& print_content_area,
                  const WebRect& printable_area,
                  const WebSize& paper_size,
                  int printer_dpi,
                  WebPrintScalingOption print_scaling_option,
-                 bool use_printing_layout)
+                 bool use_printing_layout,
+                 int num_pages_per_sheet)
       : print_content_area(print_content_area),
         printable_area(printable_area),
         paper_size(paper_size),
         printer_dpi(printer_dpi),
         print_scaling_option(print_scaling_option),
-        use_printing_layout(use_printing_layout) {}
+        use_printing_layout(use_printing_layout),
+        num_pages_per_sheet(num_pages_per_sheet) {}
 };
 
 }  // namespace blink
