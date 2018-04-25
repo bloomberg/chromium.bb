@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
@@ -87,7 +88,7 @@ class MessageView {
 };
 
 class ChannelPosix : public Channel,
-                     public base::MessageLoop::DestructionObserver,
+                     public base::MessageLoopCurrent::DestructionObserver,
                      public base::MessagePumpForIO::FdWatcher {
  public:
   ChannelPosix(Delegate* delegate,
@@ -211,15 +212,15 @@ class ChannelPosix : public Channel,
     DCHECK(!write_watcher_);
     read_watcher_.reset(
         new base::MessagePumpForIO::FdWatchController(FROM_HERE));
-    base::MessageLoop::current()->AddDestructionObserver(this);
+    base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
     if (handle_.get().needs_connection) {
-      base::MessageLoopForIO::current()->WatchFileDescriptor(
+      base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
           handle_.get().handle, false /* persistent */,
           base::MessagePumpForIO::WATCH_READ, read_watcher_.get(), this);
     } else {
       write_watcher_.reset(
           new base::MessagePumpForIO::FdWatchController(FROM_HERE));
-      base::MessageLoopForIO::current()->WatchFileDescriptor(
+      base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
           handle_.get().handle, true /* persistent */,
           base::MessagePumpForIO::WATCH_READ, read_watcher_.get(), this);
       base::AutoLock lock(write_lock_);
@@ -239,7 +240,7 @@ class ChannelPosix : public Channel,
       return;
     if (io_task_runner_->RunsTasksInCurrentSequence()) {
       pending_write_ = true;
-      base::MessageLoopForIO::current()->WatchFileDescriptor(
+      base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
           handle_.get().handle, false /* persistent */,
           base::MessagePumpForIO::WATCH_WRITE, write_watcher_.get(), this);
     } else {
@@ -250,7 +251,7 @@ class ChannelPosix : public Channel,
   }
 
   void ShutDownOnIOThread() {
-    base::MessageLoop::current()->RemoveDestructionObserver(this);
+    base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
 
     read_watcher_.reset();
     write_watcher_.reset();
@@ -265,7 +266,7 @@ class ChannelPosix : public Channel,
     self_ = nullptr;
   }
 
-  // base::MessageLoop::DestructionObserver:
+  // base::MessageLoopCurrent::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override {
     DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
     if (self_)
@@ -278,7 +279,7 @@ class ChannelPosix : public Channel,
     if (handle_.get().needs_connection) {
 #if !defined(OS_NACL)
       read_watcher_.reset();
-      base::MessageLoop::current()->RemoveDestructionObserver(this);
+      base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
 
       ScopedPlatformHandle accept_fd;
       ServerAcceptConnection(handle_, &accept_fd);

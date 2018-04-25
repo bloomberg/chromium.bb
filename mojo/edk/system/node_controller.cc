@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
@@ -103,8 +104,8 @@ ports::ScopedEvent DeserializeEventMessage(
 // Used by NodeController to watch for shutdown. Since no IO can happen once
 // the IO thread is killed, the NodeController can cleanly drop all its peers
 // at that time.
-class ThreadDestructionObserver :
-    public base::MessageLoop::DestructionObserver {
+class ThreadDestructionObserver
+    : public base::MessageLoopCurrent::DestructionObserver {
  public:
   static void Create(scoped_refptr<base::TaskRunner> task_runner,
                      const base::Closure& callback) {
@@ -120,14 +121,14 @@ class ThreadDestructionObserver :
  private:
   explicit ThreadDestructionObserver(const base::Closure& callback)
       : callback_(callback) {
-    base::MessageLoop::current()->AddDestructionObserver(this);
+    base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
   }
 
   ~ThreadDestructionObserver() override {
-    base::MessageLoop::current()->RemoveDestructionObserver(this);
+    base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
   }
 
-  // base::MessageLoop::DestructionObserver:
+  // base::MessageLoopCurrent::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override {
     callback_.Run();
     delete this;
