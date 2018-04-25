@@ -74,6 +74,7 @@ namespace leveldb {
 class LevelDBMojoProxy;
 }
 namespace media {
+class AudioInputDevice;
 class BlockingUrlProtocol;
 }
 namespace midi {
@@ -217,6 +218,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class content::BrowserProcessSubThread;
   friend class cronet::CronetPrefsManager;
   friend class cronet::CronetURLRequestContext;
+  friend class media::AudioInputDevice;
   friend class mojo::CoreLibraryInitializer;
   friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
   friend class ui::MaterialDesignController;
