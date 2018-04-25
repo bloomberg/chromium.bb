@@ -13,7 +13,8 @@ namespace content {
 
 class RTCRtpReceiver::RTCRtpReceiverInternal
     : public base::RefCountedThreadSafe<
-          RTCRtpReceiver::RTCRtpReceiverInternal> {
+          RTCRtpReceiver::RTCRtpReceiverInternal,
+          RTCRtpReceiver::RTCRtpReceiverInternalTraits> {
  public:
   RTCRtpReceiverInternal(
       scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
@@ -94,8 +95,9 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
   }
 
  private:
-  friend class base::RefCountedThreadSafe<RTCRtpReceiverInternal>;
-  ~RTCRtpReceiverInternal() {}
+  friend struct RTCRtpReceiver::RTCRtpReceiverInternalTraits;
+
+  ~RTCRtpReceiverInternal() { DCHECK(main_thread_->BelongsToCurrentThread()); }
 
   void GetStatsOnSignalingThread(
       std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
@@ -116,6 +118,26 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
   // associated with the receiver.
   std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
       stream_adapter_refs_;
+};
+
+struct RTCRtpReceiver::RTCRtpReceiverInternalTraits {
+ private:
+  friend class base::RefCountedThreadSafe<RTCRtpReceiverInternal,
+                                          RTCRtpReceiverInternalTraits>;
+
+  static void Destruct(const RTCRtpReceiverInternal* receiver) {
+    // RTCRtpReceiverInternal owns AdapterRefs which have to be destroyed on the
+    // main thread, this ensures delete always happens there.
+    if (!receiver->main_thread_->BelongsToCurrentThread()) {
+      receiver->main_thread_->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &RTCRtpReceiver::RTCRtpReceiverInternalTraits::Destruct,
+              base::Unretained(receiver)));
+      return;
+    }
+    delete receiver;
+  }
 };
 
 uintptr_t RTCRtpReceiver::getId(
