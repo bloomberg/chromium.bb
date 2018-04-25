@@ -92,3 +92,8 @@ gfx::Image OmniboxClient::GetFaviconForPageUrl(
     FaviconFetchedCallback on_favicon_fetched) {
   return gfx::Image();
 }
+
+gfx::Image OmniboxClient::GetFaviconForDefaultSearchProvider(
+    FaviconFetchedCallback on_favicon_fetched) {
+  return gfx::Image();
+}

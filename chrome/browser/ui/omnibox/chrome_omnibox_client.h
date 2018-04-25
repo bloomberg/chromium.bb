@@ -7,10 +7,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
 #include "chrome/browser/ui/omnibox/favicon_cache.h"
 #include "chrome/common/search/instant_types.h"
+#include "components/favicon_base/favicon_types.h"
 #include "components/omnibox/browser/omnibox_client.h"
 
 class ChromeOmniboxEditController;
@@ -62,6 +65,8 @@ class ChromeOmniboxClient : public OmniboxClient {
   gfx::Image GetFaviconForPageUrl(
       const GURL& page_url,
       FaviconFetchedCallback on_favicon_fetched) override;
+  gfx::Image GetFaviconForDefaultSearchProvider(
+      FaviconFetchedCallback on_favicon_fetched) override;
   void OnCurrentMatchChanged(const AutocompleteMatch& match) override;
   void OnTextChanged(const AutocompleteMatch& current_match,
                      bool user_input_in_progress,
@@ -84,11 +89,19 @@ class ChromeOmniboxClient : public OmniboxClient {
   void OnBitmapFetched(const BitmapFetchedCallback& callback,
                        const SkBitmap& bitmap);
 
+  void OnDefaultSearchProviderFaviconFetched(
+      const favicon_base::FaviconImageResult& result);
+
   ChromeOmniboxEditController* controller_;
   Profile* profile_;
   ChromeAutocompleteSchemeClassifier scheme_classifier_;
   BitmapFetcherService::RequestId request_id_;
   FaviconCache favicon_cache_;
+
+  base::CancelableTaskTracker default_search_provider_favicon_task_tracker_;
+  FaviconFetchedCallback pending_default_search_provider_favicon_callback_;
+
+  base::WeakPtrFactory<ChromeOmniboxClient> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOmniboxClient);
 };

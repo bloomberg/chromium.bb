@@ -45,6 +45,7 @@
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/url_constants.h"
 #include "components/favicon/content/content_favicon_driver.h"
+#include "components/favicon/core/favicon_service.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
@@ -337,6 +338,28 @@ gfx::Image ChromeOmniboxClient::GetFaviconForPageUrl(
                                              std::move(on_favicon_fetched));
 }
 
+gfx::Image ChromeOmniboxClient::GetFaviconForDefaultSearchProvider(
+    FaviconFetchedCallback on_favicon_fetched) {
+  const GURL& favicon_url =
+      GetTemplateURLService()->GetDefaultSearchProvider()->favicon_url();
+  if (!favicon_url.is_valid())
+    return gfx::Image();
+
+  auto* favicon_service = FaviconServiceFactory::GetForProfile(
+      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  pending_default_search_provider_favicon_callback_ =
+      std::move(on_favicon_fetched);
+  favicon_service->GetFaviconImage(
+      favicon_url,
+      base::BindRepeating(
+          &ChromeOmniboxClient::OnDefaultSearchProviderFaviconFetched,
+          weak_factory_.GetWeakPtr()),
+      &default_search_provider_favicon_task_tracker_);
+
+  // TODO(tommycli): Implement a synchronous caching layer to prevent flicker.
+  return gfx::Image();
+}
+
 void ChromeOmniboxClient::OnCurrentMatchChanged(
     const AutocompleteMatch& match) {
   if (!prerender::IsOmniboxEnabled(profile_))
@@ -462,4 +485,14 @@ void ChromeOmniboxClient::OnBitmapFetched(const BitmapFetchedCallback& callback,
                                           const SkBitmap& bitmap) {
   request_id_ = BitmapFetcherService::REQUEST_ID_INVALID;
   callback.Run(bitmap);
+}
+
+void ChromeOmniboxClient::OnDefaultSearchProviderFaviconFetched(
+    const favicon_base::FaviconImageResult& result) {
+  if (pending_default_search_provider_favicon_callback_.is_null() ||
+      result.image.IsEmpty()) {
+    return;
+  }
+  std::move(pending_default_search_provider_favicon_callback_)
+      .Run(result.image);
 }
