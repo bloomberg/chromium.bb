@@ -23,7 +23,7 @@ class MockOomInterventionHost : public mojom::blink::OomInterventionHost {
  public:
   MockOomInterventionHost(mojom::blink::OomInterventionHostRequest request)
       : binding_(this, std::move(request)) {}
-  ~MockOomInterventionHost() = default;
+  ~MockOomInterventionHost() override = default;
 
   void OnHighMemoryUsage(bool intervention_triggered) override {}
 
