@@ -16,12 +16,12 @@ class CompositorMutatorImpl;
 class PLATFORM_EXPORT CompositorMutatorClient : public cc::LayerTreeMutator {
  public:
   explicit CompositorMutatorClient(std::unique_ptr<CompositorMutatorImpl>);
-  virtual ~CompositorMutatorClient();
+  ~CompositorMutatorClient() override;
 
   void SetMutationUpdate(std::unique_ptr<cc::MutatorOutputState>);
 
   // cc::LayerTreeMutator
-  void SetClient(cc::LayerTreeMutatorClient*);
+  void SetClient(cc::LayerTreeMutatorClient*) override;
   void Mutate(std::unique_ptr<cc::MutatorInputState>) override;
   bool HasAnimators() override;
 

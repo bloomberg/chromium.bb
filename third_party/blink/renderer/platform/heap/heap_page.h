@@ -492,7 +492,7 @@ class PLATFORM_EXPORT ObjectStartBitmap {
 class PLATFORM_EXPORT NormalPage final : public BasePage {
  public:
   NormalPage(PageMemory*, BaseArena*);
-  ~NormalPage();
+  ~NormalPage() override;
 
   Address Payload() { return GetAddress() + PageHeaderSize(); }
   size_t PayloadSize() {
@@ -613,7 +613,7 @@ class LargeObjectPage final : public BasePage {
   // negative page cache.
   bool Contains(Address) override;
 #endif
-  virtual size_t size() {
+  size_t size() override {
     return PageHeaderSize() + sizeof(HeapObjectHeader) + payload_size_;
   }
   static size_t PageHeaderSize() {

@@ -44,7 +44,7 @@ class GenericFontFamilySettings;
 
 class PLATFORM_EXPORT FontSelector : public FontCacheClient {
  public:
-  virtual ~FontSelector() = default;
+  ~FontSelector() override = default;
   virtual scoped_refptr<FontData> GetFontData(const FontDescription&,
                                        const AtomicString& family_name) = 0;
 

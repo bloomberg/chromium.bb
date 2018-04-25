@@ -32,7 +32,7 @@ class PLATFORM_EXPORT ImageLayerBridge
 
  public:
   ImageLayerBridge(OpacityMode);
-  ~ImageLayerBridge();
+  ~ImageLayerBridge() override;
 
   void SetImage(scoped_refptr<StaticBitmapImage>);
   void Dispose();

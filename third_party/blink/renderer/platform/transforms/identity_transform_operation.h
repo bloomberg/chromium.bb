@@ -36,7 +36,7 @@ class PLATFORM_EXPORT IdentityTransformOperation final
     return base::AdoptRef(new IdentityTransformOperation());
   }
 
-  virtual bool CanBlendWith(const TransformOperation& other) const {
+  bool CanBlendWith(const TransformOperation& other) const override {
     return IsSameType(other);
   }
 

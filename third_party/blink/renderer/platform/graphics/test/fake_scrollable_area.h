@@ -68,7 +68,7 @@ class FakeScrollableArea : public GarbageCollectedFinalized<FakeScrollableArea>,
     return scrollbar_theme_;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     ScrollableArea::Trace(visitor);
   }
 

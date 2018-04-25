@@ -42,9 +42,9 @@ using testing::UnorderedElementsAre;
 class RendererMetricsHelperTest : public testing::Test {
  public:
   RendererMetricsHelperTest() = default;
-  ~RendererMetricsHelperTest() = default;
+  ~RendererMetricsHelperTest() override = default;
 
-  void SetUp() {
+  void SetUp() override {
     histogram_tester_.reset(new base::HistogramTester());
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true);
@@ -54,7 +54,7 @@ class RendererMetricsHelperTest : public testing::Test {
     metrics_helper_ = &scheduler_->main_thread_only().metrics_helper;
   }
 
-  void TearDown() {
+  void TearDown() override {
     scheduler_->Shutdown();
     scheduler_.reset();
   }

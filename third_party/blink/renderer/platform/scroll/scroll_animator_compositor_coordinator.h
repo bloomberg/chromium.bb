@@ -83,7 +83,7 @@ class PLATFORM_EXPORT ScrollAnimatorCompositorCoordinator
     kRunningOnCompositorButNeedsAdjustment,
   };
 
-  virtual ~ScrollAnimatorCompositorCoordinator();
+  ~ScrollAnimatorCompositorCoordinator() override;
 
   bool HasAnimationThatRequiresService() const;
   void Dispose();

@@ -246,11 +246,12 @@ TEST_F(ShapingLineBreakerTest, DISABLED_ShapeLineArabicThaiHanLatin) {
                                  shaper.Shape(&font, direction, 5, 6),
                                  shaper.Shape(&font, direction, 6, 7),
                                  shaper.Shape(&font, direction, 7, 8)};
-  const auto& longest_word = std::max_element(
-      std::begin(words), std::end(words),
-      [](const scoped_refptr<ShapeResult>& a, const scoped_refptr<ShapeResult>& b) {
-        return a->SnappedWidth() < b->SnappedWidth();
-      });
+  auto* const longest_word =
+      std::max_element(std::begin(words), std::end(words),
+                       [](const scoped_refptr<ShapeResult>& a,
+                          const scoped_refptr<ShapeResult>& b) {
+                         return a->SnappedWidth() < b->SnappedWidth();
+                       });
   LayoutUnit longest_word_width = (*longest_word)->SnappedWidth();
 
   ShapingLineBreaker breaker(&shaper, &font, result.get(), &break_iterator);

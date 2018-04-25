@@ -47,7 +47,7 @@ class TrackDataContainer : public MediaStreamComponent::TrackData {
       : extra_data_(std::move(extra_data)) {}
 
   WebMediaStreamTrack::TrackData* GetTrackData() { return extra_data_.get(); }
-  void GetSettings(WebMediaStreamTrack::Settings& settings) {
+  void GetSettings(WebMediaStreamTrack::Settings& settings) override {
     extra_data_->GetSettings(settings);
   }
 

@@ -38,7 +38,7 @@ class PLATFORM_EXPORT CompositorAnimation : public cc::AnimationDelegate {
 
   explicit CompositorAnimation(
       scoped_refptr<cc::SingleKeyframeEffectAnimation>);
-  ~CompositorAnimation();
+  ~CompositorAnimation() override;
 
   cc::SingleKeyframeEffectAnimation* CcAnimation() const;
 

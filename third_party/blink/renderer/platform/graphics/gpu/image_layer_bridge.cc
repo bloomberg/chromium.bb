@@ -164,10 +164,10 @@ bool ImageLayerBridge::PrepareTransferableResource(
 ImageLayerBridge::RegisteredBitmap ImageLayerBridge::CreateOrRecycleBitmap(
     const gfx::Size& size,
     cc::SharedBitmapIdRegistrar* bitmap_registrar) {
-  auto it = std::remove_if(recycled_bitmaps_.begin(), recycled_bitmaps_.end(),
-                           [&size](const RegisteredBitmap& registered) {
-                             return registered.bitmap->size() != size;
-                           });
+  auto* it = std::remove_if(recycled_bitmaps_.begin(), recycled_bitmaps_.end(),
+                            [&size](const RegisteredBitmap& registered) {
+                              return registered.bitmap->size() != size;
+                            });
   recycled_bitmaps_.Shrink(it - recycled_bitmaps_.begin());
 
   if (!recycled_bitmaps_.IsEmpty()) {

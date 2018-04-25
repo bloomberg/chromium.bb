@@ -22,7 +22,7 @@ class PLATFORM_EXPORT CompositorFilterKeyframe : public CompositorKeyframe {
   CompositorFilterKeyframe(double time,
                            CompositorFilterOperations value,
                            const TimingFunction&);
-  ~CompositorFilterKeyframe();
+  ~CompositorFilterKeyframe() override;
 
   std::unique_ptr<cc::FilterKeyframe> CloneToCC() const;
 

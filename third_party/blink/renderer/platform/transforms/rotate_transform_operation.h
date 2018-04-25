@@ -69,7 +69,7 @@ class PLATFORM_EXPORT RotateTransformOperation : public TransformOperation {
                             double& result_angle_a,
                             double& result_angle_b);
 
-  virtual bool CanBlendWith(const TransformOperation& other) const;
+  bool CanBlendWith(const TransformOperation& other) const override;
   OperationType GetType() const override { return type_; }
   OperationType PrimitiveType() const final { return kRotate3D; }
 

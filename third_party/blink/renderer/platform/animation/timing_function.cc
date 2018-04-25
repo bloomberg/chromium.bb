@@ -166,7 +166,7 @@ scoped_refptr<TimingFunction> CreateCompositorTimingFunctionFromCC(
 
   switch (timing_function->GetType()) {
     case cc::TimingFunction::Type::CUBIC_BEZIER: {
-      auto cubic_timing_function =
+      auto* cubic_timing_function =
           static_cast<const cc::CubicBezierTimingFunction*>(timing_function);
       if (cubic_timing_function->ease_type() !=
           cc::CubicBezierTimingFunction::EaseType::CUSTOM)
@@ -179,7 +179,7 @@ scoped_refptr<TimingFunction> CreateCompositorTimingFunctionFromCC(
     }
 
     case cc::TimingFunction::Type::STEPS: {
-      auto steps_timing_function =
+      auto* steps_timing_function =
           static_cast<const cc::StepsTimingFunction*>(timing_function);
       return StepsTimingFunction::Create(
           steps_timing_function->steps(),

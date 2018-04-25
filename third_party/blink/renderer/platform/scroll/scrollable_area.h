@@ -373,7 +373,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   // Need to promptly let go of owned animator objects.
   EAGERLY_FINALIZE();
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   virtual void ClearScrollableArea();
 

@@ -256,7 +256,7 @@ void SharedBuffer::OnMemoryDump(const String& dump_prefix,
     // If there is data in the segments, then it should have been allocated
     // using fastMalloc.
     const String data_dump_name = dump_prefix + "/segments";
-    auto dump = memory_dump->CreateMemoryAllocatorDump(data_dump_name);
+    auto* dump = memory_dump->CreateMemoryAllocatorDump(data_dump_name);
     dump->AddScalar("size", "bytes", size_);
     memory_dump->AddSuballocation(
         dump->Guid(), String(WTF::Partitions::kAllocatedObjectPoolName));

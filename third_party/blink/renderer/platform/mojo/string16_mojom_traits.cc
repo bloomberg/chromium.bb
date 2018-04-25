@@ -38,7 +38,7 @@ base::span<const uint16_t>
 StructTraits<mojo_base::mojom::String16DataView, WTF::String>::data(
     const WTF::String& input,
     void* context) {
-  auto contextObject = static_cast<base::string16*>(context);
+  auto* contextObject = static_cast<base::string16*>(context);
   DCHECK_EQ(input.Is8Bit(), !!contextObject);
 
   if (contextObject) {

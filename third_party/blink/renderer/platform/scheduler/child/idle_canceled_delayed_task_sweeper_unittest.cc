@@ -69,7 +69,7 @@ class IdleCanceledDelayedTaskSweeperTest : public testing::Test,
   void IsNotQuiescent() override {}
   void OnIdlePeriodStarted() override {}
   void OnIdlePeriodEnded() override {}
-  void OnPendingTasksChanged(bool has_tasks) {}
+  void OnPendingTasksChanged(bool has_tasks) override {}
 
  protected:
   base::SimpleTestTickClock clock_;

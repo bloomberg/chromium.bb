@@ -55,7 +55,7 @@ class PLATFORM_EXPORT WEBPImageDecoder final : public ImageDecoder {
 
  private:
   // ImageDecoder:
-  virtual void DecodeSize() { UpdateDemuxer(); }
+  void DecodeSize() override { UpdateDemuxer(); }
   size_t DecodeFrameCount() override;
   void InitializeNewFrame(size_t) override;
   void Decode(size_t) override;

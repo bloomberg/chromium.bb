@@ -99,7 +99,7 @@ class WorkerSchedulerProxyTest : public testing::Test {
             nullptr,
             FrameScheduler::FrameType::kMainFrame)) {}
 
-  ~WorkerSchedulerProxyTest() {
+  ~WorkerSchedulerProxyTest() override {
     frame_scheduler_.reset();
     page_scheduler_.reset();
     main_thread_scheduler_->Shutdown();

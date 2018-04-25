@@ -39,7 +39,7 @@ class PLATFORM_EXPORT PerspectiveTransformOperation final
 
   double Perspective() const { return p_; }
 
-  virtual bool CanBlendWith(const TransformOperation& other) const {
+  bool CanBlendWith(const TransformOperation& other) const override {
     return IsSameType(other);
   }
 

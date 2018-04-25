@@ -85,9 +85,9 @@ class MockFetchContext : public FetchContext {
       ResourceRequest::RedirectStatus redirect_status) const override {
     return ResourceRequestBlockedReason::kNone;
   }
-  virtual ResourceRequestBlockedReason CheckResponseNosniff(
+  ResourceRequestBlockedReason CheckResponseNosniff(
       WebURLRequest::RequestContext,
-      const ResourceResponse&) const {
+      const ResourceResponse&) const override {
     return ResourceRequestBlockedReason::kNone;
   }
   bool ShouldLoadNewResource(Resource::Type) const override {

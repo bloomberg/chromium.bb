@@ -60,7 +60,7 @@ class FeaturePolicyTest : public testing::Test {
  protected:
   FeaturePolicyTest() = default;
 
-  ~FeaturePolicyTest() = default;
+  ~FeaturePolicyTest() override = default;
 
   scoped_refptr<const SecurityOrigin> origin_a_ =
       SecurityOrigin::CreateFromString(ORIGIN_A);

@@ -208,7 +208,7 @@ TEST(ContiguousContainerTest, ElementAddressesAreStable) {
   EXPECT_EQ(kNumElements, pointers.size());
 
   auto list_it = list.begin();
-  auto vector_it = pointers.begin();
+  auto** vector_it = pointers.begin();
   for (; list_it != list.end(); ++list_it, ++vector_it)
     EXPECT_EQ(&*list_it, *vector_it);
 }

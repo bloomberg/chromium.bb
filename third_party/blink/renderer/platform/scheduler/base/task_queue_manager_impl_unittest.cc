@@ -53,7 +53,7 @@ class TaskQueueManagerTest : public testing::Test {
   void DeleteTaskQueueManager() { manager_.reset(); }
 
  protected:
-  void TearDown() { manager_.reset(); }
+  void TearDown() override { manager_.reset(); }
 
   scoped_refptr<TestTaskQueue> CreateTaskQueueWithSpec(TaskQueue::Spec spec) {
     return manager_->CreateTaskQueue<TestTaskQueue>(spec);

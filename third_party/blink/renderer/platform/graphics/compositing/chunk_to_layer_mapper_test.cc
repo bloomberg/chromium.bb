@@ -96,7 +96,7 @@ TEST_F(ChunkToLayerMapperTest, TwoChunkSameState) {
                                    TransformationMatrix().Scale(2));
   auto clip = CreateClip(LayerState().Clip(), LayerState().Transform(),
                          FloatRoundedRect(10, 10, 100, 100));
-  auto effect = LayerState().Effect();
+  auto* effect = LayerState().Effect();
   auto chunk1 = Chunk(PropertyTreeState(transform.get(), clip.get(), effect));
   auto chunk2 = Chunk(PropertyTreeState(transform.get(), clip.get(), effect));
 
@@ -127,7 +127,7 @@ TEST_F(ChunkToLayerMapperTest, TwoChunkDifferentState) {
                                     TransformationMatrix().Scale(2));
   auto clip1 = CreateClip(LayerState().Clip(), LayerState().Transform(),
                           FloatRoundedRect(10, 10, 100, 100));
-  auto effect = LayerState().Effect();
+  auto* effect = LayerState().Effect();
   auto chunk1 = Chunk(PropertyTreeState(transform1.get(), clip1.get(), effect));
 
   auto transform2 =

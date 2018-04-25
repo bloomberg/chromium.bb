@@ -21,7 +21,7 @@ class PLATFORM_EXPORT CompositorTransformKeyframe : public CompositorKeyframe {
   CompositorTransformKeyframe(double time,
                               CompositorTransformOperations value,
                               const TimingFunction&);
-  ~CompositorTransformKeyframe();
+  ~CompositorTransformKeyframe() override;
 
   std::unique_ptr<cc::TransformKeyframe> CloneToCC() const;
 

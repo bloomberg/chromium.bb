@@ -38,7 +38,7 @@ void CanvasResource::SetSyncTokenForRelease(const gpu::SyncToken& token) {
 }
 
 void CanvasResource::WaitSyncTokenBeforeRelease() {
-  auto gl = ContextGL();
+  auto* gl = ContextGL();
   if (sync_token_for_release_.HasData() && gl) {
     gl->WaitSyncTokenCHROMIUM(sync_token_for_release_.GetData());
   }
@@ -69,7 +69,7 @@ bool CanvasResource::PrepareTransferableResource(
   // Gpu compositing is a prerequisite for accelerated 2D canvas
   // TODO: For WebGL to use this, we must add software composing support.
   DCHECK(SharedGpuContext::IsGpuCompositingEnabled());
-  auto gl = ContextGL();
+  auto* gl = ContextGL();
   DCHECK(gl);
 
   const gpu::Mailbox& mailbox = GetOrCreateGpuMailbox();
@@ -179,8 +179,8 @@ CanvasResource_GpuMemoryBuffer::CanvasResource_GpuMemoryBuffer(
       color_params_(color_params) {
   if (!context_provider_wrapper_)
     return;
-  auto gl = context_provider_wrapper_->ContextProvider()->ContextGL();
-  auto gr = context_provider_wrapper_->ContextProvider()->GetGrContext();
+  auto* gl = context_provider_wrapper_->ContextProvider()->ContextGL();
+  auto* gr = context_provider_wrapper_->ContextProvider()->GetGrContext();
   if (!gl || !gr)
     return;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
@@ -242,7 +242,7 @@ void CanvasResource_GpuMemoryBuffer::TearDown() {
   WaitSyncTokenBeforeRelease();
   if (!context_provider_wrapper_ || !image_id_)
     return;
-  auto gl = context_provider_wrapper_->ContextProvider()->ContextGL();
+  auto* gl = context_provider_wrapper_->ContextProvider()->ContextGL();
   if (gl && texture_id_) {
     GLenum target = TextureTarget();
     gl->BindTexture(target, texture_id_);
@@ -257,7 +257,7 @@ void CanvasResource_GpuMemoryBuffer::TearDown() {
 }
 
 const gpu::Mailbox& CanvasResource_GpuMemoryBuffer::GetOrCreateGpuMailbox() {
-  auto gl = ContextGL();
+  auto* gl = ContextGL();
   DCHECK(gl);  // caller should already have early exited if !gl.
   if (gpu_mailbox_.IsZero() && gl) {
     gl->GenMailboxCHROMIUM(gpu_mailbox_.name);
@@ -273,7 +273,7 @@ bool CanvasResource_GpuMemoryBuffer::HasGpuMailbox() const {
 
 const gpu::SyncToken& CanvasResource_GpuMemoryBuffer::GetSyncToken() {
   if (mailbox_needs_new_sync_token_) {
-    auto gl = ContextGL();
+    auto* gl = ContextGL();
     DCHECK(gl);  // caller should already have early exited if !gl.
     mailbox_needs_new_sync_token_ = false;
     gl->GenUnverifiedSyncTokenCHROMIUM(sync_token_.GetData());

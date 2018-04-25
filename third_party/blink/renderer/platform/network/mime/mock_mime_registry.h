@@ -15,7 +15,7 @@ namespace blink {
 class MockMimeRegistry : public mojom::blink::MimeRegistry {
  public:
   MockMimeRegistry() = default;
-  ~MockMimeRegistry() = default;
+  ~MockMimeRegistry() override = default;
 
   void GetMimeTypeFromExtension(
       const String& ext,

@@ -143,7 +143,7 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
       std::numeric_limits<size_t>::max();
 
   static ResourceLoadScheduler* Create(FetchContext* = nullptr);
-  ~ResourceLoadScheduler();
+  ~ResourceLoadScheduler() override;
 
   void Trace(blink::Visitor*);
 

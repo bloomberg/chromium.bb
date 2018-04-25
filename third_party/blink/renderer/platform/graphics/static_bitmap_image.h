@@ -49,7 +49,7 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   bool IsStaticBitmapImage() const override { return true; }
 
   // Methods overridden by all sub-classes
-  virtual ~StaticBitmapImage() = default;
+  ~StaticBitmapImage() override = default;
   // Creates a gpu copy of the image using the given ContextProvider. Should
   // not be called if IsTextureBacked() is already true. May return null if the
   // conversion failed (for instance if the context had an error).
@@ -58,7 +58,7 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
 
   // Methods have common implementation for all sub-classes
   bool CurrentFrameIsComplete() override { return true; }
-  void DestroyDecodedData() {}
+  void DestroyDecodedData() override {}
 
   // Methods that have a default implementation, and overridden by only one
   // sub-class

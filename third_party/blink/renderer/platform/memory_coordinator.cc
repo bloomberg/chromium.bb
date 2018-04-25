@@ -112,7 +112,7 @@ void MemoryCoordinator::OnPurgeMemory() {
 
   // Thread-specific data never issues a layout, so we are safe here.
   MutexLocker lock(web_threads_mutex_);
-  for (auto thread : web_threads_) {
+  for (auto* thread : web_threads_) {
     if (!thread->GetTaskRunner())
       continue;
 

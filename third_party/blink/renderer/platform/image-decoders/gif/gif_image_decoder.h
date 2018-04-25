@@ -73,7 +73,7 @@ class PLATFORM_EXPORT GIFImageDecoder final : public ImageDecoder {
  private:
   // ImageDecoder:
   void ClearFrameBuffer(size_t frame_index) override;
-  virtual void DecodeSize() { Parse(kGIFSizeQuery); }
+  void DecodeSize() override { Parse(kGIFSizeQuery); }
   size_t DecodeFrameCount() override;
   void InitializeNewFrame(size_t) override;
   void Decode(size_t) override;

@@ -32,8 +32,8 @@
 namespace blink {
 
 const SimpleFontData* SegmentedFontData::FontDataForCharacter(UChar32 c) const {
-  auto end = faces_.end();
-  for (auto it = faces_.begin(); it != end; ++it) {
+  auto* end = faces_.end();
+  for (auto* it = faces_.begin(); it != end; ++it) {
     if ((*it)->Contains(c))
       return (*it)->FontData();
   }
@@ -41,8 +41,8 @@ const SimpleFontData* SegmentedFontData::FontDataForCharacter(UChar32 c) const {
 }
 
 bool SegmentedFontData::ContainsCharacter(UChar32 c) const {
-  auto end = faces_.end();
-  for (auto it = faces_.begin(); it != end; ++it) {
+  auto* end = faces_.end();
+  for (auto* it = faces_.begin(); it != end; ++it) {
     if ((*it)->Contains(c))
       return true;
   }
@@ -55,8 +55,8 @@ bool SegmentedFontData::IsCustomFont() const {
 }
 
 bool SegmentedFontData::IsLoading() const {
-  auto end = faces_.end();
-  for (auto it = faces_.begin(); it != end; ++it) {
+  auto* end = faces_.end();
+  for (auto* it = faces_.begin(); it != end; ++it) {
     if ((*it)->FontData()->IsLoading())
       return true;
   }
@@ -65,8 +65,8 @@ bool SegmentedFontData::IsLoading() const {
 
 // Returns true if any of the sub fonts are loadingFallback.
 bool SegmentedFontData::IsLoadingFallback() const {
-  auto end = faces_.end();
-  for (auto it = faces_.begin(); it != end; ++it) {
+  auto* end = faces_.end();
+  for (auto* it = faces_.begin(); it != end; ++it) {
     if ((*it)->FontData()->IsLoadingFallback())
       return true;
   }
@@ -78,8 +78,8 @@ bool SegmentedFontData::IsSegmented() const {
 }
 
 bool SegmentedFontData::ShouldSkipDrawing() const {
-  auto end = faces_.end();
-  for (auto it = faces_.begin(); it != end; ++it) {
+  auto* end = faces_.end();
+  for (auto* it = faces_.begin(); it != end; ++it) {
     if ((*it)->FontData()->ShouldSkipDrawing())
       return true;
   }

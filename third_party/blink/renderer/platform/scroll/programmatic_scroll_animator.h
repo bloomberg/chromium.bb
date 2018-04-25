@@ -32,7 +32,7 @@ class ProgrammaticScrollAnimator : public ScrollAnimatorCompositorCoordinator {
     return new ProgrammaticScrollAnimator(scrollable_area);
   }
 
-  virtual ~ProgrammaticScrollAnimator();
+  ~ProgrammaticScrollAnimator() override;
 
   void ScrollToOffsetWithoutAnimation(const ScrollOffset&,
                                       bool is_sequenced_scroll);
@@ -52,7 +52,7 @@ class ProgrammaticScrollAnimator : public ScrollAnimatorCompositorCoordinator {
   void LayerForCompositedScrollingDidChange(
       CompositorAnimationTimeline*) override;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit ProgrammaticScrollAnimator(ScrollableArea*);

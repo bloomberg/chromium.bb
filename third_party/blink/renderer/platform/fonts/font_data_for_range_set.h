@@ -70,7 +70,7 @@ class PLATFORM_EXPORT FontDataForRangeSetFromCache
       scoped_refptr<SimpleFontData> font_data,
       scoped_refptr<UnicodeRangeSet> range_set = nullptr)
       : FontDataForRangeSet(std::move(font_data), std::move(range_set)) {}
-  virtual ~FontDataForRangeSetFromCache();
+  ~FontDataForRangeSetFromCache() override;
 };
 
 }  // namespace blink

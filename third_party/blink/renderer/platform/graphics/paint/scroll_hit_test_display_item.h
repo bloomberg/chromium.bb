@@ -28,7 +28,7 @@ class PLATFORM_EXPORT ScrollHitTestDisplayItem final : public DisplayItem {
       const DisplayItemClient&,
       Type,
       scoped_refptr<const TransformPaintPropertyNode> scroll_offset_node);
-  ~ScrollHitTestDisplayItem();
+  ~ScrollHitTestDisplayItem() override;
 
   const TransformPaintPropertyNode& scroll_offset_node() const {
     return *scroll_offset_node_;

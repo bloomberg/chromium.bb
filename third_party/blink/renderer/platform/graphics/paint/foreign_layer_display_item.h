@@ -31,7 +31,7 @@ class PLATFORM_EXPORT ForeignLayerDisplayItem final : public DisplayItem {
                           scoped_refptr<cc::Layer>,
                           const FloatPoint& location,
                           const IntSize& bounds);
-  ~ForeignLayerDisplayItem();
+  ~ForeignLayerDisplayItem() override;
 
   cc::Layer* GetLayer() const { return layer_.get(); }
   const FloatPoint& Location() const { return location_; }

@@ -20,7 +20,7 @@ class PageScheduler;
 
 class FrameScheduler : public FrameOrWorkerScheduler {
  public:
-  virtual ~FrameScheduler() = default;
+  ~FrameScheduler() override = default;
 
   // Observer type that regulates conditions to invoke callbacks.
   enum class ObserverType { kLoader, kWorkerScheduler };

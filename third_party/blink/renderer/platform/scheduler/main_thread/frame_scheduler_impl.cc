@@ -583,7 +583,7 @@ void FrameSchedulerImpl::UpdateThrottlingState() {
   if (throttling_state == throttling_state_)
     return;
   throttling_state_ = throttling_state;
-  for (auto observer : loader_observers_)
+  for (auto* observer : loader_observers_)
     observer->OnThrottlingStateChanged(throttling_state_);
 }
 

@@ -42,7 +42,7 @@ class LongTaskDetectorTest : public testing::Test {
   }
 
  protected:
-  void SetUp() {
+  void SetUp() override {
     // For some reason, platform needs to run for non-zero seconds before we
     // start posting tasks to it. Otherwise TaskTimeObservers don't get notified
     // of tasks.

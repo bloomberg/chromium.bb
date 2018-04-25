@@ -77,14 +77,13 @@ class StateObserver : public NetworkStateNotifier::NetworkStateObserver {
         observed_save_data_(SaveData::kOff),
         callback_count_(0) {}
 
-  virtual void ConnectionChange(
-      WebConnectionType type,
-      double max_bandwidth_mbps,
-      WebEffectiveConnectionType effective_type,
-      const base::Optional<TimeDelta>& http_rtt,
-      const base::Optional<TimeDelta>& transport_rtt,
-      const base::Optional<double>& downlink_throughput_mbps,
-      bool save_data) {
+  void ConnectionChange(WebConnectionType type,
+                        double max_bandwidth_mbps,
+                        WebEffectiveConnectionType effective_type,
+                        const base::Optional<TimeDelta>& http_rtt,
+                        const base::Optional<TimeDelta>& transport_rtt,
+                        const base::Optional<double>& downlink_throughput_mbps,
+                        bool save_data) override {
     observed_type_ = type;
     observed_max_bandwidth_mbps_ = max_bandwidth_mbps;
     observed_effective_type_ = effective_type;
@@ -98,7 +97,7 @@ class StateObserver : public NetworkStateNotifier::NetworkStateObserver {
       std::move(closure_).Run();
   }
 
-  virtual void OnLineStateChange(bool on_line) {
+  void OnLineStateChange(bool on_line) override {
     observed_on_line_state_ = on_line;
     callback_count_ += 1;
 

@@ -15,7 +15,7 @@ namespace blink {
 class MarkingVerifier final : public Visitor {
  public:
   explicit MarkingVerifier(ThreadState* state) : Visitor(state) {}
-  virtual ~MarkingVerifier() {}
+  ~MarkingVerifier() override {}
 
   void VerifyObject(HeapObjectHeader* header) {
     // Verify only non-free marked objects.
