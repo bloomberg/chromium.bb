@@ -34,35 +34,42 @@
 #include "third_party/blink/public/web/web_find_options.h"
 #include "third_party/blink/public/web/web_frame_client.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
+#include "third_party/blink/renderer/core/page/find_in_page.h"
 
 namespace blink {
 
 void WebLocalFrameImpl::RequestFind(int identifier,
                                     const WebString& search_text,
                                     const WebFindOptions& options) {
+  find_in_page_->RequestFind(identifier, search_text, options);
+}
+
+void FindInPage::RequestFind(int identifier,
+                             const WebString& search_text,
+                             const WebFindOptions& options) {
   // Send "no results" if this frame has no visible content.
-  if (!HasVisibleContent() && !options.force) {
-    Client()->ReportFindInPageMatchCount(identifier, 0 /* count */,
-                                         true /* finalUpdate */);
+  if (!frame_->HasVisibleContent() && !options.force) {
+    frame_->Client()->ReportFindInPageMatchCount(identifier, 0 /* count */,
+                                                 true /* finalUpdate */);
     return;
   }
 
-  WebRange current_selection = SelectionRange();
+  WebRange current_selection = frame_->SelectionRange();
   bool result = false;
   bool active_now = false;
 
   // Search for an active match only if this frame is focused or if this is a
   // find next request.
-  if (IsFocused() || options.find_next) {
-    result = Find(identifier, search_text, options, false /* wrapWithinFrame */,
-                  &active_now);
+  if (frame_->IsFocused() || options.find_next) {
+    result = frame_->Find(identifier, search_text, options,
+                          false /* wrapWithinFrame */, &active_now);
   }
 
   if (result && !options.find_next) {
     // Indicate that at least one match has been found. 1 here means
     // possibly more matches could be coming.
-    Client()->ReportFindInPageMatchCount(identifier, 1 /* count */,
-                                         false /* finalUpdate */);
+    frame_->Client()->ReportFindInPageMatchCount(identifier, 1 /* count */,
+                                                 false /* finalUpdate */);
   }
 
   // There are three cases in which scoping is needed:
@@ -86,7 +93,7 @@ void WebLocalFrameImpl::RequestFind(int identifier,
   if (/* (1) */ options.find_next && /* (2) */ current_selection.IsNull() &&
       /* (3) */ !(result && !active_now)) {
     // Force report of the actual count.
-    IncreaseMatchCount(0, identifier);
+    frame_->IncreaseMatchCount(0, identifier);
     return;
   }
 
@@ -101,33 +108,49 @@ bool WebLocalFrameImpl::Find(int identifier,
                              const WebFindOptions& options,
                              bool wrap_within_frame,
                              bool* active_now) {
-  if (!GetFrame())
+  return find_in_page_->Find(identifier, search_text, options,
+                             wrap_within_frame, active_now);
+}
+
+bool FindInPage::Find(int identifier,
+                      const WebString& search_text,
+                      const WebFindOptions& options,
+                      bool wrap_within_frame,
+                      bool* active_now) {
+  if (!frame_->GetFrame())
     return false;
 
   // Unlikely, but just in case we try to find-in-page on a detached frame.
-  DCHECK(GetFrame()->GetPage());
+  DCHECK(frame_->GetFrame()->GetPage());
 
   // Up-to-date, clean tree is required for finding text in page, since it
   // relies on TextIterator to look over the text.
-  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame_->GetFrame()
+      ->GetDocument()
+      ->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   return EnsureTextFinder().Find(identifier, search_text, options,
                                  wrap_within_frame, active_now);
 }
 
 void WebLocalFrameImpl::StopFinding(StopFindAction action) {
-  bool clear_selection = action == kStopFindActionClearSelection;
-  if (clear_selection)
-    ExecuteCommand(WebString::FromUTF8("Unselect"));
+  find_in_page_->StopFinding(action);
+}
 
-  if (text_finder_) {
+void FindInPage::StopFinding(WebLocalFrame::StopFindAction action) {
+  bool clear_selection = action == WebLocalFrame::kStopFindActionClearSelection;
+  if (clear_selection)
+    frame_->ExecuteCommand(WebString::FromUTF8("Unselect"));
+
+  if (GetTextFinder()) {
     if (!clear_selection)
-      text_finder_->SetFindEndstateFocusAndSelection();
-    text_finder_->StopFindingAndClearSelection();
+      GetTextFinder()->SetFindEndstateFocusAndSelection();
+    GetTextFinder()->StopFindingAndClearSelection();
   }
 
-  if (action == kStopFindActionActivateSelection && IsFocused()) {
-    WebDocument doc = GetDocument();
+  if (action == WebLocalFrame::kStopFindActionActivateSelection &&
+      frame_->IsFocused()) {
+    WebDocument doc = frame_->GetDocument();
     if (!doc.IsNull()) {
       WebElement element = doc.FocusedElement();
       if (!element.IsNull())
@@ -137,53 +160,98 @@ void WebLocalFrameImpl::StopFinding(StopFindAction action) {
 }
 
 void WebLocalFrameImpl::IncreaseMatchCount(int count, int identifier) {
+  find_in_page_->IncreaseMatchCount(count, identifier);
+}
+
+void FindInPage::IncreaseMatchCount(int count, int identifier) {
   EnsureTextFinder().IncreaseMatchCount(identifier, count);
+}
+
+int WebLocalFrameImpl::FindMatchMarkersVersion() const {
+  return find_in_page_->FindMatchMarkersVersion();
+};
+
+int FindInPage::FindMatchMarkersVersion() const {
+  if (GetTextFinder())
+    return GetTextFinder()->FindMatchMarkersVersion();
+  return 0;
+}
+
+WebFloatRect WebLocalFrameImpl::ActiveFindMatchRect() {
+  return find_in_page_->ActiveFindMatchRect();
+}
+
+WebFloatRect FindInPage::ActiveFindMatchRect() {
+  if (GetTextFinder())
+    return GetTextFinder()->ActiveFindMatchRect();
+  return WebFloatRect();
+}
+
+void WebLocalFrameImpl::FindMatchRects(WebVector<WebFloatRect>& output_rects) {
+  find_in_page_->FindMatchRects(output_rects);
+};
+
+void FindInPage::FindMatchRects(WebVector<WebFloatRect>& output_rects) {
+  EnsureTextFinder().FindMatchRects(output_rects);
 }
 
 int WebLocalFrameImpl::SelectNearestFindMatch(const WebFloatPoint& point,
                                               WebRect* selection_rect) {
-  return EnsureTextFinder().SelectNearestFindMatch(point, selection_rect);
-}
+  return find_in_page_->SelectNearestFindMatch(point, selection_rect);
+};
 
-int WebLocalFrameImpl::FindMatchMarkersVersion() const {
-  if (text_finder_)
-    return text_finder_->FindMatchMarkersVersion();
-  return 0;
+int FindInPage::SelectNearestFindMatch(const WebFloatPoint& point,
+                                       WebRect* selection_rect) {
+  return EnsureTextFinder().SelectNearestFindMatch(point, selection_rect);
 }
 
 float WebLocalFrameImpl::DistanceToNearestFindMatch(
     const WebFloatPoint& point) {
+  return find_in_page_->DistanceToNearestFindMatch(point);
+}
+
+float FindInPage::DistanceToNearestFindMatch(const WebFloatPoint& point) {
   float nearest_distance;
   EnsureTextFinder().NearestFindMatch(point, &nearest_distance);
   return nearest_distance;
 }
 
-WebFloatRect WebLocalFrameImpl::ActiveFindMatchRect() {
-  if (text_finder_)
-    return text_finder_->ActiveFindMatchRect();
-  return WebFloatRect();
-}
-
-void WebLocalFrameImpl::FindMatchRects(WebVector<WebFloatRect>& output_rects) {
-  EnsureTextFinder().FindMatchRects(output_rects);
-}
-
 void WebLocalFrameImpl::SetTickmarks(const WebVector<WebRect>& tickmarks) {
-  if (GetFrameView()) {
+  find_in_page_->SetTickmarks(tickmarks);
+}
+
+void FindInPage::SetTickmarks(const WebVector<WebRect>& tickmarks) {
+  if (frame_->GetFrameView()) {
     Vector<IntRect> tickmarks_converted(tickmarks.size());
     for (size_t i = 0; i < tickmarks.size(); ++i)
       tickmarks_converted[i] = tickmarks[i];
-    GetFrameView()->SetTickmarks(tickmarks_converted);
+    frame_->GetFrameView()->SetTickmarks(tickmarks_converted);
   }
 }
 
+void WebLocalFrameImpl::ClearActiveFindMatch() {
+  find_in_page_->ClearActiveFindMatch();
+}
+
+void FindInPage::ClearActiveFindMatch() {
+  EnsureTextFinder().ClearActiveFindMatch();
+}
+
 TextFinder* WebLocalFrameImpl::GetTextFinder() const {
+  return find_in_page_->GetTextFinder();
+}
+
+TextFinder* FindInPage::GetTextFinder() const {
   return text_finder_;
 }
 
 TextFinder& WebLocalFrameImpl::EnsureTextFinder() {
+  return find_in_page_->EnsureTextFinder();
+}
+
+TextFinder& FindInPage::EnsureTextFinder() {
   if (!text_finder_)
-    text_finder_ = TextFinder::Create(*this);
+    text_finder_ = TextFinder::Create(*frame_);
 
   return *text_finder_;
 }
