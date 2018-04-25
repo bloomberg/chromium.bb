@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_DEMO_SKIA_RENDERER_H_
-#define UI_OZONE_DEMO_SKIA_RENDERER_H_
+#ifndef UI_OZONE_DEMO_SKIA_SKIA_GL_RENDERER_H_
+#define UI_OZONE_DEMO_SKIA_SKIA_GL_RENDERER_H_
 
 #include "base/containers/queue.h"
 #include "base/macros.h"
@@ -29,13 +29,13 @@ class GLSurface;
 
 namespace ui {
 
-class SkiaRenderer : public RendererBase,
-                     public base::DelegateSimpleThread::Delegate {
+class SkiaGlRenderer : public RendererBase,
+                       public base::DelegateSimpleThread::Delegate {
  public:
-  SkiaRenderer(gfx::AcceleratedWidget widget,
-               const scoped_refptr<gl::GLSurface>& surface,
-               const gfx::Size& size);
-  ~SkiaRenderer() override;
+  SkiaGlRenderer(gfx::AcceleratedWidget widget,
+                 const scoped_refptr<gl::GLSurface>& surface,
+                 const gfx::Size& size);
+  ~SkiaGlRenderer() override;
 
   // Renderer:
   bool Initialize() override;
@@ -76,11 +76,11 @@ class SkiaRenderer : public RendererBase,
   SkSurfaceCharacterization surface_charaterization_;
   base::queue<std::unique_ptr<SkDeferredDisplayList>> ddls_;
 
-  base::WeakPtrFactory<SkiaRenderer> weak_ptr_factory_;
+  base::WeakPtrFactory<SkiaGlRenderer> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SkiaRenderer);
+  DISALLOW_COPY_AND_ASSIGN(SkiaGlRenderer);
 };
 
 }  // namespace ui
 
-#endif  // UI_OZONE_DEMO_SKIA_RENDERER_H_
+#endif  // UI_OZONE_DEMO_SKIA_SKIA_GL_RENDERER_H_

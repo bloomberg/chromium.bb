@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/demo/surfaceless_skia_renderer.h"
+#include "ui/ozone/demo/skia/skia_surfaceless_gl_renderer.h"
 
 #include <stddef.h>
 
@@ -69,7 +69,7 @@ OverlaySurfaceCandidate MakeOverlayCandidate(int z_order,
 
 }  // namespace
 
-class SurfacelessSkiaRenderer::BufferWrapper {
+class SurfacelessSkiaGlRenderer::BufferWrapper {
  public:
   BufferWrapper();
   ~BufferWrapper();
@@ -93,16 +93,16 @@ class SurfacelessSkiaRenderer::BufferWrapper {
   sk_sp<SkSurface> sk_surface_;
 };
 
-SurfacelessSkiaRenderer::BufferWrapper::BufferWrapper() = default;
+SurfacelessSkiaGlRenderer::BufferWrapper::BufferWrapper() = default;
 
-SurfacelessSkiaRenderer::BufferWrapper::~BufferWrapper() {
+SurfacelessSkiaGlRenderer::BufferWrapper::~BufferWrapper() {
   if (gl_tex_) {
     image_->ReleaseTexImage(GL_TEXTURE_2D);
     glDeleteTextures(1, &gl_tex_);
   }
 }
 
-bool SurfacelessSkiaRenderer::BufferWrapper::Initialize(
+bool SurfacelessSkiaGlRenderer::BufferWrapper::Initialize(
     GrContext* gr_context,
     gfx::AcceleratedWidget widget,
     const gfx::Size& size) {
@@ -144,24 +144,24 @@ bool SurfacelessSkiaRenderer::BufferWrapper::Initialize(
   return true;
 }
 
-SurfacelessSkiaRenderer::SurfacelessSkiaRenderer(
+SurfacelessSkiaGlRenderer::SurfacelessSkiaGlRenderer(
     gfx::AcceleratedWidget widget,
     const scoped_refptr<gl::GLSurface>& surface,
     const gfx::Size& size)
-    : SkiaRenderer(widget, surface, size),
+    : SkiaGlRenderer(widget, surface, size),
       overlay_checker_(ui::OzonePlatform::GetInstance()
                            ->GetOverlayManager()
                            ->CreateOverlayCandidates(widget)),
       weak_ptr_factory_(this) {}
 
-SurfacelessSkiaRenderer::~SurfacelessSkiaRenderer() {
+SurfacelessSkiaGlRenderer::~SurfacelessSkiaGlRenderer() {
   // Need to make current when deleting the framebuffer resources allocated in
   // the buffers.
   gl_context_->MakeCurrent(gl_surface_.get());
 }
 
-bool SurfacelessSkiaRenderer::Initialize() {
-  if (!SkiaRenderer::Initialize())
+bool SurfacelessSkiaGlRenderer::Initialize() {
+  if (!SkiaGlRenderer::Initialize())
     return false;
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -193,8 +193,8 @@ bool SurfacelessSkiaRenderer::Initialize() {
   return true;
 }
 
-void SurfacelessSkiaRenderer::RenderFrame() {
-  TRACE_EVENT0("ozone", "SurfacelessSkiaRenderer::RenderFrame");
+void SurfacelessSkiaGlRenderer::RenderFrame() {
+  TRACE_EVENT0("ozone", "SurfacelessSkiaGlRenderer::RenderFrame");
 
   float fraction = CurrentFraction();
   gfx::Rect overlay_rect;
@@ -257,12 +257,12 @@ void SurfacelessSkiaRenderer::RenderFrame() {
 
   back_buffer_ ^= 1;
   gl_surface_->SwapBuffersAsync(
-      base::BindRepeating(&SurfacelessSkiaRenderer::PostRenderFrameTask,
+      base::BindRepeating(&SurfacelessSkiaGlRenderer::PostRenderFrameTask,
                           weak_ptr_factory_.GetWeakPtr()),
       base::DoNothing());
 }
 
-void SurfacelessSkiaRenderer::PostRenderFrameTask(gfx::SwapResult result) {
+void SurfacelessSkiaGlRenderer::PostRenderFrameTask(gfx::SwapResult result) {
   switch (result) {
     case gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS:
       for (size_t i = 0; i < arraysize(buffers_); ++i) {
@@ -273,7 +273,7 @@ void SurfacelessSkiaRenderer::PostRenderFrameTask(gfx::SwapResult result) {
       }
       FALLTHROUGH;  // We want to render a new frame anyways.
     case gfx::SwapResult::SWAP_ACK:
-      SkiaRenderer::PostRenderFrameTask(result);
+      SkiaGlRenderer::PostRenderFrameTask(result);
       break;
     case gfx::SwapResult::SWAP_FAILED:
       LOG(FATAL) << "Failed to swap buffers";
