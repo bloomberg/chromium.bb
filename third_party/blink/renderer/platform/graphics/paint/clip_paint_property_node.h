@@ -35,13 +35,20 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
     scoped_refptr<const RefCountedPath> clip_path;
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
 
-    bool operator==(const State& o) const {
+    // Returns true if the states are equal, ignoring the clip rect excluding
+    // overlay scrollbars which is only used for hit testing.
+    bool EqualIgnoringHitTestRects(const State& o) const {
       return local_transform_space == o.local_transform_space &&
              clip_rect == o.clip_rect &&
-             clip_rect_excluding_overlay_scrollbars ==
-                 o.clip_rect_excluding_overlay_scrollbars &&
              clip_path == o.clip_path &&
              direct_compositing_reasons == o.direct_compositing_reasons;
+    }
+
+    bool operator==(const State& o) const {
+      if (!EqualIgnoringHitTestRects(o))
+        return false;
+      return clip_rect_excluding_overlay_scrollbars ==
+             o.clip_rect_excluding_overlay_scrollbars;
     }
   };
 
@@ -64,6 +71,12 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
     SetChanged();
     state_ = std::move(state);
     return true;
+  }
+
+  bool EqualIgnoringHitTestRects(
+      scoped_refptr<const ClipPaintPropertyNode> parent,
+      const State& state) const {
+    return parent == Parent() && state_.EqualIgnoringHitTestRects(state);
   }
 
   const TransformPaintPropertyNode* LocalTransformSpace() const {

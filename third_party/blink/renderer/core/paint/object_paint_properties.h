@@ -144,6 +144,9 @@ class CORE_EXPORT ObjectPaintProperties {
   const ClipPaintPropertyNode* InnerBorderRadiusClip() const {
     return inner_border_radius_clip_.get();
   }
+  const ClipPaintPropertyNode* OverflowClip() const {
+    return overflow_clip_.get();
+  }
   const ClipPaintPropertyNode* OverflowOrInnerBorderRadiusClip() const {
     return overflow_clip_ ? overflow_clip_.get()
                           : inner_border_radius_clip_.get();
