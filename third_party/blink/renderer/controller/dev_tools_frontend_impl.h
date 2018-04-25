@@ -63,7 +63,7 @@ class DevToolsFrontendImpl final
 
   ~DevToolsFrontendImpl() override;
   void DidClearWindowObject();
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   DevToolsFrontendImpl(LocalFrame&,
