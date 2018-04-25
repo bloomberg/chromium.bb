@@ -19,7 +19,7 @@ const base::Feature kEnableEmojiContextMenu{"EnableEmojiContextMenu",
 
 // Enables the floating virtual keyboard behavior.
 const base::Feature kEnableFloatingVirtualKeyboard = {
-    "enable-floating-virtual-keyboard", base::FEATURE_ENABLED_BY_DEFAULT};
+    "enable-floating-virtual-keyboard", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the full screen handwriting virtual keyboard behavior.
 const base::Feature kEnableFullscreenHandwritingVirtualKeyboard = {
