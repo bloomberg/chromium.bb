@@ -126,6 +126,22 @@ void GestureListenerManager::ResetGestureDetection(
     rwhva_->ResetGestureDetection();
 }
 
+void GestureListenerManager::SetDoubleTapSupportEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jboolean enabled) {
+  if (rwhva_)
+    rwhva_->SetDoubleTapSupportEnabled(enabled);
+}
+
+void GestureListenerManager::SetMultiTouchZoomSupportEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jboolean enabled) {
+  if (rwhva_)
+    rwhva_->SetMultiTouchZoomSupportEnabled(enabled);
+}
+
 void GestureListenerManager::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {

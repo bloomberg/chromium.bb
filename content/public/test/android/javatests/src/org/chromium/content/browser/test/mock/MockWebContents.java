@@ -250,6 +250,11 @@ public class MockWebContents implements WebContents {
     public void simulateRendererKilledForTesting(boolean wasOomProtected) {}
 
     @Override
+    public boolean isSelectPopupVisibleForTesting() {
+        return false;
+    }
+
+    @Override
     public void setHasPersistentVideo(boolean value) {}
 
     @Override

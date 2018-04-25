@@ -36,6 +36,14 @@ class GestureListenerManager : public RenderWidgetHostConnector {
   void Reset(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void ResetGestureDetection(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj);
+  void SetDoubleTapSupportEnabled(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean enabled);
+  void SetMultiTouchZoomSupportEnabled(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean enabled);
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result);
   void DidStopFlinging();

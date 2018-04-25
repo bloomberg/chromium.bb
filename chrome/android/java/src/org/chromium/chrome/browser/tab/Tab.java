@@ -2794,9 +2794,13 @@ public class Tab
         updateBrowserControlsState(constraints, BrowserControlsState.BOTH,
                 constraints != BrowserControlsState.HIDDEN);
 
-        if (getContentViewCore() != null && mFullscreenManager != null) {
-            getContentViewCore().updateMultiTouchZoomSupport(
-                    !mFullscreenManager.getPersistentFullscreenMode());
+        if (mWebContents != null) {
+            GestureListenerManager gestureManager =
+                    GestureListenerManager.fromWebContents(mWebContents);
+            if (gestureManager != null && mFullscreenManager != null) {
+                gestureManager.updateMultiTouchZoomSupport(
+                        !mFullscreenManager.getPersistentFullscreenMode());
+            }
         }
     }
 

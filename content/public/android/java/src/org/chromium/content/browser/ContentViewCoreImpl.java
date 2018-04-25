@@ -297,15 +297,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         return mNativeContentViewCore != 0;
     }
 
-    @VisibleForTesting
-    @Override
-    public int getTopControlsShrinkBlinkHeightForTesting() {
-        // TODO(jinsukkim): Let callsites provide with its own top controls height to remove
-        //                  the test-only method in content layer.
-        if (mNativeContentViewCore == 0) return 0;
-        return nativeGetTopControlsShrinkBlinkHeightPixForTesting(mNativeContentViewCore);
-    }
-
     private void hidePopupsAndClearSelection() {
         getSelectionPopupController().destroyActionModeAndUnselect();
         mWebContents.dismissTextHandles();
@@ -521,18 +512,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
 
     // End FrameLayout overrides.
 
-    @Override
-    public void updateMultiTouchZoomSupport(boolean supportsMultiTouchZoom) {
-        if (mNativeContentViewCore == 0) return;
-        nativeSetMultiTouchZoomSupportEnabled(mNativeContentViewCore, supportsMultiTouchZoom);
-    }
-
-    @Override
-    public void updateDoubleTapSupport(boolean supportsDoubleTap) {
-        if (mNativeContentViewCore == 0) return;
-        nativeSetDoubleTapSupportEnabled(mNativeContentViewCore, supportsDoubleTap);
-    }
-
     /**
      * Send the screen orientation value to the renderer.
      */
@@ -541,12 +520,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         if (mNativeContentViewCore == 0) return;
 
         nativeSendOrientationChangeEvent(mNativeContentViewCore, orientation);
-    }
-
-    @VisibleForTesting
-    @Override
-    public boolean isSelectPopupVisibleForTest() {
-        return getSelectPopup().isVisibleForTesting();
     }
 
     private void destroyPastePopup() {
@@ -608,12 +581,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     private native void nativeOnJavaContentViewCoreDestroyed(long nativeContentViewCore);
     private native void nativeSetFocus(long nativeContentViewCore, boolean focused);
     private native void nativeSetDIPScale(long nativeContentViewCore, float dipScale);
-    private native int nativeGetTopControlsShrinkBlinkHeightPixForTesting(
-            long nativeContentViewCore);
     private native void nativeSendOrientationChangeEvent(
             long nativeContentViewCore, int orientation);
-    private native void nativeSetDoubleTapSupportEnabled(
-            long nativeContentViewCore, boolean enabled);
-    private native void nativeSetMultiTouchZoomSupportEnabled(
-            long nativeContentViewCore, boolean enabled);
 }

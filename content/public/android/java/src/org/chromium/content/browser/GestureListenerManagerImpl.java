@@ -102,6 +102,19 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
         mListeners.removeObserver(listener);
     }
 
+    @Override
+    public void updateMultiTouchZoomSupport(boolean supportsMultiTouchZoom) {
+        if (mNativeGestureListenerManager == 0) return;
+        nativeSetMultiTouchZoomSupportEnabled(
+                mNativeGestureListenerManager, supportsMultiTouchZoom);
+    }
+
+    @Override
+    public void updateDoubleTapSupport(boolean supportsDoubleTap) {
+        if (mNativeGestureListenerManager == 0) return;
+        nativeSetDoubleTapSupportEnabled(mNativeGestureListenerManager, supportsDoubleTap);
+    }
+
     /** Update all the listeners after touch down event occurred. */
     @CalledByNative
     private void updateOnTouchDown() {
@@ -355,4 +368,8 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
     private native long nativeInit(WebContentsImpl webContents);
     private native void nativeReset(long nativeGestureListenerManager);
     private native void nativeResetGestureDetection(long nativeGestureListenerManager);
+    private native void nativeSetDoubleTapSupportEnabled(
+            long nativeGestureListenerManager, boolean enabled);
+    private native void nativeSetMultiTouchZoomSupportEnabled(
+            long nativeGestureListenerManager, boolean enabled);
 }

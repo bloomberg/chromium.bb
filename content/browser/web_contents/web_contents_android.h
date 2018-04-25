@@ -225,6 +225,12 @@ class CONTENT_EXPORT WebContentsAndroid
   void SetMediaSession(
       const base::android::ScopedJavaLocalRef<jobject>& j_media_session);
 
+  // Returns the amount of the top controls height if controls are in the state
+  // of shrinking Blink's view size, otherwise 0.
+  int GetTopControlsShrinkBlinkHeightPixForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
  private:
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 

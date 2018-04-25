@@ -15,7 +15,6 @@ import org.junit.Assert;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 
 import java.io.IOException;
@@ -505,11 +504,11 @@ public class DOMUtils {
         return new int[] {(int) (clickX * scale), (int) (clickY * scale)};
     }
 
-    private static int getMaybeTopControlsHeight(WebContents webContents) {
-        final ContentViewCore core = ContentViewCore.fromWebContents(webContents);
+    private static int getMaybeTopControlsHeight(final WebContents webContents) {
         try {
-            return ThreadUtils.runOnUiThreadBlocking(
-                    () -> { return core.getTopControlsShrinkBlinkHeightForTesting(); });
+            return ThreadUtils.runOnUiThreadBlocking(() -> {
+                return ((WebContentsImpl) webContents).getTopControlsShrinkBlinkHeightForTesting();
+            });
         } catch (ExecutionException e) {
             return 0;
         }

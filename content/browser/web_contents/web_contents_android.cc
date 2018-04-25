@@ -792,4 +792,14 @@ void WebContentsAndroid::SetMediaSession(
   Java_WebContentsImpl_setMediaSession(env, obj_, j_media_session);
 }
 
+int WebContentsAndroid::GetTopControlsShrinkBlinkHeightPixForTesting(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
+  float scale = web_contents_->GetNativeView()->GetDipScale();
+  return (rwhva && rwhva->DoBrowserControlsShrinkBlinkSize())
+             ? rwhva->GetTopControlsHeight() * scale
+             : 0;
+}
+
 }  // namespace content

@@ -60,7 +60,7 @@ public class SelectPopupTest {
 
         @Override
         public boolean isSatisfied() {
-            return mActivityTestRule.getContentViewCore().isSelectPopupVisibleForTest();
+            return mActivityTestRule.getWebContents().isSelectPopupVisibleForTesting();
         }
     }
 
@@ -71,7 +71,7 @@ public class SelectPopupTest {
 
         @Override
         public boolean isSatisfied() {
-            return !mActivityTestRule.getContentViewCore().isSelectPopupVisibleForTest();
+            return !mActivityTestRule.getWebContents().isSelectPopupVisibleForTesting();
         }
     }
 

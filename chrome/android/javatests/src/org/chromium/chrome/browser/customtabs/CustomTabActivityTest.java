@@ -870,8 +870,8 @@ public class CustomTabActivityTest {
             public boolean isSatisfied() {
                 return mCustomTabActivityTestRule.getActivity()
                         .getActivityTab()
-                        .getContentViewCore()
-                        .isSelectPopupVisibleForTest();
+                        .getWebContents()
+                        .isSelectPopupVisibleForTesting();
             }
         });
         final ChromeActivity newActivity = reparentAndVerifyTab();
@@ -879,8 +879,8 @@ public class CustomTabActivityTest {
             @Override
             public boolean isSatisfied() {
                 Tab currentTab = newActivity.getActivityTab();
-                return currentTab != null && currentTab.getContentViewCore() != null
-                        && !currentTab.getContentViewCore().isSelectPopupVisibleForTest();
+                return currentTab != null && currentTab.getWebContents() != null
+                        && !currentTab.getWebContents().isSelectPopupVisibleForTesting();
             }
         });
     }

@@ -466,6 +466,12 @@ public interface WebContents extends Parcelable {
     void simulateRendererKilledForTesting(boolean wasOomProtected);
 
     /**
+     * @return {@code true} if select popup is being shown.
+     */
+    @VisibleForTesting
+    boolean isSelectPopupVisibleForTesting();
+
+    /**
      * Notifies the WebContents about the new persistent video status. It should be called whenever
      * the value changes.
      *
