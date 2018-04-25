@@ -27,7 +27,7 @@ function clickLink() {
         eventSender.mouseUp();
     } else {
         // in manual mode
-        alert("Please use run-webkit-tests.");
+        alert("Please use run_web_tests.py.");
     }
 }
 ]]>

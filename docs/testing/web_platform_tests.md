@@ -245,7 +245,7 @@ http://web-platform-tests.org/appendix/github-intro.html.
 ## Running tests
 
 Same as Blink layout tests, you can use
-[`run-webkit-tests`](layout_tests.md#running-the-tests) to run any WPT test.
+[`run_web_tests.py`](layout_tests.md#running-the-tests) to run any WPT test.
 
 One thing to note is that glob patterns for WPT tests are not yet supported.
 

@@ -43,4 +43,4 @@ class PNGChecker(object):
                 if not read_checksum_from_png.read_checksum(filehandle):
                     self._handle_style_error(
                         0, 'image/png', 5,
-                        'Image lacks a checksum. Generate pngs using run-webkit-tests to ensure they have a checksum.')
+                        'Image lacks a checksum. Generate pngs using run_web_tests.py to ensure they have a checksum.')

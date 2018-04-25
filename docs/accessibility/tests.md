@@ -33,7 +33,7 @@ content/shell/test_runner
 To run all accessibility LayoutTests:
 ```
 ninja -C out/release blink_tests
-third_party/WebKit/Tools/Scripts/run-webkit-tests --build-directory=out --target=release accessibility/
+third_party/blink/tools/run_web_tests.py --build-directory=out --target=release accessibility/
 ```
 
 To run just one test by itself without the script:

@@ -523,7 +523,7 @@
       # 'release_trybot' includes 'dcheck_always_on', and the blink
       # release trybots must *not* enable dchecks, because that could
       # cause them to produce different baselines than the release
-      # waterfall bots, and run-webkit-tests can't handle that (by design).
+      # waterfall bots, and run_web_tests.py can't handle that (by design).
       'linux_trusty_blink_compile_dbg': 'debug_trybot',
       'linux_trusty_blink_compile_rel': 'release_bot_minimal_symbols',
       'linux_trusty_blink_dbg': 'debug_trybot',

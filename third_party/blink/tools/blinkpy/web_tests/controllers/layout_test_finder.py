@@ -90,7 +90,7 @@ class LayoutTestFinder(object):
     # the css3/flexbox tests. It should *not* run the fastest 50%
     # of the css3/flexbox tests.
     #
-    # run-webkit-tests --fastest=50 css3/flexbox
+    # run_web_tests.py --fastest=50 css3/flexbox
     def _fastest_tests(self, times_trie, all_tests, fastest_percentile):
         times = convert_times_trie_to_flat_paths(times_trie)
 

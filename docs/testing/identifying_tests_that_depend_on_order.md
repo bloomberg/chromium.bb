@@ -39,13 +39,13 @@ interested in adding that feature to the script.
 Instead of running `bisect_web_test_ordering.py`, you can manually do the work
 of step 4 above.
 
-1. `run-webkit-tests --child-processes=1 --order=none --test-list=path/to/file/from/step/3`
+1. `run_web_tests.py --child-processes=1 --order=none --test-list=path/to/file/from/step/3`
 2. If the test doesn't fail here, then the test itself is probably just flaky.
    If it does, remove some lines from the file and repeat step 1. Continue
    repeating until you've found the dependency. If the test fails when run by
    itself, but passes on the bots, that means that it depends on another test to
    pass. In this case, you need to generate the list of tests run by
-   `run-webkit-tests --order=natural` and repeat this process to find which test
+   `run_web_tests.py --order=natural` and repeat this process to find which test
    causes the test in question to *pass* (e.g.
    [crbug.com/262793](https://crbug.com/262793)).
 3. File a bug and give it the
@@ -57,13 +57,13 @@ of step 4 above.
 
 #### Run tests in a random order and diagnose failures
 
-1. Run `run-webkit-tests --order=random --no-retry`
+1. Run `run_web_tests.py --order=random --no-retry`
 2. Run `./tools/print_web_test_ordering.py` and save the output to a file. This
    outputs the tests run in the order they were run on each content_shell
    instance.
 3. Run the diagnosing steps from above to figure out which tests
 
-Run `run-webkit-tests --run-singly --no-retry`. This starts up a new
+Run `run_web_tests.py --run-singly --no-retry`. This starts up a new
 content_shell instance for each test. Tests that fail when run in isolation but
 pass when run as part of the full test suite represent some state that we're not
 properly resetting between test runs or some state that we're not properly

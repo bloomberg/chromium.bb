@@ -9,6 +9,10 @@ This document covers running and debugging existing layout tests. See the
 [Writing Layout Tests documentation](./writing_layout_tests.md) if you find
 yourself writing layout tests.
 
+Note that we're in process of changing the term "layout tests" to "web tests".
+Please assume these terms mean the identical stuff. We also call it as
+"WebKit tests" and "WebKit layout tests".
+
 [TOC]
 
 ## Running Layout Tests
@@ -46,20 +50,20 @@ strip ./xcodebuild/{Debug,Release}/content_shell.app/Contents/MacOS/content_shel
 TODO: mention `testing/xvfb.py`
 
 The test runner script is in
-`third_party/WebKit/Tools/Scripts/run-webkit-tests`.
+`third_party/blink/tools/run_web_tests.py`.
 
 To specify which build directory to use (e.g. out/Default, out/Release,
 out/Debug) you should pass the `-t` or `--target` parameter. For example, to
 use the build in `out/Default`, use:
 
 ```bash
-python third_party/WebKit/Tools/Scripts/run-webkit-tests -t Default
+python third_party/blink/tools/run_web_tests.py -t Default
 ```
 
 For Android (if your build directory is `out/android`):
 
 ```bash
-python third_party/WebKit/Tools/Scripts/run-webkit-tests -t android --android
+python third_party/blink/tools/run_web_tests.py -t android --android
 ```
 
 Tests marked as `[ Skip ]` in
@@ -86,13 +90,13 @@ arguments to `run_webkit_tests.py` relative to the layout test directory
 use:
 
 ```bash
-Tools/Scripts/run-webkit-tests fast/forms
+third_party/blink/tools/run_web_tests.py fast/forms
 ```
 
 Or you could use the following shorthand:
 
 ```bash
-Tools/Scripts/run-webkit-tests fast/fo\*
+third_party/blink/tools/run_web_tests.py fast/fo\*
 ```
 
 *** promo
@@ -100,7 +104,7 @@ Example: To run the layout tests with a debug build of `content_shell`, but only
 test the SVG tests and run pixel tests, you would run:
 
 ```bash
-Tools/Scripts/run-webkit-tests -t Default svg
+third_party/blink/tools/run_web_tests.py -t Default svg
 ```
 ***
 
@@ -121,7 +125,7 @@ out/Default/content_shell.exe --run-layout-test --no-sandbox \
 but this requires a manual diff against expected results, because the shell
 doesn't do it for you.
 
-To see a complete list of arguments supported, run: `run-webkit-tests --help`
+To see a complete list of arguments supported, run: `run_web_tests.py --help`
 
 *** note
 **Linux Note:** We try to match the Windows render tree output exactly by
@@ -195,7 +199,7 @@ There are two ways to run layout tests with additional command-line arguments:
 * Using `--additional-driver-flag`:
 
   ```bash
-  run-webkit-tests --additional-driver-flag=--blocking-repaint
+  run_web_tests.py --additional-driver-flag=--blocking-repaint
   ```
 
   This tells the test harness to pass `--blocking-repaint` to the
@@ -405,7 +409,7 @@ machine?
   > Debug DevTools lets you avoid having to recompile after every change to the DevTools front-end.
 * Do one of the following:
     * Option A) Run from the chromium/src folder:
-      `blink/tools/run_layout_tests.sh
+      `third_party/blink/tools/run_web_tests.sh
       --additional-driver-flag='--debug-devtools'
       --additional-driver-flag='--remote-debugging-port=9222'
       --time-out-ms=6000000`
@@ -449,7 +453,7 @@ this:
 gclient sync || exit 125
 ninja -C out/Debug -j100 blink_tests || exit 125
 
-blink/tools/run_layout_tests.sh -t Debug \
+third_party/blink/tools/run_web_tests.py -t Debug \
   --no-show-results --no-retry-failures \
   path/to/layout/test.html
 ```
@@ -474,8 +478,8 @@ read on.
 ***
 
 ```bash
-cd src/third_party/WebKit
-Tools/Scripts/run-webkit-tests --reset-results foo/bar/test.html
+cd src/third_party/blink
+tools/run_web_tests.py --reset-results foo/bar/test.html
 ```
 
 If there are current expectation files for `LayoutTests/foo/bar/test.html`,
@@ -498,8 +502,8 @@ Though we prefer the Rebaseline Tool to local rebaselining, the Rebaseline Tool
 doesn't support rebaselining flag-specific expectations.
 
 ```bash
-cd src/third_party/WebKit
-Tools/Scripts/run-webkit-tests --additional-driver-flag=--enable-flag --reset-results foo/bar/test.html
+cd src/third_party/blink
+tools/run_web_tests.py --additional-driver-flag=--enable-flag --reset-results foo/bar/test.html
 ```
 
 New baselines will be created in the flag-specific baselines directory, e.g.
@@ -513,14 +517,14 @@ files. You can follow the steps below for easier review.
 1. Copy existing baselines to the flag-specific baselines directory for the
    tests to be rebaselined:
    ```bash
-   Tools/Scripts/run-webkit-tests --additional-driver-flag=--enable-flag --copy-baselines foo/bar/test.html
+   third_party/blink/tools/run_web_tests.py --additional-driver-flag=--enable-flag --copy-baselines foo/bar/test.html
    ```
    Then add the newly created baseline files, commit and upload the patch.
    Note that the above command won't copy baselines for passing tests.
 
 2. Rebaseline the test locally:
    ```bash
-   Tools/Scripts/run-webkit-tests --additional-driver-flag=--enable-flag --reset-results foo/bar/test.html
+   third_party/blink/tools/run_web_tests.py --additional-driver-flag=--enable-flag --reset-results foo/bar/test.html
    ```
    Commit the changes and upload the patch.
 

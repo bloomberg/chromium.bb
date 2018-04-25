@@ -1314,7 +1314,7 @@
     "script": "//testing/scripts/run_isolated_script_test.py",
     "args": [
       "--xvfb",
-      "../../third_party/WebKit/Tools/Scripts/run-webkit-tests",
+      "../../third_party/blink/tools/run_web_tests.py",
       "--clobber-old-results",
       "--debug-rwt-logging",
       "--no-show-results",
@@ -1327,7 +1327,7 @@
     "script": "//testing/scripts/run_isolated_script_test.py",
     "args": [
       "--xvfb",
-      "../../third_party/WebKit/Tools/Scripts/run-webkit-tests",
+      "../../third_party/blink/tools/run_web_tests.py",
       "--seed", "4",
       "--no-show-results",
       "--clobber-old-results",

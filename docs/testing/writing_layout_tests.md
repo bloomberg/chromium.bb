@@ -271,7 +271,7 @@ In these situations, a test file will be accompanied by a baseline, which is an
 `-expected.txt` file that contains the test's expected output.
 
 The baselines are generated automatically when appropriate by
-`run-webkit-tests`, which is described [here](./layout_tests.md), and by the
+`run_web_tests.py`, which is described [here](./layout_tests.md), and by the
 [rebaselining tools](./layout_test_expectations.md).
 
 Text baselines for `testharness.js` should be avoided, as having a text baseline
@@ -315,7 +315,7 @@ or features restricted to secure protocols.
 HTTP tests are those under `LayoutTests/http/tests` (or virtual variants). Use a
 locally running HTTP server (Apache) to run them. Tests are served off of ports
 8000 and 8080 for HTTP, and 8443 for HTTPS. If you run the tests using
-`run-webkit-tests`, the server will be started automatically. To run the server
+`run_web_tests.py`, the server will be started automatically. To run the server
 manually to reproduce or debug a failure:
 
 ```bash

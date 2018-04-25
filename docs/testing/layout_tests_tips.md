@@ -77,7 +77,7 @@ assess its flakiness. While not foolproof, this approach gives you some
 confidence, and giving up CPU cycles for mental energy is a pretty good trade.
 
 ```bash
-third_party/WebKit/Tools/Scripts/run-webkit-tests path/to/test.html --repeat-each=100
+third_party/blink/tools/run_web_tests.py path/to/test.html --repeat-each=100
 ```
 
 The

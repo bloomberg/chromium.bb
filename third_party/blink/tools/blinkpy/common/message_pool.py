@@ -26,7 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Module for handling messages and concurrency for run-webkit-tests
+"""Module for handling messages and concurrency for run_we_tests.py
 and run_blinkpy_tests.py. This module follows the design for
 multiprocessing.Pool and concurrency.futures.ProcessPoolExecutor, with the
 following differences:

@@ -146,7 +146,7 @@ class TestImporter(object):
         # self._delete_orphaned_baselines()
 
         # TODO(qyearsley): Consider running the imported tests with
-        # `run-webkit-tests --reset-results external/wpt` to get some baselines
+        # `run_web_tests.py --reset-results external/wpt` to get some baselines
         # before the try jobs are started.
 
         _log.info('Updating TestExpectations for any removed or renamed tests.')

@@ -67,4 +67,4 @@ class PNGCheckerTest(unittest.TestCase):
         self.assertEqual(len(errors), 1)
         self.assertEqual(
             errors[0],
-            (0, 'image/png', 5, 'Image lacks a checksum. Generate pngs using run-webkit-tests to ensure they have a checksum.'))
+            (0, 'image/png', 5, 'Image lacks a checksum. Generate pngs using run_web_tests.py to ensure they have a checksum.'))

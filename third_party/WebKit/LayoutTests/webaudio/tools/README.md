@@ -19,7 +19,7 @@ or notes and print out the logs at the end of the processing.
 
 ## Installation
 
-The `run-webkit-tests` script process all the files in the `webaudio/` directory, so files created by the node package installation will pollute the test result. To avoid this, copy `tools/` directory to another directory. Then run the following in that directory.
+The `run_web_tests.py` script process all the files in the `webaudio/` directory, so files created by the node package installation will pollute the test result. To avoid this, copy `tools/` directory to another directory. Then run the following in that directory.
 
 ```
 cd ${WHERE_PACKAGE_JSON_IS} npm install
