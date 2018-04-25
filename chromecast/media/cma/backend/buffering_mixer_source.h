@@ -206,6 +206,8 @@ class BufferingMixerSource : public MixerInput::Source,
   const int max_queued_frames_;
   // Minimum number of frames buffered before starting to fill data.
   const int start_threshold_frames_;
+  // The absolute timestamp relative to clock monotonic (raw) at which the
+  // playback should start. INT64_MIN indicates playback should start ASAP.
   const int64_t playback_start_timestamp_;
 
   LockedMembers locked_members_;
