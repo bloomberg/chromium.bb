@@ -27,10 +27,6 @@ namespace gfx {
 class Image;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace network {
 namespace mojom {
 class URLLoaderFactory;
@@ -101,9 +97,6 @@ class KioskAppData : public KioskAppDataBase,
   class WebstoreDataParser;
 
   void SetStatus(Status status);
-
-  // Returns URLRequestContextGetter to use for fetching web store data.
-  net::URLRequestContextGetter* GetRequestContextGetter();
 
   // Returns URLLoaderFactory to use for fetching web store data.
   network::mojom::URLLoaderFactory* GetURLLoaderFactory();

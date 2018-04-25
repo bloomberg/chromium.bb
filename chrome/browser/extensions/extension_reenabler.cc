@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/webstore_data_fetcher.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -82,13 +83,12 @@ ExtensionReenabler::ExtensionReenabler(
   // If we have a non-empty referrer, then we have to validate that it's a valid
   // url for the extension.
   if (!referrer_url_.is_empty()) {
-    webstore_data_fetcher_.reset(new WebstoreDataFetcher(
-        this,
-        content::BrowserContext::GetDefaultStoragePartition(browser_context_)->
-            GetURLRequestContext(),
-        referrer_url_,
-        extension->id()));
-    webstore_data_fetcher_->Start();
+    webstore_data_fetcher_.reset(
+        new WebstoreDataFetcher(this, referrer_url_, extension->id()));
+    webstore_data_fetcher_->Start(
+        content::BrowserContext::GetDefaultStoragePartition(browser_context_)
+            ->GetURLLoaderFactoryForBrowserProcess()
+            .get());
   } else {
     ExtensionInstallPrompt::PromptType type =
         ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(

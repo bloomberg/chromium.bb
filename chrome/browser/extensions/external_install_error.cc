@@ -358,12 +358,12 @@ ExternalInstallError::ExternalInstallError(
   prompt_.reset(new ExtensionInstallPrompt::Prompt(
       ExtensionInstallPrompt::EXTERNAL_INSTALL_PROMPT));
 
-  webstore_data_fetcher_.reset(new WebstoreDataFetcher(
-      this,
-      content::BrowserContext::GetDefaultStoragePartition(browser_context_)->
-          GetURLRequestContext(),
-      GURL(), extension_id_));
-  webstore_data_fetcher_->Start();
+  webstore_data_fetcher_.reset(
+      new WebstoreDataFetcher(this, GURL(), extension_id_));
+  webstore_data_fetcher_->Start(
+      content::BrowserContext::GetDefaultStoragePartition(browser_context_)
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get());
 }
 
 ExternalInstallError::~ExternalInstallError() {

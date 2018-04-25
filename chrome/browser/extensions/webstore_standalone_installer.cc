@@ -63,16 +63,16 @@ void WebstoreStandaloneInstaller::BeginInstall() {
   // Use the requesting page as the referrer both since that is more correct
   // (it is the page that caused this request to happen) and so that we can
   // track top sites that trigger inline install requests.
-  webstore_data_fetcher_.reset(new WebstoreDataFetcher(
-      this,
-      profile_->GetRequestContext(),
-      GetRequestorURL(),
-      id_));
+  webstore_data_fetcher_.reset(
+      new WebstoreDataFetcher(this, GetRequestorURL(), id_));
 
   webstore_data_fetcher_->SetPostData(
       GetPostData(webstore_data_fetcher_->upload_content_type()));
 
-  webstore_data_fetcher_->Start();
+  webstore_data_fetcher_->Start(
+      content::BrowserContext::GetDefaultStoragePartition(profile_)
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get());
 }
 
 //

@@ -10,17 +10,18 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
 namespace base {
 class Value;
 }
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}
+namespace network {
+class SimpleURLLoader;
+namespace mojom {
+class URLLoaderFactory;
+}  // namespace mojom
+}  // namespace network
 
 namespace extensions {
 
@@ -28,20 +29,18 @@ class WebstoreDataFetcherDelegate;
 
 // WebstoreDataFetcher fetches web store data and parses it into a
 // DictionaryValue.
-class WebstoreDataFetcher : public base::SupportsWeakPtr<WebstoreDataFetcher>,
-                            public net::URLFetcherDelegate {
+class WebstoreDataFetcher : public base::SupportsWeakPtr<WebstoreDataFetcher> {
  public:
   WebstoreDataFetcher(WebstoreDataFetcherDelegate* delegate,
-                      net::URLRequestContextGetter* request_context,
                       const GURL& referrer_url,
                       const std::string webstore_item_id);
-  ~WebstoreDataFetcher() override;
+  ~WebstoreDataFetcher();
 
   // Makes this request use a POST instead of GET, and sends |data| in the
   // body of the request. If |data| is empty, this is a no-op.
   void SetPostData(const std::string& data);
 
-  void Start();
+  void Start(network::mojom::URLLoaderFactory* url_loader_factory);
 
   void set_max_auto_retries(int max_retries) {
     max_auto_retries_ = max_retries;
@@ -52,19 +51,16 @@ class WebstoreDataFetcher : public base::SupportsWeakPtr<WebstoreDataFetcher>,
  private:
   void OnJsonParseSuccess(std::unique_ptr<base::Value> parsed_json);
   void OnJsonParseFailure(const std::string& error);
-
-  // net::URLFetcherDelegate overrides:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   WebstoreDataFetcherDelegate* delegate_;
-  net::URLRequestContextGetter* request_context_;
   GURL referrer_url_;
   std::string id_;
   std::string post_data_;
   std::string upload_content_type_;
 
   // For fetching webstore JSON data.
-  std::unique_ptr<net::URLFetcher> webstore_data_url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
 
   // Maximum auto retry times on server 5xx error or ERR_NETWORK_CHANGED.
   // Default is 0 which means to use the URLFetcher default behavior.
