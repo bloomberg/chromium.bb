@@ -210,6 +210,7 @@
 #include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
+#include "third_party/blink/renderer/core/page/find_in_page.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -1749,6 +1750,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(
       client_(client),
       local_frame_client_(LocalFrameClientImpl::Create(this)),
       autofill_client_(nullptr),
+      find_in_page_(FindInPage::Create(*this)),
       input_events_scale_factor_for_emulation_(1),
       interface_registry_(interface_registry),
       input_method_controller_(*this),
@@ -1777,10 +1779,10 @@ WebLocalFrameImpl::~WebLocalFrameImpl() {
 
 void WebLocalFrameImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(local_frame_client_);
+  visitor->Trace(find_in_page_);
   visitor->Trace(frame_);
   visitor->Trace(dev_tools_agent_);
   visitor->Trace(frame_widget_);
-  visitor->Trace(text_finder_);
   visitor->Trace(print_context_);
   visitor->Trace(input_method_controller_);
   WebFrame::TraceFrames(visitor, this);
@@ -1862,8 +1864,8 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
 }
 
 void WebLocalFrameImpl::DidChangeContentsSize(const IntSize& size) {
-  if (text_finder_ && text_finder_->TotalMatchCount() > 0)
-    text_finder_->IncreaseMarkerVersion();
+  if (GetTextFinder() && GetTextFinder()->TotalMatchCount() > 0)
+    GetTextFinder()->IncreaseMarkerVersion();
 }
 
 void WebLocalFrameImpl::CreateFrameView() {
@@ -2060,8 +2062,8 @@ void WebLocalFrameImpl::Load(
   DCHECK(!request.Url().ProtocolIs("javascript"));
   const ResourceRequest& resource_request = request.ToResourceRequest();
 
-  if (text_finder_)
-    text_finder_->ClearActiveFindMatch();
+  if (GetTextFinder())
+    GetTextFinder()->ClearActiveFindMatch();
 
   FrameLoadRequest frame_request =
       FrameLoadRequest(nullptr, resource_request, /*frame_name=*/AtomicString(),
@@ -2341,12 +2343,12 @@ void WebLocalFrameImpl::WillBeDetached() {
 void WebLocalFrameImpl::WillDetachParent() {
   // Do not expect string scoping results from any frames that got detached
   // in the middle of the operation.
-  if (text_finder_ && text_finder_->ScopingInProgress()) {
+  if (GetTextFinder() && GetTextFinder()->ScopingInProgress()) {
     // There is a possibility that the frame being detached was the only
     // pending one. We need to make sure final replies can be sent.
-    text_finder_->FlushCurrentScoping();
+    GetTextFinder()->FlushCurrentScoping();
 
-    text_finder_->CancelPendingScopingEffort();
+    GetTextFinder()->CancelPendingScopingEffort();
   }
 }
 
@@ -2406,10 +2408,6 @@ WebSandboxFlags WebLocalFrameImpl::EffectiveSandboxFlags() const {
     return WebSandboxFlags::kNone;
   return static_cast<WebSandboxFlags>(
       GetFrame()->Loader().EffectiveSandboxFlags());
-}
-
-void WebLocalFrameImpl::ClearActiveFindMatch() {
-  EnsureTextFinder().ClearActiveFindMatch();
 }
 
 void WebLocalFrameImpl::UsageCountChromeLoadTimes(const WebString& metric) {

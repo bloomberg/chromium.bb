@@ -50,6 +50,7 @@
 namespace blink {
 
 class ChromePrintContext;
+class FindInPage;
 class IntSize;
 class LocalFrameClientImpl;
 class ScrollableArea;
@@ -441,6 +442,9 @@ class CORE_EXPORT WebLocalFrameImpl final
   // useful.
   WebFrameWidgetBase* LocalRootFrameWidget();
 
+  // Returns true if the frame is focused.
+  bool IsFocused() const;
+
   virtual void Trace(blink::Visitor*);
 
  private:
@@ -467,9 +471,6 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   WebPlugin* FocusedPluginIfInputMethodSupported();
   ScrollableArea* LayoutViewportScrollableArea() const;
-
-  // Returns true if the frame is focused.
-  bool IsFocused() const;
 
   // A helper for DispatchBeforePrintEvent() and DispatchAfterPrintEvent().
   void DispatchPrintEventRecursively(const AtomicString& event_type);
@@ -499,8 +500,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   std::unique_ptr<SharedWorkerRepositoryClientImpl>
       shared_worker_repository_client_;
 
-  // Will be initialized after first call to ensureTextFinder().
-  Member<TextFinder> text_finder_;
+  Member<FindInPage> find_in_page_;
 
   // Valid between calls to BeginPrint() and EndPrint(). Containts the print
   // information. Is used by PrintPage().
