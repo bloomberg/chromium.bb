@@ -3408,58 +3408,6 @@ TEST_F(PasswordFormManagerTest, SkipZeroClickIntact) {
   EXPECT_TRUE(credentials_to_update[0].skip_zero_click);
 }
 
-TEST_F(PasswordFormManagerTest, ProbablyAccountCreationUpload) {
-  PasswordForm form(*observed_form());
-  form.form_data = saved_match()->form_data;
-  form.other_possible_usernames = saved_match()->other_possible_usernames;
-
-  FakeFormFetcher fetcher;
-  fetcher.Fetch();
-  PasswordFormManager form_manager(
-      password_manager(), client(), client()->driver(), form,
-      std::make_unique<NiceMock<MockFormSaver>>(), &fetcher);
-  form_manager.Init(nullptr);
-
-  PasswordForm form_to_save(form);
-  form_to_save.preferred = true;
-  form_to_save.username_element = ASCIIToUTF16("observed-username-field");
-  form_to_save.username_value = saved_match()->username_value;
-  form_to_save.password_value = saved_match()->password_value;
-  form_to_save.does_look_like_signup_form = true;
-
-  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
-
-  // A user submits a form and edits the username in the prompt.
-  form_manager.ProvisionallySave(
-      form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
-  form_manager.UpdateUsername(ASCIIToUTF16("test2@gmail.com"));
-
-  autofill::FormStructure pending_structure(form_to_save.form_data);
-  autofill::ServerFieldTypeSet expected_available_field_types;
-  std::map<base::string16, autofill::ServerFieldType> expected_types;
-  expected_types[saved_match()->username_element] = autofill::UNKNOWN_TYPE;
-  expected_types[ASCIIToUTF16("full_name")] = autofill::USERNAME;
-  expected_types[saved_match()->password_element] =
-      autofill::PROBABLY_ACCOUNT_CREATION_PASSWORD;
-  expected_available_field_types.insert(
-      autofill::PROBABLY_ACCOUNT_CREATION_PASSWORD);
-  expected_available_field_types.insert(autofill::USERNAME);
-
-  autofill::AutofillUploadContents::Field::UsernameVoteType
-      expected_username_vote_type =
-          autofill::AutofillUploadContents::Field::USERNAME_EDITED;
-
-  EXPECT_CALL(
-      *client()->mock_driver()->mock_autofill_download_manager(),
-      StartUploadRequest(
-          CheckUploadedAutofillTypesAndSignature(
-              pending_structure.FormSignatureAsStr(), expected_types,
-              false /* expect_generation_vote */, expected_username_vote_type),
-          false, expected_available_field_types, std::string(), true));
-
-  form_manager.Save();
-}
-
 TEST_F(PasswordFormManagerFillOnAccountSelectTest, ProcessFrame) {
   EXPECT_CALL(*client()->mock_driver(),
               ShowInitialPasswordAccountSuggestions(_));
@@ -3591,7 +3539,6 @@ TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
         field.name = ASCIIToUTF16("full_name");
         field.form_control_type = "text";
         new_login.form_data.fields.push_back(field);
-        new_login.does_look_like_signup_form = true;
       }
       field.label = ASCIIToUTF16("Email");
       field.name = ASCIIToUTF16("observed-username-field");
@@ -3663,10 +3610,8 @@ TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
         EXPECT_CALL(*mock_autofill_manager, StartUploadProcessPtr(_, _, true))
             .WillOnce(WithArg<0>(SaveToUniquePtr(&signin_vote_form_structure)));
       } else {
-        // The observed form has 2 text fields and 1 password field,
-        // PROBABLY_ACCOUNT_CREATION_PASSWORD should be uploaded.
         autofill::ServerFieldTypeSet field_types;
-        field_types.insert(autofill::PROBABLY_ACCOUNT_CREATION_PASSWORD);
+        field_types.insert(autofill::PASSWORD);
         EXPECT_CALL(
             *client()->mock_driver()->mock_autofill_download_manager(),
             StartUploadRequest(_, false, field_types, std::string(), true));

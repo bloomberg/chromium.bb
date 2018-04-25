@@ -317,9 +317,6 @@ struct PasswordForm {
   // found using affiliation-based match.
   bool is_affiliation_based_match;
 
-  // If true, this form looks like SignUp form according to local heuristics.
-  bool does_look_like_signup_form;
-
   // The type of the event that was taken as an indication that this form is
   // being or has already been submitted. This field is not persisted and filled
   // out only for submitted forms.

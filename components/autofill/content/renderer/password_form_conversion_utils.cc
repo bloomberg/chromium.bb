@@ -808,14 +808,6 @@ bool GetPasswordForm(
   password_form->blacklisted_by_user = false;
   password_form->type = PasswordForm::TYPE_MANUAL;
 
-  // The password form is considered that it looks like SignUp form if it has
-  // more than 1 text field with user input or it has a new password field and
-  // no current password field.
-  password_form->does_look_like_signup_form =
-      number_of_non_empty_text_non_password_fields > 1 ||
-      (number_of_non_empty_text_non_password_fields == 1 &&
-       password_form->password_element.empty() &&
-       !password_form->new_password_element.empty());
   return true;
 }
 
