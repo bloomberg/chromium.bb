@@ -4,8 +4,7 @@
 
 #include "ash/assistant/ash_assistant_controller.h"
 
-#include <memory>
-
+#include "ash/assistant/ui/assistant_bubble.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -15,9 +14,16 @@
 
 namespace ash {
 
+namespace {
+
+constexpr base::TimeDelta kAutoDismissDelay = base::TimeDelta::FromSeconds(5);
+
+}  // namespace
+
 AshAssistantController::AshAssistantController()
     : assistant_controller_binding_(this),
-      assistant_event_subscriber_binding_(this) {
+      assistant_event_subscriber_binding_(this),
+      assistant_bubble_(std::make_unique<AssistantBubble>(this)) {
   Shell::Get()->AddShellObserver(this);
 }
 
@@ -91,14 +97,21 @@ void AshAssistantController::RemoveInteractionModelObserver(
 }
 
 void AshAssistantController::OnInteractionStarted() {
-  // TODO(dmblack): Handle.
-  NOTIMPLEMENTED();
+  assistant_bubble_timer_.Stop();
+  assistant_bubble_->Show();
 }
 
 void AshAssistantController::OnInteractionFinished(
     chromeos::assistant::mojom::AssistantInteractionResolution resolution) {
-  // TODO(dmblack): Handle.
-  NOTIMPLEMENTED();
+  assistant_bubble_timer_.Start(
+      FROM_HERE, kAutoDismissDelay, this,
+      &AshAssistantController::OnInteractionDismissed);
+}
+
+void AshAssistantController::OnInteractionDismissed() {
+  assistant_bubble_timer_.Stop();
+  assistant_bubble_->Dismiss();
+  assistant_interaction_model_.ClearInteraction();
 }
 
 void AshAssistantController::OnHtmlResponse(const std::string& response) {
@@ -181,6 +194,7 @@ void AshAssistantController::OnSpeechLevelUpdated(float speech_level) {
 
 void AshAssistantController::OnOpenUrlResponse(const GURL& url) {
   Shell::Get()->shell_delegate()->OpenUrlFromArc(url);
+  OnInteractionDismissed();
 }
 
 // TODO(b/77637813): Remove when pulling Assistant out of launcher.
