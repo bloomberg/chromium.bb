@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ACTIVE_FLING_PARAMETERS_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ACTIVE_FLING_PARAMETERS_H_
 
+#include "base/time/time.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_gesture_device.h"
@@ -41,10 +42,10 @@ struct WebActiveFlingParameters {
   int modifiers;
   WebGestureDevice source_device;
   WebSize cumulative_scroll;
-  double start_time;
+  base::TimeTicks start_time;
 
   WebActiveFlingParameters()
-      : modifiers(0), source_device(kWebGestureDeviceTouchpad), start_time(0) {}
+      : modifiers(0), source_device(kWebGestureDeviceTouchpad) {}
 };
 }  // namespace blink
 

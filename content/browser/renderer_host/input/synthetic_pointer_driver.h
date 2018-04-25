@@ -43,9 +43,6 @@ class CONTENT_EXPORT SyntheticPointerDriver {
   virtual bool UserInputCheck(
       const SyntheticPointerActionParams& params) const = 0;
 
- protected:
-  static double ConvertTimestampToSeconds(const base::TimeTicks& timestamp);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SyntheticPointerDriver);
 };

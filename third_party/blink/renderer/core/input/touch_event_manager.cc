@@ -104,7 +104,7 @@ void SetWebTouchEventAttributesFromWebPointerEvent(
       web_pointer_event.moved_beyond_slop_region;
   web_touch_event->SetFrameScale(web_pointer_event.FrameScale());
   web_touch_event->SetFrameTranslate(web_pointer_event.FrameTranslate());
-  web_touch_event->SetTimeStampSeconds(web_pointer_event.TimeStampSeconds());
+  web_touch_event->SetTimeStamp(web_pointer_event.TimeStamp());
   web_touch_event->SetModifiers(web_pointer_event.GetModifiers());
 }
 
@@ -255,7 +255,7 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
   // Create all coalesced touch events based on pointerevents
   struct {
     bool operator()(const WebPointerEvent& a, const WebPointerEvent& b) {
-      return a.TimeStampSeconds() < b.TimeStampSeconds();
+      return a.TimeStamp() < b.TimeStamp();
     }
   } timestamp_based_event_comparison;
   std::sort(all_coalesced_events.begin(), all_coalesced_events.end(),
@@ -273,8 +273,8 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
         if (last_coalesced_touch_event_.touches[i].id == web_pointer_event.id) {
           last_coalesced_touch_event_.touches[i] =
               CreateWebTouchPointFromWebPointerEvent(web_pointer_event, false);
-          last_coalesced_touch_event_.SetTimeStampSeconds(
-              web_pointer_event.TimeStampSeconds());
+          last_coalesced_touch_event_.SetTimeStamp(
+              web_pointer_event.TimeStamp());
           found_existing_id = true;
           break;
         }
@@ -301,8 +301,8 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
         if (last_coalesced_touch_event_.touches[i].id == web_pointer_event.id) {
           last_coalesced_touch_event_.touches[i] =
               CreateWebTouchPointFromWebPointerEvent(web_pointer_event, false);
-          last_coalesced_touch_event_.SetTimeStampSeconds(
-              web_pointer_event.TimeStampSeconds());
+          last_coalesced_touch_event_.SetTimeStamp(
+              web_pointer_event.TimeStamp());
           result.AddCoalescedEvent(last_coalesced_touch_event_);
 
           // Remove up and canceled points.

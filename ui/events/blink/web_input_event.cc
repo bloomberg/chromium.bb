@@ -71,9 +71,9 @@ blink::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
     const PlatformEvent& native_event,
     const base::TimeTicks& time_stamp,
     blink::WebPointerProperties::PointerType pointer_type) {
-  return WebMouseEventBuilder::Build(
-      native_event.hwnd, native_event.message, native_event.wParam,
-      native_event.lParam, EventTimeStampToSeconds(time_stamp), pointer_type);
+  return WebMouseEventBuilder::Build(native_event.hwnd, native_event.message,
+                                     native_event.wParam, native_event.lParam,
+                                     time_stamp, pointer_type);
 }
 
 blink::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
@@ -82,7 +82,7 @@ blink::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
     blink::WebPointerProperties::PointerType pointer_type) {
   return WebMouseWheelEventBuilder::Build(
       native_event.hwnd, native_event.message, native_event.wParam,
-      native_event.lParam, EventTimeStampToSeconds(time_stamp), pointer_type);
+      native_event.lParam, time_stamp, pointer_type);
 }
 #endif  // defined(OS_WIN)
 
@@ -101,9 +101,10 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromUiEvent(const KeyEvent& event) {
   }
 
   blink::WebKeyboardEvent webkit_event(
-      type, EventFlagsToWebEventModifiers(event.flags()) |
-                DomCodeToWebInputEventModifiers(event.code()),
-      EventTimeStampToSeconds(event.time_stamp()));
+      type,
+      EventFlagsToWebEventModifiers(event.flags()) |
+          DomCodeToWebInputEventModifiers(event.code()),
+      event.time_stamp());
 
   if (webkit_event.GetModifiers() & blink::WebInputEvent::kAltKey)
     webkit_event.is_system_key = true;
@@ -127,8 +128,7 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
     const ScrollEvent& event) {
   blink::WebMouseWheelEvent webkit_event(
       blink::WebInputEvent::kMouseWheel,
-      EventFlagsToWebEventModifiers(event.flags()),
-      EventTimeStampToSeconds(event.time_stamp()));
+      EventFlagsToWebEventModifiers(event.flags()), event.time_stamp());
 
   webkit_event.button = blink::WebMouseEvent::Button::kNoButton;
   webkit_event.has_precise_scrolling_deltas = true;
@@ -208,8 +208,7 @@ blink::WebGestureEvent MakeWebGestureEventFromUiEvent(
   }
 
   blink::WebGestureEvent webkit_event(
-      type, EventFlagsToWebEventModifiers(event.flags()),
-      EventTimeStampToSeconds(event.time_stamp()),
+      type, EventFlagsToWebEventModifiers(event.flags()), event.time_stamp(),
       blink::kWebGestureDeviceTouchpad);
   if (event.type() == ET_SCROLL_FLING_START) {
     webkit_event.data.fling_start.velocity_x = event.x_offset();
@@ -396,8 +395,7 @@ blink::WebGestureEvent MakeWebGestureEvent(
 blink::WebGestureEvent MakeWebGestureEventFlingCancel() {
   blink::WebGestureEvent gesture_event(
       blink::WebInputEvent::kGestureFlingCancel,
-      blink::WebInputEvent::kNoModifiers,
-      EventTimeStampToSeconds(EventTimeForNow()),
+      blink::WebInputEvent::kNoModifiers, EventTimeForNow(),
       blink::kWebGestureDeviceTouchpad);
   // All other fields are ignored on a GestureFlingCancel event.
   return gesture_event;
@@ -445,8 +443,8 @@ blink::WebMouseEvent MakeWebMouseEventFromUiEvent(const MouseEvent& event) {
   }
 
   blink::WebMouseEvent webkit_event(
-      type, EventFlagsToWebEventModifiers(event.flags()),
-      EventTimeStampToSeconds(event.time_stamp()), event.pointer_details().id);
+      type, EventFlagsToWebEventModifiers(event.flags()), event.time_stamp(),
+      event.pointer_details().id);
   webkit_event.button = blink::WebMouseEvent::Button::kNoButton;
   int button_flags = event.flags();
   if (event.type() == ET_MOUSE_PRESSED || event.type() == ET_MOUSE_RELEASED) {
@@ -489,8 +487,7 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
     const MouseWheelEvent& event) {
   blink::WebMouseWheelEvent webkit_event(
       blink::WebInputEvent::kMouseWheel,
-      EventFlagsToWebEventModifiers(event.flags()),
-      EventTimeStampToSeconds(event.time_stamp()));
+      EventFlagsToWebEventModifiers(event.flags()), event.time_stamp());
 
   webkit_event.button = blink::WebMouseEvent::Button::kNoButton;
 

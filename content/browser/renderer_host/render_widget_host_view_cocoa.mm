@@ -1744,7 +1744,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   // open mouse-downs.
   if (hasOpenMouseDown_) {
     WebMouseEvent event(WebInputEvent::kMouseUp, WebInputEvent::kNoModifiers,
-                        ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+                        ui::EventTimeForNow());
     event.button = WebMouseEvent::Button::kLeft;
     client_->OnNSViewForwardMouseEvent(event);
     hasOpenMouseDown_ = NO;

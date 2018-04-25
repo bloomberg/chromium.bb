@@ -29,9 +29,6 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent : public blink::WebKeyboardEvent {
   NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
                          int modifiers,
                          base::TimeTicks timestamp);
-  NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
-                         int modifiers,
-                         double timestampSeconds);
 
   // Creates a native web keyboard event from a WebKeyboardEvent. The |os_event|
   // member may be a synthetic event, and possibly incomplete.
@@ -46,7 +43,7 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent : public blink::WebKeyboardEvent {
       const base::android::JavaRef<jobject>& android_key_event,
       blink::WebInputEvent::Type type,
       int modifiers,
-      double time_secs,
+      base::TimeTicks timestamp,
       int keycode,
       int scancode,
       int unicode_character,

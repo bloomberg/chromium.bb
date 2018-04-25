@@ -47,7 +47,7 @@ class SyntheticGestureTargetAndroid : public SyntheticGestureTargetBase {
   void TouchSetScrollDeltas(int x, int y, int dx, int dy);
   void TouchInject(MotionEventAction action,
                    int pointer_count,
-                   int64_t time_in_ms);
+                   base::TimeTicks time);
 
   ui::ViewAndroid* const view_;
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;

@@ -274,8 +274,8 @@ class InputRouterImplTest : public testing::Test {
 
   void SimulateKeyboardEvent(WebInputEvent::Type type) {
     NativeWebKeyboardEventWithLatencyInfo key_event(
-        type, WebInputEvent::kNoModifiers,
-        ui::EventTimeStampToSeconds(ui::EventTimeForNow()), ui::LatencyInfo());
+        type, WebInputEvent::kNoModifiers, ui::EventTimeForNow(),
+        ui::LatencyInfo());
     input_router_->SendKeyboardEvent(key_event);
   }
 

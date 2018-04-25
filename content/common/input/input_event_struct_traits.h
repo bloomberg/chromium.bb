@@ -25,8 +25,8 @@ struct StructTraits<content::mojom::EventDataView, InputEventUniquePtr> {
     return event->web_event->GetModifiers();
   }
 
-  static double timestamp_seconds(const InputEventUniquePtr& event) {
-    return event->web_event->TimeStampSeconds();
+  static base::TimeTicks timestamp(const InputEventUniquePtr& event) {
+    return event->web_event->TimeStamp();
   }
 
   static const ui::LatencyInfo& latency(const InputEventUniquePtr& event) {

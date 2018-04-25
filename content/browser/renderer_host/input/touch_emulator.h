@@ -132,7 +132,7 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   // These are used to drop extra mouse move events coming too quickly, so
   // we don't handle too much touches in gesture provider.
   bool last_mouse_event_was_move_;
-  double last_mouse_move_timestamp_;
+  base::TimeTicks last_mouse_move_timestamp_;
 
   bool mouse_pressed_;
   bool shift_pressed_;

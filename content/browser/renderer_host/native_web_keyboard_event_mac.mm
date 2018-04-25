@@ -43,14 +43,7 @@ size_t WebKeyboardEventTextLength(const blink::WebUChar* text) {
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
                                                int modifiers,
                                                base::TimeTicks timestamp)
-    : NativeWebKeyboardEvent(type,
-                             modifiers,
-                             ui::EventTimeStampToSeconds(timestamp)) {}
-
-NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
-                                               int modifiers,
-                                               double timestampSeconds)
-    : WebKeyboardEvent(type, modifiers, timestampSeconds),
+    : WebKeyboardEvent(type, modifiers, timestamp),
       os_event(NULL),
       skip_in_browser(false) {}
 
@@ -82,7 +75,8 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(
   os_event = [[NSEvent keyEventWithType:type
                                location:NSZeroPoint
                           modifierFlags:flags
-                              timestamp:web_event.TimeStampSeconds()
+                              timestamp:ui::EventTimeStampToSeconds(
+                                            web_event.TimeStamp())
                            windowNumber:[[native_view window] windowNumber]
                                 context:nil
                              characters:text

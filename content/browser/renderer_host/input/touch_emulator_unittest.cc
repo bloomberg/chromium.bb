@@ -34,15 +34,13 @@ class TouchEmulatorTest : public testing::Test,
   TouchEmulatorTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        last_event_time_(base::TimeTicks::Now()),
+        event_time_delta_(base::TimeDelta::FromMilliseconds(100)),
         shift_pressed_(false),
         mouse_pressed_(false),
         ack_touches_synchronously_(true),
         last_mouse_x_(-1),
-        last_mouse_y_(-1) {
-    last_event_time_seconds_ =
-        (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
-    event_time_delta_seconds_ = 0.1;
-  }
+        last_mouse_y_(-1) {}
 
   ~TouchEmulatorTest() override {}
 
@@ -113,17 +111,17 @@ class TouchEmulatorTest : public testing::Test,
     return result;
   }
 
-  double GetNextEventTimeSeconds() {
-    last_event_time_seconds_ += event_time_delta_seconds_;
-    return last_event_time_seconds_;
+  base::TimeTicks GetNextEventTime() {
+    last_event_time_ += event_time_delta_;
+    return last_event_time_;
   }
 
-  void set_event_time_delta_seconds_(double delta) {
-    event_time_delta_seconds_ = delta;
+  void set_event_time_delta(base::TimeDelta delta) {
+    event_time_delta_ = delta;
   }
 
   void SendKeyboardEvent(WebInputEvent::Type type) {
-    WebKeyboardEvent event(type, modifiers(), GetNextEventTimeSeconds());
+    WebKeyboardEvent event(type, modifiers(), GetNextEventTime());
     emulator()->HandleKeyboardEvent(event);
   }
 
@@ -140,7 +138,7 @@ class TouchEmulatorTest : public testing::Test,
   }
 
   void SendMouseEvent(WebInputEvent::Type type, int  x, int y) {
-    WebMouseEvent event(type, modifiers(), GetNextEventTimeSeconds());
+    WebMouseEvent event(type, modifiers(), GetNextEventTime());
     event.button = mouse_pressed_ ? WebMouseEvent::Button::kLeft
                                   : WebMouseEvent::Button::kNoButton;
     last_mouse_x_ = x;
@@ -152,7 +150,7 @@ class TouchEmulatorTest : public testing::Test,
 
   bool SendMouseWheelEvent() {
     WebMouseWheelEvent event(WebInputEvent::kMouseWheel, modifiers(),
-                             GetNextEventTimeSeconds());
+                             GetNextEventTime());
     // Return whether mouse wheel is forwarded.
     return !emulator()->HandleMouseWheelEvent(event);
   }
@@ -200,7 +198,7 @@ class TouchEmulatorTest : public testing::Test,
 
   WebTouchEvent MakeTouchEvent(WebInputEvent::Type type,
       WebTouchPoint::State state, int x, int y) {
-    WebTouchEvent event(type, modifiers(), GetNextEventTimeSeconds());
+    WebTouchEvent event(type, modifiers(), GetNextEventTime());
     event.touches_length = 1;
     event.touches[0].id = 0;
     event.touches[0].state = state;
@@ -261,8 +259,8 @@ class TouchEmulatorTest : public testing::Test,
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<TouchEmulator> emulator_;
   std::vector<WebInputEvent::Type> forwarded_events_;
-  double last_event_time_seconds_;
-  double event_time_delta_seconds_;
+  base::TimeTicks last_event_time_;
+  base::TimeDelta event_time_delta_;
   bool shift_pressed_;
   bool mouse_pressed_;
   bool ack_touches_synchronously_;
@@ -450,7 +448,7 @@ TEST_F(TouchEmulatorTest, MouseMovesDropped) {
   EXPECT_EQ("TouchStart GestureTapDown", ExpectedEvents());
 
   // Mouse move after mouse down is never dropped.
-  set_event_time_delta_seconds_(0.001);
+  set_event_time_delta(base::TimeDelta::FromMilliseconds(1));
   MouseDrag(200, 200);
   EXPECT_EQ(
       "TouchMove GestureTapCancel GestureScrollBegin GestureScrollUpdate",
@@ -463,7 +461,7 @@ TEST_F(TouchEmulatorTest, MouseMovesDropped) {
   EXPECT_EQ("", ExpectedEvents());
 
   // Dispatching again.
-  set_event_time_delta_seconds_(0.1);
+  set_event_time_delta(base::TimeDelta::FromMilliseconds(100));
   MouseDrag(400, 200);
   EXPECT_EQ(
       "TouchMove GestureScrollUpdate",

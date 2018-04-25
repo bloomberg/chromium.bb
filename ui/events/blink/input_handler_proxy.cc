@@ -49,7 +49,8 @@ const int32_t kEventDispositionUndefined = -1;
 // Maximum time between a fling event's timestamp and the first |Animate| call
 // for the fling curve to use the fling timestamp as the initial animation time.
 // Two frames allows a minor delay between event creation and the first animate.
-const double kMaxSecondsFromFlingTimestampToFirstAnimate = 2. / 60.;
+constexpr base::TimeDelta kMaxIntervalFromFlingTimestampToFirstAnimate =
+    base::TimeDelta::FromSecondsD(2. / 60.);
 
 // Threshold for determining whether a fling scroll delta should have caused the
 // client to scroll.
@@ -778,9 +779,7 @@ InputHandlerProxy::HandleGestureScrollUpdate(
   if (ShouldAnimate(gesture_event.data.scroll_update.delta_units !=
                     blink::WebGestureEvent::ScrollUnits::kPixels)) {
     DCHECK(!scroll_state.is_in_inertial_phase());
-    base::TimeTicks event_time =
-        base::TimeTicks() +
-        base::TimeDelta::FromSecondsD(gesture_event.TimeStampSeconds());
+    base::TimeTicks event_time = gesture_event.TimeStamp();
     base::TimeDelta delay = base::TimeTicks::Now() - event_time;
     switch (input_handler_
                 ->ScrollAnimated(gfx::ToFlooredPoint(scroll_point),
@@ -1087,18 +1086,18 @@ void InputHandlerProxy::Animate(base::TimeTicks time) {
     has_fling_animation_started_ = true;
     // Guard against invalid, future or sufficiently stale start times, as there
     // are no guarantees fling event and animation timestamps are compatible.
-    if (!fling_parameters_.start_time ||
-        monotonic_time_sec <= fling_parameters_.start_time ||
-        monotonic_time_sec >= fling_parameters_.start_time +
-                                  kMaxSecondsFromFlingTimestampToFirstAnimate) {
-      fling_parameters_.start_time = monotonic_time_sec;
+    if (fling_parameters_.start_time.is_null() ||
+        time <= fling_parameters_.start_time ||
+        time >= fling_parameters_.start_time +
+                    kMaxIntervalFromFlingTimestampToFirstAnimate) {
+      fling_parameters_.start_time = time;
       RequestAnimation();
       return;
     }
   }
 
   bool fling_is_active = fling_curve_->AdvanceAndApplyToTarget(
-      monotonic_time_sec - fling_parameters_.start_time, this);
+      (time - fling_parameters_.start_time).InSecondsF(), this);
 
   if (disallow_vertical_fling_scroll_ && disallow_horizontal_fling_scroll_)
     fling_is_active = false;
@@ -1420,7 +1419,7 @@ void InputHandlerProxy::UpdateCurrentFlingState(
       WebFloatPoint(velocity.x(), velocity.y()), blink::WebSize());
   disallow_horizontal_fling_scroll_ = !velocity.x();
   disallow_vertical_fling_scroll_ = !velocity.y();
-  fling_parameters_.start_time = fling_start_event.TimeStampSeconds();
+  fling_parameters_.start_time = fling_start_event.TimeStamp();
   fling_parameters_.delta = WebFloatPoint(velocity.x(), velocity.y());
   fling_parameters_.point = fling_start_event.PositionInWidget();
   fling_parameters_.global_point = fling_start_event.PositionInScreen();

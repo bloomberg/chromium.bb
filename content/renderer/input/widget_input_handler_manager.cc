@@ -360,8 +360,7 @@ void WidgetInputHandlerManager::DispatchEvent(
   // platform timestamp in this process. Instead use the time that the event is
   // received as the event's timestamp.
   if (!base::TimeTicks::IsConsistentAcrossProcesses()) {
-    event->web_event->SetTimeStampSeconds(
-        ui::EventTimeStampToSeconds(base::TimeTicks::Now()));
+    event->web_event->SetTimeStamp(base::TimeTicks::Now());
   }
 
   if (compositor_task_runner_) {

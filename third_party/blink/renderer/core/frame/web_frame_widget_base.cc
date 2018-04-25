@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/time/time.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_gesture_curve.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -181,7 +182,7 @@ void WebFrameWidgetBase::DragSourceEndedAt(
   WebMouseEvent fake_mouse_move(
       WebInputEvent::kMouseMove, point_in_root_frame, screen_point,
       WebPointerProperties::Button::kLeft, 0, WebInputEvent::kNoModifiers,
-      CurrentTimeTicksInSeconds());
+      CurrentTimeTicks());
   fake_mouse_move.SetFrameScale(1);
   local_root_->GetFrame()->GetEventHandler().DragSourceEndedAt(
       fake_mouse_move, static_cast<DragOperation>(operation));
@@ -399,9 +400,8 @@ bool WebFrameWidgetBase::ScrollBy(const WebFloatSize& delta,
   if (fling_source_device_ == kWebGestureDeviceTouchpad) {
     bool enable_touchpad_scroll_latching =
         RuntimeEnabledFeatures::TouchpadAndWheelScrollLatchingEnabled();
-    WebMouseWheelEvent synthetic_wheel(WebInputEvent::kMouseWheel,
-                                       fling_modifier_,
-                                       WTF::CurrentTimeTicksInSeconds());
+    WebMouseWheelEvent synthetic_wheel(
+        WebInputEvent::kMouseWheel, fling_modifier_, WTF::CurrentTimeTicks());
     const float kTickDivisor = WheelEvent::kTickMultiplier;
 
     synthetic_wheel.delta_x = delta.width;
@@ -489,7 +489,7 @@ WebInputEventResult WebFrameWidgetBase::HandleGestureFlingEvent(
               WebSize());
       DCHECK(fling_curve);
       gesture_animation_ = WebActiveGestureAnimation::CreateWithTimeOffset(
-          std::move(fling_curve), this, event.TimeStampSeconds());
+          std::move(fling_curve), this, event.TimeStamp());
       ScheduleAnimation();
 
       WebGestureEvent scaled_event =
@@ -522,8 +522,8 @@ WebLocalFrame* WebFrameWidgetBase::FocusedWebLocalFrameInWidget() const {
 WebGestureEvent WebFrameWidgetBase::CreateGestureScrollEventFromFling(
     WebInputEvent::Type type,
     WebGestureDevice source_device) const {
-  WebGestureEvent gesture_event(
-      type, fling_modifier_, WTF::CurrentTimeTicksInSeconds(), source_device);
+  WebGestureEvent gesture_event(type, fling_modifier_, WTF::CurrentTimeTicks(),
+                                source_device);
   gesture_event.SetPositionInWidget(position_on_fling_start_);
   gesture_event.SetPositionInScreen(global_position_on_fling_start_);
   return gesture_event;
@@ -534,11 +534,11 @@ bool WebFrameWidgetBase::IsFlinging() const {
 }
 
 void WebFrameWidgetBase::UpdateGestureAnimation(
-    double last_frame_time_monotonic) {
+    base::TimeTicks last_frame_time) {
   if (!gesture_animation_)
     return;
 
-  if (gesture_animation_->Animate(last_frame_time_monotonic)) {
+  if (gesture_animation_->Animate(last_frame_time)) {
     ScheduleAnimation();
   } else {
     DCHECK_NE(fling_source_device_, kWebGestureDeviceUninitialized);

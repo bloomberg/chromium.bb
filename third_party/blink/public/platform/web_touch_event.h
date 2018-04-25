@@ -49,11 +49,8 @@ class WebTouchEvent : public WebInputEvent {
   WebTouchEvent()
       : WebInputEvent(sizeof(WebTouchEvent)), dispatch_type(kBlocking) {}
 
-  WebTouchEvent(Type type, int modifiers, double time_stamp_seconds)
-      : WebInputEvent(sizeof(WebTouchEvent),
-                      type,
-                      modifiers,
-                      time_stamp_seconds),
+  WebTouchEvent(Type type, int modifiers, base::TimeTicks time_stamp)
+      : WebInputEvent(sizeof(WebTouchEvent), type, modifiers, time_stamp),
         dispatch_type(kBlocking) {}
 
 #if INSIDE_BLINK

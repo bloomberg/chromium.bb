@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_INPUT_WEB_TOUCH_EVENT_TRAITS_H_
 #define CONTENT_COMMON_INPUT_WEB_TOUCH_EVENT_TRAITS_H_
 
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 
@@ -32,14 +33,14 @@ class CONTENT_EXPORT WebTouchEventTraits {
   // Sets the type of |event| to |type|, resetting any other type-specific
   // properties and updating the timestamp.
   static void ResetType(blink::WebInputEvent::Type type,
-                        double timestamp_sec,
+                        base::TimeTicks timestamp,
                         blink::WebTouchEvent* event);
 
   // Like ResetType but also resets the state of all active touches
   // to match the event type.  This is particularly useful, for example,
   // in sending a touchcancel for all active touches.
   static void ResetTypeAndTouchStates(blink::WebInputEvent::Type type,
-                                      double timestamp_sec,
+                                      base::TimeTicks timestamp,
                                       blink::WebTouchEvent* event);
 };
 

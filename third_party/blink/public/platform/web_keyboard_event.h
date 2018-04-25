@@ -64,11 +64,8 @@ class WebKeyboardEvent : public WebInputEvent {
   WebUChar text[kTextLengthCap];
   WebUChar unmodified_text[kTextLengthCap];
 
-  WebKeyboardEvent(Type type, int modifiers, double time_stamp_seconds)
-      : WebInputEvent(sizeof(WebKeyboardEvent),
-                      type,
-                      modifiers,
-                      time_stamp_seconds) {}
+  WebKeyboardEvent(Type type, int modifiers, base::TimeTicks time_stamp)
+      : WebInputEvent(sizeof(WebKeyboardEvent), type, modifiers, time_stamp) {}
 
   WebKeyboardEvent() : WebInputEvent(sizeof(WebKeyboardEvent)) {}
 

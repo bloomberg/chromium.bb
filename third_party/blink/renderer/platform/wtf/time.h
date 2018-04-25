@@ -21,6 +21,7 @@ namespace WTF {
 // For usage guideline please see the documentation in base/time/time.h
 
 using TimeDelta = base::TimeDelta;
+using TimeTicks = base::TimeTicks;
 using Time = base::Time;
 using TimeTicks = base::TimeTicks;
 

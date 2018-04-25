@@ -64,8 +64,7 @@ bool MakeUITouchEventsFromWebTouchEvents(
   }
 
   int flags = ui::WebEventModifiersToEventFlags(touch.GetModifiers());
-  base::TimeTicks timestamp =
-      ui::EventTimeStampFromSeconds(touch.TimeStampSeconds());
+  base::TimeTicks timestamp = touch.TimeStamp();
   for (unsigned i = 0; i < touch.touches_length; ++i) {
     const blink::WebTouchPoint& point = touch.touches[i];
     if (WebTouchPointStateToEventType(point.state) != type)

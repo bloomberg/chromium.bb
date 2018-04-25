@@ -300,9 +300,9 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
     context->web_view()->SetIsActive(true);
     blink::WebRect content_rect =
         context->render_view_impl()->GetWidget()->ViewRect();
-    blink::WebMouseEvent mouseMove(
-        blink::WebInputEvent::kMouseMove, blink::WebInputEvent::kNoModifiers,
-        ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+    blink::WebMouseEvent mouseMove(blink::WebInputEvent::kMouseMove,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   ui::EventTimeForNow());
     mouseMove.SetPositionInWidget((content_rect.x + content_rect.width / 2.0),
                                   (content_rect.y + content_rect.height / 2.0));
     context->web_view()->HandleInputEvent(

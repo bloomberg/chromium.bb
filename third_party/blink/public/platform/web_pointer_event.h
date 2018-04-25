@@ -42,7 +42,7 @@ class WebPointerEvent : public WebInputEvent, public WebPointerProperties {
 
   BLINK_PLATFORM_EXPORT static WebPointerEvent CreatePointerCausesUaActionEvent(
       WebPointerProperties::PointerType,
-      double time_stamp_seconds);
+      base::TimeTicks time_stamp);
 
   // ------------ Touch Point Specific ------------
 

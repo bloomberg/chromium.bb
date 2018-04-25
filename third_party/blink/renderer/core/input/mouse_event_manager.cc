@@ -246,8 +246,7 @@ WebInputEventResult MouseEventManager::DispatchMouseEvent(
             : nullptr);
 
     MouseEvent* event = MouseEvent::Create(
-        mouse_event_type, initializer,
-        TimeTicksFromSeconds(mouse_event.TimeStampSeconds()),
+        mouse_event_type, initializer, mouse_event.TimeStamp(),
         mouse_event.FromTouch() ? MouseEvent::kFromTouch
                                 : MouseEvent::kRealOrIndistinguishable,
         mouse_event.menu_source_type);
@@ -367,10 +366,10 @@ void MouseEventManager::FakeMouseMoveEventTimerFired(TimerBase* timer) {
     button = WebPointerProperties::Button::kLeft;
     modifiers |= WebInputEvent::kLeftButtonDown;
   }
-  WebMouseEvent fake_mouse_move_event(
-      WebInputEvent::kMouseMove, last_known_mouse_position_,
-      last_known_mouse_global_position_, button, 0, modifiers,
-      CurrentTimeTicksInSeconds());
+  WebMouseEvent fake_mouse_move_event(WebInputEvent::kMouseMove,
+                                      last_known_mouse_position_,
+                                      last_known_mouse_global_position_, button,
+                                      0, modifiers, CurrentTimeTicks());
   // TODO(dtapuska): Update m_lastKnowMousePosition to be viewport coordinates.
   fake_mouse_move_event.SetFrameScale(1);
   Vector<WebMouseEvent> coalesced_events;
@@ -587,7 +586,7 @@ void MouseEventManager::HandleMousePressEventUpdateStates(
   SetLastKnownMousePosition(mouse_event);
   mouse_down_may_start_drag_ = false;
   mouse_down_may_start_autoscroll_ = false;
-  mouse_down_timestamp_ = TimeTicksFromSeconds(mouse_event.TimeStampSeconds());
+  mouse_down_timestamp_ = mouse_event.TimeStamp();
 
   if (LocalFrameView* view = frame_->View()) {
     mouse_down_pos_ = view->RootFrameToContents(
@@ -758,7 +757,7 @@ bool MouseEventManager::HandleDragDropIfPossible(
         WebPointerProperties::Button::kLeft, 1,
         modifiers | WebInputEvent::Modifiers::kLeftButtonDown |
             WebInputEvent::Modifiers::kIsCompatibilityEventForTouch,
-        CurrentTimeTicksInSeconds());
+        CurrentTimeTicks());
     mouse_down_ = mouse_down_event;
 
     WebMouseEvent mouse_drag_event(
@@ -766,7 +765,7 @@ bool MouseEventManager::HandleDragDropIfPossible(
         WebPointerProperties::Button::kLeft, 1,
         modifiers | WebInputEvent::Modifiers::kLeftButtonDown |
             WebInputEvent::Modifiers::kIsCompatibilityEventForTouch,
-        CurrentTimeTicksInSeconds());
+        CurrentTimeTicks());
     HitTestRequest request(HitTestRequest::kReadOnly);
     MouseEventWithHitTestResults mev =
         EventHandlingUtil::PerformMouseEventHitTest(frame_, request,
@@ -896,9 +895,7 @@ bool MouseEventManager::HandleDrag(const MouseEventWithHitTestResults& event,
     Node* node = result.InnerNode();
     if (node) {
       DragController::SelectionDragPolicy selection_drag_policy =
-          TimeTicksFromSeconds(event.Event().TimeStampSeconds()) -
-                      mouse_down_timestamp_ <
-                  kTextDragDelay
+          event.Event().TimeStamp() - mouse_down_timestamp_ < kTextDragDelay
               ? DragController::kDelayedSelectionDragResolution
               : DragController::kImmediateSelectionDragResolution;
       GetDragState().drag_src_ =
@@ -943,7 +940,7 @@ bool MouseEventManager::HandleDrag(const MouseEventWithHitTestResults& event,
       frame_->GetEventHandler().HandlePointerEvent(
           WebPointerEvent::CreatePointerCausesUaActionEvent(
               WebPointerProperties::PointerType::kMouse,
-              event.Event().TimeStampSeconds()),
+              event.Event().TimeStamp()),
           Vector<WebPointerEvent>());
     }
     // TODO(crbug.com/708278): If the drag starts with touch the touch cancel
@@ -1064,10 +1061,10 @@ WebInputEventResult MouseEventManager::DispatchDragEvent(
   UIEventWithKeyState::SetFromWebInputEventModifiers(
       initializer, static_cast<WebInputEvent::Modifiers>(event.GetModifiers()));
 
-  DragEvent* me = DragEvent::Create(
-      event_type, initializer, TimeTicksFromSeconds(event.TimeStampSeconds()),
-      event.FromTouch() ? MouseEvent::kFromTouch
-                        : MouseEvent::kRealOrIndistinguishable);
+  DragEvent* me = DragEvent::Create(event_type, initializer, event.TimeStamp(),
+                                    event.FromTouch()
+                                        ? MouseEvent::kFromTouch
+                                        : MouseEvent::kRealOrIndistinguishable);
 
   return EventHandlingUtil::ToWebInputEventResult(
       drag_target->DispatchEvent(me));

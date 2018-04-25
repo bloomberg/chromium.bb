@@ -5,7 +5,10 @@
 #include "third_party/blink/renderer/core/events/pointer_event_factory.h"
 
 #include <gtest/gtest.h>
+
 #include <climits>
+
+#include "base/time/time.h"
 #include "third_party/blink/public/platform/web_pointer_properties.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -52,8 +55,7 @@ class PointerEventFactoryTest : public testing::Test {
     web_pointer_event.pointer_type = pointer_type;
     web_pointer_event.id = raw_id;
     web_pointer_event.SetType(type);
-    web_pointer_event.SetTimeStampSeconds(
-        WebInputEvent::GetStaticTimeStampForTests());
+    web_pointer_event.SetTimeStamp(WebInputEvent::GetStaticTimeStampForTests());
     web_pointer_event.SetModifiers(modifiers);
     web_pointer_event.force = 1.0;
     web_pointer_event.hovering = hovering;
@@ -65,7 +67,7 @@ class PointerEventFactoryTest : public testing::Test {
         web_pointer_event, coalesced_events, nullptr);
     EXPECT_EQ(unique_id, pointer_event->pointerId());
     EXPECT_EQ(is_primary, pointer_event->isPrimary());
-    EXPECT_EQ(TimeTicksFromSeconds(WebInputEvent::GetStaticTimeStampForTests()),
+    EXPECT_EQ(WebInputEvent::GetStaticTimeStampForTests(),
               pointer_event->PlatformTimeStamp());
     const char* expected_pointer_type =
         PointerTypeNameForWebPointPointerType(pointer_type);
@@ -77,9 +79,8 @@ class PointerEventFactoryTest : public testing::Test {
       EXPECT_EQ(is_primary,
                 pointer_event->getCoalescedEvents()[i]->isPrimary());
       EXPECT_EQ(expected_pointer_type, pointer_event->pointerType());
-      EXPECT_EQ(
-          TimeTicksFromSeconds(WebInputEvent::GetStaticTimeStampForTests()),
-          pointer_event->PlatformTimeStamp());
+      EXPECT_EQ(WebInputEvent::GetStaticTimeStampForTests(),
+                pointer_event->PlatformTimeStamp());
     }
     return pointer_event;
   }
@@ -103,14 +104,13 @@ PointerEvent* PointerEventFactoryTest::CreateAndCheckPointerCancel(
     int unique_id,
     bool is_primary) {
   PointerEvent* pointer_event = pointer_event_factory_.CreatePointerCancelEvent(
-      unique_id,
-      TimeTicksFromSeconds(WebInputEvent::GetStaticTimeStampForTests()));
+      unique_id, WebInputEvent::GetStaticTimeStampForTests());
   EXPECT_EQ("pointercancel", pointer_event->type());
   EXPECT_EQ(unique_id, pointer_event->pointerId());
   EXPECT_EQ(is_primary, pointer_event->isPrimary());
   EXPECT_EQ(PointerTypeNameForWebPointPointerType(pointer_type),
             pointer_event->pointerType());
-  EXPECT_EQ(TimeTicksFromSeconds(WebInputEvent::GetStaticTimeStampForTests()),
+  EXPECT_EQ(WebInputEvent::GetStaticTimeStampForTests(),
             pointer_event->PlatformTimeStamp());
 
   return pointer_event;

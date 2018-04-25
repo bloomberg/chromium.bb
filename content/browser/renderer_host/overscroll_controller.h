@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "cc/input/overscroll_behavior.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
@@ -169,12 +170,12 @@ class CONTENT_EXPORT OverscrollController {
   // flag or because cool off period had not passed.
   bool overscroll_ignored_ = false;
 
-  // Timestamp for the end of the last ignored scroll sequence, in seconds.
-  double last_ignored_scroll_time_ = 0.;
+  // Timestamp for the end of the last ignored scroll sequence.
+  base::TimeTicks last_ignored_scroll_time_;
 
   // Time between the end of the last ignored scroll sequence and the beginning
-  // of the current one, in seconds.
-  double time_since_last_ignored_scroll_ = 0.;
+  // of the current one.
+  base::TimeDelta time_since_last_ignored_scroll_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollController);
 };

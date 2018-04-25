@@ -39,10 +39,9 @@ void TransformEventTouchPositions(blink::WebTouchEvent* event,
   }
 }
 
-blink::WebGestureEvent DummyGestureScrollUpdate(double timeStampSeconds) {
+blink::WebGestureEvent DummyGestureScrollUpdate(base::TimeTicks time_stamp) {
   return blink::WebGestureEvent(blink::WebInputEvent::kGestureScrollUpdate,
-                                blink::WebInputEvent::kNoModifiers,
-                                timeStampSeconds);
+                                blink::WebInputEvent::kNoModifiers, time_stamp);
 }
 
 viz::HitTestQuery* GetHitTestQuery(
@@ -417,7 +416,7 @@ void RenderWidgetHostInputEventRouter::DispatchMouseWheelEvent(
         // the wheel target view is destroyed and the wheel end event won't get
         // processed.
         blink::WebGestureEvent fake_scroll_update =
-            DummyGestureScrollUpdate(mouse_wheel_event.TimeStampSeconds());
+            DummyGestureScrollUpdate(mouse_wheel_event.TimeStamp());
         fake_scroll_update.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
         SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
                              fake_scroll_update);
@@ -588,9 +587,8 @@ void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
 
   if (is_sequence_start) {
     if (touch_target_.target == bubbling_gesture_scroll_target_.target) {
-      SendGestureScrollEnd(
-          bubbling_gesture_scroll_target_.target,
-          DummyGestureScrollUpdate(touch_event.TimeStampSeconds()));
+      SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
+                           DummyGestureScrollUpdate(touch_event.TimeStamp()));
       CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
     }
   }
@@ -945,8 +943,7 @@ void RenderWidgetHostInputEventRouter::SendGestureScrollEnd(
     const blink::WebGestureEvent& event) {
   blink::WebGestureEvent scroll_end(event);
   scroll_end.SetType(blink::WebInputEvent::kGestureScrollEnd);
-  scroll_end.SetTimeStampSeconds(
-      (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF());
+  scroll_end.SetTimeStamp(base::TimeTicks::Now());
   switch (event.GetType()) {
     case blink::WebInputEvent::kGestureScrollBegin:
       DCHECK(view->wheel_scroll_latching_enabled());
@@ -1181,9 +1178,8 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     if (touchscreen_gesture_target_.target &&
         touchscreen_gesture_target_.target ==
             bubbling_gesture_scroll_target_.target) {
-      SendGestureScrollEnd(
-          bubbling_gesture_scroll_target_.target,
-          DummyGestureScrollUpdate(gesture_event.TimeStampSeconds()));
+      SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
+                           DummyGestureScrollUpdate(gesture_event.TimeStamp()));
       CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
     }
   }
@@ -1265,7 +1261,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchpadGestureEvent(
             bubbling_gesture_scroll_target_.target) {
       SendGestureScrollEnd(
           bubbling_gesture_scroll_target_.target,
-          DummyGestureScrollUpdate(touchpad_gesture_event.TimeStampSeconds()));
+          DummyGestureScrollUpdate(touchpad_gesture_event.TimeStamp()));
       CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
     }
   }

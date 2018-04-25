@@ -9,8 +9,8 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/callback_helpers.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/vr/vr_shell_delegate.h"
-
 #include "third_party/blink/public/platform/web_mouse_event.h"
 
 using base::android::JavaParamRef;
@@ -82,8 +82,8 @@ std::unique_ptr<blink::WebMouseEvent> VrDialog::MakeMouseEvent(
   blink::WebInputEvent::Modifiers modifiers =
       blink::WebInputEvent::kNoModifiers;
 
-  // timestamp is not used
-  auto mouse_event = std::make_unique<blink::WebMouseEvent>(type, modifiers, 0);
+  auto mouse_event = std::make_unique<blink::WebMouseEvent>(
+      type, modifiers, base::TimeTicks::Now());
   mouse_event->pointer_type = blink::WebPointerProperties::PointerType::kMouse;
   mouse_event->button = blink::WebPointerProperties::Button::kLeft;
   mouse_event->SetPositionInWidget(location.x(), location.y());

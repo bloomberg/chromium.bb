@@ -61,7 +61,7 @@ void ParamTraits<WebInputEventPointer>::Log(const param_type& p,
   l->append(", ");
   LogParam(p->GetType(), l);
   l->append(", ");
-  LogParam(p->TimeStampSeconds(), l);
+  LogParam(p->TimeStamp(), l);
   l->append(")");
 }
 

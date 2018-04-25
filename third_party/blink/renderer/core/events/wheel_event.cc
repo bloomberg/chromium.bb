@@ -94,7 +94,7 @@ WheelEvent::WheelEvent(const AtomicString& type,
 WheelEvent::WheelEvent(const WebMouseWheelEvent& event, AbstractView* view)
     : MouseEvent(EventTypeNames::wheel,
                  GetMouseEventInitForWheel(event, view),
-                 TimeTicksFromSeconds(event.TimeStampSeconds())),
+                 event.TimeStamp()),
       wheel_delta_(event.wheel_ticks_x * kTickMultiplier,
                    event.wheel_ticks_y * kTickMultiplier),
       delta_x_(-event.DeltaXInRootFrame()),

@@ -70,8 +70,7 @@ void OverscrollBehaviorTest::SetInnerOverscrollBehavior(EOverscrollBehavior x,
 
 void OverscrollBehaviorTest::ScrollBegin(double hint_x, double hint_y) {
   WebGestureEvent event(WebInputEvent::kGestureScrollBegin,
-                        WebInputEvent::kNoModifiers,
-                        CurrentTimeTicksInSeconds(),
+                        WebInputEvent::kNoModifiers, CurrentTimeTicks(),
                         WebGestureDevice::kWebGestureDeviceTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(20, 20));
   event.SetPositionInScreen(WebFloatPoint(20, 20));
@@ -84,8 +83,7 @@ void OverscrollBehaviorTest::ScrollBegin(double hint_x, double hint_y) {
 
 void OverscrollBehaviorTest::ScrollUpdate(double delta_x, double delta_y) {
   WebGestureEvent event(WebInputEvent::kGestureScrollUpdate,
-                        WebInputEvent::kNoModifiers,
-                        CurrentTimeTicksInSeconds(),
+                        WebInputEvent::kNoModifiers, CurrentTimeTicks(),
                         WebGestureDevice::kWebGestureDeviceTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(20, 20));
   event.SetPositionInScreen(WebFloatPoint(20, 20));
@@ -97,8 +95,7 @@ void OverscrollBehaviorTest::ScrollUpdate(double delta_x, double delta_y) {
 
 void OverscrollBehaviorTest::ScrollEnd() {
   WebGestureEvent event(WebInputEvent::kGestureScrollEnd,
-                        WebInputEvent::kNoModifiers,
-                        CurrentTimeTicksInSeconds(),
+                        WebInputEvent::kNoModifiers, CurrentTimeTicks(),
                         WebGestureDevice::kWebGestureDeviceTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(20, 20));
   event.SetPositionInScreen(WebFloatPoint(20, 20));

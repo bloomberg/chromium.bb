@@ -68,13 +68,10 @@ bool SnapFlingController::HandleGestureScrollUpdate(
     return true;
   }
 
-  base::TimeTicks event_time =
-      base::TimeTicks() +
-      base::TimeDelta::FromSecondsD(event.TimeStampSeconds());
-  curve_ =
-      std::make_unique<SnapFlingCurve>(start_offset, target_offset, event_time);
+  curve_ = std::make_unique<SnapFlingCurve>(start_offset, target_offset,
+                                            event.TimeStamp());
   state_ = State::kActive;
-  Animate(event_time);
+  Animate(event.TimeStamp());
   return true;
 }
 

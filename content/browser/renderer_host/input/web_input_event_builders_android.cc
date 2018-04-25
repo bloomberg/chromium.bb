@@ -7,6 +7,7 @@
 #include <android/input.h>
 
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "ui/events/android/key_event_utils.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"
@@ -78,7 +79,7 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(
     const base::android::JavaRef<jobject>& android_key_event,
     WebInputEvent::Type type,
     int modifiers,
-    double time_sec,
+    base::TimeTicks time,
     int keycode,
     int scancode,
     int unicode_character,
@@ -90,8 +91,7 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(
     dom_code = ui::KeycodeConverter::NativeKeycodeToDomCode(scancode);
 
   WebKeyboardEvent result(
-      type, modifiers | ui::DomCodeToWebInputEventModifiers(dom_code),
-      time_sec);
+      type, modifiers | ui::DomCodeToWebInputEventModifiers(dom_code), time);
   result.windows_key_code = ui::LocatedToNonLocatedKeyboardCode(
       ui::KeyboardCodeFromAndroidKeyCode(keycode));
   result.native_key_code = keycode;
@@ -118,9 +118,8 @@ WebMouseEvent WebMouseEventBuilder::Build(
     int action_button) {
   DCHECK(WebInputEvent::IsMouseEventType(type));
   int modifiers = motion_event.GetFlags();
-  WebMouseEvent result(
-      type, ui::EventFlagsToWebEventModifiers(modifiers),
-      ui::EventTimeStampToSeconds(motion_event.GetEventTime()));
+  WebMouseEvent result(type, ui::EventFlagsToWebEventModifiers(modifiers),
+                       motion_event.GetEventTime());
 
   result.SetPositionInWidget(motion_event.GetX(0), motion_event.GetY(0));
   result.SetPositionInScreen(motion_event.GetRawX(0), motion_event.GetRawY(0));
@@ -153,7 +152,7 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
     const ui::MotionEventAndroid& motion_event) {
   WebMouseWheelEvent result(WebInputEvent::kMouseWheel,
                             WebInputEvent::kNoModifiers,
-                            motion_event.time_sec());
+                            motion_event.GetEventTime());
   result.SetPositionInWidget(motion_event.GetX(0), motion_event.GetY(0));
   result.SetPositionInScreen(motion_event.GetRawX(0), motion_event.GetRawY(0));
   result.button = WebMouseEvent::Button::kNoButton;
@@ -167,13 +166,12 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
 }
 
 WebGestureEvent WebGestureEventBuilder::Build(WebInputEvent::Type type,
-                                              double time_sec,
+                                              base::TimeTicks time,
                                               float x,
                                               float y) {
   DCHECK(WebInputEvent::IsGestureEventType(type));
-  WebGestureEvent result(type, WebInputEvent::kNoModifiers, time_sec,
+  WebGestureEvent result(type, WebInputEvent::kNoModifiers, time,
                          blink::kWebGestureDeviceTouchscreen);
-
   result.SetPositionInWidget(gfx::PointF(x, y));
 
   return result;

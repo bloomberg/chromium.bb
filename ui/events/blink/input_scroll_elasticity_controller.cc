@@ -109,9 +109,7 @@ InputScrollElasticityController::GetWeakPtr() {
 void InputScrollElasticityController::ObserveGestureEventAndResult(
     const blink::WebGestureEvent& gesture_event,
     const cc::InputHandlerScrollResult& scroll_result) {
-  base::TimeTicks event_timestamp =
-      base::TimeTicks() +
-      base::TimeDelta::FromSecondsD(gesture_event.TimeStampSeconds());
+  base::TimeTicks event_timestamp = gesture_event.TimeStamp();
 
   switch (gesture_event.GetType()) {
     case blink::WebInputEvent::kGestureScrollBegin: {

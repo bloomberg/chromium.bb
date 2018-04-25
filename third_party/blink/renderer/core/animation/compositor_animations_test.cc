@@ -327,7 +327,9 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
 
   LocalFrame* GetFrame() const { return helper_.LocalMainFrame()->GetFrame(); }
 
-  void BeginFrame() { helper_.GetWebView()->BeginFrame(WTF::CurrentTime()); }
+  void BeginFrame() {
+    helper_.GetWebView()->BeginFrame(WTF::CurrentTimeTicks());
+  }
 
   void ForceFullCompositingUpdate() {
     helper_.GetWebView()->UpdateAllLifecyclePhases();

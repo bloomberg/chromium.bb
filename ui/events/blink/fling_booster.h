@@ -9,6 +9,7 @@
 
 namespace ui {
 
+// TODO(dcheng): This class should probably be using base::TimeTicks internally.
 class FlingBooster {
  public:
   FlingBooster(const gfx::Vector2dF& fling_velocity,

@@ -80,8 +80,7 @@ void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
         .DispatchPendingWheelEndEvent();
     return;
   }
-  base::TimeTicks timestamp =
-      ui::EventTimeStampFromSeconds(web_wheel.TimeStampSeconds());
+  base::TimeTicks timestamp = web_wheel.TimeStamp();
   ui::MouseWheelEvent wheel_event(
       gfx::Vector2d(web_wheel.delta_x, web_wheel.delta_y), gfx::Point(),
       gfx::Point(), timestamp, ui::EF_NONE, ui::EF_NONE);

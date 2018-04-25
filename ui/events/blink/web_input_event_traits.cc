@@ -107,7 +107,8 @@ struct WebInputEventToString {
   bool Execute(const WebInputEvent& event, std::string* result) const {
     SStringPrintf(result, "%s (Time: %lf, Modifiers: %d)\n",
                   WebInputEvent::GetName(event.GetType()),
-                  event.TimeStampSeconds(), event.GetModifiers());
+                  event.TimeStamp().since_origin().InSecondsF(),
+                  event.GetModifiers());
     const EventType& typed_event = static_cast<const EventType&>(event);
     ApppendEventDetails(typed_event, result);
     return true;

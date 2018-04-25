@@ -1078,8 +1078,7 @@ void RenderWidgetCompositor::SynchronouslyComposite(
     // LayoutTests can use a nested message loop to pump frames while inside a
     // frame, but the compositor does not support this. In this case, we only
     // run blink's lifecycle updates.
-    delegate_->BeginMainFrame(
-        (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF());
+    delegate_->BeginMainFrame(base::TimeTicks::Now());
     delegate_->UpdateVisualState(
         cc::LayerTreeHostClient::VisualStateUpdate::kAll);
     return;
@@ -1186,8 +1185,7 @@ void RenderWidgetCompositor::DidBeginMainFrame() {}
 
 void RenderWidgetCompositor::BeginMainFrame(const viz::BeginFrameArgs& args) {
   compositor_deps_->GetWebMainThreadScheduler()->WillBeginFrame(args);
-  double frame_time_sec = (args.frame_time - base::TimeTicks()).InSecondsF();
-  delegate_->BeginMainFrame(frame_time_sec);
+  delegate_->BeginMainFrame(args.frame_time);
 }
 
 void RenderWidgetCompositor::BeginMainFrameNotExpectedSoon() {

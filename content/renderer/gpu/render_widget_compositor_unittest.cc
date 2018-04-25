@@ -50,7 +50,7 @@ class StubRenderWidgetCompositorDelegate
                            float top_controls_delta) override {}
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override {}
-  void BeginMainFrame(double frame_time_sec) override {}
+  void BeginMainFrame(base::TimeTicks frame_time) override {}
   void RequestNewLayerTreeFrameSink(
       const LayerTreeFrameSinkCallback& callback) override {
     callback.Run(nullptr);

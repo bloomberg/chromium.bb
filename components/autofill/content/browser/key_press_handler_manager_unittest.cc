@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/time/time.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,7 +16,7 @@ namespace autofill {
 namespace {
 
 const content::NativeWebKeyboardEvent
-    kDummyEvent(blink::WebInputEvent::kUndefined, 0, 0);
+    kDummyEvent(blink::WebInputEvent::kUndefined, 0, base::TimeTicks());
 
 // Dummy keyboard event handler: ignores the event, but appends the given |name|
 // to a logging |target|.

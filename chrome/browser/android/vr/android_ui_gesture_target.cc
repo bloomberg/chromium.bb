@@ -39,7 +39,7 @@ void AndroidUiGestureTarget::DispatchWebInputEvent(
     gesture = static_cast<blink::WebGestureEvent*>(event.get());
   }
 
-  int64_t event_time_ms = event->TimeStampSeconds() * 1000;
+  int64_t event_time_ms = event->TimeStamp().since_origin().InMilliseconds();
   switch (event->GetType()) {
     case blink::WebGestureEvent::kGestureScrollBegin: {
       DCHECK(gesture->data.scroll_begin.delta_hint_units ==

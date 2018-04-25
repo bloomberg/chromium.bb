@@ -69,7 +69,7 @@ class CORE_EXPORT WebFrameWidgetBase
   // Fling operations.
   bool EndActiveFlingAnimation();
   WebInputEventResult HandleGestureFlingEvent(const WebGestureEvent&);
-  void UpdateGestureAnimation(double last_frame_time_monotonic);
+  void UpdateGestureAnimation(base::TimeTicks last_frame_time);
 
   // WebGestureCurveTarget implementation.
   bool ScrollBy(const WebFloatSize& delta,

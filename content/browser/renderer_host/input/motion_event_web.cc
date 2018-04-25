@@ -184,9 +184,7 @@ float MotionEventWeb::GetTiltY(size_t pointer_index) const {
 }
 
 base::TimeTicks MotionEventWeb::GetEventTime() const {
-  return base::TimeTicks() +
-         base::TimeDelta::FromMicroseconds(event_.TimeStampSeconds() *
-                                           base::Time::kMicrosecondsPerSecond);
+  return event_.TimeStamp();
 }
 
 ui::MotionEvent::ToolType MotionEventWeb::GetToolType(

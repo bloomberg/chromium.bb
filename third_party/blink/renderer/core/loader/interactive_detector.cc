@@ -147,10 +147,8 @@ void InteractiveDetector::HandleForFirstInputDelay(const WebInputEvent& event) {
   // We can't report a pointerDown until the pointerUp, in case it turns into a
   // scroll.
   if (event.GetType() == WebInputEvent::kPointerDown) {
-    pending_pointerdown_delay_ = TimeDelta::FromSecondsD(
-        CurrentTimeTicksInSeconds() - event.TimeStampSeconds());
-    pending_pointerdown_timestamp_ =
-        TimeTicksFromSeconds(event.TimeStampSeconds());
+    pending_pointerdown_delay_ = CurrentTimeTicks() - event.TimeStamp();
+    pending_pointerdown_timestamp_ = event.TimeStamp();
     return;
   }
 
@@ -176,9 +174,8 @@ void InteractiveDetector::HandleForFirstInputDelay(const WebInputEvent& event) {
     delay = pending_pointerdown_delay_;
     event_timestamp = pending_pointerdown_timestamp_;
   } else {
-    delay = TimeDelta::FromSecondsD(CurrentTimeTicksInSeconds() -
-                                    event.TimeStampSeconds());
-    event_timestamp = TimeTicksFromSeconds(event.TimeStampSeconds());
+    delay = CurrentTimeTicks() - event.TimeStamp();
+    event_timestamp = event.TimeStamp();
   }
 
   pending_pointerdown_delay_ = base::TimeDelta();

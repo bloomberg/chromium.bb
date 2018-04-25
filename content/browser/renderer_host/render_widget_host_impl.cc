@@ -192,7 +192,7 @@ inline blink::WebGestureEvent CreateScrollBeginForWrapping(
 
   blink::WebGestureEvent wrap_gesture_scroll_begin(
       blink::WebInputEvent::kGestureScrollBegin, gesture_event.GetModifiers(),
-      gesture_event.TimeStampSeconds(), gesture_event.SourceDevice());
+      gesture_event.TimeStamp(), gesture_event.SourceDevice());
   wrap_gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0;
   wrap_gesture_scroll_begin.data.scroll_begin.delta_y_hint = 0;
   wrap_gesture_scroll_begin.resending_plugin_id =
@@ -209,7 +209,7 @@ inline blink::WebGestureEvent CreateScrollEndForWrapping(
 
   blink::WebGestureEvent wrap_gesture_scroll_end(
       blink::WebInputEvent::kGestureScrollEnd, gesture_event.GetModifiers(),
-      gesture_event.TimeStampSeconds(), gesture_event.SourceDevice());
+      gesture_event.TimeStamp(), gesture_event.SourceDevice());
   wrap_gesture_scroll_end.resending_plugin_id =
       gesture_event.resending_plugin_id;
   wrap_gesture_scroll_end.data.scroll_end.delta_units =

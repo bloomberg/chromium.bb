@@ -363,7 +363,8 @@ TEST_F(BrowserCommandControllerFullscreenTest,
     { IDC_SHOW_AS_TAB,             false,    false,     false,     false    },
   };
   const content::NativeWebKeyboardEvent key_event(
-      blink::WebInputEvent::kTypeFirst, 0, 0);
+      blink::WebInputEvent::kTypeFirst, 0,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   // Defaults for a tabbed browser.
   for (size_t i = 0; i < arraysize(commands); i++) {
     SCOPED_TRACE(commands[i].command_id);
