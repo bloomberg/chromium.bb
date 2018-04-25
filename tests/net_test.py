@@ -76,6 +76,45 @@ class RetryLoopTest(RetryLoopMockedTest):
     self.assertNotEqual(a, b)
 
 
+class HttpErrorTest(unittest.TestCase):
+  def test_description_simple(self):
+    e = net_utils.make_fake_error(
+        code=404,
+        url='/url',
+        content='Response\nBody',
+        headers={'Header-A': 'value-a', 'X-Skipped': 'zzz'})
+    self.assertEqual(e.description(False), 'Server returned HTTP code 404')
+    self.assertEqual(e.description(True), '\n'.join([
+        'Server returned HTTP code 404',
+        '----------',
+        'Content-length: 13',
+        'Header-a: value-a',
+        '',
+        'Response',
+        'Body',
+        '----------',
+    ]))
+
+  def test_description_json_good(self):
+    e = net_utils.make_fake_error(
+        code=404,
+        url='/url',
+        content='{"error": "inner error message"}',
+        headers={'Content-Type': 'application/json'})
+    self.assertEqual(
+        e.description(False),
+        'Server returned HTTP code 404 - inner error message')
+    self.assertEqual(e.description(True), '\n'.join([
+        'Server returned HTTP code 404 - inner error message',
+        '----------',
+        'Content-length: 32',
+        'Content-type: application/json',
+        '',
+        '{"error": "inner error message"}',
+        '----------',
+    ]))
+
+
 class HttpServiceTest(RetryLoopMockedTest):
   """Tests for HttpService class."""
 
@@ -96,12 +135,6 @@ class HttpServiceTest(RetryLoopMockedTest):
     class MockedRequestEngine(object):
       def perform_request(self, request):
         return perform_request(request) if perform_request else None
-      @classmethod
-      def timeout_exception_classes(cls):
-        return ()
-      @classmethod
-      def parse_request_exception(cls, exc):
-        return None, None
 
     return net.HttpService(
         url,
@@ -116,8 +149,7 @@ class HttpServiceTest(RetryLoopMockedTest):
     def mock_perform_request(request):
       self.assertTrue(
           request.get_full_url().startswith(service_url + request_url))
-      return net_utils.make_fake_response(
-          response, request.get_full_url())
+      return net_utils.make_fake_response(response, request.get_full_url())
 
     service = self.mocked_http_service(url=service_url,
         perform_request=mock_perform_request)
@@ -208,27 +240,12 @@ class HttpServiceTest(RetryLoopMockedTest):
     count = []
     def mock_perform_request(request):
       count.append(request)
-      raise net.HttpError(400, 'text/plain', None)
+      raise net_utils.make_fake_error(400, request.get_full_url())
 
     service = self.mocked_http_service(perform_request=mock_perform_request)
     self.assertEqual(service.request('/', data={}), None)
     self.assertEqual(1, len(count))
     self.assertAttempts(1, net.URL_OPEN_TIMEOUT)
-
-  def test_request_HTTP_error_retry_404(self):
-    response = 'data'
-    attempts = []
-
-    def mock_perform_request(request):
-      attempts.append(request)
-      if len(attempts) == 1:
-        raise net.HttpError(404, 'text/plain', None)
-      return net_utils.make_fake_response(response, request.get_full_url())
-
-    service = self.mocked_http_service(perform_request=mock_perform_request)
-    result = service.request('/', data={}, retry_404=True)
-    self.assertEqual(result.read(), response)
-    self.assertAttempts(2, net.URL_OPEN_TIMEOUT)
 
   def test_request_HTTP_error_retry_404_endpoints(self):
     response = 'data'
@@ -237,7 +254,9 @@ class HttpServiceTest(RetryLoopMockedTest):
     def mock_perform_request(request):
       attempts.append(request)
       if len(attempts) == 1:
-        raise net.HttpError(404, 'application/text; charset=ASCII', None)
+        raise net_utils.make_fake_error(404, request.get_full_url(), headers={
+          'Content-Type': 'application/text; charset=ASCII',
+        })
       return net_utils.make_fake_response(response, request.get_full_url())
 
     service = self.mocked_http_service(perform_request=mock_perform_request)
@@ -252,7 +271,7 @@ class HttpServiceTest(RetryLoopMockedTest):
     def mock_perform_request(request):
       attempts.append(request)
       if len(attempts) == 1:
-        raise net.HttpError(500, 'text/plain', None)
+        raise net_utils.make_fake_error(500, request.get_full_url())
       return net_utils.make_fake_response(response, request.get_full_url())
 
     service = self.mocked_http_service(perform_request=mock_perform_request)
@@ -266,7 +285,7 @@ class HttpServiceTest(RetryLoopMockedTest):
     def mock_perform_request(request):
       calls.append('request')
       if 'login' not in calls:
-        raise net.HttpError(403, 'text/plain', None)
+        raise net_utils.make_fake_error(403, request.get_full_url())
       return net_utils.make_fake_response(response, request.get_full_url())
 
     def mock_authorize(request):
@@ -290,8 +309,8 @@ class HttpServiceTest(RetryLoopMockedTest):
   def test_auth_failure(self):
     count = []
 
-    def mock_perform_request(_request):
-      raise net.HttpError(403, 'text/plain', None)
+    def mock_perform_request(request):
+      raise net_utils.make_fake_error(403, request.get_full_url())
 
     def mock_login(allow_user_interaction):
       self.assertFalse(allow_user_interaction)

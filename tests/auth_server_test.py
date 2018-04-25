@@ -276,13 +276,6 @@ class LocalAuthHttpServiceTest(auto_stub.TestCase):
     class MockedRequestEngine(object):
       def perform_request(self, request):
         return perform_request(request) if perform_request else None
-      @classmethod
-      def timeout_exception_classes(cls):
-        return ()
-      @classmethod
-      def parse_request_exception(cls, exc):
-        del exc  # Unused argument
-        return None, None
 
     return net.HttpService(
         url,

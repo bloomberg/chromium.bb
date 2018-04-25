@@ -93,22 +93,71 @@ class ConnectionError(NetError):
 
 
 class HttpError(NetError):
-  """Server returned HTTP error code."""
+  """Server returned HTTP error code.
 
-  def __init__(self, code, content_type, inner_exc):
-    super(HttpError, self).__init__(inner_exc)
-    self.code = code
-    self.content_type = content_type
-    self._details = None  # (list with header pairs, response body)
+  Contains the response in full (as HttpResponse object) and the original
+  exception raised by the underlying network library (if any). The type of
+  the original exception may depend on the kind of the network engine and should
+  not be relied upon.
+  """
 
-  def _extract_response_details(self, engine):
-    """Returns pair (response headers or None, response body or None)."""
-    # Avoid making multiple calls to parse_request_exception since they may
-    # have side effects on the exception, e.g. urllib2 based exceptions are in
-    # fact file-like objects that can not be read twice.
-    if not self._details:
-      self._details = engine.parse_request_exception(self.inner_exc)
-    return self._details
+  def __init__(self, response, inner_exc=None):
+    assert isinstance(response, HttpResponse), response
+    super(HttpError, self).__init__(
+        inner_exc or 'Server returned HTTP code %d' % response.code)
+    self.response = response
+    self._body_for_desc = None
+
+  def description(self, verbose=False):
+    """Returns a short or verbose description of the error.
+
+    The short description is one line of text, the verbose one is multiple lines
+    that may contain response body and headers.
+
+    May be called multiple times (results of the first call are cached).
+
+    "Destroys" the response by reading from it. So if the callers plan to read
+    from 'response' themselves, they should not use 'description()'.
+    """
+    if self._body_for_desc is None:
+      try:
+        self._body_for_desc = self.response.read()
+      except Exception as exc:
+        self._body_for_desc = '<failed to read the response body: %s>' % exc
+
+    desc = str(self)
+
+    # If the body is JSON, assume it is Cloud Endpoints response and fish out an
+    # error message from it.
+    if self.response.content_type.startswith('application/json'):
+      msg = _fish_out_error_message(self._body_for_desc)
+      if msg:
+        desc += ' - ' + msg
+
+    if not verbose:
+      return desc
+
+    out = [desc, '----------']
+    if self.response.headers:
+      for header, value in sorted(self.response.headers.items()):
+        if not header.lower().startswith('x-'):
+          out.append('%s: %s' % (header.capitalize(), value))
+      out.append('')
+    out.append(self._body_for_desc or '<empty body>')
+    out.append('----------')
+    return '\n'.join(out)
+
+
+def _fish_out_error_message(maybe_json_blob):
+  try:
+    as_json = json.loads(maybe_json_blob)
+    err = as_json.get('error')
+    if isinstance(err, basestring):
+      return err
+    if isinstance(err, dict):
+      return str(err.get('message') or '<no error message>')
+  except (ValueError, KeyError, TypeError):
+    return None  # not a JSON we recognize
 
 
 def set_engine_class(engine_cls):
@@ -309,22 +358,20 @@ class HttpService(object):
     self.authenticator = authenticator
 
   @staticmethod
-  def is_transient_http_error(code, retry_404, retry_50x, suburl, content_type):
-    """Returns True if given HTTP response code is a transient error."""
+  def is_transient_http_error(resp, retry_50x, suburl):
+    """Returns True if given HTTP response indicates a transient error."""
     # Google Storage can return this and it should be retried.
-    if code == 408:
+    if resp.code == 408:
       return True
-    if code == 404:
-      # Retry 404 if allowed by the caller.
-      if retry_404:
-        return retry_404
+    if resp.code == 404:
       # Transparently retry 404 IIF it is a CloudEndpoints API call *and* the
-      # result is not JSON. This assumes that we only use JSON encoding.
+      # result is not JSON. This assumes that we only use JSON encoding. This
+      # is workaround for known Cloud Endpoints bug.
       return (
           suburl.startswith('/_ah/api/') and
-          not content_type.startswith('application/json'))
+          not resp.content_type.startswith('application/json'))
     # All other 4** errors are fatal.
-    if code < 500:
+    if resp.code < 500:
       return False
     # Retry >= 500 error only if allowed by the caller.
     return retry_50x
@@ -371,7 +418,6 @@ class HttpService(object):
       data=None,
       content_type=None,
       max_attempts=URL_OPEN_MAX_ATTEMPTS,
-      retry_404=False,
       retry_50x=True,
       timeout=URL_OPEN_TIMEOUT,
       read_timeout=URL_READ_TIMEOUT,
@@ -462,26 +508,25 @@ class HttpService(object):
         if self.authenticator:
           self.authenticator.authorize(request)
         response = self.engine.perform_request(request)
-        response._timeout_exc_classes = self.engine.timeout_exception_classes()
         logging.debug('Request %s succeeded', request.get_full_url())
         return response
 
       except (ConnectionError, TimeoutError) as e:
         last_error = e
         logging.warning(
-            'Unable to open url %s on attempt %d.\n%s',
-            request.get_full_url(), attempt.attempt, self._format_error(e))
+            'Unable to open url %s on attempt %d: %s',
+            request.get_full_url(), attempt.attempt, e)
         continue
 
       except HttpError as e:
         last_error = e
 
         # Access denied -> authenticate.
-        if e.code in (401, 403):
+        if e.response.code in (401, 403):
           logging.warning(
-              'Got a reply with HTTP status code %d for %s on attempt %d.\n%s',
-              e.code, request.get_full_url(),
-              attempt.attempt, self._format_error(e, verbose=True))
+              'Got a reply with HTTP status code %d for %s on attempt %d: %s',
+              e.response.code, request.get_full_url(),
+              attempt.attempt, e.description())
           # Try forcefully refresh the token. If it doesn't help, then server
           # does not support authentication or user doesn't have required
           # access.
@@ -494,7 +539,7 @@ class HttpService(object):
           # Authentication attempt was unsuccessful.
           logging.error(
               'Request to %s failed with HTTP status code %d: %s',
-              request.get_full_url(), e.code, self._extract_error_message(e))
+              request.get_full_url(), e.response.code, e.description())
           if self.authenticator and self.authenticator.supports_login:
             logging.error(
                 'Use auth.py to login if haven\'t done so already:\n'
@@ -502,30 +547,33 @@ class HttpService(object):
           return None
 
         # Hit a error that can not be retried -> stop retry loop.
-        if not self.is_transient_http_error(
-            e.code, retry_404, retry_50x, parsed.path, e.content_type):
+        if not self.is_transient_http_error(e.response, retry_50x, parsed.path):
           # This HttpError means we reached the server and there was a problem
           # with the request, so don't retry. Dump entire reply to debug log and
           # only a friendly error message to error log.
           logging.debug(
               'Request to %s failed with HTTP status code %d.\n%s',
-              request.get_full_url(), e.code,
-              self._format_error(e, verbose=True))
+              request.get_full_url(), e.response.code,
+              e.description(verbose=True))
           logging.error(
               'Request to %s failed with HTTP status code %d: %s',
-              request.get_full_url(), e.code, self._extract_error_message(e))
+              request.get_full_url(), e.response.code, e.description())
           return None
 
         # Retry all other errors.
         logging.warning(
-            'Server responded with error on %s on attempt %d.\n%s',
-            request.get_full_url(), attempt.attempt, self._format_error(e))
+            'Server responded with error on %s on attempt %d: %s',
+            request.get_full_url(), attempt.attempt, e.description())
         continue
 
+    if isinstance(last_error, HttpError):
+      error_msg = last_error.description(verbose=True)
+    else:
+      error_msg = str(last_error)
     logging.error(
         'Unable to open given url, %s, after %d attempts.\n%s',
-        request.get_full_url(), max_attempts,
-        self._format_error(last_error, verbose=True))
+        request.get_full_url(), max_attempts, error_msg)
+
     return None
 
   def json_request(self, urlpath, data=None, **kwargs):
@@ -557,51 +605,6 @@ class HttpService(object):
       logging.error('Not a JSON response when calling %s: %s; full text: %s',
                     urlpath, e, text)
       return None
-
-  def _format_error(self, exc, verbose=False):
-    """Returns detailed description of a NetError."""
-    if not isinstance(exc, NetError):
-      return str(exc)
-    if not verbose or not isinstance(exc, HttpError):
-      return str(exc.inner_exc or exc)
-    out = [str(exc.inner_exc or exc)]
-    headers, body = exc._extract_response_details(self.engine)
-    if headers or body:
-      out.append('----------')
-      if headers:
-        for header, value in headers:
-          if not header.startswith('x-'):
-            out.append('%s: %s' % (header.capitalize(), value))
-        out.append('')
-      out.append(body or '<empty body>')
-      out.append('----------')
-    return '\n'.join(out)
-
-  def _extract_error_message(self, exc):
-    """Attempts to extract a user friendly error message from HttpError body."""
-    headers, body = exc._extract_response_details(self.engine)
-    if not headers or not body:
-      return '<no error message>'
-
-    is_json = False
-    for k, v in headers:
-      if k.lower() == 'content-type':
-        is_json = v.startswith('application/json')
-        break
-
-    # Fish out an error message from Cloud Endpoints response.
-    if is_json:
-      try:
-        as_json = json.loads(body)
-        err = as_json.get('error')
-        if isinstance(err, basestring):
-          return err
-        if isinstance(err, dict):
-          return str(err.get('message') or '<no error message>')
-      except (ValueError, KeyError, TypeError):
-        pass  # not a JSON we recognize
-
-    return body
 
 
 class HttpRequest(object):
@@ -646,15 +649,26 @@ class HttpRequest(object):
 
 
 class HttpResponse(object):
-  """Response from HttpService."""
+  """Response from HttpService.
 
-  def __init__(self, response, url, headers):
+  Wraps a file-like object that holds the body of the response. This object may
+  optionally provide 'iter_content(chunk_size)' generator method if it supports
+  iterator interface, and 'content' field if it can return the entire response
+  body at once.
+  """
+
+  def __init__(self, response, url, code, headers, timeout_exc_classes=None):
     self._response = response
     self._url = url
+    self._code = code
     self._headers = get_case_insensitive_dict(headers)
-    self._timeout_exc_classes = ()
+    self._timeout_exc_classes = timeout_exc_classes or ()
 
   def iter_content(self, chunk_size):
+    """Yields the response in chunks of given size.
+
+    This is a destructive operation in general. The response can not be reread.
+    """
     assert all(issubclass(e, Exception) for e in self._timeout_exc_classes)
     try:
       read = 0
@@ -677,6 +691,10 @@ class HttpResponse(object):
       raise TimeoutError(e)
 
   def read(self):
+    """Reads the entire response and returns it as bytes.
+
+    This is a destructive operation in general. The response can not be reread.
+    """
     assert all(issubclass(e, Exception) for e in self._timeout_exc_classes)
     try:
       if hasattr(self._response, 'content'):
@@ -693,6 +711,21 @@ class HttpResponse(object):
     """Returns response header (as str) or None if no such header."""
     return self._headers.get(header)
 
+  @property
+  def headers(self):
+    """Case insensitive dict with response headers."""
+    return self._headers
+
+  @property
+  def code(self):
+    """HTTP status code, as integer."""
+    return self._code
+
+  @property
+  def content_type(self):
+    """Response content type or empty string if not presented by the server."""
+    return self.get_header('Content-Type') or ''
+
 
 class RequestsLibEngine(object):
   """Class that knows how to execute HttpRequests via requests library."""
@@ -700,26 +733,16 @@ class RequestsLibEngine(object):
   # This engine doesn't know how to authenticate requests on transport level.
   provides_auth = False
 
-  @classmethod
-  def parse_request_exception(cls, exc):
-    """Extracts HTTP headers and body from inner exceptions put in HttpError."""
-    if isinstance(exc, requests.HTTPError):
-      return exc.response.headers.items(), exc.response.content
-    return None, None
-
-  @classmethod
-  def timeout_exception_classes(cls):
-    """A tuple of exception classes that represent timeout.
-
-    Will be caught while reading a streaming response in HttpResponse.read and
-    transformed to TimeoutError.
-    """
-    return (
-        socket.timeout, ssl.SSLError,
-        requests.Timeout,
-        requests.ConnectionError,
-        requests.packages.urllib3.exceptions.ProtocolError,
-        requests.packages.urllib3.exceptions.TimeoutError)
+  # A tuple of exception classes that represent timeout.
+  #
+  # Will be caught while reading a streaming response in HttpResponse.read and
+  # transformed to TimeoutError.
+  timeout_exception_classes = (
+      socket.timeout, ssl.SSLError,
+      requests.Timeout,
+      requests.ConnectionError,
+      requests.packages.urllib3.exceptions.ProtocolError,
+      requests.packages.urllib3.exceptions.TimeoutError)
 
   def __init__(self):
     super(RequestsLibEngine, self).__init__()
@@ -745,6 +768,7 @@ class RequestsLibEngine(object):
       TimeoutError - timeout while connecting or reading response.
       HttpError - server responded with >= 400 error code.
     """
+    resp = None  # will be HttpResponse
     try:
       # response is a requests.models.Response.
       response = self.session.request(
@@ -757,13 +781,20 @@ class RequestsLibEngine(object):
           timeout=request.timeout,
           stream=request.stream,
           allow_redirects=request.follow_redirects)
+      # Convert it to HttpResponse (that doesn't depend on the engine).
+      resp = HttpResponse(
+          response=response,
+          url=request.get_full_url(),
+          code=response.status_code,
+          headers=response.headers,
+          timeout_exc_classes=self.timeout_exception_classes)
       response.raise_for_status()
-      return HttpResponse(response, request.get_full_url(), response.headers)
+      return resp
     except requests.Timeout as e:
       raise TimeoutError(e)
     except requests.HTTPError as e:
-      raise HttpError(
-          e.response.status_code, e.response.headers.get('Content-Type'), e)
+      assert resp  # must be set, since HTTPError is raised by raise_for_status
+      raise HttpError(resp, e)
     except (requests.ConnectionError, socket.timeout, ssl.SSLError) as e:
       raise ConnectionError(e)
 
