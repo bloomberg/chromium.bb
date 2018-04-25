@@ -31,8 +31,6 @@ LayerTreeResourceProvider::Settings::Settings(
     : yuv_highbit_resource_format(resource_settings.high_bit_for_testing
                                       ? viz::R16_EXT
                                       : viz::LUMINANCE_8),
-      use_gpu_memory_buffer_resources(
-          resource_settings.use_gpu_memory_buffer_resources),
       delegated_sync_points_required(delegated_sync_points_required) {
   if (!compositor_context_provider) {
     // Pick an arbitrary limit here similar to what hardware might.
@@ -42,12 +40,7 @@ LayerTreeResourceProvider::Settings::Settings(
   }
 
   const auto& caps = compositor_context_provider->ContextCapabilities();
-  use_texture_storage = caps.texture_storage;
-  use_texture_format_bgra = caps.texture_format_bgra8888;
-  use_texture_usage_hint = caps.texture_usage;
-  use_texture_npot = caps.texture_npot;
   use_sync_query = caps.sync_query;
-  use_texture_storage_image = caps.texture_storage_image;
 
   if (caps.disable_one_component_textures) {
     yuv_resource_format = yuv_highbit_resource_format = viz::RGBA_8888;
@@ -62,8 +55,8 @@ LayerTreeResourceProvider::Settings::Settings(
   GLES2Interface* gl = compositor_context_provider->ContextGL();
   gl->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 
-  best_texture_format =
-      viz::PlatformColor::BestSupportedTextureFormat(use_texture_format_bgra);
+  best_texture_format = viz::PlatformColor::BestSupportedTextureFormat(
+      caps.texture_format_bgra8888);
   best_render_buffer_format = viz::PlatformColor::BestSupportedTextureFormat(
       caps.render_buffer_format_bgra8888);
 }
@@ -158,34 +151,17 @@ void LayerTreeResourceProvider::PrepareSendToParent(
   // as pointers so we don't have to look up the resource id multiple times.
   // Make sure the maps do not change while these vectors are alive or they
   // will become invalid.
-  std::vector<std::pair<viz::internal::Resource*, viz::ResourceId>> resources;
   std::vector<ImportedResource*> imports;
-  resources.reserve(export_ids.size());
   imports.reserve(export_ids.size());
   for (const viz::ResourceId id : export_ids) {
     auto it = imported_resources_.find(id);
-    if (it != imported_resources_.end())
-      imports.push_back(&it->second);
-    else
-      resources.push_back({GetResource(id), id});
+    DCHECK(it != imported_resources_.end());
+    imports.push_back(&it->second);
   }
-  DCHECK_EQ(resources.size() + imports.size(), export_ids.size());
 
   // Lazily create any mailboxes and verify all unverified sync tokens.
   std::vector<GLbyte*> unverified_sync_tokens;
-  std::vector<viz::internal::Resource*> need_synchronization_resources;
   if (settings_.delegated_sync_points_required) {
-    for (auto& pair : resources) {
-      viz::internal::Resource* resource = pair.first;
-      if (!resource->is_gpu_resource_type())
-        continue;
-
-      if (resource->needs_sync_token()) {
-        need_synchronization_resources.push_back(resource);
-      } else if (!resource->sync_token().verified_flush()) {
-        unverified_sync_tokens.push_back(resource->GetSyncTokenData());
-      }
-    }
     for (ImportedResource* imported : imports) {
       if (!imported->resource.is_software &&
           !imported->resource.mailbox_holder.sync_token.verified_flush()) {
@@ -195,15 +171,8 @@ void LayerTreeResourceProvider::PrepareSendToParent(
     }
   }
 
-  // Insert sync point to synchronize the mailbox creation or bound textures.
-  gpu::SyncToken new_sync_token;
-  if (!need_synchronization_resources.empty()) {
-    DCHECK(settings_.delegated_sync_points_required);
-    DCHECK(gl);
-    gl->GenUnverifiedSyncTokenCHROMIUM(new_sync_token.GetData());
-    unverified_sync_tokens.push_back(new_sync_token.GetData());
-  }
-
+  // TODO(piman): See if this FlushPendingWork is needed.
+  // https://crbug.com/836497
   if (compositor_context_provider_)
     compositor_context_provider_->ContextSupport()->FlushPendingWork();
 
@@ -214,30 +183,6 @@ void LayerTreeResourceProvider::PrepareSendToParent(
                                  unverified_sync_tokens.size());
   }
 
-  // Set sync token after verification.
-  for (viz::internal::Resource* resource : need_synchronization_resources) {
-    DCHECK(resource->is_gpu_resource_type());
-    resource->UpdateSyncToken(new_sync_token);
-    resource->SetSynchronized();
-  }
-
-  // Transfer Resources.
-  for (size_t i = 0; i < resources.size(); ++i) {
-    viz::internal::Resource* source = resources[i].first;
-    const viz::ResourceId id = resources[i].second;
-
-    DCHECK(!settings_.delegated_sync_points_required ||
-           !source->needs_sync_token());
-    DCHECK(!settings_.delegated_sync_points_required ||
-           viz::internal::Resource::LOCALLY_USED !=
-               source->synchronization_state());
-
-    viz::TransferableResource resource;
-    TransferResource(source, id, &resource);
-
-    source->exported_count++;
-    list->push_back(std::move(resource));
-  }
   for (ImportedResource* imported : imports) {
     list->push_back(imported->resource);
     imported->exported_count++;
@@ -247,126 +192,31 @@ void LayerTreeResourceProvider::PrepareSendToParent(
 void LayerTreeResourceProvider::ReceiveReturnsFromParent(
     const std::vector<viz::ReturnedResource>& resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  GLES2Interface* gl = ContextGL();
 
   for (const viz::ReturnedResource& returned : resources) {
     viz::ResourceId local_id = returned.id;
 
     auto import_it = imported_resources_.find(local_id);
-    if (import_it != imported_resources_.end()) {
-      ImportedResource& imported = import_it->second;
+    DCHECK(import_it != imported_resources_.end());
+    ImportedResource& imported = import_it->second;
 
-      DCHECK_GE(imported.exported_count, returned.count);
-      imported.exported_count -= returned.count;
-      imported.returned_lost |= returned.lost;
+    DCHECK_GE(imported.exported_count, returned.count);
+    imported.exported_count -= returned.count;
+    imported.returned_lost |= returned.lost;
 
-      if (imported.exported_count)
-        continue;
-
-      if (returned.sync_token.HasData()) {
-        DCHECK(!imported.resource.is_software);
-        imported.returned_sync_token = returned.sync_token;
-      }
-
-      if (imported.marked_for_deletion) {
-        imported.release_callback->Run(imported.returned_sync_token,
-                                       imported.returned_lost);
-        imported_resources_.erase(import_it);
-      }
-
-      continue;
-    }
-
-    auto map_iterator = resources_.find(local_id);
-    DCHECK(map_iterator != resources_.end());
-    // Resource was already lost (e.g. it belonged to a child that was
-    // destroyed).
-    // TODO(danakj): Remove this. There is no "child" here anymore, and
-    // lost resources are still in the map until exported_count == 0.
-    if (map_iterator == resources_.end())
-      continue;
-
-    viz::internal::Resource* resource = &map_iterator->second;
-
-    DCHECK_GE(resource->exported_count, returned.count);
-    resource->exported_count -= returned.count;
-    resource->lost |= returned.lost;
-    if (resource->exported_count)
+    if (imported.exported_count)
       continue;
 
     if (returned.sync_token.HasData()) {
-      DCHECK(!resource->has_shared_bitmap_id);
-      if (resource->origin == viz::internal::Resource::INTERNAL) {
-        DCHECK(resource->gl_id);
-        gl->WaitSyncTokenCHROMIUM(returned.sync_token.GetConstData());
-        resource->SetSynchronized();
-      } else {
-        DCHECK(!resource->gl_id);
-        resource->UpdateSyncToken(returned.sync_token);
-      }
+      DCHECK(!imported.resource.is_software);
+      imported.returned_sync_token = returned.sync_token;
     }
 
-    if (!resource->marked_for_deletion)
-      continue;
-
-    // The resource belongs to this LayerTreeResourceProvider, so it can be
-    // destroyed.
-    DeleteResourceInternal(map_iterator, NORMAL);
-  }
-}
-
-viz::ResourceId LayerTreeResourceProvider::CreateGpuTextureResource(
-    const gfx::Size& size,
-    viz::ResourceFormat format,
-    const gfx::ColorSpace& color_space) {
-  DCHECK(compositor_context_provider_);
-  DCHECK(!size.IsEmpty());
-  DCHECK_LE(size.width(), settings_.max_texture_size);
-  DCHECK_LE(size.height(), settings_.max_texture_size);
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(IsTextureFormatSupported(format));
-  DCHECK_NE(format, viz::ETC1);
-
-  viz::ResourceId id = next_id_++;
-  viz::internal::Resource* resource =
-      InsertResource(id, viz::internal::Resource(
-                             size, viz::internal::Resource::INTERNAL,
-                             viz::ResourceType::kTexture, format, color_space));
-  GLES2Interface* gl = ContextGL();
-  DCHECK(gl);
-
-  // Create and set texture properties. Allocation of the texture backing is
-  // delayed until needed.
-  gl->GenTextures(1, &resource->gl_id);
-  gl->BindTexture(resource->target, resource->gl_id);
-  gl->TexParameteri(resource->target, GL_TEXTURE_MIN_FILTER,
-                    resource->original_filter);
-  gl->TexParameteri(resource->target, GL_TEXTURE_MAG_FILTER,
-                    resource->original_filter);
-  gl->TexParameteri(resource->target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  gl->TexParameteri(resource->target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  gl->TexImage2D(resource->target, 0, GLInternalFormat(format), size.width(),
-                 size.height(), 0, GLDataFormat(format), GLDataType(format),
-                 nullptr);
-  gl->GenMailboxCHROMIUM(resource->mailbox.name);
-  gl->ProduceTextureDirectCHROMIUM(resource->gl_id, resource->mailbox.name);
-  resource->SetLocallyUsed();
-  return id;
-}
-
-void LayerTreeResourceProvider::DeleteResource(viz::ResourceId id) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  viz::internal::Resource* resource = &it->second;
-  DCHECK(!resource->marked_for_deletion);
-  DCHECK_EQ(resource->imported_count, 0);
-
-  if (resource->exported_count > 0) {
-    resource->marked_for_deletion = true;
-    return;
-  } else {
-    DeleteResourceInternal(it, NORMAL);
+    if (imported.marked_for_deletion) {
+      imported.release_callback->Run(imported.returned_sync_token,
+                                     imported.returned_lost);
+      imported_resources_.erase(import_it);
+    }
   }
 }
 
@@ -392,51 +242,6 @@ void LayerTreeResourceProvider::RemoveImportedResource(viz::ResourceId id) {
                                    imported.returned_lost);
     imported_resources_.erase(it);
   }
-}
-
-void LayerTreeResourceProvider::CopyToResource(viz::ResourceId id,
-                                               const uint8_t* image,
-                                               const gfx::Size& image_size) {
-  viz::internal::Resource* resource = GetResource(id);
-  DCHECK_EQ(resource->origin, viz::internal::Resource::INTERNAL);
-  DCHECK_EQ(resource->exported_count, 0);
-  DCHECK(!resource->lost);
-  DCHECK(!resource->ShouldWaitSyncToken());
-  DCHECK_EQ(image_size.width(), resource->size.width());
-  DCHECK_EQ(image_size.height(), resource->size.height());
-
-  DCHECK_NE(resource->type, viz::ResourceType::kBitmap);
-  GLuint texture_id = resource->gl_id;
-  DCHECK(texture_id);
-  GLES2Interface* gl = ContextGL();
-  DCHECK(gl);
-  gl->BindTexture(resource->target, texture_id);
-  gl->TexSubImage2D(resource->target, 0, 0, 0, image_size.width(),
-                    image_size.height(), GLDataFormat(resource->format),
-                    GLDataType(resource->format), image);
-  resource->SetLocallyUsed();
-}
-
-void LayerTreeResourceProvider::TransferResource(
-    viz::internal::Resource* source,
-    viz::ResourceId id,
-    viz::TransferableResource* resource) {
-  resource->id = id;
-  resource->format = source->format;
-  resource->buffer_format = source->buffer_format;
-  resource->filter = source->filter;
-  resource->size = source->size;
-  resource->read_lock_fences_enabled = source->read_lock_fences_enabled;
-  resource->is_overlay_candidate = false;
-  resource->color_space = source->color_space;
-
-  DCHECK_NE(source->type, viz::ResourceType::kBitmap);
-  DCHECK(!source->mailbox.IsZero());
-  // This is either an external resource, or a compositor resource that we
-  // already exported. Make sure to forward the sync point that we were given.
-  resource->mailbox_holder.mailbox = source->mailbox;
-  resource->mailbox_holder.texture_target = source->target;
-  resource->mailbox_holder.sync_token = source->sync_token();
 }
 
 void LayerTreeResourceProvider::FlushPendingDeletions() const {
@@ -517,19 +322,6 @@ viz::ResourceFormat LayerTreeResourceProvider::YuvResourceFormat(
   }
 }
 
-void LayerTreeResourceProvider::LoseResourceForTesting(viz::ResourceId id) {
-  auto it = imported_resources_.find(id);
-  if (it != imported_resources_.end()) {
-    ImportedResource& imported = it->second;
-    imported.returned_lost = true;
-    return;
-  }
-
-  viz::internal::Resource* resource = GetResource(id);
-  DCHECK(resource);
-  resource->lost = true;
-}
-
 LayerTreeResourceProvider::ScopedSkSurface::ScopedSkSurface(
     GrContext* gr_context,
     GLuint texture_id,
@@ -571,30 +363,14 @@ SkSurfaceProps LayerTreeResourceProvider::ScopedSkSurface::ComputeSurfaceProps(
 void LayerTreeResourceProvider::ValidateResource(viz::ResourceId id) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(id);
-  DCHECK(resources_.find(id) != resources_.end() ||
-         imported_resources_.find(id) != imported_resources_.end());
+  DCHECK(imported_resources_.find(id) != imported_resources_.end());
 }
 
 bool LayerTreeResourceProvider::InUseByConsumer(viz::ResourceId id) {
   auto it = imported_resources_.find(id);
-  if (it != imported_resources_.end()) {
-    ImportedResource& imported = it->second;
-    return imported.exported_count > 0 || imported.returned_lost;
-  }
-
-  viz::internal::Resource* resource = GetResource(id);
-  return resource->exported_count > 0 || resource->lost;
-}
-
-bool LayerTreeResourceProvider::OnMemoryDump(
-    const base::trace_event::MemoryDumpArgs& args,
-    base::trace_event::ProcessMemoryDump* pmd) {
-  // Imported resources should be tracked in the client where they
-  // originated, as this code has only a name to refer to them and
-  // is not keeping them alive.
-
-  // Non-imported resources are tracked in the base class.
-  return ResourceProvider::OnMemoryDump(args, pmd);
+  DCHECK(it != imported_resources_.end());
+  ImportedResource& imported = it->second;
+  return imported.exported_count > 0 || imported.returned_lost;
 }
 
 }  // namespace cc

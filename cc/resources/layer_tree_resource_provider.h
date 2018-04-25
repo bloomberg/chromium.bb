@@ -51,12 +51,6 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
   void ReceiveReturnsFromParent(
       const std::vector<viz::ReturnedResource>& transferable_resources);
 
-  viz::ResourceId CreateGpuTextureResource(const gfx::Size& size,
-                                           viz::ResourceFormat format,
-                                           const gfx::ColorSpace& color_space);
-
-  void DeleteResource(viz::ResourceId id);
-
   // Receives a resource from an external client that can be used in compositor
   // frames, via the returned ResourceId.
   viz::ResourceId ImportResource(const viz::TransferableResource&,
@@ -64,11 +58,6 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
   // Removes an imported resource, which will call the ReleaseCallback given
   // originally, once the resource is no longer in use by any compositor frame.
   void RemoveImportedResource(viz::ResourceId);
-  // Update pixels from image, copying source_rect (in image) to dest_offset (in
-  // the resource).
-  void CopyToResource(viz::ResourceId id,
-                      const uint8_t* image,
-                      const gfx::Size& image_size);
 
   // Verify that the ResourceId is valid and is known to this class, for debug
   // checks.
@@ -108,8 +97,6 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
     return gpu_memory_buffer_manager_;
   }
 
-  void LoseResourceForTesting(viz::ResourceId id);
-
   class CC_EXPORT ScopedSkSurface {
    public:
     ScopedSkSurface(GrContext* gr_context,
@@ -139,29 +126,13 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
              const viz::ResourceSettings& resource_settings);
 
     int max_texture_size = 0;
-    bool use_texture_storage = false;
-    bool use_texture_format_bgra = false;
-    bool use_texture_usage_hint = false;
-    bool use_texture_npot = false;
     bool use_sync_query = false;
-    bool use_texture_storage_image = false;
-    viz::ResourceType default_resource_type = viz::ResourceType::kTexture;
     viz::ResourceFormat yuv_resource_format = viz::LUMINANCE_8;
     viz::ResourceFormat yuv_highbit_resource_format = viz::LUMINANCE_8;
     viz::ResourceFormat best_texture_format = viz::RGBA_8888;
     viz::ResourceFormat best_render_buffer_format = viz::RGBA_8888;
-    bool use_gpu_memory_buffer_resources = false;
     bool delegated_sync_points_required = false;
   } const settings_;
-
-  // base::trace_event::MemoryDumpProvider implementation.
-  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                    base::trace_event::ProcessMemoryDump* pmd) override;
-
-  void CreateAndBindImage(viz::internal::Resource* resource);
-  void TransferResource(viz::internal::Resource* source,
-                        viz::ResourceId id,
-                        viz::TransferableResource* resource);
 
   struct ImportedResource;
   base::flat_map<viz::ResourceId, ImportedResource> imported_resources_;

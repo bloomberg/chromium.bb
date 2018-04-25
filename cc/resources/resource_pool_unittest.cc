@@ -163,7 +163,14 @@ TEST_F(ResourcePoolTest, LostResource) {
   SetBackingOnResource(resource);
   resource_pool_->PrepareForExport(resource);
 
-  resource_provider_->LoseResourceForTesting(resource.resource_id_for_export());
+  std::vector<viz::ResourceId> export_ids = {resource.resource_id_for_export()};
+  std::vector<viz::TransferableResource> transferable_resources;
+  resource_provider_->PrepareSendToParent(export_ids, &transferable_resources);
+  auto returned_resources =
+      viz::TransferableResource::ReturnResources(transferable_resources);
+  ASSERT_EQ(1u, returned_resources.size());
+  returned_resources[0].lost = true;
+  resource_provider_->ReceiveReturnsFromParent(returned_resources);
 
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
   resource_pool_->ReleaseResource(std::move(resource));
