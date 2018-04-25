@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_WORKLET_ANIMATION_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_WORKLET_ANIMATION_CONTROLLER_H_
 
+#include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -34,7 +35,8 @@ class CORE_EXPORT WorkletAnimationController
   void AttachAnimation(WorkletAnimationBase&);
   void DetachAnimation(WorkletAnimationBase&);
 
-  void Update();
+  void UpdateAnimationCompositingStates();
+  void UpdateAnimationTimings(TimingUpdateReason);
 
   void Trace(blink::Visitor*);
 

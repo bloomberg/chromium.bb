@@ -250,6 +250,27 @@ function waitForAnimationsToStart(callback)
     }
 }
 
+function convertExpectationsToChecks(expected, callbacks) {
+  var checks = {};
+
+  if (typeof callbacks == 'function') {
+    checks[0] = [callbacks];
+  } else for (var time in callbacks) {
+      timeMs = Math.round(time * 1000);
+      checks[timeMs] = [callbacks[time]];
+  }
+
+  for (var i = 0; i < expected.length; i++) {
+      var expectation = expected[i];
+      var timeMs = Math.round(expectation[0] * 1000);
+      if (!checks[timeMs])
+          checks[timeMs] = [];
+      checks[timeMs].push(checkExpectedValue.bind(null, expected, i));
+  }
+
+  return checks;
+}
+
 // FIXME: disablePauseAnimationAPI and doPixelTest
 function runAnimationTest(expected, callbacks, trigger, disablePauseAnimationAPI, doPixelTest, startTestImmediately)
 {
@@ -261,22 +282,7 @@ function runAnimationTest(expected, callbacks, trigger, disablePauseAnimationAPI
     if (disablePauseAnimationAPI)
         hasPauseAnimationAPI = false;
 
-    var checks = {};
-
-    if (typeof callbacks == 'function') {
-        checks[0] = [callbacks];
-    } else for (var time in callbacks) {
-        timeMs = Math.round(time * 1000);
-        checks[timeMs] = [callbacks[time]];
-    }
-
-    for (var i = 0; i < expected.length; i++) {
-        var expectation = expected[i];
-        var timeMs = Math.round(expectation[0] * 1000);
-        if (!checks[timeMs])
-            checks[timeMs] = [];
-        checks[timeMs].push(checkExpectedValue.bind(null, expected, i));
-    }
+    var checks = convertExpectationsToChecks(expected, callbacks);
 
     var doPixelTest = Boolean(doPixelTest);
     useResultElement = doPixelTest;
