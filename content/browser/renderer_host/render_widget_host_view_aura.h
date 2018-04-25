@@ -442,9 +442,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   void UpdateCursorIfOverSelf();
 
-  void WasResized(const cc::DeadlinePolicy& deadline_policy,
-                  const base::Optional<viz::LocalSurfaceId>&
-                      child_allocated_local_surface_id);
+  void SynchronizeVisualProperties(const cc::DeadlinePolicy& deadline_policy,
+                                   const base::Optional<viz::LocalSurfaceId>&
+                                       child_allocated_local_surface_id);
 
   // Tracks whether SnapToPhysicalPixelBoundary() has been called.
   bool has_snapped_to_boundary() { return has_snapped_to_boundary_; }

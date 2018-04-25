@@ -208,8 +208,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
 
   virtual void SetIgnoreInputEvents(bool ignore_input_events) = 0;
 
-  // Called to notify the RenderWidget that it has been resized.
-  virtual void WasResized() = 0;
+  // Called to propagate updated visual properties to the renderer.
+  virtual void SynchronizeVisualProperties() = 0;
 
   // Access to the implementation's IPC::Listener::OnMessageReceived. Intended
   // only for test code.

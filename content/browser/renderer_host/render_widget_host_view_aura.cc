@@ -639,7 +639,8 @@ bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() const {
 
 void RenderWidgetHostViewAura::EnsureSurfaceSynchronizedForLayoutTest() {
   ++latest_capture_sequence_number_;
-  WasResized(cc::DeadlinePolicy::UseInfiniteDeadline(), base::nullopt);
+  SynchronizeVisualProperties(cc::DeadlinePolicy::UseInfiniteDeadline(),
+                              base::nullopt);
 }
 
 bool RenderWidgetHostViewAura::IsShowing() {
@@ -666,7 +667,8 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
   // If the primary surface was evicted, we should create a new primary.
   if (features::IsSurfaceSynchronizationEnabled() && delegated_frame_host_ &&
       delegated_frame_host_->IsPrimarySurfaceEvicted()) {
-    WasResized(cc::DeadlinePolicy::UseDefaultDeadline(), base::nullopt);
+    SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                                base::nullopt);
   }
 
   TRACE_EVENT_ASYNC_BEGIN0("latency", "TabSwitching::Latency",
@@ -764,7 +766,7 @@ gfx::Size RenderWidgetHostViewAura::GetVisibleViewportSize() const {
 void RenderWidgetHostViewAura::SetInsets(const gfx::Insets& insets) {
   if (insets != insets_) {
     insets_ = insets;
-    host()->WasResized(!insets_.IsEmpty());
+    host()->SynchronizeVisualProperties(!insets_.IsEmpty());
   }
 }
 
@@ -1983,7 +1985,7 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
   }
 }
 
-void RenderWidgetHostViewAura::WasResized(
+void RenderWidgetHostViewAura::SynchronizeVisualProperties(
     const cc::DeadlinePolicy& deadline_policy,
     const base::Optional<viz::LocalSurfaceId>&
         child_allocated_local_surface_id) {
@@ -2134,13 +2136,14 @@ void RenderWidgetHostViewAura::SyncSurfaceProperties(
     return;
 
   if (delegated_frame_host_) {
-    delegated_frame_host_->WasResized(window_->GetLocalSurfaceId(),
-                                      window_->bounds().size(),
-                                      deadline_policy);
+    delegated_frame_host_->SynchronizeVisualProperties(
+        window_->GetLocalSurfaceId(), window_->bounds().size(),
+        deadline_policy);
   }
   // Note that |host_| will retrieve resize parameters from
-  // |delegated_frame_host_|, so it must have WasResized called after.
-  host()->WasResized();
+  // |delegated_frame_host_|, so it must have SynchronizeVisualProperties called
+  // after.
+  host()->SynchronizeVisualProperties();
 }
 
 #if defined(OS_WIN)
@@ -2422,15 +2425,17 @@ void RenderWidgetHostViewAura::ScrollFocusedEditableNodeIntoRect(
 }
 
 void RenderWidgetHostViewAura::OnSynchronizedDisplayPropertiesChanged() {
-  WasResized(cc::DeadlinePolicy::UseDefaultDeadline(), base::nullopt);
+  SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                              base::nullopt);
 }
 
 viz::ScopedSurfaceIdAllocator RenderWidgetHostViewAura::ResizeDueToAutoResize(
     const gfx::Size& new_size,
     const viz::LocalSurfaceId& child_local_surface_id) {
   base::OnceCallback<void()> allocation_task = base::BindOnce(
-      &RenderWidgetHostViewAura::WasResized, weak_ptr_factory_.GetWeakPtr(),
-      cc::DeadlinePolicy::UseDefaultDeadline(), child_local_surface_id);
+      &RenderWidgetHostViewAura::SynchronizeVisualProperties,
+      weak_ptr_factory_.GetWeakPtr(), cc::DeadlinePolicy::UseDefaultDeadline(),
+      child_local_surface_id);
   return window_->GetSurfaceIdAllocator(std::move(allocation_task));
 }
 
@@ -2440,7 +2445,8 @@ bool RenderWidgetHostViewAura::IsLocalSurfaceIdAllocationSuppressed() const {
 }
 
 void RenderWidgetHostViewAura::DidNavigate() {
-  WasResized(cc::DeadlinePolicy::UseExistingDeadline(), base::nullopt);
+  SynchronizeVisualProperties(cc::DeadlinePolicy::UseExistingDeadline(),
+                              base::nullopt);
   if (delegated_frame_host_)
     delegated_frame_host_->DidNavigate();
 }

@@ -438,7 +438,7 @@ bool BlinkTestController::PrepareForLayoutTest(
     main_window_->web_contents()
         ->GetRenderViewHost()
         ->GetWidget()
-        ->WasResized();
+        ->SynchronizeVisualProperties();
     RenderViewHost* render_view_host =
         main_window_->web_contents()->GetRenderViewHost();
 

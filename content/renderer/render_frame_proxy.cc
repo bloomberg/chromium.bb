@@ -239,7 +239,8 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
 
   compositing_helper_ = std::make_unique<ChildFrameCompositingHelper>(this);
 
-  pending_resize_params_.screen_info = render_widget_->GetOriginalScreenInfo();
+  pending_visual_properties_.screen_info =
+      render_widget_->GetOriginalScreenInfo();
 
 #if defined(USE_AURA)
   if (features::IsMusEnabled()) {
@@ -256,9 +257,10 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
 }
 
 void RenderFrameProxy::ResendResizeParams() {
-  // Reset |sent_resize_params_| in order to allocate a new viz::LocalSurfaceId.
-  sent_resize_params_ = base::nullopt;
-  WasResized();
+  // Reset |sent_visual_properties_| in order to allocate a new
+  // viz::LocalSurfaceId.
+  sent_visual_properties_ = base::nullopt;
+  SynchronizeVisualProperties();
 }
 
 void RenderFrameProxy::WillBeginCompositorFrame() {
@@ -273,20 +275,20 @@ void RenderFrameProxy::WillBeginCompositorFrame() {
 }
 
 void RenderFrameProxy::OnScreenInfoChanged(const ScreenInfo& screen_info) {
-  pending_resize_params_.screen_info = screen_info;
+  pending_visual_properties_.screen_info = screen_info;
   if (crashed_) {
     // Update the sad page to match the current ScreenInfo.
     compositing_helper_->ChildFrameGone(local_frame_size(),
                                         screen_info.device_scale_factor);
     return;
   }
-  WasResized();
+  SynchronizeVisualProperties();
 }
 
 void RenderFrameProxy::UpdateCaptureSequenceNumber(
     uint32_t capture_sequence_number) {
-  pending_resize_params_.capture_sequence_number = capture_sequence_number;
-  WasResized();
+  pending_visual_properties_.capture_sequence_number = capture_sequence_number;
+  SynchronizeVisualProperties();
 }
 
 void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
@@ -586,15 +588,15 @@ void RenderFrameProxy::OnResizeDueToAutoResize(
 
 void RenderFrameProxy::OnEnableAutoResize(const gfx::Size& min_size,
                                           const gfx::Size& max_size) {
-  pending_resize_params_.auto_resize_enabled = true;
-  pending_resize_params_.min_size_for_auto_resize = min_size;
-  pending_resize_params_.max_size_for_auto_resize = max_size;
-  WasResized();
+  pending_visual_properties_.auto_resize_enabled = true;
+  pending_visual_properties_.min_size_for_auto_resize = min_size;
+  pending_visual_properties_.max_size_for_auto_resize = max_size;
+  SynchronizeVisualProperties();
 }
 
 void RenderFrameProxy::OnDisableAutoResize() {
-  pending_resize_params_.auto_resize_enabled = false;
-  WasResized();
+  pending_visual_properties_.auto_resize_enabled = false;
+  SynchronizeVisualProperties();
 }
 
 #if defined(USE_AURA)
@@ -604,34 +606,36 @@ void RenderFrameProxy::SetMusEmbeddedFrame(
 }
 #endif
 
-void RenderFrameProxy::WasResized() {
+void RenderFrameProxy::SynchronizeVisualProperties() {
   if (!frame_sink_id_.is_valid() || crashed_)
     return;
 
   // Note that the following flag is true if the capture sequence number
   // actually changed. That is, it is false if we did not have
-  // |sent_resize_params_|, which is different from
-  // |synchronized_params_changed| below.
+  // |sent_visual_properties_|, which is different from
+  // |synchronized_props_changed| below.
   bool capture_sequence_number_changed =
-      sent_resize_params_ && sent_resize_params_->capture_sequence_number !=
-                                 pending_resize_params_.capture_sequence_number;
+      sent_visual_properties_ &&
+      sent_visual_properties_->capture_sequence_number !=
+          pending_visual_properties_.capture_sequence_number;
 
-  bool synchronized_params_changed =
-      !sent_resize_params_ ||
-      sent_resize_params_->auto_resize_enabled !=
-          pending_resize_params_.auto_resize_enabled ||
-      sent_resize_params_->min_size_for_auto_resize !=
-          pending_resize_params_.min_size_for_auto_resize ||
-      sent_resize_params_->max_size_for_auto_resize !=
-          pending_resize_params_.max_size_for_auto_resize ||
-      sent_resize_params_->local_frame_size !=
-          pending_resize_params_.local_frame_size ||
-      sent_resize_params_->screen_space_rect.size() !=
-          pending_resize_params_.screen_space_rect.size() ||
-      sent_resize_params_->screen_info != pending_resize_params_.screen_info ||
+  bool synchronized_props_changed =
+      !sent_visual_properties_ ||
+      sent_visual_properties_->auto_resize_enabled !=
+          pending_visual_properties_.auto_resize_enabled ||
+      sent_visual_properties_->min_size_for_auto_resize !=
+          pending_visual_properties_.min_size_for_auto_resize ||
+      sent_visual_properties_->max_size_for_auto_resize !=
+          pending_visual_properties_.max_size_for_auto_resize ||
+      sent_visual_properties_->local_frame_size !=
+          pending_visual_properties_.local_frame_size ||
+      sent_visual_properties_->screen_space_rect.size() !=
+          pending_visual_properties_.screen_space_rect.size() ||
+      sent_visual_properties_->screen_info !=
+          pending_visual_properties_.screen_info ||
       capture_sequence_number_changed;
 
-  if (synchronized_params_changed)
+  if (synchronized_props_changed)
     local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
 
   viz::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
@@ -646,10 +650,10 @@ void RenderFrameProxy::WasResized() {
                                              deadline);
   }
 
-  bool rect_changed =
-      !sent_resize_params_ || sent_resize_params_->screen_space_rect !=
-                                  pending_resize_params_.screen_space_rect;
-  bool resize_params_changed = synchronized_params_changed || rect_changed;
+  bool rect_changed = !sent_visual_properties_ ||
+                      sent_visual_properties_->screen_space_rect !=
+                          pending_visual_properties_.screen_space_rect;
+  bool visual_properties_changed = synchronized_props_changed || rect_changed;
 
 #if defined(USE_AURA)
   if (rect_changed && mus_embedded_frame_) {
@@ -658,13 +662,13 @@ void RenderFrameProxy::WasResized() {
   }
 #endif
 
-  if (!resize_params_changed)
+  if (!visual_properties_changed)
     return;
 
   // Let the browser know about the updated view rect.
   Send(new FrameHostMsg_UpdateResizeParams(routing_id_, surface_id,
-                                           pending_resize_params_));
-  sent_resize_params_ = pending_resize_params_;
+                                           pending_visual_properties_));
+  sent_visual_properties_ = pending_visual_properties_;
 
   // The visible rect that the OOPIF needs to raster depends partially on
   // parameters that might have changed. If they affect the raster area, resend
@@ -778,17 +782,18 @@ void RenderFrameProxy::Navigate(const blink::WebURLRequest& request,
 void RenderFrameProxy::FrameRectsChanged(
     const blink::WebRect& local_frame_rect,
     const blink::WebRect& screen_space_rect) {
-  pending_resize_params_.screen_space_rect = gfx::Rect(screen_space_rect);
-  pending_resize_params_.local_frame_size =
+  pending_visual_properties_.screen_space_rect = gfx::Rect(screen_space_rect);
+  pending_visual_properties_.local_frame_size =
       gfx::Size(local_frame_rect.width, local_frame_rect.height);
-  pending_resize_params_.screen_info = render_widget_->GetOriginalScreenInfo();
+  pending_visual_properties_.screen_info =
+      render_widget_->GetOriginalScreenInfo();
   if (crashed_) {
     // Update the sad page to match the current size.
     compositing_helper_->ChildFrameGone(local_frame_size(),
                                         screen_info().device_scale_factor);
     return;
   }
-  WasResized();
+  SynchronizeVisualProperties();
 }
 
 void RenderFrameProxy::UpdateRemoteViewportIntersection(
@@ -899,7 +904,7 @@ uint32_t RenderFrameProxy::Print(const blink::WebRect& rect,
 
 gfx::Rect RenderFrameProxy::ComputeCompositingRect(
     const gfx::Rect& intersection_rect) {
-  if (!sent_resize_params_)
+  if (!sent_visual_properties_)
     return gfx::Rect();
 
   gfx::Size visible_viewport_size_in_pixels(
@@ -909,10 +914,10 @@ gfx::Rect RenderFrameProxy::ComputeCompositingRect(
   gfx::Rect screen_space_rect;
   if (!IsUseZoomForDSFEnabled()) {
     screen_space_rect =
-        gfx::ScaleToEnclosingRect(sent_resize_params_->screen_space_rect,
+        gfx::ScaleToEnclosingRect(sent_visual_properties_->screen_space_rect,
                                   screen_info().device_scale_factor);
   } else {
-    screen_space_rect = sent_resize_params_->screen_space_rect;
+    screen_space_rect = sent_visual_properties_->screen_space_rect;
   }
 
   // For iframes that are larger than the window viewport, add a 30% buffer

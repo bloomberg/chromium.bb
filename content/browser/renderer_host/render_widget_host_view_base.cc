@@ -316,7 +316,7 @@ void RenderWidgetHostViewBase::DidUnregisterFromTextInputManager(
 void RenderWidgetHostViewBase::EnableAutoResize(const gfx::Size& min_size,
                                                 const gfx::Size& max_size) {
   host()->SetAutoResize(true, min_size, max_size);
-  host()->WasResized();
+  host()->SynchronizeVisualProperties();
 }
 
 void RenderWidgetHostViewBase::DisableAutoResize(const gfx::Size& new_size) {
@@ -327,7 +327,7 @@ void RenderWidgetHostViewBase::DisableAutoResize(const gfx::Size& new_size) {
   if (host()->delegate())
     host()->delegate()->ResetAutoResizeSize();
   host()->SetAutoResize(false, gfx::Size(), gfx::Size());
-  host()->WasResized();
+  host()->SynchronizeVisualProperties();
 }
 
 bool RenderWidgetHostViewBase::IsScrollOffsetAtTop() const {
@@ -645,7 +645,7 @@ bool RenderWidgetHostViewBase::ShouldContinueToPauseForFrame() {
 
 void RenderWidgetHostViewBase::DidNavigate() {
   if (host())
-    host()->WasResized();
+    host()->SynchronizeVisualProperties();
 }
 
 }  // namespace content

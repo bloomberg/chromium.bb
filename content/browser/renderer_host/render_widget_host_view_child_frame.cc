@@ -341,7 +341,7 @@ void RenderWidgetHostViewChildFrame::SetInsets(const gfx::Insets& insets) {
   // Insets are used only for <webview> and are used to let the UI know it's
   // being obscured (for e.g. by the virtual keyboard).
   insets_ = insets;
-  host()->WasResized(!insets_.IsEmpty());
+  host()->SynchronizeVisualProperties(!insets_.IsEmpty());
 }
 
 gfx::NativeView RenderWidgetHostViewChildFrame::GetNativeView() const {
@@ -1146,7 +1146,7 @@ void RenderWidgetHostViewChildFrame::OnResizeDueToAutoResizeComplete(
 }
 
 void RenderWidgetHostViewChildFrame::DidNavigate() {
-  host()->WasResized();
+  host()->SynchronizeVisualProperties();
 }
 
 }  // namespace content

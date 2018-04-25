@@ -2173,7 +2173,7 @@ void WebContentsImpl::ExitFullscreenMode(bool will_cause_resize) {
   if (!will_cause_resize) {
     if (RenderWidgetHostView* rwhv = GetRenderWidgetHostView()) {
         if (RenderWidgetHost* render_widget_host = rwhv->GetRenderWidgetHost())
-          render_widget_host->WasResized();
+          render_widget_host->SynchronizeVisualProperties();
     }
   }
 
@@ -2954,7 +2954,7 @@ void WebContentsImpl::ResizeDueToAutoResize(
       RenderWidgetHostImpl* host =
           node->current_frame_host()->GetRenderWidgetHost();
       if (host != render_widget_host)
-        host->WasResized();
+        host->SynchronizeVisualProperties();
     }
   }
 
@@ -5788,7 +5788,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
   RenderWidgetHostView* rwh_view = render_view_host->GetWidget()->GetView();
   if (rwh_view) {
     if (RenderWidgetHost* render_widget_host = rwh_view->GetRenderWidgetHost())
-      render_widget_host->WasResized();
+      render_widget_host->SynchronizeVisualProperties();
   }
 #endif
 

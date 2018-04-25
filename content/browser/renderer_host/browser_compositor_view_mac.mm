@@ -274,7 +274,7 @@ bool BrowserCompositorMac::UpdateNSViewAndDisplay(
   if (needs_new_surface_id) {
     if (recyclable_compositor_)
       recyclable_compositor_->Suspend();
-    GetDelegatedFrameHost()->WasResized(
+    GetDelegatedFrameHost()->SynchronizeVisualProperties(
         dfh_local_surface_id_allocator_.GenerateId(), dfh_size_dip_,
         cc::DeadlinePolicy::UseExistingDeadline());
   }
@@ -296,7 +296,7 @@ void BrowserCompositorMac::UpdateForAutoResize(const gfx::Size& new_size_dip) {
 
   if (recyclable_compositor_)
     recyclable_compositor_->Suspend();
-  GetDelegatedFrameHost()->WasResized(
+  GetDelegatedFrameHost()->SynchronizeVisualProperties(
       dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId(), dfh_size_dip_,
       cc::DeadlinePolicy::UseExistingDeadline());
 }
@@ -519,9 +519,10 @@ ui::Compositor* BrowserCompositorMac::CompositorForTesting() const {
 void BrowserCompositorMac::DidNavigate() {
   const viz::LocalSurfaceId& new_local_surface_id =
       dfh_local_surface_id_allocator_.GenerateId();
-  client_->WasResized();
-  delegated_frame_host_->WasResized(new_local_surface_id, dfh_size_dip_,
-                                    cc::DeadlinePolicy::UseExistingDeadline());
+  client_->SynchronizeVisualProperties();
+  delegated_frame_host_->SynchronizeVisualProperties(
+      new_local_surface_id, dfh_size_dip_,
+      cc::DeadlinePolicy::UseExistingDeadline());
   delegated_frame_host_->DidNavigate();
 }
 

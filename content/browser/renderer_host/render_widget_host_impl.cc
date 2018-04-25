@@ -566,7 +566,7 @@ void RenderWidgetHostImpl::Init() {
   renderer_initialized_ = true;
 
   SendScreenRects();
-  WasResized();
+  SynchronizeVisualProperties();
 
   if (owner_delegate_)
     owner_delegate_->RenderWidgetDidInit();
@@ -720,20 +720,24 @@ void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
 
   // It's possible for our size to be out of sync with the renderer. The
   // following is one case that leads to this:
-  // 1. WasResized -> Send ViewMsg_Resize to render
-  // 2. WasResized -> do nothing as resize_ack_pending_ is true
+  // 1. SynchronizeVisualProperties -> Send ViewMsg_SynchronizeVisualProperties
+  //    to render.
+  // 2. SynchronizeVisualProperties -> do nothing as
+  //    sync_visual_props_ack_pending_ is true
   // 3. WasHidden
-  // 4. OnResizeOrRepaintACK from (1) processed. Does NOT invoke WasResized as
-  //    view is hidden. Now renderer/browser out of sync with what they think
-  //    size is.
-  // By invoking WasResized the renderer is updated as necessary. WasResized
-  // does nothing if the sizes are already in sync.
+  // 4. OnResizeOrRepaintACK from (1) processed. Does NOT invoke
+  //    SynchronizeVisualProperties as view is hidden. Now renderer/browser out
+  //    of sync with what they think size is.
+  // By invoking SynchronizeVisualProperties the renderer is updated as
+  // necessary. SynchronizeVisualProperties does nothing if the sizes are
+  // already in sync.
   //
   // TODO: ideally ViewMsg_WasShown would take a size. This way, the renderer
   // could handle both the restore and resize at once. This isn't that big a
   // deal as RenderWidget::WasShown delays updating, so that the resize from
-  // WasResized is usually processed before the renderer is painted.
-  WasResized();
+  // SynchronizeVisualProperties is usually processed before the renderer is
+  // painted.
+  SynchronizeVisualProperties();
 }
 
 #if defined(OS_ANDROID)
@@ -857,11 +861,12 @@ void RenderWidgetHostImpl::SetInitialRenderSizeParams(
   old_resize_params_ = std::make_unique<ResizeParams>(resize_params);
 }
 
-void RenderWidgetHostImpl::WasResized() {
-  WasResized(false);
+void RenderWidgetHostImpl::SynchronizeVisualProperties() {
+  SynchronizeVisualProperties(false);
 }
 
-void RenderWidgetHostImpl::WasResized(bool scroll_focused_node_into_view) {
+void RenderWidgetHostImpl::SynchronizeVisualProperties(
+    bool scroll_focused_node_into_view) {
   // Skip if the |delegate_| has already been detached because
   // it's web contents is being deleted.
   if (resize_ack_pending_ || !process_->HasConnection() || !view_ ||
@@ -1681,7 +1686,7 @@ void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
   // The resize message (which may not happen immediately) will carry with it
   // the screen info as well as the new size (if the screen has changed scale
   // factor).
-  WasResized();
+  SynchronizeVisualProperties();
 
   if (touch_emulator_) {
     touch_emulator_->SetDeviceScaleFactor(GetScaleFactorForView(view_.get()));
@@ -2213,7 +2218,7 @@ void RenderWidgetHostImpl::DidCompleteResizeOrRepaint(
   bool is_resize_ack =
       ViewHostMsg_ResizeOrRepaint_ACK_Flags::is_resize_ack(params.flags);
   if (is_resize_ack)
-    WasResized();
+    SynchronizeVisualProperties();
 }
 
 void RenderWidgetHostImpl::OnSetCursor(const WebCursor& cursor) {
@@ -3097,7 +3102,7 @@ void RenderWidgetHostImpl::SetScreenOrientationForTesting(
     ScreenOrientationValues type) {
   screen_orientation_angle_for_testing_ = angle;
   screen_orientation_type_for_testing_ = type;
-  WasResized();
+  SynchronizeVisualProperties();
 }
 
 // TODO(ericrk): On Android, with surface synchronization enabled,  we need to

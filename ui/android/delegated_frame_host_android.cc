@@ -213,7 +213,7 @@ void DelegatedFrameHostAndroid::DetachFromCompositor() {
   registered_parent_compositor_ = nullptr;
 }
 
-void DelegatedFrameHostAndroid::WasResized() {
+void DelegatedFrameHostAndroid::SynchronizeVisualProperties() {
   if (enable_surface_synchronization_) {
     local_surface_id_ = local_surface_id_allocator_.GenerateId();
 

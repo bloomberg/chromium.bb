@@ -161,18 +161,18 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       std::unique_ptr<MusEmbeddedFrame> mus_embedded_frame);
 #endif
 
-  void WasResized();
+  void SynchronizeVisualProperties();
 
   const gfx::Rect& screen_space_rect() const {
-    return pending_resize_params_.screen_space_rect;
+    return pending_visual_properties_.screen_space_rect;
   }
 
   const gfx::Size& local_frame_size() const {
-    return pending_resize_params_.local_frame_size;
+    return pending_visual_properties_.local_frame_size;
   }
 
   const ScreenInfo& screen_info() const {
-    return pending_resize_params_.screen_info;
+    return pending_visual_properties_.screen_info;
   }
 
   const viz::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
@@ -295,11 +295,11 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // therefore don't care to synchronize ResizeParams with viz::LocalSurfaceIds.
   // Perhaps this can be moved to ChildFrameCompositingHelper?
   // The last ResizeParams sent to the browser process, if any.
-  base::Optional<FrameResizeParams> sent_resize_params_;
+  base::Optional<FrameResizeParams> sent_visual_properties_;
 
   // The current set of ResizeParams. This may or may not match
-  // |sent_resize_params_|.
-  FrameResizeParams pending_resize_params_;
+  // |sent_visual_properties_|.
+  FrameResizeParams pending_visual_properties_;
 
   bool crashed_ = false;
 
