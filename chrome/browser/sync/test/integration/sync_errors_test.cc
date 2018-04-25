@@ -235,7 +235,8 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ClientDataObsoleteTest) {
   // Make server return SUCCESS so that sync can initialize.
   EXPECT_TRUE(GetFakeServer()->TriggerError(sync_pb::SyncEnums::SUCCESS));
 
-  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
+  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization(
+      /*skip_passphrase_verification=*/false));
 
   // Ensure cache_guid changed.
   GetSyncService(0)->QueryDetailedSyncStatus(&status);

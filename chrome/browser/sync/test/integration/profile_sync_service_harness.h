@@ -99,12 +99,12 @@ class ProfileSyncServiceHarness {
   // (e.g., auth error) is reached. Returns true if and only if the engine
   // initialized successfully. See ProfileSyncService's IsEngineInitialized()
   // method for the definition of engine initialization.
-  bool AwaitEngineInitialization(bool skip_passphrase_verification = false);
+  bool AwaitEngineInitialization(bool skip_passphrase_verification);
 
   // Blocks the caller until sync setup is complete. Returns true if and only
   // if sync setup completed successfully. See syncer::SyncService's
   // IsSyncActive() method for the definition of what successful means here.
-  bool AwaitSyncSetupCompletion();
+  bool AwaitSyncSetupCompletion(bool skip_passphrase_verification);
 
   // Returns the ProfileSyncService member of the sync client.
   browser_sync::ProfileSyncService* service() const { return service_; }
