@@ -52,7 +52,7 @@ public class ChromeMediaRouterTestBase {
         mRouteProvider = mock(MediaRouteProvider.class);
         doReturn(true).when(mRouteProvider).supportsSource(anyString());
         mChromeMediaRouter.addMediaRouteProvider(mRouteProvider);
-        assertEquals(mChromeMediaRouter.getRouteProvidersForTest().size(), 1);
+        assertEquals(1, mChromeMediaRouter.getRouteProvidersForTest().size());
         assertEquals(mRouteProvider, mChromeMediaRouter.getRouteProvidersForTest().get(0));
         assertNotNull(mRouteProvider);
 
