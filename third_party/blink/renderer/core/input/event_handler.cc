@@ -544,9 +544,9 @@ EventHandler::OptionalCursor EventHandler::SelectCursor(
       return ZoomInCursor();
     case ECursor::kZoomOut:
       return ZoomOutCursor();
-    case ECursor::kWebkitGrab:
+    case ECursor::kGrab:
       return GrabCursor();
-    case ECursor::kWebkitGrabbing:
+    case ECursor::kGrabbing:
       return GrabbingCursor();
   }
   return PointerCursor();

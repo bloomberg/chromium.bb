@@ -107,6 +107,10 @@ inline ECursor CssValueIDToPlatformEnum(CSSValueID v) {
     return ECursor::kZoomIn;
   if (v == CSSValueWebkitZoomOut)
     return ECursor::kZoomOut;
+  if (v == CSSValueWebkitGrab)
+    return ECursor::kGrab;
+  if (v == CSSValueWebkitGrabbing)
+    return ECursor::kGrabbing;
   return detail::cssValueIDToPlatformEnumGenerated<ECursor>(v);
 }
 
