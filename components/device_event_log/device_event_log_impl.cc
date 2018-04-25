@@ -33,6 +33,7 @@ const char* kLogTypeBluetoothDesc = "Bluetooth";
 const char* kLogTypeUsbDesc = "USB";
 const char* kLogTypeHidDesc = "HID";
 const char* kLogTypeMemoryDesc = "Memory";
+const char* kLogTypePrinterDesc = "Printer";
 
 std::string GetLogTypeString(LogType type) {
   switch (type) {
@@ -50,6 +51,8 @@ std::string GetLogTypeString(LogType type) {
       return kLogTypeHidDesc;
     case LOG_TYPE_MEMORY:
       return kLogTypeMemoryDesc;
+    case LOG_TYPE_PRINTER:
+      return kLogTypePrinterDesc;
     case LOG_TYPE_UNKNOWN:
       break;
   }

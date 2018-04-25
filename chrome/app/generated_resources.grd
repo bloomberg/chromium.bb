@@ -10530,6 +10530,9 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       <message name="IDS_DEVICE_LOG_TYPE_HID" desc="Checkbox to enable showing events of type HID (Human Interface Device)">
         HID
       </message>
+      <message name="IDS_DEVICE_LOG_TYPE_PRINTER" desc="Checkbox to enable showing events of type Printer">
+        Printer
+      </message>
       <message name="IDS_DEVICE_LOG_FILEINFO" desc="File info checkbox in device event log">
         File Info
       </message>
