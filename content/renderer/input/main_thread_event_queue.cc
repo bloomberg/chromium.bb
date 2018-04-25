@@ -240,6 +240,11 @@ MainThreadEventQueue::MainThreadEventQueue(
     }
   }
   raf_fallback_timer_.SetTaskRunner(main_task_runner);
+
+  event_predictor_ =
+      base::FeatureList::IsEnabled(features::kResamplingInputEvents)
+          ? std::make_unique<InputEventPrediction>()
+          : nullptr;
 }
 
 MainThreadEventQueue::~MainThreadEventQueue() {}
@@ -392,6 +397,7 @@ void MainThreadEventQueue::DispatchEvents() {
       task = shared_state_.events_.Pop();
     }
 
+    HandleEventResampling(task, base::TimeTicks::Now());
     // Dispatching the event is outside of critical section.
     task->Dispatch(this);
   }
@@ -450,6 +456,7 @@ void MainThreadEventQueue::DispatchRafAlignedInput(base::TimeTicks frame_time) {
       }
       task = shared_state_.events_.Pop();
     }
+    HandleEventResampling(task, frame_time);
     // Dispatching the event is outside of critical section.
     task->Dispatch(this);
   }
@@ -504,6 +511,16 @@ bool MainThreadEventQueue::IsRafAlignedEvent(
              !needs_low_latency_until_pointer_up_;
     default:
       return false;
+  }
+}
+
+void MainThreadEventQueue::HandleEventResampling(
+    const std::unique_ptr<MainThreadEventQueueTask>& item,
+    base::TimeTicks frame_time) {
+  if (item->IsWebInputEvent() && allow_raf_aligned_input_ && event_predictor_) {
+    QueuedWebInputEvent* event = static_cast<QueuedWebInputEvent*>(item.get());
+    event_predictor_->HandleEvents(event->coalesced_event(), frame_time,
+                                   &event->event());
   }
 }
 
