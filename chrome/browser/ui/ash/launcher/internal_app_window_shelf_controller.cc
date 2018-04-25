@@ -59,7 +59,7 @@ void InternalAppWindowShelfController::OnWindowPropertyChanged(
   ash::ShelfID old_shelf_id =
       ash::ShelfID::Deserialize(reinterpret_cast<std::string*>(old));
   if (!old_shelf_id.IsNull() && app_list::IsInternalApp(old_shelf_id.app_id))
-    DelegetAppWindow(old_shelf_id);
+    DeleteAppWindow(old_shelf_id);
 
   ash::ShelfID shelf_id =
       ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
@@ -91,7 +91,7 @@ void InternalAppWindowShelfController::OnWindowDestroying(
 
   ash::ShelfID shelf_id =
       ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
-  if (!DelegetAppWindow(shelf_id))
+  if (!DeleteAppWindow(shelf_id))
     return;
 
   // Check if we may close controller now, at this point we can safely remove
@@ -149,7 +149,7 @@ void InternalAppWindowShelfController::UnregisterAppWindow(
   app_window->SetController(nullptr);
 }
 
-bool InternalAppWindowShelfController::DelegetAppWindow(
+bool InternalAppWindowShelfController::DeleteAppWindow(
     const ash::ShelfID& shelf_id) {
   auto app_window_it = shelf_id_to_app_window_.find(shelf_id);
   if (app_window_it == shelf_id_to_app_window_.end())

@@ -54,8 +54,8 @@ class InternalAppWindowShelfController : public AppWindowLauncherController,
   void UnregisterAppWindow(AppWindowBase* app_window);
 
   // Deletes an AppWindow.
-  // Returns true if an AppWindow of |shelf_id| exits, otherwise returns false.
-  bool DelegetAppWindow(const ash::ShelfID& shelf_id);
+  // Returns true if an AppWindow of |shelf_id| exists, otherwise returns false.
+  bool DeleteAppWindow(const ash::ShelfID& shelf_id);
 
   // AppWindowLauncherController:
   AppWindowLauncherItemController* ControllerForWindow(
