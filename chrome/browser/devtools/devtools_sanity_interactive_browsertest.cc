@@ -128,7 +128,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest, NormalWindowChangeBounds) {
   CheckWindowBounds(gfx::Rect(200, 100, 500, 400));
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest, NormalToMaximizedWindow) {
+#if defined(OS_MACOSX)
+// MacViews does not yet implement maximized windows: https://crbug.com/836327
+#define MAYBE_NormalToMaximizedWindow DISABLED_NormalToMaximizedWindow
+#else
+#define MAYBE_NormalToMaximizedWindow NormalToMaximizedWindow
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest,
+                       MAYBE_NormalToMaximizedWindow) {
   CheckIsMaximized(false);
   SendCommand("maximized");
   CheckIsMaximized(true);
@@ -159,8 +166,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest,
   CheckIsFullscreen(true);
 }
 
+#if defined(OS_MACOSX)
+// MacViews does not yet implement maximized windows: https://crbug.com/836327
+#define MAYBE_MaximizedToMinimizedWindow DISABLED_MaximizedToMinimizedWindow
+#else
+#define MAYBE_MaximizedToMinimizedWindow MaximizedToMinimizedWindow
+#endif
 IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest,
-                       MaximizedToMinimizedWindow) {
+                       MAYBE_MaximizedToMinimizedWindow) {
   browser()->window()->Maximize();
   CheckIsMaximized(true);
 
@@ -198,7 +211,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest, ShowMinimizedWindow) {
   CheckIsMinimized(false);
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest, RestoreMaximizedWindow) {
+#if defined(OS_MACOSX)
+// MacViews does not yet implement maximized windows: https://crbug.com/836327
+#define MAYBE_RestoreMaximizedWindow DISABLED_RestoreMaximizedWindow
+#else
+#define MAYBE_RestoreMaximizedWindow RestoreMaximizedWindow
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest,
+                       MAYBE_RestoreMaximizedWindow) {
   browser()->window()->Maximize();
   CheckIsMaximized(true);
   SendCommand("normal");
