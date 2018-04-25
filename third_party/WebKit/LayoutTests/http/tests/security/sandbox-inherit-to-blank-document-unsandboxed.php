@@ -18,8 +18,8 @@ header("Content-Security-Policy: sandbox allow-scripts allow-popups allow-popups
         var test = async_test("Testing sandbox not inherited via target='_blank' when 'allow-popups-to-escape-sandbox' present");
 
         window.addEventListener("message", test.step_func(function (e) {
-            assert_equals(document.origin, 'null');
-            assert_equals(e.data.origin, 'http://127.0.0.1:8000'); 
+            assert_equals(self.origin, 'null');
+            assert_equals(e.data.origin, 'http://127.0.0.1:8000');
             test.done();
         }));
 

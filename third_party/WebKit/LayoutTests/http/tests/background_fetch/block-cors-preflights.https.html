@@ -24,7 +24,7 @@ backgroundFetchTest((t, bgFetch) => {
 }, 'POST and text/plain are whitelisted, so should register ok');
 
 backgroundFetchTest((t, bgFetch) => {
-  return bgFetch.fetch(uniqueTag(), new Request(document.origin, {
+  return bgFetch.fetch(uniqueTag(), new Request(self.origin, {
     method: 'PUT',
     headers: {'Content-Type': 'text/json'}
   }));

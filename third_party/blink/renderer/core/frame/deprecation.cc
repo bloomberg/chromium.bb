@@ -575,6 +575,12 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                                     "TouchEvent constructor", kM68,
                                     "5668612064935936")};
 
+    case WebFeature::kDocumentOrigin:
+      return {"DocumentOrigin", kM70,
+              ReplacedWillBeRemoved("document.origin",
+                                    "self.origin (window.origin)", kM70,
+                                    "5701042356355072")};
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return {"NotDeprecated", kUnknown, ""};

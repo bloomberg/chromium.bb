@@ -43,7 +43,7 @@
   ];
   url_list.forEach(url => test(t => {
     var a = document.createElement('a');
-    a.ping = document.origin + url;
+    a.ping = self.origin + url;
     a.href = '#' + url;
     document.body.appendChild(a);
     a.click();
