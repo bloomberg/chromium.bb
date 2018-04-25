@@ -11,6 +11,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -60,6 +61,7 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -1626,7 +1628,42 @@ error::Error RasterDecoderImpl::HandleWaitSyncTokenCHROMIUM(
 error::Error RasterDecoderImpl::HandleSetColorSpaceMetadata(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  NOTIMPLEMENTED();
+  const volatile raster::cmds::SetColorSpaceMetadata& c =
+      *static_cast<const volatile raster::cmds::SetColorSpaceMetadata*>(
+          cmd_data);
+
+  GLuint texture_id = c.texture_id;
+  GLsizei color_space_size = c.color_space_size;
+  const char* data = static_cast<const char*>(
+      GetAddressAndCheckSize(c.shm_id, c.shm_offset, color_space_size));
+  if (!data)
+    return error::kOutOfBounds;
+
+  // Make a copy to reduce the risk of a time of check to time of use attack.
+  std::vector<char> color_space_data(data, data + color_space_size);
+  base::Pickle color_space_pickle(color_space_data.data(), color_space_size);
+  base::PickleIterator iterator(color_space_pickle);
+  gfx::ColorSpace color_space;
+  if (!IPC::ParamTraits<gfx::ColorSpace>::Read(&color_space_pickle, &iterator,
+                                               &color_space))
+    return error::kOutOfBounds;
+
+  TextureRef* ref = texture_manager()->GetTexture(texture_id);
+  if (!ref) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "SetColorSpaceMetadata",
+                       "unknown texture");
+    return error::kNoError;
+  }
+
+  scoped_refptr<gl::GLImage> image =
+      ref->texture()->GetLevelImage(ref->texture()->target(), 0);
+  if (!image) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "SetColorSpaceMetadata",
+                       "no image associated with texture");
+    return error::kNoError;
+  }
+
+  image->SetColorSpace(color_space);
   return error::kNoError;
 }
 

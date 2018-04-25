@@ -39,6 +39,7 @@
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
@@ -1035,7 +1036,28 @@ void RasterImplementation::UnmapRasterCHROMIUM(GLsizeiptr written_size) {
 
 void RasterImplementation::SetColorSpaceMetadata(GLuint texture_id,
                                                  GLColorSpace color_space) {
-  NOTIMPLEMENTED();
+#if defined(__native_client__)
+  // Including gfx::ColorSpace would bring Skia and a lot of other code into
+  // NaCl's IRT.
+  SetGLError(GL_INVALID_VALUE, "RasterImplementation::SetColorSpaceMetadata",
+             "not supported");
+#else
+  gfx::ColorSpace* gfx_color_space =
+      reinterpret_cast<gfx::ColorSpace*>(color_space);
+  base::Pickle color_space_data;
+  IPC::ParamTraits<gfx::ColorSpace>::Write(&color_space_data, *gfx_color_space);
+
+  ScopedTransferBufferPtr buffer(color_space_data.size(), helper_,
+                                 transfer_buffer_);
+  if (!buffer.valid() || buffer.size() < color_space_data.size()) {
+    SetGLError(GL_OUT_OF_MEMORY, "RasterImplementation::SetColorSpaceMetadata",
+               "out of memory");
+    return;
+  }
+  memcpy(buffer.address(), color_space_data.data(), color_space_data.size());
+  helper_->SetColorSpaceMetadata(texture_id, buffer.shm_id(), buffer.offset(),
+                                 color_space_data.size());
+#endif
 }
 
 void RasterImplementation::GenMailbox(GLbyte* mailbox) {
