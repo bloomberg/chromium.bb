@@ -82,6 +82,7 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
 
  private:
   class RTCRtpSenderInternal;
+  struct RTCRtpSenderInternalTraits;
 
   scoped_refptr<RTCRtpSenderInternal> internal_;
 };

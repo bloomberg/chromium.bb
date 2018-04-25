@@ -60,6 +60,7 @@ class CONTENT_EXPORT RTCRtpReceiver : public blink::WebRTCRtpReceiver {
 
  private:
   class RTCRtpReceiverInternal;
+  struct RTCRtpReceiverInternalTraits;
 
   scoped_refptr<RTCRtpReceiverInternal> internal_;
 };

@@ -42,7 +42,24 @@ class RTCRtpReceiverTest : public ::testing::Test {
         dependency_factory_.get(), nullptr);
   }
 
-  void TearDown() override { blink::WebHeap::CollectAllGarbageForTesting(); }
+  void TearDown() override {
+    receiver_.reset();
+    // Syncing up with the signaling thread ensures any pending operations on
+    // that thread are executed. If they post back to the main thread, such as
+    // the sender's destructor traits, this is allowed to execute before the
+    // test shuts down the threads.
+    SyncWithSignalingThread();
+    blink::WebHeap::CollectAllGarbageForTesting();
+  }
+
+  // Wait for the signaling thread to perform any queued tasks, executing tasks
+  // posted to the current thread in the meantime while waiting.
+  void SyncWithSignalingThread() const {
+    base::RunLoop run_loop;
+    dependency_factory_->GetWebRtcSignalingThread()->PostTask(
+        FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+  }
 
   std::unique_ptr<RTCRtpReceiver> CreateReceiver(
       scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track) {
@@ -127,8 +144,7 @@ TEST_F(RTCRtpReceiverTest, ShallowCopy) {
   EXPECT_EQ(copy->Track().UniqueId(), web_track_unique_id);
 }
 
-// Test is flaky (https://crbug.com/827450).
-TEST_F(RTCRtpReceiverTest, DISABLED_GetStats) {
+TEST_F(RTCRtpReceiverTest, GetStats) {
   scoped_refptr<MockWebRtcAudioTrack> webrtc_track =
       MockWebRtcAudioTrack::Create("webrtc_track");
   receiver_ = CreateReceiver(webrtc_track);
