@@ -5,32 +5,47 @@
 #ifndef CC_RESOURCES_LAYER_TREE_RESOURCE_PROVIDER_H_
 #define CC_RESOURCES_LAYER_TREE_RESOURCE_PROVIDER_H_
 
-#include "cc/resources/resource_provider.h"
+#include <vector>
+
+#include "base/threading/thread_checker.h"
+#include "cc/cc_export.h"
 #include "components/viz/common/display/renderer_settings.h"
+#include "components/viz/common/resources/release_callback.h"
+#include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/resource_settings.h"
+#include "components/viz/common/resources/single_release_callback.h"
+#include "components/viz/common/resources/transferable_resource.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
 namespace gpu {
 class GpuMemoryBufferManager;
+namespace gles2 {
+class GLES2Interface;
+}
 namespace raster {
 class RasterInterface;
 }
 }  // namespace gpu
 
+namespace viz {
+class ContextProvider;
+}  // namespace viz
+
 namespace cc {
 
 // This class is not thread-safe and can only be called from the thread it was
 // created on (in practice, the impl thread).
-class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
+class CC_EXPORT LayerTreeResourceProvider {
  public:
   LayerTreeResourceProvider(
       viz::ContextProvider* compositor_context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       bool delegated_sync_points_required,
       const viz::ResourceSettings& resource_settings);
-  ~LayerTreeResourceProvider() override;
+  ~LayerTreeResourceProvider();
 
   static gpu::SyncToken GenerateSyncTokenHelper(gpu::gles2::GLES2Interface* gl);
   static gpu::SyncToken GenerateSyncTokenHelper(
@@ -41,7 +56,7 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
   // Resources are not removed from the ResourceProvider, but are marked as
   // "in use".
   void PrepareSendToParent(
-      const ResourceIdArray& resource_ids,
+      const std::vector<viz::ResourceId>& resource_ids,
       std::vector<viz::TransferableResource>* transferable_resources);
 
   // Receives resources from the parent, moving them from mailboxes. ResourceIds
@@ -76,6 +91,8 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
   // Returns true if the provided |format| can be used as a render buffer.
   // Note that render buffer support implies texture support.
   bool IsRenderBufferFormatSupported(viz::ResourceFormat format) const;
+
+  bool IsSoftware() const { return !compositor_context_provider_; }
 
   bool use_sync_query() const { return settings_.use_sync_query; }
 
@@ -135,7 +152,12 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
   } const settings_;
 
   struct ImportedResource;
+  // Returns null if we do not have a viz::ContextProvider.
+  gpu::gles2::GLES2Interface* ContextGL() const;
+
+  THREAD_CHECKER(thread_checker_);
   base::flat_map<viz::ResourceId, ImportedResource> imported_resources_;
+  viz::ContextProvider* compositor_context_provider_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   viz::ResourceId next_id_;
 

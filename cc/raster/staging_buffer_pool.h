@@ -20,6 +20,9 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/resources/layer_tree_resource_provider.h"
 
+namespace gfx {
+class GpuMemoryBuffer;
+}
 namespace gpu {
 namespace raster {
 class RasterInterface;

@@ -11,6 +11,7 @@
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
+#include "components/viz/common/resources/returned_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -100,12 +101,13 @@ LayerTreeResourceProvider::LayerTreeResourceProvider(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     bool delegated_sync_points_required,
     const viz::ResourceSettings& resource_settings)
-    : ResourceProvider(compositor_context_provider),
-      settings_(compositor_context_provider,
+    : settings_(compositor_context_provider,
                 delegated_sync_points_required,
                 resource_settings),
+      compositor_context_provider_(compositor_context_provider),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       next_id_(kLayerTreeInitialResourceId) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 LayerTreeResourceProvider::~LayerTreeResourceProvider() {
@@ -142,7 +144,7 @@ gpu::SyncToken LayerTreeResourceProvider::GenerateSyncTokenHelper(
 }
 
 void LayerTreeResourceProvider::PrepareSendToParent(
-    const ResourceIdArray& export_ids,
+    const std::vector<viz::ResourceId>& export_ids,
     std::vector<viz::TransferableResource>* list) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   GLES2Interface* gl = ContextGL();
@@ -373,4 +375,9 @@ bool LayerTreeResourceProvider::InUseByConsumer(viz::ResourceId id) {
   return imported.exported_count > 0 || imported.returned_lost;
 }
 
+GLES2Interface* LayerTreeResourceProvider::ContextGL() const {
+  return compositor_context_provider_
+             ? compositor_context_provider_->ContextGL()
+             : nullptr;
+}
 }  // namespace cc

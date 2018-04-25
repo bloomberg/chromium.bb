@@ -2312,8 +2312,6 @@ void LayerTreeHostImpl::DidLoseLayerTreeFrameSink() {
   if (!has_valid_layer_tree_frame_sink_)
     return;
   has_valid_layer_tree_frame_sink_ = false;
-  if (resource_provider_)
-    resource_provider_->DidLoseContextProvider();
   client_->DidLoseLayerTreeFrameSinkOnImplThread();
 }
 

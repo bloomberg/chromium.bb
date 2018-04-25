@@ -108,7 +108,7 @@ class MockVideoFrameResourceProvider
                     media::VideoRotation));
   MOCK_METHOD0(ReleaseFrameResources, void());
   MOCK_METHOD2(PrepareSendToParent,
-               void(const cc::LayerTreeResourceProvider::ResourceIdArray&,
+               void(const std::vector<viz::ResourceId>&,
                     std::vector<viz::TransferableResource>*));
   MOCK_METHOD1(
       ReceiveReturnsFromParent,
