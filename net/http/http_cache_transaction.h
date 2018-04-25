@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
+#include "net/base/completion_repeating_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_states.h"
@@ -609,7 +610,7 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   int read_offset_;
   int effective_load_flags_;
   std::unique_ptr<PartialData> partial_;  // We are dealing with range requests.
-  CompletionCallback io_callback_;
+  CompletionRepeatingCallback io_callback_;
 
   // Error code to be returned from a subsequent Read call if shared writing
   // failed in a separate transaction.

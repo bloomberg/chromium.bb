@@ -371,7 +371,6 @@ class HttpStreamFactory::JobController
 
   State next_state_;
   ProxyResolutionService::Request* proxy_resolve_request_;
-  CompletionCallback io_callback_;
   const HttpRequestInfo request_info_;
   ProxyInfo proxy_info_;
   const SSLConfig server_ssl_config_;

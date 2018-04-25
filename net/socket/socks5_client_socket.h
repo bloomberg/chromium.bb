@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
+#include "net/base/completion_repeating_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/dns/host_resolver.h"
@@ -124,7 +125,7 @@ class NET_EXPORT_PRIVATE SOCKS5ClientSocket : public StreamSocket {
   // and return OK on success.
   int BuildHandshakeWriteBuffer(std::string* handshake) const;
 
-  CompletionCallback io_callback_;
+  CompletionRepeatingCallback io_callback_;
 
   // Stores the underlying socket.
   std::unique_ptr<ClientSocketHandle> transport_;

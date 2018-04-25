@@ -190,8 +190,8 @@ HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
                     arraysize(kValidationHeaders),
                 "invalid number of validation headers");
 
-  io_callback_ = base::Bind(&Transaction::OnIOComplete,
-                              weak_factory_.GetWeakPtr());
+  io_callback_ = base::BindRepeating(&Transaction::OnIOComplete,
+                                     weak_factory_.GetWeakPtr());
 }
 
 HttpCache::Transaction::~Transaction() {

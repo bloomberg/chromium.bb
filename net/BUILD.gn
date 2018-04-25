@@ -109,6 +109,7 @@ component("net") {
     "base/auth.h",
     "base/completion_callback.h",
     "base/completion_once_callback.h",
+    "base/completion_repeating_callback.h",
     "base/datagram_buffer.cc",
     "base/datagram_buffer.h",
     "base/escape.cc",

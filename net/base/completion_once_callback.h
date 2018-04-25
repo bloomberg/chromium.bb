@@ -14,15 +14,15 @@ namespace net {
 
 // A OnceCallback specialization that takes a single int parameter. Usually this
 // is used to report a byte count or network error code.
-typedef base::OnceCallback<void(int)> CompletionOnceCallback;
+using CompletionOnceCallback = base::OnceCallback<void(int)>;
 
 // 64bit version of the OnceCallback specialization that takes a single int64_t
 // parameter. Usually this is used to report a file offset, size or network
 // error code.
-typedef base::OnceCallback<void(int64_t)> Int64CompletionOnceCallback;
+using Int64CompletionOnceCallback = base::OnceCallback<void(int64_t)>;
 
-typedef base::CancelableOnceCallback<void(int)>
-    CancelableCompletionOnceCallback;
+using CancelableCompletionOnceCallback =
+    base::CancelableOnceCallback<void(int)>;
 
 }  // namespace net
 

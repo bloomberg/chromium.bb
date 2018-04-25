@@ -37,8 +37,8 @@ HttpProxyClientSocket::HttpProxyClientSocket(
     NextProto negotiated_protocol,
     bool is_https_proxy,
     const NetworkTrafficAnnotationTag& traffic_annotation)
-    : io_callback_(base::Bind(&HttpProxyClientSocket::OnIOComplete,
-                              base::Unretained(this))),
+    : io_callback_(base::BindRepeating(&HttpProxyClientSocket::OnIOComplete,
+                                       base::Unretained(this))),
       next_state_(STATE_NONE),
       transport_(std::move(transport_socket)),
       endpoint_(endpoint),

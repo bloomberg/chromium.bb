@@ -34,8 +34,8 @@ SOCKS5ClientSocket::SOCKS5ClientSocket(
     std::unique_ptr<ClientSocketHandle> transport_socket,
     const HostResolver::RequestInfo& req_info,
     const NetworkTrafficAnnotationTag& traffic_annotation)
-    : io_callback_(base::Bind(&SOCKS5ClientSocket::OnIOComplete,
-                              base::Unretained(this))),
+    : io_callback_(base::BindRepeating(&SOCKS5ClientSocket::OnIOComplete,
+                                       base::Unretained(this))),
       transport_(std::move(transport_socket)),
       next_state_(STATE_NONE),
       completed_handshake_(false),

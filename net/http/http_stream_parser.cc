@@ -211,8 +211,8 @@ HttpStreamParser::HttpStreamParser(ClientSocketHandle* connection,
       weak_ptr_factory_(this) {
   CHECK(connection_) << "ClientSocketHandle passed to HttpStreamParser must "
                         "not be NULL. See crbug.com/790776";
-  io_callback_ = base::Bind(&HttpStreamParser::OnIOComplete,
-                            weak_ptr_factory_.GetWeakPtr());
+  io_callback_ = base::BindRepeating(&HttpStreamParser::OnIOComplete,
+                                     weak_ptr_factory_.GetWeakPtr());
 }
 
 HttpStreamParser::~HttpStreamParser() = default;

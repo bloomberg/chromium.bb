@@ -86,8 +86,6 @@ HttpStreamFactory::JobController::JobController(
       can_start_alternative_proxy_job_(true),
       next_state_(STATE_RESOLVE_PROXY),
       proxy_resolve_request_(nullptr),
-      io_callback_(
-          base::Bind(&JobController::OnIOComplete, base::Unretained(this))),
       request_info_(request_info),
       server_ssl_config_(server_ssl_config),
       proxy_ssl_config_(proxy_ssl_config),
@@ -751,8 +749,10 @@ int HttpStreamFactory::JobController::DoResolveProxy() {
   HostPortPair destination(HostPortPair::FromURL(request_info_.url));
   GURL origin_url = ApplyHostMappingRules(request_info_.url, &destination);
 
+  CompletionCallback io_callback =
+      base::Bind(&JobController::OnIOComplete, base::Unretained(this));
   return session_->proxy_resolution_service()->ResolveProxy(
-      origin_url, request_info_.method, &proxy_info_, io_callback_,
+      origin_url, request_info_.method, &proxy_info_, io_callback,
       &proxy_resolve_request_, session_->context().proxy_delegate, net_log_);
 }
 

@@ -16,8 +16,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "crypto/ec_private_key.h"
-#include "net/base/completion_callback.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/completion_repeating_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log_with_source.h"
@@ -274,7 +274,7 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   NetLogWithSource net_log_;
 
   // Callback to be used when doing IO.
-  CompletionCallback io_callback_;
+  CompletionRepeatingCallback io_callback_;
 
   // Buffer used to read the request body from UploadDataStream.
   scoped_refptr<SeekableIOBuffer> request_body_read_buf_;
