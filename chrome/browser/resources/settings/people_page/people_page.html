@@ -176,7 +176,7 @@
 <if expr="not chromeos">
               <template is="dom-if" if="[[showSignin_(syncStatus)]]">
                 <div class="separator"></div>
-                <paper-button class="action-button" on-click="onSigninTap_"
+                <paper-button class="primary-button" on-click="onSigninTap_"
                     disabled="[[syncStatus.setupInProgress]]">
                   $i18n{syncSignin}
                 </paper-button>
