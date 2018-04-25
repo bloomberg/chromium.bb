@@ -6,6 +6,7 @@ include_rules = [
   "+chrome/grit",
   "+chrome/install_static",
   "+chrome/installer/util",
+  "+chrome/notification_helper/notification_helper_constants.h",
   "+chrome/services/file_util/public",
   "+chrome/services/media_gallery_util/public",
   "+chrome/services/printing/public",

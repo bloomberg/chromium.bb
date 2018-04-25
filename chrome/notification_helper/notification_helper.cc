@@ -16,6 +16,7 @@
 #include "chrome/install_static/product_install_details.h"
 #include "chrome/install_static/user_data_dir.h"
 #include "chrome/notification_helper/com_server_module.h"
+#include "chrome/notification_helper/notification_helper_constants.h"
 #include "chrome/notification_helper/notification_helper_crash_reporter_client.h"
 #include "chrome/notification_helper/notification_helper_util.h"
 #include "chrome/notification_helper/trace_util.h"
@@ -25,10 +26,8 @@ extern "C" int WINAPI wWinMain(HINSTANCE instance,
                                wchar_t* command_line,
                                int show_command) {
   // Persist histograms so they can be uploaded later.
-  // The allocator name must be kept in sync with the writer in
-  // chrome/browser/metrics/chrome_metrics_service_client.cc.
   base::PersistentHistogramStorage persistent_histogram_storage(
-      "NotificationHelperMetrics",
+      notification_helper::kNotificationHelperHistogramAllocatorName,
       base::PersistentHistogramStorage::StorageDirManagement::kCreate);
 
   // Initialize the CommandLine singleton from the environment.

@@ -134,6 +134,7 @@
 #include "chrome/browser/metrics/google_update_metrics_provider_win.h"
 #include "chrome/common/metrics_constants_util_win.h"
 #include "chrome/install_static/install_util.h"
+#include "chrome/notification_helper/notification_helper_constants.h"
 #include "components/browser_watcher/watcher_metrics_provider_win.h"
 #endif
 
@@ -166,13 +167,6 @@ const int kMaxHistogramGatheringWaitDuration = 60000;  // 60 seconds.
 // third_party/crashpad/crashpad/handler/handler_main.cc.
 const char kCrashpadHistogramAllocatorName[] = "CrashpadMetrics";
 
-#if defined(OS_WIN)
-// Must be kept in sync with the allocator name in
-// notification_helper/notification_helper.cc.
-constexpr char kNotificationHelperHistogramAllocatorName[] =
-    "NotificationHelperMetrics";
-#endif
-
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // The stream type assigned to the minidump stream that holds the serialized
 // system profile proto.
@@ -198,7 +192,7 @@ void RegisterFileMetricsPreferences(PrefRegistrySimple* registry) {
       registry, installer::kSetupHistogramAllocatorName);
 
   metrics::FileMetricsProvider::RegisterPrefs(
-      registry, kNotificationHelperHistogramAllocatorName);
+      registry, notification_helper::kNotificationHelperHistogramAllocatorName);
 #endif
 }
 
@@ -306,7 +300,8 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
   // potential duplicate code.
   if (!user_data_dir.empty()) {
     base::FilePath notification_helper_metrics_upload_dir =
-        user_data_dir.AppendASCII(kNotificationHelperHistogramAllocatorName);
+        user_data_dir.AppendASCII(
+            notification_helper::kNotificationHelperHistogramAllocatorName);
 
     if (metrics_reporting_enabled) {
       file_metrics_provider->RegisterSource(
@@ -314,7 +309,7 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
               notification_helper_metrics_upload_dir,
               metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
               metrics::FileMetricsProvider::ASSOCIATE_CURRENT_RUN,
-              kNotificationHelperHistogramAllocatorName));
+              notification_helper::kNotificationHelperHistogramAllocatorName));
     } else {
       base::PostTaskWithTraits(
           FROM_HERE,
