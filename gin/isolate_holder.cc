@@ -12,7 +12,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -94,7 +94,7 @@ IsolateHolder::IsolateHolder(
 
 IsolateHolder::~IsolateHolder() {
   if (task_observer_.get())
-    base::MessageLoop::current()->RemoveTaskObserver(task_observer_.get());
+    base::MessageLoopCurrent::Get()->RemoveTaskObserver(task_observer_.get());
 #if defined(OS_WIN)
   {
     void* code_range;
@@ -126,12 +126,12 @@ void IsolateHolder::Initialize(ScriptMode mode,
 void IsolateHolder::AddRunMicrotasksObserver() {
   DCHECK(!task_observer_.get());
   task_observer_.reset(new RunMicrotasksObserver(isolate_));
-  base::MessageLoop::current()->AddTaskObserver(task_observer_.get());
+  base::MessageLoopCurrent::Get()->AddTaskObserver(task_observer_.get());
 }
 
 void IsolateHolder::RemoveRunMicrotasksObserver() {
   DCHECK(task_observer_.get());
-  base::MessageLoop::current()->RemoveTaskObserver(task_observer_.get());
+  base::MessageLoopCurrent::Get()->RemoveTaskObserver(task_observer_.get());
   task_observer_.reset();
 }
 
