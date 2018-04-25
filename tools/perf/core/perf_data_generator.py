@@ -173,58 +173,6 @@ def get_waterfall_config():
     ])
 
   waterfall = add_tester(
-    waterfall, 'Android Nexus6 Perf', 'android-nexus6', 'android',
-    swarming=[
-      {
-       'os': 'Android',
-       'pool': 'Chrome-perf',
-       'device_ids': [
-           'build15-b1--device1', 'build15-b1--device2', 'build15-b1--device3',
-           'build15-b1--device4', 'build15-b1--device5', 'build15-b1--device6',
-           'build15-b1--device7',
-           'build16-b1--device1', 'build16-b1--device2', 'build16-b1--device3',
-           'build16-b1--device4', 'build16-b1--device5', 'build16-b1--device6',
-           'build16-b1--device7',
-           'build45-b1--device1', 'build45-b1--device2', 'build45-b1--device3',
-           'build45-b1--device4', 'build45-b1--device5', 'build45-b1--device6',
-           'build45-b1--device7',
-          ],
-       'perf_tests': [
-         ('tracing_perftests', 'build15-b1--device2'),
-         ('gpu_perftests', 'build16-b1--device2'),
-        ]
-      }
-    ])
-
-  waterfall = add_tester(
-    waterfall, 'Android Nexus7v2 Perf', 'android-nexus7v2', 'android',
-    swarming=[
-      {
-       'os': 'Android',
-       'pool': 'Chrome-perf',
-       'device_ids': [
-           'build9-b1--device1', 'build9-b1--device2', 'build9-b1--device3',
-           'build9-b1--device4', 'build9-b1--device5', 'build9-b1--device6',
-           'build9-b1--device7',
-           'build10-b1--device1', 'build10-b1--device2', 'build10-b1--device3',
-           'build10-b1--device4', 'build10-b1--device5', 'build10-b1--device6',
-           'build10-b1--device7',
-           'build49-b1--device1', 'build49-b1--device2', 'build49-b1--device3',
-           'build49-b1--device4', 'build49-b1--device5', 'build49-b1--device6',
-           'build49-b1--device7',
-          ],
-       'perf_tests': [
-         ('tracing_perftests', 'build9-b1--device2'),
-         ('gpu_perftests', 'build10-b1--device2'),
-        ],
-       'perf_tests_with_args': [
-         ('angle_perftests', 'build49-b1--device7', ['--shard-timeout=300'],
-           'angle_perftests'),
-       ]
-      }
-    ])
-
-  waterfall = add_tester(
     waterfall, 'Android One Perf', 'android-nexus7v2', 'android',
     swarming=[
       {
@@ -329,23 +277,6 @@ def get_waterfall_config():
       }
     ])
   waterfall = add_tester(
-    waterfall, 'Win 8 Perf', 'chromium-rel-win8-dual', 'win',
-    swarming=[
-      {
-       'gpu': '102b:0532',
-       'os': 'Windows-2012ServerR2-SP0',
-       'pool': 'Chrome-perf',
-       'device_ids': [
-           'build143-m1', 'build144-m1',
-           'build145-m1', 'build146-m1', 'build147-m1'
-          ],
-       'perf_tests': [
-         ('load_library_perf_tests', 'build145-m1'),
-         ('performance_browser_tests', 'build145-m1'),
-         ('media_perftests', 'build146-m1')]
-      }
-    ])
-  waterfall = add_tester(
     waterfall, 'Win 7 Perf', 'chromium-rel-win7-dual',
     'win', target_bits=32,
     swarming=[
@@ -363,43 +294,6 @@ def get_waterfall_config():
          # ('performance_browser_tests', 'build187-m1'),
          ('media_perftests', 'build188-m1'),
          ('components_perftests', 'build189-m1')]
-      }
-    ])
-  waterfall = add_tester(
-    waterfall, 'Win 7 x64 Perf',
-    'chromium-rel-win7-x64-dual', 'win',
-    swarming=[
-      {
-       'gpu': '102b:0532',
-       'os': 'Windows-2008ServerR2-SP1',
-       'pool': 'Chrome-perf',
-       'device_ids': [
-           'build138-m1', 'build139-m1',
-           'build140-m1', 'build141-m1', 'build142-m1'
-          ],
-       'perf_tests': [
-         ('load_library_perf_tests', 'build140-m1'),
-         ('performance_browser_tests', 'build140-m1')]
-      }
-    ])
-  waterfall = add_tester(
-    waterfall, 'Win 7 ATI GPU Perf',
-    'chromium-rel-win7-gpu-ati', 'win',
-    swarming=[
-      {
-       'gpu': '1002:6613',
-       'os': 'Windows-2008ServerR2-SP1',
-       'pool': 'Chrome-perf',
-       'device_ids': [
-           'build101-m1', 'build102-m1',
-           'build103-m1', 'build104-m1', 'build105-m1'
-          ],
-       'perf_tests': [
-         # crbug.com/785291
-         # ('angle_perftests', 'build103-m1'),
-         ('load_library_perf_tests', 'build103-m1'),
-         ('performance_browser_tests', 'build103-m1'),
-         ('media_perftests', 'build104-m1')]
       }
     ])
   waterfall = add_tester(
