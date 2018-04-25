@@ -1949,16 +1949,24 @@ PaintInvalidationReason LayoutBox::InvalidatePaint(
 LayoutRect LayoutBox::OverflowClipRect(
     const LayoutPoint& location,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {
-  if (RootScrollerUtil::IsEffective(*this))
-    return View()->ViewRect();
+  LayoutRect clip_rect;
 
-  // FIXME: When overflow-clip (CSS3) is implemented, we'll obtain the property
-  // here.
-  LayoutRect clip_rect = BorderBoxRect();
-  clip_rect.SetLocation(location + clip_rect.Location() +
-                        LayoutSize(BorderLeft(), BorderTop()));
-  clip_rect.SetSize(clip_rect.Size() -
-                    LayoutSize(BorderWidth(), BorderHeight()));
+  if (RootScrollerUtil::IsEffective(*this)) {
+    // If this box is the effective root scroller, use the viewport clipping
+    // rect since it will account for the URL bar correctly which the border
+    // box does not. We can do this because the effective root scroller is
+    // restricted such that it exactly fills the viewport. See
+    // RootScrollerController::IsValidRootScroller()
+    clip_rect = LayoutRect(location, View()->ViewRect().Size());
+  } else {
+    // FIXME: When overflow-clip (CSS3) is implemented, we'll obtain the
+    // property here.
+    clip_rect = BorderBoxRect();
+    clip_rect.SetLocation(location + clip_rect.Location() +
+                          LayoutSize(BorderLeft(), BorderTop()));
+    clip_rect.SetSize(clip_rect.Size() -
+                      LayoutSize(BorderWidth(), BorderHeight()));
+  }
 
   if (HasOverflowClip())
     ExcludeScrollbars(clip_rect, overlay_scrollbar_clip_behavior);

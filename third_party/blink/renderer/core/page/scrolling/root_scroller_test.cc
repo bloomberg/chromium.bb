@@ -1269,6 +1269,43 @@ class RootScrollerSimTest : public testing::WithParamInterface<bool>,
 
 INSTANTIATE_TEST_CASE_P(All, RootScrollerSimTest, testing::Bool());
 
+// Test that the element is considered to be viewport filling only if its
+// padding box fills the viewport. That means it must have no border.
+TEST_P(RootScrollerSimTest, UsePaddingBoxForViewportFillingCondition) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            body {
+              margin: 0;
+            }
+            #container {
+              position: absolute;
+              width: 100%;
+              height: 100%;
+              box-sizing: border-box;
+              overflow: scroll;
+            }
+          </style>
+          <div id="container"></div>
+      )HTML");
+  Compositor().BeginFrame();
+
+  Element* container = GetDocument().getElementById("container");
+  GetDocument().setRootScroller(container);
+  ASSERT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  // Setting a border should cause the element to no longer be valid as its
+  // padding box doesn't fill the viewport exactly.
+  container->setAttribute(HTMLNames::styleAttr, "border: 1px solid black");
+  Compositor().BeginFrame();
+  EXPECT_EQ(&GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+}
+
 // Tests that the root scroller doesn't affect visualViewport pageLeft and
 // pageTop.
 TEST_P(RootScrollerSimTest, RootScrollerDoesntAffectVisualViewport) {
