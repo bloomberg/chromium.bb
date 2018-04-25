@@ -152,7 +152,7 @@ class CacheStorageDispatcherHost::CacheImpl
     std::vector<ServiceWorkerResponse> responses;
     if (error == CacheStorageError::kSuccess) {
       DCHECK(response);
-      responses.push_back(std::move(*response.release()));
+      responses.push_back(std::move(*response));
     }
     OnCacheMatchAllCallback(std::move(callback), std::move(cache_handle), error,
                             std::move(responses));
