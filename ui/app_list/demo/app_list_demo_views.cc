@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -73,7 +73,7 @@ void DemoAppListViewDelegate::Dismiss() {
 }
 
 void DemoAppListViewDelegate::ViewClosing() {
-  base::MessageLoop* message_loop = base::MessageLoopForUI::current();
+  base::MessageLoopCurrent message_loop = base::MessageLoopCurrentForUI::Get();
   message_loop->task_runner()->DeleteSoon(FROM_HERE, this);
   base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
