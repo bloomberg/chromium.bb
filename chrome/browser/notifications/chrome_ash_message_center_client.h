@@ -42,6 +42,9 @@ class ChromeAshMessageCenterClient : public ash::mojom::AshMessageCenterClient,
   void SetNotifierEnabled(const message_center::NotifierId& notifier_id,
                           bool enabled) override;
   void GetNotifierList(GetNotifierListCallback callback) override;
+  void GetArcAppIdByPackageName(
+      const std::string& package_name,
+      GetArcAppIdByPackageNameCallback callback) override;
 
   // NotifierController::Observer:
   void OnIconImageUpdated(const message_center::NotifierId& notifier_id,

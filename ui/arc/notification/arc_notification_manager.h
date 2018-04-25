@@ -9,6 +9,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "base/memory/weak_ptr.h"
 #include "components/arc/common/notifications.mojom.h"
 #include "components/arc/connection_holder.h"
 #include "components/arc/connection_observer.h"
@@ -37,10 +38,13 @@ class ArcNotificationManager
   ConnectionHolder<mojom::NotificationsInstance, mojom::NotificationsHost>*
   GetConnectionHolderForTest();
 
-  void set_get_app_id_callback(
-      base::RepeatingCallback<std::string(const std::string&)>
-          get_app_id_callback) {
-    get_app_id_callback_ = std::move(get_app_id_callback);
+  using GetAppIdResponseCallback =
+      base::OnceCallback<void(const std::string& app_id)>;
+  using GetAppIdCallback =
+      base::RepeatingCallback<void(const std::string& package_name,
+                                   GetAppIdResponseCallback callback)>;
+  void set_get_app_id_callback(const GetAppIdCallback& get_app_id_callback) {
+    get_app_id_callback_ = get_app_id_callback;
   }
 
   // ConnectionObserver<mojom::NotificationsInstance> implementation:
@@ -69,8 +73,14 @@ class ArcNotificationManager
 
   bool ShouldIgnoreNotification(mojom::ArcNotificationData* data);
 
-  // Calls |get_app_id_callback_| to retrieve the app id from ArcAppListPrefs.
-  std::string GetAppId(const std::string& package_name) const;
+  // Calls |get_app_id_callback_| to retrieve the app id. |callback| will be
+  // invoked with the app id or an empty string.
+  void GetAppId(const std::string& package_name,
+                GetAppIdResponseCallback callback) const;
+
+  // Invoked when |get_app_id_callback_| gets back the app id.
+  void OnGotAppId(mojom::ArcNotificationDataPtr data,
+                  const std::string& app_id);
 
   const AccountId main_profile_id_;
   message_center::MessageCenter* const message_center_;
@@ -79,13 +89,13 @@ class ArcNotificationManager
       std::unordered_map<std::string, std::unique_ptr<ArcNotificationItem>>;
   ItemMap items_;
 
-  base::RepeatingCallback<std::string(const std::string&)> get_app_id_callback_;
+  GetAppIdCallback get_app_id_callback_;
 
   bool ready_ = false;
 
-  // Put as a last member to ensure that any callback tied to the elements
-  // is not invoked.
   std::unique_ptr<InstanceOwner> instance_owner_;
+
+  base::WeakPtrFactory<ArcNotificationManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationManager);
 };

@@ -7,10 +7,12 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/i18n/string_compare.h"
 #include "base/stl_util.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/arc_application_notifier_controller.h"
 #include "chrome/browser/notifications/extension_notifier_controller.h"
 #include "chrome/browser/notifications/web_page_notifier_controller.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -162,6 +164,14 @@ void ChromeAshMessageCenterClient::GetNotifierList(
   std::sort(notifiers.begin(), notifiers.end(), comparator);
 
   std::move(callback).Run(std::move(notifiers));
+}
+
+void ChromeAshMessageCenterClient::GetArcAppIdByPackageName(
+    const std::string& package_name,
+    GetArcAppIdByPackageNameCallback callback) {
+  std::move(callback).Run(
+      ArcAppListPrefs::Get(arc::ArcSessionManager::Get()->profile())
+          ->GetAppIdByPackageName(package_name));
 }
 
 void ChromeAshMessageCenterClient::OnIconImageUpdated(

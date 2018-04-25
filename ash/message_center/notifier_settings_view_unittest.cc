@@ -67,6 +67,11 @@ class TestAshMessageCenterClient : public mojom::AshMessageCenterClient {
 
     std::move(callback).Run(std::move(ui_data));
   }
+  void GetArcAppIdByPackageName(
+      const std::string& package_name,
+      GetArcAppIdByPackageNameCallback callback) override {
+    std::move(callback).Run(std::string());
+  }
 
  private:
   bool no_notifiers_ = false;

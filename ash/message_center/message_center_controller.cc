@@ -9,6 +9,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/unguessable_token.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -160,6 +161,9 @@ void MessageCenterController::SetArcNotificationsInstance(
             ->GetPrimaryUserSession()
             ->user_info->account_id,
         message_center::MessageCenter::Get());
+    arc_notification_manager_->set_get_app_id_callback(
+        base::BindRepeating(&MessageCenterController::GetArcAppIdByPackageName,
+                            base::Unretained(this)));
   }
   arc_notification_manager_->SetInstance(std::move(arc_notification_instance));
 }
@@ -224,6 +228,13 @@ void MessageCenterController::OnGotNotifierList(
     std::vector<mojom::NotifierUiDataPtr> ui_data) {
   if (notifier_id_)
     notifier_id_->SetNotifierList(ui_data);
+}
+
+void MessageCenterController::GetArcAppIdByPackageName(
+    const std::string& package_name,
+    arc::ArcNotificationManager::GetAppIdResponseCallback callback) {
+  DCHECK(client_.is_bound());
+  client_->GetArcAppIdByPackageName(package_name, std::move(callback));
 }
 
 }  // namespace ash
