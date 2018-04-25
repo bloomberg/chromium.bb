@@ -636,9 +636,9 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
       capture_sequence_number_changed;
 
   if (synchronized_props_changed)
-    local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
+    parent_local_surface_id_allocator_.GenerateId();
 
-  viz::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
+  viz::SurfaceId surface_id(frame_sink_id_, GetLocalSurfaceId());
   if (enable_surface_synchronization_) {
     // If we're synchronizing surfaces, then use an infinite deadline to ensure
     // everything is synchronized.
@@ -657,7 +657,7 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
 
 #if defined(USE_AURA)
   if (rect_changed && mus_embedded_frame_) {
-    mus_embedded_frame_->SetWindowBounds(local_surface_id_,
+    mus_embedded_frame_->SetWindowBounds(GetLocalSurfaceId(),
                                          gfx::Rect(local_frame_size()));
   }
 #endif
@@ -955,6 +955,10 @@ gfx::Rect RenderFrameProxy::ComputeCompositingRect(
     viewport_rect.set_y(gfx::ToCeiledInt(top));
   }
   return viewport_rect;
+}
+
+const viz::LocalSurfaceId& RenderFrameProxy::GetLocalSurfaceId() const {
+  return parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
 }
 
 }  // namespace content
