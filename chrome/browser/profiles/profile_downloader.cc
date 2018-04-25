@@ -32,12 +32,11 @@
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
 #include "skia/ext/image_operations.h"
 #include "url/gurl.h"
 
@@ -46,8 +45,7 @@ using content::BrowserThread;
 namespace {
 
 // Template for optional authorization header when using an OAuth access token.
-const char kAuthorizationHeader[] =
-    "Authorization: Bearer %s";
+constexpr char kAuthorizationHeader[] = "Authorization: Bearer %s";
 
 }  // namespace
 
@@ -212,48 +210,55 @@ void ProfileDownloader::FetchImageData() {
             "profile image."
         })");
 
-  VLOG(1) << "Fetching profile image from " << image_url_with_size;
-  profile_image_fetcher_ =
-      net::URLFetcher::Create(GURL(image_url_with_size), net::URLFetcher::GET,
-                              this, traffic_annotation);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      profile_image_fetcher_.get(),
-      data_use_measurement::DataUseUserData::PROFILE_DOWNLOADER);
-  profile_image_fetcher_->SetRequestContext(
-      delegate_->GetBrowserProfile()->GetRequestContext());
-  profile_image_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                                       net::LOAD_DO_NOT_SAVE_COOKIES);
+  VLOG(1) << "Loading profile image from " << image_url_with_size;
 
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GURL(image_url_with_size);
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
   if (!auth_token_.empty()) {
-    profile_image_fetcher_->SetExtraRequestHeaders(
+    resource_request->headers.AddHeadersFromString(
         base::StringPrintf(kAuthorizationHeader, auth_token_.c_str()));
   }
 
-  profile_image_fetcher_->Start();
+  network::mojom::URLLoaderFactory* loader_factory =
+      content::BrowserContext::GetDefaultStoragePartition(
+          delegate_->GetBrowserProfile())
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get();
+
+  simple_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                    traffic_annotation);
+  simple_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory, base::BindOnce(&ProfileDownloader::OnURLLoaderComplete,
+                                     base::Unretained(this)));
 }
 
-void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
+void ProfileDownloader::OnURLLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (source->GetResponseCode() == net::HTTP_OK) {
-    std::string data;
-    source->GetResponseAsString(&data);
-    profile_image_fetcher_.reset();
+  int response_code = -1;
+  if (simple_loader_->ResponseInfo() && simple_loader_->ResponseInfo()->headers)
+    response_code = simple_loader_->ResponseInfo()->headers->response_code();
+
+  if (response_body) {
+    simple_loader_.reset();
     DVLOG(1) << "Decoding the image...";
-    ImageDecoder::Start(this, data);
-  } else if (source->GetResponseCode() == net::HTTP_NOT_FOUND) {
-    profile_image_fetcher_.reset();
+    ImageDecoder::Start(this, *response_body);
+  } else if (response_code == net::HTTP_NOT_FOUND) {
+    simple_loader_.reset();
     VLOG(1) << "Got 404, using default picture...";
     picture_status_ = PICTURE_DEFAULT;
     delegate_->OnProfileDownloadSuccess(this);
   } else {
-    LOG(WARNING) << "Fetching profile data failed";
-    DVLOG(1) << "  Status: " << source->GetStatus().status();
-    DVLOG(1) << "  Error: " << source->GetStatus().error();
-    DVLOG(1) << "  Response code: " << source->GetResponseCode();
-    DVLOG(1) << "  Url: " << source->GetURL().spec();
+    LOG(WARNING) << "Loading profile data failed";
+    DVLOG(1) << "  Error: " << simple_loader_->NetError();
+    DVLOG(1) << "  Response code: " << response_code;
+    DVLOG(1) << "  Url: " << simple_loader_->GetFinalURL().spec();
+    // Handle miscellaneous 400/500 errors.
     bool network_error =
-        source->GetStatus().status() != net::URLRequestStatus::SUCCESS;
-    profile_image_fetcher_.reset();
+        response_code == -1 || (response_code >= 400 && response_code < 600);
+    simple_loader_.reset();
     delegate_->OnProfileDownloadFailure(this, network_error ?
         ProfileDownloaderDelegate::NETWORK_ERROR :
         ProfileDownloaderDelegate::SERVICE_ERROR);
