@@ -21,6 +21,17 @@
 namespace {
 const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 const CGFloat kShiftTilesUpAnimationDuration = 0.25;
+
+UIEdgeInsets SafeAreaInsetsForViewWithinNTP(UIView* view) {
+  UIEdgeInsets insets = SafeAreaInsetsForView(view);
+  if (IsUIRefreshPhase1Enabled() && !base::ios::IsRunningOnIOS11OrLater()) {
+    // TODO(crbug.com/826369) Replace this when the NTP is contained by the
+    // BVC with |self.collectionController.topLayoutGuide.length|.
+    insets = UIEdgeInsetsMake(StatusBarHeight(), 0, 0, 0);
+  }
+  return insets;
+}
+
 }  // namespace
 
 @interface ContentSuggestionsHeaderSynchronizer ()<UIGestureRecognizerDelegate>
@@ -169,12 +180,7 @@ initWithCollectionController:
   }
 
   if (self.shouldAnimateHeader) {
-    UIEdgeInsets insets = SafeAreaInsetsForView(self.collectionView);
-    if (IsUIRefreshPhase1Enabled() && !base::ios::IsRunningOnIOS11OrLater()) {
-      // TODO(crbug.com/826369) Replace this when the NTP is contained by the
-      // BVC with |self.collectionController.topLayoutGuide.length|.
-      insets = UIEdgeInsetsMake(StatusBarHeight(), 0, 0, 0);
-    }
+    UIEdgeInsets insets = SafeAreaInsetsForViewWithinNTP(self.collectionView);
     [self.headerController
         updateFakeOmniboxForOffset:self.collectionView.contentOffset.y
                        screenWidth:self.collectionView.frame.size.width
@@ -185,10 +191,11 @@ initWithCollectionController:
 - (void)updateFakeOmniboxOnNewWidth:(CGFloat)width {
   if (self.shouldAnimateHeader &&
       (IsUIRefreshPhase1Enabled() || !IsIPadIdiom())) {
+    UIEdgeInsets insets = SafeAreaInsetsForViewWithinNTP(self.collectionView);
     [self.headerController
         updateFakeOmniboxForOffset:self.collectionView.contentOffset.y
                        screenWidth:width
-                    safeAreaInsets:SafeAreaInsetsForView(self.collectionView)];
+                    safeAreaInsets:insets];
   } else {
     [self.headerController updateFakeOmniboxForWidth:width];
   }
