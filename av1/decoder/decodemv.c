@@ -859,7 +859,7 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp,
 
 static INLINE void read_mv(aom_reader *r, MV *mv, const MV *ref,
                            nmv_context *ctx, MvSubpelPrecision precision) {
-  MV diff = { 0, 0 };
+  MV diff = kZeroMv;
   const MV_JOINT_TYPE joint_type =
       (MV_JOINT_TYPE)aom_read_symbol(r, ctx->joints_cdf, MV_JOINTS, ACCT_STR);
 

@@ -357,7 +357,7 @@ static void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
                                      const MV *ref_mv, MV *best_mv,
                                      int *best_motion_err) {
   MACROBLOCKD *const xd = &x->e_mbd;
-  MV tmp_mv = { 0, 0 };
+  MV tmp_mv = kZeroMv;
   MV ref_mv_full = { ref_mv->row >> 3, ref_mv->col >> 3 };
   int num00, tmp_err, n;
   const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
@@ -508,9 +508,8 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   int image_data_start_row = INVALID_ROW;
   int new_mv_count = 0;
   int sum_in_vectors = 0;
-  MV lastmv = { 0, 0 };
+  MV lastmv = kZeroMv;
   TWO_PASS *twopass = &cpi->twopass;
-  const MV zero_mv = { 0, 0 };
   int recon_y_stride, recon_uv_stride, uv_mb_height;
 
   YV12_BUFFER_CONFIG *const lst_yv12 = get_ref_frame_buffer(cpi, LAST_FRAME);
@@ -589,7 +588,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   uv_mb_height = 16 >> (new_yv12->y_height > new_yv12->uv_height);
 
   for (mb_row = 0; mb_row < cm->mb_rows; ++mb_row) {
-    MV best_ref_mv = { 0, 0 };
+    MV best_ref_mv = kZeroMv;
 
     // Reset above block coeffs.
     xd->up_available = (mb_row != 0);
@@ -707,7 +706,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
       if (!frame_is_intra_only(cm)) {  // Do a motion search
         int tmp_err, motion_error, raw_motion_error;
         // Assume 0,0 motion with no mv overhead.
-        MV mv = { 0, 0 }, tmp_mv = { 0, 0 };
+        MV mv = kZeroMv, tmp_mv = kZeroMv;
         struct buf_2d unscaled_last_source_buf_2d;
 
         xd->plane[0].pre[0].buf = first_ref_buf->y_buffer + recon_yoffset;
@@ -744,7 +743,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
           // 0,0 based search as well.
           if (!is_zero_mv(&best_ref_mv)) {
             tmp_err = INT_MAX;
-            first_pass_motion_search(cpi, x, &zero_mv, &tmp_mv, &tmp_err);
+            first_pass_motion_search(cpi, x, &kZeroMv, &tmp_mv, &tmp_err);
 
             if (tmp_err < motion_error) {
               motion_error = tmp_err;
@@ -766,7 +765,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
                                                      &xd->plane[0].pre[0]);
             }
 
-            first_pass_motion_search(cpi, x, &zero_mv, &tmp_mv,
+            first_pass_motion_search(cpi, x, &kZeroMv, &tmp_mv,
                                      &gf_motion_error);
 
             if (gf_motion_error < motion_error && gf_motion_error < this_error)

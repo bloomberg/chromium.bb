@@ -104,7 +104,7 @@ static int do_16x16_motion_search(AV1_COMP *cpi, const MV *ref_mv, int mb_row,
   // If the current best reference mv is not centered on 0,0 then do a 0,0
   // based search as well.
   if (ref_mv->row != 0 || ref_mv->col != 0) {
-    MV zero_ref_mv = { 0, 0 };
+    MV zero_ref_mv = kZeroMv;
 
     tmp_err = do_16x16_motion_iteration(cpi, &zero_ref_mv, mb_row, mb_col);
     if (tmp_err < err) {
@@ -227,7 +227,7 @@ static void update_mbgraph_frame_stats(AV1_COMP *cpi,
 
   int mb_col, mb_row, offset = 0;
   int mb_y_offset = 0, arf_y_offset = 0, gld_y_offset = 0;
-  MV gld_top_mv = { 0, 0 };
+  MV gld_top_mv = kZeroMv;
   MB_MODE_INFO mi_local;
 
   av1_zero(mi_local);

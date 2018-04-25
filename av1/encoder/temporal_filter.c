@@ -225,7 +225,7 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
   int cost_list[5];
   MvLimits tmp_mv_limits = x->mv_limits;
 
-  MV best_ref_mv1 = { 0, 0 };
+  MV best_ref_mv1 = kZeroMv;
   MV best_ref_mv1_full; /* full-pixel value of best_ref_mv1 */
 
   // Save input state

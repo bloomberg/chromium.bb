@@ -27,6 +27,8 @@ typedef struct mv {
   int16_t col;
 } MV;
 
+static const MV kZeroMv = { 0, 0 };
+
 typedef union int_mv {
   uint32_t as_int;
   MV as_mv;
