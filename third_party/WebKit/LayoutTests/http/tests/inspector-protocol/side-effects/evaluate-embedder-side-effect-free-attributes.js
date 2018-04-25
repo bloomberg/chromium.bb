@@ -54,6 +54,12 @@
   await checkHasNoSideEffect(`div.tabIndex`);
   await checkHasNoSideEffect(`div.style`);
 
+  // Location
+  await checkHasNoSideEffect(`location.href`);
+
+  // Navigator
+  await checkHasNoSideEffect(`navigator.userAgent`);
+
   // Node
   var testNodes = ['div', 'document', 'textNode'];
   for (var node of testNodes) {
@@ -88,10 +94,8 @@
   await checkHasNoSideEffect(`history`);
   await checkHasNoSideEffect(`navigator`);
   await checkHasNoSideEffect(`performance`);
-
-  // TODO(luoe): add support for LazyData properties.
-  await checkHasSideEffect(`window`);
-  await checkHasSideEffect(`window.location`);
+  await checkHasNoSideEffect(`window`);
+  await checkHasNoSideEffect(`location`);
 
   testRunner.completeTest();
 

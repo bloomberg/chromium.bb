@@ -34,12 +34,12 @@
 ] interface Window : EventTarget {
     // the current browsing context
     // FIXME: The spec uses the WindowProxy type for this and many other attributes.
-    [Unforgeable, CrossOrigin] readonly attribute Window window;
+    [Affects=Nothing, Unforgeable, CrossOrigin] readonly attribute Window window;
     [Replaceable, CrossOrigin] readonly attribute Window self;
     [Affects=Nothing, Unforgeable, CachedAccessor] readonly attribute Document document;
     [Replaceable] readonly attribute DOMString origin;
     attribute DOMString name;
-    [PutForwards=href, Unforgeable, CrossOrigin=(Getter,Setter), Custom=Getter] readonly attribute Location location;
+    [Affects=Nothing, PutForwards=href, Unforgeable, CrossOrigin=(Getter,Setter), Custom=Getter] readonly attribute Location location;
     [Affects=Nothing] readonly attribute History history;
     [Replaceable, MeasureAs=BarPropLocationbar] readonly attribute BarProp locationbar;
     [Replaceable, MeasureAs=BarPropMenubar] readonly attribute BarProp menubar;

@@ -55,7 +55,7 @@
     // TODO(foolip): |ancestorOrigins| should have [Unforgeable, SameObject].
     readonly attribute DOMStringList ancestorOrigins;
 
-    [SetterCallWith=(CurrentWindow,EnteredWindow), CrossOrigin=Setter, RaisesException=Setter] attribute URLString href;
+    [Affects=Nothing, SetterCallWith=(CurrentWindow,EnteredWindow), CrossOrigin=Setter, RaisesException=Setter] attribute URLString href;
     // TODO(yukishiino): Use [Unforgeable] stringifier instead of toString.
     DOMString toString();
     [MeasureAs=LocationOrigin] readonly attribute USVString origin;

@@ -45,6 +45,10 @@ Expression `div.tabIndex`
 has side effect: false, expected: false
 Expression `div.style`
 has side effect: false, expected: false
+Expression `location.href`
+has side effect: false, expected: false
+Expression `navigator.userAgent`
+has side effect: false, expected: false
 Expression `div.nodeType`
 has side effect: false, expected: false
 Expression `div.nodeName`
@@ -162,7 +166,7 @@ has side effect: false, expected: false
 Expression `performance`
 has side effect: false, expected: false
 Expression `window`
-has side effect: true, expected: true
-Expression `window.location`
-has side effect: true, expected: true
+has side effect: false, expected: false
+Expression `location`
+has side effect: false, expected: false
 
