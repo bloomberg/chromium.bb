@@ -208,7 +208,7 @@ TEST_F(FrameTreeNodeBlameContextTest, URLChange) {
   trace_analyzer::Start("*");
   root()->SetCurrentURL(url1);
   root()->SetCurrentURL(url2);
-  root()->ResetForNewProcess();
+  root()->SetCurrentURL(GURL());
   auto analyzer = trace_analyzer::Stop();
 
   trace_analyzer::TraceEventVector events;

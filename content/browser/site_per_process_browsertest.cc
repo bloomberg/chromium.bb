@@ -11481,4 +11481,36 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(success);
 }
 
+// Tests that the last committed URL is preserved on an RFH even after the RFH
+// goes into the pending deletion state.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       LastCommittedURLRetainedAfterSwapOut) {
+  // Navigate to a.com.
+  GURL start_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  RenderFrameHostImpl* rfh = web_contents()->GetMainFrame();
+  EXPECT_EQ(start_url, rfh->GetLastCommittedURL());
+
+  // Disable the swapout ACK and the swapout timer.
+  scoped_refptr<SwapoutACKMessageFilter> filter = new SwapoutACKMessageFilter();
+  rfh->GetProcess()->AddFilter(filter.get());
+  rfh->DisableSwapOutTimerForTesting();
+
+  // Open a popup on a.com to keep the process alive.
+  OpenPopup(shell(), embedded_test_server()->GetURL("a.com", "/title2.html"),
+            "foo");
+
+  // Navigate cross-process to b.com.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title3.html")));
+
+  // The old RFH should be pending deletion.
+  EXPECT_FALSE(rfh->is_active());
+  EXPECT_FALSE(rfh->IsCurrent());
+  EXPECT_NE(rfh, web_contents()->GetMainFrame());
+
+  // Check that it still has a valid last committed URL.
+  EXPECT_EQ(start_url, rfh->GetLastCommittedURL());
+}
+
 }  // namespace content

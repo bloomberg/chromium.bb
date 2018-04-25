@@ -757,6 +757,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            ContextMenuAfterCrossProcessNavigation);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            ActiveSandboxFlagsRetainedAfterSwapOut);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           LastCommittedURLRetainedAfterSwapOut);
   FRIEND_TEST_ALL_PREFIXES(SecurityExploitBrowserTest,
                            AttemptDuplicateRenderViewHost);
 

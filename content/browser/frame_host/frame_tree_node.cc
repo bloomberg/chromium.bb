@@ -262,9 +262,6 @@ void FrameTreeNode::RemoveChild(FrameTreeNode* child) {
 }
 
 void FrameTreeNode::ResetForNewProcess() {
-  current_frame_host()->SetLastCommittedUrl(GURL());
-  blame_context_.TakeSnapshot();
-
   // Remove child nodes from the tree, then delete them. This destruction
   // operation will notify observers.
   std::vector<std::unique_ptr<FrameTreeNode>>().swap(children_);
