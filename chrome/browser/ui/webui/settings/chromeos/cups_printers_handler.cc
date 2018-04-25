@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
+#include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker.h"
@@ -181,7 +182,9 @@ CupsPrintersHandler::CupsPrintersHandler(content::WebUI* webui)
     : profile_(Profile::FromWebUI(webui)),
       ppd_provider_(CreatePpdProvider(profile_)),
       printer_configurer_(PrinterConfigurer::Create(profile_)),
-      printers_manager_(CupsPrintersManager::Create(profile_)),
+      printers_manager_(
+          CupsPrintersManagerFactory::GetInstance()->GetForBrowserContext(
+              profile_)),
       weak_factory_(this) {}
 
 CupsPrintersHandler::~CupsPrintersHandler() {}

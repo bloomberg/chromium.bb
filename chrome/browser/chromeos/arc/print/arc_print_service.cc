@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
+#include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_job_worker.h"
@@ -194,7 +195,8 @@ class PrinterDiscoverySessionHostImpl
       : binding_(this, std::move(request)),
         instance_(std::move(instance)),
         service_(service),
-        printers_manager_(chromeos::CupsPrintersManager::Create(profile)),
+        printers_manager_(chromeos::CupsPrintersManagerFactory::GetInstance()
+                              ->GetForBrowserContext(profile)),
         configurer_(chromeos::PrinterConfigurer::Create(profile)),
         weak_ptr_factory_(this) {
     printers_manager_->AddObserver(this);
@@ -311,7 +313,7 @@ class PrinterDiscoverySessionHostImpl
 
   mojom::PrinterDiscoverySessionInstancePtr instance_;
   ArcPrintServiceImpl* const service_;
-  std::unique_ptr<chromeos::CupsPrintersManager> printers_manager_;
+  chromeos::CupsPrintersManager* printers_manager_;
   std::unique_ptr<chromeos::PrinterConfigurer> configurer_;
   base::WeakPtrFactory<PrinterDiscoverySessionHostImpl> weak_ptr_factory_;
 

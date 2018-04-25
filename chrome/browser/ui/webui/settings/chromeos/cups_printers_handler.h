@@ -174,7 +174,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   std::string webui_callback_id_;
-  std::unique_ptr<CupsPrintersManager> printers_manager_;
+  CupsPrintersManager* printers_manager_;
 
   base::WeakPtrFactory<CupsPrintersHandler> weak_factory_;
 
