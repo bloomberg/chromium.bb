@@ -46,8 +46,7 @@ specific_include_rules = {
         "+gin"
     ],
 
-    # Allow WebLocalFrameImplFindInPage.cpp to use WebLocalFrameImpl.h
-    "web_local_frame_impl_find_in_page.cc" : [
+    "find_in_page.cc" : [
         "+third_party/blink/renderer/core/frame/web_local_frame_impl.h",
     ],
 }
