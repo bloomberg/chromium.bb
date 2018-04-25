@@ -158,24 +158,10 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
                           space_used_size);
   }
 
-  // Compute the rest of the memory, not accounted by the spaces above.
-  std::string other_spaces_name = space_name_prefix + "/other_spaces";
-  auto* other_dump =
-      process_memory_dump->CreateAllocatorDump(other_spaces_name);
-
-  other_dump->AddScalar(
-      base::trace_event::MemoryAllocatorDump::kNameSize,
-      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-      heap_statistics.total_physical_size() - known_spaces_physical_size);
-
-  other_dump->AddScalar(
-      "allocated_objects_size",
-      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-      heap_statistics.used_heap_size() - known_spaces_used_size);
-
-  other_dump->AddScalar("virtual_size",
-                        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                        heap_statistics.total_heap_size() - known_spaces_size);
+  // Sanity checks.
+  DCHECK_EQ(heap_statistics.total_physical_size(), known_spaces_physical_size);
+  DCHECK_EQ(heap_statistics.used_heap_size(), known_spaces_used_size);
+  DCHECK_EQ(heap_statistics.total_heap_size(), known_spaces_size);
 
   // If V8 zaps garbage, all the memory mapped regions become resident,
   // so we add an extra dump to avoid mismatches w.r.t. the total
