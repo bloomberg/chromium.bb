@@ -2272,11 +2272,9 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
     // take into account device emulation.
     gfx::Size new_compositor_viewport_pixel_size =
         gfx::ScaleToCeiledSize(size_, GetWebScreenInfo().device_scale_factor);
-    viz::LocalSurfaceId local_surface_id;
-    if (!new_compositor_viewport_pixel_size.IsEmpty())
-      local_surface_id = child_local_surface_id_allocator_.GenerateId();
-    UpdateSurfaceAndScreenInfo(
-        local_surface_id, new_compositor_viewport_pixel_size, screen_info_);
+    UpdateSurfaceAndScreenInfo(child_local_surface_id_allocator_.GenerateId(),
+                               new_compositor_viewport_pixel_size,
+                               screen_info_);
 
     if (!resizing_mode_selector_->is_synchronous_mode())
       need_resize_ack_for_auto_resize_ = true;
