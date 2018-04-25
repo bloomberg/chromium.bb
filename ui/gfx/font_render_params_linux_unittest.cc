@@ -310,7 +310,11 @@ TEST_F(FontRenderParamsTest, ForceSubpixelPositioning) {
     FontRenderParams params =
         GetFontRenderParams(FontRenderParamsQuery(), NULL);
     EXPECT_TRUE(params.antialiasing);
+#if !defined(OS_CHROMEOS)
     EXPECT_TRUE(params.subpixel_positioning);
+#else
+    EXPECT_FALSE(params.subpixel_positioning);
+#endif  // !defined(OS_CHROMEOS)
     SetFontRenderParamsDeviceScaleFactor(1.0f);
   }
 }

@@ -279,7 +279,11 @@ FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
     params.subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_NONE;
     params.subpixel_positioning = false;
   } else {
+#if !defined(OS_CHROMEOS)
     params.subpixel_positioning = actual_query.device_scale_factor > 1.0f;
+#else
+    params.subpixel_positioning = false;
+#endif  // !defined(OS_CHROMEOS)
 
     // To enable subpixel positioning, we need to disable hinting.
     if (params.subpixel_positioning)
