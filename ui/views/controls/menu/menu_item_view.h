@@ -430,6 +430,14 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Calculates and returns the MenuItemDimensions.
   MenuItemDimensions CalculateDimensions() const;
 
+  // Imposes MenuConfig's minimum sizes, if any, on the supplied
+  // dimensions and returns the new dimensions. It is guaranteed that:
+  //    ApplyMinimumDimensions(x).standard_width >= x.standard_width
+  //    ApplyMinimumDimensions(x).children_width == x.children_width
+  //    ApplyMinimumDimensions(x).minor_text_width == x.minor_text_width
+  //    ApplyMinimumDimensions(x).height >= x.height
+  void ApplyMinimumDimensions(MenuItemDimensions* dims) const;
+
   // Get the horizontal position at which to draw the menu item's label.
   int GetLabelStartForThisItem() const;
 

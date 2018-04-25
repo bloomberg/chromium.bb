@@ -70,17 +70,25 @@ TEST(MenuItemViewUnitTest, TestMenuItemViewWithFlexibleWidthChild) {
   ASSERT_EQ(flexible_view, submenu->GetMenuItemAt(1));
   gfx::Size flexible_size = flexible_view->GetPreferredSize();
 
-  // The flexible view's "preferred size" should be 1x1...
-  EXPECT_EQ(flexible_size, gfx::Size(1, 1));
+  const MenuConfig& config = MenuConfig::instance();
 
-  // ...but it should use whatever space is available to make a square.
-  int flex_height = flexible_view->GetHeightForWidth(label_size.width());
-  EXPECT_EQ(label_size.width(), flex_height);
+  if (config.minimum_menu_width)
+    EXPECT_EQ(flexible_size.width(), config.minimum_menu_width);
+  else
+    EXPECT_EQ(flexible_size.width(), 1);
 
-  // The submenu should be tall enough to allow for both menu items at the given
-  // width.
-  EXPECT_EQ(label_size.height() + flex_height,
-            submenu->GetPreferredSize().height());
+  if (!config.minimum_container_item_height) {
+    // ...but it should use whatever space is available to make a square.
+    int flex_height = flexible_view->GetHeightForWidth(label_size.width());
+    EXPECT_EQ(label_size.width(), flex_height);
+
+    // The submenu should be tall enough to allow for both menu items at the
+    // given width.
+    EXPECT_EQ(label_size.height() + flex_height,
+              submenu->GetPreferredSize().height());
+  } else {
+    EXPECT_EQ(flexible_size.height(), config.minimum_container_item_height);
+  }
 }
 
 // Tests that the top-level menu item with hidden children should contain the

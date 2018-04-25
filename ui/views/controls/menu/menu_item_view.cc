@@ -1042,22 +1042,6 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
 
   const gfx::FontList& font_list = GetFontList();
   base::string16 minor_text = GetMinorText();
-  if (menu_config.fixed_text_item_height &&
-      menu_config.fixed_container_item_height && menu_config.fixed_menu_width &&
-      GetMenuController() && !GetMenuController()->is_combobox()) {
-    bool has_children = NonIconChildViewsCount() > 0;
-    dimensions.height = has_children ? menu_config.fixed_container_item_height
-                                     : menu_config.fixed_text_item_height;
-    dimensions.children_width = 0;
-    dimensions.minor_text_width =
-        minor_text.empty() ? 0 : gfx::GetStringWidth(minor_text, font_list);
-    int leave_for_minor = dimensions.minor_text_width
-                              ? dimensions.minor_text_width +
-                                    menu_config.label_to_minor_text_padding
-                              : 0;
-    dimensions.standard_width = menu_config.fixed_menu_width - leave_for_minor;
-    return dimensions;
-  }
 
   dimensions.height = child_size.height();
   // Adjust item content height if menu has both items with and without icons.
@@ -1069,8 +1053,10 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
   dimensions.height += GetBottomMargin() + GetTopMargin();
 
   // In case of a container, only the container size needs to be filled.
-  if (IsContainer())
+  if (IsContainer()) {
+    ApplyMinimumDimensions(&dimensions);
     return dimensions;
+  }
 
   // Get Icon margin overrides for this particular item.
   const MenuDelegate* delegate = GetDelegate();
@@ -1105,7 +1091,21 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
                font_list.GetHeight() + GetBottomMargin() + GetTopMargin());
   dimensions.height =
       std::max(dimensions.height, MenuConfig::instance().item_min_height);
+
+  ApplyMinimumDimensions(&dimensions);
   return dimensions;
+}
+
+void MenuItemView::ApplyMinimumDimensions(MenuItemDimensions* dims) const {
+  int used =
+      dims->standard_width + dims->children_width + dims->minor_text_width;
+  const MenuConfig& config = MenuConfig::instance();
+  if (used < config.minimum_menu_width)
+    dims->standard_width += (config.minimum_menu_width - used);
+
+  dims->height = std::max(dims->height,
+                          IsContainer() ? config.minimum_container_item_height
+                                        : config.minimum_text_item_height);
 }
 
 int MenuItemView::GetLabelStartForThisItem() const {
