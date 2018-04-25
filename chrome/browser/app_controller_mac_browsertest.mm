@@ -14,7 +14,7 @@
 #include "base/command_line.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -293,7 +293,7 @@ void CreateProfileCallback(const base::Closure& quit_closure,
 void CreateAndWaitForSystemProfile() {
   ProfileManager::CreateCallback create_callback =
       base::Bind(&CreateProfileCallback,
-                 base::MessageLoop::current()->QuitWhenIdleClosure());
+                 base::MessageLoopCurrent::Get()->QuitWhenIdleClosure());
   g_browser_process->profile_manager()->CreateProfileAsync(
       ProfileManager::GetSystemProfilePath(),
       create_callback,
