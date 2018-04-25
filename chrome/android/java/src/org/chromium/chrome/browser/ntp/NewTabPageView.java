@@ -11,7 +11,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.graphics.drawable.GradientDrawable;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.RecyclerView;
@@ -148,10 +147,10 @@ public class NewTabPageView
     private ContextMenuManager mContextMenuManager;
 
     /**
-     * Lateral inset to add to the top and bottom of the search box bounds. May be 0 if no inset
+     * Vertical inset to add to the top and bottom of the search box bounds. May be 0 if no inset
      * should be applied. See {@link Rect#inset(int, int)}.
      */
-    private int mSearchBoxBoundsLateralInset;
+    private int mSearchBoxBoundsVerticalInset;
 
     /**
      * Manages the view interaction with the rest of the system.
@@ -291,11 +290,8 @@ public class NewTabPageView
                     getResources().getDimensionPixelSize(R.dimen.ntp_search_box_height_modern);
 
             if (!DeviceFormFactor.isTablet()) {
-                mSearchBoxBoundsLateralInset = getResources().getDimensionPixelSize(
-                        R.dimen.ntp_search_box_bounds_lateral_inset_modern);
-            } else {
-                GradientDrawable background = (GradientDrawable) mSearchBoxView.getBackground();
-                background.setCornerRadius(mSearchBoxView.getLayoutParams().height / 2.f);
+                mSearchBoxBoundsVerticalInset = getResources().getDimensionPixelSize(
+                        R.dimen.ntp_search_box_bounds_vertical_inset_modern);
             }
         }
         mNoSearchLogoSpacer = mNewTabPageLayout.findViewById(R.id.no_search_logo_spacer);
@@ -775,7 +771,7 @@ public class NewTabPageView
                 + mNewTabPageLayout.getPaddingTop();
         int target = Math.max(basePosition,
                 mSearchBoxView.getBottom() - mSearchBoxView.getPaddingBottom()
-                        - mSearchBoxBoundsLateralInset);
+                        - mSearchBoxBoundsVerticalInset);
 
         mNewTabPageLayout.setTranslationY(percent * (basePosition - target));
     }
@@ -835,7 +831,7 @@ public class NewTabPageView
         bounds.offset(translation.x, translation.y);
 
         if (translation.y != Integer.MIN_VALUE) {
-            bounds.inset(0, mSearchBoxBoundsLateralInset);
+            bounds.inset(0, mSearchBoxBoundsVerticalInset);
         }
     }
 

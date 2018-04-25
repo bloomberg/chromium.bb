@@ -1216,11 +1216,18 @@ public class ToolbarPhone extends ToolbarLayout
 
         int leftBoundDifference = mNtpSearchBoxBounds.left - mLocationBarBackgroundBounds.left;
         int rightBoundDifference = mNtpSearchBoxBounds.right - mLocationBarBackgroundBounds.right;
+        int verticalInset = 0;
+        if (mLocationBar.useModernDesign()) {
+            verticalInset = (int) (getResources().getDimensionPixelSize(
+                                           R.dimen.ntp_search_box_bounds_vertical_inset_modern)
+                    * (1.f - mUrlExpansionPercent));
+        }
         mLocationBarBackgroundNtpOffset.set(
                 Math.round(leftBoundDifference * shrinkage),
                 locationBarTranslationY,
                 Math.round(rightBoundDifference * shrinkage),
                 locationBarTranslationY);
+        mLocationBarBackgroundNtpOffset.inset(0, verticalInset);
 
         // The omnibox background bounds are outset by |mLocationBarBackgroundCornerRadius| in the
         // fully expanded state (and only there!) to hide the rounded corners, so undo that before
