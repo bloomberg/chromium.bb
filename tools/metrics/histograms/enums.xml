@@ -41572,6 +41572,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Large Downscale"/>
 </enum>
 
+<enum name="SmartLockEnabledState">
+  <int value="0" label="Enabled"/>
+  <int value="1" label="Disabled"/>
+  <int value="2" label="Unset"/>
+</enum>
+
 <enum name="SnackbarIdentifier">
   <int value="-2" label="TEST_SNACKBAR"/>
   <int value="-1" label="UNKNOWN"/>

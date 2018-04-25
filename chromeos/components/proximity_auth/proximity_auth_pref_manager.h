@@ -32,6 +32,12 @@ class ProximityAuthPrefManager {
   virtual void SetIsEasyUnlockEnabled(bool is_easy_unlock_enabled) const = 0;
   virtual bool IsEasyUnlockEnabled() const = 0;
 
+  // Returns true if EasyUnlock has ever been enabled, regardless of whether the
+  // feature is currently enabled or disabled. Compare to IsEasyUnlockEnabled(),
+  // which flags the latter case.
+  virtual void SetEasyUnlockEnabledStateSet() const = 0;
+  virtual bool IsEasyUnlockEnabledStateSet() const = 0;
+
   // Setter and getter for the timestamp of the last password entry. This
   // preference is used to enforce reauthing with the password after a given
   // time period has elapsed.

@@ -79,10 +79,17 @@ const char kKeyPermitAccess[] = "permitAccess";
 // Key name of the remote device list in kEasyUnlockPairing.
 const char kKeyDevices[] = "devices";
 
+enum class SmartLockToggleFeature { DISABLE = false, ENABLE = true };
+
 // The result of a SmartLock operation.
 enum class SmartLockResult { FAILURE = false, SUCCESS = true };
 
-enum class SmartLockToggleFeature { DISABLE = false, ENABLE = true };
+enum class SmartLockEnabledState {
+  ENABLED = 0,
+  DISABLED = 1,
+  UNSET = 2,
+  COUNT
+};
 
 void LogToggleFeature(SmartLockToggleFeature toggle) {
   UMA_HISTOGRAM_BOOLEAN("SmartLock.ToggleFeature", static_cast<bool>(toggle));
@@ -91,6 +98,11 @@ void LogToggleFeature(SmartLockToggleFeature toggle) {
 void LogToggleFeatureDisableResult(SmartLockResult result) {
   UMA_HISTOGRAM_BOOLEAN("SmartLock.ToggleFeature.Disable.Result",
                         static_cast<bool>(result));
+}
+
+void LogSmartLockEnabledState(SmartLockEnabledState state) {
+  UMA_HISTOGRAM_ENUMERATION("SmartLock.EnabledState", state,
+                            SmartLockEnabledState::COUNT);
 }
 
 }  // namespace
@@ -117,11 +129,30 @@ EasyUnlockServiceRegular::~EasyUnlockServiceRegular() {
   registrar_.RemoveAll();
 }
 
+// TODO(jhawkins): This method with |has_unlock_keys| == true is the only signal
+// that SmartLock setup has completed successfully. Make this signal more
+// explicit.
 void EasyUnlockServiceRegular::LoadRemoteDevices() {
   bool has_unlock_keys = !GetCryptAuthDeviceManager()->GetUnlockKeys().empty();
+  // TODO(jhawkins): The enabled pref should not be tied to whether unlock keys
+  // exist; instead, both of these variables should be used to determine
+  // IsEnabled().
   pref_manager_->SetIsEasyUnlockEnabled(has_unlock_keys);
-  if (!has_unlock_keys) {
+  if (has_unlock_keys) {
+    // If |has_unlock_keys| is true, then the user must have successfully
+    // completed setup. Track that the IsEasyUnlockEnabled pref is actively set
+    // by the user, as opposed to passively being set to disabled (the default
+    // state).
+    pref_manager_->SetEasyUnlockEnabledStateSet();
+    LogSmartLockEnabledState(SmartLockEnabledState::ENABLED);
+  } else {
     SetProximityAuthDevices(GetAccountId(), cryptauth::RemoteDeviceList());
+
+    if (pref_manager_->IsEasyUnlockEnabledStateSet()) {
+      LogSmartLockEnabledState(SmartLockEnabledState::DISABLED);
+    } else {
+      LogSmartLockEnabledState(SmartLockEnabledState::UNSET);
+    }
     return;
   }
 

@@ -15,6 +15,10 @@ const char kEasyUnlockAllowed[] = "easy_unlock.allowed";
 // through the setup flow and there is at least one unlock key).
 const char kEasyUnlockEnabled[] = "easy_unlock.enabled";
 
+// Whether or not the state of EasyUnlock has actively been changed, e.g.,
+// explicitly enabled by the user (through setup) or disabled via Settings.
+const char kEasyUnlockEnabledStateSet[] = "easy_unlock.enabled_state_set";
+
 // How close the remote and the local device should be in order to use Easy
 // Unlock.
 const char kEasyUnlockProximityThreshold[] = "easy_unlock.proximity_threshold";
