@@ -69,10 +69,10 @@ void MediaWebContentsObserver::RenderFrameDeleted(
   ClearWakeLocks(render_frame_host);
   session_controllers_manager_.RenderFrameDeleted(render_frame_host);
 
-  if (fullscreen_player_ && fullscreen_player_->first == render_frame_host)
+  if (fullscreen_player_ && fullscreen_player_->first == render_frame_host) {
+    picture_in_picture_allowed_in_fullscreen_.reset();
     fullscreen_player_.reset();
-
-  picture_in_picture_allowed_in_fullscreen_.reset();
+  }
 }
 
 void MediaWebContentsObserver::MaybeUpdateAudibleState() {
@@ -274,10 +274,10 @@ void MediaWebContentsObserver::OnMediaEffectivelyFullscreenChanged(
       picture_in_picture_allowed_in_fullscreen_ = false;
       break;
     case blink::WebFullscreenVideoStatus::kNotEffectivelyFullscreen:
-      picture_in_picture_allowed_in_fullscreen_.reset();
       if (!fullscreen_player_ || *fullscreen_player_ != id)
         return;
 
+      picture_in_picture_allowed_in_fullscreen_.reset();
       fullscreen_player_.reset();
       break;
   }
