@@ -595,6 +595,13 @@ def DefaultSettings():
       # TODO: Make the value required after crbug.com/776955 is finished.
       display_label=None,
 
+      # This defines which LUCI Builder to use. It must match an entry in:
+      #
+      # https://chrome-internal.git.corp.google.com/chromeos/
+      #    manifest-internal/+/infra/config/cr-buildbucket.cfg
+      #
+      luci_builder='Prod',
+
       # The profile of the variant to set up and build.
       profile=None,
 
