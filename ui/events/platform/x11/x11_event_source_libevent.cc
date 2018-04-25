@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
@@ -197,11 +197,11 @@ void X11EventSourceLibevent::ProcessXEvent(XEvent* xevent) {
 void X11EventSourceLibevent::AddEventWatcher() {
   if (initialized_)
     return;
-  if (!base::MessageLoop::current())
+  if (!base::MessageLoopCurrent::Get())
     return;
 
   int fd = ConnectionNumber(event_source_.display());
-  base::MessageLoopForUI::current()->WatchFileDescriptor(
+  base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
       fd, true, base::MessagePumpLibevent::WATCH_READ, &watcher_controller_,
       this);
   initialized_ = true;
