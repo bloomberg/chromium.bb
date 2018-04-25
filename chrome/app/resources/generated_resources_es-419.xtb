@@ -90,7 +90,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Editar el motor de búsqueda</translation>
 <translation id="1134009406053225289">Abrir en una ventana de incógnito</translation>
-<translation id="1136155683023653803">Las contraseñas, los favoritos, el historial y otros datos se sincronizan con tu cuenta de Google</translation>
+<translation id="1136155683023653803">Las contraseñas, los favoritos, el historial y otros datos se sincronizan con tu cuenta</translation>
 <translation id="1137673463384776352">Abrir vínculo en <ph name="APP" /></translation>
 <translation id="1140351953533677694">Acceder a los dispositivos en serie y Bluetooth</translation>
 <translation id="1140610710803014750">Para usar tus favoritos en todos los dispositivos, accede a tu cuenta y activa la sincronización.</translation>
@@ -1916,7 +1916,7 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="3867944738977021751">Campos del certificado</translation>
 <translation id="3869917919960562512">Índice incorrecto.</translation>
 <translation id="3871092408932389764">Muy bajo</translation>
-<translation id="3872220884670338524">Más acciones, cuenta guardada para <ph name="USERNAME" /> en <ph name="DOMAIN" /></translation>
+<translation id="3872220884670338524">Más acciones (cuenta guardada para <ph name="USERNAME" /> en <ph name="DOMAIN" />)</translation>
 <translation id="3872991219937722530">Libera espacio en el disco o el dispositivo dejará de funcionar.</translation>
 <translation id="3878840326289104869">Creando usuario supervisado</translation>
 <translation id="3879748587602334249">Administrador de descargas</translation>

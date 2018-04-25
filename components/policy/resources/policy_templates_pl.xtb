@@ -158,21 +158,11 @@
 
       Jeśli to ustawienie jest wyłączone lub nie jest skonfigurowane, użytkownicy w firmie
       nie mogą używać rozszerzenia ARC.</translation>
-<translation id="1561183922461862993">
-      Ta zasada ma wpływ na ekran logowania. Zapoznaj się też z informacjami o zasadzie <ph name="SITE_PER_PROCESS_POLICY_NAME" />, która ma wpływ na sesję użytkownika. Zaleca się skonfigurowanie obu tych zasad w jednakowy sposób. Jeśli ich wartości nie są zgodne, podczas logowania się do sesji użytkownika może wystąpić opóźnienie spowodowane zastosowaniem wartości określonej przez zasady dotyczące użytkowników.
-      Możesz dostosować ustawienie zasady IsolateOrigins, by jak najlepiej
-      wykorzystać oba sposoby działania (izolację i ograniczony wpływ na użytkowników).
-      W zasadzie IsolateOrigins użyj listy witryn, które chcesz izolować. To ustawienie,
-      SitePerProcess, izoluje wszystkie witryny.
-      Jeśli zasada jest włączona, każda witryna uruchamia się w obrębie własnego procesu.
-      Jeśli zasada jest wyłączona, działa logika zarządzania procesem sprzed izolacji witryny powodująca wyłączenie testów funkcjonalnych zasad IsolateOrigins i SitePerProcess. Użytkownicy nadal mogą włączyć zasadę SitePerProcess ręcznie.
-      Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
-      </translation>
 <translation id="1561424797596341174">Zasada zastępuje kompilacje hosta dostępu zdalnego w trybie debugowania</translation>
 <translation id="1561967320164410511">U2F i rozszerzenia do indywidualnego poświadczania</translation>
-<translation id="1574554504290354326">To ustawienie zostało wycofane. Zamiast niego użyj ustawienia SafeBrowsingExtendedReportingEnabled. Włączenie lub wyłączenie ustawienia SafeBrowsingExtendedReportingEnabled działa tak samo jak wyłączenie ustawienia SafeBrowsingExtendedReportingOptInAllowed.
+<translation id="1574554504290354326">To ustawienie zostało wycofane. Zamiast niego użyj ustawienia SafeBrowsingExtendedReportingEnabled. Włączenie lub wyłączenie zasady SafeBrowsingExtendedReportingEnabled działa tak samo jak ustawienie wartości false w zasadzie SafeBrowsingExtendedReportingOptInAllowed.
 
-      Wyłączenie tego ustawienia uniemożliwi użytkownikom wysyłanie niektórych informacji o systemie i zawartości stron na serwery Google. Jeśli zasada będzie włączona lub nie zostanie skonfigurowana, użytkownicy będą mogli wysyłać niektóre informacje o systemie i zawartości stron do usługi Bezpieczne przeglądanie, która może wykryć niebezpieczne aplikacje i strony.
+      Ustawienie tej zasady na false uniemożliwi użytkownikom wysyłanie niektórych informacji o systemie i zawartości stron na serwery Google. Jeśli zasada ma wartość true lub nie zostanie skonfigurowana, użytkownicy będą mogli wysyłać niektóre informacje o systemie i zawartości stron do usługi Bezpieczne przeglądanie, która może wykryć niebezpieczne aplikacje i strony.
 
       Więcej informacji o Bezpiecznym przeglądaniu znajdziesz na https://developers.google.com/safe-browsing</translation>
 <translation id="1583248206450240930">Używaj domyślnie wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -765,16 +755,6 @@ Alerty dotyczące ochrony hasłem ostrzegają użytkowników, gdy chcą oni stos
 <translation id="3214164532079860003">W przypadku włączenia ta zasada wymusza zaimportowanie strony startowej z bieżącej przeglądarki domyślnej. Jeśli zasada będzie wyłączona, strona startowa nie zostanie zaimportowana. Jeśli ta zasada nie zostanie ustawiona, użytkownik może zobaczyć pytanie, czy zaimportować stronę, lub importowanie może odbyć się automatycznie.</translation>
 <translation id="3219421230122020860">Tryb incognito dostępny</translation>
 <translation id="3220624000494482595">Jeśli aplikacja kiosku jest aplikacją na Androida, nie będzie mieć żadnej kontroli nad wersją <ph name="PRODUCT_OS_NAME" />, nawet jeśli ta zasada jest ustawiona na <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      Możesz dostosować ustawienie zasady IsolateOrigins, by jak najlepiej
-      wykorzystać oba sposoby działania (izolację i ograniczony wpływ na użytkowników).
-      W zasadzie IsolateOrigins użyj listy witryn, które chcesz izolować. To ustawienie,
-      SitePerProcess, izoluje wszystkie witryny.
-      Jeśli zasada jest włączona, każda witryna uruchamia się w obrębie własnego procesu.
-      Jeśli zasada jest wyłączona, działa logika zarządzania procesem sprzed izolacji witryny powodująca wyłączenie testów funkcjonalnych zasad IsolateOrigins i SitePerProcess. Użytkownicy nadal mogą włączyć zasadę SitePerProcess ręcznie.
-      Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
-      W systemie <ph name="PRODUCT_OS_NAME" /> zalecane jest ustawienie zasady dotyczącej urządzeń <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> na tę samą wartość. Jeśli wartości określone przez te dwie zasady nie są zgodne, podczas logowania się do sesji użytkownika może wystąpić opóźnienie spowodowane zastosowaniem wartości określonej przez zasady dotyczące użytkowników.
-      </translation>
 <translation id="3236046242843493070">Wzorce URL-ów, z których dozwolone jest instalowanie rozszerzeń, aplikacji i skryptów użytkownika</translation>
 <translation id="3240609035816615922">Zasady dostępu do konfiguracji drukarki.</translation>
 <translation id="3243309373265599239">Określa, po jakim czasie nieaktywności użytkownika przyciemniany jest ekran przy zasilaniu z sieci.
@@ -854,16 +834,6 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
           Ta zasada jest uwzględniana tylko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="350797926066071931">Włącz Tłumacza</translation>
 <translation id="3512226956150568738">Jeśli model urządzenia klienta obsługiwał środowisko ARC już wtedy, gdy do uruchomienia ARC nie była konieczna migracja do ext4, i jeśli zasada ArcEnabled jest ustawiona na wartość prawda, ta opcja będzie zachowywać się tak jak opcja AskUser (wartość 3). We wszystkich pozostałych przypadkach (jeśli model urządzenia nie obsługiwał wcześniej ARC lub jeśli zasada ArcEnabled jest ustawiona na wartość fałsz), ta wartość jest równoznaczna z opcją DisallowArc (wartość 0).</translation>
-<translation id="3519934027321156158">
-      Jeśli ta zasada jest włączona, każde nazwane źródło
-      z listy oddzielonej przecinkami działa w obrębie własnego procesu. Powoduje to też
-      izolację źródeł z nazwami subdomen, np. określenie https://example.com/ spowoduje,
-      że adres https://foo.example.com/ będzie także izolowany jako część witryny
-      https://example.com/
-      Jeśli ta zasada jest wyłączona, działa logika zarządzania procesem sprzed izolacji witryny powodująca wyłączenie testów funkcjonalnych zasad IsolateOrigins i SitePerProcess. Użytkownicy nadal mogą włączyć zasadę IsolateOrigins ręcznie.
-      Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
-      W systemie <ph name="PRODUCT_OS_NAME" /> zalecane jest ustawienie zasady dotyczącej urządzeń <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> na tę samą wartość. Jeśli wartości określone przez te dwie zasady nie są zgodne, podczas logowania się do sesji użytkownika może wystąpić opóźnienie spowodowane zastosowaniem wartości określonej przez zasady dotyczące użytkowników.
-      </translation>
 <translation id="3524204464536655762">Nie zezwalaj żadnym stronom na wysyłanie próśb o dostęp do urządzeń USB przez interfejs API WebUSB</translation>
 <translation id="3528000905991875314">Włącz alternatywne strony błędów</translation>
 <translation id="3547954654003013442">Ustawienia serwera proxy</translation>
@@ -1037,16 +1007,6 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
       Jeśli nie skonfigurujesz tej zasady lub ustawisz dla niej wartość prawda, użytkownicy będą mogli wykorzystywać oferty przy rejestracji systemu operacyjnego Chrome.
 
       Jeśli ustawisz tu wartość fałsz, użytkownicy nie będą mogli wykorzystywać ofert.</translation>
-<translation id="4002183184444060875">
-      Ta zasada ma wpływ na ekran logowania. Zapoznaj się też z informacjami o zasadzie <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, która ma wpływ na sesję użytkownika. Zaleca się skonfigurowanie obu tych zasad w jednakowy sposób. Jeśli ich wartości nie są zgodne, podczas logowania się do sesji użytkownika może wystąpić opóźnienie spowodowane zastosowaniem wartości określonej przez zasady dotyczące użytkowników.
-      Jeśli ta zasada jest włączona, każde nazwane źródło z listy oddzielonej przecinkami
-      działa w obrębie własnego procesu. Powoduje to też izolację
-      źródeł z nazwami subdomen, np. określenie https://example.com/
-      spowoduje, że adres https://foo.example.com/ będzie także izolowany jako część witryny
-      https://example.com/
-      Jeśli ta zasada jest wyłączona, działa logika zarządzania procesem sprzed izolacji witryny powodująca wyłączenie testów funkcjonalnych zasad IsolateOrigins i SitePerProcess. Użytkownicy nadal mogą włączyć zasadę IsolateOrigins ręcznie.
-      Jeśli zasada nie jest skonfigurowana, do ekranu logowania są stosowane domyślne ustawienia platformy dotyczące izolacji witryn.
-      </translation>
 <translation id="4010738624545340900">Zezwolenie na wywoływanie okien dialogowych wyboru plików</translation>
 <translation id="4012737788880122133">Włączenie tego ustawienia wyłącza automatyczne aktualizacje.
 
@@ -1458,13 +1418,13 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="5370279767682621504">Włącz obsługę HTTP/0.9 w portach innych niż domyślne</translation>
 <translation id="5378985487213287085">Umożliwia określenie, czy witryny mogą wyświetlać powiadomienia na pulpicie. Wyświetlanie powiadomień na pulpicie może być domyślnie dozwolone lub zabronione bądź użytkownikowi może być wyświetlany monit za każdym razem, gdy witryna chce wyświetlić takie powiadomienie. W przypadku nieskonfigurowania tej zasady będzie używana zasada „AskNotifications”, a użytkownik będzie mógł zmienić to ustawienie.</translation>
 <translation id="538108065117008131">Zezwalaj wtyczce <ph name="PRODUCT_FRAME_NAME" /> na obsługę następujących typów treści</translation>
-<translation id="5391363090783552279">Jeśli ta zasada zostanie włączona, <ph name="PRODUCT_NAME" /> będzie się łączyć z urządzeniami przesyłającymi pod wszystkimi adresami IP, a nie tylko pod adresami prywatnymi RFC1918/RFC4913.
+<translation id="5391363090783552279">Jeśli ta zasada ma wartość true, <ph name="PRODUCT_NAME" /> będzie się łączyć z urządzeniami przesyłającymi pod wszystkimi adresami IP, a nie tylko pod adresami prywatnymi RFC1918/RFC4913.
 
-          Jeśli ta zasada nie zostanie włączona, <ph name="PRODUCT_NAME" /> będzie się łączyć z urządzeniami przesyłającymi tylko pod adresami prywatnymi RFC1918/RFC4913.
+          Jeśli ta zasada nie ma wartość false, <ph name="PRODUCT_NAME" /> będzie się łączyć z urządzeniami przesyłającymi tylko pod adresami prywatnymi RFC1918/RFC4913.
 
           Jeśli ta zasada nie zostanie ustawiona, <ph name="PRODUCT_NAME" /> będzie się łączyć z urządzeniami przesyłającymi tylko pod prywatnymi adresami RFC1918/RFC4913, chyba że zostanie włączona funkcja CastAllowAllIPs.
 
-          Jeśli zasada „EnableMediaRouter” będzie wyłączona, wartość ustawiona dla tej zasady nie będzie miała znaczenia.</translation>
+          Jeśli zasada „EnableMediaRouter” będzie mieć wartość false, wartość ustawiona dla tej zasady nie będzie miała znaczenia.</translation>
 <translation id="5392172595902933844">Informacje o stanie Androida są wysyłane z powrotem na serwer.
 
       Jeśli zasada jest wyłączona lub nieskonfigurowana, nie są wysyłane żadne informacje o stanie.
@@ -1855,7 +1815,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6699880231565102694">Włącz uwierzytelnianie dwuskładnikowe dla hostów zdalnego dostępu</translation>
 <translation id="6702257826895463228">Zezwala stronom na otwieranie wyskakujących okienek podczas nawigowania.
 
-      Pełne wyjaśnienie można znaleźć na https://www.chromestatus.com/features/5675755719622656.
+      Pełne wyjaśnienie można znaleźć na https://www.chromestatus.com/features/5675755719622656
       Jeśli ta zasada zostanie włączona, strony będą mogły otwierać nowe okna/karty podczas nawigowania.
       Jeśli ta zasada zostanie wyłączona lub nie zostanie ustawiona, strony nie będą mogły otwierać nowych okien/kart podczas nawigowania.</translation>
 <translation id="6724842112053619797">Jeśli włączysz to ustawienie, ustawienia zapisane w profilach <ph name="PRODUCT_NAME" />, takie jak zakładki, dane autouzupełniania, hasła itp., będą też zapisywane w folderze profilu przenośnego (Roaming) użytkownika lub w lokalizacji ustawionej przez administratora w zasadzie <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Włączenie tej zasady wyłącza synchronizację z chmurą.
@@ -2124,9 +2084,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli jest ustawiona wartość GAIA, logowanie będzie przebiegać zgodnie ze zwykłym procesem uwierzytelniania GAIA.
 
       Jeśli ustawiona wartość to SAML_INTERSTITIAL, podczas logowania wyświetli się pełnoekranowe okno z informacją, że użytkownik może przejść dalej, gdy dokona uwierzytelnienia przez dostawcę tożsamości SAML domeny rejestracji urządzenia lub może powrócić do normalnego procesu logowania GAIA.</translation>
-<translation id="755951849901630953">Gdy ta zasada jest włączona lub nieskonfigurowana, włączone są aktualizacje wszystkich komponentów w: <ph name="PRODUCT_NAME" />.
+<translation id="755951849901630953">Gdy ta zasada ma wartość true lub nie jest skonfigurowana, włączone są aktualizacje wszystkich komponentów w: <ph name="PRODUCT_NAME" />.
 
-      Jeśli zasada jest wyłączona, aktualizacje komponentów również są wyłączone. Nie obejmuje to jednak komponentów, które nie zawierają kodu wykonywalnego, nie mają znacznego wpływu na działanie przeglądarki lub mają kluczowe znaczenie dla bezpieczeństwa.
+      Jeśli zasada ma wartość false, aktualizacje komponentów również są wyłączone. Nie obejmuje to jednak komponentów, które nie zawierają kodu wykonywalnego, nie mają znacznego wpływu na działanie przeglądarki lub mają kluczowe znaczenie dla bezpieczeństwa.
       Przykładami takich komponentów są listy odwołanych certyfikatów i dane Bezpiecznego przeglądania.
       Więcej informacji o Bezpiecznym przeglądaniu znajdziesz na https://developers.google.com/safe-browsing</translation>
 <translation id="757395965347379751">Gdy to ustawienie jest włączone, <ph name="PRODUCT_NAME" /> akceptuje certyfikaty z podpisem SHA-1, o ile zostanie potwierdzona ich poprawność i zostaną łańcuchowo powiązane z zainstalowanymi lokalnie certyfikatami CA.
@@ -2506,13 +2466,13 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 <translation id="8731693562790917685">Ustawienia treści umożliwiają określenie sposobu obsługi treści danego typu (na przykład plików cookie, grafik czy kodu JavaScript).</translation>
 <translation id="8733448613597049197">Włącza rozszerzone raporty w usłudze Bezpieczne przeglądanie w: <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
 
-      Rozszerzone raportowanie wysyła na serwery Google pewne informacje o systemie i zawartości stron w celu wykrywania niebezpiecznych aplikacji i witryn.
+      Rozszerzone raportowanie wysyła na serwery Google niektóre informacje o systemie i zawartości stron w celu wykrywania niebezpiecznych aplikacji i witryn.
 
-      Jeśli ustawienie jest włączone, raporty są tworzone i wysyłane w razie potrzeby (na przykład jeśli wyświetlane jest pełnoekranowe ostrzeżenie o zagrożeniu).
+      Jeśli ustawienie ma wartość true, raporty są tworzone i wysyłane w razie potrzeby (na przykład jeśli wyświetlane jest pełnoekranowe ostrzeżenie o zagrożeniu).
 
-      Jeśli ustawienie jest wyłączone, raporty nie są nigdy wysyłane.
+      Jeśli ustawienie ma wartość false, raporty nie są nigdy wysyłane.
 
-      Jeśli zasada jest włączona lub wyłączona, użytkownik nie może zmienić ustawienia.
+      Jeśli zasada ma wartość true lub false, użytkownik nie może zmienić ustawienia.
 
       Jeśli zasada nie jest ustawiona, użytkownik może zmienić ustawienie i zdecydować, czy wysyłać raporty.
 

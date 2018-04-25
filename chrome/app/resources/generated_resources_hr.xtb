@@ -2814,7 +2814,7 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="5334142896108694079">Predmemorija skripte</translation>
 <translation id="5334844597069022743">Pogledaj izvor</translation>
 <translation id="5335458522276292100">Sigurnosno kopiranje datoteka (ukupno) <ph name="FILE_COUNT" /> na <ph name="BEGIN_LINK" />Google disk<ph name="END_LINK" /></translation>
-<translation id="5336126339807372270">Ne dopuštaj nijednoj web-lokaciji da pristupa USB uređajima</translation>
+<translation id="5336126339807372270">Onemogući svim web-lokacijama pristup USB uređajima</translation>
 <translation id="5337771866151525739">Instalirala treća strana.</translation>
 <translation id="5338503421962489998">Lokalna pohrana</translation>
 <translation id="5340217413897845242">Stavka police 6</translation>

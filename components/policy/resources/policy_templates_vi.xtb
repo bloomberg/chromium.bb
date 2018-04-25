@@ -162,15 +162,6 @@
 
       Nếu cài đặt này bị tắt hoặc không được định cấu hình thì người dùng
       doanh nghiệp sẽ không thể sử dụng ARC.</translation>
-<translation id="1561183922461862993">
-      Chính sách này áp dụng cho màn hình đăng nhập. Vui lòng xem thêm chính sách <ph name="SITE_PER_PROCESS_POLICY_NAME" /> áp dụng cho phiên người dùng. Bạn nên đặt cùng một giá trị cho cả hai chính sách. Nếu các giá trị không khớp nhau thì có thể xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi áp dụng giá trị mà chính sách người dùng chỉ định.
-      Bạn nên xem thông tin cài đặt chính sách IsolateOrigins để khai thác tối đa
-      cả hai khía cạnh, cô lập và hạn chế tác động người dùng, bằng cách sử dụng
-      IsolateOrigins cùng với danh sách các trang web mà bạn muốn cô lập. Tùy chọn cài đặt       SitePerProcess này sẽ cô lập mọi trang web.
-      Nếu bạn bật chính sách này, mỗi trang web sẽ chạy theo quy trình riêng.
-      Nếu bạn tắt chính sách này, logic quản lý quy trình cô lập trước khi chạy trang web sẽ có hiệu lực và các phiên bản dùng thử tại chỗ của IsolateOrigins và SitePerProcess sẽ bị tắt. Người dùng vẫn có thể bật SitePerProcess theo cách thủ công.
-      Nếu bạn không định cấu hình chính sách này, người dùng sẽ có thể thay đổi cài đặt này.
-      </translation>
 <translation id="1561424797596341174">Chính sách ghi đè dành cho bản dựng Gỡ lỗi của máy chủ truy cập từ xa</translation>
 <translation id="1561967320164410511">Tiện ích U2F+ để chứng thực cá nhân</translation>
 <translation id="1574554504290354326">Cài đặt này không còn được dùng nữa, hãy sử dụng cài đặt SafeBrowsingExtendedReportingEnabled thay vào đó. Việc bật hoặc tắt cài đặt SafeBrowsingExtendedReportingEnabled cũng giống với thao tác đặt SafeBrowsingExtendedReportingOptInAllowed thành False.
@@ -795,15 +786,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu không thiết lập chính sách này, người dùng có thể được hỏi có nhập hay không hoặc quá trình nhập có thể diễn ra tự động.</translation>
 <translation id="3219421230122020860">Chế độ ẩn danh khả dụng</translation>
 <translation id="3220624000494482595">Nếu ứng dụng kiosk là một ứng dụng Android thì ứng dụng này không có quyền kiểm soát đối với phiên bản <ph name="PRODUCT_OS_NAME" /> ngay cả khi chính sách này được đặt thành <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      Bạn nên xem thông tin cài đặt chính sách IsolateOrigins để khai thác tối đa
-      cả hai khía cạnh, cô lập và hạn chế tác động đến người dùng, bằng cách sử dụng
-      IsolateOrigins cùng với danh sách các trang web mà bạn muốn cô lập. Tùy chọn cài đặt SitePerProcess này sẽ cô lập mọi trang web.
-      Nếu bạn bật chính sách này, mỗi trang web sẽ chạy theo quy trình riêng.
-      Nếu bạn tắt chính sách này, logic quản lý quy trình cô lập trước khi chạy trang web sẽ có hiệu lực và các phiên bản dùng thử tại chỗ của IsolateOrigins và SitePerProcess sẽ bị tắt. Người dùng sẽ vẫn có thể bật SitePerProcess theo cách thủ công.
-      Nếu bạn không định cấu hình chính sách này, người dùng sẽ có thể thay đổi tùy chọn cài đặt này.
-      Trên <ph name="PRODUCT_OS_NAME" />, bạn cũng nên đặt chính sách thiết bị <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> về cùng một giá trị. Nếu các giá trị do hai chính sách chỉ định không khớp nhau thì có thể xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi áp dụng giá trị mà chính sách người dùng chỉ định.
-      </translation>
 <translation id="3236046242843493070">Mẫu URL để cho phép cài đặt tiện ích, ứng dụng và tập lệnh người dùng từ</translation>
 <translation id="3240609035816615922">Chính sách truy cập vào cấu hình máy in.</translation>
 <translation id="3243309373265599239">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó màn hình bị mờ đi khi chạy trên nguồn AC.
@@ -885,16 +867,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Chính sách này chỉ được tuân theo nếu kích hoạt chính sách 'DefaultSearchProviderEnabled'.</translation>
 <translation id="350797926066071931">Bật tính năng Dịch</translation>
 <translation id="3512226956150568738">Nếu cần có kiểu thiết bị khách đã hỗ trợ ARC trước khi di chuyển sang ext4 để chạy ARC và nếu chính sách ArcEnabled được đặt thành true thì tùy chọn này sẽ hoạt động giống như AskUser (giá trị 3). Trong tất cả các trường hợp khác (nếu kiểu thiết bị không hỗ trợ ARC từ trước hoặc nếu chính sách ArcEnabled được đặt thành false), thì giá trị này sẽ tương đương với DisallowArc (giá trị 0).</translation>
-<translation id="3519934027321156158">
-      Nếu bạn bật chính sách này, mỗi nguồn gốc có tên trong
-      danh sách phân tách bằng dấu phẩy sẽ chạy theo quy trình riêng. Cài đặt này cũng sẽ cô lập
-      các nguồn gốc được đặt tên theo miền phụ; chẳng hạn như việc chỉ định https://example.com/ cũng sẽ
-      khiến https://foo.example.com/ bị cô lập vì là một phần của
-      https://example.com/ site.
-      Nếu bạn tắt chính sách này, logic quản lý quy trình Cô lập trước khi chạy trang web sẽ có hiệu lực và các phiên bản dùng thử tại chỗ của IsolateOrigins và SitePerProcess sẽ bị tắt. Người dùng sẽ vẫn có thể bật IsolateOrigins theo cách thủ công.
-      Nếu bạn không định cấu hình chính sách này, người dùng sẽ có thể thay đổi tùy chọn cài đặt này.
-      Trên <ph name="PRODUCT_OS_NAME" />, bạn cũng nên đặt chính sách thiết bị <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> về cùng giá trị. Nếu các giá trị do hai chính sách chỉ định không khớp nhau thì có thể xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi áp dụng giá trị mà chính sách người dùng chỉ định.
-      </translation>
 <translation id="3524204464536655762">Không cho phép bất kỳ trang web nào yêu cầu quyền truy cập vào thiết bị USB qua API WebUSB</translation>
 <translation id="3528000905991875314">Bật các trang lỗi thay thế</translation>
 <translation id="3547954654003013442">Cài đặt proxy</translation>
@@ -1073,16 +1045,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này được đặt thành true hoặc không được đặt, người dùng sẽ có thể đổi phiếu mua hàng thông qua Đăng ký Chrome OS.
 
       Nếu chính sách này được đặt thành false, người dùng sẽ không thể đổi phiếu mua hàng.</translation>
-<translation id="4002183184444060875">
-      Chính sách này áp dụng cho màn hình đăng nhập. Vui lòng xem thêm chính sách <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> áp dụng cho phiên người dùng. Bạn nên đặt cả hai chính sách về cùng một giá trị. Nếu các giá trị không khớp nhau thì có thể xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi áp dụng giá trị mà chính sách người dùng chỉ định.
-      Nếu bạn bật chính sách, mỗi nguồn gốc có tên trong
-      danh sách phân tách bằng dấu phẩy sẽ chạy theo quy trình riêng. Cài đặt này cũng sẽ cô lập
-      các nguồn gốc được đặt tên theo miền phụ; chẳng hạn như việc chỉ định https://example.com/ cũng sẽ
-      khiến https://foo.example.com/ bị cô lập vì là một phần của
-      https://example.com/ site.
-      Nếu bạn tắt chính sách này thì logic quản lý quy trình Cô lập trước khi chạy trang web sẽ có hiệu lực và các phiên bản dùng thử tại chỗ của IsolateOrigins và SitePerProcess sẽ bị tắt. Người dùng sẽ vẫn có thể bật IsolateOrigins theo cách thủ công.
-      Nếu bạn không định cấu hình chính sách này, cài đặt cô lập trang web mặc định của nền tảng sẽ được sử dụng cho màn hình đăng nhập.
-      </translation>
 <translation id="4010738624545340900">Cho phép kích hoạt các hộp thoại chọn tệp</translation>
 <translation id="4012737788880122133">Tắt cập nhật tự động khi được đặt thành True.
 

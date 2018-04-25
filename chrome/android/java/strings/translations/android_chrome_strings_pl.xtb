@@ -414,7 +414,7 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="4876188919622883022">Widok uproszczony</translation>
 <translation id="4878404682131129617">Nie udało się utworzyć tunelu przez serwer proxy</translation>
 <translation id="4881695831933465202">Otwórz</translation>
-<translation id="488187801263602086">Zmiana nazwy pliku</translation>
+<translation id="488187801263602086">Zmień nazwę pliku</translation>
 <translation id="4885273946141277891">Nieobsługiwana liczba wystąpień Chrome.</translation>
 <translation id="4910889077668685004">Aplikacje do płatności</translation>
 <translation id="4913161338056004800">Resetuj statystyki</translation>
@@ -892,6 +892,7 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="932327136139879170">Strona główna</translation>
 <translation id="932599481871055447">Zapisuj dane i szybciej przeglądaj strony</translation>
 <translation id="938850635132480979">Błąd: <ph name="ERROR_CODE" /></translation>
+<translation id="945522503751344254">Wyślij zgłoszenie</translation>
 <translation id="945632385593298557">Dostęp do mikrofonu</translation>
 <translation id="951339005376969845">Usuń istniejące dane. Aby je pobrać, przełącz się z powrotem na konto <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome może używać <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> do wyszukiwania w Chinach. Możesz to zmienić w <ph name="BEGIN_LINK" />Ustawieniach<ph name="END_LINK" />.</translation>

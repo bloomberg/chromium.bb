@@ -162,16 +162,6 @@
 
       Kung idi-disable o hindi iko-configure ang setting na ito, hindi magagamit ng
       mga user ng enterprise ang ARC.</translation>
-<translation id="1561183922461862993">
-      Nalalapat ang patakarang ito sa screen ng pag-sign in. Pakitingnan din ang patakarang <ph name="SITE_PER_PROCESS_POLICY_NAME" /> na nalalapat sa session ng user. Inirerekomendang itakda ang dalawang patakaran sa parehong value. Kung hindi magtutugma ang mga value, maaaring magkaroon ng pagkaantala sa pagpasok sa isang session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
-      Maaari mong tingnan ang setting ng patakaran ng IsolateOrigins para parehong
-      masulit ang pag-isolate at pagkakaroon ng limitadong epekto sa mga user sa pamamagitan ng paggamit ng
-      IsolateOrigins na may listahan ng mga site na gusto mong i-isolate. Ina-isolate ng setting na ito na
-      SitePerProcess ang lahat ng site.
-      Kung naka-enable ang patakaran, tatakbo ang bawat site sa sarili nitong proseso.
-      Kung naka-disable ang patakaran, magkakabisa ang logic sa pamamahala ng proseso bago ang Pag-isolate ng Site, at madi-disable ang mga field trial ng IsolateOrigins at SitePerProcess. Magagawa pa rin ng mga user na manual na i-enable ang SitePerProcess.
-      Kung hindi na-configure ang patakaran, mababago ng user ang setting na ito.
-      </translation>
 <translation id="1561424797596341174">Mga pag-override ng patakaran para sa Mga build sa pag-debug ng host ng malayuang access</translation>
 <translation id="1561967320164410511">U2F kasama ang mga extension para sa pagpapatunay ng indibidwal</translation>
 <translation id="1574554504290354326">Hindi na ginagamit ang setting na ito, gamitin na lang ang SafeBrowsingExtendedReportingEnabled. Katumbas ng pag-enable o pag-disable ng SafeBrowsingExtendedReportingEnabled ang pagtakda ng SafeBrowsingExtendedReportingOptInAllowed sa False.
@@ -793,16 +783,6 @@
       Kung hindi ito nakatakda, maaaring tanungin sa user kung mag-i-import o hindi, o maaaring awtomatikong mangyari ang pag-import.</translation>
 <translation id="3219421230122020860">Available ang mode na incognito</translation>
 <translation id="3220624000494482595">Kung ang kiosk app ay isang Android app, wala itong kontrol sa bersyon ng <ph name="PRODUCT_OS_NAME" />, kahit na nakatakda ang patakarang ito sa <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      Maaari mong tingnan ang setting ng patakaran ng IsolateOrigins para
-      parehong masulit ang pag-isolate at pagkakaroon ng limitadong epekto sa mga user sa pamamagitan ng paggamit ng
-      IsolateOrigins na may listahan ng mga site na gusto mong i-isolate. Ina-isolate ng setting na ito na
-      SitePerProcess ang lahat ng site.
-      Kung naka-enable ang patakaran, tatakbo ang bawat site sa sarili nitong proseso.
-      Kung naka-disable ang patakaran, magkakabisa ang logic sa pamamahala ng proseso bago ang Pag-isolate ng Site, at madi-disable ang mga field trial ng IsolateOrigins at SitePerProcess. Magagawa pa rin ng mga user na manual na i-enable ang SitePerProcess.
-      Kung hindi na-configure ang patakaran, mababago ng user ang setting na ito.
-      Inirerekomenda sa <ph name="PRODUCT_OS_NAME" /> na itakda rin ang patakaran sa device na <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sa parehong value. Kung hindi magtutugma ang mga value na tinukoy ng dalawang patakaran, maaaring magkaroon ng pagkaantala sa pagpasok sa isang session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
-      </translation>
 <translation id="3236046242843493070">Mga pattern ng URL na bibigyang-daan ang mga manggagaling na pag-install ng extension, app, at script ng user</translation>
 <translation id="3240609035816615922">Patakaran sa pag-access ng configuration ng printer</translation>
 <translation id="3243309373265599239">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay idi-dim ang screen kapag tumatakbo habang nakasaksak sa kuryente.
@@ -884,16 +864,6 @@
           Iginagalang lang ang patakarang ito kung naka-enable ang patakarang 'DefaultSearchProviderEnabled.'</translation>
 <translation id="350797926066071931">Paganahin ang I-translate</translation>
 <translation id="3512226956150568738">Kung sinusuportahan na ng modelo ng device ng kliyente ang ARC bago kailanganin ang paglipat sa ext4 upang mapatakbo ang ARC at kung nakatakda sa true ang patakarang ArcEnabled, gagana ang opsyong ito bilang AskUser (value 3). Sa lahat ng iba pang sitwasyon (kung hindi sinusuportahan ng modelo ng device ang ARC dati, o kung nakatakda sa false ang patakarang ArcEnabled), ang value na ito ay katumbas ng DisallowArc (value 0).</translation>
-<translation id="3519934027321156158">
-      Kung naka-enable ang patakaran, tatakbo sa sarili nitong proseso ang bawat isa sa mga pinangalanang pinagmulan sa isang
-      comma-separated list. Ia-isolate din nito ang mga
-      pinagmulang pinangalanan ng mga subdomain; hal. kapag tinukoy ang https://example.com/,
-      maa-isolate din ang https://foo.example.com/ bilang bahagi ng
-      site na https://example.com/.
-      Kung naka-disable ang patakaran, magkakabisa ang logic sa pamamahala ng proseso bago ang Pag-isolate ng Site, at madi-disable ang mga field trial ng IsolateOrigins at SitePerProcess. Magagawa pa rin ng mga user na manual na i-enable ang SitePerProcess.
-      Kung hindi na-configure ang patakaran, mababago ng user ang setting na ito.
-      Inirerekomenda sa <ph name="PRODUCT_OS_NAME" /> na itakda rin ang patakaran sa device na <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> sa parehong value. Kung hindi magtutugma ang mga value na tinukoy ng dalawang patakaran, maaaring magkaroon ng pagkaantala sa pagpasok sa isang session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
-      </translation>
 <translation id="3524204464536655762">Huwag payagan ang anumang site na humiling ng access sa mga USB device sa pamamagitan ng WebUSB API</translation>
 <translation id="3528000905991875314">Paganahin ang mga kahaliling pahina ng error</translation>
 <translation id="3547954654003013442">Mga setting ng proxy</translation>
@@ -1072,16 +1042,6 @@
       Kung itinakda sa true o iniwang hindi nakatakda ang patakarang ito, makakakuha ng mga alok ang mga user sa pamamagitan ng Pagpaparehistro ng Chrome OS.
 
       Kung itinakda sa false ang patakarang ito, hindi makakakuha ng mga alok ang user.</translation>
-<translation id="4002183184444060875">
-      Nalalapat ang patakarang ito sa screen ng pag-sign in. Pakitingnan din ang patakarang <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> na nalalapat sa session ng user. Inirerekomendang itakda ang dalawang patakaran sa parehong value. Kung hindi magtutugma ang mga value, maaaring magkaroon ng pagkaantala sa pagpasok sa isang session ng user habang inilalapat ang value na tinukoy ng patakaran ng user
-      Kung naka-enable ang patakaran, tatakbo sa sarili nitong proseso ang bawat isa sa mga pinangalanang pinagmulan sa
-      isang comma-separated list. Ia-isolate din nito ang
-      mga pinagmulang pinangalanan ng mga subdomain; hal. kapag tinukoy ang https://example.com/,
-      maa-isolate din ang https://foo.example.com/ bilang bahagi ng site na
-      https://example.com/.
-      Kung naka-disable ang patakaran, magkakabisa ang logic sa pamamahala ng proseso bago ang Pag-isolate ng Site, at madi-disable ang mga field trial ng IsolateOrigins at SitePerProcess. Magagawa pa rin ng mga user na manual na i-enable ang SitePerProcess.
-      Kung hindi na-configure ang patakaran, gagamitin ang mga default na setting ng pag-isolate ng site ng platform para sa screen ng pag-sign in.
-      </translation>
 <translation id="4010738624545340900">Payagan ang invocation ng mga dialog sa pagpili ng file</translation>
 <translation id="4012737788880122133">Dini-disable ang awtomatikong pag-update kapag nakatakda sa True.
 

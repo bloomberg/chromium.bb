@@ -162,16 +162,6 @@
 
       Jei šis nustatymas išjungtas arba nesukonfigūruotas, įmonių naudotojai
       negali naudoti ARC.</translation>
-<translation id="1561183922461862993">
-      Ši politika taikoma prisijungimo ekranui. Taip pat žr. politiką „<ph name="SITE_PER_PROCESS_POLICY_NAME" />“, kuri taikoma naudotojo sesijai. Rekomenduojama nustatyti tas pačias abiejų tipų politikos vertes. Jei vertės neatitinka, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
-      Gali būti naudinga peržiūrėti politikos nustatymą „IsolateOrigins“, kad
-      efektyviai naudotumėte atskyrimą darydami ribotą įtaką naudotojams, pasitelkdami
-      „IsolateOrigins“ su svetainių, kurias norite atskirti, sąrašu. Nustatymu,
-      „SitePerProcess“ atskiriamos visos svetainės.
-      Įgalinus politiką kiekviena svetainė vykdys atskirą procesą.
-      Išjungus politiką įsigalios kiekvienos svetainės atskyrimo proceso tvarkymo logika, o „IsolateOrigins“ ir „SitePerProcess“ bandomosios versijos bus išjungtos. Naudotojai vis tiek galės patys įgalinti „SitePerProcess“.
-      Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
-      </translation>
 <translation id="1561424797596341174">Nuotolinės prieigos prieglobos derinimo versijų politikos pakeitimai</translation>
 <translation id="1561967320164410511">Papildomi U2F asmeninės atestacijos plėtiniai</translation>
 <translation id="1574554504290354326">Šis nustatymas nebenaudojamas. Vietoje jo naudokite „SafeBrowsingExtendedReportingEnabled“. „SafeBrowsingExtendedReportingEnabled“ įgalinimas arba išjungimas atitinka „SafeBrowsingExtendedReportingOptInAllowed“ nustatymą į „False“.
@@ -644,7 +634,7 @@
 <translation id="2769952903507981510">Konfigūruoti reikiamą nuotolinės prieigos prieglobų domeno pavadinimą</translation>
 <translation id="2787173078141616821">Informacijos apie „Android“ būseną ataskaita</translation>
 <translation id="2793923553868251161">Šaltiniai, kurie turi būti laikomi saugiu kontekstu.</translation>
-<translation id="2799297758492717491">Leisti automatiškai leisti mediją, atitinkančią į baltąjį sąrašą įtrauktus URL šablonus</translation>
+<translation id="2799297758492717491">Leisti automatinį medijos, atitinkančios į baltąjį sąrašą įtrauktus URL šablonus, paleidimą</translation>
 <translation id="2801230735743888564">Leidžiama naudotojams žaisti dinozaurų Velykų kiaušinių žaidimą, kai įrenginys neprijungtas prie interneto.
 
       Jei ši politika nustatyta į „False“, naudotojai negali žaisti dinozaurų Velykų kiaušinių žaidimo, kai įrenginys neprijungtas prie interneto. Jei šis nustatymas nustatytas į „True“, naudotojams leidžiama žaisti dinozaurų žaidimą. Jei ši politika nenustatyta, naudotojams neleidžiama žaisti dinozaurų Velykų kiaušinių žaidimo užregistruotoje „Chrome“ OS, bet leidžiama žaisti kitomis aplinkybėmis.</translation>
@@ -798,16 +788,6 @@
       Jei jis nenustatytas, naudotojo gali būti paklausta, ar importuoti, arba gali būti automatiškai pradėta importuoti.</translation>
 <translation id="3219421230122020860">Inkognito režimas pasiekiamas</translation>
 <translation id="3220624000494482595">Jei viešojo terminalo programa yra „Android“ programa, ji negalės valdyti „<ph name="PRODUCT_OS_NAME" />“ versijos, net jei ši politika nustatyta į „<ph name="TRUE" />“.</translation>
-<translation id="3229833076897893450">
-      Gali būti naudinga peržiūrėti politikos nustatymą „IsolateOrigins“, kad
-      efektyviai naudotumėte atskyrimą darydami ribotą įtaką naudotojams, pasitelkdami
-      „IsolateOrigins“ su svetainių, kurias norite atskirti, sąrašu. Nustatymu
-      „SitePerProcess“ atskiriamos visos svetainės.
-      Įgalinus politiką kiekviena svetainė vykdys atskirą procesą.
-      Išjungus politiką įsigalios kiekvienos svetainės atskyrimo proceso tvarkymo logika, o „IsolateOrigins“ ir „SitePerProcess“ bandomosios versijos bus išjungtos. Naudotojai vis tiek galės patys įgalinti „SitePerProcess“.
-      Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
-      Naudojant „<ph name="PRODUCT_OS_NAME" />“ taip pat rekomenduojama nustatyti tą pačią įrenginio politikos „<ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />“ vertę. Jei abiejų tipų politikos vertės neatitinka, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
-      </translation>
 <translation id="3236046242843493070">URL šablonai, kuriuos naudojant galima įdiegti plėtinį, programą ir naudotojo scenarijų iš</translation>
 <translation id="3240609035816615922">Spausdintuvų konfigūracijos pasiekiamumo politika.</translation>
 <translation id="3243309373265599239">Nurodoma laiko trukmė be naudotojo įvesties, po kurios ekranas pritemdomas, kai naudojama kintamosios srovės energija.
@@ -889,16 +869,6 @@
           Šios politikos laikomasi, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
 <translation id="350797926066071931">Įgalinti vertimą</translation>
 <translation id="3512226956150568738">Jei kliento turimo modelio įrenginyje jau buvo palaikomas failų formatas ARC, kol dar perėjimas prie „ext4“ šifruotės nebuvo būtinas, kad būtų galima vykdyti ARC failus, ir jei politika „ArcEnabled“ nustatyta į „true“, ši parinktis veiks kaip „AskUser“ (3 vertė). Visais kitais atvejais (jei įrenginio modelyje nebuvo nepalaikomas failų formatas ARC arba jei politika „ArcEnabled“ nustatyta į „false“) ši vertė bus lygi „DisallowArc“ (0 vertė).</translation>
-<translation id="3519934027321156158">
-      Įgalinus politiką kiekvienas pavadinimą turintis šaltinis, įtrauktas į
-      kableliais atskirtų verčių sąrašą, vykdys atskirą procesą. Taip pat bus atskiriami
-      šaltiniai, pavadinti pagal padomenius, pvz., nurodžius https://example.com/ taip pat
-      bus atskiriamas ir padomenis https://foo.example.com/ kaip svetainės
-      https://example.com/ dalis.
-      Išjungus politiką įsigalios išankstinio svetainės atskyrimo proceso tvarkymo logika, o „IsolateOrigins“ ir „SitePerProcess“ bandomosios versijos bus išjungtos. Naudotojai vis tiek galės patys įgalinti „IsolateOrigins“.
-      Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
-      Naudojant „<ph name="PRODUCT_OS_NAME" />“ taip pat rekomenduojama nustatyti tą pačią įrenginio politikos „<ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />“ vertę. Jei abiejų tipų politikos vertės neatitinka, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
-      </translation>
 <translation id="3524204464536655762">Neleisti jokiai svetainei pateikti užklausos pasiekti USB įrenginių naudojant „WebUSB“ API</translation>
 <translation id="3528000905991875314">Įgalinti kitus klaidų puslapius</translation>
 <translation id="3547954654003013442">Įgaliotojo serverio nustatymai</translation>
@@ -1083,16 +1053,6 @@
       Jei ši politika galioja arba nėra nustatyta, naudotojai galės išpirkti pasiūlymus vykdydami „Chrome“ OS registraciją.
 
       Jei ši politika negalioja, naudotojas negalės išpirkti pasiūlymų.</translation>
-<translation id="4002183184444060875">
-      Ši politika taikoma prisijungimo ekranui. Taip pat žr. politiką „<ph name="ISOLATE_ORIGINS_POLICY_NAME" />“, kuri taikoma naudotojo sesijai. Rekomenduojama nustatyti tas pačias abiejų tipų politikos vertes. Jei vertės neatitinka, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
-      Įgalinus politiką kiekvienas pavadinimą turintis šaltinis, įtrauktas į
-      kableliais atskirtų verčių sąrašą, vykdys atskirą procesą. Taip pat bus atskiriami
-      šaltiniai, pavadinti pagal padomenius, pvz., nurodžius https://example.com/ taip pat
-      bus atskiriamas ir padomenis https://foo.example.com/ kaip svetainės
-      https://example.com/ dalis.
-      Išjungus politiką įsigalios išankstinio svetainės atskyrimo proceso tvarkymo logika, o „IsolateOrigins“ ir „SitePerProcess“ bandomosios versijos bus išjungtos. Naudotojai vis tiek galės patys įgalinti „IsolateOrigins“. Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
-      Jei politika nesukonfigūruota, prisijungimo ekranui bus naudojami platformos numatytieji svetainės atskyrimo nustatymai.
-      </translation>
 <translation id="4010738624545340900">Leisti iškviesti failų pasirinkimo dialogo langus</translation>
 <translation id="4012737788880122133">Neleidžiami automatiniai naujiniai, kai nustatyta į „true“.
 

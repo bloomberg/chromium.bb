@@ -157,13 +157,6 @@
 <translation id="1553684822621013552">Als dit beleid is ingesteld op waar, wordt ARC ingeschakeld voor de gebruiker (onderhevig aan extra controles van de beleidsinstellingen; ARC is nog steeds niet beschikbaar als de kortstondige modus of toegang tot meerdere accounts is ingeschakeld in de huidige gebruikerssessie).
 
      Als deze instelling is uitgeschakeld of niet is geconfigureerd, kunnen zakelijke gebruikers ARC niet gebruiken.</translation>
-<translation id="1561183922461862993">
-      Dit beleid is van toepassing op het inlogscherm. Zie ook het beleid <ph name="SITE_PER_PROCESS_POLICY_NAME" /> dat van toepassing is op de gebruikerssessie. We raden je aan beide beleidsregels in te stellen op dezelfde waarde. Als de waarden niet overeenkomen, treedt er mogelijk een vertraging op wanneer een gebruikerssessie wordt gestart terwijl de waarde van het gebruikersbeleid wordt toegepast.
-      Je kunt de beleidsinstelling IsolateOrigins bekijken om optimaal gebruik te maken van beide functies (isolatie en beperkte impact voor gebruikers) door IsolateOrigins te gebruiken met een lijst van de sites die je wilt isoleren. Met deze instelling (SitePerProcess) worden alle sites geïsoleerd.
-      Als het beleid is ingeschakeld, wordt elke site uitgevoerd in een eigen proces.
-      Als het beleid is uitgeschakeld, wordt de procesbeheerlogica voorafgaand aan site-isolatie van kracht en worden praktijktests van IsolateOrigins en SitePerProcess uitgeschakeld. Gebruikers kunnen SitePerProcess nog steeds handmatig inschakelen.
-      Als het beleid niet is geconfigureerd, kan de gebruiker deze instelling wijzigen.
-      </translation>
 <translation id="1561424797596341174">Beleid overschrijft Debug-builds van de host voor externe toegang</translation>
 <translation id="1561967320164410511">U2F plus extensies voor individuele bevestiging</translation>
 <translation id="1574554504290354326">Deze instelling is beëindigd. Gebruik in plaats daarvan SafeBrowsingExtendedReportingEnabled. Het inschakelen of uitschakelen van SafeBrowsingExtendedReportingEnabled staat gelijk aan het instellen van SafeBrowsingExtendedReportingOptInAllowed op false (onwaar).
@@ -792,13 +785,6 @@
       Als dit beleid niet is ingesteld, kan de gebruiker worden gevraagd of deze wil importeren, of wordt er automatisch geïmporteerd.</translation>
 <translation id="3219421230122020860">Incognitomodus beschikbaar</translation>
 <translation id="3220624000494482595">Als de kiosk-app een Android-app is, heeft deze geen controle over de <ph name="PRODUCT_OS_NAME" />-versie, zelfs niet als het beleid is ingesteld op <ph name="TRUE" /> (Waar).</translation>
-<translation id="3229833076897893450">
-      Je kunt de beleidsinstelling IsolateOrigins bekijken om optimaal gebruik te maken van beide functies (isolatie en beperkte impact voor gebruikers) door IsolateOrigins te gebruiken met een lijst van de sites die je wilt isoleren. Met deze instelling (SitePerProcess) worden alle sites geïsoleerd.
-      Als het beleid is ingeschakeld, wordt elke site uitgevoerd in een eigen proces.
-      Als het beleid is uitgeschakeld, wordt de procesbeheerlogica voorafgaand aan site-isolatie van kracht en worden praktijktests van IsolateOrigins en SitePerProcess uitgeschakeld. Gebruikers kunnen SitePerProcess nog steeds handmatig inschakelen.
-      Als het beleid niet is geconfigureerd, kan de gebruiker deze instelling wijzigen.
-      Voor <ph name="PRODUCT_OS_NAME" /> wordt het aanbevolen ook het apparaatbeleid <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> in te stellen op dezelfde waarde. Als de waarden van de twee beleidsregels niet overeenkomen, treedt er mogelijk een vertraging op wanneer een gebruikerssessie wordt gestart terwijl de waarde van het gebruikersbeleid wordt toegepast.
-      </translation>
 <translation id="3236046242843493070">URL-patronen om de installatie van extensies, apps en gebruikersscripts toe te staan vanaf</translation>
 <translation id="3240609035816615922">Toegangsbeleid voor printerconfiguratie.</translation>
 <translation id="3243309373265599239">Hiermee wordt de tijdsduur zonder input van gebruikers gespecificeerd waarna het scherm wordt gedimd wanneer er op netstroom wordt gewerkt.
@@ -880,12 +866,6 @@
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="350797926066071931">Vertalen inschakelen</translation>
 <translation id="3512226956150568738">Als het apparaatmodel van de klant al ondersteuning voor ARC bood voordat migratie naar ext4 nodig werd om ARC uit te voeren en als het beleid ArcEnabled is ingesteld op 'true' (waar), wordt AskUser (waarde 3) gebruikt voor deze optie. In alle andere gevallen (als het apparaatmodel voorheen geen ondersteuning voor ARC bood of als het beleid ArcEnabled op 'false' (onwaar) is ingesteld), is deze waarde gelijk aan DisallowArc (waarde 0).</translation>
-<translation id="3519934027321156158">
-      Als het beleid is ingeschakeld, wordt elk van de benoemde herkomsten in een door komma's gescheiden lijst uitgevoerd in een eigen proces. Hiermee worden ook herkomsten geïsoleerd die worden benoemd door subdomeinen. Als je bijvoorbeeld https://example.com/ opgeeft, wordt ook https://foo.example.com/ geïsoleerd als onderdeel van de site https://example.com/.
-      Als het beleid is uitgeschakeld, wordt de procesbeheerlogica voorafgaand aan site-isolatie van kracht en worden praktijktests van IsolateOrigins en SitePerProcess uitgeschakeld. Gebruikers kunnen IsolateOrigins nog steeds handmatig inschakelen.
-      Als het beleid niet is geconfigureerd, kan de gebruiker deze instelling wijzigen.
-      Voor <ph name="PRODUCT_OS_NAME" /> wordt het aanbevolen ook het apparaatbeleid <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> in te stellen op dezelfde waarde. Als de waarden van de twee beleidsregels niet overeenkomen, treedt er mogelijk een vertraging op wanneer een gebruikerssessie wordt gestart terwijl de waarde van het gebruikersbeleid wordt toegepast.
-      </translation>
 <translation id="3524204464536655762">Niet toestaan dat sites via de WebUSB API toegang tot USB-apparaten vragen</translation>
 <translation id="3528000905991875314">Alternatieve foutpagina's inschakelen</translation>
 <translation id="3547954654003013442">Proxyinstellingen</translation>
@@ -1069,12 +1049,6 @@
       Als dit beleid is ingesteld op 'true' (waar) of niet wordt ingesteld, kunnen gebruikers aanbiedingen inwisselen via registratie van Chrome OS.
 
       Als dit beleid is ingesteld op 'false' (onwaar), kunnen gebruikers geen aanbiedingen inwisselen.</translation>
-<translation id="4002183184444060875">
-      Dit beleid is van toepassing op het inlogscherm. Zie ook het beleid <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> dat van toepassing is op de gebruikerssessie. We raden je aan beide beleidsregels in te stellen op dezelfde waarde. Als de waarden niet overeenkomen, treedt er mogelijk een vertraging op wanneer een gebruikerssessie wordt gestart terwijl de waarde van het gebruikersbeleid wordt toegepast.
-      Als het beleid is ingeschakeld, wordt elk van de benoemde herkomsten in een door komma's gescheiden lijst uitgevoerd in een eigen proces. Hiermee worden ook herkomsten geïsoleerd die worden benoemd door subdomeinen. Als je bijvoorbeeld https://example.com/ opgeeft, wordt ook https://foo.example.com/ geïsoleerd als onderdeel van de site https://example.com/.
-      Als het beleid is uitgeschakeld, wordt de procesbeheerlogica voorafgaand aan site-isolatie van kracht en worden praktijktests van IsolateOrigins en SitePerProcess uitgeschakeld. Gebruikers kunnen IsolateOrigins nog steeds handmatig inschakelen.
-      Als het beleid niet is geconfigureerd, worden de standaardinstellingen van het platform voor site-isolatie gebruikt voor het inlogscherm.
-      </translation>
 <translation id="4010738624545340900">Activering van dialoogvensters voor het selecteren van bestanden toestaan</translation>
 <translation id="4012737788880122133">Als dit is ingesteld op 'true' (waar), schakel je hiermee automatische updates uit.
 

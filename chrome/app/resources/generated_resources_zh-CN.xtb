@@ -2047,7 +2047,7 @@
 <ph name="EXTENSION_FILE" /></translation>
 <translation id="4087470595660267445">在 Chromebook 上安装从 Google Play 下载的应用和游戏。&lt;a target="_blank" href="<ph name="URL" />"&gt;了解详情&lt;/a&gt;</translation>
 <translation id="4088095054444612037">代表群组接受</translation>
-<translation id="4089235344645910861">已保存设置。已开始同步。</translation>
+<translation id="4089235344645910861">设置已保存。已开始同步。</translation>
 <translation id="4090103403438682346">允许已通过验证的访问凭证</translation>
 <translation id="4090535558450035482">（此扩展程序由政策控制，无法移除。）</translation>
 <translation id="4091434297613116013">张纸</translation>
@@ -2352,7 +2352,7 @@
 <translation id="4640525840053037973">使用您的 Google 帐号登录</translation>
 <translation id="4641539339823703554">Chrome无法设置系统时间。请检查下面的时间，并在必要时进行更正。</translation>
 <translation id="4643612240819915418">在新标签页中打开视频(&amp;O)</translation>
-<translation id="4644818355646995778">正在下载，还差百分之 <ph name="PERCENT_REMAINING" /></translation>
+<translation id="4644818355646995778">正在下载，<ph name="PERCENT_REMAINING" /></translation>
 <translation id="4645676300727003670">保留(&amp;K)</translation>
 <translation id="4647090755847581616">关闭标签页(&amp;C)</translation>
 <translation id="4647697156028544508">请输入“<ph name="DEVICE_NAME" />”的 PIN：</translation>
@@ -4443,7 +4443,7 @@
 <translation id="7886917304091689118">正在 Chrome 中运行</translation>
 <translation id="7887334752153342268">复制</translation>
 <translation id="7887864092952184874">蓝牙鼠标已配对</translation>
-<translation id="7889565820482017512">缩放比例</translation>
+<translation id="7889565820482017512">显示大小</translation>
 <translation id="7889966925761734854">进度</translation>
 <translation id="7892100671754994880">下一位用户</translation>
 <translation id="7893008570150657497">通过计算机访问照片、音乐和其他媒体</translation>

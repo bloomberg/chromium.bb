@@ -162,16 +162,6 @@
 
       If this setting is disabled or not configured then enterprise users are
       unable to use ARC.</translation>
-<translation id="1561183922461862993">
-      This policy applies to the sign-in screen. Please also see the <ph name="SITE_PER_PROCESS_POLICY_NAME" /> policy which applies to the user session. It is recommended that you set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-      You might want to look at the IsolateOrigins policy setting to get the
-      best of both worlds, isolation and limited impact for users, by using
-      IsolateOrigins with a list of the sites that you want to isolate. This setting,
-      SitePerProcess, isolates all sites.
-      If the policy is enabled, each site will run in its own process.
-      If the policy is disabled, the pre-Site Isolation process management logic will take effect, and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable SitePerProcess manually.
-      If the policy is not configured, the user will be able to change this setting.
-      </translation>
 <translation id="1561424797596341174">Policy overrides for Debug builds of the remote access host</translation>
 <translation id="1561967320164410511">U2F plus extensions for individual attestation</translation>
 <translation id="1574554504290354326">This setting is deprecated – use SafeBrowsingExtendedReportingEnabled instead. Enabling or disabling SafeBrowsingExtendedReportingEnabled is equivalent to setting SafeBrowsingExtendedReportingOptInAllowed to False.
@@ -798,16 +788,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="3219421230122020860">Incognito mode available.</translation>
 <translation id="3220624000494482595">If the kiosk app is an Android app, it will have no control over the <ph name="PRODUCT_OS_NAME" /> version, even if this policy is set to <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      You might want to look at the IsolateOrigins policy setting to get the
-      best of both worlds; isolation and limited impact for users, by using
-      IsolateOrigins with a list of the sites that you want to isolate. This setting,
-      SitePerProcess, isolates all sites.
-      If the policy is enabled, each site will run in its own process.
-      If the policy is disabled, the pre-Site Isolation process management logic will take effect, and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable SitePerProcess manually.
-      If the policy is not configured, the user will be able to change this setting.
-      On <ph name="PRODUCT_OS_NAME" />, it is recommended that you also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-      </translation>
 <translation id="3236046242843493070">URL patterns to allow extension, app, and user script installs from</translation>
 <translation id="3240609035816615922">Printer configuration access policy.</translation>
 <translation id="3243309373265599239">Specifies the length of time without user input after which the screen is dimmed when running on AC power.
@@ -889,16 +869,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="350797926066071931">Enable Translate</translation>
 <translation id="3512226956150568738">If the client device model already supported ARC before migration to ext4 was necessary to run ARC and if the ArcEnabled policy is set to true, this option will behave as AskUser (value 3). In all other cases (if the device model did not support ARC before, or if ArcEnabled policy is set to false), this value is equivalent to DisallowArc (value 0).</translation>
-<translation id="3519934027321156158">
-      If the policy is enabled, each of the named origins in a
-      comma-separated list will run in its own process. This will also isolate
-      origins named by subdomains; e.g. specifying https://example.com/ will
-      also cause https://foo.example.com/ to be isolated as part of the
-      https://example.com/ site.
-      If the policy is disabled, the pre-Site Isolation process management logic will take effect, and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable IsolateOrigins manually.
-      If the policy is not configured, the user will be able to change this setting.
-      On <ph name="PRODUCT_OS_NAME" />, it is recommended that you also set the <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-      </translation>
 <translation id="3524204464536655762">Do not allow any site to request access to USB devices via the WebUSB API</translation>
 <translation id="3528000905991875314">Enable alternate error pages</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
@@ -1083,16 +1053,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is set to true or left not set, users will be able to redeem offers through Chrome OS Registration.
 
       If this policy is set to false, user will not be able to redeem offers.</translation>
-<translation id="4002183184444060875">
-      This policy applies to the sign-in screen. Please also see the <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> policy which applies to the user session. It is recommended that you set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-      If the policy is enabled, each of the named origins in a
-      comma-separated list will run in its own process. This will also isolate
-      origins named by subdomains; e.g. specifying https://example.com/ will
-      also cause https://foo.example.com/ to be isolated as part of the
-      https://example.com/ site.
-      If the policy is disabled, the pre-Site Isolation process management logic will take effect, and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable IsolateOrigins manually.
-      If the policy is not configured, the platform default site isolation settings will be used for the sign-in screen.
-      </translation>
 <translation id="4010738624545340900">Allow invocation of file selection dialogues</translation>
 <translation id="4012737788880122133">Disables automatic updates when set to True.
 

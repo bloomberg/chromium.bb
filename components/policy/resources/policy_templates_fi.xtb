@@ -159,16 +159,6 @@
 
       Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty,
       yrityskäyttäjät eivät voi käyttää ARC:tä.</translation>
-<translation id="1561183922461862993">
-      Tämä käytäntö koskee kirjautumisnäyttöjä. Tutustu myös <ph name="SITE_PER_PROCESS_POLICY_NAME" />-käytäntöön, joka koskee käyttökertaa. Suosittelemme määrittämään molemmille käytännöille saman arvon. Jos arvot eivät täsmää, käyttökerran aloittaminen saattaa viivästyä, kun käyttäjäkäytännössä määritettyä arvoa otetaan käyttöön.
-      Suosittelemme tutustumaan IsolateOrigins-käytännön asetukseen
-      saadaksesi molempien parhaat puolet, erilläänpidon ja rajallisen vaikutuksen
-      käyttäjille, käyttämällä IsolateOrigins-käytäntöä erillään pidettävien
-      sivustojen luettelon kanssa. Tämä asetus, SitePerProcess, pitää kaikki sivustot erillään.
-      Jos käytäntö on otettu käyttöön, kaikki sivustot toimivat omien prosessiensa puitteissa.
-      Jos käytäntöä ei ole otettu käyttöön, sivustojen erilläänpitoa edeltävä hallintalogiikka tulee voimaan, ja IsolateOrigins- ja SitePerProcess-käytännön kokeet poistetaan käytöstä. Käyttäjä voi edelleen ottaa SitePerProcessin käyttöön manuaalisesti.
-      Jos käytäntöä ei ole määritetty, käyttäjä voi muuttaa tämän asetuksen.
-      </translation>
 <translation id="1561424797596341174">Käytäntöjen ohitus etäkäytön isännän vianetsintäversioissa</translation>
 <translation id="1561967320164410511">U2F ja laajennukset, yksilöllinen todennus mahdollista</translation>
 <translation id="1574554504290354326">Tämä asetus on vanhentunut. Käytä tämän sijaan SafeBrowsingExtendedReportingEnabled-asetusta. SafeBrowsingExtendedReportingEnabled-asetuksen ottaminen käyttöön tai poistaminen käytöstä vastaa sitä, että SafeBrowsingExtendedReportingOptInAllowed-asetuksen arvoksi määritetään epätosi.
@@ -764,16 +754,6 @@ Jos tätä käytäntöä ei määritetä, käyttäjät voivat valita, haluavatko
 <translation id="3214164532079860003">Tämä käytäntö (sen ollessa käytössä) pakottaa etusivun tuomisen nykyisestä oletusselaimesta. Jos käytäntö ei ole käytössä, etusivua ei tuoda. Jos käytäntöä ei ole määritetty, käyttäjältä voidaan kysyä, haluaako hän tuoda etusivun, tai sivu voidaan tuoda automaattisesti.</translation>
 <translation id="3219421230122020860">Incognito-tila käytettävissä</translation>
 <translation id="3220624000494482595">Jos kioskisovellus on Android-sovellus, sillä ei ole vaikutusta tuotteen <ph name="PRODUCT_OS_NAME" /> versioon, vaikka käytännön arvoksi olisi määritetty <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      Suosittelemme tutustumaan IsolateOrigins-käytännön asetukseen
-      saadaksesi molempien parhaat puolet, erilläänpidon ja rajallisen vaikutuksen
-      käyttäjille, käyttämällä IsolateOrigins-käytäntöä erillään pidettävien
-      sivustojen luettelon kanssa. Tämä asetus, SitePerProcess, pitää kaikki sivustot erillään.
-      Jos käytäntö on otettu käyttöön, kaikki sivustot toimivat omien prosessiensa puitteissa.
-      Jos käytäntöä ei ole otettu käyttöön, sivustojen erilläänpitoa edeltävä hallintalogiikka tulee voimaan, ja IsolateOrigins- ja SitePerProcess-käytännön kokeet poistetaan käytöstä. Käyttäjä voi edelleen ottaa SitePerProcessin käyttöön manuaalisesti.
-      Jos käytäntöä ei ole määritetty, käyttäjä voi muuttaa tämän asetuksen.
-      Tuotteen <ph name="PRODUCT_OS_NAME" /> kohdalla myös laitekäytännölle <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> kannattaa määrittää sama arvo. Jos käytännöissä määritetyt arvot eivät täsmää, käyttökerran aloittaminen saattaa viivästyä, kun käyttäjäkäytännössä määritettyä arvoa otetaan käyttöön.
-      </translation>
 <translation id="3236046242843493070">URL-kuviot, jotka sallivat laajennusten, sovellusten ja käyttäjien komentosarjojen asennuksen kohteesta</translation>
 <translation id="3240609035816615922">Tulostimien määrityksen käyttöoikeuskäytäntö</translation>
 <translation id="3243309373265599239">Määrittää käyttämättömyysajan, jonka kuluttua ruutu himmennetään, kun laitetta käytetään verkkovirralla.
@@ -855,15 +835,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
           Käytäntö on voimassa vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
 <translation id="350797926066071931">Ota Kääntäjä käyttöön</translation>
 <translation id="3512226956150568738">Jos asiakkaan laitemalli tuki ARC:tä jo ennen kuin siirtyminen ext4:ään oli pakollista ARC:n suorittamiseksi ja jos ArcEnabled-käytännön arvoksi on asetettu tosi, tämä vaihtoehto toimii samalla tavalla kuin AskUser (arvo 3). Kaikissa muissa tapauksissa (jos laitemalli ei tukenut ARC:tä ennen tai jos ArcEnabled-käytännön arvoksi on asetettu epätosi), tämä arvo on sama kuin DisallowArc (arvo 0).</translation>
-<translation id="3519934027321156158">
-      Jos käytäntö on otettu käyttöön, kaikki pilkuilla erotetun luettelon nimetyistä alkuperistä
-      suorittavat oman prosessinsa. Tämä pitää erillään myös aliverkkotunnusten
-      mukaan nimetyt alkuperät, esim. jos https://example.com/ on luettelossa,
-      https://foo.example.com/ pidetään myös erillään osana https://example.com/-sivustoa.
-      Jos käytäntöä ei ole otettu käyttöön, sivustojen erilläänpitoa edeltävä hallintalogiikka tulee voimaan, ja IsolateOrigins- ja SitePerProcess-käytännön kokeet poistetaan käytöstä. Käyttäjä voi edelleen ottaa IsolateOriginsin käyttöön manuaalisesti.
-      Jos käytäntöä ei ole määritetty, käyttäjä voi muuttaa tämän asetuksen.
-      Tuotteen <ph name="PRODUCT_OS_NAME" /> kohdalla myös laitekäytännölle <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> kannattaa määrittää sama arvo. Jos käytännöissä määritetyt arvot eivät täsmää, käyttökerran aloittaminen saattaa viivästyä, kun käyttäjäkäytännössä määritettyä arvoa otetaan käyttöön.
-      </translation>
 <translation id="3524204464536655762">Älä salli sivustojen pyytää USB-laitteiden käyttöoikeutta WebUSB-sovellusliittymän kautta</translation>
 <translation id="3528000905991875314">Ota vaihtoehtoiset virhesivut käyttöön</translation>
 <translation id="3547954654003013442">Välityspalvelimen asetukset</translation>
@@ -1040,15 +1011,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Jos käytännön arvoksi on asetettu tosi tai sille ei aseteta mitään arvoa, käyttäjät voivat lunastaa tarjouksia Chrome-käyttöjärjestelmän rekisteröitymisen kautta.
 
       Jos käytännön arvoksi on asetettu epätosi, käyttäjät eivät voi lunastaa tarjouksia.</translation>
-<translation id="4002183184444060875">
-      Tämä käytäntö koskee kirjautumisnäyttöjä. Tutustu myös <ph name="ISOLATE_ORIGINS_POLICY_NAME" />-käytäntöön, joka koskee käyttökertaa. Suosittelemme määrittämään molemmille käytännöille saman arvon. Jos arvot eivät täsmää, käyttökerran aloittaminen saattaa viivästyä, kun käyttäjäkäytännössä määritettyä arvoa otetaan käyttöön.
-      Jos käytäntö on otettu käyttöön, kaikki pilkuilla erotetun luettelon nimetyistä alkuperistä
-      suorittavat oman prosessinsa. Tämä pitää erillään myös aliverkkotunnusten
-      mukaan nimetyt alkuperät, esim. jos https://example.com/ on luettelossa,
-      https://foo.example.com/ pidetään myös erillään osana https://example.com/-sivustoa.
-      Jos käytäntöä ei ole otettu käyttöön, sivustojen erilläänpitoa edeltävä hallintalogiikka tulee voimaan, ja IsolateOrigins- ja SitePerProcess-käytännön kokeet poistetaan käytöstä. Käyttäjä voi edelleen ottaa IsolateOriginsin käyttöön manuaalisesti.
-      Jos käytäntöä ei ole määritetty, alustan sivun erilläänpidon oletusasetusta käytetään kirjautumisnäytöllä.
-      </translation>
 <translation id="4010738624545340900">Salli tiedostonvalintaikkunoiden käyttö</translation>
 <translation id="4012737788880122133">Kun arvo on tosi, automaattiset päivitykset poistetaan käytöstä.
 

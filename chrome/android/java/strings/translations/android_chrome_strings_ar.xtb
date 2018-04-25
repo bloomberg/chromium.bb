@@ -809,7 +809,7 @@
 <translation id="8441146129660941386">الرجوع للوراء</translation>
 <translation id="8445448999790540984">يتعذّر تصدير كلمات المرور</translation>
 <translation id="8447861592752582886">إبطال إذن الجهاز</translation>
-<translation id="8487700953926739672">التوفر في وضع عدم الاتصال</translation>
+<translation id="8487700953926739672">التوفر بلا إنترنت</translation>
 <translation id="8489271220582375723">فتح صفحة السجل</translation>
 <translation id="8493948351860045254">تفريغ بعض المساحة</translation>
 <translation id="8497726226069778601">لا يوجد شيء هنا... حتى الآن</translation>
@@ -893,6 +893,7 @@
 <translation id="932327136139879170">الصفحة الرئيسية</translation>
 <translation id="932599481871055447">حفظ البيانات والاستمتاع بتصفح أسرع</translation>
 <translation id="938850635132480979">الخطأ: <ph name="ERROR_CODE" /></translation>
+<translation id="945522503751344254">إرسال تعليقات</translation>
 <translation id="945632385593298557">الدخول إلى الميكروفون</translation>
 <translation id="951339005376969845">يمكنك حذف البيانات الحالية. يمكنك استرداد هذه البيانات بالتبديل مرة أخرى إلى <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">‏يمكن لـ Chrome استخدام <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> للبحث في الصين. ويمكنك تغيير هذا في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>

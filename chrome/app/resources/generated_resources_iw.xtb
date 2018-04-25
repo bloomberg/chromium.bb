@@ -90,7 +90,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">עריכת מנוע חיפוש</translation>
 <translation id="1134009406053225289">פתח בחלון גלישה פרטית</translation>
-<translation id="1136155683023653803">הסיסמאות, הסימניות, ההיסטוריה ועוד מסתנכרנים עם החשבון שלך</translation>
+<translation id="1136155683023653803">הסיסמאות, הסימניות, ההיסטוריה והגדרות נוספות מסתנכרנות עם החשבון שלך</translation>
 <translation id="1137673463384776352">פתח את הקישור ב-<ph name="APP" /></translation>
 <translation id="1140351953533677694">‏גישה ל-Bluetooth ולהתקנים סיריאליים</translation>
 <translation id="1140610710803014750">כדי לקבל גישה אל הסימניות שלך בכל המכשירים יש להיכנס ולבצע סינכרון.</translation>
@@ -2453,7 +2453,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4804331037112292643">פתיחת קובץ/תיבת דו-שיח לשמירה</translation>
 <translation id="4804818685124855865">נתק</translation>
 <translation id="4807098396393229769">שם על הכרטיס</translation>
-<translation id="4807650012029404839">‏הוספת קולות או הסרת קולות של המרת הטקסט לדיבור של Google</translation>
+<translation id="4807650012029404839">‏הוספה או הסרה של קולות המשמשים להמרת הטקסט לדיבור של Google</translation>
 <translation id="480990236307250886">פתח את דף הבית</translation>
 <translation id="4812632551187706935">לא ניתן היה לאתחל את החיבור</translation>
 <translation id="4813512666221746211">שגיאת רשת</translation>
@@ -3442,7 +3442,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6286708577777130801">פרטי סיסמה שמורה</translation>
 <translation id="6287852322318138013">בחירת יישום לפתיחת הקובץ</translation>
 <translation id="6290556621549272952">‏ניתן להשתמש בתכונה זו להצגת תוכן מ-Chromium בטלוויזיה או במכשירים אחרים.</translation>
-<translation id="6291949900244949761">‏בקש ממני אישור כשאתר רוצה לגשת למכשירי USB (מומלץ)</translation>
+<translation id="6291949900244949761">‏צריך לבקש ממני אישור כשאתר רוצה לגשת למכשירי USB (מומלץ)</translation>
 <translation id="6291953229176937411">‏&amp;הצג ב-Finder</translation>
 <translation id="6295158916970320988">כל האתרים</translation>
 <translation id="6295855836753816081">שומר...</translation>
@@ -4941,7 +4941,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8663099077749055505">תמיד חסום הורדות מרובות אוטומטיות ב-<ph name="HOST" /></translation>
 <translation id="8664389313780386848">&amp;צפה במקור הדף</translation>
 <translation id="866611985033792019">תן אמון באישור זה לזיהוי משתמשי אימייל</translation>
-<translation id="8666584013686199826">‏בקש ממני אישור כשאתר רוצה לגשת למכשירי USB</translation>
+<translation id="8666584013686199826">‏צריך לבקש ממני אישור כשאתר רוצה לגשת למכשירי USB</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> הוא כעת במסך מלא והשבית את סמן העכבר שלך.</translation>
 <translation id="8669284339312441707">חמים יותר</translation>
 <translation id="8669949407341943408">מעביר...</translation>

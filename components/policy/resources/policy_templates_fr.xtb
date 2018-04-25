@@ -163,16 +163,6 @@ Pour consulter des exemples détaillés, rendez-vous sur :
 
       Si ce paramètre est désactivé ou s'il n'est pas configuré, les utilisateurs d'entreprise
       ne peuvent pas utiliser ARC.</translation>
-<translation id="1561183922461862993">
-      Cette règle s'applique à l'écran de connexion. Veuillez également consulter la règle <ph name="SITE_PER_PROCESS_POLICY_NAME" /> qui s'applique à la session utilisateur. Nous vous recommandons de définir les deux règles sur les mêmes valeurs. Si les valeurs sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-      Nous vous conseillons d'examiner le paramètre de la règle IsolateOrigins pour obtenir
-      le meilleur résultat, c'est-à-dire l'isolation avec un impact limité sur les utilisateurs,
-      et d'utiliser IsolateOrigins avec une liste des sites que vous souhaitez isoler.
-      Le paramètre SitePerProcess isole tous les sites.
-      Si cette règle est activée, chaque site exécute son propre processus.
-      Si cette règle est désactivée, la logique préliminaire de gestion du processus d'isolation de sites prend effet, et les tests en conditions réelles de IsolateOrigins et SitePerProcess seront désactivés. Les utilisateurs pourront toujours activer SitePerProcess manuellement.
-      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
-      </translation>
 <translation id="1561424797596341174">Remplacements de règle pour les versions de débogage de l'hôte distant</translation>
 <translation id="1561967320164410511">U2F plus extensions pour chaque attestation</translation>
 <translation id="1574554504290354326">Cette règle est obsolète. (Utilisez à la place celle intitulée "SafeBrowsingExtendedReportingEnabled". L'activation ou la désactivation de cette dernière équivaut à définir "SafeBrowsingExtendedReportingOptInAllowed" sur "False".)
@@ -220,7 +210,7 @@ Pour consulter des exemples détaillés, rendez-vous sur :
 <translation id="1797233582739332495">Afficher une invite récurrente indiquant qu'un redémarrage est nécessaire</translation>
 <translation id="1803646570632580723">Liste des applications épinglées à afficher dans le lanceur d'applications</translation>
 <translation id="1808715480127969042">Bloquer les cookies sur ces sites</translation>
-<translation id="1810261428246410396">Autoriser le partage de connexion instantané.</translation>
+<translation id="1810261428246410396">Autoriser le partage de connexion instantané</translation>
 <translation id="1827523283178827583">Utiliser des serveurs proxy déterminés</translation>
 <translation id="1843117931376765605">Fréquence d'actualisation des règles relatives aux utilisateurs</translation>
 <translation id="1844620919405873871">Permet de configurer les règles associées au déverrouillage rapide.</translation>
@@ -806,16 +796,6 @@ Si elle est désactivée, la page d'accueil n'est pas importée.
 Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="3219421230122020860">Mode navigation privée disponible</translation>
 <translation id="3220624000494482595">Si l'application kiosque est une application Android, elle ne contrôlera pas la version <ph name="PRODUCT_OS_NAME" /> même si cette règle est définie sur "<ph name="TRUE" />".</translation>
-<translation id="3229833076897893450">
-      Nous vous conseillons d'examiner le paramètre de la règle IsolateOrigins pour obtenir
-      le meilleur résultat, c'est-à-dire l'isolation avec un impact limité sur les utilisateurs,
-      et d'utiliser IsolateOrigins avec une liste des sites que vous souhaitez isoler.
-      Le paramètre SitePerProcess isole tous les sites.
-      Si cette règle est activée, chaque site exécute son propre processus.
-      Si cette règle est désactivée, la logique préliminaire de gestion du processus d'isolation de sites prend effet, et les tests en conditions réelles de IsolateOrigins et SitePerProcess seront désactivés. Les utilisateurs pourront toujours activer SitePerProcess manuellement.
-      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
-      Pour <ph name="PRODUCT_OS_NAME" />, nous vous recommandons de définir également la règle relative aux appareils <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sur la même valeur. Si les valeurs spécifiées par les deux règles sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-      </translation>
 <translation id="3236046242843493070">Formats d'URL à partir desquelles autoriser les sources d'installation des extensions, des applications et des scripts d'utilisateur</translation>
 <translation id="3240609035816615922">Règle d'accès à la configuration des imprimantes.</translation>
 <translation id="3243309373265599239">Indiquer le délai d'inactivité au terme duquel l'écran s'assombrit en cas d'utilisation de l'alimentation secteur
@@ -897,16 +877,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
           Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="350797926066071931">Activer Google Traduction</translation>
 <translation id="3512226956150568738">Si le modèle de l'appareil client était déjà compatible avec ARC avant que la migration vers ext4 soit nécessaire pour exécuter ARC, et si la règle "ArcEnabled" est définie sur "true", cette option se comportera comme "AskUser" (valeur 3). Dans tous les autres cas (si le modèle de l'appareil n'était pas compatible avec ARC auparavant, ou si la règle "ArcEnabled" est définie sur "false"), cette valeur est équivalente à "DisallowArc" (valeur 0).</translation>
-<translation id="3519934027321156158">
-      Si cette règle est activée, chacune des origines définies et répertoriées
-      dans une liste d'éléments séparés par une virgule exécute son propre
-      processus. Elle isole également les origines par sous-domaines. 
-      Par exemple, si vous indiquez "https://example.com/", https://foo.example.com/
-      est également isolé en tant que partie du site https://example.com/.
-      Si cette règle est désactivée, la logique préliminaire de gestion du processus d'isolation de sites prend effet, et les tests en conditions réelles de IsolateOrigins et SitePerProcess seront désactivés. Les utilisateurs pourront toujours activer IsolateOrigins manuellement.
-      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
-      Pour <ph name="PRODUCT_OS_NAME" />, nous vous recommandons de définir également la règle relative aux appareils <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> sur la même valeur. Si les valeurs spécifiées par les deux règles sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-      </translation>
 <translation id="3524204464536655762">Interdire à tous les sites de demander l'accès à des appareils USB via l'API WebUSB</translation>
 <translation id="3528000905991875314">Activer les pages d'erreur alternatives</translation>
 <translation id="3547954654003013442">Paramètres de proxy</translation>
@@ -949,7 +919,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
       Si ces règles ne sont pas configurées, les utilisateurs peuvent choisir eux-mêmes leurs paramètres de proxy.</translation>
 <translation id="3758249152301468420">Désactiver les outils de développement</translation>
-<translation id="3764248359515129699">Désactive l'application des règles de transparence des certificats pour une liste d'autorités de certification héritées.
+<translation id="3764248359515129699">Désactive l'application des règles de transparence des certificats pour une liste d'autorités de certification anciennes.
 
       Cette règle permet de désactiver les exigences de divulgation stipulées dans les règles de transparence des certificats concernant les chaînes de certificat qui contiennent des certificats avec un des hachages subjectPublicKeyInfo spécifiés. Ainsi, les certificats qui n'auraient pas été jugés fiables pour ne pas avoir été communiqués au public comme il se doit, peuvent continuer d'être utilisés pour les hôtes Enterprise.
 
@@ -957,7 +927,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
       Un hachage subjectPublicKeyInfo est spécifié en concaténant le nom de l'algorithme de hachage, le caractère "/" et l'encodage Base64 de cet algorithme de hachage appliqué à l'élément subjectPublicKeyInfo encodé en DER du certificat spécifié. Cet encodage Base64 présente le même format qu'une empreinte SPKI, tel que défini dans la RFC 7469, section 2.4. Les algorithmes de hachage non reconnus sont ignorés. Le seul qui soit compatible pour l'instant est l'algorithme de hachage "sha256".
 
-      Si cette politique n'est pas configurée, tout certificat qui doit être communiqué tel que le prévoient les règles de transparence des certificats est considéré comme n'étant pas fiable s'il n'est pas communiqué comme il se doit.</translation>
+      Si cette règle n'est pas configurée, tout certificat qui doit être communiqué tel que le prévoient les règles de transparence des certificats est considéré comme n'étant pas fiable s'il n'est pas communiqué comme il se doit.</translation>
 <translation id="3765260570442823273">Durée du message d'avertissement avant la déconnexion pour cause d'inactivité</translation>
 <translation id="377044054160169374">Application de l'intervention en cas d'expérience abusive</translation>
 <translation id="3780152581321609624">Inclure un port non standard dans le SPN Kerberos</translation>
@@ -1091,16 +1061,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle est définie sur "True" ou si elle n'est pas définie, les utilisateurs peuvent utiliser leurs offres via ce service.
 
       Si elle est définie sur "False", les utilisateurs ne peuvent pas utiliser leurs offres.</translation>
-<translation id="4002183184444060875">
-      Cette règle s'applique à l'écran de connexion. Veuillez également consulter la règle <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> qui s'applique à la session utilisateur. Nous vous recommandons de définir les deux règles sur les mêmes valeurs. Si les valeurs sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-      Si cette règle est activée, chacune des origines définies et répertoriées
-      dans une liste d'éléments séparés par une virgule exécute son propre
-      processus. Elle isole également les origines par sous-domaines. 
-      Par exemple, si vous indiquez "https://example.com/", https://foo.example.com/
-      est également isolé en tant que partie du site https://example.com/.
-      Si cette règle est désactivée, la logique préliminaire de gestion du processus d'isolation de sites prend effet, et les tests en conditions réelles de IsolateOrigins et SitePerProcess seront désactivés. Les utilisateurs pourront toujours activer IsolateOrigins manuellement.
-      Si cette règle n'est pas configurée, les paramètres d'isolation de site par défaut de la plate-forme sont utilisés pour l'écran de connexion.
-      </translation>
 <translation id="4010738624545340900">Autoriser l'appel des boîtes de dialogue de sélection de fichiers</translation>
 <translation id="4012737788880122133">Désactive les mises à jour automatiques lorsque cette règle est définie sur "True".
 
@@ -1213,7 +1173,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 <translation id="437791893267799639">Règle non définie, interdire la migration de données et ARC</translation>
 <translation id="4389091865841123886">Configurer l'attestation à distance avec le mécanisme TPM</translation>
 <translation id="4410236409016356088">Activer la limitation de la bande passante réseau</translation>
-<translation id="441217499641439905">Désactiver Google Drive en cas de connexion mobile dans l'application "Fichiers" de <ph name="PRODUCT_OS_NAME" /></translation>
+<translation id="441217499641439905">Désactiver Google Drive en cas de connexion au réseau mobile dans l'application "Fichiers" de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4418726081189202489">Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> cesse d'envoyer occasionnellement des requêtes à un serveur Google en vue d'obtenir un horodatage précis. En revanche, si elle est définie sur "True" ou si elle n'est pas définie, ces requêtes pourront être envoyées.</translation>
 <translation id="4423597592074154136">Spécifier manuellement les paramètres de proxy</translation>
 <translation id="4429220551923452215">Activer ou désactiver le raccourci des applications dans la barre de favoris.
@@ -2402,7 +2362,7 @@ Si cette règle n'est pas configurée, la règle "AllowImages" est utilisée, et
 
       Un hachage subjectPublicKeyInfo est spécifié en concaténant le nom de l'algorithme de hachage, le caractère "/" et l'encodage Base64 de cet algorithme de hachage appliqué à subjectPublicKeyInfo encodé en DER pour le certificat spécifié. Cet encodage Base64 est le même format qu'une empreinte SPKI, tel que défini dans la RFC 7469, section 2.4. Les algorithmes de hachage non reconnus sont ignorés. Le seul qui soit compatible pour l'instant est l'algorithme de hachage "sha256".
 
-      Si cette politique n'est pas configurée, tout certificat qui doit être communiqué tel que le prévoient les règles de transparence des certificats est considéré comme n'étant pas fiable s'il n'est pas communiqué comme il se doit.</translation>
+      Si cette règle n'est pas configurée, tout certificat qui doit être communiqué tel que le prévoient les règles de transparence des certificats est considéré comme n'étant pas fiable s'il n'est pas communiqué comme il se doit.</translation>
 <translation id="7818131573217430250">Définir l'état par défaut du mode Contraste élevé sur l'écran de connexion</translation>
 <translation id="7822837118545582721">Lorsque cette règle est définie sur "True", les utilisateurs ne peuvent rien écrire sur les périphériques de stockage externes.
 

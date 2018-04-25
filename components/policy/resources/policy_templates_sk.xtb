@@ -157,13 +157,6 @@
 <translation id="1553684822621013552">Keď je toto pravidlo nastavené na hodnotu True, bude pre používateľa povolená funkcia ARC (táto možnosť podlieha ďalším kontrolám nastavení pravidiel – ak je v aktuálnej relácii používateľa povolený buď režim dočasných profilov, alebo viacnásobné prihlásenie, funkcia ARC nebude dostupná).
 
 Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť podnikoví používatelia používať funkciu ARC.</translation>
-<translation id="1561183922461862993">
-      Toto pravidlo platí pre prihlasovaciu obrazovku. Pozrite si tiež pravidlo <ph name="SITE_PER_PROCESS_POLICY_NAME" />, ktoré platí pre reláciu používateľa. Obe pravidlá odporúčame nastaviť na rovnakú hodnotu. V prípade nezhody týchto hodnôt môže pri spúšťaní relácie používateľa nastať oneskorenie spôsobené používaním hodnoty zadanej v pravidle pre používateľa.
-      Ak chcete vyťažiť z oboch možností čo najviac, t. j. izolovať s obmedzeným vplyvom na používateľov, pozrite si nastavenie pravidla IsolateOrigins. Pravidlo IsolateOrigins použite so zoznamom webov, ktoré chcete izolovať. Toto nastavenie – SitePerProcess – izoluje všetky weby.
-      Ak pravidlo povolíte, všetky weby sa budú spúšťať vo vlastných procesoch.
-      Ak pravidlo zakážete, uplatní sa logika správy procesov izolácie webov. Skúšobné verzie pravidiel IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť nastavenie SitePerProcess povoliť aj naďalej manuálne.
-      Ak toto pravidlo nenakonfigurujete, používateľ bude môcť dané nastavenie zmeniť.
-      </translation>
 <translation id="1561424797596341174">Prepísania pravidiel pre zostavy ladenia používané hostiteľom vzdialeného prístupu</translation>
 <translation id="1561967320164410511">U2F a rozšírenia na individuálne preverovanie</translation>
 <translation id="1574554504290354326">Podpora tohto nastavenia bola ukončená, použite namiesto neho SafeBrowsingExtendedReportingEnabled. Povolenie alebo zakázanie parametra SafeBrowsingExtendedReportingEnabled je rovnaké ako nastavenie parametra SafeBrowsingExtendedReportingOptInAllowed na hodnotu False.
@@ -786,13 +779,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak nie je nastavené, môže sa používateľovi zobraziť výzva, či chce domovskú stránku importovať, alebo môže import prebehnúť automaticky.</translation>
 <translation id="3219421230122020860">Režim inkognito je dostupný</translation>
 <translation id="3220624000494482595">Ak je verejná aplikácia aplikáciou pre Android, nebude mať žiadnu kontrolu nad verziou systému <ph name="PRODUCT_OS_NAME" />, a to ani v prípade, keď je toto pravidlo nastavené na hodnotu <ph name="TRUE" />.</translation>
-<translation id="3229833076897893450">
-      Ak chcete vyťažiť z oboch možností čo najviac, t. j. izolovať s obmedzeným vplyvom na používateľov, pozrite si nastavenie pravidla IsolateOrigins. Pravidlo IsolateOrigins použite so zoznamom webov, ktoré chcete izolovať. Toto nastavenie – SitePerProcess – izoluje všetky weby.
-      Ak pravidlo povolíte, všetky weby sa budú spúšťať vo vlastných procesoch.
-      Ak pravidlo zakážete, uplatní sa logika správy procesov izolácie webov. Skúšobné verzie pravidiel IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť nastavenie SitePerProcess povoliť aj naďalej manuálne.
-      Ak toto pravidlo nenakonfigurujete, používateľ bude môcť dané nastavenie zmeniť.
-      V systéme <ph name="PRODUCT_OS_NAME" /> odporúčame na rovnakú hodnotu nastaviť aj pravidlo pre zariadenie <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. V prípade nezhody hodnôt týchto dvoch pravidiel môže pri spúšťaní relácie používateľa nastať oneskorenie spôsobené používaním hodnoty zadanej v pravidle pre používateľa.
-      </translation>
 <translation id="3236046242843493070">Vzory webových adries na povolenie zdrojov inštalácie rozšírenia, aplikácie a skriptov používateľa</translation>
 <translation id="3240609035816615922">Pravidlá prístupu ku konfigurácii tlačiarní</translation>
 <translation id="3243309373265599239">Určuje dobu nečinnosti používateľa, po ktorej sa pri používaní napájacieho zdroja zníži jas obrazovky.
@@ -874,12 +860,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Toto pravidlo sa rešpektuje iba v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
 <translation id="350797926066071931">Povoliť službu Translate</translation>
 <translation id="3512226956150568738">Ak model klientskeho zariadenia podporoval ARC už predtým, ako bolo na spustenie ARC potrebné migrovať na ext4, a ak je pravidlo ArcEnabled nastavené na hodnotu True, táto možnosť sa bude správať ako parameter AskUser (hodnota 3). Vo všetkých ostatných prípadoch (ak model zariadenia predtým ARC nepodporoval alebo ak je pravidlo ArcEnabled nastavené na hodnotu False), táto hodnota sa bude zhodovať s parametrom DisallowArc (hodnota 0).</translation>
-<translation id="3519934027321156158">
-      Ak toto pravidlo povolíte, jednotlivé uvedené zdroje v zozname oddelené čiarkami sa spustia vo vlastných procesoch. Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/, izolovaná bude aj adresa https://foo.example.com/ ako súčasť webu https://example.com/.
-      Ak pravidlo zakážete, uplatní sa logika správy procesov izolácie webov. Skúšobné verzie pravidiel IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť nastavenie SitePerProcess povoliť aj naďalej manuálne.
-      Ak toto pravidlo nenakonfigurujete, používateľ bude môcť dané nastavenie zmeniť.
-      V systéme <ph name="PRODUCT_OS_NAME" /> odporúčame na rovnakú hodnotu nastaviť aj pravidlo pre zariadenie <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. V prípade nezhody hodnôt týchto dvoch pravidiel môže pri spúšťaní relácie používateľa nastať oneskorenie spôsobené používaním hodnoty zadanej v pravidle pre používateľa.
-      </translation>
 <translation id="3524204464536655762">Nepovoliť žiadnemu webu požadovať prístup k zariadeniam USB prostredníctvom rozhrania WebUSB API</translation>
 <translation id="3528000905991875314">Povoliť alternatívne chybové stránky</translation>
 <translation id="3547954654003013442">Nastavenia servera proxy</translation>
@@ -1058,12 +1038,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak je toto pravidlo nastavené na hodnotu true alebo je ponechané bez nastavenia, používatelia si pri registrácii OS Chrome budú môcť uplatniť ponuky.
 
       Ak je toto pravidlo nastavené na hodnotu false, používatelia si nebudú môcť uplatniť ponuky.</translation>
-<translation id="4002183184444060875">
-      Toto pravidlo platí pre prihlasovaciu obrazovku. Pozrite si tiež pravidlo <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, ktoré platí pre reláciu používateľa. Obe pravidlá odporúčame nastaviť na rovnakú hodnotu. V prípade nezhody týchto hodnôt môže pri spúšťaní relácie používateľa nastať oneskorenie spôsobené používaním hodnoty zadanej v pravidle pre používateľa.
-      Ak toto pravidlo povolíte, jednotlivé uvedené zdroje v zozname oddelené čiarkami sa spustia vo vlastných procesoch. Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/, izolovaná bude aj adresa https://foo.example.com/ ako súčasť webu https://example.com/.
-      Ak pravidlo zakážete, uplatní sa logika správy procesov izolácie webov. Skúšobné verzie pravidiel IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť nastavenie SitePerProcess povoliť aj naďalej manuálne.
-      Ak pravidlo nenakonfigurujete, v prípade prihlasovacej obrazovky sa použijú nastavenia izolácie webov predvolené v rámci platformy.
-      </translation>
 <translation id="4010738624545340900">Povolenie vyvolania dialógových okien na výber súborov</translation>
 <translation id="4012737788880122133">Ak je pravidlo nastavené na hodnotu True, zakáže automatické aktualizácie.
 
@@ -1394,7 +1368,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
       Ak nie je nastavené, môže sa používateľovi zobraziť výzva, či chce históriu prehliadania importovať, alebo môže import prebehnúť automaticky.</translation>
 <translation id="5056708224511062314">Lupa obrazovky je vypnutá</translation>
-<translation id="5058573563327660283">Vybrať stratégiu, ktorá sa použije na uvoľnenie miesta na disku počas automatického čistenia (ktorej podpora bola ukončená)</translation>
+<translation id="5058573563327660283">Vybrať stratégiu, ktorá sa použije na uvoľnenie miesta na disku počas automatického čistenia (podpora bola ukončená)</translation>
 <translation id="5067143124345820993">Zoznam používateľov s povolením na prihlásenie</translation>
 <translation id="5068140065960598044">Pravidlá používania cloudu v prehliadači <ph name="PRODUCT_NAME" /> prepíšu pravidlá zariadenia.</translation>
 <translation id="5085647276663819155">Zakázať ukážku pred tlačou</translation>

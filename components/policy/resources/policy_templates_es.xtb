@@ -158,16 +158,6 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 
       Si esta configuración se inhabilita o no se configura, los usuarios de empresas no
       podrán utilizar ARC.</translation>
-<translation id="1561183922461862993">
-      Esta política se aplica a la pantalla de inicio de sesión. También puedes consultar la política <ph name="SITE_PER_PROCESS_POLICY_NAME" /> que se aplica a la sesión del usuario. Te recomendamos que asignes el mismo valor a ambas políticas. Si los valores no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
-      Para conseguir tanto aislamiento como
-      un impacto limitado para los usuarios, utiliza la política
-      IsolateOrigins con una lista de los sitios web que quieras aislar. La opción
-      SitePerProcess aísla todos los sitios web.
-      Si se habilita la política, cada sitio web se ejecuta en un proceso propio.
-      Si se inhabilita, se aplicará la lógica previa de administración de procesos de aislamiento de sitios web y se inhabilitarán las pruebas de campo de IsolateOrigins y SitePerProcess. Los usuarios podrán seguir habilitando la política SitePerProcess manualmente.
-      Si no se configura la política, el usuario podrá cambiar esta opción.
-      </translation>
 <translation id="1561424797596341174">La política anula las compilaciones de depuración del host de acceso remoto.</translation>
 <translation id="1561967320164410511">U2F y extensiones de confirmación individual</translation>
 <translation id="1574554504290354326">Esta opción está obsoleta; usa SafeBrowsingExtendedReportingEnabled en su lugar. Habilitar o inhabilitar SafeBrowsingExtendedReportingEnabled es igual que asignar el valor "False" a la opción SafeBrowsingExtendedReportingOptInAllowed.
@@ -793,16 +783,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si no se establece, es posible que se le pida al usuario que haga la importación o que la página de inicio se importe automáticamente.</translation>
 <translation id="3219421230122020860">Modo de incógnito disponible</translation>
 <translation id="3220624000494482595">Si la aplicación de kiosco es una aplicación para Android, no tendrá control sobre la versión de <ph name="PRODUCT_OS_NAME" />, incluso si se asigna el valor <ph name="TRUE" /> a esta política.</translation>
-<translation id="3229833076897893450">
-      Para conseguir tanto aislamiento como
-      un impacto limitado para los usuarios, utiliza la política
-      IsolateOrigins con una lista de los sitios web que quieras aislar. La opción
-      SitePerProcess aísla todos los sitios web.
-      Si se habilita la política, cada sitio web se ejecuta en un proceso propio.
-      Si se inhabilita, se aplicará la lógica previa de administración de procesos de aislamiento de sitios web y se inhabilitarán las pruebas de campo de IsolateOrigins y SitePerProcess. Los usuarios podrán seguir habilitando la política SitePerProcess manualmente.
-      Si no se configura la política, el usuario podrá cambiar esta opción.
-      En <ph name="PRODUCT_OS_NAME" /> también se recomienda asignar el mismo valor a la política de dispositivos <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />.Si los valores especificados por las dos políticas no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
-      </translation>
 <translation id="3236046242843493070">Patrones de URL desde los que se puede instalar secuencias de comandos de usuario, aplicaciones y extensiones</translation>
 <translation id="3240609035816615922">Política de acceso a la configuración de impresoras.</translation>
 <translation id="3243309373265599239">Permite especificar el tiempo transcurrido hasta la atenuación de la pantalla (sin que el usuario realice ninguna acción) cuando el dispositivo está conectado a la red.
@@ -884,17 +864,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="350797926066071931">Habilitar el Traductor</translation>
 <translation id="3512226956150568738">Si el modelo de dispositivo del cliente ya admitía ARC antes de que fuera necesario realizar la migración a ext4 para ejecutar ese formato y si se ha asignado el valor "True" a la política ArcEnabled, esta opción se comportará como AskUser (valor 3). En el resto de los casos (si el modelo de dispositivo no admitía ARC antes o si se ha asignado el valor "False" a la política ArcEnabled), este valor es equivalente a DisallowArc (valor 0).</translation>
-<translation id="3519934027321156158">
-      Si se habilita la política, cada uno de los orígenes especificados en una
-      lista de elementos separados por comas se ejecutará en un proceso propio. También se aislarán
-      los orígenes de los subdominios correspondientes (p. ej., si especificas https://example.com/
-      se aislará https://foo.example.com/ como parte del sitio web
-      https://example.com/).
-      
-Si se inhabilita, se aplicará la lógica previa de administración de procesos de aislamiento de sitios web y se inhabilitarán las pruebas de campo de IsolateOrigins y SitePerProcess. Los usuarios podrán seguir habilitando la política IsolateOrigins manualmente.
-      Si no se configura la política, el usuario podrá cambiar esta opción.
-      En <ph name="PRODUCT_OS_NAME" /> también se recomienda asignar el mismo valor a la política de dispositivos <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />.Si los valores especificados por las dos políticas no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
-      </translation>
 <translation id="3524204464536655762">No permitir que los sitios web soliciten acceso a dispositivos USB a través de la API WebUSB</translation>
 <translation id="3528000905991875314">Habilitar páginas de error alternativas</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
@@ -941,9 +910,9 @@ Si se inhabilita, se aplicará la lógica previa de administración de procesos 
 
       Esta política permite inhabilitar los requisitos de comunicación de transparencia en los certificados en cadenas que contienen certificados con uno de los hashes subjectPublicKeyInfo especificados. Esto permite que se sigan usando en hosts empresariales los certificados que, de otra forma, no serían de confianza por no haberse comunicado públicamente de forma correcta.
 
-      Para inhabilitar la aplicación de la transparencia en los certificados cuando está política está habilitada, el hash debe ser de subjectPublicKeyInfo y aparecer en un certificado de CA que se reconozca como autoridad de certificación (CA) antigua, es decir, que uno o más sistemas operativos compatibles con <ph name="PRODUCT_NAME" /> confíen en ella públicamente de forma predeterminada, pero que no sea de confianza para el Proyecto de Software Libre de Android o <ph name="PRODUCT_OS_NAME" />.
+      Para inhabilitar la aplicación de la transparencia en los certificados cuando esta política está habilitada, el hash debe ser de subjectPublicKeyInfo y aparecer en un certificado de CA que se reconozca como autoridad de certificación (CA) antigua, es decir, que uno o más sistemas operativos compatibles con <ph name="PRODUCT_NAME" /> confíen en ella públicamente de forma predeterminada, pero que no sea de confianza para el Proyecto de Software Libre de Android o <ph name="PRODUCT_OS_NAME" />.
 
-      Para especificar un hash subjectPublicKeyInfo, se concatenan el nombre del algoritmo del hash, el carácter "/" y el cifrado Base64 del algoritmo del hash aplicado al cifrado DER de subjectPublicKeyInfo del certificado especificado. El cifrado Base64 tiene el mismo cifrado que una huella digital SPKI, según lo especificado en RFC 7469 (sección 2.4). Los algoritmos de has no reconocidos se ignoran. El único algoritmo de has admitido en este momento es "sha256".
+      Para especificar un hash subjectPublicKeyInfo, se concatenan el nombre del algoritmo del hash, el carácter "/" y el cifrado Base64 del algoritmo del hash aplicado al cifrado DER de subjectPublicKeyInfo del certificado especificado. El cifrado Base64 tiene el mismo cifrado que una huella digital SPKI, según lo especificado en RFC 7469 (sección 2.4). Los algoritmos de hash no reconocidos se ignoran. El único algoritmo de hash admitido en este momento es "sha256".
 
       Si no se habilita esta política, los certificados que se deban comunicar a través de la transparencia en los certificados no se considerarán de confianza si no se comunican de acuerdo con la política de transparencia en los certificados.</translation>
 <translation id="3765260570442823273">Duración del mensaje que advierte al usuario de que se cerrará la sesión porque se encuentra inactivo</translation>
@@ -1078,17 +1047,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 Si esta política se establece en True o no se establece, los usuarios podrán canjear ofertas a través del servicio de registro de Chrome OS.
 
 Si esta política se establece en False, el usuario no podrá canjear ofertas.</translation>
-<translation id="4002183184444060875">
-      Esta política se aplica a la pantalla de inicio de sesión. También puedes consultar la política <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> que se aplica a la sesión del usuario. Te recomendamos que asignes el mismo valor a ambas políticas. Si los valores no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
-      
-Si se habilita la política, cada uno de los orígenes especificados en una
-      lista de elementos separados por comas se ejecutará en un proceso propio. También se aislarán
-      los orígenes de los subdominios correspondientes (p. ej., si especificas https://example.com/
-      se aislará https://foo.example.com/ como parte del sitio web
-      https://example.com/).
-      Si se inhabilita, se aplicará la lógica previa de administración de procesos de aislamiento de sitios web y se inhabilitarán las pruebas de campo de IsolateOrigins y SitePerProcess. Los usuarios podrán seguir habilitando la política IsolateOrigins manualmente.
-      Si no se configura, se utilizarán los ajustes predeterminados de aislamiento de sitios web de la plataforma para la pantalla de inicio de sesión.
-      </translation>
 <translation id="4010738624545340900">Permitir solicitud de cuadros de diálogo de selección de archivos</translation>
 <translation id="4012737788880122133">Si se asigna el valor True a esta política, se inhabilitarán las actualizaciones automáticas.
 
@@ -1124,7 +1082,7 @@ Si se habilita la política, cada uno de los orígenes especificados en una
 
       En caso contrario, se le asignará uno de estos valores: "tls1.2" o "tls1.3". Si se habilita, <ph name="PRODUCT_NAME" /> no usará las versiones de SSL/TLS superiores a la versión especificada y se ignorarán los valores no reconocidos.</translation>
 <translation id="4121350739760194865">Evitar que las promociones de aplicaciones aparezcan en la página Nueva pestaña</translation>
-<translation id="412697421478384751">Permitir que los usuarios definan PIN que se consideren no seguros para la pantalla de bloqueo</translation>
+<translation id="412697421478384751">Permitir que los usuarios utilicen un PIN poco seguro para la pantalla de bloqueo</translation>
 <translation id="4157003184375321727">Informar de la versión del firmware y del sistema operativo</translation>
 <translation id="4157594634940419685">Permitir el acceso a impresoras CUPS nativas</translation>
 <translation id="4183229833636799228">Configuración predeterminada de <ph name="FLASH_PLUGIN_NAME" /></translation>
@@ -1223,7 +1181,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       </translation>
 <translation id="4442582539341804154">Habilitar el bloqueo cuando el dispositivo esté inactivo o suspendido</translation>
 <translation id="4449545651113180484">Girar la pantalla 270 grados hacia la derecha</translation>
-<translation id="4454820008017317557">Mostrar  el icono de la barra de herramientas de <ph name="PRODUCT_NAME" /></translation>
+<translation id="4454820008017317557">Mostrar el icono de la barra de herramientas de <ph name="PRODUCT_NAME" /></translation>
 <translation id="4467952432486360968">Bloquear cookies de terceros</translation>
 <translation id="4474167089968829729">Habilitar el almacenamiento de contraseñas en el administrador de contraseñas</translation>
 <translation id="4476769083125004742">Si se asigna el valor <ph name="BLOCK_GEOLOCATION_SETTING" /> a esta política, las aplicaciones para Android no tendrán acceso a la información sobre la ubicación. Si se le asigna cualquier otro valor o no se configura, el usuario tendrá que dar su consentimiento cuando una aplicación para Android quiera acceder a los datos de ubicación.</translation>
@@ -2254,7 +2212,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Si se le asigna el valor GAIA, el inicio de sesión se hace a través del flujo de autenticación normal de GAIA.
 
       Si se le asigna el valor SAML_INTERSTITIAL, el inicio de sesión muestra una pantalla intersticial que permite al usuario continuar con la autenticación a través del proveedor de identidad SAML del dominio de registro del dispositivo o volver al flujo de inicio de sesión normal de GAIA.</translation>
-<translation id="755951849901630953">Habilita las actualizaciones de todos los componentes de <ph name="PRODUCT_NAME" /> si no se establece la política o si se le asigna el valor True.
+<translation id="755951849901630953">Habilita las actualizaciones de todos los componentes de <ph name="PRODUCT_NAME" /> si no se establece la política o si se le asigna el valor "True".
 
       Si se le asigna el valor "False", se inhabilitan las actualizaciones de los componentes. Sin embargo, algunos componentes quedan exentos de esta política: no se inhabilitarán las actualizaciones de cualquier componente que no contenga ningún código ejecutable, que no influya en el funcionamiento del navegador de forma significativa o que sea esencial para su seguridad.
       Entre los ejemplos de estos componentes se incluyen las listas de revocación de certificados y los datos de navegación segura.
@@ -2382,10 +2340,10 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 
       Para inhabilitar los requisitos de transparencia en los certificados cuando se habilita esta política, se debe cumplir una de las siguientes condiciones:
       1. El hash pertenece al subjectPublicKeyInfo del certificado del servidor.
-      2. El hash pertenece a un subjectPublicKeyInfo que aparece en un certificado de CA de la cadena de certificados, ese certificado está limitado por la a través de la extensión X.509v3 nameConstraints, aparecen uno o más directoryName nameConstraints en permittedSubtrees y directoryName contiene un atributo organizationName.
+      2. El hash pertenece a un subjectPublicKeyInfo que aparece en un certificado de CA de la cadena de certificados, ese certificado está limitado por la extensión X.509v3 nameConstraints, aparecen uno o más directoryName nameConstraints en permittedSubtrees y directoryName contiene un atributo organizationName.
       3. El hash es de un subjectPublicKeyInfo que aparece en un certificado de CA de la cadena de certificados, el certificado de CA tiene uno o más atributos organizationName en el Subject del certificado y el certificado del servidor contiene el mismo número de atributos organizationName, en el mismo orden y con los mismos valores byte por byte.
 
-      Para especificar un hash subjectPublicKeyInfo, se concatenan el nombre del algoritmo del hash, el carácter "/" y el cifrado Base64 del algoritmo del hash aplicado al cifrado DER de subjectPublicKeyInfo del certificado especificado. El cifrado Base64 tiene el mismo cifrado que una huella digital SPKI, según lo especificado en RFC 7469 (sección 2.4). Los algoritmos de has no reconocidos se ignoran. El único algoritmo de has admitido en este momento es "sha256".
+      Para especificar un hash subjectPublicKeyInfo, se concatenan el nombre del algoritmo del hash, el carácter "/" y el cifrado Base64 del algoritmo del hash aplicado al cifrado DER de subjectPublicKeyInfo del certificado especificado. El cifrado Base64 tiene el mismo cifrado que una huella digital SPKI, según lo especificado en RFC 7469 (sección 2.4). Los algoritmos de hash no reconocidos se ignoran. El único algoritmo de hash admitido en este momento es "sha256".
 
       Si no se habilita esta política, los certificados que se deban comunicar a través de la transparencia en los certificados no se considerarán de confianza si no se comunican de acuerdo con la política de transparencia en los certificados.</translation>
 <translation id="7818131573217430250">Establecer el estado predeterminado del modo de contraste alto en la pantalla de inicio de sesión</translation>
