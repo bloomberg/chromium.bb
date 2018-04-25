@@ -32,7 +32,7 @@ BrokerHost::BrokerHost(base::ProcessHandle client_process,
 {
   CHECK(platform_handle.is_valid());
 
-  base::MessageLoop::current()->AddDestructionObserver(this);
+  base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
 
   channel_ = Channel::Create(
       this,
@@ -43,7 +43,7 @@ BrokerHost::BrokerHost(base::ProcessHandle client_process,
 
 BrokerHost::~BrokerHost() {
   // We're always destroyed on the creation thread, which is the IO thread.
-  base::MessageLoop::current()->RemoveDestructionObserver(this);
+  base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
 
   if (channel_)
     channel_->ShutDown();

@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/perf_time_logger.h"
@@ -82,7 +83,7 @@ void PingPongTest::RunTest(int iterations, int batch_size, int message_size) {
   current_iterations_ = 0;
   calls_outstanding_ = 0;
 
-  base::MessageLoop::current()->SetNestableTasksAllowed(true);
+  base::MessageLoopCurrent::Get()->SetNestableTasksAllowed(true);
   base::RunLoop run_loop;
   quit_closure_ = run_loop.QuitClosure();
   base::ThreadTaskRunnerHandle::Get()->PostTask(

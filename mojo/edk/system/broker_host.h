@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_piece.h"
 #include "mojo/edk/embedder/process_error_callback.h"
@@ -22,7 +23,7 @@ namespace edk {
 // The BrokerHost is a channel to a broker client process, servicing synchronous
 // IPCs issued by the client.
 class BrokerHost : public Channel::Delegate,
-                   public base::MessageLoop::DestructionObserver {
+                   public base::MessageLoopCurrent::DestructionObserver {
  public:
   BrokerHost(base::ProcessHandle client_process,
              ScopedPlatformHandle handle,
@@ -47,7 +48,7 @@ class BrokerHost : public Channel::Delegate,
                         std::vector<ScopedPlatformHandle> handles) override;
   void OnChannelError(Channel::Error error) override;
 
-  // base::MessageLoop::DestructionObserver:
+  // base::MessageLoopCurrent::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override;
 
   void OnBufferRequest(uint32_t num_bytes);

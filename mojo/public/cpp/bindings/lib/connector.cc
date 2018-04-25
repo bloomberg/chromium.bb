@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local.h"
@@ -64,11 +65,11 @@ class Connector::ActiveDispatchTracker {
 // ActiveDispatchTrackers when a nested run loop is started.
 class Connector::RunLoopNestingObserver
     : public base::RunLoop::NestingObserver,
-      public base::MessageLoop::DestructionObserver {
+      public base::MessageLoopCurrent::DestructionObserver {
  public:
   RunLoopNestingObserver() {
     base::RunLoop::AddNestingObserverOnCurrentThread(this);
-    base::MessageLoop::current()->AddDestructionObserver(this);
+    base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
   }
 
   ~RunLoopNestingObserver() override {}
@@ -79,17 +80,17 @@ class Connector::RunLoopNestingObserver
       top_tracker_->NotifyBeginNesting();
   }
 
-  // base::MessageLoop::DestructionObserver:
+  // base::MessageLoopCurrent::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override {
     base::RunLoop::RemoveNestingObserverOnCurrentThread(this);
-    base::MessageLoop::current()->RemoveDestructionObserver(this);
+    base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
     DCHECK_EQ(this, g_tls_nesting_observer.Get().Get());
     g_tls_nesting_observer.Get().Set(nullptr);
     delete this;
   }
 
   static RunLoopNestingObserver* GetForThread() {
-    if (!base::MessageLoop::current())
+    if (!base::MessageLoopCurrent::Get())
       return nullptr;
     auto* observer = static_cast<RunLoopNestingObserver*>(
         g_tls_nesting_observer.Get().Get());
