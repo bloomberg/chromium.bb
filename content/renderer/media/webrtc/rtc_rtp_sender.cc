@@ -37,7 +37,8 @@ void OnSetParametersCompleted(blink::WebRTCVoidRequest request,
 }  // namespace
 
 class RTCRtpSender::RTCRtpSenderInternal
-    : public base::RefCountedThreadSafe<RTCRtpSender::RTCRtpSenderInternal> {
+    : public base::RefCountedThreadSafe<RTCRtpSender::RTCRtpSenderInternal,
+                                        RTCRtpSender::RTCRtpSenderInternal> {
  public:
   RTCRtpSenderInternal(
       scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
@@ -199,8 +200,26 @@ class RTCRtpSender::RTCRtpSenderInternal
   }
 
  private:
-  friend class base::RefCountedThreadSafe<RTCRtpSenderInternal>;
-  virtual ~RTCRtpSenderInternal() {}
+  friend class base::RefCountedThreadSafe<RTCRtpSender::RTCRtpSenderInternal,
+                                          RTCRtpSender::RTCRtpSenderInternal>;
+
+  static void Destruct(const RTCRtpSenderInternal* sender) {
+    // RTCRtpSenderInternal owns AdapterRefs which have to be destroyed on the
+    // main thread, this ensures delete always happens there.
+    if (!sender->main_thread_->BelongsToCurrentThread()) {
+      sender->main_thread_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&RTCRtpSender::RTCRtpSenderInternal::Destruct,
+                         base::Unretained(sender)));
+      return;
+    }
+    delete sender;
+  }
+
+  ~RTCRtpSenderInternal() {
+    // Ensured by destructor traits.
+    DCHECK(main_thread_->BelongsToCurrentThread());
+  }
 
   // |webrtc_track| is passed as an argument because |track_ref->webrtc_track()|
   // cannot be accessed on the signaling thread. https://crbug.com/756436

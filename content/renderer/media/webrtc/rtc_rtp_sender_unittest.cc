@@ -49,7 +49,24 @@ class RTCRtpSenderTest : public ::testing::Test {
     mock_webrtc_sender_ = new rtc::RefCountedObject<webrtc::MockRtpSender>();
   }
 
-  void TearDown() override { blink::WebHeap::CollectAllGarbageForTesting(); }
+  void TearDown() override {
+    sender_.reset();
+    // Syncing up with the signaling thread ensures any pending operations on
+    // that thread are executed. If they post back to the main thread, such as
+    // the sender's destructor traits, this is allowed to execute before the
+    // test shuts down the threads.
+    SyncWithSignalingThread();
+    blink::WebHeap::CollectAllGarbageForTesting();
+  }
+
+  // Wait for the signaling thread to perform any queued tasks, executing tasks
+  // posted to the current thread in the meantime while waiting.
+  void SyncWithSignalingThread() const {
+    base::RunLoop run_loop;
+    dependency_factory_->GetWebRtcSignalingThread()->PostTask(
+        FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+  }
 
   blink::WebMediaStreamTrack CreateWebTrack(const std::string& id) {
     blink::WebMediaStreamSource web_source;
@@ -141,14 +158,7 @@ TEST_F(RTCRtpSenderTest, CreateSenderWithNullTrack) {
   EXPECT_TRUE(sender_->Track().IsNull());
 }
 
-// This test is flaky on Android and Linux.
-// See crbug.com/800465 for detail.
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_ReplaceTrackSetsTrack DISABLED_ReplaceTrackSetsTrack
-#else
-#define MAYBE_ReplaceTrackSetsTrack ReplaceTrackSetsTrack
-#endif
-TEST_F(RTCRtpSenderTest, MAYBE_ReplaceTrackSetsTrack) {
+TEST_F(RTCRtpSenderTest, ReplaceTrackSetsTrack) {
   auto web_track1 = CreateWebTrack("track1");
   sender_ = CreateSender(web_track1);
 
@@ -160,14 +170,7 @@ TEST_F(RTCRtpSenderTest, MAYBE_ReplaceTrackSetsTrack) {
   EXPECT_EQ(web_track2.UniqueId(), sender_->Track().UniqueId());
 }
 
-// This test is flaky on Android and Linux.
-// See crbug.com/803597 for detail.
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_ReplaceTrackWithNullTrack DISABLED_ReplaceTrackWithNullTrack
-#else
-#define MAYBE_ReplaceTrackWithNullTrack ReplaceTrackWithNullTrack
-#endif
-TEST_F(RTCRtpSenderTest, MAYBE_ReplaceTrackWithNullTrack) {
+TEST_F(RTCRtpSenderTest, ReplaceTrackWithNullTrack) {
   auto web_track = CreateWebTrack("track_id");
   sender_ = CreateSender(web_track);
 
@@ -178,14 +181,7 @@ TEST_F(RTCRtpSenderTest, MAYBE_ReplaceTrackWithNullTrack) {
   EXPECT_TRUE(sender_->Track().IsNull());
 }
 
-// This test is flaky on Android and Linux.
-// See crbug.com/800465 for detail.
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_ReplaceTrackCanFail DISABLED_ReplaceTrackCanFail
-#else
-#define MAYBE_ReplaceTrackCanFail ReplaceTrackCanFail
-#endif
-TEST_F(RTCRtpSenderTest, MAYBE_ReplaceTrackCanFail) {
+TEST_F(RTCRtpSenderTest, ReplaceTrackCanFail) {
   auto web_track = CreateWebTrack("track_id");
   sender_ = CreateSender(web_track);
   ASSERT_FALSE(sender_->Track().IsNull());
@@ -200,16 +196,7 @@ TEST_F(RTCRtpSenderTest, MAYBE_ReplaceTrackCanFail) {
   EXPECT_EQ(web_track.UniqueId(), sender_->Track().UniqueId());
 }
 
-// This test is flaky on Android and Linux.
-// See crbug.com/800465 for detail.
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_ReplaceTrackIsNotSetSynchronously \
-  DISABLED_ReplaceTrackIsNotSetSynchronously
-#else
-#define MAYBE_ReplaceTrackIsNotSetSynchronously \
-  ReplaceTrackIsNotSetSynchronously
-#endif
-TEST_F(RTCRtpSenderTest, MAYBE_ReplaceTrackIsNotSetSynchronously) {
+TEST_F(RTCRtpSenderTest, ReplaceTrackIsNotSetSynchronously) {
   auto web_track1 = CreateWebTrack("track1");
   sender_ = CreateSender(web_track1);
 
@@ -223,8 +210,7 @@ TEST_F(RTCRtpSenderTest, MAYBE_ReplaceTrackIsNotSetSynchronously) {
   std::move(replaceTrackRunLoopAndGetResult).Run();
 }
 
-// Test is flaky (https://crbug.com/827450).
-TEST_F(RTCRtpSenderTest, DISABLED_GetStats) {
+TEST_F(RTCRtpSenderTest, GetStats) {
   auto web_track = CreateWebTrack("track_id");
   sender_ = CreateSender(web_track);
 
@@ -250,8 +236,7 @@ TEST_F(RTCRtpSenderTest, DISABLED_GetStats) {
   EXPECT_EQ(stats->Timestamp(), 1.234);
 }
 
-// TODO(crbug.com/812296): Disabled since flaky.
-TEST_F(RTCRtpSenderTest, DISABLED_CopiedSenderSharesInternalStates) {
+TEST_F(RTCRtpSenderTest, CopiedSenderSharesInternalStates) {
   auto web_track = CreateWebTrack("track_id");
   sender_ = CreateSender(web_track);
   auto copy = std::make_unique<RTCRtpSender>(*sender_);
