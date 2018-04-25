@@ -90,6 +90,9 @@ const char kArcAvailability[] = "arc-availability";
 // Signals the availability of the ARC instance on this device.
 const char kArcAvailable[] = "arc-available";
 
+// Flag that forces ARC data be cleaned on each start.
+const char kArcDataCleanupOnStart[] = "arc-data-cleanup-on-start";
+
 // Used in autotest to specifies how to handle packages cache. Can be
 // copy - copy resulting packages.xml to the temporary directory.
 // skip-copy - skip initial packages cache setup and copy resulting packages.xml

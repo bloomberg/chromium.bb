@@ -50,6 +50,12 @@ void ArcPlayStoreEnabledPreferenceHandler::Start() {
   VLOG(1) << "Start observing Google Play Store enabled preference. "
           << "Initial value: " << is_play_store_enabled;
 
+  // Force data clean if needed.
+  if (IsArcDataCleanupOnStartRequested()) {
+    VLOG(1) << "Request to cleanup data on start.";
+    arc_session_manager_->RequestArcDataRemoval();
+  }
+
   // If the OOBE or Assistant Wizard screen is shown, don't kill the
   // mini-container. We'll do it if and when the user declines the TOS. We need
   // to check |is_play_store_enabled| to handle the case where |kArcEnabled| is

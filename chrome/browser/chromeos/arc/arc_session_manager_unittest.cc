@@ -16,8 +16,10 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_command_line.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
+#include "chrome/browser/chromeos/arc/arc_play_store_enabled_preference_handler.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_oobe_negotiator.h"
@@ -661,6 +663,67 @@ TEST_F(ArcSessionManagerTest, IsDirectlyStartedOnInternalRestart) {
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   // directy started flag should be preserved.
   EXPECT_FALSE(arc_session_manager()->is_directly_started());
+  arc_session_manager()->Shutdown();
+}
+
+// In case of the next start ArcSessionManager should go through remove data
+// folder phase before negotiating terms of service.
+TEST_F(ArcSessionManagerTest, DataCleanUpOnFirstStart) {
+  base::test::ScopedCommandLine command_line;
+  command_line.GetProcessCommandLine()->AppendSwitch(
+      chromeos::switches::kArcDataCleanupOnStart);
+
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+
+  ArcPlayStoreEnabledPreferenceHandler handler(profile(),
+                                               arc_session_manager());
+  handler.Start();
+
+  EXPECT_EQ(ArcSessionManager::State::REMOVING_DATA_DIR,
+            arc_session_manager()->state());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+
+  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
+  arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
+  EXPECT_EQ(ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT,
+            arc_session_manager()->state());
+  arc_session_manager()->StartArcForTesting();
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  arc_session_manager()->Shutdown();
+}
+
+// In case of the next start ArcSessionManager should go through remove data
+// folder phase before activating.
+TEST_F(ArcSessionManagerTest, DataCleanUpOnNextStart) {
+  base::test::ScopedCommandLine command_line;
+  command_line.GetProcessCommandLine()->AppendSwitch(
+      chromeos::switches::kArcDataCleanupOnStart);
+
+  PrefService* const prefs = profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kArcTermsAccepted, true);
+  prefs->SetBoolean(prefs::kArcSignedIn, true);
+  prefs->SetBoolean(prefs::kArcEnabled, true);
+
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+
+  ArcPlayStoreEnabledPreferenceHandler handler(profile(),
+                                               arc_session_manager());
+  handler.Start();
+
+  EXPECT_EQ(ArcSessionManager::State::REMOVING_DATA_DIR,
+            arc_session_manager()->state());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
   arc_session_manager()->Shutdown();
 }
 
