@@ -628,6 +628,12 @@ String BaseAudioContext::state() const {
 void BaseAudioContext::SetContextState(AudioContextState new_state) {
   DCHECK(IsMainThread());
 
+  // If there's no change in the current state, there's nothing that needs to be
+  // done.
+  if (new_state == context_state_) {
+    return;
+  }
+
   // Validate the transitions.  The valid transitions are Suspended->Running,
   // Running->Suspended, and anything->Closed.
   switch (new_state) {
@@ -640,11 +646,6 @@ void BaseAudioContext::SetContextState(AudioContextState new_state) {
     case kClosed:
       DCHECK_NE(context_state_, kClosed);
       break;
-  }
-
-  if (new_state == context_state_) {
-    // DCHECKs above failed; just return.
-    return;
   }
 
   context_state_ = new_state;
