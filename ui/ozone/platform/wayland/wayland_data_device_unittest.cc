@@ -131,10 +131,12 @@ TEST_P(WaylandDataDeviceManagerTest, IsSelectionOwner) {
   ASSERT_FALSE(clipboard_client_->IsSelectionOwner());
 }
 
-INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,
-                        WaylandDataDeviceManagerTest,
-                        ::testing::Values(kXdgShellV5));
-
+// TODO(tonikitoo): Deliberately skip running these specific unittests on
+// XDG_v5. ChromeOS/Linux builder running on 14.04, which seems to have a
+// mis-functioning XDG v5 implementation.
+//
+// Details:
+// https://ci.chromium.org/buildbot/chromium.chromiumos/linux-chromeos-rel/7224
 INSTANTIATE_TEST_CASE_P(XdgVersionV6Test,
                         WaylandDataDeviceManagerTest,
                         ::testing::Values(kXdgShellV6));
