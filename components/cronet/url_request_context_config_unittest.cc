@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/json/json_writer.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "net/cert/cert_verifier.h"
@@ -24,6 +25,26 @@ namespace cronet {
 TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   base::test::ScopedTaskEnvironment scoped_task_environment_(
       base::test::ScopedTaskEnvironment::MainThreadType::IO);
+
+  // Create JSON for experimental options.
+  base::DictionaryValue options;
+  options.SetPath({"QUIC", "max_server_configs_stored_in_properties"},
+                  base::Value(2));
+  options.SetPath({"QUIC", "user_agent_id"}, base::Value("Custom QUIC UAID"));
+  options.SetPath({"QUIC", "idle_connection_timeout_seconds"},
+                  base::Value(300));
+  options.SetPath({"QUIC", "close_sessions_on_ip_change"}, base::Value(true));
+  options.SetPath({"QUIC", "race_cert_verification"}, base::Value(true));
+  options.SetPath({"QUIC", "connection_options"}, base::Value("TIME,TBBR,REJ"));
+  options.SetPath({"AsyncDNS", "enable"}, base::Value(true));
+  options.SetPath({"NetworkErrorLogging", "enable"}, base::Value(true));
+  options.SetPath({"UnknownOption", "foo"}, base::Value(true));
+  options.SetPath({"HostResolverRules", "host_resolver_rules"},
+                  base::Value("MAP * 127.0.0.1"));
+  // See http://crbug.com/696569.
+  options.SetKey("disable_ipv6_on_wifi", base::Value(true));
+  std::string options_json;
+  EXPECT_TRUE(base::JSONWriter::Write(options, &options_json));
 
   URLRequestContextConfig config(
       // Enable QUIC.
@@ -48,19 +69,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
       // User-Agent request header field.
       "fake agent",
       // JSON encoded experimental options.
-      "{\"QUIC\":{\"max_server_configs_stored_in_properties\":2,"
-      "\"user_agent_id\":\"Custom QUIC UAID\","
-      "\"idle_connection_timeout_seconds\":300,"
-      "\"close_sessions_on_ip_change\":true,"
-      "\"race_cert_verification\":true,"
-      "\"connection_options\":\"TIME,TBBR,REJ\"},"
-      "\"AsyncDNS\":{\"enable\":true},"
-      "\"NetworkErrorLogging\":{\"enable\":true},"
-      "\"UnknownOption\":{\"foo\":true},"
-      "\"HostResolverRules\":{\"host_resolver_rules\":"
-      "\"MAP * 127.0.0.1\"},"
-      // See http://crbug.com/696569.
-      "\"disable_ipv6_on_wifi\":true}",
+      options_json,
       // MockCertVerifier to use for testing purposes.
       std::unique_ptr<net::CertVerifier>(),
       // Enable network quality estimator.
