@@ -26,14 +26,14 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Package that handles non-debug, non-file output for run-webkit-tests."""
+"""Package that handles non-debug, non-file output for run_webkit_tests."""
 
 import math
 import optparse
 
-from blinkpy.tool import grammar
 from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.views.metered_stream import MeteredStream
+from blinkpy.tool import grammar
 
 
 NUM_SLOW_TESTS_TO_LOG = 10
@@ -42,7 +42,7 @@ NUM_SLOW_TESTS_TO_LOG = 10
 def print_options():
     return [
         optparse.make_option('--debug-rwt-logging', action='store_true', default=False,
-                             help='print timestamps and debug information for run-webkit-tests itself'),
+                             help='print timestamps and debug information for run_webkit_tests itself'),
         optparse.make_option('--details', action='store_true', default=False,
                              help='print detailed results for every test'),
         optparse.make_option('-q', '--quiet', action='store_true', default=False,
@@ -55,7 +55,7 @@ def print_options():
 
 
 class Printer(object):
-    """Class handling all non-debug-logging printing done by run-webkit-tests."""
+    """Class handling all non-debug-logging printing done by run_webkit_tests."""
 
     def __init__(self, port, options, regular_output, logger=None):
         self.num_completed = 0
@@ -140,20 +140,15 @@ class Printer(object):
         return ndigits
 
     def print_results(self, run_time, run_results):
-        self._print_timing_statistics(run_time, run_results)
-        self._print_one_line_summary(run_time, run_results)
+        self.print_timing_statistics(run_time, run_results)
+        self.print_summary(run_time, run_results)
 
-    def _print_timing_statistics(self, total_time, run_results):
+    def print_timing_statistics(self, total_time, run_results):
         self._print_debug('Test timing:')
         self._print_debug('  %6.2f total testing time' % total_time)
         self._print_debug('')
 
-        self._print_worker_statistics(run_results, int(self._options.child_processes))
-        self._print_aggregate_test_statistics(run_results)
-        self._print_individual_test_times(run_results)
-        self._print_directory_timings(run_results)
-
-    def _print_worker_statistics(self, run_results, num_workers):
+        num_workers = int(self._options.child_processes)
         self._print_debug('Thread timing:')
         stats = {}
         cuml_time = 0
@@ -169,113 +164,7 @@ class Printer(object):
         self._print_debug('   %6.2f cumulative, %6.2f optimal' % (cuml_time, cuml_time / num_workers))
         self._print_debug('')
 
-    def _print_aggregate_test_statistics(self, run_results):
-        times_for_dump_render_tree = [result.test_run_time for result in run_results.results_by_name.values()]
-        self._print_statistics_for_test_timings('PER TEST TIME IN TESTSHELL (seconds):', times_for_dump_render_tree)
-
-    def _print_individual_test_times(self, run_results):
-        # Reverse-sort by the time spent in the driver.
-
-        individual_test_timings = sorted(run_results.results_by_name.values(),
-                                         key=lambda result: result.test_run_time, reverse=True)
-        num_printed = 0
-        slow_tests = []
-        timeout_or_crash_tests = []
-        unexpected_slow_tests = []
-        for test_tuple in individual_test_timings:
-            test_name = test_tuple.test_name
-            is_timeout_crash_or_slow = False
-            if test_name in run_results.slow_tests:
-                is_timeout_crash_or_slow = True
-                slow_tests.append(test_tuple)
-
-            if test_name in run_results.failures_by_name:
-                result = run_results.results_by_name[test_name].type
-                if (result == test_expectations.TIMEOUT or
-                        result == test_expectations.CRASH):
-                    is_timeout_crash_or_slow = True
-                    timeout_or_crash_tests.append(test_tuple)
-
-            if not is_timeout_crash_or_slow and num_printed < NUM_SLOW_TESTS_TO_LOG:
-                num_printed = num_printed + 1
-                unexpected_slow_tests.append(test_tuple)
-
-        self._print_debug('')
-        if unexpected_slow_tests:
-            self._print_test_list_timing('%s slowest tests that are not marked as SLOW and did not timeout/crash:' %
-                                         NUM_SLOW_TESTS_TO_LOG, unexpected_slow_tests)
-            self._print_debug('')
-
-        if slow_tests:
-            self._print_test_list_timing('Tests marked as SLOW:', slow_tests)
-            self._print_debug('')
-
-        if timeout_or_crash_tests:
-            self._print_test_list_timing('Tests that timed out or crashed:', timeout_or_crash_tests)
-            self._print_debug('')
-
-    def _print_test_list_timing(self, title, test_list):
-        self._print_debug(title)
-        for test_tuple in test_list:
-            test_run_time = round(test_tuple.test_run_time, 1)
-            self._print_debug('  %s took %s seconds' % (test_tuple.test_name, test_run_time))
-
-    def _print_directory_timings(self, run_results):
-        stats = {}
-        for result in run_results.results_by_name.values():
-            stats.setdefault(result.shard_name, {'num_tests': 0, 'total_time': 0})
-            stats[result.shard_name]['num_tests'] += 1
-            stats[result.shard_name]['total_time'] += result.total_run_time
-
-        min_seconds_to_print = 15
-
-        timings = []
-        for directory in stats:
-            rounded_time = round(stats[directory]['total_time'], 1)
-            if rounded_time > min_seconds_to_print:
-                timings.append((directory, rounded_time, stats[directory]['num_tests']))
-
-        if not timings:
-            return
-
-        timings.sort()
-
-        self._print_debug('Time to process slowest subdirectories:')
-        for timing in timings:
-            self._print_debug('  %s took %s seconds to run %s tests.' % timing)
-        self._print_debug('')
-
-    def _print_statistics_for_test_timings(self, title, timings):
-        self._print_debug(title)
-        timings.sort()
-
-        num_tests = len(timings)
-        if not num_tests:
-            return
-        percentile90 = timings[int(.9 * num_tests)]
-        percentile99 = timings[int(.99 * num_tests)]
-
-        if num_tests % 2 == 1:
-            median = timings[((num_tests - 1) / 2) - 1]
-        else:
-            lower = timings[num_tests / 2 - 1]
-            upper = timings[num_tests / 2]
-            median = (float(lower + upper)) / 2
-
-        mean = sum(timings) / num_tests
-
-        for timing in timings:
-            sum_of_deviations = math.pow(timing - mean, 2)
-
-        std_deviation = math.sqrt(sum_of_deviations / num_tests)
-        self._print_debug('  Median:          %6.3f' % median)
-        self._print_debug('  Mean:            %6.3f' % mean)
-        self._print_debug('  90th percentile: %6.3f' % percentile90)
-        self._print_debug('  99th percentile: %6.3f' % percentile99)
-        self._print_debug('  Standard dev:    %6.3f' % std_deviation)
-        self._print_debug('')
-
-    def _print_one_line_summary(self, total_time, run_results):
+    def print_summary(self, total_time, run_results):
         if self._options.timing:
             parallel_time = sum(result.total_run_time for result in run_results.results_by_name.values())
 
@@ -316,12 +205,12 @@ class Printer(object):
             else:
                 summary = '%s ran as expected%s%s%s.' % (grammar.pluralize(
                     'test', expected), expected_summary_str, incomplete_str, timing_summary)
+            self._print_quiet(summary)
         else:
-            summary = "%s ran as expected%s, %d didn't%s%s:" % (grammar.pluralize(
-                'test', expected), expected_summary_str, unexpected, incomplete_str, timing_summary)
-
-        self._print_quiet(summary)
-        self._print_quiet('')
+            self._print_quiet("%s ran as expected%s, %d didn't%s%s:" % (grammar.pluralize(
+                'test', expected), expected_summary_str, unexpected, incomplete_str, timing_summary))
+            for test_name in sorted(run_results.unexpected_results_by_name):
+                self._print_quiet('    %s' % test_name)
 
     def _test_status_line(self, test_name, suffix):
         format_string = '[%d/%d] %s%s'
