@@ -665,7 +665,7 @@
           "--testing=true",
           "--xvfb"
         ],
-        "isolate_name": "telemetry_perf_tests_experimental",
+        "isolate_name": "telemetry_perf_tests_without_chrome",
         "merge": {
           "args": [
             "--service-account-file",
@@ -673,9 +673,9 @@
           ],
           "script": "//tools/perf/process_perf_results.py"
         },
-        "name": "telemetry_perf_tests_experimental",
+        "name": "telemetry_perf_tests_without_chrome",
         "override_compile_targets": [
-          "telemetry_perf_tests_experimental"
+          "telemetry_perf_tests_without_chrome"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,

@@ -1099,7 +1099,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
     'One Buildbot Step Test Builder': {
       'tests': [
         {
-          'isolate': 'telemetry_perf_tests_experimental',
+          'isolate': 'telemetry_perf_tests_without_chrome',
           'extra_args': ['--xvfb'],
         },
         {
