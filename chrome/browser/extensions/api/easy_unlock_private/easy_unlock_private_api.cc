@@ -398,21 +398,20 @@ EasyUnlockPrivateFindSetupConnectionFunction::Run() {
 
   // Creates a BLE connection finder to look for any device advertising
   // |params->setup_service_uuid|.
-  connection_finder_.reset(
-      new proximity_auth::BluetoothLowEnergySetupConnectionFinder(
-          params->setup_service_uuid));
+  connection_finder_ =
+      std::make_unique<proximity_auth::BluetoothLowEnergySetupConnectionFinder>(
+          params->setup_service_uuid);
 
   connection_finder_->Find(base::Bind(
       &EasyUnlockPrivateFindSetupConnectionFunction::OnConnectionFound, this));
 
-  timer_.reset(new base::OneShotTimer());
+  timer_ = std::make_unique<base::OneShotTimer>();
   timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(params->time_out),
                 base::Bind(&EasyUnlockPrivateFindSetupConnectionFunction::
                                OnConnectionFinderTimedOut,
                            this));
 
-  // TODO(https://crbug.com/829182): Resolve this.
-  return did_respond() ? AlreadyResponded() : RespondLater();
+  return RespondLater();
 }
 
 EasyUnlockPrivateSetupConnectionDisconnectFunction::
