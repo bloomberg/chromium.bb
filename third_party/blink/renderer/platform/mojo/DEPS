@@ -8,7 +8,7 @@ include_rules = [
     # Dependencies.
     "+base/callback.h",
     "+base/containers/span.h",
-    "+base/message_loop/message_loop.h",
+    "+base/message_loop/message_loop_current.h",
     "+base/observer_list.h",
     "+base/strings/string16.h",
     "+mojo/common/big_string.mojom-blink.h",
