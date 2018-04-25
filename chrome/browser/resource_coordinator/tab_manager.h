@@ -26,6 +26,7 @@
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
+#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/sessions/session_restore_observer.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -203,6 +204,7 @@ class TabManager : public LifecycleUnitObserver,
 
  private:
   friend class TabManagerStatsCollectorTest;
+  friend class TabManagerWithProactiveDiscardExperimentEnabledTest;
 
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, PurgeBackgroundRenderer);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ActivateTabResetPurgeState);
@@ -256,6 +258,8 @@ class TabManager : public LifecycleUnitObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, FreezeTab);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            TrackingNumberOfLoadedLifecycleUnits);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerWithProactiveDiscardExperimentEnabledTest,
+                           GetTimeInBackgroundBeforeProactiveDiscardTest);
 
   // The time of the first purging after a renderer is backgrounded.
   // The initial value was chosen because most of users activate backgrounded
@@ -404,7 +408,24 @@ class TabManager : public LifecycleUnitObserver,
   // Returns true if the background tab force load timer is running.
   bool IsForceLoadTimerRunning() const;
 
+  // Returns the threshold after which a background LifecycleUnit gets
+  // discarded, given the current number of alive LifecycleUnits and experiment
+  // parameters.
+  base::TimeDelta GetTimeInBackgroundBeforeProactiveDiscard() const;
+
+  // Returns the next discardable LifecycleUnit, if any, and nullptr otherwise.
+  // The next discardable LifecycleUnit is the LifecycleUnit that has been in
+  // the visibility state content::Visibility::HIDDEN for the longest time.
+  LifecycleUnit* GetNextDiscardableLifecycleUnit() const;
+
+  // If necessary, schedules a task to proactively discard a LifecycleUnit at
+  // the right time.
+  void UpdateProactiveDiscardTimerIfNecessary();
+
   // LifecycleUnitObserver:
+  void OnLifecycleUnitVisibilityChanged(
+      LifecycleUnit* lifecycle_unit,
+      content::Visibility visibility) override;
   void OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) override;
   void OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit) override;
 
@@ -414,12 +435,20 @@ class TabManager : public LifecycleUnitObserver,
   // LifecycleUnits managed by this.
   LifecycleUnitSet lifecycle_units_;
 
-  // Number of LifecycleUnits in |lifecycle_units_| that are State::LOADED. Used
-  // to determine threshold for proactive tab discarding experiments.
+  // Number of LifecycleUnits in |lifecycle_units_| that are in State::LOADED.
+  // Used to determine timeout threshold for proactive discarding.
   int num_loaded_lifecycle_units_ = 0;
+
+  // Parameters for proactive discarding. Used to determine the timeout
+  // until a LifecycleUnit should be discarded based on
+  // |num_loaded_lifecycle_units_|.
+  ProactiveTabDiscardParams proactive_discard_params_;
 
   // Timer to periodically update the stats of the renderers.
   base::RepeatingTimer update_timer_;
+
+  // Timer for proactive discarding.
+  std::unique_ptr<base::OneShotTimer> proactive_discard_timer_;
 
   // A listener to global memory pressure events.
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
