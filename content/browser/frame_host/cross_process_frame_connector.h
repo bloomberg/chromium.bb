@@ -12,7 +12,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/renderer_host/frame_connector_delegate.h"
 #include "content/common/content_export.h"
-#include "content/common/frame_resize_params.h"
+#include "content/common/frame_visual_properties.h"
 
 namespace IPC {
 class Message;
@@ -133,8 +133,9 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   void ResetScreenSpaceRect();
 
   // Handlers for messages received from the parent frame.
-  void OnUpdateResizeParams(const viz::SurfaceId& surface_id,
-                            const FrameResizeParams& frame_resize_params);
+  void OnSynchronizeVisualProperties(
+      const viz::SurfaceId& surface_id,
+      const FrameVisualProperties& visual_properties);
   void OnUpdateViewportIntersection(const gfx::Rect& viewport_intersection,
                                     const gfx::Rect& compositor_visible_rect);
   void OnVisibilityChanged(bool visible);

@@ -549,8 +549,8 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
   ui::TouchSelectionControllerTestApi selection_controller_test_api(
       selection_controller);
 
-  scoped_refptr<UpdateResizeParamsMessageFilter> filter =
-      new UpdateResizeParamsMessageFilter();
+  scoped_refptr<SynchronizeVisualPropertiesMessageFilter> filter =
+      new SynchronizeVisualPropertiesMessageFilter();
   root->current_frame_host()->GetProcess()->AddFilter(filter.get());
 
   // Find the location of some text to select.

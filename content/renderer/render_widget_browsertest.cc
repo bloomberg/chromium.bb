@@ -5,7 +5,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
-#include "content/common/resize_params.h"
+#include "content/common/visual_properties.h"
 #include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -26,8 +26,8 @@ class RenderWidgetTest : public RenderViewTest {
     return static_cast<RenderViewImpl*>(view_)->GetWidget();
   }
 
-  void OnResize(const ResizeParams& params) {
-    widget()->OnResize(params);
+  void OnSynchronizeVisualProperties(const VisualProperties& params) {
+    widget()->OnSynchronizeVisualProperties(params);
   }
 
   void GetCompositionRange(gfx::Range* range) {
@@ -53,64 +53,64 @@ class RenderWidgetTest : public RenderViewTest {
   void SetFocus(bool focused) { widget()->OnSetFocus(focused); }
 };
 
-TEST_F(RenderWidgetTest, OnResize) {
+TEST_F(RenderWidgetTest, OnSynchronizeVisualProperties) {
   widget()->DidNavigate();
   // The initial bounds is empty, so setting it to the same thing should do
   // nothing.
-  ResizeParams resize_params;
-  resize_params.screen_info = ScreenInfo();
-  resize_params.new_size = gfx::Size();
-  resize_params.compositor_viewport_pixel_size = gfx::Size();
-  resize_params.top_controls_height = 0.f;
-  resize_params.browser_controls_shrink_blink_size = false;
-  resize_params.is_fullscreen_granted = false;
-  resize_params.needs_resize_ack = false;
-  resize_params.content_source_id = 0u;
-  OnResize(resize_params);
-  EXPECT_EQ(resize_params.needs_resize_ack, next_paint_is_resize_ack());
+  VisualProperties visual_properties;
+  visual_properties.screen_info = ScreenInfo();
+  visual_properties.new_size = gfx::Size();
+  visual_properties.compositor_viewport_pixel_size = gfx::Size();
+  visual_properties.top_controls_height = 0.f;
+  visual_properties.browser_controls_shrink_blink_size = false;
+  visual_properties.is_fullscreen_granted = false;
+  visual_properties.needs_resize_ack = false;
+  visual_properties.content_source_id = 0u;
+  OnSynchronizeVisualProperties(visual_properties);
+  EXPECT_EQ(visual_properties.needs_resize_ack, next_paint_is_resize_ack());
 
   // Setting empty physical backing size should not send the ack.
-  resize_params.new_size = gfx::Size(10, 10);
-  OnResize(resize_params);
-  EXPECT_EQ(resize_params.needs_resize_ack, next_paint_is_resize_ack());
+  visual_properties.new_size = gfx::Size(10, 10);
+  OnSynchronizeVisualProperties(visual_properties);
+  EXPECT_EQ(visual_properties.needs_resize_ack, next_paint_is_resize_ack());
 
   // Setting the bounds to a "real" rect should send the ack.
   render_thread_->sink().ClearMessages();
   viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator;
   gfx::Size size(100, 100);
-  resize_params.local_surface_id = local_surface_id_allocator.GenerateId();
-  resize_params.new_size = size;
-  resize_params.compositor_viewport_pixel_size = size;
-  resize_params.content_source_id = 1u;
-  resize_params.needs_resize_ack = true;
-  OnResize(resize_params);
-  EXPECT_EQ(resize_params.needs_resize_ack, next_paint_is_resize_ack());
+  visual_properties.local_surface_id = local_surface_id_allocator.GenerateId();
+  visual_properties.new_size = size;
+  visual_properties.compositor_viewport_pixel_size = size;
+  visual_properties.content_source_id = 1u;
+  visual_properties.needs_resize_ack = true;
+  OnSynchronizeVisualProperties(visual_properties);
+  EXPECT_EQ(visual_properties.needs_resize_ack, next_paint_is_resize_ack());
 
   // Clear the flag.
   widget()->DidCommitCompositorFrame();
   widget()->DidCommitAndDrawCompositorFrame();
 
   // Setting the same size again should not send the ack.
-  resize_params.needs_resize_ack = false;
-  OnResize(resize_params);
-  EXPECT_EQ(resize_params.needs_resize_ack, next_paint_is_resize_ack());
+  visual_properties.needs_resize_ack = false;
+  OnSynchronizeVisualProperties(visual_properties);
+  EXPECT_EQ(visual_properties.needs_resize_ack, next_paint_is_resize_ack());
 
   // Resetting the rect to empty should not send the ack.
-  resize_params.new_size = gfx::Size();
-  resize_params.compositor_viewport_pixel_size = gfx::Size();
-  resize_params.local_surface_id = base::nullopt;
-  OnResize(resize_params);
-  EXPECT_EQ(resize_params.needs_resize_ack, next_paint_is_resize_ack());
+  visual_properties.new_size = gfx::Size();
+  visual_properties.compositor_viewport_pixel_size = gfx::Size();
+  visual_properties.local_surface_id = base::nullopt;
+  OnSynchronizeVisualProperties(visual_properties);
+  EXPECT_EQ(visual_properties.needs_resize_ack, next_paint_is_resize_ack());
 
   // Changing the screen info should not send the ack.
-  resize_params.screen_info.orientation_angle = 90;
-  OnResize(resize_params);
-  EXPECT_EQ(resize_params.needs_resize_ack, next_paint_is_resize_ack());
+  visual_properties.screen_info.orientation_angle = 90;
+  OnSynchronizeVisualProperties(visual_properties);
+  EXPECT_EQ(visual_properties.needs_resize_ack, next_paint_is_resize_ack());
 
-  resize_params.screen_info.orientation_type =
+  visual_properties.screen_info.orientation_type =
       SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
-  OnResize(resize_params);
-  EXPECT_EQ(resize_params.needs_resize_ack, next_paint_is_resize_ack());
+  OnSynchronizeVisualProperties(visual_properties);
+  EXPECT_EQ(visual_properties.needs_resize_ack, next_paint_is_resize_ack());
 }
 
 class RenderWidgetInitialSizeTest : public RenderWidgetTest {
@@ -120,8 +120,9 @@ class RenderWidgetInitialSizeTest : public RenderWidgetTest {
   }
 
  protected:
-  std::unique_ptr<ResizeParams> InitialSizeParams() override {
-    std::unique_ptr<ResizeParams> initial_size_params(new ResizeParams());
+  std::unique_ptr<VisualProperties> InitialSizeParams() override {
+    std::unique_ptr<VisualProperties> initial_size_params(
+        new VisualProperties());
     initial_size_params->new_size = initial_size_;
     initial_size_params->compositor_viewport_pixel_size = initial_size_;
     initial_size_params->needs_resize_ack = true;

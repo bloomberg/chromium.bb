@@ -27,7 +27,7 @@
 #include "content/browser/renderer_host/frame_connector_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/common/frame_resize_params.h"
+#include "content/common/frame_visual_properties.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/content_features.h"
@@ -351,19 +351,20 @@ TEST_F(RenderWidgetHostViewChildFrameTest, WasResizedOncePerChange) {
 
   process->sink().ClearMessages();
 
-  FrameResizeParams resize_params;
-  resize_params.screen_space_rect = screen_space_rect;
-  resize_params.local_frame_size = compositor_viewport_pixel_size;
-  resize_params.capture_sequence_number = 123u;
-  test_frame_connector_->UpdateResizeParams(surface_id, resize_params);
+  FrameVisualProperties visual_properties;
+  visual_properties.screen_space_rect = screen_space_rect;
+  visual_properties.local_frame_size = compositor_viewport_pixel_size;
+  visual_properties.capture_sequence_number = 123u;
+  test_frame_connector_->SynchronizeVisualProperties(surface_id,
+                                                     visual_properties);
 
   ASSERT_EQ(1u, process->sink().message_count());
 
-  const IPC::Message* resize_msg =
-      process->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID);
+  const IPC::Message* resize_msg = process->sink().GetUniqueMessageMatching(
+      ViewMsg_SynchronizeVisualProperties::ID);
   ASSERT_NE(nullptr, resize_msg);
-  ViewMsg_Resize::Param params;
-  ViewMsg_Resize::Read(resize_msg, &params);
+  ViewMsg_SynchronizeVisualProperties::Param params;
+  ViewMsg_SynchronizeVisualProperties::Read(resize_msg, &params);
   EXPECT_EQ(compositor_viewport_pixel_size,
             std::get<0>(params).compositor_viewport_pixel_size);
   EXPECT_EQ(screen_space_rect.size(), std::get<0>(params).new_size);

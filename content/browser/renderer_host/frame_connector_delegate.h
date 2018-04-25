@@ -30,7 +30,7 @@ namespace content {
 class RenderWidgetHostViewBase;
 class RenderWidgetHostViewChildFrame;
 class WebCursor;
-struct FrameResizeParams;
+struct FrameVisualProperties;
 
 //
 // FrameConnectorDelegate
@@ -73,8 +73,8 @@ class CONTENT_EXPORT FrameConnectorDelegate {
       const blink::WebIntrinsicSizingInfo&) {}
 
   // Sends new resize parameters to the sub-frame's renderer.
-  void UpdateResizeParams(const viz::SurfaceId& surface_id,
-                          const FrameResizeParams& resize_params);
+  void SynchronizeVisualProperties(const viz::SurfaceId& surface_id,
+                                   const FrameVisualProperties& resize_params);
 
   // Return the size of the CompositorFrame to use in the child renderer.
   const gfx::Size& local_frame_size_in_pixels() const {

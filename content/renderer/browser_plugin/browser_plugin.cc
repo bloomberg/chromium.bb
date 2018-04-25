@@ -303,7 +303,7 @@ void BrowserPlugin::SynchronizeVisualProperties() {
   if (visual_properties_changed && attached()) {
     // Let the browser know about the updated view rect.
     BrowserPluginManager::Get()->Send(
-        new BrowserPluginHostMsg_UpdateResizeParams(
+        new BrowserPluginHostMsg_SynchronizeVisualProperties(
             browser_plugin_instance_id_, GetLocalSurfaceId(),
             pending_visual_properties_));
   }

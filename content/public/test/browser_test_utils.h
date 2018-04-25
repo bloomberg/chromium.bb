@@ -71,7 +71,7 @@ using test_server::EmbeddedTestServer;
 namespace content {
 
 class BrowserContext;
-struct FrameResizeParams;
+struct FrameVisualProperties;
 class InterstitialPage;
 class MessageLoopRunner;
 class NavigationHandle;
@@ -1149,12 +1149,15 @@ bool TestChildOrGuestAutoresize(bool is_guest,
                                 RenderProcessHost* embedder_rph,
                                 RenderWidgetHost* guest_rwh);
 
-// Class to sniff incoming IPCs for either FrameHostMsg_UpdateResizeParams or
-// BrowserPluginHostMsg_UpdateResizeParams messages. This allows the message to
-// continue to the target child so that processing can be verified by tests.
-class UpdateResizeParamsMessageFilter : public content::BrowserMessageFilter {
+// Class to sniff incoming IPCs for either
+// FrameHostMsg_SynchronizeVisualProperties or
+// BrowserPluginHostMsg_SynchronizeVisualProperties messages. This allows the
+// message to continue to the target child so that processing can be verified by
+// tests.
+class SynchronizeVisualPropertiesMessageFilter
+    : public content::BrowserMessageFilter {
  public:
-  UpdateResizeParamsMessageFilter();
+  SynchronizeVisualPropertiesMessageFilter();
 
   gfx::Rect last_rect() const { return last_rect_; }
 
@@ -1170,17 +1173,20 @@ class UpdateResizeParamsMessageFilter : public content::BrowserMessageFilter {
   viz::LocalSurfaceId WaitForSurfaceId();
 
  protected:
-  ~UpdateResizeParamsMessageFilter() override;
+  ~SynchronizeVisualPropertiesMessageFilter() override;
 
  private:
-  void OnUpdateFrameHostResizeParams(const viz::SurfaceId& surface_id,
-                                     const FrameResizeParams& resize_params);
-  void OnUpdateBrowserPluginResizeParams(int browser_plugin_guest_instance_id,
-                                         viz::LocalSurfaceId surface_id,
-                                         FrameResizeParams resize_params);
-  void OnUpdateResizeParams(const viz::LocalSurfaceId& surface_id,
-                            const viz::FrameSinkId& frame_sink_id,
-                            const FrameResizeParams& resize_params);
+  void OnSynchronizeFrameHostVisualProperties(
+      const viz::SurfaceId& surface_id,
+      const FrameVisualProperties& visual_properties);
+  void OnSynchronizeBrowserPluginVisualProperties(
+      int browser_plugin_guest_instance_id,
+      viz::LocalSurfaceId surface_id,
+      FrameVisualProperties visual_properties);
+  void OnSynchronizeVisualProperties(
+      const viz::LocalSurfaceId& surface_id,
+      const viz::FrameSinkId& frame_sink_id,
+      const FrameVisualProperties& visual_properties);
   // |rect| is in DIPs.
   void OnUpdatedFrameRectOnUI(const gfx::Rect& rect);
   void OnUpdatedFrameSinkIdOnUI();
@@ -1199,7 +1205,7 @@ class UpdateResizeParamsMessageFilter : public content::BrowserMessageFilter {
   viz::LocalSurfaceId last_surface_id_;
   std::unique_ptr<base::RunLoop> surface_id_run_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(UpdateResizeParamsMessageFilter);
+  DISALLOW_COPY_AND_ASSIGN(SynchronizeVisualPropertiesMessageFilter);
 };
 
 }  // namespace content

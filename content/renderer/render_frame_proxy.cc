@@ -666,8 +666,8 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
     return;
 
   // Let the browser know about the updated view rect.
-  Send(new FrameHostMsg_UpdateResizeParams(routing_id_, surface_id,
-                                           pending_visual_properties_));
+  Send(new FrameHostMsg_SynchronizeVisualProperties(
+      routing_id_, surface_id, pending_visual_properties_));
   sent_visual_properties_ = pending_visual_properties_;
 
   // The visible rect that the OOPIF needs to raster depends partially on

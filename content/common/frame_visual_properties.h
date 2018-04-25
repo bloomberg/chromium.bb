@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_FRAME_RESIZE_PARAMS_H_
-#define CONTENT_COMMON_FRAME_RESIZE_PARAMS_H_
+#ifndef CONTENT_COMMON_FRAME_VISUAL_PROPERTIES_H_
+#define CONTENT_COMMON_FRAME_VISUAL_PROPERTIES_H_
 
 #include "content/common/content_export.h"
 #include "content/public/common/screen_info.h"
@@ -13,12 +13,12 @@
 namespace content {
 
 // TODO(fsamuel): We might want to unify this with content::ResizeParams.
-struct CONTENT_EXPORT FrameResizeParams {
-  FrameResizeParams();
-  FrameResizeParams(const FrameResizeParams& other);
-  ~FrameResizeParams();
+struct CONTENT_EXPORT FrameVisualProperties {
+  FrameVisualProperties();
+  FrameVisualProperties(const FrameVisualProperties& other);
+  ~FrameVisualProperties();
 
-  FrameResizeParams& operator=(const FrameResizeParams& other);
+  FrameVisualProperties& operator=(const FrameVisualProperties& other);
 
   // Information about the screen (dpi, depth, etc..).
   ScreenInfo screen_info;
@@ -41,4 +41,4 @@ struct CONTENT_EXPORT FrameResizeParams {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_FRAME_RESIZE_PARAMS_H_
+#endif  // CONTENT_COMMON_FRAME_VISUAL_PROPERTIES_H_

@@ -13,7 +13,7 @@ struct WebDeviceEmulationParams;
 
 namespace content {
 
-struct ResizeParams;
+struct VisualProperties;
 
 // Consumers of RenderWidgetScreenMetricsEmulatorDelegate implement this
 // delegate in order to transport emulation information across processes.
@@ -22,8 +22,9 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulatorDelegate {
   // Requests a full redraw of the contents of the renderer.
   virtual void Redraw() = 0;
 
-  // Resizes the Widget with the provided |resize_params|.
-  virtual void Resize(const ResizeParams& resize_params) = 0;
+  // Synchronize visual properties with the widget.
+  virtual void SynchronizeVisualProperties(
+      const VisualProperties& visual_properties) = 0;
 
   // Passes device emulation parameters to the delegate.
   virtual void SetScreenMetricsEmulationParameters(

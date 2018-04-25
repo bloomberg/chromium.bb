@@ -52,7 +52,8 @@ bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
 
   IPC_BEGIN_MESSAGE_MAP(CrossProcessFrameConnector, msg)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateResizeParams, OnUpdateResizeParams)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_SynchronizeVisualProperties,
+                        OnSynchronizeVisualProperties)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateViewportIntersection,
                         OnUpdateViewportIntersection)
     IPC_MESSAGE_HANDLER(FrameHostMsg_VisibilityChanged, OnVisibilityChanged)
@@ -270,14 +271,15 @@ void CrossProcessFrameConnector::UnlockMouse() {
     root_view->UnlockMouse();
 }
 
-void CrossProcessFrameConnector::OnUpdateResizeParams(
+void CrossProcessFrameConnector::OnSynchronizeVisualProperties(
     const viz::SurfaceId& surface_id,
-    const FrameResizeParams& resize_params) {
+    const FrameVisualProperties& visual_properties) {
   // If the |screen_space_rect| or |screen_info| of the frame has changed, then
   // the viz::LocalSurfaceId must also change.
-  if ((last_received_local_frame_size_ != resize_params.local_frame_size ||
-       screen_info_ != resize_params.screen_info ||
-       capture_sequence_number() != resize_params.capture_sequence_number) &&
+  if ((last_received_local_frame_size_ != visual_properties.local_frame_size ||
+       screen_info_ != visual_properties.screen_info ||
+       capture_sequence_number() !=
+           visual_properties.capture_sequence_number) &&
       local_surface_id_ == surface_id.local_surface_id()) {
     bad_message::ReceivedBadMessage(
         frame_proxy_in_parent_renderer_->GetProcess(),
@@ -285,8 +287,8 @@ void CrossProcessFrameConnector::OnUpdateResizeParams(
     return;
   }
 
-  last_received_local_frame_size_ = resize_params.local_frame_size;
-  UpdateResizeParams(surface_id, resize_params);
+  last_received_local_frame_size_ = visual_properties.local_frame_size;
+  SynchronizeVisualProperties(surface_id, visual_properties);
 }
 
 void CrossProcessFrameConnector::OnUpdateViewportIntersection(

@@ -54,7 +54,7 @@ class RendererMainPlatformDelegate;
 class RendererBlinkPlatformImpl;
 class RendererBlinkPlatformImplTestOverrideImpl;
 class RenderView;
-struct ResizeParams;
+struct VisualProperties;
 
 class RenderViewTest : public testing::Test {
  public:
@@ -181,7 +181,7 @@ class RenderViewTest : public testing::Test {
   virtual ContentRendererClient* CreateContentRendererClient();
 
   // Allows a subclass to customize the initial size of the RenderView.
-  virtual std::unique_ptr<ResizeParams> InitialSizeParams();
+  virtual std::unique_ptr<VisualProperties> InitialSizeParams();
 
   // testing::Test
   void SetUp() override;

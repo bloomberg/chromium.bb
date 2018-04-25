@@ -28,9 +28,9 @@
 #include "content/common/date_time_suggestion.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/navigation_gesture.h"
-#include "content/common/resize_params.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_message_enums.h"
+#include "content/common/visual_properties.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/menu_item.h"
 #include "content/public/common/page_state.h"
@@ -161,7 +161,7 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebDeviceEmulationParams)
   IPC_STRUCT_TRAITS_MEMBER(screen_orientation_type)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::ResizeParams)
+IPC_STRUCT_TRAITS_BEGIN(content::VisualProperties)
   IPC_STRUCT_TRAITS_MEMBER(screen_info)
   IPC_STRUCT_TRAITS_MEMBER(auto_resize_enabled)
   IPC_STRUCT_TRAITS_MEMBER(min_size_for_auto_resize)
@@ -342,12 +342,14 @@ IPC_MESSAGE_ROUTED1(ViewMsg_UpdateWebPreferences,
 // Expects a Close_ACK message when finished.
 IPC_MESSAGE_ROUTED0(ViewMsg_Close)
 
-// Tells the render view to change its size.  A ViewHostMsg_ResizeOrRepaint_ACK
-// message is generated in response provided new_size is not empty and not equal
-// to the view's current size.  The generated ViewHostMsg_ResizeOrRepaint_ACK
+// Tells the renderer to update visual properties.  A
+// ViewHostMsg_ResizeOrRepaint_ACK  message is generated in response provided
+// new_size is not empty and not equal to the view's current size.  The
+// generated ViewHostMsg_ResizeOrRepaint_ACK
 // message will have the IS_RESIZE_ACK flag set. It also receives the resizer
 // rect so that we don't have to fetch it every time WebKit asks for it.
-IPC_MESSAGE_ROUTED1(ViewMsg_Resize, content::ResizeParams /* params */)
+IPC_MESSAGE_ROUTED1(ViewMsg_SynchronizeVisualProperties,
+                    content::VisualProperties /* params */)
 
 // Enables device emulation. See WebDeviceEmulationParams for description.
 IPC_MESSAGE_ROUTED1(ViewMsg_EnableDeviceEmulation,

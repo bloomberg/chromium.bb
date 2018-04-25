@@ -2720,13 +2720,14 @@ TEST_F(RenderWidgetHostViewAuraTest, CompositorViewportPixelSizeWithScale) {
   view_->SetSize(gfx::Size(100, 100));
   EXPECT_EQ("100x100", view_->GetCompositorViewportPixelSize().ToString());
   EXPECT_EQ(1u, sink_->message_count());
-  EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID),
+  EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SynchronizeVisualProperties::ID),
             sink_->GetMessageAt(0)->type());
   {
     const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID), msg->type());
-    ViewMsg_Resize::Param params;
-    ViewMsg_Resize::Read(msg, &params);
+    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SynchronizeVisualProperties::ID),
+              msg->type());
+    ViewMsg_SynchronizeVisualProperties::Param params;
+    ViewMsg_SynchronizeVisualProperties::Read(msg, &params);
     EXPECT_EQ("100x100", std::get<0>(params).new_size.ToString());  // dip size
     EXPECT_EQ("100x100",
               std::get<0>(params)
@@ -2741,9 +2742,10 @@ TEST_F(RenderWidgetHostViewAuraTest, CompositorViewportPixelSizeWithScale) {
   // Extra ScreenInfoChanged message for |parent_view_|.
   // Changing the device scale factor triggers the
   // RenderWidgetHostViewAura::OnDisplayMetricsChanged() observer callback,
-  // which sends a ViewMsg_Resize::ID message to the renderer.
+  // which sends a ViewMsg_SynchronizeVisualProperties::ID message to the
+  // renderer.
   EXPECT_EQ(1u, sink_->message_count());
-  EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID),
+  EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SynchronizeVisualProperties::ID),
             sink_->GetMessageAt(0)->type());
 
   widget_host_->ResetSizeAndRepaintPendingFlags();
@@ -2752,13 +2754,13 @@ TEST_F(RenderWidgetHostViewAuraTest, CompositorViewportPixelSizeWithScale) {
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(1.0f);
   // Extra ScreenInfoChanged message for |parent_view_|.
   EXPECT_EQ(1u, sink_->message_count());
-  EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID),
+  EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SynchronizeVisualProperties::ID),
             sink_->GetMessageAt(0)->type());
   EXPECT_EQ("100x100", view_->GetCompositorViewportPixelSize().ToString());
 }
 
 // This test verifies that in AutoResize mode a new
-// ViewMsg_Resize message is sent when ScreenInfo
+// ViewMsg_SynchronizeVisualProperties message is sent when ScreenInfo
 // changes and that message contains the latest ScreenInfo.
 TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
   view_->InitAsChild(nullptr);
@@ -2789,15 +2791,16 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
   ASSERT_EQ(1u, sink_->message_count());
   {
     const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID), msg->type());
-    ViewMsg_Resize::Param params;
-    ViewMsg_Resize::Read(msg, &params);
-    ResizeParams resize_params = std::get<0>(params);
-    EXPECT_EQ("50x50", resize_params.min_size_for_auto_resize.ToString());
-    EXPECT_EQ("100x100", resize_params.max_size_for_auto_resize.ToString());
-    EXPECT_EQ(1, resize_params.screen_info.device_scale_factor);
+    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SynchronizeVisualProperties::ID),
+              msg->type());
+    ViewMsg_SynchronizeVisualProperties::Param params;
+    ViewMsg_SynchronizeVisualProperties::Read(msg, &params);
+    VisualProperties visual_properties = std::get<0>(params);
+    EXPECT_EQ("50x50", visual_properties.min_size_for_auto_resize.ToString());
+    EXPECT_EQ("100x100", visual_properties.max_size_for_auto_resize.ToString());
+    EXPECT_EQ(1, visual_properties.screen_info.device_scale_factor);
     local_surface_id2 =
-        resize_params.local_surface_id.value_or(viz::LocalSurfaceId());
+        visual_properties.local_surface_id.value_or(viz::LocalSurfaceId());
     EXPECT_NE(local_surface_id1, local_surface_id2);
     EXPECT_TRUE(local_surface_id2.is_valid());
   }
@@ -2809,23 +2812,23 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
     // TODO(samans): There should be only one message in the sink, but some
     // testers are seeing two (crrev.com/c/839580). Investigate why.
     const IPC::Message* msg =
-        sink_->GetFirstMessageMatching(ViewMsg_Resize::ID);
+        sink_->GetFirstMessageMatching(ViewMsg_SynchronizeVisualProperties::ID);
     ASSERT_TRUE(msg);
-    ViewMsg_Resize::Param params;
-    ViewMsg_Resize::Read(msg, &params);
-    ResizeParams resize_params = std::get<0>(params);
-    EXPECT_EQ("50x50", resize_params.min_size_for_auto_resize.ToString());
-    EXPECT_EQ("100x100", resize_params.max_size_for_auto_resize.ToString());
-    EXPECT_EQ(2, resize_params.screen_info.device_scale_factor);
-    EXPECT_NE(local_surface_id1,
-              resize_params.local_surface_id.value_or(viz::LocalSurfaceId()));
-    EXPECT_NE(local_surface_id2,
-              resize_params.local_surface_id.value_or(viz::LocalSurfaceId()));
+    ViewMsg_SynchronizeVisualProperties::Param params;
+    ViewMsg_SynchronizeVisualProperties::Read(msg, &params);
+    VisualProperties visual_properties = std::get<0>(params);
+    EXPECT_EQ("50x50", visual_properties.min_size_for_auto_resize.ToString());
+    EXPECT_EQ("100x100", visual_properties.max_size_for_auto_resize.ToString());
+    EXPECT_EQ(2, visual_properties.screen_info.device_scale_factor);
+    EXPECT_NE(local_surface_id1, visual_properties.local_surface_id.value_or(
+                                     viz::LocalSurfaceId()));
+    EXPECT_NE(local_surface_id2, visual_properties.local_surface_id.value_or(
+                                     viz::LocalSurfaceId()));
   }
 }
 
 // This test verifies that in AutoResize mode a new
-// ViewMsg_Resize message is sent when size changes.
+// ViewMsg_SynchronizeVisualProperties message is sent when size changes.
 TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
@@ -2855,15 +2858,16 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
   ASSERT_EQ(1u, sink_->message_count());
   {
     const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID), msg->type());
-    ViewMsg_Resize::Param params;
-    ViewMsg_Resize::Read(msg, &params);
-    ResizeParams resize_params = std::get<0>(params);
-    EXPECT_EQ("50x50", resize_params.min_size_for_auto_resize.ToString());
-    EXPECT_EQ("100x100", resize_params.max_size_for_auto_resize.ToString());
-    EXPECT_EQ(1, resize_params.screen_info.device_scale_factor);
+    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SynchronizeVisualProperties::ID),
+              msg->type());
+    ViewMsg_SynchronizeVisualProperties::Param params;
+    ViewMsg_SynchronizeVisualProperties::Read(msg, &params);
+    VisualProperties visual_properties = std::get<0>(params);
+    EXPECT_EQ("50x50", visual_properties.min_size_for_auto_resize.ToString());
+    EXPECT_EQ("100x100", visual_properties.max_size_for_auto_resize.ToString());
+    EXPECT_EQ(1, visual_properties.screen_info.device_scale_factor);
     local_surface_id2 =
-        resize_params.local_surface_id.value_or(viz::LocalSurfaceId());
+        visual_properties.local_surface_id.value_or(viz::LocalSurfaceId());
     EXPECT_TRUE(local_surface_id2.is_valid());
     EXPECT_NE(local_surface_id1, local_surface_id2);
   }
@@ -2875,15 +2879,16 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
   ASSERT_EQ(1u, sink_->message_count());
   {
     const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID), msg->type());
-    ViewMsg_Resize::Param params;
-    ViewMsg_Resize::Read(msg, &params);
-    ResizeParams resize_params = std::get<0>(params);
-    EXPECT_EQ("50x50", resize_params.min_size_for_auto_resize.ToString());
-    EXPECT_EQ("100x100", resize_params.max_size_for_auto_resize.ToString());
-    EXPECT_EQ(1, resize_params.screen_info.device_scale_factor);
+    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SynchronizeVisualProperties::ID),
+              msg->type());
+    ViewMsg_SynchronizeVisualProperties::Param params;
+    ViewMsg_SynchronizeVisualProperties::Read(msg, &params);
+    VisualProperties visual_properties = std::get<0>(params);
+    EXPECT_EQ("50x50", visual_properties.min_size_for_auto_resize.ToString());
+    EXPECT_EQ("100x100", visual_properties.max_size_for_auto_resize.ToString());
+    EXPECT_EQ(1, visual_properties.screen_info.device_scale_factor);
     local_surface_id3 =
-        resize_params.local_surface_id.value_or(viz::LocalSurfaceId());
+        visual_properties.local_surface_id.value_or(viz::LocalSurfaceId());
     EXPECT_TRUE(local_surface_id3.is_valid());
     EXPECT_NE(local_surface_id1, local_surface_id3);
     EXPECT_NE(local_surface_id2, local_surface_id3);
@@ -3212,9 +3217,10 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
   {
     // 0 is CreatingNew message.
     const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID), msg->type());
-    ViewMsg_Resize::Param params;
-    ViewMsg_Resize::Read(msg, &params);
+    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SynchronizeVisualProperties::ID),
+              msg->type());
+    ViewMsg_SynchronizeVisualProperties::Param params;
+    ViewMsg_SynchronizeVisualProperties::Read(msg, &params);
     EXPECT_EQ(
         "0,0 800x600",
         std::get<0>(params).screen_info.available_rect.ToString());
@@ -3239,9 +3245,10 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
   EXPECT_EQ(1u, sink_->message_count());
   {
     const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID), msg->type());
-    ViewMsg_Resize::Param params;
-    ViewMsg_Resize::Read(msg, &params);
+    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SynchronizeVisualProperties::ID),
+              msg->type());
+    ViewMsg_SynchronizeVisualProperties::Param params;
+    ViewMsg_SynchronizeVisualProperties::Read(msg, &params);
     EXPECT_EQ(
         "0,0 1600x1200",
         std::get<0>(params).screen_info.available_rect.ToString());
@@ -3342,9 +3349,10 @@ TEST_F(RenderWidgetHostViewAuraTest, ZeroSizeStillGetsLocalSurfaceId) {
   EXPECT_EQ(2u, sink_->message_count());
   {
     const IPC::Message* msg = sink_->GetMessageAt(1);
-    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID), msg->type());
-    ViewMsg_Resize::Param params;
-    ViewMsg_Resize::Read(msg, &params);
+    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SynchronizeVisualProperties::ID),
+              msg->type());
+    ViewMsg_SynchronizeVisualProperties::Param params;
+    ViewMsg_SynchronizeVisualProperties::Read(msg, &params);
     EXPECT_EQ(frame_size.ToString(), std::get<0>(params).new_size.ToString());
     ASSERT_TRUE(std::get<0>(params).local_surface_id.has_value());
     EXPECT_TRUE(std::get<0>(params).local_surface_id->is_valid());
@@ -3414,9 +3422,10 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
   EXPECT_EQ(1u, sink_->message_count());
   {
     const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID), msg->type());
-    ViewMsg_Resize::Param params;
-    ViewMsg_Resize::Read(msg, &params);
+    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SynchronizeVisualProperties::ID),
+              msg->type());
+    ViewMsg_SynchronizeVisualProperties::Param params;
+    ViewMsg_SynchronizeVisualProperties::Read(msg, &params);
     EXPECT_EQ(size2.ToString(), std::get<0>(params).new_size.ToString());
   }
   // Send resize ack to observe new Resize messages.
@@ -3466,10 +3475,10 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
   for (uint32_t i = 0; i < sink_->message_count(); ++i) {
     const IPC::Message* msg = sink_->GetMessageAt(i);
     switch (msg->type()) {
-      case ViewMsg_Resize::ID: {
+      case ViewMsg_SynchronizeVisualProperties::ID: {
         EXPECT_FALSE(has_resize);
-        ViewMsg_Resize::Param params;
-        ViewMsg_Resize::Read(msg, &params);
+        ViewMsg_SynchronizeVisualProperties::Param params;
+        ViewMsg_SynchronizeVisualProperties::Read(msg, &params);
         EXPECT_EQ(size3.ToString(), std::get<0>(params).new_size.ToString());
         has_resize = true;
         break;
@@ -4467,12 +4476,12 @@ TEST_F(RenderWidgetHostViewAuraTest, VisibleViewportTest) {
 
   EXPECT_EQ(60, view_->GetVisibleViewportSize().height());
 
-  const IPC::Message *message = sink_->GetFirstMessageMatching(
-      ViewMsg_Resize::ID);
+  const IPC::Message* message =
+      sink_->GetFirstMessageMatching(ViewMsg_SynchronizeVisualProperties::ID);
   ASSERT_TRUE(message != nullptr);
 
-  ViewMsg_Resize::Param params;
-  ViewMsg_Resize::Read(message, &params);
+  ViewMsg_SynchronizeVisualProperties::Param params;
+  ViewMsg_SynchronizeVisualProperties::Read(message, &params);
   EXPECT_EQ(60, std::get<0>(params).visible_viewport_size.height());
 }
 

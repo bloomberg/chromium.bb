@@ -18,8 +18,8 @@
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/renderer.mojom.h"
-#include "content/common/resize_params.h"
 #include "content/common/view_messages.h"
+#include "content/common/visual_properties.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/bind_interface_helpers.h"
@@ -561,17 +561,18 @@ void RenderViewTest::Reload(const GURL& url) {
 
 void RenderViewTest::Resize(gfx::Size new_size,
                             bool is_fullscreen_granted) {
-  ResizeParams params;
-  params.screen_info = ScreenInfo();
-  params.new_size = new_size;
-  params.compositor_viewport_pixel_size = new_size;
-  params.top_controls_height = 0.f;
-  params.browser_controls_shrink_blink_size = false;
-  params.is_fullscreen_granted = is_fullscreen_granted;
-  params.display_mode = blink::kWebDisplayModeBrowser;
-  params.content_source_id =
+  VisualProperties visual_properties;
+  visual_properties.screen_info = ScreenInfo();
+  visual_properties.new_size = new_size;
+  visual_properties.compositor_viewport_pixel_size = new_size;
+  visual_properties.top_controls_height = 0.f;
+  visual_properties.browser_controls_shrink_blink_size = false;
+  visual_properties.is_fullscreen_granted = is_fullscreen_granted;
+  visual_properties.display_mode = blink::kWebDisplayModeBrowser;
+  visual_properties.content_source_id =
       static_cast<RenderViewImpl*>(view_)->GetContentSourceId();
-  std::unique_ptr<IPC::Message> resize_message(new ViewMsg_Resize(0, params));
+  std::unique_ptr<IPC::Message> resize_message(
+      new ViewMsg_SynchronizeVisualProperties(0, visual_properties));
   OnMessageReceived(*resize_message);
 }
 
@@ -667,8 +668,8 @@ ContentRendererClient* RenderViewTest::CreateContentRendererClient() {
   return new ContentRendererClient;
 }
 
-std::unique_ptr<ResizeParams> RenderViewTest::InitialSizeParams() {
-  auto initial_size = std::make_unique<ResizeParams>();
+std::unique_ptr<VisualProperties> RenderViewTest::InitialSizeParams() {
+  auto initial_size = std::make_unique<VisualProperties>();
   // Ensure the view has some size so tests involving scrolling bounds work.
   initial_size->new_size = gfx::Size(400, 300);
   initial_size->visible_viewport_size = gfx::Size(400, 300);

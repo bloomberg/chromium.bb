@@ -54,7 +54,7 @@
 #include "content/common/fileapi/file_system_messages.h"
 #include "content/common/fileapi/webblob_messages.h"
 #include "content/common/frame_messages.h"
-#include "content/common/frame_resize_params.h"
+#include "content/common/frame_visual_properties.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -2543,8 +2543,8 @@ bool TestChildOrGuestAutoresize(bool is_guest,
   RenderWidgetHostImpl* guest_rwh_impl =
       static_cast<RenderWidgetHostImpl*>(guest_rwh);
 
-  scoped_refptr<UpdateResizeParamsMessageFilter> filter(
-      new UpdateResizeParamsMessageFilter());
+  scoped_refptr<SynchronizeVisualPropertiesMessageFilter> filter(
+      new SynchronizeVisualPropertiesMessageFilter());
 
   // Register the message filter for the guest or child. For guest, we must use
   // a special hook, as there are already message filters installed which will
@@ -2599,57 +2599,63 @@ bool TestChildOrGuestAutoresize(bool is_guest,
                              current_id.embed_token());
 }
 
-const uint32_t UpdateResizeParamsMessageFilter::kMessageClassesToFilter[2] = {
-    FrameMsgStart, BrowserPluginMsgStart};
+const uint32_t
+    SynchronizeVisualPropertiesMessageFilter::kMessageClassesToFilter[2] = {
+        FrameMsgStart, BrowserPluginMsgStart};
 
-UpdateResizeParamsMessageFilter::UpdateResizeParamsMessageFilter()
+SynchronizeVisualPropertiesMessageFilter::
+    SynchronizeVisualPropertiesMessageFilter()
     : content::BrowserMessageFilter(kMessageClassesToFilter,
                                     arraysize(kMessageClassesToFilter)),
       screen_space_rect_run_loop_(std::make_unique<base::RunLoop>()),
       screen_space_rect_received_(false) {}
 
-void UpdateResizeParamsMessageFilter::WaitForRect() {
+void SynchronizeVisualPropertiesMessageFilter::WaitForRect() {
   screen_space_rect_run_loop_->Run();
 }
 
-void UpdateResizeParamsMessageFilter::ResetRectRunLoop() {
+void SynchronizeVisualPropertiesMessageFilter::ResetRectRunLoop() {
   last_rect_ = gfx::Rect();
   screen_space_rect_run_loop_.reset(new base::RunLoop);
   screen_space_rect_received_ = false;
 }
 
-viz::FrameSinkId UpdateResizeParamsMessageFilter::GetOrWaitForId() {
+viz::FrameSinkId SynchronizeVisualPropertiesMessageFilter::GetOrWaitForId() {
   // No-op if already quit.
   frame_sink_id_run_loop_.Run();
   return frame_sink_id_;
 }
 
-viz::LocalSurfaceId UpdateResizeParamsMessageFilter::WaitForSurfaceId() {
+viz::LocalSurfaceId
+SynchronizeVisualPropertiesMessageFilter::WaitForSurfaceId() {
   surface_id_run_loop_.reset(new base::RunLoop);
   surface_id_run_loop_->Run();
   return last_surface_id_;
 }
 
-UpdateResizeParamsMessageFilter::~UpdateResizeParamsMessageFilter() {}
+SynchronizeVisualPropertiesMessageFilter::
+    ~SynchronizeVisualPropertiesMessageFilter() {}
 
-void UpdateResizeParamsMessageFilter::OnUpdateFrameHostResizeParams(
-    const viz::SurfaceId& surface_id,
-    const FrameResizeParams& resize_params) {
-  OnUpdateResizeParams(surface_id.local_surface_id(),
-                       surface_id.frame_sink_id(), resize_params);
+void SynchronizeVisualPropertiesMessageFilter::
+    OnSynchronizeFrameHostVisualProperties(
+        const viz::SurfaceId& surface_id,
+        const FrameVisualProperties& resize_params) {
+  OnSynchronizeVisualProperties(surface_id.local_surface_id(),
+                                surface_id.frame_sink_id(), resize_params);
 }
 
-void UpdateResizeParamsMessageFilter::OnUpdateBrowserPluginResizeParams(
-    int browser_plugin_guest_instance_id,
-    viz::LocalSurfaceId surface_id,
-    FrameResizeParams resize_params) {
-  OnUpdateResizeParams(surface_id, viz::FrameSinkId(), resize_params);
+void SynchronizeVisualPropertiesMessageFilter::
+    OnSynchronizeBrowserPluginVisualProperties(
+        int browser_plugin_guest_instance_id,
+        viz::LocalSurfaceId surface_id,
+        FrameVisualProperties resize_params) {
+  OnSynchronizeVisualProperties(surface_id, viz::FrameSinkId(), resize_params);
 }
 
-void UpdateResizeParamsMessageFilter::OnUpdateResizeParams(
+void SynchronizeVisualPropertiesMessageFilter::OnSynchronizeVisualProperties(
     const viz::LocalSurfaceId& local_surface_id,
     const viz::FrameSinkId& frame_sink_id,
-    const FrameResizeParams& resize_params) {
+    const FrameVisualProperties& resize_params) {
   gfx::Rect screen_space_rect_in_dip = resize_params.screen_space_rect;
   if (IsUseZoomForDSFEnabled()) {
     screen_space_rect_in_dip =
@@ -2663,14 +2669,16 @@ void UpdateResizeParamsMessageFilter::OnUpdateResizeParams(
   // Track each rect updates.
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&UpdateResizeParamsMessageFilter::OnUpdatedFrameRectOnUI,
-                     this, screen_space_rect_in_dip));
+      base::BindOnce(
+          &SynchronizeVisualPropertiesMessageFilter::OnUpdatedFrameRectOnUI,
+          this, screen_space_rect_in_dip));
 
   // Track each surface id update.
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&UpdateResizeParamsMessageFilter::OnUpdatedSurfaceIdOnUI,
-                     this, local_surface_id));
+      base::BindOnce(
+          &SynchronizeVisualPropertiesMessageFilter::OnUpdatedSurfaceIdOnUI,
+          this, local_surface_id));
 
   // Record the received value. We cannot check the current state of the child
   // frame, as it can only be processed on the UI thread, and we cannot block
@@ -2686,12 +2694,12 @@ void UpdateResizeParamsMessageFilter::OnUpdateResizeParams(
   // post there to exit the nesting.
   content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
       ->PostTask(FROM_HERE,
-                 base::BindOnce(
-                     &UpdateResizeParamsMessageFilter::OnUpdatedFrameSinkIdOnUI,
-                     this));
+                 base::BindOnce(&SynchronizeVisualPropertiesMessageFilter::
+                                    OnUpdatedFrameSinkIdOnUI,
+                                this));
 }
 
-void UpdateResizeParamsMessageFilter::OnUpdatedFrameRectOnUI(
+void SynchronizeVisualPropertiesMessageFilter::OnUpdatedFrameRectOnUI(
     const gfx::Rect& rect) {
   last_rect_ = rect;
   if (!screen_space_rect_received_) {
@@ -2702,11 +2710,11 @@ void UpdateResizeParamsMessageFilter::OnUpdatedFrameRectOnUI(
   }
 }
 
-void UpdateResizeParamsMessageFilter::OnUpdatedFrameSinkIdOnUI() {
+void SynchronizeVisualPropertiesMessageFilter::OnUpdatedFrameSinkIdOnUI() {
   frame_sink_id_run_loop_.Quit();
 }
 
-void UpdateResizeParamsMessageFilter::OnUpdatedSurfaceIdOnUI(
+void SynchronizeVisualPropertiesMessageFilter::OnUpdatedSurfaceIdOnUI(
     viz::LocalSurfaceId surface_id) {
   last_surface_id_ = surface_id;
   if (surface_id_run_loop_) {
@@ -2714,13 +2722,13 @@ void UpdateResizeParamsMessageFilter::OnUpdatedSurfaceIdOnUI(
   }
 }
 
-bool UpdateResizeParamsMessageFilter::OnMessageReceived(
+bool SynchronizeVisualPropertiesMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
-  IPC_BEGIN_MESSAGE_MAP(UpdateResizeParamsMessageFilter, message)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateResizeParams,
-                        OnUpdateFrameHostResizeParams)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateResizeParams,
-                        OnUpdateBrowserPluginResizeParams)
+  IPC_BEGIN_MESSAGE_MAP(SynchronizeVisualPropertiesMessageFilter, message)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_SynchronizeVisualProperties,
+                        OnSynchronizeFrameHostVisualProperties)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SynchronizeVisualProperties,
+                        OnSynchronizeBrowserPluginVisualProperties)
   IPC_END_MESSAGE_MAP()
 
   // We do not consume the message, so that we can verify the effects of it

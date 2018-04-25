@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_RESIZE_PARAMS_H_
-#define CONTENT_COMMON_RESIZE_PARAMS_H_
+#ifndef CONTENT_COMMON_VISUAL_PROPERTIES_H_
+#define CONTENT_COMMON_VISUAL_PROPERTIES_H_
 
 #include "base/optional.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
@@ -14,12 +14,12 @@
 
 namespace content {
 
-struct CONTENT_EXPORT ResizeParams {
-  ResizeParams();
-  ResizeParams(const ResizeParams& other);
-  ~ResizeParams();
+struct CONTENT_EXPORT VisualProperties {
+  VisualProperties();
+  VisualProperties(const VisualProperties& other);
+  ~VisualProperties();
 
-  ResizeParams& operator=(const ResizeParams& other);
+  VisualProperties& operator=(const VisualProperties& other);
 
   // Information about the screen (dpi, depth, etc..).
   ScreenInfo screen_info;
@@ -34,7 +34,7 @@ struct CONTENT_EXPORT ResizeParams {
   gfx::Size max_size_for_auto_resize;
 
   // This variable is increased after each auto-resize. If the
-  // renderer receives a ResizeParams with stale auto_resize_seqence_number,
+  // renderer receives a VisualProperties with stale auto_resize_seqence_number,
   // then the resize request is dropped.
   uint64_t auto_resize_sequence_number = 0u;
 
@@ -81,7 +81,7 @@ struct CONTENT_EXPORT ResizeParams {
   bool needs_resize_ack = false;
 
   // This variable is increased after each cross-document navigation. If the
-  // renderer receives a ResizeParams with stale content_source_id, it still
+  // renderer receives a VisualProperties with stale content_source_id, it still
   // performs the resize but doesn't use the given LocalSurfaceId.
   uint32_t content_source_id = 0u;
 
@@ -93,4 +93,4 @@ struct CONTENT_EXPORT ResizeParams {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_RESIZE_PARAMS_H_
+#endif  // CONTENT_COMMON_VISUAL_PROPERTIES_H_

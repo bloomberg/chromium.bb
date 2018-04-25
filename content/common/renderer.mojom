@@ -79,7 +79,7 @@ struct CreateViewParams {
   bool has_committed_real_load;
 
   // The initial renderer size.
-  ResizeParams initial_size;
+  VisualProperties initial_size;
 
   // Whether to enable auto-resize.
   bool enable_auto_resize;
