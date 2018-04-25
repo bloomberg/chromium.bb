@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/app_list/app_list_export.h"
@@ -200,6 +201,10 @@ APP_LIST_EXPORT const gfx::ShadowValues& IconStartShadows();
 APP_LIST_EXPORT const gfx::ShadowValues& IconEndShadows();
 
 APP_LIST_EXPORT const gfx::FontList& AppListAppTitleFont();
+
+// Returns the dimension at which a result's icon should be displayed.
+APP_LIST_EXPORT int GetPreferredIconDimension(
+    ash::SearchResultDisplayType display_type);
 
 }  // namespace app_list
 

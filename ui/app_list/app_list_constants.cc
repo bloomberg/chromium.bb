@@ -282,4 +282,21 @@ const gfx::FontList& AppListAppTitleFont() {
   return kAppListAppTitleFont;
 }
 
+int GetPreferredIconDimension(ash::SearchResultDisplayType display_type) {
+  switch (display_type) {
+    case ash::SearchResultDisplayType::kRecommendation:  // Falls through.
+    case ash::SearchResultDisplayType::kTile:
+      return kTileIconSize;
+    case ash::SearchResultDisplayType::kList:
+      return kListIconSize;
+    case ash::SearchResultDisplayType::kNone:
+    case ash::SearchResultDisplayType::kCard:
+      return 0;
+    case ash::SearchResultDisplayType::kLast:
+      break;
+  }
+  NOTREACHED();
+  return 0;
+}
+
 }  // namespace app_list
