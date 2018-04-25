@@ -2,7 +2,7 @@
 {% filter format_blink_cpp_source_code %}
 
 {% include 'copyright_block.txt' %}
-#include "{{this_include_header_name}}"
+#include "{{this_include_header_path}}"
 
 {% for filename in cpp_includes %}
 #include "{{filename}}"

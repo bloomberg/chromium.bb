@@ -45,7 +45,7 @@ from v8_globals import includes
 import v8_methods
 import v8_types
 import v8_utilities
-from v8_utilities import (binding_header_basename, context_enabled_feature_name,
+from v8_utilities import (binding_header_filename, context_enabled_feature_name,
                           cpp_name_or_partial, cpp_name,
                           has_extended_attribute_value,
                           runtime_enabled_feature_name,
@@ -209,7 +209,7 @@ def interface_context(interface, interfaces):
         parent_interface = None
         is_event_target = False
         # partial interface needs the definition of its original interface.
-        includes.add('bindings/core/v8/%s' % binding_header_basename(interface.name))
+        includes.add('bindings/core/v8/%s' % binding_header_filename(interface.name))
     else:
         parent_interface = interface.parent
         if parent_interface:

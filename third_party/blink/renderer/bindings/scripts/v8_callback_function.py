@@ -45,7 +45,7 @@ def callback_function_context(callback_function):
         'header_includes': sorted(CALLBACK_FUNCTION_H_INCLUDES),
         'idl_type': idl_type_str,
         'return_cpp_type': idl_type.cpp_type,
-        'this_include_header_name': to_snake_case('V8%s' % callback_function.name),
+        'this_include_header_path': to_snake_case('V8%s' % callback_function.name) + '.h',
     }
 
     if idl_type_str != 'void':

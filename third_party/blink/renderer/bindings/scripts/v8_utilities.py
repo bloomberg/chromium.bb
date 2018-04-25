@@ -148,22 +148,19 @@ def v8_class_name_or_partial(interface):
     return class_name
 
 
-def build_basename(name, prefix=None, ext=None):
+def build_basename(name, prefix=None):
     basename = to_snake_case(name)
     if prefix:
         basename = prefix + basename
-    if not ext:
-        return basename
-    return basename + ext
+    return basename
 
 
-def binding_header_basename(name):
-    """Returns a binding header basename including an extension for the
-    specified interface name.
+def binding_header_filename(name):
+    """Returns a binding header filename for the specified interface name.
 
     E.g. 'NodeList' -> 'v8_node_list.h'
     """
-    return build_basename(name, prefix='v8_', ext='.h')
+    return build_basename(name, prefix='v8_') + '.h'
 
 
 ################################################################################

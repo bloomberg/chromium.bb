@@ -192,13 +192,13 @@ class ExternalReferenceTableGenerator(object):
         interfaces = []
         for name in sorted(self._interface_contexts):
             interfaces.append(self._interface_contexts[name])
-        header_name = 'v8_context_snapshot_external_references.h'
+        header_path = 'bindings/modules/v8/v8_context_snapshot_external_references.h'
         include_files = list(self._include_files)
         return {
             'class': 'V8ContextSnapshotExternalReferences',
             'interfaces': interfaces,
             'include_files': sorted(include_files),
-            'this_include_header_name': header_name,
+            'this_include_header_path': header_path,
             'code_generator': os.path.basename(__file__),
             'jinja_template_filename': TEMPLATE_FILE
         }

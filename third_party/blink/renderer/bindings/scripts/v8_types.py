@@ -50,7 +50,7 @@ from idl_types import IdlUnionType
 from utilities import to_snake_case
 import v8_attributes  # for IdlType.constructor_type_name
 from v8_globals import includes
-from v8_utilities import binding_header_basename, extended_attribute_value_contains
+from v8_utilities import binding_header_filename, extended_attribute_value_contains
 
 
 ################################################################################
@@ -445,7 +445,7 @@ def includes_for_type(idl_type, extended_attributes=None):
         return INCLUDES_FOR_TYPE[base_idl_type]
     if base_idl_type in TYPED_ARRAY_TYPES:
         return INCLUDES_FOR_TYPE['ArrayBufferView'].union(
-            set(['bindings/%s/v8/%s' % (component_dir[base_idl_type], binding_header_basename(base_idl_type))])
+            set(['bindings/%s/v8/%s' % (component_dir[base_idl_type], binding_header_filename(base_idl_type))])
         )
     if idl_type.is_basic_type:
         return set(['bindings/core/v8/idl_types.h',
@@ -464,11 +464,11 @@ def includes_for_type(idl_type, extended_attributes=None):
         return set()
     if idl_type.is_callback_function:
         component = IdlType.callback_functions[base_idl_type]['component_dir']
-        return set(['bindings/%s/v8/%s' % (component, binding_header_basename(base_idl_type))])
+        return set(['bindings/%s/v8/%s' % (component, binding_header_filename(base_idl_type))])
     if base_idl_type not in component_dir:
         return set()
     return set(['bindings/%s/v8/%s' % (component_dir[base_idl_type],
-                                       binding_header_basename(base_idl_type))])
+                                       binding_header_filename(base_idl_type))])
 
 IdlType.includes_for_type = includes_for_type
 

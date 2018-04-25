@@ -152,8 +152,8 @@ class CodeGeneratorV8Base(CodeGeneratorBase):
         # This should be implemented in subclasses.
         raise NotImplementedError()
 
-    def get_output_basename(self, definition_name, ext, prefix=None):
-        return build_basename(definition_name, prefix=prefix, ext=ext)
+    def get_output_filename(self, definition_name, ext, prefix=None):
+        return build_basename(definition_name, prefix=prefix) + ext
 
 
 class CodeGeneratorV8(CodeGeneratorV8Base):
@@ -161,9 +161,9 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
         CodeGeneratorV8Base.__init__(self, info_provider, cache_dir, output_dir)
 
     def output_paths(self, definition_name):
-        header_path = posixpath.join(self.output_dir, self.get_output_basename(
+        header_path = posixpath.join(self.output_dir, self.get_output_filename(
             definition_name, '.h', prefix='v8_'))
-        cpp_path = posixpath.join(self.output_dir, self.get_output_basename(
+        cpp_path = posixpath.join(self.output_dir, self.get_output_filename(
             definition_name, '.cc', prefix='v8_'))
         return header_path, cpp_path
 
@@ -225,7 +225,7 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
         template_context['header_includes'].update(
             interface_info.get('additional_header_includes', []))
         header_path, cpp_path = self.output_paths(interface_name)
-        template_context['this_include_header_name'] = posixpath.basename(header_path)
+        template_context['this_include_header_path'] = posixpath.basename(header_path)
         header_template = self.jinja_env.get_template(header_template_filename)
         cpp_template = self.jinja_env.get_template(cpp_template_filename)
         header_text, cpp_text = self.render_template(
@@ -252,7 +252,7 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
             template_context['header_includes'].add(self.info_provider.include_path_for_export)
             template_context['exported'] = self.info_provider.specifier_for_export
         header_path, cpp_path = self.output_paths(dictionary_name)
-        template_context['this_include_header_name'] = posixpath.basename(header_path)
+        template_context['this_include_header_path'] = posixpath.basename(header_path)
         header_text, cpp_text = self.render_template(
             include_paths, header_template, cpp_template, template_context)
         return (
@@ -269,9 +269,9 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorV8Base):
         output_dir = posixpath.join(self.output_dir,
                                     interface_info['relative_dir'])
         header_path = posixpath.join(output_dir,
-                                     self.get_output_basename(definition_name, '.h'))
+                                     self.get_output_filename(definition_name, '.h'))
         cpp_path = posixpath.join(output_dir,
-                                  self.get_output_basename(definition_name, '.cc'))
+                                  self.get_output_filename(definition_name, '.cc'))
         return header_path, cpp_path
 
     def generate_code_internal(self, definitions, definition_name):
@@ -292,7 +292,7 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorV8Base):
             interface_info.get('additional_header_includes', []))
         header_path, cpp_path = self.output_paths(
             cpp_name(dictionary), interface_info)
-        template_context['this_include_header_name'] = posixpath.basename(header_path)
+        template_context['this_include_header_path'] = posixpath.basename(header_path)
         header_text, cpp_text = self.render_template(
             include_paths, header_template, cpp_template, template_context)
         return (
@@ -333,7 +333,7 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
         template_context['code_generator'] = self.generator_name
         template_context['exported'] = self.info_provider.specifier_for_export
         snake_base_name = to_snake_case(shorten_union_name(union_type))
-        template_context['this_include_header_name'] = snake_base_name
+        template_context['this_include_header_path'] = snake_base_name + '.h'
         header_text = render_template(header_template, template_context)
         cpp_text = render_template(cpp_template, template_context)
         header_path = posixpath.join(self.output_dir, '%s.h' % snake_base_name)

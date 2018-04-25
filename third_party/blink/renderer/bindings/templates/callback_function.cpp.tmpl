@@ -3,7 +3,7 @@
 
 {% include 'copyright_block.txt' %}
 
-#include "{{this_include_header_name}}.h"
+#include "{{this_include_header_path}}"
 
 {% for filename in cpp_includes %}
 #include "{{filename}}"
