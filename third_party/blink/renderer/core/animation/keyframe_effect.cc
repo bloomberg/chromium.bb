@@ -319,12 +319,12 @@ EffectModel::CompositeOperation KeyframeEffect::CompositeInternal() const {
 
 void KeyframeEffect::ApplyEffects() {
   DCHECK(IsInEffect());
-  DCHECK(GetAnimation());
   if (!target_ || !model_->HasFrames())
     return;
 
-  if (HasIncompatibleStyle())
+  if (GetAnimation() && HasIncompatibleStyle()) {
     GetAnimation()->CancelAnimationOnCompositor();
+  }
 
   double iteration = CurrentIteration();
   DCHECK_GE(iteration, 0);
@@ -358,12 +358,12 @@ void KeyframeEffect::ApplyEffects() {
 }
 
 void KeyframeEffect::ClearEffects() {
-  DCHECK(GetAnimation());
   DCHECK(sampled_effect_);
 
   sampled_effect_->Clear();
   sampled_effect_ = nullptr;
-  GetAnimation()->RestartAnimationOnCompositor();
+  if (GetAnimation())
+    GetAnimation()->RestartAnimationOnCompositor();
   target_->SetNeedsAnimationStyleRecalc();
   if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() &&
       target_->IsSVGElement())
@@ -374,7 +374,7 @@ void KeyframeEffect::ClearEffects() {
 void KeyframeEffect::UpdateChildrenAndEffects() const {
   if (!model_->HasFrames())
     return;
-  DCHECK(GetAnimation());
+  DCHECK(owner_);
   if (IsInEffect() && !owner_->EffectSuppressed())
     const_cast<KeyframeEffect*>(this)->ApplyEffects();
   else if (sampled_effect_)

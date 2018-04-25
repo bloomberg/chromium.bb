@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/document_timeline_or_scroll_timeline.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
+#include "third_party/blink/renderer/core/animation/animation_effect_owner.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/worklet_animation_base.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -32,8 +33,10 @@ class AnimationEffectOrAnimationEffectSequence;
 // Spec: https://wicg.github.io/animation-worklet/#worklet-animation-desc
 class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
                                         public CompositorAnimationClient,
-                                        public CompositorAnimationDelegate {
+                                        public CompositorAnimationDelegate,
+                                        public AnimationEffectOwner {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(WorkletAnimation);
   USING_PRE_FINALIZER(WorkletAnimation, Dispose);
 
  public:
@@ -50,7 +53,26 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   void play();
   void cancel();
 
+  // AnimationEffectOwner implementation:
+  unsigned SequenceNumber() const override { return sequence_number_; }
+  bool Playing() const override;
+  // Always allow dispatching events for worklet animations. This is only ever
+  // relevant to CSS animations which means it does not have any material effect
+  // on worklet animations either way.
+  bool IsEventDispatchAllowed() const override { return true; }
+  // Effect supression is used by devtool's animation inspection machinery which
+  // is not currently supported by worklet animations.
+  bool EffectSuppressed() const override { return false; }
+
+  // TODO(crbug.com/833846): We should update compositor animation when this
+  // happens.
+  void SpecifiedTimingChanged() override {}
+  void UpdateIfNecessary() override;
+
+  Animation* GetAnimation() override { return nullptr; }
+
   // WorkletAnimationBase implementation.
+  void Update(TimingUpdateReason) override;
   bool StartOnCompositor(String* failure_message) override;
 
   // CompositorAnimationClient implementation.
@@ -83,8 +105,14 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
                    scoped_refptr<SerializedScriptValue>);
   void DestroyCompositorAnimation();
 
+  AnimationTimeline& GetAnimationTimeline();
+
+  unsigned sequence_number_;
+
   const String animator_name_;
   Animation::AnimationPlayState play_state_;
+  // Start time in ms.
+  WTF::Optional<double> start_time_;
 
   Member<Document> document_;
 

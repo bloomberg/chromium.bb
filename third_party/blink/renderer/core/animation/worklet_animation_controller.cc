@@ -42,7 +42,7 @@ void WorkletAnimationController::DetachAnimation(
     compositor_animations_.erase(&animation);
 }
 
-void WorkletAnimationController::Update() {
+void WorkletAnimationController::UpdateAnimationCompositingStates() {
   DCHECK(IsMainThread());
   HeapHashSet<Member<WorkletAnimationBase>> animations;
   animations.swap(pending_animations_);
@@ -54,6 +54,20 @@ void WorkletAnimationController::Update() {
       document_->AddConsoleMessage(ConsoleMessage::Create(
           kOtherMessageSource, kWarningMessageLevel, failure_message));
     }
+  }
+}
+
+void WorkletAnimationController::UpdateAnimationTimings(
+    TimingUpdateReason reason) {
+  DCHECK(IsMainThread());
+  // Worklet animations inherited time values are only ever updated once per
+  // animation frame. This means the inherited time does not change outside of
+  // the frame so return early in the on-demand case.
+  if (reason == kTimingUpdateOnDemand)
+    return;
+
+  for (const auto& animation : compositor_animations_) {
+    animation->Update(reason);
   }
 }
 

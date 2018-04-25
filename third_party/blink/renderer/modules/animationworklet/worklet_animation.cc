@@ -152,6 +152,13 @@ std::unique_ptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
   return std::make_unique<CompositorScrollTimeline>(element_id, orientation,
                                                     time_range.GetAsDouble());
 }
+
+unsigned NextSequenceNumber() {
+  // TODO(majidvp): This should actually come from the same source as other
+  // animation so that they have the correct ordering.
+  static unsigned next = 0;
+  return ++next;
+}
 }  // namespace
 
 WorkletAnimation* WorkletAnimation::Create(
@@ -194,7 +201,8 @@ WorkletAnimation::WorkletAnimation(
     const HeapVector<Member<KeyframeEffect>>& effects,
     DocumentTimelineOrScrollTimeline timeline,
     scoped_refptr<SerializedScriptValue> options)
-    : animator_name_(animator_name),
+    : sequence_number_(NextSequenceNumber()),
+      animator_name_(animator_name),
       play_state_(Animation::kIdle),
       document_(document),
       effects_(effects),
@@ -203,6 +211,9 @@ WorkletAnimation::WorkletAnimation(
   DCHECK(IsMainThread());
   DCHECK(Platform::Current()->IsThreadedAnimationEnabled());
   DCHECK(Platform::Current()->CompositorSupport());
+
+  AnimationEffect* target_effect = effects_.at(0);
+  target_effect->Attach(this);
 }
 
 String WorkletAnimation::playState() {
@@ -250,11 +261,52 @@ void WorkletAnimation::cancel() {
   target->SetNeedsAnimationStyleRecalc();
 }
 
+bool WorkletAnimation::Playing() const {
+  return play_state_ == Animation::kRunning;
+}
+
+void WorkletAnimation::UpdateIfNecessary() {
+  // TODO(crbug.com/833846): This is updating more often than necessary. This
+  // gets fixed once WorkletAnimation becomes a subclass of Animation.
+  Update(kTimingUpdateOnDemand);
+}
+
+void WorkletAnimation::Update(TimingUpdateReason reason) {
+  if (play_state_ != Animation::kRunning)
+    return;
+
+  if (!start_time_)
+    return;
+
+  // TODO(crbug.com/756359): For now we use 0 as inherited time in but we will
+  // need to get the inherited time from worklet context.
+  double inherited_time_seconds = 0;
+
+  KeyframeEffect* target_effect = effects_.at(0);
+  target_effect->UpdateInheritedTime(inherited_time_seconds, reason);
+}
+
+AnimationTimeline& WorkletAnimation::GetAnimationTimeline() {
+  DCHECK(!timeline_.IsNull());
+
+  if (timeline_.IsScrollTimeline())
+    return *timeline_.GetAsScrollTimeline();
+
+  return *timeline_.GetAsDocumentTimeline();
+}
+
 bool WorkletAnimation::StartOnCompositor(String* failure_message) {
   DCHECK(IsMainThread());
   KeyframeEffect* target_effect = effects_.at(0);
   Element& target = *target_effect->target();
 
+  // TODO(crbug.com/836393): This should not be possible but it is currently
+  // happening and needs to be investigated/fixed.
+  if (!target.GetComputedStyle()) {
+    if (failure_message)
+      *failure_message = "The target element does not have style.";
+    return false;
+  }
   // CheckCanStartAnimationOnCompositor requires that the property-specific
   // keyframe groups have been created. To ensure this we manually snapshot the
   // frames in the target effect.
@@ -311,6 +363,13 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
                                              playback_rate,
                                              compositor_animation_.get());
   play_state_ = Animation::kRunning;
+
+  AnimationTimeline& timeline = GetAnimationTimeline();
+  bool is_null;
+  double time = timeline.currentTime(is_null);
+  if (!is_null)
+    start_time_ = time;
+
   return true;
 }
 
