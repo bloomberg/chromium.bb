@@ -521,28 +521,29 @@ void TextIteratorTextNodeHandler::HandleTextNodeFirstLetter(
   text_box_ = first_letter_text_->FirstTextBox();
 }
 
-bool TextIteratorTextNodeHandler::FixLeadingWhiteSpaceForReplacedElement(
-    const Node* parent) {
+bool TextIteratorTextNodeHandler::ShouldFixLeadingWhiteSpaceForReplacedElement()
+    const {
   // This is a hacky way for white space fixup in legacy layout. With LayoutNG,
   // we can get rid of this function.
   if (uses_layout_ng_)
     return false;
-
-  if (behavior_.CollapseTrailingSpace()) {
-    if (text_node_) {
-      String str = text_node_->GetLayoutObject()->GetText();
-      if (last_text_node_ended_with_collapsed_space_ && offset_ > 0 &&
-          str[offset_ - 1] == ' ') {
-        SpliceBuffer(kSpaceCharacter, parent, text_node_, 1, 1);
-        return true;
-      }
-    }
-  } else if (last_text_node_ended_with_collapsed_space_) {
-    SpliceBuffer(kSpaceCharacter, parent, text_node_, 1, 1);
+  if (!last_text_node_ended_with_collapsed_space_)
+    return false;
+  if (!behavior_.CollapseTrailingSpace())
     return true;
-  }
+  if (!text_node_)
+    return false;
+  const String str = text_node_->GetLayoutObject()->GetText();
+  return offset_ > 0 && str[offset_ - 1] == ' ';
+}
 
-  return false;
+bool TextIteratorTextNodeHandler::FixLeadingWhiteSpaceForReplacedElement(
+    const Node* parent) {
+  if (!ShouldFixLeadingWhiteSpaceForReplacedElement())
+    return false;
+  text_state_.SpliceBuffer(kSpaceCharacter, parent, text_node_, 1, 1);
+  ResetCollapsedWhiteSpaceFixup();
+  return true;
 }
 
 void TextIteratorTextNodeHandler::ResetCollapsedWhiteSpaceFixup() {
