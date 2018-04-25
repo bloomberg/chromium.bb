@@ -159,6 +159,8 @@ base::LazyInstance<TimeClamper>::Leaky g_time_clamper =
 base::PageAccessibilityConfiguration GetPageConfig(
     v8::PageAllocator::Permission permission) {
   switch (permission) {
+    case v8::PageAllocator::Permission::kRead:
+      return base::PageRead;
     case v8::PageAllocator::Permission::kReadWrite:
       return base::PageReadWrite;
     case v8::PageAllocator::Permission::kReadWriteExecute:

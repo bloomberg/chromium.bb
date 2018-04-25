@@ -41,6 +41,7 @@ static const size_t kSystemPageBaseMask = ~kSystemPageOffsetMask;
 
 enum PageAccessibilityConfiguration {
   PageInaccessible,
+  PageRead,
   PageReadWrite,
   PageReadExecute,
   // This flag is deprecated and will go away soon.

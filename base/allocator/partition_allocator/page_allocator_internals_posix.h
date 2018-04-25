@@ -29,6 +29,8 @@ std::atomic<int32_t> s_allocPageErrorCode{0};
 
 int GetAccessFlags(PageAccessibilityConfiguration accessibility) {
   switch (accessibility) {
+    case PageRead:
+      return PROT_READ;
     case PageReadWrite:
       return PROT_READ | PROT_WRITE;
     case PageReadExecute:
