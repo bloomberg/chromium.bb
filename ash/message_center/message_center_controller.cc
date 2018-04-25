@@ -201,6 +201,9 @@ void MessageCenterController::GetActiveNotifications(
   notification_vector.reserve(notification_set.size());
   for (auto* notification : notification_set) {
     notification_vector.emplace_back(*notification);
+    // The client doesn't know how to de-serialize vector icons,
+    // nor does it need to.
+    notification_vector.back().set_vector_small_image(gfx::kNoneIcon);
   }
   std::move(callback).Run(notification_vector);
 }
