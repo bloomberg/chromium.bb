@@ -103,9 +103,8 @@ class GpuInProcessThreadHolder : public base::Thread {
   const scoped_refptr<InProcessCommandBuffer::Service>& GetGpuThreadService() {
     if (!gpu_thread_service_) {
       gpu_thread_service_ = base::MakeRefCounted<GpuInProcessThreadService>(
-          true /* use_virtualized_gl_context */, task_runner(),
-          sync_point_manager_.get(), nullptr, nullptr, gpu_feature_info_,
-          GpuPreferences());
+          task_runner(), sync_point_manager_.get(), nullptr, nullptr,
+          gpu_feature_info_, GpuPreferences());
     }
     return gpu_thread_service_;
   }

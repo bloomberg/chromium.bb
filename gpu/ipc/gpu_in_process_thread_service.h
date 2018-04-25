@@ -21,7 +21,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
       public base::RefCountedThreadSafe<GpuInProcessThreadService> {
  public:
   GpuInProcessThreadService(
-      bool force_virtualized_gl_context,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       gpu::SyncPointManager* sync_point_manager,
       gpu::MailboxManager* mailbox_manager,
@@ -42,8 +41,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
   friend class base::RefCountedThreadSafe<GpuInProcessThreadService>;
 
   ~GpuInProcessThreadService() override;
-
-  const bool force_virtualized_gl_context_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
