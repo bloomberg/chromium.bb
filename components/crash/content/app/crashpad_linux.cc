@@ -50,7 +50,7 @@ class SandboxedHandler {
   SandboxedHandler() = default;
   ~SandboxedHandler() = delete;
 
-  int ConnectToHandler(base::ScopedFD* connection) {
+  int ConnectToHandler(int signo, base::ScopedFD* connection) {
     int fds[2];
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) != 0) {
       return errno;
@@ -58,11 +58,15 @@ class SandboxedHandler {
     base::ScopedFD local_connection(fds[0]);
     base::ScopedFD handlers_socket(fds[1]);
 
+    iovec iov;
+    iov.iov_base = &signo;
+    iov.iov_len = sizeof(signo);
+
     msghdr msg;
     msg.msg_name = nullptr;
     msg.msg_namelen = 0;
-    msg.msg_iov = nullptr;
-    msg.msg_iovlen = 0;
+    msg.msg_iov = &iov;
+    msg.msg_iovlen = 1;
 
     char cmsg_buf[CMSG_SPACE(sizeof(int))];
     msg.msg_control = cmsg_buf;
@@ -86,7 +90,7 @@ class SandboxedHandler {
     SandboxedHandler* state = Get();
 
     base::ScopedFD connection;
-    if (state->ConnectToHandler(&connection) == 0) {
+    if (state->ConnectToHandler(signo, &connection) == 0) {
       ExceptionInformation exception_information;
       exception_information.siginfo_address =
           FromPointerCast<decltype(exception_information.siginfo_address)>(
