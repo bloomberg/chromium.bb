@@ -113,6 +113,9 @@ public class CastWebContentsFragment extends Fragment {
     public void onPause() {
         Log.d(TAG, "onPause");
         super.onPause();
+        // Set mFragmentRootView to invisible to avoid dismiss fragment animation -> activity back
+        // ground -> one frame of cast app UI -> acivity back ground
+        mFragmentRootView.setVisibility(View.INVISIBLE);
         mResumedState.reset();
     }
 
@@ -120,7 +123,17 @@ public class CastWebContentsFragment extends Fragment {
     public void onResume() {
         Log.d(TAG, "onResume");
         super.onResume();
+        // Delayed set mFragmentRootView to visible to avoid activity UI -> one frame of fragment
+        // background -> cast app rendered UI
+        mFragmentRootView.setVisibility(View.INVISIBLE);
+        mFragmentRootView.postDelayed(this ::setToVisible, 150);
         mResumedState.set(Unit.unit());
+    }
+
+    private void setToVisible() {
+        if (isResumed()) {
+            mFragmentRootView.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
