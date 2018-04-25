@@ -1195,7 +1195,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // RenderFrameHost owns its RenderViewHost.
   RenderWidgetHostImpl* render_widget_host_;
 
-  int routing_id_;
+  const int routing_id_;
 
   // Boolean indicating whether this RenderFrameHost is being actively used or
   // is waiting for FrameHostMsg_SwapOut_ACK and thus pending deletion.
