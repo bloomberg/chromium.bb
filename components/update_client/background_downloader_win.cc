@@ -719,9 +719,11 @@ HRESULT BackgroundDownloader::QueueBitsJob(const GURL& url,
 HRESULT BackgroundDownloader::CreateOrOpenJob(const GURL& url,
                                               ComPtr<IBackgroundCopyJob>* job) {
   std::vector<ComPtr<IBackgroundCopyJob>> jobs;
-  HRESULT hr =
-      FindBitsJobIf(std::bind2nd(std::ptr_fun(JobFileUrlEqualPredicate), url),
-                    bits_manager_, &jobs);
+  HRESULT hr = FindBitsJobIf(
+      [&url](ComPtr<IBackgroundCopyJob> job) {
+        return JobFileUrlEqualPredicate(job, url);
+      },
+      bits_manager_, &jobs);
   if (SUCCEEDED(hr) && !jobs.empty()) {
     *job = jobs.front();
     return S_FALSE;
@@ -899,9 +901,11 @@ void BackgroundDownloader::CleanupStaleJobs() {
   last_sweep = current_time;
 
   std::vector<ComPtr<IBackgroundCopyJob>> jobs;
-  FindBitsJobIf(std::bind2nd(std::ptr_fun(JobCreationOlderThanDaysPredicate),
-                             kPurgeStaleJobsAfterDays),
-                bits_manager_, &jobs);
+  FindBitsJobIf(
+      [](ComPtr<IBackgroundCopyJob> job) {
+        return JobCreationOlderThanDaysPredicate(job, kPurgeStaleJobsAfterDays);
+      },
+      bits_manager_, &jobs);
 
   for (const auto& job : jobs)
     CleanupJob(job);
