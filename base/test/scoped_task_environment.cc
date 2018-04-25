@@ -170,6 +170,13 @@ ScopedTaskEnvironment::GetMainThreadTaskRunner() {
   return mock_time_task_runner_;
 }
 
+bool ScopedTaskEnvironment::MainThreadHasPendingTask() const {
+  if (message_loop_)
+    return !message_loop_->IsIdleForTesting();
+  DCHECK(mock_time_task_runner_);
+  return mock_time_task_runner_->HasPendingTask();
+}
+
 void ScopedTaskEnvironment::RunUntilIdle() {
   // TODO(gab): This can be heavily simplified to essentially:
   //     bool HasMainThreadTasks() {
@@ -268,11 +275,6 @@ const TickClock* ScopedTaskEnvironment::GetMockTickClock() {
 std::unique_ptr<TickClock> ScopedTaskEnvironment::DeprecatedGetMockTickClock() {
   DCHECK(mock_time_task_runner_);
   return mock_time_task_runner_->DeprecatedGetMockTickClock();
-}
-
-bool ScopedTaskEnvironment::MainThreadHasPendingTask() const {
-  DCHECK(mock_time_task_runner_);
-  return mock_time_task_runner_->HasPendingTask();
 }
 
 size_t ScopedTaskEnvironment::GetPendingMainThreadTaskCount() const {

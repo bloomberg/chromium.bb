@@ -98,9 +98,11 @@ class ScopedTaskEnvironment {
   // TaskScheduler and the (Thread|Sequenced)TaskRunnerHandle.
   ~ScopedTaskEnvironment();
 
-  // Only valid for instances with a MOCK_TIME MainThreadType.
   // Returns a TaskRunner that schedules tasks on the main thread.
   scoped_refptr<base::SingleThreadTaskRunner> GetMainThreadTaskRunner();
+
+  // Returns whether the main thread's TaskRunner has pending tasks.
+  bool MainThreadHasPendingTask() const;
 
   // Runs tasks until both the (Thread|Sequenced)TaskRunnerHandle and the
   // TaskScheduler's non-delayed queues are empty.
@@ -122,10 +124,6 @@ class ScopedTaskEnvironment {
   // TickClock whose time is updated by FastForward(By|UntilNoTasksRemain).
   const TickClock* GetMockTickClock();
   std::unique_ptr<TickClock> DeprecatedGetMockTickClock();
-
-  // Only valid for instances with a MOCK_TIME MainThreadType.
-  // Returns whether the main thread's TaskRunner has pending tasks.
-  bool MainThreadHasPendingTask() const;
 
   // Only valid for instances with a MOCK_TIME MainThreadType.
   // Returns the number of pending tasks of the main thread's TaskRunner.
