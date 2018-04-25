@@ -43,8 +43,8 @@ class ScriptingPermissionsModifier {
   static bool DefaultAllowedOnAllUrls();
 
   // Sets whether the extension should be allowed to execute on all urls without
-  // explicit user consent. Used when the FeatureSwitch::scripts_require_action
-  // switch is enabled.
+  // explicit user consent. Used when the features::kRuntimeHostPermissions
+  // feature is enabled.
   void SetAllowedOnAllUrls(bool allowed);
 
   // Returns whether the extension is allowed to execute scripts on all urls
@@ -55,14 +55,14 @@ class ScriptingPermissionsModifier {
   // ability to execute scripts without consent.
   bool HasSetAllowedOnAllUrls() const;
 
-  // Returns true if the --scripts-require-action flag would possibly affect
-  // the given extension and |permissions|. We pass in the |permissions|
-  // explicitly, as we may need to check with permissions other than the ones
-  // that are currently on the extension's PermissionsData.
+  // Returns true if the features::kRuntimeHostPermissions feature would
+  // possibly affect the given extension and |permissions|. We pass in the
+  // |permissions| explicitly, as we may need to check with permissions other
+  // than the ones that are currently on the extension's PermissionsData.
   bool CanAffectExtension(const PermissionSet& permissions) const;
 
-  // Returns true if the extension has been affected by the scripts-require-
-  // action flag.
+  // Returns true if the extension has been affected by the
+  // features::kRuntimeHostPermissions feature.
   bool HasAffectedExtension() const;
 
   // Grants the extension permission to run on the origin of |url|.

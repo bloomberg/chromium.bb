@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
@@ -53,8 +54,8 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/test_extension_dir.h"
@@ -358,8 +359,8 @@ void DeveloperPrivateApiUnitTest::TearDown() {
 // Test developerPrivate.updateExtensionConfiguration.
 TEST_F(DeveloperPrivateApiUnitTest,
        DeveloperPrivateUpdateExtensionConfiguration) {
-  FeatureSwitch::ScopedOverride scripts_require_action(
-      FeatureSwitch::scripts_require_action(), true);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
   // Sadly, we need a "real" directory here, because toggling prefs causes
   // a reload (which needs a path).
   const Extension* extension = LoadUnpackedExtension();

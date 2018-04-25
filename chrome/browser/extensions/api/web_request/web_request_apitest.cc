@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -58,6 +59,7 @@
 #include "extensions/browser/blocked_action_type.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -810,11 +812,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, HostedAppRequest) {
   EXPECT_TRUE(listener2.WaitUntilSatisfied());
 }
 
-// Tests that webRequest works with the --scripts-require-action feature.
+// Tests that webRequest works with features::kRuntimeHostPermissions.
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestWithWithheldPermissions) {
-  FeatureSwitch::ScopedOverride enable_scripts_require_action(
-      FeatureSwitch::scripts_require_action(), true);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
 
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1559,8 +1561,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
 // specific permission shouldn't bypass our policy.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
                        WebRequestProtectedByPolicy) {
-  FeatureSwitch::ScopedOverride enable_scripts_require_action(
-      FeatureSwitch::scripts_require_action(), true);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
 
   // Host protected by policy.
   const std::string protected_domain = "example.com";

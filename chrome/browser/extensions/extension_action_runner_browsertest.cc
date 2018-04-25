@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
@@ -24,8 +25,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
-#include "extensions/common/feature_switch.h"
-#include "extensions/common/switches.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -102,15 +102,13 @@ class ExtensionActionRunnerBrowserTest : public ExtensionBrowserTest {
  private:
   std::vector<std::unique_ptr<TestExtensionDir>> test_extension_dirs_;
   std::vector<const Extension*> extensions_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 void ExtensionActionRunnerBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
-  // We append the actual switch to the commandline because it needs to be
-  // passed over to the renderer, which a FeatureSwitch::ScopedOverride will
-  // not do.
-  command_line->AppendSwitch(switches::kEnableScriptsRequireAction);
+  scoped_feature_list_.InitAndEnableFeature(features::kRuntimeHostPermissions);
 }
 
 void ExtensionActionRunnerBrowserTest::TearDownOnMainThread() {

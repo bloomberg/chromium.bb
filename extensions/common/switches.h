@@ -26,8 +26,6 @@ extern const char kExtensionsOnChromeURLs[];
 extern const char kForceDevModeHighlighting[];
 extern const char kLoadApps[];
 extern const char kLoadExtension[];
-extern const char kScriptsRequireAction[];
-extern const char kEnableScriptsRequireAction[];
 #if defined(CHROMIUM_BUILD)
 extern const char kPromptForExternalExtensions[];
 #endif

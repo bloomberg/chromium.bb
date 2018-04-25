@@ -7,6 +7,7 @@
 #include <map>
 #include <utility>
 
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -25,7 +26,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/feature_switch.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/user_script.h"
 #include "extensions/common/value_builder.h"
@@ -78,12 +79,12 @@ class ExtensionActionRunnerUnitTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override;
 
-  // Since ExtensionActionRunner's behavior is behind a flag, override the
-  // feature switch.
-  FeatureSwitch::ScopedOverride feature_override_;
+  // Used to enable features::kRuntimeHostPermissions for ExtensionActionRunner
+  // to take effect.
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   // The associated ExtensionActionRunner.
-  ExtensionActionRunner* extension_action_runner_;
+  ExtensionActionRunner* extension_action_runner_ = nullptr;
 
   // The map of observed executions, keyed by extension id.
   std::map<std::string, int> extension_executions_;
@@ -93,12 +94,8 @@ class ExtensionActionRunnerUnitTest : public ChromeRenderViewHostTestHarness {
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionRunnerUnitTest);
 };
 
-ExtensionActionRunnerUnitTest::ExtensionActionRunnerUnitTest()
-    : feature_override_(FeatureSwitch::scripts_require_action(),
-                        FeatureSwitch::OVERRIDE_ENABLED),
-      extension_action_runner_(nullptr) {}
-
-ExtensionActionRunnerUnitTest::~ExtensionActionRunnerUnitTest() {}
+ExtensionActionRunnerUnitTest::ExtensionActionRunnerUnitTest() = default;
+ExtensionActionRunnerUnitTest::~ExtensionActionRunnerUnitTest() = default;
 
 const Extension* ExtensionActionRunnerUnitTest::AddExtension() {
   const std::string kId = crx_file::id_util::GenerateId("all_hosts_extension");
@@ -174,6 +171,8 @@ void ExtensionActionRunnerUnitTest::IncrementExecutionCount(
 
 void ExtensionActionRunnerUnitTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
+
+  scoped_feature_list_.InitAndEnableFeature(features::kRuntimeHostPermissions);
 
   // Skip syncing for testing purposes.
   ExtensionSyncServiceFactory::GetInstance()->SetTestingFactory(profile(),

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "chrome/browser/extensions/extension_service_test_with_install.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -24,7 +25,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/feature_switch.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
@@ -129,9 +130,10 @@ TEST_F(ExtensionInstallPromptUnitTest, PromptShowsPermissionWarnings) {
 }
 
 TEST_F(ExtensionInstallPromptUnitTest, PromptShowsWithheldPermissions) {
-  // Enable consent flag so that <all_hosts> permissions get withheld.
-  FeatureSwitch::ScopedOverride enable_scripts_switch(
-      FeatureSwitch::scripts_require_action(), true);
+  // Enable features::kRuntimeHostPermissions so that <all_hosts> permissions
+  // get withheld.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()

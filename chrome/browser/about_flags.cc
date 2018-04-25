@@ -153,6 +153,7 @@
 #endif  // ENABLE_APP_LIST
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/common/extension_features.h"
 #include "extensions/common/switches.h"
 #endif  // ENABLE_EXTENSIONS
 
@@ -1953,8 +1954,8 @@ const FeatureEntry kFeatureEntries[] = {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     {"extension-active-script-permission",
      flag_descriptions::kUserConsentForExtensionScriptsName,
-     flag_descriptions::kUserConsentForExtensionScriptsDescription, kOsAll,
-     SINGLE_VALUE_TYPE(extensions::switches::kEnableScriptsRequireAction)},
+     flag_descriptions::kUserConsentForExtensionScriptsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(extensions::features::kRuntimeHostPermissions)},
 #endif  // ENABLE_EXTENSIONS
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     {"enable-embedded-extension-options",

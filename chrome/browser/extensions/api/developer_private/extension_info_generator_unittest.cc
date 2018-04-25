@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/developer_private/inspectable_views_finder.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
@@ -32,6 +33,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -390,9 +392,9 @@ TEST_F(ExtensionInfoGeneratorUnitTest, GenerateExtensionsJSONData) {
 // urls, and only when the switch is on.
 TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
   // Start with the switch enabled.
-  std::unique_ptr<FeatureSwitch::ScopedOverride> enable_scripts_switch(
-      new FeatureSwitch::ScopedOverride(FeatureSwitch::scripts_require_action(),
-                                        true));
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(features::kRuntimeHostPermissions);
+
   // Two extensions - one with all urls, one without.
   scoped_refptr<const Extension> all_urls_extension = CreateExtension(
       "all_urls", ListBuilder().Append(kAllHostsPermission).Build(),
@@ -427,7 +429,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
 
   // Turn off the switch and load another extension (so permissions are
   // re-initialized).
-  enable_scripts_switch.reset();
+  scoped_feature_list.reset();
 
   // Since the extension doesn't have access to all urls (but normally would),
   // the extension should have the "want" flag even with the switch off.

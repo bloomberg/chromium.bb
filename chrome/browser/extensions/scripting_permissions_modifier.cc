@@ -4,12 +4,13 @@
 
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 
+#include "base/feature_list.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/feature_switch.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -37,7 +38,7 @@ URLPatternSet FilterImpliedAllHostsPatterns(const URLPatternSet& patterns) {
   return result;
 }
 
-// Returns true if the extension must be allowed to execute scripts on all urls.
+// Returns true if the extension must be allowed to access all urls.
 bool ExtensionMustBeAllowedOnAllUrls(const Extension& extension) {
   // Some extensions must retain privilege to execute on all urls. Specifically,
   // extensions that don't show up in chrome:extensions (where withheld
@@ -99,7 +100,7 @@ void ScriptingPermissionsModifier::SetAllowedOnAllUrlsForSync(
 
 // static
 bool ScriptingPermissionsModifier::DefaultAllowedOnAllUrls() {
-  return !FeatureSwitch::scripts_require_action()->IsEnabled();
+  return !base::FeatureList::IsEnabled(features::kRuntimeHostPermissions);
 }
 
 void ScriptingPermissionsModifier::SetAllowedOnAllUrls(bool allowed) {
@@ -132,8 +133,9 @@ bool ScriptingPermissionsModifier::IsAllowedOnAllUrls() {
   if (!extension_prefs_->ReadPrefAsBoolean(
           extension_->id(), kExtensionAllowedOnAllUrlsPrefName, &allowed)) {
     // If there is no value present, we make one, defaulting it to the value of
-    // the 'scripts require action' flag. If the flag is on, then the extension
-    // does not have permission to script on all urls by default.
+    // the features::kRuntimeHostPermissions feature. If the feature is
+    // enabled, then the extension does not have permission to access all
+    // urls by default.
     allowed = DefaultAllowedOnAllUrls();
     SetAllowedOnAllUrlsPref(false, allowed, extension_->id(), extension_prefs_);
   }

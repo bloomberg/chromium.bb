@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
@@ -14,7 +15,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/feature_switch.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
@@ -92,10 +93,9 @@ using ScriptingPermissionsModifierUnitTest = ExtensionServiceTestBase;
 TEST_F(ScriptingPermissionsModifierUnitTest, WithholdAllHosts) {
   InitializeEmptyExtensionService();
 
-  // Permissions are only withheld with the appropriate switch turned on.
-  std::unique_ptr<FeatureSwitch::ScopedOverride> switch_override(
-      new FeatureSwitch::ScopedOverride(FeatureSwitch::scripts_require_action(),
-                                        FeatureSwitch::OVERRIDE_ENABLED));
+  // Permissions are only withheld with the appropriate feature turned on.
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(features::kRuntimeHostPermissions);
 
   URLPattern google(URLPattern::SCHEME_ALL, "http://www.google.com/*");
   URLPattern sub_google(URLPattern::SCHEME_ALL, "http://*.google.com/*");
@@ -195,8 +195,8 @@ TEST_F(ScriptingPermissionsModifierUnitTest, WithholdAllHosts) {
                   .patterns()
                   .empty());
 
-  // Without the switch, we shouldn't withhold anything.
-  switch_override.reset();
+  // Without the feature, we shouldn't withhold anything.
+  scoped_feature_list.reset();
   extension = CreateExtensionWithPermissions(all_patterns, all_patterns,
                                              Manifest::INTERNAL, "c");
   permissions_data = extension->permissions_data();
@@ -243,10 +243,9 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
   ScriptingPermissionsModifier modifier_a(profile(), extension_a);
   EXPECT_TRUE(modifier_a.IsAllowedOnAllUrls());
 
-  // Enable the switch, and re-init permission for the extension.
-  std::unique_ptr<FeatureSwitch::ScopedOverride> switch_override(
-      new FeatureSwitch::ScopedOverride(FeatureSwitch::scripts_require_action(),
-                                        FeatureSwitch::OVERRIDE_ENABLED));
+  // Enable the feature, and re-init permission for the extension.
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(features::kRuntimeHostPermissions);
   updater.InitializePermissions(extension_a.get());
 
   // Since the extension was installed when the switch was off, it should still
@@ -274,7 +273,7 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
   EXPECT_FALSE(modifier_b.IsAllowedOnAllUrls());
 
   // Disable the switch, and reload the extension.
-  switch_override.reset();
+  scoped_feature_list.reset();
   updater.InitializePermissions(extension_b.get());
 
   // Since the extension was installed with the switch on, it should still be
@@ -291,10 +290,9 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
 TEST_F(ScriptingPermissionsModifierUnitTest, GrantHostPermission) {
   InitializeEmptyExtensionService();
 
-  // Permissions are only withheld with the appropriate switch turned on.
-  std::unique_ptr<FeatureSwitch::ScopedOverride> switch_override(
-      new FeatureSwitch::ScopedOverride(FeatureSwitch::scripts_require_action(),
-                                        FeatureSwitch::OVERRIDE_ENABLED));
+  // Permissions are only withheld with the appropriate feature turned on.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
 
   URLPattern all_hosts(URLPattern::SCHEME_ALL, "<all_urls>");
   std::set<URLPattern> all_host_patterns;
@@ -337,9 +335,8 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantHostPermission) {
 // Fix for crbug.com/629927.
 TEST_F(ScriptingPermissionsModifierUnitTest,
        PolicyExtensionsCanExecuteEverywhere) {
-  std::unique_ptr<FeatureSwitch::ScopedOverride> switch_override(
-      new FeatureSwitch::ScopedOverride(FeatureSwitch::scripts_require_action(),
-                                        FeatureSwitch::OVERRIDE_ENABLED));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
   InitializeEmptyExtensionService();
   URLPattern all_hosts(URLPattern::SCHEME_ALL, "<all_urls>");
   std::set<URLPattern> all_host_patterns;
