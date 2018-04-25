@@ -7,7 +7,6 @@
 #include "base/callback.h"
 #include "content/browser/web_package/signed_exchange_header.h"
 #include "content/browser/web_package/signed_exchange_header_parser.h"
-#include "content/browser/web_package/signed_exchange_utils.h"
 #include "net/cert/x509_certificate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -126,7 +125,7 @@ TEST(SignedExchangeSignatureVerifier, Verify) {
       base::Time::UnixEpoch() +
       base::TimeDelta::FromSeconds(kSignatureHeaderDate);
   auto signature = SignedExchangeHeaderParser::ParseSignature(
-      kSignatureHeader, signed_exchange_utils::LogCallback());
+      kSignatureHeader, nullptr /* devtools_proxy */);
   ASSERT_TRUE(signature.has_value());
   ASSERT_EQ(1u, signature->size());
 
@@ -150,32 +149,32 @@ TEST(SignedExchangeSignatureVerifier, Verify) {
   EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kSuccess,
             SignedExchangeSignatureVerifier::Verify(
                 header, certificate, verification_time,
-                signed_exchange_utils::LogCallback()));
+                nullptr /* devtools_proxy */));
 
   EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
             SignedExchangeSignatureVerifier::Verify(
                 header, certificate,
                 base::Time::UnixEpoch() +
                     base::TimeDelta::FromSeconds(kSignatureHeaderDate - 1),
-                signed_exchange_utils::LogCallback()));
+                nullptr /* devtools_proxy */));
 
   EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kSuccess,
             SignedExchangeSignatureVerifier::Verify(
                 header, certificate,
                 base::Time::UnixEpoch() +
                     base::TimeDelta::FromSeconds(kSignatureHeaderExpires),
-                signed_exchange_utils::LogCallback()));
+                nullptr /* devtools_proxy */));
 
   EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
             SignedExchangeSignatureVerifier::Verify(
                 header, certificate,
                 base::Time::UnixEpoch() +
                     base::TimeDelta::FromSeconds(kSignatureHeaderExpires + 1),
-                signed_exchange_utils::LogCallback()));
+                nullptr /* devtools_proxy */));
 
   SignedExchangeHeader invalid_expires_header(header);
   auto invalid_expires_signature = SignedExchangeHeaderParser::ParseSignature(
-      kSignatureHeaderInvalidExpires, signed_exchange_utils::LogCallback());
+      kSignatureHeaderInvalidExpires, nullptr /* devtools_proxy */);
   ASSERT_TRUE(invalid_expires_signature.has_value());
   ASSERT_EQ(1u, invalid_expires_signature->size());
   invalid_expires_header.SetSignatureForTesting(
@@ -183,15 +182,15 @@ TEST(SignedExchangeSignatureVerifier, Verify) {
   EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
             SignedExchangeSignatureVerifier::Verify(
                 invalid_expires_header, certificate, verification_time,
-                signed_exchange_utils::LogCallback()));
+                nullptr /* devtools_proxy */));
 
   SignedExchangeHeader corrupted_header(header);
   corrupted_header.set_request_url(GURL("https://example.com/bad.html"));
   EXPECT_EQ(
       SignedExchangeSignatureVerifier::Result::kErrSignatureVerificationFailed,
-      SignedExchangeSignatureVerifier::Verify(
-          corrupted_header, certificate, verification_time,
-          signed_exchange_utils::LogCallback()));
+      SignedExchangeSignatureVerifier::Verify(corrupted_header, certificate,
+                                              verification_time,
+                                              nullptr /* devtools_proxy */));
 
   SignedExchangeHeader badsig_header(header);
   SignedExchangeHeaderParser::Signature badsig = header.signature();
@@ -199,9 +198,9 @@ TEST(SignedExchangeSignatureVerifier, Verify) {
   badsig_header.SetSignatureForTesting(badsig);
   EXPECT_EQ(
       SignedExchangeSignatureVerifier::Result::kErrSignatureVerificationFailed,
-      SignedExchangeSignatureVerifier::Verify(
-          badsig_header, certificate, verification_time,
-          signed_exchange_utils::LogCallback()));
+      SignedExchangeSignatureVerifier::Verify(badsig_header, certificate,
+                                              verification_time,
+                                              nullptr /* devtools_proxy */));
 
   SignedExchangeHeader badsigsha256_header(header);
   SignedExchangeHeaderParser::Signature badsigsha256 = header.signature();
@@ -209,9 +208,9 @@ TEST(SignedExchangeSignatureVerifier, Verify) {
   badsigsha256_header.SetSignatureForTesting(badsigsha256);
   EXPECT_EQ(
       SignedExchangeSignatureVerifier::Result::kErrCertificateSHA256Mismatch,
-      SignedExchangeSignatureVerifier::Verify(
-          badsigsha256_header, certificate, verification_time,
-          signed_exchange_utils::LogCallback()));
+      SignedExchangeSignatureVerifier::Verify(badsigsha256_header, certificate,
+                                              verification_time,
+                                              nullptr /* devtools_proxy */));
 }
 
 }  // namespace

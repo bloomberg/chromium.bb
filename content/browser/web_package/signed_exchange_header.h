@@ -14,13 +14,14 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "content/browser/web_package/signed_exchange_header_parser.h"
-#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/common/content_export.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
 
 namespace content {
+
+class SignedExchangeDevToolsProxy;
 
 // SignedExchangeHeader contains all information captured in signed exchange
 // envelope but the payload.
@@ -43,7 +44,7 @@ class CONTENT_EXPORT SignedExchangeHeader {
   // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#cross-origin-trust
   static base::Optional<SignedExchangeHeader> Parse(
       base::span<const uint8_t> input,
-      const signed_exchange_utils::LogCallback& error_message_callback);
+      SignedExchangeDevToolsProxy* devtools_proxy);
   SignedExchangeHeader();
   SignedExchangeHeader(const SignedExchangeHeader&);
   SignedExchangeHeader(SignedExchangeHeader&&);

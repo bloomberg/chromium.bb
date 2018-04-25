@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
-#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/common/content_export.h"
 #include "net/cert/x509_certificate.h"
 
@@ -23,6 +22,7 @@ class Time;
 namespace content {
 
 class SignedExchangeHeader;
+class SignedExchangeDevToolsProxy;
 
 // SignedExchangeSignatureVerifier verifies the signature of the given
 // signed exchange. This is done by reconstructing the signed message
@@ -47,11 +47,10 @@ class CONTENT_EXPORT SignedExchangeSignatureVerifier final {
     kErrInvalidTimestamp
   };
 
-  static Result Verify(
-      const SignedExchangeHeader& header,
-      scoped_refptr<net::X509Certificate> certificate,
-      const base::Time& verification_time,
-      const signed_exchange_utils::LogCallback& error_message_callback);
+  static Result Verify(const SignedExchangeHeader& header,
+                       scoped_refptr<net::X509Certificate> certificate,
+                       const base::Time& verification_time,
+                       SignedExchangeDevToolsProxy* devtools_proxy);
 
   static base::Optional<std::vector<uint8_t>> EncodeCanonicalExchangeHeaders(
       const SignedExchangeHeader& header);

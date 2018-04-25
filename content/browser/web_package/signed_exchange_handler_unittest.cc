@@ -12,7 +12,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
-#include "content/browser/web_package/signed_exchange_utils.h"
+#include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "net/base/io_buffer.h"
@@ -61,8 +61,7 @@ class MockSignedExchangeCertFetcherFactory
       const GURL& cert_url,
       bool force_fetch,
       SignedExchangeCertFetcher::CertificateCallback callback,
-      const signed_exchange_utils::LogCallback& error_message_callback)
-      override {
+      SignedExchangeDevToolsProxy* devtools_proxy) override {
     EXPECT_EQ(cert_url, expected_cert_url_);
 
     auto cert_chain = SignedExchangeCertificateChain::Parse(cert_str_);
@@ -108,7 +107,7 @@ class SignedExchangeHandlerTest
         base::BindOnce(&SignedExchangeHandlerTest::OnHeaderFound,
                        base::Unretained(this)),
         std::move(cert_fetcher_factory), request_context_getter_,
-        -1 /* frame_tree_node_id */);
+        nullptr /* devtools_proxy */);
   }
 
   void TearDown() override {

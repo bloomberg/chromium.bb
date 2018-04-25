@@ -7,19 +7,18 @@
 
 #include <string>
 
-#include "base/callback_forward.h"
-
 namespace content {
+
+class SignedExchangeDevToolsProxy;
+
 namespace signed_exchange_utils {
 
-using LogCallback = base::RepeatingCallback<void(const std::string&)>;
-
-// Runs |callback| with |error_message| if |callback| is not null. And calls
-// TRACE_EVENT_END() with "disabled-by-default-loading" category, |name| and
-// |error_meassage|.
-void RunErrorMessageCallbackAndEndTraceEvent(const char* name,
-                                             const LogCallback& callback,
-                                             const std::string& error_message);
+// Utility method to call SignedExchangeDevToolsProxy::ReportErrorMessage() and
+// TRACE_EVENT_END() to report the error to both DevTools and about:tracing. If
+// |devtools_proxy| is nullptr, it just calls TRACE_EVENT_END().
+void ReportErrorAndEndTraceEvent(SignedExchangeDevToolsProxy* devtools_proxy,
+                                 const char* trace_event_name,
+                                 const std::string& error_message);
 
 }  // namespace  signed_exchange_utils
 }  // namespace content

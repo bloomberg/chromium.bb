@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -41,11 +42,13 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   // |request_context_getter| may be used when a prefetch handler
   // needs to additionally create a request (e.g. for fetching certificate
   // if the prefetch was for a signed exchange).
+  // |frame_tree_node_id_getter| is called only on UI thread when NetworkService
+  // is not enabled, but can be also called on IO thread otherwise.
   PrefetchURLLoader(
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
-      int frame_tree_node_id,
+      base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
       const network::ResourceRequest& resource_request,
       network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
@@ -87,7 +90,7 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
 
   void OnNetworkConnectionError();
 
-  const int frame_tree_node_id_;
+  const base::RepeatingCallback<int(void)> frame_tree_node_id_getter_;
 
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
 

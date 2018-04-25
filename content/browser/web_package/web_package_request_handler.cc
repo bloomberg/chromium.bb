@@ -83,7 +83,8 @@ bool WebPackageRequestHandler::MaybeCreateLoaderForResponse(
   // to support SafeBrowsing checking of the content of the WebPackage.
   web_package_loader_ = std::make_unique<WebPackageLoader>(
       response, std::move(client), url_loader->Unbind(),
-      std::move(request_initiator_), url_loader_options_, frame_tree_node_id_,
+      std::move(request_initiator_), url_loader_options_,
+      base::BindRepeating([](int id) { return id; }, frame_tree_node_id_),
       std::move(url_loader_factory_), std::move(url_loader_throttles_getter_),
       std::move(request_context_getter_));
   return true;

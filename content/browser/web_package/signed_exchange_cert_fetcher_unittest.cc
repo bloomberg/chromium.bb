@@ -8,7 +8,6 @@
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/test/scoped_task_environment.h"
-#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
@@ -207,7 +206,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
         base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
             &mock_loader_factory_),
         std::move(throttles_), url_, request_initiator_, force_fetch,
-        std::move(callback), signed_exchange_utils::LogCallback());
+        std::move(callback), nullptr /* devtools_proxy */);
   }
 
   void CallOnReceiveResponse() {

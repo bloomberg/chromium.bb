@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_PREFETCH_HANDLER_H_
 #define CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_PREFETCH_HANDLER_H_
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -37,7 +38,7 @@ class WebPackagePrefetchHandler final : public network::mojom::URLLoaderClient {
   // |forwarding_client| is a pointer to the downstream client (typically who
   // creates this handler).
   WebPackagePrefetchHandler(
-      int frame_tree_node_id,
+      base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
       const network::ResourceResponseHead& response,
       network::mojom::URLLoaderPtr network_loader,
       network::mojom::URLLoaderClientRequest network_client_request,
