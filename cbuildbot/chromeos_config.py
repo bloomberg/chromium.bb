@@ -1989,7 +1989,7 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       'pre_cq',
       site_config.templates.paladin,
       display_label=config_lib.DISPLAY_LABEL_PRECQ,
-      luci_builder='PreCQ',
+      luci_builder=config_lib.LUCI_BUILDER_PRECQ,
       active_waterfall=waterfall.WATERFALL_SWARMING,
       build_type=constants.PRE_CQ_TYPE,
       pre_cq=True,
@@ -4201,7 +4201,7 @@ def TryjobMirrors(site_config):
     tryjob_config.apply(
         name=tryjob_name,
         display_label=config_lib.DISPLAY_LABEL_TRYJOB,
-        luci_builder='Try',
+        luci_builder=config_lib.LUCI_BUILDER_TRY,
         # Generally make tryjobs safer.
         chroot_replace=True,
         debug=True,

@@ -77,6 +77,20 @@ ALL_DISPLAY_LABEL = TRYJOB_DISPLAY_LABEL | {
     DISPLAY_LABEL_PRODUCTION_TRYJOB,
 }
 
+# These values must be kept in sync with the ChromeOS LUCI builders.
+#
+# https://chrome-internal.git.corp.google.com/chromeos/
+#    manifest-internal/+/infra/config/cr-buildbucket.cfg
+LUCI_BUILDER_TRY = 'Try'
+LUCI_BUILDER_PRECQ = 'PreCQ'
+LUCI_BUILDER_PROD = 'Prod'
+
+ALL_LUCI_BUILDER = {
+    LUCI_BUILDER_TRY,
+    LUCI_BUILDER_PRECQ,
+    LUCI_BUILDER_PROD,
+}
+
 def isTryjobConfig(build_config):
   """Is a given build config a tryjob config, or a production config?
 
@@ -599,7 +613,7 @@ def DefaultSettings():
       # https://chrome-internal.git.corp.google.com/chromeos/
       #    manifest-internal/+/infra/config/cr-buildbucket.cfg
       #
-      luci_builder='Prod',
+      luci_builder=LUCI_BUILDER_PROD,
 
       # The profile of the variant to set up and build.
       profile=None,

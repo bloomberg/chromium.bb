@@ -358,6 +358,13 @@ class CBuildBotTest(ChromeosConfigTestBase):
                     'Invalid display_label "%s" on "%s"' %
                     (config.display_label, build_name))
 
+  def testConfigsHaveValidLuciBuilder(self):
+    """Configs must have names set."""
+    for build_name, config in self.site_config.iteritems():
+      self.assertIn(config.luci_builder, config_lib.ALL_LUCI_BUILDER,
+                    'Invalid luci_builder "%s" on "%s"' %
+                    (config.luci_builder, build_name))
+
   def testMasterSlaveConfigsExist(self):
     """Configs listing slave configs, must list valid configs."""
     for config in self.site_config.itervalues():
