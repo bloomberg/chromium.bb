@@ -43,6 +43,9 @@ Polymer({
       },
     },
 
+    /**
+     * @return {number}
+     */
     get selectionStart() {
       return this.$.input.textarea.selectionStart;
     },
@@ -50,6 +53,9 @@ Polymer({
       this.$.input.textarea.selectionStart = start;
     },
 
+    /**
+     * @return {number}
+     */
     get selectionEnd() {
       return this.$.input.textarea.selectionEnd;
     },

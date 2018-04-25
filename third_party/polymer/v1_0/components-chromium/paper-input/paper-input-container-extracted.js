@@ -123,6 +123,12 @@ Polymer({
     },
 
     ready: function() {
+      // Paper-input treats a value of undefined differently at startup than
+      // the rest of the time (specifically: it does not validate it at startup, but
+      // it does after that. We need to track whether the first time we encounter
+      // the value is basically this first time, so that we can validate it
+      // correctly the rest of the time. See https://github.com/PolymerElements/paper-input/issues/605
+      this.__isFirstValueUpdate = true;
       if (!this._addons) {
         this._addons = [];
       }
@@ -145,6 +151,7 @@ Polymer({
       }
     },
 
+    /** @private */
     _onAddonAttached: function(event) {
       if (!this._addons) {
         this._addons = [];
@@ -158,37 +165,41 @@ Polymer({
       }
     },
 
+    /** @private */
     _onFocus: function() {
       this._setFocused(true);
     },
 
+    /** @private */
     _onBlur: function() {
       this._setFocused(false);
       this._handleValueAndAutoValidate(this._inputElement);
     },
 
+    /** @private */
     _onInput: function(event) {
       this._handleValueAndAutoValidate(event.target);
     },
 
+    /** @private */
     _onValueChanged: function(event) {
       var input = event.target;
 
-      // Problem: if the input is required but has no text entered, we should
-      // only validate it on blur (so that an empty form doesn't come up red
-      // immediately; however, in this handler, we don't know whether this is
-      // the booting up value or a value in the future. I am assuming that the
-      // case  we care about manifests itself when the value is undefined.
-      // If this causes future problems, we need to do something like track whether
-      // the iron-input-ready event has fired, and this handler came before that.
-
-      if (input.value === undefined) {
-        return;
+      // Paper-input treats a value of undefined differently at startup than
+      // the rest of the time (specifically: it does not validate it at startup, but
+      // it does after that. If this is in fact the bootup case, ignore validation,
+      // just this once.
+      if (this.__isFirstValueUpdate) {
+        this.__isFirstValueUpdate = false;
+        if (input.value === undefined) {
+          return;
+        }
       }
 
       this._handleValueAndAutoValidate(event.target);
     },
 
+    /** @private */
     _handleValue: function(inputElement) {
       var value = this._inputElementValue;
 
@@ -206,6 +217,7 @@ Polymer({
       });
     },
 
+    /** @private */
     _handleValueAndAutoValidate: function(inputElement) {
       if (this.autoValidate && inputElement) {
         var valid;
@@ -222,10 +234,12 @@ Polymer({
       this._handleValue(inputElement);
     },
 
+    /** @private */
     _onIronInputValidate: function(event) {
       this.invalid = this._inputElement.invalid;
     },
 
+    /** @private */
     _invalidChanged: function() {
       if (this._addons) {
         this.updateAddons({invalid: this.invalid});
@@ -242,6 +256,7 @@ Polymer({
       }
     },
 
+    /** @private */
     _computeInputContentClass: function(noLabelFloat, alwaysFloatLabel, focused, invalid, _inputHasContent) {
       var cls = 'input-content';
       if (!noLabelFloat) {
@@ -281,6 +296,7 @@ Polymer({
       return cls;
     },
 
+    /** @private */
     _computeUnderlineClass: function(focused, invalid) {
       var cls = 'underline';
       if (invalid) {
@@ -291,6 +307,7 @@ Polymer({
       return cls;
     },
 
+    /** @private */
     _computeAddOnContentClass: function(focused, invalid) {
       var cls = 'add-on-content';
       if (invalid) {

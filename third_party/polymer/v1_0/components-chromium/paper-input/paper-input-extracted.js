@@ -26,6 +26,8 @@ Polymer({
     /**
      * Returns a reference to the focusable element. Overridden from PaperInputBehavior
      * to correctly focus the native input.
+     *
+     * @return {!HTMLElement}
      */
     get _focusableElement() {
       return Polymer.Element ? this.inputElement._inputElement : this.inputElement;

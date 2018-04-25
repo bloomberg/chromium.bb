@@ -87,25 +87,25 @@ Custom property | Description | Default
       }
 
       input {
-        position: relative; /* to make a stacking context */
-        outline: none;
-        box-shadow: none;
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        max-width: 100%;
-        background: transparent;
-        border: none;
-        color: var(--paper-input-container-input-color, var(--primary-text-color));
-        -webkit-appearance: none;
-        text-align: inherit;
-        vertical-align: bottom;
-
         /* Firefox sets a min-width on the input, which can cause layout issues */
         min-width: 0;
+      }
 
-        @apply --paper-font-subhead;
-        @apply --paper-input-container-input;
+      /* In 1.x, the <input> is distributed to paper-input-container, which styles it.
+      In 2.x the <iron-input> is distributed to paper-input-container, which styles
+      it, but in order for this to work correctly, we need to reset some
+      of the native input's properties to inherit (from the iron-input) */
+      iron-input > input {
+        @apply --paper-input-container-shared-input-style;
+        font-family: inherit;
+        font-weight: inherit;
+        font-size: inherit;
+        letter-spacing: inherit;
+        word-spacing: inherit;
+        line-height: inherit;
+        text-shadow: inherit;
+        color: inherit;
+        cursor: inherit;
       }
 
       input:disabled {
@@ -119,6 +119,10 @@ Custom property | Description | Default
 
       input::-webkit-clear-button {
         @apply --paper-input-container-input-webkit-clear;
+      }
+
+      input::-webkit-calendar-picker-indicator {
+        @apply --paper-input-container-input-webkit-calendar-picker-indicator;
       }
 
       input::-webkit-input-placeholder {
