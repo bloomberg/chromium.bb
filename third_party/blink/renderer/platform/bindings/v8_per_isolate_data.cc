@@ -142,6 +142,12 @@ void V8PerIsolateData::WillBeDestroyed(v8::Isolate* isolate) {
   data->ClearEndOfScopeTasks();
 
   data->active_script_wrappables_.Clear();
+
+  // Detach V8's garbage collector.
+  isolate->SetEmbedderHeapTracer(nullptr);
+  if (data->script_wrappable_visitor_->WrapperTracingInProgress())
+    data->script_wrappable_visitor_->AbortTracing();
+  data->script_wrappable_visitor_.reset();
 }
 
 // destroy() clear things that should be cleared after ThreadState::detach()

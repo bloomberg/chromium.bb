@@ -115,6 +115,7 @@ void WorkerBackingThread::ShutdownOnBackingThread() {
     Platform::Current()->WillStopWorkerThread();
 
   V8PerIsolateData::WillBeDestroyed(isolate_);
+  V8GCController::ClearDOMWrappers(isolate_);
   // TODO(yhirano): Remove this when https://crbug.com/v8/1428 is fixed.
   if (should_call_gc_on_shutdown_) {
     // This statement runs only in tests.
