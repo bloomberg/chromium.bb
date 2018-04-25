@@ -33,6 +33,7 @@
 #include "gpu/command_buffer/common/raster_cmd_ids.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
+#include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/decoder_client.h"
@@ -237,7 +238,8 @@ ScopedPixelUnpackState::~ScopedPixelUnpackState() {
 
 }  // namespace
 
-class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
+class RasterDecoderImpl final : public RasterDecoder,
+                                public gles2::ErrorStateClient {
  public:
   RasterDecoderImpl(DecoderClient* client,
                     CommandBufferServiceBase* command_buffer_service,
@@ -374,6 +376,11 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
 
   const GpuDriverBugWorkarounds& workarounds() const {
     return feature_info_->workarounds();
+  }
+
+  bool IsRobustnessSupported() {
+    return has_robustness_extension_ &&
+           context_->WasAllocatedUsingRobustnessExtension();
   }
 
   const gl::GLVersionInfo& gl_version_info() {
@@ -621,6 +628,10 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
 
   bool supports_oop_raster_ = false;
 
+  bool has_robustness_extension_ = false;
+  bool context_was_lost_ = false;
+  bool reset_by_robustness_extension_ = false;
+
   // The current decoder error communicates the decoder error through command
   // processing functions that do not return the error value. Should be set
   // only if not returning an error.
@@ -661,6 +672,9 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   DecoderFramebufferState framebuffer_state_;
 
   bool gpu_debug_commands_;
+
+  // An optional behaviour to lose the context and group when OOM.
+  bool lose_context_when_out_of_memory_ = false;
 
   // Log extra info.
   bool service_logging_;
@@ -787,6 +801,10 @@ ContextResult RasterDecoderImpl::Initialize(
   surface_ = surface;
   context_ = context;
 
+  // Save the loseContextWhenOutOfMemory context creation attribute.
+  lose_context_when_out_of_memory_ =
+      attrib_helper.lose_context_when_out_of_memory;
+
   auto result =
       group_->Initialize(this, attrib_helper.context_type, disallowed_features);
   if (result != ContextResult::kSuccess) {
@@ -837,6 +855,10 @@ ContextResult RasterDecoderImpl::Initialize(
   }
   api()->glActiveTextureFn(GL_TEXTURE0);
   CHECK_GL_ERROR();
+
+  has_robustness_extension_ = features().arb_robustness ||
+                              features().khr_robustness ||
+                              features().ext_robustness;
 
   // Set all the default state because some GL drivers get it wrong.
   // TODO(backer): Not all of this state needs to be initialized. Reduce the set
@@ -968,6 +990,13 @@ bool RasterDecoderImpl::MakeCurrent() {
     return false;
   }
   DCHECK_EQ(api(), gl::g_current_gl_context);
+
+  if (CheckResetStatus()) {
+    LOG(ERROR)
+        << "  RasterDecoderImpl: Context reset detected after MakeCurrent.";
+    group_->LoseContexts(error::kUnknown);
+    return false;
+  }
 
   // Rebind textures if the service ids may have changed.
   RestoreAllExternalTextureBindingsIfNeeded();
@@ -1170,20 +1199,65 @@ void RasterDecoderImpl::SetLevelInfo(uint32_t client_id,
 }
 
 bool RasterDecoderImpl::WasContextLost() const {
-  return false;
+  return context_was_lost_;
 }
 
 bool RasterDecoderImpl::WasContextLostByRobustnessExtension() const {
-  NOTIMPLEMENTED();
-  return false;
+  return WasContextLost() && reset_by_robustness_extension_;
 }
 
 void RasterDecoderImpl::MarkContextLost(error::ContextLostReason reason) {
-  NOTIMPLEMENTED();
+  // Only lose the context once.
+  if (WasContextLost())
+    return;
+
+  // Don't make GL calls in here, the context might not be current.
+  command_buffer_service()->SetContextLostReason(reason);
+  current_decoder_error_ = error::kLostContext;
+  context_was_lost_ = true;
+
+  if (vertex_array_manager_.get()) {
+    vertex_array_manager_->MarkContextLost();
+  }
+  state_.MarkContextLost();
 }
 
 bool RasterDecoderImpl::CheckResetStatus() {
-  NOTIMPLEMENTED();
+  DCHECK(!WasContextLost());
+  DCHECK(context_->IsCurrent(nullptr));
+
+  if (IsRobustnessSupported()) {
+    // If the reason for the call was a GL error, we can try to determine the
+    // reset status more accurately.
+    GLenum driver_status = api()->glGetGraphicsResetStatusARBFn();
+    if (driver_status == GL_NO_ERROR)
+      return false;
+
+    LOG(ERROR)
+        << "RasterDecoder context lost via ARB/EXT_robustness. Reset status = "
+        << GLES2Util::GetStringEnum(driver_status);
+
+    // Don't pretend we know which client was responsible.
+    if (workarounds().use_virtualized_gl_contexts)
+      driver_status = GL_UNKNOWN_CONTEXT_RESET_ARB;
+
+    switch (driver_status) {
+      case GL_GUILTY_CONTEXT_RESET_ARB:
+        MarkContextLost(error::kGuilty);
+        break;
+      case GL_INNOCENT_CONTEXT_RESET_ARB:
+        MarkContextLost(error::kInnocent);
+        break;
+      case GL_UNKNOWN_CONTEXT_RESET_ARB:
+        MarkContextLost(error::kUnknown);
+        break;
+      default:
+        NOTREACHED();
+        return false;
+    }
+    reset_by_robustness_extension_ = true;
+    return true;
+  }
   return false;
 }
 
@@ -1500,11 +1574,25 @@ ServiceTransferCache* RasterDecoderImpl::GetTransferCacheForTest() {
 }
 
 void RasterDecoderImpl::OnContextLostError() {
-  NOTIMPLEMENTED();
+  if (!WasContextLost()) {
+    // Need to lose current context before broadcasting!
+    CheckResetStatus();
+    group_->LoseContexts(error::kUnknown);
+    reset_by_robustness_extension_ = true;
+  }
 }
 
 void RasterDecoderImpl::OnOutOfMemoryError() {
-  NOTIMPLEMENTED();
+  if (lose_context_when_out_of_memory_ && !WasContextLost()) {
+    error::ContextLostReason other = error::kOutOfMemory;
+    if (CheckResetStatus()) {
+      other = error::kUnknown;
+    } else {
+      // Need to lose current context before broadcasting!
+      MarkContextLost(error::kOutOfMemory);
+    }
+    group_->LoseContexts(other);
+  }
 }
 
 error::Error RasterDecoderImpl::HandleWaitSyncTokenCHROMIUM(
@@ -2471,7 +2559,7 @@ bool RasterDecoderImpl::DoBindOrCopyTexImageIfNeeded(Texture* texture,
 namespace {
 
 // Helper to read client data from transfer cache.
-class TransferCacheDeserializeHelperImpl
+class TransferCacheDeserializeHelperImpl final
     : public cc::TransferCacheDeserializeHelper {
  public:
   explicit TransferCacheDeserializeHelperImpl(
@@ -2479,12 +2567,12 @@ class TransferCacheDeserializeHelperImpl
       : transfer_cache_(transfer_cache) {
     DCHECK(transfer_cache_);
   }
-  ~TransferCacheDeserializeHelperImpl() final = default;
+  ~TransferCacheDeserializeHelperImpl() override = default;
 
  private:
   cc::ServiceTransferCacheEntry* GetEntryInternal(
       cc::TransferCacheEntryType entry_type,
-      uint32_t entry_id) final {
+      uint32_t entry_id) override {
     return transfer_cache_->GetEntry(entry_type, entry_id);
   }
   ServiceTransferCache* const transfer_cache_;
