@@ -85,7 +85,7 @@ class ActivityLoggerTest : public testing::Test {
                                 "about:blank");
   }
 
-  ~ActivityLoggerTest() { WebCache::Clear(); }
+  ~ActivityLoggerTest() override { WebCache::Clear(); }
 
   void ExecuteScriptInMainWorld(const String& script) const {
     v8::HandleScope scope(v8::Isolate::GetCurrent());

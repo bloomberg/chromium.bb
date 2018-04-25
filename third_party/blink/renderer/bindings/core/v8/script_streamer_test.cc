@@ -62,7 +62,7 @@ class ScriptStreamingTest : public testing::Test {
     GetResource()->SetResponse(response);
   }
 
-  ~ScriptStreamingTest() {
+  ~ScriptStreamingTest() override {
     if (pending_script_)
       pending_script_->Dispose();
   }

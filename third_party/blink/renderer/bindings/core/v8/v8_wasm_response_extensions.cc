@@ -84,7 +84,7 @@ class FetchDataLoaderAsWasmModule final : public FetchDataLoader,
     return AbortCompilation();
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(consumer_);
     visitor->Trace(client_);
     FetchDataLoader::Trace(visitor);

@@ -173,7 +173,7 @@ V8EmbedderGraphBuilder::EmbedderNode* V8EmbedderGraphBuilder::GraphNode(
   }
   // Ownership of the new node is transferred to the graph_.
   // graph_node_.at(tracable) is valid for all BuildEmbedderGraph execution.
-  auto raw_node = new EmbedderNode(name, wrapper, dom_tree_state);
+  auto* raw_node = new EmbedderNode(name, wrapper, dom_tree_state);
   EmbedderNode* node = static_cast<EmbedderNode*>(
       graph_->AddNode(std::unique_ptr<Graph::Node>(raw_node)));
   graph_node_.insert(traceable, node);

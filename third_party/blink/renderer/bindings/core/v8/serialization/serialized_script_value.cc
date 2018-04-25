@@ -378,7 +378,7 @@ void SerializedScriptValue::CloneSharedArrayBuffers(
   HeapHashSet<Member<DOMArrayBufferBase>> visited;
   shared_array_buffers_contents_.Grow(array_buffers.size());
   size_t i = 0;
-  for (auto it = array_buffers.begin(); it != array_buffers.end(); ++it) {
+  for (auto* it = array_buffers.begin(); it != array_buffers.end(); ++it) {
     DOMSharedArrayBuffer* shared_array_buffer = *it;
     if (visited.Contains(shared_array_buffer))
       continue;
@@ -510,7 +510,7 @@ ArrayBufferArray SerializedScriptValue::ExtractNonSharedArrayBuffers(
   ArrayBufferArray result;
   // Partition array_buffers into [shared..., non_shared...], maintaining
   // relative ordering of elements with the same predicate value.
-  auto non_shared_begin =
+  auto* non_shared_begin =
       std::stable_partition(array_buffers.begin(), array_buffers.end(),
                             [](Member<DOMArrayBufferBase>& array_buffer) {
                               return array_buffer->IsShared();
@@ -533,7 +533,7 @@ SerializedScriptValue::TransferArrayBufferContents(
   if (!array_buffers.size())
     return ArrayBufferContentsArray();
 
-  for (auto it = array_buffers.begin(); it != array_buffers.end(); ++it) {
+  for (auto* it = array_buffers.begin(); it != array_buffers.end(); ++it) {
     DOMArrayBufferBase* array_buffer = *it;
     if (array_buffer->IsNeutered()) {
       size_t index = std::distance(array_buffers.begin(), it);
@@ -546,7 +546,7 @@ SerializedScriptValue::TransferArrayBufferContents(
 
   contents.Grow(array_buffers.size());
   HeapHashSet<Member<DOMArrayBufferBase>> visited;
-  for (auto it = array_buffers.begin(); it != array_buffers.end(); ++it) {
+  for (auto* it = array_buffers.begin(); it != array_buffers.end(); ++it) {
     DOMArrayBufferBase* array_buffer_base = *it;
     if (visited.Contains(array_buffer_base))
       continue;

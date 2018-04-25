@@ -73,7 +73,7 @@ class PromiseAllHandler final
       return self->BindToV8Function();
     }
 
-    virtual void Trace(blink::Visitor* visitor) {
+    void Trace(blink::Visitor* visitor) override {
       visitor->Trace(handler_);
       ScriptFunction::Trace(visitor);
     }

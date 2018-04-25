@@ -57,12 +57,12 @@ class V8LazyEventListener final : public V8AbstractEventListener {
                                    code, source_url, position, node);
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(node_);
     V8AbstractEventListener::Trace(visitor);
   }
 
-  const String& Code() const { return code_; }
+  const String& Code() const override { return code_; }
 
  protected:
   v8::Local<v8::Object> GetListenerObjectInternal(ExecutionContext*) override;

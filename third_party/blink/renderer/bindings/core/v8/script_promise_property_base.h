@@ -48,7 +48,7 @@ class CORE_EXPORT ScriptPromisePropertyBase
 
   ScriptPromise Promise(DOMWrapperWorld&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   ScriptPromisePropertyBase(ExecutionContext*, Name);
