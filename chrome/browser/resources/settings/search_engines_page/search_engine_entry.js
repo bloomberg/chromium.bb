@@ -30,9 +30,6 @@ Polymer({
           'engine.canBeEdited,' +
           'engine.canBeRemoved)',
     },
-
-    /** @private {boolean} */
-    showEditSearchEngineDialog_: Boolean,
   },
 
   /** @private {settings.SearchEnginesBrowserProxy} */
@@ -96,18 +93,9 @@ Polymer({
   onEditTap_: function(e) {
     e.preventDefault();
     this.closePopupMenu_();
-
-    this.showEditSearchEngineDialog_ = true;
-    this.async(() => {
-      const dialog = this.$$('settings-search-engine-dialog');
-      // Register listener to detect when the dialog is closed. Flip the boolean
-      // once closed to force a restamp next time it is shown such that the
-      // previous dialog's contents are cleared.
-      dialog.addEventListener('close', () => {
-        this.showEditSearchEngineDialog_ = false;
-        cr.ui.focusWithoutInk(
-            assert(this.$$('paper-icon-button-light button')));
-      });
+    this.fire('edit-search-engine', {
+      engine: this.engine,
+      anchorElement: assert(this.$$('paper-icon-button-light button')),
     });
   },
 

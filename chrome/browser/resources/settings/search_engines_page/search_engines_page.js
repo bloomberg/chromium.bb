@@ -31,9 +31,6 @@ Polymer({
     },
 
     /** @private {boolean} */
-    showAddSearchEngineDialog_: Boolean,
-
-    /** @private {boolean} */
     showExtensionsList_: {
       type: Boolean,
       computed: 'computeShowExtensionsList_(extensions)',
@@ -65,11 +62,33 @@ Polymer({
 
     /** @private {HTMLElement} */
     omniboxExtensionlastFocused_: Object,
+
+    /** @private {?SearchEngine} */
+    dialogModel_: {
+      type: Object,
+      value: null,
+    },
+
+    /** @private {?HTMLElement} */
+    dialogAnchorElement_: {
+      type: Object,
+      value: null,
+    },
+
+    /** @private */
+    showDialog_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   // Since the iron-list for extensions is enclosed in a dom-if, observe both
   // |extensions| and |showExtensionsList_|.
   observers: ['extensionsChanged_(extensions, showExtensionsList_)'],
+
+  listeners: {
+    'edit-search-engine': 'onEditSearchEngine_',
+  },
 
   /** @override */
   ready: function() {
@@ -85,6 +104,37 @@ Polymer({
     });
   },
 
+  /**
+   * @param {?SearchEngine} searchEngine
+   * @param {!HTMLElement} anchorElement
+   * @private
+   */
+  openDialog_: function(searchEngine, anchorElement) {
+    this.dialogModel_ = searchEngine;
+    this.dialogAnchorElement_ = anchorElement;
+    this.showDialog_ = true;
+  },
+
+  /** @private */
+  onCloseDialog_: function() {
+    this.showDialog_ = false;
+    const anchor = /** @type {!HTMLElement} */ (this.dialogAnchorElement_);
+    cr.ui.focusWithoutInk(anchor);
+    this.dialogModel_ = null;
+    this.dialogAnchorElement_ = null;
+  },
+
+  /**
+   * @param {!CustomEvent} e
+   * @private
+   */
+  onEditSearchEngine_: function(e) {
+    const params =
+        /** @type {!{engine: !SearchEngine, anchorElement: !HTMLElement}} */ (
+            e.detail);
+    this.openDialog_(params.engine, params.anchorElement);
+  },
+
   /** @private */
   extensionsChanged_: function() {
     if (this.showExtensionsList_ && this.$.extensions)
@@ -96,15 +146,14 @@ Polymer({
    * @private
    */
   enginesChanged_: function(searchEnginesInfo) {
-    this.defaultEngines = searchEnginesInfo['defaults'];
+    this.defaultEngines = searchEnginesInfo.defaults;
 
     // Sort |otherEngines| in alphabetical order.
-    this.otherEngines = searchEnginesInfo['others'].sort(function(a, b) {
-      return a.name.toLocaleLowerCase().localeCompare(
-          b.name.toLocaleLowerCase());
-    });
+    this.otherEngines = searchEnginesInfo.others.sort(
+        (a, b) => a.name.toLocaleLowerCase().localeCompare(
+            b.name.toLocaleLowerCase()));
 
-    this.extensions = searchEnginesInfo['extensions'];
+    this.extensions = searchEnginesInfo.extensions;
   },
 
   /**
@@ -113,17 +162,7 @@ Polymer({
    */
   onAddSearchEngineTap_: function(e) {
     e.preventDefault();
-    this.showAddSearchEngineDialog_ = true;
-    this.async(() => {
-      const dialog = this.$$('settings-search-engine-dialog');
-      // Register listener to detect when the dialog is closed. Flip the boolean
-      // once closed to force a restamp next time it is shown such that the
-      // previous dialog's contents are cleared.
-      dialog.addEventListener('close', () => {
-        this.showAddSearchEngineDialog_ = false;
-        cr.ui.focusWithoutInk(assert(this.$.addSearchEngine));
-      });
-    });
+    this.openDialog_(null, assert(this.$.addSearchEngine));
   },
 
   /** @private */

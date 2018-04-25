@@ -8,7 +8,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../controls/extension_controlled_indicator.html">
 <link rel="import" href="../focus_row_behavior.html">
-<link rel="import" href="search_engine_dialog.html">
 <link rel="import" href="search_engine_entry_css.html">
 <link rel="import" href="search_engines_browser_proxy.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -41,10 +40,6 @@
       }
     </style>
 
-    <template is="dom-if" if="[[showEditSearchEngineDialog_]]" restamp>
-      <settings-search-engine-dialog model="[[engine]]">
-      </settings-search-engine-dialog>
-    </template>
     <div class="list-item" focus-row-container>
       <div id="name-column">
         <div class="favicon-image"
