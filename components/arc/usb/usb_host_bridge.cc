@@ -118,6 +118,11 @@ void ArcUsbHostBridge::RequestPermission(const std::string& guid,
                                          const std::string& package,
                                          bool interactive,
                                          RequestPermissionCallback callback) {
+  if (guid.empty()) {
+    HandleScanDeviceListRequest(package, std::move(callback));
+    return;
+  }
+
   VLOG(2) << "USB RequestPermission " << guid << " package " << package;
   // Permission already requested.
   if (HasPermissionForDevice(guid, package)) {
@@ -315,6 +320,20 @@ bool ArcUsbHostBridge::HasPermissionForDevice(const std::string& guid,
   return ui_delegate_->HasUsbAccessPermission(
       package, guid, device->serial_number(), device->vendor_id(),
       device->product_id());
+}
+
+void ArcUsbHostBridge::HandleScanDeviceListRequest(
+    const std::string& package,
+    RequestPermissionCallback callback) {
+  if (!ui_delegate_) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  VLOG(2) << "USB Request USB scan devicelist permission "
+          << "package: " << package;
+  ui_delegate_->RequestUsbScanDeviceListPermission(package,
+                                                   std::move(callback));
 }
 
 }  // namespace arc

@@ -80,6 +80,8 @@ class ArcUsbHostBridge : public KeyedService,
                                   RequestPermissionCallback callback);
   bool HasPermissionForDevice(const std::string& guid,
                               const std::string& package);
+  void HandleScanDeviceListRequest(const std::string& package,
+                                   RequestPermissionCallback callback);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   mojom::UsbHostHostPtr usb_host_ptr_;
