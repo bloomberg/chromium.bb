@@ -226,6 +226,8 @@ cast_source_set("browser") {
       "extension_request_protocol_handler.h",
       "extensions/api/bookmarks/bookmarks_api.cc",
       "extensions/api/bookmarks/bookmarks_api.h",
+      "extensions/api/braille_display_private/braille_display_private_api.cc",
+      "extensions/api/braille_display_private/braille_display_private_api.h",
       "extensions/api/history/history_api.cc",
       "extensions/api/history/history_api.h",
       "extensions/api/identity/identity_api.cc",
