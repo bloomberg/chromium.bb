@@ -108,6 +108,7 @@ public class EarlyTraceEvent {
     @VisibleForTesting static List<Event> sCompletedEvents;
     @VisibleForTesting static Map<String, Event> sPendingEvents;
     @VisibleForTesting static List<AsyncEvent> sAsyncEvents;
+    @VisibleForTesting static List<String> sPendingAsyncEvents;
 
     /** @see TraceEvent#MaybeEnableEarlyTracing().
      */
@@ -139,6 +140,7 @@ public class EarlyTraceEvent {
             sCompletedEvents = new ArrayList<Event>();
             sPendingEvents = new HashMap<String, Event>();
             sAsyncEvents = new ArrayList<AsyncEvent>();
+            sPendingAsyncEvents = new ArrayList<String>();
             sState = STATE_ENABLED;
         }
     }
@@ -209,16 +211,19 @@ public class EarlyTraceEvent {
         synchronized (sLock) {
             if (!enabled()) return;
             sAsyncEvents.add(event);
+            sPendingAsyncEvents.add(name);
         }
     }
 
     /** @see {@link TraceEvent#finishAsync()}. */
     public static void finishAsync(String name, long id) {
-        if (!enabled()) return;
+        if (!isActive()) return;
         AsyncEvent event = new AsyncEvent(name, id, false /*isStart*/);
         synchronized (sLock) {
-            if (!enabled()) return;
+            if (!isActive()) return;
+            if (!sPendingAsyncEvents.remove(name)) return;
             sAsyncEvents.add(event);
+            if (sState == STATE_FINISHING) maybeFinishLocked();
         }
     }
 
@@ -228,6 +233,7 @@ public class EarlyTraceEvent {
         sCompletedEvents = null;
         sPendingEvents = null;
         sAsyncEvents = null;
+        sPendingAsyncEvents = null;
     }
 
     private static void maybeFinishLocked() {
@@ -239,17 +245,17 @@ public class EarlyTraceEvent {
             dumpAsyncEvents(sAsyncEvents);
             sAsyncEvents.clear();
         }
-        if (sPendingEvents.isEmpty()) {
+        if (sPendingEvents.isEmpty() && sPendingAsyncEvents.isEmpty()) {
             sState = STATE_FINISHED;
             sPendingEvents = null;
             sCompletedEvents = null;
+            sPendingAsyncEvents = null;
+            sAsyncEvents = null;
         }
     }
 
     private static void dumpEvents(List<Event> events) {
-        long nativeNowNanos = TimeUtils.nativeGetTimeTicksNowUs() * 1000;
-        long javaNowNanos = Event.elapsedRealtimeNanos();
-        long offsetNanos = nativeNowNanos - javaNowNanos;
+        long offsetNanos = getOffsetNanos();
         for (Event e : events) {
             nativeRecordEarlyEvent(e.mName, e.mBeginTimeNanos + offsetNanos,
                     e.mEndTimeNanos + offsetNanos, e.mThreadId,
@@ -257,9 +263,7 @@ public class EarlyTraceEvent {
         }
     }
     private static void dumpAsyncEvents(List<AsyncEvent> events) {
-        long nativeNowNanos = TimeUtils.nativeGetTimeTicksNowUs() * 1000;
-        long javaNowNanos = Event.elapsedRealtimeNanos();
-        long offsetNanos = nativeNowNanos - javaNowNanos;
+        long offsetNanos = getOffsetNanos();
         for (AsyncEvent e : events) {
             if (e.mIsStart) {
                 nativeRecordEarlyStartAsyncEvent(e.mName, e.mId, e.mTimestampNanos + offsetNanos);
@@ -267,6 +271,12 @@ public class EarlyTraceEvent {
                 nativeRecordEarlyFinishAsyncEvent(e.mName, e.mId, e.mTimestampNanos + offsetNanos);
             }
         }
+    }
+
+    private static long getOffsetNanos() {
+        long nativeNowNanos = TimeUtils.nativeGetTimeTicksNowUs() * 1000;
+        long javaNowNanos = Event.elapsedRealtimeNanos();
+        return nativeNowNanos - javaNowNanos;
     }
 
     private static native void nativeRecordEarlyEvent(String name, long beginTimNanos,

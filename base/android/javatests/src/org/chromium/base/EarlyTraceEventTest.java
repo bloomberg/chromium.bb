@@ -30,6 +30,7 @@ public class EarlyTraceEventTest {
     private static final String EVENT_NAME = "MyEvent";
     private static final String EVENT_NAME2 = "MyOtherEvent";
     private static final long EVENT_ID = 1;
+    private static final long EVENT_ID2 = 2;
 
     @Before
     public void setUp() throws Exception {
@@ -80,6 +81,21 @@ public class EarlyTraceEventTest {
         Assert.assertTrue(beforeNanos <= eventStart.mTimestampNanos
                 && eventEnd.mTimestampNanos <= afterNanos);
         Assert.assertTrue(eventStart.mTimestampNanos <= eventEnd.mTimestampNanos);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testRecordAsyncFinishEventWhenFinishing() {
+        EarlyTraceEvent.enable();
+        EarlyTraceEvent.startAsync(EVENT_NAME, EVENT_ID);
+        EarlyTraceEvent.disable();
+
+        Assert.assertEquals(EarlyTraceEvent.STATE_FINISHING, EarlyTraceEvent.sState);
+        Assert.assertTrue(EarlyTraceEvent.sAsyncEvents.isEmpty());
+        Assert.assertEquals(1, EarlyTraceEvent.sPendingAsyncEvents.size());
+        EarlyTraceEvent.finishAsync(EVENT_NAME, EVENT_ID);
+        Assert.assertEquals(EarlyTraceEvent.STATE_FINISHED, EarlyTraceEvent.sState);
     }
 
     @Test
@@ -168,6 +184,21 @@ public class EarlyTraceEventTest {
 
         Assert.assertEquals(1, EarlyTraceEvent.sPendingEvents.size());
         Assert.assertTrue(EarlyTraceEvent.sCompletedEvents.isEmpty());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testIgnoreNewAsyncEventsWhenFinishing() {
+        EarlyTraceEvent.enable();
+        EarlyTraceEvent.startAsync(EVENT_NAME, EVENT_ID);
+        EarlyTraceEvent.disable();
+
+        Assert.assertEquals(EarlyTraceEvent.STATE_FINISHING, EarlyTraceEvent.sState);
+        EarlyTraceEvent.startAsync(EVENT_NAME2, EVENT_ID2);
+
+        Assert.assertEquals(1, EarlyTraceEvent.sPendingAsyncEvents.size());
+        Assert.assertTrue(EarlyTraceEvent.sAsyncEvents.isEmpty());
     }
 
     @Test
