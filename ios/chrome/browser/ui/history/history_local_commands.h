@@ -12,6 +12,8 @@
 @protocol HistoryLocalCommands
 // Notifies the coordinator that history should be dismissed.
 - (void)dismissHistoryWithCompletion:(ProceduralBlock)completionHandler;
+// Notifies the coordinator that Privacy Settings should be displayed.
+- (void)displayPrivacySettings;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_LOCAL_COMMANDS_H_

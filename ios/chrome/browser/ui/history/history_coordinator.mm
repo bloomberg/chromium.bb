@@ -11,6 +11,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/ui/history/history_local_commands.h"
 #include "ios/chrome/browser/ui/history/history_table_view_controller.h"
 #import "ios/chrome/browser/ui/history/history_transitioning_delegate.h"
@@ -92,6 +93,13 @@
 
 - (void)dismissHistoryWithCompletion:(ProceduralBlock)completionHandler {
   [self stopWithCompletion:completionHandler];
+}
+
+- (void)displayPrivacySettings {
+  // TODO(crbug.com/805201): We need to push CBD into the NavigationController
+  // instead of presenting it modally.
+  [self.dispatcher showClearBrowsingDataSettingsFromViewController:
+                       self.historyNavigationController];
 }
 
 @end
