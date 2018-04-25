@@ -138,5 +138,18 @@ void CastContentWindowAura::OnSideSwipeEnd(CastSideSwipeOrigin swipe_origin,
   }
 }
 
+bool CastContentWindowAura::CanHandleSwipe(CastSideSwipeOrigin swipe_origin) {
+  return swipe_origin == CastSideSwipeOrigin::LEFT &&
+         delegate_->CanHandleGesture(GestureType::GO_BACK);
+}
+
+void CastContentWindowAura::HandleSideSwipeBegin(
+    CastSideSwipeOrigin swipe_origin,
+    const gfx::Point& touch_location) {
+  if (swipe_origin == CastSideSwipeOrigin::LEFT) {
+    delegate_->ConsumeGesture(GestureType::GO_BACK);
+  }
+}
+
 }  // namespace shell
 }  // namespace chromecast
