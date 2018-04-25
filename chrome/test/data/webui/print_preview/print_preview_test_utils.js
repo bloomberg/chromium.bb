@@ -68,55 +68,7 @@ cr.define('print_preview_test_utils', function() {
     };
   }
 
-  /**
-   * Creates a destination with a certificate status tag.
-   * @param {string} id Printer id
-   * @param {string} name Printer display name
-   * @param {boolean} invalid Whether printer has an invalid certificate.
-   * @return {!print_preview.Destination}
-   */
-  function createDestinationWithCertificateStatus(id, name, invalid) {
-    const tags = {
-      certificateStatus: invalid ?
-          print_preview.DestinationCertificateStatus.NO :
-          print_preview.DestinationCertificateStatus.UNKNOWN,
-    };
-    const dest = new print_preview.Destination(
-        id, print_preview.DestinationType.GOOGLE,
-        print_preview.DestinationOrigin.COOKIES, name, true /* isRecent */,
-        print_preview.DestinationConnectionStatus.ONLINE, tags);
-    return dest;
-  }
-
-  /**
-   * Get the default media size for |device|.
-   * @param {!print_preview.PrinterCapabilitiesResponse} device
-   * @return {{width_microns: number,
-   *           height_microns: number}} The width and height of the default
-   *     media.
-   */
-  function getDefaultMediaSize(device) {
-    const size = device.capabilities.printer.media_size.option.find(
-        opt => opt.is_default);
-    return { width_microns: size.width_microns,
-             height_microns: size.height_microns };
-  }
-
-  /**
-   * Get the default page orientation for |device|.
-   * @param {!print_preview.PrinterCapabilitiesResponse} device
-   * @return {string} The default orientation.
-   */
-  function getDefaultOrientation(device) {
-    return device.capabilities.printer.page_orientation.option.find(
-        opt => opt.is_default).type;
-  }
-
   return {
     getCddTemplate: getCddTemplate,
-    getDefaultMediaSize: getDefaultMediaSize,
-    getDefaultOrientation: getDefaultOrientation,
-    createDestinationWithCertificateStatus:
-        createDestinationWithCertificateStatus,
   };
 });

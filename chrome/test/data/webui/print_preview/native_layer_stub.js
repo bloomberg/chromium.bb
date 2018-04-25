@@ -95,8 +95,12 @@ cr.define('print_preview', function() {
         pageCount: pageCount
       });
       const printTicketParsed = JSON.parse(printTicket);
-      if (printTicketParsed.deviceName == this.badPrinterId_)
-        return Promise.reject('SETTINGS_INVALID');
+      if (printTicketParsed.deviceName == this.badPrinterId_) {
+        let rejectString = print_preview.PreviewArea.EventType.SETTINGS_INVALID;
+        rejectString = rejectString.substring(
+            rejectString.lastIndexOf('.') + 1, rejectString.length);
+        return Promise.reject(rejectString);
+      }
       const pageRanges = printTicketParsed.pageRange;
       const requestId = printTicketParsed.requestID;
       if (pageRanges.length == 0) {  // assume full length document, 1 page.

@@ -68,8 +68,7 @@ cr.define('preview_generation_test', function() {
 
       page = document.createElement('print-preview-app');
       const previewArea = page.$$('print-preview-preview-area');
-      previewArea.plugin_ = new print_preview.PDFPluginStub(
-          previewArea.onPluginLoad_.bind(previewArea));
+      previewArea.plugin_ = new print_preview.PDFPluginStub(previewArea);
       document.body.appendChild(page);
       return Promise.all([
         nativeLayer.whenCalled('getInitialSettings'),
