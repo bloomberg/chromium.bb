@@ -227,9 +227,9 @@ bool InvokeAttachmentServices(const base::FilePath& full_path,
     return false;
   }
 
-  // The source URL could be empty if it was not a valid URL or was not HTTP/S.
-  // If so, user "about:internet" as a fallback URL. The latter is known to
-  // reliably map to the Internet zone.
+  // The source URL could be empty if it was not a valid URL, or was not HTTP/S,
+  // or the download was off-the-record. If so, user "about:internet" as a
+  // fallback URL. The latter is known to reliably map to the Internet zone.
   //
   // In addition, URLs that are longer than INTERNET_MAX_URL_LENGTH are also
   // known to cause problems for URLMon. Hence also use "about:internet" in

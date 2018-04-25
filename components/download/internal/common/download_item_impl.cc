@@ -1728,7 +1728,9 @@ void DownloadItemImpl::OnDownloadCompleting() {
                      base::Unretained(download_file_.get()),
                      GetTargetFilePath(),
                      delegate_->GetApplicationClientIdForFileScanning(),
-                     GetURL(), GetReferrerUrl(), std::move(callback)));
+                     delegate_->IsOffTheRecord() ? GURL() : GetURL(),
+                     delegate_->IsOffTheRecord() ? GURL() : GetReferrerUrl(),
+                     std::move(callback)));
 }
 
 void DownloadItemImpl::OnDownloadRenamedToFinalName(
