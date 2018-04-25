@@ -1342,7 +1342,7 @@
     "type": "script",
     "script": "//testing/scripts/run_isolated_script_test.py",
     "args": [
-      "../../third_party/WebKit/Tools/Scripts/test-webkitpy"
+      "../../third_party/blink/tools/run_blinkpy_tests.py"
     ]
   },
   "webkit_unit_tests": {

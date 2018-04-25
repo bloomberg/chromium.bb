@@ -81,7 +81,7 @@ class MockExecutive(object):
         self._should_log = should_log
         self._should_throw = should_throw
         # FIXME: Once executive wraps os.getpid() we can just use a static pid for "this" process.
-        self._running_pids = {'test-webkitpy': os.getpid()}
+        self._running_pids = {'run_blinkpy_tests.py': os.getpid()}
         self._output = output
         self._stderr = stderr
         self._exit_code = exit_code

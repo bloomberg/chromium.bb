@@ -79,12 +79,12 @@ class ConfigureLoggingTestBase(unittest.TestCase):
         log_stream = TestLogStream(self)
 
         # Use a logger other than the root logger or one prefixed with
-        # webkit so as not to conflict with test-webkitpy logging.
+        # webkit so as not to conflict with run_blinkpy_tests.py logging.
         logger = logging.getLogger("unittest")
 
         # Configure the test logger not to pass messages along to the
         # root logger.  This prevents test messages from being
-        # propagated to loggers used by test-webkitpy logging (e.g.
+        # propagated to loggers used by run_blinkpy_tests.py logging (e.g.
         # the root logger).
         logger.propagate = False
 

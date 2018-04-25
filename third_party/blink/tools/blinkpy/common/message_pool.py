@@ -27,8 +27,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 """Module for handling messages and concurrency for run-webkit-tests
-and test-webkitpy. This module follows the design for multiprocessing.Pool
-and concurrency.futures.ProcessPoolExecutor, with the following differences:
+and run_blinkpy_tests.py. This module follows the design for
+multiprocessing.Pool and concurrency.futures.ProcessPoolExecutor, with the
+following differences:
 
 * Tasks are executed in stateful subprocesses via objects that implement the
   Worker interface - this allows the workers to share state across tasks.
