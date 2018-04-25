@@ -35,7 +35,7 @@ namespace {
 class MockVideoFrameProvider : public cc::VideoFrameProvider {
  public:
   MockVideoFrameProvider() = default;
-  ~MockVideoFrameProvider() = default;
+  ~MockVideoFrameProvider() override = default;
 
   MOCK_METHOD1(SetVideoFrameProviderClient, void(Client*));
   MOCK_METHOD2(UpdateCurrentFrame, bool(base::TimeTicks, base::TimeTicks));
@@ -52,7 +52,7 @@ class MockCompositorFrameSink : public viz::mojom::blink::CompositorFrameSink {
   MockCompositorFrameSink(
       viz::mojom::blink::CompositorFrameSinkRequest* request)
       : binding_(this, std::move(*request)) {}
-  ~MockCompositorFrameSink() = default;
+  ~MockCompositorFrameSink() override = default;
 
   MOCK_METHOD1(SetNeedsBeginFrame, void(bool));
   MOCK_METHOD0(SetWantsAnimateOnlyBeginFrames, void());
@@ -99,7 +99,7 @@ class MockVideoFrameResourceProvider
             cc::LayerTreeSettings()) {
     blink::VideoFrameResourceProvider::Initialize(context_provider);
   }
-  ~MockVideoFrameResourceProvider() = default;
+  ~MockVideoFrameResourceProvider() override = default;
 
   MOCK_METHOD1(Initialize, void(viz::ContextProvider*));
   MOCK_METHOD3(AppendQuads,

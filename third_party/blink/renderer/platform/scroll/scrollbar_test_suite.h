@@ -90,7 +90,7 @@ class MockScrollableArea : public GarbageCollectedFinalized<MockScrollableArea>,
   }
   bool ScrollAnimatorEnabled() const override { return false; }
   int PageStep(ScrollbarOrientation) const override { return 0; }
-  void ScrollControlWasSetNeedsPaintInvalidation() {}
+  void ScrollControlWasSetNeedsPaintInvalidation() override {}
   void SetScrollOrigin(const IntPoint& origin) {
     ScrollableArea::SetScrollOrigin(origin);
   }
@@ -114,7 +114,7 @@ class MockScrollableArea : public GarbageCollectedFinalized<MockScrollableArea>,
   using ScrollableArea::VerticalScrollbarNeedsPaintInvalidation;
   using ScrollableArea::ClearNeedsPaintInvalidationForScrollControls;
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(chrome_client_);
     ScrollableArea::Trace(visitor);
   }

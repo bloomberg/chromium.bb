@@ -21,7 +21,7 @@ namespace render_widget_signals_unittest {
 class MockObserver : public RenderWidgetSignals::Observer {
  public:
   MockObserver() = default;
-  virtual ~MockObserver() = default;
+  ~MockObserver() override = default;
 
   MOCK_METHOD1(SetAllRenderWidgetsHidden, void(bool hidden));
   MOCK_METHOD1(SetHasVisibleRenderWidgetWithTouchHandler,

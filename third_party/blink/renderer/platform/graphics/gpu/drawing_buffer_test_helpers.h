@@ -108,12 +108,12 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
     state_.renderbuffer_binding = renderbuffer;
   }
 
-  void Enable(GLenum cap) {
+  void Enable(GLenum cap) override {
     if (cap == GL_SCISSOR_TEST)
       state_.scissor_enabled = true;
   }
 
-  void Disable(GLenum cap) {
+  void Disable(GLenum cap) override {
     if (cap == GL_SCISSOR_TEST)
       state_.scissor_enabled = false;
   }
@@ -232,7 +232,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   }
 
   MOCK_METHOD1(DestroyImageMock, void(GLuint imageId));
-  void DestroyImageCHROMIUM(GLuint image_id) {
+  void DestroyImageCHROMIUM(GLuint image_id) override {
     image_sizes_.erase(image_id);
     // No textures should be bound to this.
     CHECK(image_to_texture_map_.find(image_id) == image_to_texture_map_.end());
@@ -241,7 +241,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   }
 
   MOCK_METHOD1(BindTexImage2DMock, void(GLint imageId));
-  void BindTexImage2DCHROMIUM(GLenum target, GLint image_id) {
+  void BindTexImage2DCHROMIUM(GLenum target, GLint image_id) override {
     if (target == ImageCHROMIUMTextureTarget()) {
       texture_sizes_.Set(bound_textures_[target],
                          image_sizes_.find(image_id)->value);
@@ -251,7 +251,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   }
 
   MOCK_METHOD1(ReleaseTexImage2DMock, void(GLint imageId));
-  void ReleaseTexImage2DCHROMIUM(GLenum target, GLint image_id) {
+  void ReleaseTexImage2DCHROMIUM(GLenum target, GLint image_id) override {
     if (target == ImageCHROMIUMTextureTarget()) {
       image_sizes_.Set(current_image_id_, IntSize());
       image_to_texture_map_.erase(image_id);

@@ -110,7 +110,7 @@ class MockGLES2InterfaceWithImageSupport : public FakeGLES2Interface {
   MOCK_METHOD2(GenTextures, void(GLsizei, GLuint*));
   MOCK_METHOD2(DeleteTextures, void(GLsizei, const GLuint*));
   // Fake
-  void GenMailboxCHROMIUM(GLbyte* name) {
+  void GenMailboxCHROMIUM(GLbyte* name) override {
     name[0] = 1;  // Make non-zero mailbox names
   }
 };
@@ -458,14 +458,14 @@ class MockLogger : public Canvas2DLayerBridge::Logger {
   MOCK_METHOD1(ReportHibernationEvent,
                void(Canvas2DLayerBridge::HibernationEvent));
   MOCK_METHOD0(DidStartHibernating, void());
-  virtual ~MockLogger() = default;
+  ~MockLogger() override = default;
 };
 
 class MockCanvasResourceHost : public CanvasResourceHost {
  public:
-  void NotifySurfaceInvalid() {}
-  void SetNeedsCompositingUpdate() {}
-  void UpdateMemoryUsage() {}
+  void NotifySurfaceInvalid() override {}
+  void SetNeedsCompositingUpdate() override {}
+  void UpdateMemoryUsage() override {}
   MOCK_CONST_METHOD1(RestoreCanvasMatrixClipStack, void(PaintCanvas*));
 };
 
