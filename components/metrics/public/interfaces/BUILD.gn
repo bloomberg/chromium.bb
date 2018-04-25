@@ -10,7 +10,6 @@ mojom("call_stack_mojo_bindings") {
   ]
 
   deps = [
-    "//mojo/common:common_custom_types",
     "//mojo/public/mojom/base",
   ]
 }
@@ -22,7 +21,6 @@ mojom("call_stack_mojo_test_bindings") {
 
   deps = [
     ":call_stack_mojo_bindings",
-    "//mojo/common:common_custom_types",
   ]
 }
 

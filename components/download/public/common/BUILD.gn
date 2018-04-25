@@ -104,10 +104,6 @@ mojom("interfaces") {
     "download_stream.mojom",
   ]
 
-  public_deps = [
-    "//mojo/common:common_custom_types",
-  ]
-
   export_class_attribute = "COMPONENTS_DOWNLOAD_EXPORT"
   export_define = "COMPONENTS_DOWNLOAD_IMPLEMENTATION=1"
   export_header = "components/download/public/common/download_export.h"

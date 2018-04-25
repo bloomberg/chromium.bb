@@ -27,8 +27,4 @@ mojom("mojo_bindings") {
   sources = [
     "mojom/inline_install.mojom",
   ]
-
-  public_deps = [
-    "//mojo/common:common_custom_types",
-  ]
 }

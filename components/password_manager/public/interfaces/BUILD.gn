@@ -8,7 +8,4 @@ mojom("interfaces") {
   sources = [
     "sync_password_data.mojom",
   ]
-  deps = [
-    "//mojo/common:common_custom_types",
-  ]
 }

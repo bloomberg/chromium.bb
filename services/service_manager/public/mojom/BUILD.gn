@@ -20,7 +20,6 @@ mojom_component("mojom") {
 
   public_deps = [
     ":constants",
-    "//mojo/common:common_custom_types",
   ]
 }
 

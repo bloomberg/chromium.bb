@@ -13,10 +13,6 @@ mojom("data_pipe_interfaces") {
     "data_pipe_getter.mojom",
   ]
 
-  public_deps = [
-    "//mojo/common:common_custom_types",
-  ]
-
   # TODO(crbug/598073): When moving the service implementation to
   # //services/network, add the correct values for export_class_attribute /
   # export_define / export_header here. Context in https://crrev.com/2225673002.

@@ -694,7 +694,6 @@ mojom("mojo_bindings") {
   public_deps = [
     "//components/content_settings/core/common:mojo_bindings",
     "//content/public/common:interfaces",
-    "//mojo/common:common_custom_types",
     "//mojo/public/mojom/base",
     "//third_party/blink/public:mojo_bindings",
     "//ui/gfx/geometry/mojo",
@@ -723,7 +722,6 @@ mojom("search_mojom") {
   ]
 
   public_deps = [
-    "//mojo/common:common_custom_types",
     "//mojo/public/mojom/base",
     "//url/mojom:url_mojom_gurl",
   ]
