@@ -19,11 +19,16 @@ TestBrowserThread::TestBrowserThread(BrowserThread::ID identifier)
   real_thread_->AllowBlockingForTesting();
 }
 
-TestBrowserThread::TestBrowserThread(BrowserThread::ID identifier,
-                                     base::MessageLoop* message_loop)
+TestBrowserThread::TestBrowserThread(
+    BrowserThread::ID identifier,
+    scoped_refptr<base::SingleThreadTaskRunner> thread_runner)
     : identifier_(identifier),
       fake_thread_(
-          new BrowserThreadImpl(identifier_, message_loop->task_runner())) {}
+          new BrowserThreadImpl(identifier_, std::move(thread_runner))) {}
+
+TestBrowserThread::TestBrowserThread(BrowserThread::ID identifier,
+                                     base::MessageLoop* message_loop)
+    : TestBrowserThread(identifier, message_loop->task_runner()) {}
 
 TestBrowserThread::~TestBrowserThread() {
   // The upcoming BrowserThreadImpl::ResetGlobalsForTesting() call requires that
