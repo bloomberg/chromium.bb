@@ -50,7 +50,7 @@ void DeviceMonitorLinux::Initialize() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   // We want to be notified of IO message loop destruction to delete |udev_|.
-  base::MessageLoop::current()->AddDestructionObserver(this);
+  base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
 
   std::vector<device::UdevLinux::UdevMonitorFilter> filters;
   for (const SubsystemMap& entry : kSubsystemMap) {

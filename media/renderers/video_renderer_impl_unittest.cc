@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -280,13 +281,13 @@ class VideoRendererImplTest : public testing::Test {
   }
 
   void AdvanceWallclockTimeInMs(int time_ms) {
-    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
+    DCHECK_EQ(&message_loop_, base::MessageLoopCurrent::Get());
     base::AutoLock l(lock_);
     tick_clock_.Advance(base::TimeDelta::FromMilliseconds(time_ms));
   }
 
   void AdvanceTimeInMs(int time_ms) {
-    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
+    DCHECK_EQ(&message_loop_, base::MessageLoopCurrent::Get());
     base::AutoLock l(lock_);
     time_ += base::TimeDelta::FromMilliseconds(time_ms);
     time_source_.StopTicking();
@@ -470,7 +471,7 @@ class VideoRendererImplTest : public testing::Test {
  private:
   void DecodeRequested(scoped_refptr<DecoderBuffer> buffer,
                        const VideoDecoder::DecodeCB& decode_cb) {
-    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
+    DCHECK_EQ(&message_loop_, base::MessageLoopCurrent::Get());
     CHECK(decode_cb_.is_null());
     decode_cb_ = decode_cb;
 
@@ -488,7 +489,7 @@ class VideoRendererImplTest : public testing::Test {
   }
 
   void FlushRequested(const base::Closure& callback) {
-    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
+    DCHECK_EQ(&message_loop_, base::MessageLoopCurrent::Get());
     decode_results_.clear();
     if (!decode_cb_.is_null()) {
       QueueFrames("abort");

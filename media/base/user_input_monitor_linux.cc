@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "media/base/keyboard_event_counter.h"
@@ -32,7 +33,7 @@ namespace {
 // UserInputMonitorLinux since it needs to be deleted on the IO thread.
 class UserInputMonitorLinuxCore
     : public base::SupportsWeakPtr<UserInputMonitorLinuxCore>,
-      public base::MessageLoop::DestructionObserver {
+      public base::MessageLoopCurrent::DestructionObserver {
  public:
   explicit UserInputMonitorLinuxCore(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
@@ -186,7 +187,7 @@ void UserInputMonitorLinuxCore::StartMonitor() {
 
   // Start observing message loop destruction if we start monitoring the first
   // event.
-  base::MessageLoop::current()->AddDestructionObserver(this);
+  base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
 
   // Fetch pending events if any.
   OnXEvent();
@@ -219,7 +220,7 @@ void UserInputMonitorLinuxCore::StopMonitor() {
     x_control_display_ = NULL;
   }
   // Stop observing message loop destruction if no event is being monitored.
-  base::MessageLoop::current()->RemoveDestructionObserver(this);
+  base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
 }
 
 void UserInputMonitorLinuxCore::OnXEvent() {
