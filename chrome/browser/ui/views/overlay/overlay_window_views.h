@@ -10,6 +10,11 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget.h"
 
+namespace views {
+class ImageButton;
+class ToggleImageButton;
+}  // namespace views
+
 // The Chrome desktop implementation of OverlayWindow. This will only be
 // implemented in views, which will support all desktop platforms.
 class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
@@ -27,6 +32,11 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   ui::Layer* GetLayer() override;
   gfx::Rect GetBounds() const override;
   void UpdateVideoSize(const gfx::Size& natural_size) override;
+  ui::Layer* GetVideoLayer() override;
+  ui::Layer* GetCloseControlsLayer() override;
+  ui::Layer* GetPlayPauseControlsLayer() override;
+  gfx::Rect GetCloseControlsBounds() override;
+  gfx::Rect GetPlayPauseControlsBounds() override;
 
   // views::Widget:
   gfx::Size GetMinimumSize() const override;
@@ -44,6 +54,9 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   // |min_size_| and |max_size_|.
   gfx::Rect CalculateAndUpdateBounds();
 
+  // Set up the views::Views that will be shown on the window.
+  void SetUpViews();
+
   // Not owned; |controller_| owns |this|.
   content::PictureInPictureWindowController* controller_;
 
@@ -60,6 +73,11 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   // The natural size of the video to show. This is used to compute sizing and
   // ensuring factors such as aspect ratio is maintained.
   gfx::Size natural_size_;
+
+  // Views to be shown.
+  std::unique_ptr<views::View> video_view_;
+  std::unique_ptr<views::ImageButton> close_controls_view_;
+  std::unique_ptr<views::ToggleImageButton> play_pause_controls_view_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayWindowViews);
 };

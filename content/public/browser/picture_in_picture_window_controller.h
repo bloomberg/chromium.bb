@@ -41,7 +41,9 @@ class PictureInPictureWindowController {
   virtual void UpdateLayerBounds() = 0;
 
   // Commands.
-  virtual void TogglePlayPause() = 0;
+  // Returns true if the player is active (i.e. currently playing) after this
+  // call.
+  virtual bool TogglePlayPause() = 0;
 
  protected:
   // Use PictureInPictureWindowController::GetOrCreateForWebContents() to

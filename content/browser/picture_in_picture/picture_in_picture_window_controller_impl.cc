@@ -100,7 +100,7 @@ void PictureInPictureWindowControllerImpl::UpdateLayerBounds() {
     embedder_->UpdateLayerBounds();
 }
 
-void PictureInPictureWindowControllerImpl::TogglePlayPause() {
+bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
   DCHECK(window_ && window_->IsActive());
 
   content::MediaWebContentsObserver* observer =
@@ -113,10 +113,12 @@ void PictureInPictureWindowControllerImpl::TogglePlayPause() {
   if (observer->IsPlayerActive(*player_id)) {
     player_id->first->Send(new MediaPlayerDelegateMsg_Pause(
         player_id->first->GetRoutingID(), player_id->second));
-  } else {
-    player_id->first->Send(new MediaPlayerDelegateMsg_Play(
-        player_id->first->GetRoutingID(), player_id->second));
+    return false;
   }
+
+  player_id->first->Send(new MediaPlayerDelegateMsg_Play(
+      player_id->first->GetRoutingID(), player_id->second));
+  return true;
 }
 
 }  // namespace content
