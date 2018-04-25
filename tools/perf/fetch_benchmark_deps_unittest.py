@@ -3,7 +3,10 @@
 # found in the LICENSE file.
 
 import os
+import re
+import sys
 import unittest
+import StringIO
 
 import mock  # pylint: disable=import-error
 
@@ -26,7 +29,9 @@ class FetchBenchmarkDepsUnittest(unittest.TestCase):
   """
 
   def testFetchWPRs(self):
-    args = ['smoothness.top_25_smooth']
+    old_out = sys.stdout
+    sys.stdout = StringIO.StringIO()
+    args = ['smoothness.top_25_smooth', '--output-deps']
     with mock.patch.object(archive_info.WprArchiveInfo,
         'DownloadArchivesIfNeeded', autospec=True) as mock_download:
       with mock.patch('py_utils.cloud_storage'
@@ -41,6 +46,21 @@ class FetchBenchmarkDepsUnittest(unittest.TestCase):
             'top_25_smooth.json'))
         # This benchmark doesn't use any static local files.
         self.assertFalse(mock_get.called)
+
+    # Checks fetch_benchmark_deps.py Output.
+    output_count = 0
+    dep_pattern = re.compile('Dependency: (.+)')
+    for line in sys.stdout.getvalue().splitlines():
+      dep_match = dep_pattern.match(line)
+      if not dep_match:
+        continue
+      filename = dep_match.group(1)
+      fullpath = os.path.join(path_util.GetChromiumSrcDir(), filename)
+      sha1path = fullpath + '.sha1'
+      self.assertTrue(os.path.isfile(sha1path))
+      output_count += 1
+    self.assertTrue(output_count > 0)
+    sys.stdout = old_out
 
   def testFetchServingDirs(self):
     args = ['media.desktop']
