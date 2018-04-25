@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
 #include "chromeos/cryptohome/async_method_caller.h"
@@ -327,7 +327,7 @@ void AttestationFlow::CheckAttestationReadyAndReschedule(
   if (base::TimeTicks::Now() < end_time) {
     LOG(WARNING) << "Attestation: Not prepared yet."
                  << " Retrying in " << retry_delay_ << ".";
-    base::MessageLoop::current()->task_runner()->PostDelayedTask(
+    base::MessageLoopCurrent::Get()->task_runner()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&AttestationFlow::WaitForAttestationReadyAndStartEnroll,
                        weak_factory_.GetWeakPtr(), end_time, on_failure,
