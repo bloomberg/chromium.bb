@@ -16,7 +16,7 @@
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/renderer/dom_storage/local_storage_area.h"
 #include "content/renderer/dom_storage/local_storage_cached_areas.h"
-#include "content/renderer/dom_storage/webstoragenamespace_impl.h"
+#include "content/renderer/dom_storage/session_web_storage_namespace_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -351,7 +351,8 @@ void LocalStorageCachedArea::KeyDeleted(const std::vector<uint8_t>& key,
   }
 
   if (IsSessionStorage()) {
-    WebStorageNamespaceImpl session_namespace_for_event_dispatch(namespace_id_);
+    SessionWebStorageNamespaceImpl session_namespace_for_event_dispatch(
+        namespace_id_, nullptr);
     blink::WebStorageEventDispatcher::DispatchSessionStorageEvent(
         blink::WebString::FromUTF16(key_string),
         blink::WebString::FromUTF16(
@@ -392,7 +393,8 @@ void LocalStorageCachedArea::AllDeleted(const std::string& source) {
   }
 
   if (IsSessionStorage()) {
-    WebStorageNamespaceImpl session_namespace_for_event_dispatch(namespace_id_);
+    SessionWebStorageNamespaceImpl session_namespace_for_event_dispatch(
+        namespace_id_, nullptr);
     blink::WebStorageEventDispatcher::DispatchSessionStorageEvent(
         blink::WebString(), blink::WebString(), blink::WebString(),
         origin_.GetURL(), page_url, session_namespace_for_event_dispatch,
@@ -441,7 +443,8 @@ void LocalStorageCachedArea::KeyAddedOrChanged(
   }
 
   if (IsSessionStorage()) {
-    WebStorageNamespaceImpl session_namespace_for_event_dispatch(namespace_id_);
+    SessionWebStorageNamespaceImpl session_namespace_for_event_dispatch(
+        namespace_id_, nullptr);
     blink::WebStorageEventDispatcher::DispatchSessionStorageEvent(
         blink::WebString::FromUTF16(key_string),
         blink::WebString::FromUTF16(old_value),
