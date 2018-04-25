@@ -14,6 +14,7 @@
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/network.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -36,6 +37,7 @@ struct URLLoaderCompletionStatus;
 namespace content {
 class BrowserContext;
 class DevToolsAgentHostImpl;
+class DevToolsIOContext;
 class RenderFrameHostImpl;
 class InterceptionHandle;
 class NavigationHandle;
@@ -51,7 +53,7 @@ class BackgroundSyncRestorer;
 class NetworkHandler : public DevToolsDomainHandler,
                        public Network::Backend {
  public:
-  explicit NetworkHandler(const std::string& host_id);
+  NetworkHandler(const std::string& host_id, DevToolsIOContext* io_context);
   ~NetworkHandler() override;
 
   static std::vector<NetworkHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
@@ -125,6 +127,10 @@ class NetworkHandler : public DevToolsDomainHandler,
       const String& interception_id,
       std::unique_ptr<GetResponseBodyForInterceptionCallback> callback)
       override;
+  void TakeResponseBodyForInterceptionAsStream(
+      const String& interception_id,
+      std::unique_ptr<TakeResponseBodyForInterceptionAsStreamCallback> callback)
+      override;
 
   bool MaybeCreateProxyForInterception(
       const base::UnguessableToken& frame_token,
@@ -174,6 +180,15 @@ class NetworkHandler : public DevToolsDomainHandler,
   void RequestIntercepted(std::unique_ptr<InterceptedRequestInfo> request_info);
   void SetNetworkConditions(network::mojom::NetworkConditionsPtr conditions);
 
+  void OnResponseBodyPipeTaken(
+      std::unique_ptr<TakeResponseBodyForInterceptionAsStreamCallback> callback,
+      Response response,
+      mojo::ScopedDataPipeConsumerHandle pipe,
+      const std::string& mime_type);
+
+  const std::string host_id_;
+  DevToolsIOContext* const io_context_;
+
   std::unique_ptr<Network::Frontend> frontend_;
   BrowserContext* browser_context_;
   StoragePartition* storage_partition_;
@@ -181,7 +196,6 @@ class NetworkHandler : public DevToolsDomainHandler,
   bool enabled_;
   std::string user_agent_;
   std::vector<std::pair<std::string, std::string>> extra_headers_;
-  std::string host_id_;
   std::unique_ptr<InterceptionHandle> interception_handle_;
   std::unique_ptr<DevToolsURLLoaderInterceptor> url_loader_interceptor_;
   bool bypass_service_worker_;

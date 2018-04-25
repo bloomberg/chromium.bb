@@ -2501,7 +2501,7 @@ domain IO
       # Handle of the stream to read.
       StreamHandle handle
       # Seek to the specified offset before reading (if not specificed, proceed with offset
-      # following the last read).
+      # following the last read). Some types of streams may only support sequential reads.
       optional integer offset
       # Maximum number of bytes to read (left upon the agent discretion if not specified).
       optional integer size
@@ -3807,6 +3807,16 @@ domain Network
       string body
       # True, if content was sent as base64.
       boolean base64Encoded
+
+  # Returns a handle to the stream representing the response body. Note that after this command,
+  # the intercepted request can't be continued as is -- you either need to cancel it or to provide
+  # the response body. The stream only supports sequential read, IO.read will fail if the position
+  # is specified.
+  experimental command takeResponseBodyForInterceptionAsStream
+    parameters
+      InterceptionId interceptionId
+    returns
+      IO.StreamHandle stream
 
   # This method sends a new XMLHttpRequest which is identical to the original one. The following
   # parameters should be identical: method, url, async, request body, extra headers, withCredentials

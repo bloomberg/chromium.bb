@@ -11,6 +11,7 @@
 #include "base/unguessable_token.h"
 #include "content/browser/devtools/protocol/network.h"
 #include "content/public/common/resource_type.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/net_errors.h"
 
 namespace content {
@@ -44,6 +45,10 @@ class DevToolsNetworkInterceptor {
       protocol::Network::Backend::ContinueInterceptedRequestCallback;
   using GetResponseBodyForInterceptionCallback =
       protocol::Network::Backend::GetResponseBodyForInterceptionCallback;
+  using TakeResponseBodyPipeCallback =
+      base::OnceCallback<void(protocol::Response,
+                              mojo::ScopedDataPipeConsumerHandle,
+                              const std::string& mime_type)>;
 
   struct Modifications {
     Modifications();

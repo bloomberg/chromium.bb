@@ -29,6 +29,8 @@ using ContinueInterceptedRequestCallback =
     DevToolsNetworkInterceptor::ContinueInterceptedRequestCallback;
 using GetResponseBodyForInterceptionCallback =
     DevToolsNetworkInterceptor::GetResponseBodyForInterceptionCallback;
+using TakeResponseBodyPipeCallback =
+    DevToolsNetworkInterceptor::TakeResponseBodyPipeCallback;
 using Modifications = DevToolsNetworkInterceptor::Modifications;
 using InterceptionStage = DevToolsNetworkInterceptor::InterceptionStage;
 using protocol::Response;
@@ -177,6 +179,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
 
   void GetResponseBody(
       std::unique_ptr<GetResponseBodyForInterceptionCallback> callback);
+  void TakeResponseBodyPipe(TakeResponseBodyPipeCallback callback);
   void ContinueInterceptedRequest(
       std::unique_ptr<Modifications> modifications,
       std::unique_ptr<ContinueInterceptedRequestCallback> callback);
@@ -217,6 +220,8 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   void ResponseBodyComplete();
 
   bool ShouldBypassForResponse() const {
+    if (state_ == State::kResponseTaken)
+      return false;
     DCHECK_EQ(!!response_metadata_, !!body_reader_);
     DCHECK_EQ(state_, State::kResponseReceived);
     return !response_metadata_;
@@ -246,6 +251,8 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
+  bool CanGetResponseBody(std::string* error_reason);
+
   const std::string id_;
   const GlobalRequestId global_req_id_;
   const base::UnguessableToken frame_token_;
@@ -272,6 +279,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
     kRedirectReceived,
     kAuthRequired,
     kResponseReceived,
+    kResponseTaken,
   };
 
   State state_;
@@ -283,6 +291,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   base::Optional<std::pair<net::RequestPriority, int32_t>> priority_;
   DevToolsURLLoaderInterceptor::HandleAuthRequestCallback
       pending_auth_callback_;
+  TakeResponseBodyPipeCallback pending_response_body_pipe_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(InterceptionJob);
 };
@@ -338,6 +347,19 @@ class DevToolsURLLoaderInterceptor::Impl
       std::unique_ptr<GetResponseBodyForInterceptionCallback> callback) {
     if (InterceptionJob* job = FindJob(interception_id, &callback))
       job->GetResponseBody(std::move(callback));
+  }
+
+  void TakeResponseBodyPipe(
+      const std::string& interception_id,
+      DevToolsNetworkInterceptor::TakeResponseBodyPipeCallback callback) {
+    auto it = jobs_.find(interception_id);
+    if (it == jobs_.end()) {
+      std::move(callback).Run(
+          protocol::Response::InvalidParams("Invalid InterceptionId."),
+          mojo::ScopedDataPipeConsumerHandle(), std::string());
+      return;
+    }
+    it->second->TakeResponseBodyPipe(std::move(callback));
   }
 
   void ContinueInterceptedRequest(
@@ -555,6 +577,15 @@ void DevToolsURLLoaderInterceptor::GetResponseBody(
                      interception_id, std::move(callback)));
 }
 
+void DevToolsURLLoaderInterceptor::TakeResponseBodyPipe(
+    const std::string& interception_id,
+    DevToolsNetworkInterceptor::TakeResponseBodyPipeCallback callback) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&Impl::TakeResponseBodyPipe, base::Unretained(impl_.get()),
+                     interception_id, std::move(callback)));
+}
+
 void DevToolsURLLoaderInterceptor::ContinueInterceptedRequest(
     const std::string& interception_id,
     std::unique_ptr<Modifications> modifications,
@@ -632,21 +663,26 @@ InterceptionJob::InterceptionJob(
   StartRequest();
 }
 
+bool InterceptionJob::CanGetResponseBody(std::string* error_reason) {
+  if (!(stage_ & InterceptionStage::RESPONSE)) {
+    *error_reason =
+        "Can only get response body on HeadersReceived pattern matched "
+        "requests.";
+    return false;
+  }
+  if (state_ != State::kResponseReceived || !waiting_for_resolution_) {
+    *error_reason =
+        "Can only get response body on requests captured after headers "
+        "received.";
+    return false;
+  }
+  return true;
+}
+
 void InterceptionJob::GetResponseBody(
     std::unique_ptr<GetResponseBodyForInterceptionCallback> callback) {
   std::string error_reason;
-
-  if (!(stage_ & InterceptionStage::RESPONSE)) {
-    error_reason =
-        "Can only get response body on HeadersReceived pattern matched "
-        "requests.";
-  } else if (state_ != kResponseReceived) {
-    DCHECK(waiting_for_resolution_);
-    error_reason =
-        "Can only get response body on requests captured after headers "
-        "received.";
-  }
-  if (!error_reason.empty()) {
+  if (!CanGetResponseBody(&error_reason)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&GetResponseBodyForInterceptionCallback::sendFailure,
@@ -654,7 +690,6 @@ void InterceptionJob::GetResponseBody(
                        Response::Error(std::move(error_reason))));
     return;
   }
-
   if (!body_reader_) {
     body_reader_ = std::make_unique<BodyReader>(base::BindOnce(
         &InterceptionJob::ResponseBodyComplete, base::Unretained(this)));
@@ -664,11 +699,30 @@ void InterceptionJob::GetResponseBody(
   body_reader_->AddCallback(std::move(callback));
 }
 
+void InterceptionJob::TakeResponseBodyPipe(
+    TakeResponseBodyPipeCallback callback) {
+  std::string error_reason;
+  if (!CanGetResponseBody(&error_reason)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       Response::Error(std::move(error_reason)),
+                       mojo::ScopedDataPipeConsumerHandle(), std::string()));
+    return;
+  }
+  DCHECK_EQ(state_, State::kResponseReceived);
+  DCHECK(!!response_metadata_);
+  state_ = State::kResponseTaken;
+  pending_response_body_pipe_callback_ = std::move(callback);
+  client_binding_.ResumeIncomingMethodCallProcessing();
+  loader_->ResumeReadingBodyFromNet();
+}
+
 void InterceptionJob::ContinueInterceptedRequest(
     std::unique_ptr<Modifications> modifications,
     std::unique_ptr<ContinueInterceptedRequestCallback> callback) {
   Response response = InnerContinueRequest(std::move(modifications));
-  // |this| may be destroyed at this pont.
+  // |this| may be destroyed at this point.
   bool success = response.isSuccess();
   base::OnceClosure task =
       success ? base::BindOnce(&ContinueInterceptedRequestCallback::sendSuccess,
@@ -747,6 +801,10 @@ Response InterceptionJob::InnerContinueRequest(
   }
 
   if (response_metadata_) {
+    if (state_ == State::kResponseTaken) {
+      return Response::InvalidParams(
+          "Unable to continue request as is after body is taken");
+    }
     // TODO(caseq): report error if other modifications are present.
     DCHECK_EQ(State::kResponseReceived, state_);
     DCHECK(!body_reader_);
@@ -1050,17 +1108,17 @@ void InterceptionJob::SetPriority(net::RequestPriority priority,
                                   int32_t intra_priority_value) {
   priority_ = std::make_pair(priority, intra_priority_value);
 
-  if (state_ != State::kNotStarted)
+  if (loader_)
     loader_->SetPriority(priority, intra_priority_value);
 }
 
 void InterceptionJob::PauseReadingBodyFromNet() {
-  if (state_ != State::kNotStarted && !body_reader_)
+  if (!body_reader_ && loader_ && state_ != State::kResponseTaken)
     loader_->PauseReadingBodyFromNet();
 }
 
 void InterceptionJob::ResumeReadingBodyFromNet() {
-  if (state_ != State::kNotStarted && !body_reader_)
+  if (!body_reader_ && loader_ && state_ != State::kResponseTaken)
     loader_->ResumeReadingBodyFromNet();
 }
 
@@ -1144,6 +1202,17 @@ void InterceptionJob::OnTransferSizeUpdated(int32_t transfer_size_diff) {
 
 void InterceptionJob::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
+  if (pending_response_body_pipe_callback_) {
+    DCHECK_EQ(State::kResponseTaken, state_);
+    DCHECK(!body_reader_);
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(std::move(pending_response_body_pipe_callback_),
+                       Response::OK(), std::move(body),
+                       response_metadata_->head.mime_type));
+    return;
+  }
+  DCHECK_EQ(State::kResponseReceived, state_);
   if (ShouldBypassForResponse())
     client_->OnStartLoadingResponseBody(std::move(body));
   else

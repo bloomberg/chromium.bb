@@ -40,6 +40,9 @@ class DevToolsURLLoaderInterceptor {
       std::unique_ptr<
           DevToolsNetworkInterceptor::GetResponseBodyForInterceptionCallback>
           callback);
+  void TakeResponseBodyPipe(
+      const std::string& interception_id,
+      DevToolsNetworkInterceptor::TakeResponseBodyPipeCallback callback);
   void ContinueInterceptedRequest(
       const std::string& interception_id,
       std::unique_ptr<DevToolsNetworkInterceptor::Modifications> modifications,

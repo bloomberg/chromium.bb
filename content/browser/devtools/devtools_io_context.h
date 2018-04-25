@@ -33,6 +33,7 @@ class DevToolsIOContext : public base::SupportsWeakPtr<DevToolsIOContext> {
                                 bool base64_encoded,
                                 int status)>;
 
+    virtual bool SupportsSeek() const;
     virtual void Read(off_t position,
                       size_t max_size,
                       ReadCallback callback) = 0;
@@ -60,6 +61,8 @@ class DevToolsIOContext : public base::SupportsWeakPtr<DevToolsIOContext> {
   scoped_refptr<Stream> GetByHandle(const std::string& handle);
   bool Close(const std::string& handle);
   void DiscardAllStreams();
+
+  static bool IsTextMimeType(const std::string& mime_type);
 
  private:
   // Registration can only be done by Stream subclasses through Stream methods.

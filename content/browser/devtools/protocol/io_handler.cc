@@ -72,6 +72,12 @@ void IOHandler::Read(
     callback->sendFailure(Response::InvalidParams("Invalid stream handle"));
     return;
   }
+  if (offset.isJust() && !stream->SupportsSeek()) {
+    callback->sendFailure(
+        Response::InvalidParams("Read offset is specificed for a stream that "
+                                "does not support random access"));
+    return;
+  }
   stream->Read(offset.fromMaybe(-1), max_size.fromMaybe(kDefaultChunkSize),
                base::BindOnce(&IOHandler::ReadComplete,
                               weak_factory_.GetWeakPtr(), std::move(callback)));
