@@ -207,14 +207,14 @@ function setInputElementAngularValue_(value, input) {
  *
  * @param {string} value The value the input element will be set.
  * @param {Element} input The input element of which the value is set.
- * @param {function(boolean)=} callback Callback function with a boolean
+ * @param {function()=} callback Callback function with a boolean
  *     argument that indicates if the input element's value was changed.
  */
 __gCrWeb.fill.setInputElementValue = function(
     value, input, callback = undefined) {
-  if (!input) {
+  if (!input)
     return;
-  }
+
   var activeElement = document.activeElement;
   if (input != activeElement) {
     __gCrWeb.fill.createAndDispatchHTMLEvent(
@@ -222,10 +222,11 @@ __gCrWeb.fill.setInputElementValue = function(
     __gCrWeb.fill.createAndDispatchHTMLEvent(
         input, value, 'focus', true, false);
   }
-  var changed = setInputElementValue_(value, input);
-  if (callback) {
-    callback(changed);
-  }
+
+  setInputElementValue_(value, input);
+  if (callback)
+    callback();
+
   if (input != activeElement) {
     __gCrWeb.fill.createAndDispatchHTMLEvent(input, value, 'blur', true, false);
     __gCrWeb.fill.createAndDispatchHTMLEvent(
@@ -238,8 +239,6 @@ __gCrWeb.fill.setInputElementValue = function(
  *
  * @param {string} value The value the input element will be set.
  * @param {Element} input The input element of which the value is set.
- * @return {boolean} Whether value of the field changed; Used for marking the
- *     field as autofilled.
  */
 function setInputElementValue_(value, input) {
   var propertyName = (input.type === 'checkbox' || input.type === 'radio') ?
@@ -254,7 +253,9 @@ function setInputElementValue_(value, input) {
     value = __gCrWeb.fill.sanitizeValueForInputElement(value, input);
   }
 
-  if (input[propertyName] == value) return false;
+  // Return early if the value hasn't changed.
+  if (input[propertyName] == value)
+    return;
 
   // When the user inputs a value in an HTMLInput field, the property setter is
   // not called. The different frameworks often call it explicitly when
@@ -318,9 +319,6 @@ function setInputElementValue_(value, input) {
       input[propertyName] = value;
     }
   }
-
-  // Return true whether or not we succeeded in setting the value.
-  return true;
 }
 
 /**

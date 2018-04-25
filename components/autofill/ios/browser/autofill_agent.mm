@@ -726,34 +726,29 @@ void GetFormAndField(autofill::FormData* form,
 }
 
 - (void)onFormDataFilled:(const autofill::FormData&)form {
-  std::unique_ptr<base::DictionaryValue> JSONForm(new base::DictionaryValue);
-  JSONForm->SetString("formName", base::UTF16ToUTF8(form.name));
-  // Note: Destruction of all child base::Value types is handled by the root
-  // formData object on its own destruction.
-  auto JSONFields = std::make_unique<base::DictionaryValue>();
+  base::Value autofillData(base::Value::Type::DICTIONARY);
+  autofillData.SetKey("formName", base::Value(base::UTF16ToUTF8(form.name)));
 
-  const std::vector<autofill::FormFieldData>& autofillFields = form.fields;
-  for (const auto& autofillField : autofillFields) {
-    if (JSONFields->HasKey(base::UTF16ToUTF8(autofillField.id)) &&
-        autofillField.value.empty())
+  base::Value fieldsData(base::Value::Type::DICTIONARY);
+  for (const auto& field : form.fields) {
+    // Skip empty fields and those that are not autofilled.
+    if (field.value.empty() || !field.is_autofilled)
       continue;
-    JSONFields->SetKey(base::UTF16ToUTF8(autofillField.id),
-                       base::Value(autofillField.value));
-  }
-  JSONForm->Set("fields", std::move(JSONFields));
 
-  // Stringify the JSON data and send it to the UIWebView-side fillForm method.
+    fieldsData.SetKey(base::UTF16ToUTF8(field.id), base::Value(field.value));
+  }
+  autofillData.SetKey("fields", std::move(fieldsData));
+
   std::string JSONString;
-  base::JSONWriter::Write(*JSONForm.get(), &JSONString);
-  NSString* nsJSONString = base::SysUTF8ToNSString(JSONString);
+  base::JSONWriter::Write(autofillData, &JSONString);
 
   // Store the form data when WebState is not visible, to send it as soon as it
   // becomes visible again, e.g., when the CVC unmask prompt is showing.
   if (!webState_->IsVisible()) {
-    pendingFormJSON_ = nsJSONString;
+    pendingFormJSON_ = base::SysUTF8ToNSString(JSONString);
     return;
   }
-  [self sendDataToWebState:nsJSONString];
+  [self sendDataToWebState:base::SysUTF8ToNSString(JSONString)];
 }
 
 - (void)sendDataToWebState:(NSString*)JSONData {
@@ -800,16 +795,16 @@ void GetFormAndField(autofill::FormData* form,
     return;
   }
 
-  base::DictionaryValue predictionData;
+  base::Value predictionData(base::Value::Type::DICTIONARY);
   for (const auto& form : forms) {
-    auto formJSONData = std::make_unique<base::DictionaryValue>();
+    base::Value fieldData(base::Value::Type::DICTIONARY);
     DCHECK(form.fields.size() == form.data.fields.size());
     for (size_t i = 0; i < form.fields.size(); i++) {
-      formJSONData->SetKey(base::UTF16ToUTF8(form.data.fields[i].id),
-                           base::Value(form.fields[i].overall_type));
+      fieldData.SetKey(base::UTF16ToUTF8(form.data.fields[i].id),
+                       base::Value(form.fields[i].overall_type));
     }
-    predictionData.SetWithoutPathExpansion(base::UTF16ToUTF8(form.data.name),
-                                           std::move(formJSONData));
+    predictionData.SetKey(base::UTF16ToUTF8(form.data.name),
+                          std::move(fieldData));
   }
   std::string dataString;
   base::JSONWriter::Write(predictionData, &dataString);
