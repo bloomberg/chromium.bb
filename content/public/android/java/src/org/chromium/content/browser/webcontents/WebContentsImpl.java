@@ -685,6 +685,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
      * Removes handles used in text selection.
      */
     public void dismissTextHandles() {
+        if (isDestroyed()) return;
         nativeDismissTextHandles(mNativeWebContentsAndroid);
     }
 
