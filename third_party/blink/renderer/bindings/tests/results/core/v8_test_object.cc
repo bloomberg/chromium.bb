@@ -2178,7 +2178,7 @@ static void checkSecurityForNodeReadonlyDocumentAttributeAttributeGetter(const v
 
   // Perform a security check for the returned object.
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestObject", "checkSecurityForNodeReadonlyDocumentAttribute");
-  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), WTF::GetPtr(impl->checkSecurityForNodeReadonlyDocumentAttribute()), exceptionState)) {
+  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), WTF::GetPtr(impl->checkSecurityForNodeReadonlyDocumentAttribute()), BindingSecurity::ErrorReportOption::kDoNotReport)) {
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
                       WebFeature::kCrossOriginTestObjectCheckSecurityForNodeReadonlyDocumentAttribute);
     V8SetReturnValueNull(info);
@@ -5283,7 +5283,7 @@ static void voidMethodNullableSequenceLongArgMethod(const v8::FunctionCallbackIn
     return;
   }
 
-  base::Optional<Vector<int32_t>> longSequenceArg;
+  Optional<Vector<int32_t>> longSequenceArg;
   if (!info[0]->IsNullOrUndefined()) {
     longSequenceArg = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
     if (exceptionState.HadException())
@@ -5338,7 +5338,7 @@ static void voidMethodTestInterfaceEmptyFrozenArrayMethodMethod(const v8::Functi
 static void nullableLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
-  base::Optional<int32_t> result = impl->nullableLongMethod();
+  Optional<int32_t> result = impl->nullableLongMethod();
   if (!result)
     V8SetReturnValueNull(info);
   else
@@ -5360,7 +5360,7 @@ static void nullableTestInterfaceMethodMethod(const v8::FunctionCallbackInfo<v8:
 static void nullableLongSequenceMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
-  base::Optional<Vector<int32_t>> result = impl->nullableLongSequenceMethod();
+  Optional<Vector<int32_t>> result = impl->nullableLongSequenceMethod();
   if (!result)
     V8SetReturnValueNull(info);
   else
@@ -5581,10 +5581,10 @@ static void voidMethodTestCallbackInterfaceArgMethod(const v8::FunctionCallbackI
   }
 
   V8TestCallbackInterface* testCallbackInterfaceArg;
-  if (info[0]->IsFunction()) {
+  if (info[0]->IsObject()) {
     testCallbackInterfaceArg = V8TestCallbackInterface::Create(info[0].As<v8::Object>());
   } else {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not an object."));
     return;
   }
 
@@ -5595,12 +5595,12 @@ static void voidMethodOptionalTestCallbackInterfaceArgMethod(const v8::FunctionC
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
   V8TestCallbackInterface* optionalTestCallbackInterfaceArg;
-  if (info[0]->IsFunction()) {
+  if (info[0]->IsObject()) {
     optionalTestCallbackInterfaceArg = V8TestCallbackInterface::Create(info[0].As<v8::Object>());
   } else if (info[0]->IsNullOrUndefined()) {
     optionalTestCallbackInterfaceArg = nullptr;
   } else {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodOptionalTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodOptionalTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not an object."));
     return;
   }
 
@@ -5616,12 +5616,12 @@ static void voidMethodTestCallbackInterfaceOrNullArgMethod(const v8::FunctionCal
   }
 
   V8TestCallbackInterface* testCallbackInterfaceArg;
-  if (info[0]->IsFunction()) {
+  if (info[0]->IsObject()) {
     testCallbackInterfaceArg = V8TestCallbackInterface::Create(info[0].As<v8::Object>());
   } else if (0 < info.Length() && info[0]->IsNullOrUndefined()) {
     testCallbackInterfaceArg = nullptr;
   } else {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTestCallbackInterfaceOrNullArg", "TestObject", "The callback provided as parameter 1 is not a function."));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTestCallbackInterfaceOrNullArg", "TestObject", "The callback provided as parameter 1 is not an object."));
     return;
   }
 
@@ -5719,7 +5719,7 @@ static void testDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
 static void nullableTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
-  base::Optional<TestDictionary> result;
+  Optional<TestDictionary> result;
   impl->nullableTestDictionaryMethod(result);
   if (!result)
     V8SetReturnValueNull(info);
@@ -5734,7 +5734,7 @@ static void staticTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::
 }
 
 static void staticNullableTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  base::Optional<TestDictionary> result;
+  Optional<TestDictionary> result;
   TestObject::staticNullableTestDictionaryMethod(result);
   if (!result)
     V8SetReturnValueNull(info);
@@ -7386,10 +7386,10 @@ static void overloadedMethodN2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
   V8TestCallbackInterface* testCallbackInterfaceArg;
-  if (info[0]->IsFunction()) {
+  if (info[0]->IsObject()) {
     testCallbackInterfaceArg = V8TestCallbackInterface::Create(info[0].As<v8::Object>());
   } else {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("overloadedMethodN", "TestObject", "The callback provided as parameter 1 is not a function."));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("overloadedMethodN", "TestObject", "The callback provided as parameter 1 is not an object."));
     return;
   }
 
@@ -7944,7 +7944,7 @@ static void checkSecurityForNodeVoidMethodMethod(const v8::FunctionCallbackInfo<
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "checkSecurityForNodeVoidMethod");
-  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), impl->checkSecurityForNodeVoidMethod(), exceptionState)) {
+  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), impl->checkSecurityForNodeVoidMethod(), BindingSecurity::ErrorReportOption::kDoNotReport)) {
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
                       WebFeature::kCrossOriginTestObjectCheckSecurityForNodeVoidMethod);
     V8SetReturnValueNull(info);
@@ -8657,10 +8657,10 @@ static void raisesExceptionVoidMethodTestCallbackInterfaceArgMethod(const v8::Fu
   }
 
   V8TestCallbackInterface* testCallbackInterfaceArg;
-  if (info[0]->IsFunction()) {
+  if (info[0]->IsObject()) {
     testCallbackInterfaceArg = V8TestCallbackInterface::Create(info[0].As<v8::Object>());
   } else {
-    exceptionState.ThrowTypeError("The callback provided as parameter 1 is not a function.");
+    exceptionState.ThrowTypeError("The callback provided as parameter 1 is not an object.");
     return;
   }
 
@@ -8676,12 +8676,12 @@ static void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethod(cons
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
   V8TestCallbackInterface* optionalTestCallbackInterfaceArg;
-  if (info[0]->IsFunction()) {
+  if (info[0]->IsObject()) {
     optionalTestCallbackInterfaceArg = V8TestCallbackInterface::Create(info[0].As<v8::Object>());
   } else if (info[0]->IsNullOrUndefined()) {
     optionalTestCallbackInterfaceArg = nullptr;
   } else {
-    exceptionState.ThrowTypeError("The callback provided as parameter 1 is not a function.");
+    exceptionState.ThrowTypeError("The callback provided as parameter 1 is not an object.");
     return;
   }
 
