@@ -153,7 +153,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
   virtual scoped_refptr<CanvasResource> CreateResource();
   cc::ImageDecodeCache* ImageDecodeCache();
 
-  base::WeakPtrFactory<CanvasResourceProvider> weak_ptr_factory_;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   IntSize size_;
   CanvasColorParams color_params_;
@@ -169,6 +168,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
   cc::PaintImage::ContentId snapshot_paint_image_content_id_ =
       cc::PaintImage::kInvalidContentId;
   uint32_t snapshot_sk_image_id_ = 0u;
+
+  base::WeakPtrFactory<CanvasResourceProvider> weak_ptr_factory_;
 };
 
 }  // namespace blink

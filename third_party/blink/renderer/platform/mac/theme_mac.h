@@ -37,40 +37,40 @@ class ThemeMac : public Theme {
   ThemeMac() {}
   ~ThemeMac() override {}
 
-  virtual int BaselinePositionAdjustment(ControlPart) const;
+  int BaselinePositionAdjustment(ControlPart) const override;
 
-  virtual FontDescription ControlFont(ControlPart,
-                                      const FontDescription&,
-                                      float zoom_factor) const;
+  FontDescription ControlFont(ControlPart,
+                              const FontDescription&,
+                              float zoom_factor) const override;
 
-  virtual LengthSize GetControlSize(ControlPart,
-                                    const FontDescription&,
-                                    const LengthSize&,
-                                    float zoom_factor) const;
-  virtual LengthSize MinimumControlSize(ControlPart,
-                                        const FontDescription&,
-                                        float zoom_factor) const;
+  LengthSize GetControlSize(ControlPart,
+                            const FontDescription&,
+                            const LengthSize&,
+                            float zoom_factor) const override;
+  LengthSize MinimumControlSize(ControlPart,
+                                const FontDescription&,
+                                float zoom_factor) const override;
 
-  virtual LengthBox ControlPadding(ControlPart,
-                                   const FontDescription&,
-                                   const Length& zoomed_box_top,
-                                   const Length& zoomed_box_right,
-                                   const Length& zoomed_box_bottom,
-                                   const Length& zoomed_box_left,
-                                   float zoom_factor) const;
-  virtual LengthBox ControlBorder(ControlPart,
-                                  const FontDescription&,
-                                  const LengthBox& zoomed_box,
-                                  float zoom_factor) const;
+  LengthBox ControlPadding(ControlPart,
+                           const FontDescription&,
+                           const Length& zoomed_box_top,
+                           const Length& zoomed_box_right,
+                           const Length& zoomed_box_bottom,
+                           const Length& zoomed_box_left,
+                           float zoom_factor) const override;
+  LengthBox ControlBorder(ControlPart,
+                          const FontDescription&,
+                          const LengthBox& zoomed_box,
+                          float zoom_factor) const override;
 
-  virtual bool ControlRequiresPreWhiteSpace(ControlPart part) const {
+  bool ControlRequiresPreWhiteSpace(ControlPart part) const override {
     return part == kPushButtonPart;
   }
 
-  virtual void AddVisualOverflow(ControlPart,
-                                 ControlStates,
-                                 float zoom_factor,
-                                 IntRect& border_box) const;
+  void AddVisualOverflow(ControlPart,
+                         ControlStates,
+                         float zoom_factor,
+                         IntRect& border_box) const override;
 
   // Inflate an IntRect to accout for specific padding around margins.
   enum { kTopMargin = 0, kRightMargin = 1, kBottomMargin = 2, kLeftMargin = 3 };

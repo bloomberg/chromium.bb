@@ -184,7 +184,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   std::unique_ptr<WebExternalTextureLayer> layer_;
   std::unique_ptr<SharedContextRateLimiter> rate_limiter_;
   std::unique_ptr<Logger> logger_;
-  base::WeakPtrFactory<Canvas2DLayerBridge> weak_ptr_factory_;
   int msaa_sample_count_;
   int frames_since_last_commit_ = 0;
   size_t bytes_allocated_;
@@ -216,6 +215,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   mutable SnapshotState snapshot_state_;
 
   CanvasResourceHost* resource_host_;
+
+  base::WeakPtrFactory<Canvas2DLayerBridge> weak_ptr_factory_;
 };
 
 }  // namespace blink

@@ -41,11 +41,11 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher {
 
  protected:
   OffscreenCanvasFrameDispatcher(OffscreenCanvasFrameDispatcherClient* client)
-      : weak_ptr_factory_(this), client_(client) {}
+      : client_(client), weak_ptr_factory_(this) {}
 
  private:
-  base::WeakPtrFactory<OffscreenCanvasFrameDispatcher> weak_ptr_factory_;
   OffscreenCanvasFrameDispatcherClient* client_;
+  base::WeakPtrFactory<OffscreenCanvasFrameDispatcher> weak_ptr_factory_;
 };
 
 }  // namespace blink

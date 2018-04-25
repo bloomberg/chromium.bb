@@ -4363,7 +4363,7 @@ class MojoTestHelper {
 class MockUnhandledTapNotifierImpl : public mojom::blink::UnhandledTapNotifier {
  public:
   MockUnhandledTapNotifierImpl() : binding_(this) {}
-  ~MockUnhandledTapNotifierImpl() = default;
+  ~MockUnhandledTapNotifierImpl() override = default;
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
     binding_.Bind(mojom::blink::UnhandledTapNotifierRequest(std::move(handle)));

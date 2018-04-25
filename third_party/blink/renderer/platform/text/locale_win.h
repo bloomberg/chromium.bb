@@ -43,7 +43,7 @@ namespace blink {
 class PLATFORM_EXPORT LocaleWin : public Locale {
  public:
   static std::unique_ptr<LocaleWin> Create(LCID, bool defaults_for_locale);
-  ~LocaleWin();
+  ~LocaleWin() override;
   const Vector<String>& WeekDayShortLabels() override;
   unsigned FirstDayOfWeek() override;
   bool IsRTL() override;

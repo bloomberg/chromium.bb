@@ -113,7 +113,7 @@ class PLATFORM_EXPORT ScrollAnimatorMac : public ScrollAnimatorBase {
 
   void SendContentAreaScrolledSoon(const ScrollOffset& scroll_delta);
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     ScrollAnimatorBase::Trace(visitor);
   }
 

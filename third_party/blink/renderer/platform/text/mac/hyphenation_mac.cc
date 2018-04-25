@@ -28,7 +28,8 @@ class HyphenationCF final : public Hyphenation {
   // locations and discards ones after |after_index|.
   // This version minimizes the computation for platforms that supports
   // LastHyphenLocation() but does not support HyphenLocations().
-  size_t FirstHyphenLocation(const StringView& text, size_t after_index) const {
+  size_t FirstHyphenLocation(const StringView& text,
+                             size_t after_index) const override {
     after_index =
         std::max(after_index, static_cast<size_t>(kMinimumPrefixLength - 1));
     size_t hyphen_location = text.length();

@@ -479,14 +479,14 @@ base::Optional<SnapContainerData> SnapCoordinator::GetSnapContainerData(
 #ifndef NDEBUG
 
 void SnapCoordinator::ShowSnapAreaMap() {
-  for (auto& container : snap_container_map_.Keys())
+  for (auto* const container : snap_container_map_.Keys())
     ShowSnapAreasFor(container);
 }
 
 void SnapCoordinator::ShowSnapAreasFor(const LayoutBox* container) {
   LOG(INFO) << *container->GetNode();
   if (SnapAreaSet* snap_areas = container->SnapAreas()) {
-    for (auto& snap_area : *snap_areas) {
+    for (auto* const snap_area : *snap_areas) {
       LOG(INFO) << "    " << *snap_area->GetNode();
     }
   }

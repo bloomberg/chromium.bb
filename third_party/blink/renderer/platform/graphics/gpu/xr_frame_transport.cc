@@ -118,7 +118,7 @@ void XRFrameTransport::FrameSubmit(
     if (!frame_copier_ || !last_transfer_succeeded_) {
       frame_copier_ = std::make_unique<GpuMemoryBufferImageCopy>(gl);
     }
-    auto gpu_memory_buffer = frame_copier_->CopyImage(image_ref.get());
+    auto* gpu_memory_buffer = frame_copier_->CopyImage(image_ref.get());
     drawing_buffer_client->DrawingBufferClientRestoreTexture2DBinding();
     drawing_buffer_client->DrawingBufferClientRestoreFramebufferBinding();
     drawing_buffer_client->DrawingBufferClientRestoreRenderbufferBinding();

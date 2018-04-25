@@ -65,7 +65,6 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
                                          AccelerationMode acceleration_mode,
                                          const CanvasColorParams& color_params)
     : logger_(std::make_unique<Logger>()),
-      weak_ptr_factory_(this),
       msaa_sample_count_(msaa_sample_count),
       bytes_allocated_(0),
       have_recorded_draw_commands_(false),
@@ -78,7 +77,8 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
       color_params_(color_params),
       size_(size),
       snapshot_state_(kInitialSnapshotState),
-      resource_host_(nullptr) {
+      resource_host_(nullptr),
+      weak_ptr_factory_(this) {
   // Used by browser tests to detect the use of a Canvas2DLayerBridge.
   TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation",
                        TRACE_EVENT_SCOPE_GLOBAL);

@@ -94,7 +94,7 @@ class LayoutThemeMac final : public LayoutTheme {
 
   bool SupportsSelectionForegroundColors() const override { return false; }
 
-  virtual bool IsModalColorChooser() const { return false; }
+  bool IsModalColorChooser() const override { return false; }
 
  protected:
   LayoutThemeMac();

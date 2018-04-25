@@ -113,8 +113,7 @@ BackgroundHTMLParser::Configuration::Configuration()
 BackgroundHTMLParser::BackgroundHTMLParser(
     std::unique_ptr<Configuration> config,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner)
-    : weak_factory_(this),
-      token_(std::make_unique<HTMLToken>()),
+    : token_(std::make_unique<HTMLToken>()),
       tokenizer_(HTMLTokenizer::Create(config->options)),
       tree_builder_simulator_(config->options),
       options_(config->options),
@@ -128,7 +127,8 @@ BackgroundHTMLParser::BackgroundHTMLParser(
       tokenized_chunk_queue_(std::move(config->tokenized_chunk_queue)),
       pending_csp_meta_token_index_(
           HTMLDocumentParser::TokenizedChunk::kNoPendingToken),
-      starting_script_(false) {
+      starting_script_(false),
+      weak_factory_(this) {
   DCHECK_GT(outstanding_token_limit_, 0u);
   DCHECK_GT(pending_token_limit_, 0u);
   DCHECK_GE(outstanding_token_limit_, pending_token_limit_);
