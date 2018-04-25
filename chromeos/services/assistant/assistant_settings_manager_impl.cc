@@ -20,7 +20,8 @@ void AssistantSettingsManagerImpl::BindRequest(
 
 void AssistantSettingsManagerImpl::GetSettings(const std::string& selector,
                                                GetSettingsCallback callback) {
-  DCHECK(assistant_manager_service_->IsRunning());
+  DCHECK(assistant_manager_service_->GetState() ==
+         AssistantManagerService::State::RUNNING);
   // Wraps the callback into a repeating callback since the server side
   // interface requires the callback to be copyable.
   assistant_manager_service_->SendGetSettingsUiRequest(
