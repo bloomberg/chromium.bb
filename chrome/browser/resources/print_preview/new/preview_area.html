@@ -115,25 +115,25 @@
       }
 
     </style>
-    <div class$="preview-area-overlay-layer [[getInvisible_(previewState_)]]"
+    <div class$="preview-area-overlay-layer [[getInvisible_(previewState)]]"
         aria-hidden$="[[previewLoaded_]]">
       <div class="preview-area-messages">
         <div class="preview-area-message">
           <div>
-            <span>[[currentMessage_(previewState_)]]</span>
+            <span>[[currentMessage_(previewState)]]</span>
             <span class$="preview-area-loading-message-jumping-dots
-                          [[getJumpingDots_(previewState_)]]"
-                hidden$="[[!isPreviewLoading_(previewState_)]]">
+                          [[getJumpingDots_(previewState)]]"
+                hidden$="[[!isPreviewLoading_(previewState)]]">
                 <span>.</span><span>.</span><span>.</span>
             </span>
             <a is="action-link" class="learn-more-link"
-                hidden$="[[!shouldShowLearnMoreLink_(previewState_)]]"
+                hidden$="[[!shouldShowLearnMoreLink_(previewState)]]"
                 on-click="onGcpErrorLearnMoreClick_">
               $i18n{learnMore}
             </a>
           </div>
           <div class="preview-area-action-area"
-              hidden$="[[!displaySystemDialogButton_(previewState_)]]">
+              hidden$="[[!displaySystemDialogButton_(previewState)]]">
             <button class="preview-area-open-system-dialog-button">
               $i18n{launchNativeDialog}
             </button>
