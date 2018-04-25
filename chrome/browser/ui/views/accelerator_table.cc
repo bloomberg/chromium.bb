@@ -152,6 +152,9 @@ const AcceleratorMapping kAcceleratorMap[] = {
     // handled via WM_APPCOMMAND.
     {ui::VKEY_BROWSER_SEARCH, ui::EF_NONE, IDC_FOCUS_SEARCH},
     {ui::VKEY_M, ui::EF_SHIFT_DOWN | kPlatformModifier, IDC_SHOW_AVATAR_MENU},
+#if !defined(OS_MACOSX)
+    {ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_EXIT},
+#endif  // !OS_MACOSX
 #endif  // !OS_CHROMEOS
 
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_MACOSX)
@@ -240,7 +243,6 @@ const AcceleratorMapping kAcceleratorMap[] = {
     {ui::VKEY_J, ui::EF_CONTROL_DOWN, IDC_SHOW_DOWNLOADS},
     {ui::VKEY_H, ui::EF_CONTROL_DOWN, IDC_SHOW_HISTORY},
     {ui::VKEY_U, ui::EF_CONTROL_DOWN, IDC_VIEW_SOURCE},
-    {ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_EXIT},
 #if !defined(OS_CHROMEOS)
     // On Chrome OS, these keys are assigned to change UI scale.
     {ui::VKEY_OEM_MINUS, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
