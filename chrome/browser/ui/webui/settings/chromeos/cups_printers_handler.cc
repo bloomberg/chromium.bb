@@ -408,8 +408,7 @@ void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
   // We don't have enough from discovery to configure the printer.  Fill in as
   // much information as we can about the printer, and ask the user to supply
   // the rest.
-  FireWebUIListener("on-manually-add-discovered-printer",
-                    *GetCupsPrinterInfo(*printer));
+  FireManuallyAddDiscoveredPrinter(*printer);
 }
 
 void CupsPrintersHandler::OnAutoconfQueried(const std::string& callback_id,
@@ -581,9 +580,9 @@ void CupsPrintersHandler::OnAddedDiscoveredPrinter(
     FireWebUIListener("on-add-cups-printer", base::Value(result_code),
                       base::Value(printer.display_name()));
   } else {
-    FireWebUIListener("on-manually-add-discovered-printer",
-                      base::Value(result_code == PrinterSetupResult::kSuccess),
-                      base::Value(printer.display_name()));
+    // TODO(crubg.com/836434): Log in printer log.
+    // Could not set up printer.  Asking user for manufacturer data.
+    FireManuallyAddDiscoveredPrinter(printer);
   }
 }
 
@@ -824,8 +823,7 @@ void CupsPrintersHandler::HandleAddDiscoveredPrinter(
                    weak_factory_.GetWeakPtr(), base::Passed(&printer)));
   } else {
     // If it's not an IPP printer, the user must choose a PPD.
-    FireWebUIListener("on-manually-add-discovered-printer",
-                      *GetCupsPrinterInfo(*printer));
+    FireManuallyAddDiscoveredPrinter(*printer);
   }
 }
 
@@ -863,6 +861,12 @@ void CupsPrintersHandler::OnGetPrinterPpdManufacturerAndModel(
   info.SetString("ppdManufacturer", manufacturer);
   info.SetString("ppdModel", model);
   ResolveJavascriptCallback(base::Value(callback_id), info);
+}
+
+void CupsPrintersHandler::FireManuallyAddDiscoveredPrinter(
+    const Printer& printer) {
+  FireWebUIListener("on-manually-add-discovered-printer",
+                    *GetCupsPrinterInfo(printer));
 }
 
 }  // namespace settings

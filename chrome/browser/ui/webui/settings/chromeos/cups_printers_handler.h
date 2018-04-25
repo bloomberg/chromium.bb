@@ -152,6 +152,10 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void VerifyPpdContents(const base::FilePath& path,
                          const std::string& contents);
 
+  // Fires the on-manually-add-discovered-printer event with the appropriate
+  // parameters.  See https://crbug.com/835476
+  void FireManuallyAddDiscoveredPrinter(const Printer& printer);
+
   Profile* profile_;
 
   // Discovery support.  discovery_active_ tracks whether or not the UI
