@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/display/renderer_settings.h"
@@ -17,6 +18,7 @@
 #include "components/viz/service/display_embedder/gl_output_surface.h"
 #include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
+#include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/service/display_embedder/software_output_surface.h"
 #include "components/viz/service/display_embedder/viz_process_context_provider.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
@@ -64,11 +66,13 @@ namespace viz {
 
 GpuDisplayProvider::GpuDisplayProvider(
     uint32_t restart_id,
+    GpuServiceImpl* gpu_service_impl,
     scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
     gpu::GpuChannelManager* gpu_channel_manager,
     bool headless,
     bool wait_for_all_pipeline_stages_before_draw)
     : restart_id_(restart_id),
+      gpu_service_impl_(gpu_service_impl),
       gpu_service_(std::move(gpu_service)),
       gpu_channel_manager_delegate_(gpu_channel_manager->delegate()),
       gpu_memory_buffer_manager_(
@@ -103,11 +107,37 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     display_begin_frame_source = synthetic_begin_frame_source.get();
   }
 
+  // TODO(penghuang): Merge two output surfaces into one when GLRenderer and
+  // software compositor is removed.
   std::unique_ptr<OutputSurface> output_surface;
+  SkiaOutputSurface* skia_output_surface = nullptr;
 
   if (!gpu_compositing) {
     output_surface = std::make_unique<SoftwareOutputSurface>(
         CreateSoftwareOutputDeviceForPlatform(surface_handle), task_runner_);
+  } else if (renderer_settings.use_skia_renderer &&
+             renderer_settings.use_skia_deferred_display_list) {
+#if defined(OS_MACOSX) || defined(OS_WIN)
+    // TODO(penghuang): Support DDL for all platforms.
+    NOTIMPLEMENTED();
+    // Workaround compile error: private field 'gpu_service_impl_' is not used.
+    ALLOW_UNUSED_LOCAL(gpu_service_impl_);
+#else
+    // Create an offscreen context_provider for SkiaOutputSurfaceImpl, because
+    // SkiaRenderer still needs it to draw RenderPass into a texture.
+    // TODO(penghuang): remove this context when we figure out how to use DDL
+    // to draw RenderPass. https://crbug.com/825901
+    auto context_provider = base::MakeRefCounted<VizProcessContextProvider>(
+        gpu_service_, gpu::kNullSurfaceHandle, gpu_memory_buffer_manager_.get(),
+        image_factory_, gpu_channel_manager_delegate_,
+        gpu::SharedMemoryLimits());
+    auto result = context_provider->BindToCurrentThread();
+    CHECK_EQ(result, gpu::ContextResult::kSuccess);
+    output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
+        gpu_service_impl_, surface_handle, std::move(context_provider),
+        synthetic_begin_frame_source.get());
+    skia_output_surface = static_cast<SkiaOutputSurface*>(output_surface.get());
+#endif
   } else {
     scoped_refptr<VizProcessContextProvider> context_provider;
 
@@ -166,7 +196,8 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 
   return std::make_unique<Display>(
       ServerSharedBitmapManager::current(), renderer_settings, frame_sink_id,
-      std::move(output_surface), std::move(scheduler), task_runner_);
+      std::move(output_surface), std::move(scheduler), task_runner_,
+      skia_output_surface);
 }
 
 std::unique_ptr<SoftwareOutputDevice>

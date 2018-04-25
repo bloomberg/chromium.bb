@@ -84,8 +84,7 @@ enum CommandBufferNamespace : int8_t {
 
   GPU_IO,
   IN_PROCESS,
-  MOJO,
-  MOJO_LOCAL,
+  VIZ_OUTPUT_SURFACE,
 
   NUM_COMMAND_BUFFER_NAMESPACES
 };

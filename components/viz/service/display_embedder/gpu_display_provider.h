@@ -27,6 +27,7 @@ class ImageFactory;
 namespace viz {
 class Display;
 class ExternalBeginFrameControllerImpl;
+class GpuServiceImpl;
 class OutputDeviceBacking;
 class SoftwareOutputDevice;
 
@@ -35,6 +36,7 @@ class VIZ_SERVICE_EXPORT GpuDisplayProvider : public DisplayProvider {
  public:
   GpuDisplayProvider(
       uint32_t restart_id,
+      GpuServiceImpl* gpu_service_impl,
       scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
       gpu::GpuChannelManager* gpu_channel_manager,
       bool headless,
@@ -56,6 +58,7 @@ class VIZ_SERVICE_EXPORT GpuDisplayProvider : public DisplayProvider {
       gpu::SurfaceHandle surface_handle);
 
   const uint32_t restart_id_;
+  GpuServiceImpl* const gpu_service_impl_;
   scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service_;
   gpu::GpuChannelManagerDelegate* const gpu_channel_manager_delegate_;
   std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
