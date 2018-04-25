@@ -7,12 +7,12 @@
 #include <string>
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/shell.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/extension.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -21,6 +21,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_utils.h"
@@ -53,13 +55,11 @@ const int kWindowCornerRadius = 4;
 // Creates and shows the message widget for |view| with |animation_time_ms|.
 void CreateAndShowWidget(views::WidgetDelegateView* delegate,
                          int animation_time_ms) {
-  aura::Window* root_window = ash::Shell::GetRootWindowForNewWindows();
-  gfx::Size rs = root_window->bounds().size();
-  gfx::Size ps = delegate->GetPreferredSize();
-  gfx::Rect bounds((rs.width() - ps.width()) / 2,
-                   -ps.height(),
-                   ps.width(),
-                   ps.height());
+  gfx::Size display_size =
+      display::Screen::GetScreen()->GetPrimaryDisplay().size();
+  gfx::Size view_size = delegate->GetPreferredSize();
+  gfx::Rect bounds((display_size.width() - view_size.width()) / 2,
+                   -view_size.height(), view_size.width(), view_size.height());
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
@@ -69,8 +69,8 @@ void CreateAndShowWidget(views::WidgetDelegateView* delegate,
   params.remove_standard_frame = true;
   params.delegate = delegate;
   params.bounds = bounds;
-  params.parent = ash::Shell::GetContainer(
-      root_window, ash::kShellWindowId_SettingBubbleContainer);
+  ash_util::SetupWidgetInitParamsForContainer(
+      &params, ash::kShellWindowId_SettingBubbleContainer);
   views::Widget* widget = new views::Widget;
   widget->Init(params);
   gfx::NativeView native_view = widget->GetNativeView();
@@ -86,7 +86,7 @@ void CreateAndShowWidget(views::WidgetDelegateView* delegate,
   // We don't care about the show animation since it is off screen, so stop the
   // started animation and move the message into view.
   animator->StopAnimating();
-  bounds.set_y((rs.height() - ps.height()) / 20);
+  bounds.set_y((display_size.height() - view_size.height()) / 20);
   widget->SetBounds(bounds);
 
   // Allow to use the message for spoken feedback.
