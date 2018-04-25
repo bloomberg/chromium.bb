@@ -166,6 +166,10 @@ class FileReader::ThrottlingController final
   }
 
   void ExecuteReaders() {
+    // Dont execute more readers if the context is already destroyed (or in the
+    // process of being destroyed).
+    if (GetSupplementable()->IsContextDestroyed())
+      return;
     while (running_readers_.size() < max_running_readers_) {
       if (pending_readers_.IsEmpty())
         return;
