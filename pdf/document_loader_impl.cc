@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "pdf/document_loader.h"
+#include "pdf/document_loader_impl.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include <algorithm>
-#include <memory>
 #include <utility>
 
 #include "base/logging.h"
@@ -53,23 +52,23 @@ bool IsValidContentType(const std::string& type) {
 
 }  // namespace
 
-DocumentLoader::Chunk::Chunk() = default;
+DocumentLoaderImpl::Chunk::Chunk() = default;
 
-DocumentLoader::Chunk::~Chunk() = default;
+DocumentLoaderImpl::Chunk::~Chunk() = default;
 
-void DocumentLoader::Chunk::Clear() {
+void DocumentLoaderImpl::Chunk::Clear() {
   chunk_index = 0;
   data_size = 0;
   chunk_data.reset();
 }
 
-DocumentLoader::DocumentLoader(Client* client)
+DocumentLoaderImpl::DocumentLoaderImpl(Client* client)
     : client_(client), loader_factory_(this) {}
 
-DocumentLoader::~DocumentLoader() = default;
+DocumentLoaderImpl::~DocumentLoaderImpl() = default;
 
-bool DocumentLoader::Init(std::unique_ptr<URLLoaderWrapper> loader,
-                          const std::string& url) {
+bool DocumentLoaderImpl::Init(std::unique_ptr<URLLoaderWrapper> loader,
+                              const std::string& url) {
   DCHECK(url_.empty());
   DCHECK(!loader_);
 
@@ -119,25 +118,29 @@ bool DocumentLoader::Init(std::unique_ptr<URLLoaderWrapper> loader,
   return true;
 }
 
-bool DocumentLoader::IsDocumentComplete() const {
+bool DocumentLoaderImpl::IsDocumentComplete() const {
   return chunk_stream_.IsComplete();
 }
 
-void DocumentLoader::SetDocumentSize(uint32_t size) {
+void DocumentLoaderImpl::SetDocumentSize(uint32_t size) {
   chunk_stream_.set_eof_pos(size);
 }
 
-uint32_t DocumentLoader::GetDocumentSize() const {
+uint32_t DocumentLoaderImpl::GetDocumentSize() const {
   return chunk_stream_.eof_pos();
 }
 
-void DocumentLoader::ClearPendingRequests() {
+uint32_t DocumentLoaderImpl::BytesReceived() const {
+  return bytes_received_;
+}
+
+void DocumentLoaderImpl::ClearPendingRequests() {
   pending_requests_.Clear();
 }
 
-bool DocumentLoader::GetBlock(uint32_t position,
-                              uint32_t size,
-                              void* buf) const {
+bool DocumentLoaderImpl::GetBlock(uint32_t position,
+                                  uint32_t size,
+                                  void* buf) const {
   base::CheckedNumeric<uint32_t> addition_result = position;
   addition_result += size;
   if (!addition_result.IsValid())
@@ -146,7 +149,8 @@ bool DocumentLoader::GetBlock(uint32_t position,
       gfx::Range(position, addition_result.ValueOrDie()), buf);
 }
 
-bool DocumentLoader::IsDataAvailable(uint32_t position, uint32_t size) const {
+bool DocumentLoaderImpl::IsDataAvailable(uint32_t position,
+                                         uint32_t size) const {
   base::CheckedNumeric<uint32_t> addition_result = position;
   addition_result += size;
   if (!addition_result.IsValid())
@@ -155,7 +159,7 @@ bool DocumentLoader::IsDataAvailable(uint32_t position, uint32_t size) const {
       gfx::Range(position, addition_result.ValueOrDie()));
 }
 
-void DocumentLoader::RequestData(uint32_t position, uint32_t size) {
+void DocumentLoaderImpl::RequestData(uint32_t position, uint32_t size) {
   if (size == 0 || IsDataAvailable(position, size))
     return;
 
@@ -190,14 +194,14 @@ void DocumentLoader::RequestData(uint32_t position, uint32_t size) {
   pending_requests_.Union(requested_chunks);
 }
 
-void DocumentLoader::SetPartialLoadingEnabled(bool enabled) {
+void DocumentLoaderImpl::SetPartialLoadingEnabled(bool enabled) {
   partial_loading_enabled_ = enabled;
   if (!enabled) {
     is_partial_loader_active_ = false;
   }
 }
 
-bool DocumentLoader::ShouldCancelLoading() const {
+bool DocumentLoaderImpl::ShouldCancelLoading() const {
   if (!loader_)
     return true;
   if (!partial_loading_enabled_ || pending_requests_.IsEmpty())
@@ -207,7 +211,7 @@ bool DocumentLoader::ShouldCancelLoading() const {
   return !pending_requests_.Intersects(current_range);
 }
 
-void DocumentLoader::ContinueDownload() {
+void DocumentLoaderImpl::ContinueDownload() {
   if (!ShouldCancelLoading())
     return ReadMore();
 
@@ -252,10 +256,10 @@ void DocumentLoader::ContinueDownload() {
 
   loader_->OpenRange(
       url_, url_, start, length,
-      loader_factory_.NewCallback(&DocumentLoader::DidOpenPartial));
+      loader_factory_.NewCallback(&DocumentLoaderImpl::DidOpenPartial));
 }
 
-void DocumentLoader::DidOpenPartial(int32_t result) {
+void DocumentLoaderImpl::DidOpenPartial(int32_t result) {
   if (result != PP_OK) {
     return ReadComplete();
   }
@@ -288,13 +292,13 @@ void DocumentLoader::DidOpenPartial(int32_t result) {
   return ContinueDownload();
 }
 
-void DocumentLoader::ReadMore() {
+void DocumentLoaderImpl::ReadMore() {
   loader_->ReadResponseBody(
       buffer_, sizeof(buffer_),
-      loader_factory_.NewCallback(&DocumentLoader::DidRead));
+      loader_factory_.NewCallback(&DocumentLoaderImpl::DidRead));
 }
 
-void DocumentLoader::DidRead(int32_t result) {
+void DocumentLoaderImpl::DidRead(int32_t result) {
   if (result < 0) {
     // An error occurred.
     // The renderer will detect that we're missing data and will display a
@@ -322,7 +326,7 @@ void DocumentLoader::DidRead(int32_t result) {
   return ContinueDownload();
 }
 
-bool DocumentLoader::SaveBuffer(char* input, uint32_t input_size) {
+bool DocumentLoaderImpl::SaveBuffer(char* input, uint32_t input_size) {
   const uint32_t document_size = GetDocumentSize();
   if (document_size != 0) {
     // If the HTTP server sends more data than expected, then truncate
@@ -368,17 +372,17 @@ bool DocumentLoader::SaveBuffer(char* input, uint32_t input_size) {
   return true;
 }
 
-void DocumentLoader::SaveChunkData() {
+void DocumentLoaderImpl::SaveChunkData() {
   chunk_stream_.SetChunkData(chunk_.chunk_index, std::move(chunk_.chunk_data));
   chunk_.data_size = 0;
   ++chunk_.chunk_index;
 }
 
-uint32_t DocumentLoader::EndOfCurrentChunk() const {
+uint32_t DocumentLoaderImpl::EndOfCurrentChunk() const {
   return chunk_.chunk_index * DataStream::kChunkSize + chunk_.data_size;
 }
 
-void DocumentLoader::ReadComplete() {
+void DocumentLoaderImpl::ReadComplete() {
   if (GetDocumentSize() != 0) {
     // If there is remaining data in |chunk_|, then save whatever can be saved.
     // e.g. In the underrun case.

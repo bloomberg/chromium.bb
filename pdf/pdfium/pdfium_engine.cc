@@ -30,6 +30,7 @@
 #include "gin/array_buffer.h"
 #include "gin/public/gin_embedders.h"
 #include "gin/public/isolate_holder.h"
+#include "pdf/document_loader_impl.h"
 #include "pdf/draw_utils.h"
 #include "pdf/pdf_transform.h"
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
@@ -1226,7 +1227,7 @@ bool PDFiumEngine::HandleDocumentLoad(const pp::URLLoader& loader) {
       std::make_unique<URLLoaderWrapperImpl>(GetPluginInstance(), loader);
   loader_wrapper->SetResponseHeaders(headers_);
 
-  doc_loader_ = std::make_unique<DocumentLoader>(this);
+  doc_loader_ = std::make_unique<DocumentLoaderImpl>(this);
   if (doc_loader_->Init(std::move(loader_wrapper), url_)) {
     // request initial data.
     doc_loader_->RequestData(0, 1);
@@ -1318,7 +1319,7 @@ void PDFiumEngine::OnPendingRequestComplete() {
 }
 
 void PDFiumEngine::OnNewDataReceived() {
-  client_->DocumentLoadProgress(doc_loader_->bytes_received(),
+  client_->DocumentLoadProgress(doc_loader_->BytesReceived(),
                                 doc_loader_->GetDocumentSize());
 }
 
@@ -1388,7 +1389,7 @@ void PDFiumEngine::FinishLoadingDocument() {
     document_features.is_tagged = FPDFCatalog_IsTagged(doc_);
     document_features.form_type = static_cast<FormType>(FPDF_GetFormType(doc_));
     client_->DocumentLoadComplete(document_features,
-                                  doc_loader_->bytes_received());
+                                  doc_loader_->BytesReceived());
   }
 }
 

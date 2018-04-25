@@ -11,10 +11,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
-#include "pdf/chunk_stream.h"
-#include "ppapi/utility/completion_callback_factory.h"
-
 namespace pp {
 class Instance;
 }
@@ -25,9 +21,6 @@ class URLLoaderWrapper;
 
 class DocumentLoader {
  public:
-  // Number was chosen in crbug.com/78264#c8
-  static constexpr uint32_t kDefaultRequestSize = 65536;
-
   class Client {
    public:
     virtual ~Client() = default;
@@ -48,84 +41,27 @@ class DocumentLoader {
     virtual void CancelBrowserDownload() = 0;
   };
 
-  explicit DocumentLoader(Client* client);
-  ~DocumentLoader();
+  virtual ~DocumentLoader() = default;
 
-  bool Init(std::unique_ptr<URLLoaderWrapper> loader, const std::string& url);
+  virtual bool Init(std::unique_ptr<URLLoaderWrapper> loader,
+                    const std::string& url) = 0;
 
   // Data access interface. Return true if successful.
-  bool GetBlock(uint32_t position, uint32_t size, void* buf) const;
+  virtual bool GetBlock(uint32_t position, uint32_t size, void* buf) const = 0;
 
   // Data availability interface. Return true if data is available.
-  bool IsDataAvailable(uint32_t position, uint32_t size) const;
+  virtual bool IsDataAvailable(uint32_t position, uint32_t size) const = 0;
 
   // Data request interface.
-  void RequestData(uint32_t position, uint32_t size);
+  virtual void RequestData(uint32_t position, uint32_t size) {}
 
-  bool IsDocumentComplete() const;
-  void SetDocumentSize(uint32_t size);
-  uint32_t GetDocumentSize() const;
-  uint32_t bytes_received() const { return bytes_received_; }
+  virtual bool IsDocumentComplete() const = 0;
+  virtual void SetDocumentSize(uint32_t size) {}
+  virtual uint32_t GetDocumentSize() const = 0;
+  virtual uint32_t BytesReceived() const = 0;
 
   // Clear pending requests from the queue.
-  void ClearPendingRequests();
-
-  // Exposed for unit tests.
-  void SetPartialLoadingEnabled(bool enabled);
-  bool is_partial_loader_active() const { return is_partial_loader_active_; }
-
- private:
-  using DataStream = ChunkStream<kDefaultRequestSize>;
-  struct Chunk {
-    Chunk();
-    ~Chunk();
-
-    void Clear();
-
-    uint32_t chunk_index = 0;
-    uint32_t data_size = 0;
-    std::unique_ptr<DataStream::ChunkData> chunk_data;
-  };
-
-  // Called by the completion callback of the document's URLLoader.
-  void DidOpenPartial(int32_t result);
-  // Call to read data from the document's URLLoader.
-  void ReadMore();
-  // Called by the completion callback of the document's URLLoader.
-  void DidRead(int32_t result);
-
-  bool ShouldCancelLoading() const;
-  void ContinueDownload();
-  // Called when we complete server request.
-  void ReadComplete();
-
-  bool SaveBuffer(char* input, uint32_t input_size);
-  void SaveChunkData();
-
-  uint32_t EndOfCurrentChunk() const;
-
-  Client* const client_;
-  std::string url_;
-  std::unique_ptr<URLLoaderWrapper> loader_;
-
-  pp::CompletionCallbackFactory<DocumentLoader> loader_factory_;
-
-  DataStream chunk_stream_;
-  bool partial_loading_enabled_ = true;
-  bool is_partial_loader_active_ = false;
-
-  static constexpr uint32_t kReadBufferSize = 256 * 1024;
-  char buffer_[kReadBufferSize];
-
-  // The current chunk DocumentLoader is working with.
-  Chunk chunk_;
-
-  // In units of Chunks.
-  RangeSet pending_requests_;
-
-  uint32_t bytes_received_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(DocumentLoader);
+  virtual void ClearPendingRequests() {}
 };
 
 }  // namespace chrome_pdf
