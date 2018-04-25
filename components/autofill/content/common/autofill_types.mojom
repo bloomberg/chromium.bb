@@ -151,6 +151,7 @@ struct FormFieldDataPredictions {
   string server_type;
   string overall_type;
   string parseable_name;
+  string section;
 };
 
 // autofill::FormDataPredictions

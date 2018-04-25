@@ -31,6 +31,7 @@ void CreateTestFieldDataPredictions(const std::string& signature,
   field_predict->server_type = "TestServerType";
   field_predict->overall_type = "TestOverallType";
   field_predict->parseable_name = "TestParseableName";
+  field_predict->section = "TestSection";
 }
 
 void CreateTestPasswordFormFillData(PasswordFormFillData* fill_data) {
