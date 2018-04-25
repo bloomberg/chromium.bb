@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
-#include "base/callback.h"
 #include "base/containers/span.h"
 #include "base/i18n/icu_util.h"
 #include "content/browser/web_package/signed_exchange_header.h"  // nogncheck
@@ -31,9 +30,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // detected.
   std::vector<uint8_t> header(data, data + std::min(size, header_len));
 
-  SignedExchangeHeader::Parse(
-      base::make_span(header),
-      base::RepeatingCallback<void(const std::string&)>());
+  SignedExchangeHeader::Parse(base::make_span(header),
+                              nullptr /* devtools_proxy */);
   return 0;
 }
 

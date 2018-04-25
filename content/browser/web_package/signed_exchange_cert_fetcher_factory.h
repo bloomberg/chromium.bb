@@ -10,7 +10,6 @@
 
 #include "base/callback_forward.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher.h"
-#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/common/content_export.h"
 #include "url/origin.h"
 
@@ -20,6 +19,7 @@ class SharedURLLoaderFactory;
 
 namespace content {
 
+class SignedExchangeDevToolsProxy;
 class SignedExchangeCertFetcher;
 class URLLoaderThrottle;
 
@@ -33,7 +33,7 @@ class CONTENT_EXPORT SignedExchangeCertFetcherFactory {
       const GURL& cert_url,
       bool force_fetch,
       SignedExchangeCertFetcher::CertificateCallback callback,
-      const signed_exchange_utils::LogCallback& error_message_callback) = 0;
+      SignedExchangeDevToolsProxy* devtools_proxy) = 0;
 
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
       std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;

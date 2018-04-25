@@ -4,6 +4,7 @@
 
 #include "content/browser/web_package/web_package_prefetch_handler.h"
 
+#include "base/callback.h"
 #include "content/browser/web_package/signed_exchange_url_loader_factory_for_non_network_service.h"
 #include "content/browser/web_package/web_package_loader.h"
 #include "content/browser/web_package/web_package_request_handler.h"
@@ -29,7 +30,7 @@ bool WebPackagePrefetchHandler::IsResponseForWebPackage(
 }
 
 WebPackagePrefetchHandler::WebPackagePrefetchHandler(
-    int frame_tree_node_id,
+    base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
     const network::ResourceResponseHead& response,
     network::mojom::URLLoaderPtr network_loader,
     network::mojom::URLLoaderClientRequest network_client_request,
@@ -57,7 +58,7 @@ WebPackagePrefetchHandler::WebPackagePrefetchHandler(
   web_package_loader_ = std::make_unique<WebPackageLoader>(
       response, std::move(client), std::move(endpoints),
       std::move(request_initiator), network::mojom::kURLLoadOptionNone,
-      frame_tree_node_id, std::move(url_loader_factory),
+      frame_tree_node_id_getter, std::move(url_loader_factory),
       loader_throttles_getter, request_context_getter);
 }
 

@@ -67,14 +67,13 @@ bool IsMethodCacheable(base::StringPiece method) {
   return method == "GET" || method == "HEAD" || method == "POST";
 }
 
-bool ParseRequestMap(
-    const cbor::CBORValue& value,
-    SignedExchangeHeader* out,
-    const signed_exchange_utils::LogCallback& error_message_callback) {
+bool ParseRequestMap(const cbor::CBORValue& value,
+                     SignedExchangeHeader* out,
+                     SignedExchangeDevToolsProxy* devtools_proxy) {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"), "ParseRequestMap");
   if (!value.is_map()) {
-    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-        "ParseRequestMap", error_message_callback,
+    signed_exchange_utils::ReportErrorAndEndTraceEvent(
+        devtools_proxy, "ParseRequestMap",
         base::StringPrintf(
             "Expected request map, got non-map type. Actual type: %d",
             static_cast<int>(value.type())));
@@ -86,21 +85,20 @@ bool ParseRequestMap(
   auto url_iter = request_map.find(
       cbor::CBORValue(kUrlKey, cbor::CBORValue::Type::BYTE_STRING));
   if (url_iter == request_map.end() || !url_iter->second.is_bytestring()) {
-    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-        "ParseRequestMap", error_message_callback,
+    signed_exchange_utils::ReportErrorAndEndTraceEvent(
+        devtools_proxy, "ParseRequestMap",
         ":url is not found or not a bytestring.");
     return false;
   }
   out->set_request_url(GURL(url_iter->second.GetBytestringAsString()));
   if (!out->request_url().is_valid()) {
-    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-        "ParseRequestMap", error_message_callback, ":url is not a valid URL.");
+    signed_exchange_utils::ReportErrorAndEndTraceEvent(
+        devtools_proxy, "ParseRequestMap", ":url is not a valid URL.");
     return false;
   }
   if (out->request_url().has_ref()) {
-    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-        "ParseRequestMap", error_message_callback,
-        ":url can't have a fragment.");
+    signed_exchange_utils::ReportErrorAndEndTraceEvent(
+        devtools_proxy, "ParseRequestMap", ":url can't have a fragment.");
     return false;
   }
 
@@ -108,8 +106,8 @@ bool ParseRequestMap(
       cbor::CBORValue(kMethodKey, cbor::CBORValue::Type::BYTE_STRING));
   if (method_iter == request_map.end() ||
       !method_iter->second.is_bytestring()) {
-    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-        "ParseRequestMap", error_message_callback,
+    signed_exchange_utils::ReportErrorAndEndTraceEvent(
+        devtools_proxy, "ParseRequestMap",
         ":method is not found or not a bytestring.");
     return false;
   }
@@ -119,8 +117,8 @@ bool ParseRequestMap(
   // [spec text]
   if (!net::HttpUtil::IsMethodSafe(method_str.as_string()) ||
       !IsMethodCacheable(method_str)) {
-    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-        "ParseRequestMap", error_message_callback,
+    signed_exchange_utils::ReportErrorAndEndTraceEvent(
+        devtools_proxy, "ParseRequestMap",
         base::StringPrintf(
             "Request method is not safe or not cacheable. method: %s",
             method_str.as_string().c_str()));
@@ -130,8 +128,8 @@ bool ParseRequestMap(
 
   for (const auto& it : request_map) {
     if (!it.first.is_bytestring() || !it.second.is_bytestring()) {
-      signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-          "ParseRequestMap", error_message_callback,
+      signed_exchange_utils::ReportErrorAndEndTraceEvent(
+          devtools_proxy, "ParseRequestMap",
           "Non-bytestring value in the request map.");
       return false;
     }
@@ -142,8 +140,8 @@ bool ParseRequestMap(
     // TODO(kouhei): Add spec ref here once
     // https://github.com/WICG/webpackage/issues/161 is resolved.
     if (name_str != base::ToLowerASCII(name_str)) {
-      signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-          "ParseRequestMap", error_message_callback,
+      signed_exchange_utils::ReportErrorAndEndTraceEvent(
+          devtools_proxy, "ParseRequestMap",
           base::StringPrintf(
               "Request header name should be lower-cased. header name: %s",
               name_str.as_string().c_str()));
@@ -153,8 +151,8 @@ bool ParseRequestMap(
     // 4. If exchange’s headers contain a stateful header field, as defined in
     // Section 4.1, return “invalid”. [spec text]
     if (IsStatefulRequestHeader(name_str)) {
-      signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-          "ParseRequestMap", error_message_callback,
+      signed_exchange_utils::ReportErrorAndEndTraceEvent(
+          devtools_proxy, "ParseRequestMap",
           base::StringPrintf(
               "Exchange contains stateful request header. header name: %s",
               name_str.as_string().c_str()));
@@ -166,14 +164,13 @@ bool ParseRequestMap(
   return true;
 }
 
-bool ParseResponseMap(
-    const cbor::CBORValue& value,
-    SignedExchangeHeader* out,
-    const signed_exchange_utils::LogCallback& error_message_callback) {
+bool ParseResponseMap(const cbor::CBORValue& value,
+                      SignedExchangeHeader* out,
+                      SignedExchangeDevToolsProxy* devtools_proxy) {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"), "ParseResponseMap");
   if (!value.is_map()) {
-    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-        "ParseResponseMap", error_message_callback,
+    signed_exchange_utils::ReportErrorAndEndTraceEvent(
+        devtools_proxy, "ParseResponseMap",
         base::StringPrintf(
             "Expected request map, got non-map type. Actual type: %d",
             static_cast<int>(value.type())));
@@ -185,8 +182,8 @@ bool ParseResponseMap(
       cbor::CBORValue(kStatusKey, cbor::CBORValue::Type::BYTE_STRING));
   if (status_iter == response_map.end() ||
       !status_iter->second.is_bytestring()) {
-    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-        "ParseRequestMap", error_message_callback,
+    signed_exchange_utils::ReportErrorAndEndTraceEvent(
+        devtools_proxy, "ParseRequestMap",
         ":status is not found or not a bytestring.");
     return false;
   }
@@ -194,8 +191,8 @@ bool ParseResponseMap(
       status_iter->second.GetBytestringAsString();
   int response_code;
   if (!base::StringToInt(response_code_str, &response_code)) {
-    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-        "ParseRequestMap", error_message_callback,
+    signed_exchange_utils::ReportErrorAndEndTraceEvent(
+        devtools_proxy, "ParseRequestMap",
         "Failed to parse status code to integer.");
     return false;
   }
@@ -203,8 +200,8 @@ bool ParseResponseMap(
 
   for (const auto& it : response_map) {
     if (!it.first.is_bytestring() || !it.second.is_bytestring()) {
-      signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-          "ParseRequestMap", error_message_callback,
+      signed_exchange_utils::ReportErrorAndEndTraceEvent(
+          devtools_proxy, "ParseRequestMap",
           "Non-bytestring value in the response map.");
       return false;
     }
@@ -212,8 +209,8 @@ bool ParseResponseMap(
     if (name_str == kStatusKey)
       continue;
     if (!net::HttpUtil::IsValidHeaderName(name_str)) {
-      signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-          "ParseResponseMap", error_message_callback,
+      signed_exchange_utils::ReportErrorAndEndTraceEvent(
+          devtools_proxy, "ParseResponseMap",
           base::StringPrintf("Invalid header name. header_name: %s",
                              name_str.as_string().c_str()));
       return false;
@@ -222,8 +219,8 @@ bool ParseResponseMap(
     // TODO(kouhei): Add spec ref here once
     // https://github.com/WICG/webpackage/issues/161 is resolved.
     if (name_str != base::ToLowerASCII(name_str)) {
-      signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-          "ParseResponseMap", error_message_callback,
+      signed_exchange_utils::ReportErrorAndEndTraceEvent(
+          devtools_proxy, "ParseResponseMap",
           base::StringPrintf(
               "Response header name should be lower-cased. header_name: %s",
               name_str.as_string().c_str()));
@@ -233,8 +230,8 @@ bool ParseResponseMap(
     // 4. If exchange’s headers contain a stateful header field, as defined in
     // Section 4.1, return “invalid”. [spec text]
     if (IsStatefulResponseHeader(name_str)) {
-      signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-          "ParseResponseMap", error_message_callback,
+      signed_exchange_utils::ReportErrorAndEndTraceEvent(
+          devtools_proxy, "ParseResponseMap",
           base::StringPrintf(
               "Exchange contains stateful response header. header_name: %s",
               name_str.as_string().c_str()));
@@ -243,13 +240,13 @@ bool ParseResponseMap(
 
     base::StringPiece value_str = it.second.GetBytestringAsString();
     if (!net::HttpUtil::IsValidHeaderValue(value_str)) {
-      signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-          "ParseRequestMap", error_message_callback, "Invalid header value.");
+      signed_exchange_utils::ReportErrorAndEndTraceEvent(
+          devtools_proxy, "ParseRequestMap", "Invalid header value.");
       return false;
     }
     if (!out->AddResponseHeader(name_str, value_str)) {
-      signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-          "ParseResponseMap", error_message_callback,
+      signed_exchange_utils::ReportErrorAndEndTraceEvent(
+          devtools_proxy, "ParseResponseMap",
           base::StringPrintf("Duplicate header value. header_name: %s",
                              name_str.as_string().c_str()));
       return false;
@@ -275,21 +272,21 @@ size_t SignedExchangeHeader::ParseHeadersLength(
 // static
 base::Optional<SignedExchangeHeader> SignedExchangeHeader::Parse(
     base::span<const uint8_t> input,
-    const signed_exchange_utils::LogCallback& error_message_callback) {
+    SignedExchangeDevToolsProxy* devtools_proxy) {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "SignedExchangeHeader::Parse");
   cbor::CBORReader::DecoderError error;
   base::Optional<cbor::CBORValue> value = cbor::CBORReader::Read(input, &error);
   if (!value.has_value()) {
-    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-        "SignedExchangeHeader::Parse", error_message_callback,
+    signed_exchange_utils::ReportErrorAndEndTraceEvent(
+        devtools_proxy, "SignedExchangeHeader::Parse",
         base::StringPrintf("Failed to decode CBORValue. CBOR error: %s",
                            cbor::CBORReader::ErrorCodeToString(error)));
     return base::nullopt;
   }
   if (!value->is_array()) {
-    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-        "SignedExchangeHeader::Parse", error_message_callback,
+    signed_exchange_utils::ReportErrorAndEndTraceEvent(
+        devtools_proxy, "SignedExchangeHeader::Parse",
         base::StringPrintf(
             "Expected top-level CBORValue to be an array. Actual type : %d",
             static_cast<int>(value->type())));
@@ -299,8 +296,8 @@ base::Optional<SignedExchangeHeader> SignedExchangeHeader::Parse(
   const cbor::CBORValue::ArrayValue& top_level_array = value->GetArray();
   constexpr size_t kTopLevelArraySize = 2;
   if (top_level_array.size() != kTopLevelArraySize) {
-    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-        "SignedExchangeHeader::Parse", error_message_callback,
+    signed_exchange_utils::ReportErrorAndEndTraceEvent(
+        devtools_proxy, "SignedExchangeHeader::Parse",
         base::StringPrintf("Expected top-level array to have 2 elements. "
                            "Actual element count: %" PRIuS,
                            top_level_array.size()));
@@ -309,33 +306,33 @@ base::Optional<SignedExchangeHeader> SignedExchangeHeader::Parse(
 
   SignedExchangeHeader ret;
 
-  if (!ParseRequestMap(top_level_array[0], &ret, error_message_callback)) {
-    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-        "SignedExchangeHeader::Parse", error_message_callback,
+  if (!ParseRequestMap(top_level_array[0], &ret, devtools_proxy)) {
+    signed_exchange_utils::ReportErrorAndEndTraceEvent(
+        devtools_proxy, "SignedExchangeHeader::Parse",
         "Failed to parse request map.");
     return base::nullopt;
   }
-  if (!ParseResponseMap(top_level_array[1], &ret, error_message_callback)) {
-    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-        "SignedExchangeHeader::Parse", error_message_callback,
+  if (!ParseResponseMap(top_level_array[1], &ret, devtools_proxy)) {
+    signed_exchange_utils::ReportErrorAndEndTraceEvent(
+        devtools_proxy, "SignedExchangeHeader::Parse",
         "Failed to parse response map.");
     return base::nullopt;
   }
 
   auto signature_iter = ret.response_headers_.find(kSignature);
   if (signature_iter == ret.response_headers_.end()) {
-    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-        "SignedExchangeHeader::Parse", error_message_callback,
+    signed_exchange_utils::ReportErrorAndEndTraceEvent(
+        devtools_proxy, "SignedExchangeHeader::Parse",
         "No signature header found.");
     return base::nullopt;
   }
 
   base::Optional<std::vector<SignedExchangeHeaderParser::Signature>>
       signatures = SignedExchangeHeaderParser::ParseSignature(
-          signature_iter->second, error_message_callback);
+          signature_iter->second, devtools_proxy);
   if (!signatures || signatures->empty()) {
-    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
-        "SignedExchangeHeader::Parse", error_message_callback,
+    signed_exchange_utils::ReportErrorAndEndTraceEvent(
+        devtools_proxy, "SignedExchangeHeader::Parse",
         "Failed to parse signature.");
     return base::nullopt;
   }

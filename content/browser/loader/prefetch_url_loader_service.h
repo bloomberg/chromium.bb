@@ -63,7 +63,7 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
       network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
-      int frame_tree_node_id = -1);
+      base::RepeatingCallback<int(void)> frame_tree_node_id_getter);
 
   // Register a callback that is fired right before a prefetch load is started
   // by this service.
@@ -93,8 +93,9 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
 
   // For URLLoaderThrottlesGetter.
   std::vector<std::unique_ptr<content::URLLoaderThrottle>>
-  CreateURLLoaderThrottles(const network::ResourceRequest& request,
-                           int frame_tree_node_id);
+  CreateURLLoaderThrottles(
+      const network::ResourceRequest& request,
+      base::RepeatingCallback<int(void)> frame_tree_node_id_getter);
 
   mojo::BindingSet<blink::mojom::PrefetchURLLoaderService,
                    int /* frame_tree_node_id */>

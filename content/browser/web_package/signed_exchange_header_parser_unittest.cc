@@ -5,7 +5,6 @@
 #include "content/browser/web_package/signed_exchange_header_parser.h"
 
 #include "base/callback.h"
-#include "content/browser/web_package/signed_exchange_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -58,7 +57,7 @@ TEST_F(SignedExchangeHeaderParserTest, ParseSignature) {
        0x00, 0x63, 0xf7, 0xd0, 0xe5, 0x62, 0x9e, 0x1f, 0x11, 0x7c}};
 
   auto signatures = SignedExchangeHeaderParser::ParseSignature(
-      hdr_string, signed_exchange_utils::LogCallback());
+      hdr_string, nullptr /* devtools_proxy */);
   ASSERT_TRUE(signatures.has_value());
   ASSERT_EQ(signatures->size(), 2u);
 
@@ -98,7 +97,7 @@ TEST_F(SignedExchangeHeaderParserTest, IncompleteSignature) {
       " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
       " date=1511128380; expires=1511733180";
   auto signatures = SignedExchangeHeaderParser::ParseSignature(
-      hdr_string, signed_exchange_utils::LogCallback());
+      hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 
@@ -114,7 +113,7 @@ TEST_F(SignedExchangeHeaderParserTest, DuplicatedParam) {
       " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
       " date=1511128380; expires=1511733180";
   auto signatures = SignedExchangeHeaderParser::ParseSignature(
-      hdr_string, signed_exchange_utils::LogCallback());
+      hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 
@@ -129,7 +128,7 @@ TEST_F(SignedExchangeHeaderParserTest, InvalidCertURL) {
       " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
       " date=1511128380; expires=1511733180";
   auto signatures = SignedExchangeHeaderParser::ParseSignature(
-      hdr_string, signed_exchange_utils::LogCallback());
+      hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 
@@ -144,7 +143,7 @@ TEST_F(SignedExchangeHeaderParserTest, CertURLWithFragment) {
       " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
       " date=1511128380; expires=1511733180";
   auto signatures = SignedExchangeHeaderParser::ParseSignature(
-      hdr_string, signed_exchange_utils::LogCallback());
+      hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 
@@ -159,7 +158,7 @@ TEST_F(SignedExchangeHeaderParserTest, RelativeCertURL) {
       " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
       " date=1511128380; expires=1511733180";
   auto signatures = SignedExchangeHeaderParser::ParseSignature(
-      hdr_string, signed_exchange_utils::LogCallback());
+      hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 
@@ -174,7 +173,7 @@ TEST_F(SignedExchangeHeaderParserTest, InvalidValidityUrl) {
       " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
       " date=1511128380; expires=1511733180";
   auto signatures = SignedExchangeHeaderParser::ParseSignature(
-      hdr_string, signed_exchange_utils::LogCallback());
+      hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 
@@ -189,7 +188,7 @@ TEST_F(SignedExchangeHeaderParserTest, ValidityUrlWithFragment) {
       " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
       " date=1511128380; expires=1511733180";
   auto signatures = SignedExchangeHeaderParser::ParseSignature(
-      hdr_string, signed_exchange_utils::LogCallback());
+      hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 
@@ -204,7 +203,7 @@ TEST_F(SignedExchangeHeaderParserTest, RelativeValidityUrl) {
       " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
       " date=1511128380; expires=1511733180";
   auto signatures = SignedExchangeHeaderParser::ParseSignature(
-      hdr_string, signed_exchange_utils::LogCallback());
+      hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 
@@ -219,14 +218,14 @@ TEST_F(SignedExchangeHeaderParserTest, InvalidCertSHA256) {
       " certSha256=*W7uB969dFW3Mb5ZefPS9;"
       " date=1511128380; expires=1511733180";
   auto signatures = SignedExchangeHeaderParser::ParseSignature(
-      hdr_string, signed_exchange_utils::LogCallback());
+      hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 
 TEST_F(SignedExchangeHeaderParserTest, OpenQuoteAtEnd) {
   const char hdr_string[] = "sig1; sig=\"";
   auto signatures = SignedExchangeHeaderParser::ParseSignature(
-      hdr_string, signed_exchange_utils::LogCallback());
+      hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 

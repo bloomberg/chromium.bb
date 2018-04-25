@@ -56,7 +56,7 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
-    int frame_tree_node_id) {
+    base::RepeatingCallback<int(void)> frame_tree_node_id_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(RESOURCE_TYPE_PREFETCH, resource_request.resource_type);
   DCHECK(resource_context_);
@@ -70,12 +70,12 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
   // TODO(kinuko): Revisit this.
   mojo::MakeStrongBinding(
       std::make_unique<PrefetchURLLoader>(
-          routing_id, request_id, options, frame_tree_node_id, resource_request,
-          std::move(client), traffic_annotation,
+          routing_id, request_id, options, frame_tree_node_id_getter,
+          resource_request, std::move(client), traffic_annotation,
           std::move(network_loader_factory),
           base::BindRepeating(
               &PrefetchURLLoaderService::CreateURLLoaderThrottles, this,
-              resource_request, frame_tree_node_id),
+              resource_request, frame_tree_node_id_getter),
           resource_context_, request_context_getter_),
       std::move(request));
 }
@@ -100,10 +100,11 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   int frame_tree_node_id = loader_factory_bindings_.dispatch_context();
-  CreateLoaderAndStart(std::move(request), routing_id, request_id, options,
-                       resource_request, std::move(client), traffic_annotation,
-                       loader_factory_getter_->GetNetworkFactory(),
-                       frame_tree_node_id);
+  CreateLoaderAndStart(
+      std::move(request), routing_id, request_id, options, resource_request,
+      std::move(client), traffic_annotation,
+      loader_factory_getter_->GetNetworkFactory(),
+      base::BindRepeating([](int id) { return id; }, frame_tree_node_id));
 }
 
 void PrefetchURLLoaderService::Clone(
@@ -116,12 +117,12 @@ void PrefetchURLLoaderService::Clone(
 std::vector<std::unique_ptr<content::URLLoaderThrottle>>
 PrefetchURLLoaderService::CreateURLLoaderThrottles(
     const network::ResourceRequest& request,
-    int frame_tree_node_id) {
+    base::RepeatingCallback<int(void)> frame_tree_node_id_getter) {
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
       !request_context_getter_ ||
       !request_context_getter_->GetURLRequestContext())
     return std::vector<std::unique_ptr<content::URLLoaderThrottle>>();
-
+  int frame_tree_node_id = frame_tree_node_id_getter.Run();
   return GetContentClient()->browser()->CreateURLLoaderThrottles(
       request, resource_context_,
       base::BindRepeating(&WebContents::FromFrameTreeNodeId,

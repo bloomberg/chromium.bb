@@ -6,11 +6,13 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/loader/data_pipe_to_source_stream.h"
 #include "content/browser/loader/source_stream_to_data_pipe.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
+#include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
 #include "content/public/common/content_features.h"
 #include "net/cert/cert_status_flags.h"
@@ -80,7 +82,7 @@ WebPackageLoader::WebPackageLoader(
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
     url::Origin request_initiator,
     uint32_t url_loader_options,
-    int frame_tree_node_id,
+    base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter)
@@ -90,7 +92,7 @@ WebPackageLoader::WebPackageLoader(
       url_loader_client_binding_(this),
       request_initiator_(request_initiator),
       url_loader_options_(url_loader_options),
-      frame_tree_node_id_(frame_tree_node_id),
+      frame_tree_node_id_getter_(std::move(frame_tree_node_id_getter)),
       url_loader_factory_(std::move(url_loader_factory)),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
       request_context_getter_(std::move(request_context_getter)),
@@ -185,7 +187,8 @@ void WebPackageLoader::OnStartLoadingResponseBody(
       base::BindOnce(&WebPackageLoader::OnHTTPExchangeFound,
                      weak_factory_.GetWeakPtr()),
       std::move(cert_fetcher_factory), std::move(request_context_getter_),
-      frame_tree_node_id_);
+      std::make_unique<SignedExchangeDevToolsProxy>(
+          std::move(frame_tree_node_id_getter_)));
 }
 
 void WebPackageLoader::OnComplete(

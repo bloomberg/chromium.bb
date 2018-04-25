@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_LOADER_H_
 #define CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_LOADER_H_
 
+#include "base/callback_forward.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -48,7 +49,7 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
       network::mojom::URLLoaderClientEndpointsPtr endpoints,
       url::Origin request_initiator,
       uint32_t url_loader_options,
-      int frame_tree_node_id,
+      base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
@@ -126,7 +127,7 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
 
   url::Origin request_initiator_;
   const uint32_t url_loader_options_;
-  const int frame_tree_node_id_;
+  base::RepeatingCallback<int(void)> frame_tree_node_id_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;

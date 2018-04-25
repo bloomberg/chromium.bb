@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_requester_info.h"
@@ -26,6 +27,14 @@ namespace content {
 namespace {
 network::mojom::URLLoaderFactory* g_test_factory;
 ResourceMessageFilter* g_current_filter;
+
+int GetFrameTreeNodeId(int render_process_host_id, int render_frame_host_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderFrameHost* render_frame_host =
+      RenderFrameHost::FromID(render_process_host_id, render_frame_host_id);
+  return render_frame_host ? render_frame_host->GetFrameTreeNodeId() : -1;
+}
+
 }  // namespace
 
 ResourceMessageFilter::ResourceMessageFilter(
@@ -123,7 +132,9 @@ void ResourceMessageFilter::CreateLoaderAndStart(
         std::move(request), routing_id, request_id, options, url_request,
         std::move(client), traffic_annotation,
         base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
-            url_loader_factory_.get()));
+            url_loader_factory_.get()),
+        base::BindRepeating(&GetFrameTreeNodeId, child_id(),
+                            url_request.render_frame_id));
     return;
   }
 

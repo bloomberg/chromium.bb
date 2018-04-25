@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
-#include "base/callback.h"
 #include "base/i18n/icu_util.h"
 #include "content/browser/web_package/signed_exchange_header_parser.h"  // nogncheck
 
@@ -19,8 +18,8 @@ IcuEnvironment* env = new IcuEnvironment();
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::StringPiece input(reinterpret_cast<const char*>(data), size);
-  SignedExchangeHeaderParser::ParseSignature(
-      input, base::RepeatingCallback<void(const std::string&)>());
+  SignedExchangeHeaderParser::ParseSignature(input,
+                                             nullptr /* devtools_proxy */);
   return 0;
 }
 
