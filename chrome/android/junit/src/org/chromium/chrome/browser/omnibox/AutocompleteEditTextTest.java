@@ -1260,4 +1260,46 @@ public class AutocompleteEditTextTest {
         assertEquals("abcde", mAutocomplete.getTextWithAutocomplete());
         assertEquals("abcde", mAutocomplete.getTextWithoutAutocomplete());
     }
+
+    // crbug.com/810704
+    @Test
+    @EnableFeatures(ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE)
+    public void testPerformEditorAction() {
+        // User types "goo".
+        assertTrue(mInputConnection.setComposingText("goo", 1));
+        assertTrue(mAutocomplete.shouldAutocomplete());
+        mAutocomplete.setAutocompleteText("goo", "gle.com");
+        assertEquals("google.com", mAutocomplete.getText().toString());
+
+        // User presses 'GO' key on the keyboard.
+        assertTrue(mInputConnection.commitText("goo", 1));
+        assertEquals("google.com", mAutocomplete.getText().toString());
+
+        assertTrue(mInputConnection.performEditorAction(EditorInfo.IME_ACTION_GO));
+        assertEquals("google.com", mAutocomplete.getText().toString());
+    }
+
+    // crbug.com/810704
+    @Test
+    @EnableFeatures(ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE)
+    public void testPerformEditorActionInBatchEdit() {
+        // User types "goo".
+        assertTrue(mInputConnection.setComposingText("goo", 1));
+        assertTrue(mAutocomplete.shouldAutocomplete());
+        mAutocomplete.setAutocompleteText("goo", "gle.com");
+        assertEquals("google.com", mAutocomplete.getText().toString());
+
+        // User presses 'GO' key on the keyboard.
+        mInputConnection.beginBatchEdit();
+
+        assertTrue(mInputConnection.commitText("goo", 1));
+        assertEquals("google.com", mAutocomplete.getText().toString());
+
+        assertTrue(mInputConnection.performEditorAction(EditorInfo.IME_ACTION_GO));
+        assertEquals("google.com", mAutocomplete.getText().toString());
+
+        mInputConnection.endBatchEdit();
+
+        assertEquals("google.com", mAutocomplete.getText().toString());
+    }
 }
