@@ -32,12 +32,13 @@ class GestureConfigurationCast : public GestureConfiguration {
             switches::kCompensateForUnstablePinchZoom)
             ? 5
             : 0);
-    set_velocity_tracker_strategy(VelocityTracker::Strategy::LSQ2_RESTRICTED);
+    set_velocity_tracker_strategy(VelocityTracker::Strategy::INT1);
     set_span_slop(max_touch_move_in_pixels_for_click() * 2);
     set_swipe_enabled(true);
     set_two_finger_tap_enabled(true);
     set_fling_touchpad_tap_suppression_enabled(true);
     set_fling_touchscreen_tap_suppression_enabled(true);
+    set_max_fling_velocity(5000.0f);
   }
 
   friend struct base::DefaultSingletonTraits<GestureConfigurationCast>;
