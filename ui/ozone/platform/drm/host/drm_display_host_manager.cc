@@ -30,9 +30,9 @@ namespace ui {
 
 namespace {
 
-typedef base::Callback<void(const base::FilePath&,
-                            const base::FilePath&,
-                            std::unique_ptr<DrmDeviceHandle>)>
+typedef base::OnceCallback<void(const base::FilePath&,
+                                const base::FilePath&,
+                                std::unique_ptr<DrmDeviceHandle>)>
     OnOpenDeviceReplyCallback;
 
 const char kDefaultGraphicsCardPattern[] = "/dev/dri/card%d";
@@ -54,14 +54,14 @@ base::FilePath MapDevPathToSysPath(const base::FilePath& device_path) {
 
 void OpenDeviceAsync(const base::FilePath& device_path,
                      const scoped_refptr<base::TaskRunner>& reply_runner,
-                     const OnOpenDeviceReplyCallback& callback) {
+                     OnOpenDeviceReplyCallback callback) {
   base::FilePath sys_path = MapDevPathToSysPath(device_path);
 
   std::unique_ptr<DrmDeviceHandle> handle(new DrmDeviceHandle());
   handle->Initialize(device_path, sys_path);
   reply_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(callback, device_path, sys_path, std::move(handle)));
+      FROM_HERE, base::BindOnce(std::move(callback), device_path, sys_path,
+                                std::move(handle)));
 }
 
 base::FilePath GetPrimaryDisplayCardPath() {
@@ -255,8 +255,8 @@ void DrmDisplayHostManager::ProcessEvent() {
               base::BindOnce(
                   &OpenDeviceAsync, event.path,
                   base::ThreadTaskRunnerHandle::Get(),
-                  base::Bind(&DrmDisplayHostManager::OnAddGraphicsDevice,
-                             weak_ptr_factory_.GetWeakPtr())));
+                  base::BindOnce(&DrmDisplayHostManager::OnAddGraphicsDevice,
+                                 weak_ptr_factory_.GetWeakPtr())));
           task_pending_ = true;
         }
         break;

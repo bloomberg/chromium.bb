@@ -74,8 +74,8 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
       }
     }
     if (!drm_->PageFlip(flip.crtc_id, flip.framebuffer,
-                        base::Bind(&CrtcController::OnPageFlipEvent,
-                                   flip.crtc->AsWeakPtr()))) {
+                        base::BindOnce(&CrtcController::OnPageFlipEvent,
+                                       flip.crtc->AsWeakPtr()))) {
       // 1) Permission Denied is a legitimate error.
       // 2) Device or resource busy is possible if we're page flipping a
       // disconnected CRTC. Pretend we're fine since a hotplug event is supposed

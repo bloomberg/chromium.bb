@@ -75,7 +75,7 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
 
   if (!drm_->CommitProperties(plane_list->atomic_property_set.get(), flags,
                               crtcs.size(),
-                              base::Bind(&AtomicPageFlipCallback, crtcs))) {
+                              base::BindOnce(&AtomicPageFlipCallback, crtcs))) {
     if (!test_only) {
       PLOG(ERROR) << "Failed to commit properties for page flip.";
     } else {
@@ -109,9 +109,9 @@ bool HardwareDisplayPlaneManagerAtomic::DisableOverlayPlanes(
   // to get the pageflip callback. In this case we don't need to be notified
   // at the next page flip, so the list of crtcs can be empty.
   std::vector<base::WeakPtr<CrtcController>> crtcs;
-  bool ret = drm_->CommitProperties(plane_list->atomic_property_set.get(),
-                                    DRM_MODE_ATOMIC_NONBLOCK, crtcs.size(),
-                                    base::Bind(&AtomicPageFlipCallback, crtcs));
+  bool ret = drm_->CommitProperties(
+      plane_list->atomic_property_set.get(), DRM_MODE_ATOMIC_NONBLOCK,
+      crtcs.size(), base::BindOnce(&AtomicPageFlipCallback, crtcs));
   PLOG_IF(ERROR, !ret) << "Failed to commit properties for page flip.";
 
   plane_list->atomic_property_set.reset(drmModeAtomicAlloc());

@@ -32,9 +32,10 @@ namespace ui {
 
 namespace {
 
-using DrmEventHandler = base::Callback<void(uint32_t /* frame */,
-                                            base::TimeTicks /* timestamp */,
-                                            uint64_t /* id */)>;
+using DrmEventHandler =
+    base::RepeatingCallback<void(uint32_t /* frame */,
+                                 base::TimeTicks /* timestamp */,
+                                 uint64_t /* id */)>;
 
 bool DrmCreateDumbBuffer(int fd,
                          const SkImageInfo& info,
@@ -252,21 +253,21 @@ class DrmDevice::PageFlipManager {
       return;
     }
 
-    DrmDevice::PageFlipCallback callback = it->callback;
+    DrmDevice::PageFlipCallback callback = std::move(it->callback);
     it->pending_calls--;
     if (it->pending_calls)
       return;
 
     callbacks_.erase(it);
-    callback.Run(frame, timestamp);
+    std::move(callback).Run(frame, timestamp);
   }
 
   uint64_t GetNextId() { return next_id_++; }
 
   void RegisterCallback(uint64_t id,
                         uint64_t pending_calls,
-                        const DrmDevice::PageFlipCallback& callback) {
-    callbacks_.push_back({id, pending_calls, callback});
+                        DrmDevice::PageFlipCallback callback) {
+    callbacks_.push_back({id, pending_calls, std::move(callback)});
   }
 
  private:
@@ -317,8 +318,9 @@ class DrmDevice::IOWatcher : public base::MessagePumpLibevent::FdWatcher {
     DCHECK(base::MessageLoopForIO::IsCurrent());
     TRACE_EVENT1("drm", "OnDrmEvent", "socket", fd);
 
-    if (!ProcessDrmEvent(fd, base::Bind(&DrmDevice::PageFlipManager::OnPageFlip,
-                                        base::Unretained(page_flip_manager_))))
+    if (!ProcessDrmEvent(
+            fd, base::BindRepeating(&DrmDevice::PageFlipManager::OnPageFlip,
+                                    base::Unretained(page_flip_manager_))))
       Unregister();
   }
 
@@ -446,7 +448,7 @@ bool DrmDevice::RemoveFramebuffer(uint32_t framebuffer) {
 
 bool DrmDevice::PageFlip(uint32_t crtc_id,
                          uint32_t framebuffer,
-                         const PageFlipCallback& callback) {
+                         PageFlipCallback callback) {
   DCHECK(file_.IsValid());
   TRACE_EVENT2("drm", "DrmDevice::PageFlip", "crtc", crtc_id, "framebuffer",
                framebuffer);
@@ -457,7 +459,7 @@ bool DrmDevice::PageFlip(uint32_t crtc_id,
   if (!drmModePageFlip(file_.GetPlatformFile(), crtc_id, framebuffer,
                        DRM_MODE_PAGE_FLIP_EVENT, reinterpret_cast<void*>(id))) {
     // If successful the payload will be removed by a PageFlip event.
-    page_flip_manager_->RegisterCallback(id, 1, callback);
+    page_flip_manager_->RegisterCallback(id, 1, std::move(callback));
     return true;
   }
 
@@ -602,7 +604,7 @@ bool DrmDevice::CloseBufferHandle(uint32_t handle) {
 bool DrmDevice::CommitProperties(drmModeAtomicReq* properties,
                                  uint32_t flags,
                                  uint32_t crtc_count,
-                                 const PageFlipCallback& callback) {
+                                 PageFlipCallback callback) {
   uint64_t id = 0;
   bool page_flip_event_requested = flags & DRM_MODE_PAGE_FLIP_EVENT;
 
@@ -612,7 +614,7 @@ bool DrmDevice::CommitProperties(drmModeAtomicReq* properties,
   if (!drmModeAtomicCommit(file_.GetPlatformFile(), properties, flags,
                            reinterpret_cast<void*>(id))) {
     if (page_flip_event_requested)
-      page_flip_manager_->RegisterCallback(id, crtc_count, callback);
+      page_flip_manager_->RegisterCallback(id, crtc_count, std::move(callback));
 
     return true;
   }

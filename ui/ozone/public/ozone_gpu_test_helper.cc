@@ -81,8 +81,8 @@ class FakeGpuProcessHost {
   ~FakeGpuProcessHost() {}
 
   void InitOnIO() {
-    base::Callback<void(IPC::Message*)> sender =
-        base::Bind(&DispatchToGpuPlatformSupportTaskOnIO);
+    base::RepeatingCallback<void(IPC::Message*)> sender =
+        base::BindRepeating(&DispatchToGpuPlatformSupportTaskOnIO);
 
     ui::OzonePlatform::GetInstance()
         ->GetGpuPlatformSupportHost()
