@@ -212,6 +212,19 @@ enum class UserVerificationRequirement {
   kDiscouraged,
 };
 
+// Enumerates the two types of application parameter values used: the
+// "primary" value is the hash of the relying party ID[1] and is always
+// provided. The "alternative" value is the hash of a U2F AppID, specified in
+// an extension[2], for compatibility with keys that were registered with the
+// old API.
+//
+// [1] https://w3c.github.io/webauthn/#rp-id
+// [2] https://w3c.github.io/webauthn/#sctn-appid-extension
+enum class ApplicationParameterType {
+  kPrimary,
+  kAlternative,
+};
+
 // Parameters for fake U2F registration used to check for user presence.
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const std::array<uint8_t, 32> kBogusAppParam;

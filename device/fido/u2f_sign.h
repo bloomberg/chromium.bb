@@ -49,19 +49,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fSign : public U2fRequest {
   ~U2fSign() override;
 
  private:
-  // Enumerates the two types of |application_parameter| values used: the
-  // "primary" value is the hash of the relying party ID[1] and is always
-  // provided. The "alternative" value is the hash of a U2F AppID, specified in
-  // an extension[2], for compatibility with keys that were registered with the
-  // old API.
-  //
-  // [1] https://w3c.github.io/webauthn/#rp-id
-  // [2] https://w3c.github.io/webauthn/#sctn-appid-extension
-  enum class ApplicationParameterType {
-    kPrimary,
-    kAlternative,
-  };
-
   void TryDevice() override;
   void OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
                    ApplicationParameterType application_parameter_type,

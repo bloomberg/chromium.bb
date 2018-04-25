@@ -6,6 +6,8 @@
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_parsing_utils.h"
+#include "device/fido/fido_test_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,16 +16,6 @@ namespace device {
 // Leveraging example 4 of section 6.1 of the spec
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html
 TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
-  static constexpr uint8_t kClientDataHash[] = {
-      0x68, 0x71, 0x34, 0x96, 0x82, 0x22, 0xec, 0x17, 0x20, 0x2e, 0x42,
-      0x50, 0x5f, 0x8e, 0xd2, 0xb1, 0x6a, 0xe2, 0x2f, 0x16, 0xbb, 0x05,
-      0xb8, 0x8c, 0x25, 0xdb, 0x9e, 0x60, 0x26, 0x45, 0xf1, 0x41};
-
-  static constexpr uint8_t kUserId[] = {
-      0x30, 0x82, 0x01, 0x93, 0x30, 0x82, 0x01, 0x38, 0xa0, 0x03, 0x02,
-      0x01, 0x02, 0x30, 0x82, 0x01, 0x93, 0x30, 0x82, 0x01, 0x38, 0xa0,
-      0x03, 0x02, 0x01, 0x02, 0x30, 0x82, 0x01, 0x93, 0x30, 0x82};
-
   static constexpr uint8_t kSerializedRequest[] = {
       // clang-format off
       0x01,        // authenticatorMakeCredential command
@@ -50,10 +42,8 @@ TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
       0xa4,        // map(4)
       0x62,        // text(2)
       0x69, 0x64,  // "id"
-      0x58, 0x20,  // bytes(32) - user id
-      0x30, 0x82, 0x01, 0x93, 0x30, 0x82, 0x01, 0x38, 0xa0, 0x03, 0x02, 0x01,
-      0x02, 0x30, 0x82, 0x01, 0x93, 0x30, 0x82, 0x01, 0x38, 0xa0, 0x03, 0x02,
-      0x01, 0x02, 0x30, 0x82, 0x01, 0x93, 0x30, 0x82,
+      0x48,        // bytes(8) - user id
+      0x10, 0x98, 0x23, 0x72, 0x35, 0x40, 0x98, 0x72,
       0x64,                    // text(4)
       0x69, 0x63, 0x6f, 0x6e,  // "icon"
       0x78, 0x28,              // text(40)
@@ -112,13 +102,13 @@ TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
   rp.SetRpName("Acme");
 
   PublicKeyCredentialUserEntity user(
-      std::vector<uint8_t>(kUserId, std::end(kUserId)));
+      fido_parsing_utils::Materialize(test_data::kUserId));
   user.SetUserName("johnpsmith@example.com")
       .SetDisplayName("John P. Smith")
       .SetIconUrl(GURL("https://pics.acme.com/00/p/aBjjjpqPb.png"));
 
   CtapMakeCredentialRequest make_credential_param(
-      std::vector<uint8_t>(kClientDataHash, std::end(kClientDataHash)),
+      fido_parsing_utils::Materialize(test_data::kClientDataHash),
       std::move(rp), std::move(user),
       PublicKeyCredentialParams({{CredentialType::kPublicKey, 7},
                                  {CredentialType::kPublicKey, 257}}));
@@ -129,11 +119,6 @@ TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
 }
 
 TEST(CTAPRequestTest, TestConstructGetAssertionRequest) {
-  static constexpr uint8_t kClientDataHash[] = {
-      0x68, 0x71, 0x34, 0x96, 0x82, 0x22, 0xec, 0x17, 0x20, 0x2e, 0x42,
-      0x50, 0x5f, 0x8e, 0xd2, 0xb1, 0x6a, 0xe2, 0x2f, 0x16, 0xbb, 0x05,
-      0xb8, 0x8c, 0x25, 0xdb, 0x9e, 0x60, 0x26, 0x45, 0xf1, 0x41};
-
   static constexpr uint8_t kSerializedRequest[] = {
       // clang-format off
       0x02,  // authenticatorGetAssertion command
@@ -198,8 +183,7 @@ TEST(CTAPRequestTest, TestConstructGetAssertionRequest) {
   };
 
   CtapGetAssertionRequest get_assertion_req(
-      "acme.com",
-      std::vector<uint8_t>(kClientDataHash, std::end(kClientDataHash)));
+      "acme.com", fido_parsing_utils::Materialize(test_data::kClientDataHash));
 
   std::vector<PublicKeyCredentialDescriptor> allowed_list;
   allowed_list.push_back(PublicKeyCredentialDescriptor(
