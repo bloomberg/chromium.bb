@@ -746,11 +746,11 @@ CSSValue* ConsumeMaskSourceType(CSSParserTokenRange& range) {
 CSSPrimitiveValue* ConsumeLengthOrPercentCountNegative(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    base::Optional<WebFeature> negativeSize) {
+    base::Optional<WebFeature> negative_size) {
   CSSPrimitiveValue* result =
       ConsumeLengthOrPercent(range, context.Mode(), kValueRangeNonNegative,
                              CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
-  if (result || !negativeSize)
+  if (result || !negative_size)
     return result;
 
   result =
@@ -758,13 +758,13 @@ CSSPrimitiveValue* ConsumeLengthOrPercentCountNegative(
                              CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
 
   if (result)
-    context.Count(*negativeSize);
+    context.Count(*negative_size);
   return result;
 }
 
 CSSValue* ConsumeBackgroundSize(CSSParserTokenRange& range,
                                 const CSSParserContext& context,
-                                base::Optional<WebFeature> negativeSize,
+                                base::Optional<WebFeature> negative_size,
                                 ParsingStyle parsing_style) {
   if (CSSPropertyParserHelpers::IdentMatches<CSSValueContain, CSSValueCover>(
           range.Peek().Id())) {
@@ -775,7 +775,7 @@ CSSValue* ConsumeBackgroundSize(CSSParserTokenRange& range,
       CSSPropertyParserHelpers::ConsumeIdent<CSSValueAuto>(range);
   if (!horizontal) {
     horizontal =
-        ConsumeLengthOrPercentCountNegative(range, context, negativeSize);
+        ConsumeLengthOrPercentCountNegative(range, context, negative_size);
   }
 
   CSSValue* vertical = nullptr;
@@ -784,7 +784,7 @@ CSSValue* ConsumeBackgroundSize(CSSParserTokenRange& range,
       range.ConsumeIncludingWhitespace();
     } else {
       vertical =
-          ConsumeLengthOrPercentCountNegative(range, context, negativeSize);
+          ConsumeLengthOrPercentCountNegative(range, context, negative_size);
     }
   } else if (parsing_style == ParsingStyle::kLegacy) {
     // Legacy syntax: "-webkit-background-size: 10px" is equivalent to
@@ -843,9 +843,9 @@ CSSValue* ParseBackgroundBox(CSSParserTokenRange& range,
 CSSValue* ParseBackgroundOrMaskSize(CSSParserTokenRange& range,
                                     const CSSParserContext& context,
                                     const CSSParserLocalContext& local_context,
-                                    base::Optional<WebFeature> negativeSize) {
+                                    base::Optional<WebFeature> negative_size) {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      ConsumeBackgroundSize, range, context, negativeSize,
+      ConsumeBackgroundSize, range, context, negative_size,
       local_context.UseAliasParsing() ? ParsingStyle::kLegacy
                                       : ParsingStyle::kNotLegacy);
 }

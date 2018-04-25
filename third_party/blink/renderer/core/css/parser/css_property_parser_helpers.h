@@ -59,9 +59,10 @@ CSSPrimitiveValue* ConsumeLengthOrPercent(
     ValueRange,
     UnitlessQuirk = UnitlessQuirk::kForbid);
 
-CSSPrimitiveValue* ConsumeAngle(CSSParserTokenRange&,
-                                const CSSParserContext*,
-                                base::Optional<WebFeature> unitlessZeroFeature);
+CSSPrimitiveValue* ConsumeAngle(
+    CSSParserTokenRange&,
+    const CSSParserContext*,
+    base::Optional<WebFeature> unitless_zero_feature);
 CSSPrimitiveValue* ConsumeTime(CSSParserTokenRange&, ValueRange);
 CSSPrimitiveValue* ConsumeResolution(CSSParserTokenRange&);
 
@@ -88,11 +89,11 @@ CSSValue* ConsumeLineWidth(CSSParserTokenRange&, CSSParserMode, UnitlessQuirk);
 CSSValuePair* ConsumePosition(CSSParserTokenRange&,
                               const CSSParserContext&,
                               UnitlessQuirk,
-                              base::Optional<WebFeature> threeValuePosition);
+                              base::Optional<WebFeature> three_value_position);
 bool ConsumePosition(CSSParserTokenRange&,
                      const CSSParserContext&,
                      UnitlessQuirk,
-                     base::Optional<WebFeature> threeValuePosition,
+                     base::Optional<WebFeature> three_value_position,
                      CSSValue*& result_x,
                      CSSValue*& result_y);
 bool ConsumeOneOrTwoValuedPosition(CSSParserTokenRange&,
