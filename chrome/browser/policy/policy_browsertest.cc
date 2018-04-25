@@ -1915,7 +1915,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   params.install_immediately = true;
   extensions::TestExtensionRegistryObserver update_observer(
       extensions::ExtensionRegistry::Get(browser()->profile()));
-  updater->CheckNow(params);
+  updater->CheckNow(std::move(params));
   update_observer.WaitForExtensionWillBeInstalled();
 
   const base::Version& new_version =

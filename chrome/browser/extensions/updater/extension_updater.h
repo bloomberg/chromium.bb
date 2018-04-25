@@ -56,13 +56,18 @@ class ExtensionUpdaterTest;
 class ExtensionUpdater : public ExtensionDownloaderDelegate,
                          public content::NotificationObserver {
  public:
-  // TODO(mxnguyen): Change FinishedCallback to base::OnceClosure.
-  typedef base::Closure FinishedCallback;
+  typedef base::OnceClosure FinishedCallback;
 
   struct CheckParams {
     // Creates a default CheckParams instance that checks for all extensions.
     CheckParams();
     ~CheckParams();
+
+    CheckParams(const CheckParams& other) = delete;
+    CheckParams& operator=(const CheckParams& other) = delete;
+
+    CheckParams(CheckParams&& other);
+    CheckParams& operator=(CheckParams&& other);
 
     // The set of extensions that should be checked for updates. If empty
     // all extensions will be included in the update check.
@@ -109,11 +114,11 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
 
   // Starts an update check for the specified extension soon.
   void CheckExtensionSoon(const std::string& extension_id,
-                          const FinishedCallback& callback);
+                          FinishedCallback callback);
 
   // Starts an update check right now, instead of waiting for the next
   // regularly scheduled check or a pending check from CheckSoon().
-  void CheckNow(const CheckParams& params);
+  void CheckNow(CheckParams params);
 
   // Returns true iff CheckSoon() has been called but the update check
   // hasn't been performed yet.  This is used mostly by tests; calling
@@ -227,7 +232,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   void OnUpdateServiceFinished(int request_id);
 
   void ExtensionCheckFinished(const std::string& extension_id,
-                              const FinishedCallback& callback);
+                              FinishedCallback callback);
 
   // Whether Start() has been called but not Stop().
   bool alive_;

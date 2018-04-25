@@ -1750,9 +1750,8 @@ class ExtensionUpdaterTest : public testing::Test {
                              kUpdateFrequencySecs,
                              NULL,
                              service.GetDownloaderFactory());
-    ExtensionUpdater::CheckParams params;
     updater.Start();
-    updater.CheckNow(params);
+    updater.CheckNow(ExtensionUpdater::CheckParams());
 
     // Make the updater do manifest fetching, and note the urls it tries to
     // fetch.
@@ -2220,9 +2219,8 @@ TEST_F(ExtensionUpdaterTest, TestNonAutoUpdateableLocations) {
   EXPECT_CALL(delegate, GetPingDataForExtension(updateable_id, _));
 
   service.set_extensions(extensions, ExtensionList());
-  ExtensionUpdater::CheckParams params;
   updater.Start();
-  updater.CheckNow(params);
+  updater.CheckNow(ExtensionUpdater::CheckParams());
 }
 
 TEST_F(ExtensionUpdaterTest, TestUpdatingDisabledExtensions) {
@@ -2258,9 +2256,8 @@ TEST_F(ExtensionUpdaterTest, TestUpdatingDisabledExtensions) {
   EXPECT_CALL(delegate, GetPingDataForExtension(disabled_id, _));
 
   service.set_extensions(enabled_extensions, disabled_extensions);
-  ExtensionUpdater::CheckParams params;
   updater.Start();
-  updater.CheckNow(params);
+  updater.CheckNow(ExtensionUpdater::CheckParams());
 }
 
 TEST_F(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
@@ -2401,9 +2398,9 @@ TEST_F(ExtensionUpdaterTest, TestUninstallWhileUpdateCheck) {
                            NULL,
                            service.GetDownloaderFactory());
   ExtensionUpdater::CheckParams params;
-  params.ids.push_back(id);
+  params.ids = {id};
   updater.Start();
-  updater.CheckNow(params);
+  updater.CheckNow(std::move(params));
 
   service.set_extensions(ExtensionList(), ExtensionList());
   ASSERT_FALSE(service.GetExtensionById(id, false));

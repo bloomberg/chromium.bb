@@ -657,6 +657,8 @@ class ExtensionService
   // A callback to be called when all external providers are ready and their
   // extensions have been installed. Normally this is a null callback, but
   // is used in external provider related tests.
+  // TODO(mxnguyen): Change |external_updates_finished_callback_| to
+  // OnceClosure.
   base::Closure external_updates_finished_callback_;
 
   // Set when the browser is terminating. Prevents us from installing or
