@@ -6,12 +6,14 @@ package org.chromium.chrome.browser.contextual_suggestions;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 
 import org.junit.After;
 import org.junit.Before;
@@ -33,6 +35,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.chrome.test.util.ViewUtils;
 import org.chromium.chrome.test.util.browser.ChromeModernDesign;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -253,6 +256,31 @@ public class ContextualSuggestionsTest {
 
         assertEquals("Sheet should be peeking.", BottomSheet.SHEET_STATE_PEEK,
                 mBottomSheet.getSheetState());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions"})
+    public void testMenuButton() throws Exception {
+        forceShowSuggestions();
+        View title =
+                mBottomSheet.getCurrentSheetContent().getToolbarView().findViewById(R.id.title);
+        View menuButton =
+                mBottomSheet.getCurrentSheetContent().getToolbarView().findViewById(R.id.more);
+
+        int titleWidth = title.getWidth();
+        // Menu button is not visible on peek state.
+        assertEquals(View.GONE, menuButton.getVisibility());
+        assertEquals(0, menuButton.getWidth());
+
+        // Menu button is visible after sheet is opened.
+        openSheet();
+        assertEquals(View.VISIBLE, menuButton.getVisibility());
+
+        // Title view should be resized.
+        ViewUtils.waitForStableView(menuButton);
+        assertNotEquals(0, menuButton.getWidth());
+        assertEquals(titleWidth, title.getWidth() + menuButton.getWidth());
     }
 
     private void forceShowSuggestions() throws InterruptedException, TimeoutException {

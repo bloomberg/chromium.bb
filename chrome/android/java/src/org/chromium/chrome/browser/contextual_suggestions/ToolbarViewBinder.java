@@ -17,6 +17,10 @@ class ToolbarViewBinder
     public void bind(ContextualSuggestionsModel model, ToolbarView view, PropertyKey propertyKey) {
         if (propertyKey == PropertyKey.CLOSE_BUTTON_ON_CLICK_LISTENER) {
             view.setCloseButtonOnClickListener(model.getCloseButtonOnClickListener());
+        } else if (propertyKey == PropertyKey.MENU_BUTTON_VISIBILITY) {
+            view.setMenuButtonVisibility(model.getMenuButtonVisibility());
+        } else if (propertyKey == PropertyKey.MENU_BUTTON_DELEGATE) {
+            view.setMenuButtonDelegate(model.getMenuButtonDelegate());
         } else if (propertyKey == PropertyKey.TITLE) {
             view.setTitle(model.getTitle());
         } else if (propertyKey == PropertyKey.TOOLBAR_SHADOW_VISIBILITY) {

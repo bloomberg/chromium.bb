@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.modelutil.PropertyObservable;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.cards.NodeParent;
 import org.chromium.chrome.browser.ntp.cards.TreeNode;
+import org.chromium.chrome.browser.widget.ListMenuButton;
 
 import java.util.Collections;
 
@@ -21,6 +22,8 @@ class ContextualSuggestionsModel
     /** Keys uniquely identifying model properties. */
     static class PropertyKey {
         static final PropertyKey CLOSE_BUTTON_ON_CLICK_LISTENER = new PropertyKey();
+        static final PropertyKey MENU_BUTTON_VISIBILITY = new PropertyKey();
+        static final PropertyKey MENU_BUTTON_DELEGATE = new PropertyKey();
         static final PropertyKey TITLE = new PropertyKey();
         static final PropertyKey TOOLBAR_SHADOW_VISIBILITY = new PropertyKey();
         static final PropertyKey DEFAULT_TOOLBAR_ON_CLICK_LISTENER = new PropertyKey();
@@ -77,6 +80,8 @@ class ContextualSuggestionsModel
 
     ClusterListObservable mClusterListObservable = new ClusterListObservable();
     private OnClickListener mCloseButtonOnClickListener;
+    private boolean mMenuButtonVisibility;
+    private ListMenuButton.Delegate mMenuButtonDelegate;
     private OnClickListener mDefaultToolbarOnClickListener;
     private String mTitle;
     private boolean mToolbarShadowVisibility;
@@ -100,6 +105,28 @@ class ContextualSuggestionsModel
     /** @return The {@link OnClickListener} for the close button. */
     OnClickListener getCloseButtonOnClickListener() {
         return mCloseButtonOnClickListener;
+    }
+
+    /** @param visible Whether the menu button is visible. */
+    void setMenuButtonVisibility(boolean visible) {
+        mMenuButtonVisibility = visible;
+        notifyPropertyChanged(PropertyKey.MENU_BUTTON_VISIBILITY);
+    }
+
+    /** @return Whether the menu button is visible. */
+    boolean getMenuButtonVisibility() {
+        return mMenuButtonVisibility;
+    }
+
+    /** @param delegate The delegate for handles actions for the menu. */
+    void setMenuButtonDelegate(ListMenuButton.Delegate delegate) {
+        mMenuButtonDelegate = delegate;
+        notifyPropertyChanged(PropertyKey.MENU_BUTTON_DELEGATE);
+    }
+
+    /** @return The delegate that handles actions for the menu. */
+    ListMenuButton.Delegate getMenuButtonDelegate() {
+        return mMenuButtonDelegate;
     }
 
     /** @param title The title to display in the toolbar. */

@@ -5,6 +5,8 @@
 
 <org.chromium.chrome.browser.contextual_suggestions.ToolbarView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:chrome="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical" >
@@ -35,15 +37,22 @@
              android:ellipsize="end"
              android:textAppearance="@style/BlackTitle1" />
 
-        <!-- Use 50dp width and 16dp end/start padding to produce an 18dp, centered icon. -->
+        <org.chromium.chrome.browser.widget.ListMenuButton
+            android:id="@+id/more"
+            android:layout_width="@dimen/contextual_suggestions_icon_size"
+            android:layout_height="match_parent"
+            android:background="?attr/selectableItemBackground"
+            android:src="@drawable/ic_more_vert_black_24dp"
+            chrome:chrometint="@color/dark_mode_tint"
+            tools:ignore="ContentDescription" />
+
         <ImageView
             android:id="@+id/close_button"
             android:layout_height="match_parent"
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/contextual_suggestions_icon_size"
+            android:background="?attr/selectableItemBackground"
             android:src="@drawable/btn_close"
             android:scaleType="center"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
             android:contentDescription="@string/close" />
    </LinearLayout>
 

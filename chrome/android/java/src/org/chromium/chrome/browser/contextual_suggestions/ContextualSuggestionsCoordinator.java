@@ -4,15 +4,21 @@
 
 package org.chromium.chrome.browser.contextual_suggestions;
 
+import android.content.Intent;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.preferences.ContextualSuggestionsPreference;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegateImpl;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegateImpl;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
@@ -165,6 +171,20 @@ public class ContextualSuggestionsCoordinator {
             mBottomSheetContent.destroy();
             mBottomSheetContent = null;
         }
+    }
+
+    /** Show the settings page for contextual suggestions. */
+    void showSettings() {
+        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
+                mActivity, ContextualSuggestionsPreference.class.getName());
+        IntentUtils.safeStartActivity(mActivity, intent);
+    }
+
+    /** Show the feedback page. */
+    void showFeedback() {
+        Tab currentTab = mActivity.getActivityTab();
+        HelpAndFeedback.getInstance(mActivity).showFeedback(
+                mActivity, mProfile, currentTab != null ? currentTab.getUrl() : null, null);
     }
 
     @VisibleForTesting

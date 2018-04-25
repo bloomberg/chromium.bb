@@ -2581,6 +2581,9 @@ Customize this anytime in <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph n
       <message name="IDS_MENU_CLOSE_ALL_INCOGNITO_TABS" desc="Menu item for closing all open incognito tabs. [CHAR-LIMIT=27]">
         Close incognito tabs
       </message>
+      <message name="IDS_MENU_SEND_FEEDBACK" desc="Menu item for sending feedback. [CHAR-LIMIT=27]">
+        Send feedback
+      </message>
 
       <!-- Bookmarks strings -->
       <message name="IDS_BOOKMARKS" desc="Title of the bookmarks page, which shows a list of the user's bookmarks. [CHAR-LIMIT=18]">
