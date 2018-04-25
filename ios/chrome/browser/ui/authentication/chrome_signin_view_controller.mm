@@ -150,6 +150,7 @@ enum AuthenticationState {
   MDCButton* _secondaryButton;
   UIView* _gradientView;
   CAGradientLayer* _gradientLayer;
+  UIView* _embeddedView;
 
   // Identity picker state.
   SigninAccountSelectorViewController* _accountSelectorVC;
@@ -274,6 +275,30 @@ enum AuthenticationState {
                forState:UIControlStateNormal];
   [button setUnderlyingColorHint:[UIColor whiteColor]];
   [button setInkColor:[UIColor colorWithWhite:0 alpha:0.06f]];
+}
+
+// Displays |viewController.view| above the primary and secondary button.
+// -[ChromeSigninViewController removeEmbeddedViewController:] has to be called
+// before calling this method again.
+- (void)showEmbeddedViewController:(UIViewController*)viewController {
+  DCHECK(viewController);
+  DCHECK(!_embeddedView);
+  [self addChildViewController:viewController];
+  _embeddedView = viewController.view;
+  _embeddedView.frame = self.view.bounds;
+  [self.view insertSubview:viewController.view belowSubview:_primaryButton];
+  [viewController didMoveToParentViewController:self];
+}
+
+// Removes the view previously added by -[ChromeSigninViewController
+// showEmbeddedViewController:].
+- (void)removeEmbeddedViewController:(UIViewController*)viewController {
+  DCHECK(_embeddedView);
+  DCHECK_EQ(_embeddedView, viewController.view);
+  [viewController willMoveToParentViewController:nil];
+  [_embeddedView removeFromSuperview];
+  [viewController removeFromParentViewController];
+  _embeddedView = nil;
 }
 
 #pragma mark - Accessibility
@@ -496,11 +521,7 @@ enum AuthenticationState {
   // Add the account selector view controller.
   _accountSelectorVC = [[SigninAccountSelectorViewController alloc] init];
   _accountSelectorVC.delegate = self;
-  [_accountSelectorVC willMoveToParentViewController:self];
-  [self addChildViewController:_accountSelectorVC];
-  _accountSelectorVC.view.frame = self.view.bounds;
-  [self.view insertSubview:_accountSelectorVC.view belowSubview:_primaryButton];
-  [_accountSelectorVC didMoveToParentViewController:self];
+  [self showEmbeddedViewController:_accountSelectorVC];
 
   // Update the button title.
   [self updatePrimaryButtonTitle];
@@ -547,9 +568,7 @@ enum AuthenticationState {
         _secondaryButton.hidden = YES;
       }
       completion:^(BOOL finished) {
-        [_accountSelectorVC willMoveToParentViewController:nil];
-        [[_accountSelectorVC view] removeFromSuperview];
-        [_accountSelectorVC removeFromParentViewController];
+        [self removeEmbeddedViewController:_accountSelectorVC];
         _accountSelectorVC = nil;
         [self enterState:nextState];
       }];
@@ -632,11 +651,7 @@ enum AuthenticationState {
   _confirmationVC.delegate = self;
 
   _hasConfirmationScreenReachedBottom = NO;
-  [_confirmationVC willMoveToParentViewController:self];
-  [self addChildViewController:_confirmationVC];
-  _confirmationVC.view.frame = self.view.bounds;
-  [self.view insertSubview:_confirmationVC.view belowSubview:_primaryButton];
-  [_confirmationVC didMoveToParentViewController:self];
+  [self showEmbeddedViewController:_confirmationVC];
 
   [self setSecondaryButtonStyling:_primaryButton];
   NSString* primaryButtonTitle = l10n_util::GetNSString(
@@ -678,9 +693,7 @@ enum AuthenticationState {
 }
 
 - (void)leaveIdentitySelectedState:(AuthenticationState)nextState {
-  [_confirmationVC willMoveToParentViewController:nil];
-  [[_confirmationVC view] removeFromSuperview];
-  [_confirmationVC removeFromParentViewController];
+  [self removeEmbeddedViewController:_confirmationVC];
   _confirmationVC = nil;
   [self setPrimaryButtonStyling:_primaryButton];
   _primaryButton.hidden = YES;
@@ -852,8 +865,7 @@ enum AuthenticationState {
       constants.ButtonBottomPadding - constants.ButtonTopPadding;
   CGRect collectionViewFrame =
       CGRectMake(0, 0, viewSize.width, collectionViewHeight);
-  [_accountSelectorVC.view setFrame:collectionViewFrame];
-  [_confirmationVC.view setFrame:collectionViewFrame];
+  [_embeddedView setFrame:collectionViewFrame];
 
   // Layout the gradient view right above the buttons.
   CGFloat gradientOriginY = CGRectGetHeight(self.view.bounds) -
