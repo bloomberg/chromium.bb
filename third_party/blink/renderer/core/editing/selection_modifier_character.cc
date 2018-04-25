@@ -243,6 +243,23 @@ bool IsAfterAtomicInlineOrLineBreak(const InlineBox& box, int offset) {
   return box.GetLineLayoutItem().IsAtomicInlineLevel();
 }
 
+template <typename Traversal>
+const InlineBox* LeadingBoxOfEntireSecondaryRun(const InlineBox* box) {
+  unsigned char level = box->BidiLevel();
+  // TODO(xiaochengh): Use another runner variable instead of |box|.
+  while (true) {
+    box = Traversal::FindBackwardBoundaryOfEntireBidiRun(*box, level);
+    if (box->BidiLevel() == level)
+      break;
+    level = box->BidiLevel();
+    box = Traversal::FindForwardBoundaryOfEntireBidiRun(*box, level);
+    if (box->BidiLevel() == level)
+      break;
+    level = box->BidiLevel();
+  }
+  return box;
+}
+
 template <typename Strategy, typename Traversal>
 static PositionTemplate<Strategy> TraverseInternalAlgorithm(
     const VisiblePositionTemplate<Strategy>& visible_position) {
@@ -371,16 +388,7 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
       }
       // Trailing edge of a secondary run. Set to the leading edge of
       // the entire run.
-      while (true) {
-        box = Traversal::FindBackwardBoundaryOfEntireBidiRun(*box, level);
-        if (box->BidiLevel() == level)
-          break;
-        level = box->BidiLevel();
-        box = Traversal::FindForwardBoundaryOfEntireBidiRun(*box, level);
-        if (box->BidiLevel() == level)
-          break;
-        level = box->BidiLevel();
-      }
+      box = LeadingBoxOfEntireSecondaryRun<Traversal>(box);
       offset = Traversal::CaretMinOffsetOf(primary_direction, *box);
       break;
     }
