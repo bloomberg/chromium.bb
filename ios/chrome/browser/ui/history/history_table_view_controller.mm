@@ -15,7 +15,6 @@
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #include "ios/chrome/browser/ui/history/history_entries_status_item.h"
 #import "ios/chrome/browser/ui/history/history_entries_status_item_delegate.h"
@@ -824,6 +823,16 @@ const int kMaxFetchCount = 100;
   [self.localDispatcher dismissHistoryWithCompletion:nil];
 }
 
+- (void)openPrivacySettings {
+  // Ignore the button tap if |self| is presenting another ViewController.
+  if ([self presentedViewController]) {
+    return;
+  }
+  base::RecordAction(
+      base::UserMetricsAction("HistoryPage_InitClearBrowsingData"));
+  [self.localDispatcher displayPrivacySettings];
+}
+
 #pragma mark Setter & Getters
 
 - (UIBarButtonItem*)cancelButton {
@@ -839,6 +848,8 @@ const int kMaxFetchCount = 100;
   return _cancelButton;
 }
 
+// TODO(crbug.com/831865): Find a way to disable the button when a VC is
+// presented.
 - (UIBarButtonItem*)clearBrowsingDataButton {
   if (!_clearBrowsingDataButton) {
     NSString* titleString = l10n_util::GetNSStringWithFixup(
@@ -846,8 +857,8 @@ const int kMaxFetchCount = 100;
     _clearBrowsingDataButton =
         [[UIBarButtonItem alloc] initWithTitle:titleString
                                          style:UIBarButtonItemStylePlain
-                                        target:nil
-                                        action:nil];
+                                        target:self
+                                        action:@selector(openPrivacySettings)];
     _clearBrowsingDataButton.tintColor = [UIColor redColor];
   }
   return _clearBrowsingDataButton;
