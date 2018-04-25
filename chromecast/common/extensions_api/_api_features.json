@@ -7,6 +7,10 @@
 // feature.h, simple_feature.h, and feature_provider.h.
 
 {
+  "brailleDisplayPrivate": {
+    "dependencies": ["permission:brailleDisplayPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   // Stub implementation of chrome.identity for app_shell.
   "identity": {
     "channel": "dev",
