@@ -8,6 +8,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/default_clock.h"
+#include "chrome/browser/media/router/discovery/mdns/media_sink_util.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/media_sink.h"
@@ -39,8 +40,7 @@ MediaSinkInternal CreateCastSinkFromDialSink(
 
   CastSinkExtraData extra_data;
   extra_data.ip_endpoint =
-      net::IPEndPoint(dial_sink.dial_data().ip_address,
-                      CastMediaSinkServiceImpl::kCastControlPort);
+      net::IPEndPoint(dial_sink.dial_data().ip_address, kCastControlPort);
   extra_data.model_name = dial_sink.dial_data().model_name;
   extra_data.discovered_by_dial = true;
   extra_data.capabilities = cast_channel::CastDeviceCapability::NONE;
@@ -164,17 +164,6 @@ bool IsNetworkIdUnknownOrDisconnected(const std::string& network_id) {
 // static
 constexpr int CastMediaSinkServiceImpl::kMaxDialSinkFailureCount;
 
-// static
-SinkIconType CastMediaSinkServiceImpl::GetCastSinkIconType(
-    uint8_t capabilities) {
-  if (capabilities & cast_channel::CastDeviceCapability::VIDEO_OUT)
-    return SinkIconType::CAST;
-
-  return capabilities & cast_channel::CastDeviceCapability::MULTIZONE_GROUP
-             ? SinkIconType::CAST_AUDIO_GROUP
-             : SinkIconType::CAST_AUDIO;
-}
-
 CastMediaSinkServiceImpl::CastMediaSinkServiceImpl(
     const OnSinksDiscoveredCallback& callback,
     Observer* observer,
@@ -252,6 +241,10 @@ void CastMediaSinkServiceImpl::Start() {
   network_monitor_->GetNetworkId(base::BindOnce(
       &CastMediaSinkServiceImpl::OnNetworksChanged, GetWeakPtr()));
   network_monitor_->AddObserver(this);
+
+  std::vector<MediaSinkInternal> test_sinks = GetFixedIPSinksFromCommandLine();
+  if (!test_sinks.empty())
+    OpenChannels(test_sinks, SinkSource::kMdns);
 }
 
 void CastMediaSinkServiceImpl::OnDiscoveryComplete() {

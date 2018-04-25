@@ -9,6 +9,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
+#include "chrome/browser/media/router/discovery/mdns/media_sink_util.h"
 #include "chrome/browser/media/router/test/mock_dns_sd_registry.h"
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "components/cast_channel/cast_socket.h"
@@ -38,8 +39,7 @@ media_router::DnsSdService CreateDnsService(int num, int capabilities) {
   net::IPEndPoint ip_endpoint = CreateIPEndPoint(num);
   media_router::DnsSdService service;
   service.service_name =
-      "_myDevice." +
-      std::string(media_router::CastMediaSinkService::kCastServiceType);
+      "_myDevice." + std::string(media_router::kCastServiceType);
   service.ip_address = ip_endpoint.address().ToString();
   service.service_host_port = net::HostPortPair::FromIPEndPoint(ip_endpoint);
   service.service_data.push_back(base::StringPrintf("id=service %d", num));
@@ -179,8 +179,7 @@ TEST_F(CastMediaSinkServiceTest, TestOnDnsSdEvent) {
   DnsSdRegistry::DnsSdServiceList service_list{service1, service2, service3};
 
   // Invoke CastSocketService::OpenSocket on the IO thread.
-  media_sink_service_->OnDnsSdEvent(CastMediaSinkService::kCastServiceType,
-                                    service_list);
+  media_sink_service_->OnDnsSdEvent(kCastServiceType, service_list);
 
   std::vector<MediaSinkInternal> sinks;
   EXPECT_CALL(*mock_impl_, OpenChannels(_, _)).WillOnce(SaveArg<0>(&sinks));

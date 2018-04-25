@@ -11,6 +11,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/timer/mock_timer.h"
+#include "chrome/browser/media/router/discovery/mdns/media_sink_util.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "components/cast_channel/cast_socket.h"
@@ -562,9 +563,9 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnDialSinkAdded) {
   MediaSinkInternal dial_sink1 = CreateDialSink(1);
   MediaSinkInternal dial_sink2 = CreateDialSink(2);
   net::IPEndPoint ip_endpoint1(dial_sink1.dial_data().ip_address,
-                               CastMediaSinkServiceImpl::kCastControlPort);
+                               kCastControlPort);
   net::IPEndPoint ip_endpoint2(dial_sink2.dial_data().ip_address,
-                               CastMediaSinkServiceImpl::kCastControlPort);
+                               kCastControlPort);
 
   cast_channel::MockCastSocket socket1;
   cast_channel::MockCastSocket socket2;
@@ -607,7 +608,7 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnDialSinkAdded) {
 TEST_F(CastMediaSinkServiceImplTest, TestOnDialSinkAddedSkipsIfNonCastDevice) {
   MediaSinkInternal dial_sink1 = CreateDialSink(1);
   net::IPEndPoint ip_endpoint1(dial_sink1.dial_data().ip_address,
-                               CastMediaSinkServiceImpl::kCastControlPort);
+                               kCastControlPort);
 
   cast_channel::MockCastSocket socket1;
   socket1.set_id(1);
@@ -1111,7 +1112,7 @@ TEST_F(CastMediaSinkServiceImplTest, CacheDialDiscoveredSinks) {
   MediaSinkInternal sink2_dial = CreateDialSink(2);
   net::IPEndPoint ip_endpoint1 = CreateIPEndPoint(1);
   net::IPEndPoint ip_endpoint2(sink2_dial.dial_data().ip_address,
-                               CastMediaSinkServiceImpl::kCastControlPort);
+                               kCastControlPort);
   std::vector<MediaSinkInternal> sink_list1{sink1_cast};
 
   // Resolution will succeed for both sinks.
@@ -1153,7 +1154,7 @@ TEST_F(CastMediaSinkServiceImplTest, CacheDialDiscoveredSinks) {
   MediaSinkInternal sink4_dial = CreateDialSink(4);
   net::IPEndPoint ip_endpoint3 = CreateIPEndPoint(3);
   net::IPEndPoint ip_endpoint4(sink4_dial.dial_data().ip_address,
-                               CastMediaSinkServiceImpl::kCastControlPort);
+                               kCastControlPort);
   std::vector<MediaSinkInternal> sink_list2{sink3_cast};
 
   cast_channel::MockCastSocket socket3;
@@ -1200,7 +1201,7 @@ TEST_F(CastMediaSinkServiceImplTest, DualDiscoveryDoesntDuplicateCacheItems) {
   MediaSinkInternal sink1_dial = CreateDialSink(0);
   net::IPEndPoint ip_endpoint1_cast = CreateIPEndPoint(0);
   net::IPEndPoint ip_endpoint1_dial(sink1_dial.dial_data().ip_address,
-                                    CastMediaSinkServiceImpl::kCastControlPort);
+                                    kCastControlPort);
   std::vector<MediaSinkInternal> sink_list1{sink1_cast};
 
   // Dial discovery will succeed first.

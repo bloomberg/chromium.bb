@@ -28,9 +28,6 @@ namespace media_router {
 // This class is not thread safe. All methods must be invoked on the UI thread.
 class CastMediaSinkService : public DnsSdRegistry::DnsSdObserver {
  public:
-  // mDNS service types.
-  static const char kCastServiceType[];
-
   CastMediaSinkService();
   ~CastMediaSinkService() override;
 

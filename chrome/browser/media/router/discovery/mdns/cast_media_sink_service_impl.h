@@ -54,16 +54,9 @@ class CastMediaSinkServiceImpl
 
   using SinkSource = CastDeviceCountMetrics::SinkSource;
 
-  // Default Cast control port to open Cast Socket from DIAL sink.
-  static constexpr int kCastControlPort = 8009;
-
   // The max number of cast channel open failure for a DIAL-discovered sink
   // before we can say confidently that it is unlikely to be a Cast device.
   static constexpr int kMaxDialSinkFailureCount = 10;
-
-  // Returns the icon type to use according to |capabilities|. |capabilities| is
-  // a bit set of cast_channel::CastDeviceCapabilities in CastSinkExtraData.
-  static SinkIconType GetCastSinkIconType(uint8_t capabilities);
 
   // |callback|: Callback passed to MediaSinkServiceBase.
   // |observer|: Observer to invoke on sink updates. Can be nullptr.
