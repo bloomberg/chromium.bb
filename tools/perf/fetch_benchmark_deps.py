@@ -64,7 +64,14 @@ def _EnumerateDependencies(story_set):
   return [dep[prefix_len:] for dep in deps if dep]
 
 
-def FetchDepsForBenchmark(benchmark):
+def _PrintDeps(mesg, output_deps):
+  if output_deps:
+    print mesg
+  else:
+    logging.info(mesg)
+
+
+def FetchDepsForBenchmark(benchmark, output_deps):
   # Create a dummy options object which hold default values that are expected
   # by Benchmark.CreateStorySet(options) method.
   parser = optparse.OptionParser()
@@ -76,9 +83,11 @@ def FetchDepsForBenchmark(benchmark):
   _FetchDependenciesIfNeeded(story_set)
 
   # Log files downloaded.
+  _PrintDeps('Fetch dependencies for benchmark %s' % benchmark.Name(),
+             output_deps)
   deps = _EnumerateDependencies(story_set)
   for dep in deps:
-    logging.info(dep)
+    _PrintDeps("Dependency: " + dep, output_deps)
 
 
 def main(args):
@@ -88,6 +97,14 @@ def main(args):
   parser.add_argument('--force', '-f',
                       help=('Force fetching all the benchmarks when '
                             'benchmark_name is not specified'),
+                      action='store_true', default=False)
+  # Flag --output-deps: print the dependencies to stdout, CrOS autotest
+  # telemetry_runner parses the output to upload the dependencies to the DUT.
+  # Example output, fetch_benchmark_deps.py --output-deps octane:
+  # Fetch dependencies for benchmark octane
+  # Dependency: tools/perf/page_sets/data/octane_002.wprgo
+  parser.add_argument('--output-deps',
+                      help=('Print dependencies to stdout'),
                       action='store_true', default=False)
   parser.add_argument(
         '-v', '--verbose', action='count', dest='verbosity',
@@ -112,15 +129,15 @@ def main(args):
         options.benchmark_name, config)
     if not benchmark:
       raise ValueError('No such benchmark: %s' % options.benchmark_name)
-    FetchDepsForBenchmark(benchmark)
+    FetchDepsForBenchmark(benchmark, options.output_deps)
   else:
     if not options.force:
       raw_input(
           'No benchmark name is specified. Fetching all benchmark deps. '
           'Press enter to continue...')
     for b in benchmark_finders.GetAllPerfBenchmarks():
-      logging.info('Fetch dependencies for benchmark %s', b.Name())
-      FetchDepsForBenchmark(b)
+      FetchDepsForBenchmark(b, options.output_deps)
+
 
 if __name__ == '__main__':
   main(sys.argv[1:])
