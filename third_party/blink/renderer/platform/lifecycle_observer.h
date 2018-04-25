@@ -37,7 +37,7 @@ class LifecycleNotifier;
 template <typename Context, typename Observer>
 class LifecycleObserver : public GarbageCollectedMixin {
  public:
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(lifecycle_context_);
   }
 

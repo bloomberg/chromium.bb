@@ -50,7 +50,7 @@ class LifecycleNotifier : public GarbageCollectedMixin {
   // and safe to use while handling the notification.
   virtual void NotifyContextDestroyed();
 
-  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(observers_); }
+  void Trace(blink::Visitor* visitor) override { visitor->Trace(observers_); }
 
   bool IsIteratingOverObservers() const {
     return iteration_state_ != kNotIterating;

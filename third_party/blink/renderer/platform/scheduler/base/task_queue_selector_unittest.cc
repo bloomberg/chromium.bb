@@ -31,7 +31,7 @@ namespace task_queue_selector_unittest {
 class MockObserver : public TaskQueueSelector::Observer {
  public:
   MockObserver() = default;
-  virtual ~MockObserver() = default;
+  ~MockObserver() override = default;
 
   MOCK_METHOD1(OnTaskQueueEnabled, void(internal::TaskQueueImpl*));
 

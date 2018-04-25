@@ -111,9 +111,10 @@ class MockScrollableAreaForAnimatorTest
     return ScrollableArea::GetScrollOffset();
   }
 
-  void SetScrollOffset(const ScrollOffset& offset,
-                       ScrollType type,
-                       ScrollBehavior behavior = kScrollBehaviorInstant) {
+  void SetScrollOffset(
+      const ScrollOffset& offset,
+      ScrollType type,
+      ScrollBehavior behavior = kScrollBehaviorInstant) override {
     if (animator)
       animator->SetCurrentOffset(offset);
     ScrollableArea::SetScrollOffset(offset, type, behavior);
@@ -131,7 +132,7 @@ class MockScrollableAreaForAnimatorTest
     return ScrollbarTheme::DeprecatedStaticGetTheme();
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(animator);
     ScrollableArea::Trace(visitor);
   }

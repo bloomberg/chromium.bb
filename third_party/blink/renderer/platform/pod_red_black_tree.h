@@ -709,7 +709,7 @@ class PODRedBlackTree {
    public:
     Counter() : count_(0) {}
 
-    virtual void Visit(const T&) { ++count_; }
+    void Visit(const T&) override { ++count_; }
     int Count() const { return count_; }
 
    private:
