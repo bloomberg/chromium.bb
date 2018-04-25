@@ -15,8 +15,8 @@ def main_run(args):
   with common.temporary_file() as tempfile_path:
     rc = common.run_command([
         sys.executable,
-        os.path.join(common.SRC_DIR, 'third_party', 'WebKit',
-                     'Tools', 'Scripts', 'test-webkitpy'),
+        os.path.join(common.SRC_DIR, 'third_party', 'blink',
+                     'tools', 'run_blinkpy_tests.py'),
         '--write-full-results-to', tempfile_path,
     ], cwd=args.paths['checkout'])
 
