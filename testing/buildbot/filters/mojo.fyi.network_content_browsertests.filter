@@ -48,21 +48,6 @@
 # Cross-origin request to file:// URL should be blocked. crbug.com/759230
 -BrowserSideNavigationBrowserDisableWebSecurityTest.ValidateBaseUrlForDataUrl
 
-# This test validates that the renderer does not hang indefinitely in a sync
-# XMLHttpRequest when ResourceDispatcherHostImpl::CancelRequestsForProcess is
-# called to tear down the browser-side request state without signaling
-# completion. With the network service this will be equivalent to a network
-# service process crash.
--ResourceDispatcherHostBrowserTest.SyncXMLHttpRequest_Cancelled
-
-# http://crbug.com/787614
--ResourceDispatcherHostBrowserTest.ContentDispositionEmpty
--ResourceDispatcherHostBrowserTest.ContentDispositionInline
--ResourceDispatcherHostBrowserTest.CrossOriginRedirectBlocked
--ResourceDispatcherHostBrowserTest.CrossSiteAfterCrash
--ResourceDispatcherHostBrowserTest.CrossSiteNavigationNonBuffered
--ResourceDispatcherHostBrowserTest.SniffNoContentTypeNoData
-
 # Cross-origin read blocking (CORB) needs to be implemented in the network
 # service.
 # https://crbug.com/786505 (cross site document blocking)

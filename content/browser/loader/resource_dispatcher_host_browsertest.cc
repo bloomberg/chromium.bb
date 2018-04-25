@@ -188,9 +188,9 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   BrowserContext::GetDownloadManager(
       shell()->web_contents()->GetBrowserContext())
       ->AddObserver(this);
-  CheckTitleTest(
-      net::URLRequestMockHTTPJob::GetMockUrl("content-sniffer-test3.html"),
-      "Content Sniffer Test 3");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/content-sniffer-test3.html"));
+  CheckTitleTest(url, "Content Sniffer Test 3");
   EXPECT_EQ(1u, Shell::windows().size());
   ASSERT_FALSE(got_downloads());
 }
@@ -208,16 +208,16 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        ContentDispositionEmpty) {
-  CheckTitleTest(
-      net::URLRequestMockHTTPJob::GetMockUrl("content-disposition-empty.html"),
-      "success");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/content-disposition-empty.html"));
+  CheckTitleTest(url, "success");
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        ContentDispositionInline) {
-  CheckTitleTest(
-      net::URLRequestMockHTTPJob::GetMockUrl("content-disposition-inline.html"),
-      "success");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/content-disposition-inline.html"));
+  CheckTitleTest(url, "success");
 }
 
 // Test for bug #1091358.
@@ -279,8 +279,9 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 
 namespace {
 
-// Responses with a HungResponse for the specified URL to hang on the request,
-// and cancells all requests from specifield |child_id|.
+// Responds with a HungResponse for the specified URL to hang on the request.
+// If the network service is enabled, crashes the process. If it's disabled,
+// cancels all requests from specifield |child_id|.
 std::unique_ptr<net::test_server::HttpResponse> CancelOnRequest(
     const std::string& relative_url,
     int child_id,
@@ -288,11 +289,17 @@ std::unique_ptr<net::test_server::HttpResponse> CancelOnRequest(
   if (request.relative_url != relative_url)
     return nullptr;
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ResourceDispatcherHostImpl::CancelRequestsForProcess,
-                     base::Unretained(ResourceDispatcherHostImpl::Get()),
-                     child_id));
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(SimulateNetworkServiceCrash));
+  } else {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&ResourceDispatcherHostImpl::CancelRequestsForProcess,
+                       base::Unretained(ResourceDispatcherHostImpl::Get()),
+                       child_id));
+  }
 
   return std::make_unique<net::test_server::HungResponse>();
 }
@@ -427,9 +434,9 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 
   // Navigate to a new cross-site page.  The browser should not wait around for
   // the old renderer's on{before}unload handlers to run.
-  CheckTitleTest(
-      net::URLRequestMockHTTPJob::GetMockUrl("content-sniffer-test0.html"),
-      "Content Sniffer Test 0");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/content-sniffer-test0.html"));
+  CheckTitleTest(url, "Content Sniffer Test 0");
 }
 
 // Tests that cross-site navigations work when the new page does not go through
@@ -437,14 +444,14 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        CrossSiteNavigationNonBuffered) {
   // Start with an HTTP page.
-  CheckTitleTest(
-      net::URLRequestMockHTTPJob::GetMockUrl("content-sniffer-test0.html"),
-      "Content Sniffer Test 0");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url1(embedded_test_server()->GetURL("/content-sniffer-test0.html"));
+  CheckTitleTest(url1, "Content Sniffer Test 0");
 
   // Now load a file:// page, which does not use the BufferedEventHandler.
   // Make sure that the page loads and displays a title, and doesn't get stuck.
-  GURL url = GetTestUrl("", "title2.html");
-  CheckTitleTest(url, "Title Of Awesomeness");
+  GURL url2 = GetTestUrl("", "title2.html");
+  CheckTitleTest(url2, "Title Of Awesomeness");
 }
 
 // Flaky everywhere. http://crbug.com/130404
@@ -519,16 +526,23 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        CrossOriginRedirectBlocked) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(
+      embedded_test_server()->GetURL("/cross-origin-redirect-blocked.html"));
   // We expect the following URL requests from this test:
-  // 1-  http://mock.http/cross-origin-redirect-blocked.html
-  // 2-  http://mock.http/redirect-to-title2.html
-  // 3-  http://mock.http/title2.html
+  // 1- navigation to http://127.0.0.1:[port]/cross-origin-redirect-blocked.html
+  // 2- XHR to
+  // http://127.0.0.1:[port]/server-redirect-302?http://a.com:[port]/title2.html
+  // 3- above XHR is redirected to http://a.com:[port]/title2.html which should
+  // be blocked
+  // 4- When the page notices the above request is blocked, it issues an XHR to
+  // http://127.0.0.1:[port]/title2.html
+  // 5- When the above XHR succeed, the page navigates to
+  // http://127.0.0.1:[port]/title3.html
   //
-  // If the redirect in #2 were not blocked, we'd also see a request
-  // for http://mock.http:4000/title2.html, and the title would be different.
-  CheckTitleTest(net::URLRequestMockHTTPJob::GetMockUrl(
-                     "cross-origin-redirect-blocked.html"),
-                 "Title Of More Awesomeness");
+  // If the redirect in #3 were not blocked, we'd instead see a navigation
+  // to http://a.com[port]/title2.html, and the title would be different.
+  CheckTitleTest(url, "Title Of More Awesomeness");
 }
 
 // Tests that ResourceRequestInfoImpl is updated correctly on failed
