@@ -780,7 +780,7 @@ scoped_refptr<AnimatableValue> StyleResolver::CreateAnimatableValueSnapshot(
     StyleBuilder::ApplyProperty(property, state, *value);
     state.GetFontBuilder().CreateFont(
         state.GetDocument().GetStyleEngine().GetFontSelector(),
-        state.MutableStyleRef());
+        state.StyleRef());
   }
   return CSSAnimatableValueFactory::Create(property, *state.Style());
 }
@@ -1041,8 +1041,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForText(Text* text_node) {
 
 void StyleResolver::UpdateFont(StyleResolverState& state) {
   state.GetFontBuilder().CreateFont(
-      GetDocument().GetStyleEngine().GetFontSelector(),
-      state.MutableStyleRef());
+      GetDocument().GetStyleEngine().GetFontSelector(), state.StyleRef());
   state.SetConversionFontSizes(CSSToLengthConversionData::FontSizes(
       state.Style(), state.RootElementStyle()));
   state.SetConversionZoom(state.Style()->EffectiveZoom());
