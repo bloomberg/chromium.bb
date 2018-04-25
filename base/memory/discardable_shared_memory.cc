@@ -97,47 +97,15 @@ struct SharedState {
 };
 
 // Shared state is stored at offset 0 in shared memory segments.
-SharedState* SharedStateFromSharedMemory(const SharedMemory& shared_memory) {
-  DCHECK(shared_memory.memory());
+SharedState* SharedStateFromSharedMemory(
+    const WritableSharedMemoryMapping& shared_memory) {
+  DCHECK(shared_memory.IsValid());
   return static_cast<SharedState*>(shared_memory.memory());
 }
 
 // Round up |size| to a multiple of page size.
 size_t AlignToPageSize(size_t size) {
   return bits::Align(size, base::GetPageSize());
-}
-
-// LockPages/UnlockPages are platform-native discardable page management
-// helper functions. Both expect |offset| to be specified relative to the
-// base address at which |memory| is mapped, and that |offset| and |length|
-// are page-aligned by the caller.
-
-#if defined(OS_ANDROID)
-// Returns SUCCESS on platforms which do not support discardable pages.
-DiscardableSharedMemory::LockResult LockPages(const SharedMemory& memory,
-                                              size_t offset,
-                                              size_t length) {
-  SharedMemoryHandle handle = memory.handle();
-  if (handle.IsValid()) {
-    int pin_result = ashmem_pin_region(handle.GetHandle(), offset, length);
-    if (pin_result == ASHMEM_WAS_PURGED)
-      return DiscardableSharedMemory::PURGED;
-    if (pin_result < 0)
-      return DiscardableSharedMemory::FAILED;
-  }
-  return DiscardableSharedMemory::SUCCESS;
-}
-#endif
-
-// UnlockPages() is a no-op on platforms not supporting discardable pages.
-void UnlockPages(const SharedMemory& memory, size_t offset, size_t length) {
-#if defined(OS_ANDROID)
-  SharedMemoryHandle handle = memory.handle();
-  if (handle.IsValid()) {
-    int unpin_result = ashmem_unpin_region(handle.GetHandle(), offset, length);
-    DCHECK_EQ(0, unpin_result);
-  }
-#endif
 }
 
 }  // namespace
@@ -147,11 +115,10 @@ DiscardableSharedMemory::DiscardableSharedMemory()
 }
 
 DiscardableSharedMemory::DiscardableSharedMemory(
-    SharedMemoryHandle shared_memory_handle)
-    : shared_memory_(shared_memory_handle, false),
+    UnsafeSharedMemoryRegion shared_memory_region)
+    : shared_memory_region_(std::move(shared_memory_region)),
       mapped_size_(0),
-      locked_page_count_(0) {
-}
+      locked_page_count_(0) {}
 
 DiscardableSharedMemory::~DiscardableSharedMemory() = default;
 
@@ -161,11 +128,18 @@ bool DiscardableSharedMemory::CreateAndMap(size_t size) {
   if (!checked_size.IsValid())
     return false;
 
-  if (!shared_memory_.CreateAndMapAnonymous(checked_size.ValueOrDie()))
+  shared_memory_region_ =
+      UnsafeSharedMemoryRegion::Create(checked_size.ValueOrDie());
+
+  if (!shared_memory_region_.IsValid())
     return false;
 
-  mapped_size_ =
-      shared_memory_.mapped_size() - AlignToPageSize(sizeof(SharedState));
+  shared_memory_mapping_ = shared_memory_region_.Map();
+  if (!shared_memory_mapping_.IsValid())
+    return false;
+
+  mapped_size_ = shared_memory_mapping_.mapped_size() -
+                 AlignToPageSize(sizeof(SharedState));
 
   locked_page_count_ = AlignToPageSize(mapped_size_) / base::GetPageSize();
 #if DCHECK_IS_ON()
@@ -175,17 +149,24 @@ bool DiscardableSharedMemory::CreateAndMap(size_t size) {
 
   DCHECK(last_known_usage_.is_null());
   SharedState new_state(SharedState::LOCKED, Time());
-  subtle::Release_Store(&SharedStateFromSharedMemory(shared_memory_)->value.i,
-                        new_state.value.i);
+  subtle::Release_Store(
+      &SharedStateFromSharedMemory(shared_memory_mapping_)->value.i,
+      new_state.value.i);
   return true;
 }
 
 bool DiscardableSharedMemory::Map(size_t size) {
-  if (!shared_memory_.Map(AlignToPageSize(sizeof(SharedState)) + size))
+  DCHECK(!shared_memory_mapping_.IsValid());
+  if (shared_memory_mapping_.IsValid())
     return false;
 
-  mapped_size_ =
-      shared_memory_.mapped_size() - AlignToPageSize(sizeof(SharedState));
+  shared_memory_mapping_ = shared_memory_region_.MapAt(
+      0, AlignToPageSize(sizeof(SharedState)) + size);
+  if (!shared_memory_mapping_.IsValid())
+    return false;
+
+  mapped_size_ = shared_memory_mapping_.mapped_size() -
+                 AlignToPageSize(sizeof(SharedState));
 
   locked_page_count_ = AlignToPageSize(mapped_size_) / base::GetPageSize();
 #if DCHECK_IS_ON()
@@ -197,9 +178,10 @@ bool DiscardableSharedMemory::Map(size_t size) {
 }
 
 bool DiscardableSharedMemory::Unmap() {
-  if (!shared_memory_.Unmap())
+  if (!shared_memory_mapping_.IsValid())
     return false;
 
+  shared_memory_mapping_ = WritableSharedMemoryMapping();
   locked_page_count_ = 0;
 #if DCHECK_IS_ON()
   locked_pages_.clear();
@@ -216,7 +198,7 @@ DiscardableSharedMemory::LockResult DiscardableSharedMemory::Lock(
   // Calls to this function must be synchronized properly.
   DFAKE_SCOPED_LOCK(thread_collision_warner_);
 
-  DCHECK(shared_memory_.memory());
+  DCHECK(shared_memory_mapping_.IsValid());
 
   // We need to successfully acquire the platform independent lock before
   // individual pages can be locked.
@@ -229,9 +211,8 @@ DiscardableSharedMemory::LockResult DiscardableSharedMemory::Lock(
     SharedState old_state(SharedState::UNLOCKED, last_known_usage_);
     SharedState new_state(SharedState::LOCKED, Time());
     SharedState result(subtle::Acquire_CompareAndSwap(
-        &SharedStateFromSharedMemory(shared_memory_)->value.i,
-        old_state.value.i,
-        new_state.value.i));
+        &SharedStateFromSharedMemory(shared_memory_mapping_)->value.i,
+        old_state.value.i, new_state.value.i));
     if (result.value.u != old_state.value.u) {
       // Update |last_known_usage_| in case the above CAS failed because of
       // an incorrect timestamp.
@@ -267,7 +248,7 @@ DiscardableSharedMemory::LockResult DiscardableSharedMemory::Lock(
 
 #if defined(OS_ANDROID)
   // Ensure that the platform won't discard the required pages.
-  return LockPages(shared_memory_,
+  return LockPages(shared_memory_region_,
                    AlignToPageSize(sizeof(SharedState)) + offset, length);
 #elif defined(OS_MACOSX)
   // On macOS, there is no mechanism to lock pages. However, we do need to call
@@ -283,7 +264,7 @@ DiscardableSharedMemory::LockResult DiscardableSharedMemory::Lock(
   //
   // For more information, see
   // https://bugs.chromium.org/p/chromium/issues/detail?id=823915.
-  if (madvise(reinterpret_cast<char*>(shared_memory_.memory()) +
+  if (madvise(reinterpret_cast<char*>(shared_memory_mapping_.memory()) +
                   AlignToPageSize(sizeof(SharedState)),
               AlignToPageSize(mapped_size_), MADV_FREE_REUSE))
     ;
@@ -305,11 +286,11 @@ void DiscardableSharedMemory::Unlock(size_t offset, size_t length) {
   if (!length)
     length = AlignToPageSize(mapped_size_) - offset;
 
-  DCHECK(shared_memory_.memory());
+  DCHECK(shared_memory_mapping_.IsValid());
 
   // Allow the pages to be discarded by the platform, if supported.
-  UnlockPages(shared_memory_, AlignToPageSize(sizeof(SharedState)) + offset,
-              length);
+  UnlockPages(shared_memory_region_,
+              AlignToPageSize(sizeof(SharedState)) + offset, length);
 
   size_t start = offset / base::GetPageSize();
   size_t end = start + length / base::GetPageSize();
@@ -346,9 +327,8 @@ void DiscardableSharedMemory::Unlock(size_t offset, size_t length) {
   DCHECK_EQ((new_state.GetTimestamp() - Time::UnixEpoch()).InSeconds(),
             (current_time - Time::UnixEpoch()).InSeconds());
   SharedState result(subtle::Release_CompareAndSwap(
-      &SharedStateFromSharedMemory(shared_memory_)->value.i,
-      old_state.value.i,
-      new_state.value.i));
+      &SharedStateFromSharedMemory(shared_memory_mapping_)->value.i,
+      old_state.value.i, new_state.value.i));
 
   DCHECK_EQ(old_state.value.u, result.value.u);
 
@@ -356,21 +336,20 @@ void DiscardableSharedMemory::Unlock(size_t offset, size_t length) {
 }
 
 void* DiscardableSharedMemory::memory() const {
-  return reinterpret_cast<uint8_t*>(shared_memory_.memory()) +
+  return reinterpret_cast<uint8_t*>(shared_memory_mapping_.memory()) +
          AlignToPageSize(sizeof(SharedState));
 }
 
 bool DiscardableSharedMemory::Purge(Time current_time) {
   // Calls to this function must be synchronized properly.
   DFAKE_SCOPED_LOCK(thread_collision_warner_);
-  DCHECK(shared_memory_.memory());
+  DCHECK(shared_memory_mapping_.IsValid());
 
   SharedState old_state(SharedState::UNLOCKED, last_known_usage_);
   SharedState new_state(SharedState::UNLOCKED, Time());
   SharedState result(subtle::Acquire_CompareAndSwap(
-      &SharedStateFromSharedMemory(shared_memory_)->value.i,
-      old_state.value.i,
-      new_state.value.i));
+      &SharedStateFromSharedMemory(shared_memory_mapping_)->value.i,
+      old_state.value.i, new_state.value.i));
 
   // Update |last_known_usage_| to |current_time| if the memory is locked. This
   // allows the caller to determine if purging failed because last known usage
@@ -407,7 +386,7 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
   // Advise the kernel to remove resources associated with purged pages.
   // Subsequent accesses of memory pages will succeed, but might result in
   // zero-fill-on-demand pages.
-  if (madvise(reinterpret_cast<char*>(shared_memory_.memory()) +
+  if (madvise(reinterpret_cast<char*>(shared_memory_mapping_.memory()) +
                   AlignToPageSize(sizeof(SharedState)),
               AlignToPageSize(mapped_size_), MADV_PURGE_ARGUMENT)) {
     DPLOG(ERROR) << "madvise() failed";
@@ -423,7 +402,7 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
             GetModuleHandle(L"kernel32.dll"), "DiscardVirtualMemory"));
     if (discard_virtual_memory) {
       DWORD discard_result = discard_virtual_memory(
-          reinterpret_cast<char*>(shared_memory_.memory()) +
+          reinterpret_cast<char*>(shared_memory_mapping_.memory()) +
               AlignToPageSize(sizeof(SharedState)),
           AlignToPageSize(mapped_size_));
       if (discard_result != ERROR_SUCCESS) {
@@ -439,34 +418,34 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
 }
 
 bool DiscardableSharedMemory::IsMemoryResident() const {
-  DCHECK(shared_memory_.memory());
+  DCHECK(shared_memory_mapping_.IsValid());
 
   SharedState result(subtle::NoBarrier_Load(
-      &SharedStateFromSharedMemory(shared_memory_)->value.i));
+      &SharedStateFromSharedMemory(shared_memory_mapping_)->value.i));
 
   return result.GetLockState() == SharedState::LOCKED ||
          !result.GetTimestamp().is_null();
 }
 
 bool DiscardableSharedMemory::IsMemoryLocked() const {
-  DCHECK(shared_memory_.memory());
+  DCHECK(shared_memory_mapping_.IsValid());
 
   SharedState result(subtle::NoBarrier_Load(
-      &SharedStateFromSharedMemory(shared_memory_)->value.i));
+      &SharedStateFromSharedMemory(shared_memory_mapping_)->value.i));
 
   return result.GetLockState() == SharedState::LOCKED;
 }
 
 void DiscardableSharedMemory::Close() {
-  shared_memory_.Close();
+  shared_memory_region_ = UnsafeSharedMemoryRegion();
 }
 
 void DiscardableSharedMemory::CreateSharedMemoryOwnershipEdge(
     trace_event::MemoryAllocatorDump* local_segment_dump,
     trace_event::ProcessMemoryDump* pmd,
     bool is_owned) const {
-  auto* shared_memory_dump =
-      SharedMemoryTracker::GetOrCreateSharedMemoryDump(&shared_memory_, pmd);
+  auto* shared_memory_dump = SharedMemoryTracker::GetOrCreateSharedMemoryDump(
+      shared_memory_mapping_, pmd);
   // TODO(ssid): Clean this by a new api to inherit size of parent dump once the
   // we send the full PMD and calculate sizes inside chrome, crbug.com/704203.
   size_t resident_size = shared_memory_dump->GetSizeInternal();
@@ -480,7 +459,7 @@ void DiscardableSharedMemory::CreateSharedMemoryOwnershipEdge(
   // TODO(ssid): Define better constants in MemoryAllocatorDump for importance
   // values, crbug.com/754793.
   const int kImportance = is_owned ? 2 : 0;
-  auto shared_memory_guid = shared_memory_.mapped_id();
+  auto shared_memory_guid = shared_memory_mapping_.guid();
   local_segment_dump->AddString("id", "hash", shared_memory_guid.ToString());
 
   // Owned discardable segments which are allocated by client process, could
@@ -494,6 +473,38 @@ void DiscardableSharedMemory::CreateSharedMemoryOwnershipEdge(
     pmd->CreateSharedMemoryOwnershipEdge(local_segment_dump->guid(),
                                          shared_memory_guid, kImportance);
   }
+}
+
+// static
+DiscardableSharedMemory::LockResult DiscardableSharedMemory::LockPages(
+    const UnsafeSharedMemoryRegion& region,
+    size_t offset,
+    size_t length) {
+#if defined(OS_ANDROID)
+  if (region.IsValid()) {
+    int pin_result =
+        ashmem_pin_region(region.GetPlatformHandle(), offset, length);
+    if (pin_result == ASHMEM_WAS_PURGED)
+      return PURGED;
+    if (pin_result < 0)
+      return FAILED;
+  }
+#endif
+  return SUCCESS;
+}
+
+// static
+void DiscardableSharedMemory::UnlockPages(
+    const UnsafeSharedMemoryRegion& region,
+    size_t offset,
+    size_t length) {
+#if defined(OS_ANDROID)
+  if (region.IsValid()) {
+    int unpin_result =
+        ashmem_unpin_region(region.GetPlatformHandle(), offset, length);
+    DCHECK_EQ(0, unpin_result);
+  }
+#endif
 }
 
 Time DiscardableSharedMemory::Now() const {

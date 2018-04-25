@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/shared_memory_handle.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/discardable_memory/common/discardable_memory_export.h"
@@ -67,11 +67,11 @@ class DISCARDABLE_MEMORY_EXPORT ClientDiscardableSharedMemoryManager
   AllocateLockedDiscardableSharedMemory(size_t size, int32_t id);
   void AllocateOnIO(size_t size,
                     int32_t id,
-                    base::SharedMemoryHandle* handle,
+                    base::UnsafeSharedMemoryRegion* region,
                     base::ScopedClosureRunner closure_runner);
-  void AllocateCompletedOnIO(base::SharedMemoryHandle* handle,
+  void AllocateCompletedOnIO(base::UnsafeSharedMemoryRegion* region,
                              base::ScopedClosureRunner closure_runner,
-                             mojo::ScopedSharedBufferHandle mojo_handle);
+                             base::UnsafeSharedMemoryRegion ret_region);
 
   void DeletedDiscardableSharedMemory(int32_t id);
   void MemoryUsageChanged(size_t new_bytes_allocated,

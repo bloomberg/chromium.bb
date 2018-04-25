@@ -15,14 +15,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
-namespace {
 
 class TestDiscardableSharedMemory : public DiscardableSharedMemory {
  public:
   TestDiscardableSharedMemory() = default;
 
-  explicit TestDiscardableSharedMemory(SharedMemoryHandle handle)
-      : DiscardableSharedMemory(handle) {}
+  explicit TestDiscardableSharedMemory(UnsafeSharedMemoryRegion region)
+      : DiscardableSharedMemory(std::move(region)) {}
 
   void SetNow(Time now) { now_ = now; }
 
@@ -50,10 +49,10 @@ TEST(DiscardableSharedMemoryTest, CreateFromHandle) {
   bool rv = memory1.CreateAndMap(kDataSize);
   ASSERT_TRUE(rv);
 
-  SharedMemoryHandle shared_handle = memory1.handle().Duplicate();
-  ASSERT_TRUE(shared_handle.IsValid());
+  UnsafeSharedMemoryRegion shared_region = memory1.DuplicateRegion();
+  ASSERT_TRUE(shared_region.IsValid());
 
-  TestDiscardableSharedMemory memory2(shared_handle);
+  TestDiscardableSharedMemory memory2(std::move(shared_region));
   rv = memory2.Map(kDataSize);
   ASSERT_TRUE(rv);
   EXPECT_TRUE(memory2.IsMemoryLocked());
@@ -82,10 +81,10 @@ TEST(DiscardableSharedMemoryTest, LockAndUnlock) {
   EXPECT_EQ(DiscardableSharedMemory::SUCCESS, lock_rv);
   EXPECT_TRUE(memory1.IsMemoryLocked());
 
-  SharedMemoryHandle shared_handle = memory1.handle().Duplicate();
-  ASSERT_TRUE(shared_handle.IsValid());
+  UnsafeSharedMemoryRegion shared_region = memory1.DuplicateRegion();
+  ASSERT_TRUE(shared_region.IsValid());
 
-  TestDiscardableSharedMemory memory2(shared_handle);
+  TestDiscardableSharedMemory memory2(std::move(shared_region));
   rv = memory2.Map(kDataSize);
   ASSERT_TRUE(rv);
 
@@ -118,10 +117,10 @@ TEST(DiscardableSharedMemoryTest, Purge) {
   bool rv = memory1.CreateAndMap(kDataSize);
   ASSERT_TRUE(rv);
 
-  SharedMemoryHandle shared_handle = memory1.handle().Duplicate();
-  ASSERT_TRUE(shared_handle.IsValid());
+  UnsafeSharedMemoryRegion shared_region = memory1.DuplicateRegion();
+  ASSERT_TRUE(shared_region.IsValid());
 
-  TestDiscardableSharedMemory memory2(shared_handle);
+  TestDiscardableSharedMemory memory2(std::move(shared_region));
   rv = memory2.Map(kDataSize);
   ASSERT_TRUE(rv);
 
@@ -158,10 +157,10 @@ TEST(DiscardableSharedMemoryTest, LastUsed) {
   bool rv = memory1.CreateAndMap(kDataSize);
   ASSERT_TRUE(rv);
 
-  SharedMemoryHandle shared_handle = memory1.handle().Duplicate();
-  ASSERT_TRUE(shared_handle.IsValid());
+  UnsafeSharedMemoryRegion shared_region = memory1.DuplicateRegion();
+  ASSERT_TRUE(shared_region.IsValid());
 
-  TestDiscardableSharedMemory memory2(shared_handle);
+  TestDiscardableSharedMemory memory2(std::move(shared_region));
   rv = memory2.Map(kDataSize);
   ASSERT_TRUE(rv);
 
@@ -224,10 +223,10 @@ TEST(DiscardableSharedMemoryTest, LockShouldAlwaysFailAfterSuccessfulPurge) {
   bool rv = memory1.CreateAndMap(kDataSize);
   ASSERT_TRUE(rv);
 
-  SharedMemoryHandle shared_handle = memory1.handle().Duplicate();
-  ASSERT_TRUE(shared_handle.IsValid());
+  UnsafeSharedMemoryRegion shared_region = memory1.DuplicateRegion();
+  ASSERT_TRUE(shared_region.IsValid());
 
-  TestDiscardableSharedMemory memory2(shared_handle);
+  TestDiscardableSharedMemory memory2(std::move(shared_region));
   rv = memory2.Map(kDataSize);
   ASSERT_TRUE(rv);
 
@@ -242,16 +241,22 @@ TEST(DiscardableSharedMemoryTest, LockShouldAlwaysFailAfterSuccessfulPurge) {
   EXPECT_EQ(DiscardableSharedMemory::FAILED, lock_rv);
 }
 
+#if defined(OS_ANDROID)
 TEST(DiscardableSharedMemoryTest, LockShouldFailIfPlatformLockPagesFails) {
   const uint32_t kDataSize = 1024;
 
-  DiscardableSharedMemory memory;
-  bool rv = memory.CreateAndMap(kDataSize);
-  ASSERT_TRUE(rv);
+  DiscardableSharedMemory memory1;
+  bool rv1 = memory1.CreateAndMap(kDataSize);
+  ASSERT_TRUE(rv1);
+
+  base::UnsafeSharedMemoryRegion region = memory1.DuplicateRegion();
+  int fd = region.GetPlatformHandle();
+  DiscardableSharedMemory memory2(std::move(region));
+  bool rv2 = memory2.Map(kDataSize);
+  ASSERT_TRUE(rv2);
 
   // Unlock() the first page of memory, so we can test Lock()ing it.
-  memory.Unlock(0, base::GetPageSize());
-#if defined(OS_ANDROID)
+  memory2.Unlock(0, base::GetPageSize());
   // To cause ashmem_pin_region() to fail, we arrange for it to be called with
   // an invalid file-descriptor, which requires a valid-looking fd (i.e. we
   // can't just Close() |memory|), but one on which the operation is invalid.
@@ -260,15 +265,14 @@ TEST(DiscardableSharedMemoryTest, LockShouldFailIfPlatformLockPagesFails) {
   // that it can close, etc without errors, but on which ashmem_pin_region()
   // will fail.
   base::ScopedFD null(open("/dev/null", O_RDONLY));
-  ASSERT_EQ(memory.handle().GetHandle(),
-            dup2(null.get(), memory.handle().GetHandle()));
+  ASSERT_EQ(fd, dup2(null.get(), fd));
 
   // Now re-Lock()ing the first page should fail.
   DiscardableSharedMemory::LockResult lock_rv =
-      memory.Lock(0, base::GetPageSize());
+      memory2.Lock(0, base::GetPageSize());
   EXPECT_EQ(DiscardableSharedMemory::FAILED, lock_rv);
-#endif  // defined(OS_ANDROID)
 }
+#endif  // defined(OS_ANDROID)
 
 TEST(DiscardableSharedMemoryTest, LockAndUnlockRange) {
   const uint32_t kDataSize = 32;
@@ -279,10 +283,10 @@ TEST(DiscardableSharedMemoryTest, LockAndUnlockRange) {
   bool rv = memory1.CreateAndMap(data_size_in_bytes);
   ASSERT_TRUE(rv);
 
-  SharedMemoryHandle shared_handle = memory1.handle().Duplicate();
-  ASSERT_TRUE(shared_handle.IsValid());
+  UnsafeSharedMemoryRegion shared_region = memory1.DuplicateRegion();
+  ASSERT_TRUE(shared_region.IsValid());
 
-  TestDiscardableSharedMemory memory2(shared_handle);
+  TestDiscardableSharedMemory memory2(std::move(shared_region));
   rv = memory2.Map(data_size_in_bytes);
   ASSERT_TRUE(rv);
 
@@ -396,10 +400,10 @@ TEST(DiscardableSharedMemoryTest, ZeroFilledPagesAfterPurge) {
   bool rv = memory1.CreateAndMap(kDataSize);
   ASSERT_TRUE(rv);
 
-  SharedMemoryHandle shared_handle = memory1.handle().Duplicate();
-  ASSERT_TRUE(shared_handle.IsValid());
+  UnsafeSharedMemoryRegion shared_region = memory1.DuplicateRegion();
+  ASSERT_TRUE(shared_region.IsValid());
 
-  TestDiscardableSharedMemory memory2(shared_handle);
+  TestDiscardableSharedMemory memory2(std::move(shared_region));
   rv = memory2.Map(kDataSize);
   ASSERT_TRUE(rv);
 
@@ -449,5 +453,4 @@ TEST(DiscardableSharedMemoryTest, TracingOwnershipEdges) {
   // CreateWeakSharedMemoryOwnershipEdge() is fixed, crbug.com/661257.
 }
 
-}  // namespace
 }  // namespace base

@@ -25,7 +25,6 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "components/crash/core/common/crash_key.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace discardable_memory {
 namespace {
@@ -357,7 +356,7 @@ ClientDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
                "ClientDiscardableSharedMemoryManager::"
                "AllocateLockedDiscardableSharedMemory",
                "size", size, "id", id);
-  base::SharedMemoryHandle handle;
+  base::UnsafeSharedMemoryRegion region;
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::ScopedClosureRunner event_signal_runner(
@@ -365,11 +364,12 @@ ClientDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&ClientDiscardableSharedMemoryManager::AllocateOnIO,
-                     base::Unretained(this), size, id, &handle,
+                     base::Unretained(this), size, id, &region,
                      std::move(event_signal_runner)));
   // Waiting until IPC has finished on the IO thread.
   event.Wait();
-  auto memory = std::make_unique<base::DiscardableSharedMemory>(handle);
+  auto memory =
+      std::make_unique<base::DiscardableSharedMemory>(std::move(region));
   if (!memory->Map(size))
     base::TerminateBecauseOutOfMemory(size);
   return memory;
@@ -378,25 +378,21 @@ ClientDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
 void ClientDiscardableSharedMemoryManager::AllocateOnIO(
     size_t size,
     int32_t id,
-    base::SharedMemoryHandle* handle,
+    base::UnsafeSharedMemoryRegion* region,
     base::ScopedClosureRunner closure_runner) {
   (*manager_mojo_)
       ->AllocateLockedDiscardableSharedMemory(
           static_cast<uint32_t>(size), id,
           base::BindOnce(
               &ClientDiscardableSharedMemoryManager::AllocateCompletedOnIO,
-              base::Unretained(this), handle, std::move(closure_runner)));
+              base::Unretained(this), region, std::move(closure_runner)));
 }
 
 void ClientDiscardableSharedMemoryManager::AllocateCompletedOnIO(
-    base::SharedMemoryHandle* handle,
+    base::UnsafeSharedMemoryRegion* region,
     base::ScopedClosureRunner closure_runner,
-    mojo::ScopedSharedBufferHandle mojo_handle) {
-  if (!mojo_handle.is_valid())
-    return;
-  auto result = mojo::UnwrapSharedMemoryHandle(std::move(mojo_handle), handle,
-                                               nullptr, nullptr);
-  DCHECK_EQ(result, MOJO_RESULT_OK);
+    base::UnsafeSharedMemoryRegion ret_region) {
+  *region = std::move(ret_region);
 }
 
 void ClientDiscardableSharedMemoryManager::DeletedDiscardableSharedMemory(
