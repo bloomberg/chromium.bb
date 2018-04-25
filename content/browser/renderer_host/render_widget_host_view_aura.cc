@@ -898,6 +898,13 @@ void RenderWidgetHostViewAura::SubmitCompositorFrame(
   DCHECK(delegated_frame_host_);
   TRACE_EVENT0("content", "RenderWidgetHostViewAura::OnSwapCompositorFrame");
 
+  // Override the background color to the current compositor background.
+  // This allows us to, when navigating to a new page, transfer this color to
+  // that page. This allows us to pass this background color to new views on
+  // navigation.
+  // TODO(yiyix): Remove this line when https://crbug.com/830540 is fixed.
+  UpdateBackgroundColorFromRenderer(frame.metadata.root_background_color);
+
   delegated_frame_host_->SubmitCompositorFrame(
       local_surface_id, std::move(frame), std::move(hit_test_region_list));
 }
