@@ -35,7 +35,6 @@ namespace internal {
 // for client and service libraries and should not be used directly from
 // external client code.
 struct VIZ_COMMON_EXPORT Resource {
-  enum Origin { INTERNAL, DELEGATED };
   enum SynchronizationState {
     // The LOCALLY_USED state is the state each resource defaults to when
     // constructed or modified or read. This state indicates that the
@@ -67,7 +66,6 @@ struct VIZ_COMMON_EXPORT Resource {
   };
 
   Resource(const gfx::Size& size,
-           Origin origin,
            ResourceType type,
            ResourceFormat format,
            const gfx::ColorSpace& color_space);
@@ -104,9 +102,6 @@ struct VIZ_COMMON_EXPORT Resource {
   // Bitfield flags. ======
   // When true, the resource is currently being used externally.
   bool locked_for_external_use : 1;
-  // When true the resource can not be used and must only be deleted. This is
-  // passed along to the |release_callback|.
-  bool lost : 1;
   // When the resource should be deleted until it is actually reaped.
   bool marked_for_deletion : 1;
   // Tracks if a gpu fence needs to be used for reading a GpuMemoryBuffer-
@@ -150,7 +145,6 @@ struct VIZ_COMMON_EXPORT Resource {
   // of the resource.
   int lock_for_read_count = 0;
   int imported_count = 0;
-  int exported_count = 0;
   // A fence used for accessing a GpuMemoryBuffer-backed or texture-backed
   // resource for reading, that ensures any writing done to the resource has
   // been completed. This is implemented and used to implement transferring
@@ -159,10 +153,6 @@ struct VIZ_COMMON_EXPORT Resource {
   scoped_refptr<ResourceFence> read_lock_fence;
   // Size of the resource in pixels.
   gfx::Size size;
-  // Where the resource was originally allocated. Either internally by the
-  // ResourceProvider instance, or in a client and given to the ResourceProvider
-  // via IPC.
-  Origin origin = INTERNAL;
   // The texture target for GpuMemoryBuffer- and texture-backed resources.
   GLenum target = GL_TEXTURE_2D;
   // The min/mag filter of the resource when it was given to/created by the

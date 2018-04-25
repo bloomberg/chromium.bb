@@ -89,20 +89,6 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
                                               DeleteStyle style) {
   TRACE_EVENT0("cc", "ResourceProvider::DeleteResourceInternal");
   viz::internal::Resource* resource = &it->second;
-  DCHECK(resource->exported_count == 0 || style != NORMAL);
-
-  // Exported resources are lost on shutdown.
-  bool exported_resource_lost =
-      style == FOR_SHUTDOWN && resource->exported_count > 0;
-  // GPU resources are lost when context is lost.
-  bool gpu_resource_lost =
-      resource->is_gpu_resource_type() && lost_context_provider_;
-  bool lost_resource =
-      resource->lost || exported_resource_lost || gpu_resource_lost;
-
-  // Wait on sync token before deleting resources we own.
-  if (!lost_resource && resource->origin == viz::internal::Resource::INTERNAL)
-    WaitSyncTokenInternal(resource);
 
   if (resource->gl_id) {
     GLES2Interface* gl = ContextGL();
@@ -249,11 +235,9 @@ bool ResourceProvider::OnMemoryDump(
 
     DCHECK(!shared_memory_guid.is_empty() || !guid.empty());
 
-    const int kImportanceForInteral = 2;
-    const int kImportanceForExternal = 1;
-    int importance = resource.origin == viz::internal::Resource::INTERNAL
-                         ? kImportanceForInteral
-                         : kImportanceForExternal;
+    // The client that owns the resource will use a higher importance (2), and
+    // the GPU service will use a lower one (0).
+    const int importance = 1;
     if (!shared_memory_guid.is_empty()) {
       pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,
                                            importance);
