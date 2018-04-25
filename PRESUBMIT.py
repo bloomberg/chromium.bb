@@ -342,7 +342,7 @@ _BANNED_CPP_FUNCTIONS = (
       ),
     ),
     (
-      'base::SequenceChecker',
+      r'/base::SequenceChecker\b',
       (
         'Consider using SEQUENCE_CHECKER macros instead of the class directly.',
       ),
@@ -350,7 +350,7 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      'base::ThreadChecker',
+      r'/base::ThreadChecker\b',
       (
         'Consider using THREAD_CHECKER macros instead of the class directly.',
       ),
