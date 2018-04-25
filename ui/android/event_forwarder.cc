@@ -13,6 +13,7 @@
 #include "ui/events/android/drag_event_android.h"
 #include "ui/events/android/gesture_event_android.h"
 #include "ui/events/android/gesture_event_type.h"
+#include "ui/events/android/key_event_android.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/events/base_event_utils.h"
 
@@ -176,11 +177,11 @@ void EventForwarder::OnDragEvent(JNIEnv* env,
   view_->OnDragEvent(event);
 }
 
-bool EventForwarder::OnGestureEvent(JNIEnv* env,
-                                    const JavaParamRef<jobject>& jobj,
-                                    jint type,
-                                    jlong time_ms,
-                                    jfloat scale) {
+jboolean EventForwarder::OnGestureEvent(JNIEnv* env,
+                                        const JavaParamRef<jobject>& jobj,
+                                        jint type,
+                                        jlong time_ms,
+                                        jfloat scale) {
   float dip_scale = view_->GetDipScale();
   auto size = view_->GetSize();
   float x = size.width() / 2;
@@ -190,6 +191,20 @@ bool EventForwarder::OnGestureEvent(JNIEnv* env,
   return view_->OnGestureEvent(GestureEventAndroid(
       type, gfx::PointF(x / dip_scale, y / dip_scale), root_location, time_ms,
       scale, 0, 0, 0, 0, false, false));
+}
+
+jboolean EventForwarder::OnKeyUp(JNIEnv* env,
+                                 const JavaParamRef<jobject>& obj,
+                                 const JavaParamRef<jobject>& key_event,
+                                 jint key_code) {
+  return view_->OnKeyUp(KeyEventAndroid(env, key_event, key_code));
+}
+
+jboolean EventForwarder::DispatchKeyEvent(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& key_event) {
+  return view_->DispatchKeyEvent(KeyEventAndroid(env, key_event, 0));
 }
 
 void EventForwarder::Scroll(JNIEnv* env,

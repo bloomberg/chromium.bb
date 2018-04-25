@@ -172,20 +172,13 @@ public class ContentView
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        ContentViewCore cvc = getContentViewCore();
-        assert cvc != null;
-        return cvc.onKeyUp(keyCode, event);
+        return getEventForwarder().onKeyUp(keyCode, event);
     }
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (isFocused()) {
-            ContentViewCore cvc = getContentViewCore();
-            assert cvc != null;
-            return cvc.dispatchKeyEvent(event);
-        } else {
-            return super.dispatchKeyEvent(event);
-        }
+        return isFocused() ? getEventForwarder().dispatchKeyEvent(event)
+                           : super.dispatchKeyEvent(event);
     }
 
     @Override

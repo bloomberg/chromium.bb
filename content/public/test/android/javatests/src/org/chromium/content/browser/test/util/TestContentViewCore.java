@@ -6,7 +6,6 @@ package org.chromium.content.browser.test.util;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 
 import org.chromium.content_public.browser.ContentViewCore;
@@ -45,16 +44,6 @@ public class TestContentViewCore implements ContentViewCore {
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
-        return false;
-    }
-
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        return false;
-    }
-
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
         return false;
     }
 

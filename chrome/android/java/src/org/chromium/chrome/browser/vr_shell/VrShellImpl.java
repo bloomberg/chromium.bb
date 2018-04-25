@@ -635,8 +635,8 @@ public class VrShellImpl
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (mTab != null && mTab.getContentViewCore() != null
-                && mTab.getContentViewCore().dispatchKeyEvent(event)) {
+        if (mTab != null && mTab.getWebContents() != null
+                && mTab.getWebContents().getEventForwarder().dispatchKeyEvent(event)) {
             return true;
         }
         return super.dispatchKeyEvent(event);

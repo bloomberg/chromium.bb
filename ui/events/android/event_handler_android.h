@@ -11,6 +11,7 @@ namespace ui {
 
 class DragEventAndroid;
 class GestureEventAndroid;
+class KeyEventAndroid;
 class MotionEventAndroid;
 
 // Dispatches events to appropriate targets. The default implementations of
@@ -28,6 +29,12 @@ class EVENTS_EXPORT EventHandlerAndroid {
   virtual bool OnGestureEvent(const GestureEventAndroid& event);
   virtual void OnSizeChanged();
   virtual void OnPhysicalBackingSizeChanged();
+
+  virtual bool OnGenericMotionEvent(const MotionEventAndroid& event);
+  virtual bool OnKeyUp(const KeyEventAndroid& event);
+  virtual bool DispatchKeyEvent(const KeyEventAndroid& event);
+  virtual bool ScrollBy(const GestureEventAndroid& event);
+  virtual bool ScrollTo(const GestureEventAndroid& event);
 };
 
 }  // namespace ui
