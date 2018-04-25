@@ -17,7 +17,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -208,7 +208,7 @@ void QuitClosure::BindToMainThread() {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
       base::ThreadTaskRunnerHandle::Get());
   base::Closure quit_closure =
-      base::MessageLoop::current()->QuitWhenIdleClosure();
+      base::MessageLoopCurrent::Get()->QuitWhenIdleClosure();
   closure_ = base::Bind(&QuitClosure::PostClosure, task_runner, quit_closure);
   cond_var_.Signal();
 }
@@ -428,7 +428,7 @@ void ChildThreadImpl::Init(const Options& options) {
   TRACE_EVENT0("startup", "ChildThreadImpl::Init");
   g_lazy_tls.Pointer()->Set(this);
   on_channel_error_called_ = false;
-  message_loop_ = base::MessageLoop::current();
+  main_thread_runner_ = base::ThreadTaskRunnerHandle::Get();
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   // We must make sure to instantiate the IPC Logger *before* we create the
   // channel, otherwise we can get a callback on the IO thread which creates
@@ -472,8 +472,8 @@ void ChildThreadImpl::Init(const Options& options) {
   }
 
   sync_message_filter_ = channel_->CreateSyncMessageFilter();
-  thread_safe_sender_ = new ThreadSafeSender(
-      message_loop_->task_runner(), sync_message_filter_.get());
+  thread_safe_sender_ =
+      new ThreadSafeSender(main_thread_runner_, sync_message_filter_.get());
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(base::Bind(&ChildHistogramFetcherFactoryImpl::Create),
@@ -558,7 +558,7 @@ void ChildThreadImpl::Init(const Options& options) {
       connection_timeout = temp;
   }
 
-  message_loop_->task_runner()->PostDelayedTask(
+  main_thread_runner_->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&ChildThreadImpl::EnsureConnected,
                      channel_connected_factory_->GetWeakPtr()),
@@ -641,7 +641,7 @@ void ChildThreadImpl::OnChannelError() {
 }
 
 bool ChildThreadImpl::Send(IPC::Message* msg) {
-  DCHECK(message_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(main_thread_runner_->BelongsToCurrentThread());
   if (!channel_) {
     delete msg;
     return false;
@@ -701,7 +701,7 @@ service_manager::Connector* ChildThreadImpl::GetConnector() {
 }
 
 IPC::MessageRouter* ChildThreadImpl::GetRouter() {
-  DCHECK(message_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(main_thread_runner_->BelongsToCurrentThread());
   return &router_;
 }
 

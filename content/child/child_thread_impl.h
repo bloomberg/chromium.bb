@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
@@ -36,10 +37,6 @@
 #elif defined(OS_MACOSX)
 #include "content/common/font_loader_mac.mojom.h"
 #endif
-
-namespace base {
-class MessageLoop;
-}  // namespace base
 
 namespace IPC {
 class MessageFilter;
@@ -132,7 +129,9 @@ class CONTENT_EXPORT ChildThreadImpl
     return thread_safe_sender_.get();
   }
 
-  base::MessageLoop* message_loop() const { return message_loop_; }
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner() const {
+    return main_thread_runner_;
+  }
 
   // Returns the one child thread. Can only be called on the main thread.
   static ChildThreadImpl* current();
@@ -248,7 +247,8 @@ class CONTENT_EXPORT ChildThreadImpl
   // attempt to communicate.
   bool on_channel_error_called_;
 
-  base::MessageLoop* message_loop_;
+  // TaskRunner to post tasks to the main thread.
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;
 
   std::unique_ptr<base::PowerMonitor> power_monitor_;
 
