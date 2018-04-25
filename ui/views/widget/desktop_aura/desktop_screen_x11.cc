@@ -362,6 +362,9 @@ std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
   primary_display_index_ = 0;
   RROutput primary_display_id = XRRGetOutputPrimary(xdisplay_, x_root_window_);
 
+  int explicit_primary_display_index = -1;
+  int monitor_order_primary_display_index = -1;
+
   bool has_work_area = false;
   gfx::Rect work_area_in_pixels;
   std::vector<int> value;
@@ -436,10 +439,13 @@ std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
       }
 
       if (is_primary_display)
-        primary_display_index_ = displays.size();
+        explicit_primary_display_index = displays.size();
+
+      auto monitor_iter = output_to_monitor.find(output_id);
+      if (monitor_iter != output_to_monitor.end() && monitor_iter->second == 0)
+        monitor_order_primary_display_index = displays.size();
 
       if (!display::Display::HasForceColorProfile()) {
-        auto monitor_iter = output_to_monitor.find(output_id);
         gfx::ICCProfile icc_profile = GetICCProfileForMonitor(
             monitor_iter == output_to_monitor.end() ? 0 : monitor_iter->second);
         icc_profile.HistogramDisplay(display.id());
@@ -448,6 +454,12 @@ std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
 
       displays.push_back(display);
     }
+  }
+
+  if (explicit_primary_display_index != -1) {
+    primary_display_index_ = explicit_primary_display_index;
+  } else if (monitor_order_primary_display_index != -1) {
+    primary_display_index_ = monitor_order_primary_display_index;
   }
 
   if (displays.empty())
