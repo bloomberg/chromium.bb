@@ -58,6 +58,10 @@ class ChromeBrowserState;
 @property(nonatomic, weak) id<CRWSwipeRecognizerProvider>
     swipeRecognizerProvider;
 
+// Exposes content inset of contentSuggestions collectionView to ensure all of
+// content is visible under the bottom toolbar in ui refresh.
+@property(nonatomic) UIEdgeInsets contentInset;
+
 // Init with the given url (presumably "chrome://newtab") and loader object.
 // |loader| may be nil, but isn't retained so it must outlive this controller.
 - (id)initWithUrl:(const GURL&)url

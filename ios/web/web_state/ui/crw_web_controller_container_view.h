@@ -25,11 +25,6 @@
 - (CGFloat)nativeContentHeaderHeightForContainerView:
     (CRWWebControllerContainerView*)containerView;
 
-// Returns the footers for any toolbars that overlap the bottom of native
-// content.
-- (CGFloat)nativeContentFooterHeightForContainerView:
-    (CRWWebControllerContainerView*)containerView;
-
 @end
 
 // Container view class that manages the display of content within

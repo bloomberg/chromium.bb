@@ -357,10 +357,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
                                                          webState:webState];
 }
 
-- (CGFloat)nativeContentFooterHeightForWebState:(web::WebState*)webState {
-  return 0;
-}
-
 #pragma mark -
 #pragma mark Private Methods
 

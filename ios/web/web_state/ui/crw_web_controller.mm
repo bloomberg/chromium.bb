@@ -2186,11 +2186,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   return [self headerHeight];
 }
 
-- (CGFloat)nativeContentFooterHeightForContainerView:
-    (CRWWebControllerContainerView*)containerView {
-  return [_nativeProvider nativeContentFooterHeightForWebState:self.webState];
-}
-
 #pragma mark -
 #pragma mark CRWJSInjectionEvaluator Methods
 

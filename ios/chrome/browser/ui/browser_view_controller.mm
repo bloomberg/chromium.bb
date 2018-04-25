@@ -3936,10 +3936,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return [self headerHeightForTab:tab];
 }
 
-- (CGFloat)nativeContentFooterHeightForWebState:(web::WebState*)webState {
-  return self.secondaryToolbarHeightConstraint.constant;
-}
-
 #pragma mark - DialogPresenterDelegate methods
 
 - (void)dialogPresenter:(DialogPresenter*)presenter
@@ -4046,6 +4042,18 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
     // Resize the infobars to take into account the changes in the toolbar.
     [self infoBarContainerStateDidChangeAnimated:NO];
+
+    // Resize the NTP's contentInset.bottom to be above the secondary toolbar.
+    if (IsUIRefreshPhase1Enabled()) {
+      id nativeController = [self nativeControllerForTab:[_model currentTab]];
+      if ([nativeController isKindOfClass:[NewTabPageController class]]) {
+        NewTabPageController* newTabPageController =
+            base::mac::ObjCCast<NewTabPageController>(nativeController);
+        UIEdgeInsets contentInset = newTabPageController.contentInset;
+        contentInset.bottom = self.secondaryToolbarHeightConstraint.constant;
+        newTabPageController.contentInset = contentInset;
+      }
+    }
   } else {
     if (![_model currentTab].isVoiceSearchResultsTab)
       return;

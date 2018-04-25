@@ -58,11 +58,6 @@ const CGFloat kTestToolbarViewHeight = 50.0f;
   return 0;
 }
 
-- (CGFloat)nativeContentFooterHeightForContainerView:
-    (CRWWebControllerContainerView*)containerView {
-  return 0;
-}
-
 @end
 
 #pragma mark - CRWWebControllerContainerViewTest
