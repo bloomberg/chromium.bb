@@ -41,8 +41,8 @@ public class ConnectionInfoPopupTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ConnectionInfoPopup.show(mActivityTestRule.getActivity(),
-                        mActivityTestRule.getActivity().getActivityTab().getWebContents());
+                ConnectionInfoPopup.show(
+                        mActivityTestRule.getActivity(), mActivityTestRule.getWebContents());
             }
         });
     }

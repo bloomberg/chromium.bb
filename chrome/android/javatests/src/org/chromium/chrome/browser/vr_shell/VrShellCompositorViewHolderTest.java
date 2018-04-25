@@ -54,7 +54,7 @@ public class VrShellCompositorViewHolderTest {
         final AtomicReference<Integer> oldHeight = new AtomicReference<>();
         final int testWidth = 123;
         final int testHeight = 456;
-        final WebContents webContents = mVrTestRule.getActivity().getActivityTab().getWebContents();
+        final WebContents webContents = mVrTestRule.getWebContents();
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override

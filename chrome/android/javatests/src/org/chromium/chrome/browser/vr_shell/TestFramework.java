@@ -82,7 +82,7 @@ public class TestFramework {
      */
     public TestFramework(ChromeActivityTestRule rule) {
         mRule = rule;
-        mFirstTabWebContents = mRule.getActivity().getActivityTab().getWebContents();
+        mFirstTabWebContents = mRule.getWebContents();
         mFirstTabCvc = mRule.getActivity().getActivityTab().getContentViewCore();
         mFirstTabContentView = mRule.getActivity().getActivityTab().getContentView();
         Assert.assertFalse("Test did not start in VR", VrShellDelegate.isInVr());
@@ -143,7 +143,7 @@ public class TestFramework {
         int result = mRule.loadUrl(url, timeoutSec);
         Assert.assertTrue("JavaScript initialization successful",
                 pollJavaScriptBoolean("isInitializationComplete()", POLL_TIMEOUT_LONG_MS,
-                        mRule.getActivity().getActivityTab().getWebContents()));
+                        mRule.getWebContents()));
         return result;
     }
 

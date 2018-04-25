@@ -152,8 +152,7 @@ public class OfflinePageRequestTest {
             @Override
             public void run() {
                 mOfflinePageBridge.savePage(
-                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
-                        CLIENT_ID, new SavePageCallback() {
+                        mActivityTestRule.getWebContents(), CLIENT_ID, new SavePageCallback() {
                             @Override
                             public void onSavePageDone(
                                     int savePageResult, String url, long offlineId) {

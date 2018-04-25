@@ -197,7 +197,7 @@ public class CastSwitchVideoTest {
 
     private void playVideoFromCurrentTab(String videoElement) throws InterruptedException,
             TimeoutException {
-        WebContents webContents = mCastTestRule.getActivity().getActivityTab().getWebContents();
+        WebContents webContents = mCastTestRule.getWebContents();
 
         mCastTestRule.waitUntilVideoReady(videoElement, webContents);
 

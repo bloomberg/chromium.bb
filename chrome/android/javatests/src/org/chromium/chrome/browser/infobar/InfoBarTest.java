@@ -334,8 +334,7 @@ public class InfoBarTest {
                         .apply();
                 // Add an infobar.
                 Assert.assertTrue(DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
-                        mActivityTestRule.getActivity(),
-                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
+                        mActivityTestRule.getActivity(), mActivityTestRule.getWebContents(),
                         "http://google.com", false, false, HttpURLConnection.HTTP_OK));
             }
         });
@@ -368,8 +367,7 @@ public class InfoBarTest {
                 // Try to add an infobar. Infobar should not be added since it has already been
                 // shown.
                 Assert.assertFalse(DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
-                        mActivityTestRule.getActivity(),
-                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
+                        mActivityTestRule.getActivity(), mActivityTestRule.getWebContents(),
                         "http://google.com", false, false, HttpURLConnection.HTTP_OK));
             }
         });
@@ -398,8 +396,7 @@ public class InfoBarTest {
                         .apply();
                 // Add an infobar.
                 Assert.assertTrue(DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
-                        mActivityTestRule.getActivity(),
-                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
+                        mActivityTestRule.getActivity(), mActivityTestRule.getWebContents(),
                         "http://google.com", false, false, HttpURLConnection.HTTP_OK));
             }
         });
@@ -429,8 +426,7 @@ public class InfoBarTest {
                 // Try to add an infobar. Infobar should not be added since the user clicked
                 // dismiss.
                 Assert.assertFalse(DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
-                        mActivityTestRule.getActivity(),
-                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
+                        mActivityTestRule.getActivity(), mActivityTestRule.getWebContents(),
                         "http://google.com", false, false, HttpURLConnection.HTTP_OK));
             }
         });
@@ -461,8 +457,7 @@ public class InfoBarTest {
                 // or second run promo version was not shown and the package was installed
                 // after M48.
                 Assert.assertFalse(DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
-                        mActivityTestRule.getActivity(),
-                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
+                        mActivityTestRule.getActivity(), mActivityTestRule.getWebContents(),
                         "http://google.com", false, false, HttpURLConnection.HTTP_OK));
             }
         });
@@ -484,8 +479,7 @@ public class InfoBarTest {
                 // Try to add an infobar. Infobar should not be added since the first run
                 // experience or second run promo hasn't been shown.
                 Assert.assertFalse(DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
-                        mActivityTestRule.getActivity(),
-                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
+                        mActivityTestRule.getActivity(), mActivityTestRule.getWebContents(),
                         "http://google.com", false, false, HttpURLConnection.HTTP_OK));
 
                 // Fake showing the FRE.
@@ -494,8 +488,7 @@ public class InfoBarTest {
                 // Try to add an infobar. Infobar should not be added since the
                 // first run experience was just shown.
                 Assert.assertFalse(DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
-                        mActivityTestRule.getActivity(),
-                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
+                        mActivityTestRule.getActivity(), mActivityTestRule.getWebContents(),
                         "http://google.com", false, false, HttpURLConnection.HTTP_OK));
 
                 // Fake the first run experience or second run promo being shown in M51.
@@ -509,8 +502,7 @@ public class InfoBarTest {
                 // Try to add an infobar. Infobar should not be added since the user opted
                 // out on the first run experience.
                 Assert.assertFalse(DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
-                        mActivityTestRule.getActivity(),
-                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
+                        mActivityTestRule.getActivity(), mActivityTestRule.getWebContents(),
                         "http://google.com", false, false, HttpURLConnection.HTTP_OK));
             }
         });

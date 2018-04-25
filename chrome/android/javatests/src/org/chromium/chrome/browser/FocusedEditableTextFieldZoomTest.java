@@ -53,8 +53,7 @@ public class FocusedEditableTextFieldZoomTest {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.startMainActivityWithURL(
                 mTestServer.getURL("/chrome/test/data/android/focused_editable_zoom.html"));
-        mCoordinates = Coordinates.createFor(
-                mActivityTestRule.getActivity().getActivityTab().getWebContents());
+        mCoordinates = Coordinates.createFor(mActivityTestRule.getWebContents());
         waitForInitialZoom();
     }
 

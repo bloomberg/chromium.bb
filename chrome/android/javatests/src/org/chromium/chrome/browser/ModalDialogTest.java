@@ -481,7 +481,6 @@ public class ModalDialogTest {
     }
 
     private TestCallbackHelperContainer getActiveTabTestCallbackHelperContainer() {
-        return new TestCallbackHelperContainer(
-                mActivityTestRule.getActivity().getActivityTab().getWebContents());
+        return new TestCallbackHelperContainer(mActivityTestRule.getWebContents());
     }
 }

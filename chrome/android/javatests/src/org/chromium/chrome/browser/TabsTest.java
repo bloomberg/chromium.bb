@@ -323,9 +323,7 @@ public class TabsTest {
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), mTestServer.getURL(TEST_FILE_PATH), false);
         Assert.assertEquals("Failed to click node.", true,
-                DOMUtils.clickNode(
-                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
-                        "input_text"));
+                DOMUtils.clickNode(mActivityTestRule.getWebContents(), "input_text"));
         assertWaitForKeyboardStatus(true);
 
         // Open a new tab(the 2nd tab).
@@ -334,8 +332,7 @@ public class TabsTest {
         assertWaitForKeyboardStatus(false);
 
         // Click node in the 2nd tab.
-        DOMUtils.clickNode(
-                mActivityTestRule.getActivity().getActivityTab().getWebContents(), "input_text");
+        DOMUtils.clickNode(mActivityTestRule.getWebContents(), "input_text");
         assertWaitForKeyboardStatus(true);
 
         // Switch to the 1st tab.
@@ -343,8 +340,7 @@ public class TabsTest {
         assertWaitForKeyboardStatus(false);
 
         // Click node in the 1st tab.
-        DOMUtils.clickNode(
-                mActivityTestRule.getActivity().getActivityTab().getWebContents(), "input_text");
+        DOMUtils.clickNode(mActivityTestRule.getWebContents(), "input_text");
         assertWaitForKeyboardStatus(true);
 
         // Close current tab(the 1st tab).
@@ -367,16 +363,12 @@ public class TabsTest {
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), mTestServer.getURL(TEST_FILE_PATH), false);
         Assert.assertEquals("Failed to click textarea.", true,
-                DOMUtils.clickNode(
-                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
-                        "textarea"));
+                DOMUtils.clickNode(mActivityTestRule.getWebContents(), "textarea"));
         assertWaitForKeyboardStatus(true);
 
         // Click the button to open a new window.
         Assert.assertEquals("Failed to click button.", true,
-                DOMUtils.clickNode(
-                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
-                        "button"));
+                DOMUtils.clickNode(mActivityTestRule.getWebContents(), "button"));
         assertWaitForKeyboardStatus(false);
     }
 
@@ -384,8 +376,7 @@ public class TabsTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                WebContents webContents =
-                        mActivityTestRule.getActivity().getActivityTab().getWebContents();
+                WebContents webContents = mActivityTestRule.getWebContents();
                 SelectionPopupController controller =
                         SelectionPopupController.fromWebContents(webContents);
                 final String actualText = controller.getSelectedText();
@@ -432,8 +423,7 @@ public class TabsTest {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), mTestServer.getURL(TEST_FILE_PATH), false);
-        DOMUtils.longPressNode(
-                mActivityTestRule.getActivity().getActivityTab().getWebContents(), "textarea");
+        DOMUtils.longPressNode(mActivityTestRule.getWebContents(), "textarea");
         assertWaitForSelectedText("helloworld");
 
         // Switch to tab-switcher mode, switch back, and scroll page.
@@ -1382,8 +1372,7 @@ public class TabsTest {
         mActivityTestRule.loadUrlInNewTab(
                 mTestServer.getURL("/chrome/test/data/android/tabstest/text_page.html"));
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
-            WebContents webContents =
-                    mActivityTestRule.getActivity().getActivityTab().getWebContents();
+            WebContents webContents = mActivityTestRule.getWebContents();
             webContents.getEventForwarder().startFling(SystemClock.uptimeMillis(), 0, -2000, false);
         });
         ChromeTabUtils.closeCurrentTab(
@@ -1756,11 +1745,10 @@ public class TabsTest {
         ChromeTabUtils.newTabFromMenu(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         mActivityTestRule.loadUrl(RESIZE_TEST_URL);
-        final WebContents webContents =
-                mActivityTestRule.getActivity().getActivityTab().getWebContents();
+        final WebContents webContents = mActivityTestRule.getWebContents();
 
-        JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents,
-                                                          "resizeHappened = false;");
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                mActivityTestRule.getWebContents(), "resizeHappened = false;");
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
@@ -1783,12 +1771,10 @@ public class TabsTest {
         ChromeTabUtils.newTabFromMenu(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         mActivityTestRule.loadUrl(RESIZE_TEST_URL);
-        final WebContents webContents =
-                mActivityTestRule.getActivity().getActivityTab().getWebContents();
 
         showOverviewAndWaitForAnimation();
-        JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents,
-                                                          "resizeHappened = false;");
+        final WebContents webContents = mActivityTestRule.getWebContents();
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents, "resizeHappened = false;");
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
@@ -1798,8 +1784,7 @@ public class TabsTest {
                 JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents, "resizeHappened",
                         WAIT_RESIZE_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents,
-                                                          "resizeHappened = false;");
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents, "resizeHappened = false;");
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());

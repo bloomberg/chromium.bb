@@ -82,8 +82,8 @@ public class VrShellControllerInputTest {
     public void testControllerScrolling() throws InterruptedException {
         mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
                 PAGE_LOAD_TIMEOUT_S);
-        final RenderCoordinates coord = RenderCoordinates.fromWebContents(
-                mVrTestRule.getActivity().getActivityTab().getWebContents());
+        final RenderCoordinates coord =
+                RenderCoordinates.fromWebContents(mVrTestRule.getWebContents());
         waitForPageToBeScrollable(coord);
 
         // Test that scrolling down works
@@ -132,8 +132,8 @@ public class VrShellControllerInputTest {
     public void testControllerFlingScrolling() throws InterruptedException {
         mVrTestRule.loadUrl(VrTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
                 PAGE_LOAD_TIMEOUT_S);
-        final RenderCoordinates coord = RenderCoordinates.fromWebContents(
-                mVrTestRule.getActivity().getActivityTab().getWebContents());
+        final RenderCoordinates coord =
+                RenderCoordinates.fromWebContents(mVrTestRule.getWebContents());
         waitForPageToBeScrollable(coord);
 
         // Arbitrary, but valid values to trigger fling scrolling

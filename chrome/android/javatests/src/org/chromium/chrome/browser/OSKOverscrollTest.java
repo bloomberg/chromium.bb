@@ -120,9 +120,8 @@ public class OSKOverscrollTest {
         mActivityTestRule.startMainActivityWithURL(FIXED_FOOTER_PAGE);
 
         final AtomicReference<WebContents> webContentsRef = new AtomicReference<WebContents>();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            webContentsRef.set(mActivityTestRule.getActivity().getActivityTab().getWebContents());
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { webContentsRef.set(mActivityTestRule.getWebContents()); });
 
         DOMUtils.waitForNonZeroNodeBounds(webContentsRef.get(), "fn");
 

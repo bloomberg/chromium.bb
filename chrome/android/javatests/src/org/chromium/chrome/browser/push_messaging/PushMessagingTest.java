@@ -277,8 +277,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
      * Runs {@code script} in the current tab but does not wait for the result.
      */
     private void runScript(String script) {
-        JavaScriptUtils.executeJavaScript(
-                mNotificationTestRule.getActivity().getActivityTab().getWebContents(), script);
+        JavaScriptUtils.executeJavaScript(mNotificationTestRule.getWebContents(), script);
     }
 
     /**
@@ -286,7 +285,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
      */
     private String runScriptBlocking(String script) throws InterruptedException, TimeoutException {
         return JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                mNotificationTestRule.getActivity().getActivityTab().getWebContents(), script);
+                mNotificationTestRule.getWebContents(), script);
     }
 
     /**
