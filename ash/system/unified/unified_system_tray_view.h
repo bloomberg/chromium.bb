@@ -57,6 +57,9 @@ class UnifiedSystemTrayView : public views::View {
   // Add slider view.
   void AddSliderView(views::View* slider_view);
 
+  // Hide the main view and show the given |detailed_view|.
+  void SetDetailedView(views::View* detailed_view);
+
   // Change the expanded state. 0.0 if collapsed, and 1.0 if expanded.
   // Otherwise, it shows intermediate state.
   void SetExpandedAmount(double expanded_amount);
@@ -75,6 +78,8 @@ class UnifiedSystemTrayView : public views::View {
   FeaturePodsContainerView* feature_pods_container_;
   UnifiedSlidersContainerView* sliders_container_;
   UnifiedSystemInfoView* system_info_view_;
+  views::View* system_tray_container_;
+  views::View* detailed_view_container_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTrayView);
 };

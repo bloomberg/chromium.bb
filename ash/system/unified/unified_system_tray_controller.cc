@@ -56,7 +56,10 @@ UnifiedSystemTrayController::UnifiedSystemTrayController(
   animation_->SetTweenType(gfx::Tween::EASE_IN_OUT);
 }
 
-UnifiedSystemTrayController::~UnifiedSystemTrayController() = default;
+UnifiedSystemTrayController::~UnifiedSystemTrayController() {
+  if (detailed_view_item_)
+    detailed_view_item_->OnDetailedViewDestroyed();
+}
 
 UnifiedSystemTrayView* UnifiedSystemTrayController::CreateView() {
   DCHECK(!unified_view_);
@@ -192,12 +195,10 @@ void UnifiedSystemTrayController::AddFeaturePodItem(
 
 void UnifiedSystemTrayController::ShowSystemTrayDetailedView(
     SystemTrayItem* system_tray_item) {
-  // Initially create default view to set |default_bubble_height_|.
-  system_tray_->ShowDefaultView(BubbleCreationType::BUBBLE_CREATE_NEW,
-                                true /* show_by_click */);
-  system_tray_->ShowDetailedView(system_tray_item,
-                                 0 /* close_delay_in_seconds */,
-                                 BubbleCreationType::BUBBLE_USE_EXISTING);
+  LoginStatus login_status = Shell::Get()->session_controller()->login_status();
+  unified_view_->SetDetailedView(
+      system_tray_item->CreateDetailedView(login_status));
+  detailed_view_item_ = system_tray_item;
 }
 
 void UnifiedSystemTrayController::UpdateExpandedAmount() {
