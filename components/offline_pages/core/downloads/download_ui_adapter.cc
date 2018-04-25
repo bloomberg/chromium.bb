@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
@@ -262,39 +263,53 @@ void DownloadUIAdapter::GetVisualsForItem(
     return;
   }
   const ItemInfo* item = it->second.get();
+
+  VisualResultCallback callback = base::BindOnce(visuals_callback, id);
+  if (item->client_id.name_space == kSuggestedArticlesNamespace) {
+    // Report PrefetchedItemHasThumbnail along with result callback.
+    auto report_and_callback =
+        [](VisualResultCallback result_callback,
+           std::unique_ptr<offline_items_collection::OfflineItemVisuals>
+               visuals) {
+          UMA_HISTOGRAM_BOOLEAN(
+              "OfflinePages.DownloadUI.PrefetchedItemHasThumbnail",
+              visuals.get() != nullptr);
+          std::move(result_callback).Run(std::move(visuals));
+        };
+    callback = base::BindOnce(report_and_callback, std::move(callback));
+  }
+
   model_->GetThumbnailByOfflineId(
       item->offline_id,
       base::BindOnce(&DownloadUIAdapter::OnThumbnailLoaded,
-                     weak_ptr_factory_.GetWeakPtr(), id, visuals_callback));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void DownloadUIAdapter::OnThumbnailLoaded(
-    const ContentId& content_id,
-    const VisualsCallback& visuals_callback,
+    VisualResultCallback callback,
     std::unique_ptr<OfflinePageThumbnail> thumbnail) {
   DCHECK(thumbnail_decoder_);
   if (!thumbnail || thumbnail->thumbnail.empty()) {
     // PostTask not required, GetThumbnailByOfflineId does it for us.
-    visuals_callback.Run(content_id, nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
-  auto forward_visuals_lambda = [](const ContentId& content_id,
-                                   const VisualsCallback& visuals_callback,
+  auto forward_visuals_lambda = [](VisualResultCallback callback,
                                    const gfx::Image& image) {
     if (image.IsEmpty()) {
-      visuals_callback.Run(content_id, nullptr);
+      std::move(callback).Run(nullptr);
       return;
     }
     auto visuals =
         std::make_unique<offline_items_collection::OfflineItemVisuals>();
     visuals->icon = image;
-    visuals_callback.Run(content_id, std::move(visuals));
+    std::move(callback).Run(std::move(visuals));
   };
 
   thumbnail_decoder_->DecodeAndCropThumbnail(
       thumbnail->thumbnail,
-      base::BindOnce(forward_visuals_lambda, content_id, visuals_callback));
+      base::BindOnce(forward_visuals_lambda, std::move(callback)));
 }
 
 void DownloadUIAdapter::ThumbnailAdded(OfflinePageModel* model,

@@ -82,7 +82,7 @@ class DownloadUIAdapter : public OfflineContentProvider,
 
   int64_t GetOfflineIdByGuid(const std::string& guid) const;
 
-  // OfflineContentProvider implmentation.
+  // OfflineContentProvider implementation.
   void OpenItem(const ContentId& id) override;
   void RemoveItem(const ContentId& id) override;
   void CancelDownload(const ContentId& id) override;
@@ -159,6 +159,8 @@ class DownloadUIAdapter : public OfflineContentProvider,
   };
 
   typedef std::map<std::string, std::unique_ptr<ItemInfo>> OfflineItems;
+  using VisualResultCallback = base::OnceCallback<void(
+      std::unique_ptr<offline_items_collection::OfflineItemVisuals>)>;
 
   void LoadCache();
   void ClearCache();
@@ -174,9 +176,8 @@ class DownloadUIAdapter : public OfflineContentProvider,
       const std::string& guid,
       std::vector<std::unique_ptr<SavePageRequest>> requests);
   void OnOfflinePagesLoaded(const MultipleOfflinePageItemResult& pages);
-  void OnThumbnailLoaded(const ContentId& content_id,
-                         const VisualsCallback& visuals_callback,
-                         std::unique_ptr<OfflinePageThumbnail>);
+  void OnThumbnailLoaded(VisualResultCallback callback,
+                         std::unique_ptr<OfflinePageThumbnail> thumbnail);
   void OnRequestsLoaded(std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   void OnDeletePagesDone(DeletePageResult result);
