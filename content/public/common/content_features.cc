@@ -304,6 +304,10 @@ const base::Feature kRenderingPipelineThrottling{
 const base::Feature kRequireCSSExtensionForFile{
     "RequireCSSExtensionForFile", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables resampling input events on main thread.
+const base::Feature kResamplingInputEvents{"ResamplingInputEvents",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Loading Dispatcher v0 support with ResourceLoadScheduler (crbug.com/729954).
 const base::Feature kResourceLoadScheduler{"ResourceLoadScheduler",
                                            base::FEATURE_ENABLED_BY_DEFAULT};

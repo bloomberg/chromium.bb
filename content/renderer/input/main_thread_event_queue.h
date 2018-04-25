@@ -13,6 +13,7 @@
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/input_event_ack_state.h"
+#include "content/renderer/input/input_event_prediction.h"
 #include "content/renderer/input/main_thread_event_queue_task_list.h"
 #include "content/renderer/input/scoped_web_input_event_with_latency_info.h"
 #include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
@@ -103,6 +104,11 @@ class CONTENT_EXPORT MainThreadEventQueue
   // Request unbuffered input events until next pointerup.
   void RequestUnbufferedInputEvents();
 
+  // Resampling event before dispatch it.
+  void HandleEventResampling(
+      const std::unique_ptr<MainThreadEventQueueTask>& item,
+      base::TimeTicks frame_time);
+
  protected:
   friend class base::RefCountedThreadSafe<MainThreadEventQueue>;
   virtual ~MainThreadEventQueue();
@@ -156,6 +162,8 @@ class CONTENT_EXPORT MainThreadEventQueue
   blink::scheduler::WebMainThreadScheduler* main_thread_scheduler_;
   base::OneShotTimer raf_fallback_timer_;
   bool use_raf_fallback_timer_;
+
+  std::unique_ptr<InputEventPrediction> event_predictor_;
 
   DISALLOW_COPY_AND_ASSIGN(MainThreadEventQueue);
 };

@@ -1595,6 +1595,7 @@ test("content_unittests") {
     "../renderer/indexed_db/mock_webidbcallbacks.h",
     "../renderer/indexed_db/webidbcursor_impl_unittest.cc",
     "../renderer/indexed_db/webidbdatabase_impl_unittest.cc",
+    "../renderer/input/input_event_prediction_unittest.cc",
     "../renderer/input/main_thread_event_queue_unittest.cc",
     "../renderer/loader/resource_dispatcher_unittest.cc",
     "../renderer/loader/shared_memory_data_consumer_handle_unittest.cc",
