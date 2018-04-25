@@ -8,6 +8,7 @@
 
 import contextlib
 from cStringIO import StringIO
+import md5
 import os
 import shutil
 import sys
@@ -74,7 +75,7 @@ class ApiStaticCheckUnitTest(unittest.TestCase):
     with open(API_VERSION_FILENAME, 'w') as api_version_file:
       api_version_file.write('0')
     with open(API_FILENAME, 'w') as api_file:
-      api_file.write('}\n')
+      api_file.write('}\nStamp: 7d9d25f71cb8a5aba86202540a20d405\n')
     shutil.copytree(os.path.dirname(__file__), 'tools')
 
 
@@ -141,6 +142,15 @@ class ApiStaticCheckUnitTest(unittest.TestCase):
       api_version = api_version_file.read()
     with open(OUT_FILENAME, 'r') as out_file:
       output = out_file.read()
+
+    # Verify stamp
+    api_stamp = api.split('\n')[-2]
+    stamp_length = len('Stamp: 78418460c193047980ae9eabb79293f2\n')
+    api = api[:-stamp_length]
+    api_hash = md5.new()
+    api_hash.update(api)
+    self.assertEquals(api_stamp, 'Stamp: %s' % api_hash.hexdigest())
+
     return [return_code == 0, output, api, api_version]
 
 
