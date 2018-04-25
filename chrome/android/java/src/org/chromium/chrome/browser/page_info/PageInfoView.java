@@ -251,12 +251,8 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         }
     }
 
-    public Animator createEnterAnimation() {
-        return createFadeAnimations(true);
-    }
-
-    public Animator createExitAnimation() {
-        return createFadeAnimations(false);
+    public Animator createEnterExitAnimation(boolean isEnter) {
+        return createFadeAnimations(isEnter);
     }
 
     public void toggleUrlTruncation() {

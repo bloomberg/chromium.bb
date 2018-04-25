@@ -4,21 +4,13 @@
 
 package org.chromium.chrome.browser.page_info;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -30,12 +22,6 @@ import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.text.style.TextAppearanceSpan;
-import android.view.Gravity;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.StrictModeContext;
@@ -46,7 +32,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
-import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView.ButtonType;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
@@ -74,7 +59,6 @@ import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
@@ -127,12 +111,6 @@ public class PageInfoPopup implements ModalDialogView.Controller {
         }
     }
 
-    private static final int ENTER_START_DELAY_MS = 100;
-    private static final int ENTER_EXIT_DURATION_MS = 200;
-    private static final int CLOSE_CLEANUP_DELAY_MS = 10;
-
-    private static final int MAX_MODAL_DIALOG_WIDTH_DP = 400;
-
     private final Context mContext;
     private final WindowAndroid mWindowAndroid;
     private final Tab mTab;
@@ -143,15 +121,8 @@ public class PageInfoPopup implements ModalDialogView.Controller {
     // The view inside the popup.
     private PageInfoView mView;
 
-    // The dialog the container is placed in.
-    // mSheetDialog is set if the dialog appears as a sheet. Otherwise, mModalDialog is set.
-    private Dialog mSheetDialog;
-    private ModalDialogView mModalDialog;
-
-    // Animation which is currently running, if there is one.
-    private Animator mCurrentAnimation;
-
-    private boolean mDismissWithoutAnimation;
+    // The dialog the view is placed in.
+    private final PageInfoDialog mDialog;
 
     // The full URL from the URL bar, which is copied to the user's clipboard when they select 'Copy
     // URL'.
@@ -327,24 +298,7 @@ public class PageInfoPopup implements ModalDialogView.Controller {
             viewParams.instantAppButtonShown = false;
         }
 
-        // On smaller screens, place the dialog at the top of the screen, and remove its border.
-        if (isSheet()) {
-            createSheetDialog();
-        }
-
         mView = new PageInfoView(mContext, viewParams);
-        mView.setVisibility(View.INVISIBLE);
-        mView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(
-                    View v, int l, int t, int r, int b, int ol, int ot, int or, int ob) {
-                // Trigger the entrance animations once the main container has been laid out and has
-                // a height.
-                mView.removeOnLayoutChangeListener(this);
-                mView.setVisibility(View.VISIBLE);
-                createAllAnimations(true, null).start();
-            }
-        });
 
         // This needs to come after other member initialization.
         mNativePageInfoPopup = nativeInit(this, mTab.getWebContents());
@@ -353,14 +307,14 @@ public class PageInfoPopup implements ModalDialogView.Controller {
             public void navigationEntryCommitted() {
                 // If a navigation is committed (e.g. from in-page redirect), the data we're showing
                 // is stale so dismiss the dialog.
-                dismissDialog();
+                mDialog.dismiss(true);
             }
 
             @Override
             public void wasHidden() {
                 // The web contents were hidden (potentially by loading another URL via an intent),
                 // so dismiss the dialog).
-                dismissDialog();
+                mDialog.dismiss(true);
             }
 
             @Override
@@ -368,12 +322,13 @@ public class PageInfoPopup implements ModalDialogView.Controller {
                 super.destroy();
                 // Force the dialog to close immediately in case the destroy was from Chrome
                 // quitting.
-                mDismissWithoutAnimation = true;
-                dismissDialog();
+                mDialog.dismiss(false);
             }
         };
 
-        showDialog();
+        mDialog = new PageInfoDialog(mContext, mView, mTab.getView(), isSheet(),
+                mTab.getActivity().getModalDialogManager(), this);
+        mDialog.show();
     }
 
     /**
@@ -613,64 +568,11 @@ public class PageInfoPopup implements ModalDialogView.Controller {
     }
 
     /**
-     * Displays the PageInfoPopup.
-     */
-    private void showDialog() {
-        ScrollView dialogView;
-        if (isSheet()) {
-            // On smaller screens, make the dialog fill the width of the screen.
-            dialogView = new ScrollView(mContext) {
-                @Override
-                protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-                    heightMeasureSpec =
-                            MeasureSpec.makeMeasureSpec(mTab.getHeight(), MeasureSpec.AT_MOST);
-                    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-                }
-            };
-        } else {
-            // On larger screens, make the dialog centered in the screen and have a maximum width.
-            dialogView = new ScrollView(mContext) {
-                @Override
-                protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-                    final int maxDialogWidthInPx = (int) (MAX_MODAL_DIALOG_WIDTH_DP
-                            * mContext.getResources().getDisplayMetrics().density);
-                    if (MeasureSpec.getSize(widthMeasureSpec) > maxDialogWidthInPx) {
-                        widthMeasureSpec = MeasureSpec.makeMeasureSpec(maxDialogWidthInPx,
-                                MeasureSpec.EXACTLY);
-                    }
-                    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-                }
-            };
-        }
-
-        dialogView.addView(mView);
-
-        if (isSheet()) {
-            mSheetDialog.addContentView(dialogView,
-                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.MATCH_PARENT));
-
-            // This must be called after addContentView, or it won't fully fill to the edge.
-            Window window = mSheetDialog.getWindow();
-            window.setLayout(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            mSheetDialog.show();
-        } else {
-            ModalDialogView.Params params = new ModalDialogView.Params();
-            params.customView = dialogView;
-            params.cancelOnTouchOutside = true;
-            mModalDialog = new ModalDialogView(this, params);
-            mTab.getActivity().getModalDialogManager().showDialog(
-                    mModalDialog, ModalDialogManager.APP_MODAL);
-        }
-    }
-
-    /**
      * Dismiss the popup, and then run a task after the animation has completed (if there is one).
      */
     private void runAfterDismiss(Runnable task) {
         mPendingRunAfterDismissTask = task;
-        dismissDialog();
+        mDialog.dismiss(true);
     }
 
     @Override
@@ -691,57 +593,6 @@ public class PageInfoPopup implements ModalDialogView.Controller {
         }
     }
 
-    private void dismissDialog() {
-        if (isSheet()) {
-            mSheetDialog.dismiss();
-        } else {
-            mTab.getActivity().getModalDialogManager().dismissDialog(mModalDialog);
-        }
-    }
-
-    /**
-     * Create an animator to slide in the entire dialog from the top of the screen.
-     */
-    private Animator createDialogSlideAnimaton(boolean isEnter) {
-        final float animHeight = -mView.getHeight();
-        ObjectAnimator translateAnim;
-        if (isEnter) {
-            mView.setTranslationY(animHeight);
-            translateAnim = ObjectAnimator.ofFloat(mView, View.TRANSLATION_Y, 0f);
-            translateAnim.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
-        } else {
-            translateAnim = ObjectAnimator.ofFloat(mView, View.TRANSLATION_Y, animHeight);
-            translateAnim.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
-        }
-        translateAnim.setDuration(ENTER_EXIT_DURATION_MS);
-        return translateAnim;
-    }
-
-    /**
-     * Create an animator to show/hide the entire dialog. On phones the dialog is slid in as a
-     * sheet. Otherwise, the default fade-in is used.
-     */
-    private Animator createAllAnimations(boolean isEnter, Runnable onAnimationEnd) {
-        Animator dialogAnimation =
-                isSheet() ? createDialogSlideAnimaton(isEnter) : new AnimatorSet();
-        Animator viewAnimation =
-                isEnter ? mView.createEnterAnimation() : mView.createExitAnimation();
-        AnimatorSet allAnimations = new AnimatorSet();
-        if (isEnter) allAnimations.setStartDelay(ENTER_START_DELAY_MS);
-        allAnimations.playTogether(dialogAnimation, viewAnimation);
-        allAnimations.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mCurrentAnimation = null;
-                if (onAnimationEnd == null) return;
-                onAnimationEnd.run();
-            }
-        });
-        if (mCurrentAnimation != null) mCurrentAnimation.cancel();
-        mCurrentAnimation = allAnimations;
-        return allAnimations;
-    }
-
     private void recordAction(int action) {
         if (mNativePageInfoPopup != 0) {
             nativeRecordPageInfoAction(mNativePageInfoPopup, action);
@@ -758,42 +609,6 @@ public class PageInfoPopup implements ModalDialogView.Controller {
     private boolean isSheet() {
         return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext)
                 && !VrShellDelegate.isInVr();
-    }
-
-    private void createSheetDialog() {
-        mSheetDialog = new Dialog(mContext) {
-            private void superDismiss() {
-                super.dismiss();
-            }
-
-            @Override
-            public void dismiss() {
-                if (mDismissWithoutAnimation) {
-                    // Dismiss the modal dialogs without any custom animations.
-                    super.dismiss();
-                } else {
-                    createAllAnimations(false, () -> {
-                        // onAnimationEnd is called during the final frame of the animation.
-                        // Delay the cleanup by a tiny amount to give this frame a chance to
-                        // be displayed before we destroy the dialog.
-                        mView.postDelayed(this ::superDismiss, CLOSE_CLEANUP_DELAY_MS);
-                    }).start();
-                }
-            }
-        };
-        mSheetDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        mSheetDialog.setCanceledOnTouchOutside(true);
-
-        Window window = mSheetDialog.getWindow();
-        window.setGravity(Gravity.TOP);
-        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
-        mSheetDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                PageInfoPopup.this.onDismiss();
-            }
-        });
     }
 
     private void showConnectionInfoPopup() {
