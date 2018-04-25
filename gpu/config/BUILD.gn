@@ -72,7 +72,7 @@ action("workaround_list") {
   skia_workaround_list = "//third_party/skia/src/gpu/gpu_workaround_list.txt"
   inputs = [
     "gpu_workaround_list.txt",
-    rebase_path(skia_workaround_list, root_build_dir),
+    skia_workaround_list,
   ]
 
   outputs = [
