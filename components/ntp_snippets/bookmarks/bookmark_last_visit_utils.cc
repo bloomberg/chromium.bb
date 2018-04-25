@@ -16,11 +16,13 @@
 #include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/bookmarks/browser/url_and_title.h"
 #include "components/ntp_snippets/time_serialization.h"
 #include "url/gurl.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
+using bookmarks::UrlAndTitle;
 
 namespace ntp_snippets {
 
@@ -163,11 +165,11 @@ bool IsDismissedFromNTPForBookmark(const BookmarkNode& node) {
 
 void MarkAllBookmarksUndismissed(BookmarkModel* bookmark_model) {
   // Get all the bookmark URLs.
-  std::vector<BookmarkModel::URLAndTitle> bookmarks;
+  std::vector<UrlAndTitle> bookmarks;
   bookmark_model->GetBookmarks(&bookmarks);
 
   // Remove dismissed flag from all bookmarks
-  for (const BookmarkModel::URLAndTitle& bookmark : bookmarks) {
+  for (const UrlAndTitle& bookmark : bookmarks) {
     std::vector<const BookmarkNode*> nodes;
     bookmark_model->GetNodesByURL(bookmark.url, &nodes);
     for (const BookmarkNode* node : nodes) {
@@ -182,13 +184,13 @@ std::vector<const BookmarkNode*> GetRecentlyVisitedBookmarks(
     const base::Time& min_visit_time,
     bool consider_visits_from_desktop) {
   // Get all the bookmark URLs.
-  std::vector<BookmarkModel::URLAndTitle> bookmark_urls;
+  std::vector<UrlAndTitle> bookmark_urls;
   bookmark_model->GetBookmarks(&bookmark_urls);
 
   std::vector<RecentBookmark> bookmarks;
   // Find for each bookmark the most recently visited BookmarkNode and find out
   // whether it is visited since |min_visit_time|.
-  for (const BookmarkModel::URLAndTitle& url_and_title : bookmark_urls) {
+  for (const UrlAndTitle& url_and_title : bookmark_urls) {
     // Skip URLs that are blacklisted.
     if (IsBlacklisted(url_and_title.url)) {
       continue;
@@ -241,27 +243,26 @@ std::vector<const BookmarkNode*> GetRecentlyVisitedBookmarks(
 std::vector<const BookmarkNode*> GetDismissedBookmarksForDebugging(
     BookmarkModel* bookmark_model) {
   // Get all the bookmark URLs.
-  std::vector<BookmarkModel::URLAndTitle> bookmarks;
+  std::vector<UrlAndTitle> bookmarks;
   bookmark_model->GetBookmarks(&bookmarks);
 
   // Remove the bookmark URLs which have at least one non-dismissed bookmark.
-  base::EraseIf(
-      bookmarks, [&bookmark_model](const BookmarkModel::URLAndTitle& bookmark) {
-        std::vector<const BookmarkNode*> bookmarks_for_url;
-        bookmark_model->GetNodesByURL(bookmark.url, &bookmarks_for_url);
-        DCHECK(!bookmarks_for_url.empty());
+  base::EraseIf(bookmarks, [&bookmark_model](const UrlAndTitle& bookmark) {
+    std::vector<const BookmarkNode*> bookmarks_for_url;
+    bookmark_model->GetNodesByURL(bookmark.url, &bookmarks_for_url);
+    DCHECK(!bookmarks_for_url.empty());
 
-        for (const BookmarkNode* node : bookmarks_for_url) {
-          if (!IsDismissedFromNTPForBookmark(*node)) {
-            return true;
-          }
-        }
-        return false;
-      });
+    for (const BookmarkNode* node : bookmarks_for_url) {
+      if (!IsDismissedFromNTPForBookmark(*node)) {
+        return true;
+      }
+    }
+    return false;
+  });
 
   // Insert into |result|.
   std::vector<const BookmarkNode*> result;
-  for (const BookmarkModel::URLAndTitle& bookmark : bookmarks) {
+  for (const UrlAndTitle& bookmark : bookmarks) {
     result.push_back(
         bookmark_model->GetMostRecentlyAddedUserNodeForURL(bookmark.url));
   }
@@ -289,10 +290,10 @@ void RemoveLastVisitedDatesBetween(const base::Time& begin,
                                    base::Callback<bool(const GURL& url)> filter,
                                    bookmarks::BookmarkModel* bookmark_model) {
   // Get all the bookmark URLs.
-  std::vector<BookmarkModel::URLAndTitle> bookmark_urls;
+  std::vector<UrlAndTitle> bookmark_urls;
   bookmark_model->GetBookmarks(&bookmark_urls);
 
-  for (const BookmarkModel::URLAndTitle& url_and_title : bookmark_urls) {
+  for (const UrlAndTitle& url_and_title : bookmark_urls) {
     if (!filter.Run(url_and_title.url)) {
       continue;
     }

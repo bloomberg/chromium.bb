@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/url_and_title.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
@@ -20,6 +21,7 @@
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
+using bookmarks::UrlAndTitle;
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::AddURL;
 using bookmarks_helper::CheckHasNoFavicon;
@@ -61,11 +63,11 @@ class SingleClientBookmarksSyncTest : public SyncTest {
 void SingleClientBookmarksSyncTest::VerifyBookmarkModelMatchesFakeServer(
     int index) {
   fake_server::FakeServerVerifier fake_server_verifier(GetFakeServer());
-  std::vector<BookmarkModel::URLAndTitle> local_bookmarks;
+  std::vector<UrlAndTitle> local_bookmarks;
   GetBookmarkModel(index)->GetBookmarks(&local_bookmarks);
 
   // Verify that all local bookmark titles exist once on the server.
-  std::vector<BookmarkModel::URLAndTitle>::const_iterator it;
+  std::vector<UrlAndTitle>::const_iterator it;
   for (it = local_bookmarks.begin(); it != local_bookmarks.end(); ++it) {
     ASSERT_TRUE(fake_server_verifier.VerifyEntityCountByTypeAndName(
         1,

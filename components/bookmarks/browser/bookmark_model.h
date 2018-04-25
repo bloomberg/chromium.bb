@@ -53,6 +53,8 @@ class BookmarkUndoDelegate;
 class ScopedGroupBookmarkActions;
 class TestBookmarkClient;
 class TitledUrlIndex;
+
+struct UrlAndTitle;
 struct TitledUrlMatch;
 
 // BookmarkModel --------------------------------------------------------------
@@ -68,11 +70,6 @@ struct TitledUrlMatch;
 class BookmarkModel : public BookmarkUndoProvider,
                       public KeyedService {
  public:
-  struct URLAndTitle {
-    GURL url;
-    base::string16 title;
-  };
-
   explicit BookmarkModel(std::unique_ptr<BookmarkClient> client);
   ~BookmarkModel() override;
 
@@ -193,7 +190,7 @@ class BookmarkModel : public BookmarkUndoProvider,
   // same or not.
   //
   // If not on the main thread you *must* invoke BlockTillLoaded first.
-  void GetBookmarks(std::vector<BookmarkModel::URLAndTitle>* urls);
+  void GetBookmarks(std::vector<UrlAndTitle>* urls);
 
   // Blocks until loaded. This is intended for usage on a thread other than
   // the main thread.

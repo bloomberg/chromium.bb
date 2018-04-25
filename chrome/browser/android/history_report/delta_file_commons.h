@@ -9,8 +9,11 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/android/proto/delta_file.pb.h"
-#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_types.h"
+
+namespace bookmarks {
+struct UrlAndTitle;
+}
 
 namespace history_report {
 
@@ -51,7 +54,7 @@ class DeltaFileEntryWithData {
   void SetData(const history::URLRow& data);
 
   // Marks delta file entry as bookmark.
-  void MarkAsBookmark(const bookmarks::BookmarkModel::URLAndTitle& bookmark);
+  void MarkAsBookmark(const bookmarks::UrlAndTitle& bookmark);
 
   // Whether given url can be used as Id.
   static bool IsValidId(const std::string& url);

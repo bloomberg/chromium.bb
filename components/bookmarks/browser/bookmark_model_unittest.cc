@@ -27,6 +27,7 @@
 #include "components/bookmarks/browser/bookmark_undo_delegate.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/titled_url_match.h"
+#include "components/bookmarks/browser/url_and_title.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/favicon_base/favicon_callback.h"
@@ -1006,7 +1007,7 @@ TEST_F(BookmarkModelTest, GetBookmarksWithDups) {
   model_->AddURL(model_->bookmark_bar_node(), 0, title, url);
   model_->AddURL(model_->bookmark_bar_node(), 1, title, url);
 
-  std::vector<BookmarkModel::URLAndTitle> bookmarks;
+  std::vector<UrlAndTitle> bookmarks;
   model_->GetBookmarks(&bookmarks);
   ASSERT_EQ(1U, bookmarks.size());
   EXPECT_EQ(url, bookmarks[0].url);
