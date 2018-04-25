@@ -11036,7 +11036,7 @@
       origins named by subdomains; e.g. specifying https://example.com/ will
       also cause https://foo.example.com/ to be isolated as part of the
       https://example.com/ site.
-      If the policy is disabled, the pre-Site Isolation process management logic will take effect, and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable IsolateOrigins manually.
+      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable IsolateOrigins manually.
       If the policy is not configured, the user will be able to change this setting.
       On <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME">DeviceLoginScreenIsolateOrigins</ph> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
       ''',
@@ -11061,7 +11061,7 @@
       IsolateOrigins with a list of the sites you want to isolate. This setting,
       SitePerProcess, isolates all sites.
       If the policy is enabled, each site will run in its own process.
-      If the policy is disabled, the pre-Site Isolation process management logic will take effect, and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable SitePerProcess manually.
+      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable SitePerProcess manually.
       If the policy is not configured, the user will be able to change this setting.
       On <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME">DeviceLoginScreenSitePerProcess</ph> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
       ''',
@@ -11087,7 +11087,7 @@
       origins named by subdomains; e.g. specifying https://example.com/ will
       also cause https://foo.example.com/ to be isolated as part of the
       https://example.com/ site.
-      If the policy is disabled, the pre-Site Isolation process management logic will take effect, and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable IsolateOrigins manually.
+      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable IsolateOrigins manually.
       If the policy is not configured, the platform default site isolation settings will be used for the sign-in screen.
       ''',
     },
@@ -11112,7 +11112,7 @@
       IsolateOrigins with a list of the sites you want to isolate. This setting,
       SitePerProcess, isolates all sites.
       If the policy is enabled, each site will run in its own process.
-      If the policy is disabled, the pre-Site Isolation process management logic will take effect, and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable SitePerProcess manually.
+      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable SitePerProcess manually.
       If the policy is not configured, the user will be able to change this setting.
       ''',
     },
