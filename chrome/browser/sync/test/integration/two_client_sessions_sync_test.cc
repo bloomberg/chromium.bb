@@ -192,13 +192,10 @@ IN_PROC_BROWSER_TEST_P(TwoClientSessionsSyncTest, DeleteIdleSession) {
   EXPECT_FALSE(GetSessionData(1, &sessions1));
 }
 
-// Timeout on win (https://crbug.com/836289).
-#if defined(OS_WIN)
-#define MAYBE_DeleteActiveSession DISABLED_DeleteActiveSession
-#else
-#define MAYBE_DeleteActiveSession DeleteActiveSession
-#endif
-IN_PROC_BROWSER_TEST_P(TwoClientSessionsSyncTest, MAYBE_DeleteActiveSession) {
+// Flaky timeouts on all platforms in the USS instatiation of this test
+// (https://crbug.com/836289).
+IN_PROC_BROWSER_TEST_P(TwoClientSessionsSyncTest,
+                       DISABLED_DeleteActiveSession) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
