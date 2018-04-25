@@ -252,8 +252,8 @@ PASS flood-color supports animating as color of hsla()
 PASS flood-opacity (type: opacity) has testAddition function
 PASS flood-opacity: [0, 1] number
 PASS flood-opacity: [0, 1] number (clamped)
-PASS font-stretch (type: fontStretch) has testAddition function
-FAIL font-stretch uses font-stretch behavior for composite type add assert_equals: The value should be normal at 0ms expected "normal" but got "125%"
+PASS font-stretch (type: percentage) has testAddition function
+FAIL font-stretch: percentage assert_equals: The value should be 130% at 0ms expected "130%" but got "70%"
 PASS font-style (type: discrete) has testAddition function
 FAIL font-style: "oblique" onto "italic" assert_equals: The value should be oblique at 0ms expected "oblique" but got "italic"
 PASS font-style: "italic" onto "oblique"

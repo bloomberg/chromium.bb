@@ -1656,7 +1656,6 @@ crbug.com/800898 external/wpt/FileAPI/url/url-with-fetch.any.worker.html [ Pass 
 crbug.com/800898 external/wpt/FileAPI/url/url-with-xhr.any.worker.html [ Pass Failure ]
 
 # Websockets
-crbug.com/803558 external/wpt/websockets/Create-Secure-extensions-empty.htm [ Timeout ]
 crbug.com/803558 external/wpt/websockets/constructor/014.html?wss [ Timeout ]
 crbug.com/803558 external/wpt/websockets/keeping-connection-open/001.html?wss [ Timeout ]
 crbug.com/803558 external/wpt/websockets/opening-handshake/003-sets-origin.worker.html [ Timeout ]
