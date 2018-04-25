@@ -77,7 +77,8 @@ cr.define('restore_state_test', function() {
 
       page = document.createElement('print-preview-app');
       const previewArea = page.$$('print-preview-preview-area');
-      previewArea.plugin_ = new print_preview.PDFPluginStub(previewArea);
+      previewArea.plugin_ = new print_preview.PDFPluginStub(
+          previewArea.onPluginLoad_.bind(previewArea));
       document.body.appendChild(page);
       return nativeLayer.whenCalled('getInitialSettings').then(function() {
         return nativeLayer.whenCalled('getPrinterCapabilities');
@@ -226,7 +227,8 @@ cr.define('restore_state_test', function() {
 
       page = document.createElement('print-preview-app');
       const previewArea = page.$$('print-preview-preview-area');
-      previewArea.plugin_ = new print_preview.PDFPluginStub(previewArea);
+      previewArea.plugin_ = new print_preview.PDFPluginStub(
+          previewArea.onPluginLoad_.bind(previewArea));
       document.body.appendChild(page);
 
       return nativeLayer.whenCalled('getInitialSettings').then(function() {

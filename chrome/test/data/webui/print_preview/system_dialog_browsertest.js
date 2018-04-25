@@ -53,8 +53,7 @@ cr.define('system_dialog_browsertest', function() {
       page = document.createElement('print-preview-app');
       linkContainer = page.$$('print-preview-link-container');
       const previewArea = page.$$('print-preview-preview-area');
-      previewArea.plugin_ = new print_preview.PDFPluginStub(previewArea);
-      previewArea.plugin_.setLoadCallback(
+      previewArea.plugin_ = new print_preview.PDFPluginStub(
           previewArea.onPluginLoad_.bind(previewArea));
       document.body.appendChild(page);
       return Promise.all([
