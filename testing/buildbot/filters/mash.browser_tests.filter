@@ -154,7 +154,6 @@
 # termination_observer_->terminated() is false.
 # Value of: login_display_host == NULL || login_display_host->GetNativeWindow()->layer()->GetTargetOpacity() == 0.0f
 # Check failed: !browser_client || browser_client->IsShuttingDown() || did_respond() || ignore_all_did_respond_for_testing_do_not_use. app.window.create
-# chromeos::KioskExternalUpdateNotification::CreateAndShowNotificationView() uses ash::Shell.
 -KioskAppManagerTest.*
 -KioskAppSettingsWebUITest.*
 -KioskCrashRestoreTest.*
