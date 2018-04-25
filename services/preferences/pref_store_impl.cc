@@ -29,8 +29,7 @@ class PrefStoreImpl::Observer {
 
     std::vector<mojom::PrefUpdatePtr> updates;
     updates.push_back(mojom::PrefUpdate::New(
-        key, mojom::PrefUpdateValue::NewAtomicUpdate(value.CreateDeepCopy()),
-        0));
+        key, mojom::PrefUpdateValue::NewAtomicUpdate(value.Clone()), 0));
     observer_->OnPrefsChanged(std::move(updates));
   }
 
@@ -40,7 +39,7 @@ class PrefStoreImpl::Observer {
 
     std::vector<mojom::PrefUpdatePtr> updates;
     updates.push_back(mojom::PrefUpdate::New(
-        key, mojom::PrefUpdateValue::NewAtomicUpdate(nullptr), 0));
+        key, mojom::PrefUpdateValue::NewAtomicUpdate(base::nullopt), 0));
     observer_->OnPrefsChanged(std::move(updates));
   }
 
@@ -94,7 +93,8 @@ mojom::PrefStoreConnectionPtr PrefStoreImpl::AddObserver(
                                        prefs_to_observe.end());
   auto result = mojom::PrefStoreConnection::New(
       std::move(request),
-      FilterPrefs(backing_pref_store_->GetValues(), observed_prefs),
+      base::Value::FromUniquePtrValue(
+          FilterPrefs(backing_pref_store_->GetValues(), observed_prefs)),
       backing_pref_store_->IsInitializationComplete());
   observers_.push_back(std::make_unique<Observer>(std::move(observer_ptr),
                                                   std::move(observed_prefs)));

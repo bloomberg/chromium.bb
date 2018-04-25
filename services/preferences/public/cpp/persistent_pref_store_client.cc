@@ -155,8 +155,9 @@ PersistentPrefStoreClient::PersistentPrefStoreClient(
     error_delegate_->OnError(read_error_);
   error_delegate_.reset();
   if (connection->pref_store_connection) {
-    Init(std::move(connection->pref_store_connection->initial_prefs), true,
-         std::move(connection->pref_store_connection->observer));
+    Init(base::DictionaryValue::From(base::Value::ToUniquePtrValue(
+             std::move(connection->pref_store_connection->initial_prefs))),
+         true, std::move(connection->pref_store_connection->observer));
   } else {
     Init(nullptr, false, nullptr);
   }
@@ -300,21 +301,21 @@ void PersistentPrefStoreClient::FlushPendingWrites() {
         const base::Value* nested_value = LookupPath(value, path);
         if (nested_value) {
           pref_updates.emplace_back(base::in_place, path,
-                                    nested_value->CreateDeepCopy());
+                                    nested_value->Clone());
         } else {
-          pref_updates.emplace_back(base::in_place, path, nullptr);
+          pref_updates.emplace_back(base::in_place, path, base::nullopt);
         }
         sub_pref_writes.push_back(path);
       }
       if (pref_updates.empty()) {
-        update_value->set_atomic_update(value->CreateDeepCopy());
+        update_value->set_atomic_update(value->Clone());
         writes.push_back({pref.first});
       } else {
         update_value->set_split_updates(std::move(pref_updates));
         writes.push_back({pref.first, std::move(sub_pref_writes)});
       }
     } else {
-      update_value->set_atomic_update(nullptr);
+      update_value->set_atomic_update(base::nullopt);
       writes.push_back({pref.first});
     }
     updates.emplace_back(base::in_place, pref.first, std::move(update_value),

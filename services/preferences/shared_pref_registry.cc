@@ -146,8 +146,9 @@ void SharedPrefRegistry::ProcessPublicPrefs(
                        << key << "\"";
 #endif
       registry_->RegisterForeignPref(key);
-      registry_->SetDefaultForeignPrefValue(key, std::move(default_value),
-                                            registration->flags);
+      registry_->SetDefaultForeignPrefValue(
+          key, base::Value::ToUniquePtrValue(std::move(default_value)),
+          registration->flags);
 
       observed_prefs->push_back(key);
       new_public_prefs.push_back(key);
@@ -167,7 +168,7 @@ void SharedPrefRegistry::ProcessPublicPrefs(
       const base::Value* existing_default_value = nullptr;
       DCHECK(registry_->defaults()->GetValue(registration->key,
                                              &existing_default_value));
-      DCHECK_EQ(*existing_default_value, *registration->default_value);
+      DCHECK_EQ(*existing_default_value, registration->default_value);
 #endif
     }
   }
@@ -180,7 +181,7 @@ void SharedPrefRegistry::ProvideDefaultPrefs(
   for (const auto& key : foreign_prefs) {
     const base::Value* value = nullptr;
     registry_->defaults()->GetValue(key, &value);
-    defaults.emplace_back(base::in_place, key, value->CreateDeepCopy(),
+    defaults.emplace_back(base::in_place, key, value->Clone(),
                           registry_->GetRegistrationFlags(key));
   }
 

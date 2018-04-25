@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
 #include "services/preferences/public/cpp/lib/util.h"
@@ -111,22 +112,24 @@ void PrefStoreClientMixin<BasePrefStore>::OnPrefChanged(
   bool changed = false;
   if (update_value->is_atomic_update()) {
     if (ShouldSkipWrite(key, std::vector<std::string>(),
-                        update_value->get_atomic_update().get())) {
+                        OptionalOrNullptr(update_value->get_atomic_update()))) {
       return;
     }
-    auto& value = update_value->get_atomic_update();
-    if (!value) {  // Delete
+    auto& optional = update_value->get_atomic_update();
+    if (!optional.has_value()) {  // Delete
       if (cached_prefs_->RemovePath(key, nullptr))
         changed = true;
     } else {
       const base::Value* prev;
       if (cached_prefs_->Get(key, &prev)) {
-        if (!prev->Equals(value.get())) {
-          cached_prefs_->Set(key, std::move(value));
+        if (!prev->Equals(&optional.value())) {
+          cached_prefs_->Set(
+              key, base::Value::ToUniquePtrValue(std::move(optional.value())));
           changed = true;
         }
       } else {
-        cached_prefs_->Set(key, std::move(value));
+        cached_prefs_->Set(
+            key, base::Value::ToUniquePtrValue(std::move(optional.value())));
         changed = true;
       }
     }
@@ -137,14 +140,18 @@ void PrefStoreClientMixin<BasePrefStore>::OnPrefChanged(
     for (auto& update : updates) {
       // Clients shouldn't send empty paths.
       if (update->path.empty() ||
-          ShouldSkipWrite(key, update->path, update->value.get())) {
+          ShouldSkipWrite(key, update->path,
+                          OptionalOrNullptr(update->value))) {
         continue;
       }
       std::vector<base::StringPiece> full_path = base::SplitStringPiece(
           key, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
       full_path.insert(full_path.end(), update->path.begin(),
                        update->path.end());
-      prefs::SetValue(cached_prefs_.get(), full_path, std::move(update->value));
+      prefs::SetValue(cached_prefs_.get(), full_path,
+                      update->value ? base::Value::ToUniquePtrValue(
+                                          std::move(*update->value))
+                                    : nullptr);
     }
   }
   if (changed && initialized_)

@@ -4,9 +4,9 @@
 
 module prefs.mojom;
 
-import "mojo/common/values.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/values.mojom";
 import "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom";
 
 const string kServiceName = "preferences";
@@ -49,7 +49,7 @@ struct PrefStoreConnection {
 
   // Initial values of the PrefStore. These will not be communicated through
   // OnPrefChanged.
-  mojo.common.mojom.DictionaryValue initial_prefs;
+  mojo_base.mojom.DictionaryValue initial_prefs;
 
   // Is the PrefStore initialized? If not it should not be used before
   // OnInitializationCompleted has been called.
@@ -105,7 +105,7 @@ struct SubPrefUpdate {
   // The path to the changed value within the pref.
   array<string> path;
   // The new value; a null |value| indicates a delete.
-  mojo.common.mojom.Value? value;
+  mojo_base.mojom.Value? value;
 };
 
 union PrefUpdateValue {
@@ -113,7 +113,7 @@ union PrefUpdateValue {
   // under the pref key).
   array<SubPrefUpdate> split_updates;
   // An atomic update to the pref. A null |atomic_update| indicates a delete.
-  mojo.common.mojom.Value? atomic_update;
+  mojo_base.mojom.Value? atomic_update;
 };
 
 // An update to a pref.
@@ -162,7 +162,7 @@ struct PrefRegistry {
 struct PrefRegistration {
   string key;
 
-  mojo.common.mojom.Value default_value;
+  mojo_base.mojom.Value default_value;
 
   // A bitfield of flags. Flag values are defined in
   // PrefRegistry::PrefRegistrationFlags and
