@@ -24,7 +24,7 @@ class MODULES_EXPORT DetectedBarcode final : public ScriptWrappable {
   const String& rawValue() const;
   DOMRect* boundingBox() const;
   const HeapVector<Point2D>& cornerPoints() const;
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   DetectedBarcode(String, DOMRect*, HeapVector<Point2D>);

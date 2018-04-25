@@ -65,7 +65,7 @@ class WebGLObject : public ScriptWrappable {
   // Oilpan tracing. Therefore this destructor is declared virtual, but is
   // empty, and the code that would have gone into its body is called by
   // subclasses via runDestructor().
-  virtual ~WebGLObject();
+  ~WebGLObject() override;
 
   // deleteObject may not always delete the OpenGL resource.  For programs and
   // shaders, deletion is delayed until they are no longer attached.

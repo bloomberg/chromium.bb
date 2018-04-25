@@ -27,7 +27,7 @@ class USBIsochronousOutTransferPacket final : public ScriptWrappable {
   USBIsochronousOutTransferPacket(const String& status, unsigned bytes_written)
       : status_(status), bytes_written_(bytes_written) {}
 
-  virtual ~USBIsochronousOutTransferPacket() = default;
+  ~USBIsochronousOutTransferPacket() override = default;
 
   String status() const { return status_; }
   unsigned bytesWritten() const { return bytes_written_; }

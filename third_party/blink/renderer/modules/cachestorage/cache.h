@@ -65,7 +65,7 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
   static WebServiceWorkerCache::QueryParams ToWebQueryParams(
       const CacheQueryOptions&);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   class BarrierCallbackForPut;

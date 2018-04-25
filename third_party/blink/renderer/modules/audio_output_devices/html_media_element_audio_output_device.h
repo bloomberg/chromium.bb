@@ -26,7 +26,7 @@ class MODULES_EXPORT HTMLMediaElementAudioOutputDevice final
  public:
   static const char kSupplementName[];
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
   static String sinkId(HTMLMediaElement&);
   static ScriptPromise setSinkId(ScriptState*,
                                  HTMLMediaElement&,

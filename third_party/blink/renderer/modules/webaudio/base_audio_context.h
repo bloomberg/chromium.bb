@@ -121,7 +121,7 @@ class MODULES_EXPORT BaseAudioContext
 
   // Document notification
   void ContextDestroyed(ExecutionContext*) final;
-  bool HasPendingActivity() const;
+  bool HasPendingActivity() const override;
 
   // Cannnot be called from the audio thread.
   AudioDestinationNode* destination() const;

@@ -30,7 +30,7 @@ class ScreenOrientationDispatcher final
 
   ~ScreenOrientationDispatcher();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   ScreenOrientationDispatcher();

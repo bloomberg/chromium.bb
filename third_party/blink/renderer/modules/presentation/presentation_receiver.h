@@ -39,7 +39,7 @@ class MODULES_EXPORT PresentationReceiver final
 
  public:
   explicit PresentationReceiver(LocalFrame*);
-  ~PresentationReceiver() = default;
+  ~PresentationReceiver() override = default;
 
   static PresentationReceiver* From(Document&);
 
@@ -56,7 +56,7 @@ class MODULES_EXPORT PresentationReceiver final
   void RemoveConnection(ReceiverPresentationConnection*);
   void Terminate();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   friend class PresentationReceiverTest;

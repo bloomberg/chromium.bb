@@ -69,7 +69,7 @@ class LockManager::LockRequestImpl final
         binding_(this, std::move(request)),
         manager_(manager) {}
 
-  ~LockRequestImpl() = default;
+  ~LockRequestImpl() override = default;
 
   void Trace(blink::Visitor* visitor) {
     visitor->Trace(resolver_);

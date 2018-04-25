@@ -31,7 +31,7 @@ class GamepadPose final : public ScriptWrappable {
 
   void SetPose(const device::GamepadPose& state);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   GamepadPose();

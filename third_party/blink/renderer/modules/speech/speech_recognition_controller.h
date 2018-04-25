@@ -61,7 +61,7 @@ class SpeechRecognitionController final
     return Supplement<LocalFrame>::From<SpeechRecognitionController>(frame);
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     Supplement<LocalFrame>::Trace(visitor);
     visitor->Trace(client_);
   }

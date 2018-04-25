@@ -48,7 +48,7 @@ class MODULES_EXPORT MediaStreamObserver : public GarbageCollectedMixin {
   // Invoked when |MediaStream::removeTrack| is called.
   virtual void OnStreamRemoveTrack(MediaStream*, MediaStreamTrack*) = 0;
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  void Trace(blink::Visitor* visitor) override {}
 };
 
 class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
@@ -119,7 +119,7 @@ class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
   // URLRegistrable
   URLRegistry& Registry() const override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   bool AddEventListenerInternal(

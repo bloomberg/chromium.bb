@@ -101,7 +101,7 @@ class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
 
   void Zero();
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(channels_);
     ScriptWrappable::Trace(visitor);
   }

@@ -35,7 +35,7 @@ class XRPresentationFrame final : public ScriptWrappable {
 
   void SetBasePoseMatrix(const TransformationMatrix&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   const Member<XRSession> session_;

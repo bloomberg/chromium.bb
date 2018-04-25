@@ -62,7 +62,7 @@ class DeviceMotionDispatcher final
   // Inherited from WebDeviceMotionListener.
   void DidChangeDeviceMotion(const device::MotionData&) override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   DeviceMotionDispatcher();

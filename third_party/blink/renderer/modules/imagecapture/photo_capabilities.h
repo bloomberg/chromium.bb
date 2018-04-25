@@ -18,7 +18,7 @@ class PhotoCapabilities final : public ScriptWrappable {
 
  public:
   static PhotoCapabilities* Create();
-  virtual ~PhotoCapabilities() = default;
+  ~PhotoCapabilities() override = default;
 
   MediaSettingsRange* imageHeight() const { return image_height_; }
   void SetImageHeight(MediaSettingsRange* value) { image_height_ = value; }
@@ -38,7 +38,7 @@ class PhotoCapabilities final : public ScriptWrappable {
   }
   bool IsRedEyeReductionControllable() const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   PhotoCapabilities() = default;

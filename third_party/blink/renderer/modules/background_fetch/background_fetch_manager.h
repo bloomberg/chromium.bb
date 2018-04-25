@@ -54,7 +54,7 @@ class MODULES_EXPORT BackgroundFetchManager final
   ScriptPromise get(ScriptState* script_state, const String& id);
   ScriptPromise getIds(ScriptState* script_state);
 
-  void Trace(blink::Visitor* visitor);
+  void Trace(blink::Visitor* visitor) override;
 
   // ContextLifecycleObserver interface
   void ContextDestroyed(ExecutionContext* context) override;

@@ -36,7 +36,7 @@ class USBAlternateInterface : public ScriptWrappable {
   String interfaceName() const { return Info().interface_name; }
   HeapVector<Member<USBEndpoint>> endpoints() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Member<const USBInterface> interface_;

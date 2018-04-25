@@ -31,7 +31,7 @@ class CookieStore final : public EventTargetWithInlineData,
 
  public:
   // Needed because of the network::mojom::blink::RestrictedCookieManagerPtr
-  ~CookieStore();
+  ~CookieStore() override;
 
   static CookieStore* Create(
       ExecutionContext* execution_context,

@@ -52,7 +52,7 @@ class XRView final : public ScriptWrappable {
   const FloatPoint3D& offset() const { return offset_; }
   void UpdateOffset(float x, float y, float z);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   const Eye eye_;

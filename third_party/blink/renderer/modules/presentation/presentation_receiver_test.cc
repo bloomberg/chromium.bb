@@ -78,9 +78,9 @@ using testing::StrictMock;
 
 TEST_F(PresentationReceiverTest, NoConnectionUnresolvedConnectionList) {
   V8TestingScope scope;
-  auto receiver = new PresentationReceiver(&scope.GetFrame());
+  auto* receiver = new PresentationReceiver(&scope.GetFrame());
 
-  auto event_handler =
+  auto* event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();
   AddConnectionavailableEventListener(event_handler, receiver);
   EXPECT_CALL(*event_handler, handleEvent(testing::_, testing::_)).Times(0);
@@ -94,9 +94,9 @@ TEST_F(PresentationReceiverTest, NoConnectionUnresolvedConnectionList) {
 
 TEST_F(PresentationReceiverTest, OneConnectionResolvedConnectionListNoEvent) {
   V8TestingScope scope;
-  auto receiver = new PresentationReceiver(&scope.GetFrame());
+  auto* receiver = new PresentationReceiver(&scope.GetFrame());
 
-  auto event_handler =
+  auto* event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();
   AddConnectionavailableEventListener(event_handler, receiver);
   EXPECT_CALL(*event_handler, handleEvent(testing::_, testing::_)).Times(0);
@@ -115,7 +115,7 @@ TEST_F(PresentationReceiverTest, OneConnectionResolvedConnectionListNoEvent) {
 
 TEST_F(PresentationReceiverTest, TwoConnectionsFireOnconnectionavailableEvent) {
   V8TestingScope scope;
-  auto receiver = new PresentationReceiver(&scope.GetFrame());
+  auto* receiver = new PresentationReceiver(&scope.GetFrame());
 
   StrictMock<MockEventListenerForPresentationReceiver>* event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();
@@ -146,7 +146,7 @@ TEST_F(PresentationReceiverTest, TwoConnectionsFireOnconnectionavailableEvent) {
 
 TEST_F(PresentationReceiverTest, TwoConnectionsNoEvent) {
   V8TestingScope scope;
-  auto receiver = new PresentationReceiver(&scope.GetFrame());
+  auto* receiver = new PresentationReceiver(&scope.GetFrame());
 
   StrictMock<MockEventListenerForPresentationReceiver>* event_handler =
       new StrictMock<MockEventListenerForPresentationReceiver>();

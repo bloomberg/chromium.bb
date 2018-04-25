@@ -32,7 +32,7 @@ class NFC final : public ScriptWrappable,
  public:
   static NFC* Create(LocalFrame*);
 
-  virtual ~NFC();
+  ~NFC() override;
 
   void Dispose();
 

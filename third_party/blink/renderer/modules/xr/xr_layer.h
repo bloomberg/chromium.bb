@@ -29,7 +29,7 @@ class XRLayer : public ScriptWrappable {
   virtual void OnFrameEnd();
   virtual void OnResize();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   const Member<XRSession> session_;

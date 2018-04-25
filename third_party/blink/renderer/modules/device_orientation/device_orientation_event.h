@@ -59,7 +59,7 @@ class DeviceOrientationEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   DeviceOrientationEvent();

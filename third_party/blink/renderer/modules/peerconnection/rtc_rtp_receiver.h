@@ -36,7 +36,7 @@ class RTCRtpReceiver final : public ScriptWrappable {
   MediaStreamVector streams() const;
   void UpdateSourcesIfNeeded();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
 #if DCHECK_IS_ON()

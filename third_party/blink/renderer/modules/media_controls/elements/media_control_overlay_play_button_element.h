@@ -60,7 +60,7 @@ class MODULES_EXPORT MediaControlOverlayPlayButtonElement final
     // iteration.
     void Show();
 
-    void Trace(Visitor*);
+    void Trace(Visitor*) override;
 
    private:
     void HideInternal();

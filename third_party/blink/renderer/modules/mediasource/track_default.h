@@ -29,7 +29,7 @@ class TrackDefault final : public ScriptWrappable {
                               const String& byte_stream_track_id,
                               ExceptionState&);
 
-  virtual ~TrackDefault();
+  ~TrackDefault() override;
 
   // Implement the IDL
   AtomicString type() const { return type_; }

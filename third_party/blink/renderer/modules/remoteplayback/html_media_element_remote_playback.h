@@ -34,7 +34,7 @@ class MODULES_EXPORT HTMLMediaElementRemotePlayback final
   static HTMLMediaElementRemotePlayback& From(HTMLMediaElement&);
   static RemotePlayback* remote(HTMLMediaElement&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Member<RemotePlayback> remote_;

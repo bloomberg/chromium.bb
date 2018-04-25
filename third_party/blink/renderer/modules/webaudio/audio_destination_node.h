@@ -72,7 +72,7 @@ class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
   virtual void RestartRendering() = 0;
 
   // Returns the rendering callback buffer size.
-  virtual size_t CallbackBufferSize() const = 0;
+  size_t CallbackBufferSize() const override = 0;
   virtual double SampleRate() const = 0;
 
   // Returns the audio buffer size in frames used by the AudioContext.

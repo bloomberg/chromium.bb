@@ -31,7 +31,7 @@ class MODULES_EXPORT PaymentResponse final : public ScriptWrappable {
                   PaymentAddress* shipping_address_,
                   PaymentCompleter*,
                   const String& requestId);
-  virtual ~PaymentResponse();
+  ~PaymentResponse() override;
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
@@ -46,7 +46,7 @@ class MODULES_EXPORT PaymentResponse final : public ScriptWrappable {
 
   ScriptPromise complete(ScriptState*, const String& result = "");
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   String requestId_;

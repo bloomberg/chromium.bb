@@ -21,13 +21,13 @@ class MODULES_EXPORT AuthenticatorAttestationResponse final
       DOMArrayBuffer* client_data_json,
       DOMArrayBuffer* attestation_object);
 
-  virtual ~AuthenticatorAttestationResponse();
+  ~AuthenticatorAttestationResponse() override;
 
   DOMArrayBuffer* attestationObject() const {
     return attestation_object_.Get();
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit AuthenticatorAttestationResponse(DOMArrayBuffer* client_data_json,

@@ -47,7 +47,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
  public:
   static AXNodeObject* Create(Node*, AXObjectCacheImpl&);
   ~AXNodeObject() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   bool children_dirty_;
@@ -64,7 +64,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   void AlterSliderOrSpinButtonValue(bool increase);
   AXObject* ActiveDescendant() override;
   String AriaAccessibilityDescription() const;
-  String AriaAutoComplete() const;
+  String AriaAutoComplete() const override;
   void AccessibilityChildrenFromAOMProperty(AOMRelationListProperty,
                                             AXObject::AXObjectVector&) const;
 
@@ -124,7 +124,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   AccessibilityExpanded IsExpanded() const override;
   bool IsModal() const final;
   bool IsRequired() const final;
-  bool IsControl() const;
+  bool IsControl() const override;
   AXRestriction Restriction() const override;
 
   // Properties of static elements.

@@ -24,7 +24,7 @@ class MODULES_EXPORT DOMWindowStorageController final
  public:
   static const char kSupplementName[];
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   static DOMWindowStorageController& From(Document&);
 

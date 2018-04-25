@@ -20,7 +20,7 @@ class MediaKeySystemAccess final : public ScriptWrappable {
  public:
   MediaKeySystemAccess(const String& key_system,
                        std::unique_ptr<WebContentDecryptionModuleAccess>);
-  virtual ~MediaKeySystemAccess();
+  ~MediaKeySystemAccess() override;
 
   const String& keySystem() const { return key_system_; }
   void getConfiguration(MediaKeySystemConfiguration& result);

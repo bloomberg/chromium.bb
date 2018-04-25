@@ -171,7 +171,7 @@ class PromiseObserver {
         : ScriptFunction(script_state),
           flag_to_set_(flag_to_set),
           arg_to_set_(arg_to_set) {}
-    ScriptValue Call(ScriptValue arg) {
+    ScriptValue Call(ScriptValue arg) override {
       *flag_to_set_ = true;
       *arg_to_set_ = arg;
       return arg;
@@ -290,7 +290,7 @@ TEST_F(MediaDevicesTest, GetUserMediaCanBeCalled) {
 
 TEST_F(MediaDevicesTest, EnumerateDevices) {
   V8TestingScope scope;
-  auto media_devices = GetMediaDevices(scope.GetExecutionContext());
+  auto* media_devices = GetMediaDevices(scope.GetExecutionContext());
   media_devices->SetEnumerateDevicesCallbackForTesting(
       WTF::Bind(&MediaDevicesTest::DevicesEnumerated, WTF::Unretained(this)));
   ScriptPromise promise =
@@ -342,7 +342,7 @@ TEST_F(MediaDevicesTest, EnumerateDevices) {
 
 TEST_F(MediaDevicesTest, EnumerateDevicesAfterConnectionError) {
   V8TestingScope scope;
-  auto media_devices = GetMediaDevices(scope.GetExecutionContext());
+  auto* media_devices = GetMediaDevices(scope.GetExecutionContext());
   media_devices->SetEnumerateDevicesCallbackForTesting(
       WTF::Bind(&MediaDevicesTest::DevicesEnumerated, WTF::Unretained(this)));
   media_devices->SetConnectionErrorCallbackForTesting(
@@ -364,7 +364,7 @@ TEST_F(MediaDevicesTest, EnumerateDevicesAfterConnectionError) {
 
 TEST_F(MediaDevicesTest, EnumerateDevicesBeforeConnectionError) {
   V8TestingScope scope;
-  auto media_devices = GetMediaDevices(scope.GetExecutionContext());
+  auto* media_devices = GetMediaDevices(scope.GetExecutionContext());
   media_devices->SetEnumerateDevicesCallbackForTesting(
       WTF::Bind(&MediaDevicesTest::DevicesEnumerated, WTF::Unretained(this)));
   media_devices->SetConnectionErrorCallbackForTesting(
@@ -386,7 +386,7 @@ TEST_F(MediaDevicesTest, EnumerateDevicesBeforeConnectionError) {
 
 TEST_F(MediaDevicesTest, ObserveDeviceChangeEvent) {
   V8TestingScope scope;
-  auto media_devices = GetMediaDevices(scope.GetExecutionContext());
+  auto* media_devices = GetMediaDevices(scope.GetExecutionContext());
   media_devices->SetDeviceChangeCallbackForTesting(
       WTF::Bind(&MediaDevicesTest::OnDevicesChanged, WTF::Unretained(this)));
   EXPECT_FALSE(listener());

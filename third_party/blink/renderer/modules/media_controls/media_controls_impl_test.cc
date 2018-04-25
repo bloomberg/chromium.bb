@@ -188,14 +188,16 @@ class MediaControlsImplTest : public PageTestBase,
   MediaControlsImplTest() : ScopedMediaCastOverlayButtonForTest(true) {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     original_time_function_ =
         SetTimeFunctionsForTesting([] { return g_current_time; });
 
     InitializePage();
   }
 
-  void TearDown() { SetTimeFunctionsForTesting(original_time_function_); }
+  void TearDown() override {
+    SetTimeFunctionsForTesting(original_time_function_);
+  }
 
   void InitializePage() {
     Page::PageClients clients;
@@ -1319,7 +1321,7 @@ TEST_F(MediaControlsImplTest, CastOverlayShowsOnSomeEvents) {
   SimulateHideMediaControlsTimerFired();
   EXPECT_FALSE(IsElementVisible(*cast_overlay_button));
 
-  for (const auto& event_name :
+  for (auto* const event_name :
        {"gesturetap", "click", "pointerover", "pointermove"}) {
     overlay_enclosure->DispatchEvent(Event::Create(event_name));
     EXPECT_TRUE(IsElementVisible(*cast_overlay_button));

@@ -24,7 +24,7 @@ class MODULES_EXPORT PresentationConnectionList final
 
  public:
   explicit PresentationConnectionList(ExecutionContext*);
-  ~PresentationConnectionList() = default;
+  ~PresentationConnectionList() override = default;
 
   // EventTarget implementation.
   const AtomicString& InterfaceName() const override;
@@ -43,7 +43,7 @@ class MODULES_EXPORT PresentationConnectionList final
   void DispatchConnectionAvailableEvent(PresentationConnection*);
   bool IsEmpty();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   // EventTarget implementation.

@@ -20,13 +20,13 @@ class XRInputPose final : public ScriptWrappable {
   XRInputPose(std::unique_ptr<TransformationMatrix> pointer_matrix,
               std::unique_ptr<TransformationMatrix> grip_matrix,
               bool emulated_position = false);
-  ~XRInputPose();
+  ~XRInputPose() override;
 
   DOMFloat32Array* pointerMatrix() const;
   DOMFloat32Array* gripMatrix() const;
   bool emulatedPosition() const { return emulated_position_; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   const std::unique_ptr<TransformationMatrix> pointer_matrix_;

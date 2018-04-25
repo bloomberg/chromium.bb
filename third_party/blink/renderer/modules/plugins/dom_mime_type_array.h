@@ -53,7 +53,7 @@ class DOMMimeTypeArray final : public ScriptWrappable,
   bool NamedPropertyQuery(const AtomicString&, ExceptionState&) const;
 
   // PluginsChangedObserver implementation.
-  void PluginsChanged();
+  void PluginsChanged() override;
 
   void Trace(blink::Visitor*) override;
 

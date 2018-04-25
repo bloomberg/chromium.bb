@@ -302,8 +302,8 @@ void SensorProxy::UpdateSuspendedStatus() {
 
 void SensorProxy::RemoveActiveFrequency(double frequency) {
   // Can use binary search as active_frequencies_ is sorted.
-  auto it = std::lower_bound(active_frequencies_.begin(),
-                             active_frequencies_.end(), frequency);
+  auto* it = std::lower_bound(active_frequencies_.begin(),
+                              active_frequencies_.end(), frequency);
   if (it == active_frequencies_.end()) {
     NOTREACHED() << "Attempted to remove active frequency which is not present "
                     "in the list";

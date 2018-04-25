@@ -69,7 +69,7 @@ class MODULES_EXPORT SpeechSynthesis final
     return ContextClient::GetExecutionContext();
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit SpeechSynthesis(ExecutionContext*);

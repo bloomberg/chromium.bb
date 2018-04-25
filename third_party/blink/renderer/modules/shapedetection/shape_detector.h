@@ -18,7 +18,7 @@ namespace blink {
 
 class MODULES_EXPORT ShapeDetector : public ScriptWrappable {
  public:
-  virtual ~ShapeDetector() = default;
+  ~ShapeDetector() override = default;
 
   ScriptPromise detect(ScriptState*, const ImageBitmapSourceUnion&);
 

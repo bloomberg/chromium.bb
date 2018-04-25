@@ -50,8 +50,8 @@ class WebGLTransformFeedback : public WebGLContextObject {
   bool UsesBuffer(WebGLBuffer*);
   void UnbindBuffer(WebGLBuffer*);
 
-  virtual void Trace(blink::Visitor*);
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
   bool active() const { return active_; }
   bool paused() const { return paused_; }

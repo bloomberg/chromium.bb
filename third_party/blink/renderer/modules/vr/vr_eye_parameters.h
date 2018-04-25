@@ -27,7 +27,7 @@ class VREyeParameters final : public ScriptWrappable {
   unsigned long renderWidth() const { return render_width_; }
   unsigned long renderHeight() const { return render_height_; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Member<DOMFloat32Array> offset_;

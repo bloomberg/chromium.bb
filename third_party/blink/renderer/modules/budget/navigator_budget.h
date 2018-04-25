@@ -27,7 +27,7 @@ class NavigatorBudget final : public GarbageCollected<NavigatorBudget>,
   static BudgetService* budget(ExecutionContext* context, Navigator& navigator);
   BudgetService* budget(ExecutionContext* context);
 
-  virtual void Trace(blink::Visitor* visitor);
+  void Trace(blink::Visitor* visitor) override;
 
  private:
   explicit NavigatorBudget(Navigator& navigator);

@@ -25,7 +25,7 @@ class RTCRtpContributingSource final : public ScriptWrappable {
   double timestamp() const;
   uint32_t source() const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Member<RTCRtpReceiver> receiver_;

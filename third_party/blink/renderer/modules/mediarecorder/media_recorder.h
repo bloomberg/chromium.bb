@@ -42,7 +42,7 @@ class MODULES_EXPORT MediaRecorder final
                                const MediaRecorderOptions& options,
                                ExceptionState& exception_state);
 
-  virtual ~MediaRecorder() = default;
+  ~MediaRecorder() override = default;
 
   MediaStream* stream() const { return stream_.Get(); }
   const String& mimeType() const { return mime_type_; }
@@ -85,7 +85,7 @@ class MODULES_EXPORT MediaRecorder final
                  double timecode) override;
   void OnError(const WebString& message) override;
 
-  virtual void Trace(blink::Visitor* visitor);
+  void Trace(blink::Visitor* visitor) override;
 
  private:
   MediaRecorder(ExecutionContext* context,

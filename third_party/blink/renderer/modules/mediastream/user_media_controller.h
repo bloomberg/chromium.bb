@@ -45,7 +45,7 @@ class UserMediaController final
   static const char kSupplementName[];
 
   UserMediaController(LocalFrame&, std::unique_ptr<UserMediaClient>);
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   UserMediaClient* Client() const { return client_.get(); }
 

@@ -52,7 +52,7 @@ class MODULES_EXPORT MediaControlAnimationEventListener final
   void Trace(Visitor*) override;
 
  private:
-  void handleEvent(ExecutionContext*, Event*);
+  void handleEvent(ExecutionContext*, Event*) override;
 
   Member<Observer> observer_;
 };

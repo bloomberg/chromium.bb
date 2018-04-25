@@ -57,7 +57,7 @@ class MODULES_EXPORT PaymentRequest final
                                 const PaymentOptions&,
                                 ExceptionState&);
 
-  virtual ~PaymentRequest();
+  ~PaymentRequest() override;
 
   ScriptPromise show(ScriptState*);
   ScriptPromise abort(ScriptState*);
@@ -86,7 +86,7 @@ class MODULES_EXPORT PaymentRequest final
   void OnUpdatePaymentDetails(const ScriptValue& details_script_value) override;
   void OnUpdatePaymentDetailsFailure(const String& error) override;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   void OnCompleteTimeoutForTesting();
 

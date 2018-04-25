@@ -315,7 +315,7 @@ class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {
   USING_PRE_FINALIZER(AudioNode, Dispose);
 
  public:
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
   AudioHandler& Handler() const;
 
   void HandleChannelOptions(const AudioNodeOptions&, ExceptionState&);

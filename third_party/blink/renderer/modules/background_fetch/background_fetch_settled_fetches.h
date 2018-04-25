@@ -35,7 +35,7 @@ class MODULES_EXPORT BackgroundFetchSettledFetches final
                       const RequestOrUSVString& request);
   ScriptPromise values(ScriptState* script_state);
 
-  void Trace(blink::Visitor* visitor);
+  void Trace(blink::Visitor* visitor) override;
 
  private:
   BackgroundFetchSettledFetches(

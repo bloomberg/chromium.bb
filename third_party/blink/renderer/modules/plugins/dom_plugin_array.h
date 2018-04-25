@@ -55,7 +55,7 @@ class DOMPluginArray final : public ScriptWrappable,
   void refresh(bool reload);
 
   // PluginsChangedObserver implementation.
-  void PluginsChanged();
+  void PluginsChanged() override;
 
   void Trace(blink::Visitor*) override;
 

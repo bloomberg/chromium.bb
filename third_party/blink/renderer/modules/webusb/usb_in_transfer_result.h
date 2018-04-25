@@ -36,7 +36,7 @@ class USBInTransferResult final : public ScriptWrappable {
   USBInTransferResult(const String& status, DOMDataView* data)
       : status_(status), data_(data) {}
 
-  virtual ~USBInTransferResult() = default;
+  ~USBInTransferResult() override = default;
 
   String status() const { return status_; }
   DOMDataView* data() const { return data_; }

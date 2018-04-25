@@ -32,7 +32,7 @@ class WorkerNavigatorBudget final
                                WorkerNavigator& worker_navigator);
   BudgetService* budget(ExecutionContext* context);
 
-  virtual void Trace(blink::Visitor* visitor);
+  void Trace(blink::Visitor* visitor) override;
 
  private:
   explicit WorkerNavigatorBudget(WorkerNavigator& worker_navigator);

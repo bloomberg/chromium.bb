@@ -465,7 +465,7 @@ RTCPeerConnection* RTCPeerConnection::Create(
   // Count number of PeerConnections that could potentially be impacted by CSP
   if (context) {
     auto& security_context = context->GetSecurityContext();
-    auto content_security_policy = security_context.GetContentSecurityPolicy();
+    auto* content_security_policy = security_context.GetContentSecurityPolicy();
     if (content_security_policy &&
         content_security_policy->IsActiveForConnections()) {
       UseCounter::Count(context, WebFeature::kRTCPeerConnectionWithActiveCsp);
@@ -1224,7 +1224,7 @@ void RTCPeerConnection::removeStream(MediaStream* stream,
   if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
     return;
   for (const auto& track : stream->getTracks()) {
-    auto sender = FindSenderForTrackAndStream(track, stream);
+    auto* sender = FindSenderForTrackAndStream(track, stream);
     if (!sender)
       continue;
     removeTrack(sender, exception_state);
@@ -1298,7 +1298,7 @@ ScriptPromise RTCPeerConnection::getStats(
   // Custom binding for spec-compliant "getStats()" and "getStats(undefined)".
   if (argument->IsUndefined())
     return PromiseBasedGetStats(script_state, nullptr);
-  auto isolate = callback_or_selector.GetIsolate();
+  auto* isolate = callback_or_selector.GetIsolate();
   // Custom binding for spec-compliant "getStats(MediaStreamTrack? selector)".
   // null is a valid selector value, but value of wrong type isn't. |selector|
   // set to no value means type error.
@@ -1466,7 +1466,7 @@ void RTCPeerConnection::removeTrack(RTCRtpSender* sender,
   DCHECK(sender);
   if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
     return;
-  auto it = FindSender(*sender->web_sender());
+  auto* it = FindSender(*sender->web_sender());
   if (it == rtp_senders_.end()) {
     exception_state.ThrowDOMException(
         kInvalidAccessError,
@@ -1550,7 +1550,7 @@ RTCRtpSender* RTCPeerConnection::FindSenderForTrackAndStream(
 
 HeapVector<Member<RTCRtpSender>>::iterator RTCPeerConnection::FindSender(
     const WebRTCRtpSender& web_sender) {
-  for (auto it = rtp_senders_.begin(); it != rtp_senders_.end(); ++it) {
+  for (auto* it = rtp_senders_.begin(); it != rtp_senders_.end(); ++it) {
     if ((*it)->web_sender()->Id() == web_sender.Id())
       return it;
   }
@@ -1559,7 +1559,7 @@ HeapVector<Member<RTCRtpSender>>::iterator RTCPeerConnection::FindSender(
 
 HeapVector<Member<RTCRtpReceiver>>::iterator RTCPeerConnection::FindReceiver(
     const WebRTCRtpReceiver& web_receiver) {
-  for (auto it = rtp_receivers_.begin(); it != rtp_receivers_.end(); ++it) {
+  for (auto* it = rtp_receivers_.begin(); it != rtp_receivers_.end(); ++it) {
     if ((*it)->web_receiver().Id() == web_receiver.Id())
       return it;
   }
@@ -1629,7 +1629,7 @@ void RTCPeerConnection::OnStreamAddTrack(MediaStream* stream,
 
 void RTCPeerConnection::OnStreamRemoveTrack(MediaStream* stream,
                                             MediaStreamTrack* track) {
-  auto sender = FindSenderForTrackAndStream(track, stream);
+  auto* sender = FindSenderForTrackAndStream(track, stream);
   if (sender) {
     ExceptionState exception_state(v8::Isolate::GetCurrent(),
                                    ExceptionState::kExecutionContext, nullptr,
@@ -1777,7 +1777,7 @@ void RTCPeerConnection::DidRemoveRemoteTrack(
   DCHECK(GetExecutionContext()->IsContextThread());
 
   WebVector<WebMediaStream> web_streams = web_rtp_receiver->Streams();
-  auto it = FindReceiver(*web_rtp_receiver);
+  auto* it = FindReceiver(*web_rtp_receiver);
   DCHECK(it != rtp_receivers_.end());
   RTCRtpReceiver* rtp_receiver = *it;
   MediaStreamTrack* track = rtp_receiver->track();

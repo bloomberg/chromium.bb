@@ -51,7 +51,7 @@ class MODULES_EXPORT CryptoKey final : public ScriptWrappable {
     return new CryptoKey(key);
   }
 
-  ~CryptoKey();
+  ~CryptoKey() override;
 
   String type() const;
   bool extractable() const;

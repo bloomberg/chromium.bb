@@ -35,7 +35,7 @@ RTCSessionDescriptionRequestPromiseImpl::
 void RTCSessionDescriptionRequestPromiseImpl::RequestSucceeded(
     const WebRTCSessionDescription& web_session_description) {
   if (requester_ && requester_->ShouldFireDefaultCallbacks()) {
-    auto description = RTCSessionDescription::Create(web_session_description);
+    auto* description = RTCSessionDescription::Create(web_session_description);
     requester_->NoteSdpCreated(*description);
     resolver_->Resolve(description);
   } else {

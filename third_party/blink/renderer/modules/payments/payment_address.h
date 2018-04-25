@@ -22,7 +22,7 @@ class MODULES_EXPORT PaymentAddress final : public ScriptWrappable {
 
  public:
   explicit PaymentAddress(payments::mojom::blink::PaymentAddressPtr);
-  virtual ~PaymentAddress();
+  ~PaymentAddress() override;
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 

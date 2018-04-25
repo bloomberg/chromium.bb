@@ -35,7 +35,7 @@ class MODULES_EXPORT PushSubscription final : public ScriptWrappable {
       ServiceWorkerRegistration* service_worker_registration);
   static void Dispose(WebPushSubscription* subscription_raw);
 
-  virtual ~PushSubscription();
+  ~PushSubscription() override;
 
   KURL endpoint() const { return endpoint_; }
   DOMTimeStamp expirationTime(bool& out_is_null) const;
@@ -47,7 +47,7 @@ class MODULES_EXPORT PushSubscription final : public ScriptWrappable {
 
   ScriptValue toJSONForBinding(ScriptState* script_state);
 
-  void Trace(blink::Visitor* visitor);
+  void Trace(blink::Visitor* visitor) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PushSubscriptionTest,

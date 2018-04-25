@@ -36,7 +36,7 @@ class USBInterface : public ScriptWrappable {
   HeapVector<Member<USBAlternateInterface>> alternates() const;
   bool claimed() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Member<const USBDevice> device_;

@@ -20,7 +20,7 @@ class XRStageBounds final : public ScriptWrappable {
 
   HeapVector<Member<XRStageBoundsPoint>> geometry() const { return geometry_; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   HeapVector<Member<XRStageBoundsPoint>> geometry_;

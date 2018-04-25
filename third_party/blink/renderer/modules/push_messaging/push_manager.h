@@ -37,7 +37,7 @@ class MODULES_EXPORT PushManager final : public ScriptWrappable {
                                 const PushSubscriptionOptionsInit& options,
                                 ExceptionState& exception_state);
 
-  void Trace(blink::Visitor* visitor);
+  void Trace(blink::Visitor* visitor) override;
 
  private:
   explicit PushManager(ServiceWorkerRegistration* registration);

@@ -254,9 +254,9 @@ void FillWidgetStates(AXObject& ax_object,
       break;
   }
   if (checked_prop_val) {
-    const auto checked_prop_name = role == kToggleButtonRole
-                                       ? AXPropertyNameEnum::Pressed
-                                       : AXPropertyNameEnum::Checked;
+    auto* const checked_prop_name = role == kToggleButtonRole
+                                        ? AXPropertyNameEnum::Pressed
+                                        : AXPropertyNameEnum::Checked;
     properties.addItem(CreateProperty(
         checked_prop_name,
         CreateValue(checked_prop_val, AXValueTypeEnum::Tristate)));
@@ -333,7 +333,7 @@ class SparseAttributeAXPropertyAdapter
   Member<AXObject> ax_object_;
   protocol::Array<AXProperty>& properties_;
 
-  void AddBoolAttribute(AXBoolAttribute attribute, bool value) {
+  void AddBoolAttribute(AXBoolAttribute attribute, bool value) override {
     switch (attribute) {
       case AXBoolAttribute::kAriaBusy:
         properties_.addItem(
@@ -343,7 +343,8 @@ class SparseAttributeAXPropertyAdapter
     }
   }
 
-  void AddStringAttribute(AXStringAttribute attribute, const String& value) {
+  void AddStringAttribute(AXStringAttribute attribute,
+                          const String& value) override {
     switch (attribute) {
       case AXStringAttribute::kAriaKeyShortcuts:
         properties_.addItem(
@@ -358,7 +359,8 @@ class SparseAttributeAXPropertyAdapter
     }
   }
 
-  void AddObjectAttribute(AXObjectAttribute attribute, AXObject& object) {
+  void AddObjectAttribute(AXObjectAttribute attribute,
+                          AXObject& object) override {
     switch (attribute) {
       case AXObjectAttribute::kAriaActiveDescendant:
         properties_.addItem(CreateProperty(AXPropertyNameEnum::Activedescendant,
@@ -375,8 +377,9 @@ class SparseAttributeAXPropertyAdapter
     }
   }
 
-  void AddObjectVectorAttribute(AXObjectVectorAttribute attribute,
-                                HeapVector<Member<AXObject>>& objects) {
+  void AddObjectVectorAttribute(
+      AXObjectVectorAttribute attribute,
+      HeapVector<Member<AXObject>>& objects) override {
     switch (attribute) {
       case AXObjectVectorAttribute::kAriaControls:
         properties_.addItem(

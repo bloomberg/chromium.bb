@@ -23,7 +23,7 @@ class MODULES_EXPORT DeviceOrientationAbsoluteController final
   void DidAddEventListener(LocalDOMWindow*,
                            const AtomicString& event_type) override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit DeviceOrientationAbsoluteController(Document&);

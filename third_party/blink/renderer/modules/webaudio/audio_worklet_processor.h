@@ -38,7 +38,7 @@ class MODULES_EXPORT AudioWorkletProcessor : public ScriptWrappable {
   // |AudioWorkletGlobalScope|.
   static AudioWorkletProcessor* Create(ExecutionContext*);
 
-  ~AudioWorkletProcessor() = default;
+  ~AudioWorkletProcessor() override = default;
 
   // |AudioWorkletHandler| invokes this method to process audio.
   bool Process(
@@ -55,7 +55,7 @@ class MODULES_EXPORT AudioWorkletProcessor : public ScriptWrappable {
   // IDL
   MessagePort* port() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   AudioWorkletProcessor(AudioWorkletGlobalScope*,

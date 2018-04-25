@@ -145,7 +145,7 @@ void MediaControlsOrientationLockDelegate::MaybeLockOrientation() {
   if (!GetDocument().GetFrame())
     return;
 
-  auto controller =
+  auto* controller =
       ScreenOrientationController::From(*GetDocument().GetFrame());
   if (controller->MaybeHasActiveLock()) {
     RecordLockResult(LockResultMetrics::kAlreadyLocked);

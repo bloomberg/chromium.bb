@@ -64,7 +64,7 @@ class PeriodicWave final : public ScriptWrappable {
                               const PeriodicWaveOptions&,
                               ExceptionState&);
 
-  virtual ~PeriodicWave();
+  ~PeriodicWave() override;
 
   // Returns pointers to the lower and higher wave data for the pitch range
   // containing the given fundamental frequency. These two tables are in

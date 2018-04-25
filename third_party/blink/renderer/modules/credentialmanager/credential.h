@@ -19,8 +19,8 @@ class MODULES_EXPORT Credential : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  virtual ~Credential();
-  virtual void Trace(blink::Visitor*);
+  ~Credential() override;
+  void Trace(blink::Visitor*) override;
 
   virtual bool IsPasswordCredential() const { return false; }
   virtual bool IsFederatedCredential() const { return false; }

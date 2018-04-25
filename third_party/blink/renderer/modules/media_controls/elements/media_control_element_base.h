@@ -59,7 +59,7 @@ class MODULES_EXPORT MediaControlElementBase : public GarbageCollectedMixin {
   // Whether the element has been disabled via the HTML disabled attribute.
   virtual bool IsDisabled() const = 0;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   MediaControlElementBase(MediaControlsImpl&,

@@ -20,7 +20,7 @@ class AmbientLightSensor final : public Sensor {
 
   double illuminance(bool& is_null) const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   AmbientLightSensor(ExecutionContext*, const SensorOptions&, ExceptionState&);

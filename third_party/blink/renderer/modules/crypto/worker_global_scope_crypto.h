@@ -52,7 +52,7 @@ class WorkerGlobalScopeCrypto final
   static Crypto* crypto(Supplementable<WorkerGlobalScope>&);
   Crypto* crypto() const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   WorkerGlobalScopeCrypto();

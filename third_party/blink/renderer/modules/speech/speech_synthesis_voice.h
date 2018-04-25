@@ -40,7 +40,7 @@ class SpeechSynthesisVoice final : public ScriptWrappable {
  public:
   static SpeechSynthesisVoice* Create(
       scoped_refptr<PlatformSpeechSynthesisVoice>);
-  ~SpeechSynthesisVoice();
+  ~SpeechSynthesisVoice() override;
 
   const String& voiceURI() const { return platform_voice_->VoiceURI(); }
   const String& name() const { return platform_voice_->GetName(); }

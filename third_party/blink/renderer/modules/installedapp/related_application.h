@@ -21,7 +21,7 @@ class RelatedApplication final : public ScriptWrappable {
     return new RelatedApplication(platform, url, id);
   }
 
-  virtual ~RelatedApplication() = default;
+  ~RelatedApplication() override = default;
 
   String platform() const { return platform_; }
   String url() const { return url_; }

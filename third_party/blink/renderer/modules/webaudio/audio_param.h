@@ -263,7 +263,7 @@ class AudioParam final : public ScriptWrappable {
       float min_value = -std::numeric_limits<float>::max(),
       float max_value = std::numeric_limits<float>::max());
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
   // |handler| always returns a valid object.
   AudioParamHandler& Handler() const { return *handler_; }
   // |context| always returns a valid object.

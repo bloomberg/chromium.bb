@@ -31,7 +31,7 @@ using device::mojom::blink::WakeLockRequest;
 class MockWakeLock : public WakeLock {
  public:
   MockWakeLock() : binding_(this) {}
-  ~MockWakeLock() = default;
+  ~MockWakeLock() override = default;
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
     binding_.Bind(WakeLockRequest(std::move(handle)));

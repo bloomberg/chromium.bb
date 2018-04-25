@@ -321,7 +321,7 @@ ScriptPromise RTCRtpSender::setParameters(ScriptState* script_state,
     degradation_preference = blink::WebRTCDegradationPreference::Balanced;
   }
 
-  auto request = RTCVoidRequestScriptPromiseResolverImpl::Create(resolver);
+  auto* request = RTCVoidRequestScriptPromiseResolverImpl::Create(resolver);
   sender_->SetParameters(std::move(encodings), degradation_preference.value(),
                          request);
   return promise;

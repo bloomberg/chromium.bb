@@ -90,8 +90,8 @@ class MODULES_EXPORT AXObjectCacheImpl
   };
 
   explicit AXObjectCacheImpl(Document&);
-  virtual ~AXObjectCacheImpl();
-  virtual void Trace(blink::Visitor*);
+  ~AXObjectCacheImpl() override;
+  void Trace(blink::Visitor*) override;
 
   Document& GetDocument() { return *document_; }
   AXObject* FocusedObject();
@@ -105,10 +105,10 @@ class MODULES_EXPORT AXObjectCacheImpl
   void ChildrenChanged(LayoutObject*) override;
   void ChildrenChanged(AccessibleNode*) override;
   void CheckedStateChanged(Node*) override;
-  virtual void ListboxOptionStateChanged(HTMLOptionElement*);
-  virtual void ListboxSelectedChildrenChanged(HTMLSelectElement*);
-  virtual void ListboxActiveIndexChanged(HTMLSelectElement*);
-  virtual void RadiobuttonRemovedFromGroup(HTMLInputElement*);
+  void ListboxOptionStateChanged(HTMLOptionElement*) override;
+  void ListboxSelectedChildrenChanged(HTMLSelectElement*) override;
+  void ListboxActiveIndexChanged(HTMLSelectElement*) override;
+  void RadiobuttonRemovedFromGroup(HTMLInputElement*) override;
 
   void Remove(AccessibleNode*) override;
   void Remove(LayoutObject*) override;
@@ -295,7 +295,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   // mojom::blink::PermissionObserver implementation.
   // Called when we get an updated AOM event listener permission value from
   // the browser.
-  void OnPermissionStatusChange(mojom::PermissionStatus);
+  void OnPermissionStatusChange(mojom::PermissionStatus) override;
 
   // When a <tr> or <td> is inserted or removed, the containing table may have
   // gained or lost rows or columns.

@@ -52,7 +52,7 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
 
   ~OfflineAudioContext() override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   size_t length() const { return total_render_frames_; }
 

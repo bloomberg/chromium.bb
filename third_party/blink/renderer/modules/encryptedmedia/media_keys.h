@@ -63,7 +63,7 @@ class MediaKeys : public ScriptWrappable,
       ExecutionContext*,
       const WebVector<WebEncryptedMediaSessionType>& supported_session_types,
       std::unique_ptr<WebContentDecryptionModule>);
-  virtual ~MediaKeys();
+  ~MediaKeys() override;
 
   MediaKeySession* createSession(ScriptState*,
                                  const String& session_type_string,

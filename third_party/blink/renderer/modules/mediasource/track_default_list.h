@@ -26,7 +26,7 @@ class TrackDefaultList final : public ScriptWrappable {
   unsigned length() const { return track_defaults_.size(); }
   TrackDefault* item(unsigned) const;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   TrackDefaultList();
