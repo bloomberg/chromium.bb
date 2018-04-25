@@ -1057,7 +1057,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/privacy/ContextualSearchPreferenceFragment.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/DoNotTrackPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/OtherFormsOfHistoryDialogFragment.java",
-  "java/src/org/chromium/chrome/browser/preferences/privacy/PhysicalWebPreferenceFragment.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferences.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferencesManager.java",
   "java/src/org/chromium/chrome/browser/preferences/privacy/UsageAndCrashReportsPreferenceFragment.java",

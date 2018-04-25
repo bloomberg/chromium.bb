@@ -18,7 +18,6 @@ import org.chromium.base.SysUtils;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.components.location.LocationUtils;
@@ -28,9 +27,7 @@ import org.chromium.components.location.LocationUtils;
  */
 public class PhysicalWeb {
     public static final int OPTIN_NOTIFY_MAX_TRIES = 1;
-    private static final String PHYSICAL_WEB_SHARING_PREFERENCE = "physical_web_sharing";
     private static final String FEATURE_NAME = "PhysicalWeb";
-    private static final String PHYSICAL_WEB_SHARING_FEATURE_NAME = "PhysicalWebSharing";
     private static final int MIN_ANDROID_VERSION = 18;
 
     /**
@@ -49,36 +46,7 @@ public class PhysicalWeb {
      * @return boolean {@code true} if the preference is On.
      */
     public static boolean isPhysicalWebPreferenceEnabled() {
-        return PrivacyPreferencesManager.getInstance().isPhysicalWebEnabled();
-    }
-
-    /**
-     * Checks whether the Physical Web Sharing feature is enabled.
-     *
-     * @return boolean {@code true} if the feature is enabled
-     */
-    public static boolean sharingIsEnabled() {
-        return ChromeFeatureList.isEnabled(PHYSICAL_WEB_SHARING_FEATURE_NAME);
-    }
-
-    /**
-     * Checks whether the user has consented to use the Sharing feature.
-     *
-     * @return boolean {@code true} if the feature is enabled
-     */
-    public static boolean sharingIsOptedIn() {
-        return ContextUtils.getAppSharedPreferences()
-            .getBoolean(PHYSICAL_WEB_SHARING_PREFERENCE, false);
-    }
-
-    /**
-     * Sets the preference that the user has opted into use the Sharing feature.
-     */
-    public static void setSharingOptedIn() {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putBoolean(PHYSICAL_WEB_SHARING_PREFERENCE, true)
-                .apply();
+        return false;
     }
 
     /**
@@ -88,7 +56,7 @@ public class PhysicalWeb {
      * @return boolean {@code true} if onboarding is complete.
      */
     public static boolean isOnboarding() {
-        return PrivacyPreferencesManager.getInstance().isPhysicalWebOnboarding();
+        return false;
     }
 
     /**
@@ -102,11 +70,6 @@ public class PhysicalWeb {
                 new NearbyBackgroundSubscription(NearbySubscription.UNSUBSCRIBE).run();
             }
             return;
-        }
-
-        // If this user is in the default state, we need to check if we should enable Physical Web.
-        if (isOnboarding() && shouldAutoEnablePhysicalWeb()) {
-            PrivacyPreferencesManager.getInstance().setPhysicalWebEnabled(true);
         }
 
         updateScans();
