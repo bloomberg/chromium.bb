@@ -213,23 +213,28 @@ unpacker.Compressor.prototype.getArchiveFile_ = function() {
           this.onErrorInternal_();
         });
   };
-  new Promise(function(resolve, reject) {
-    navigator.webkitTemporaryStorage
-        .queryUsageAndQuota(function(used, granted) {
-          resolve(granted);
-        }, reject);
-  })
+
+  this.getTemporaryRootEntry_().then(saveZipFile).catch((domException) => {
+    console.error(domException);
+    this.onErrorInternal_();
+  });
+};
+
+/**
+ * Creates a Promise which gives the root entry of a temporary filesystem.
+ * @return {!Promise<!Entry>}
+ */
+unpacker.Compressor.prototype.getTemporaryRootEntry_ = function() {
+  return new Promise(function(resolve, reject) {
+           navigator.webkitTemporaryStorage
+               .queryUsageAndQuota(function(used, granted) {
+                 resolve(granted);
+               }, reject);
+         })
       .then(
           (quota) =>
               new Promise(webkitRequestFileSystem.bind(null, TEMPORARY, quota)))
-      .then((fs) => {
-        saveZipFile(fs.root);
-        this.fs = fs.root;
-      })
-      .catch((domException) => {
-        console.error(domException);
-        this.onErrorInternal_();
-      });
+      .then((fs) => fs.root);
 };
 
 /**
@@ -587,31 +592,43 @@ unpacker.Compressor.prototype.moveZipFileToActualDestination = function() {
           this.onErrorInternal_();
         });
   };
+  this.getParentEntry_()
+      .then(moveZipFileToParentDir)
+      .catch(this.onErrorInternal_.bind(this));
+};
 
-  // Get all accessible volumes with their metadata
-  chrome.fileManagerPrivate.getVolumeMetadataList((volumeMetadataList) => {
-    // Here we call chrome.fileSystem.requestFileSystem on each volume's
-    // metadata entry to be able to sucessfully execute
-    // resolveIsolatedEntries later.
-    Promise.all(this.requestAccessPermissionForVolumes_(volumeMetadataList))
-        .then((result) => {
-          chrome.fileManagerPrivate.resolveIsolatedEntries(
-              [this.items_[0].entry], (result) => {
-                if (result && result.length >= 1) {
-                  result[0].getParent(moveZipFileToParentDir);
-                } else {
-                  console.error('Failed to resolve isolated entries!');
-                  if (chrome.runtime.lastError)
-                    console.error(chrome.runtime.lastError.message);
+/**
+ * Creates a Promise which gives the parent entry of the files to be zipped.
+ * @rerturn {!Promise<!Entry>}
+ * @private
+ */
+unpacker.Compressor.prototype.getParentEntry_ = function() {
+  return new Promise((resolve, reject) => {
+    // Get all accessible volumes with their metadata
+    chrome.fileManagerPrivate.getVolumeMetadataList((volumeMetadataList) => {
+      // Here we call chrome.fileSystem.requestFileSystem on each volume's
+      // metadata entry to be able to sucessfully execute
+      // resolveIsolatedEntries later.
+      Promise.all(this.requestAccessPermissionForVolumes_(volumeMetadataList))
+          .then((result) => {
+            chrome.fileManagerPrivate.resolveIsolatedEntries(
+                [this.items_[0].entry], (result) => {
+                  if (result && result.length >= 1) {
+                    result[0].getParent(resolve);
+                  } else {
+                    console.error('Failed to resolve isolated entries!');
+                    if (chrome.runtime.lastError)
+                      console.error(chrome.runtime.lastError.message);
 
-                  this.onErrorInternal_();
-                }
-              });
-        })
-        .catch((error) => {
-          console.error(error);
-          this.onErrorInternal_();
-        });
+                    reject();
+                  }
+                });
+          })
+          .catch((error) => {
+            console.error(error);
+            reject();
+          });
+    });
   });
 };
 
