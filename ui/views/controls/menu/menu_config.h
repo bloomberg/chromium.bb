@@ -44,12 +44,12 @@ struct VIEWS_EXPORT MenuConfig {
   int item_no_icon_top_margin;
   int item_no_icon_bottom_margin;
 
-  // Fixed dimensions used for entire items. If these are nonzero, they override
-  // the vertical margin constants given above - the item's text and icon are
-  // vertically centered within these heights.
-  int fixed_text_item_height;
-  int fixed_container_item_height;
-  int fixed_menu_width;
+  // Minimum dimensions used for entire items. If these are nonzero, they
+  // override the vertical margin constants given above - the item's text and
+  // icon are vertically centered within these heights.
+  int minimum_text_item_height;
+  int minimum_container_item_height;
+  int minimum_menu_width;
 
   // Margins between the left of the item and the icon.
   int item_left_margin;
