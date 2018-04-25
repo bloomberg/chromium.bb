@@ -222,18 +222,6 @@ NGPositionedFloat PositionFloat(LayoutUnit origin_block_offset,
   NGFragment float_fragment(parent_space.GetWritingMode(),
                             *layout_result->PhysicalFragment());
 
-  // TODO(glebl): This should check for infinite opportunity instead.
-  // TODO(ikilpatrick): Remove.
-  if (opportunity.rect.IsEmpty()) {
-    // Because of the implementation specific of the layout opportunity iterator
-    // an empty opportunity can mean 2 things:
-    // - search for layout opportunities is exhausted.
-    // - opportunity has an infinite size. That's because CS is infinite.
-    opportunity = NGLayoutOpportunity(NGBfcRect(
-        /* start_offset */ NGBfcOffset(), /* end_offset */ NGBfcOffset(
-            float_fragment.InlineSize(), float_fragment.BlockSize())));
-  }
-
   LayoutUnit float_margin_box_inline_size =
       float_fragment.InlineSize() + unpositioned_float->margins.InlineSum();
 
