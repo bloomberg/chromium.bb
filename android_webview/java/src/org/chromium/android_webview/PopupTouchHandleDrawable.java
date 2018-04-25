@@ -588,7 +588,7 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
         if (mOriginXDip == originXDip && mOriginYDip == originYDip && !mRotationChanged) return;
         mOriginXDip = originXDip;
         mOriginYDip = originYDip;
-        if (getVisibility() == VISIBLE || mRotationChanged) {
+        if (mVisible || mRotationChanged) {
             if (mRotationChanged) mRotationChanged = false;
             scheduleInvalidate();
         }
