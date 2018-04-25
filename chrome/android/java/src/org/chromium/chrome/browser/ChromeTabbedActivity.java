@@ -282,11 +282,6 @@ public class ChromeTabbedActivity
     private Runnable mShowHistoryRunnable;
 
     /**
-     * Whether an initial tab needs to be created during UI initialization.
-     */
-    private Runnable mDelayedInitialTabBehaviorDuringUiInit;
-
-    /**
      * Keeps track of whether or not a specific tab was created based on the startup intent.
      */
     private boolean mCreatedTabOnStartup;
@@ -848,12 +843,7 @@ public class ChromeTabbedActivity
                 bgViewWrapper.initialize();
             }
 
-            if (mDelayedInitialTabBehaviorDuringUiInit != null) {
-                mDelayedInitialTabBehaviorDuringUiInit.run();
-                mDelayedInitialTabBehaviorDuringUiInit = null;
-            } else {
-                mLayoutManager.hideOverview(false);
-            }
+            mLayoutManager.hideOverview(false);
 
             mScreenshotMonitor = ScreenshotMonitor.create(ChromeTabbedActivity.this);
 
@@ -1093,8 +1083,7 @@ public class ChromeTabbedActivity
                     && BrowserActionsTabModelSelector.getInstance().getTotalTabCount() != 0;
             mCreatedTabOnStartup = getCurrentTabModel().getCount() > 0
                     || mTabModelSelectorImpl.getRestoredTabCount() > 0 || mIntentWithEffect
-                    || mDelayedInitialTabBehaviorDuringUiInit != null || hasBrowserActionTabs
-                    || hasTabWaitingForReparenting;
+                    || hasBrowserActionTabs || hasTabWaitingForReparenting;
 
             // We always need to try to restore tabs. The set of tabs might be empty, but at least
             // it will trigger the notification that tab restore is complete which is needed by
@@ -1115,8 +1104,7 @@ public class ChromeTabbedActivity
             // to create a new tab as well.
             if (!mCreatedTabOnStartup
                     || (!hasTabWaitingForReparenting && activeTabBeingRestored
-                               && getTabModelSelector().getTotalTabCount() == 0
-                               && mDelayedInitialTabBehaviorDuringUiInit == null)) {
+                               && getTabModelSelector().getTotalTabCount() == 0)) {
                 // If homepage URI is not determined, due to PartnerBrowserCustomizations provider
                 // async reading, then create a tab at the async reading finished. If it takes
                 // too long, just create NTP.
