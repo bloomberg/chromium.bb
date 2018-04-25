@@ -10,6 +10,7 @@
 goog.provide('cvox.KbExplorer');
 
 goog.require('BrailleCommandData');
+goog.require('GestureCommandData');
 goog.require('Spannable');
 goog.require('cvox.BrailleKeyCommand');
 goog.require('cvox.ChromeVoxKbHandler');
@@ -39,6 +40,8 @@ cvox.KbExplorer.init = function() {
   chrome.accessibilityPrivate.onAccessibilityGesture.addListener(
       cvox.KbExplorer.onAccessibilityGesture);
   chrome.accessibilityPrivate.setKeyboardListener(true, true);
+  backgroundWindow['BrailleCommandHandler']['setEnabled'](false);
+  backgroundWindow['GestureCommandHandler']['setEnabled'](false);
 
   window.onbeforeunload = function(evt) {
     backgroundWindow.removeEventListener(
@@ -52,6 +55,8 @@ cvox.KbExplorer.init = function() {
     chrome.accessibilityPrivate.onAccessibilityGesture.removeListener(
         cvox.KbExplorer.onAccessibilityGesture);
     chrome.accessibilityPrivate.setKeyboardListener(true, false);
+    backgroundWindow['BrailleCommandHandler']['setEnabled'](true);
+    backgroundWindow['GestureCommandHandler']['setEnabled'](true);
   };
   if (localStorage['useClassic'] != 'true') {
     cvox.ChromeVoxKbHandler.handlerKeyMap = cvox.KeyMap.fromNext();
@@ -206,7 +211,9 @@ cvox.KbExplorer.onBrailleKeyEvent = function(evt) {
  *     defined in ui/accessibility/ax_enums.idl
  */
 cvox.KbExplorer.onAccessibilityGesture = function(gesture) {
-  // TODO(dmazzoni): implement.
+  var gestureData = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
+  if (gestureData)
+    cvox.KbExplorer.onCommand(gestureData.command);
 };
 
 /**
