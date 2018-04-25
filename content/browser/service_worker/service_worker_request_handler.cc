@@ -238,6 +238,14 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     RequestContextType request_context_type,
     network::mojom::RequestContextFrameType frame_type,
     scoped_refptr<network::ResourceRequestBody> body) {
+  // S13nServiceWorker enabled, NetworkService disabled:
+  // for subresource requests, subresource loader should be used, but when that
+  // request handler falls back to network, InitializeHandler() is called.
+  // Since we already determined to fall back to network, don't create another
+  // handler.
+  if (ServiceWorkerUtils::IsServicificationEnabled())
+    return;
+
   // Create the handler even for insecure HTTP since it's used in the
   // case of redirect to HTTPS.
   if (!request->url().SchemeIsHTTPOrHTTPS() &&
