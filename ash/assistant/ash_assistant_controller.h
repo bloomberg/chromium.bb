@@ -5,6 +5,7 @@
 #ifndef ASH_ASSISTANT_ASH_ASSISTANT_CONTROLLER_H_
 #define ASH_ASSISTANT_ASH_ASSISTANT_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,6 +14,7 @@
 #include "ash/public/interfaces/assistant_card_renderer.mojom.h"
 #include "ash/shell_observer.h"
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/app_list/assistant_controller.h"
@@ -30,6 +32,8 @@ class UnguessableToken;
 }  // namespace base
 
 namespace ash {
+
+class AssistantBubble;
 
 class AshAssistantController
     : public app_list::AssistantController,
@@ -84,6 +88,8 @@ class AshAssistantController
                                   aura::Window* root_window) override;
 
  private:
+  void OnInteractionDismissed();
+
   mojo::Binding<mojom::AshAssistantController> assistant_controller_binding_;
   mojo::Binding<chromeos::assistant::mojom::AssistantEventSubscriber>
       assistant_event_subscriber_binding_;
@@ -91,6 +97,9 @@ class AshAssistantController
 
   chromeos::assistant::mojom::AssistantPtr assistant_;
   mojom::AssistantCardRendererPtr assistant_card_renderer_;
+
+  std::unique_ptr<AssistantBubble> assistant_bubble_;
+  base::OneShotTimer assistant_bubble_timer_;
 
   // TODO(b/77637813): Remove when pulling Assistant out of launcher.
   bool is_app_list_shown_ = false;
