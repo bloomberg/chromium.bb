@@ -1,0 +1,23 @@
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Error in remote: [object Event]
+PASS Filesystem and blob.
+PASS Cross-origin `importScripts()` blocked in http:
+PASS `eval()` blocked in http:
+PASS `setTimeout([string])` blocked in http:
+PASS Cross-origin `importScripts()` blocked in http:?pipe=sub|header(Content-Security-Policy,script-src%20%27none%27)
+PASS `eval()` blocked in http:?pipe=sub|header(Content-Security-Policy,script-src%20%27none%27)
+PASS `setTimeout([string])` blocked in http:?pipe=sub|header(Content-Security-Policy,script-src%20%27none%27)
+PASS Cross-origin `importScripts()` blocked in http:?pipe=sub|header(Content-Security-Policy,default-src%20*)
+PASS `eval()` blocked in http:?pipe=sub|header(Content-Security-Policy,default-src%20*)
+PASS Cross-origin `importScripts()` blocked in blob:
+PASS `setTimeout([string])` blocked in http:?pipe=sub|header(Content-Security-Policy,default-src%20*)
+PASS Cross-origin `importScripts()` blocked in http:?pipe=sub|header(Content-Security-Policy,default-src%20%27none%27)
+PASS `eval()` blocked in blob:
+PASS `eval()` blocked in http:?pipe=sub|header(Content-Security-Policy,default-src%20%27none%27)
+PASS `setTimeout([string])` blocked in http:?pipe=sub|header(Content-Security-Policy,default-src%20%27none%27)
+PASS `setTimeout([string])` blocked in blob:
+PASS Cross-origin `importScripts()` blocked in filesystem:
+PASS `eval()` blocked in filesystem:
+PASS `setTimeout([string])` blocked in filesystem:
+Harness: the test ran to completion.
+
