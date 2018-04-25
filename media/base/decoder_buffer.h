@@ -16,13 +16,11 @@
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/shared_memory_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/media_export.h"
 #include "media/base/timestamp_constants.h"
-#include "media/base/unaligned_shared_memory.h"
 
 namespace media {
 
@@ -66,19 +64,6 @@ class MEDIA_EXPORT DecoderBuffer
                                                const uint8_t* side_data,
                                                size_t side_data_size);
 
-  // Create a DecoderBuffer where data() of |size| bytes resides within the
-  // memory referred to by |handle| at non-negative offset |offset|. The
-  // buffer's |is_key_frame_| will default to false.
-  //
-  // The shared memory will be mapped read-only.
-  //
-  // If mapping fails, nullptr will be returned. In all cases |handle| is
-  // consumed.
-  static scoped_refptr<DecoderBuffer> FromSharedMemoryHandle(
-      const base::SharedMemoryHandle& handle,
-      off_t offset,
-      size_t size);
-
   // Create a DecoderBuffer indicating we've reached end of stream.
   //
   // Calling any method other than end_of_stream() on the resulting buffer
@@ -109,15 +94,11 @@ class MEDIA_EXPORT DecoderBuffer
 
   const uint8_t* data() const {
     DCHECK(!end_of_stream());
-    if (shm_)
-      return static_cast<uint8_t*>(shm_->memory());
     return data_.get();
   }
 
-  // TODO(sandersd): Remove writable_data(). https://crbug.com/834088
   uint8_t* writable_data() const {
     DCHECK(!end_of_stream());
-    DCHECK(!shm_);
     return data_.get();
   }
 
@@ -163,7 +144,9 @@ class MEDIA_EXPORT DecoderBuffer
   }
 
   // If there's no data in this buffer, it represents end of stream.
-  bool end_of_stream() const { return !shm_ && !data_; }
+  bool end_of_stream() const {
+    return data_ == NULL;
+  }
 
   bool is_key_frame() const {
     DCHECK(!end_of_stream());
@@ -196,9 +179,6 @@ class MEDIA_EXPORT DecoderBuffer
                 size_t size,
                 const uint8_t* side_data,
                 size_t side_data_size);
-
-  DecoderBuffer(std::unique_ptr<UnalignedSharedMemory> shm, size_t size);
-
   virtual ~DecoderBuffer();
 
  private:
@@ -209,7 +189,6 @@ class MEDIA_EXPORT DecoderBuffer
   std::unique_ptr<uint8_t, base::AlignedFreeDeleter> data_;
   size_t side_data_size_;
   std::unique_ptr<uint8_t, base::AlignedFreeDeleter> side_data_;
-  std::unique_ptr<UnalignedSharedMemory> shm_;
   std::unique_ptr<DecryptConfig> decrypt_config_;
   DiscardPadding discard_padding_;
   bool is_key_frame_;
