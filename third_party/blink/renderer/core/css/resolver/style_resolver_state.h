@@ -87,10 +87,11 @@ class CORE_EXPORT StyleResolverState {
   void SetStyle(scoped_refptr<ComputedStyle>);
   const ComputedStyle* Style() const { return style_.get(); }
   ComputedStyle* Style() { return style_.get(); }
+  ComputedStyle& StyleRef() {
+    DCHECK(style_);
+    return *style_;
+  }
   scoped_refptr<ComputedStyle> TakeStyle();
-
-  ComputedStyle& MutableStyleRef() const { return *style_; }
-  const ComputedStyle& StyleRef() const { return MutableStyleRef(); }
 
   const CSSToLengthConversionData& CssToLengthConversionData() const {
     return css_to_length_conversion_data_;
