@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
 #include "media/base/media_util.h"
@@ -102,7 +102,7 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
 
   void SetUp() override {
     // Do this first. Lots of pieces depend on the task runner.
-    auto message_loop = base::MessageLoop::current();
+    auto message_loop = base::MessageLoopCurrent::Get();
     original_task_runner_ = message_loop.task_runner();
     task_runner_ = new base::TestMockTimeTaskRunner();
     message_loop.SetTaskRunner(task_runner_);
@@ -124,7 +124,7 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
 
     // Run task runner to have Mojo cleanup interceptor_.
     task_runner_->RunUntilIdle();
-    base::MessageLoop::current().SetTaskRunner(original_task_runner_);
+    base::MessageLoopCurrent::Get().SetTaskRunner(original_task_runner_);
   }
 
   PipelineStatistics MakeAdvancingDecodeStats() {

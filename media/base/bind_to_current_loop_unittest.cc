@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_checker_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -44,15 +45,13 @@ void BoundIntegersSet(int* a_var, int* b_var, int a_val, int b_val) {
 }
 
 struct ThreadRestrictionChecker {
-  ThreadRestrictionChecker() : bound_loop_(base::MessageLoop::current()) {}
-
-  void Run() { EXPECT_EQ(bound_loop_, base::MessageLoop::current()); }
+  void Run() { EXPECT_TRUE(thread_checker_.CalledOnValidThread()); }
 
   ~ThreadRestrictionChecker() {
-    EXPECT_EQ(bound_loop_, base::MessageLoop::current());
+    EXPECT_TRUE(thread_checker_.CalledOnValidThread());
   }
 
-  base::MessageLoop* bound_loop_;
+  base::ThreadCheckerImpl thread_checker_;
 };
 
 void ClearReference(base::OnceClosure cb) {}
