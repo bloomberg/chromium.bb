@@ -108,8 +108,7 @@ void BackgroundHTMLParser::Init(
 
 BackgroundHTMLParser::Configuration::Configuration()
     : outstanding_token_limit(kDefaultOutstandingTokenLimit),
-      pending_token_limit(kDefaultPendingTokenLimit),
-      should_coalesce_chunks(false) {}
+      pending_token_limit(kDefaultPendingTokenLimit) {}
 
 BackgroundHTMLParser::BackgroundHTMLParser(
     std::unique_ptr<Configuration> config,
@@ -129,8 +128,7 @@ BackgroundHTMLParser::BackgroundHTMLParser(
       tokenized_chunk_queue_(std::move(config->tokenized_chunk_queue)),
       pending_csp_meta_token_index_(
           HTMLDocumentParser::TokenizedChunk::kNoPendingToken),
-      starting_script_(false),
-      should_coalesce_chunks_(config->should_coalesce_chunks) {
+      starting_script_(false) {
   DCHECK_GT(outstanding_token_limit_, 0u);
   DCHECK_GT(pending_token_limit_, 0u);
   DCHECK_GE(outstanding_token_limit_, pending_token_limit_);
@@ -292,7 +290,7 @@ void BackgroundHTMLParser::PumpTokenizer() {
         break;
     }
 
-    if (!should_coalesce_chunks_ && should_notify_main_thread) {
+    if (should_notify_main_thread) {
       RunOnMainThread(&HTMLDocumentParser::NotifyPendingTokenizedChunks,
                       parser_);
       should_notify_main_thread = false;

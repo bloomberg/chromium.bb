@@ -65,7 +65,6 @@ class BackgroundHTMLParser {
     // pendingTokenLimit
     size_t outstanding_token_limit;
     size_t pending_token_limit;
-    bool should_coalesce_chunks;
   };
 
   // The returned BackgroundHTMLParser should only be used on the parser
@@ -147,7 +146,6 @@ class BackgroundHTMLParser {
   int pending_csp_meta_token_index_;
 
   bool starting_script_;
-  bool should_coalesce_chunks_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundHTMLParser);
 };
