@@ -302,7 +302,6 @@
 <translation id="3063697135517575841">Chrome kunne ikke bekrefte kortet ditt akkurat nå. Prøv igjen senere.</translation>
 <translation id="3064966200440839136">Går ut av inkognitomodus for å betale via en ekstern app. Vil du fortsette?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Ingen}=1{1 passord}other{# passord}}</translation>
-<translation id="3093245981617870298">Du er ikke tilkoblet Internett.</translation>
 <translation id="3096100844101284527">Legg til henteadresse</translation>
 <translation id="3105172416063519923">Ressurs-ID:</translation>
 <translation id="3109728660330352905">Du har ikke autorisasjon til å se denne siden.</translation>
@@ -735,6 +734,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" />-bokmerker</translation>
 <translation id="6264485186158353794">Tilbake til trygg grunn</translation>
 <translation id="6276112860590028508">Sider fra leselisten din vises her</translation>
+<translation id="627746635834430766">For å betale raskere neste gang, lagre kortet ditt og faktureringsadressen i Google-kontoen din.</translation>
 <translation id="6280223929691119688">Kan ikke levere til denne adressen. Velg en annen adresse.</translation>
 <translation id="6282194474023008486">Postnummer</translation>
 <translation id="6290238015253830360">De foreslåtte artiklene dine vises her</translation>
@@ -749,6 +749,7 @@
 <translation id="6355080345576803305">Offentlig økt-overstyring</translation>
 <translation id="6358450015545214790">Hva innebærer dette?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 annet forslag}other{# andre forslag}}</translation>
+<translation id="6387754724289022810">For å betale raskere neste gang, lagre kortet ditt og faktureringsadressen i Google-kontoen din og på denne enheten.</translation>
 <translation id="6397451950548600259">Det er programvare på datamaskinen din som hindrer Chrome i å koble trygt til Internett</translation>
 <translation id="6404511346730675251">Rediger bokmerket</translation>
 <translation id="6410264514553301377">Skriv inn utløpsdatoen og verifiseringskoden for <ph name="CREDIT_CARD" /></translation>
@@ -1106,7 +1107,6 @@
 <translation id="9207861905230894330">Kunne ikke legge til artikkelen.</translation>
 <translation id="9215416866750762878">Et program hindrer Chrome i å koble trygt til dette nettstedet.</translation>
 <translation id="9219103736887031265">Bilder</translation>
-<translation id="933612690413056017">Du er ikke koblet til Internett</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">SLETT INNHOLDET I SKJEMAET</translation>
 <translation id="939736085109172342">Ny mappe</translation>

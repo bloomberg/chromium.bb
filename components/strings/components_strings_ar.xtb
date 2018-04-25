@@ -303,7 +303,6 @@
 <translation id="3063697135517575841">‏لم يتمكن Chrome من التأكد من بطاقتك في الوقت الحالي. يُرجى إعادة المحاولة في وقت لاحق.</translation>
 <translation id="3064966200440839136">ستتم مغادرة وضع التصفح المتخفي للدفع عبر تطبيق خارجي. هل تريد المتابعة؟</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{بدون}=1{كلمة مرور واحدة}two{كلمتا مرور (#)}few{# كلمات مرور}many{# كلمة مرور}other{# كلمة مرور}}</translation>
-<translation id="3093245981617870298">أنت غير متصل.</translation>
 <translation id="3096100844101284527">إضافة عنوان الاستلام من المستخدم</translation>
 <translation id="3105172416063519923">رقم تعريف الأصل:</translation>
 <translation id="3109728660330352905">ليس لديك إذن بعرض هذه الصفحة.</translation>
@@ -363,7 +362,7 @@
 <translation id="3427092606871434483">السماح (تلقائي)</translation>
 <translation id="3427342743765426898">إعادة الت&amp;حرير</translation>
 <translation id="3431636764301398940">حفظ هذه البطاقة إلى هذا الجهاز</translation>
-<translation id="3447661539832366887">عطل مالك هذا الجهاز تشغيل لعبة الديناصور.</translation>
+<translation id="3447661539832366887">أوقف مالك هذا الجهاز تشغيل لعبة الديناصور.</translation>
 <translation id="3447884698081792621">عرض الشهادة (من إصدار <ph name="ISSUER" />)</translation>
 <translation id="3452404311384756672">الفاصل الزمني للجلب:</translation>
 <translation id="3462200631372590220">الإخفاء (خيار متقدم)</translation>
@@ -602,12 +601,12 @@
 <translation id="5230733896359313003">عنوان الشحن</translation>
 <translation id="5250209940322997802">"الاتصال بالشبكة"</translation>
 <translation id="5251803541071282808">السحاب</translation>
-<translation id="5281113152797308730">‏<ph name="BEGIN_PARAGRAPH" />اتبع هذه الخطوات لتعطيل البرامج مؤقتًا حتى يتسنى لك الوصول إلى الويب. سيلزمك الحصول على امتيازات المشرف.<ph name="END_PARAGRAPH" />
+<translation id="5281113152797308730">‏<ph name="BEGIN_PARAGRAPH" />اتبع هذه الخطوات لإيقاف البرامج مؤقتًا حتى يتسنى لك الوصول إلى الويب. سيلزمك الحصول على امتيازات المشرف.<ph name="END_PARAGRAPH" />
 
     <ph name="BEGIN_LIST" />
     <ph name="LIST_ITEM" />انقر على <ph name="BEGIN_BOLD" />البدء<ph name="END_BOLD" />، ثم ابحث عن <ph name="BEGIN_BOLD" />"عرض الخدمات المحلية"<ph name="END_BOLD" /> وحدِّده
     <ph name="LIST_ITEM" />حدِّد <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />ضمن <ph name="BEGIN_BOLD" />نوع بدء التشغيل<ph name="END_BOLD" />، حدِّد <ph name="BEGIN_BOLD" />معطَّل<ph name="END_BOLD" />
+    <ph name="LIST_ITEM" />ضمن <ph name="BEGIN_BOLD" />نوع بدء التشغيل<ph name="END_BOLD" />، حدِّد <ph name="BEGIN_BOLD" />غير مفعّل<ph name="END_BOLD" />
     <ph name="LIST_ITEM" />ضمن <ph name="BEGIN_BOLD" />حالة التشغيل<ph name="END_BOLD" />، انقر على <ph name="BEGIN_BOLD" />إيقاف<ph name="END_BOLD" />
     <ph name="LIST_ITEM" />انقر على <ph name="BEGIN_BOLD" />تطبيق<ph name="END_BOLD" />، ثم انقر على <ph name="BEGIN_BOLD" />موافق<ph name="END_BOLD" />
     <ph name="LIST_ITEM" />تفضَّل بزيارة <ph name="BEGIN_LEARN_MORE_LINK" />مركز مساعدة Chrome<ph name="END_LEARN_MORE_LINK" /> للتعرُّف على كيفية إزالة البرامج من جهاز الكمبيوتر نهائيًا
@@ -1109,7 +1108,6 @@
 <translation id="9207861905230894330">تعذّرت إضافة مقالة.</translation>
 <translation id="9215416866750762878">‏يعمل أحد التطبيقات على منع اتصال Chrome بموقع الويب هذا على نحو آمن</translation>
 <translation id="9219103736887031265">صور</translation>
-<translation id="933612690413056017">لا يوجد اتصال بالإنترنت</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">محو النموذج</translation>
 <translation id="939736085109172342">مجلد جديد</translation>

@@ -303,7 +303,6 @@
 <translation id="3063697135517575841">현재 Chrome에서 카드를 확인할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="3064966200440839136">시크릿 모드를 종료하고 외부 애플리케이션에서 결제합니다. 계속하시겠습니까?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{없음}=1{비밀번호 1개}other{비밀번호 #개}}</translation>
-<translation id="3093245981617870298">오프라인 상태입니다.</translation>
 <translation id="3096100844101284527">수령 주소 추가</translation>
 <translation id="3105172416063519923">애셋 ID:</translation>
 <translation id="3109728660330352905">이 페이지를 볼 수 있는 권한이 없습니다.</translation>
@@ -1107,7 +1106,6 @@
 <translation id="9207861905230894330">글을 추가하지 못했습니다.</translation>
 <translation id="9215416866750762878">애플리케이션으로 인해 Chrome이 안전하게 이 사이트에 접속할 수 없음</translation>
 <translation id="9219103736887031265">이미지</translation>
-<translation id="933612690413056017">인터넷에 연결되지 않음</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">양식 지우기</translation>
 <translation id="939736085109172342">새 폴더</translation>

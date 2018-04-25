@@ -303,7 +303,6 @@
 <translation id="3063697135517575841">Det gick inte att bekräfta kortet. Försök igen senare.</translation>
 <translation id="3064966200440839136">Om du betalar i ett externt program sker inte det i inkognitoläge. Vill du fortsätta?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Ingen}=1{1 lösenord}other{# lösenord}}</translation>
-<translation id="3093245981617870298">Du är offline.</translation>
 <translation id="3096100844101284527">Lägg till hämtningsadress</translation>
 <translation id="3105172416063519923">Tillgångs-id:</translation>
 <translation id="3109728660330352905">Du är inte behörig att se den här sidan.</translation>
@@ -1109,7 +1108,6 @@
 <translation id="9207861905230894330">Det gick inte att lägga till artikeln.</translation>
 <translation id="9215416866750762878">Ett program förhindrar att Chrome ansluter till den här webbplatsen på ett säkert sätt</translation>
 <translation id="9219103736887031265">Bilder</translation>
-<translation id="933612690413056017">Det finns ingen internetanslutning</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">RENSA FORMULÄRET</translation>
 <translation id="939736085109172342">Ny mapp</translation>

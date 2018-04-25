@@ -303,7 +303,6 @@
 <translation id="3063697135517575841">Saat ini Chrome tidak dapat mengonfirmasi kartu. Coba lagi nanti.</translation>
 <translation id="3064966200440839136">Keluar dari mode penyamaran untuk membayar melalui aplikasi eksternal. Lanjutkan?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Tidak ada}=1{1 sandi}other{# sandi}}</translation>
-<translation id="3093245981617870298">Anda sedang offline.</translation>
 <translation id="3096100844101284527">Tambahkan Alamat Pengambilan</translation>
 <translation id="3105172416063519923">ID Aset:</translation>
 <translation id="3109728660330352905">Anda tidak memiliki otorisasi untuk melihat halaman ini.</translation>
@@ -737,6 +736,7 @@
 <translation id="6263376278284652872">Bookmark <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Kembali ke keamanan</translation>
 <translation id="6276112860590028508">Halaman dari daftar bacaan Anda muncul di sini</translation>
+<translation id="627746635834430766">Untuk membayar lebih cepat di pembelian selanjutnya, simpan kartu dan alamat penagihan ke Akun Google Anda.</translation>
 <translation id="6280223929691119688">Tidak dapat mengirim ke alamat ini. Pilih alamat lain.</translation>
 <translation id="6282194474023008486">Kode pos</translation>
 <translation id="6290238015253830360">Artikel yang disarankan ditampilkan di sini</translation>
@@ -751,6 +751,7 @@
 <translation id="6355080345576803305">Diganti oleh sesi publik</translation>
 <translation id="6358450015545214790">Apakah maksud ini?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 saran lain}other{# saran lain}}</translation>
+<translation id="6387754724289022810">Untuk membayar lebih cepat di pembelian selanjutnya, simpan kartu dan alamat penagihan ke Akun Google Anda dan ke perangkat ini.</translation>
 <translation id="6397451950548600259">Software di komputer menghentikan Chrome agar tidak terhubung dengan aman ke web</translation>
 <translation id="6404511346730675251">Edit bookmark</translation>
 <translation id="6410264514553301377">Masukkan tanggal kedaluwarsa dan CVC <ph name="CREDIT_CARD" /></translation>
@@ -1108,7 +1109,6 @@
 <translation id="9207861905230894330">Gagal menambahkan artikel.</translation>
 <translation id="9215416866750762878">Aplikasi membuat Chrome tidak terhubung dengan aman ke situs ini</translation>
 <translation id="9219103736887031265">Gambar</translation>
-<translation id="933612690413056017">Tidak ada koneksi Internet</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">HAPUS FORMULIR</translation>
 <translation id="939736085109172342">Folder baru</translation>

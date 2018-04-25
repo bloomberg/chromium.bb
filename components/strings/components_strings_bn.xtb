@@ -303,7 +303,6 @@
 <translation id="3063697135517575841">Chrome এই মুহূর্তে আপনার কার্ড নিশ্চিত করতে পারছে না৷ অনুগ্রহ করে পরে আবার চেষ্টা করুন৷</translation>
 <translation id="3064966200440839136">বহিরাগত অ্যাপ্লিকেশানের মাধ্যমে অর্থপ্রদান করার জন্য ছদ্মবেশী মোড থেকে বেরিয়ে যাচ্ছে। চালিয়ে যাবেন?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{কিছুই নয়}=1{১টি পাসওয়ার্ড}one{#টি পাসওয়ার্ড}other{#টি পাসওয়ার্ড}}</translation>
-<translation id="3093245981617870298">আপনি অফলাইনে আছেন৷</translation>
 <translation id="3096100844101284527">পিক-আপের ঠিকানা যোগ করুন</translation>
 <translation id="3105172416063519923">সম্পদ আইডি:</translation>
 <translation id="3109728660330352905">আপনার এই পৃষ্ঠাটি দেখার জন্য অনুমোদন নেই।</translation>
@@ -1096,7 +1095,6 @@
 <translation id="9207861905230894330">নিবন্ধ যোগ করতে ব্যর্থ হয়েছে৷</translation>
 <translation id="9215416866750762878">একটি অ্যাপ্লিকেশন Chrome কে এই সাইটের সাথে নিরাপদভাবে সংযুক্ত হতে বাধা দিচ্ছে</translation>
 <translation id="9219103736887031265">ছবিগুলি</translation>
-<translation id="933612690413056017">কোনো ইন্টারনেট সংযোগ নেই</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">ফর্ম সাফ করুন</translation>
 <translation id="939736085109172342">নতুন ফোল্ডার</translation>

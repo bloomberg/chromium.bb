@@ -303,7 +303,6 @@
 <translation id="3063697135517575841">Chrome 目前無法驗證您的信用卡，請稍後再試。</translation>
 <translation id="3064966200440839136">即將離開無痕模式，改為使用外部應用程式付款，要繼續嗎？</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{無}=1{1 組密碼}other{# 組密碼}}</translation>
-<translation id="3093245981617870298">你處於離線狀態。</translation>
 <translation id="3096100844101284527">新增取件地址</translation>
 <translation id="3105172416063519923">資產 ID：</translation>
 <translation id="3109728660330352905">您未獲得授權，無法瀏覽這個網頁。</translation>
@@ -1108,7 +1107,6 @@
 <translation id="9207861905230894330">無法新增文章。</translation>
 <translation id="9215416866750762878">有應用程式阻止 Chrome 建立這個網站的安全連線</translation>
 <translation id="9219103736887031265">圖片</translation>
-<translation id="933612690413056017">無法連上網際網路</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">清除表單</translation>
 <translation id="939736085109172342">新增資料夾</translation>

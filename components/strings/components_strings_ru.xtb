@@ -303,7 +303,6 @@
 <translation id="3063697135517575841">Не удалось подтвердить данные карты. Повторите попытку позже.</translation>
 <translation id="3064966200440839136">Вы выйдете из режима инкогнито, чтобы произвести оплату во внешнем приложении. Продолжить?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Нет}=1{1 пароль}one{# пароль}few{# пароля}many{# паролей}other{# пароля}}</translation>
-<translation id="3093245981617870298">Нет подключения к сети</translation>
 <translation id="3096100844101284527">Добавить адрес получения</translation>
 <translation id="3105172416063519923">Идентификатор объекта:</translation>
 <translation id="3109728660330352905">У вас нет прав для просмотра этой страницы.</translation>
@@ -1107,7 +1106,6 @@
 <translation id="9207861905230894330">Не удалось добавить статью</translation>
 <translation id="9215416866750762878">Приложение не позволяет Chrome безопасно подключиться к этому сайту</translation>
 <translation id="9219103736887031265">Картинки</translation>
-<translation id="933612690413056017">Нет подключения к Интернету</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">ОЧИСТИТЬ ФОРМУ</translation>
 <translation id="939736085109172342">Новая папка</translation>

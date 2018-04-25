@@ -302,7 +302,6 @@
 <translation id="3063697135517575841">Momentan, Chrome nu a putut confirma cardul. Încearcă din nou mai târziu.</translation>
 <translation id="3064966200440839136">Vei părăsi modul incognito pentru a plăti folosind o aplicație externă. Continui?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Niciuna}=1{1 parolă}few{# parole}other{# de parole}}</translation>
-<translation id="3093245981617870298">Ești offline.</translation>
 <translation id="3096100844101284527">Adaugă o adresă de preluare</translation>
 <translation id="3105172416063519923">ID articol:</translation>
 <translation id="3109728660330352905">Nu ești autorizat(ă) să vezi această pagină.</translation>
@@ -1107,7 +1106,6 @@
 <translation id="9207861905230894330">Articolul nu a fost adăugat.</translation>
 <translation id="9215416866750762878">O aplicație împiedică browserul Chrome să se conecteze în siguranță la acest site</translation>
 <translation id="9219103736887031265">Imagini</translation>
-<translation id="933612690413056017">Nu există conexiune la internet</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">GOLEȘTE FORMULARUL</translation>
 <translation id="939736085109172342">Dosar nou</translation>

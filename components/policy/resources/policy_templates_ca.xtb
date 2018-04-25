@@ -252,6 +252,22 @@
       Si s'estableix en "false", es desactivaran els informes de mètriques i de dades de diagnòstic.
 
       Si no es configura, els informes de mètriques i de dades de diagnòstic es desactivaran als dispositius no gestionats i s'activaran als dispositius gestionats.</translation>
+<translation id="1929709556673267855">Proporciona configuracions per a les impressores d'empresa vinculades a dispositius.
+
+      Aquesta política et permet proporcionar configuracions d'impressores als dispositius <ph name="PRODUCT_OS_NAME" />. El format és el mateix que el del diccionari NativePrinters, amb un camp addicional "id" o "guid" obligatori per afegir cada impressora a la llista blanca o negra.
+
+      El fitxer ha d'estar codificat en JSON i no pot superar els 5 MB. Es calcula que 5 MB corresponen a un fitxer amb unes 21.000 impressores. El resum criptogràfic serveix per verificar la integritat de la baixada.
+
+      El fitxer es baixa i es desa a la memòria cau. Es torna a baixar cada cop que es modifica l'URL o el resum.
+
+      Si es defineix aquesta política, <ph name="PRODUCT_OS_NAME" /> baixarà el fitxer per a les configuracions d'impressores i les impressores estaran disponibles de conformitat amb <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> i <ph name="DEVICE_PRINTERS_BLACKLIST" />.
+
+      Aquesta política no influeix en la possibilitat que tenen els usuaris de configurar les impressores en dispositius concrets. La seva finalitat és complementar la configuració de les impressores per part dels usuaris.
+
+      Aquesta política complementa <ph name="BULK_PRINTERS_POLICY" />.
+
+      Si aquesta política no es defineix, no hi haurà impressores per als dispositius i les altres polítiques <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> s'ignoraran.
+      </translation>
 <translation id="193259052151668190">Llista blanca de dispositius USB que es poden separar</translation>
 <translation id="1933378685401357864">Imatge de fons de pantalla</translation>
 <translation id="1956493342242507974">Configuració de la gestió d'energia a la pantalla d'inici de <ph name="PRODUCT_OS_NAME" />
@@ -284,6 +300,20 @@
 
       Tingues en compte que, si la plataforma admet notificacions sobre polítiques, el retard d'actualització s'establirà en 24 hores (i s'ignoraran tots els valors predeterminats i el valor d'aquesta política), ja que es preveu que aquestes notificacions forcin una actualització automàtica cada vegada que canviï la política. Per tant, serà innecessari fer actualitzacions més freqüents.</translation>
 <translation id="2024476116966025075">Configura el nom de domini requerit per a clients d'accés remot</translation>
+<translation id="202757291638965203">Configura una llista d'impressores.
+
+      Aquesta política permet als administradors proporcionar configuracions d'impressores als usuaris.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> són cadenes de format lliure que es poden personalitzar per facilitar la selecció de la impressora. Les cadenes <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> representen el fabricant i el model de la impressora, i serveixen perquè els usuaris finals puguin identificar la impressora més fàcilment. <ph name="PRINTER_URI" /> ha de ser una adreça accessible des d'un ordinador de client, com ara <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> és opcional. Si s'indica, s'utilitza per eliminar la duplicació d'impressores <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> ha de coincidir amb una de les cadenes que representa una impressora <ph name="PRODUCT_NAME" /> admesa. La cadena s'utilitzarà per identificar i instal·lar el fitxer PPD adequat per a la impressora. Pots trobar-ne més informació a https://support.google.com/chrome?p=noncloudprint.
+
+      La configuració d'una impressora es completa quan s'utilitza per primera vegada, moment en què es baixen els fitxers PPD. Després, els que s'utilitzen sovint es desen a la memòria cau.
+
+      Aquesta política no té cap efecte en si els usuaris poden configurar impressores en dispositius concrets, sinó que s'ha creat per complementar la configuració d'impressores per part dels usuaris.
+
+      En el cas dels dispositius gestionats d'Active Directory, aquesta política permet ampliar <ph name="MACHINE_NAME_VARIABLE" /> per incloure-hi el nom del dispositiu d'Active Directory o una subcadena d'aquest. Si, per exemple, el nom del dispositiu és <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> se substituirà pels 4 caràcters posteriors a la sisena posició, és a dir, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Fixa't que la posició es basa en zero.
+      </translation>
 <translation id="2030905906517501646">Paraula clau del proveïdor de cerca predeterminat</translation>
 <translation id="203096360153626918">Aquesta política no té cap efecte a les aplicacions per a Android. Podran activar el mode de pantalla completa encara que aquesta política s'estableixi en "<ph name="FALSE" />".</translation>
 <translation id="2043770014371753404">Impressores d'empresa desactivades</translation>
@@ -533,6 +563,20 @@
           Si aquesta política no s'estableix, l'opció predeterminada és "true" i s'activa l'autenticació NTLMv2.</translation>
 <translation id="2623014935069176671">Espereu que hi hagi una activitat inicial de l'usuari.</translation>
 <translation id="262740370354162807">Activa l'enviament de documents a <ph name="CLOUD_PRINT_NAME" /></translation>
+<translation id="2627554163382448569">Proporciona configuracions per a les impressores d'empresa.
+
+      Aquesta política et permet proporcionar configuracions d'impressores als dispositius <ph name="PRODUCT_OS_NAME" />. El format és el mateix que el del diccionari NativePrinters, amb un camp addicional "id" o "guid" obligatori per afegir cada impressora a la llista blanca o negra.
+
+      El fitxer ha d'estar codificat en JSON i no pot superar els 5 MB. Es calcula que 5 MB corresponen a un fitxer amb unes 21.000 impressores. El resum criptogràfic serveix per verificar la integritat de la baixada.
+
+      El fitxer es baixa i es desa a la memòria cau. Es torna a baixar cada cop que es modifica l'URL o el resum.
+
+      Si es defineix aquesta política, <ph name="PRODUCT_OS_NAME" /> baixarà el fitxer per a les configuracions d'impressores i les impressores estaran disponibles de conformitat amb <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> i <ph name="BULK_PRINTERS_BLACKLIST" />.
+
+      Si defineixes aquesta política, els usuaris no la poden canviar ni substituir.
+
+      Aquesta política no influeix en la possibilitat que tenen els usuaris de configurar les impressores en dispositius concrets. La seva finalitat és complementar la configuració de les impressores per part dels usuaris.
+      </translation>
 <translation id="2633084400146331575">Activa els comentaris de veu</translation>
 <translation id="2646290749315461919">Us permet definir si els llocs web poden rastrejar la ubicació física dels usuaris. El seguiment de la ubicació física dels usuaris es pot autoritzar o denegar de manera predeterminada o bé es pot preguntar a l'usuari cada vegada que un lloc web demani la ubicació física. Si no es defineix aquesta política, s'utilitzarà el paràmetre "AskGeolocation" i l'usuari podrà canviar-lo.</translation>
 <translation id="2647069081229792812">Activa o desactiva l'edició d'adreces d'interès</translation>
@@ -590,6 +634,12 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="2823870601012066791">Ubicació del registre de Windows per a clients amb <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Activa el mode d'incògnit</translation>
 <translation id="2838830882081735096">No permetis la migració de dades i ARC</translation>
+<translation id="2840269525054388612">Especifica les impressores que un usuari pot fer servir.
+
+      Aquesta política només s'utilitza si se selecciona <ph name="PRINTERS_WHITELIST" /> per a <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
+
+      Si s'utilitza, l'usuari només tindrà a la seva disposició les impressores amb identificadors que coincideixin amb els valors d'aquesta política. Els identificadors han de correspondre amb el camp "id" o "guid" del fitxer especificat a <ph name="DEVICE_PRINTERS_POLICY" />.
+      </translation>
 <translation id="2844404652289407061">Permet que la funció Toca per cercar estigui disponible a la visualització de contingut de <ph name="PRODUCT_NAME" />.
 
       Si activeu aquesta opció de configuració, l'usuari tindrà a la seva disposició la funció Toca per cercar i podrà activar-la i desactivar-la.
@@ -1057,6 +1107,12 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4239720644496144453">La memòria cau no s'utilitza a les aplicacions per a Android. Si diversos usuaris instal·len la mateixa aplicació per a Android, es baixarà de nou en cada cas.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Configuració regional de la pantalla d'inici de sessió del dispositiu</translation>
+<translation id="427220754384423013">Especifica les impressores que un usuari pot fer servir.
+
+      Aquesta política només s'utilitza si se selecciona <ph name="PRINTERS_WHITELIST" /> per a <ph name="BULK_PRINTERS_ACCESS_MODE" />.
+
+      Si s'utilitza, l'usuari només tindrà a la seva disposició les impressores amb identificadors que coincideixin amb els valors d'aquesta política. Els identificadors han de correspondre amb el camp "id" o "guid" del fitxer especificat a <ph name="BULK_PRINTERS_POLICY" />.
+      </translation>
 <translation id="427632463972968153">Especifica els paràmetres utilitzats en cercar imatges amb POST. Consisteix en parelles de nom/valor separades per comes. Si un valor és un paràmetre de plantilla, com ara {imageThumbnail} a l'exemple anterior, se substituirà per dades de la miniatura de la imatge real.
 
           Aquesta política és opcional. Si no es defineix, la sol·licitud de cerca d'imatges s'enviarà mitjançant el mètode GET.
@@ -2049,6 +2105,12 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="749556411189861380">Informa de la versió del SO i del microprogramari dels dispositius inscrits.
 
       Si aquest opció de configuració no s'estableix o s'estableix com a certa, els dispositius inscrits informaran de la versió de SO i de microprogramari de manera periòdica. Si s'estableix com a falsa, no s'enviarà informació sobre la versió.</translation>
+<translation id="7498946151094347510">Especifica les impressores que un usuari no pot fer servir.
+
+      Aquesta política només s'utilitza si se selecciona <ph name="PRINTERS_BLACKLIST" /> per a <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
+
+      Si s'utilitza, l'usuari té accés a totes les impressores tret de les identificades en aquesta política. Els identificadors han de correspondre amb el camp "id" o "guid" del fitxer especificat a <ph name="DEVICE_PRINTERS_POLICY" />.
+      </translation>
 <translation id="7511361072385293666">Si aquesta política s'estableix en "true" o no es configura, es permet utilitzar el protocol QUIC a <ph name="PRODUCT_NAME" />.
       Si aquesta política s'estableix en "false", no es permet utilitzar el protocol QUIC.</translation>
 <translation id="7519251620064708155">Permet que aquests llocs utilitzin la generació de claus</translation>
@@ -2404,6 +2466,12 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="8544375438507658205">Renderitzador HTML predeterminat per a <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Mostra un advertiment quan es visitin llocs no inclosos en paquets de contingut.</translation>
 <translation id="8566842294717252664">Amaga Web Store a la pàgina Pestanya nova i al Menú d'aplicacions</translation>
+<translation id="8586528890725660268">Especifica les impressores que un usuari no pot fer servir.
+
+      Aquesta política només s'utilitza si se selecciona <ph name="PRINTERS_BLACKLIST" /> per a <ph name="BULK_PRINTERS_ACCESS_MODE" />.
+
+      Si s'utilitza, l'usuari té accés a totes les impressores tret de les identificades en aquesta política. Els identificadors han de correspondre amb el camp "id" o "guid" del fitxer especificat a <ph name="BULK_PRINTERS_POLICY" />.
+      </translation>
 <translation id="8587229956764455752">Permet la creació de comptes d'usuari</translation>
 <translation id="8598350264853261122">Si la política es defineix com "false", els usuaris no afiliats no tindran permís per fer servir ARC.
 
