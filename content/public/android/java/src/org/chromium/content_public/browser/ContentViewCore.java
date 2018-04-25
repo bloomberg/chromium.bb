@@ -133,16 +133,6 @@ public interface ContentViewCore {
     boolean onGenericMotionEvent(MotionEvent event);
 
     /**
-     * @see View#onKeyUp(int, KeyEvent)
-     */
-    boolean onKeyUp(int keyCode, KeyEvent event);
-
-    /**
-     * @see View#dispatchKeyEvent(KeyEvent)
-     */
-    boolean dispatchKeyEvent(KeyEvent event);
-
-    /**
      * @see View#onWindowFocusChanged(boolean)
      */
     void onWindowFocusChanged(boolean hasWindowFocus);

@@ -2516,8 +2516,8 @@ public class AwContents implements SmartClipProvider {
      * @see android.view.View#onGenericMotionEvent()
      */
     public boolean onGenericMotionEvent(MotionEvent event) {
-        return isDestroyedOrNoOperation(NO_WARN) ? false :
-            mContentViewCore.onGenericMotionEvent(event);
+        return isDestroyedOrNoOperation(NO_WARN) ? false
+                                                 : mContentViewCore.onGenericMotionEvent(event);
     }
 
     /**
@@ -3354,8 +3354,9 @@ public class AwContents implements SmartClipProvider {
 
         @Override
         public boolean onKeyUp(int keyCode, KeyEvent event) {
-            return isDestroyedOrNoOperation(NO_WARN) ? false
-                    : mContentViewCore.onKeyUp(keyCode, event);
+            return isDestroyedOrNoOperation(NO_WARN)
+                    ? false
+                    : mWebContents.getEventForwarder().onKeyUp(keyCode, event);
         }
 
         @Override
@@ -3374,7 +3375,7 @@ public class AwContents implements SmartClipProvider {
                     && mContentsClient.shouldOverrideKeyEvent(event)) {
                 return mInternalAccessAdapter.super_dispatchKeyEvent(event);
             }
-            return mContentViewCore.dispatchKeyEvent(event);
+            return mWebContents.getEventForwarder().dispatchKeyEvent(event);
         }
 
         @Override
@@ -3426,7 +3427,7 @@ public class AwContents implements SmartClipProvider {
         @Override
         public boolean onGenericMotionEvent(MotionEvent event) {
             return isDestroyedOrNoOperation(NO_WARN) ? false
-                    : mContentViewCore.onGenericMotionEvent(event);
+                                                     : mContentViewCore.onGenericMotionEvent(event);
         }
 
         @Override

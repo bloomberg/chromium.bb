@@ -26,6 +26,27 @@ bool EventHandlerAndroid::OnGestureEvent(const GestureEventAndroid& event) {
   return false;
 }
 
+bool EventHandlerAndroid::OnGenericMotionEvent(
+    const MotionEventAndroid& event) {
+  return false;
+}
+
+bool EventHandlerAndroid::OnKeyUp(const KeyEventAndroid& event) {
+  return false;
+}
+
+bool EventHandlerAndroid::DispatchKeyEvent(const KeyEventAndroid& event) {
+  return false;
+}
+
+bool EventHandlerAndroid::ScrollBy(const GestureEventAndroid& event) {
+  return false;
+}
+
+bool EventHandlerAndroid::ScrollTo(const GestureEventAndroid& event) {
+  return false;
+}
+
 void EventHandlerAndroid::OnSizeChanged() {}
 
 void EventHandlerAndroid::OnPhysicalBackingSizeChanged() {}

@@ -32,6 +32,7 @@ class DragEventAndroid;
 class EventForwarder;
 class EventHandlerAndroid;
 class GestureEventAndroid;
+class KeyEventAndroid;
 class MotionEventAndroid;
 class WindowAndroid;
 class ViewAndroidObserver;
@@ -195,6 +196,8 @@ class UI_ANDROID_EXPORT ViewAndroid {
   bool OnMouseEvent(const MotionEventAndroid& event);
   bool OnMouseWheelEvent(const MotionEventAndroid& event);
   bool OnGestureEvent(const GestureEventAndroid& event);
+  bool OnKeyUp(const KeyEventAndroid& event);
+  bool DispatchKeyEvent(const KeyEventAndroid& event);
 
   void RemoveChild(ViewAndroid* child);
   void RemoveAllChildren();

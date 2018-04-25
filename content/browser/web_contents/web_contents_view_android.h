@@ -20,6 +20,7 @@
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace content {
+class ContentUiEventHandler;
 class RenderWidgetHostViewAndroid;
 class SelectPopup;
 class SelectionPopupController;
@@ -34,6 +35,8 @@ class WebContentsViewAndroid : public WebContentsView,
   WebContentsViewAndroid(WebContentsImpl* web_contents,
                          WebContentsViewDelegate* delegate);
   ~WebContentsViewAndroid() override;
+
+  void SetContentUiEventHandler(std::unique_ptr<ContentUiEventHandler> handler);
 
   // Sets the object that show/hide popup view for <select> tag.
   void SetSelectPopup(std::unique_ptr<SelectPopup> select_popup);
@@ -111,6 +114,8 @@ class WebContentsViewAndroid : public WebContentsView,
   bool OnTouchEvent(const ui::MotionEventAndroid& event) override;
   bool OnMouseEvent(const ui::MotionEventAndroid& event) override;
   bool OnDragEvent(const ui::DragEventAndroid& event) override;
+  bool OnKeyUp(const ui::KeyEventAndroid& event) override;
+  bool DispatchKeyEvent(const ui::KeyEventAndroid& event) override;
   void OnSizeChanged() override;
   void OnPhysicalBackingSizeChanged() override;
 
@@ -129,6 +134,9 @@ class WebContentsViewAndroid : public WebContentsView,
 
   // The WebContents whose contents we display.
   WebContentsImpl* web_contents_;
+
+  // Handles UI events in Java layer when necessary.
+  std::unique_ptr<ContentUiEventHandler> content_ui_event_handler_;
 
   // Handles "overscroll to refresh" events
   std::unique_ptr<ui::OverscrollRefreshHandler> overscroll_refresh_handler_;

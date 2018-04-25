@@ -20,6 +20,7 @@
 #include "ui/events/android/drag_event_android.h"
 #include "ui/events/android/event_handler_android.h"
 #include "ui/events/android/gesture_event_android.h"
+#include "ui/events/android/key_event_android.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "url/gurl.h"
@@ -530,6 +531,28 @@ bool ViewAndroid::OnGestureEvent(const GestureEventAndroid& event) {
 bool ViewAndroid::SendGestureEventToHandler(EventHandlerAndroid* handler,
                                             const GestureEventAndroid& event) {
   return handler->OnGestureEvent(event);
+}
+
+bool ViewAndroid::OnKeyUp(const KeyEventAndroid& event) {
+  if (event_handler_ && event_handler_->OnKeyUp(event))
+    return true;
+
+  for (auto* child : children_) {
+    if (child->OnKeyUp(event))
+      return true;
+  }
+  return false;
+}
+
+bool ViewAndroid::DispatchKeyEvent(const KeyEventAndroid& event) {
+  if (event_handler_ && event_handler_->DispatchKeyEvent(event))
+    return true;
+
+  for (auto* child : children_) {
+    if (child->DispatchKeyEvent(event))
+      return true;
+  }
+  return false;
 }
 
 template <typename E>

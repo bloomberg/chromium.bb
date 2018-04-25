@@ -84,9 +84,9 @@ public class WebKitHitTestTest {
 
     private void simulateTabDownUpOnUiThread() throws Throwable {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
-            mAwContents.getContentViewCore().dispatchKeyEvent(
+            mAwContents.getWebContents().getEventForwarder().dispatchKeyEvent(
                     new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_TAB));
-            mAwContents.getContentViewCore().dispatchKeyEvent(
+            mAwContents.getWebContents().getEventForwarder().dispatchKeyEvent(
                     new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_TAB));
         });
     }

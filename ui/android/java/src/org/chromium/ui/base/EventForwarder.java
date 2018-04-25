@@ -9,6 +9,7 @@ import android.content.ClipData;
 import android.content.ClipDescription;
 import android.os.Build;
 import android.view.DragEvent;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -350,7 +351,18 @@ public class EventForwarder {
      *        pinch scale to default.
      */
     public boolean onGestureEvent(@GestureEventType int type, long timeMs, float delta) {
+        if (mNativeEventForwarder == 0) return false;
         return nativeOnGestureEvent(mNativeEventForwarder, type, timeMs, delta);
+    }
+
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (mNativeEventForwarder == 0) return false;
+        return nativeOnKeyUp(mNativeEventForwarder, event, keyCode);
+    }
+
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (mNativeEventForwarder == 0) return false;
+        return nativeDispatchKeyEvent(mNativeEventForwarder, event);
     }
 
     /**
@@ -413,6 +425,8 @@ public class EventForwarder {
             int screenX, int screenY, String[] mimeTypes, String content);
     private native boolean nativeOnGestureEvent(
             long nativeEventForwarder, int type, long timeMs, float delta);
+    private native boolean nativeOnKeyUp(long nativeEventForwarder, KeyEvent event, int keyCode);
+    private native boolean nativeDispatchKeyEvent(long nativeEventForwarder, KeyEvent event);
     private native void nativeScroll(
             long nativeEventForwarder, long timeMs, float deltaX, float deltaY);
     private native void nativeDoubleTap(long nativeEventForwarder, long timeMs, int x, int y);
