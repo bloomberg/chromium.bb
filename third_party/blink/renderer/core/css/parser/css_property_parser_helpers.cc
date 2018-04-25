@@ -404,10 +404,10 @@ CSSPrimitiveValue* ConsumeGradientLengthOrPercent(
 CSSPrimitiveValue* ConsumeAngle(
     CSSParserTokenRange& range,
     const CSSParserContext* context,
-    base::Optional<WebFeature> unitlessZeroFeature) {
-  // Ensure that we have a context for counting the unitlessZeroFeature if it is
-  // requested.
-  DCHECK(context || !unitlessZeroFeature);
+    base::Optional<WebFeature> unitless_zero_feature) {
+  // Ensure that we have a context for counting the
+  // unitless_zero_feature if it is requested.
+  DCHECK(context || !unitless_zero_feature);
   const CSSParserToken& token = range.Peek();
   if (token.GetType() == kDimensionToken) {
     switch (token.GetUnitType()) {
@@ -423,9 +423,9 @@ CSSPrimitiveValue* ConsumeAngle(
     }
   }
   if (token.GetType() == kNumberToken && token.NumericValue() == 0 &&
-      unitlessZeroFeature) {
+      unitless_zero_feature) {
     range.ConsumeIncludingWhitespace();
-    context->Count(*unitlessZeroFeature);
+    context->Count(*unitless_zero_feature);
     return CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kDegrees);
   }
   CalcParser calc_parser(range, kValueRangeAll);
@@ -836,7 +836,7 @@ static void PositionFromThreeOrFourValues(CSSValue** values,
 bool ConsumePosition(CSSParserTokenRange& range,
                      const CSSParserContext& context,
                      UnitlessQuirk unitless,
-                     base::Optional<WebFeature> threeValuePosition,
+                     base::Optional<WebFeature> three_value_position,
                      CSSValue*& result_x,
                      CSSValue*& result_y) {
   bool horizontal_edge = false;
@@ -883,7 +883,7 @@ bool ConsumePosition(CSSParserTokenRange& range,
                                       horizontal_edge, vertical_edge);
 
   if (!value4) {
-    if (!threeValuePosition) {
+    if (!three_value_position) {
       // [top | bottom] <length-percentage> is not permitted
       if (vertical_edge && !value2->IsIdentifierValue()) {
         range = range_after_first_consume;
@@ -894,8 +894,9 @@ bool ConsumePosition(CSSParserTokenRange& range,
       PositionFromTwoValues(value1, value2, result_x, result_y);
       return true;
     }
-    DCHECK_EQ(*threeValuePosition, WebFeature::kThreeValuedPositionBackground);
-    context.Count(*threeValuePosition);
+    DCHECK_EQ(*three_value_position,
+              WebFeature::kThreeValuedPositionBackground);
+    context.Count(*three_value_position);
   }
 
   CSSValue* values[5];
@@ -911,10 +912,10 @@ bool ConsumePosition(CSSParserTokenRange& range,
 CSSValuePair* ConsumePosition(CSSParserTokenRange& range,
                               const CSSParserContext& context,
                               UnitlessQuirk unitless,
-                              base::Optional<WebFeature> threeValuePosition) {
+                              base::Optional<WebFeature> three_value_position) {
   CSSValue* result_x = nullptr;
   CSSValue* result_y = nullptr;
-  if (ConsumePosition(range, context, unitless, threeValuePosition, result_x,
+  if (ConsumePosition(range, context, unitless, three_value_position, result_x,
                       result_y))
     return CSSValuePair::Create(result_x, result_y,
                                 CSSValuePair::kKeepIdenticalValues);
