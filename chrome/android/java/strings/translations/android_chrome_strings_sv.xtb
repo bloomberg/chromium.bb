@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">Dölj för tillfället</translation>
 <translation id="1211530540767271776">Det finns inga USB-enheter här</translation>
 <translation id="123724288017357924">Läs in den aktuella sidan igen och ignorera cachelagrat innehåll</translation>
-<translation id="1240668123557180468">Upptäck webbsidor som skickats av enheter i närheten. Chrome samlar webbsidor som är kopplade till enheter i din omgivning, skickar de sedan anonymt till en av Googles tjänster och väljer de som är mest användbara för dig och visar dem sedan.
-
-Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjänster.</translation>
 <translation id="124116460088058876">Fler språk</translation>
 <translation id="124678866338384709">Stäng den aktuella fliken</translation>
 <translation id="1258753120186372309">Googles doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -643,7 +640,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6864459304226931083">Ladda ned bild</translation>
 <translation id="6865313869410766144">Formuläruppgifter för Autofyll</translation>
 <translation id="6868088497967843822">Logga in om du vill att bokmärken, historik, lösenord och andra inställningar ska vara tillgängliga på alla dina enheter.</translation>
-<translation id="6875705348083140572">Visa vad som finns i närheten</translation>
 <translation id="688738109438487280">Lägg till befintlig data i <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Lås upp om du vill kopiera lösenordet</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d öppen flik}other{%1$d öppna flikar}}</translation>
@@ -716,7 +712,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7542481630195938534">Det går inte att få förslag</translation>
 <translation id="7562080006725997899">Tar bort webbinformation</translation>
 <translation id="756809126120519699">Data i Chrome har rensats</translation>
-<translation id="7588950540487816470">Physical Web</translation>
 <translation id="7589445247086920869">Blockera för den nuvarande sökmotorn</translation>
 <translation id="7593557518625677601">Återaktivera synkronisering i Android-inställningarna så börjar Chrome synkas</translation>
 <translation id="7596558890252710462">Operativsystem</translation>

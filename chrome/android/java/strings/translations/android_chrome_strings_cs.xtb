@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">Prozatím skrýt</translation>
 <translation id="1211530540767271776">Nejsou zde žádná zařízení USB</translation>
 <translation id="123724288017357924">Obnovit stránku a ignorovat obsah v mezipaměti</translation>
-<translation id="1240668123557180468">Objevujte webové stránky odesílané objekty v okolí. Chrome shromažďuje webové stránky přidružené k objektům v okolí a anonymně je odesílá do služby Google. Ta vyhodnotí, které z nich jsou pro vás užitečné, a zobrazí vám je.
-
-Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování polohy.</translation>
 <translation id="124116460088058876">Další jazyky</translation>
 <translation id="124678866338384709">Zavřít aktuální kartu</translation>
 <translation id="1258753120186372309">Sváteční logo Google: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -643,7 +640,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6864459304226931083">Stáhnout obrázek</translation>
 <translation id="6865313869410766144">Automatické vyplňování formulářů</translation>
 <translation id="6868088497967843822">Přihlaste se a synchronizujte záložky, historii, hesla a další nastavení do všech svých zařízení.</translation>
-<translation id="6875705348083140572">Zobrazit weby v okolí</translation>
 <translation id="688738109438487280">Přidat existující data do účtu <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Chcete-li zkopírovat heslo, odemkněte zařízení</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d otevřená karta}few{%1$d otevřené karty}many{%1$d otevřené karty}other{%1$d otevřených karet}}</translation>
@@ -716,7 +712,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7542481630195938534">Návrhy nelze načíst</translation>
 <translation id="7562080006725997899">Mazání údajů o prohlížení</translation>
 <translation id="756809126120519699">Vymazání údajů Chromu</translation>
-<translation id="7588950540487816470">Fyzický web</translation>
 <translation id="7589445247086920869">Blokovat pro aktuální vyhledávač</translation>
 <translation id="7593557518625677601">Chcete-li spustit synchronizaci Chromu, povolte synchronizaci systému Android.</translation>
 <translation id="7596558890252710462">Operační systém</translation>

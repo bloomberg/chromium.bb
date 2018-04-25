@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">暫時隱藏</translation>
 <translation id="1211530540767271776">清單中沒有任何 USB 裝置</translation>
 <translation id="123724288017357924">重新載入目前的網頁，略過已快取的內容</translation>
-<translation id="1240668123557180468">探索附近物件傳送的網頁。Chrome 會收集與您附近物件相關聯的網頁，將這些資訊以匿名方式傳送給 Google 服務，藉此找出並顯示對您最實用的資訊。
-
-您必須開啟藍牙和定位功能，才能使用實體化網路。</translation>
 <translation id="124116460088058876">更多語言</translation>
 <translation id="124678866338384709">關閉目前的分頁</translation>
 <translation id="1258753120186372309">Google Doodle：<ph name="DOODLE_DESCRIPTION" /></translation>
@@ -643,7 +640,6 @@
 <translation id="6864459304226931083">下載圖片</translation>
 <translation id="6865313869410766144">自動填入表單資料</translation>
 <translation id="6868088497967843822">登入後，即可從任何裝置取得自己的書籤、歷史記錄、密碼和其他設定</translation>
-<translation id="6875705348083140572">查看附近網址</translation>
 <translation id="688738109438487280">將現有資料新增至 <ph name="TO_ACCOUNT" />。</translation>
 <translation id="6891726759199484455">解鎖即可複製你的密碼</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d 個開啟的分頁}other{%1$d 個開啟的分頁}}</translation>
@@ -716,7 +712,6 @@
 <translation id="7542481630195938534">無法取得建議</translation>
 <translation id="7562080006725997899">正在清除瀏覽資料</translation>
 <translation id="756809126120519699">已清除 Chrome 資料</translation>
-<translation id="7588950540487816470">實體化網路</translation>
 <translation id="7589445247086920869">對目前的搜尋引擎封鎖</translation>
 <translation id="7593557518625677601">如要啟動 Chrome 同步功能，請開啟 Android 設定並重新啟用 Android 系統同步處理設定</translation>
 <translation id="7596558890252710462">作業系統</translation>

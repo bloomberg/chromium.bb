@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">Sembunyikan sekarang</translation>
 <translation id="1211530540767271776">Tidak ada perangkat USB di sini</translation>
 <translation id="123724288017357924">Memuat ulang halaman, mengabaikan konten dalam cache</translation>
-<translation id="1240668123557180468">Temukan halaman web yang dikirim oleh objek di sekitar. Chrome mengumpulkan halaman web yang terkait dengan objek di sekitar Anda, mengirimkannya secara anonim ke layanan Google untuk menemukan halaman web yang paling bermanfaat untuk Anda, kemudian menampilkan halaman web tersebut.
-
-Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</translation>
 <translation id="124116460088058876">Bahasa lainnya</translation>
 <translation id="124678866338384709">Menutup tab aktif</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -643,7 +640,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6864459304226931083">Download gambar</translation>
 <translation id="6865313869410766144">Data formulir isi-otomatis</translation>
 <translation id="6868088497967843822">Masuk untuk mendapatkan bookmark, histori, sandi, dan setelan Anda lainnya di semua perangkat</translation>
-<translation id="6875705348083140572">Lihat yang ada di sekitar</translation>
 <translation id="688738109438487280">Menambahkan data yang sudah ada ke <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Buka kunci untuk menyalin sandi Anda</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d tab terbuka}other{%1$d tab terbuka}}</translation>
@@ -716,7 +712,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7542481630195938534">Tidak bisa mendapatkan saran</translation>
 <translation id="7562080006725997899">Menghapus data penjelajahan</translation>
 <translation id="756809126120519699">Data Chrome telah dihapus</translation>
-<translation id="7588950540487816470">Web Fisik</translation>
 <translation id="7589445247086920869">Memblokir mesin telusur saat ini</translation>
 <translation id="7593557518625677601">Buka setelan Android dan aktifkan kembali sinkronisasi sistem Android untuk memulai Sinkronisasi Chrome</translation>
 <translation id="7596558890252710462">Sistem operasi</translation>

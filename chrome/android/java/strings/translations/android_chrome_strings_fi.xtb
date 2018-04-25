@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">Piilota toistaiseksi</translation>
 <translation id="1211530540767271776">Ei USB-laitteita</translation>
 <translation id="123724288017357924">Päivitä nykyinen sivu, ohita välimuistin sisältö</translation>
-<translation id="1240668123557180468">Katsele lähistöllä olevien esineiden lähettämiä verkkosivuja. Chrome kerää ympärilläsi oleviin esineisiin liittyviä verkkosivuja, lähettää ne nimettöminä Googlen palveluun osuvimpien sivujen valintaa varten ja näyttää nämä sitten sinulle.
-
-Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voidaan käyttää.</translation>
 <translation id="124116460088058876">Lisää kieliä</translation>
 <translation id="124678866338384709">Sulje nykyinen välilehti</translation>
 <translation id="1258753120186372309">Google-piirros: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -643,7 +640,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6864459304226931083">Lataa kuva</translation>
 <translation id="6865313869410766144">Automaattisesti täydennetyt lomaketiedot</translation>
 <translation id="6868088497967843822">Kirjaudu ja käytä kirjanmerkkejä, historiaa, salasanoja ja muita asetuksiasi kaikissa laitteissasi.</translation>
-<translation id="6875705348083140572">Näytä lähellä olevat sivut</translation>
 <translation id="688738109438487280">Lisää olemassa olevat tiedot tilille <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Avaa lukitus kopioidaksesi salasanan</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d avoin välilehti}other{%1$d avointa välilehteä}}</translation>
@@ -716,7 +712,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7542481630195938534">Ehdotusten haku epäonnistui</translation>
 <translation id="7562080006725997899">Selaustietoja poistetaan</translation>
 <translation id="756809126120519699">Chrome-tiedot tyhjennetty</translation>
-<translation id="7588950540487816470">Fyysinen web</translation>
 <translation id="7589445247086920869">Estä nykyiselle hakukoneelle</translation>
 <translation id="7593557518625677601">Avaa Android-asetukset ja ota järjestelmän synkronointi uudelleen käyttöön.</translation>
 <translation id="7596558890252710462">Käyttöjärjestelmä</translation>

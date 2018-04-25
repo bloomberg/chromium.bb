@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">Ocultar por enquanto</translation>
 <translation id="1211530540767271776">Nenhum dispositivo USB aqui</translation>
 <translation id="123724288017357924">Atualizar página atual e ignorar conteúdo em cache</translation>
-<translation id="1240668123557180468">Descubra páginas da Web enviadas por objetos nas proximidades. O Chrome reúne páginas da Web associadas a objetos ao seu redor, envia-as anonimamente para um serviço do Google para encontrar as mais úteis para você e as exibe.
-
-É necessário que o Bluetooth e o Local estejam ativados para usar a Web física.</translation>
 <translation id="124116460088058876">Mais idiomas</translation>
 <translation id="124678866338384709">Fechar a guia atual</translation>
 <translation id="1258753120186372309">Doodle do Google: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -642,7 +639,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="6864459304226931083">Fazer o download da imagem</translation>
 <translation id="6865313869410766144">Preenchimento automático dos dados do formulário</translation>
 <translation id="6868088497967843822">Faça login para que favoritos, histórico, senhas e outras configurações fiquem disponíveis em todos os seus dispositivos</translation>
-<translation id="6875705348083140572">Ver o que está nas proximidades</translation>
 <translation id="688738109438487280">Adicionar dados já existentes à conta <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Desbloqueie para copiar sua senha</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d guia aberta}one{%1$d guia aberta}other{%1$d guias abertas}}</translation>
@@ -715,7 +711,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7542481630195938534">Não é possível exibir as sugestões</translation>
 <translation id="7562080006725997899">Limpando dados de navegação</translation>
 <translation id="756809126120519699">Dados do Chrome apagados</translation>
-<translation id="7588950540487816470">Web física</translation>
 <translation id="7589445247086920869">Bloquear o mecanismo de pesquisa atual</translation>
 <translation id="7593557518625677601">Abrir configs. Android e reativar sincronização do Android p/ sincronizar Chrome</translation>
 <translation id="7596558890252710462">Sistema operacional</translation>

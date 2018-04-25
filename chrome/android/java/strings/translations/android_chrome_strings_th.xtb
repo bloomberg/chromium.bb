@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">ซ่อนไปก่อน</translation>
 <translation id="1211530540767271776">ไม่มีอุปกรณ์ USB ที่นี่</translation>
 <translation id="123724288017357924">โหลดหน้าปัจจุบันซ้ำ โดยไม่คำนึงถึงเนื้อหาที่แคชไว้</translation>
-<translation id="1240668123557180468">ค้นพบหน้าเว็บที่ส่งมาจากออบเจ็กต์ใกล้เคียง Chrome รวบรวมหน้าเว็บที่เชื่อมโยงกับออบเจ็กต์รอบตัวคุณ ส่งหน้าเว็บดังกล่าวแบบไม่ระบุตัวตนไปยังบริการของ Google เพื่อค้นหาสิ่งที่มีประโยชน์ต่อคุณมากที่สุด แล้วแสดงขึ้นมา
-
-คุณต้องเปิดใช้บลูทูธและตำแหน่งเพื่อที่จะใช้ Physical Web</translation>
 <translation id="124116460088058876">ภาษาเพิ่มเติม</translation>
 <translation id="124678866338384709">ปิดแท็บปัจจุบัน</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -643,7 +640,6 @@
 <translation id="6864459304226931083">ดาวน์โหลดรูปภาพ</translation>
 <translation id="6865313869410766144">ข้อมูลฟอร์มที่ป้อนอัตโนมัติ</translation>
 <translation id="6868088497967843822">ลงชื่อเข้าใช้เพื่อรับบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดของคุณ</translation>
-<translation id="6875705348083140572">ดูว่ามีอะไรอยู่ใกล้เคียง</translation>
 <translation id="688738109438487280">เพิ่มข้อมูลที่มีอยู่ลงใน <ph name="TO_ACCOUNT" /></translation>
 <translation id="6891726759199484455">ปลดล็อกเพื่อคัดลอกรหัสผ่าน</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{แท็บที่เปิดอยู่ %1$d แท็บ}other{แท็บที่เปิดอยู่ %1$d แท็บ}}</translation>
@@ -716,7 +712,6 @@
 <translation id="7542481630195938534">รับคำแนะนำไม่ได้</translation>
 <translation id="7562080006725997899">กำลังล้างข้อมูลการท่องเว็บ</translation>
 <translation id="756809126120519699">ล้างข้อมูล Chrome แล้ว</translation>
-<translation id="7588950540487816470">Physical Web</translation>
 <translation id="7589445247086920869">บล็อกสำหรับเครื่องมือค้นหาปัจจุบัน</translation>
 <translation id="7593557518625677601">เปิดการตั้งค่า Android และเปิดการซิงค์ Android ใหม่เพื่อเริ่มการซิงค์ของ Chrome</translation>
 <translation id="7596558890252710462">ระบบปฏิบัติการ</translation>

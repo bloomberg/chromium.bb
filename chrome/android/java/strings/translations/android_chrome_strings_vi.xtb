@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">Ẩn ngay bây giờ</translation>
 <translation id="1211530540767271776">Không có thiết bị USB nào ở đây</translation>
 <translation id="123724288017357924">Tải lại trang hiện tại, bỏ qua nội dung được lưu trong bộ nhớ đệm</translation>
-<translation id="1240668123557180468">Khám phá trang web do các đối tượng lân cận gửi. Chrome tập hợp các trang web được liên kết với các đối tượng xung quanh bạn, chuyển chúng một cách ẩn danh tới dịch vụ của Google để tìm những trang web hữu ích nhất cho bạn, sau đó hiển thị các trang đó.
-
-Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc sống.</translation>
 <translation id="124116460088058876">Ngôn ngữ khác</translation>
 <translation id="124678866338384709">Đóng tab hiện tại</translation>
 <translation id="1258753120186372309">Hình tượng trưng của Google: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -643,7 +640,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6864459304226931083">Tải hình ảnh xuống</translation>
 <translation id="6865313869410766144">Dữ liệu biểu mẫu tự động điền</translation>
 <translation id="6868088497967843822">Đăng nhập để nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả các thiết bị của bạn</translation>
-<translation id="6875705348083140572">Xem có gì ở gần đây</translation>
 <translation id="688738109438487280">Thêm dữ liệu hiện có vào <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Mở khóa để sao chép mật khẩu của bạn</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d tab đang mở}other{%1$d tab đang mở}}</translation>
@@ -716,7 +712,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7542481630195938534">Không thể nhận đề xuất</translation>
 <translation id="7562080006725997899">Xóa dữ liệu duyệt web</translation>
 <translation id="756809126120519699">Đã xóa dữ liệu Chrome</translation>
-<translation id="7588950540487816470">Web trong cuộc sống</translation>
 <translation id="7589445247086920869">Chặn đối với công cụ tìm kiếm hiện tại</translation>
 <translation id="7593557518625677601">Mở c.đặt Android &amp; bật lại đ.bộ hóa hệ thống Android để b.đầu đồng bộ hóa Chrome</translation>
 <translation id="7596558890252710462">Hệ điều hành</translation>

@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">הסתר בינתיים</translation>
 <translation id="1211530540767271776">‏לא נמצאו מכשירי USB</translation>
 <translation id="123724288017357924">טען מחדש את הדף הנוכחי, תוך התעלמות מתוכן שמאוחסן בקובץ השמור</translation>
-<translation id="1240668123557180468">‏תוכל לגלות דפי אינטרנט שנשלחו על ידי אובייקטים בקרבת מקום. Chrome אוסף דפי אינטרנט המשויכים לאובייקטים בסביבה, ושולח אותם בצורה אנונימית לשירות של Google כדי למצוא את הדפים המועילים ביותר עבורך. לאחר מכן הוא מציג אותם.
-
-כדי להשתמש באינטרנט הווירטופיזי, עליך להפעיל את Bluetooth ואת שירותי המיקום.</translation>
 <translation id="124116460088058876">שפות נוספות</translation>
 <translation id="124678866338384709">סגור את הכרטיסייה הנוכחית</translation>
 <translation id="1258753120186372309">‏דודל של Google‏: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -643,7 +640,6 @@
 <translation id="6864459304226931083">הורד תמונה</translation>
 <translation id="6865313869410766144">נתוני טפסים למילוי אוטומטי</translation>
 <translation id="6868088497967843822">היכנס כדי לקבל גישה אל הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בכל המכשירים שברשותך</translation>
-<translation id="6875705348083140572">מה נמצא בקרבת מקום?</translation>
 <translation id="688738109438487280">הוסף נתונים קיימים אל <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">ביטול הנעילה יאפשר להעתיק את הסיסמה</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{כרטיסייה פתוחה אחת}two{שתי כרטיסיות פתוחות}many{‏%1$d כרטיסיות פתוחות}other{‏%1$d כרטיסיות פתוחות}}</translation>
@@ -716,7 +712,6 @@
 <translation id="7542481630195938534">לא ניתן לקבל הצעות</translation>
 <translation id="7562080006725997899">מנקה נתוני גלישה</translation>
 <translation id="756809126120519699">‏נתוני Chrome נוקו</translation>
-<translation id="7588950540487816470">האינטרנט הווירטופיזי</translation>
 <translation id="7589445247086920869">חסום למנוע החיפוש הנוכחי</translation>
 <translation id="7593557518625677601">‏פתח את הגדרות Android והפעל מחדש את הסנכרון של מערכת Android כדי להתחיל בסנכרון של Chrome</translation>
 <translation id="7596558890252710462">מערכת הפעלה</translation>

@@ -90,7 +90,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">تعديل محرّك البحث</translation>
 <translation id="1134009406053225289">فتح في نافذة للتصفح المتخفي</translation>
-<translation id="1136155683023653803">تتم مزامنة كلمات المرور والإشارات المرجعية والسجل والمزيد من الخيارات مع حسابك.</translation>
+<translation id="1136155683023653803">تتم مزامنة كلمات المرور والإشارات المرجعية والسجل والمزيد من الخيارات مع حسابك</translation>
 <translation id="1137673463384776352">فتح الرابط في <ph name="APP" /></translation>
 <translation id="1140351953533677694">الوصول إلى بلوتوث والأجهزة التسلسلية</translation>
 <translation id="1140610710803014750">للحصول على الإشارات المرجعية على جميع أجهزتك، يُرجى تسجيل الدخول وتفعيل المزامنة.</translation>
@@ -2453,7 +2453,7 @@
 <translation id="4804331037112292643">مربع حوار فتح/حفظ الملف</translation>
 <translation id="4804818685124855865">قطع الاتصال</translation>
 <translation id="4807098396393229769">الاسم كما على البطاقة</translation>
-<translation id="4807650012029404839">‏إضافة الإعدادات الصوتية في ميزة "تحويل النص إلى كلام من Google" أو إزالتها</translation>
+<translation id="4807650012029404839">‏إضافة الإعدادات الصوتية إلى ميزة "تحويل النص إلى كلام من Google" أو إزالتها</translation>
 <translation id="480990236307250886">فتح الصفحة الرئيسية</translation>
 <translation id="4812632551187706935">تعذَّر تهيئة الاتصال</translation>
 <translation id="4813512666221746211">حدث خطأ في الشبكة</translation>
@@ -2809,7 +2809,7 @@
 <translation id="5334142896108694079">ذاكرة التخزين المؤقت للنص البرمجي</translation>
 <translation id="5334844597069022743">عرض المصدر</translation>
 <translation id="5335458522276292100">‏الاحتفاظ بنسخة احتياطية من <ph name="FILE_COUNT" /> في <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
-<translation id="5336126339807372270">‏عدم السماح لأي مواقع بالوصول إلى أجهزة USB</translation>
+<translation id="5336126339807372270">‏عدم السماح لأي موقع بالوصول إلى أجهزة USB</translation>
 <translation id="5337771866151525739">تم التثبيت من جهة خارجية.</translation>
 <translation id="5338503421962489998">تخزين محلي</translation>
 <translation id="5340217413897845242">عنصر الرف 6</translation>
@@ -2945,7 +2945,7 @@
 <translation id="5525677322972469346">إنشاء مستخدم جديد تحت الإشراف</translation>
 <translation id="5525695896049981561">نعم، أرى ذلك</translation>
 <translation id="5526701598901867718">الكل (غير آمن)</translation>
-<translation id="5526745900034778153">تسجيل الدخول مرة أخرى لاستئناف المزامنة</translation>
+<translation id="5526745900034778153">إعادة تسجيل الدخول لاستئناف المزامنة</translation>
 <translation id="5527463195266282916">محاولة تثبيت إضافة ذات إصدار سابق.</translation>
 <translation id="5527474464531963247">يمكنك أيضا تحديد شبكة أخرى.</translation>
 <translation id="5528368756083817449">مدير الإشارات</translation>
@@ -3441,7 +3441,7 @@
 <translation id="6286708577777130801">تفاصيل كلمة المرور المحفوظة</translation>
 <translation id="6287852322318138013">حدد تطبيقًا لفتح هذا الملف من خلاله</translation>
 <translation id="6290556621549272952">‏يمكنك استخدام هذه الميزة لعرض المحتوى من Chromium على التلفزيون أو غيره من الأجهزة.</translation>
-<translation id="6291949900244949761">‏طلب الإذن في حال محاولة أحد المواقع الوصول إلى أجهزة USB (مُوصى به)</translation>
+<translation id="6291949900244949761">‏طلب الإذن عند محاولة أحد المواقع الوصول إلى أجهزة USB (مُوصى به)</translation>
 <translation id="6291953229176937411">إ&amp;ظهار في الباحث</translation>
 <translation id="6295158916970320988">جميع المواقع</translation>
 <translation id="6295855836753816081">جارٍ الحفظ...</translation>
@@ -4752,7 +4752,7 @@
 <translation id="8336153091935557858">الأمس <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8338952601723052325">موقع الويب لمطوّر البرامج</translation>
 <translation id="8339059274628563283">بيانات <ph name="SITE" /> المخزنة محليًا</translation>
-<translation id="833986336429795709">لفتح هذا الرابط، اختر أحد التطبيقات.</translation>
+<translation id="833986336429795709">لفتح هذا الرابط، اختر أحد التطبيقات</translation>
 <translation id="8342318071240498787">هناك ملف أو دليل موجود بهذا الاسم فعلاً.</translation>
 <translation id="8343956361364550006">استخدام معدل نقل بيانات عالٍ للحصول على أفضل فيديو أو صورة متحركة. قد لا يتمكن الأشخاص الذين لديهم اتصال بطيء من الاطّلاع على المحتوى.</translation>
 <translation id="8349826889576450703">launcher</translation>
@@ -4950,7 +4950,7 @@
 <translation id="8663099077749055505">حظر التنزيلات المتعددة تلقائيًا بشكل دائم على <ph name="HOST" /></translation>
 <translation id="8664389313780386848">عرض م&amp;صدر الصفحة</translation>
 <translation id="866611985033792019">الوثوق بهذه الشهادة لتحديد هوية مستخدمي البريد الإلكتروني</translation>
-<translation id="8666584013686199826">‏طلب الإذن في حال محاولة أحد المواقع الوصول إلى أجهزة USB (مُوصى به)</translation>
+<translation id="8666584013686199826">‏طلب الإذن عند محاولة أحد المواقع الوصول إلى أجهزة USB (مُوصى به)</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> في وضع ملء الشاشة الآن وتم إيقاف مؤشر الماوس.</translation>
 <translation id="8669284339312441707">أكثر دفئًا</translation>
 <translation id="8669949407341943408">جارٍ النقل...</translation>

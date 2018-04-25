@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">Elrejtés most</translation>
 <translation id="1211530540767271776">Nincs USB-eszköz</translation>
 <translation id="123724288017357924">Oldal újratöltése a gyorsítótárat figyelmen kívül hagyva</translation>
-<translation id="1240668123557180468">Közeli objektumok által küldött weboldalak felfedezése. A Chrome összegyűjti az Ön közelében található objektumokhoz társított weboldalakat, névtelenül elküldi őket egy Google-szolgáltatásnak, hogy megtalálja az Ön számára leghasznosabbakat, majd megjeleníti az oldalakat.
-
-A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a helyszolgáltatást.</translation>
 <translation id="124116460088058876">További nyelvek…</translation>
 <translation id="124678866338384709">Az aktuális lap bezárása</translation>
 <translation id="1258753120186372309">Google ünnepi embléma: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -643,7 +640,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6864459304226931083">Kép letöltése</translation>
 <translation id="6865313869410766144">Automatikus kitöltési űrlapadatok</translation>
 <translation id="6868088497967843822">Jelentkezzen be, hogy könyvjelzőit, előzményeit, jelszavait és más beállításait az összes eszközén elérje.</translation>
-<translation id="6875705348083140572">Közeli URL-ek megtekintése</translation>
 <translation id="688738109438487280">Meglévő adatok hozzáadása a(z) <ph name="TO_ACCOUNT" /> fiókhoz.</translation>
 <translation id="6891726759199484455">Oldja fel a képernyőzárat a jelszó másolásához</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d nyitott lap}other{%1$d nyitott lap}}</translation>
@@ -716,7 +712,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7542481630195938534">Nem sikerült lekérni a javaslatokat</translation>
 <translation id="7562080006725997899">Böngészési adatok törlése</translation>
 <translation id="756809126120519699">Chrome-adatok törölve</translation>
-<translation id="7588950540487816470">Fizikai web</translation>
 <translation id="7589445247086920869">Tiltja a jelenlegi keresőmotor számára</translation>
 <translation id="7593557518625677601">Aktiválja újra az Android rendszer szinkronizálását a Chrome-szinkronizáláshoz</translation>
 <translation id="7596558890252710462">Operációs rendszer</translation>

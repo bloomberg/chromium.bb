@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">Skjul for øyeblikket</translation>
 <translation id="1211530540767271776">Ingen USB-enheter</translation>
 <translation id="123724288017357924">Last inn siden på nytt, men ignorer bufret innhold</translation>
-<translation id="1240668123557180468">Oppdag nettsider som sendes av objekter i nærheten. Chrome samler nettsidene som er tilknyttet objektene rundt deg, og sender dem anonymt til en Google-tjeneste for å finne ut hvilke som har mest nytteverdi for deg. Deretter vises disse.
-
-Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</translation>
 <translation id="124116460088058876">Flere språk</translation>
 <translation id="124678866338384709">Lukk den aktive fanen</translation>
 <translation id="1258753120186372309">Google-doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -641,7 +638,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6864459304226931083">Last ned bildet</translation>
 <translation id="6865313869410766144">Skjemadata lagret med autofyll</translation>
 <translation id="6868088497967843822">Logg på for å få bokmerkene, loggen, passordene og de andre innstillingene dine på alle enhetene du bruker.</translation>
-<translation id="6875705348083140572">Se hva som er i nærheten</translation>
 <translation id="688738109438487280">Legg til eksisterende data i <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Lås opp for å kopiere passordet ditt</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d åpen fane}other{%1$d åpne faner}}</translation>
@@ -714,7 +710,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7542481630195938534">Kan ikke hente forslag</translation>
 <translation id="7562080006725997899">Sletter nettlesingsdata</translation>
 <translation id="756809126120519699">Chrome-dataene er slettet</translation>
-<translation id="7588950540487816470">Fysisk nett</translation>
 <translation id="7589445247086920869">Blokkert for den aktive søkemotoren</translation>
 <translation id="7593557518625677601">Start Chrome-synkronisering ved å slå på synkronisering i Android-innstillingene</translation>
 <translation id="7596558890252710462">Operativsystem</translation>

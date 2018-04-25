@@ -27,9 +27,6 @@
 <translation id="1209206284964581585">今は表示しない</translation>
 <translation id="1211530540767271776">USB デバイスはありません</translation>
 <translation id="123724288017357924">キャッシュ コンテンツを無視して現在のページを再読み込みする</translation>
-<translation id="1240668123557180468">近くのオブジェクトから送信されているウェブページを検出します。Chrome はあなたの周囲のオブジェクトに関連付けられたウェブページを収集し、匿名でそのウェブページを Google サービスに送り、そこであなたに最も役立つと判断されたウェブページを表示します。
-
-フィジカル ウェブを使用するには、Bluetooth と現在地機能をオンにする必要があります。</translation>
 <translation id="124116460088058876">その他の言語</translation>
 <translation id="124678866338384709">現在のタブを閉じる</translation>
 <translation id="1258753120186372309">Google Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -643,7 +640,6 @@
 <translation id="6864459304226931083">画像をダウンロード</translation>
 <translation id="6865313869410766144">自動入力フォームのデータ</translation>
 <translation id="6868088497967843822">ログインすると、お使いのどのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できるようになります。</translation>
-<translation id="6875705348083140572">近くの URL を表示</translation>
 <translation id="688738109438487280">既存のデータを <ph name="TO_ACCOUNT" /> に追加します。</translation>
 <translation id="6891726759199484455">パスワードをコピーするにはロックを解除してください</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d 個の開いているタブ}other{%1$d 個の開いているタブ}}</translation>
@@ -716,7 +712,6 @@
 <translation id="7542481630195938534">候補を取得できません</translation>
 <translation id="7562080006725997899">閲覧データの消去</translation>
 <translation id="756809126120519699">Chrome データの消去完了</translation>
-<translation id="7588950540487816470">フィジカルウェブ</translation>
 <translation id="7589445247086920869">現在の検索エンジンをブロックする</translation>
 <translation id="7593557518625677601">Chrome の同期を開始するには、Android の設定で Android システムの同期を再度有効にします</translation>
 <translation id="7596558890252710462">オペレーティング システム</translation>
