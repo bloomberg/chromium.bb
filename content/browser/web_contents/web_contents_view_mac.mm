@@ -28,6 +28,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/custom_data_helper.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
@@ -317,9 +318,11 @@ void WebContentsViewMac::OnMenuClosed() {
 }
 
 gfx::Rect WebContentsViewMac::GetViewBounds() const {
-  // This method is not currently used on mac.
-  NOTIMPLEMENTED();
-  return gfx::Rect();
+  NSRect window_bounds =
+      [cocoa_view_ convertRect:[cocoa_view_ bounds] toView:nil];
+  window_bounds.origin = ui::ConvertPointFromWindowToScreen(
+      [cocoa_view_ window], window_bounds.origin);
+  return gfx::ScreenRectFromNSRect(window_bounds);
 }
 
 void WebContentsViewMac::SetAllowOtherViews(bool allow) {
