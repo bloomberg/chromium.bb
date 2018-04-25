@@ -22,8 +22,8 @@ class ViewsTestHelper;
 // by ViewsTestBase.
 class ScopedViewsTestHelper {
  public:
-  // Initialize with the default TestViewsDelegate, MessageLoopForUI::current()
-  // and the default test ContextFactory.
+  // Initialize with the default TestViewsDelegate,
+  // MessageLoopCurrentForUI::Get() and the default test ContextFactory.
   ScopedViewsTestHelper();
 
   // Initialize with the given TestViewsDelegate instance, after setting the
