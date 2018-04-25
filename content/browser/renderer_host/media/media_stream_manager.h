@@ -38,6 +38,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -71,7 +72,7 @@ class VideoCaptureProvider;
 // using callbacks.
 class CONTENT_EXPORT MediaStreamManager
     : public MediaStreamProviderListener,
-      public base::MessageLoop::DestructionObserver,
+      public base::MessageLoopCurrent::DestructionObserver,
       public base::PowerObserver {
  public:
   // Callback to deliver the result of a media access request.
@@ -228,12 +229,10 @@ class CONTENT_EXPORT MediaStreamManager
 
   // This object gets deleted on the UI thread after the IO thread has been
   // destroyed. So we need to know when IO thread is being destroyed so that
-  // we can delete VideoCaptureManager and AudioInputDeviceManager. Normally
-  // this is handled by
-  // base::MessageLoop::DestructionObserver::WillDestroyCurrentMessageLoop.
-  // But for some tests which use TestBrowserThreadBundle, we need to call
-  // WillDestroyCurrentMessageLoop explicitly because the notification happens
-  // too late. (see http://crbug.com/247525#c14).
+  // we can delete VideoCaptureManager and AudioInputDeviceManager.
+  // Note: In tests it is sometimes necessary to invoke this explicitly when
+  // using TestBrowserThreadBundle because the notification happens too late.
+  // (see http://crbug.com/247525#c14).
   void WillDestroyCurrentMessageLoop() override;
 
   // Sends log messages to the render process hosts whose corresponding render

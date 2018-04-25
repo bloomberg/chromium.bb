@@ -210,7 +210,7 @@ class MediaStreamManagerTest : public ::testing::Test {
   }
 
   // media_stream_manager_ needs to outlive thread_bundle_ because it is a
-  // MessageLoop::DestructionObserver. audio_manager_ needs to outlive
+  // MessageLoopCurrent::DestructionObserver. audio_manager_ needs to outlive
   // thread_bundle_ because it uses the underlying message loop.
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   std::unique_ptr<MockMediaObserver> media_observer_;

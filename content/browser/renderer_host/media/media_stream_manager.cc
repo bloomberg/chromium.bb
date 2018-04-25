@@ -1379,7 +1379,7 @@ void MediaStreamManager::InitializeMaybeAsync(
 
   // We want to be notified of IO message loop destruction to delete the thread
   // and the device managers.
-  base::MessageLoop::current()->AddDestructionObserver(this);
+  base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
 
   video_capture_manager_ =
       new VideoCaptureManager(std::move(video_capture_provider),
