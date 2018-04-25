@@ -338,16 +338,19 @@
         type: Boolean
       },
 
+      /** @private */
       _ariaDescribedBy: {
         type: String,
         value: ''
       },
 
+      /** @private */
       _ariaLabelledBy: {
         type: String,
         value: ''
       },
 
+      /** @private */
       _inputId: {
         type: String,
         value: ''
@@ -358,16 +361,21 @@
       'addon-attached': '_onAddonAttached',
     },
 
+    /**
+     * @type {!Object}
+     */
     keyBindings: {
       'shift+tab:keydown': '_onShiftTabDown'
     },
 
+    /** @private */
     hostAttributes: {
       tabindex: 0
     },
 
     /**
      * Returns a reference to the input element.
+     * @return {!HTMLElement}
      */
     get inputElement() {
       // Chrome generates audit errors if an <input type="password"> has a
@@ -385,6 +393,7 @@
 
     /**
      * Returns a reference to the focusable element.
+     * @return {!HTMLElement}
      */
     get _focusableElement() {
       return this.inputElement;

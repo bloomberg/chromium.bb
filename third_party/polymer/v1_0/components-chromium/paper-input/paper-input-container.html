@@ -102,6 +102,7 @@ Custom property | Description | Default
 `--paper-input-container-input-invalid` | Mixin applied to the input when invalid | `{}`
 `--paper-input-container-input-webkit-spinner` | Mixin applied to the webkit spinner | `{}`
 `--paper-input-container-input-webkit-clear` | Mixin applied to the webkit clear button | `{}`
+`--paper-input-container-input-webkit-calendar-picker-indicator` | Mixin applied to the webkit calendar picker indicator | `{}`
 `--paper-input-container-ms-clear` | Mixin applied to the Internet Explorer clear button | `{}`
 `--paper-input-container-underline` | Mixin applied to the underline | `{}`
 `--paper-input-container-underline-focus` | Mixin applied to the underline when the input is focused | `{}`
@@ -113,30 +114,36 @@ This element is `display:block` by default, but you can set the `inline` attribu
 `display:inline-block`.
 -->
 
-</head><body><dom-module id="paper-input-container">
+</head><body><custom-style>
+  <style is="custom-style">
+    html {
+      --paper-input-container-shared-input-style: {
+        position: relative; /* to make a stacking context */
+        outline: none;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        max-width: 100%;
+        background: transparent;
+        border: none;
+        color: var(--paper-input-container-input-color, var(--primary-text-color));
+        -webkit-appearance: none;
+        text-align: inherit;
+        vertical-align: bottom;
+
+        @apply --paper-font-subhead;
+      };
+    }
+  </style>
+</custom-style>
+
+<dom-module id="paper-input-container">
   <template>
     <style>
       :host {
         display: block;
         padding: 8px 0;
-
-        --paper-input-container-shared-input-style: {
-          position: relative; /* to make a stacking context */
-          outline: none;
-          box-shadow: none;
-          padding: 0;
-          width: 100%;
-          max-width: 100%;
-          background: transparent;
-          border: none;
-          color: var(--paper-input-container-input-color, var(--primary-text-color));
-          -webkit-appearance: none;
-          text-align: inherit;
-          vertical-align: bottom;
-
-          @apply --paper-font-subhead;
-        };
-
         @apply --paper-input-container;
       }
 
@@ -271,15 +278,15 @@ This element is `display:block` by default, but you can set the `inline` attribu
         visibility: hidden;
       }
 
-      .input-content ::slotted(iron-input) {
-        @apply --paper-input-container-shared-input-style;
-      }
-
       .input-content ::slotted(input),
+      .input-content ::slotted(iron-input),
       .input-content ::slotted(textarea),
       .input-content ::slotted(iron-autogrow-textarea),
       .input-content ::slotted(.paper-input-input) {
         @apply --paper-input-container-shared-input-style;
+        /* The apply shim doesn't apply the nested color custom property,
+          so we have to re-apply it here. */
+        color: var(--paper-input-container-input-color, var(--primary-text-color));
         @apply --paper-input-container-input;
       }
 
@@ -289,6 +296,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
       }
 
       .input-content.focused ::slotted(input),
+      .input-content.focused ::slotted(iron-input),
       .input-content.focused ::slotted(textarea),
       .input-content.focused ::slotted(iron-autogrow-textarea),
       .input-content.focused ::slotted(.paper-input-input) {
@@ -296,6 +304,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
       }
 
       .input-content.is-invalid ::slotted(input),
+      .input-content.is-invalid ::slotted(iron-input),
       .input-content.is-invalid ::slotted(textarea),
       .input-content.is-invalid ::slotted(iron-autogrow-textarea),
       .input-content.is-invalid ::slotted(.paper-input-input) {
