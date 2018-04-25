@@ -39,8 +39,12 @@ oobe-dialog > iron-icon.warning {
   --iron-icon-fill-color: rgb(219, 68, 55);
 }
 
-.chrome-logo {
-  background: url(chrome://oobe/product-logo.png) center/100% no-repeat;
+.warning-icon {
+  -webkit-mask-image: url(../../../../../ui/webui/resources/images/warning.svg);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background-color: var(--google-red-500);
 }
 
 .footer {
