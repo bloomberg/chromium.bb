@@ -1757,7 +1757,7 @@ static void get_cx_data(struct stream_state *stream,
   }
 }
 
-static void show_psnr(struct stream_state *stream, double peak) {
+static void show_psnr(struct stream_state *stream, double peak, int64_t bps) {
   int i;
   double ovpsnr;
 
@@ -1771,6 +1771,10 @@ static void show_psnr(struct stream_state *stream, double peak) {
   for (i = 0; i < 4; i++) {
     fprintf(stderr, " %.3f", stream->psnr_totals[i] / stream->psnr_count);
   }
+  if (bps > 0) {
+    fprintf(stderr, " %7" PRId64 " bps", bps);
+  }
+  fprintf(stderr, " %7" PRId64 " ms", stream->cx_time / 1000);
   fprintf(stderr, "\n");
 }
 
@@ -2251,18 +2255,16 @@ int main(int argc, const char **argv_) {
 
     if (!global.quiet) {
       FOREACH_STREAM(stream, streams) {
+        const int64_t bpf =
+            seen_frames ? (int64_t)(stream->nbytes * 8 / seen_frames) : 0;
+        const int64_t bps = bpf * global.framerate.num / global.framerate.den;
         fprintf(stderr,
                 "\rPass %d/%d frame %4d/%-4d %7" PRId64 "B %7" PRId64
                 "b/f %7" PRId64
                 "b/s"
                 " %7" PRId64 " %s (%.2f fps)\033[K\n",
                 pass + 1, global.passes, frames_in, stream->frames_out,
-                (int64_t)stream->nbytes,
-                seen_frames ? (int64_t)(stream->nbytes * 8 / seen_frames) : 0,
-                seen_frames ? (int64_t)stream->nbytes * 8 *
-                                  (int64_t)global.framerate.num /
-                                  global.framerate.den / seen_frames
-                            : 0,
+                (int64_t)stream->nbytes, bpf, bps,
                 stream->cx_time > 9999999 ? stream->cx_time / 1000
                                           : stream->cx_time,
                 stream->cx_time > 9999999 ? "ms" : "us",
@@ -2273,10 +2275,16 @@ int main(int argc, const char **argv_) {
     if (global.show_psnr) {
       if (global.codec->fourcc == AV1_FOURCC) {
         FOREACH_STREAM(stream, streams) {
-          show_psnr(stream, (1 << stream->config.cfg.g_input_bit_depth) - 1);
+          int64_t bps = 0;
+          if (stream->psnr_count && seen_frames && global.framerate.den) {
+            bps = (int64_t)stream->nbytes * 8 * (int64_t)global.framerate.num /
+                  global.framerate.den / seen_frames;
+          }
+          show_psnr(stream, (1 << stream->config.cfg.g_input_bit_depth) - 1,
+                    bps);
         }
       } else {
-        FOREACH_STREAM(stream, streams) { show_psnr(stream, 255.0); }
+        FOREACH_STREAM(stream, streams) { show_psnr(stream, 255.0, 0); }
       }
     }
 
