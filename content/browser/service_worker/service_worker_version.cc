@@ -504,15 +504,7 @@ void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
         base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_REDUNDANT));
     return;
   }
-
-  // Check that the worker is allowed to start on the given scope. Since this
-  // worker might not be used for a specific tab, pass a null callback as
-  // WebContents getter.
-  // resource_context() can return null in unit tests.
-  if (context_->wrapper()->resource_context() &&
-      !GetContentClient()->browser()->AllowServiceWorker(
-          scope_, scope_, context_->wrapper()->resource_context(),
-          base::Callback<WebContents*(void)>())) {
+  if (!IsStartWorkerAllowed()) {
     RecordStartWorkerResult(purpose, status_, kInvalidTraceId,
                             is_browser_startup_complete,
                             SERVICE_WORKER_ERROR_DISALLOWED);
@@ -1989,6 +1981,30 @@ void ServiceWorkerVersion::OnNoWorkInBrowser() {
   for (auto& observer : listeners_)
     observer.OnNoWork(this);
   idle_timer_fired_in_renderer_ = false;
+}
+
+bool ServiceWorkerVersion::IsStartWorkerAllowed() const {
+  // Check that the worker is allowed on this origin. It's possible a
+  // worker was previously allowed and installed, but later the embedder's
+  // policy or binary changed to disallow this origin.
+  if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(
+          {script_url_})) {
+    return false;
+  }
+
+  // Check that the worker is allowed on the given scope. It's possible a worker
+  // was previously allowed and installed, but later content settings changed to
+  // disallow this scope. Since this worker might not be used for a specific
+  // tab, pass a null callback as WebContents getter.
+  // resource_context() can return null in unit tests.
+  if ((context_->wrapper()->resource_context() &&
+       !GetContentClient()->browser()->AllowServiceWorker(
+           scope_, scope_, context_->wrapper()->resource_context(),
+           base::Callback<WebContents*(void)>()))) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace content

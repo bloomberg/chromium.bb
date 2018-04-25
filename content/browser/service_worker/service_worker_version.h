@@ -722,6 +722,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // has been fired or the worker has been stopped.
   void OnNoWorkInBrowser();
 
+  bool IsStartWorkerAllowed() const;
+
   const int64_t version_id_;
   const int64_t registration_id_;
   const GURL script_url_;

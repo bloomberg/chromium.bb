@@ -177,7 +177,8 @@ class ServiceWorkerVersionTest : public testing::Test {
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = pattern_;
     registration_ = new ServiceWorkerRegistration(
-        options, 1L, helper_->context()->AsWeakPtr());
+        options, helper_->context()->storage()->NewRegistrationId(),
+        helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
         registration_.get(),
         GURL("https://www.example.com/test/service_worker.js"),
@@ -1264,6 +1265,26 @@ TEST_F(ServiceWorkerVersionTest, RendererCrashDuringEvent) {
   // Request already failed, calling finsh should return false.
   EXPECT_FALSE(version_->FinishRequest(request_id, true /* was_handled */,
                                        base::Time::Now()));
+}
+
+// Test starting a service worker from a disallowed origin.
+TEST_F(ServiceWorkerVersionTest, BadOrigin) {
+  const GURL scope("bad-origin://www.example.com/test/");
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = scope;
+  auto registration = base::MakeRefCounted<ServiceWorkerRegistration>(
+      options, helper_->context()->storage()->NewRegistrationId(),
+      helper_->context()->AsWeakPtr());
+  auto version = base::MakeRefCounted<ServiceWorkerVersion>(
+      registration_.get(),
+      GURL("bad-origin://www.example.com/test/service_worker.js"),
+      helper_->context()->storage()->NewVersionId(),
+      helper_->context()->AsWeakPtr());
+  ServiceWorkerStatusCode status = SERVICE_WORKER_OK;
+  version->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
+                       CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_ERROR_DISALLOWED, status);
 }
 
 TEST_F(ServiceWorkerFailToStartTest, FailingWorkerUsesNewRendererProcess) {
