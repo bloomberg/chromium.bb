@@ -2432,7 +2432,7 @@ ArcBluetoothBridge::GetAdapterProperties(
     std::vector<mojom::BluetoothAddressPtr> bonded_devices;
 
     for (auto* device : devices) {
-      if (device->IsPaired())
+      if (!device->IsPaired())
         continue;
 
       mojom::BluetoothAddressPtr addr =
