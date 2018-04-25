@@ -4,10 +4,8 @@
 
 #include "content/browser/frame_host/keep_alive_handle_factory.h"
 
-#include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
@@ -18,9 +16,11 @@ namespace content {
 
 class KeepAliveHandleFactory::Context final : public base::RefCounted<Context> {
  public:
-  explicit Context(RenderProcessHost* process_host)
-      : process_id_(process_host->GetID()), weak_ptr_factory_(this) {
-    DCHECK(!process_host->IsKeepAliveRefCountDisabled());
+  explicit Context(int process_id)
+      : process_id_(process_id), weak_ptr_factory_(this) {
+    RenderProcessHost* process_host = RenderProcessHost::FromID(process_id_);
+    if (!process_host || process_host->IsKeepAliveRefCountDisabled())
+      return;
     process_host->IncrementKeepAliveRefCount(
         RenderProcessHost::KeepAliveClientType::kFetch);
   }
@@ -37,12 +37,11 @@ class KeepAliveHandleFactory::Context final : public base::RefCounted<Context> {
         RenderProcessHost::KeepAliveClientType::kFetch);
   }
 
-  void DetachLater() {
+  void DetachLater(base::TimeDelta timeout) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     BrowserThread::PostDelayedTask(
         BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&Context::Detach, weak_ptr_factory_.GetWeakPtr()),
-        timeout_);
+        base::BindOnce(&Context::Detach, AsWeakPtr()), timeout);
   }
 
   void AddBinding(std::unique_ptr<mojom::KeepAliveHandle> impl,
@@ -50,7 +49,7 @@ class KeepAliveHandleFactory::Context final : public base::RefCounted<Context> {
     binding_set_.AddBinding(std::move(impl), std::move(request));
   }
 
-  void set_timeout(base::TimeDelta timeout) { timeout_ = timeout; }
+  base::WeakPtr<Context> AsWeakPtr() { return weak_ptr_factory_.GetWeakPtr(); }
 
  private:
   friend class base::RefCounted<Context>;
@@ -59,7 +58,6 @@ class KeepAliveHandleFactory::Context final : public base::RefCounted<Context> {
   mojo::StrongBindingSet<mojom::KeepAliveHandle> binding_set_;
   const int process_id_;
   bool detached_ = false;
-  base::TimeDelta timeout_;
 
   base::WeakPtrFactory<Context> weak_ptr_factory_;
 
@@ -80,19 +78,28 @@ class KeepAliveHandleFactory::KeepAliveHandleImpl final
 };
 
 KeepAliveHandleFactory::KeepAliveHandleFactory(RenderProcessHost* process_host)
-    : context_(base::MakeRefCounted<Context>(process_host)) {}
+    : process_id_(process_host->GetID()) {}
 
 KeepAliveHandleFactory::~KeepAliveHandleFactory() {
-  context_->DetachLater();
+  if (context_)
+    context_->DetachLater(timeout_);
 }
 
 void KeepAliveHandleFactory::Create(mojom::KeepAliveHandleRequest request) {
-  context_->AddBinding(std::make_unique<KeepAliveHandleImpl>(context_),
-                       std::move(request));
+  scoped_refptr<Context> context;
+  if (context_) {
+    context = context_.get();
+  } else {
+    context = base::MakeRefCounted<Context>(process_id_);
+    context_ = context->AsWeakPtr();
+  }
+
+  context->AddBinding(std::make_unique<KeepAliveHandleImpl>(context),
+                      std::move(request));
 }
 
 void KeepAliveHandleFactory::SetTimeout(base::TimeDelta timeout) {
-  context_->set_timeout(timeout);
+  timeout_ = timeout;
 }
 
 }  // namespace content

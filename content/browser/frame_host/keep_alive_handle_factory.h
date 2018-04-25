@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_FRAME_HOST_KEEP_ALIVE_HANDLE_FACTORY_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "content/common/frame.mojom.h"
 
 namespace content {
@@ -32,7 +34,9 @@ class KeepAliveHandleFactory final {
   class KeepAliveHandleImpl;
   class Context;
 
-  scoped_refptr<Context> context_;
+  const int process_id_;
+  base::TimeDelta timeout_;
+  base::WeakPtr<Context> context_;
 
   DISALLOW_COPY_AND_ASSIGN(KeepAliveHandleFactory);
 };
