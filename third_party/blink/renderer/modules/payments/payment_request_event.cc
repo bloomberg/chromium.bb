@@ -96,8 +96,9 @@ ScriptPromise PaymentRequestEvent::openWindow(ScriptState* script_state,
   }
 
   if (!context->IsWindowInteractionAllowed()) {
-    resolver->Reject(DOMException::Create(kInvalidAccessError,
-                                          "Not allowed to open a window."));
+    resolver->Reject(DOMException::Create(
+        kNotAllowedError,
+        "Not allowed to open a window without user activation"));
     return promise;
   }
   context->ConsumeWindowInteraction();
