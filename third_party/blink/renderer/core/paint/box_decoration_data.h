@@ -11,6 +11,7 @@
 namespace blink {
 
 class LayoutBox;
+class LayoutObject;
 class Document;
 class NGPhysicalFragment;
 class ComputedStyle;
@@ -34,6 +35,8 @@ struct BoxDecorationData {
       const Document&,
       const ComputedStyle&,
       bool background_should_always_be_clipped);
+  BackgroundBleedAvoidance ComputeBleedAvoidance(const LayoutObject*);
+
   BoxDecorationData(const ComputedStyle&);
 };
 

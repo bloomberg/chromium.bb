@@ -15,19 +15,12 @@ namespace blink {
 
 BoxDecorationData::BoxDecorationData(const LayoutBox& layout_box)
     : BoxDecorationData(layout_box.StyleRef()) {
-  if (layout_box.IsDocumentElement()) {
-    bleed_avoidance = kBackgroundBleedNone;
-  } else {
-    bleed_avoidance = DetermineBackgroundBleedAvoidance(
-        layout_box.GetDocument(), layout_box.StyleRef(),
-        layout_box.BackgroundShouldAlwaysBeClipped());
-  }
+  bleed_avoidance = ComputeBleedAvoidance(&layout_box);
 }
 
 BoxDecorationData::BoxDecorationData(const NGPhysicalFragment& fragment)
     : BoxDecorationData(fragment.Style()) {
-  // TODO(layout-dev): Implement
-  bleed_avoidance = kBackgroundBleedClipLayer;
+  bleed_avoidance = ComputeBleedAvoidance(fragment.GetLayoutObject());
 }
 
 BoxDecorationData::BoxDecorationData(const ComputedStyle& style) {
@@ -37,6 +30,21 @@ BoxDecorationData::BoxDecorationData(const ComputedStyle& style) {
   DCHECK(has_background == style.HasBackground());
   has_border_decoration = style.HasBorderDecoration();
   has_appearance = style.HasAppearance();
+}
+
+BackgroundBleedAvoidance BoxDecorationData::ComputeBleedAvoidance(
+    const LayoutObject* layout_object) {
+  DCHECK(layout_object);
+  if (layout_object->IsDocumentElement())
+    return kBackgroundBleedNone;
+
+  bool background_should_always_be_clipped =
+      layout_object->IsBox()
+          ? ToLayoutBox(layout_object)->BackgroundShouldAlwaysBeClipped()
+          : false;
+  return DetermineBackgroundBleedAvoidance(layout_object->GetDocument(),
+                                           layout_object->StyleRef(),
+                                           background_should_always_be_clipped);
 }
 
 namespace {
