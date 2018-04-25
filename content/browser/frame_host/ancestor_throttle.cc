@@ -58,7 +58,14 @@ enum XFrameOptionsHistogram {
   // The 'frame-ancestors' CSP directive should take effect instead.
   BYPASS = 8,
 
-  XFRAMEOPTIONS_HISTOGRAM_MAX = BYPASS
+  // Navigation would have been blocked if we applied 'X-Frame-Options' to
+  // redirects.
+  //
+  // TODO(mkwst): Rename this when we make a decision around
+  // https://crbug.com/835465.
+  REDIRECT_WOULD_BE_BLOCKED = 9,
+
+  XFRAMEOPTIONS_HISTOGRAM_MAX = REDIRECT_WOULD_BE_BLOCKED
 };
 
 void RecordXFrameOptionsUsage(XFrameOptionsHistogram usage) {
@@ -99,7 +106,31 @@ std::unique_ptr<NavigationThrottle> AncestorThrottle::MaybeCreateThrottleFor(
 AncestorThrottle::~AncestorThrottle() {}
 
 NavigationThrottle::ThrottleCheckResult
+AncestorThrottle::WillRedirectRequest() {
+  // During a redirect, we don't know which RenderFrameHost we'll end up in,
+  // so we can't log reliably to the console. We should be able to work around
+  // this iff we decide to ship the redirect-blocking behavior, but for now
+  // we'll just skip the console-logging bits to collect metrics.
+  NavigationThrottle::ThrottleCheckResult result =
+      ProcessResponseImpl(LoggingDisposition::DO_NOT_LOG_TO_CONSOLE);
+
+  if (result.action() == NavigationThrottle::BLOCK_RESPONSE)
+    RecordXFrameOptionsUsage(REDIRECT_WOULD_BE_BLOCKED);
+
+  // TODO(mkwst): We need to decide whether we'll be able to get away with
+  // tightening the XFO check to include redirect responses once we have a
+  // feel for the REDIRECT_WOULD_BE_BLOCKED numbers we're collecting above.
+  // Until then, we'll allow the response to proceed: https://crbug.com/835465.
+  return NavigationThrottle::PROCEED;
+}
+
+NavigationThrottle::ThrottleCheckResult
 AncestorThrottle::WillProcessResponse() {
+  return ProcessResponseImpl(LoggingDisposition::LOG_TO_CONSOLE);
+}
+
+NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
+    LoggingDisposition logging) {
   DCHECK(!navigation_handle()->IsInMainFrame());
 
   NavigationHandleImpl* handle =
@@ -116,18 +147,21 @@ AncestorThrottle::WillProcessResponse() {
 
   switch (disposition) {
     case HeaderDisposition::CONFLICT:
-      ParseError(header_value, disposition);
+      if (logging == LoggingDisposition::LOG_TO_CONSOLE)
+        ParseError(header_value, disposition);
       RecordXFrameOptionsUsage(CONFLICT);
       return NavigationThrottle::BLOCK_RESPONSE;
 
     case HeaderDisposition::INVALID:
-      ParseError(header_value, disposition);
+      if (logging == LoggingDisposition::LOG_TO_CONSOLE)
+        ParseError(header_value, disposition);
       RecordXFrameOptionsUsage(INVALID);
       // TODO(mkwst): Consider failing here.
       return NavigationThrottle::PROCEED;
 
     case HeaderDisposition::DENY:
-      ConsoleError(disposition);
+      if (logging == LoggingDisposition::LOG_TO_CONSOLE)
+        ConsoleError(disposition);
       RecordXFrameOptionsUsage(DENY);
       return NavigationThrottle::BLOCK_RESPONSE;
 
@@ -139,7 +173,8 @@ AncestorThrottle::WillProcessResponse() {
       while (parent) {
         if (!parent->current_origin().IsSameOriginWith(current_origin)) {
           RecordXFrameOptionsUsage(SAMEORIGIN_BLOCKED);
-          ConsoleError(disposition);
+          if (logging == LoggingDisposition::LOG_TO_CONSOLE)
+            ConsoleError(disposition);
 
           // TODO(mkwst): Stop recording this metric once we convince other
           // vendors to follow our lead with XFO: SAMEORIGIN processing.

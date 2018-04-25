@@ -38,16 +38,21 @@ class CONTENT_EXPORT AncestorThrottle : public NavigationThrottle {
 
   ~AncestorThrottle() override;
 
+  NavigationThrottle::ThrottleCheckResult WillRedirectRequest() override;
   NavigationThrottle::ThrottleCheckResult WillProcessResponse() override;
   const char* GetNameForLogging() override;
 
  private:
+  enum class LoggingDisposition { LOG_TO_CONSOLE, DO_NOT_LOG_TO_CONSOLE };
+
   FRIEND_TEST_ALL_PREFIXES(AncestorThrottleTest, ParsingXFrameOptions);
   FRIEND_TEST_ALL_PREFIXES(AncestorThrottleTest, ErrorsParsingXFrameOptions);
   FRIEND_TEST_ALL_PREFIXES(AncestorThrottleTest,
                            IgnoreWhenFrameAncestorsPresent);
 
   explicit AncestorThrottle(NavigationHandle* handle);
+  NavigationThrottle::ThrottleCheckResult ProcessResponseImpl(
+      LoggingDisposition);
   void ParseError(const std::string& value, HeaderDisposition disposition);
   void ConsoleError(HeaderDisposition disposition);
 
