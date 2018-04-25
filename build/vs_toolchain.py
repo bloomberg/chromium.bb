@@ -346,7 +346,11 @@ def _GetDesiredVsToolchainHashes():
   if env_version == '2017':
     # VS 2017 Update 3.2 with 10.0.15063.468 SDK, patched setenv.cmd, and
     # 10.0.16299.15 debuggers.
-    return ['1180cb75833ea365097e279efb2d5d7a42dee4b0']
+    toolchain_hash = '1180cb75833ea365097e279efb2d5d7a42dee4b0'
+    # Third parties that do not have access to the canonical toolchain can map
+    # canonical toolchain version to their own toolchain versions.
+    toolchain_hash_mapping_key = 'GYP_MSVS_HASH_%s' % toolchain_hash
+    return [os.environ.get(toolchain_hash_mapping_key, toolchain_hash)]
   raise Exception('Unsupported VS version %s' % env_version)
 
 
