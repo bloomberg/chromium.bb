@@ -50,8 +50,4 @@
   return 0;
 }
 
-- (CGFloat)nativeContentFooterHeightForWebState:(web::WebState*)webState {
-  return 0;
-}
-
 @end

@@ -198,6 +198,18 @@ using base::UserMetricsAction;
   [self.homePanel setDelegate:nil];
 }
 
+#pragma mark - Properties
+
+- (UIEdgeInsets)contentInset {
+  return self.contentSuggestionsCoordinator.viewController.collectionView
+      .contentInset;
+}
+
+- (void)setContentInset:(UIEdgeInsets)contentInset {
+  self.contentSuggestionsCoordinator.viewController.collectionView
+      .contentInset = contentInset;
+}
+
 #pragma mark - CRWNativeContent
 
 - (void)willBeDismissed {

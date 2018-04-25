@@ -194,10 +194,8 @@
 - (CGRect)nativeContentVisibleFrame {
   CGFloat headerHeight =
       [_delegate nativeContentHeaderHeightForContainerView:self];
-  CGFloat footerHeight =
-      [_delegate nativeContentFooterHeightForContainerView:self];
-  return UIEdgeInsetsInsetRect(
-      self.bounds, UIEdgeInsetsMake(headerHeight, 0, footerHeight, 0));
+  return UIEdgeInsetsInsetRect(self.bounds,
+                               UIEdgeInsetsMake(headerHeight, 0, 0, 0));
 }
 
 #pragma mark Layout
