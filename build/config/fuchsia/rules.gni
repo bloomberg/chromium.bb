@@ -203,6 +203,7 @@ template("fuchsia_executable_runner") {
   package(_pkg_target) {
     forward_variables_from(invoker, [ "testonly" ])
     package_name = _exe_name
+    sandbox_policy = "//build/config/fuchsia/sandbox_policy"
     binary = _exe_name
     deps = _combined_deps
   }

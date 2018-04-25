@@ -287,6 +287,7 @@ template("test") {
     package(_pkg_target) {
       testonly = true
       package_name = _output_name
+      sandbox_policy = "//build/config/fuchsia/testing_sandbox_policy"
       binary = get_label_info(_exec_target, "name")
       deps = [
         ":$_exec_target",
