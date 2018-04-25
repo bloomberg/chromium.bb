@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
@@ -51,6 +52,7 @@ em::DeviceRegisterRequest::Flavor EnrollmentModeToRegistrationFlavor(
     EnrollmentConfig::Mode mode) {
   switch (mode) {
     case EnrollmentConfig::MODE_NONE:
+    case EnrollmentConfig::MODE_OFFLINE_DEMO:
       break;
     case EnrollmentConfig::MODE_MANUAL:
       return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_MANUAL;
@@ -141,11 +143,8 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
       weak_ptr_factory_(this) {
   CHECK(!client_->is_registered());
   CHECK_EQ(DM_STATUS_SUCCESS, client_->status());
-  CHECK((enrollment_config_.mode == EnrollmentConfig::MODE_ATTESTATION ||
-         enrollment_config_.mode ==
-             EnrollmentConfig::MODE_ATTESTATION_LOCAL_FORCED ||
-         enrollment_config.mode ==
-             EnrollmentConfig::MODE_ATTESTATION_SERVER_FORCED) ==
+  CHECK((enrollment_config_.is_mode_attestation() ||
+         enrollment_config.mode == EnrollmentConfig::MODE_OFFLINE_DEMO) ==
         auth_token_.empty());
   CHECK(enrollment_config_.auth_mechanism !=
             EnrollmentConfig::AUTH_MECHANISM_ATTESTATION ||
@@ -370,6 +369,8 @@ void EnrollmentHandlerChromeOS::StartRegistration() {
   SetStep(STEP_REGISTRATION);
   if (enrollment_config_.is_mode_attestation()) {
     StartAttestationBasedEnrollmentFlow();
+  } else if (enrollment_config_.mode == EnrollmentConfig::MODE_OFFLINE_DEMO) {
+    StartOfflineDemoEnrollmentFlow();
   } else {
     client_->Register(
         em::DeviceRegisterRequest::DEVICE,
@@ -403,6 +404,22 @@ void EnrollmentHandlerChromeOS::HandleRegistrationCertificateResult(
     ReportResult(EnrollmentStatus::ForStatus(
         EnrollmentStatus::REGISTRATION_CERT_FETCH_FAILED));
   }
+}
+
+void EnrollmentHandlerChromeOS::StartOfflineDemoEnrollmentFlow() {
+  // TODO(mukai): set |policy_| which are obtained offline to enforce the actual
+  // policy for offline-demo mode. https://crbug.com/827290
+  device_mode_ = policy::DeviceMode::DEVICE_MODE_ENTERPRISE;
+  domain_ = enrollment_config_.management_domain;
+  device_id_ = base::GenerateGUID();
+  skip_robot_auth_ = true;
+  if (!policy_) {
+    ReportResult(
+        EnrollmentStatus::ForStatus(EnrollmentStatus::POLICY_FETCH_FAILED));
+    return;
+  }
+  SetStep(STEP_SET_FWMP_DATA);
+  SetFirmwareManagementParametersData();
 }
 
 void EnrollmentHandlerChromeOS::HandlePolicyValidationResult(

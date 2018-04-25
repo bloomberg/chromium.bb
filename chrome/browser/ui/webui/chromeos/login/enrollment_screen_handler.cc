@@ -61,6 +61,7 @@ const char kEnrollmentModeUIRecovery[] = "recovery";
 std::string EnrollmentModeToUIMode(policy::EnrollmentConfig::Mode mode) {
   switch (mode) {
     case policy::EnrollmentConfig::MODE_NONE:
+    case policy::EnrollmentConfig::MODE_OFFLINE_DEMO:
       break;
     case policy::EnrollmentConfig::MODE_MANUAL:
     case policy::EnrollmentConfig::MODE_MANUAL_REENROLLMENT:
