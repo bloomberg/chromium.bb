@@ -58,7 +58,9 @@ void WaylandDataSource::OnSend(void* data,
     self->GetClipboardData("text/plain", &mime_data);
 
   std::string contents(mime_data->begin(), mime_data->end());
-  DCHECK(base::WriteFileDescriptor(fd, contents.data(), contents.length()));
+  bool result =
+      base::WriteFileDescriptor(fd, contents.data(), contents.length());
+  DCHECK(result);
   close(fd);
 }
 
