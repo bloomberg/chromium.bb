@@ -256,8 +256,10 @@ void DefaultFrameHeader::SetFrameColorsImpl(SkColor active_frame_color,
     updated = true;
   }
 
-  if (updated)
+  if (updated) {
     UpdateAllButtonImages();
+    view_->SchedulePaint();
+  }
 }
 
 SkColor DefaultFrameHeader::GetActiveFrameColor() const {
