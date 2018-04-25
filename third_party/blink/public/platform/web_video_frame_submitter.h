@@ -38,7 +38,7 @@ class BLINK_PLATFORM_EXPORT WebVideoFrameSubmitter
       WebContextProviderCallback,
       gpu::GpuMemoryBufferManager*,
       const cc::LayerTreeSettings&);
-  virtual ~WebVideoFrameSubmitter() = default;
+  ~WebVideoFrameSubmitter() override = default;
 
   // Intialize must be called before submissions occur, pulled out of
   // StartSubmitting() to enable tests without the full mojo statck running.
