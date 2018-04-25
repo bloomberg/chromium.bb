@@ -90,6 +90,8 @@ XRSession::XRSession(XRDevice* device,
       exclusive_(exclusive),
       output_context_(output_context),
       callback_collection_(device->GetExecutionContext()) {
+  blurred_ = !HasAppropriateFocus();
+
   // When an output context is provided, monitor it for resize events.
   if (output_context_) {
     HTMLCanvasElement* canvas = outputContext()->canvas();
@@ -299,6 +301,22 @@ void XRSession::OnBlur() {
 
   blurred_ = true;
   DispatchEvent(XRSessionEvent::Create(EventTypeNames::blur, this));
+}
+
+// Exclusive sessions may still not be blurred in headset even if the page isn't
+// focused.  This prevents the in-headset experience from freezing on an
+// external display headset when the user clicks on another tab.
+bool XRSession::HasAppropriateFocus() {
+  return exclusive_ ? device_->HasDeviceFocus()
+                    : device_->HasDeviceAndFrameFocus();
+}
+
+void XRSession::OnFocusChanged() {
+  if (HasAppropriateFocus()) {
+    OnFocus();
+  } else {
+    OnBlur();
+  }
 }
 
 void XRSession::OnFrame(
