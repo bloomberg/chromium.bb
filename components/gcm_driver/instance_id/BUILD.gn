@@ -12,10 +12,15 @@ static_library("instance_id") {
     "instance_id_driver.h",
     "instance_id_impl.cc",
     "instance_id_impl.h",
+    "instance_id_profile_service.cc",
+    "instance_id_profile_service.h",
   ]
 
   deps = [
     "//base",
+    "//components/gcm_driver:gcm_buildflags",
+    "//components/keyed_service/core:core",
+    "//components/prefs:prefs",
     "//crypto",
   ]
 
