@@ -830,7 +830,7 @@ LayoutUnit LayoutFlexibleBox::ComputeInnerFlexBaseSizeForChild(
     LayoutBox& child,
     LayoutUnit main_axis_border_and_padding,
     ChildLayoutType child_layout_type) {
-  child.ClearOverrideContentSize();
+  child.ClearOverrideSize();
 
   if (child.IsImage() || child.IsVideo() || child.IsCanvas())
     UseCounter::Count(GetDocument(), WebFeature::kAspectRatioFlexItem);
@@ -1126,12 +1126,10 @@ LayoutUnit LayoutFlexibleBox::CrossSizeForPercentageResolution(
     return LayoutUnit(-1);
 
   // Here we implement https://drafts.csswg.org/css-flexbox/#algo-stretch
-  if (HasOrthogonalFlow(child) && child.HasOverrideContentLogicalWidth())
-    return child.OverrideContentLogicalWidth() - child.ScrollbarLogicalWidth();
-  if (!HasOrthogonalFlow(child) && child.HasOverrideContentLogicalHeight()) {
-    return child.OverrideContentLogicalHeight() -
-           child.ScrollbarLogicalHeight();
-  }
+  if (HasOrthogonalFlow(child) && child.HasOverrideLogicalWidth())
+    return child.OverrideContentLogicalWidth();
+  if (!HasOrthogonalFlow(child) && child.HasOverrideLogicalHeight())
+    return child.OverrideContentLogicalHeight();
 
   // We don't currently implement the optimization from
   // https://drafts.csswg.org/css-flexbox/#definite-sizes case 1. While that
@@ -1160,14 +1158,11 @@ LayoutUnit LayoutFlexibleBox::MainSizeForPercentageResolution(
   }
 
   if (HasOrthogonalFlow(child))
-    return child.HasOverrideContentLogicalHeight()
-               ? child.OverrideContentLogicalHeight() -
-                     child.ScrollbarLogicalHeight()
+    return child.HasOverrideLogicalHeight()
+               ? child.OverrideContentLogicalHeight()
                : LayoutUnit(-1);
-  return child.HasOverrideContentLogicalWidth()
-             ? child.OverrideContentLogicalWidth() -
-                   child.ScrollbarLogicalWidth()
-             : LayoutUnit(-1);
+  return child.HasOverrideLogicalWidth() ? child.OverrideContentLogicalWidth()
+                                         : LayoutUnit(-1);
 }
 
 LayoutUnit LayoutFlexibleBox::ChildLogicalHeightForPercentageResolution(
@@ -1215,7 +1210,7 @@ FlexItem LayoutFlexibleBox::ConstructFlexItem(LayoutBox& child,
     // height of the child).
     if (child.NeedsLayout() ||
         (IsColumnFlow() && layout_type == kForceLayout)) {
-      child.ClearOverrideContentSize();
+      child.ClearOverrideSize();
       child.ForceChildLayout();
       CacheChildMainSize(child);
       layout_type = kLayoutIfNeeded;
@@ -1283,10 +1278,15 @@ static LayoutUnit AlignmentOffset(LayoutUnit available_free_space,
 void LayoutFlexibleBox::SetOverrideMainAxisContentSizeForChild(
     LayoutBox& child,
     LayoutUnit child_preferred_size) {
-  if (HasOrthogonalFlow(child))
-    child.SetOverrideContentLogicalHeight(child_preferred_size);
-  else
-    child.SetOverrideContentLogicalWidth(child_preferred_size);
+  if (HasOrthogonalFlow(child)) {
+    // TODO(rego): Shouldn't we add the scrollbar height too?
+    child.SetOverrideLogicalHeight(child_preferred_size +
+                                   child.BorderAndPaddingLogicalHeight());
+  } else {
+    // TODO(rego): Shouldn't we add the scrollbar width too?
+    child.SetOverrideLogicalWidth(child_preferred_size +
+                                  child.BorderAndPaddingLogicalWidth());
+  }
 }
 
 LayoutUnit LayoutFlexibleBox::StaticMainAxisPositionForPositionedChild(
@@ -1457,7 +1457,6 @@ void LayoutFlexibleBox::LayoutLineItems(FlexLine* current_line,
                                            flex_item.flexed_content_size);
     // The flexed content size and the override size include the scrollbar
     // width, so we need to compare to the size including the scrollbar.
-    // TODO(cbiesinger): Should it include the scrollbar?
     if (flex_item.flexed_content_size !=
         MainAxisContentExtentForChildIncludingScrollbar(*child)) {
       child->SetChildNeedsLayout(kMarkOnlyThis);
@@ -1713,9 +1712,8 @@ void LayoutFlexibleBox::ApplyStretchAlignmentToChild(
       // So, redo it here.
       child_needs_relayout = true;
     }
-    if (child_needs_relayout || !child.HasOverrideContentLogicalHeight())
-      child.SetOverrideContentLogicalHeight(
-          desired_logical_height - child.BorderAndPaddingLogicalHeight());
+    if (child_needs_relayout || !child.HasOverrideLogicalHeight())
+      child.SetOverrideLogicalHeight(desired_logical_height);
     if (child_needs_relayout) {
       child.SetLogicalHeight(LayoutUnit());
       // We cache the child's intrinsic content logical height to avoid it being
@@ -1739,8 +1737,7 @@ void LayoutFlexibleBox::ApplyStretchAlignmentToChild(
     flex_item.cross_axis_size = child_width;
 
     if (child_width != child.LogicalWidth()) {
-      child.SetOverrideContentLogicalWidth(
-          child_width - child.BorderAndPaddingLogicalWidth());
+      child.SetOverrideLogicalWidth(child_width);
       child.ForceChildLayout();
     }
   }

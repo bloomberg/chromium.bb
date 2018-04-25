@@ -42,36 +42,28 @@ CustomLayoutFragment* CustomLayoutFragmentRequest::PerformLayout() {
 
   if (options_.hasFixedInlineSize()) {
     if (is_parallel_writing_mode) {
-      box->SetOverrideContentLogicalWidth(
-          (LayoutUnit::FromDoubleRound(options_.fixedInlineSize()) -
-           box->BorderAndPaddingLogicalWidth())
-              .ClampNegativeToZero());
+      box->SetOverrideLogicalWidth(
+          LayoutUnit::FromDoubleRound(options_.fixedInlineSize()));
     } else {
-      box->SetOverrideContentLogicalHeight(
-          (LayoutUnit::FromDoubleRound(options_.fixedInlineSize()) -
-           box->BorderAndPaddingLogicalHeight())
-              .ClampNegativeToZero());
+      box->SetOverrideLogicalHeight(
+          LayoutUnit::FromDoubleRound(options_.fixedInlineSize()));
     }
   }
 
   if (options_.hasFixedBlockSize()) {
     if (is_parallel_writing_mode) {
-      box->SetOverrideContentLogicalHeight(
-          (LayoutUnit::FromDoubleRound(options_.fixedBlockSize()) -
-           box->BorderAndPaddingLogicalHeight())
-              .ClampNegativeToZero());
+      box->SetOverrideLogicalHeight(
+          LayoutUnit::FromDoubleRound(options_.fixedBlockSize()));
     } else {
-      box->SetOverrideContentLogicalWidth(
-          (LayoutUnit::FromDoubleRound(options_.fixedBlockSize()) -
-           box->BorderAndPaddingLogicalWidth())
-              .ClampNegativeToZero());
+      box->SetOverrideLogicalWidth(
+          LayoutUnit::FromDoubleRound(options_.fixedBlockSize()));
     }
   }
 
   box->ForceLayout();
 
   box->ClearOverrideContainingBlockContentSize();
-  box->ClearOverrideContentSize();
+  box->ClearOverrideSize();
 
   LayoutUnit fragment_inline_size =
       is_parallel_writing_mode ? box->LogicalWidth() : box->LogicalHeight();

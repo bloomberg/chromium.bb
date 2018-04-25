@@ -226,7 +226,7 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
   LayoutUnit PaddingLeft() const override;
   LayoutUnit PaddingRight() const override;
 
-  void SetOverrideContentLogicalHeightFromRowHeight(LayoutUnit);
+  void SetOverrideLogicalHeightFromRowHeight(LayoutUnit);
 
   void ScrollbarsChanged(bool horizontal_scrollbar_changed,
                          bool vertical_scrollbar_changed,

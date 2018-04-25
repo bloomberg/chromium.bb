@@ -134,17 +134,12 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
   NGLogicalSize percentage_size = {available_logical_width,
                                    available_logical_height};
   NGLogicalSize available_size = percentage_size;
-  // When we have an override size, the available_logical_{width,height} will be
-  // used as the final size of the box, so it has to include border and
-  // padding.
-  if (box.HasOverrideContentLogicalWidth()) {
-    available_size.inline_size =
-        box.BorderAndPaddingLogicalWidth() + box.OverrideContentLogicalWidth();
+  if (box.HasOverrideLogicalWidth()) {
+    available_size.inline_size = box.OverrideLogicalWidth();
     fixed_inline = true;
   }
-  if (box.HasOverrideContentLogicalHeight()) {
-    available_size.block_size = box.BorderAndPaddingLogicalHeight() +
-                                box.OverrideContentLogicalHeight();
+  if (box.HasOverrideLogicalHeight()) {
+    available_size.block_size = box.OverrideLogicalHeight();
     fixed_block = true;
   }
 

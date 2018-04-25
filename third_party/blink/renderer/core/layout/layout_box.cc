@@ -126,7 +126,7 @@ PaintLayerType LayoutBox::LayerTypeRequired() const {
 }
 
 void LayoutBox::WillBeDestroyed() {
-  ClearOverrideContentSize();
+  ClearOverrideSize();
   ClearOverrideContainingBlockContentSize();
 
   if (IsOutOfFlowPositioned())
@@ -316,7 +316,7 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
   // change) but that should be harmless.
   if (IsOutOfFlowPositioned() && Parent() &&
       Parent()->StyleRef().IsDisplayFlexibleOrGridBox())
-    ClearOverrideContentSize();
+    ClearOverrideSize();
 
   if (LayoutMultiColumnSpannerPlaceholder* placeholder = SpannerPlaceholder())
     placeholder->LayoutObjectInFlowThreadStyleDidChange(old_style);
@@ -1376,47 +1376,73 @@ LayoutUnit LayoutBox::MaxPreferredLogicalWidth() const {
   return max_preferred_logical_width_;
 }
 
-bool LayoutBox::HasOverrideContentLogicalHeight() const {
-  return rare_data_ && rare_data_->override_content_logical_height_ != -1;
+LayoutUnit LayoutBox::OverrideLogicalWidth() const {
+  DCHECK(HasOverrideLogicalWidth());
+  return rare_data_->override_logical_width_;
 }
 
-bool LayoutBox::HasOverrideContentLogicalWidth() const {
-  return rare_data_ && rare_data_->override_content_logical_width_ != -1;
+LayoutUnit LayoutBox::OverrideLogicalHeight() const {
+  DCHECK(HasOverrideLogicalHeight());
+  return rare_data_->override_logical_height_;
 }
 
-void LayoutBox::SetOverrideContentLogicalHeight(LayoutUnit height) {
+bool LayoutBox::HasOverrideLogicalHeight() const {
+  return rare_data_ && rare_data_->override_logical_height_ != -1;
+}
+
+bool LayoutBox::HasOverrideLogicalWidth() const {
+  return rare_data_ && rare_data_->override_logical_width_ != -1;
+}
+
+void LayoutBox::SetOverrideLogicalHeight(LayoutUnit height) {
   DCHECK_GE(height, 0);
-  EnsureRareData().override_content_logical_height_ = height;
+  EnsureRareData().override_logical_height_ = height;
 }
 
-void LayoutBox::SetOverrideContentLogicalWidth(LayoutUnit width) {
+void LayoutBox::SetOverrideLogicalWidth(LayoutUnit width) {
   DCHECK_GE(width, 0);
-  EnsureRareData().override_content_logical_width_ = width;
+  EnsureRareData().override_logical_width_ = width;
 }
 
-void LayoutBox::ClearOverrideContentLogicalHeight() {
+void LayoutBox::ClearOverrideLogicalHeight() {
   if (rare_data_)
-    rare_data_->override_content_logical_height_ = LayoutUnit(-1);
+    rare_data_->override_logical_height_ = LayoutUnit(-1);
 }
 
-void LayoutBox::ClearOverrideContentLogicalWidth() {
+void LayoutBox::ClearOverrideLogicalWidth() {
   if (rare_data_)
-    rare_data_->override_content_logical_width_ = LayoutUnit(-1);
+    rare_data_->override_logical_width_ = LayoutUnit(-1);
 }
 
-void LayoutBox::ClearOverrideContentSize() {
-  ClearOverrideContentLogicalHeight();
-  ClearOverrideContentLogicalWidth();
+void LayoutBox::ClearOverrideSize() {
+  ClearOverrideLogicalHeight();
+  ClearOverrideLogicalWidth();
 }
 
 LayoutUnit LayoutBox::OverrideContentLogicalWidth() const {
-  DCHECK(HasOverrideContentLogicalWidth());
-  return rare_data_->override_content_logical_width_;
+  return (OverrideLogicalWidth() - BorderAndPaddingLogicalWidth() -
+          ScrollbarLogicalWidth())
+      .ClampNegativeToZero();
 }
 
 LayoutUnit LayoutBox::OverrideContentLogicalHeight() const {
-  DCHECK(HasOverrideContentLogicalHeight());
-  return rare_data_->override_content_logical_height_;
+  return (OverrideLogicalHeight() - BorderAndPaddingLogicalHeight() -
+          ScrollbarLogicalHeight())
+      .ClampNegativeToZero();
+}
+
+// TODO(rego): Probably at some point we could remove this if all calls to
+// override sizes consider the scrollbar size properly.
+LayoutUnit LayoutBox::OverrideContentAndScrollbarLogicalWidth() const {
+  return (OverrideLogicalWidth() - BorderAndPaddingLogicalWidth())
+      .ClampNegativeToZero();
+}
+
+// TODO(rego): Probably at some point we could remove this if all calls to
+// override sizes consider the scrollbar size properly.
+LayoutUnit LayoutBox::OverrideContentAndScrollbarLogicalHeight() const {
+  return (OverrideLogicalHeight() - BorderAndPaddingLogicalHeight())
+      .ClampNegativeToZero();
 }
 
 // TODO (lajava) Shouldn't we implement these functions based on physical
@@ -2093,8 +2119,11 @@ LayoutUnit LayoutBox::PerpendicularContainingBlockLogicalHeight() const {
     return OverrideContainingBlockContentLogicalHeight();
 
   LayoutBlock* cb = ContainingBlock();
-  if (cb->HasOverrideContentLogicalHeight())
-    return cb->OverrideContentLogicalHeight();
+  if (cb->HasOverrideLogicalHeight()) {
+    // TODO(rego): Shouldn't we use OverrideContentLogicalHeight() directly, so
+    // scrollbar size gets subtracted?
+    return cb->OverrideContentAndScrollbarLogicalHeight();
+  }
 
   const ComputedStyle& containing_block_style = cb->StyleRef();
   Length logical_height_length = containing_block_style.LogicalHeight();
@@ -2651,9 +2680,8 @@ void LayoutBox::ComputeLogicalWidth(
 
   // The parent box is flexing us, so it has increased or decreased our
   // width.  Use the width from the style context.
-  if (HasOverrideContentLogicalWidth()) {
-    computed_values.extent_ =
-        OverrideContentLogicalWidth() + BorderAndPaddingLogicalWidth();
+  if (HasOverrideLogicalWidth()) {
+    computed_values.extent_ = OverrideLogicalWidth();
     return;
   }
 
@@ -3136,10 +3164,8 @@ void LayoutBox::ComputeLogicalHeight(
   Length h;
   if (IsOutOfFlowPositioned()) {
     ComputePositionedLogicalHeight(computed_values);
-    if (HasOverrideContentLogicalHeight()) {
-      computed_values.extent_ =
-          OverrideContentLogicalHeight() + BorderAndPaddingLogicalHeight();
-    }
+    if (HasOverrideLogicalHeight())
+      computed_values.extent_ = OverrideLogicalHeight();
   } else {
     LayoutBlock* cb = ContainingBlock();
 
@@ -3179,8 +3205,12 @@ void LayoutBox::ComputeLogicalHeight(
 
     // The parent box is flexing us, so it has increased or decreased our
     // height. We have to grab our cached flexible height.
-    if (HasOverrideContentLogicalHeight()) {
-      h = Length(OverrideContentLogicalHeight(), kFixed);
+    if (HasOverrideLogicalHeight()) {
+      // TODO(rego): Other branches set the logical height, why are we
+      // using OverrideContentAndScrollbarLogicalHeight() here?
+      // TODO(rego): Shouldn't we use OverrideContentLogicalHeight() directly,
+      // so scrollbar size gets subtracted?
+      h = Length(OverrideContentAndScrollbarLogicalHeight(), kFixed);
     } else if (treat_as_replaced) {
       h = Length(ComputeReplacedLogicalHeight(), kFixed);
     } else {
@@ -3409,7 +3439,7 @@ LayoutUnit LayoutBox::ComputePercentageLogicalHeight(
       // Basically we don't care if the cell specified a height or not. We just
       // always make ourselves be a percentage of the cell's current content
       // height.
-      if (!cb->HasOverrideContentLogicalHeight()) {
+      if (!cb->HasOverrideLogicalHeight()) {
         // https://drafts.csswg.org/css-tables-3/#row-layout:
         // For the purpose of calculating [the minimum height of a row],
         // descendants of table cells whose height depends on percentages
@@ -3425,7 +3455,9 @@ LayoutUnit LayoutBox::ComputePercentageLogicalHeight(
           return LayoutUnit();
         return LayoutUnit(-1);
       }
-      available_height = cb->OverrideContentLogicalHeight();
+      // TODO(rego): Shouldn't we subtract the scrollbar height too?
+      available_height = cb->OverrideLogicalHeight() -
+                         cb->CollapsedBorderAndCSSPaddingLogicalHeight();
     }
   } else {
     available_height = cb->AvailableLogicalHeightForPercentageComputation();
@@ -3440,16 +3472,16 @@ LayoutUnit LayoutBox::ComputePercentageLogicalHeight(
     available_height += cb->PaddingLogicalHeight();
 
   LayoutUnit result = ValueForLength(height, available_height);
-  // |overrideLogicalContentHeight| is the maximum height made available by the
+  // |OverrideLogicalHeight| is the maximum height made available by the
   // cell to its percent height children when we decide they can determine the
   // height of the cell. If the percent height child is box-sizing:content-box
   // then we must subtract the border and padding from the cell's
-  // |availableHeight| (given by |overrideLogicalContentHeight|) to arrive
+  // |available_height| (given by |OverrideLogicalHeight|) to arrive
   // at the child's computed height.
   bool subtract_border_and_padding =
       IsTable() ||
       (cb->IsTableCell() && !skipped_auto_height_containing_block &&
-       cb->HasOverrideContentLogicalHeight() &&
+       cb->HasOverrideLogicalHeight() &&
        Style()->BoxSizing() == EBoxSizing::kContentBox);
   if (subtract_border_and_padding) {
     result -= BorderAndPaddingLogicalHeight();
@@ -3609,13 +3641,15 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
       if (cb->IsLayoutBlock()) {
         LayoutBlock* block = ToLayoutBlock(cb);
         block->AddPercentHeightDescendant(const_cast<LayoutBox*>(this));
-        if (block->IsFlexItem())
+        if (block->IsFlexItem()) {
           stretched_height =
               ToLayoutFlexibleBox(block->Parent())
                   ->ChildLogicalHeightForPercentageResolution(*block);
-        else if (block->IsGridItem() &&
-                 block->HasOverrideContentLogicalHeight())
-          stretched_height = block->OverrideContentLogicalHeight();
+        } else if (block->IsGridItem() && block->HasOverrideLogicalHeight()) {
+          // TODO(rego): Shouldn't we use OverrideContentLogicalHeight()
+          // directly, so scrollbar size gets subtracted?
+          stretched_height = block->OverrideContentAndScrollbarLogicalHeight();
+        }
       }
 
       if (cb->IsOutOfFlowPositioned() && cb->Style()->Height().IsAuto() &&
@@ -3710,8 +3744,11 @@ LayoutUnit LayoutBox::AvailableLogicalHeightUsing(
   // some new height, and then when we lay out again we'll use the calculation
   // below.
   if (IsTableCell() && (h.IsAuto() || h.IsPercentOrCalc())) {
-    if (HasOverrideContentLogicalHeight())
-      return OverrideContentLogicalHeight();
+    if (HasOverrideLogicalHeight()) {
+      // TODO(rego): Shouldn't we subtract the scrollbar height too?
+      return OverrideLogicalHeight() -
+             CollapsedBorderAndCSSPaddingLogicalHeight();
+    }
     return LogicalHeight() - BorderAndPaddingLogicalHeight();
   }
 

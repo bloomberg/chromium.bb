@@ -318,16 +318,28 @@ static bool ChildDoesNotAffectWidthOrFlexing(LayoutObject* child) {
          child->Style()->Visibility() == EVisibility::kCollapse;
 }
 
+static LayoutUnit WidthForChild(LayoutBox* child) {
+  if (child->HasOverrideLogicalWidth())
+    return child->OverrideLogicalWidth();
+  return child->LogicalWidth();
+}
+
 static LayoutUnit ContentWidthForChild(LayoutBox* child) {
-  if (child->HasOverrideContentLogicalWidth())
-    return child->OverrideContentLogicalWidth();
-  return child->LogicalWidth() - child->BorderAndPaddingLogicalWidth();
+  // TODO(rego): Shouldn't we subtract the scrollbar width too?
+  return (WidthForChild(child) - child->BorderAndPaddingLogicalWidth())
+      .ClampNegativeToZero();
+}
+
+static LayoutUnit HeightForChild(LayoutBox* child) {
+  if (child->HasOverrideLogicalHeight())
+    return child->OverrideLogicalHeight();
+  return child->LogicalHeight();
 }
 
 static LayoutUnit ContentHeightForChild(LayoutBox* child) {
-  if (child->HasOverrideContentLogicalHeight())
-    return child->OverrideContentLogicalHeight();
-  return child->LogicalHeight() - child->BorderAndPaddingLogicalHeight();
+  // TODO(rego): Shouldn't we subtract the scrollbar height too?
+  return (HeightForChild(child) - child->BorderAndPaddingLogicalHeight())
+      .ClampNegativeToZero();
 }
 
 void LayoutDeprecatedFlexibleBox::StyleWillChange(
@@ -474,7 +486,7 @@ static void GatherFlexChildrenInfo(FlexBoxIterator& iterator,
       // We always have to lay out flexible objects again, since the flex
       // distribution
       // may have changed, and we need to reallocate space.
-      child->ClearOverrideContentSize();
+      child->ClearOverrideSize();
       if (!relayout_children)
         child->SetChildNeedsLayout(kMarkOnlyThis);
       have_flex = true;
@@ -712,8 +724,7 @@ void LayoutDeprecatedFlexibleBox::LayoutHorizontalBox(bool relayout_children) {
                 LayoutUnit(space_available_this_pass *
                            (child->Style()->BoxFlex() / total_flex));
             if (space_add) {
-              child->SetOverrideContentLogicalWidth(
-                  ContentWidthForChild(child) + space_add);
+              child->SetOverrideLogicalWidth(WidthForChild(child) + space_add);
               flexing_children = true;
               relayout_children = true;
             }
@@ -731,8 +742,7 @@ void LayoutDeprecatedFlexibleBox::LayoutHorizontalBox(bool relayout_children) {
           for (LayoutBox* child = iterator.First(); child && remaining_space;
                child = iterator.Next()) {
             if (AllowedChildFlex(child, expanding)) {
-              child->SetOverrideContentLogicalWidth(
-                  ContentWidthForChild(child) + space_add);
+              child->SetOverrideLogicalWidth(WidthForChild(child) + space_add);
               flexing_children = true;
               relayout_children = true;
               remaining_space -= space_add;
@@ -998,8 +1008,8 @@ void LayoutDeprecatedFlexibleBox::LayoutVerticalBox(bool relayout_children) {
                 space_available_this_pass *
                 (child->Style()->BoxFlex() / total_flex));
             if (space_add) {
-              child->SetOverrideContentLogicalHeight(
-                  ContentHeightForChild(child) + space_add);
+              child->SetOverrideLogicalHeight(HeightForChild(child) +
+                                              space_add);
               flexing_children = true;
               relayout_children = true;
             }
@@ -1017,8 +1027,8 @@ void LayoutDeprecatedFlexibleBox::LayoutVerticalBox(bool relayout_children) {
           for (LayoutBox* child = iterator.First(); child && remaining_space;
                child = iterator.Next()) {
             if (AllowedChildFlex(child, expanding)) {
-              child->SetOverrideContentLogicalHeight(
-                  ContentHeightForChild(child) + space_add);
+              child->SetOverrideLogicalHeight(HeightForChild(child) +
+                                              space_add);
               flexing_children = true;
               relayout_children = true;
               remaining_space -= space_add;
@@ -1117,7 +1127,7 @@ void LayoutDeprecatedFlexibleBox::ApplyLineClamp(FlexBoxIterator& iterator,
     if (ChildDoesNotAffectWidthOrFlexing(child))
       continue;
 
-    child->ClearOverrideContentSize();
+    child->ClearOverrideSize();
     if (relayout_children ||
         (child->IsAtomicInlineLevel() &&
          (child->Style()->Width().IsPercentOrCalc() ||
@@ -1162,8 +1172,7 @@ void LayoutDeprecatedFlexibleBox::ApplyLineClamp(FlexBoxIterator& iterator,
     if (new_height == child->Size().Height())
       continue;
 
-    child->SetOverrideContentLogicalHeight(new_height -
-                                           child->BorderAndPaddingHeight());
+    child->SetOverrideLogicalHeight(new_height);
     child->ForceChildLayout();
 
     // FIXME: For now don't support RTL.
@@ -1231,7 +1240,7 @@ void LayoutDeprecatedFlexibleBox::ClearLineClamp() {
     if (ChildDoesNotAffectWidthOrFlexing(child))
       continue;
 
-    child->ClearOverrideContentSize();
+    child->ClearOverrideSize();
     if ((child->IsAtomicInlineLevel() &&
          (child->Style()->Width().IsPercentOrCalc() ||
           child->Style()->Height().IsPercentOrCalc())) ||
