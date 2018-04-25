@@ -98,13 +98,13 @@
           $i18n{networkButtonConfigure}
         </paper-button>
       </template>
-      <paper-button class="primary-button" on-click="onConnectTap_"
+      <paper-button class="action-button" on-click="onConnectTap_"
           hidden$="[[!showConnect_(networkProperties, globalPolicy)]]"
           disabled="[[!enableConnect_(networkProperties, defaultNetwork,
               globalPolicy, networkPropertiesReceived_, outOfRange_)]]">
         $i18n{networkButtonConnect}
       </paper-button>
-      <paper-button class="primary-button" on-click="onDisconnectTap_"
+      <paper-button class="action-button" on-click="onDisconnectTap_"
           hidden$="[[!showDisconnect_(networkProperties)]]">
         $i18n{networkButtonDisconnect}
       </paper-button>

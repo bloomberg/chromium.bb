@@ -8,33 +8,6 @@
 <dom-module id="cr-shared-style">
   <template>
     <style include="cr-hidden-style cr-icons">
-      .action-button {
-        background: var(--google-blue-500);
-        color: white;
-        --paper-button-flat-keyboard-focus: {
-          background: rgb(58, 117, 215);  /* 88% of --google-blue-500 */
-        };
-      }
-
-      .action-button[disabled] {
-        opacity: .2;
-      }
-
-      .cancel-button {
-        --paper-button-flat-keyboard-focus: {
-          background: rgba(0, 0, 0, .12);
-        };
-        -webkit-margin-end: 8px;
-        color: var(--paper-grey-600);
-      }
-
-      .action-button,
-      .cancel-button {
-        font-weight: 500;
-        line-height: 154%;
-        padding: 8px 16px;
-      }
-
       [actionable] {
         @apply --cr-actionable;
       }
