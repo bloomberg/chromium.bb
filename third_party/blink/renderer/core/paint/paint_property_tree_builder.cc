@@ -359,9 +359,12 @@ class FragmentPaintPropertyTreeBuilder {
     property_added_or_removed_ |= result.NewNodeCreated();
     property_changed_ |= !result.Unchanged();
   }
-  void OnUpdateClip(const ObjectPaintProperties::UpdateResult& result) {
+  // Like |OnUpdate| but sets |clip_changed| if the clip values change.
+  void OnUpdateClip(const ObjectPaintProperties::UpdateResult& result,
+                    bool only_updated_hit_test_values = false) {
     OnUpdate(result);
-    full_context_.clip_changed |= !result.Unchanged();
+    full_context_.clip_changed |=
+        !(result.Unchanged() || only_updated_hit_test_values);
   }
   void OnClear(bool cleared) {
     property_added_or_removed_ |= cleared;
@@ -1242,26 +1245,17 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
     if (NeedsOverflowClip(object_) && !CanOmitOverflowClip(object_)) {
       ClipPaintPropertyNode::State state;
       state.local_transform_space = context_.current.transform;
+
       if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
           object_.IsSVGForeignObject()) {
         state.clip_rect = ToClipRect(ToLayoutBox(object_).FrameRect());
       } else if (object_.IsBox()) {
         state.clip_rect = ToClipRect(ToLayoutBox(object_).OverflowClipRect(
             context_.current.paint_offset));
-
-        bool is_root_layout_view =
-            object_.IsLayoutView() && !object_.GetFrame()->Tree().Parent();
-        // Overlay scrollbar hiding frequently changes clip rects which requires
-        // invalidating all clip nodes. To avoid this expensive operation at the
-        // root, we do not set |clip_rect_excluding_overlay_scrollbars| and
-        // instead special-case hit test clipping at the root (see:
-        // PaintLayerClipper::CalculateBackgroundClipRectWithGeometryMapper).
-        if (!is_root_layout_view) {
-          state.clip_rect_excluding_overlay_scrollbars =
-              ToClipRect(ToLayoutBox(object_).OverflowClipRect(
-                  context_.current.paint_offset,
-                  kExcludeOverlayScrollbarSizeForHitTesting));
-        }
+        state.clip_rect_excluding_overlay_scrollbars =
+            ToClipRect(ToLayoutBox(object_).OverflowClipRect(
+                context_.current.paint_offset,
+                kExcludeOverlayScrollbarSizeForHitTesting));
       } else {
         DCHECK(object_.IsSVGViewportContainer());
         const auto& viewport_container = ToLayoutSVGViewportContainer(object_);
@@ -1278,8 +1272,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
           should_create_overflow_clip = false;
       }
       if (should_create_overflow_clip) {
+        const ClipPaintPropertyNode* existing = properties_->OverflowClip();
+        bool equal_ignoring_hit_test_rects =
+            !!existing &&
+            existing->EqualIgnoringHitTestRects(context_.current.clip, state);
         OnUpdateClip(properties_->UpdateOverflowClip(context_.current.clip,
-                                                     std::move(state)));
+                                                     std::move(state)),
+                     equal_ignoring_hit_test_rects);
       } else {
         OnClearClip(properties_->ClearOverflowClip());
       }
