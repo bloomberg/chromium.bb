@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "content/common/frame_messages.h"
 #include "content/public/common/bindings_policy.h"
@@ -22,6 +23,7 @@
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
@@ -96,6 +98,13 @@ void WebUIExtension::Send(gin::Arguments* args) {
     return;
   }
 
+  if (base::EndsWith(message, "RequiringGesture",
+                     base::CompareCase::SENSITIVE) &&
+      !blink::WebUserGestureIndicator::IsProcessingUserGesture(frame)) {
+    NOTREACHED();
+    return;
+  }
+
   // If they've provided an optional message parameter, convert that into a
   // Value to send to the browser process.
   std::unique_ptr<base::ListValue> content;
@@ -122,6 +131,7 @@ void WebUIExtension::Send(gin::Arguments* args) {
 
   // Send the message up to the browser.
   render_frame->Send(new FrameHostMsg_WebUISend(render_frame->GetRoutingID(),
+                                                frame->GetDocument().Url(),
                                                 message, *content));
 }
 
