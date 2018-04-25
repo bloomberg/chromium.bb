@@ -109,7 +109,6 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
   }
 
   void LoseResourceForTesting(viz::ResourceId id);
-  void EnableReadLockFencesForTesting(viz::ResourceId id);
 
   class CC_EXPORT ScopedSkSurface {
    public:

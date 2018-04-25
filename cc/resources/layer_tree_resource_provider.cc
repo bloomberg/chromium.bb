@@ -530,13 +530,6 @@ void LayerTreeResourceProvider::LoseResourceForTesting(viz::ResourceId id) {
   resource->lost = true;
 }
 
-void LayerTreeResourceProvider::EnableReadLockFencesForTesting(
-    viz::ResourceId id) {
-  viz::internal::Resource* resource = GetResource(id);
-  DCHECK(resource);
-  resource->read_lock_fences_enabled = true;
-}
-
 LayerTreeResourceProvider::ScopedSkSurface::ScopedSkSurface(
     GrContext* gr_context,
     GLuint texture_id,

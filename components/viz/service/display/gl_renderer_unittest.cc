@@ -1611,9 +1611,10 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   int root_pass_id = 1;
   RenderPass* root_pass;
 
-  ResourceId mask = child_resource_provider_->CreateGpuTextureResource(
-      gfx::Size(20, 12), child_resource_provider_->best_texture_format(),
-      gfx::ColorSpace());
+  auto transfer_resource = TransferableResource::MakeGL(
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+  ResourceId mask = child_resource_provider_->ImportResource(
+      transfer_resource, SingleReleaseCallback::Create(base::DoNothing()));
 
   // Return the mapped resource id.
   cc::ResourceProvider::ResourceIdMap resource_map =
