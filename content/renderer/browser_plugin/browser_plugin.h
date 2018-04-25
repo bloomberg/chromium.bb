@@ -16,7 +16,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
-#include "content/common/frame_resize_params.h"
+#include "content/common/frame_visual_properties.h"
 #include "content/public/common/screen_info.h"
 #include "content/renderer/child_frame_compositor.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
@@ -257,11 +257,11 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   bool enable_surface_synchronization_ = false;
 
   // The last ResizeParams sent to the browser process, if any.
-  base::Optional<FrameResizeParams> sent_visual_properties_;
+  base::Optional<FrameVisualProperties> sent_visual_properties_;
 
   // The current set of ResizeParams. This may or may not match
   // |sent_visual_properties_|.
-  FrameResizeParams pending_visual_properties_;
+  FrameVisualProperties pending_visual_properties_;
 
   // We call lifetime managing methods on |delegate_|, but we do not directly
   // own this. The delegate destroys itself.

@@ -7,7 +7,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/frame_resize_params.h"
+#include "content/common/frame_visual_properties.h"
 
 namespace content {
 
@@ -25,9 +25,9 @@ FrameConnectorDelegate::GetRootRenderWidgetHostView() {
   return nullptr;
 }
 
-void FrameConnectorDelegate::UpdateResizeParams(
+void FrameConnectorDelegate::SynchronizeVisualProperties(
     const viz::SurfaceId& surface_id,
-    const FrameResizeParams& resize_params) {
+    const FrameVisualProperties& resize_params) {
   screen_info_ = resize_params.screen_info;
   local_surface_id_ = surface_id.local_surface_id();
   capture_sequence_number_ = resize_params.capture_sequence_number;

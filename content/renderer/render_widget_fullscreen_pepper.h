@@ -69,7 +69,8 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
   // RenderWidget API.
   void DidInitiatePaint() override;
   void Close() override;
-  void OnResize(const ResizeParams& params) override;
+  void OnSynchronizeVisualProperties(
+      const VisualProperties& visual_properties) override;
 
   // RenderWidget overrides.
   GURL GetURLForGraphicsContext3D() override;

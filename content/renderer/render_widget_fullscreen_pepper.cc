@@ -379,8 +379,9 @@ void RenderWidgetFullscreenPepper::Close() {
   RenderWidget::Close();
 }
 
-void RenderWidgetFullscreenPepper::OnResize(const ResizeParams& params) {
-  RenderWidget::OnResize(params);
+void RenderWidgetFullscreenPepper::OnSynchronizeVisualProperties(
+    const VisualProperties& visual_properties) {
+  RenderWidget::OnSynchronizeVisualProperties(visual_properties);
   UpdateLayerBounds();
 }
 

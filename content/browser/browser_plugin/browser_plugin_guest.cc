@@ -36,7 +36,7 @@
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/drag_messages.h"
-#include "content/common/frame_resize_params.h"
+#include "content/common/frame_visual_properties.h"
 #include "content/common/input/ime_text_span_conversions.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
@@ -288,8 +288,8 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetVisibility, OnSetVisibility)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UnlockMouse_ACK, OnUnlockMouseAck)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateResizeParams,
-                        OnUpdateResizeParams)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SynchronizeVisualProperties,
+                        OnSynchronizeVisualProperties)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1033,14 +1033,15 @@ void BrowserPluginGuest::OnUnlockMouseAck(int browser_plugin_instance_id) {
   mouse_locked_ = false;
 }
 
-void BrowserPluginGuest::OnUpdateResizeParams(
+void BrowserPluginGuest::OnSynchronizeVisualProperties(
     int browser_plugin_instance_id,
     const viz::LocalSurfaceId& local_surface_id,
-    const FrameResizeParams& resize_params) {
+    const FrameVisualProperties& visual_properties) {
   if (local_surface_id_ > local_surface_id ||
-      ((frame_rect_.size() != resize_params.screen_space_rect.size() ||
-        screen_info_ != resize_params.screen_info ||
-        capture_sequence_number_ != resize_params.capture_sequence_number) &&
+      ((frame_rect_.size() != visual_properties.screen_space_rect.size() ||
+        screen_info_ != visual_properties.screen_info ||
+        capture_sequence_number_ !=
+            visual_properties.capture_sequence_number) &&
        local_surface_id_ == local_surface_id)) {
     SiteInstance* owner_site_instance = delegate_->GetOwnerSiteInstance();
     bad_message::ReceivedBadMessage(
@@ -1049,13 +1050,13 @@ void BrowserPluginGuest::OnUpdateResizeParams(
     return;
   }
 
-  screen_info_ = resize_params.screen_info;
-  frame_rect_ = resize_params.screen_space_rect;
+  screen_info_ = visual_properties.screen_info;
+  frame_rect_ = visual_properties.screen_space_rect;
   GetWebContents()->SendScreenRects();
   local_surface_id_ = local_surface_id;
   bool capture_sequence_number_changed =
-      capture_sequence_number_ != resize_params.capture_sequence_number;
-  capture_sequence_number_ = resize_params.capture_sequence_number;
+      capture_sequence_number_ != visual_properties.capture_sequence_number;
+  capture_sequence_number_ = visual_properties.capture_sequence_number;
 
   RenderWidgetHostView* view = web_contents()->GetRenderWidgetHostView();
   if (!view)
@@ -1073,9 +1074,9 @@ void BrowserPluginGuest::OnUpdateResizeParams(
       RenderWidgetHostImpl::From(view->GetRenderWidgetHost());
   DCHECK(render_widget_host);
 
-  render_widget_host->SetAutoResize(resize_params.auto_resize_enabled,
-                                    resize_params.min_size_for_auto_resize,
-                                    resize_params.max_size_for_auto_resize);
+  render_widget_host->SetAutoResize(visual_properties.auto_resize_enabled,
+                                    visual_properties.min_size_for_auto_resize,
+                                    visual_properties.max_size_for_auto_resize);
 
   render_widget_host->SynchronizeVisualProperties();
 }

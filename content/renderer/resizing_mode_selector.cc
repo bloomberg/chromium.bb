@@ -17,12 +17,14 @@ bool ResizingModeSelector::NeverUsesSynchronousResize() const {
          !RenderThreadImpl::current()->layout_test_mode();
 }
 
-bool ResizingModeSelector::ShouldAbortOnResize(RenderWidget* widget,
-                                               const ResizeParams& params) {
+bool ResizingModeSelector::ShouldAbortOnResize(
+    RenderWidget* widget,
+    const VisualProperties& visual_properties) {
   return is_synchronous_mode_ &&
-         params.is_fullscreen_granted == widget->is_fullscreen_granted() &&
-         params.display_mode == widget->display_mode() &&
-         params.screen_info.device_scale_factor ==
+         visual_properties.is_fullscreen_granted ==
+             widget->is_fullscreen_granted() &&
+         visual_properties.display_mode == widget->display_mode() &&
+         visual_properties.screen_info.device_scale_factor ==
              widget->GetScreenInfo().device_scale_factor;
 }
 

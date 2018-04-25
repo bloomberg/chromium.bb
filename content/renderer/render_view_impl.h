@@ -91,7 +91,7 @@ class RenderViewImplTest;
 class RenderViewObserver;
 class RenderViewTest;
 struct FileChooserParams;
-struct ResizeParams;
+struct VisualProperties;
 
 namespace mojom {
 class CreateViewParams;
@@ -377,7 +377,7 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   blink::WebWidget* GetWebWidget() const override;
   void CloseForFrame() override;
   void Close() override;
-  void OnResize(const ResizeParams& params) override;
+  void OnSynchronizeVisualProperties(const VisualProperties& params) override;
   void OnSetFocus(bool enable) override;
   GURL GetURLForGraphicsContext3D() override;
   void DidCommitCompositorFrame() override;

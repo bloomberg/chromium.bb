@@ -440,18 +440,21 @@ class RenderViewImplBlinkSettingsTest : public RenderViewImplTest {
 class RenderViewImplScaleFactorTest : public RenderViewImplBlinkSettingsTest {
  protected:
   void SetDeviceScaleFactor(float dsf) {
-    ResizeParams params;
-    params.screen_info.device_scale_factor = dsf;
-    params.new_size = gfx::Size(100, 100);
-    params.compositor_viewport_pixel_size = gfx::Size(200, 200);
-    params.visible_viewport_size = params.new_size;
-    params.auto_resize_enabled = view()->auto_resize_mode();
-    params.capture_sequence_number = view()->capture_sequence_number();
-    params.min_size_for_auto_resize = view()->min_size_for_auto_resize();
-    params.max_size_for_auto_resize = view()->max_size_for_auto_resize();
-    params.needs_resize_ack = false;
-    params.content_source_id = view()->GetContentSourceId();
-    view()->OnResize(params);
+    VisualProperties visual_properties;
+    visual_properties.screen_info.device_scale_factor = dsf;
+    visual_properties.new_size = gfx::Size(100, 100);
+    visual_properties.compositor_viewport_pixel_size = gfx::Size(200, 200);
+    visual_properties.visible_viewport_size = visual_properties.new_size;
+    visual_properties.auto_resize_enabled = view()->auto_resize_mode();
+    visual_properties.capture_sequence_number =
+        view()->capture_sequence_number();
+    visual_properties.min_size_for_auto_resize =
+        view()->min_size_for_auto_resize();
+    visual_properties.max_size_for_auto_resize =
+        view()->max_size_for_auto_resize();
+    visual_properties.needs_resize_ack = false;
+    visual_properties.content_source_id = view()->GetContentSourceId();
+    view()->OnSynchronizeVisualProperties(visual_properties);
     ASSERT_EQ(dsf, view()->GetWebScreenInfo().device_scale_factor);
     ASSERT_EQ(dsf, view()->GetOriginalScreenInfo().device_scale_factor);
   }

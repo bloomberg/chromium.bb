@@ -38,8 +38,8 @@
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/render_frame_metadata.mojom.h"
-#include "content/common/resize_params.h"
 #include "content/common/view_messages.h"
+#include "content/common/visual_properties.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -183,11 +183,11 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
  public:
 
   // Allow poking at a few private members.
-  using RenderWidgetHostImpl::GetResizeParams;
+  using RenderWidgetHostImpl::GetVisualProperties;
   using RenderWidgetHostImpl::OnResizeOrRepaintACK;
   using RenderWidgetHostImpl::RendererExited;
   using RenderWidgetHostImpl::SetInitialRenderSizeParams;
-  using RenderWidgetHostImpl::old_resize_params_;
+  using RenderWidgetHostImpl::old_visual_properties_;
   using RenderWidgetHostImpl::is_hidden_;
   using RenderWidgetHostImpl::resize_ack_pending_;
   using RenderWidgetHostImpl::input_router_;
@@ -736,8 +736,8 @@ class RenderWidgetHostTest : public testing::Test {
   }
 
   void SetInitialRenderSizeParams() {
-    ResizeParams render_size_params;
-    host_->GetResizeParams(&render_size_params);
+    VisualProperties render_size_params;
+    host_->GetVisualProperties(&render_size_params);
     host_->SetInitialRenderSizeParams(render_size_params);
   }
 
@@ -950,7 +950,8 @@ TEST_F(RenderWidgetHostTest, Resize) {
   view_->SetBounds(gfx::Rect());
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
+      ViewMsg_SynchronizeVisualProperties::ID));
 
   // No resize ack if the physical backing gets set, but the view bounds are
   // zero.
@@ -966,8 +967,9 @@ TEST_F(RenderWidgetHostTest, Resize) {
   view_->SetMockCompositorViewportPixelSize(gfx::Size());
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_EQ(original_size.size(), host_->old_resize_params_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  EXPECT_EQ(original_size.size(), host_->old_visual_properties_->new_size);
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+      ViewMsg_SynchronizeVisualProperties::ID));
 
   // Setting the bounds and physical backing size to nonzero should send out
   // the notification and expect an ack.
@@ -975,8 +977,9 @@ TEST_F(RenderWidgetHostTest, Resize) {
   view_->ClearMockCompositorViewportPixelSize();
   host_->SynchronizeVisualProperties();
   EXPECT_TRUE(host_->resize_ack_pending_);
-  EXPECT_EQ(original_size.size(), host_->old_resize_params_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  EXPECT_EQ(original_size.size(), host_->old_visual_properties_->new_size);
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+      ViewMsg_SynchronizeVisualProperties::ID));
   ViewHostMsg_ResizeOrRepaint_ACK_Params params;
   params.flags = ViewHostMsg_ResizeOrRepaint_ACK_Flags::IS_RESIZE_ACK;
   params.view_size = original_size.size();
@@ -995,7 +998,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   params.view_size = gfx::Size(100, 100);
   host_->OnResizeOrRepaintACK(params);
   EXPECT_TRUE(host_->resize_ack_pending_);
-  EXPECT_EQ(second_size.size(), host_->old_resize_params_->new_size);
+  EXPECT_EQ(second_size.size(), host_->old_visual_properties_->new_size);
 
   // Sending out a new notification should NOT send out a new IPC message since
   // a resize ACK is pending.
@@ -1004,8 +1007,9 @@ TEST_F(RenderWidgetHostTest, Resize) {
   view_->SetBounds(third_size);
   host_->SynchronizeVisualProperties();
   EXPECT_TRUE(host_->resize_ack_pending_);
-  EXPECT_EQ(second_size.size(), host_->old_resize_params_->new_size);
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  EXPECT_EQ(second_size.size(), host_->old_visual_properties_->new_size);
+  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
+      ViewMsg_SynchronizeVisualProperties::ID));
 
   // Send a update that's a resize ack, but for the original_size we sent. Since
   // this isn't the second_size, the message handler should immediately send
@@ -1015,8 +1019,9 @@ TEST_F(RenderWidgetHostTest, Resize) {
   params.view_size = original_size.size();
   host_->OnResizeOrRepaintACK(params);
   EXPECT_TRUE(host_->resize_ack_pending_);
-  EXPECT_EQ(third_size.size(), host_->old_resize_params_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+      ViewMsg_SynchronizeVisualProperties::ID));
 
   // Send the resize ack for the latest size.
   process_->sink().ClearMessages();
@@ -1024,8 +1029,9 @@ TEST_F(RenderWidgetHostTest, Resize) {
   params.view_size = third_size.size();
   host_->OnResizeOrRepaintACK(params);
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_EQ(third_size.size(), host_->old_resize_params_->new_size);
-  EXPECT_FALSE(process_->sink().GetFirstMessageMatching(ViewMsg_Resize::ID));
+  EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
+  EXPECT_FALSE(process_->sink().GetFirstMessageMatching(
+      ViewMsg_SynchronizeVisualProperties::ID));
 
   // Now clearing the bounds should send out a notification but we shouldn't
   // expect a resize ack (since the renderer won't ack empty sizes). The message
@@ -1034,30 +1040,34 @@ TEST_F(RenderWidgetHostTest, Resize) {
   view_->SetBounds(gfx::Rect());
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_EQ(gfx::Size(), host_->old_resize_params_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  EXPECT_EQ(gfx::Size(), host_->old_visual_properties_->new_size);
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+      ViewMsg_SynchronizeVisualProperties::ID));
 
   // Send a rect that has no area but has either width or height set.
   process_->sink().ClearMessages();
   view_->SetBounds(gfx::Rect(0, 0, 0, 30));
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_EQ(gfx::Size(0, 30), host_->old_resize_params_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  EXPECT_EQ(gfx::Size(0, 30), host_->old_visual_properties_->new_size);
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+      ViewMsg_SynchronizeVisualProperties::ID));
 
   // Set the same size again. It should not be sent again.
   process_->sink().ClearMessages();
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_EQ(gfx::Size(0, 30), host_->old_resize_params_->new_size);
-  EXPECT_FALSE(process_->sink().GetFirstMessageMatching(ViewMsg_Resize::ID));
+  EXPECT_EQ(gfx::Size(0, 30), host_->old_visual_properties_->new_size);
+  EXPECT_FALSE(process_->sink().GetFirstMessageMatching(
+      ViewMsg_SynchronizeVisualProperties::ID));
 
   // A different size should be sent again, however.
   view_->SetBounds(gfx::Rect(0, 0, 0, 31));
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_EQ(gfx::Size(0, 31), host_->old_resize_params_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  EXPECT_EQ(gfx::Size(0, 31), host_->old_visual_properties_->new_size);
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+      ViewMsg_SynchronizeVisualProperties::ID));
 }
 
 // Test that a resize event is sent if SynchronizeVisualProperties() is called
@@ -1073,7 +1083,8 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   view_->SetScreenInfo(screen_info);
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+      ViewMsg_SynchronizeVisualProperties::ID));
   process_->sink().ClearMessages();
 
   screen_info.orientation_angle = 180;
@@ -1082,7 +1093,8 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   view_->SetScreenInfo(screen_info);
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+      ViewMsg_SynchronizeVisualProperties::ID));
   process_->sink().ClearMessages();
 
   screen_info.device_scale_factor = 2.f;
@@ -1090,14 +1102,16 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   view_->SetScreenInfo(screen_info);
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+      ViewMsg_SynchronizeVisualProperties::ID));
   process_->sink().ClearMessages();
 
   // No screen change.
   view_->SetScreenInfo(screen_info);
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
+      ViewMsg_SynchronizeVisualProperties::ID));
 }
 
 // Test for crbug.com/25097.  If a renderer crashes between a resize and the
@@ -1111,8 +1125,9 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
   view_->SetBounds(original_size);
   host_->SynchronizeVisualProperties();
   EXPECT_TRUE(host_->resize_ack_pending_);
-  EXPECT_EQ(original_size.size(), host_->old_resize_params_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  EXPECT_EQ(original_size.size(), host_->old_visual_properties_->new_size);
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+      ViewMsg_SynchronizeVisualProperties::ID));
 
   // Simulate a renderer crash before the update message.  Ensure all the
   // resize ack logic is cleared.  Must clear the view first so it doesn't get
@@ -1120,7 +1135,7 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
   host_->SetView(nullptr);
   host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_EQ(gfx::Size(), host_->old_resize_params_->new_size);
+  EXPECT_EQ(gfx::Size(), host_->old_visual_properties_->new_size);
 
   // Reset the view so we can exit the test cleanly.
   host_->SetView(view_.get());
@@ -2143,20 +2158,20 @@ TEST_F(RenderWidgetHostTest, RendererExitedResetsIsHidden) {
   ASSERT_FALSE(host_->input_router()->HasPendingEvents());
 }
 
-TEST_F(RenderWidgetHostTest, ResizeParams) {
+TEST_F(RenderWidgetHostTest, VisualProperties) {
   gfx::Rect bounds(0, 0, 100, 100);
   gfx::Size compositor_viewport_pixel_size(40, 50);
   view_->SetBounds(bounds);
   view_->SetMockCompositorViewportPixelSize(compositor_viewport_pixel_size);
 
-  ResizeParams resize_params;
-  host_->GetResizeParams(&resize_params);
-  EXPECT_EQ(bounds.size(), resize_params.new_size);
+  VisualProperties visual_properties;
+  host_->GetVisualProperties(&visual_properties);
+  EXPECT_EQ(bounds.size(), visual_properties.new_size);
   EXPECT_EQ(compositor_viewport_pixel_size,
-            resize_params.compositor_viewport_pixel_size);
+            visual_properties.compositor_viewport_pixel_size);
 }
 
-TEST_F(RenderWidgetHostTest, ResizeParamsDeviceScale) {
+TEST_F(RenderWidgetHostTest, VisualPropertiesDeviceScale) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(switches::kEnableUseZoomForDSF, "true");
 
@@ -2172,12 +2187,12 @@ TEST_F(RenderWidgetHostTest, ResizeParamsDeviceScale) {
   view_->set_top_controls_height(top_controls_height);
   view_->set_bottom_controls_height(bottom_controls_height);
 
-  ResizeParams resize_params;
-  host_->GetResizeParams(&resize_params);
+  VisualProperties visual_properties;
+  host_->GetVisualProperties(&visual_properties);
   EXPECT_EQ(top_controls_height * device_scale,
-            resize_params.top_controls_height);
+            visual_properties.top_controls_height);
   EXPECT_EQ(bottom_controls_height * device_scale,
-            resize_params.bottom_controls_height);
+            visual_properties.bottom_controls_height);
 }
 
 // Make sure no dragging occurs after renderer exited. See crbug.com/704832.
@@ -2223,8 +2238,9 @@ TEST_F(RenderWidgetHostInitialSizeTest, InitialSize) {
   // SynchronizeVisualProperties calls should not result in new IPC (unless the
   // size has actually changed).
   host_->SynchronizeVisualProperties();
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
-  EXPECT_EQ(initial_size_, host_->old_resize_params_->new_size);
+  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
+      ViewMsg_SynchronizeVisualProperties::ID));
+  EXPECT_EQ(initial_size_, host_->old_visual_properties_->new_size);
   EXPECT_TRUE(host_->resize_ack_pending_);
 }
 

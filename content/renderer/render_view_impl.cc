@@ -611,7 +611,7 @@ void RenderViewImpl::Initialize(
   UpdateWebViewWithDeviceScaleFactor();
   OnSetRendererPrefs(params->renderer_preferences);
 
-  OnResize(params->initial_size);
+  OnSynchronizeVisualProperties(params->initial_size);
 
   idle_user_detector_.reset(new IdleUserDetector());
 
@@ -1285,7 +1285,7 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
   // TODO(vangelis): Can we tell if the new view will be a background page?
   bool never_visible = false;
 
-  ResizeParams initial_size = ResizeParams();
+  VisualProperties initial_size = VisualProperties();
   initial_size.screen_info = screen_info_;
 
   // The initial hidden state for the RenderViewImpl here has to match what the
@@ -1938,8 +1938,9 @@ void RenderViewImpl::ResizeWebWidget() {
       browser_controls_shrink_blink_size_);
 }
 
-void RenderViewImpl::OnResize(const ResizeParams& params) {
-  TRACE_EVENT0("renderer", "RenderViewImpl::OnResize");
+void RenderViewImpl::OnSynchronizeVisualProperties(
+    const VisualProperties& params) {
+  TRACE_EVENT0("renderer", "RenderViewImpl::OnSynchronizeVisualProperties");
 
   if (webview()) {
     // Only hide popups when the size changes. There are situations (e.g. hiding
@@ -1990,13 +1991,13 @@ void RenderViewImpl::OnResize(const ResizeParams& params) {
   bottom_controls_height_ = params.bottom_controls_height;
 
   if (device_scale_factor_for_testing_) {
-    ResizeParams p(params);
+    VisualProperties p(params);
     p.screen_info.device_scale_factor = *device_scale_factor_for_testing_;
     p.compositor_viewport_pixel_size =
         gfx::ScaleToCeiledSize(p.new_size, p.screen_info.device_scale_factor);
-    RenderWidget::OnResize(p);
+    RenderWidget::OnSynchronizeVisualProperties(p);
   } else {
-    RenderWidget::OnResize(params);
+    RenderWidget::OnSynchronizeVisualProperties(params);
   }
 
   if (!params.scroll_focused_node_into_view)
@@ -2324,34 +2325,35 @@ void RenderViewImpl::SetFocusAndActivateForTesting(bool enable) {
 void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   device_scale_factor_for_testing_ = factor;
 
-  ResizeParams params;
-  params.screen_info = screen_info_;
-  params.screen_info.device_scale_factor = factor;
-  params.new_size = size();
-  params.visible_viewport_size = visible_viewport_size_;
-  params.compositor_viewport_pixel_size =
+  VisualProperties visual_properties;
+  visual_properties.screen_info = screen_info_;
+  visual_properties.screen_info.device_scale_factor = factor;
+  visual_properties.new_size = size();
+  visual_properties.visible_viewport_size = visible_viewport_size_;
+  visual_properties.compositor_viewport_pixel_size =
       gfx::ScaleToCeiledSize(size(), factor);
-  params.browser_controls_shrink_blink_size = false;
-  params.top_controls_height = 0.f;
-  params.is_fullscreen_granted = is_fullscreen_granted();
-  params.display_mode = display_mode_;
-  params.content_source_id = GetContentSourceId();
-  OnResize(params);
+  visual_properties.browser_controls_shrink_blink_size = false;
+  visual_properties.top_controls_height = 0.f;
+  visual_properties.is_fullscreen_granted = is_fullscreen_granted();
+  visual_properties.display_mode = display_mode_;
+  visual_properties.content_source_id = GetContentSourceId();
+  OnSynchronizeVisualProperties(visual_properties);
 }
 
 void RenderViewImpl::SetDeviceColorSpaceForTesting(
     const gfx::ColorSpace& color_space) {
-  ResizeParams params;
-  params.screen_info = screen_info_;
-  params.screen_info.color_space = color_space;
-  params.new_size = size();
-  params.visible_viewport_size = visible_viewport_size_;
-  params.compositor_viewport_pixel_size = compositor_viewport_pixel_size_;
-  params.browser_controls_shrink_blink_size = false;
-  params.top_controls_height = 0.f;
-  params.is_fullscreen_granted = is_fullscreen_granted();
-  params.display_mode = display_mode_;
-  OnResize(params);
+  VisualProperties visual_properties;
+  visual_properties.screen_info = screen_info_;
+  visual_properties.screen_info.color_space = color_space;
+  visual_properties.new_size = size();
+  visual_properties.visible_viewport_size = visible_viewport_size_;
+  visual_properties.compositor_viewport_pixel_size =
+      compositor_viewport_pixel_size_;
+  visual_properties.browser_controls_shrink_blink_size = false;
+  visual_properties.top_controls_height = 0.f;
+  visual_properties.is_fullscreen_granted = is_fullscreen_granted();
+  visual_properties.display_mode = display_mode_;
+  OnSynchronizeVisualProperties(visual_properties);
 }
 
 void RenderViewImpl::ForceResizeForTesting(const gfx::Size& new_size) {
@@ -2366,33 +2368,33 @@ void RenderViewImpl::UseSynchronousResizeModeForTesting(bool enable) {
 
 void RenderViewImpl::EnableAutoResizeForTesting(const gfx::Size& min_size,
                                                 const gfx::Size& max_size) {
-  ResizeParams resize_params;
-  resize_params.auto_resize_enabled = true;
-  resize_params.min_size_for_auto_resize = min_size;
-  resize_params.max_size_for_auto_resize = max_size;
-  resize_params.local_surface_id = base::Optional<viz::LocalSurfaceId>(
+  VisualProperties visual_properties;
+  visual_properties.auto_resize_enabled = true;
+  visual_properties.min_size_for_auto_resize = min_size;
+  visual_properties.max_size_for_auto_resize = max_size;
+  visual_properties.local_surface_id = base::Optional<viz::LocalSurfaceId>(
       viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()));
-  OnResize(resize_params);
+  OnSynchronizeVisualProperties(visual_properties);
 }
 
 void RenderViewImpl::DisableAutoResizeForTesting(const gfx::Size& new_size) {
   if (!auto_resize_mode_)
     return;
 
-  ResizeParams resize_params;
-  resize_params.auto_resize_enabled = false;
-  resize_params.screen_info = screen_info_;
-  resize_params.new_size = new_size;
-  resize_params.compositor_viewport_pixel_size =
+  VisualProperties visual_properties;
+  visual_properties.auto_resize_enabled = false;
+  visual_properties.screen_info = screen_info_;
+  visual_properties.new_size = new_size;
+  visual_properties.compositor_viewport_pixel_size =
       compositor_viewport_pixel_size_;
-  resize_params.browser_controls_shrink_blink_size =
+  visual_properties.browser_controls_shrink_blink_size =
       browser_controls_shrink_blink_size_;
-  resize_params.top_controls_height = top_controls_height_;
-  resize_params.visible_viewport_size = visible_viewport_size_;
-  resize_params.is_fullscreen_granted = is_fullscreen_granted();
-  resize_params.display_mode = display_mode_;
-  resize_params.needs_resize_ack = false;
-  OnResize(resize_params);
+  visual_properties.top_controls_height = top_controls_height_;
+  visual_properties.visible_viewport_size = visible_viewport_size_;
+  visual_properties.is_fullscreen_granted = is_fullscreen_granted();
+  visual_properties.display_mode = display_mode_;
+  visual_properties.needs_resize_ack = false;
+  OnSynchronizeVisualProperties(visual_properties);
 }
 
 void RenderViewImpl::OnResolveTapDisambiguation(

@@ -346,7 +346,7 @@ bool RenderViewHostImpl::CreateRenderView(
   params->renderer_wide_named_frame_lookup =
       GetSiteInstance()->GetSiteURL().SchemeIs(kGuestScheme);
 
-  GetWidget()->GetResizeParams(&params->initial_size);
+  GetWidget()->GetVisualProperties(&params->initial_size);
   GetWidget()->SetInitialRenderSizeParams(params->initial_size);
 
   GetProcess()->GetRendererInterface()->CreateView(std::move(params));

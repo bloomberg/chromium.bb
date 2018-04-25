@@ -651,7 +651,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
     IPC_MESSAGE_HANDLER(ViewMsg_ShowContextMenu, OnShowContextMenu)
     IPC_MESSAGE_HANDLER(ViewMsg_Close, OnClose)
-    IPC_MESSAGE_HANDLER(ViewMsg_Resize, OnResize)
+    IPC_MESSAGE_HANDLER(ViewMsg_SynchronizeVisualProperties,
+                        OnSynchronizeVisualProperties)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableDeviceEmulation,
                         OnEnableDeviceEmulation)
     IPC_MESSAGE_HANDLER(ViewMsg_DisableDeviceEmulation,
@@ -715,16 +716,16 @@ bool RenderWidget::ShouldHandleImeEvents() const {
 
 void RenderWidget::SetWindowRectSynchronously(
     const gfx::Rect& new_window_rect) {
-  ResizeParams params;
-  params.screen_info = screen_info_;
-  params.new_size = new_window_rect.size();
-  params.compositor_viewport_pixel_size = gfx::ScaleToCeiledSize(
+  VisualProperties visual_properties;
+  visual_properties.screen_info = screen_info_;
+  visual_properties.new_size = new_window_rect.size();
+  visual_properties.compositor_viewport_pixel_size = gfx::ScaleToCeiledSize(
       new_window_rect.size(), GetWebScreenInfo().device_scale_factor);
-  params.visible_viewport_size = new_window_rect.size();
-  params.is_fullscreen_granted = is_fullscreen_granted_;
-  params.display_mode = display_mode_;
-  params.needs_resize_ack = false;
-  Resize(params);
+  visual_properties.visible_viewport_size = new_window_rect.size();
+  visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
+  visual_properties.display_mode = display_mode_;
+  visual_properties.needs_resize_ack = false;
+  SynchronizeVisualProperties(visual_properties);
 
   view_screen_rect_ = new_window_rect;
   window_screen_rect_ = new_window_rect;
@@ -766,18 +767,20 @@ void RenderWidget::OnClose() {
   Release();
 }
 
-void RenderWidget::OnResize(const ResizeParams& params) {
+void RenderWidget::OnSynchronizeVisualProperties(
+    const VisualProperties& params) {
   gfx::Size old_visible_viewport_size = visible_viewport_size_;
 
-  if (resizing_mode_selector_->ShouldAbortOnResize(this, params))
-    return;
-
-  if (screen_metrics_emulator_) {
-    screen_metrics_emulator_->OnResize(params);
+  if (resizing_mode_selector_->ShouldAbortOnResize(this, params)) {
     return;
   }
 
-  Resize(params);
+  if (screen_metrics_emulator_) {
+    screen_metrics_emulator_->OnSynchronizeVisualProperties(params);
+    return;
+  }
+
+  SynchronizeVisualProperties(params);
 
   if (old_visible_viewport_size != visible_viewport_size_) {
     for (auto& render_frame : render_frames_)
@@ -788,7 +791,7 @@ void RenderWidget::OnResize(const ResizeParams& params) {
 void RenderWidget::OnEnableDeviceEmulation(
     const blink::WebDeviceEmulationParams& params) {
   if (!screen_metrics_emulator_) {
-    ResizeParams resize_params;
+    VisualProperties resize_params;
     resize_params.screen_info = screen_info_;
     resize_params.new_size = size_;
     resize_params.compositor_viewport_pixel_size =
@@ -818,8 +821,8 @@ void RenderWidget::OnWasHidden() {
     observer.WasHidden();
 
   // Ack the resize if we have to, so that the next time we're visible we get a
-  // fresh ResizeParams right away; otherwise we'll start painting based on a
-  // stale ResizeParams.
+  // fresh VisualProperties right away; otherwise we'll start painting based on
+  // a stale VisualProperties.
   DidResizeOrRepaintAck();
 }
 
@@ -1246,9 +1249,9 @@ gfx::Size RenderWidget::GetSizeForWebWidget() const {
   return size_;
 }
 
-void RenderWidget::Resize(const ResizeParams& params) {
+void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
   viz::LocalSurfaceId new_local_surface_id;
-  // If the content_source_id of ResizeParams doesn't match
+  // If the content_source_id of VisualProperties doesn't match
   // |current_content_source_id_|, then the given LocalSurfaceId was generated
   // before the navigation. Continue with the resize but don't use the
   // LocalSurfaceId until the right one comes.
@@ -2561,8 +2564,8 @@ void RenderWidget::DidNavigate() {
                              compositor_viewport_pixel_size_, screen_info_);
 
   // If surface synchronization is on, navigation implicitly acks any resize
-  // that has happened so far so we can get the next ResizeParams containing the
-  // LocalSurfaceId that should be used after navigation.
+  // that has happened so far so we can get the next VisualProperties containing
+  // the LocalSurfaceId that should be used after navigation.
   if (compositor_->IsSurfaceSynchronizationEnabled() && !auto_resize_mode_ &&
       next_paint_is_resize_ack()) {
     reset_next_paint_is_resize_ack();

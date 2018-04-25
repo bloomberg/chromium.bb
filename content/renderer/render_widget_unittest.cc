@@ -17,8 +17,8 @@
 #include "content/common/input/input_handler.mojom.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
-#include "content/common/resize_params.h"
 #include "content/common/view_messages.h"
+#include "content/common/visual_properties.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator.h"
@@ -398,19 +398,19 @@ TEST_F(RenderWidgetUnittest, AckResizeOnHide) {
   // The widget should start off visible.
   ASSERT_FALSE(widget()->is_hidden());
 
-  // Send a ResizeParams that needs to be acked.
+  // Send a VisualProperties that needs to be acked.
   constexpr gfx::Size size(200, 200);
-  ResizeParams resize_params;
-  resize_params.screen_info = ScreenInfo();
-  resize_params.new_size = size;
-  resize_params.compositor_viewport_pixel_size = size;
-  resize_params.local_surface_id =
+  VisualProperties visual_properties;
+  visual_properties.screen_info = ScreenInfo();
+  visual_properties.new_size = size;
+  visual_properties.compositor_viewport_pixel_size = size;
+  visual_properties.local_surface_id =
       viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create());
-  resize_params.visible_viewport_size = size;
-  resize_params.content_source_id = widget()->GetContentSourceId();
-  resize_params.needs_resize_ack = true;
-  widget()->OnMessageReceived(
-      ViewMsg_Resize(widget()->routing_id(), resize_params));
+  visual_properties.visible_viewport_size = size;
+  visual_properties.content_source_id = widget()->GetContentSourceId();
+  visual_properties.needs_resize_ack = true;
+  widget()->OnMessageReceived(ViewMsg_SynchronizeVisualProperties(
+      widget()->routing_id(), visual_properties));
 
   // Hide the widget. Make sure the resize is acked.
   widget()->sink()->ClearMessages();
@@ -451,17 +451,17 @@ TEST_F(RenderWidgetUnittest, SurfaceSynchronizationAutoResizeThrottling) {
   widget()->DidAutoResize(auto_size2);
 
   // Send the LocalSurfaceId for the first Auto-Resize.
-  content::ResizeParams resize_params;
-  resize_params.auto_resize_enabled = true;
-  resize_params.min_size_for_auto_resize = auto_size;
-  resize_params.max_size_for_auto_resize = auto_size2;
-  resize_params.local_surface_id = allocator.GenerateId();
-  widget()->OnMessageReceived(
-      ViewMsg_Resize(widget()->routing_id(), resize_params));
+  content::VisualProperties visual_properties;
+  visual_properties.auto_resize_enabled = true;
+  visual_properties.min_size_for_auto_resize = auto_size;
+  visual_properties.max_size_for_auto_resize = auto_size2;
+  visual_properties.local_surface_id = allocator.GenerateId();
+  widget()->OnMessageReceived(ViewMsg_SynchronizeVisualProperties(
+      widget()->routing_id(), visual_properties));
 
   // The LocalSurfaceId should not take because there's another in-flight auto-
   // resize operation.
-  EXPECT_NE(widget()->local_surface_id(), resize_params.local_surface_id);
+  EXPECT_NE(widget()->local_surface_id(), visual_properties.local_surface_id);
 }
 
 // Tests that if a RenderWidget is auto-resized, it allocates its own
@@ -622,15 +622,15 @@ TEST_F(RenderWidgetPopupUnittest, EmulatingPopupRect) {
 
   gfx::Rect parent_window_rect = gfx::Rect(0, 0, 800, 600);
 
-  ResizeParams resize_params;
-  resize_params.new_size = parent_window_rect.size();
+  VisualProperties visual_properties;
+  visual_properties.new_size = parent_window_rect.size();
 
   scoped_refptr<PopupRenderWidget> parent_widget(
       new PopupRenderWidget(&compositor_deps_));
   parent_widget->Release();  // Balance Init().
   RenderWidgetScreenMetricsEmulator emulator(
-      parent_widget.get(), emulation_params, resize_params, parent_window_rect,
-      parent_window_rect);
+      parent_widget.get(), emulation_params, visual_properties,
+      parent_window_rect, parent_window_rect);
   emulator.Apply();
 
   widget()->SetPopupOriginAdjustmentsForEmulation(&emulator);

@@ -10,7 +10,7 @@
 namespace content {
 
 class RenderWidget;
-struct ResizeParams;
+struct VisualProperties;
 
 // Enables switching between two modes of resizing:
 // 1) The "normal" (asynchronous) resizing, which involves sending messages to
@@ -25,7 +25,8 @@ class ResizingModeSelector {
  public:
   ResizingModeSelector();
   bool NeverUsesSynchronousResize() const;
-  bool ShouldAbortOnResize(RenderWidget* widget, const ResizeParams& params);
+  bool ShouldAbortOnResize(RenderWidget* widget,
+                           const VisualProperties& visual_properties);
 
   void set_is_synchronous_mode(bool mode);
   bool is_synchronous_mode() const;

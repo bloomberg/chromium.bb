@@ -10,7 +10,7 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_messages.h"
-#include "content/common/frame_resize_params.h"
+#include "content/common/frame_visual_properties.h"
 #include "content/public/common/screen_info.h"
 #include "content/renderer/child_frame_compositor.h"
 #include "ipc/ipc_listener.h"
@@ -297,11 +297,11 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // therefore don't care to synchronize ResizeParams with viz::LocalSurfaceIds.
   // Perhaps this can be moved to ChildFrameCompositingHelper?
   // The last ResizeParams sent to the browser process, if any.
-  base::Optional<FrameResizeParams> sent_visual_properties_;
+  base::Optional<FrameVisualProperties> sent_visual_properties_;
 
   // The current set of ResizeParams. This may or may not match
   // |sent_visual_properties_|.
-  FrameResizeParams pending_visual_properties_;
+  FrameVisualProperties pending_visual_properties_;
 
   bool crashed_ = false;
 

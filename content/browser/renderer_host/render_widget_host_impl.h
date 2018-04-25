@@ -104,7 +104,7 @@ class TimeoutMonitor;
 class TouchEmulator;
 class WebCursor;
 struct EditCommand;
-struct ResizeParams;
+struct VisualProperties;
 struct ScreenInfo;
 struct TextInputState;
 
@@ -557,13 +557,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                      const gfx::Size& min_size,
                      const gfx::Size& max_size);
 
-  // Fills in the |resize_params| struct.
+  // Fills in the |visual_properties| struct.
   // Returns |false| if the update is redundant, |true| otherwise.
-  bool GetResizeParams(ResizeParams* resize_params);
+  bool GetVisualProperties(VisualProperties* visual_properties);
 
-  // Sets the |resize_params| that were sent to the renderer bundled with the
-  // request to create a new RenderWidget.
-  void SetInitialRenderSizeParams(const ResizeParams& resize_params);
+  // Sets the |visual_properties| that were sent to the renderer bundled with
+  // the request to create a new RenderWidget.
+  void SetInitialRenderSizeParams(const VisualProperties& visual_properties);
 
   // Pushes updated visual properties to the renderer as well as whether the
   // focused node should be scrolled into view.
@@ -930,8 +930,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // The current size of the RenderWidget.
   gfx::Size current_size_;
 
-  // Resize information that was most recently sent to the renderer.
-  std::unique_ptr<ResizeParams> old_resize_params_;
+  // Visual properties that were most recently sent to the renderer.
+  std::unique_ptr<VisualProperties> old_visual_properties_;
 
   // The next auto resize to send.
   gfx::Size new_auto_size_;

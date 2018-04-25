@@ -70,9 +70,9 @@
 #include "content/common/frame_messages.h"
 #include "content/common/input/sync_compositor_messages.h"
 #include "content/common/input_messages.h"
-#include "content/common/resize_params.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
+#include "content/common/visual_properties.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
@@ -522,8 +522,8 @@ void RenderWidgetHostImpl::ResetSizeAndRepaintPendingFlags() {
         "renderer_host", "RenderWidgetHostImpl::repaint_ack_pending_", this);
   }
   repaint_ack_pending_ = false;
-  if (old_resize_params_)
-    old_resize_params_->new_size = gfx::Size();
+  if (old_visual_properties_)
+    old_visual_properties_->new_size = gfx::Size();
 }
 
 void RenderWidgetHostImpl::SendScreenRects() {
@@ -749,116 +749,120 @@ void RenderWidgetHostImpl::SetImportance(ChildProcessImportance importance) {
 }
 #endif
 
-bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
-  *resize_params = ResizeParams();
+bool RenderWidgetHostImpl::GetVisualProperties(
+    VisualProperties* visual_properties) {
+  *visual_properties = VisualProperties();
 
-  GetScreenInfo(&resize_params->screen_info);
+  GetScreenInfo(&visual_properties->screen_info);
 
   if (delegate_) {
-    resize_params->is_fullscreen_granted =
+    visual_properties->is_fullscreen_granted =
         delegate_->IsFullscreenForCurrentTab();
-    resize_params->display_mode = delegate_->GetDisplayMode(this);
+    visual_properties->display_mode = delegate_->GetDisplayMode(this);
   } else {
-    resize_params->is_fullscreen_granted = false;
-    resize_params->display_mode = blink::kWebDisplayModeBrowser;
+    visual_properties->is_fullscreen_granted = false;
+    visual_properties->display_mode = blink::kWebDisplayModeBrowser;
   }
 
-  resize_params->auto_resize_enabled = auto_resize_enabled_;
-  resize_params->min_size_for_auto_resize = min_size_for_auto_resize_;
-  resize_params->max_size_for_auto_resize = max_size_for_auto_resize_;
+  visual_properties->auto_resize_enabled = auto_resize_enabled_;
+  visual_properties->min_size_for_auto_resize = min_size_for_auto_resize_;
+  visual_properties->max_size_for_auto_resize = max_size_for_auto_resize_;
 
   if (view_) {
-    resize_params->new_size = view_->GetRequestedRendererSize();
-    resize_params->capture_sequence_number = view_->GetCaptureSequenceNumber();
-    resize_params->compositor_viewport_pixel_size =
+    visual_properties->new_size = view_->GetRequestedRendererSize();
+    visual_properties->capture_sequence_number =
+        view_->GetCaptureSequenceNumber();
+    visual_properties->compositor_viewport_pixel_size =
         view_->GetCompositorViewportPixelSize();
-    resize_params->top_controls_height = view_->GetTopControlsHeight();
-    resize_params->bottom_controls_height = view_->GetBottomControlsHeight();
+    visual_properties->top_controls_height = view_->GetTopControlsHeight();
+    visual_properties->bottom_controls_height =
+        view_->GetBottomControlsHeight();
     if (IsUseZoomForDSFEnabled()) {
-      float device_scale = resize_params->screen_info.device_scale_factor;
-      resize_params->top_controls_height *= device_scale;
-      resize_params->bottom_controls_height *= device_scale;
+      float device_scale = visual_properties->screen_info.device_scale_factor;
+      visual_properties->top_controls_height *= device_scale;
+      visual_properties->bottom_controls_height *= device_scale;
     }
-    resize_params->browser_controls_shrink_blink_size =
+    visual_properties->browser_controls_shrink_blink_size =
         view_->DoBrowserControlsShrinkBlinkSize();
-    resize_params->visible_viewport_size = view_->GetVisibleViewportSize();
+    visual_properties->visible_viewport_size = view_->GetVisibleViewportSize();
     // TODO(ccameron): GetLocalSurfaceId is not synchronized with the device
     // scale factor of the surface. Fix this.
     viz::LocalSurfaceId local_surface_id = view_->GetLocalSurfaceId();
     if (local_surface_id.is_valid())
-      resize_params->local_surface_id = local_surface_id;
+      visual_properties->local_surface_id = local_surface_id;
   }
 
-  resize_params->content_source_id = current_content_source_id_;
+  visual_properties->content_source_id = current_content_source_id_;
 
   if (screen_orientation_type_for_testing_) {
-    resize_params->screen_info.orientation_type =
+    visual_properties->screen_info.orientation_type =
         *screen_orientation_type_for_testing_;
   }
 
   if (screen_orientation_angle_for_testing_) {
-    resize_params->screen_info.orientation_angle =
+    visual_properties->screen_info.orientation_angle =
         *screen_orientation_angle_for_testing_;
   }
 
   const bool size_changed =
-      !old_resize_params_ ||
-      old_resize_params_->auto_resize_enabled !=
-          resize_params->auto_resize_enabled ||
-      (old_resize_params_->auto_resize_enabled &&
-       (old_resize_params_->min_size_for_auto_resize !=
-            resize_params->min_size_for_auto_resize ||
-        old_resize_params_->max_size_for_auto_resize !=
-            resize_params->max_size_for_auto_resize)) ||
-      (!old_resize_params_->auto_resize_enabled &&
-       (old_resize_params_->new_size != resize_params->new_size ||
-        (old_resize_params_->compositor_viewport_pixel_size.IsEmpty() &&
-         !resize_params->compositor_viewport_pixel_size.IsEmpty())));
+      !old_visual_properties_ ||
+      old_visual_properties_->auto_resize_enabled !=
+          visual_properties->auto_resize_enabled ||
+      (old_visual_properties_->auto_resize_enabled &&
+       (old_visual_properties_->min_size_for_auto_resize !=
+            visual_properties->min_size_for_auto_resize ||
+        old_visual_properties_->max_size_for_auto_resize !=
+            visual_properties->max_size_for_auto_resize)) ||
+      (!old_visual_properties_->auto_resize_enabled &&
+       (old_visual_properties_->new_size != visual_properties->new_size ||
+        (old_visual_properties_->compositor_viewport_pixel_size.IsEmpty() &&
+         !visual_properties->compositor_viewport_pixel_size.IsEmpty())));
 
   bool dirty =
       size_changed ||
-      old_resize_params_->screen_info != resize_params->screen_info ||
-      old_resize_params_->compositor_viewport_pixel_size !=
-          resize_params->compositor_viewport_pixel_size ||
-      old_resize_params_->is_fullscreen_granted !=
-          resize_params->is_fullscreen_granted ||
-      old_resize_params_->display_mode != resize_params->display_mode ||
-      old_resize_params_->top_controls_height !=
-          resize_params->top_controls_height ||
-      old_resize_params_->browser_controls_shrink_blink_size !=
-          resize_params->browser_controls_shrink_blink_size ||
-      old_resize_params_->bottom_controls_height !=
-          resize_params->bottom_controls_height ||
-      old_resize_params_->visible_viewport_size !=
-          resize_params->visible_viewport_size ||
+      old_visual_properties_->screen_info != visual_properties->screen_info ||
+      old_visual_properties_->compositor_viewport_pixel_size !=
+          visual_properties->compositor_viewport_pixel_size ||
+      old_visual_properties_->is_fullscreen_granted !=
+          visual_properties->is_fullscreen_granted ||
+      old_visual_properties_->display_mode != visual_properties->display_mode ||
+      old_visual_properties_->top_controls_height !=
+          visual_properties->top_controls_height ||
+      old_visual_properties_->browser_controls_shrink_blink_size !=
+          visual_properties->browser_controls_shrink_blink_size ||
+      old_visual_properties_->bottom_controls_height !=
+          visual_properties->bottom_controls_height ||
+      old_visual_properties_->visible_viewport_size !=
+          visual_properties->visible_viewport_size ||
       (enable_surface_synchronization_ &&
-       old_resize_params_->content_source_id !=
-           resize_params->content_source_id) ||
+       old_visual_properties_->content_source_id !=
+           visual_properties->content_source_id) ||
       (enable_surface_synchronization_ &&
-       old_resize_params_->local_surface_id !=
-           resize_params->local_surface_id) ||
-      old_resize_params_->capture_sequence_number !=
-          resize_params->capture_sequence_number;
+       old_visual_properties_->local_surface_id !=
+           visual_properties->local_surface_id) ||
+      old_visual_properties_->capture_sequence_number !=
+          visual_properties->capture_sequence_number;
 
   // We don't expect to receive an ACK when the requested size or the physical
   // backing size is empty, or when the main viewport size didn't change.
-  resize_params->needs_resize_ack =
+  visual_properties->needs_resize_ack =
       !auto_resize_enabled_ && g_check_for_pending_resize_ack &&
-      !resize_params->new_size.IsEmpty() &&
-      !resize_params->compositor_viewport_pixel_size.IsEmpty() &&
+      !visual_properties->new_size.IsEmpty() &&
+      !visual_properties->compositor_viewport_pixel_size.IsEmpty() &&
       (size_changed || next_resize_needs_resize_ack_) &&
       (!enable_surface_synchronization_ ||
-       (resize_params->local_surface_id.has_value() &&
-        resize_params->local_surface_id->is_valid()));
+       (visual_properties->local_surface_id.has_value() &&
+        visual_properties->local_surface_id->is_valid()));
 
   return dirty;
 }
 
 void RenderWidgetHostImpl::SetInitialRenderSizeParams(
-    const ResizeParams& resize_params) {
-  resize_ack_pending_ = resize_params.needs_resize_ack;
+    const VisualProperties& visual_properties) {
+  resize_ack_pending_ = visual_properties.needs_resize_ack;
 
-  old_resize_params_ = std::make_unique<ResizeParams>(resize_params);
+  old_visual_properties_ =
+      std::make_unique<VisualProperties>(visual_properties);
 }
 
 void RenderWidgetHostImpl::SynchronizeVisualProperties() {
@@ -874,19 +878,19 @@ void RenderWidgetHostImpl::SynchronizeVisualProperties(
     return;
   }
 
-  std::unique_ptr<ResizeParams> params(new ResizeParams);
-  if (!GetResizeParams(params.get()))
+  std::unique_ptr<VisualProperties> params(new VisualProperties);
+  if (!GetVisualProperties(params.get()))
     return;
   params->scroll_focused_node_into_view = scroll_focused_node_into_view;
 
   ScreenInfo screen_info = params->screen_info;
   bool width_changed =
-      !old_resize_params_ ||
-      old_resize_params_->new_size.width() != params->new_size.width();
-  if (Send(new ViewMsg_Resize(routing_id_, *params))) {
+      !old_visual_properties_ ||
+      old_visual_properties_->new_size.width() != params->new_size.width();
+  if (Send(new ViewMsg_SynchronizeVisualProperties(routing_id_, *params))) {
     resize_ack_pending_ = params->needs_resize_ack;
     next_resize_needs_resize_ack_ = false;
-    old_resize_params_.swap(params);
+    old_visual_properties_.swap(params);
   }
 
   if (delegate_)

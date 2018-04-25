@@ -174,18 +174,18 @@ TEST_F(RenderFrameImplTest, SubframeWidget) {
 // Verify a subframe RenderWidget properly processes its viewport being
 // resized.
 TEST_F(RenderFrameImplTest, FrameResize) {
-  ResizeParams resize_params;
+  VisualProperties visual_properties;
   gfx::Size size(200, 200);
-  resize_params.screen_info = ScreenInfo();
-  resize_params.new_size = size;
-  resize_params.compositor_viewport_pixel_size = size;
-  resize_params.visible_viewport_size = size;
-  resize_params.top_controls_height = 0.f;
-  resize_params.browser_controls_shrink_blink_size = false;
-  resize_params.is_fullscreen_granted = false;
-  resize_params.content_source_id = frame_widget()->GetContentSourceId();
+  visual_properties.screen_info = ScreenInfo();
+  visual_properties.new_size = size;
+  visual_properties.compositor_viewport_pixel_size = size;
+  visual_properties.visible_viewport_size = size;
+  visual_properties.top_controls_height = 0.f;
+  visual_properties.browser_controls_shrink_blink_size = false;
+  visual_properties.is_fullscreen_granted = false;
+  visual_properties.content_source_id = frame_widget()->GetContentSourceId();
 
-  ViewMsg_Resize resize_message(0, resize_params);
+  ViewMsg_SynchronizeVisualProperties resize_message(0, visual_properties);
   frame_widget()->OnMessageReceived(resize_message);
 
   EXPECT_EQ(frame_widget()->GetWebWidget()->Size(), blink::WebSize(size));

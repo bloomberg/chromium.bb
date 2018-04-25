@@ -72,7 +72,7 @@ class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
 class SiteInstance;
 struct DropData;
-struct FrameResizeParams;
+struct FrameVisualProperties;
 struct ScreenInfo;
 struct TextInputState;
 
@@ -336,9 +336,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void OnSetVisibility(int instance_id, bool visible);
   void OnUnlockMouse();
   void OnUnlockMouseAck(int instance_id);
-  void OnUpdateResizeParams(int instance_id,
-                            const viz::LocalSurfaceId& local_surface_id,
-                            const FrameResizeParams& resize_params);
+  void OnSynchronizeVisualProperties(
+      int instance_id,
+      const viz::LocalSurfaceId& local_surface_id,
+      const FrameVisualProperties& visual_properties);
 
   void OnTextInputStateChanged(const TextInputState& params);
   void OnImeSetComposition(

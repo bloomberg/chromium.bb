@@ -118,7 +118,7 @@ class ResizingModeSelector;
 class TextInputClientObserver;
 class WidgetInputHandlerManager;
 struct ContextMenuParams;
-struct ResizeParams;
+struct VisualProperties;
 
 // RenderWidget provides a communication bridge between a WebWidget and
 // a RenderWidgetHost, the latter of which lives in a different process.
@@ -290,7 +290,8 @@ class CONTENT_EXPORT RenderWidget
 
   // RenderWidgetScreenMetricsEmulatorDelegate
   void Redraw() override;
-  void Resize(const ResizeParams& resize_params) override;
+  void SynchronizeVisualProperties(
+      const VisualProperties& resize_params) override;
   void SetScreenMetricsEmulationParameters(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) override;
@@ -560,7 +561,7 @@ class CONTENT_EXPORT RenderWidget
       InputEventDispatchType dispatch_type);
   void OnClose();
   void OnCreatingNewAck();
-  virtual void OnResize(const ResizeParams& params);
+  virtual void OnSynchronizeVisualProperties(const VisualProperties& params);
   void OnEnableDeviceEmulation(const blink::WebDeviceEmulationParams& params);
   void OnDisableDeviceEmulation();
   virtual void OnWasHidden();
