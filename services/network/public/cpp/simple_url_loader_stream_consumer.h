@@ -15,8 +15,8 @@ namespace network {
 // Interface to handle streaming data from SimpleURLLoader. All methods are
 // invoked on the sequence the SimpleURLLoader was started on, and all callbacks
 // must be invoked on the same sequence. The SimpleURLLoader may be deleted at
-// any time. None of these methods will be called during SimpleURLLoader
-// destruction.
+// any time, including in any of the callbacks it invokes. None of these methods
+// will be called during SimpleURLLoader destruction.
 class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoaderStreamConsumer {
  public:
   // Called as body data is received.

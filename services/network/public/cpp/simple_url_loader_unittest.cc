@@ -227,6 +227,14 @@ class SimpleLoaderTestHelper : public SimpleURLLoaderStreamConsumer {
     download_to_stream_destroy_on_retry_ = download_to_stream_destroy_on_retry;
   }
 
+  // Sets whether the SimpleURLLoader should be destroyed when invoking the
+  // completion callback. When enabled, it will be destroyed before touching the
+  // completion data, to make sure it's still available after the destruction of
+  // the SimpleURLLoader.
+  void set_destroy_loader_on_complete(bool destroy_loader_on_complete) {
+    destroy_loader_on_complete_ = destroy_loader_on_complete;
+  }
+
   // Received response body, if any. Returns nullptr if no body was received
   // (Which is different from a 0-length body). For DownloadType::TO_STRING,
   // this is just the value passed to the callback. For DownloadType::TO_FILE,
@@ -281,18 +289,24 @@ class SimpleLoaderTestHelper : public SimpleURLLoaderStreamConsumer {
     EXPECT_EQ(DownloadType::TO_STRING, download_type_);
     EXPECT_FALSE(response_body_);
 
+    if (destroy_loader_on_complete_)
+      simple_url_loader_.reset();
+
     response_body_ = std::move(response_body);
 
     done_ = true;
     run_loop_.Quit();
   }
 
-  void DownloadedToFile(const base::FilePath& file_path) {
+  void DownloadedToFile(base::FilePath file_path) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     EXPECT_FALSE(done_);
     EXPECT_TRUE(download_type_ == DownloadType::TO_FILE ||
                 download_type_ == DownloadType::TO_TEMP_FILE);
     EXPECT_FALSE(response_body_);
+
+    if (destroy_loader_on_complete_)
+      simple_url_loader_.reset();
 
     base::ScopedAllowBlockingForTesting allow_blocking;
 
@@ -373,6 +387,9 @@ class SimpleLoaderTestHelper : public SimpleURLLoaderStreamConsumer {
           std::make_unique<std::string>(download_as_stream_response_body_);
     }
 
+    if (destroy_loader_on_complete_)
+      simple_url_loader_.reset();
+
     done_ = true;
     run_loop_.Quit();
   }
@@ -422,6 +439,8 @@ class SimpleLoaderTestHelper : public SimpleURLLoaderStreamConsumer {
   bool download_to_stream_destroy_on_data_received_ = false;
   bool download_to_stream_async_retry_ = false;
   bool download_to_stream_destroy_on_retry_ = false;
+
+  bool destroy_loader_on_complete_ = false;
 
   bool allow_http_error_results_ = false;
 
@@ -837,6 +856,23 @@ TEST_P(SimpleURLLoaderTest, DeleteInOnResponseStartedCallback) {
   unowned_test_helper->StartSimpleLoader(url_loader_factory_.get());
 
   run_loop.Run();
+}
+
+// Check the case where the SimpleURLLoader is deleted in the completion
+// callback.
+TEST_P(SimpleURLLoaderTest, DestroyLoaderInOnComplete) {
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      std::make_unique<network::ResourceRequest>();
+  // Use a more interesting request than "/echo", just to verify more than the
+  // request URL is hooked up.
+  resource_request->url = test_server_.GetURL("/echoheader?foo");
+  resource_request->headers.SetHeader("foo", "Expected Response");
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelper(std::move(resource_request));
+  test_helper->set_destroy_loader_on_complete(true);
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+  ASSERT_TRUE(test_helper->response_body());
+  EXPECT_EQ("Expected Response", *test_helper->response_body());
 }
 
 // Check the case where a URLLoaderFactory with a closed Mojo pipe was passed

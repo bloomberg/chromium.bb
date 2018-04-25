@@ -687,7 +687,7 @@ class SaveToFileBodyHandler : public BodyHandler {
     // destructor.
     FileWriter::Destroy(std::move(file_writer_));
 
-    std::move(download_to_file_complete_callback_).Run(path_);
+    std::move(download_to_file_complete_callback_).Run(std::move(path_));
   }
 
   void PrepareToRetry(base::OnceClosure retry_callback) override {

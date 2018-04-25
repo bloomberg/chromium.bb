@@ -63,7 +63,7 @@ class CustomizationWallpaperDownloader {
   void Retry();
 
   // This is called when the download has finished.
-  void OnSimpleLoaderComplete(const base::FilePath& file_path);
+  void OnSimpleLoaderComplete(base::FilePath file_path);
 
   // Called on UI thread.
   void OnWallpaperDirectoryCreated(std::unique_ptr<bool> success);
