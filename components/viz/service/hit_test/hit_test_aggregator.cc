@@ -69,19 +69,20 @@ void HitTestAggregator::AllocateHitTestRegionArray() {
 void HitTestAggregator::ResizeHitTestRegionArray(uint32_t size) {
   size_t num_bytes = size * sizeof(AggregatedHitTestRegion);
   write_handle_ = mojo::SharedBufferHandle::Create(num_bytes);
-  DCHECK(write_handle_.is_valid());
-  auto new_buffer_ = write_handle_->Map(num_bytes);
-  DCHECK(new_buffer_);
+  CHECK(write_handle_.is_valid()) << "Allocating shared memory failed.";
+  auto new_buffer = write_handle_->Map(num_bytes);
+  CHECK(new_buffer) << "Allocating shared memory failed.";
   handle_replaced_ = true;
 
-  AggregatedHitTestRegion* region = (AggregatedHitTestRegion*)new_buffer_.get();
+  AggregatedHitTestRegion* region =
+      static_cast<AggregatedHitTestRegion*>(new_buffer.get());
   if (write_size_)
     memcpy(region, write_buffer_.get(), write_size_);
   else
     region[0].child_count = kEndOfList;
 
   write_size_ = size;
-  write_buffer_ = std::move(new_buffer_);
+  write_buffer_ = std::move(new_buffer);
 }
 
 void HitTestAggregator::SwapHandles() {
