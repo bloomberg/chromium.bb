@@ -18,7 +18,7 @@ header("Content-Security-Policy: sandbox allow-scripts allow-popups");
         var test = async_test("Testing sandbox inherited via target='_blank'");
 
         window.addEventListener("message", test.step_func(function (e) {
-            assert_equals(document.origin, 'null');
+            assert_equals(self.origin, 'null');
             assert_equals(e.data.origin, 'null');
             test.done();
         }));

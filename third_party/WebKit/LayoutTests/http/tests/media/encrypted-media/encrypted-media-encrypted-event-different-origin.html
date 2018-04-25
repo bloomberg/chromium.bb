@@ -56,7 +56,7 @@
                     // Verify that the current origin is different than what
                     // we use for the content.
                     logMessage('setting src');
-                    assert_equals(document.origin, 'http://127.0.0.1:8000');
+                    assert_equals(self.origin, 'http://127.0.0.1:8000');
                     video.src = 'http://127.0.0.1:8080/media/encrypted-media/test-encrypted.webm';
                     video.play();
                 });

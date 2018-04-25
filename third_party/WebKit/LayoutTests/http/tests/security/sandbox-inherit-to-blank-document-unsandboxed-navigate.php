@@ -20,7 +20,7 @@ header("Content-Security-Policy: sandbox allow-scripts allow-popups allow-popups
         var win = null;
 
         window.addEventListener("message", test.step_func(function (e) {
-            assert_equals(document.origin, 'null');
+            assert_equals(self.origin, 'null');
             if (current == 0) {
                 assert_equals(e.data.origin, 'http://127.0.0.1:8000');
                 current++;
