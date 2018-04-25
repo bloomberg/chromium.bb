@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/json/json_writer.h"
+#include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
@@ -30,6 +32,7 @@
 #import "ios/web_view/internal/autofill/cwv_autofill_controller_internal.h"
 #import "ios/web_view/internal/cwv_html_element_internal.h"
 #import "ios/web_view/internal/cwv_navigation_action_internal.h"
+#import "ios/web_view/internal/cwv_script_command_internal.h"
 #import "ios/web_view/internal/cwv_scroll_view_internal.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
 #import "ios/web_view/internal/translate/cwv_translation_controller_internal.h"
@@ -53,7 +56,25 @@
 namespace {
 // A key used in NSCoder to store the session storage object.
 NSString* const kSessionStorageKey = @"sessionStorage";
+
+// Converts base::DictionaryValue to NSDictionary.
+NSDictionary* NSDictionaryFromDictionaryValue(
+    const base::DictionaryValue& value) {
+  std::string json;
+  if (!base::JSONWriter::Write(value, &json)) {
+    NOTREACHED() << "Failed to convert base::DictionaryValue to JSON";
+    return nil;
+  }
+
+  NSData* json_data = [NSData dataWithBytes:json.c_str() length:json.length()];
+  NSDictionary* ns_dictionary =
+      [NSJSONSerialization JSONObjectWithData:json_data
+                                      options:kNilOptions
+                                        error:nil];
+  DCHECK(ns_dictionary) << "Failed to convert JSON to NSDictionary";
+  return ns_dictionary;
 }
+}  // namespace
 
 @interface CWVWebView ()<CRWWebStateDelegate, CRWWebStateObserver> {
   CWVWebViewConfiguration* _configuration;
@@ -392,6 +413,29 @@ static NSString* gUserAgentProduct = nil;
     [_UIDelegate webView:self
         commitPreviewingViewController:previewingViewController];
   }
+}
+
+- (void)addScriptCommandHandler:(id<CWVScriptCommandHandler>)handler
+                  commandPrefix:(NSString*)commandPrefix {
+  CWVWebView* __weak weakSelf = self;
+  const web::WebState::ScriptCommandCallback callback = base::BindBlockArc(
+      ^bool(const base::DictionaryValue& content, const GURL& mainDocumentURL,
+            bool userInteracting) {
+        NSDictionary* nsContent = NSDictionaryFromDictionaryValue(content);
+        CWVScriptCommand* command = [[CWVScriptCommand alloc]
+            initWithContent:nsContent
+            mainDocumentURL:net::NSURLWithGURL(mainDocumentURL)
+            userInteracting:userInteracting];
+        return [handler webView:weakSelf handleScriptCommand:command];
+      });
+
+  _webState->AddScriptCommandCallback(callback,
+                                      base::SysNSStringToUTF8(commandPrefix));
+}
+
+- (void)removeScriptCommandHandlerForCommandPrefix:(NSString*)commandPrefix {
+  _webState->RemoveScriptCommandCallback(
+      base::SysNSStringToUTF8(commandPrefix));
 }
 
 #pragma mark - Translation

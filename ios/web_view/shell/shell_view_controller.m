@@ -22,6 +22,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 
 @interface ShellViewController ()<CWVNavigationDelegate,
                                   CWVUIDelegate,
+                                  CWVScriptCommandHandler,
                                   UITextFieldDelegate>
 // Container for |webView|.
 @property(nonatomic, strong) UIView* containerView;
@@ -281,18 +282,23 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
              forKeyPath:@"canGoForward"
                 options:NSKeyValueObservingOptionNew
                 context:nil];
+
+  [_webView addScriptCommandHandler:self commandPrefix:@"test"];
 }
 
 - (void)removeWebView {
   [_webView removeFromSuperview];
   [_webView removeObserver:self forKeyPath:@"canGoBack"];
   [_webView removeObserver:self forKeyPath:@"canGoForward"];
+  [_webView removeScriptCommandHandlerForCommandPrefix:@"test"];
+
   _webView = nil;
 }
 
 - (void)dealloc {
   [_webView removeObserver:self forKeyPath:@"canGoBack"];
   [_webView removeObserver:self forKeyPath:@"canGoForward"];
+  [_webView removeScriptCommandHandlerForCommandPrefix:@"test"];
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField*)field {
@@ -496,6 +502,14 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 - (void)webView:(CWVWebView*)webView
     commitPreviewingViewController:(UIViewController*)previewingViewController {
   NSLog(@"%@", NSStringFromSelector(_cmd));
+}
+
+#pragma mark CWVScriptCommandHandler
+
+- (BOOL)webView:(CWVWebView*)webView
+    handleScriptCommand:(nonnull CWVScriptCommand*)command {
+  NSLog(@"%@ command.content=%@", NSStringFromSelector(_cmd), command.content);
+  return YES;
 }
 
 @end
