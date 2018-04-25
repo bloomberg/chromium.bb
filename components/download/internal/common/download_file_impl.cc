@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -147,7 +147,7 @@ DownloadFileImpl::DownloadFileImpl(
       bytes_seen_without_parallel_streams_(0),
       is_paused_(false),
       download_id_(download_id),
-      main_task_runner_(base::MessageLoop::current()->task_runner()),
+      main_task_runner_(base::MessageLoopCurrent::Get()->task_runner()),
       observer_(observer),
       weak_factory_(this) {
   TRACE_EVENT_INSTANT0("download", "DownloadFileCreated",
