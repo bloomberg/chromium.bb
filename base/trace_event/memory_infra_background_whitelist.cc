@@ -255,7 +255,6 @@ const char* const kAllocatorDumpNameWhitelist[] = {
     "v8/isolate_0x?/heap_spaces/map_space",
     "v8/isolate_0x?/heap_spaces/new_space",
     "v8/isolate_0x?/heap_spaces/old_space",
-    "v8/isolate_0x?/heap_spaces/other_spaces",
     "v8/isolate_0x?/heap_spaces/read_only_space",
     "v8/isolate_0x?/malloc",
     "v8/isolate_0x?/zapped_for_debug",
