@@ -36,6 +36,19 @@ const char kSuspiciousSiteTriggerReportRejectionMetricName[] =
 const char kSuspiciousSiteTriggerReportDelayStateMetricName[] =
     "SafeBrowsing.Triggers.SuspiciousSite.DelayTimerState";
 
+void NotifySuspiciousSiteTriggerDetected(
+    const base::RepeatingCallback<content::WebContents*()>&
+        web_contents_getter) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  content::WebContents* web_contents = web_contents_getter.Run();
+  if (web_contents) {
+    safe_browsing::SuspiciousSiteTrigger* trigger =
+        safe_browsing::SuspiciousSiteTrigger::FromWebContents(web_contents);
+    if (trigger)
+      trigger->SuspiciousSiteDetected();
+  }
+}
+
 SuspiciousSiteTrigger::SuspiciousSiteTrigger(
     content::WebContents* web_contents,
     TriggerManager* trigger_manager,

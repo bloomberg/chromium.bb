@@ -65,6 +65,14 @@ enum class SuspiciousSiteTriggerEvent {
   kMaxValue = REPORT_FINISH_FAILED
 };
 
+// Notify a suspicious site trigger on a particular tab that a suspicious site
+// was detected. |web_contents_getter| specifies the tab where the site was
+// detected.
+// Must be called on UI thread.
+void NotifySuspiciousSiteTriggerDetected(
+    const base::RepeatingCallback<content::WebContents*()>&
+        web_contents_getter);
+
 // This class watches tab-level events such as the start and end of a page
 // load, and also listens for events from the SuspiciousSiteURLThrottle that
 // indicate there was a hit on the suspicious site list. This trigger is
