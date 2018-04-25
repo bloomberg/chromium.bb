@@ -1630,6 +1630,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void AddSnapArea(const LayoutBox&);
   void RemoveSnapArea(const LayoutBox&);
 
+  // Returns true when the current recursive scroll into visible could propagate
+  // to parent frame.
+  bool AllowedToPropageRecursiveScrollToParentFrame(
+      const WebScrollIntoViewParams&);
+
   LayoutRect DebugRect() const override;
 
   float VisualRectOutsetForRasterEffects() const override;

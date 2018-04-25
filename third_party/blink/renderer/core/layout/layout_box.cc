@@ -686,7 +686,7 @@ LayoutRect LayoutBox::ScrollRectToVisibleRecursive(
     // end of the IPC call.
     HTMLFrameOwnerElement* owner_element = GetDocument().LocalOwner();
     if (owner_element && owner_element->GetLayoutObject() &&
-        GetFrameView()->SafeToPropagateScrollToParent()) {
+        AllowedToPropageRecursiveScrollToParentFrame(params)) {
       parent_box = owner_element->GetLayoutObject()->EnclosingBox();
       LayoutView* parent_view = owner_element->GetLayoutObject()->View();
       absolute_rect_for_parent = EnclosingLayoutRect(
@@ -709,7 +709,7 @@ LayoutRect LayoutBox::ScrollRectToVisibleRecursive(
     return parent_box->ScrollRectToVisibleRecursive(absolute_rect_for_parent,
                                                     params);
   } else if (GetFrame()->IsLocalRoot() && !GetFrame()->IsMainFrame()) {
-    if (GetFrameView()->SafeToPropagateScrollToParent()) {
+    if (AllowedToPropageRecursiveScrollToParentFrame(params)) {
       GetFrameView()->ScrollRectToVisibleInRemoteParent(
           absolute_rect_for_parent, params);
     }
@@ -5972,6 +5972,22 @@ void LayoutBox::RemoveSnapArea(const LayoutBox& snap_area) {
   if (rare_data_ && rare_data_->snap_areas_) {
     rare_data_->snap_areas_->erase(&snap_area);
   }
+}
+
+bool LayoutBox::AllowedToPropageRecursiveScrollToParentFrame(
+    const WebScrollIntoViewParams& params) {
+  if (!GetFrameView()->SafeToPropagateScrollToParent())
+    return false;
+
+  if (params.GetScrollType() != kProgrammaticScroll)
+    return true;
+
+  if (!IsSupportedInFeaturePolicy(
+          mojom::FeaturePolicyFeature::kVerticalScroll)) {
+    return true;
+  }
+  return GetFrame()->IsFeatureEnabled(
+      mojom::FeaturePolicyFeature::kVerticalScroll);
 }
 
 SnapAreaSet* LayoutBox::SnapAreas() const {
