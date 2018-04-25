@@ -45,6 +45,8 @@ import org.chromium.ui.widget.Toast;
 public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationDelegate {
     private static final String CHROME_CONTENT_SUGGESTIONS_REFERRER =
             "https://www.googleapis.com/auth/chrome-content-suggestions";
+    private static final String CHROME_CONTEXTUAL_SUGGESTIONS_REFERRER =
+            "https://goto.google.com/explore-on-content-viewer";
     private static final String NEW_TAB_URL_HELP =
             "https://support.google.com/chrome/?p=new_tab";
 
@@ -155,6 +157,13 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
         if (article.mCategory == KnownCategories.ARTICLES) {
             loadUrlParams.setReferrer(new Referrer(CHROME_CONTENT_SUGGESTIONS_REFERRER,
                     WebReferrerPolicy.ALWAYS));
+        }
+
+        // Set appropriate referrer for contextual suggestions to distinguish them from navigation
+        // from a page.
+        if (article.mCategory == KnownCategories.CONTEXTUAL) {
+            loadUrlParams.setReferrer(
+                    new Referrer(CHROME_CONTEXTUAL_SUGGESTIONS_REFERRER, WebReferrerPolicy.ALWAYS));
         }
 
         Tab loadingTab = openUrl(windowOpenDisposition, loadUrlParams);
