@@ -14,7 +14,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -1544,13 +1543,13 @@ public class DownloadManagerService
         if (filePath.contains(Environment.getExternalStorageDirectory().getAbsolutePath())) {
             return false;
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            File[] externalDirs = mContext.getExternalFilesDirs(Environment.DIRECTORY_DOWNLOADS);
-            for (File dir : externalDirs) {
-                if (dir == null) continue;
-                if (filePath.contains(dir.getAbsolutePath())) return false;
-            }
+
+        File[] externalDirs = DownloadUtils.getAllDownloadDirectories(mContext);
+        for (File dir : externalDirs) {
+            if (dir == null) continue;
+            if (filePath.contains(dir.getAbsolutePath())) return false;
         }
+
         return true;
     }
 

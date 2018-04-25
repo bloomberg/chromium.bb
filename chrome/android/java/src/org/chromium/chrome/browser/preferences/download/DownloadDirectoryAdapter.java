@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.preferences.download;
 
 import android.content.Context;
-import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -232,12 +231,8 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
     private void setAdditionalDirectoryOptions() {
         mAdditionalOptions.clear();
 
-        // TODO(jming): Is there any way to do this for API < 19?
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return;
-
-        File[] externalDirs = mContext.getExternalFilesDirs(Environment.DIRECTORY_DOWNLOADS);
-
         // If there are no more additional directories, it is only the primary storage available.
+        File[] externalDirs = DownloadUtils.getAllDownloadDirectories(mContext);
         if (externalDirs.length <= 1) return;
 
         int numOtherAdditionalDirectories = 0;

@@ -3240,6 +3240,12 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
       <message name="IDS_SEARCH_WITH_PRODUCT" desc="Text for search widget with a search engine name">
         Search with <ph name="PRODUCT_NAME">%1$s<ex>Google</ex></ph>
       </message>
+      <message name="IDS_IPH_DOWNLOAD_SETTINGS_TEXT" desc="The in-product-help message to open download settings in download home.">
+        Change the default download location any time
+      </message>
+      <message name="IDS_IPH_DOWNLOAD_SETTINGS_ACCESSIBILITY_TEXT" desc="The in-product-help accessibility text to open download settings in download home.">
+        Change the default download location any time using the Settings menu option
+      </message>
 
       <!-- Launcher Shortcuts -->
       <message name="IDS_DISABLED_INCOGNITO_LAUNCHER_SHORTCUT_MESSAGE" desc="Text for a toast displayed prompting the user to remove the disabled 'New incognito tab' app shortcut and recreate it.">

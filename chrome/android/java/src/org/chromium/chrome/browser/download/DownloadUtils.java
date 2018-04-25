@@ -10,6 +10,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.net.Uri;
+import android.os.Build;
+import android.os.Environment;
 import android.os.StrictMode;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -1028,5 +1030,21 @@ public class DownloadUtils {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();
+    }
+
+    /**
+     * Gets all of the directories available for downloads, including internal & external storage.
+     *
+     * If the external directories are not available for querying (on older versions of Android),
+     * return an array with just the internal directory.
+     *
+     * @param context   Context from which to look for the directories.
+     * @return          The list of directories or empty array if no directories.
+     */
+    public static File[] getAllDownloadDirectories(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            return context.getExternalFilesDirs(Environment.DIRECTORY_DOWNLOADS);
+        }
+        return new File[] {Environment.getExternalStorageDirectory()};
     }
 }

@@ -16,9 +16,11 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.FileUtils;
@@ -34,6 +36,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.download.DownloadPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -42,10 +45,15 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.chrome.browser.widget.ThumbnailProviderImpl;
+import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.chrome.browser.widget.textbubble.TextBubble;
+import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
+import org.chromium.ui.widget.ViewRectProvider;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -278,6 +286,10 @@ public class DownloadManagerUi
             mToolbar.setInfoButtonText(R.string.download_manager_ui_show_storage,
                     R.string.download_manager_ui_hide_storage);
             mToolbar.setShowInfoIcon(false);
+            final Tracker tracker =
+                    TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+            tracker.addOnInitializedCallback(
+                    (Callback<Boolean>) success -> maybeShowDownloadSettingsTextBubble(tracker));
         }
 
         mSelectableListLayout.configureWideDisplayStyle();
@@ -532,7 +544,7 @@ public class DownloadManagerUi
     /**
      * @return True if info menu item should be shown on download toolbar, false otherwise.
      */
-    boolean shouldShowInfoButton() {
+    private boolean shouldShowInfoButton() {
         return mHistoryAdapter.getItemCount() > 0 && !mToolbar.isSearching()
                 && !mBackendProvider.getSelectionDelegate().isSelectionEnabled();
     }
@@ -545,6 +557,39 @@ public class DownloadManagerUi
         boolean infoHeaderIsVisible = layoutManager.findFirstVisibleItemPosition() == 0;
         mToolbar.updateInfoMenuItem(infoHeaderIsVisible && shouldShowInfoButton(),
                 mHistoryAdapter.shouldShowStorageInfoHeader());
+    }
+
+    private void maybeShowDownloadSettingsTextBubble(final Tracker tracker) {
+        // If the user doesn't have an SD card don't show the IPH.
+        File[] externalDirs = DownloadUtils.getAllDownloadDirectories(mActivity);
+        if (externalDirs.length < 2) return;
+
+        // Check to see if the help UI should be triggered.
+        if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_SETTINGS_FEATURE)) return;
+
+        // Build and show text bubble.
+        View anchorView = mToolbar.findViewById(R.id.extra_menu_id);
+        TextBubble textBubble =
+                new TextBubble(mActivity, (View) mToolbar, R.string.iph_download_settings_text,
+                        R.string.iph_download_settings_accessibility_text,
+                        new ViewRectProvider(anchorView));
+        textBubble.setDismissOnTouchInteraction(true);
+        textBubble.addOnDismissListener(() -> {
+            tracker.dismissed(FeatureConstants.DOWNLOAD_SETTINGS_FEATURE);
+            toggleHighlightForDownloadSettingsTextBubble(false);
+        });
+        toggleHighlightForDownloadSettingsTextBubble(true);
+        textBubble.show();
+    }
+
+    private void toggleHighlightForDownloadSettingsTextBubble(boolean shouldHighlight) {
+        View view = mToolbar.findViewById(R.id.extra_menu_id);
+
+        if (shouldHighlight) {
+            ViewHighlighter.turnOnHighlight(view, true);
+        } else {
+            ViewHighlighter.turnOffHighlight(view);
+        }
     }
 
     @VisibleForTesting

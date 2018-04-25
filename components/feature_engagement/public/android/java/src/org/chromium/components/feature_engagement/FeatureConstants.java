@@ -45,6 +45,12 @@ public final class FeatureConstants {
     public static final String CONTEXTUAL_SEARCH_OPT_IN_FEATURE = "IPH_ContextualSearchOptIn";
 
     /**
+     * An IPH feature indicating to users that there are settings for downloads and they are
+     * accessible through Downloads Home.
+     */
+    public static final String DOWNLOAD_SETTINGS_FEATURE = "IPH_DownloadSettings";
+
+    /**
      * Do not instantiate.
      */
     private FeatureConstants() {}
