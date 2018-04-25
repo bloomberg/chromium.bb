@@ -1953,8 +1953,10 @@ def _CheckIpcOwners(input_api, output_api):
       files.extend(['  %s' % f.LocalPath() for f in entry['files']])
     if missing_lines:
       errors.append(
-          '%s needs the following lines added:\n\n%s\n\nfor files:\n%s' %
-          (owners_file, '\n'.join(missing_lines), '\n'.join(files)))
+          'Because of the presence of files:\n%s\n\n'
+          '%s needs the following %d lines added:\n\n%s' %
+          ('\n'.join(files), owners_file, len(missing_lines),
+           '\n'.join(missing_lines)))
 
   results = []
   if errors:
