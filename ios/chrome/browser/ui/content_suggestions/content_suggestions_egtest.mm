@@ -101,10 +101,14 @@ ContentSuggestion Suggestion(Category category,
 // 200 is a reasonable scroll displacement that works for all UI elements, while
 // not being too slow.
 GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
+  // Start the scroll from the middle of the screen in case the bottom of the
+  // screen is obscured by the bottom toolbar.
+  id<GREYAction> action =
+      grey_scrollInDirectionWithStartPoint(kGREYDirectionDown, 200, 0.5, 0.5);
   return [[EarlGrey
       selectElementWithMatcher:grey_allOf(matcher, grey_sufficientlyVisible(),
                                           nil)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+         usingSearchAction:action
       onElementWithMatcher:chrome_test_util::ContentSuggestionCollectionView()];
 }
 
@@ -522,12 +526,13 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // Tests that the "Learn More" cell is present only if there is a suggestion in
 // the section.
 - (void)testLearnMore {
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                          ContentSuggestionCollectionView()]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          [ContentSuggestionsLearnMoreItem
-                                              accessibilityIdentifier])]
+  id<GREYAction> action =
+      grey_scrollInDirectionWithStartPoint(kGREYDirectionDown, 200, 0.5, 0.5);
+  [[[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                           [ContentSuggestionsLearnMoreItem
+                                               accessibilityIdentifier])]
+         usingSearchAction:action
+      onElementWithMatcher:chrome_test_util::ContentSuggestionCollectionView()]
       assertWithMatcher:grey_nil()];
 
   std::vector<ContentSuggestion> suggestions;
