@@ -1413,6 +1413,37 @@ class TestMain(NetTestCase):
           '--task-output-dir', '/b', '--task-output-stdout', 'all'])
     self._check_output('Fake output\n', '')
 
+  def test_post(self):
+    out = StringIO.StringIO()
+    err = StringIO.StringIO()
+    self.mock(sys, 'stdin', StringIO.StringIO('{"a":"b"}'))
+    self.mock(sys, 'stdout', out)
+    self.mock(sys, 'stderr', err)
+    self.expected_requests(
+        [
+          (
+            'http://localhost:1/api/swarming/v1/tasks/new',
+            {'data': '{"a":"b"}', 'method': 'POST'},
+            '{"yo":"dawg"}',
+            {},
+          ),
+        ])
+    ret = self.main_safe(['post', '-S', 'http://localhost:1', 'tasks/new'])
+    self.assertEqual(0, ret)
+    self.assertEqual('{"yo":"dawg"}', out.getvalue())
+    self.assertEqual('', err.getvalue())
+
+  def test_post_fail(self):
+    out = StringIO.StringIO()
+    err = StringIO.StringIO()
+    self.mock(sys, 'stdin', StringIO.StringIO('{"a":"b"}'))
+    self.mock(sys, 'stdout', out)
+    self.mock(sys, 'stderr', err)
+    ret = self.main_safe(['post', '-S', 'http://localhost:1', 'tasks/new'])
+    self.assertEqual(1, ret)
+    self.assertEqual('', out.getvalue())
+    self.assertEqual('No response!\n', err.getvalue())
+
   def test_query_base(self):
     self.expected_requests(
         [

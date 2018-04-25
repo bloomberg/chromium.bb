@@ -1403,6 +1403,31 @@ def CMDcollect(parser, args):
 
 
 @subcommand.usage('[method name]')
+def CMDpost(parser, args):
+  """Sends a JSON RPC POST to one API endpoint and prints out the raw result.
+
+  Input data must be sent to stdin, result is printed to stdout.
+
+  If HTTP response code >= 400, returns non-zero.
+  """
+  options, args = parser.parse_args(args)
+  if len(args) != 1:
+    parser.error('Must specify only API name')
+  url = options.swarming + '/api/swarming/v1/' + args[0]
+  data = sys.stdin.read()
+  try:
+    resp = net.url_read(url, data=data, method='POST')
+  except net.TimeoutError:
+    sys.stderr.write('Timeout!\n')
+    return 1
+  if not resp:
+    sys.stderr.write('No response!\n')
+    return 1
+  sys.stdout.write(resp)
+  return 0
+
+
+@subcommand.usage('[method name]')
 def CMDquery(parser, args):
   """Returns raw JSON information via an URL endpoint. Use 'query-list' to
   gather the list of API methods from the server.
