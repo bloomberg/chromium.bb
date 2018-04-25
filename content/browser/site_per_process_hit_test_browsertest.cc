@@ -109,9 +109,20 @@ class TestInputEventObserver : public RenderWidgetHost::InputEventObserver {
     event_ = ui::WebInputEventTraits::Clone(event);
   };
 
+  const std::vector<InputEventAckSource>& events_acked() {
+    return events_acked_;
+  }
+
+  void OnInputEventAck(InputEventAckSource source,
+                       InputEventAckState state,
+                       const blink::WebInputEvent&) override {
+    events_acked_.push_back(source);
+  }
+
  private:
   RenderWidgetHost* host_;
   std::vector<blink::WebInputEvent::Type> events_received_;
+  std::vector<InputEventAckSource> events_acked_;
   ui::WebScopedInputEvent event_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInputEventObserver);
@@ -3537,14 +3548,6 @@ class SitePerProcessGestureHitTestBrowserTest
                                blink::WebInputEvent::kTouchStart);
     rwhva->OnTouchEvent(&touch_pressed);
     waiter.Wait();
-    ui::TouchEvent touch_released(
-        ui::ET_TOUCH_RELEASED, position, ui::EventTimeForNow(),
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                           /* pointer_id*/ 0,
-                           /* radius_x */ 1.0f,
-                           /* radius_y */ 1.0f,
-                           /* force */ 1.0f));
-    rwhva->OnTouchEvent(&touch_released);
 
     ui::GestureEventDetails gesture_tap_down_details(ui::ET_GESTURE_TAP_DOWN);
     gesture_tap_down_details.set_device_type(
@@ -3593,6 +3596,21 @@ class SitePerProcessGestureHitTestBrowserTest
         gesture_scroll_end_details, touch_pressed.unique_event_id());
     UpdateEventRootLocation(&gesture_scroll_end, rwhva);
     rwhva->OnGestureEvent(&gesture_scroll_end);
+
+    // TouchActionFilter is reset when a touch event sequence ends, so in order
+    // to preserve the touch action set by TouchStart, we end release touch
+    // after pinch gestures.
+    ui::TouchEvent touch_released(
+        ui::ET_TOUCH_RELEASED, position, ui::EventTimeForNow(),
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                           /* pointer_id*/ 0,
+                           /* radius_x */ 1.0f,
+                           /* radius_y */ 1.0f,
+                           /* force */ 1.0f));
+    InputEventAckWaiter touch_released_waiter(expected_target_rwh,
+                                              blink::WebInputEvent::kTouchEnd);
+    rwhva->OnTouchEvent(&touch_released);
+    touch_released_waiter.Wait();
   }
 
   void SetupRootAndChild() {
@@ -3655,13 +3673,13 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessGestureHitTestBrowserTest,
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
   EXPECT_EQ(blink::WebInputEvent::kTouchStart,
             child_frame_monitor.events_received()[0]);
-  EXPECT_EQ(blink::WebInputEvent::kTouchEnd,
-            child_frame_monitor.events_received()[1]);
   EXPECT_EQ(blink::WebInputEvent::kGestureTapDown,
-            child_frame_monitor.events_received()[2]);
+            child_frame_monitor.events_received()[1]);
   EXPECT_EQ(blink::WebInputEvent::kGestureScrollBegin,
-            child_frame_monitor.events_received()[3]);
+            child_frame_monitor.events_received()[2]);
   EXPECT_EQ(blink::WebInputEvent::kGestureScrollEnd,
+            child_frame_monitor.events_received()[3]);
+  EXPECT_EQ(blink::WebInputEvent::kTouchEnd,
             child_frame_monitor.events_received()[4]);
 }
 
@@ -3684,21 +3702,94 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessGestureHitTestBrowserTest,
   EXPECT_TRUE(root_frame_monitor.EventWasReceived());
   EXPECT_EQ(blink::WebInputEvent::kTouchStart,
             root_frame_monitor.events_received()[0]);
-  EXPECT_EQ(blink::WebInputEvent::kTouchEnd,
-            root_frame_monitor.events_received()[1]);
   EXPECT_EQ(blink::WebInputEvent::kGestureTapDown,
-            root_frame_monitor.events_received()[2]);
+            root_frame_monitor.events_received()[1]);
   EXPECT_EQ(blink::WebInputEvent::kGestureScrollBegin,
-            root_frame_monitor.events_received()[3]);
+            root_frame_monitor.events_received()[2]);
   EXPECT_EQ(blink::WebInputEvent::kGesturePinchBegin,
-            root_frame_monitor.events_received()[4]);
+            root_frame_monitor.events_received()[3]);
   EXPECT_EQ(blink::WebInputEvent::kGesturePinchEnd,
-            root_frame_monitor.events_received()[5]);
+            root_frame_monitor.events_received()[4]);
   EXPECT_EQ(blink::WebInputEvent::kGestureScrollEnd,
+            root_frame_monitor.events_received()[5]);
+  EXPECT_EQ(blink::WebInputEvent::kTouchEnd,
             root_frame_monitor.events_received()[6]);
 
   // Verify child-RWHI gets no events.
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
+}
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessGestureHitTestBrowserTest,
+                       SubframeGesturePinchDeniedBySubframeTouchAction) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root_node =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetFrameTree()
+          ->root();
+  ASSERT_EQ(1U, root_node->child_count());
+
+  FrameTreeNode* child_node = root_node->child_at(0);
+  GURL b_url(embedded_test_server()->GetURL(
+      "b.com", "/div_with_touch_action_none.html"));
+  NavigateFrameToURL(child_node, b_url);
+
+  ASSERT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root_node));
+
+  rwhv_child_ = static_cast<RenderWidgetHostViewBase*>(
+      child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  rwhva_root_ = static_cast<RenderWidgetHostViewAura*>(
+      shell()->web_contents()->GetRenderWidgetHostView());
+
+  WaitForChildFrameSurfaceReady(child_node->current_frame_host());
+
+  MainThreadFrameObserver observer(rwhv_child_->GetRenderWidgetHost());
+  observer.Wait();
+
+  rwhi_child_ = child_node->current_frame_host()->GetRenderWidgetHost();
+  rwhi_root_ = root_node->current_frame_host()->GetRenderWidgetHost();
+
+  TestInputEventObserver root_frame_monitor(rwhi_root_);
+  TestInputEventObserver child_frame_monitor(rwhi_child_);
+
+  gfx::Rect bounds = rwhv_child_->GetViewBounds();
+  bounds.Offset(gfx::Point() - rwhva_root_->GetViewBounds().origin());
+
+  SendPinchBeginEndSequence(rwhva_root_, bounds.CenterPoint(), rwhi_child_);
+
+  // Verify that root-RWHI gets nothing.
+  EXPECT_FALSE(root_frame_monitor.EventWasReceived());
+  // Verify that child-RWHI gets TS/GTD/GSB/GPB/GPE/GSE/TE.
+  EXPECT_EQ(blink::WebInputEvent::kTouchStart,
+            child_frame_monitor.events_received()[0]);
+  EXPECT_EQ(blink::WebInputEvent::kGestureTapDown,
+            child_frame_monitor.events_received()[1]);
+  EXPECT_EQ(blink::WebInputEvent::kGestureScrollBegin,
+            child_frame_monitor.events_received()[2]);
+  EXPECT_EQ(blink::WebInputEvent::kGesturePinchBegin,
+            child_frame_monitor.events_received()[3]);
+  EXPECT_EQ(blink::WebInputEvent::kGesturePinchEnd,
+            child_frame_monitor.events_received()[4]);
+  EXPECT_EQ(blink::WebInputEvent::kGestureScrollEnd,
+            child_frame_monitor.events_received()[5]);
+  EXPECT_EQ(blink::WebInputEvent::kTouchEnd,
+            child_frame_monitor.events_received()[6]);
+
+  // Verify that the pinch gestures are consumed by browser.
+  EXPECT_EQ(InputEventAckSource::BROWSER,
+            child_frame_monitor.events_acked()[3]);
+  EXPECT_EQ(InputEventAckSource::BROWSER,
+            child_frame_monitor.events_acked()[4]);
 }
 #endif  // defined(USE_AURA)
 
