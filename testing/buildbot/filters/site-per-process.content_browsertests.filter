@@ -2,5 +2,5 @@
 -NavigationControllerBrowserTest.ReloadOriginalRequest
 
 # Untriaged.
--ResourceDispatcherHostBrowserTest.CookieSameSiteStrictOpenNewNamedWindowTwice
+-LoaderBrowserTest.CookieSameSiteStrictOpenNewNamedWindowTwice
 

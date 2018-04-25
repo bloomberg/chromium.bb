@@ -58,10 +58,10 @@ using testing::Not;
 
 namespace content {
 
-class ResourceDispatcherHostBrowserTest : public ContentBrowserTest,
-                                          public DownloadManager::Observer {
+class LoaderBrowserTest : public ContentBrowserTest,
+                          public DownloadManager::Observer {
  public:
-  ResourceDispatcherHostBrowserTest() : got_downloads_(false) {}
+  LoaderBrowserTest() : got_downloads_(false) {}
 
  protected:
   void SetUpOnMainThread() override {
@@ -115,7 +115,7 @@ class ResourceDispatcherHostBrowserTest : public ContentBrowserTest,
 
 // Test title for content created by javascript window.open().
 // See http://crbug.com/5988
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, DynamicTitle1) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, DynamicTitle1) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/dynamic1.html"));
@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, DynamicTitle1) {
 
 // Test title for content created by javascript window.open().
 // See http://crbug.com/5988
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, DynamicTitle2) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, DynamicTitle2) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/dynamic2.html"));
@@ -139,8 +139,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, DynamicTitle2) {
       << "Actual title: " << title;
 }
 
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       SniffHTMLWithNoContentType) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SniffHTMLWithNoContentType) {
   // Covered by URLLoaderTest.SniffMimeType.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))
     return;
@@ -150,8 +149,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
       "Content Sniffer Test 0");
 }
 
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       RespectNoSniffDirective) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, RespectNoSniffDirective) {
   // Covered by URLLoaderTest.RespectNoSniff.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))
     return;
@@ -160,8 +158,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                  "mock.http/nosniff-test.html");
 }
 
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       DoNotSniffHTMLFromTextPlain) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, DoNotSniffHTMLFromTextPlain) {
   // Covered by URLLoaderTest.DoNotSniffHTMLFromTextPlain.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))
     return;
@@ -171,8 +168,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
       "mock.http/content-sniffer-test1.html");
 }
 
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       DoNotSniffHTMLFromImageGIF) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, DoNotSniffHTMLFromImageGIF) {
   // Covered by URLLoaderTest.DoNotSniffHTMLFromImageGIF.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))
     return;
@@ -182,8 +178,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
       "mock.http/content-sniffer-test2.html");
 }
 
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       SniffNoContentTypeNoData) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SniffNoContentTypeNoData) {
   // Make sure no downloads start.
   BrowserContext::GetDownloadManager(
       shell()->web_contents()->GetBrowserContext())
@@ -196,8 +191,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 }
 
 // Make sure file URLs are not sniffed as HTML when they don't end in HTML.
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       DoNotSniffHTMLFromFileUrl) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, DoNotSniffHTMLFromFileUrl) {
   base::FilePath path =
       GetTestFilePath(nullptr, "content-sniffer-test5.not-html");
   GURL file_url = net::FilePathToFileURL(path);
@@ -206,22 +200,20 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   CheckTitleTest(file_url, path.BaseName().MaybeAsASCII());
 }
 
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       ContentDispositionEmpty) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, ContentDispositionEmpty) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/content-disposition-empty.html"));
   CheckTitleTest(url, "success");
 }
 
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       ContentDispositionInline) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, ContentDispositionInline) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/content-disposition-inline.html"));
   CheckTitleTest(url, "success");
 }
 
 // Test for bug #1091358.
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, SyncXMLHttpRequest) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SyncXMLHttpRequest) {
   ASSERT_TRUE(embedded_test_server()->Start());
   NavigateToURL(shell(),
                 embedded_test_server()->GetURL("/sync_xmlhttprequest.html"));
@@ -235,8 +227,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, SyncXMLHttpRequest) {
 }
 
 // If this flakes, use http://crbug.com/62776.
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       SyncXMLHttpRequest_Disallowed) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SyncXMLHttpRequest_Disallowed) {
   ASSERT_TRUE(embedded_test_server()->Start());
   NavigateToURL(shell(), embedded_test_server()->GetURL(
                              "/sync_xmlhttprequest_disallowed.html"));
@@ -258,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 #else
 #define MAYBE_SyncXMLHttpRequest_DuringUnload SyncXMLHttpRequest_DuringUnload
 #endif
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
                        MAYBE_SyncXMLHttpRequest_DuringUnload) {
   ASSERT_TRUE(embedded_test_server()->Start());
   BrowserContext::GetDownloadManager(
@@ -309,8 +300,7 @@ std::unique_ptr<net::test_server::HttpResponse> CancelOnRequest(
 // Tests the case where the request is cancelled by a layer above the
 // URLRequest, which passes the error on ResourceLoader teardown, rather than in
 // response to call to AsyncResourceHandler::OnResponseComplete.
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       SyncXMLHttpRequest_Cancelled) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SyncXMLHttpRequest_Cancelled) {
   embedded_test_server()->RegisterRequestHandler(base::Bind(
       &CancelOnRequest, "/hung",
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID()));
@@ -332,8 +322,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 
 // Flaky everywhere. http://crbug.com/130404
 // Tests that onunload is run for cross-site requests.  (Bug 1114994)
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       DISABLED_CrossSiteOnunloadCookie) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, DISABLED_CrossSiteOnunloadCookie) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url = embedded_test_server()->GetURL("/onunload_cookie.html");
@@ -352,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 // If this flakes, use http://crbug.com/130404
 // Tests that onunload is run for cross-site requests to URLs that complete
 // without network loads (e.g., about:blank, data URLs).
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
                        DISABLED_CrossSiteImmediateLoadOnunloadCookie) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -387,8 +376,7 @@ std::unique_ptr<net::test_server::HttpResponse> NoContentResponseHandler(
 
 // Tests that the unload handler is not run for 204 responses.
 // If this flakes use http://crbug.com/80596.
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       CrossSiteNoUnloadOn204) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, CrossSiteNoUnloadOn204) {
   const char kNoContentPath[] = "/nocontent";
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&NoContentResponseHandler, kNoContentPath));
@@ -419,8 +407,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 #else
 #define MAYBE_CrossSiteAfterCrash CrossSiteAfterCrash
 #endif
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       MAYBE_CrossSiteAfterCrash) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, MAYBE_CrossSiteAfterCrash) {
   // Make sure we have a live process before trying to kill it.
   NavigateToURL(shell(), GURL("about:blank"));
 
@@ -441,8 +428,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 
 // Tests that cross-site navigations work when the new page does not go through
 // the BufferedEventHandler (e.g., non-http{s} URLs).  (Bug 1225872)
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       CrossSiteNavigationNonBuffered) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, CrossSiteNavigationNonBuffered) {
   // Start with an HTTP page.
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url1(embedded_test_server()->GetURL("/content-sniffer-test0.html"));
@@ -458,7 +444,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 // Tests that a cross-site navigation to an error page (resulting in the link
 // doctor page) still runs the onunload handler and can support navigations
 // away from the link doctor page.  (Bug 1235537)
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
                        DISABLED_CrossSiteNavigationErrorPage) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -500,8 +486,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
 }
 
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       CrossSiteNavigationErrorPage2) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, CrossSiteNavigationErrorPage2) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/title2.html"));
@@ -524,8 +509,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
             shell()->web_contents()->GetTitle());
 }
 
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       CrossOriginRedirectBlocked) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, CrossOriginRedirectBlocked) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(
       embedded_test_server()->GetURL("/cross-origin-redirect-blocked.html"));
@@ -548,8 +532,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 // Tests that ResourceRequestInfoImpl is updated correctly on failed
 // requests, to prevent calling Read on a request that has already failed.
 // See bug 40250.
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       CrossSiteFailedRequest) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, CrossSiteFailedRequest) {
   // Visit another URL first to trigger a cross-site navigation.
   NavigateToURL(shell(), GetTestUrl("", "simple_page.html"));
 
@@ -579,7 +562,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
 
 // Test that we update the cookie policy URLs correctly when transferring
 // navigations.
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, CookiePolicy) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, CookiePolicy) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&HandleRedirectRequest, "/redirect?"));
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -622,8 +605,7 @@ class PageTransitionResourceDispatcherHostDelegate
 
 // Test that ui::PAGE_TRANSITION_CLIENT_REDIRECT is correctly set
 // when encountering a meta refresh tag.
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       PageTransitionClientRedirect) {
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, PageTransitionClientRedirect) {
   // TODO(crbug.com/818445): Fix the flakiness on Network Service.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))
     return;
@@ -738,10 +720,9 @@ class PreviewsStateResourceDispatcherHostDelegate
 
 }  // namespace
 
-class PreviewsStateResourceDispatcherHostBrowserTest
-    : public ContentBrowserTest {
+class PreviewsStateBrowserTest : public ContentBrowserTest {
  public:
-  ~PreviewsStateResourceDispatcherHostBrowserTest() override {}
+  ~PreviewsStateBrowserTest() override {}
 
  protected:
   void SetUpOnMainThread() override {
@@ -782,8 +763,7 @@ class PreviewsStateResourceDispatcherHostBrowserTest
 };
 
 // Test that navigating calls GetPreviewsState with SERVER_LOFI_ON.
-IN_PROC_BROWSER_TEST_F(PreviewsStateResourceDispatcherHostBrowserTest,
-                       ShouldEnableLoFiModeOn) {
+IN_PROC_BROWSER_TEST_F(PreviewsStateBrowserTest, ShouldEnableLoFiModeOn) {
   // Navigate with ShouldEnableLoFiMode returning true.
   Reset(SERVER_LOFI_ON);
   NavigateToURLBlockUntilNavigationsComplete(
@@ -792,8 +772,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsStateResourceDispatcherHostBrowserTest,
 }
 
 // Test that navigating calls GetPreviewsState returning PREVIEWS_OFF.
-IN_PROC_BROWSER_TEST_F(PreviewsStateResourceDispatcherHostBrowserTest,
-                       ShouldEnableLoFiModeOff) {
+IN_PROC_BROWSER_TEST_F(PreviewsStateBrowserTest, ShouldEnableLoFiModeOff) {
   // Navigate with GetPreviewsState returning false.
   NavigateToURLBlockUntilNavigationsComplete(
       shell(), embedded_test_server()->GetURL("/page_with_iframe.html"), 1);
@@ -802,8 +781,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsStateResourceDispatcherHostBrowserTest,
 
 // Test that reloading calls GetPreviewsState again and changes the Previews
 // state.
-IN_PROC_BROWSER_TEST_F(PreviewsStateResourceDispatcherHostBrowserTest,
-                       ShouldEnableLoFiModeReload) {
+IN_PROC_BROWSER_TEST_F(PreviewsStateBrowserTest, ShouldEnableLoFiModeReload) {
   // Navigate with GetPreviewsState returning PREVIEWS_OFF.
   NavigateToURLBlockUntilNavigationsComplete(
       shell(), embedded_test_server()->GetURL("/page_with_iframe.html"), 1);
@@ -817,7 +795,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsStateResourceDispatcherHostBrowserTest,
 
 // Test that navigating backwards calls GetPreviewsState again and changes
 // the Previews state.
-IN_PROC_BROWSER_TEST_F(PreviewsStateResourceDispatcherHostBrowserTest,
+IN_PROC_BROWSER_TEST_F(PreviewsStateBrowserTest,
                        ShouldEnableLoFiModeNavigateBackThenForward) {
   // Navigate with GetPreviewsState returning false.
   NavigateToURLBlockUntilNavigationsComplete(
@@ -837,7 +815,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsStateResourceDispatcherHostBrowserTest,
 
 // Test that reloading with Lo-Fi disabled doesn't call ShouldEnableLoFiMode and
 // already has LOFI_OFF.
-IN_PROC_BROWSER_TEST_F(PreviewsStateResourceDispatcherHostBrowserTest,
+IN_PROC_BROWSER_TEST_F(PreviewsStateBrowserTest,
                        ShouldEnableLoFiModeReloadDisableLoFi) {
   // Navigate with GetPreviewsState returning SERVER_LOFI_ON.
   Reset(SERVER_LOFI_ON);
@@ -1232,7 +1210,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, CrossOriginNested) {
 
 // Regression test for https://crbug.com/648608. An attacker could trivially
 // bypass cookies SameSite=Strict protections by navigating a new window twice.
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
                        CookieSameSiteStrictOpenNewNamedWindowTwice) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
