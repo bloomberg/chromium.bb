@@ -5,93 +5,17 @@
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service.h"
 
 #include "base/bind.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/router/discovery/discovery_network_monitor.h"
+#include "chrome/browser/media/router/discovery/mdns/media_sink_util.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "components/cast_channel/cast_socket_service.h"
 #include "components/prefs/pref_service.h"
-#include "net/base/host_port_pair.h"
-#include "net/base/ip_address.h"
 
 namespace media_router {
-
-namespace {
-
-enum ErrorType {
-  NONE,
-  NOT_CAST_DEVICE,
-  MISSING_ID,
-  MISSING_FRIENDLY_NAME,
-  MISSING_OR_INVALID_IP_ADDRESS,
-  MISSING_OR_INVALID_PORT,
-};
-
-ErrorType CreateCastMediaSink(const DnsSdService& service,
-                              MediaSinkInternal* cast_sink) {
-  DCHECK(cast_sink);
-  if (service.service_name.find(CastMediaSinkService::kCastServiceType) ==
-      std::string::npos)
-    return ErrorType::NOT_CAST_DEVICE;
-
-  net::IPAddress ip_address;
-  if (!ip_address.AssignFromIPLiteral(service.ip_address))
-    return ErrorType::MISSING_OR_INVALID_IP_ADDRESS;
-
-  std::map<std::string, std::string> service_data;
-  for (const auto& item : service.service_data) {
-    // |item| format should be "id=xxxxxx", etc.
-    size_t split_idx = item.find('=');
-    if (split_idx == std::string::npos)
-      continue;
-
-    std::string key = item.substr(0, split_idx);
-    std::string val =
-        split_idx < item.length() ? item.substr(split_idx + 1) : "";
-    service_data[key] = val;
-  }
-
-  // When use this "sink" within browser, please note it will have a different
-  // ID when it is sent to the extension, because it derives a different sink ID
-  // using the given sink ID.
-  std::string unique_id = service_data["id"];
-  if (unique_id.empty())
-    return ErrorType::MISSING_ID;
-  std::string friendly_name = service_data["fn"];
-  if (friendly_name.empty())
-    return ErrorType::MISSING_FRIENDLY_NAME;
-
-  CastSinkExtraData extra_data;
-  extra_data.ip_endpoint =
-      net::IPEndPoint(ip_address, service.service_host_port.port());
-  extra_data.model_name = service_data["md"];
-  extra_data.capabilities = cast_channel::CastDeviceCapability::NONE;
-
-  unsigned capacities;
-  if (base::StringToUint(service_data["ca"], &capacities))
-    extra_data.capabilities = capacities;
-
-  std::string processed_uuid = MediaSinkInternal::ProcessDeviceUUID(unique_id);
-  std::string sink_id = base::StringPrintf("cast:<%s>", processed_uuid.c_str());
-  MediaSink sink(
-      sink_id, friendly_name,
-      CastMediaSinkServiceImpl::GetCastSinkIconType(extra_data.capabilities),
-      MediaRouteProviderId::CAST);
-
-  cast_sink->set_sink(sink);
-  cast_sink->set_cast_data(extra_data);
-
-  return ErrorType::NONE;
-}
-
-}  // namespace
-
-// static
-const char CastMediaSinkService::kCastServiceType[] = "_googlecast._tcp.local";
 
 CastMediaSinkService::CastMediaSinkService()
     : impl_(nullptr, base::OnTaskRunnerDeleter(nullptr)),
@@ -208,9 +132,9 @@ void CastMediaSinkService::OnDnsSdEvent(
   for (const auto& service : services) {
     // Create Cast sink from mDNS service description.
     MediaSinkInternal cast_sink;
-    ErrorType error = CreateCastMediaSink(service, &cast_sink);
-    if (error != ErrorType::NONE) {
-      DVLOG(2) << "Fail to create Cast device [error]: " << error;
+    CreateCastMediaSinkResult result = CreateCastMediaSink(service, &cast_sink);
+    if (result != CreateCastMediaSinkResult::kOk) {
+      DVLOG(2) << "Fail to create Cast device [error]: " << result;
       continue;
     }
 

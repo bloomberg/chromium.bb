@@ -55,6 +55,8 @@ static_library("discovery") {
     "mdns/dns_sd_device_lister.h",
     "mdns/dns_sd_registry.cc",
     "mdns/dns_sd_registry.h",
+    "mdns/media_sink_util.cc",
+    "mdns/media_sink_util.h",
     "media_sink_discovery_metrics.cc",
     "media_sink_discovery_metrics.h",
   ]
