@@ -111,7 +111,7 @@ inline DoublePoint operator-(const DoublePoint& a, const DoubleSize& b) {
 }
 
 inline IntPoint RoundedIntPoint(const DoublePoint& p) {
-  return IntPoint(clampTo<int>(roundf(p.X())), clampTo<int>(roundf(p.Y())));
+  return IntPoint(clampTo<int>(round(p.X())), clampTo<int>(round(p.Y())));
 }
 
 inline IntPoint CeiledIntPoint(const DoublePoint& p) {
