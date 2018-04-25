@@ -102,9 +102,12 @@ class GpuInProcessThreadHolder : public base::Thread {
 
   const scoped_refptr<InProcessCommandBuffer::Service>& GetGpuThreadService() {
     if (!gpu_thread_service_) {
+      DCHECK(base::CommandLine::InitializedForCurrentProcess());
+      const base::CommandLine* command_line =
+          base::CommandLine::ForCurrentProcess();
       gpu_thread_service_ = base::MakeRefCounted<GpuInProcessThreadService>(
           task_runner(), sync_point_manager_.get(), nullptr, nullptr,
-          gpu_feature_info_, GpuPreferences());
+          gpu_feature_info_, gles2::ParseGpuPreferences(command_line));
     }
     return gpu_thread_service_;
   }
