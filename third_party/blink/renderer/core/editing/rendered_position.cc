@@ -47,34 +47,6 @@
 
 namespace blink {
 
-template <typename Strategy>
-static inline LayoutObject* LayoutObjectFromPosition(
-    const PositionTemplate<Strategy>& position) {
-  DCHECK(position.IsNotNull());
-  Node* layout_object_node = nullptr;
-  switch (position.AnchorType()) {
-    case PositionAnchorType::kOffsetInAnchor:
-      layout_object_node = position.ComputeNodeAfterPosition();
-      if (!layout_object_node || !layout_object_node->GetLayoutObject())
-        layout_object_node = position.AnchorNode()->lastChild();
-      break;
-
-    case PositionAnchorType::kBeforeAnchor:
-    case PositionAnchorType::kAfterAnchor:
-      break;
-
-    case PositionAnchorType::kBeforeChildren:
-      layout_object_node = Strategy::FirstChild(*position.AnchorNode());
-      break;
-    case PositionAnchorType::kAfterChildren:
-      layout_object_node = Strategy::LastChild(*position.AnchorNode());
-      break;
-  }
-  if (!layout_object_node || !layout_object_node->GetLayoutObject())
-    layout_object_node = position.AnchorNode();
-  return layout_object_node->GetLayoutObject();
-}
-
 RenderedPosition::RenderedPosition(const VisiblePosition& position)
     : RenderedPosition(position.DeepEquivalent(), position.Affinity()) {}
 
@@ -401,17 +373,6 @@ static CompositedSelectionBound EndPositionInGraphicsLayerBacking(
       GetLocalSelectionEndpoints(local_caret_rect);
   return ComputeSelectionBound(position, *layout_object, edge_top_in_layer,
                                edge_bottom_in_layer);
-}
-
-bool LayoutObjectContainsPosition(LayoutObject* target,
-                                  const Position& position) {
-  for (LayoutObject* layout_object = LayoutObjectFromPosition(position);
-       layout_object && layout_object->GetNode();
-       layout_object = layout_object->Parent()) {
-    if (layout_object == target)
-      return true;
-  }
-  return false;
 }
 
 CompositedSelection RenderedPosition::ComputeCompositedSelection(

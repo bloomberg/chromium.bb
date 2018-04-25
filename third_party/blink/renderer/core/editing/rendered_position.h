@@ -120,8 +120,6 @@ inline RenderedPosition::RenderedPosition(const LayoutObject* layout_object,
                                           int offset)
     : layout_object_(layout_object), inline_box_(box), offset_(offset) {}
 
-CORE_EXPORT bool LayoutObjectContainsPosition(LayoutObject*, const Position&);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_RENDERED_POSITION_H_
