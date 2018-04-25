@@ -27,6 +27,12 @@ class ClockModel : public chromeos::SystemClockClient::Observer,
 
   void SetUse24HourClock(bool use_24_hour);
 
+  // Return true if the session is logged in.
+  bool IsLoggedIn();
+
+  void ShowDateSettings();
+  void ShowSetTimeDialog();
+
   // Force observers to refresh clock views e.g. system is resumed or timezone
   // is changed.
   void NotifyRefreshClock();
