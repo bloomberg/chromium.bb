@@ -60,14 +60,12 @@ bool IsScrollEvent(const GestureList& list) {
 void HitTestElements(UiScene* scene,
                      ReticleModel* reticle_model,
                      HitTestRequest* request) {
-  std::vector<const UiElement*> elements = scene->GetVisibleElements();
+  std::vector<const UiElement*> elements = scene->GetElementsToHitTest();
   std::vector<const UiElement*> sorted =
       UiRenderer::GetElementsInDrawOrder(elements);
 
   for (const auto* element : base::Reversed(sorted)) {
-    if (!element->IsHitTestable()) {
-      continue;
-    }
+    DCHECK(element->IsHitTestable());
 
     HitTestResult result;
     element->HitTest(*request, &result);
