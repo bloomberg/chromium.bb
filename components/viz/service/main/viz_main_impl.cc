@@ -261,11 +261,10 @@ void VizMainImpl::CreateFrameSinkManagerInternal(
   DCHECK(gpu_service_);
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
 
-  constexpr bool force_virtualized_gl_context = false;
   gpu_command_service_ = base::MakeRefCounted<gpu::GpuInProcessThreadService>(
-      force_virtualized_gl_context, gpu_thread_task_runner_,
-      gpu_service_->sync_point_manager(), gpu_service_->mailbox_manager(),
-      gpu_service_->share_group(), gpu_service_->gpu_feature_info(),
+      gpu_thread_task_runner_, gpu_service_->sync_point_manager(),
+      gpu_service_->mailbox_manager(), gpu_service_->share_group(),
+      gpu_service_->gpu_feature_info(),
       gpu_service_->gpu_channel_manager()->gpu_preferences());
 
   compositor_thread_task_runner_->PostTask(

@@ -10,7 +10,6 @@
 namespace gpu {
 
 GpuInProcessThreadService::GpuInProcessThreadService(
-    bool force_virtualized_gl_context,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     gpu::SyncPointManager* sync_point_manager,
     gpu::MailboxManager* mailbox_manager,
@@ -21,7 +20,6 @@ GpuInProcessThreadService::GpuInProcessThreadService(
                                            mailbox_manager,
                                            share_group,
                                            gpu_feature_info),
-      force_virtualized_gl_context_(force_virtualized_gl_context),
       task_runner_(task_runner),
       sync_point_manager_(sync_point_manager) {}
 
@@ -33,8 +31,9 @@ void GpuInProcessThreadService::ScheduleDelayedWork(base::OnceClosure task) {
   task_runner_->PostDelayedTask(FROM_HERE, std::move(task),
                                 base::TimeDelta::FromMilliseconds(2));
 }
+
 bool GpuInProcessThreadService::ForceVirtualizedGLContexts() {
-  return force_virtualized_gl_context_;
+  return false;
 }
 
 gpu::SyncPointManager* GpuInProcessThreadService::sync_point_manager() {
