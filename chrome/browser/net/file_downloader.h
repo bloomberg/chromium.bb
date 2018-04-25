@@ -50,7 +50,7 @@ class FileDownloader {
   static bool IsSuccess(Result result) { return result != FAILED; }
 
  private:
-  void OnSimpleDownloadComplete(const base::FilePath& response_path);
+  void OnSimpleDownloadComplete(base::FilePath response_path);
 
   void OnFileExistsCheckDone(bool exists);
 

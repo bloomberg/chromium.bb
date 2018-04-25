@@ -65,8 +65,7 @@ FileDownloader::FileDownloader(
 
 FileDownloader::~FileDownloader() {}
 
-void FileDownloader::OnSimpleDownloadComplete(
-    const base::FilePath& response_path) {
+void FileDownloader::OnSimpleDownloadComplete(base::FilePath response_path) {
   if (response_path.empty()) {
     if (simple_url_loader_->ResponseInfo() &&
         simple_url_loader_->ResponseInfo()->headers) {

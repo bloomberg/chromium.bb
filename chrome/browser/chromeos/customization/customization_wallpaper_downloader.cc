@@ -150,7 +150,7 @@ void CustomizationWallpaperDownloader::OnWallpaperDirectoryCreated(
 }
 
 void CustomizationWallpaperDownloader::OnSimpleLoaderComplete(
-    const base::FilePath& response_path) {
+    base::FilePath response_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const bool error = response_path.empty();
@@ -158,9 +158,6 @@ void CustomizationWallpaperDownloader::OnSimpleLoaderComplete(
   VLOG(1) << "CustomizationWallpaperDownloader::OnURLFetchComplete(): status="
           << simple_loader_->NetError();
 
-  // Save the response_path before resetting SimplerURLLoader. It gets nulled
-  // out afterwards.
-  base::FilePath copy_response_path(response_path);
   simple_loader_.reset();
 
   if (error) {
@@ -171,7 +168,7 @@ void CustomizationWallpaperDownloader::OnSimpleLoaderComplete(
   std::unique_ptr<bool> success(new bool(false));
 
   base::OnceClosure rename_closure = base::BindOnce(
-      &RenameTemporaryFile, copy_response_path, wallpaper_downloaded_file_,
+      &RenameTemporaryFile, response_path, wallpaper_downloaded_file_,
       base::Unretained(success.get()));
   base::OnceClosure on_rename_closure = base::BindOnce(
       &CustomizationWallpaperDownloader::OnTemporaryFileRenamed,
