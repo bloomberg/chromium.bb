@@ -3525,11 +3525,12 @@ TEST_F(WebContentsImplTest, PictureInPictureMediaPlayerIdWasChanged) {
   EXPECT_EQ(kPlayerVideoOnlyId,
             observer->GetPictureInPictureVideoMediaPlayerId()->second);
 
-  // Picture-in-Picture media player id should be reset when the media is
-  // destroyed.
+  // Picture-in-Picture media player id should not be reset when the media is
+  // destroyed (e.g. video stops playing). This allows the Picture-in-Picture
+  // window to continue to control the media.
   rfh->OnMessageReceived(MediaPlayerDelegateHostMsg_OnMediaDestroyed(
       rfh->GetRoutingID(), kPlayerVideoOnlyId));
-  EXPECT_FALSE(observer->GetPictureInPictureVideoMediaPlayerId().has_value());
+  EXPECT_TRUE(observer->GetPictureInPictureVideoMediaPlayerId().has_value());
 }
 
 TEST_F(WebContentsImplTest, ParseDownloadHeaders) {
