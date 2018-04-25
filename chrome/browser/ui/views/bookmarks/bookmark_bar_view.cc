@@ -129,11 +129,11 @@ static const int kMaxButtonWidth = 150;
 // Margins around the content.
 static const int kDetachedTopMargin = 1;  // When attached, we use 0 and let the
                                           // toolbar above serve as the margin.
-static const int kBottomMargin = 2;
+static const int kBottomMargin = 4;
 static const int kHorizontalMargin = 4;
 
 // Padding between buttons.
-static const int kButtonPadding = 6;
+static const int kButtonPadding = 8;
 
 // Width of the drop indicator.
 static const int kDropIndicatorWidth = 2;
@@ -169,7 +169,7 @@ gfx::ImageSkia* GetImageSkiaNamed(int id) {
 }
 
 int GetInkDropCornerRadius() {
-  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 4 : 2;
+  return ui::MaterialDesignController::IsNewerMaterialUi() ? 4 : 2;
 }
 
 gfx::Insets GetInkDropInsets() {
