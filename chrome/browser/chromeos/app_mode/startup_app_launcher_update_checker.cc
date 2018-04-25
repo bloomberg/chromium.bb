@@ -43,9 +43,9 @@ bool StartupAppLauncherUpdateChecker::Run(UpdateCheckCallback callback) {
   extensions::ExtensionUpdater::CheckParams params;
   params.install_immediately = true;
   params.callback =
-      base::Bind(&StartupAppLauncherUpdateChecker::OnExtensionUpdaterDone,
-                 weak_ptr_factory_.GetWeakPtr());
-  updater->CheckNow(params);
+      base::BindOnce(&StartupAppLauncherUpdateChecker::OnExtensionUpdaterDone,
+                     weak_ptr_factory_.GetWeakPtr());
+  updater->CheckNow(std::move(params));
   return true;
 }
 

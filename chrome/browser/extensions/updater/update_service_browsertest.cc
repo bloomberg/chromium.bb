@@ -69,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, NoUpdate) {
 
   extensions::ExtensionUpdater::CheckParams params;
   params.ids = {kExtensionId};
-  extension_service()->updater()->CheckNow(params);
+  extension_service()->updater()->CheckNow(std::move(params));
 
   // UpdateService should emit an not-updated event.
   EXPECT_EQ(UpdateClientEvents::COMPONENT_NOT_UPDATED,
@@ -119,10 +119,8 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, SuccessfulUpdate) {
 
   extensions::ExtensionUpdater::CheckParams params;
   params.ids = {kExtensionId};
-  params.callback = base::BindRepeating(
-      [](base::OnceClosure quit_closure) { std::move(quit_closure).Run(); },
-      run_loop.QuitClosure());
-  extension_service()->updater()->CheckNow(params);
+  params.callback = run_loop.QuitClosure();
+  extension_service()->updater()->CheckNow(std::move(params));
 
   EXPECT_EQ(UpdateClientEvents::COMPONENT_UPDATED,
             WaitOnComponentUpdaterCompleteEvent(kExtensionId));
