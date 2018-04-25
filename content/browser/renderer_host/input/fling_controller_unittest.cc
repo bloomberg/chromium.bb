@@ -348,7 +348,8 @@ TEST_F(FlingControllerTest, GestureFlingCancelsFiltered) {
   EXPECT_TRUE(last_fling_cancel_filtered_);
 }
 
-TEST_F(FlingControllerTest, GestureFlingNotCancelledBySmallTimeDelta) {
+// Flaky. https://crbug.com/836996.
+TEST_F(FlingControllerTest, DISABLED_GestureFlingNotCancelledBySmallTimeDelta) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchscreen,
                      gfx::Vector2dF(1000, 0));
