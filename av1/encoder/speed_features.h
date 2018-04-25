@@ -576,6 +576,12 @@ typedef struct SPEED_FEATURES {
 
   // Calculate RD cost before doing optimize_b, and skip if the cost is large.
   int optimize_b_precheck;
+
+  // Use model rd instead of transform search in jnt_comp
+  int jnt_comp_fast_tx_search;
+
+  // Skip mv search in jnt_comp
+  int jnt_comp_skip_mv_search;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
