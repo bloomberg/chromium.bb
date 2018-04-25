@@ -149,8 +149,8 @@ class ApacheHTTP(server_base.ServerBase):
 
     def _spawn_process(self):
         _log.debug('Starting %s server, cmd="%s"', self._name, str(self._start_cmd))
-        self._process = self._executive.popen(self._start_cmd)
-        retval = self._process.returncode
+        # Apache2 (or httpd) spawns a background daemon and immediately exits.
+        retval = self._executive.run_command(self._start_cmd, return_exit_code=True)
         if retval:
             raise server_base.ServerError('Failed to start %s: %s' % (self._name, retval))
 
