@@ -1583,7 +1583,7 @@ static void read_tile_info(AV1Decoder *const pbi,
   }
 }
 
-static int mem_get_varsize(const uint8_t *src, int sz) {
+static size_t mem_get_varsize(const uint8_t *src, int sz) {
   switch (sz) {
     case 1: return src[0];
     case 2: return mem_get_le16(src);
