@@ -19,6 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -54,6 +55,8 @@ static const ClientId kTestClientIdOtherNamespace(kLastNNamespace, kTestGuid1);
 static const ClientId kTestClientIdOtherGuid(kLastNNamespace, kTestBadGuid);
 static const ClientId kTestClientId1(kAsyncNamespace, kTestGuid1);
 static const ClientId kTestClientId2(kAsyncNamespace, kTestGuid2);
+static const ClientId kTestClientIdPrefetch(kSuggestedArticlesNamespace,
+                                            kTestGuid1);
 static const ContentId kTestContentId1(kOfflinePageNamespace, kTestGuid1);
 static const base::FilePath kTestFilePath =
     base::FilePath(FILE_PATH_LITERAL("foo/bar.mhtml"));
@@ -115,8 +118,8 @@ class MockOfflinePageModel : public StubOfflinePageModel {
 
   ~MockOfflinePageModel() override {}
 
-  void AddInitialPage() {
-    OfflinePageItem page(GURL(kTestUrl), kTestOfflineId1, kTestClientId1,
+  void AddInitialPage(ClientId client_id) {
+    OfflinePageItem page(GURL(kTestUrl), kTestOfflineId1, client_id,
                          kTestFilePath, kFileSize, kTestCreationTime);
     page.title = kTestTitle;
     pages[kTestOfflineId1] = page;
@@ -230,7 +233,7 @@ class DownloadUIAdapterTest : public testing::Test,
     return request_coordinator_taco_->request_coordinator();
   }
   bool items_loaded() { return adapter->IsCacheLoadedForTest(); }
-  void AddInitialPage();
+  void AddInitialPage(const ClientId client_id);
   int64_t AddInitialRequest(const GURL& url, const ClientId& client_id);
 
   std::vector<std::string> added_guids, updated_guids, deleted_guids;
@@ -307,8 +310,9 @@ int64_t DownloadUIAdapterTest::AddRequest(const GURL& url,
       params, base::Bind(&SavePageLaterCallback));
 }
 
-void DownloadUIAdapterTest::AddInitialPage() {
-  model->AddInitialPage();
+void DownloadUIAdapterTest::AddInitialPage(
+    const ClientId client_id = kTestClientId1) {
+  model->AddInitialPage(client_id);
   // Trigger cache load in the adapter.
   adapter->GetAllItems(base::DoNothing());
   PumpLoop();
@@ -626,7 +630,7 @@ TEST_F(DownloadUIAdapterTest, UpdateProgress) {
 }
 
 TEST_F(DownloadUIAdapterTest, GetVisualsForItem) {
-  AddInitialPage();
+  AddInitialPage(kTestClientIdPrefetch);
   model->thumbnail_by_offline_id_result =
       std::make_unique<OfflinePageThumbnail>(kThumbnail);
   const int kImageWidth = 24;
@@ -641,19 +645,25 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItem) {
       [&](const offline_items_collection::ContentId& id,
           std::unique_ptr<offline_items_collection::OfflineItemVisuals>
               visuals) {
+        EXPECT_TRUE(visuals);
         EXPECT_EQ(kImageWidth, visuals->icon.Width());
         called = true;
       });
   adapter->GetAllItems(base::DoNothing());
+  base::HistogramTester histogram_tester;
+
   adapter->GetVisualsForItem(kTestContentId1, callback);
   PumpLoop();
+
+  histogram_tester.ExpectUniqueSample(
+      "OfflinePages.DownloadUI.PrefetchedItemHasThumbnail", true, 1);
   EXPECT_TRUE(called);
 }
 
 TEST_F(DownloadUIAdapterTest, GetVisualsForItemInvalidItem) {
   EXPECT_CALL(*thumbnail_decoder, DecodeAndCropThumbnail_(kThumbnailData, _))
       .Times(0);
-  AddInitialPage();
+  AddInitialPage(kTestClientIdPrefetch);
   const ContentId kContentID("not", "valid");
   bool called = false;
   auto callback = base::BindLambdaForTesting(
@@ -665,13 +675,18 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItemInvalidItem) {
         called = true;
       });
   adapter->GetAllItems(base::DoNothing());
+  base::HistogramTester histogram_tester;
+
   adapter->GetVisualsForItem(kContentID, callback);
   PumpLoop();
+
+  histogram_tester.ExpectTotalCount(
+      "OfflinePages.DownloadUI.PrefetchedItemHasThumbnail", 0);
   EXPECT_TRUE(called);
 }
 
 TEST_F(DownloadUIAdapterTest, GetVisualsForItemNoThumbnail) {
-  AddInitialPage();
+  AddInitialPage(kTestClientIdPrefetch);
   model->thumbnail_by_offline_id_result = nullptr;
   EXPECT_CALL(*thumbnail_decoder, DecodeAndCropThumbnail_(_, _)).Times(0);
   bool called = false;
@@ -684,13 +699,18 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItemNoThumbnail) {
         called = true;
       });
   adapter->GetAllItems(base::DoNothing());
+  base::HistogramTester histogram_tester;
+
   adapter->GetVisualsForItem(kTestContentId1, callback);
   PumpLoop();
+
+  histogram_tester.ExpectUniqueSample(
+      "OfflinePages.DownloadUI.PrefetchedItemHasThumbnail", false, 1);
   EXPECT_TRUE(called);
 }
 
 TEST_F(DownloadUIAdapterTest, GetVisualsForItemBadDecode) {
-  AddInitialPage();
+  AddInitialPage(kTestClientIdPrefetch);
   model->thumbnail_by_offline_id_result =
       std::make_unique<OfflinePageThumbnail>(kThumbnail);
   EXPECT_CALL(*thumbnail_decoder, DecodeAndCropThumbnail_(kThumbnailData, _))
@@ -708,8 +728,13 @@ TEST_F(DownloadUIAdapterTest, GetVisualsForItemBadDecode) {
         called = true;
       });
   adapter->GetAllItems(base::DoNothing());
+  base::HistogramTester histogram_tester;
+
   adapter->GetVisualsForItem(kTestContentId1, callback);
   PumpLoop();
+
+  histogram_tester.ExpectUniqueSample(
+      "OfflinePages.DownloadUI.PrefetchedItemHasThumbnail", false, 1);
   EXPECT_TRUE(called);
 }
 
