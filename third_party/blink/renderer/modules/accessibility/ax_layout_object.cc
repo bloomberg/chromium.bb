@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/iterators/character_iterator.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
-#include "third_party/blink/renderer/core/editing/rendered_position.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
@@ -2226,6 +2225,43 @@ void AXLayoutObject::TextChanged() {
 //
 // Text metrics. Most of these should be deprecated, needs major cleanup.
 //
+
+static LayoutObject* LayoutObjectFromPosition(const Position& position) {
+  DCHECK(position.IsNotNull());
+  Node* layout_object_node = nullptr;
+  switch (position.AnchorType()) {
+    case PositionAnchorType::kOffsetInAnchor:
+      layout_object_node = position.ComputeNodeAfterPosition();
+      if (!layout_object_node || !layout_object_node->GetLayoutObject())
+        layout_object_node = position.AnchorNode()->lastChild();
+      break;
+
+    case PositionAnchorType::kBeforeAnchor:
+    case PositionAnchorType::kAfterAnchor:
+      break;
+
+    case PositionAnchorType::kBeforeChildren:
+      layout_object_node = position.AnchorNode()->firstChild();
+      break;
+    case PositionAnchorType::kAfterChildren:
+      layout_object_node = position.AnchorNode()->lastChild();
+      break;
+  }
+  if (!layout_object_node || !layout_object_node->GetLayoutObject())
+    layout_object_node = position.AnchorNode();
+  return layout_object_node->GetLayoutObject();
+}
+
+static bool LayoutObjectContainsPosition(LayoutObject* target,
+                                         const Position& position) {
+  for (LayoutObject* layout_object = LayoutObjectFromPosition(position);
+       layout_object && layout_object->GetNode();
+       layout_object = layout_object->Parent()) {
+    if (layout_object == target)
+      return true;
+  }
+  return false;
+}
 
 // NOTE: Consider providing this utility method as AX API
 int AXLayoutObject::Index(const VisiblePosition& position) const {
