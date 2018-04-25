@@ -350,19 +350,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
                          6 /* SCHEME_DATA */, 2);
 }
 
-// Disabled on Win, Mac and ChromeOS due to https://crbug.com/836211
-#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
-#define MAYBE_NavigateToInaccessibleResourceFromChromeURL \
-  DISABLED_NavigateToInaccessibleResourceFromChromeURL
-#else
-#define MAYBE_NavigateToInaccessibleResourceFromChromeURL \
-  NavigateToInaccessibleResourceFromChromeURL
-#endif
 // Test that navigating to an extension URL is allowed on chrome:// and
 // chrome-search:// pages, even for URLs that are not web-accessible.
 // See https://crbug.com/662602.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
-                       MAYBE_NavigateToInaccessibleResourceFromChromeURL) {
+                       NavigateToInaccessibleResourceFromChromeURL) {
   // Mint an extension URL which is not web-accessible.
   const extensions::Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("uitest").AppendASCII("window_open"));
