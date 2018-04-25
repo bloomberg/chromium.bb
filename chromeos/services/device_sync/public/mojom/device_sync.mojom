@@ -144,6 +144,10 @@ interface DeviceSync {
   // device has not yet registered with the back-end, no list is provided.
   GetSyncedDevices() => (array<RemoteDevice>? devices);
 
+  // Returns the RemoteDevice object associated with this device. If this device
+  // has not yet registered with the back-end, no device is provided.
+  GetLocalDeviceMetadata() => (RemoteDevice? local_device);
+
   // Enables or disables the given software feature for the device with the
   // given public key. If |enabled| and |is_exclusive| are both true, this
   // function will enable the feature for the given device and disable the
