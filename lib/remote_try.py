@@ -179,8 +179,12 @@ class RemoteTryJob(object):
     properties = tags.copy()
     properties['cbb_extra_args'] = self.extra_args
 
+    luci_builder = 'Try'
+    if bot in site_config:
+      luci_builder = site_config[bot].luci_builder
+
     parameters = {
-        'builder_name': 'Generic',
+        'builder_name': luci_builder,
         'properties': properties,
     }
 

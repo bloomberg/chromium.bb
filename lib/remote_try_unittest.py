@@ -100,7 +100,7 @@ class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
     parameters_parsed = json.loads(body['parameters_json'])
 
     self.assertEqual(parameters_parsed, {
-        u'builder_name': u'Generic',
+        u'builder_name': u'Prod',
         u'email_notify': [{u'email': u'default_email'}],
         u'properties': {
             u'cbb_branch': u'master',
@@ -131,7 +131,7 @@ class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
     parameters_parsed = json.loads(body['parameters_json'])
 
     self.assertEqual(parameters_parsed, {
-        u'builder_name': u'Generic',
+        u'builder_name': u'Prod',
         u'email_notify': [{u'email': u'explicit_email'}],
         u'properties': {
             u'cbb_branch': u'test-branch',
@@ -162,7 +162,7 @@ class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
     parameters_parsed = json.loads(body['parameters_json'])
 
     self.assertEqual(parameters_parsed, {
-        u'builder_name': u'Generic',
+        u'builder_name': u'Try',
         u'email_notify': [{u'email': u'default_email'}],
         u'properties': {
             u'cbb_branch': u'master',
@@ -228,14 +228,14 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
         result.buildbucket_id,
         'luci.chromeos.general',
         [
-            'builder:Generic',
+            'builder:Prod',
             'cbb_branch:master',
             'cbb_config:amd64-generic-paladin',
             'cbb_display_label:display',
             'cbb_email:default_email',
         ],
         {
-            u'builder_name': u'Generic',
+            u'builder_name': u'Prod',
             u'email_notify': [{u'email': u'default_email'}],
             u'properties': {
                 u'cbb_branch': u'master',
@@ -267,7 +267,7 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
         result.buildbucket_id,
         'luci.chromeos.general',
         [
-            'builder:Generic',
+            'builder:Prod',
             'cbb_branch:test-branch',
             'cbb_display_label:display',
             'cbb_config:amd64-generic-paladin',
@@ -275,7 +275,7 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
             'cbb_master_build_id:master_bb_id',
         ],
         {
-            u'builder_name': u'Generic',
+            u'builder_name': u'Prod',
             u'email_notify': [{u'email': u'explicit_email'}],
             u'properties': {
                 u'cbb_branch': u'test-branch',
