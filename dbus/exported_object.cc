@@ -191,7 +191,10 @@ DBusHandlerResult ExportedObject::HandleMessage(
     DBusConnection* connection,
     DBusMessage* raw_message) {
   bus_->AssertOnDBusThread();
-  DCHECK_EQ(DBUS_MESSAGE_TYPE_METHOD_CALL, dbus_message_get_type(raw_message));
+  // ExportedObject only handles method calls. Ignore other message types (e.g.
+  // signal).
+  if (dbus_message_get_type(raw_message) != DBUS_MESSAGE_TYPE_METHOD_CALL)
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 
   // raw_message will be unrefed on exit of the function. Increment the
   // reference so we can use it in MethodCall.
