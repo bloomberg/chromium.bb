@@ -245,6 +245,7 @@ TEST_F(MagnificationControllerTest, PointOfInterest) {
   EXPECT_EQ("450,350", CurrentPointOfInterest());
 }
 
+// TODO(warx): move this test to unit_tests.
 TEST_F(MagnificationControllerTest, FollowFocusChanged) {
   // Enables magnifier and confirm the viewport is at center.
   GetMagnificationController()->SetEnabled(true);

@@ -61,7 +61,7 @@ class ASH_EXPORT DockedMagnifierController
   // the magnifier viewport.
   static constexpr int kScreenHeightDevisor = 3;
 
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
 
   void BindRequest(mojom::DockedMagnifierControllerRequest request);
 
@@ -79,7 +79,6 @@ class ASH_EXPORT DockedMagnifierController
   void StepToNextScaleValue(int delta_index);
 
   // ash::mojom::DockedMagnifierController:
-  void SetClient(mojom::DockedMagnifierClientPtr client) override;
   void CenterOnPoint(const gfx::Point& point_in_screen) override;
 
   // ash::SessionObserver:
@@ -115,8 +114,6 @@ class ASH_EXPORT DockedMagnifierController
   // functions. https://crbug.com/817157.
   bool GetFullscreenMagnifierEnabled() const;
   void SetFullscreenMagnifierEnabled(bool enabled);
-
-  void FlushClientPtrForTesting();
 
   const views::Widget* GetViewportWidgetForTesting() const;
 
@@ -201,8 +198,6 @@ class ASH_EXPORT DockedMagnifierController
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   mojo::Binding<mojom::DockedMagnifierController> binding_;
-
-  mojom::DockedMagnifierClientPtr client_;
 
   DISALLOW_COPY_AND_ASSIGN(DockedMagnifierController);
 };

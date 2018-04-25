@@ -199,6 +199,8 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       ash::prefs::kAccessibilityHighContrastEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(ash::prefs::kDockedMagnifierEnabled, false,
+                                PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(
       ash::prefs::kAccessibilityScreenMagnifierCenterFocus, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
