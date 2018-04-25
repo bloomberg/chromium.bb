@@ -60,6 +60,15 @@ namespace {
 
 const char kTestUrl[] = "http://www.example.com";
 
+// Default parameters for testing proactive LifecycleUnit discarding.
+const int kLowLoadedTabCount = 5;
+const int kModerateLoadedTabCount = 10;
+const int kHighLoadedTabCount = 20;
+const base::TimeDelta kLowOccludedTimeout = base::TimeDelta::FromMinutes(100);
+const base::TimeDelta kModerateOccludedTimeout =
+    base::TimeDelta::FromMinutes(10);
+const base::TimeDelta kHighOccludedTimeout = base::TimeDelta::FromMinutes(1);
+
 class NonResumingBackgroundTabNavigationThrottle
     : public BackgroundTabNavigationThrottle {
  public:
@@ -290,6 +299,35 @@ class TabManagerWithExperimentDisabledTest : public TabManagerTest {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+class TabManagerWithProactiveDiscardExperimentEnabledTest
+    : public TabManagerTest {
+ public:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kProactiveTabDiscarding);
+
+    TabManagerTest::SetUp();
+
+    // Use test constants for proactive discarding parameters.
+    tab_manager_->proactive_discard_params_ = GetTestProactiveDiscardParams();
+  }
+
+  ProactiveTabDiscardParams GetTestProactiveDiscardParams() {
+    // Return a ProactiveTabDiscardParams struct with default test
+    // parameters.
+    ProactiveTabDiscardParams params;
+    params.low_occluded_timeout = kLowOccludedTimeout;
+    params.moderate_occluded_timeout = kModerateOccludedTimeout;
+    params.high_occluded_timeout = kHighOccludedTimeout;
+    params.low_loaded_tab_count = kLowLoadedTabCount;
+    params.moderate_loaded_tab_count = kModerateLoadedTabCount;
+    params.high_loaded_tab_count = kHighLoadedTabCount;
+    return params;
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -1077,6 +1115,402 @@ TEST_F(TabManagerTest, TrackingNumberOfLoadedLifecycleUnits) {
 
   // Closing discarded tabs shouldn't affect |num_loaded_lifecycle_units_|.
   EXPECT_EQ(tab_manager_->num_loaded_lifecycle_units_, 0);
+}
+
+TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
+       GetTimeInBackgroundBeforeProactiveDiscardTest) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  // Move through every tab count in the low state and verify
+  // GetTimeInBackgroundBeforeProactiveDiscard returns the low threshold's
+  // timeout.
+  while (tab_manager_->num_loaded_lifecycle_units_ < kLowLoadedTabCount) {
+    EXPECT_EQ(tab_manager_->GetTimeInBackgroundBeforeProactiveDiscard(),
+              kLowOccludedTimeout);
+    tab_strip->AppendWebContents(CreateWebContents(), false);
+  }
+
+  // Move through every tab count in the moderate state and verify
+  // GetTimeInBackgroundBeforeProactiveDiscard returns the moderate threshold's
+  // timeout.
+  while (tab_manager_->num_loaded_lifecycle_units_ < kModerateLoadedTabCount) {
+    EXPECT_EQ(tab_manager_->GetTimeInBackgroundBeforeProactiveDiscard(),
+              kModerateOccludedTimeout);
+    tab_strip->AppendWebContents(CreateWebContents(), false);
+  }
+
+  // Move through every tab count in the high state and verify
+  // GetTimeInBackgroundBeforeProactiveDiscard returns the high threshold's
+  // timeout.
+  while (tab_manager_->num_loaded_lifecycle_units_ < kHighLoadedTabCount) {
+    EXPECT_EQ(tab_manager_->GetTimeInBackgroundBeforeProactiveDiscard(),
+              kHighOccludedTimeout);
+    tab_strip->AppendWebContents(CreateWebContents(), false);
+  }
+
+  // Add one tab to move from high state to excessive.
+  tab_strip->AppendWebContents(CreateWebContents(), false);
+  EXPECT_EQ(tab_manager_->GetTimeInBackgroundBeforeProactiveDiscard(),
+            base::TimeDelta());
+
+  tab_strip->CloseAllTabs();
+
+  EXPECT_EQ(tab_manager_->GetTimeInBackgroundBeforeProactiveDiscard(),
+            kLowOccludedTimeout);
+}
+
+TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
+       ProactiveDiscardTestLow) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  tab_strip->AppendWebContents(CreateWebContents(), false);
+  tab_strip->GetWebContentsAt(0)->WasShown();
+  tab_strip->AppendWebContents(CreateWebContents(), false);
+  tab_strip->GetWebContentsAt(1)->WasShown();
+
+  tab_strip->GetWebContentsAt(0)->WasHidden();
+
+  // Fast forward to just before the low threshold timeout.
+  base::TimeDelta less_than_low_timeout =
+      kLowOccludedTimeout - base::TimeDelta::FromSeconds(1);
+  task_runner_->FastForwardBy(less_than_low_timeout);
+
+  // Verify that 1 second before the Low threshold timeout, nothing has been
+  // discarded.
+  EXPECT_FALSE(
+      TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(0))
+          ->IsDiscarded());
+  EXPECT_FALSE(
+      TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(1))
+          ->IsDiscarded());
+
+  // Fast forward time until past the low threshold timeout
+  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // Verify that once the Low threshold timeout has passed, the hidden tab was
+  // discarded.
+  EXPECT_TRUE(
+      TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(0))
+          ->IsDiscarded());
+  EXPECT_FALSE(
+      TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(1))
+          ->IsDiscarded());
+
+  tab_strip->CloseAllTabs();
+}
+
+TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
+       ProactiveDiscardTestModerate) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  // Create enough tabs to enter the moderate state.
+  for (int tabs = 0; tabs < kLowLoadedTabCount; tabs++) {
+    tab_strip->AppendWebContents(CreateWebContents(), false);
+    tab_strip->GetWebContentsAt(tabs)->WasShown();
+  }
+
+  tab_strip->GetWebContentsAt(0)->WasHidden();
+
+  // Fast forward to just before the moderate threshold timeout.
+  base::TimeDelta less_than_moderate_timeout =
+      kModerateOccludedTimeout - base::TimeDelta::FromSeconds(1);
+  task_runner_->FastForwardBy(less_than_moderate_timeout);
+
+  for (int tab = 0; tab < kLowLoadedTabCount; tab++) {
+    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
+                     tab_strip->GetWebContentsAt(tab))
+                     ->IsDiscarded());
+  }
+
+  // Fast forward time until past the moderate threshold timeout.
+  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // The hidden tab (at index 0) should be the only discarded tab.
+  EXPECT_TRUE(
+      TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(0))
+          ->IsDiscarded());
+  for (int tab = 1; tab < kLowLoadedTabCount; tab++) {
+    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
+                     tab_strip->GetWebContentsAt(tab))
+                     ->IsDiscarded());
+  }
+
+  tab_strip->CloseAllTabs();
+}
+
+TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
+       ProactiveDiscardTestHigh) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  // Create enough tabs to enter the high state.
+  for (int tabs = 0; tabs < kModerateLoadedTabCount; tabs++) {
+    tab_strip->AppendWebContents(CreateWebContents(), false);
+    tab_strip->GetWebContentsAt(tabs)->WasShown();
+  }
+
+  tab_strip->GetWebContentsAt(0)->WasHidden();
+
+  // Fast forward to just before the high threshold timeout.
+  base::TimeDelta less_than_high_timeout =
+      kHighOccludedTimeout - base::TimeDelta::FromSeconds(1);
+  task_runner_->FastForwardBy(less_than_high_timeout);
+
+  for (int tab = 0; tab < kModerateLoadedTabCount; tab++) {
+    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
+                     tab_strip->GetWebContentsAt(tab))
+                     ->IsDiscarded());
+  }
+
+  // Fast forward time until past the high threshold timeout.
+  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // The hidden tab (at index 0) should be the only discarded tab.
+  EXPECT_TRUE(
+      TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(0))
+          ->IsDiscarded());
+  for (int tab = 1; tab < kModerateLoadedTabCount; tab++) {
+    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
+                     tab_strip->GetWebContentsAt(tab))
+                     ->IsDiscarded());
+  }
+
+  tab_strip->CloseAllTabs();
+}
+
+TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
+       ProactiveDiscardTestExcessive) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  // Create enough tabs to enter the excessive state.
+  for (int tabs = 0; tabs < kHighLoadedTabCount; tabs++) {
+    tab_strip->AppendWebContents(CreateWebContents(), false);
+    tab_strip->GetWebContentsAt(tabs)->WasShown();
+  }
+
+  tab_strip->GetWebContentsAt(0)->WasHidden();
+
+  // Nothing should be discarded initially.
+  for (int tab = 0; tab < kHighLoadedTabCount; tab++) {
+    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
+                     tab_strip->GetWebContentsAt(tab))
+                     ->IsDiscarded());
+  }
+
+  // Run until idle without fast forwarding time, as discarding while in the
+  // excessive state should happen immediately.
+  task_runner_->RunUntilIdle();
+
+  // The hidden tab (at index 0) should be the only discarded tab.
+  EXPECT_TRUE(
+      TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(0))
+          ->IsDiscarded());
+  for (int tab = 1; tab < kHighLoadedTabCount; tab++) {
+    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
+                     tab_strip->GetWebContentsAt(tab))
+                     ->IsDiscarded());
+  }
+
+  tab_strip->CloseAllTabs();
+}
+
+TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
+       ProactiveDiscardTestChangingStates) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  // Create the minumum number of tabs to enter the high state.
+  for (int tabs = 0; tabs < kModerateLoadedTabCount; tabs++) {
+    tab_strip->AppendWebContents(CreateWebContents(), false);
+    tab_strip->GetWebContentsAt(tabs)->WasShown();
+  }
+
+  // Nothing should be discarded initially.
+  for (int tab = 0; tab < kModerateLoadedTabCount; tab++) {
+    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
+                     tab_strip->GetWebContentsAt(tab))
+                     ->IsDiscarded());
+  }
+
+  // Hide the first two tabs, waiting once second between to enforce that the
+  // first tab is discarded first.
+  tab_strip->GetWebContentsAt(0)->WasHidden();
+  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  tab_strip->GetWebContentsAt(1)->WasHidden();
+
+  // Fast forward the moderate state timeout.
+  task_runner_->FastForwardBy(kHighOccludedTimeout);
+
+  // Verify that the first tab is discarded. TabManager is now in the moderate
+  // state as a result of the discard.
+  EXPECT_TRUE(
+      TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(0))
+          ->IsDiscarded());
+
+  // Verify the rest of the tabs are not discarded.
+  for (int tab = 1; tab < kModerateLoadedTabCount; tab++) {
+    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
+                     tab_strip->GetWebContentsAt(tab))
+                     ->IsDiscarded());
+  }
+
+  // Fast forward the difference between the moderate and the high threshold
+  // timeouts so the second tab was hidden the moderate threshold amount of
+  // time. This should cause the second tab to be discarded.
+  task_runner_->FastForwardBy(kModerateOccludedTimeout - kHighOccludedTimeout);
+
+  // Verify that the first 2 tabs are now discarded.
+  for (int tab = 0; tab < 2; tab++) {
+    EXPECT_TRUE(TabLifecycleUnitExternal::FromWebContents(
+                    tab_strip->GetWebContentsAt(tab))
+                    ->IsDiscarded());
+  }
+
+  // Verify the rest of the tabs are not discarded.
+  for (int tab = 2; tab < kModerateLoadedTabCount; tab++) {
+    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
+                     tab_strip->GetWebContentsAt(tab))
+                     ->IsDiscarded());
+  }
+
+  // Hide the next 4 tabs. Once these are discarded, TabManager will be in the
+  // low state.
+  tab_strip->GetWebContentsAt(2)->WasHidden();
+  tab_strip->GetWebContentsAt(3)->WasHidden();
+  tab_strip->GetWebContentsAt(4)->WasHidden();
+  tab_strip->GetWebContentsAt(5)->WasHidden();
+
+  // Fast forward by the moderate threshold timeout.
+  task_runner_->FastForwardBy(kModerateOccludedTimeout);
+
+  // Verify that the first 6 tabs are now discarded. Now in the low state.
+  for (int tab = 0; tab < 6; tab++) {
+    EXPECT_TRUE(TabLifecycleUnitExternal::FromWebContents(
+                    tab_strip->GetWebContentsAt(tab))
+                    ->IsDiscarded());
+  }
+
+  // Verify the rest of the tabs are not discarded.
+  for (int tab = 6; tab < kModerateLoadedTabCount; tab++) {
+    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
+                     tab_strip->GetWebContentsAt(tab))
+                     ->IsDiscarded());
+  }
+
+  // Hide the seventh tab.
+  tab_strip->GetWebContentsAt(6)->WasHidden();
+
+  // Fast forward the moderate threshold. Currently in the low state, so nothing
+  // should happen.
+  task_runner_->FastForwardBy(kModerateOccludedTimeout);
+
+  // Verify that the first 6 tabs are now discarded.
+  for (int tab = 0; tab < 6; tab++) {
+    EXPECT_TRUE(TabLifecycleUnitExternal::FromWebContents(
+                    tab_strip->GetWebContentsAt(tab))
+                    ->IsDiscarded());
+  }
+
+  // Verify the rest of the tabs are not discarded.
+  for (int tab = 6; tab < kModerateLoadedTabCount; tab++) {
+    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
+                     tab_strip->GetWebContentsAt(tab))
+                     ->IsDiscarded());
+  }
+
+  // Fast forward the difference between the low and the moderate threshold
+  // timeouts so the seventh tab was hidden the moderate threshold amount of
+  // time. This should cause the seventh tab to be discarded.
+  task_runner_->FastForwardBy(kLowOccludedTimeout - kModerateOccludedTimeout);
+
+  // Verify that the first 7 tabs are now discarded.
+  for (int tab = 0; tab < 7; tab++) {
+    EXPECT_TRUE(TabLifecycleUnitExternal::FromWebContents(
+                    tab_strip->GetWebContentsAt(tab))
+                    ->IsDiscarded());
+  }
+
+  // Verify the rest of the tabs are not discarded.
+  for (int tab = 7; tab < kModerateLoadedTabCount; tab++) {
+    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
+                     tab_strip->GetWebContentsAt(tab))
+                     ->IsDiscarded());
+  }
+  tab_strip->CloseAllTabs();
+}
+
+TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
+       ProactiveDiscardTestTabClosedPriorToDiscard) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  tab_strip->AppendWebContents(CreateWebContents(), false);
+  tab_strip->GetWebContentsAt(0)->WasShown();
+  tab_strip->GetWebContentsAt(0)->WasHidden();
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  tab_strip->CloseWebContentsAt(
+      0, TabStripModel::CloseTypes::CLOSE_CREATE_HISTORICAL_TAB |
+             TabStripModel::CloseTypes::CLOSE_USER_GESTURE);
+
+  // Success in this test is no crash, meaning that closing the tab caused the
+  // timer to be stopped, rather than triggering after the low threshold timeout
+  // on a closed LifecycleUnit.
+  task_runner_->FastForwardBy(kLowOccludedTimeout);
+}
+
+TEST_F(TabManagerTest, ProactiveDiscardDoesNotOccurWhenDisabled) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  tab_strip->AppendWebContents(CreateWebContents(), false);
+  tab_strip->GetWebContentsAt(0)->WasShown();
+  tab_strip->GetWebContentsAt(0)->WasHidden();
+
+  task_runner_->FastForwardBy(kLowOccludedTimeout);
+
+  EXPECT_FALSE(
+      TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(0))
+          ->IsDiscarded());
+
+  tab_strip->CloseAllTabs();
 }
 
 }  // namespace resource_coordinator
