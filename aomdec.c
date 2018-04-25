@@ -528,7 +528,7 @@ static int main_loop(int argc, const char **argv_) {
   unsigned char md5_digest[16];
 
   struct AvxDecInputContext input = { NULL, NULL, NULL };
-  struct AvxInputContext aom_input_ctx;
+  struct AvxInputContext aom_input_ctx = { 0 };
 #if CONFIG_WEBM_IO
   struct WebmInputContext webm_ctx;
   memset(&webm_ctx, 0, sizeof(webm_ctx));
