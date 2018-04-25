@@ -53,21 +53,23 @@ class AudioSinkAudioTrackImpl {
 
     // Mapping from Android's stream_type to Cast's AudioContentType (used for callback).
     private static final SparseIntArray CAST_TYPE_TO_ANDROID_USAGE_TYPE_MAP = new SparseIntArray(
-            3) {
+            4) {
         {
             append(AudioContentType.MEDIA, AudioAttributes.USAGE_MEDIA);
             append(AudioContentType.ALARM, AudioAttributes.USAGE_ALARM);
             append(AudioContentType.COMMUNICATION, AudioAttributes.USAGE_ASSISTANCE_SONIFICATION);
+            append(AudioContentType.OTHER, AudioAttributes.USAGE_VOICE_COMMUNICATION);
         }
     };
 
     private static final SparseIntArray CAST_TYPE_TO_ANDROID_CONTENT_TYPE_MAP = new SparseIntArray(
-            3) {
+            4) {
         {
             append(AudioContentType.MEDIA, AudioAttributes.CONTENT_TYPE_MUSIC);
             // Note: ALARM uses the same as COMMUNICATON.
             append(AudioContentType.ALARM, AudioAttributes.CONTENT_TYPE_SONIFICATION);
             append(AudioContentType.COMMUNICATION, AudioAttributes.CONTENT_TYPE_SONIFICATION);
+            append(AudioContentType.OTHER, AudioAttributes.CONTENT_TYPE_SPEECH);
         }
     };
 

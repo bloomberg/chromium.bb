@@ -151,6 +151,12 @@ class CHROMECAST_EXPORT CastMediaShlib {
   // AddDirectAudioSource().
   static void RemoveDirectAudioSource(DirectAudioSourceToken* token)
       __attribute__((__weak__));
+
+  // Sets the volume multiplier for a direct audio source, given the |token|
+  // that was returned by AddDirectAudioSource().
+  static void SetDirectAudioSourceVolume(DirectAudioSourceToken* token,
+                                         float multiplier)
+      __attribute__((__weak__));
 };
 
 }  // namespace media
