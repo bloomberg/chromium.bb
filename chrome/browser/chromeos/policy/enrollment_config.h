@@ -45,6 +45,9 @@ struct EnrollmentConfig {
     // Forced enrollment triggered as a fallback to attestation enrollment,
     // user can't skip.
     MODE_ATTESTATION_MANUAL_FALLBACK,
+
+    // Enrollment for offline demo mode with locally stored policy data.
+    MODE_OFFLINE_DEMO,
   };
 
   // An enumeration of authentication mechanisms that can be used for

@@ -149,6 +149,9 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
       chromeos::attestation::AttestationStatus status,
       const std::string& pem_certificate_chain);
 
+  // Starts the enrollment flow for the offline demo mode.
+  void StartOfflineDemoEnrollmentFlow();
+
   // Starts registration if the store is initialized.
   void StartRegistration();
 

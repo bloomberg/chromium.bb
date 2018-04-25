@@ -118,6 +118,12 @@ class EnterpriseEnrollmentHelper {
   // lifetime, and only if none of the EnrollUsing* was called before.
   virtual void EnrollUsingAttestation() = 0;
 
+  // Starts enterprise enrollment for offline demo-mode.
+  // EnrollForOfflineDemo is used offline, no network connections. Thus it goes
+  // into enrollment without authentication -- and applies policies which are
+  // stored locally.
+  virtual void EnrollForOfflineDemo() = 0;
+
   // Continue enrollment using license |type|.
   virtual void UseLicenseType(policy::LicenseType type) = 0;
 

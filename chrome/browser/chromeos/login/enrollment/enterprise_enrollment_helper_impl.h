@@ -37,6 +37,7 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper {
                            bool fetch_additional_token) override;
   void EnrollUsingToken(const std::string& token) override;
   void EnrollUsingAttestation() override;
+  void EnrollForOfflineDemo() override;
   void ClearAuth(const base::Closure& callback) override;
   void UseLicenseType(policy::LicenseType type) override;
   void GetDeviceAttributeUpdatePermission() override;
