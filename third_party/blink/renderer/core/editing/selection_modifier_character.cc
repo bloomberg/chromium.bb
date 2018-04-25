@@ -271,20 +271,21 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
       return Traversal::ForwardVisuallyDistinctCandidateOf(primary_direction,
                                                            deep_position);
     }
-    LineLayoutItem line_layout_item = box->GetLineLayoutItem();
 
     while (true) {
       if (IsAfterAtomicInlineOrLineBreak<Traversal>(*box, offset)) {
         return Traversal::ForwardVisuallyDistinctCandidateOf(box->Direction(),
                                                              deep_position);
       }
+
+      const LineLayoutItem line_layout_item = box->GetLineLayoutItem();
+
       if (!line_layout_item.GetNode()) {
         box = Traversal::ForwardLeafChildOf(*box);
         if (!box) {
           return Traversal::ForwardVisuallyDistinctCandidateOf(
               primary_direction, deep_position);
         }
-        line_layout_item = box->GetLineLayoutItem();
         offset = Traversal::CaretEndOffsetOf(*box);
         continue;
       }
@@ -321,7 +322,6 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
         // Reposition at the other logical position corresponding to our
         // edge's visual position and go for another round.
         box = prev_box;
-        line_layout_item = box->GetLineLayoutItem();
         offset = Traversal::CaretEndOffsetOf(*prev_box);
         continue;
       }
@@ -337,7 +337,6 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
           if (Traversal::LogicalStartBoxOf(primary_direction, *box,
                                            logical_start)) {
             box = logical_start;
-            line_layout_item = box->GetLineLayoutItem();
             offset = Traversal::CaretMinOffsetOf(primary_direction, *box);
           }
           break;
@@ -352,7 +351,6 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
           break;
 
         box = prev_box;
-        line_layout_item = box->GetLineLayoutItem();
         offset = Traversal::CaretEndOffsetOf(*box);
         if (box->Direction() == primary_direction)
           break;
@@ -364,7 +362,6 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
 
       if (prev_box) {
         box = prev_box;
-        line_layout_item = box->GetLineLayoutItem();
         offset = Traversal::CaretEndOffsetOf(*box);
         if (box->BidiLevel() > level) {
           prev_box = Traversal::FindForwardBidiRun(*prev_box, level);
@@ -385,13 +382,12 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
           break;
         level = box->BidiLevel();
       }
-      line_layout_item = box->GetLineLayoutItem();
       offset = Traversal::CaretMinOffsetOf(primary_direction, *box);
       break;
     }
 
     p = PositionTemplate<Strategy>::EditingPositionOf(
-        line_layout_item.GetNode(), offset);
+        box->GetLineLayoutItem().GetNode(), offset);
 
     if ((IsVisuallyEquivalentCandidate(p) &&
          MostForwardCaretPosition(p) != downstream_start) ||
