@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
 #include <array>
 #include <utility>
@@ -15,6 +16,7 @@
 #include "base/component_export.h"
 #include "base/containers/span.h"
 #include "base/optional.h"
+#include "base/strings/string_piece.h"
 
 namespace device {
 namespace fido_parsing_utils {
@@ -94,6 +96,9 @@ bool ExtractArray(base::span<const uint8_t> span,
 COMPONENT_EXPORT(DEVICE_FIDO)
 std::vector<base::span<const uint8_t>> SplitSpan(base::span<const uint8_t> span,
                                                  size_t max_chunk_size);
+
+COMPONENT_EXPORT(DEVICE_FIDO)
+std::vector<uint8_t> CreateSHA256Hash(base::StringPiece data);
 
 }  // namespace fido_parsing_utils
 }  // namespace device

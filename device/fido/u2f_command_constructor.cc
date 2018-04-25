@@ -8,20 +8,9 @@
 #include <utility>
 
 #include "components/apdu/apdu_command.h"
-#include "crypto/sha2.h"
 #include "device/fido/fido_parsing_utils.h"
 
 namespace device {
-
-namespace {
-
-std::vector<uint8_t> CreateHash(const std::string& data) {
-  std::vector<uint8_t> hashed_data(crypto::kSHA256Length);
-  crypto::SHA256HashString(data, hashed_data.data(), hashed_data.size());
-  return hashed_data;
-}
-
-}  // namespace
 
 bool IsConvertibleToU2fRegisterCommand(
     const CtapMakeCredentialRequest& request) {
@@ -50,8 +39,9 @@ base::Optional<std::vector<uint8_t>> ConvertToU2fRegisterCommand(
   if (!IsConvertibleToU2fRegisterCommand(request))
     return base::nullopt;
 
-  return ConstructU2fRegisterCommand(CreateHash(request.rp().rp_id()),
-                                     request.client_data_hash());
+  return ConstructU2fRegisterCommand(
+      fido_parsing_utils::CreateSHA256Hash(request.rp().rp_id()),
+      request.client_data_hash());
 }
 
 base::Optional<std::vector<uint8_t>> ConvertToU2fSignCommand(
@@ -64,7 +54,7 @@ base::Optional<std::vector<uint8_t>> ConvertToU2fSignCommand(
 
   auto application_parameter =
       application_parameter_type == ApplicationParameterType::kPrimary
-          ? CreateHash(request.rp_id())
+          ? fido_parsing_utils::CreateSHA256Hash(request.rp_id())
           : std::vector<uint8_t>();
 
   return ConstructU2fSignCommand(std::move(application_parameter),

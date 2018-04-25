@@ -8,7 +8,7 @@
 
 #include "base/base64url.h"
 #include "base/strings/string_piece.h"
-#include "crypto/sha2.h"
+#include "device/fido/fido_parsing_utils.h"
 
 namespace device {
 
@@ -33,11 +33,7 @@ std::string ResponseData::GetId() const {
 }
 
 bool ResponseData::CheckRpIdHash(const std::string& rp_id) const {
-  const auto& response_rp_id_hash = GetRpIdHash();
-  std::vector<uint8_t> request_rp_id_hash(crypto::kSHA256Length);
-  crypto::SHA256HashString(rp_id, request_rp_id_hash.data(),
-                           request_rp_id_hash.size());
-  return response_rp_id_hash == request_rp_id_hash;
+  return GetRpIdHash() == fido_parsing_utils::CreateSHA256Hash(rp_id);
 }
 
 }  // namespace device

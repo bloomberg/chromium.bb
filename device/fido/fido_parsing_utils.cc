@@ -5,6 +5,7 @@
 #include "device/fido/fido_parsing_utils.h"
 
 #include "base/logging.h"
+#include "crypto/sha2.h"
 
 namespace device {
 namespace fido_parsing_utils {
@@ -77,6 +78,12 @@ std::vector<base::span<const uint8_t>> SplitSpan(base::span<const uint8_t> span,
   }
 
   return chunks;
+}
+
+std::vector<uint8_t> CreateSHA256Hash(base::StringPiece data) {
+  std::vector<uint8_t> hashed_data(crypto::kSHA256Length);
+  crypto::SHA256HashString(data, hashed_data.data(), hashed_data.size());
+  return hashed_data;
 }
 
 }  // namespace fido_parsing_utils

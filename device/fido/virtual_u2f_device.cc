@@ -18,7 +18,6 @@
 #include "components/apdu/apdu_command.h"
 #include "components/apdu/apdu_response.h"
 #include "crypto/ec_private_key.h"
-#include "crypto/sha2.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 
@@ -119,8 +118,7 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
   DCHECK_EQ(public_key.size(), 65ul);
 
   // Our key handles are simple hashes of the public key.
-  std::vector<uint8_t> key_handle(32);
-  crypto::SHA256HashString(public_key, key_handle.data(), key_handle.size());
+  auto key_handle = fido_parsing_utils::CreateSHA256Hash(public_key);
 
   // Data to be signed.
   std::vector<uint8_t> sign_buffer;

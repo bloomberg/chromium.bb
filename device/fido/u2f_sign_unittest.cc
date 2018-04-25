@@ -9,7 +9,6 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "crypto/ec_private_key.h"
-#include "crypto/sha2.h"
 #include "device/fido/authenticator_data.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/fake_fido_discovery.h"
@@ -154,9 +153,8 @@ TEST_F(U2fSignTest, TestSignSuccessWithFake) {
   auto private_key = crypto::ECPrivateKey::Create();
   std::string public_key;
   private_key->ExportRawPublicKey(&public_key);
-  std::vector<uint8_t> key_handle(32);
-  crypto::SHA256HashString(public_key, key_handle.data(), key_handle.size());
 
+  auto key_handle = fido_parsing_utils::CreateSHA256Hash(public_key);
   std::vector<std::vector<uint8_t>> handles{key_handle};
   auto request = CreateSignRequestWithKeys(handles);
   request->Start();
