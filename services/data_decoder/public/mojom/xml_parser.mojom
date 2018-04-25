@@ -10,7 +10,7 @@
 
 module data_decoder.mojom;
 
-import "mojo/common/values.mojom";
+import "mojo/public/mojom/base/values.mojom";
 
 interface XmlParser {
   const string kTypeKey = "type";
@@ -87,5 +87,5 @@ interface XmlParser {
   // Note that the client library provides convenience methods for accessing
   // data from the returned base::Value dictionary structure (see
   // safe_parser_xml.h).
-  Parse(string xml) => (mojo.common.mojom.Value? result, string? error);
+  Parse(string xml) => (mojo_base.mojom.Value? result, string? error);
 };
