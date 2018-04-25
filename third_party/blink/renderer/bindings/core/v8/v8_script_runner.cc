@@ -783,8 +783,7 @@ scoped_refptr<CachedMetadata> V8ScriptRunner::GenerateFullCodeCache(
   if (v8::ScriptCompiler::CompileUnboundScript(
           isolate, &source, v8::ScriptCompiler::kEagerCompile)
           .ToLocal(&unbound_script)) {
-    cached_data.reset(
-        v8::ScriptCompiler::CreateCodeCache(unbound_script, code));
+    cached_data.reset(v8::ScriptCompiler::CreateCodeCache(unbound_script));
     if (cached_data && cached_data->length) {
       cached_metadata = CachedMetadata::Create(
           CacheTag(kCacheTagCode, encoding.GetName()),
