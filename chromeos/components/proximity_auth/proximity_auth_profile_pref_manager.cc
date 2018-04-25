@@ -31,6 +31,7 @@ void ProximityAuthProfilePrefManager::RegisterPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kEasyUnlockAllowed, true);
   registry->RegisterBooleanPref(prefs::kEasyUnlockEnabled, false);
+  registry->RegisterBooleanPref(prefs::kEasyUnlockEnabledStateSet, false);
   registry->RegisterInt64Pref(prefs::kProximityAuthLastPasswordEntryTimestampMs,
                               0L);
   registry->RegisterInt64Pref(
@@ -107,6 +108,14 @@ void ProximityAuthProfilePrefManager::SetIsEasyUnlockEnabled(
 
 bool ProximityAuthProfilePrefManager::IsEasyUnlockEnabled() const {
   return pref_service_->GetBoolean(prefs::kEasyUnlockEnabled);
+}
+
+void ProximityAuthProfilePrefManager::SetEasyUnlockEnabledStateSet() const {
+  return pref_service_->SetBoolean(prefs::kEasyUnlockEnabledStateSet, true);
+}
+
+bool ProximityAuthProfilePrefManager::IsEasyUnlockEnabledStateSet() const {
+  return pref_service_->GetBoolean(prefs::kEasyUnlockEnabledStateSet);
 }
 
 void ProximityAuthProfilePrefManager::SetLastPasswordEntryTimestampMs(

@@ -36,6 +36,10 @@ void ProximityAuthLocalStatePrefManager::SetIsEasyUnlockEnabled(
   NOTREACHED();
 }
 
+void ProximityAuthLocalStatePrefManager::SetEasyUnlockEnabledStateSet() const {
+  NOTREACHED();
+}
+
 void ProximityAuthLocalStatePrefManager::SetActiveUser(
     const AccountId& active_user) {
   active_user_ = active_user;
@@ -97,6 +101,11 @@ bool ProximityAuthLocalStatePrefManager::IsEasyUnlockEnabled() const {
     return false;
   }
   return pref_value;
+}
+
+bool ProximityAuthLocalStatePrefManager::IsEasyUnlockEnabledStateSet() const {
+  NOTREACHED();
+  return false;
 }
 
 ProximityAuthLocalStatePrefManager::ProximityThreshold

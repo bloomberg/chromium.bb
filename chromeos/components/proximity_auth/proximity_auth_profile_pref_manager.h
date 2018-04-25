@@ -50,6 +50,8 @@ class ProximityAuthProfilePrefManager : public ProximityAuthPrefManager {
   bool IsEasyUnlockAllowed() const override;
   void SetIsEasyUnlockEnabled(bool is_easy_unlock_enabled) const override;
   bool IsEasyUnlockEnabled() const override;
+  void SetEasyUnlockEnabledStateSet() const override;
+  bool IsEasyUnlockEnabledStateSet() const override;
   void SetLastPasswordEntryTimestampMs(int64_t timestamp_ms) override;
   int64_t GetLastPasswordEntryTimestampMs() const override;
   void SetLastPromotionCheckTimestampMs(int64_t timestamp_ms) override;

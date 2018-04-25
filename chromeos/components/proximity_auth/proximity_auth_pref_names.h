@@ -10,6 +10,7 @@ namespace prefs {
 
 extern const char kEasyUnlockAllowed[];
 extern const char kEasyUnlockEnabled[];
+extern const char kEasyUnlockEnabledStateSet[];
 extern const char kEasyUnlockProximityThreshold[];
 extern const char kEasyUnlockLocalStateUserPrefs[];
 extern const char kProximityAuthLastPasswordEntryTimestampMs[];
