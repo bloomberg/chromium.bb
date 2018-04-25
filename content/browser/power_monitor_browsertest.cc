@@ -119,10 +119,12 @@ class PowerMonitorTest : public ContentBrowserTest {
         DCHECK(RenderProcessHostImpl::GetSpareRenderProcessHostForTesting());
       }
     } else if (source_info.identity.name() == mojom::kUtilityServiceName) {
-      ++request_count_from_utility_;
-
-      DCHECK(utility_bound_closure_);
-      std::move(utility_bound_closure_).Run();
+      // If the network service is enabled, it will create utility processes
+      // without a utility closure.
+      if (utility_bound_closure_) {
+        ++request_count_from_utility_;
+        std::move(utility_bound_closure_).Run();
+      }
     } else if (source_info.identity.name() == mojom::kGpuServiceName) {
       ++request_count_from_gpu_;
 
