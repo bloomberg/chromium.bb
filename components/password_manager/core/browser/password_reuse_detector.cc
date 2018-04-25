@@ -182,7 +182,7 @@ PasswordReuseDetector::FindFirstSavedPassword(const base::string16& input) {
     return passwords_.end();
 
   // lower_bound returns the first key that is bigger or equal to input.
-  auto it = passwords_.lower_bound(input);
+  passwords_iterator it = passwords_.lower_bound(input);
   if (it != passwords_.end() && it->first == input) {
     // If the key is equal then a saved password is found.
     return it;

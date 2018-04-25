@@ -255,13 +255,13 @@ scoped_refptr<StaticBitmapImage> GetImageWithAlphaDisposition(
     AlphaDisposition alpha_disposition) {
   DCHECK(alpha_disposition != kDontChangeAlpha);
   if (alpha_disposition == kDontChangeAlpha)
-    return image;
+    return std::move(image);
   SkAlphaType alpha_type = (alpha_disposition == kPremultiplyAlpha)
                                ? kPremul_SkAlphaType
                                : kUnpremul_SkAlphaType;
   sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
   if (skia_image->alphaType() == alpha_type)
-    return image;
+    return std::move(image);
 
   // Premul/unpremul are performed in gamma-corrected space, using arithmetic
   // that assumes linear space. It is an incorrect implementation that has
