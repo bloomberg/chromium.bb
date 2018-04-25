@@ -14,6 +14,7 @@
 <translation id="152892567002884378">ድምጽ ጨምር</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />፣ ከዚያ <ph name="ESC" /></translation>
 <translation id="1652741121070700329">ወደ የቀዳሚው ቃል መጀመሪያ ይውሰዱ</translation>
+<translation id="1671169355475348905">ወደ የቀዳሚው ቋንቋ የግቤት ስልት ይቀይሩ</translation>
 <translation id="1679841710523778799">ብሩህነትን ጨምር</translation>
 <translation id="168356808214100546"><ph name="ALT" />ን ተጭነው ይያዙ፣  መክፈት የሚፈልጉትን መስኮት እስኪያገኙ ድረስ <ph name="TAB" /> መታ ያድርጉ፣ ከዚያ ይልቀቁ።</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -40,6 +41,7 @@
 <translation id="2568632782096378307">የማያ ገጽ ጥራትን ወደ ነባሪ ዳግም አቀናብር</translation>
 <translation id="2596078834055697711">የመስኮት ቅጽበታዊ ገጽ እይታን ያንሱ</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />፣ ከዚያ <ph name="TAB" /> ወይም <ph name="RIGHT" /></translation>
+<translation id="2687057317448262550">ወደ የቀጣዩ ቋንቋ የግቤት ስልት ይቀይሩ</translation>
 <translation id="2699509451653686398">የአሁኑን ድረ-ገጽዎን እንደ እልባት ያስቀምጡ</translation>
 <translation id="2750942583782703988">የአሁኑን ገጽዎን ዳግም ይጫኑ</translation>
 <translation id="2764005613199379871">ትኩረት በፍለጋ የአድራሻ አሞሌ ላይ ያድርጉ</translation>
@@ -148,6 +150,7 @@
 <translation id="7379254767514753910"><ph name="ALT" /> ወይም <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="743754632698445141">አንድ መተግበሪያን ይንቀሉ</translation>
 <translation id="7439718573248533901">ቀጣዩን ፊደል ይሰርዙ (ወደፊት ስረዛ)</translation>
+<translation id="7611271430932669992">ትኩረቱን ወደ ብቅ-ባዮች እና መገናኛዎች ይውሰዱ</translation>
 <translation id="766326951329901120">ይዘትን ከቅንጥብ ሰሌዳው ላይ እንደ ዝርግ ጽሑፍ ለጥፍ</translation>
 <translation id="7724603315864178912">ቁረጥ</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />፣ ከዚያ <ph name="SPACE" /> ወይም <ph name="ENTER" /></translation>

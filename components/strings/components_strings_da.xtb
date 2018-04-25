@@ -303,7 +303,6 @@
 <translation id="3063697135517575841">Chrome kan ikke bekræfte dit kort i øjeblikket. Prøv igen senere.</translation>
 <translation id="3064966200440839136">Du forlader inkognitotilstand for at betale via en ekstern applikation. Vil du fortsætte?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Ingen}=1{1 adgangskode}one{# adgangskode}other{# adgangskoder}}</translation>
-<translation id="3093245981617870298">Du er offline.</translation>
 <translation id="3096100844101284527">Tilføj afhentningsadresse</translation>
 <translation id="3105172416063519923">Aktiv-id:</translation>
 <translation id="3109728660330352905">Du har ikke tilladelse til at se denne side.</translation>
@@ -1109,7 +1108,6 @@
 <translation id="9207861905230894330">Artiklen kunne ikke tilføjes.</translation>
 <translation id="9215416866750762878">En app forhindrer Chrome i at oprette sikker forbindelse til dette website</translation>
 <translation id="9219103736887031265">Billeder</translation>
-<translation id="933612690413056017">Der er ingen internetforbindelse</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">RYD FORMULAREN</translation>
 <translation id="939736085109172342">Ny mappe</translation>

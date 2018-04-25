@@ -149,7 +149,7 @@
 <translation id="1502843533062797703">Ativar o bloqueio de injeção de software de terceiros</translation>
 <translation id="1504431521196476721">Comprovação Remota</translation>
 <translation id="1509692106376861764">Esta política foi removida a partir da versão 29 do <ph name="PRODUCT_NAME" />.</translation>
-<translation id="1514888685242892912">Ativar <ph name="PRODUCT_NAME" /></translation>
+<translation id="1514888685242892912">Ativar o <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Permitir que os sites registem a localização física dos utilizadores</translation>
 <translation id="152657506688053119">Lista de URLs alternativos para o fornecedor de pesquisas predefinido</translation>
 <translation id="1530812829012954197">Processar sempre os seguintes padrões de URL no navegador anfitrião</translation>
@@ -2149,9 +2149,9 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se definida para GAIA, o início de sessão é efetuado através do fluxo de autenticação GAIA normal.
 
       Se definida para SAML_INTERSTITIAL, o início de sessão apresenta um ecrã intercalar que pergunta ao utilizador se pretende avançar com a autenticação através do SAML IdP do domínio de inscrição do dispositivo ou retroceder para o fluxo de início de sessão GAIA normal.</translation>
-<translation id="755951849901630953">Ativa as atualizações de componentes para todos os componentes no <ph name="PRODUCT_NAME" /> quando não está definida ou está definida como Verdadeira.
+<translation id="755951849901630953">Ativa as atualizações de componentes para todos os componentes no <ph name="PRODUCT_NAME" /> quando não está definida ou está definida como verdadeira.
 
-      Se estiver definida como Falsa, as atualizações de componentes são desativadas. Contudo, alguns componentes estão isentos desta política: as atualizações de quaisquer componentes que não contenham código executável, que não alterem significativamente o comportamento do navegador ou que sejam essenciais para a respetiva segurança não são desativadas.
+      Se estiver definida como falsa, as atualizações de componentes são desativadas. Contudo, alguns componentes estão isentos desta política: as atualizações de quaisquer componentes que não contenham código executável, que não alterem significativamente o comportamento do navegador ou que sejam essenciais para a respetiva segurança não são desativadas.
       Alguns exemplos destes componentes incluem as listas de revogação de certificados e os dados da Navegação segura.
       Consulte https://developers.google.com/safe-browsing para mais informações sobre a Navegação segura.</translation>
 <translation id="757395965347379751">Quando esta definição está ativada, o <ph name="PRODUCT_NAME" /> permite certificados assinados SHA-1 desde que validem e incluam com êxito uma cadeia para certificados da AC (Autoridade de certificação) instalados localmente.

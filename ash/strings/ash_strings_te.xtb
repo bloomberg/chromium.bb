@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">క్షమించండి, మీ పాస్‌వర్డ్ ఇప్పటికీ ధృవీకరించబడలేదు. గమనిక: మీరు మీ పాస్‌వర్డ్‌ను ఇటీవల మార్చి ఉంటే, మీరు సైన్ అవుట్ చేసిన తర్వాత మీ కొత్త పాస్‌వర్డ్ వర్తించబడుతుంది, దయచేసి పాత పాస్‌వర్డ్‌ను ఇక్కడ ఉపయోగించండి.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> మిగిలి ఉంది</translation>
 <translation id="1698760176351776263">IPv6 చిరునామా: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">మీ కార్యకలాపాన్ని పరికర నిర్వాహకుడు పర్యవేక్షించవచ్చు.</translation>
 <translation id="1734367976349034509">ఈ పరికరం సంస్థ ద్వారా నిర్వహించబడుతోంది</translation>
 <translation id="1746730358044914197">ఇన్‌పుట్ పద్ధతులు మీ నిర్వాహకుల ద్వారా కాన్ఫిగర్ చేయబడ్డాయి.</translation>
 <translation id="1747827819627189109">స్క్రీన్‌పై కనిపించే కీబోర్డ్ ప్రారంభించబడింది</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">నిండిపోయిన బటన్</translation>
 <translation id="1951012854035635156">సహాయకం</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">మీ భాషని సెట్ చేయండి</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">పవర్ ఆఫ్ చేయి</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">సమర్పించు</translation>
 <translation id="2675319268637823299">ఒక నిర్వాహకుడు <ph name="USER_EMAIL" /> కోసం బహుళ సైన్-ఇన్ అనుమతిని తిరస్కరించారు.
     కొనసాగించాలంటే అందరు వినియోగదారులు తప్పనిసరిగా సైన్ అవుట్ చేయాలి.</translation>
+<translation id="2696763960464195425">మీరు సైన్ అవుట్ చేసినప్పుడు మీ సమాచారం తీసివేయబడుతుంది. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">మీ కీబోర్డ్‌ని సెట్ చేయండి</translation>
 <translation id="2718395828230677721">రాత్రి కాంతి</translation>
 <translation id="2727977024730340865">తక్కువ-పవర్ గల ఛార్జర్‌కు ప్లగిన్ చేయబడింది. బ్యాటరీ ఛార్జింగ్ విశ్వసనీయంగా ఉండకపోవచ్చు.</translation>
 <translation id="2761704814324807722">స్థితి ట్రే, సమయం <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -122,7 +126,7 @@
 <translation id="3465566417615315331">మీ ఫోటోను క్లిక్ చేయండి</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">మౌస్ కర్సర్‌ని హైలైట్ చేయి</translation>
-<translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> ద్వారా ఖాతా నిర్వహించబడింది</translation>
+<translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> ద్వారా ఖాతా నిర్వహించబడుతోంది</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />"కు వెనుకకి మార్చండి (పునఃప్రారంభం అవసరం)</translation>
 <translation id="3582792037806681688">ఈ సెషన్‌లో వినియోగదారు కోసం బహుళ సైన్-ఇన్ అనుమతించబడలేదు</translation>
 <translation id="3595596368722241419">బ్యాటరీ  నిండింది</translation>
@@ -296,7 +300,7 @@
 <translation id="7829386189513694949">సిగ్నల్ దృఢంగా ఉంది</translation>
 <translation id="7904094684485781019">ఈ ఖాతా నిర్వాహకులు బహుళ సైన్-ఇన్‌కు అనుమతించలేదు.</translation>
 <translation id="7933084174919150729">ప్రాథమిక ప్రొఫైల్‌కు మాత్రమే Google సహాయకం అందుబాటులో ఉంటుంది.</translation>
-<translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> మరియు <ph name="SECOND_PARENT_EMAIL" /> ద్వారా ఖాతా నిర్వహించబడింది</translation>
+<translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> మరియు <ph name="SECOND_PARENT_EMAIL" /> ద్వారా ఖాతా నిర్వహించబడుతోంది</translation>
 <translation id="7977927628060636163">మొబైల్ నెట్‌వర్క్‌ల కోసం శోధిస్తోంది...</translation>
 <translation id="7982789257301363584">నెట్‌వర్క్</translation>
 <translation id="7994370417837006925">బహుళ సైన్-ఇన్</translation>
@@ -329,6 +333,7 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">తక్కువ-పవర్ గల ఛార్జర్ కనెక్ట్ చేయబడింది</translation>
 <translation id="8734991477317290293">మీ కీస్ట్రోక్‌లను దొంగిలించడానికి ఇది ప్రయత్నిస్తుండవచ్చు</translation>
+<translation id="8809737090443522491">యాప్ లేదా పత్రం యొక్క పేరుని టైప్ చేయండి</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">విండోలను మరొక డెస్క్‌టాప్‌కు తరలించడం వలన ఊహించని ప్రవర్తన చోటు చేసుకోవచ్చు.
 
@@ -342,7 +347,7 @@
 <translation id="8921624153894383499">Google సహాయకం ఈ భాషను మాట్లాడదు.</translation>
 <translation id="8938800817013097409">USB-C పరికరం (వెనుక భాగంలో కుడి పోర్ట్)</translation>
 <translation id="8940956008527784070">బ్యాటరీ తక్కువగా ఉంది (<ph name="PERCENTAGE" />%)</translation>
-<translation id="8995603266996330174"><ph name="DOMAIN" /> ద్వారా నిర్వహించబడింది</translation>
+<translation id="8995603266996330174"><ph name="DOMAIN" /> ద్వారా నిర్వహించబడుతోంది</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">మైక్రోఫోన్ ఉపయోగంలో ఉంది.</translation>

@@ -303,7 +303,6 @@
 <translation id="3063697135517575841">Chrome не можа да потвърди картата ви. Моля, опитайте отново по-късно.</translation>
 <translation id="3064966200440839136">Ще напуснете режим „инкогнито“, за да платите във външно приложение. Искате ли да продължите?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Няма}=1{1 парола}other{# пароли}}</translation>
-<translation id="3093245981617870298">Понастоящем сте офлайн.</translation>
 <translation id="3096100844101284527">Добавяне на адрес за вземане</translation>
 <translation id="3105172416063519923">ID на актива:</translation>
 <translation id="3109728660330352905">Нямате пълномощия за преглед на тази страница.</translation>
@@ -1108,7 +1107,6 @@
 <translation id="9207861905230894330">Добавянето на статията не бе успешно.</translation>
 <translation id="9215416866750762878">Приложение пречи на Chrome да се свърже безопасно с този сайт</translation>
 <translation id="9219103736887031265">Изображения</translation>
-<translation id="933612690413056017">Няма връзка с интернет</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">ИЗЧИСТВАНЕ НА ФОРМУЛЯРА</translation>
 <translation id="939736085109172342">Нова папка</translation>

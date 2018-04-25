@@ -302,7 +302,6 @@
 <translation id="3063697135517575841">Chrome ప్రస్తుతం మీ కార్డ్‌ను నిర్ధారించలేకపోయింది. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="3064966200440839136">బాహ్య అనువర్తనం ద్వారా చెల్లించడానికి అజ్ఞాత మోడ్ నుండి నిష్క్రమిస్తోంది. కొనసాగించాలా?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{ఏమీ లేవు}=1{1 పాస్‌వర్డ్}other{# పాస్‌వర్డ్‌లు}}</translation>
-<translation id="3093245981617870298">మీరు ఆఫ్‌లైన్‌లో ఉన్నారు.</translation>
 <translation id="3096100844101284527">పికప్ చిరునామాను జోడించండి</translation>
 <translation id="3105172416063519923">అసెట్ ID:</translation>
 <translation id="3109728660330352905">మీకు ఈ పేజీని వీక్షించడానికి అధికారం లేదు.</translation>
@@ -497,6 +496,7 @@
 <translation id="4325863107915753736">కథనాన్ని కనుగొనడం విఫలమైంది</translation>
 <translation id="4326324639298822553">మీ గడువు ముగింపు తేదీని తనిఖీ చేసి, ఆపై మళ్లీ ప్రయత్నించండి</translation>
 <translation id="4331708818696583467">సురక్షితం కాదు</translation>
+<translation id="4340982228985273705">ఈ కంప్యూటర్‌ని ఎంటర్‌ప్రైజ్ నిర్వహిస్తున్నట్లు గుర్తించబడలేదు, కనుక Chrome వెబ్‌స్టోర్‌లో హోస్ట్ చేయబడిన ఎక్స్‌టెన్షన్‌లను మాత్రమే విధానం ఆటోమేటిక్‌గా ఇన్‌స్టాల్ చేస్తుంది. Chrome వెబ్‌స్టోర్ అప్‌డేట్ URL "<ph name="CWS_UPDATE_URL" />".</translation>
 <translation id="4346197816712207223">ఆమోదించే క్రెడిట్ కార్డ్‌లు</translation>
 <translation id="4356973930735388585">ఈ సైట్‌లోని దాడి చేసేవారు మీ సమాచారాన్ని (ఉదాహరణకు, ఫోటోలు, పాస్‌వర్డ్‌లు, సందేశాలు మరియు క్రెడిట్ కార్డ్‌లు) దొంగిలించడం కోసం లేదా తొలగించడం కోసం మీ కంప్యూటర్‌లో ప్రమాదకరమైన ప్రోగ్రామ్‌లను ఇన్‌స్టాల్ చేయడానికి ప్రయత్నించవచ్చు.</translation>
 <translation id="4372948949327679948">ఆశిస్తున్న <ph name="VALUE_TYPE" /> విలువ.</translation>
@@ -853,6 +853,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">కార్డ్‌ని నిర్ధారించండి</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7407424307057130981">&lt;p&gt;మీ Windows కంప్యూటర్‌లో Superfish సాఫ్ట్‌వేర్ ఉన్నట్లయితే మీకు ఈ ఎర్రర్ కనిపిస్తుంది.&lt;/p&gt;
+      &lt;p&gt;మీరు వెబ్‌లోకి వెళ్లడం కోసం, సాఫ్ట్‌వేర్‌ని తాత్కాలికంగా నిలిపివేయడానికి ఈ దశలను అనుసరించండి. మీ వద్ద నిర్వాహకుడి స్థాయి అధికారాలు ఉండాలి.&lt;/p&gt;
+      &lt;ol&gt;
+      &lt;li&gt;&lt;strong&gt;ప్రారంభించు&lt;/strong&gt;ని క్లిక్ చేసి, ఆపై &lt;strong&gt;"స్థానిక సేవలను వీక్షించండి"&lt;/strong&gt; కోసం వెతికి, దానిని ఎంచుకోండి
+      &lt;li&gt;&lt;strong&gt;VisualDiscovery&lt;/strong&gt;ని ఎంచుకోండి
+      &lt;li&gt;&lt;strong&gt;ప్రారంభ రకం&lt;/strong&gt;లో, &lt;strong&gt;నిలిపివేయబడింది&lt;/strong&gt; ఎంచుకోండి
+      &lt;li&gt;&lt;strong&gt;సేవా స్థితి&lt;/strong&gt;లో, &lt;strong&gt;ఆపివేయి&lt;/strong&gt;ని క్లిక్ చేయండి
+      &lt;li&gt;&lt;strong&gt;వర్తింపజేయి&lt;/strong&gt;ని క్లిక్ చేసి, ఆపై &lt;strong&gt;సరే&lt;/strong&gt; క్లిక్ చేయండి
+      &lt;li&gt;మీ కంప్యూటర్ నుండి శాశ్వతంగా సాఫ్ట్‌వేర్‌ను ఎలా తొలగించాలో తెలుసుకోవడానికి &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome సహాయ కేంద్రం&lt;/a&gt;ని సందర్శించండి
+      &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">ప్రొఫైల్ మార్గం</translation>
 <translation id="7437289804838430631">సంప్రదింపు సమాచారాన్ని జోడించు</translation>
 <translation id="7441627299479586546">చెల్లని విధాన విషయం</translation>
@@ -1096,7 +1106,6 @@
 <translation id="9207861905230894330">కథనాన్ని జోడించడంలో విఫలమైంది.</translation>
 <translation id="9215416866750762878">ఒక అప్లికేషన్ కారణంగా Chrome ఈ సైట్‌కు సురక్షితంగా కనెక్ట్ కాలేకపోతోంది</translation>
 <translation id="9219103736887031265">చిత్రాలు</translation>
-<translation id="933612690413056017">ఇంటర్నెట్ కనెక్షన్ లేదు</translation>
 <translation id="933712198907837967">డైనర్స్ క్లబ్</translation>
 <translation id="935608979562296692">ఫారమ్‌ను తీసివేయండి</translation>
 <translation id="939736085109172342">క్రొత్త  ఫోల్డర్</translation>

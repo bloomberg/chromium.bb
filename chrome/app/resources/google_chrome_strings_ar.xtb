@@ -23,7 +23,7 @@
 <translation id="1585657529869845941">النقر على زر <ph name="BEGIN_BOLD" />التبديل على أي حال<ph name="END_BOLD" /> في حال ظهوره</translation>
 <translation id="1587223624401073077">‏يستخدم Google Chrome الكاميرا.</translation>
 <translation id="1587325591171447154">‏ملف <ph name="FILE_NAME" /> ضار، لذلك فقد حظره Chrome.</translation>
-<translation id="1619887657840448962">‏لجعل Chrome أكثر أمنًا، عطلنا الإضافة التالية التي لم تُدرج في <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> وربما تكون قد أضيفت دون علمك.</translation>
+<translation id="1619887657840448962">‏لجعل Chrome أكثر أمنًا، أوقفنا الإضافة التالية التي لم تُدرج في <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> وربما تكون قد أضيفت دون علمك.</translation>
 <translation id="1628000112320670027">‏الحصول على مساعدة في Chrome</translation>
 <translation id="1674870198290878346">‏فتح الرابط في نافذة تصفح متخفٍ في Chrome</translation>
 <translation id="1682634494516646069">‏يتعذر على Google Chrome القراءة والكتابة في دليل البيانات الخاص به:
@@ -144,7 +144,7 @@
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">‏قد يكون هذا الملف ضارًا، لذلك فقد حظره Chrome.</translation>
 <translation id="4794050651896644714">‏حفظ التفاصيل في Chrome</translation>
-<translation id="4804732725083176494">‏عطَّل مشرف هذا الجهاز تسجيل الدخول إلى Chrome.</translation>
+<translation id="4804732725083176494">‏أوقف مشرف هذا الجهاز تسجيل الدخول إلى Chrome.</translation>
 <translation id="4833487314064352405">{0,plural, =1{‏إعادة تشغيل Chrome خلال يوم واحد}zero{‏إعادة تشغيل Chrome خلال # يوم}two{‏إعادة تشغيل Chrome خلال يومين (#)}few{‏إعادة تشغيل Chrome خلال # أيام}many{‏إعادة تشغيل Chrome خلال # يومًا}other{‏إعادة تشغيل Chrome خلال # يوم}}</translation>
 <translation id="4891791193823137474">‏دع Google Chrome يعمل في الخلفية</translation>
 <translation id="4895437082222824641">‏فتح الرابط في علامة تبويب جديدة في Chrome</translation>

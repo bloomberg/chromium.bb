@@ -2870,6 +2870,7 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="5425042808445046667">Continua la baixada</translation>
 <translation id="5425722269016440406">Heu d'estar connectat a Internet per desactivar Smart Lock, perquè aquesta opció se sincronitza amb el telèfon i amb altres dispositius. Connecteu-vos a una xarxa en primer lloc.</translation>
 <translation id="5425863515030416387">Inicieu la sessió fàcilment en tots els dispositius</translation>
+<translation id="5426179911063097041"><ph name="SITE" /> et vol enviar notificacions</translation>
 <translation id="5427278936122846523">Tradueix sempre</translation>
 <translation id="5427459444770871191">Gira en el sentit de les &amp;agulles del rellotge</translation>
 <translation id="542872847390508405">Esteu navegant com a convidat.</translation>
@@ -2906,6 +2907,7 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="5464632865477611176">Executa aquesta vegada</translation>
 <translation id="5465662442746197494">Necessiteu ajuda?</translation>
 <translation id="5469954281417596308">Gestor d'adreces d'interès</translation>
+<translation id="5471768120198416576">Hola! Soc la veu de la teva síntesi de veu.</translation>
 <translation id="5473333559083690127">Torna a introduir el PIN nou</translation>
 <translation id="5480254151128201294">El propietari ha bloquejat aquest dispositiu.</translation>
 <translation id="5481941284378890518">Afegeix impressores properes</translation>
@@ -3405,6 +3407,7 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="6238923052227198598">Mantén la darrera nota a la pantalla de bloqueig</translation>
 <translation id="6239558157302047471">Torna a carregar el &amp;marc</translation>
 <translation id="6241530762627360640">Accedir a informació sobre els dispositius Bluetooth vinculats al sistema i descobrir dispositius Bluetooth a prop</translation>
+<translation id="6243280677745499710">Establert actualment</translation>
 <translation id="6243774244933267674">El servidor no està disponible</translation>
 <translation id="6246413617632217567">L'usuari supervisat no s'ha pogut importar. Comproveu els vostres permisos i l'espai disponible a la unitat de disc dur i torneu-ho a provar.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
@@ -3916,6 +3919,7 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="7030031465713069059">Desa la contrasenya</translation>
 <translation id="7031962166228839643">El mòdul TPM s'està preparant (aquest procés pot trigar una estona). Espereu...</translation>
 <translation id="7035437538340499453">Smart Lock ja està configurat</translation>
+<translation id="7037509989619051237">Text de prova</translation>
 <translation id="7039326228527141150">Accedir a dispositius USB del proveïdor <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Inici de sessió de targeta intel·ligent de Microsoft</translation>
 <translation id="7040138676081995583">Obre amb...</translation>
@@ -4391,6 +4395,7 @@ En instal·lar <ph name="APP_NAME" />, s'utilitzaran <ph name="DOWNLOAD_SIZE" />
 <translation id="7792012425874949788">S'ha produït un problema en iniciar la sessió</translation>
 <translation id="7792388396321542707">Deixa de compartir</translation>
 <translation id="7794058097940213561">Formata el dispositiu</translation>
+<translation id="7799299114731150374">El fons de pantalla s'ha establert correctament</translation>
 <translation id="7799329977874311193">Document HTML</translation>
 <translation id="7800518121066352902">Gira en el sentit con&amp;trari a les agulles del rellotge</translation>
 <translation id="7801746894267596941">Només una persona que tingui la vostra frase de contrasenya pot llegir les dades encriptades (Google no envia ni emmagatzema la frase de contrasenya). Si no la recordeu, haureu de</translation>
@@ -4484,6 +4489,7 @@ En instal·lar <ph name="APP_NAME" />, s'utilitzaran <ph name="DOWNLOAD_SIZE" />
 <translation id="7928710562641958568">Expulsa el dispositiu</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> està compartint la pantalla i l'àudio.</translation>
 <translation id="7931318309563332511">Desconegut</translation>
+<translation id="7934414805353235750"><ph name="URL" /> vol reproduir contingut protegit. Google verificarà la identitat del teu dispositiu.</translation>
 <translation id="7938594894617528435">Fora de línia en aquest moment</translation>
 <translation id="7939062555109487992">Opcions avançades</translation>
 <translation id="7939412583708276221">Continua de totes maneres</translation>

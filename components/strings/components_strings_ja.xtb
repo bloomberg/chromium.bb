@@ -303,7 +303,6 @@
 <translation id="3063697135517575841">Chrome でカードを確認できませんでした。しばらくしてからもう一度お試しください。</translation>
 <translation id="3064966200440839136">外部アプリケーションを経由したお支払いの処理に進むため、シークレット モードを解除します。続行しますか？</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{なし}=1{1 個のパスワード}other{# 個のパスワード}}</translation>
-<translation id="3093245981617870298">現在オフラインです。</translation>
 <translation id="3096100844101284527">集荷先住所を追加</translation>
 <translation id="3105172416063519923">アセット ID:</translation>
 <translation id="3109728660330352905">このページを表示する権限がありません。</translation>
@@ -1109,7 +1108,6 @@
 <translation id="9207861905230894330">記事を追加できませんでした。</translation>
 <translation id="9215416866750762878">アプリケーションが原因で、Chrome からこのサイトに安全に接続することができません</translation>
 <translation id="9219103736887031265">画像</translation>
-<translation id="933612690413056017">インターネット接続がありません</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">フォームをクリア</translation>
 <translation id="939736085109172342">新しいフォルダ</translation>

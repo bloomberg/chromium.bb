@@ -218,7 +218,7 @@
 <translation id="1797233582739332495">Kuva kasutajale korduv viip, mis näitab, et taaskäivitamine on nõutav</translation>
 <translation id="1803646570632580723">Kinnitatud rakenduste loend, mida näidatakse käivitis</translation>
 <translation id="1808715480127969042">Blokeeri nende saitide küpsised</translation>
-<translation id="1810261428246410396">Lubab kasutada kiirjagamist.</translation>
+<translation id="1810261428246410396">Kiirjagamise kasutamise lubamine.</translation>
 <translation id="1827523283178827583">Kasuta fikseeritud puhverservereid</translation>
 <translation id="1843117931376765605">Kasutajareegli värskendussagedus</translation>
 <translation id="1844620919405873871">Seadistab kiiravamisega seotud reeglid.</translation>
@@ -2557,7 +2557,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Kui keelate reegli või jätate selle määramata, kasutatakse PDF-failide avamiseks PDF-i pistikprogrammi, välja arvatud juhul, kui kasutaja selle keelab.</translation>
 <translation id="8402079500086185021">Ava PDF-failid alati väliselt</translation>
 <translation id="8412312801707973447">Kontrolli võrgus OCSP-d/CRL-i</translation>
-<translation id="8417305981081876834">Kukustuskuva PIN-koodi maksimumpikkuse määramine</translation>
+<translation id="8417305981081876834">Lukustuskuva PIN-koodi maksimumpikkuse määramine</translation>
 <translation id="841977920223099909">Paroolikaitse hoiatuse käivitaja</translation>
 <translation id="8424255554404582727">Määratakse ekraani vaikepöördenurk, mis rakendatakse uuesti igal taaskäivitamisel</translation>
 <translation id="8426231401662877819">Ekraani pööramine 90 kraadi päripäeva</translation>
@@ -2640,7 +2640,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 
       Laiendatud aruandlus saadab Google'i serveritesse teatud süsteemiteavet ja lehe sisu, et aidata tuvastada ohtlikke rakendusi ja saite.
 
-      Kui seade on määratud väärtusele Tõene, siis luuakse ja saadetakse aruanded vajaduse korral (näiteks kui kuvatakse turvalisuse vaheekraan).
+      Kui seade on määratud väärtusele Tõene, siis luuakse ja saadetakse aruanded vajaduse korral (näiteks kui kuvatakse turvalisust puudutav vahekuva).
 
       Kui seade on määratud väärtusele Väär, siis aruandeid ei saadeta.
 

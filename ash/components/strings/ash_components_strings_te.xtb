@@ -42,17 +42,20 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, ఆపై <ph name="TAB" /> లేదా <ph name="RIGHT" /></translation>
 <translation id="2699509451653686398">మీ ప్రస్తుత వెబ్‌పేజీని బుక్‌మార్క్‌గా సేవ్ చేయండి</translation>
 <translation id="2750942583782703988">మీ ప్రస్తుత పేజీని మళ్లీ లోడ్ చేయండి</translation>
+<translation id="2764005613199379871">శోధన చిరునామా బార్‌పై దృష్టి ఉంచండి</translation>
 <translation id="2789868185375229787">పేజీలో దూరంగా జూమ్ చేయండి</translation>
 <translation id="2804480015716812239"><ph name="ALT" />ని నొక్కి, లింక్‌ని క్లిక్ చేయండి</translation>
 <translation id="2830827904629746450">కుడి వైపున విండోని డాక్ చేయండి</translation>
 <translation id="2872353916818027657">ప్రాథమిక మానిటర్‌ను మార్చు</translation>
 <translation id="2914313326123580426">డెవలపర్ సాధనాల ప్యానెల్‌ని చూపండి లేదా దాచండి</translation>
 <translation id="292495055542441795">పూర్తి స్క్రీన్‌ను టోగుల్ చేయండి</translation>
+<translation id="3020183492814296499">షార్ట్‌కట్‌లు</translation>
 <translation id="3084301071537457911">మీ అరలో ఉన్న తదుపరి అంశాన్ని హైలైట్ చేయండి</translation>
 <translation id="309173601632226815">మీ అరలో లాంచర్ బటన్‌ని హైలైట్ చేయండి</translation>
 <translation id="3105917916468784889">స్క్రీన్‌షాట్‌ని తీయండి</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">ఫోకస్ చిరునామా బార్</translation>
+<translation id="3256109297135787951">మీ అరలోని ఒక అంశానికి గల హైలైట్‌ని తీసివేయండి</translation>
 <translation id="3288816184963444640">ప్రస్తుత విండోను మూసివేయండి</translation>
 <translation id="3407560819924487926">కార్య నిర్వాహకుడిని తెరవండి</translation>
 <translation id="3422679037938588196">మీ శోధన కోసం తదుపరి సరిపోలికకు వెళ్లండి</translation>
@@ -67,6 +70,7 @@
 <translation id="3720939646656082033">లింక్‌ని కొత్త ట్యాబ్‌లో తెరిచి, కొత్త ట్యాబ్‌కి మారండి</translation>
 <translation id="3725795051337497754">ప్రస్తుత ట్యాబ్‌ను మూసివేయండి</translation>
 <translation id="3751033133896282964">మీ చివరి చర్యను రద్దు చేయండి</translation>
+<translation id="3792178297143798024">మీ అరలో హైలైట్ చేయబడిన అంశాన్ని తెరవండి</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 నుండి 8</translation>
 <translation id="3837047332182291558">కీబోర్డ్‌ని మరింత ప్రకాశవంతం చేయండి (నేపథ్య కాంతి ఉన్న కీబోర్డ్‌లకు మాత్రమే)</translation>
 <translation id="3976863468609830880">మీ అరలోని చివరి చిహ్నాన్ని క్లిక్ చేయండి</translation>
@@ -149,10 +153,12 @@
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, ఆపై <ph name="SPACE" /> లేదా <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">బ్రౌజర్‌లో ఫైల్‌ను తెరవండి</translation>
 <translation id="7917881398263220094">మీ ప్రస్తుత పేజీ లోడ్ కాకుండా ఆపివేయండి</translation>
+<translation id="7952165122793773711">1 నుండి 8 వరకు ట్యాబ్‌లలోకి వెళ్లండి</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> లేదా <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">బ్రౌజింగ్ డేటాను క్లియర్ చెయ్యి</translation>
 <translation id="8130528849632411619">పత్రం ప్రారంభం వద్దకు వెళ్లండి</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> లేదా <ph name="E" /></translation>
+<translation id="8232835244134740473">వీటి మధ్య దృష్టిని మార్చండి: స్థితి ప్రాంతం (మీ ఖాతా చిత్రం కనిపించే ప్రాంతం), లాంచర్, చిరునామా బార్, బుక్‌మార్క్‌లు (కనిపించినట్లయితే), తెరవబడే వెబ్‌పేజీ మరియు డౌన్‌లోడ్‌ల బార్ (కనిపించినట్లయితే).</translation>
 <translation id="8234414138295101081">స్క్రీన్‌ని 90 డిగ్రీలు తిప్పండి</translation>
 <translation id="8264941229485248811">డెవలపర్ సాధనాల ఇన్‌స్పెక్టర్‌ని చూపండి లేదా దాచండి</translation>
 <translation id="836869401750819675">డౌన్‌లోడ్‌ల పేజీని తెరవండి</translation>

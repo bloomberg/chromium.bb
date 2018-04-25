@@ -303,7 +303,6 @@
 <translation id="3063697135517575841">Chrome ไม่สามารถยืนยันบัตรของคุณได้ในขณะนี้ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="3064966200440839136">ออกจากโหมดไม่ระบุตัวตนเพื่อชำระเงินผ่านแอปพลิเคชันภายนอก ดำเนินการต่อไหม</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{ไม่มี}=1{รหัสผ่าน 1 รายการ}other{รหัสผ่าน # รายการ}}</translation>
-<translation id="3093245981617870298">คุณออฟไลน์อยู่</translation>
 <translation id="3096100844101284527">เพิ่มที่อยู่สำหรับรับสินค้า</translation>
 <translation id="3105172416063519923">รหัสสินทรัพย์:</translation>
 <translation id="3109728660330352905">คุณไม่มีสิทธิ์ดูหน้านี้</translation>
@@ -1109,7 +1108,6 @@
 <translation id="9207861905230894330">การเพิ่มบทความล้มเหลว</translation>
 <translation id="9215416866750762878">มีแอปพลิเคชันที่ห้ามไม่ให้ Chrome เชื่อมต่อกับไซต์นี้อย่างปลอดภัย</translation>
 <translation id="9219103736887031265">ภาพ</translation>
-<translation id="933612690413056017">ไม่มีการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">ล้างฟอร์ม</translation>
 <translation id="939736085109172342">โฟลเดอร์ใหม่</translation>
