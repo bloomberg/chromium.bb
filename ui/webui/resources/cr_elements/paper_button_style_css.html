@@ -8,18 +8,72 @@
   <template>
     <style>
       paper-button {
+        /* Gray color to be used when disabled, either as a background or as a
+           text color depending on the type of button. */
+        --disabled-color: rgb(241, 243, 244);
+        --flat-keyboard-focus-border-color: rgba(26, 115, 232, 0.4);
+        /* Blue-ish color used either as a background or as a text color,
+           depending on the type of button. */
+        --text-or-bg-color: rgb(26, 115, 232);
+
         --paper-button-flat-keyboard-focus: {
-          background: rgba(0, 0, 0, .12);
+          background: initial;
+          border-color: var(--flat-keyboard-focus-border-color);
+          font-weight: 500;
         };
-        -webkit-padding-end: var(--cr-button-edge-spacing);
-        -webkit-padding-start: var(--cr-button-edge-spacing);
-        color: var(--paper-grey-600);
+
+        --paper-button-ink-color: var(--paper-grey-600);
+
+        border: 1px solid rgb(218, 220, 224);
+        border-radius: 4px;
+        color: var(--text-or-bg-color);
         flex-shrink: 0;
+        font-size: 12px;
         font-weight: 500;
         height: 36px;
         margin: 0;
-        min-width: 1em;  /* A tighter fit than 5.14em for short buttons. */
+        padding: 8px 16px;
         text-decoration: none;
+        text-transform: none;
+      }
+
+      paper-button:not(.action-button):hover {
+        background-color: rgba(66,133,244, 0.04);
+        border-color: rgb(210, 227, 252);
+      }
+
+      paper-button.action-button {
+        /** TODO(dpapad): Get exact value from UX. */
+        --paper-button-ink-color: rgb(26, 115, 252);
+        background: var(--text-or-bg-color) padding-box;
+        border-color: transparent;
+        color: white;
+        --paper-button-flat-keyboard-focus: {
+          background: var(--text-or-bg-color) padding-box;
+          border-color: var(--flat-keyboard-focus-border-color);
+          font-weight: 500;
+        };
+      }
+
+      paper-button[disabled] {
+        background-color: white;
+        border-color: var(--disabled-color);
+        color: rgb(128, 134, 139);
+      }
+
+      paper-button.action-button[disabled] {
+        background-color: var(--disabled-color);
+        border-color: transparent;
+      }
+
+      /* cancel-button is meant to be used within a cr-dialog */
+      paper-button.cancel-button {
+        -webkit-margin-end: 8px;
+      }
+
+      paper-button.action-button,
+      paper-button.cancel-button {
+        line-height: 154%;
       }
     </style>
   </template>
