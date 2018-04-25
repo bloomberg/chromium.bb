@@ -1630,8 +1630,8 @@ bool LayoutObject::MapToVisualRectInAncestorSpaceInternal(
                      : TransformState::kFlattenTransform;
 
       if (parent != ancestor &&
-          !parent_box->MapScrollingContentsRectToBoxSpace(
-              transform_state, accumulation, visual_rect_flags))
+          !parent_box->MapContentsRectToBoxSpace(transform_state, accumulation,
+                                                 *this, visual_rect_flags))
         return false;
     }
     return parent->MapToVisualRectInAncestorSpaceInternal(

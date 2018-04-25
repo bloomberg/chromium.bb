@@ -941,13 +941,49 @@ TEST_P(CompositedLayerMappingTest, InterestRectOfIframeWithContentBoxOffset) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   ASSERT_TRUE(ChildDocument().View()->GetLayoutView()->HasLayer());
-  // The width is 485 pixels due to the size of the scrollbar.
   EXPECT_EQ(IntRect(0, 0, 500, 7500),
             RecomputeInterestRect(ChildDocument()
                                       .View()
                                       ->GetLayoutView()
                                       ->EnclosingLayer()
                                       ->GraphicsLayerBacking()));
+}
+
+TEST_P(CompositedLayerMappingTest, InterestRectOfIframeWithFixedContents) {
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
+  GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
+      true);
+  SetBodyInnerHTML(R"HTML(
+    <style> * { margin:0; } </style>
+    <iframe src='http://test.com' width='500' height='500' frameBorder='0'>
+    </iframe>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>body { margin:0; } ::-webkit-scrollbar { display:none; }</style>
+    <div id='forcescroll' style='height:6000px;'></div>
+    <div id='fixed' style='
+        position:fixed; top:0; left:0; width:400px; height:300px;'>
+      <div id='leftbox' style='
+          position:absolute; left:-5000px; width:10px; height:10px;'></div>
+      <div id='child' style='
+          position:absolute; top:0; left:0; width:400px; height:300px;'></div>
+    </div>
+  )HTML");
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  auto* fixed = ChildDocument().getElementById("fixed")->GetLayoutObject();
+  auto* graphics_layer = fixed->EnclosingLayer()->GraphicsLayerBacking(fixed);
+
+  // The graphics layer has dimensions 5400x300 but the interest rect clamps
+  // this to the right-most 4000x4000 area.
+  EXPECT_EQ(IntRect(1000, 0, 4400, 300), RecomputeInterestRect(graphics_layer));
+
+  ChildDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0.0, 3000.0), kProgrammaticScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // Because the fixed element does not scroll, the interest rect is unchanged.
+  EXPECT_EQ(IntRect(1000, 0, 4400, 300), RecomputeInterestRect(graphics_layer));
 }
 
 TEST_P(CompositedLayerMappingTest,

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
@@ -99,6 +100,22 @@ class VisualRectMappingTest : public PaintTestConfigurations,
                   LayoutRect(geometry_mapper_rect.Rect()));
       }
     }
+  }
+
+  // Checks the result of MapToVisualRectInAncestorSpace with and without
+  // geometry mapper.
+  void CheckMapToVisualRectInAncestorSpace(
+      LayoutRect rect,
+      LayoutRect expected,
+      const LayoutObject* object,
+      const LayoutBoxModelObject* ancestor) {
+    LayoutRect result(rect);
+    EXPECT_TRUE(object->MapToVisualRectInAncestorSpace(ancestor, result));
+    EXPECT_EQ(result, expected);
+    result = rect;
+    EXPECT_TRUE(object->MapToVisualRectInAncestorSpace(ancestor, result,
+                                                       kUseGeometryMapper));
+    EXPECT_EQ(result, expected);
   }
 };
 
@@ -930,6 +947,76 @@ TEST_P(VisualRectMappingTest, PerspectivePlusScroll) {
   LayoutRect output(transform.MapRect(FloatRect(originalRect)));
   output.Intersect(container->ClippingRect(LayoutPoint()));
   CheckVisualRect(*target, *target->View(), originalRect, output);
+}
+
+TEST_P(VisualRectMappingTest, FixedContentsInIframe) {
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
+  GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
+      true);
+  SetBodyInnerHTML(R"HTML(
+    <style> * { margin:0; } </style>
+    <iframe src='http://test.com' width='500' height='500' frameBorder='0'>
+    </iframe>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>body { margin:0; } ::-webkit-scrollbar { display:none; }</style>
+    <div id='forcescroll' style='height:6000px;'></div>
+    <div id='fixed' style='
+        position:fixed; top:0; left:0; width:400px; height:300px;'>
+    </div>
+  )HTML");
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  auto* fixed = ChildDocument().getElementById("fixed")->GetLayoutObject();
+  auto* root_view = fixed->View();
+  while (root_view->GetFrame()->OwnerLayoutObject())
+    root_view = root_view->GetFrame()->OwnerLayoutObject()->View();
+
+  CheckMapToVisualRectInAncestorSpace(
+      LayoutRect(0, 0, 400, 300), LayoutRect(0, 0, 400, 300), fixed, root_view);
+
+  ChildDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, 50), kProgrammaticScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // The fixed element should not scroll so the mapped visual rect should not
+  // have changed.
+  CheckMapToVisualRectInAncestorSpace(
+      LayoutRect(0, 0, 400, 300), LayoutRect(0, 0, 400, 300), fixed, root_view);
+}
+
+TEST_P(VisualRectMappingTest, FixedContentsWithScrollOffset) {
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
+  GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
+      true);
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin:0; } ::-webkit-scrollbar { display:none; }</style>
+    <div id='space' style='height:10px;'></div>
+    <div id='ancestor'>
+      <div id='fixed' style='
+          position:fixed; top:0; left:0; width:400px; height:300px;'>
+      </div>
+    </div>
+    <div id='forcescroll' style='height:1000px;'></div>
+  )HTML");
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  auto* ancestor =
+      ToLayoutBox(GetDocument().getElementById("ancestor")->GetLayoutObject());
+  auto* fixed = GetDocument().getElementById("fixed")->GetLayoutObject();
+
+  CheckMapToVisualRectInAncestorSpace(LayoutRect(0, 0, 400, 300),
+                                      LayoutRect(0, -10, 400, 300), fixed,
+                                      ancestor);
+
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, 50), kProgrammaticScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // The fixed element does not scroll but the ancestor does which changes the
+  // visual rect.
+  CheckMapToVisualRectInAncestorSpace(
+      LayoutRect(0, 0, 400, 300), LayoutRect(0, 40, 400, 300), fixed, ancestor);
 }
 
 }  // namespace blink

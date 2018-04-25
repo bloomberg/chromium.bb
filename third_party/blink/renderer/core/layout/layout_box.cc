@@ -1216,9 +1216,10 @@ bool LayoutBox::MapVisualRectToContainer(
     transform_state.MoveBy(container_offset, accumulation);
     if (container_object->IsBox() && container_object != ancestor &&
         !ToLayoutBox(container_object)
-             ->MapScrollingContentsRectToBoxSpace(transform_state, accumulation,
-                                                  visual_rect_flags))
+             ->MapContentsRectToBoxSpace(transform_state, accumulation, *this,
+                                         visual_rect_flags)) {
       return false;
+    }
     return true;
   }
 
@@ -1255,7 +1256,7 @@ bool LayoutBox::MapVisualRectToContainer(
 
   // c) Container scroll offset.
   if (container_object->IsBox() && container_object != ancestor &&
-      container_object->HasOverflowClip()) {
+      ToLayoutBox(container_object)->ContainedContentsScroll(*this)) {
     IntSize offset = -ToLayoutBox(container_object)->ScrolledContentOffset();
     transform.PostTranslate(offset.Width(), offset.Height());
   }
@@ -1292,19 +1293,28 @@ bool LayoutBox::MapVisualRectToContainer(
   return true;
 }
 
-bool LayoutBox::MapScrollingContentsRectToBoxSpace(
+bool LayoutBox::MapContentsRectToBoxSpace(
     TransformState& transform_state,
     TransformState::TransformAccumulation accumulation,
+    const LayoutObject& contents,
     VisualRectFlags visual_rect_flags) const {
   if (!HasClipRelatedProperty())
     return true;
 
-  if (HasOverflowClip()) {
+  if (ContainedContentsScroll(contents)) {
     LayoutSize offset = LayoutSize(-ScrolledContentOffset());
     transform_state.Move(offset, accumulation);
   }
 
   return ApplyBoxClips(transform_state, accumulation, visual_rect_flags);
+}
+
+bool LayoutBox::ContainedContentsScroll(const LayoutObject& contents) const {
+  if (IsLayoutView() &&
+      contents.StyleRef().GetPosition() == EPosition::kFixed) {
+    return false;
+  }
+  return HasOverflowClip();
 }
 
 bool LayoutBox::ApplyBoxClips(
@@ -2509,23 +2519,32 @@ bool LayoutBox::MapToVisualRectInAncestorSpaceInternal(
     LayoutSize container_offset =
         ancestor->OffsetFromAncestorContainer(container);
     transform_state.Move(-container_offset, accumulation);
-    // If the ancestor is fixed, then the rect is already in its coordinates so
-    // doesn't need viewport-adjusting.
-    if (ancestor->Style()->GetPosition() != EPosition::kFixed &&
-        container->IsLayoutView() && position == EPosition::kFixed) {
-      transform_state.Move(
-          ToLayoutView(container)->OffsetForFixedPosition(true), accumulation);
+
+    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+      // If the ancestor is fixed, then the rect is already in its coordinates
+      // so doesn't need viewport-adjusting.
+      if (ancestor->Style()->GetPosition() != EPosition::kFixed &&
+          container->IsLayoutView() && position == EPosition::kFixed) {
+        transform_state.Move(
+            ToLayoutView(container)->OffsetForFixedPosition(true),
+            accumulation);
+      }
     }
+
     return true;
   }
 
-  if (container->IsLayoutView())
+  if (container->IsLayoutView()) {
+    bool use_fixed_position_adjustment =
+        !RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
+        position == EPosition::kFixed;
     return ToLayoutView(container)->MapToVisualRectInAncestorSpaceInternal(
-        ancestor, transform_state, position == EPosition::kFixed ? kIsFixed : 0,
+        ancestor, transform_state, use_fixed_position_adjustment ? kIsFixed : 0,
         visual_rect_flags);
-  else
+  } else {
     return container->MapToVisualRectInAncestorSpaceInternal(
         ancestor, transform_state, visual_rect_flags);
+  }
 }
 
 void LayoutBox::InflateVisualRectForFilter(

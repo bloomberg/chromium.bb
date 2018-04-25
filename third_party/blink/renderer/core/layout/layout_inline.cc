@@ -1303,8 +1303,8 @@ bool LayoutInline::MapToVisualRectInAncestorSpaceInternal(
   LayoutBox* container_box =
       container->IsBox() ? ToLayoutBox(container) : nullptr;
   if (container_box && container != ancestor &&
-      !container_box->MapScrollingContentsRectToBoxSpace(
-          transform_state, accumulation, visual_rect_flags))
+      !container_box->MapContentsRectToBoxSpace(transform_state, accumulation,
+                                                *this, visual_rect_flags))
     return false;
 
   // TODO(wkorman): Generalize Ruby specialization and/or document more clearly.
