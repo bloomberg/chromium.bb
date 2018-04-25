@@ -112,10 +112,6 @@
 -DicePrepareMigrationBrowserTest.Signout
 -ChromeResourceDispatcherHostDelegateBrowserTest.MirrorRequestHeader
 
-# Need to add SetRequireCTDelegateForTesting to NetworkContext.
--SymantecMessageSSLUITest.ManySubresources
--SymantecMessageSSLUITest.PostJune2016
-
 # crbug.com/778793
 # Started failing in r514649.
 -PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabled

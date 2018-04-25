@@ -116,6 +116,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_state.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
@@ -152,6 +154,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -6913,29 +6916,33 @@ IN_PROC_BROWSER_TEST_P(SuperfishSSLUITest, SuperfishInterstitialDisabled) {
   ASSERT_NO_FATAL_FAILURE(ExpectSSLInterstitial(tab));
 }
 
-// Allows tests to effectively turn off CT requirements. Used by
-// SymantecMessageSSLUITest below to test Symantec certificates issued after the
-// CT requirement date.
-class NoRequireCTDelegate
-    : public net::TransportSecurityState::RequireCTDelegate {
- public:
-  NoRequireCTDelegate() {}
-  ~NoRequireCTDelegate() override = default;
-
-  CTRequirementLevel IsCTRequiredForHost(
-      const std::string& hostname,
-      const net::X509Certificate* chain,
-      const net::HashValueVector& hashes) override {
-    return CTRequirementLevel::NOT_REQUIRED;
-  }
-};
-
 void SetRequireCTDelegateOnIOThread(
     scoped_refptr<net::URLRequestContextGetter> context_getter,
     net::TransportSecurityState::RequireCTDelegate* delegate) {
   net::TransportSecurityState* state =
       context_getter->GetURLRequestContext()->transport_security_state();
   state->SetRequireCTDelegate(delegate);
+}
+
+void SetShouldNotRequireCTForTesting() {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    network::mojom::NetworkServiceTestPtr network_service_test;
+    content::ServiceManagerConnection::GetForProcess()
+        ->GetConnector()
+        ->BindInterface(content::mojom::kNetworkServiceName,
+                        &network_service_test);
+    network::mojom::NetworkServiceTest::ShouldRequireCT required_ct =
+        network::mojom::NetworkServiceTest::ShouldRequireCT::DONT_REQUIRE;
+
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    network_service_test->SetShouldRequireCT(required_ct);
+    return;
+  }
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&net::TransportSecurityState::SetShouldRequireCTForTesting,
+                     base::Owned(new bool(false))));
 }
 
 // A test fixture that mocks certificate verifications for legacy Symantec
@@ -6953,13 +6960,7 @@ class SymantecMessageSSLUITest : public CertVerifierBrowserTest {
 
     https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
 
-    require_ct_delegate_ = std::make_unique<NoRequireCTDelegate>();
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(
-            &SetRequireCTDelegateOnIOThread,
-            base::RetainedRef(browser()->profile()->GetRequestContext()),
-            require_ct_delegate_.get()));
+    SetShouldNotRequireCTForTesting();
   }
 
  protected:
@@ -6998,7 +6999,6 @@ class SymantecMessageSSLUITest : public CertVerifierBrowserTest {
 
  private:
   net::EmbeddedTestServer https_server_;
-  std::unique_ptr<NoRequireCTDelegate> require_ct_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SymantecMessageSSLUITest);
 };
