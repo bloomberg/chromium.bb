@@ -247,6 +247,7 @@ function DrawResultsOnCanvas(testOptions) {
                 var x = (tileCounter * testOptions.resizeWidth) % width;
                 var y = Math.floor(tileCounter / numTiles) *
                     testOptions.resizeHeight;
+                if (testOptions.printDebugInfoToConsole)
                     PrintTileInfoForDebug(x, y, pixelsBuffer[j].quality,
                         pixelsBuffer[j].premultiply, pixelsBuffer[j].flip);
                 tileCounter++;

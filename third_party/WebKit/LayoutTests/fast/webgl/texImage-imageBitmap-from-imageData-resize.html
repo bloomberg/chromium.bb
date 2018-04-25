@@ -24,7 +24,8 @@ var imageData = new ImageData(new Uint8ClampedArray(
 var testOptions = {sourceName: "ImageData",
 				   imageSource: imageData, sourceIsPremul: false,
 				   resizeWidth: 16, resizeHeight: 16,
-				   resultsCanvas: canvas};
+				   resultsCanvas: canvas,
+           printDebugInfoToConsole: false};
 prepareWebGLContext(testOptions);
 prepareResizedImageBitmapsAndRuntTests(testOptions);
 </script>
