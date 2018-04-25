@@ -375,7 +375,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::NavigationUIData* navigation_ui_data,
       int frame_tree_node_id) override;
   void RegisterNonNetworkNavigationURLLoaderFactories(
-      content::RenderFrameHost* frame_host,
+      int render_process_id,
+      int render_frame_id,
       NonNetworkURLLoaderFactoryMap* factories) override;
   void RegisterNonNetworkSubresourceURLLoaderFactories(
       content::RenderFrameHost* frame_host,

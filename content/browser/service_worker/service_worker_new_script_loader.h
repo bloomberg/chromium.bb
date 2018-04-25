@@ -44,10 +44,23 @@ struct HttpResponseInfoIOBuffer;
 // this class also performs the "byte-for-byte" comparison for updating the
 // worker. If the script is identical, the load succeeds but no script is
 // written, and ServiceWorkerVersion is told to terminate startup.
+//
+// NOTE: To load a script, this class uses |non_network_loader_factory| when the
+// URL has a non-http(s) scheme, e.g., a chrome-extension:// URL. Regardless,
+// that is still called a "network" request in comments and naming. "network" is
+// meant to distinguish from the load this URLLoader does for its client:
+// client:
+//     "network" <------> SWNewScriptLoader <------> client
 class CONTENT_EXPORT ServiceWorkerNewScriptLoader
     : public network::mojom::URLLoader,
       public network::mojom::URLLoaderClient {
  public:
+  // |loader_factory_getter| is used to get the network factory when the script
+  // URL has an http(s) scheme.
+  //
+  // |non_network_loader_factory| is non-null when the script URL has a
+  // non-http(s) scheme (e.g., a chrome-extension:// URL). It is used in that
+  // case since the network factory can't be used.
   ServiceWorkerNewScriptLoader(
       int32_t routing_id,
       int32_t request_id,
@@ -56,6 +69,7 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
       network::mojom::URLLoaderClientPtr client,
       scoped_refptr<ServiceWorkerVersion> version,
       scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
+      network::mojom::URLLoaderFactoryPtr non_network_loader_factory,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
   ~ServiceWorkerNewScriptLoader() override;
 

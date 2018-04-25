@@ -264,14 +264,16 @@ ShellContentBrowserClient::GetNavigationUIData(
 }
 
 void ShellContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
-    content::RenderFrameHost* frame_host,
+    int render_process_id,
+    int render_frame_id,
     NonNetworkURLLoaderFactoryMap* factories) {
-  content::BrowserContext* browser_context =
-      frame_host->GetProcess()->GetBrowserContext();
+  content::RenderProcessHost* process_host =
+      content::RenderProcessHost::FromID(render_process_id);
+  content::BrowserContext* browser_context = process_host->GetBrowserContext();
   factories->emplace(
       extensions::kExtensionScheme,
       extensions::CreateExtensionNavigationURLLoaderFactory(
-          frame_host,
+          render_process_id, render_frame_id,
           extensions::ExtensionSystem::Get(browser_context)->info_map()));
 }
 
@@ -279,10 +281,10 @@ void ShellContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
     content::RenderFrameHost* frame_host,
     const GURL& frame_url,
     NonNetworkURLLoaderFactoryMap* factories) {
-  content::BrowserContext* browser_context =
-      frame_host->GetProcess()->GetBrowserContext();
+  content::RenderProcessHost* process_host = frame_host->GetProcess();
+  content::BrowserContext* browser_context = process_host->GetBrowserContext();
   auto factory = extensions::MaybeCreateExtensionSubresourceURLLoaderFactory(
-      frame_host, frame_url,
+      process_host->GetID(), frame_host->GetRoutingID(), frame_url,
       extensions::ExtensionSystem::Get(browser_context)->info_map());
   if (factory)
     factories->emplace(extensions::kExtensionScheme, std::move(factory));

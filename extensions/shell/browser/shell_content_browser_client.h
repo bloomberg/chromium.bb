@@ -67,7 +67,8 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<content::NavigationUIData> GetNavigationUIData(
       content::NavigationHandle* navigation_handle) override;
   void RegisterNonNetworkNavigationURLLoaderFactories(
-      content::RenderFrameHost* frame_host,
+      int render_proces_id,
+      int render_frame_id,
       NonNetworkURLLoaderFactoryMap* factories) override;
   void RegisterNonNetworkSubresourceURLLoaderFactories(
       content::RenderFrameHost* frame_host,

@@ -149,7 +149,8 @@ CreateProviderHostForServiceWorkerContext(
   std::unique_ptr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateForController(std::move(context));
   mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info =
-      host->CompleteStartWorkerPreparation(process_id, hosted_version);
+      host->CompleteStartWorkerPreparation(
+          process_id, hosted_version, nullptr /* non_network_loader_factory */);
   output_endpoint->BindWithProviderInfo(std::move(provider_info));
   return host;
 }

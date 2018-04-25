@@ -987,7 +987,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   using NonNetworkURLLoaderFactoryMap =
       std::map<std::string, std::unique_ptr<network::mojom::URLLoaderFactory>>;
   virtual void RegisterNonNetworkNavigationURLLoaderFactories(
-      RenderFrameHost* frame_host,
+      int render_process_id,
+      int render_frame_id,
       NonNetworkURLLoaderFactoryMap* factories);
 
   // Allows the embedder to register per-scheme URLLoaderFactory implementations
