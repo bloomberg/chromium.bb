@@ -69,8 +69,10 @@ action("process_json") {
 action("workaround_list") {
   script = "build_workaround_header.py"
 
+  skia_workaround_list = "//third_party/skia/src/gpu/gpu_workaround_list.txt"
   inputs = [
     "gpu_workaround_list.txt",
+    rebase_path(skia_workaround_list, root_build_dir),
   ]
 
   outputs = [
