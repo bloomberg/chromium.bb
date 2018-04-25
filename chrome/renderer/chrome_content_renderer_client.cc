@@ -1228,7 +1228,7 @@ bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
   return !IsStandaloneExtensionProcess();
 }
 
-bool ChromeContentRendererClient::AllowStoppingWhenProcessBackgrounded() {
+bool ChromeContentRendererClient::AllowFreezingWhenProcessBackgrounded() {
   return base::FeatureList::IsEnabled(features::kStopInBackground);
 }
 

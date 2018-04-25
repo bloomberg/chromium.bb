@@ -392,7 +392,7 @@ TEST_F(RendererMetricsHelperTest, GetFrameStatusTest) {
 }
 
 TEST_F(RendererMetricsHelperTest, BackgroundedRendererTransition) {
-  scheduler_->SetStoppingWhenBackgroundedEnabled(true);
+  scheduler_->SetFreezingWhenBackgroundedEnabled(true);
   typedef BackgroundedRendererTransition Transition;
 
   int backgrounding_transitions = 0;
@@ -449,7 +449,7 @@ TEST_F(RendererMetricsHelperTest, BackgroundedRendererTransition) {
                          backgrounding_transitions),
                   Bucket(static_cast<int>(Transition::kForegrounded),
                          foregrounding_transitions),
-                  Bucket(static_cast<int>(Transition::kStoppedAfterDelay), 1)));
+                  Bucket(static_cast<int>(Transition::kFrozenAfterDelay), 1)));
 
   scheduler_->SetRendererBackgrounded(false);
   foregrounding_transitions++;
@@ -462,7 +462,7 @@ TEST_F(RendererMetricsHelperTest, BackgroundedRendererTransition) {
                          backgrounding_transitions),
                   Bucket(static_cast<int>(Transition::kForegrounded),
                          foregrounding_transitions),
-                  Bucket(static_cast<int>(Transition::kStoppedAfterDelay), 1),
+                  Bucket(static_cast<int>(Transition::kFrozenAfterDelay), 1),
                   Bucket(static_cast<int>(Transition::kResumed), 1)));
 }
 

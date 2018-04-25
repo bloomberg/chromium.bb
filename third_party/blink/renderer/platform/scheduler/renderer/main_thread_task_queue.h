@@ -80,7 +80,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
           can_be_deferred(false),
           can_be_throttled(false),
           can_be_paused(false),
-          can_be_stopped(false),
+          can_be_frozen(false),
           freeze_when_keep_active(false),
           used_for_important_tasks(false) {}
 
@@ -105,8 +105,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
       return *this;
     }
 
-    QueueCreationParams SetCanBeStopped(bool value) {
-      can_be_stopped = value;
+    QueueCreationParams SetCanBeFrozen(bool value) {
+      can_be_frozen = value;
       return *this;
     }
 
@@ -144,7 +144,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
     bool can_be_deferred;
     bool can_be_throttled;
     bool can_be_paused;
-    bool can_be_stopped;
+    bool can_be_frozen;
     bool freeze_when_keep_active;
     bool used_for_important_tasks;
   };
@@ -165,7 +165,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
 
   bool CanBePaused() const { return can_be_paused_; }
 
-  bool CanBeStopped() const { return can_be_stopped_; }
+  bool CanBeFrozen() const { return can_be_frozen_; }
 
   bool FreezeWhenKeepActive() const { return freeze_when_keep_active_; }
 
@@ -206,7 +206,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
   const bool can_be_deferred_;
   const bool can_be_throttled_;
   const bool can_be_paused_;
-  const bool can_be_stopped_;
+  const bool can_be_frozen_;
   const bool freeze_when_keep_active_;
   const bool used_for_important_tasks_;
 

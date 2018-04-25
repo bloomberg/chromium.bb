@@ -27,15 +27,15 @@ class MainThreadSchedulerImpl;
 
 // This enum is used for histogram and should not be renumbered.
 // It tracks the following possible transitions:
-// -> kBackgrounded (-> [STOPPED_* -> kResumed])? -> kForegrounded
+// -> kBackgrounded (-> [FROZEN_* -> kResumed])? -> kForegrounded
 enum class BackgroundedRendererTransition {
   // Renderer is backgrounded
   kBackgrounded = 0,
-  // Renderer is stopped after being backgrounded for a while
-  kStoppedAfterDelay = 1,
-  // Renderer is stopped due to critical resources, reserved for future use.
-  kStoppedDueToCriticalResources = 2,
-  // Renderer is resumed after being stopped
+  // Renderer is frozen after being backgrounded for a while
+  kFrozenAfterDelay = 1,
+  // Renderer is frozen due to critical resources, reserved for future use.
+  kFrozenDueToCriticalResources = 2,
+  // Renderer is resumed after being frozen
   kResumed = 3,
   // Renderer is foregrounded
   kForegrounded = 4,

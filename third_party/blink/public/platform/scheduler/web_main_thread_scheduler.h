@@ -192,7 +192,7 @@ class BLINK_PLATFORM_EXPORT WebMainThreadScheduler : public WebThreadScheduler {
 
   // Sets whether to allow suspension of tasks after the backgrounded signal is
   // received via SetRendererBackgrounded(true). Defaults to disabled.
-  virtual void SetStoppingWhenBackgroundedEnabled(bool enabled) = 0;
+  virtual void SetFreezingWhenBackgroundedEnabled(bool enabled) = 0;
 
   // Sets the default blame context to which top level work should be
   // attributed in this renderer. |blame_context| must outlive this scheduler.

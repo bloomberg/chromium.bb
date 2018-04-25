@@ -131,7 +131,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
   void Shutdown() override;
-  void SetStoppingWhenBackgroundedEnabled(bool enabled) override;
+  void SetFreezingWhenBackgroundedEnabled(bool enabled) override;
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;
   void SetRAILModeObserver(RAILModeObserver* observer) override;
@@ -319,7 +319,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   static const char* TimeDomainTypeToString(TimeDomainType domain_type);
 
-  void SetStoppedInBackground(bool) const;
+  void SetFrozenInBackground(bool) const;
 
   bool ContainsLocalMainFrame();
 
@@ -331,7 +331,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
           is_paused(false),
           is_throttled(false),
           is_blocked(false),
-          is_stopped(false),
+          is_frozen(false),
           use_virtual_time(false),
           priority(TaskQueue::kNormalPriority) {}
 
@@ -339,7 +339,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     bool is_paused;
     bool is_throttled;
     bool is_blocked;
-    bool is_stopped;
+    bool is_frozen;
     bool use_virtual_time;
     TaskQueue::QueuePriority priority;
 
@@ -352,7 +352,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     bool operator==(const TaskQueuePolicy& other) const {
       return is_enabled == other.is_enabled && is_paused == other.is_paused &&
              is_throttled == other.is_throttled &&
-             is_blocked == other.is_blocked && is_stopped == other.is_stopped &&
+             is_blocked == other.is_blocked && is_frozen == other.is_frozen &&
              use_virtual_time == other.use_virtual_time &&
              priority == other.priority;
     }
@@ -494,7 +494,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // The amount of time to wait before suspending shared timers, and loading
   // etc. after the renderer has been backgrounded. This is used only if
   // background suspension is enabled.
-  static const int kDelayForBackgroundTabStoppingMillis = 5 * 60 * 1000;
+  static const int kDelayForBackgroundTabFreezingMillis = 5 * 60 * 1000;
 
   // The time we should stay in a priority-escalated mode after a call to
   // DidAnimateForInputOnCompositorThread().
@@ -646,7 +646,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   SeqLockQueueingTimeEstimator seqlock_queueing_time_estimator_;
 
-  base::TimeDelta delay_for_background_tab_stopping_;
+  base::TimeDelta delay_for_background_tab_freezing_;
 
   // We have decided to improve thread safety at the cost of some boilerplate
   // (the accessors) for the following data members.
@@ -685,8 +685,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     TraceableState<bool, kTracingCategoryNameDefault>
         keep_active_fetch_or_worker;
     TraceableState<bool, kTracingCategoryNameInfo>
-        stopping_when_backgrounded_enabled;
-    TraceableState<bool, kTracingCategoryNameInfo> stopped_when_backgrounded;
+        freezing_when_backgrounded_enabled;
+    TraceableState<bool, kTracingCategoryNameInfo> frozen_when_backgrounded;
     TraceableCounter<base::TimeDelta, kTracingCategoryNameInfo>
         loading_task_estimated_cost;
     TraceableCounter<base::TimeDelta, kTracingCategoryNameInfo>

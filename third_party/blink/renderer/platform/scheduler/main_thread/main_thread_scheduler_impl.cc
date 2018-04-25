@@ -291,16 +291,16 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
         weak_factory_.GetWeakPtr());
   }
 
-  int32_t delay_for_background_tab_stopping_millis;
+  int32_t delay_for_background_tab_freezing_millis;
   if (!base::StringToInt(
-          base::GetFieldTrialParamValue("BackgroundTabStopping",
-                                        "DelayForBackgroundTabStoppingMills"),
-          &delay_for_background_tab_stopping_millis)) {
-    delay_for_background_tab_stopping_millis =
-        kDelayForBackgroundTabStoppingMillis;
+          base::GetFieldTrialParamValue("BackgroundTabFreezing",
+                                        "DelayForBackgroundTabFreezingMills"),
+          &delay_for_background_tab_freezing_millis)) {
+    delay_for_background_tab_freezing_millis =
+        kDelayForBackgroundTabFreezingMillis;
   }
-  delay_for_background_tab_stopping_ = base::TimeDelta::FromMilliseconds(
-      delay_for_background_tab_stopping_millis);
+  delay_for_background_tab_freezing_ = base::TimeDelta::FromMilliseconds(
+      delay_for_background_tab_freezing_millis);
 
   internal::ProcessState::Get()->is_process_backgrounded =
       main_thread_only().renderer_backgrounded;
@@ -416,18 +416,17 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
           main_thread_scheduler_impl,
           &main_thread_scheduler_impl->tracing_controller_,
           YesNoStateToString),
-      stopping_when_backgrounded_enabled(
+      freezing_when_backgrounded_enabled(
           false,
-          "MainThreadScheduler.StoppingWhenBackgroundedEnabled",
+          "MainThreadScheduler.FreezingWhenBackgroundedEnabled",
           main_thread_scheduler_impl,
           &main_thread_scheduler_impl->tracing_controller_,
           YesNoStateToString),
-      stopped_when_backgrounded(
-          false,
-          "MainThreadScheduler.StoppedWhenBackgrounded",
-          main_thread_scheduler_impl,
-          &main_thread_scheduler_impl->tracing_controller_,
-          YesNoStateToString),
+      frozen_when_backgrounded(false,
+                               "MainThreadScheduler.FrozenWhenBackgrounded",
+                               main_thread_scheduler_impl,
+                               &main_thread_scheduler_impl->tracing_controller_,
+                               YesNoStateToString),
       loading_task_estimated_cost(
           base::TimeDelta(),
           "MainThreadScheduler.LoadingTaskEstimatedCostMs",
@@ -694,7 +693,7 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTaskQueue(
   scoped_refptr<MainThreadTaskQueue> task_queue(helper_.NewTaskQueue(params));
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter;
-  if (params.can_be_deferred || params.can_be_paused || params.can_be_stopped)
+  if (params.can_be_deferred || params.can_be_paused || params.can_be_frozen)
     voter = task_queue->CreateQueueEnabledVoter();
 
   auto insert_result =
@@ -733,7 +732,7 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewLoadingTaskQueue(
   return NewTaskQueue(
       MainThreadTaskQueue::QueueCreationParams(queue_type)
           .SetCanBePaused(true)
-          .SetCanBeStopped(
+          .SetCanBeFrozen(
               RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled())
           .SetCanBeDeferred(true)
           .SetUsedForImportantTasks(
@@ -747,7 +746,7 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTimerTaskQueue(
             MainThreadTaskQueue::QueueClass::kTimer);
   return NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(queue_type)
                           .SetCanBePaused(true)
-                          .SetCanBeStopped(true)
+                          .SetCanBeFrozen(true)
                           .SetCanBeDeferred(true)
                           .SetCanBeThrottled(true));
 }
@@ -1410,22 +1409,22 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
                          &new_policy_duration);
   }
 
-  bool previously_stopped_when_backgrounded =
-      main_thread_only().stopped_when_backgrounded;
-  bool newly_stopped = false;
+  bool previously_frozen_when_backgrounded =
+      main_thread_only().frozen_when_backgrounded;
+  bool newly_frozen = false;
   if (main_thread_only().renderer_backgrounded &&
-      main_thread_only().stopping_when_backgrounded_enabled) {
+      main_thread_only().freezing_when_backgrounded_enabled) {
     base::TimeTicks stop_at = main_thread_only().background_status_changed_at +
-                              delay_for_background_tab_stopping_;
+                              delay_for_background_tab_freezing_;
 
-    newly_stopped = !main_thread_only().stopped_when_backgrounded;
-    main_thread_only().stopped_when_backgrounded = now >= stop_at;
-    newly_stopped &= main_thread_only().stopped_when_backgrounded;
+    newly_frozen = !main_thread_only().frozen_when_backgrounded;
+    main_thread_only().frozen_when_backgrounded = now >= stop_at;
+    newly_frozen &= main_thread_only().frozen_when_backgrounded;
 
-    if (!main_thread_only().stopped_when_backgrounded)
+    if (!main_thread_only().frozen_when_backgrounded)
       UpdatePolicyDuration(now, stop_at, &new_policy_duration);
   } else {
-    main_thread_only().stopped_when_backgrounded = false;
+    main_thread_only().frozen_when_backgrounded = false;
   }
 
   if (new_policy_duration > base::TimeDelta()) {
@@ -1564,10 +1563,10 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   }
   main_thread_only().expensive_task_policy = expensive_task_policy;
 
-  if (main_thread_only().stopped_when_backgrounded) {
+  if (main_thread_only().frozen_when_backgrounded) {
     // TODO(panicker): Remove this, as it is controlled at
     // FrameScheduler. This is currently needed to avoid early out.
-    new_policy.timer_queue_policy().is_stopped = true;
+    new_policy.timer_queue_policy().is_frozen = true;
   }
 
   if (main_thread_only().renderer_pause_count != 0) {
@@ -1622,13 +1621,13 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
   // TODO(skyostil): send these notifications after releasing the scheduler
   // lock.
-  if (main_thread_only().stopping_when_backgrounded_enabled) {
-    if (main_thread_only().stopped_when_backgrounded !=
-        previously_stopped_when_backgrounded) {
-      SetStoppedInBackground(main_thread_only().stopped_when_backgrounded);
+  if (main_thread_only().freezing_when_backgrounded_enabled) {
+    if (main_thread_only().frozen_when_backgrounded !=
+        previously_frozen_when_backgrounded) {
+      SetFrozenInBackground(main_thread_only().frozen_when_backgrounded);
       RendererMetricsHelper::RecordBackgroundedTransition(
-          main_thread_only().stopped_when_backgrounded
-              ? BackgroundedRendererTransition::kStoppedAfterDelay
+          main_thread_only().frozen_when_backgrounded
+              ? BackgroundedRendererTransition::kFrozenAfterDelay
               : BackgroundedRendererTransition::kResumed);
     }
   }
@@ -1645,7 +1644,7 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   DCHECK(compositor_task_queue_->IsQueueEnabled());
   main_thread_only().current_policy = new_policy;
 
-  if (newly_stopped)
+  if (newly_frozen)
     Platform::Current()->RequestPurgeMemory();
 }
 
@@ -1781,10 +1780,10 @@ bool MainThreadSchedulerImpl::CanEnterLongIdlePeriod(
   return true;
 }
 
-void MainThreadSchedulerImpl::SetStoppedInBackground(bool stopped) const {
+void MainThreadSchedulerImpl::SetFrozenInBackground(bool frozen) const {
   for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
     // This moves the page to FROZEN lifecycle state.
-    page_scheduler->SetPageFrozen(stopped);
+    page_scheduler->SetPageFrozen(frozen);
   }
 }
 
@@ -2015,9 +2014,9 @@ void MainThreadSchedulerImpl::SetMaxVirtualTimeTaskStarvationCount(
   ApplyVirtualTimePolicy();
 }
 
-void MainThreadSchedulerImpl::SetStoppingWhenBackgroundedEnabled(bool enabled) {
+void MainThreadSchedulerImpl::SetFreezingWhenBackgroundedEnabled(bool enabled) {
   // Note that this will only take effect for the next backgrounded signal.
-  main_thread_only().stopping_when_backgrounded_enabled = enabled;
+  main_thread_only().freezing_when_backgrounded_enabled = enabled;
 }
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
@@ -2099,8 +2098,8 @@ MainThreadSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
                     main_thread_only().renderer_backgrounded);
   state->SetBoolean("keep_active_fetch_or_worker",
                     main_thread_only().keep_active_fetch_or_worker);
-  state->SetBoolean("stopped_when_backgrounded",
-                    main_thread_only().stopped_when_backgrounded);
+  state->SetBoolean("frozen_when_backgrounded",
+                    main_thread_only().frozen_when_backgrounded);
   state->SetDouble("now", (optional_now - base::TimeTicks()).InMillisecondsF());
   state->SetDouble(
       "fling_compositor_escalation_deadline",
@@ -2186,7 +2185,7 @@ bool MainThreadSchedulerImpl::TaskQueuePolicy::IsQueueEnabled(
     return false;
   // TODO(panicker): Remove this, as it is redundant as we stop per-frame
   // task_queues in WebFrameScheduler
-  if (is_stopped && task_queue->CanBeStopped())
+  if (is_frozen && task_queue->CanBeFrozen())
     return false;
   return true;
 }
@@ -2217,7 +2216,7 @@ void MainThreadSchedulerImpl::TaskQueuePolicy::AsValueInto(
   state->SetBoolean("is_paused", is_paused);
   state->SetBoolean("is_throttled", is_throttled);
   state->SetBoolean("is_blocked", is_blocked);
-  state->SetBoolean("is_stopped", is_stopped);
+  state->SetBoolean("is_frozen", is_frozen);
   state->SetBoolean("use_virtual_time", use_virtual_time);
   state->SetString("priority", TaskQueue::PriorityToString(priority));
 }

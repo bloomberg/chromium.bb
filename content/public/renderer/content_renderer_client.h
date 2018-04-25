@@ -213,7 +213,7 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Returns true if the renderer process should allow task suspension
   // after the process has been backgrounded. Defaults to false.
-  virtual bool AllowStoppingWhenProcessBackgrounded();
+  virtual bool AllowFreezingWhenProcessBackgrounded();
 
   // Returns true if a popup window should be allowed.
   virtual bool AllowPopup();
