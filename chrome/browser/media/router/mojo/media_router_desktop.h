@@ -138,7 +138,8 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
       cast_provider_;
 
   // MediaRouteProvider for DIAL.
-  std::unique_ptr<DialMediaRouteProvider> dial_provider_;
+  std::unique_ptr<DialMediaRouteProvider, base::OnTaskRunnerDeleter>
+      dial_provider_;
 
   DualMediaSinkService* media_sink_service_;
   DualMediaSinkService::Subscription media_sink_service_subscription_;

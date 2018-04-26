@@ -4,6 +4,9 @@
 
 #include "chrome/browser/media/router/providers/dial/dial_media_route_provider.h"
 
+#include <utility>
+
+#include "base/containers/flat_map.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "chrome/common/media_router/media_source_helper.h"
@@ -21,14 +24,27 @@ url::Origin CreateOrigin(const std::string& url) {
 
 DialMediaRouteProvider::DialMediaRouteProvider(
     mojom::MediaRouteProviderRequest request,
-    mojom::MediaRouterPtr media_router,
-    DialMediaSinkService* dial_media_sink_service)
-    : binding_(this, std::move(request)),
-      media_router_(std::move(media_router)),
-      dial_media_sink_service_(dial_media_sink_service) {
+    mojom::MediaRouterPtrInfo media_router,
+    DialMediaSinkServiceImpl* media_sink_service,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+    : binding_(this), media_sink_service_(media_sink_service) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+  DCHECK(media_sink_service_);
+
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DialMediaRouteProvider::Init, base::Unretained(this),
+                     std::move(request), std::move(media_router)));
+}
+
+void DialMediaRouteProvider::Init(mojom::MediaRouteProviderRequest request,
+                                  mojom::MediaRouterPtrInfo media_router) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(dial_media_sink_service_);
-  // TODO(crbug.com/808720): This needs to be set properly according to sinks
+
+  binding_.Bind(std::move(request));
+  media_router_.Bind(std::move(media_router));
+
+  // TODO(crbug.com/816702): This needs to be set properly according to sinks
   // discovered.
   media_router_->OnSinkAvailabilityUpdated(
       MediaRouteProviderId::DIAL,
@@ -109,25 +125,49 @@ void DialMediaRouteProvider::SendRouteBinaryMessage(
 void DialMediaRouteProvider::StartObservingMediaSinks(
     const std::string& media_source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(dial_media_sink_service_);
 
   MediaSource dial_source(media_source);
   if (!IsDialMediaSource(dial_source))
     return;
 
-  RegisterDialMediaSource(dial_source);
+  std::string app_name = AppNameFromDialMediaSource(dial_source);
+  if (app_name.empty())
+    return;
+
+  auto& sink_query = media_sink_queries_[app_name];
+  if (!sink_query) {
+    sink_query = std::make_unique<MediaSinkQuery>();
+    sink_query->subscription =
+        media_sink_service_->StartMonitoringAvailableSinksForApp(
+            app_name, base::BindRepeating(
+                          &DialMediaRouteProvider::OnAvailableSinksUpdated,
+                          base::Unretained(this)));
+  }
+
+  // Return cached results immediately.
+  if (sink_query->media_sources.insert(dial_source).second) {
+    auto sinks = media_sink_service_->GetAvailableSinks(app_name);
+    NotifyOnSinksReceived(dial_source.id(), sinks, GetOrigins(app_name));
+  }
 }
 
 void DialMediaRouteProvider::StopObservingMediaSinks(
     const std::string& media_source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(dial_media_sink_service_);
 
   MediaSource dial_source(media_source);
-  if (!IsDialMediaSource(dial_source))
+  std::string app_name = AppNameFromDialMediaSource(dial_source);
+  if (app_name.empty())
     return;
 
-  UnregisterDialMediaSource(dial_source);
+  const auto& sink_query_it = media_sink_queries_.find(app_name);
+  if (sink_query_it == media_sink_queries_.end())
+    return;
+
+  auto& media_sources = sink_query_it->second->media_sources;
+  media_sources.erase(dial_source);
+  if (media_sources.empty())
+    media_sink_queries_.erase(sink_query_it);
 }
 
 void DialMediaRouteProvider::StartObservingMediaRoutes(
@@ -186,8 +226,7 @@ void DialMediaRouteProvider::CreateMediaRouteController(
 }
 
 void DialMediaRouteProvider::OnAvailableSinksUpdated(
-    const std::string& app_name,
-    const std::vector<MediaSinkInternal>& sinks) {
+    const std::string& app_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const auto& sink_query_it = media_sink_queries_.find(app_name);
   if (sink_query_it == media_sink_queries_.end()) {
@@ -198,54 +237,17 @@ void DialMediaRouteProvider::OnAvailableSinksUpdated(
   const auto& media_sources = sink_query_it->second->media_sources;
   std::vector<url::Origin> origins = GetOrigins(app_name);
 
-  for (const auto& media_source : media_sources) {
-    media_router_->OnSinksReceived(MediaRouteProviderId::DIAL,
-                                   media_source.id(), sinks, origins);
-  }
+  auto sinks = media_sink_service_->GetAvailableSinks(app_name);
+  for (const auto& media_source : media_sources)
+    NotifyOnSinksReceived(media_source.id(), sinks, origins);
 }
 
-void DialMediaRouteProvider::RegisterDialMediaSource(
-    const MediaSource& dial_source) {
-  std::string app_name = AppNameFromDialMediaSource(dial_source);
-  auto& sink_query = media_sink_queries_[app_name];
-  if (!sink_query) {
-    sink_query = std::make_unique<MediaSinkQuery>();
-    sink_query->subscription =
-        dial_media_sink_service_->StartMonitoringAvailableSinksForApp(
-            app_name, base::BindRepeating(
-                          &DialMediaRouteProvider::OnAvailableSinksUpdated,
-                          base::Unretained(this)));
-  }
-
-  if (sink_query->media_sources.insert(dial_source).second)
-    MayNotifyMediaSinksObservers(dial_source.id(), app_name);
-}
-
-void DialMediaRouteProvider::MayNotifyMediaSinksObservers(
-    const MediaSource::Id& media_source_id,
-    const std::string& app_name) {
-  const auto& cached_sinks =
-      dial_media_sink_service_->GetCachedAvailableSinks(app_name);
-  if (cached_sinks.empty())
-    return;
-
-  media_router_->OnSinksReceived(MediaRouteProviderId::DIAL, media_source_id,
-                                 cached_sinks, GetOrigins(app_name));
-}
-
-void DialMediaRouteProvider::UnregisterDialMediaSource(
-    const MediaSource& dial_source) {
-  std::string app_name = AppNameFromDialMediaSource(dial_source);
-  const auto& sink_query_it = media_sink_queries_.find(app_name);
-  if (sink_query_it == media_sink_queries_.end())
-    return;
-
-  auto& media_sources = sink_query_it->second->media_sources;
-  media_sources.erase(dial_source);
-  if (!media_sources.empty())
-    return;
-
-  media_sink_queries_.erase(app_name);
+void DialMediaRouteProvider::NotifyOnSinksReceived(
+    const MediaSource::Id& source_id,
+    const std::vector<MediaSinkInternal>& sinks,
+    const std::vector<url::Origin>& origins) {
+  media_router_->OnSinksReceived(MediaRouteProviderId::DIAL, source_id, sinks,
+                                 origins);
 }
 
 std::vector<url::Origin> DialMediaRouteProvider::GetOrigins(

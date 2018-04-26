@@ -34,16 +34,7 @@ void DialMediaSinkService::Start(
       base::BindRepeating(&DialMediaSinkService::RunSinksDiscoveredCallback,
                           weak_ptr_factory_.GetWeakPtr(), sink_discovery_cb));
 
-  OnAvailableSinksUpdatedCallback available_sinks_updated_cb_impl =
-      base::BindRepeating(
-          &RunAvailableSinksUpdatedCallbackOnSequence,
-          base::SequencedTaskRunnerHandle::Get(),
-          base::BindRepeating(
-              &DialMediaSinkService::RunAvailableSinksUpdatedCallback,
-              weak_ptr_factory_.GetWeakPtr()));
-
-  impl_ = CreateImpl(sink_discovery_cb_impl, dial_sink_added_cb,
-                     available_sinks_updated_cb_impl);
+  impl_ = CreateImpl(sink_discovery_cb_impl, dial_sink_added_cb);
 
   impl_->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&DialMediaSinkServiceImpl::Start,
@@ -57,46 +48,10 @@ void DialMediaSinkService::OnUserGesture() {
                                 base::Unretained(impl_.get())));
 }
 
-DialMediaSinkService::SinkQueryByAppSubscription
-DialMediaSinkService::StartMonitoringAvailableSinksForApp(
-    const std::string& app_name,
-    const SinkQueryByAppCallback& callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  auto& sink_list = sinks_by_app_name_[app_name];
-  if (!sink_list) {
-    // Register first observer for |app_name|.
-    sink_list = std::make_unique<SinkListByAppName>();
-    impl_->task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &DialMediaSinkServiceImpl::StartMonitoringAvailableSinksForApp,
-            base::Unretained(impl_.get()), app_name));
-    sink_list->callbacks.set_removal_callback(base::BindRepeating(
-        &DialMediaSinkService::OnAvailableSinksUpdatedCallbackRemoved,
-        base::Unretained(this), app_name));
-  }
-
-  return sink_list->callbacks.Add(callback);
-}
-
-std::vector<MediaSinkInternal> DialMediaSinkService::GetCachedAvailableSinks(
-    const std::string& app_name) {
-  const auto& sinks_it = sinks_by_app_name_.find(app_name);
-  if (sinks_it == sinks_by_app_name_.end())
-    return std::vector<MediaSinkInternal>();
-
-  return sinks_it->second->cached_sinks;
-}
-
-DialMediaSinkService::SinkListByAppName::SinkListByAppName() = default;
-DialMediaSinkService::SinkListByAppName::~SinkListByAppName() = default;
-
 std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
 DialMediaSinkService::CreateImpl(
     const OnSinksDiscoveredCallback& sink_discovery_cb,
-    const OnDialSinkAddedCallback& dial_sink_added_cb,
-    const OnAvailableSinksUpdatedCallback& available_sinks_updated_cb) {
+    const OnDialSinkAddedCallback& dial_sink_added_cb) {
   // Clone the connector so it can be used on the IO thread.
   std::unique_ptr<service_manager::Connector> connector =
       content::ServiceManagerConnection::GetForProcess()
@@ -110,8 +65,7 @@ DialMediaSinkService::CreateImpl(
           content::BrowserThread::IO);
   return std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter>(
       new DialMediaSinkServiceImpl(std::move(connector), sink_discovery_cb,
-                                   dial_sink_added_cb,
-                                   available_sinks_updated_cb, task_runner),
+                                   dial_sink_added_cb, task_runner),
       base::OnTaskRunnerDeleter(task_runner));
 }
 
@@ -119,38 +73,6 @@ void DialMediaSinkService::RunSinksDiscoveredCallback(
     const OnSinksDiscoveredCallback& sinks_discovered_cb,
     std::vector<MediaSinkInternal> sinks) {
   sinks_discovered_cb.Run(std::move(sinks));
-}
-
-void DialMediaSinkService::RunAvailableSinksUpdatedCallback(
-    const std::string& app_name,
-    std::vector<MediaSinkInternal> available_sinks) {
-  const auto& sinks_it = sinks_by_app_name_.find(app_name);
-  if (sinks_it == sinks_by_app_name_.end())
-    return;
-
-  sinks_it->second->callbacks.Notify(app_name, available_sinks);
-  sinks_it->second->cached_sinks = std::move(available_sinks);
-}
-
-void DialMediaSinkService::OnAvailableSinksUpdatedCallbackRemoved(
-    const std::string& app_name) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  const auto& sinks_it = sinks_by_app_name_.find(app_name);
-  if (sinks_it == sinks_by_app_name_.end())
-    return;
-
-  // Other profile is still monitoring |app_name|.
-  if (!sinks_it->second->callbacks.empty())
-    return;
-
-  impl_->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &DialMediaSinkServiceImpl::StopMonitoringAvailableSinksForApp,
-          base::Unretained(impl_.get()), app_name));
-
-  sinks_by_app_name_.erase(app_name);
 }
 
 }  // namespace media_router

@@ -44,7 +44,10 @@ class MediaSinkServiceBase {
   // |StartTimer()| is called.
   void RestartTimer();
 
-  // Sorted sinks from current round of discovery, keyed by sink ID.
+  // Sorted sinks from current round of discovery, keyed by sink ID. Subclasses
+  // may make modifications to this map while discovery is active. At the
+  // completion of the current round of discovery, |current_sinks_| will be
+  // copied over to |mrp_sinks_|, which will be used for |GetSink()| calls.
   base::flat_map<std::string, MediaSinkInternal> current_sinks_;
 
  private:
