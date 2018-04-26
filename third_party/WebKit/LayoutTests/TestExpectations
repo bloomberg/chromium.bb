@@ -3445,6 +3445,8 @@ crbug.com/796034 external/wpt/html/semantics/scripting-1/the-script-element/modu
 crbug.com/796034 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-inline-classic.html [ Failure ]
 crbug.com/796034 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-inline-module.html [ Failure ]
 
+crbug.com/837213 external/wpt/html/semantics/scripting-1/the-script-element/module/crossorigin.html [ Pass Failure ]
+
 # Geolocation tests
 crbug.com/745079 external/wpt/geolocation-API/PositionOptions.https.html [ Failure ]
 
