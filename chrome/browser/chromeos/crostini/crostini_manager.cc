@@ -459,6 +459,12 @@ void CrostiniManager::StartContainer(std::string vm_name,
     std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
     return;
   }
+  if (!GetConciergeClient()->IsContainerStartupFailedSignalConnected()) {
+    LOG(ERROR) << "Async call to StartContainer can't complete when signal "
+                  "is not connected.";
+    std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
+    return;
+  }
   vm_tools::concierge::StartContainerRequest request;
   request.set_vm_name(std::move(vm_name));
   request.set_container_name(std::move(container_name));
@@ -665,6 +671,17 @@ void CrostiniManager::OnContainerStarted(
       std::make_pair(signal.vm_name(), signal.container_name()));
   for (auto it = range.first; it != range.second; it++) {
     std::move(it->second).Run(ConciergeClientResult::SUCCESS);
+  }
+  start_container_callbacks_.erase(range.first, range.second);
+}
+
+void CrostiniManager::OnContainerStartupFailed(
+    const vm_tools::concierge::ContainerStartedSignal& signal) {
+  // Find the callbacks to call, then erase them from the map.
+  auto range = start_container_callbacks_.equal_range(
+      std::make_pair(signal.vm_name(), signal.container_name()));
+  for (auto it = range.first; it != range.second; it++) {
+    std::move(it->second).Run(ConciergeClientResult::CONTAINER_START_FAILED);
   }
   start_container_callbacks_.erase(range.first, range.second);
 }

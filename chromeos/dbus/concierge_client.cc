@@ -31,7 +31,11 @@ class ConciergeClientImpl : public ConciergeClient {
   }
 
   bool IsContainerStartedSignalConnected() override {
-    return is_signal_connected_;
+    return is_container_started_signal_connected_;
+  }
+
+  bool IsContainerStartupFailedSignalConnected() override {
+    return is_container_startup_failed_signal_connected_;
   }
 
   void CreateDiskImage(
@@ -184,6 +188,14 @@ class ConciergeClientImpl : public ConciergeClient {
                             weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&ConciergeClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
+    concierge_proxy_->ConnectToSignal(
+        vm_tools::concierge::kVmConciergeInterface,
+        vm_tools::concierge::kContainerStartupFailedSignal,
+        base::BindRepeating(
+            &ConciergeClientImpl::OnContainerStartupFailedSignal,
+            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&ConciergeClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -222,23 +234,48 @@ class ConciergeClientImpl : public ConciergeClient {
     }
   }
 
+  void OnContainerStartupFailedSignal(dbus::Signal* signal) {
+    DCHECK_EQ(signal->GetInterface(),
+              vm_tools::concierge::kVmConciergeInterface);
+    DCHECK_EQ(signal->GetMember(),
+              vm_tools::concierge::kContainerStartupFailedSignal);
+
+    vm_tools::concierge::ContainerStartedSignal container_startup_failed_signal;
+    dbus::MessageReader reader(signal);
+    if (!reader.PopArrayOfBytesAsProto(&container_startup_failed_signal)) {
+      LOG(ERROR) << "Failed to parse proto from DBus Signal";
+      return;
+    }
+    // Tell our Observers.
+    for (auto& observer : observer_list_) {
+      observer.OnContainerStartupFailed(container_startup_failed_signal);
+    }
+  }
+
   void OnSignalConnected(const std::string& interface_name,
                          const std::string& signal_name,
                          bool is_connected) {
     DCHECK_EQ(interface_name, vm_tools::concierge::kVmConciergeInterface);
-    DCHECK_EQ(signal_name, vm_tools::concierge::kContainerStartedSignal);
     if (!is_connected) {
       LOG(ERROR)
           << "Failed to connect to Signal. Async StartContainer will not work";
     }
-    is_signal_connected_ = is_connected;
+    if (signal_name == vm_tools::concierge::kContainerStartedSignal) {
+      is_container_started_signal_connected_ = is_connected;
+    } else if (signal_name ==
+               vm_tools::concierge::kContainerStartupFailedSignal) {
+      is_container_startup_failed_signal_connected_ = is_connected;
+    } else {
+      NOTREACHED();
+    }
   }
 
   dbus::ObjectProxy* concierge_proxy_ = nullptr;
 
   base::ObserverList<Observer> observer_list_;
 
-  bool is_signal_connected_ = false;
+  bool is_container_started_signal_connected_ = false;
+  bool is_container_startup_failed_signal_connected_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

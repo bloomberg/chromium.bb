@@ -24,6 +24,12 @@ class CHROMEOS_EXPORT ConciergeClient : public DBusClient {
     virtual void OnContainerStarted(
         const vm_tools::concierge::ContainerStartedSignal& signal) = 0;
 
+    // OnContainerStartupFailed is signaled by Concierge after the long-running
+    // container startup process's failure is detected. Note the signal protocol
+    // buffer type is the same as in OnContainerStarted.
+    virtual void OnContainerStartupFailed(
+        const vm_tools::concierge::ContainerStartedSignal& signal) = 0;
+
    protected:
     virtual ~Observer() = default;
   };
@@ -37,6 +43,10 @@ class CHROMEOS_EXPORT ConciergeClient : public DBusClient {
   // IsContainerStartedSignalConnected must return true before StartContainer
   // is called.
   virtual bool IsContainerStartedSignalConnected() = 0;
+
+  // IsContainerStartupFailedSignalConnected must return true before
+  // StartContainer is called.
+  virtual bool IsContainerStartupFailedSignalConnected() = 0;
 
   // Creates a disk image for the Termina VM.
   // |callback| is called after the method call finishes.

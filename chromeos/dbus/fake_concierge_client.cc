@@ -23,7 +23,12 @@ void FakeConciergeClient::RemoveObserver(Observer* observer) {
 
 // ConciergeClient override.
 bool FakeConciergeClient::IsContainerStartedSignalConnected() {
-  return is_signal_connected_;
+  return is_container_started_signal_connected_;
+}
+
+// ConciergeClient override.
+bool FakeConciergeClient::IsContainerStartupFailedSignalConnected() {
+  return is_container_startup_failed_signal_connected_;
 }
 
 void FakeConciergeClient::CreateDiskImage(

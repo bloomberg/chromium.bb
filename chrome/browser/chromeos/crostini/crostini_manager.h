@@ -162,6 +162,8 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   // ConciergeClient::Observer:
   void OnContainerStarted(
       const vm_tools::concierge::ContainerStartedSignal& signal) override;
+  void OnContainerStartupFailed(
+      const vm_tools::concierge::ContainerStartedSignal& signal) override;
 
   // Returns the singleton instance of CrostiniManager.
   static CrostiniManager* GetInstance();

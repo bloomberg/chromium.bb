@@ -26,6 +26,10 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   // is called.
   bool IsContainerStartedSignalConnected() override;
 
+  // IsContainerStartupFailedSignalConnected must return true before
+  // StartContainer is called.
+  bool IsContainerStartupFailedSignalConnected() override;
+
   // Fake version of the method that creates a disk image for the Termina VM.
   // Sets create_disk_image_called. |callback| is called after the method
   // call finishes.
@@ -88,7 +92,11 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   bool start_container_called() const { return start_container_called_; }
   // Set ContainerStartedSignalConnected state
   void set_container_started_signal_connected(bool connected) {
-    is_signal_connected_ = connected;
+    is_container_started_signal_connected_ = connected;
+  }
+  // Set ContainerStartedSignalConnected state
+  void set_container_startup_failed_signal_connected(bool connected) {
+    is_container_startup_failed_signal_connected_ = connected;
   }
 
  protected:
@@ -100,7 +108,8 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   bool start_termina_vm_called_ = false;
   bool stop_vm_called_ = false;
   bool start_container_called_ = false;
-  bool is_signal_connected_ = true;
+  bool is_container_started_signal_connected_ = true;
+  bool is_container_startup_failed_signal_connected_ = true;
   base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeConciergeClient);
