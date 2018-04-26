@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/cachestorage/cache_storage.h"
+#include "third_party/blink/renderer/modules/cache_storage/cache_storage.h"
 
 #include <memory>
 #include <utility>
@@ -17,7 +17,7 @@
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/modules/cachestorage/cache_storage_error.h"
+#include "third_party/blink/renderer/modules/cache_storage/cache_storage_error.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 
@@ -163,8 +163,7 @@ class CacheStorage::DeleteCallbacks final
   DeleteCallbacks(const String& cache_name,
                   CacheStorage* cache_storage,
                   ScriptPromiseResolver* resolver)
-      : cache_name_(cache_name),
-        resolver_(resolver) {}
+      : cache_name_(cache_name), resolver_(resolver) {}
   ~DeleteCallbacks() override = default;
 
   void OnSuccess() override {
