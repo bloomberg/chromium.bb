@@ -557,13 +557,13 @@ class FakeSpdySessionClientSocket : public MockClientSocket {
 
   int Read(IOBuffer* buf,
            int buf_len,
-           const CompletionCallback& callback) override {
+           CompletionOnceCallback callback) override {
     return read_result_;
   }
 
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetworkTrafficAnnotationTag& traffic_annotation) override {
     return ERR_IO_PENDING;
   }
@@ -573,7 +573,7 @@ class FakeSpdySessionClientSocket : public MockClientSocket {
 
   // The functions below are not expected to be called.
 
-  int Connect(const CompletionCallback& callback) override {
+  int Connect(CompletionOnceCallback callback) override {
     ADD_FAILURE();
     return ERR_UNEXPECTED;
   }

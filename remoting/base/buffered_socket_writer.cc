@@ -18,9 +18,10 @@ namespace {
 int WriteNetSocket(net::Socket* socket,
                    const scoped_refptr<net::IOBuffer>& buf,
                    int buf_len,
-                   const net::CompletionCallback& callback,
+                   net::CompletionOnceCallback callback,
                    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
-  return socket->Write(buf.get(), buf_len, callback, traffic_annotation);
+  return socket->Write(buf.get(), buf_len, std::move(callback),
+                       traffic_annotation);
 }
 
 }  // namespace
@@ -102,7 +103,7 @@ void BufferedSocketWriter::HandleWriteResult(int result) {
       closed_ = true;
       write_callback_.Reset();
       if (!write_failed_callback_.is_null())
-        base::ResetAndReturn(&write_failed_callback_).Run(result);
+        std::move(write_failed_callback_).Run(result);
     }
     return;
   }

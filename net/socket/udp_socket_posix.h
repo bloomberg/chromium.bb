@@ -18,7 +18,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "net/base/address_family.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/datagram_buffer.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -205,23 +205,23 @@ class NET_EXPORT UDPSocketPosix {
   // Reads from the socket.
   // Only usable from the client-side of a UDP socket, after the socket
   // has been connected.
-  int Read(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
+  int Read(IOBuffer* buf, int buf_len, CompletionOnceCallback callback);
 
   // Writes to the socket.
   // Only usable from the client-side of a UDP socket, after the socket
   // has been connected.
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Refer to datagram_client_socket.h
   int WriteAsync(DatagramBuffers buffers,
-                 const CompletionCallback& callback,
+                 CompletionOnceCallback callback,
                  const NetworkTrafficAnnotationTag& traffic_annotation);
   int WriteAsync(const char* buffer,
                  size_t buf_len,
-                 const CompletionCallback& callback,
+                 CompletionOnceCallback callback,
                  const NetworkTrafficAnnotationTag& traffic_annotation);
 
   DatagramBuffers GetUnwrittenBuffers();
@@ -239,7 +239,7 @@ class NET_EXPORT UDPSocketPosix {
   int RecvFrom(IOBuffer* buf,
                int buf_len,
                IPEndPoint* address,
-               const CompletionCallback& callback);
+               CompletionOnceCallback callback);
 
   // Sends to a socket with a particular destination.
   // |buf| is the buffer to send.
@@ -252,7 +252,7 @@ class NET_EXPORT UDPSocketPosix {
   int SendTo(IOBuffer* buf,
              int buf_len,
              const IPEndPoint& address,
-             const CompletionCallback& callback);
+             CompletionOnceCallback callback);
 
   // Sets the receive buffer size (in bytes) for the socket.
   // Returns a net error code.
@@ -405,7 +405,7 @@ class NET_EXPORT UDPSocketPosix {
   virtual bool InternalWatchFileDescriptor();
   virtual void InternalStopWatchingFileDescriptor();
 
-  void SetWriteCallback(CompletionCallback callback) {
+  void SetWriteCallback(CompletionOnceCallback callback) {
     write_callback_ = std::move(callback);
   }
 
@@ -456,7 +456,7 @@ class NET_EXPORT UDPSocketPosix {
     DISALLOW_COPY_AND_ASSIGN(WriteWatcher);
   };
 
-  int InternalWriteAsync(const CompletionCallback& callback,
+  int InternalWriteAsync(CompletionOnceCallback callback,
                          const NetworkTrafficAnnotationTag& traffic_annotation);
   bool WatchFileDescriptor();
   void StopWatchingFileDescriptor();
@@ -482,7 +482,7 @@ class NET_EXPORT UDPSocketPosix {
   int SendToOrWrite(IOBuffer* buf,
                     int buf_len,
                     const IPEndPoint* address,
-                    const CompletionCallback& callback);
+                    CompletionOnceCallback callback);
 
   int InternalConnect(const IPEndPoint& address);
 
@@ -585,10 +585,10 @@ class NET_EXPORT UDPSocketPosix {
   std::unique_ptr<IPEndPoint> send_to_address_;
 
   // External callback; called when read is complete.
-  CompletionCallback read_callback_;
+  CompletionOnceCallback read_callback_;
 
   // External callback; called when write is complete.
-  CompletionCallback write_callback_;
+  CompletionOnceCallback write_callback_;
 
   NetLogWithSource net_log_;
 

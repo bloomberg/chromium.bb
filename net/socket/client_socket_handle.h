@@ -85,7 +85,7 @@ class NET_EXPORT ClientSocketHandle {
            RequestPriority priority,
            const SocketTag& socket_tag,
            ClientSocketPool::RespectLimits respect_limits,
-           const CompletionCallback& callback,
+           CompletionOnceCallback callback,
            PoolType* pool,
            const NetLogWithSource& net_log);
 
@@ -223,7 +223,7 @@ class NET_EXPORT ClientSocketHandle {
   std::string group_name_;
   SocketReuseType reuse_type_;
   CompletionCallback callback_;
-  CompletionCallback user_callback_;
+  CompletionOnceCallback user_callback_;
   base::TimeDelta idle_time_;
   int pool_id_;  // See ClientSocketPool::ReleaseSocket() for an explanation.
   bool is_ssl_error_;
@@ -247,7 +247,7 @@ int ClientSocketHandle::Init(
     RequestPriority priority,
     const SocketTag& socket_tag,
     ClientSocketPool::RespectLimits respect_limits,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     PoolType* pool,
     const NetLogWithSource& net_log) {
   requesting_source_ = net_log.source();
@@ -261,7 +261,7 @@ int ClientSocketHandle::Init(
       pool_->RequestSocket(group_name, &socket_params, priority, socket_tag,
                            respect_limits, this, callback_, net_log);
   if (rv == ERR_IO_PENDING) {
-    user_callback_ = callback;
+    user_callback_ = std::move(callback);
   } else {
     HandleInitCompletion(rv);
   }

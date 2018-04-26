@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -28,7 +28,7 @@ class BufferedSocketWriter {
   typedef base::Callback<int(
       const scoped_refptr<net::IOBuffer>& buf,
       int buf_len,
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation)>
       WriteCallback;
   typedef base::Callback<void(int)> WriteFailedCallback;

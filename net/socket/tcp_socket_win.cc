@@ -400,7 +400,7 @@ int TCPSocketWin::Accept(std::unique_ptr<TCPSocketWin>* socket,
 }
 
 int TCPSocketWin::Connect(const IPEndPoint& address,
-                          const CompletionCallback& callback) {
+                          CompletionOnceCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_NE(socket_, INVALID_SOCKET);
   DCHECK(!waiting_connect_);
@@ -424,7 +424,7 @@ int TCPSocketWin::Connect(const IPEndPoint& address,
   if (rv == ERR_IO_PENDING) {
     // Synchronous operation not supported.
     DCHECK(!callback.is_null());
-    read_callback_ = callback;
+    read_callback_ = std::move(callback);
     waiting_connect_ = true;
   } else {
     DoConnectComplete(rv);
@@ -478,7 +478,7 @@ bool TCPSocketWin::IsConnectedAndIdle() const {
 
 int TCPSocketWin::Read(IOBuffer* buf,
                        int buf_len,
-                       const CompletionCallback& callback) {
+                       CompletionOnceCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!core_->read_iobuffer_.get());
   // base::Unretained() is safe because RetryRead() won't be called when |this|
@@ -488,7 +488,7 @@ int TCPSocketWin::Read(IOBuffer* buf,
                   base::Bind(&TCPSocketWin::RetryRead, base::Unretained(this)));
   if (rv != ERR_IO_PENDING)
     return rv;
-  read_callback_ = callback;
+  read_callback_ = std::move(callback);
   core_->read_iobuffer_ = buf;
   core_->read_buffer_length_ = buf_len;
   return ERR_IO_PENDING;
@@ -496,7 +496,7 @@ int TCPSocketWin::Read(IOBuffer* buf,
 
 int TCPSocketWin::ReadIfReady(IOBuffer* buf,
                               int buf_len,
-                              const CompletionCallback& callback) {
+                              CompletionOnceCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_NE(socket_, INVALID_SOCKET);
   DCHECK(!waiting_read_);
@@ -523,7 +523,7 @@ int TCPSocketWin::ReadIfReady(IOBuffer* buf,
   }
 
   waiting_read_ = true;
-  read_if_ready_callback_ = callback;
+  read_if_ready_callback_ = std::move(callback);
   core_->WatchForRead();
   return ERR_IO_PENDING;
 }
@@ -531,7 +531,7 @@ int TCPSocketWin::ReadIfReady(IOBuffer* buf,
 int TCPSocketWin::Write(
     IOBuffer* buf,
     int buf_len,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& /* traffic_annotation */) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_NE(socket_, INVALID_SOCKET);
@@ -574,7 +574,7 @@ int TCPSocketWin::Write(
     }
   }
   waiting_write_ = true;
-  write_callback_ = callback;
+  write_callback_ = std::move(callback);
   core_->write_iobuffer_ = buf;
   core_->write_buffer_length_ = buf_len;
   core_->WatchForWrite();
@@ -790,7 +790,7 @@ void TCPSocketWin::OnObjectSignaled(HANDLE object) {
     if (result != ERR_IO_PENDING) {
       accept_socket_ = NULL;
       accept_address_ = NULL;
-      base::ResetAndReturn(&accept_callback_).Run(result);
+      std::move(accept_callback_).Run(result);
     }
   } else {
     // This happens when a client opens a connection and closes it before we
@@ -909,7 +909,7 @@ void TCPSocketWin::RetryRead(int rv) {
   }
   core_->read_iobuffer_ = nullptr;
   core_->read_buffer_length_ = 0;
-  base::ResetAndReturn(&read_callback_).Run(rv);
+  std::move(read_callback_).Run(rv);
 }
 
 void TCPSocketWin::DidCompleteConnect() {
@@ -936,7 +936,7 @@ void TCPSocketWin::DidCompleteConnect() {
   waiting_connect_ = false;
 
   DCHECK_NE(result, ERR_IO_PENDING);
-  base::ResetAndReturn(&read_callback_).Run(result);
+  std::move(read_callback_).Run(result);
 }
 
 void TCPSocketWin::DidCompleteWrite() {
@@ -973,7 +973,7 @@ void TCPSocketWin::DidCompleteWrite() {
   core_->write_iobuffer_ = NULL;
 
   DCHECK_NE(rv, ERR_IO_PENDING);
-  base::ResetAndReturn(&write_callback_).Run(rv);
+  std::move(write_callback_).Run(rv);
 }
 
 void TCPSocketWin::DidSignalRead() {
@@ -1013,7 +1013,7 @@ void TCPSocketWin::DidSignalRead() {
 
   DCHECK_NE(rv, ERR_IO_PENDING);
   waiting_read_ = false;
-  base::ResetAndReturn(&read_if_ready_callback_).Run(rv);
+  std::move(read_if_ready_callback_).Run(rv);
 }
 
 bool TCPSocketWin::GetEstimatedRoundTripTime(base::TimeDelta* out_rtt) const {

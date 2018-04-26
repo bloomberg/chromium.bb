@@ -93,21 +93,23 @@ FakeSSLClientSocket::FakeSSLClientSocket(
 
 FakeSSLClientSocket::~FakeSSLClientSocket() {}
 
-int FakeSSLClientSocket::Read(net::IOBuffer* buf, int buf_len,
-                              const net::CompletionCallback& callback) {
+int FakeSSLClientSocket::Read(net::IOBuffer* buf,
+                              int buf_len,
+                              net::CompletionOnceCallback callback) {
   DCHECK_EQ(next_handshake_state_, STATE_NONE);
   DCHECK(handshake_completed_);
-  return transport_socket_->Read(buf, buf_len, callback);
+  return transport_socket_->Read(buf, buf_len, std::move(callback));
 }
 
 int FakeSSLClientSocket::Write(
     net::IOBuffer* buf,
     int buf_len,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_EQ(next_handshake_state_, STATE_NONE);
   DCHECK(handshake_completed_);
-  return transport_socket_->Write(buf, buf_len, callback, traffic_annotation);
+  return transport_socket_->Write(buf, buf_len, std::move(callback),
+                                  traffic_annotation);
 }
 
 int FakeSSLClientSocket::SetReceiveBufferSize(int32_t size) {
@@ -118,7 +120,7 @@ int FakeSSLClientSocket::SetSendBufferSize(int32_t size) {
   return transport_socket_->SetSendBufferSize(size);
 }
 
-int FakeSSLClientSocket::Connect(const net::CompletionCallback& callback) {
+int FakeSSLClientSocket::Connect(net::CompletionOnceCallback callback) {
   // We don't support synchronous operation, even if
   // |transport_socket_| does.
   DCHECK(!callback.is_null());
@@ -131,7 +133,7 @@ int FakeSSLClientSocket::Connect(const net::CompletionCallback& callback) {
   next_handshake_state_ = STATE_CONNECT;
   int status = DoHandshakeLoop();
   if (status == net::ERR_IO_PENDING)
-    user_connect_callback_ = callback;
+    user_connect_callback_ = std::move(callback);
 
   return status;
 }
@@ -165,9 +167,7 @@ int FakeSSLClientSocket::DoHandshakeLoop() {
 void FakeSSLClientSocket::RunUserConnectCallback(int status) {
   DCHECK_LE(status, net::OK);
   next_handshake_state_ = STATE_NONE;
-  net::CompletionCallback user_connect_callback = user_connect_callback_;
-  user_connect_callback_.Reset();
-  user_connect_callback.Run(status);
+  std::move(user_connect_callback_).Run(status);
 }
 
 void FakeSSLClientSocket::DoHandshakeLoopWithUserConnectCallback() {

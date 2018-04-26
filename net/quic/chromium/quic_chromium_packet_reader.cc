@@ -44,9 +44,10 @@ void QuicChromiumPacketReader::StartReading() {
 
     DCHECK(socket_);
     read_pending_ = true;
-    int rv = socket_->Read(read_buffer_.get(), read_buffer_->size(),
-                           base::Bind(&QuicChromiumPacketReader::OnReadComplete,
-                                      weak_factory_.GetWeakPtr()));
+    int rv =
+        socket_->Read(read_buffer_.get(), read_buffer_->size(),
+                      base::BindOnce(&QuicChromiumPacketReader::OnReadComplete,
+                                     weak_factory_.GetWeakPtr()));
     UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.AsyncRead", rv == ERR_IO_PENDING);
     if (rv == ERR_IO_PENDING) {
       num_packets_read_ = 0;

@@ -82,33 +82,35 @@ void UDPClientSocket::ApplySocketTag(const SocketTag& tag) {
 
 int UDPClientSocket::Read(IOBuffer* buf,
                           int buf_len,
-                          const CompletionCallback& callback) {
-  return socket_.Read(buf, buf_len, callback);
+                          CompletionOnceCallback callback) {
+  return socket_.Read(buf, buf_len, std::move(callback));
 }
 
 int UDPClientSocket::Write(
     IOBuffer* buf,
     int buf_len,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
-  return socket_.Write(buf, buf_len, callback, traffic_annotation);
+  return socket_.Write(buf, buf_len, std::move(callback), traffic_annotation);
 }
 
 int UDPClientSocket::WriteAsync(
     const char* buffer,
     size_t buf_len,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(WriteAsyncEnabled());
-  return socket_.WriteAsync(buffer, buf_len, callback, traffic_annotation);
+  return socket_.WriteAsync(buffer, buf_len, std::move(callback),
+                            traffic_annotation);
 }
 
 int UDPClientSocket::WriteAsync(
     DatagramBuffers buffers,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(WriteAsyncEnabled());
-  return socket_.WriteAsync(std::move(buffers), callback, traffic_annotation);
+  return socket_.WriteAsync(std::move(buffers), std::move(callback),
+                            traffic_annotation);
 }
 
 DatagramBuffers UDPClientSocket::GetUnwrittenBuffers() {

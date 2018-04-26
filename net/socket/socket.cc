@@ -13,7 +13,7 @@ const base::Feature Socket::kReadIfReadyExperiment{
 
 int Socket::ReadIfReady(IOBuffer* buf,
                         int buf_len,
-                        const CompletionCallback& callback) {
+                        CompletionOnceCallback callback) {
   return ERR_READ_IF_READY_NOT_IMPLEMENTED;
 }
 

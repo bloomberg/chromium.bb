@@ -42,13 +42,13 @@ class TestUDPClientSocket : public DatagramClientSocket {
 
   ~TestUDPClientSocket() override = default;
 
-  int Read(IOBuffer*, int, const CompletionCallback&) override {
+  int Read(IOBuffer*, int, CompletionOnceCallback) override {
     NOTIMPLEMENTED();
     return OK;
   }
   int Write(IOBuffer*,
             int,
-            const CompletionCallback&,
+            CompletionOnceCallback,
             const NetworkTrafficAnnotationTag& traffic_annotation) override {
     NOTIMPLEMENTED();
     return OK;
@@ -72,14 +72,14 @@ class TestUDPClientSocket : public DatagramClientSocket {
   int WriteAsync(
       const char* buffer,
       size_t buf_len,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       const NetworkTrafficAnnotationTag& traffic_annotation) override {
     NOTIMPLEMENTED();
     return OK;
   }
   int WriteAsync(
       DatagramBuffers buffers,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       const NetworkTrafficAnnotationTag& traffic_annotation) override {
     NOTIMPLEMENTED();
     return OK;
@@ -188,13 +188,13 @@ class TestSocketFactory : public ClientSocketFactory {
 };
 
 void OnSortComplete(AddressList* result_buf,
-                    const CompletionCallback& callback,
+                    CompletionOnceCallback callback,
                     bool success,
                     const AddressList& result) {
   EXPECT_TRUE(success);
   if (success)
     *result_buf = result;
-  callback.Run(OK);
+  std::move(callback).Run(OK);
 }
 
 }  // namespace

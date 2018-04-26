@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "net/base/address_family.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/socket_descriptor.h"
@@ -72,12 +72,12 @@ class NET_EXPORT TCPSocketPosix {
   // Returns a net error code.
   int Accept(std::unique_ptr<TCPSocketPosix>* socket,
              IPEndPoint* address,
-             const CompletionCallback& callback);
+             CompletionOnceCallback callback);
 
   // Connects this socket to the given |address|.
   // Should be called after Open().
   // Returns a net error code.
-  int Connect(const IPEndPoint& address, const CompletionCallback& callback);
+  int Connect(const IPEndPoint& address, CompletionOnceCallback callback);
   bool IsConnected() const;
   bool IsConnectedAndIdle() const;
 
@@ -87,16 +87,14 @@ class NET_EXPORT TCPSocketPosix {
 
   // Reads from the socket.
   // Returns a net error code.
-  int Read(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
-  int ReadIfReady(IOBuffer* buf,
-                  int buf_len,
-                  const CompletionCallback& callback);
+  int Read(IOBuffer* buf, int buf_len, CompletionOnceCallback callback);
+  int ReadIfReady(IOBuffer* buf, int buf_len, CompletionOnceCallback callback);
 
   // Writes to the socket.
   // Returns a net error code.
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Copies the local tcp address into |address| and returns a net error code.
@@ -231,7 +229,7 @@ class NET_EXPORT TCPSocketPosix {
 
   void AcceptCompleted(std::unique_ptr<TCPSocketPosix>* tcp_socket,
                        IPEndPoint* address,
-                       const CompletionCallback& callback,
+                       CompletionOnceCallback callback,
                        int rv);
   int HandleAcceptCompleted(std::unique_ptr<TCPSocketPosix>* tcp_socket,
                             IPEndPoint* address,
@@ -239,25 +237,25 @@ class NET_EXPORT TCPSocketPosix {
   int BuildTcpSocketPosix(std::unique_ptr<TCPSocketPosix>* tcp_socket,
                           IPEndPoint* address);
 
-  void ConnectCompleted(const CompletionCallback& callback, int rv);
+  void ConnectCompleted(CompletionOnceCallback callback, int rv);
   int HandleConnectCompleted(int rv);
   void LogConnectBegin(const AddressList& addresses) const;
   void LogConnectEnd(int net_error) const;
 
   void ReadCompleted(const scoped_refptr<IOBuffer>& buf,
-                     const CompletionCallback& callback,
+                     CompletionOnceCallback callback,
                      int rv);
-  void ReadIfReadyCompleted(const CompletionCallback& callback, int rv);
+  void ReadIfReadyCompleted(CompletionOnceCallback callback, int rv);
   int HandleReadCompleted(IOBuffer* buf, int rv);
   void HandleReadCompletedHelper(int rv);
 
   void WriteCompleted(const scoped_refptr<IOBuffer>& buf,
-                      const CompletionCallback& callback,
+                      CompletionOnceCallback callback,
                       int rv);
   int HandleWriteCompleted(IOBuffer* buf, int rv);
   int TcpFastOpenWrite(IOBuffer* buf,
                        int buf_len,
-                       const CompletionCallback& callback);
+                       CompletionOnceCallback callback);
 
   // Notifies |socket_performance_watcher_| of the latest RTT estimate available
   // from the tcp_info struct for this TCP socket.

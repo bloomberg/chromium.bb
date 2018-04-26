@@ -295,7 +295,7 @@ int TCPSocketPosix::Listen(int backlog) {
 
 int TCPSocketPosix::Accept(std::unique_ptr<TCPSocketPosix>* tcp_socket,
                            IPEndPoint* address,
-                           const CompletionCallback& callback) {
+                           CompletionOnceCallback callback) {
   DCHECK(tcp_socket);
   DCHECK(!callback.is_null());
   DCHECK(socket_);
@@ -305,15 +305,15 @@ int TCPSocketPosix::Accept(std::unique_ptr<TCPSocketPosix>* tcp_socket,
 
   int rv = socket_->Accept(
       &accept_socket_,
-      base::Bind(&TCPSocketPosix::AcceptCompleted, base::Unretained(this),
-                 tcp_socket, address, callback));
+      base::BindOnce(&TCPSocketPosix::AcceptCompleted, base::Unretained(this),
+                     tcp_socket, address, std::move(callback)));
   if (rv != ERR_IO_PENDING)
     rv = HandleAcceptCompleted(tcp_socket, address, rv);
   return rv;
 }
 
 int TCPSocketPosix::Connect(const IPEndPoint& address,
-                            const CompletionCallback& callback) {
+                            CompletionOnceCallback callback) {
   DCHECK(socket_);
 
   if (!logging_multiple_connect_attempts_)
@@ -333,9 +333,9 @@ int TCPSocketPosix::Connect(const IPEndPoint& address,
     return OK;
   }
 
-  int rv =
-      socket_->Connect(storage, base::Bind(&TCPSocketPosix::ConnectCompleted,
-                                           base::Unretained(this), callback));
+  int rv = socket_->Connect(
+      storage, base::BindOnce(&TCPSocketPosix::ConnectCompleted,
+                              base::Unretained(this), std::move(callback)));
   if (rv != ERR_IO_PENDING)
     rv = HandleConnectCompleted(rv);
   return rv;
@@ -363,17 +363,19 @@ bool TCPSocketPosix::IsConnectedAndIdle() const {
 
 int TCPSocketPosix::Read(IOBuffer* buf,
                          int buf_len,
-                         const CompletionCallback& callback) {
+                         CompletionOnceCallback callback) {
   DCHECK(socket_);
   DCHECK(!callback.is_null());
 
   int rv = socket_->Read(
       buf, buf_len,
-      base::Bind(&TCPSocketPosix::ReadCompleted,
-                 // Grab a reference to |buf| so that ReadCompleted() can still
-                 // use it when Read() completes, as otherwise, this transfers
-                 // ownership of buf to socket.
-                 base::Unretained(this), base::WrapRefCounted(buf), callback));
+      base::BindOnce(
+          &TCPSocketPosix::ReadCompleted,
+          // Grab a reference to |buf| so that ReadCompleted() can still
+          // use it when Read() completes, as otherwise, this transfers
+          // ownership of buf to socket.
+          base::Unretained(this), base::WrapRefCounted(buf),
+          std::move(callback)));
   if (rv != ERR_IO_PENDING)
     rv = HandleReadCompleted(buf, rv);
   return rv;
@@ -381,14 +383,14 @@ int TCPSocketPosix::Read(IOBuffer* buf,
 
 int TCPSocketPosix::ReadIfReady(IOBuffer* buf,
                                 int buf_len,
-                                const CompletionCallback& callback) {
+                                CompletionOnceCallback callback) {
   DCHECK(socket_);
   DCHECK(!callback.is_null());
 
-  int rv =
-      socket_->ReadIfReady(buf, buf_len,
-                           base::Bind(&TCPSocketPosix::ReadIfReadyCompleted,
-                                      base::Unretained(this), callback));
+  int rv = socket_->ReadIfReady(
+      buf, buf_len,
+      base::BindOnce(&TCPSocketPosix::ReadIfReadyCompleted,
+                     base::Unretained(this), std::move(callback)));
   if (rv != ERR_IO_PENDING)
     rv = HandleReadCompleted(buf, rv);
   return rv;
@@ -397,23 +399,24 @@ int TCPSocketPosix::ReadIfReady(IOBuffer* buf,
 int TCPSocketPosix::Write(
     IOBuffer* buf,
     int buf_len,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(socket_);
   DCHECK(!callback.is_null());
 
-  CompletionCallback write_callback =
-      base::Bind(&TCPSocketPosix::WriteCompleted,
-                 // Grab a reference to |buf| so that WriteCompleted() can still
-                 // use it when Write() completes, as otherwise, this transfers
-                 // ownership of buf to socket.
-                 base::Unretained(this), base::WrapRefCounted(buf), callback);
+  CompletionOnceCallback write_callback = base::BindOnce(
+      &TCPSocketPosix::WriteCompleted,
+      // Grab a reference to |buf| so that WriteCompleted() can still
+      // use it when Write() completes, as otherwise, this transfers
+      // ownership of buf to socket.
+      base::Unretained(this), base::WrapRefCounted(buf), std::move(callback));
   int rv;
 
   if (use_tcp_fastopen_ && !tcp_fastopen_write_attempted_) {
-    rv = TcpFastOpenWrite(buf, buf_len, write_callback);
+    rv = TcpFastOpenWrite(buf, buf_len, std::move(write_callback));
   } else {
-    rv = socket_->Write(buf, buf_len, write_callback, traffic_annotation);
+    rv = socket_->Write(buf, buf_len, std::move(write_callback),
+                        traffic_annotation);
   }
 
   if (rv != ERR_IO_PENDING)
@@ -592,10 +595,10 @@ void TCPSocketPosix::ApplySocketTag(const SocketTag& tag) {
 void TCPSocketPosix::AcceptCompleted(
     std::unique_ptr<TCPSocketPosix>* tcp_socket,
     IPEndPoint* address,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
-  callback.Run(HandleAcceptCompleted(tcp_socket, address, rv));
+  std::move(callback).Run(HandleAcceptCompleted(tcp_socket, address, rv));
 }
 
 int TCPSocketPosix::HandleAcceptCompleted(
@@ -633,10 +636,9 @@ int TCPSocketPosix::BuildTcpSocketPosix(
   return OK;
 }
 
-void TCPSocketPosix::ConnectCompleted(const CompletionCallback& callback,
-                                      int rv) {
+void TCPSocketPosix::ConnectCompleted(CompletionOnceCallback callback, int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
-  callback.Run(HandleConnectCompleted(rv));
+  std::move(callback).Run(HandleConnectCompleted(rv));
 }
 
 int TCPSocketPosix::HandleConnectCompleted(int rv) {
@@ -686,20 +688,20 @@ void TCPSocketPosix::LogConnectEnd(int net_error) const {
 }
 
 void TCPSocketPosix::ReadCompleted(const scoped_refptr<IOBuffer>& buf,
-                                   const CompletionCallback& callback,
+                                   CompletionOnceCallback callback,
                                    int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
 
-  callback.Run(HandleReadCompleted(buf.get(), rv));
+  std::move(callback).Run(HandleReadCompleted(buf.get(), rv));
 }
 
-void TCPSocketPosix::ReadIfReadyCompleted(const CompletionCallback& callback,
+void TCPSocketPosix::ReadIfReadyCompleted(CompletionOnceCallback callback,
                                           int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
   DCHECK_GE(OK, rv);
 
   HandleReadCompletedHelper(rv);
-  callback.Run(rv);
+  std::move(callback).Run(rv);
 }
 
 int TCPSocketPosix::HandleReadCompleted(IOBuffer* buf, int rv) {
@@ -744,10 +746,10 @@ void TCPSocketPosix::HandleReadCompletedHelper(int rv) {
 }
 
 void TCPSocketPosix::WriteCompleted(const scoped_refptr<IOBuffer>& buf,
-                                    const CompletionCallback& callback,
+                                    CompletionOnceCallback callback,
                                     int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
-  callback.Run(HandleWriteCompleted(buf.get(), rv));
+  std::move(callback).Run(HandleWriteCompleted(buf.get(), rv));
 }
 
 int TCPSocketPosix::HandleWriteCompleted(IOBuffer* buf, int rv) {
@@ -780,7 +782,7 @@ int TCPSocketPosix::HandleWriteCompleted(IOBuffer* buf, int rv) {
 
 int TCPSocketPosix::TcpFastOpenWrite(IOBuffer* buf,
                                      int buf_len,
-                                     const CompletionCallback& callback) {
+                                     CompletionOnceCallback callback) {
   SockaddrStorage storage;
   int rv = socket_->GetPeerAddress(&storage);
   if (rv != OK)
@@ -836,7 +838,7 @@ int TCPSocketPosix::TcpFastOpenWrite(IOBuffer* buf,
   }
 
   tcp_fastopen_status_ = TCP_FASTOPEN_SLOW_CONNECT_RETURN;
-  return socket_->WaitForWrite(buf, buf_len, callback);
+  return socket_->WaitForWrite(buf, buf_len, std::move(callback));
 }
 
 void TCPSocketPosix::NotifySocketPerformanceWatcher() {

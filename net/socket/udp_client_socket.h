@@ -35,20 +35,20 @@ class NET_EXPORT_PRIVATE UDPClientSocket : public DatagramClientSocket {
   void ApplySocketTag(const SocketTag& tag) override;
   int Read(IOBuffer* buf,
            int buf_len,
-           const CompletionCallback& callback) override;
+           CompletionOnceCallback callback) override;
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetworkTrafficAnnotationTag& traffic_annotation) override;
 
   int WriteAsync(
       const char* buffer,
       size_t buf_len,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       const NetworkTrafficAnnotationTag& traffic_annotation) override;
   int WriteAsync(
       DatagramBuffers buffers,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       const NetworkTrafficAnnotationTag& traffic_annotation) override;
 
   DatagramBuffers GetUnwrittenBuffers() override;

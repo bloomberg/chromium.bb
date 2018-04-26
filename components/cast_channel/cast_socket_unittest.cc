@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -112,13 +113,12 @@ class MockTCPSocket : public net::MockTCPClientSocket {
     do_nothing_ = do_nothing;
   }
 
-  int Connect(const net::CompletionCallback& callback) override {
+  int Connect(net::CompletionOnceCallback callback) override {
     if (do_nothing_) {
       // Stall the I/O event loop.
       return net::ERR_IO_PENDING;
     }
-
-    return net::MockTCPClientSocket::Connect(callback);
+    return net::MockTCPClientSocket::Connect(std::move(callback));
   }
 
  private:

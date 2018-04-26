@@ -34,15 +34,15 @@ class AndroidUsbSocket : public net::StreamSocket {
   // net::StreamSocket implementation.
   int Read(net::IOBuffer* buf,
            int buf_len,
-           const net::CompletionCallback& callback) override;
+           net::CompletionOnceCallback callback) override;
   int Write(
       net::IOBuffer* buf,
       int buf_len,
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
   int SetReceiveBufferSize(int32_t size) override;
   int SetSendBufferSize(int32_t size) override;
-  int Connect(const net::CompletionCallback& callback) override;
+  int Connect(net::CompletionOnceCallback callback) override;
   void Disconnect() override;
   bool IsConnected() const override;
   bool IsConnectedAndIdle() const override;
@@ -76,9 +76,9 @@ class AndroidUsbSocket : public net::StreamSocket {
   scoped_refptr<net::IOBuffer> read_io_buffer_;
   int read_length_;
   int write_length_;
-  net::CompletionCallback connect_callback_;
-  net::CompletionCallback read_callback_;
-  net::CompletionCallback write_callback_;
+  net::CompletionOnceCallback connect_callback_;
+  net::CompletionOnceCallback read_callback_;
+  net::CompletionOnceCallback write_callback_;
   base::Closure delete_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);

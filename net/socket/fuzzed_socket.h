@@ -61,17 +61,18 @@ class FuzzedSocket : public TransportClientSocket {
   // Socket implementation:
   int Read(IOBuffer* buf,
            int buf_len,
-           const CompletionCallback& callback) override;
+           CompletionOnceCallback callback) override;
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetworkTrafficAnnotationTag& traffic_annotation) override;
   int SetReceiveBufferSize(int32_t size) override;
   int SetSendBufferSize(int32_t size) override;
 
   // TransportClientSocket implementation:
   int Bind(const net::IPEndPoint& local_addr) override;
-  int Connect(const CompletionCallback& callback) override;
+  // StreamSocket implementation:
+  int Connect(CompletionOnceCallback callback) override;
   void Disconnect() override;
   bool IsConnected() const override;
   bool IsConnectedAndIdle() const override;
@@ -96,9 +97,9 @@ class FuzzedSocket : public TransportClientSocket {
   // writes return basically the same set of errors, at the TCP socket layer.
   Error ConsumeReadWriteErrorFromData();
 
-  void OnReadComplete(const CompletionCallback& callback, int result);
-  void OnWriteComplete(const CompletionCallback& callback, int result);
-  void OnConnectComplete(const CompletionCallback& callback, int result);
+  void OnReadComplete(CompletionOnceCallback callback, int result);
+  void OnWriteComplete(CompletionOnceCallback callback, int result);
+  void OnConnectComplete(CompletionOnceCallback callback, int result);
 
   // Returns whether all operations should be synchronous.  Starts returning
   // true once there have been too many async reads and writes, as spinning the

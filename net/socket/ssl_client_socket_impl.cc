@@ -494,7 +494,7 @@ int SSLClientSocketImpl::ExportKeyingMaterial(const base::StringPiece& label,
   return OK;
 }
 
-int SSLClientSocketImpl::Connect(const CompletionCallback& callback) {
+int SSLClientSocketImpl::Connect(CompletionOnceCallback callback) {
   // Although StreamSocket does allow calling Connect() after Disconnect(),
   // this has never worked for layered sockets. CHECK to detect any consumers
   // reconnecting an SSL socket.
@@ -518,7 +518,7 @@ int SSLClientSocketImpl::Connect(const CompletionCallback& callback) {
   next_handshake_state_ = STATE_HANDSHAKE;
   rv = DoHandshakeLoop(OK);
   if (rv == ERR_IO_PENDING) {
-    user_connect_callback_ = callback;
+    user_connect_callback_ = std::move(callback);
   } else {
     LogConnectEndEvent(rv);
   }
@@ -768,8 +768,8 @@ void SSLClientSocketImpl::DumpSSLClientSessionMemoryStats(
 
 int SSLClientSocketImpl::Read(IOBuffer* buf,
                               int buf_len,
-                              const CompletionCallback& callback) {
-  int rv = ReadIfReady(buf, buf_len, callback);
+                              CompletionOnceCallback callback) {
+  int rv = ReadIfReady(buf, buf_len, std::move(callback));
   if (rv == ERR_IO_PENDING) {
     user_read_buf_ = buf;
     user_read_buf_len_ = buf_len;
@@ -779,11 +779,11 @@ int SSLClientSocketImpl::Read(IOBuffer* buf,
 
 int SSLClientSocketImpl::ReadIfReady(IOBuffer* buf,
                                      int buf_len,
-                                     const CompletionCallback& callback) {
+                                     CompletionOnceCallback callback) {
   int rv = DoPayloadRead(buf, buf_len);
 
   if (rv == ERR_IO_PENDING) {
-    user_read_callback_ = callback;
+    user_read_callback_ = std::move(callback);
   } else {
     if (rv > 0)
       was_ever_used_ = true;
@@ -794,7 +794,7 @@ int SSLClientSocketImpl::ReadIfReady(IOBuffer* buf,
 int SSLClientSocketImpl::Write(
     IOBuffer* buf,
     int buf_len,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   user_write_buf_ = buf;
   user_write_buf_len_ = buf_len;
@@ -802,7 +802,7 @@ int SSLClientSocketImpl::Write(
   int rv = DoPayloadWrite();
 
   if (rv == ERR_IO_PENDING) {
-    user_write_callback_ = callback;
+    user_write_callback_ = std::move(callback);
   } else {
     if (rv > 0)
       was_ever_used_ = true;
@@ -978,7 +978,7 @@ void SSLClientSocketImpl::DoReadCallback(int rv) {
     was_ever_used_ = true;
   user_read_buf_ = nullptr;
   user_read_buf_len_ = 0;
-  base::ResetAndReturn(&user_read_callback_).Run(rv);
+  std::move(user_read_callback_).Run(rv);
 }
 
 void SSLClientSocketImpl::DoWriteCallback(int rv) {
@@ -988,7 +988,7 @@ void SSLClientSocketImpl::DoWriteCallback(int rv) {
     was_ever_used_ = true;
   user_write_buf_ = NULL;
   user_write_buf_len_ = 0;
-  base::ResetAndReturn(&user_write_callback_).Run(rv);
+  std::move(user_write_callback_).Run(rv);
 }
 
 int SSLClientSocketImpl::DoHandshake() {
@@ -1263,7 +1263,7 @@ int SSLClientSocketImpl::DoVerifyCertComplete(int result) {
 
 void SSLClientSocketImpl::DoConnectCallback(int rv) {
   if (!user_connect_callback_.is_null()) {
-    base::ResetAndReturn(&user_connect_callback_).Run(rv > OK ? OK : rv);
+    std::move(user_connect_callback_).Run(rv > OK ? OK : rv);
   }
 }
 

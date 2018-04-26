@@ -44,9 +44,7 @@ void FakeSocket::AppendInputData(const char* data, int data_size) {
     memcpy(read_buffer_->data(), &input_data_[0] + input_pos_, result);
     input_pos_ += result;
     read_buffer_ = nullptr;
-    net::CompletionCallback cb = read_callback_;
-    read_callback_.Reset();
-    std::move(cb).Run(result);
+    std::move(read_callback_).Run(result);
   }
 }
 
@@ -58,8 +56,9 @@ void FakeSocket::SetLocalAddress(const net::IPEndPoint& local_address) {
   local_address_ = local_address;
 }
 
-int FakeSocket::Read(net::IOBuffer* buf, int buf_len,
-                     const net::CompletionCallback& callback) {
+int FakeSocket::Read(net::IOBuffer* buf,
+                     int buf_len,
+                     net::CompletionOnceCallback callback) {
   DCHECK(buf);
   if (input_pos_ < static_cast<int>(input_data_.size())){
     int result = std::min(buf_len,
@@ -71,7 +70,7 @@ int FakeSocket::Read(net::IOBuffer* buf, int buf_len,
     read_pending_ = true;
     read_buffer_ = buf;
     read_buffer_size_ = buf_len;
-    read_callback_ = callback;
+    read_callback_ = std::move(callback);
     return net::ERR_IO_PENDING;
   }
 }
@@ -79,7 +78,7 @@ int FakeSocket::Read(net::IOBuffer* buf, int buf_len,
 int FakeSocket::Write(
     net::IOBuffer* buf,
     int buf_len,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     const net::NetworkTrafficAnnotationTag& /*traffic_annotation*/) {
   DCHECK(buf);
   DCHECK(!write_pending_);
@@ -88,7 +87,8 @@ int FakeSocket::Write(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&FakeSocket::DoAsyncWrite, base::Unretained(this),
-                       scoped_refptr<net::IOBuffer>(buf), buf_len, callback));
+                       scoped_refptr<net::IOBuffer>(buf), buf_len,
+                       std::move(callback)));
     write_pending_ = true;
     return net::ERR_IO_PENDING;
   }
@@ -100,15 +100,16 @@ int FakeSocket::Write(
   return buf_len;
 }
 
-void FakeSocket::DoAsyncWrite(scoped_refptr<net::IOBuffer> buf, int buf_len,
-                              const net::CompletionCallback& callback) {
+void FakeSocket::DoAsyncWrite(scoped_refptr<net::IOBuffer> buf,
+                              int buf_len,
+                              net::CompletionOnceCallback callback) {
   write_pending_ = false;
 
   if (written_data_) {
     written_data_->insert(written_data_->end(),
                           buf->data(), buf->data() + buf_len);
   }
-  callback.Run(buf_len);
+  std::move(callback).Run(buf_len);
 }
 
 int FakeSocket::SetReceiveBufferSize(int32_t size) {
@@ -121,7 +122,7 @@ int FakeSocket::SetSendBufferSize(int32_t size) {
   return net::ERR_NOT_IMPLEMENTED;
 }
 
-int FakeSocket::Connect(const net::CompletionCallback& callback) {
+int FakeSocket::Connect(net::CompletionOnceCallback callback) {
   return 0;
 }
 

@@ -389,14 +389,14 @@ int UDPSocketPosix::GetLocalAddress(IPEndPoint* address) const {
 
 int UDPSocketPosix::Read(IOBuffer* buf,
                          int buf_len,
-                         const CompletionCallback& callback) {
-  return RecvFrom(buf, buf_len, NULL, callback);
+                         CompletionOnceCallback callback) {
+  return RecvFrom(buf, buf_len, NULL, std::move(callback));
 }
 
 int UDPSocketPosix::RecvFrom(IOBuffer* buf,
                              int buf_len,
                              IPEndPoint* address,
-                             const CompletionCallback& callback) {
+                             CompletionOnceCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_NE(kInvalidSocket, socket_);
   CHECK(read_callback_.is_null());
@@ -420,29 +420,29 @@ int UDPSocketPosix::RecvFrom(IOBuffer* buf,
   read_buf_ = buf;
   read_buf_len_ = buf_len;
   recv_from_address_ = address;
-  read_callback_ = callback;
+  read_callback_ = std::move(callback);
   return ERR_IO_PENDING;
 }
 
 int UDPSocketPosix::Write(
     IOBuffer* buf,
     int buf_len,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
-  return SendToOrWrite(buf, buf_len, NULL, callback);
+  return SendToOrWrite(buf, buf_len, NULL, std::move(callback));
 }
 
 int UDPSocketPosix::SendTo(IOBuffer* buf,
                            int buf_len,
                            const IPEndPoint& address,
-                           const CompletionCallback& callback) {
-  return SendToOrWrite(buf, buf_len, &address, callback);
+                           CompletionOnceCallback callback) {
+  return SendToOrWrite(buf, buf_len, &address, std::move(callback));
 }
 
 int UDPSocketPosix::SendToOrWrite(IOBuffer* buf,
                                   int buf_len,
                                   const IPEndPoint* address,
-                                  const CompletionCallback& callback) {
+                                  CompletionOnceCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_NE(kInvalidSocket, socket_);
   CHECK(write_callback_.is_null());
@@ -468,7 +468,7 @@ int UDPSocketPosix::SendToOrWrite(IOBuffer* buf,
   if (address) {
     send_to_address_.reset(new IPEndPoint(*address));
   }
-  write_callback_ = callback;
+  write_callback_ = std::move(callback);
   return ERR_IO_PENDING;
 }
 
@@ -711,7 +711,7 @@ void UDPSocketPosix::DoReadCallback(int rv) {
 
   // Since Run() may result in Read() being called,
   // clear |read_callback_| up front.
-  base::ResetAndReturn(&read_callback_).Run(rv);
+  std::move(read_callback_).Run(rv);
 }
 
 void UDPSocketPosix::DoWriteCallback(int rv) {
@@ -720,7 +720,7 @@ void UDPSocketPosix::DoWriteCallback(int rv) {
 
   // Since Run() may result in Write() being called,
   // clear |write_callback_| up front.
-  base::ResetAndReturn(&write_callback_).Run(rv);
+  std::move(write_callback_).Run(rv);
 }
 
 void UDPSocketPosix::DidCompleteRead() {
@@ -1239,25 +1239,25 @@ int UDPSocketPosixSender::Sendmmsg(int sockfd,
 int UDPSocketPosix::WriteAsync(
     const char* buffer,
     size_t buf_len,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(datagram_buffer_pool_ != nullptr);
   IncreaseWriteAsyncOutstanding(1);
   datagram_buffer_pool_->Enqueue(buffer, buf_len, &pending_writes_);
-  return InternalWriteAsync(callback, traffic_annotation);
+  return InternalWriteAsync(std::move(callback), traffic_annotation);
 }
 
 int UDPSocketPosix::WriteAsync(
     DatagramBuffers buffers,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   IncreaseWriteAsyncOutstanding(buffers.size());
   pending_writes_.splice(pending_writes_.end(), std::move(buffers));
-  return InternalWriteAsync(callback, traffic_annotation);
+  return InternalWriteAsync(std::move(callback), traffic_annotation);
 }
 
 int UDPSocketPosix::InternalWriteAsync(
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   CHECK(write_callback_.is_null());
 
@@ -1285,7 +1285,7 @@ int UDPSocketPosix::InternalWriteAsync(
   int blocking_threshold =
       write_batching_active_ ? kWriteAsyncMaxBuffersThreshold : 1;
   if (write_async_outstanding_ >= blocking_threshold) {
-    write_callback_ = callback;
+    write_callback_ = std::move(callback);
     return ERR_IO_PENDING;
   }
 

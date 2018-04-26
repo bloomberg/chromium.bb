@@ -311,8 +311,8 @@ int TransportConnectJob::DoTransportConnect() {
 
   transport_socket_->ApplySocketTag(socket_tag());
 
-  int rv = transport_socket_->Connect(
-      base::Bind(&TransportConnectJob::OnIOComplete, base::Unretained(this)));
+  int rv = transport_socket_->Connect(base::BindOnce(
+      &TransportConnectJob::OnIOComplete, base::Unretained(this)));
   if (rv == ERR_IO_PENDING && try_ipv6_connect_with_ipv4_fallback) {
     fallback_timer_.Start(
         FROM_HERE, base::TimeDelta::FromMilliseconds(kIPv6FallbackTimerInMs),
@@ -387,10 +387,9 @@ void TransportConnectJob::DoIPv6FallbackTransportConnect() {
           *fallback_addresses_, std::move(socket_performance_watcher),
           net_log().net_log(), net_log().source());
   fallback_connect_start_time_ = base::TimeTicks::Now();
-  int rv = fallback_transport_socket_->Connect(
-      base::Bind(
-          &TransportConnectJob::DoIPv6FallbackTransportConnectComplete,
-          base::Unretained(this)));
+  int rv = fallback_transport_socket_->Connect(base::BindOnce(
+      &TransportConnectJob::DoIPv6FallbackTransportConnectComplete,
+      base::Unretained(this)));
   if (rv != ERR_IO_PENDING)
     DoIPv6FallbackTransportConnectComplete(rv);
 }
