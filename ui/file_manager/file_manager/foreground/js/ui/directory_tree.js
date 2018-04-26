@@ -106,12 +106,16 @@ var MENU_TREE_ITEM_INNER_HTML =
  */
 function DirectoryItem(label, tree) {
   var item = /** @type {DirectoryItem} */ (new cr.ui.TreeItem());
+  // Get the original label id defined by TreeItem, before overwriting
+  // prototype.
+  var labelId = item.labelElement.id;
   item.__proto__ = DirectoryItem.prototype;
   item.parentTree_ = tree;
   item.directoryModel_ = tree.directoryModel;
   item.fileFilter_ = tree.directoryModel.getFileFilter();
 
   item.innerHTML = TREE_ITEM_INNER_HTML;
+  item.labelElement.id = labelId;
   item.addEventListener('expand', item.onExpand_.bind(item), false);
 
   // Listen for collapse because for the delayed expansion case all
@@ -858,6 +862,9 @@ DriveVolumeItem.prototype.selectByEntry = function(entry) {
  */
 function ShortcutItem(modelItem, tree) {
   var item = /** @type {ShortcutItem} */ (new cr.ui.TreeItem());
+  // Get the original label id defined by TreeItem, before overwriting
+  // prototype.
+  var labelId = item.labelElement.id;
   item.__proto__ = ShortcutItem.prototype;
 
   item.parentTree_ = tree;
@@ -865,6 +872,7 @@ function ShortcutItem(modelItem, tree) {
   item.modelItem_ = modelItem;
 
   item.innerHTML = TREE_ITEM_INNER_HTML;
+  item.labelElement.id = labelId;
 
   var icon = item.querySelector('.icon');
   icon.classList.add('item-icon');
@@ -979,11 +987,15 @@ ShortcutItem.prototype.activate = function() {
  */
 function MenuItem(modelItem, tree) {
   var item = new cr.ui.TreeItem();
+  // Get the original label id defined by TreeItem, before overwriting
+  // prototype.
+  var labelId = item.labelElement.id;
   item.__proto__ = MenuItem.prototype;
 
   item.parentTree_ = tree;
   item.modelItem_ = modelItem;
   item.innerHTML = MENU_TREE_ITEM_INNER_HTML;
+  item.labelElement.id = labelId;
   item.label = modelItem.label;
 
   item.menuButton_ = /** @type {!cr.ui.MenuButton} */(queryRequiredElement(
@@ -1054,12 +1066,16 @@ MenuItem.prototype.activate = function() {
  */
 function RecentItem(modelItem, tree) {
   var item = new cr.ui.TreeItem();
+  // Get the original label id defined by TreeItem, before overwriting
+  // prototype.
+  var labelId = item.labelElement.id;
   item.__proto__ = RecentItem.prototype;
 
   item.parentTree_ = tree;
   item.modelItem_ = modelItem;
   item.dirEntry_ = modelItem.entry;
   item.innerHTML = TREE_ITEM_INNER_HTML;
+  item.labelElement.id = labelId;
   item.label = modelItem.label;
 
   var icon = queryRequiredElement('.icon', item);
@@ -1369,6 +1385,15 @@ DirectoryTree.prototype.decorateDirectoryTree = function(
       fileOperationManager,
       'entries-changed',
       this.onEntriesChanged_.bind(this));
+
+  this.addEventListener('click', (event) => {
+    // Chromevox triggers |click| without switching focus, we force the focus
+    // here so we can handle further keyboard/mouse events to expand/collapse
+    // directories.
+    if (document.activeElement === document.body) {
+      this.focus();
+    }
+  });
 
   this.privateOnDirectoryChangedBound_ =
       this.onDirectoryContentChanged_.bind(this);

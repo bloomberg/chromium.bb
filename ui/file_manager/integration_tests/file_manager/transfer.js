@@ -40,6 +40,11 @@ function copyBetweenVolumes(targetFile,
       chrome.test.assertTrue(result);
       remoteCall.waitForFiles(appId, srcContents).then(this.next);
     },
+    // Set focus on the file list.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'focus', appId, ['#file-list:not([hidden])'], this.next);
+    },
     // Select the source file.
     function() {
       remoteCall.callRemoteTestUtil(
