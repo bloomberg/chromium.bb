@@ -26,7 +26,7 @@ public class AwSafeBrowsingConfigHelper {
     private static final String OPT_IN_META_DATA_STR = "android.webkit.WebView.EnableSafeBrowsing";
     private static final boolean DEFAULT_USER_OPT_IN = false;
 
-    private static Boolean sSafeBrowsingUserOptIn;
+    private static volatile Boolean sSafeBrowsingUserOptIn;
 
     // Used to record the UMA histogram SafeBrowsing.WebView.AppOptIn. Since these values are
     // persisted to logs, they should never be renumbered nor reused.
