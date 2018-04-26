@@ -68,7 +68,7 @@ class NewMockPersistentCookieStore
   MOCK_METHOD1(UpdateCookieAccessTime, void(const CanonicalCookie& cc));
   MOCK_METHOD1(DeleteCookie, void(const CanonicalCookie& cc));
   MOCK_METHOD1(SetBeforeFlushCallback, void(base::RepeatingClosure));
-  virtual void Flush(base::OnceClosure callback) {
+  void Flush(base::OnceClosure callback) override {
     if (!callback.is_null())
       base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                     std::move(callback));
@@ -76,7 +76,7 @@ class NewMockPersistentCookieStore
   MOCK_METHOD0(SetForceKeepSessionState, void());
 
  private:
-  virtual ~NewMockPersistentCookieStore() = default;
+  ~NewMockPersistentCookieStore() override = default;
 };
 
 // False means 'less than or equal', so we test both ways for full equal.

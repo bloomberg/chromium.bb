@@ -364,7 +364,7 @@ class PtrRecordCopyContainer {
 class MockClock : public base::Clock {
  public:
   MockClock() = default;
-  virtual ~MockClock() = default;
+  ~MockClock() override = default;
 
   MOCK_CONST_METHOD0(Now, base::Time());
 
@@ -375,11 +375,11 @@ class MockClock : public base::Clock {
 class MockTimer : public base::MockTimer {
  public:
   MockTimer() : base::MockTimer(false, false) {}
-  ~MockTimer() = default;
+  ~MockTimer() override = default;
 
   void Start(const base::Location& posted_from,
              base::TimeDelta delay,
-             const base::Closure& user_task) {
+             const base::Closure& user_task) override {
     StartObserver(posted_from, delay, user_task);
     base::MockTimer::Start(posted_from, delay, user_task);
   }
@@ -1115,7 +1115,7 @@ class SimpleMockSocketFactory : public MDnsSocketFactory {
 
 class MockMDnsConnectionDelegate : public MDnsConnection::Delegate {
  public:
-  virtual void HandlePacket(DnsResponse* response, int size) {
+  void HandlePacket(DnsResponse* response, int size) override {
     HandlePacketInternal(std::string(response->io_buffer()->data(), size));
   }
 
