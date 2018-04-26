@@ -64,7 +64,7 @@ namespace {
 class MockScreenCapturerCallback : public webrtc::DesktopCapturer::Callback {
  public:
   MockScreenCapturerCallback() = default;
-  virtual ~MockScreenCapturerCallback() = default;
+  ~MockScreenCapturerCallback() override = default;
 
   MOCK_METHOD2(OnCaptureResultPtr,
                void(webrtc::DesktopCapturer::Result result,

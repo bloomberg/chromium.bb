@@ -134,7 +134,8 @@ class MockInputInjector : public InputInjector {
   MOCK_METHOD1(StartPtr,
                void(protocol::ClipboardStub* client_clipboard));
 
-  void Start(std::unique_ptr<protocol::ClipboardStub> client_clipboard);
+  void Start(
+      std::unique_ptr<protocol::ClipboardStub> client_clipboard) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInputInjector);

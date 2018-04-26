@@ -26,7 +26,7 @@ namespace {
 class ConfigFileWatcherDelegate : public ConfigFileWatcher::Delegate {
  public:
   ConfigFileWatcherDelegate() = default;
-  virtual ~ConfigFileWatcherDelegate() = default;
+  ~ConfigFileWatcherDelegate() override = default;
 
   MOCK_METHOD1(OnConfigUpdated, void(const std::string&));
   MOCK_METHOD0(OnConfigWatcherError, void());
