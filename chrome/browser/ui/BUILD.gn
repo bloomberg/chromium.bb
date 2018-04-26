@@ -1539,8 +1539,6 @@ split_static_library("ui") {
       "webui/constrained_web_dialog_delegate_base.h",
       "webui/devtools_ui.cc",
       "webui/devtools_ui.h",
-      "webui/extensions/extension_loader_handler.cc",
-      "webui/extensions/extension_loader_handler.h",
       "webui/extensions/extensions_ui.cc",
       "webui/extensions/extensions_ui.h",
       "webui/extensions/install_extension_handler.cc",
