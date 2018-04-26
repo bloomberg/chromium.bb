@@ -97,7 +97,13 @@ RenderWidgetHostViewNSViewBridgeLocal::RenderWidgetHostViewNSViewBridgeLocal(
 RenderWidgetHostViewNSViewBridgeLocal::
     ~RenderWidgetHostViewNSViewBridgeLocal() {
   [cocoa_view_ setClientDisconnected];
-  [cocoa_view_ removeFromSuperview];
+  // Do not immediately remove |cocoa_view_| from the NSView heirarchy, because
+  // the call to -[NSView removeFromSuperview] may cause use to call into the
+  // RWHVMac during tear-down, via WebContentsImpl::UpdateWebContentsVisibility.
+  // https://crbug.com/834931
+  [cocoa_view_ performSelector:@selector(removeFromSuperview)
+                    withObject:nil
+                    afterDelay:0];
   cocoa_view_.autorelease();
   display::Screen::GetScreen()->RemoveObserver(this);
   popup_window_.reset();
