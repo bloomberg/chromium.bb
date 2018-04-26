@@ -427,8 +427,8 @@ void AuthenticatorImpl::MakeCredential(
     return;
   }
 
-  if (GetContentClient()->browser()->ShouldEnforceFocusChecksForWebauthn() &&
-      !render_frame_host_->GetView()->HasFocus()) {
+  if (!GetContentClient()->browser()->IsFocused(
+          WebContents::FromRenderFrameHost(render_frame_host_))) {
     std::move(callback).Run(webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
                             nullptr);
     return;
@@ -547,8 +547,8 @@ void AuthenticatorImpl::GetAssertion(
     return;
   }
 
-  if (GetContentClient()->browser()->ShouldEnforceFocusChecksForWebauthn() &&
-      !render_frame_host_->GetView()->HasFocus()) {
+  if (!GetContentClient()->browser()->IsFocused(
+          WebContents::FromRenderFrameHost(render_frame_host_))) {
     std::move(callback).Run(webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
                             nullptr);
     return;
@@ -850,8 +850,8 @@ void AuthenticatorImpl::InvokeCallbackAndCleanup(
     MakeCredentialCallback callback,
     webauth::mojom::AuthenticatorStatus status,
     webauth::mojom::MakeCredentialAuthenticatorResponsePtr response) {
-  if (GetContentClient()->browser()->ShouldEnforceFocusChecksForWebauthn() &&
-      !render_frame_host_->GetView()->HasFocus()) {
+  if (!GetContentClient()->browser()->IsFocused(
+          WebContents::FromRenderFrameHost(render_frame_host_))) {
     std::move(callback).Run(webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
                             nullptr);
   } else {
@@ -865,8 +865,8 @@ void AuthenticatorImpl::InvokeCallbackAndCleanup(
     GetAssertionCallback callback,
     webauth::mojom::AuthenticatorStatus status,
     webauth::mojom::GetAssertionAuthenticatorResponsePtr response) {
-  if (GetContentClient()->browser()->ShouldEnforceFocusChecksForWebauthn() &&
-      !render_frame_host_->GetView()->HasFocus()) {
+  if (!GetContentClient()->browser()->IsFocused(
+          WebContents::FromRenderFrameHost(render_frame_host_))) {
     std::move(callback).Run(webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
                             nullptr);
   } else {

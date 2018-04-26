@@ -413,7 +413,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const std::string& rp_id,
       const url::Origin& origin,
       base::OnceCallback<void(bool)> callback) override;
-  bool ShouldEnforceFocusChecksForWebauthn() override;
+  bool IsFocused(content::WebContents* web_contents) override;
 
   std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
       content::ResourceContext* resource_context) override;
