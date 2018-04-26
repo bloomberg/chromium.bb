@@ -79,7 +79,7 @@ class UserInputMonitorWinCore
   DISALLOW_COPY_AND_ASSIGN(UserInputMonitorWinCore);
 };
 
-class UserInputMonitorWin : public UserInputMonitor {
+class UserInputMonitorWin : public UserInputMonitorBase {
  public:
   explicit UserInputMonitorWin(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
@@ -124,8 +124,8 @@ void UserInputMonitorWinCore::StartMonitor() {
 
   std::unique_ptr<base::win::MessageWindow> window =
       std::make_unique<base::win::MessageWindow>();
-  if (!window->Create(base::Bind(&UserInputMonitorWinCore::HandleMessage,
-                                 base::Unretained(this)))) {
+  if (!window->Create(base::BindRepeating(
+          &UserInputMonitorWinCore::HandleMessage, base::Unretained(this)))) {
     PLOG(ERROR) << "Failed to create the raw input window";
     return;
   }
@@ -238,21 +238,21 @@ uint32_t UserInputMonitorWin::GetKeyPressCount() const {
 
 void UserInputMonitorWin::StartKeyboardMonitoring() {
   ui_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&UserInputMonitorWinCore::StartMonitor, core_->AsWeakPtr()));
+      FROM_HERE, base::BindOnce(&UserInputMonitorWinCore::StartMonitor,
+                                core_->AsWeakPtr()));
 }
 
 void UserInputMonitorWin::StopKeyboardMonitoring() {
   ui_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&UserInputMonitorWinCore::StopMonitor, core_->AsWeakPtr()));
+      FROM_HERE, base::BindOnce(&UserInputMonitorWinCore::StopMonitor,
+                                core_->AsWeakPtr()));
 }
 
 }  // namespace
 
 std::unique_ptr<UserInputMonitor> UserInputMonitor::Create(
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   return std::make_unique<UserInputMonitorWin>(ui_task_runner);
 }
 

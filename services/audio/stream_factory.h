@@ -27,7 +27,6 @@ class UnguessableToken;
 namespace media {
 class AudioManager;
 class AudioParameters;
-class UserInputMonitor;
 }  // namespace media
 
 namespace service_manager {
@@ -61,6 +60,7 @@ class StreamFactory final : public mojom::StreamFactory {
                          const media::AudioParameters& params,
                          uint32_t shared_memory_count,
                          bool enable_agc,
+                         mojo::ScopedSharedBufferHandle key_press_count_buffer,
                          CreateInputStreamCallback created_callback) final;
 
   void CreateOutputStream(
@@ -87,7 +87,6 @@ class StreamFactory final : public mojom::StreamFactory {
   SEQUENCE_CHECKER(owning_sequence_);
 
   media::AudioManager* const audio_manager_;
-  media::UserInputMonitor* user_input_monitor_;
 
   mojo::BindingSet<mojom::StreamFactory,
                    std::unique_ptr<service_manager::ServiceContextRef>>

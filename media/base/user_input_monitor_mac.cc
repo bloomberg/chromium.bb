@@ -13,7 +13,7 @@
 namespace media {
 namespace {
 
-class UserInputMonitorMac : public UserInputMonitor {
+class UserInputMonitorMac : public UserInputMonitorBase {
  public:
   UserInputMonitorMac();
   ~UserInputMonitorMac() override;
@@ -45,8 +45,8 @@ void UserInputMonitorMac::StopKeyboardMonitoring() {}
 }  // namespace
 
 std::unique_ptr<UserInputMonitor> UserInputMonitor::Create(
-    const scoped_refptr<base::SingleThreadTaskRunner>& input_task_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   return std::make_unique<UserInputMonitorMac>();
 }
 

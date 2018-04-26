@@ -83,7 +83,7 @@ class MockSyncWriter : public AudioInputController::SyncWriter {
   MOCK_METHOD0(Close, void());
 };
 
-class MockUserInputMonitor : public UserInputMonitor {
+class MockUserInputMonitor : public UserInputMonitorBase {
  public:
   MockUserInputMonitor() = default;
 

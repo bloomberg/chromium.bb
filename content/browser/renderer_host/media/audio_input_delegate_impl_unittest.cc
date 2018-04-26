@@ -105,7 +105,7 @@ class MockEventHandler : public media::AudioInputDelegate::EventHandler {
   MOCK_METHOD1(OnStreamError, void(int));
 };
 
-class MockUserInputMonitor : public media::UserInputMonitor {
+class MockUserInputMonitor : public media::UserInputMonitorBase {
  public:
   MockUserInputMonitor() {}
 

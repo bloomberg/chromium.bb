@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "media/base/media_export.h"
@@ -20,24 +21,29 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
-// Monitors and notifies about keyboard events.
-// Thread safe.
+// Utility functions for correctly and atomically reading from/writing to a
+// shared memory mapping containing key press count.
+uint32_t MEDIA_EXPORT
+ReadKeyPressMonitorCount(const base::ReadOnlySharedMemoryMapping& shmem);
+void MEDIA_EXPORT
+WriteKeyPressMonitorCount(const base::WritableSharedMemoryMapping& shmem,
+                          uint32_t count);
+
+// Base class for audio:: and media:: UserInputMonitor implementations.
 class MEDIA_EXPORT UserInputMonitor {
  public:
   UserInputMonitor();
   virtual ~UserInputMonitor();
 
-  // Creates a platform-specific instance of UserInputMonitor.
+  // Creates a platform-specific instance of UserInputMonitorBase.
   // |io_task_runner| is the task runner for an IO thread.
   // |ui_task_runner| is the task runner for a UI thread.
   static std::unique_ptr<UserInputMonitor> Create(
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
-  // A caller must call EnableKeyPressMonitoring and
-  // DisableKeyPressMonitoring in pair.
-  void EnableKeyPressMonitoring();
-  void DisableKeyPressMonitoring();
+  virtual void EnableKeyPressMonitoring() = 0;
+  virtual void DisableKeyPressMonitoring() = 0;
 
   // Returns the number of keypresses. The starting point from when it is
   // counted is not guaranteed, but consistent within the pair of calls of
@@ -48,13 +54,33 @@ class MEDIA_EXPORT UserInputMonitor {
   virtual uint32_t GetKeyPressCount() const = 0;
 
  private:
+  DISALLOW_COPY_AND_ASSIGN(UserInputMonitor);
+};
+
+// Monitors and notifies about keyboard events.
+// Thread safe.
+class MEDIA_EXPORT UserInputMonitorBase : public UserInputMonitor {
+ public:
+  UserInputMonitorBase();
+  ~UserInputMonitorBase() override;
+
+  // A caller must call EnableKeyPressMonitoring and
+  // DisableKeyPressMonitoring in pair.
+  void EnableKeyPressMonitoring() override;
+  void DisableKeyPressMonitoring() override;
+
+ private:
   virtual void StartKeyboardMonitoring() = 0;
   virtual void StopKeyboardMonitoring() = 0;
 
+  // Aquired in EnableKeyPressMonitoring()/DisableKeyPressMonitoring(). Together
+  // with |references_| updated under lock, it is used to ensure operation
+  // ordering for start/stop keyboard monitoring, i.e. start is always followed
+  // by stop and start is only called when keyboard monitoring is stopped.
   base::Lock lock_;
-  size_t key_press_counter_references_;
+  size_t references_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(UserInputMonitor);
+  DISALLOW_COPY_AND_ASSIGN(UserInputMonitorBase);
 };
 
 }  // namespace media
