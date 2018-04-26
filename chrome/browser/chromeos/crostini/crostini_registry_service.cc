@@ -42,6 +42,8 @@ constexpr char kAppCommentKey[] = "comment";
 constexpr char kAppMimeTypesKey[] = "mime_types";
 constexpr char kAppNameKey[] = "name";
 constexpr char kAppNoDisplayKey[] = "no_display";
+constexpr char kAppStartupWMClassKey[] = "startup_wm_class";
+constexpr char kAppStartupNotifyKey[] = "startup_notify";
 
 std::string GenerateAppId(const std::string& desktop_file_id,
                           const std::string& vm_name,
@@ -92,6 +94,38 @@ base::Value ProtoToList(
   return result;
 }
 
+enum class FindAppIdResult { NoMatch, UniqueMatch, NonUniqueMatch };
+// Looks for an app where prefs_key is set to search_value. Returns the apps id
+// if there was only one app matching, otherwise returns an empty string.
+FindAppIdResult FindAppId(const base::DictionaryValue* prefs,
+                          base::StringPiece prefs_key,
+                          base::StringPiece search_value,
+                          std::string* result,
+                          bool require_startup_notify = false) {
+  result->clear();
+  for (const auto& item : prefs->DictItems()) {
+    if (require_startup_notify &&
+        !item.second
+             .FindKeyOfType(kAppStartupNotifyKey, base::Value::Type::BOOLEAN)
+             ->GetBool())
+      continue;
+
+    const std::string& value =
+        item.second.FindKeyOfType(prefs_key, base::Value::Type::STRING)
+            ->GetString();
+    if (!EqualsCaseInsensitiveASCII(search_value, value))
+      continue;
+
+    if (!result->empty())
+      return FindAppIdResult::NonUniqueMatch;
+    *result = item.first;
+  }
+
+  if (!result->empty())
+    return FindAppIdResult::UniqueMatch;
+  return FindAppIdResult::NoMatch;
+}
+
 }  // namespace
 
 CrostiniRegistryService::Registration::Registration(
@@ -101,14 +135,18 @@ CrostiniRegistryService::Registration::Registration(
     const LocaleString& name,
     const LocaleString& comment,
     const std::vector<std::string>& mime_types,
-    bool no_display)
+    bool no_display,
+    const std::string& startup_wm_class,
+    bool startup_notify)
     : desktop_file_id(desktop_file_id),
       vm_name(vm_name),
       container_name(container_name),
       name(name),
       comment(comment),
       mime_types(mime_types),
-      no_display(no_display) {
+      no_display(no_display),
+      startup_wm_class(startup_wm_class),
+      startup_notify(startup_notify) {
   DCHECK(name.find(std::string()) != name.end());
 }
 
@@ -135,6 +173,16 @@ CrostiniRegistryService::CrostiniRegistryService(Profile* profile)
 
 CrostiniRegistryService::~CrostiniRegistryService() = default;
 
+// The code follows these steps to identify apps and returns the first match:
+// 1) Ignore windows if the App Id is prefixed by org.chromium.arc.
+// 2) If the Startup Id is set, look for a matching desktop file id.
+// 3) If the App Id is not prefixed by org.chromium.termina., it's an app with
+// native Wayland support. Look for a matching desktop file id.
+// 4) If the App Id is prefixed by org.chromium.wmclass.:
+// 4.1) Look for an app where StartupWMClass is matches the suffix.
+// 4.2) Look for an app where the desktop file id matches the suffix.
+// 5) If we couldn't find a match, prefix the app id with 'crostini:' so we can
+// easily identify shelf entries as Crostini apps.
 std::string CrostiniRegistryService::GetCrostiniShelfAppId(
     const std::string& window_app_id,
     const std::string* window_startup_id) {
@@ -142,45 +190,50 @@ std::string CrostiniRegistryService::GetCrostiniShelfAppId(
                        base::CompareCase::SENSITIVE))
     return std::string();
 
-  // TODO(timloh): We should:
-  // - Use and store startup notify values so we can check against it.
-  // - Store StartUpWMClass values and give these priority over matching the
-  // desktop file id for non-wayland apps
-
-  base::StringPiece key;
-  if (base::StartsWith(window_app_id, kCrostiniWindowAppIdPrefix,
-                       base::CompareCase::SENSITIVE)) {
-    base::StringPiece suffix(
-        window_app_id.begin() + strlen(kCrostiniWindowAppIdPrefix),
-        window_app_id.end());
-
-    // If we don't have an id to match to a desktop file, just return the window
-    // app id, which is already prefixed.
-    if (!base::StartsWith(suffix, kWMClassPrefix, base::CompareCase::SENSITIVE))
-      return kCrostiniAppIdPrefix + window_app_id;
-    key = suffix.substr(strlen(kWMClassPrefix));
-  } else {
-    key = window_app_id;
-  }
-
-  std::string result;
   const base::DictionaryValue* apps =
       prefs_->GetDictionary(kCrostiniRegistryPref);
-  for (const auto& item : apps->DictItems()) {
-    const std::string& desktop_file_id =
-        item.second
-            .FindKeyOfType(kAppDesktopFileIdKey, base::Value::Type::STRING)
-            ->GetString();
-    if (!EqualsCaseInsensitiveASCII(key, desktop_file_id))
-      continue;
+  std::string app_id;
 
-    if (!result.empty())
-      return kCrostiniAppIdPrefix + window_app_id;
-    result = item.first;
+  if (window_startup_id) {
+    // TODO(timloh): We should use a value that is unique so we can handle
+    // an app installed in multiple containers.
+    if (FindAppId(apps, kAppDesktopFileIdKey, *window_startup_id, &app_id,
+                  true) == FindAppIdResult::UniqueMatch)
+      return app_id;
+    LOG(ERROR) << "Startup ID was set to '" << *window_startup_id
+               << "' but not matched";
+    // Try a lookup with the window app id.
   }
 
-  if (!result.empty())
-    return result;
+  // Wayland apps won't be prefixed with org.chromium.termina.
+  if (!base::StartsWith(window_app_id, kCrostiniWindowAppIdPrefix,
+                        base::CompareCase::SENSITIVE)) {
+    if (FindAppId(apps, kAppDesktopFileIdKey, window_app_id, &app_id) ==
+        FindAppIdResult::UniqueMatch)
+      return app_id;
+    return kCrostiniAppIdPrefix + window_app_id;
+  }
+
+  base::StringPiece suffix(
+      window_app_id.begin() + strlen(kCrostiniWindowAppIdPrefix),
+      window_app_id.end());
+
+  // If we don't have an id to match to a desktop file, use the window app id.
+  if (!base::StartsWith(suffix, kWMClassPrefix, base::CompareCase::SENSITIVE))
+    return kCrostiniAppIdPrefix + window_app_id;
+
+  // If an app had StartupWMClass set to the given WM class, use that,
+  // otherwise look for a desktop file id matching the WM class.
+  base::StringPiece key = suffix.substr(strlen(kWMClassPrefix));
+  FindAppIdResult result = FindAppId(apps, kAppStartupWMClassKey, key, &app_id);
+  if (result == FindAppIdResult::UniqueMatch)
+    return app_id;
+  if (result == FindAppIdResult::NonUniqueMatch)
+    return kCrostiniAppIdPrefix + window_app_id;
+
+  if (FindAppId(apps, kAppDesktopFileIdKey, key, &app_id) ==
+      FindAppIdResult::UniqueMatch)
+    return app_id;
   return kCrostiniAppIdPrefix + window_app_id;
 }
 
@@ -232,12 +285,18 @@ CrostiniRegistryService::GetRegistration(const std::string& app_id) const {
       kAppMimeTypesKey, base::Value::Type::LIST);
   const base::Value* no_display = pref_registration->FindKeyOfType(
       kAppNoDisplayKey, base::Value::Type::BOOLEAN);
+  const base::Value* startup_wm_class = pref_registration->FindKeyOfType(
+      kAppStartupWMClassKey, base::Value::Type::STRING);
+  const base::Value* startup_notify = pref_registration->FindKeyOfType(
+      kAppStartupNotifyKey, base::Value::Type::BOOLEAN);
 
   return std::make_unique<Registration>(
       desktop_file_id->GetString(), vm_name->GetString(),
       container_name->GetString(), DictionaryToStringMap(name),
       DictionaryToStringMap(comment), ListToStringVector(mime_types),
-      no_display->GetBool());
+      no_display->GetBool(),
+      startup_wm_class ? startup_wm_class->GetString() : "",
+      startup_notify && startup_notify->GetBool());
 }
 
 void CrostiniRegistryService::UpdateApplicationList(
@@ -291,6 +350,10 @@ void CrostiniRegistryService::UpdateApplicationList(
                                ProtoToDictionary(app.comment()));
       pref_registration.SetKey(kAppMimeTypesKey, ProtoToList(app.mime_types()));
       pref_registration.SetKey(kAppNoDisplayKey, base::Value(app.no_display()));
+      pref_registration.SetKey(kAppStartupWMClassKey,
+                               base::Value(app.startup_wm_class()));
+      pref_registration.SetKey(kAppStartupNotifyKey,
+                               base::Value(app.startup_notify()));
 
       base::Value* old_app = apps->FindKey(app_id);
       if (old_app && pref_registration == *old_app)
