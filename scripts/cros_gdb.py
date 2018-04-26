@@ -415,6 +415,8 @@ To install the debug symbols for all available packages, run:
     gdb_commands = self.GetGdbInitCommands(self.inf_cmd)
     gdb_args = [gdb_cmd, '--quiet'] + ['--eval-command=%s' % x
                                        for x in gdb_commands]
+    gdb_args += self.gdb_args
+
     if self.cgdb:
       gdb_args = ['cgdb'] + gdb_args
 
