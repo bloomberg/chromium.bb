@@ -1123,7 +1123,7 @@ FloatQuad PaintLayerScrollableArea::LocalToVisibleContentQuad(
 
 scoped_refptr<base::SingleThreadTaskRunner>
 PaintLayerScrollableArea::GetTimerTaskRunner() const {
-  return GetLayoutBox()->GetFrame()->GetTaskRunner(TaskType::kUnspecedTimer);
+  return GetLayoutBox()->GetFrame()->GetTaskRunner(TaskType::kInternalDefault);
 }
 
 ScrollBehavior PaintLayerScrollableArea::ScrollBehaviorStyle() const {

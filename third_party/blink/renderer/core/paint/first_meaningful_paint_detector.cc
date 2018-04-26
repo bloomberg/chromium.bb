@@ -34,11 +34,11 @@ FirstMeaningfulPaintDetector::FirstMeaningfulPaintDetector(
     Document& document)
     : paint_timing_(paint_timing),
       network0_quiet_timer_(
-          document.GetTaskRunner(TaskType::kUnspecedTimer),
+          document.GetTaskRunner(TaskType::kInternalDefault),
           this,
           &FirstMeaningfulPaintDetector::Network0QuietTimerFired),
       network2_quiet_timer_(
-          document.GetTaskRunner(TaskType::kUnspecedTimer),
+          document.GetTaskRunner(TaskType::kInternalDefault),
           this,
           &FirstMeaningfulPaintDetector::Network2QuietTimerFired) {}
 

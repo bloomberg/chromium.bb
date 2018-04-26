@@ -90,7 +90,7 @@ class TextFinder::DeferredScopeStringMatches
                              const WebString& search_text,
                              const WebFindOptions& options)
       : timer_(text_finder->OwnerFrame().GetFrame()->GetTaskRunner(
-                   TaskType::kUnspecedTimer),
+                   TaskType::kInternalDefault),
                this,
                &DeferredScopeStringMatches::DoTimeout),
         text_finder_(text_finder),

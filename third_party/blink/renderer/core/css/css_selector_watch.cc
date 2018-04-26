@@ -47,7 +47,7 @@ const char CSSSelectorWatch::kSupplementName[] = "CSSSelectorWatch";
 CSSSelectorWatch::CSSSelectorWatch(Document& document)
     : Supplement<Document>(document),
       callback_selector_change_timer_(
-          document.GetTaskRunner(TaskType::kUnspecedTimer),
+          document.GetTaskRunner(TaskType::kInternalDefault),
           this,
           &CSSSelectorWatch::CallbackSelectorChangeTimerFired),
       timer_expirations_(0) {}

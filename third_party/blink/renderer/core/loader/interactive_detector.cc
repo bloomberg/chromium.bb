@@ -46,7 +46,7 @@ InteractiveDetector::InteractiveDetector(
     : Supplement<Document>(document),
       network_activity_checker_(network_activity_checker),
       time_to_interactive_timer_(
-          document.GetTaskRunner(TaskType::kUnspecedTimer),
+          document.GetTaskRunner(TaskType::kInternalDefault),
           this,
           &InteractiveDetector::TimeToInteractiveTimerFired) {}
 

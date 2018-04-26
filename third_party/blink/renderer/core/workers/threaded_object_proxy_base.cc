@@ -17,7 +17,7 @@ namespace blink {
 
 void ThreadedObjectProxyBase::CountFeature(WebFeature feature) {
   PostCrossThreadTask(
-      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnspecedTimer),
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,
       CrossThreadBind(&ThreadedMessagingProxyBase::CountFeature,
                       MessagingProxyWeakPtr(), feature));
@@ -25,7 +25,7 @@ void ThreadedObjectProxyBase::CountFeature(WebFeature feature) {
 
 void ThreadedObjectProxyBase::CountDeprecation(WebFeature feature) {
   PostCrossThreadTask(
-      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnspecedTimer),
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,
       CrossThreadBind(&ThreadedMessagingProxyBase::CountDeprecation,
                       MessagingProxyWeakPtr(), feature));
@@ -36,7 +36,7 @@ void ThreadedObjectProxyBase::ReportConsoleMessage(MessageSource source,
                                                    const String& message,
                                                    SourceLocation* location) {
   PostCrossThreadTask(
-      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnspecedTimer),
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,
       CrossThreadBind(&ThreadedMessagingProxyBase::ReportConsoleMessage,
                       MessagingProxyWeakPtr(), source, level, message,
@@ -58,7 +58,7 @@ void ThreadedObjectProxyBase::PostMessageToPageInspector(
 
 void ThreadedObjectProxyBase::DidCloseWorkerGlobalScope() {
   PostCrossThreadTask(
-      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnspecedTimer),
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,
       CrossThreadBind(&ThreadedMessagingProxyBase::TerminateGlobalScope,
                       MessagingProxyWeakPtr()));
@@ -67,7 +67,7 @@ void ThreadedObjectProxyBase::DidCloseWorkerGlobalScope() {
 void ThreadedObjectProxyBase::DidTerminateWorkerThread() {
   // This will terminate the MessagingProxy.
   PostCrossThreadTask(
-      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnspecedTimer),
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,
       CrossThreadBind(&ThreadedMessagingProxyBase::WorkerThreadTerminated,
                       MessagingProxyWeakPtr()));

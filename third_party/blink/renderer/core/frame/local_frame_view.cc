@@ -202,10 +202,10 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       can_have_scrollbars_(true),
       has_pending_layout_(false),
       in_synchronous_post_layout_(false),
-      post_layout_tasks_timer_(frame.GetTaskRunner(TaskType::kUnspecedTimer),
+      post_layout_tasks_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
                                this,
                                &LocalFrameView::PostLayoutTimerFired),
-      update_plugins_timer_(frame.GetTaskRunner(TaskType::kUnspecedTimer),
+      update_plugins_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
                             this,
                             &LocalFrameView::UpdatePluginsTimerFired),
       base_background_color_(Color::kWhite),
@@ -215,7 +215,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       sticky_position_object_count_(0),
       input_events_scale_factor_for_emulation_(1),
       layout_size_fixed_to_frame_size_(true),
-      did_scroll_timer_(frame.GetTaskRunner(TaskType::kUnspecedTimer),
+      did_scroll_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
                         this,
                         &LocalFrameView::DidScrollTimerFired),
       needs_update_geometries_(false),
@@ -717,7 +717,7 @@ FloatQuad LocalFrameView::LocalToVisibleContentQuad(
 
 scoped_refptr<base::SingleThreadTaskRunner> LocalFrameView::GetTimerTaskRunner()
     const {
-  return frame_->GetTaskRunner(TaskType::kUnspecedTimer);
+  return frame_->GetTaskRunner(TaskType::kInternalDefault);
 }
 
 void LocalFrameView::SetCanHaveScrollbars(bool can_have_scrollbars) {

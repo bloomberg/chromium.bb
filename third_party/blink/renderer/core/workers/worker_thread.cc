@@ -368,7 +368,7 @@ WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
 void WorkerThread::ScheduleToTerminateScriptExecution() {
   DCHECK(!forcible_termination_task_handle_.IsActive());
   forcible_termination_task_handle_ = PostDelayedCancellableTask(
-      *parent_execution_context_task_runners_->Get(TaskType::kUnspecedTimer),
+      *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
       FROM_HERE,
       WTF::Bind(&WorkerThread::EnsureScriptExecutionTerminates,
                 WTF::Unretained(this), ExitCode::kAsyncForciblyTerminated),
