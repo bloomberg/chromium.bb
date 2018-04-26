@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
+#include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
@@ -47,6 +48,8 @@ using AuthToken = chromeos::quick_unlock::AuthToken;
 using QuickUnlockModeList = std::vector<QuickUnlockMode>;
 using QuickUnlockStorage = chromeos::quick_unlock::QuickUnlockStorage;
 
+using ActiveModeCallback = base::OnceCallback<void(const QuickUnlockModeList&)>;
+
 namespace {
 
 const char kModesAndCredentialsLengthMismatch[] =
@@ -74,16 +77,19 @@ constexpr const char* kMostCommonPins[] = {"1212", "1004", "2000", "6969",
                                            "1122", "1313", "2001", "1010"};
 
 // Returns the active set of quick unlock modes.
-QuickUnlockModeList ComputeActiveModes(Profile* profile) {
-  QuickUnlockModeList modes;
-
-  QuickUnlockStorage* quick_unlock_storage =
-      chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile);
-  if (quick_unlock_storage &&
-      quick_unlock_storage->pin_storage_prefs()->IsPinSet())
-    modes.push_back(quick_unlock_private::QUICK_UNLOCK_MODE_PIN);
-
-  return modes;
+void ComputeActiveModes(Profile* profile, ActiveModeCallback result) {
+  user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  chromeos::quick_unlock::PinBackend::IsSet(
+      user->GetAccountId(),
+      base::BindOnce(
+          [](ActiveModeCallback result, bool is_set) {
+            QuickUnlockModeList modes;
+            if (is_set)
+              modes.push_back(quick_unlock_private::QUICK_UNLOCK_MODE_PIN);
+            std::move(result).Run(modes);
+          },
+          std::move(result)));
 }
 
 // Returns true if |a| and |b| contain the same elements. The elements do not
@@ -263,6 +269,11 @@ void QuickUnlockPrivateGetAuthTokenFunction::OnAuthSuccess(
   result->token = quick_unlock_storage->CreateAuthToken(user_context);
   result->lifetime_seconds = AuthToken::kTokenExpirationSeconds;
 
+  // The user has successfully authenticated so we should reset pin/fingerprint
+  // attempt counts.
+  quick_unlock_storage->pin_storage_prefs()->ResetUnlockAttemptCount();
+  quick_unlock_storage->fingerprint_storage()->ResetUnlockAttemptCount();
+
   Respond(ArgumentList(
       quick_unlock_private::GetAuthToken::Results::Create(*result)));
   Release();  // Balanced in Run().
@@ -323,13 +334,20 @@ QuickUnlockPrivateGetActiveModesFunction::
     : chrome_details_(this) {}
 
 QuickUnlockPrivateGetActiveModesFunction::
-    ~QuickUnlockPrivateGetActiveModesFunction() {}
+    ~QuickUnlockPrivateGetActiveModesFunction() = default;
 
 ExtensionFunction::ResponseAction
 QuickUnlockPrivateGetActiveModesFunction::Run() {
-  const QuickUnlockModeList modes =
-      ComputeActiveModes(chrome_details_.GetProfile());
-  return RespondNow(ArgumentList(GetActiveModes::Results::Create(modes)));
+  ComputeActiveModes(
+      chrome_details_.GetProfile(),
+      base::BindOnce(
+          &QuickUnlockPrivateGetActiveModesFunction::OnGetActiveModes, this));
+  return RespondLater();
+}
+
+void QuickUnlockPrivateGetActiveModesFunction::OnGetActiveModes(
+    const std::vector<api::quick_unlock_private::QuickUnlockMode>& modes) {
+  Respond(ArgumentList(GetActiveModes::Results::Create(modes)));
 }
 
 // quickUnlockPrivate.checkCredential
@@ -463,26 +481,18 @@ ExtensionFunction::ResponseAction QuickUnlockPrivateSetModesFunction::Run() {
       return RespondNow(Error(kWeakCredential));
   }
 
-  const QuickUnlockModeList initial_modes =
-      ComputeActiveModes(chrome_details_.GetProfile());
-  ApplyModeChange();
-  const QuickUnlockModeList updated_modes =
-      ComputeActiveModes(chrome_details_.GetProfile());
+  ComputeActiveModes(
+      chrome_details_.GetProfile(),
+      base::BindOnce(&QuickUnlockPrivateSetModesFunction::OnGetActiveModes,
+                     this));
 
-  if (!AreModesEqual(initial_modes, updated_modes))
-    FireEvent(updated_modes);
-
-  const user_manager::User* const user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(
-          chrome_details_.GetProfile());
-  chromeos::UserContext user_context(user->GetAccountId());
-  chromeos::EasyUnlockService::Get(chrome_details_.GetProfile())
-      ->HandleUserReauth(user_context);
-
-  return RespondNow(ArgumentList(SetModes::Results::Create()));
+  return RespondLater();
 }
 
-void QuickUnlockPrivateSetModesFunction::ApplyModeChange() {
+void QuickUnlockPrivateSetModesFunction::OnGetActiveModes(
+    const std::vector<QuickUnlockMode>& initial_modes) {
+  initial_modes_ = initial_modes;
+
   // This function is setup so it is easy to add another quick unlock mode while
   // following all of the invariants, which are:
   //
@@ -508,16 +518,47 @@ void QuickUnlockPrivateSetModesFunction::ApplyModeChange() {
   // Apply changes.
   if (update_pin) {
     Profile* profile = chrome_details_.GetProfile();
-    QuickUnlockStorage* quick_unlock_storage =
-        chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile);
-
+    user_manager::User* user =
+        chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     if (pin_credential.empty()) {
-      quick_unlock_storage->pin_storage_prefs()->RemovePin();
+      chromeos::quick_unlock::PinBackend::Remove(
+          user->GetAccountId(), params_->token,
+          base::BindOnce(
+              &QuickUnlockPrivateSetModesFunction::PinBackendCallComplete,
+              this));
     } else {
-      quick_unlock_storage->pin_storage_prefs()->SetPin(pin_credential);
-      quick_unlock_storage->MarkStrongAuth();
+      chromeos::quick_unlock::PinBackend::Set(
+          user->GetAccountId(), params_->token, pin_credential,
+          base::BindOnce(
+              &QuickUnlockPrivateSetModesFunction::PinBackendCallComplete,
+              this));
     }
+  } else {
+    // No changes to apply. Call result directly.
+    ModeChangeComplete(initial_modes_);
   }
+}
+
+void QuickUnlockPrivateSetModesFunction::PinBackendCallComplete(bool result) {
+  ComputeActiveModes(
+      chrome_details_.GetProfile(),
+      base::BindOnce(&QuickUnlockPrivateSetModesFunction::ModeChangeComplete,
+                     this));
+}
+
+void QuickUnlockPrivateSetModesFunction::ModeChangeComplete(
+    const std::vector<QuickUnlockMode>& updated_modes) {
+  if (!AreModesEqual(initial_modes_, updated_modes))
+    FireEvent(updated_modes);
+
+  const user_manager::User* const user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(
+          chrome_details_.GetProfile());
+  const chromeos::UserContext user_context(user->GetAccountId());
+  chromeos::EasyUnlockService::Get(chrome_details_.GetProfile())
+      ->HandleUserReauth(user_context);
+
+  Respond(ArgumentList(SetModes::Results::Create()));
 }
 
 // Triggers a quickUnlockPrivate.onActiveModesChanged change event.

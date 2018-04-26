@@ -236,6 +236,12 @@ class ScreenLocker : public AuthStatusConsumer,
   // lock request is failed.
   void OnStartLockCallback(bool locked);
 
+  void OnPinAttemptDone(const UserContext& user_context, bool success);
+
+  // Called to continue authentication against cryptohome after the pin login
+  // check has completed.
+  void ContinueAuthenticate(const UserContext& user_context);
+
   // WebUIScreenLocker instance in use.
   std::unique_ptr<WebUIScreenLocker> web_ui_;
 

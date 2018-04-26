@@ -27,6 +27,10 @@ namespace base {
 class FilePath;
 }
 
+namespace chromeos {
+class QuickUnlockPrivateUnitTest;
+}
+
 namespace extensions {
 class ExtensionGarbageCollectorChromeOSUnitTest;
 }
@@ -189,6 +193,7 @@ class ProfileHelper
   friend class arc::ArcSessionManagerTest;
   friend class arc::ArcAuthServiceTest;
   friend class arc::ArcCertStoreBridgeTest;
+  friend class chromeos::QuickUnlockPrivateUnitTest;
   friend class ::ArcAppTest;
   friend class ::SessionControllerClientTest;
   friend class ::test::BrowserFinderChromeOSTest;

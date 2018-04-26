@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/auth/fake_extended_authenticator.h"
@@ -118,6 +119,8 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
     fake_user_manager_->AddUser(test_account);
     fake_user_manager_->UserLoggedIn(test_account, kTestUserEmailHash, false,
                                      false);
+    ProfileHelper::Get()->SetUserToProfileMappingForTesting(
+        fake_user_manager_->GetPrimaryUser(), GetProfile());
 
     // Generate an auth token.
     token_ = quick_unlock::QuickUnlockFactory::GetForProfile(profile())

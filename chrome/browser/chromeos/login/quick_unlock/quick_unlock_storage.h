@@ -66,9 +66,15 @@ class QuickUnlockStorage : public KeyedService {
   // token if valid, or an empty string if it has expired.
   std::string GetAuthToken();
 
+  // Fetch the user context if |auth_token| is valid. May return null.
+  UserContext* GetUserContext(const std::string& auth_token);
+
   FingerprintStorage* fingerprint_storage() {
     return fingerprint_storage_.get();
   }
+
+  // Fetch the underlying pref pin storage. If iteracting with pin generally,
+  // use the PinBackend APIs.
   PinStoragePrefs* pin_storage_prefs() { return pin_storage_prefs_.get(); }
 
  private:

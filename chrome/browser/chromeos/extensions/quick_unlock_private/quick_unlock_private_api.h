@@ -109,6 +109,9 @@ class QuickUnlockPrivateGetActiveModesFunction
   ResponseAction Run() override;
 
  private:
+  void OnGetActiveModes(
+      const std::vector<api::quick_unlock_private::QuickUnlockMode>& modes);
+
   ChromeExtensionFunctionDetails chrome_details_;
 
   DISALLOW_COPY_AND_ASSIGN(QuickUnlockPrivateGetActiveModesFunction);
@@ -172,13 +175,21 @@ class QuickUnlockPrivateSetModesFunction : public UIThreadExtensionFunction {
   // ExtensionFunction overrides.
   ResponseAction Run() override;
 
-  void ApplyModeChange();
+  // Continuation of OnAuthSuccess after active modes have been fetched.
+  void OnGetActiveModes(const std::vector<QuickUnlockMode>& modes);
+
+  void PinBackendCallComplete(bool result);
+
+  // Apply any changes specified in |params_|. Returns the new active modes.
+  void ModeChangeComplete(const std::vector<QuickUnlockMode>& updated_modes);
 
  private:
   void FireEvent(const std::vector<QuickUnlockMode>& modes);
 
   ChromeExtensionFunctionDetails chrome_details_;
   std::unique_ptr<api::quick_unlock_private::SetModes::Params> params_;
+
+  std::vector<QuickUnlockMode> initial_modes_;
 
   ModesChangedEventHandler modes_changed_handler_;
 
