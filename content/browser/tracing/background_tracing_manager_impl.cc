@@ -25,7 +25,7 @@
 #include "content/public/browser/tracing_delegate.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "services/tracing/public/cpp/chrome_trace_event_agent.h"
+#include "services/tracing/public/cpp/trace_event_agent.h"
 
 namespace content {
 
@@ -105,9 +105,11 @@ BackgroundTracingManagerImpl::~BackgroundTracingManagerImpl() {
 }
 
 void BackgroundTracingManagerImpl::AddMetadataGeneratorFunction() {
-  tracing::ChromeTraceEventAgent::GetInstance()->AddMetadataGeneratorFunction(
-      base::BindRepeating(&BackgroundTracingManagerImpl::GenerateMetadataDict,
-                          base::Unretained(this)));
+  TracingControllerImpl::GetInstance()
+      ->GetTraceEventAgent()
+      ->AddMetadataGeneratorFunction(base::BindRepeating(
+          &BackgroundTracingManagerImpl::GenerateMetadataDict,
+          base::Unretained(this)));
 }
 
 void BackgroundTracingManagerImpl::WhenIdle(

@@ -23,7 +23,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/test_content_browser_client.h"
-#include "services/tracing/public/cpp/chrome_trace_event_agent.h"
+#include "services/tracing/public/cpp/trace_event_agent.h"
 
 using base::trace_event::RECORD_CONTINUOUSLY;
 using base::trace_event::RECORD_UNTIL_FULL;
@@ -236,10 +236,9 @@ class TracingControllerTest : public ContentBrowserTest {
     base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
         base::Bind(&IsTraceEventArgsWhitelisted));
 
-    TracingController* controller = TracingController::GetInstance();
-    tracing::ChromeTraceEventAgent::GetInstance()->AddMetadataGeneratorFunction(
-        base::Bind(&TracingControllerTest::GenerateMetadataDict,
-                   base::Unretained(this)));
+    TracingControllerImpl* controller = TracingControllerImpl::GetInstance();
+    controller->GetTraceEventAgent()->AddMetadataGeneratorFunction(base::Bind(
+        &TracingControllerTest::GenerateMetadataDict, base::Unretained(this)));
 
     {
       base::RunLoop run_loop;

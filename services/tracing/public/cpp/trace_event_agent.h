@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_TRACING_PUBLIC_CPP_CHROME_TRACE_EVENT_AGENT_H_
-#define SERVICES_TRACING_PUBLIC_CPP_CHROME_TRACE_EVENT_AGENT_H_
+#ifndef SERVICES_TRACING_PUBLIC_CPP_TRACE_EVENT_AGENT_H_
+#define SERVICES_TRACING_PUBLIC_CPP_TRACE_EVENT_AGENT_H_
 
 #include <memory>
 #include <string>
@@ -27,23 +27,40 @@ class Connector;
 
 namespace tracing {
 
-class COMPONENT_EXPORT(TRACING_CPP) ChromeTraceEventAgent : public BaseAgent {
+class COMPONENT_EXPORT(TRACING_CPP) TraceEventAgent {
  public:
   using MetadataGeneratorFunction =
       base::RepeatingCallback<std::unique_ptr<base::DictionaryValue>()>;
 
-  static ChromeTraceEventAgent* GetInstance();
+  static std::unique_ptr<TraceEventAgent> Create(
+      service_manager::Connector* connector,
+      bool request_clock_sync_marker_on_android);
 
-  explicit ChromeTraceEventAgent(service_manager::Connector* connector,
-                                 bool request_clock_sync_marker_on_android);
+  TraceEventAgent();
+  virtual ~TraceEventAgent();
 
-  void AddMetadataGeneratorFunction(MetadataGeneratorFunction generator);
+  virtual void AddMetadataGeneratorFunction(
+      MetadataGeneratorFunction generator) {}
 
  private:
-  friend std::default_delete<ChromeTraceEventAgent>;  // For Testing
-  friend class ChromeTraceEventAgentTest;             // For Testing
+  DISALLOW_COPY_AND_ASSIGN(TraceEventAgent);
+};
 
-  ~ChromeTraceEventAgent() override;
+class COMPONENT_EXPORT(TRACING_CPP) TraceEventAgentImpl
+    : public BaseAgent,
+      public TraceEventAgent {
+ public:
+  TraceEventAgentImpl(service_manager::Connector* connector,
+                      bool request_clock_sync_marker_on_android);
+
+  void AddMetadataGeneratorFunction(
+      MetadataGeneratorFunction generator) override;
+
+ private:
+  friend std::default_delete<TraceEventAgentImpl>;  // For Testing
+  friend class TraceEventAgentTest;                 // For Testing
+
+  ~TraceEventAgentImpl() override;
 
   // mojom::Agent
   void StartTracing(const std::string& config,
@@ -66,8 +83,8 @@ class COMPONENT_EXPORT(TRACING_CPP) ChromeTraceEventAgent : public BaseAgent {
 
   THREAD_CHECKER(thread_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeTraceEventAgent);
+  DISALLOW_COPY_AND_ASSIGN(TraceEventAgentImpl);
 };
 
 }  // namespace tracing
-#endif  // SERVICES_TRACING_PUBLIC_CPP_CHROME_TRACE_EVENT_AGENT_H_
+#endif  // SERVICES_TRACING_PUBLIC_CPP_TRACE_EVENT_AGENT_H_

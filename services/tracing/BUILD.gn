@@ -31,8 +31,12 @@ source_set("lib") {
 
   if (is_mac || is_linux || is_android) {
     sources += [
+      "perfetto/json_trace_exporter.cc",
+      "perfetto/json_trace_exporter.h",
       "perfetto/perfetto_service.cc",
       "perfetto/perfetto_service.h",
+      "perfetto/perfetto_tracing_coordinator.cc",
+      "perfetto/perfetto_tracing_coordinator.h",
       "perfetto/producer_host.cc",
       "perfetto/producer_host.h",
     ]
@@ -70,11 +74,15 @@ source_set("tests") {
   sources = [
     "agent_registry_unittest.cc",
     "coordinator_unittest.cc",
-    "public/cpp/chrome_trace_event_agent_unittest.cc",
+    "public/cpp/trace_event_agent_unittest.cc",
     "recorder_unittest.cc",
     "test_util.cc",
     "test_util.h",
   ]
+
+  if (is_mac || is_linux || is_android) {
+    sources += [ "public/cpp/perfetto/trace_event_data_source_unittest.cc" ]
+  }
 
   if (!is_android) {
     sources += [ "tracing_service_unittest.cc" ]
@@ -94,9 +102,13 @@ source_set("tests") {
   ]
 
   if (is_mac || is_linux || is_android) {
-    sources += [ "perfetto/perfetto_integration_unittest.cc" ]
+    sources += [
+      "perfetto/json_trace_exporter_unittest.cc",
+      "perfetto/perfetto_integration_unittest.cc",
+    ]
 
     deps += [
+      "//third_party/perfetto/include/perfetto/protozero:protozero",
       "//third_party/perfetto/protos/perfetto/common",
       "//third_party/perfetto/protos/perfetto/trace:lite",
       "//third_party/perfetto/protos/perfetto/trace:zero",

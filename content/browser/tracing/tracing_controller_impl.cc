@@ -34,7 +34,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/network_change_notifier.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/tracing/public/cpp/chrome_trace_event_agent.h"
+#include "services/tracing/public/cpp/trace_event_agent.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "v8/include/v8-version-string.h"
 
@@ -146,18 +146,24 @@ void TracingControllerImpl::AddAgents() {
   agents_.push_back(std::make_unique<EtwTracingAgent>(connector));
 #endif
 
-  auto chrome_agent = std::make_unique<tracing::ChromeTraceEventAgent>(
+  auto trace_event_agent = tracing::TraceEventAgent::Create(
       connector, true /* request_clock_sync_marker_on_android */);
+
   // For adding general CPU, network, OS, and other system information to the
   // metadata.
-  chrome_agent->AddMetadataGeneratorFunction(base::BindRepeating(
+  trace_event_agent->AddMetadataGeneratorFunction(base::BindRepeating(
       &TracingControllerImpl::GenerateMetadataDict, base::Unretained(this)));
   if (delegate_) {
-    chrome_agent->AddMetadataGeneratorFunction(
+    trace_event_agent->AddMetadataGeneratorFunction(
         base::BindRepeating(&TracingDelegate::GenerateMetadataDict,
                             base::Unretained(delegate_.get())));
   }
-  agents_.push_back(std::move(chrome_agent));
+  trace_event_agent_ = std::move(trace_event_agent);
+}
+
+tracing::TraceEventAgent* TracingControllerImpl::GetTraceEventAgent() const {
+  DCHECK(trace_event_agent_);
+  return trace_event_agent_.get();
 }
 
 std::unique_ptr<base::DictionaryValue>

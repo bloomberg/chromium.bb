@@ -6,8 +6,8 @@ component("cpp") {
   sources = [
     "base_agent.cc",
     "base_agent.h",
-    "chrome_trace_event_agent.cc",
-    "chrome_trace_event_agent.h",
+    "trace_event_agent.cc",
+    "trace_event_agent.h",
     "tracing_features.cc",
     "tracing_features.h",
   ]
@@ -30,6 +30,8 @@ component("cpp") {
       "perfetto/shared_memory.h",
       "perfetto/task_runner.cc",
       "perfetto/task_runner.h",
+      "perfetto/trace_event_data_source.cc",
+      "perfetto/trace_event_data_source.h",
     ]
 
     deps = [

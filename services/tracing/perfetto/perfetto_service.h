@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/tracing/public/cpp/perfetto/task_runner.h"
@@ -30,10 +31,12 @@ namespace tracing {
 // ProducerHost.
 class PerfettoService : public mojom::PerfettoService {
  public:
-  PerfettoService();
+  explicit PerfettoService(scoped_refptr<base::SequencedTaskRunner>
+                               task_runner_for_testing = nullptr);
   ~PerfettoService() override;
 
   static PerfettoService* GetInstance();
+  static void DestroyOnSequence(std::unique_ptr<PerfettoService>);
 
   void BindRequest(mojom::PerfettoServiceRequest request,
                    const service_manager::BindSourceInfo& source_info);
@@ -42,12 +45,20 @@ class PerfettoService : public mojom::PerfettoService {
   void ConnectToProducerHost(mojom::ProducerClientPtr producer_client,
                              mojom::ProducerHostRequest producer_host) override;
 
-  perfetto::Service* service() const { return service_.get(); }
+  perfetto::Service* GetService() const;
+  base::SequencedTaskRunner* task_runner() {
+    return perfetto_task_runner_.task_runner();
+  }
 
  private:
+  void BindOnSequence(mojom::PerfettoServiceRequest request,
+                      const service_manager::Identity& identity);
+  void CreateServiceOnSequence();
+
   PerfettoTaskRunner perfetto_task_runner_;
   std::unique_ptr<perfetto::Service> service_;
   mojo::BindingSet<mojom::PerfettoService, service_manager::Identity> bindings_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PerfettoService);
 };

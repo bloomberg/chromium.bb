@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/tracing/public/cpp/chrome_trace_event_agent.h"
+#include "services/tracing/public/cpp/trace_event_agent.h"
 
 #include <utility>
 
@@ -22,8 +22,8 @@
 namespace tracing {
 
 namespace {
-const char kTestCategory[] = "ChromeTraceEventAgentTestCategory";
-const char kTestMetadataKey[] = "ChromeTraceEventAgentTestMetadata";
+const char kTestCategory[] = "TraceEventAgentTestCategory";
+const char kTestMetadataKey[] = "TraceEventAgentTestMetadata";
 }  // namespace
 
 class MockRecorder : public mojom::Recorder {
@@ -79,11 +79,11 @@ class MockRecorder : public mojom::Recorder {
   base::Closure quit_closure_;
 };
 
-class ChromeTraceEventAgentTest : public testing::Test {
+class TraceEventAgentTest : public testing::Test {
  public:
   void SetUp() override {
     message_loop_.reset(new base::MessageLoop());
-    agent_.reset(new ChromeTraceEventAgent(nullptr, false));
+    agent_.reset(new TraceEventAgentImpl(nullptr, false));
   }
 
   void TearDown() override {
@@ -108,15 +108,15 @@ class ChromeTraceEventAgentTest : public testing::Test {
   }
 
   void AddMetadataGeneratorFunction(
-      ChromeTraceEventAgent::MetadataGeneratorFunction generator) {
+      TraceEventAgent::MetadataGeneratorFunction generator) {
     agent_->AddMetadataGeneratorFunction(generator);
   }
 
   void GetCategories(const std::string& expected_category,
                      base::Closure quit_closure) {
     agent_->GetCategories(base::BindRepeating(
-        &ChromeTraceEventAgentTest::OnGetCategoriesReply,
-        base::Unretained(this), expected_category, quit_closure));
+        &TraceEventAgentTest::OnGetCategoriesReply, base::Unretained(this),
+        expected_category, quit_closure));
   }
 
   void OnGetCategoriesReply(const std::string& expected_category,
@@ -130,11 +130,11 @@ class ChromeTraceEventAgentTest : public testing::Test {
 
  private:
   std::unique_ptr<base::MessageLoop> message_loop_;
-  std::unique_ptr<ChromeTraceEventAgent> agent_;
+  std::unique_ptr<TraceEventAgentImpl> agent_;
   std::unique_ptr<MockRecorder> recorder_;
 };
 
-TEST_F(ChromeTraceEventAgentTest, StartTracing) {
+TEST_F(TraceEventAgentTest, StartTracing) {
   EXPECT_FALSE(base::trace_event::TraceLog::GetInstance()->IsEnabled());
   base::RunLoop run_loop;
   StartTracing("*");
@@ -143,7 +143,7 @@ TEST_F(ChromeTraceEventAgentTest, StartTracing) {
   run_loop.Run();
 }
 
-TEST_F(ChromeTraceEventAgentTest, StopAndFlushEvents) {
+TEST_F(TraceEventAgentTest, StopAndFlushEvents) {
   EXPECT_FALSE(base::trace_event::TraceLog::GetInstance()->IsEnabled());
   base::RunLoop run_loop;
   StartTracing(kTestCategory);
@@ -158,14 +158,14 @@ TEST_F(ChromeTraceEventAgentTest, StopAndFlushEvents) {
   EXPECT_FALSE(base::trace_event::TraceLog::GetInstance()->IsEnabled());
 }
 
-TEST_F(ChromeTraceEventAgentTest, GetCategories) {
+TEST_F(TraceEventAgentTest, GetCategories) {
   base::RunLoop run_loop;
   TRACE_EVENT_INSTANT0(kTestCategory, "event1", TRACE_EVENT_SCOPE_THREAD);
   GetCategories(kTestCategory, run_loop.QuitClosure());
   run_loop.Run();
 }
 
-TEST_F(ChromeTraceEventAgentTest, StopAndFlushMetadata) {
+TEST_F(TraceEventAgentTest, StopAndFlushMetadata) {
   EXPECT_FALSE(base::trace_event::TraceLog::GetInstance()->IsEnabled());
   base::RunLoop run_loop;
   AddMetadataGeneratorFunction(base::BindRepeating([] {
