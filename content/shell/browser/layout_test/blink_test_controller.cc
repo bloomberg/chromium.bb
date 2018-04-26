@@ -597,11 +597,19 @@ void BlinkTestController::OnInitiateCaptureDump(bool capture_navigation_history,
         switches::kEnableDisplayCompositorPixelDump));
     waiting_for_pixel_results_ = true;
 
-    // Trigger compositing on all frames.
-    CompositeAllFrames();
+    auto* rwhv = main_window_->web_contents()->GetRenderWidgetHostView();
+    // If we're running in threaded mode, then the frames will be produced via a
+    // scheduler elsewhere, all we need to do is to ensure that the surface is
+    // synchronized before we copy from it. In single threaded mode, we have to
+    // force each renderer to produce a frame.
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableThreadedCompositing)) {
+      rwhv->EnsureSurfaceSynchronizedForLayoutTest();
+    } else {
+      CompositeAllFrames();
+    }
 
     // Enqueue a copy output request.
-    auto* rwhv = main_window_->web_contents()->GetRenderWidgetHostView();
     rwhv->CopyFromSurface(
         gfx::Rect(), gfx::Size(),
         base::BindOnce(&BlinkTestController::OnPixelDumpCaptured,
