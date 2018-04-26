@@ -10,29 +10,33 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_context_menu.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/image/image_skia_operations.h"
 
 // static
 const char CrostiniAppItem::kItemType[] = "CrostiniAppItem";
 
 CrostiniAppItem::CrostiniAppItem(
     Profile* profile,
+    AppListModelUpdater* model_updater,
     const app_list::AppListSyncableService::SyncItem* sync_item,
     const std::string& id,
-    const std::string& name,
-    const gfx::ImageSkia* image_skia)
+    const std::string& name)
     : ChromeAppListItem(profile, id) {
-  SetIcon(gfx::ImageSkiaOperations::CreateResizedImage(
-      *image_skia, skia::ImageOperations::RESIZE_BEST,
-      gfx::Size(app_list::kTileIconSize, app_list::kTileIconSize)));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  crostini_app_icon_.reset(
+      new CrostiniAppIcon(profile, id, app_list::kTileIconSize, this));
+
   SetName(name);
+  UpdateIcon();
   if (sync_item && sync_item->item_ordinal.IsValid()) {
     UpdateFromSync(sync_item);
   } else {
     SetDefaultPositionIfApplicable();
   }
+
+  // Set model updater last to avoid being called during construction.
+  set_model_updater(model_updater);
 }
 
 CrostiniAppItem::~CrostiniAppItem() {}
@@ -55,4 +59,13 @@ void CrostiniAppItem::GetContextMenuModel(GetMenuModelCallback callback) {
 
 app_list::AppContextMenu* CrostiniAppItem::GetAppContextMenu() {
   return context_menu_.get();
+}
+
+void CrostiniAppItem::UpdateIcon() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  SetIcon(crostini_app_icon_->image_skia());
+}
+
+void CrostiniAppItem::OnIconUpdated(CrostiniAppIcon* icon) {
+  UpdateIcon();
 }

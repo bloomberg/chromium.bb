@@ -10,13 +10,18 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/ui/app_icon_loader.h"
+#include "chrome/browser/ui/app_list/crostini/crostini_app_icon.h"
 #include "ui/gfx/image/image_skia.h"
 
 class Profile;
 
 // An AppIconLoader that loads icons for Crostini apps.
-class CrostiniAppIconLoader : public AppIconLoader {
+class CrostiniAppIconLoader
+    : public AppIconLoader,
+      public crostini::CrostiniRegistryService::Observer,
+      public CrostiniAppIcon::Observer {
  public:
   CrostiniAppIconLoader(Profile* profile,
                         int resource_size_in_dip,
@@ -29,11 +34,19 @@ class CrostiniAppIconLoader : public AppIconLoader {
   void ClearImage(const std::string& app_id) override;
   void UpdateImage(const std::string& app_id) override;
 
+  // CrostiniRegistryService::Observer:
+  void OnAppIconUpdated(const std::string& app_id,
+                        ui::ScaleFactor scale_factor) override;
+
+  // CrostiniAppIcon::Observer:
+  void OnIconUpdated(CrostiniAppIcon* icon) override;
+
  private:
-  using AppIDToIconMap = std::map<std::string, std::unique_ptr<gfx::ImageSkia>>;
+  using AppIDToIconMap =
+      std::map<std::string, std::unique_ptr<CrostiniAppIcon>>;
 
   // Not owned.
-  Profile* profile_;
+  crostini::CrostiniRegistryService* registry_service_;
 
   // Maps from Crostini app id to icon.
   AppIDToIconMap icon_map_;

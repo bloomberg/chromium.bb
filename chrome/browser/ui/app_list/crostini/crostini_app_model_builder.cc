@@ -44,12 +44,8 @@ void CrostiniAppModelBuilder::InsertCrostiniAppItem(
   const std::string& localized_name =
       crostini::CrostiniRegistryService::Registration::Localize(
           registration->name);
-  // TODO(timloh): Get an icon from the registry.
   InsertApp(std::make_unique<CrostiniAppItem>(
-      profile(), GetSyncItem(app_id), app_id, localized_name,
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          app_id == kCrostiniTerminalId ? IDR_LOGO_CROSTINI_TERMINAL
-                                        : IDR_LOGO_CROSTINI_DEFAULT)));
+      profile(), model_updater(), GetSyncItem(app_id), app_id, localized_name));
 }
 
 void CrostiniAppModelBuilder::OnRegistryUpdated(
@@ -66,4 +62,17 @@ void CrostiniAppModelBuilder::OnRegistryUpdated(
   }
   for (const std::string& app_id : inserted_apps)
     InsertCrostiniAppItem(registry_service, app_id);
+}
+
+void CrostiniAppModelBuilder::OnAppIconUpdated(const std::string& app_id,
+                                               ui::ScaleFactor scale_factor) {
+  CrostiniAppItem* app_item = static_cast<CrostiniAppItem*>(GetAppItem(app_id));
+  if (!app_item) {
+    VLOG(2) << "Could not update the icon of Crostini app (" << app_id
+            << ") because it was not found";
+    return;
+  }
+
+  // Initiate async icon reloading.
+  app_item->crostini_app_icon()->LoadForScaleFactor(scale_factor);
 }

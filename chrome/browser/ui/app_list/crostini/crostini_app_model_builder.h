@@ -28,6 +28,8 @@ class CrostiniAppModelBuilder
       const std::vector<std::string>& updated_apps,
       const std::vector<std::string>& removed_apps,
       const std::vector<std::string>& inserted_apps) override;
+  void OnAppIconUpdated(const std::string& app_id,
+                        ui::ScaleFactor scale_factor) override;
 
   void InsertCrostiniAppItem(
       const crostini::CrostiniRegistryService* registry_service,
