@@ -164,6 +164,7 @@
       <entry name="0900" value="900"/>
       <entry name="0950" value="950"/>
       <entry name="1000" value="1000"/>
+      <entry name="1050" value="1050"/>
       <entry name="1100" value="1100"/>
       <entry name="1150" value="1150"/>
       <entry name="1125" value="1125"/>
@@ -177,6 +178,7 @@
       <entry name="1750" value="1750"/>
       <entry name="1800" value="1800"/>
       <entry name="2000" value="2000"/>
+      <entry name="2200" value="2200"/>
       <entry name="2250" value="2250"/>
       <entry name="2500" value="2500"/>
       <entry name="2750" value="2750"/>
