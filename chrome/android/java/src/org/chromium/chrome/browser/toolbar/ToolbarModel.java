@@ -395,7 +395,9 @@ public class ToolbarModel implements ToolbarDataProvider {
         if (isIncognito() || needLightIcon) {
             // For a dark theme color, use light icons.
             list = ApiCompatibilityUtils.getColorStateList(resources, R.color.light_mode_tint);
-        } else if (isUsingBrandColor()) {
+        } else if (isUsingBrandColor()
+                || ChromeFeatureList.isEnabled(
+                           ChromeFeatureList.OMNIBOX_HIDE_SCHEME_DOMAIN_IN_STEADY_STATE)) {
             // For theme colors which are not dark and are also not
             // light enough to warrant an opaque URL bar, use dark
             // icons.
