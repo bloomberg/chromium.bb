@@ -110,16 +110,17 @@ void FrameGenerator::OnBeginFrame(const viz::BeginFrameArgs& begin_frame_args) {
 
   // TODO(fsamuel): We should add a trace for generating a top level frame.
   viz::CompositorFrame frame(GenerateCompositorFrame());
-  if (!local_surface_id_.is_valid() ||
+  if (!id_allocator_.GetCurrentLocalSurfaceId().is_valid() ||
       frame.size_in_pixels() != last_submitted_frame_size_ ||
       frame.device_scale_factor() != last_device_scale_factor_) {
     last_device_scale_factor_ = frame.device_scale_factor();
     last_submitted_frame_size_ = frame.size_in_pixels();
-    local_surface_id_ = id_allocator_.GenerateId();
+    id_allocator_.GenerateId();
   }
 
   compositor_frame_sink_->SubmitCompositorFrame(
-      local_surface_id_, std::move(frame), GenerateHitTestRegionList(), 0);
+      id_allocator_.GetCurrentLocalSurfaceId(), std::move(frame),
+      GenerateHitTestRegionList(), 0);
 
   SetNeedsBeginFrame(false);
 }
