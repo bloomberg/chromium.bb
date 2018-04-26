@@ -4,7 +4,11 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/time/clock.h"
+#include "base/time/default_clock.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -44,6 +48,8 @@ constexpr char kAppNameKey[] = "name";
 constexpr char kAppNoDisplayKey[] = "no_display";
 constexpr char kAppStartupWMClassKey[] = "startup_wm_class";
 constexpr char kAppStartupNotifyKey[] = "startup_notify";
+constexpr char kAppInstallTimeKey[] = "install_time";
+constexpr char kAppLastLaunchTimeKey[] = "last_launch_time";
 
 std::string GenerateAppId(const std::string& desktop_file_id,
                           const std::string& vm_name,
@@ -104,6 +110,9 @@ FindAppIdResult FindAppId(const base::DictionaryValue* prefs,
                           bool require_startup_notify = false) {
   result->clear();
   for (const auto& item : prefs->DictItems()) {
+    if (item.first == kCrostiniTerminalId)
+      continue;
+
     if (require_startup_notify &&
         !item.second
              .FindKeyOfType(kAppStartupNotifyKey, base::Value::Type::BOOLEAN)
@@ -126,6 +135,31 @@ FindAppIdResult FindAppId(const base::DictionaryValue* prefs,
   return FindAppIdResult::NoMatch;
 }
 
+bool EqualsExcludingTimestamps(const base::Value& left,
+                               const base::Value& right) {
+  auto left_items = left.DictItems();
+  auto right_items = right.DictItems();
+  auto left_iter = left_items.begin();
+  auto right_iter = right_items.begin();
+  while (left_iter != left_items.end() && right_iter != right_items.end()) {
+    if (left_iter->first == kAppInstallTimeKey ||
+        left_iter->first == kAppLastLaunchTimeKey) {
+      ++left_iter;
+      continue;
+    }
+    if (right_iter->first == kAppInstallTimeKey ||
+        right_iter->first == kAppLastLaunchTimeKey) {
+      ++right_iter;
+      continue;
+    }
+    if (*left_iter != *right_iter)
+      return false;
+    ++left_iter;
+    ++right_iter;
+  }
+  return left_iter == left_items.end() && right_iter == right_items.end();
+}
+
 }  // namespace
 
 CrostiniRegistryService::Registration::Registration(
@@ -137,7 +171,9 @@ CrostiniRegistryService::Registration::Registration(
     const std::vector<std::string>& mime_types,
     bool no_display,
     const std::string& startup_wm_class,
-    bool startup_notify)
+    bool startup_notify,
+    base::Time install_time,
+    base::Time last_launch_time)
     : desktop_file_id(desktop_file_id),
       vm_name(vm_name),
       container_name(container_name),
@@ -146,7 +182,9 @@ CrostiniRegistryService::Registration::Registration(
       mime_types(mime_types),
       no_display(no_display),
       startup_wm_class(startup_wm_class),
-      startup_notify(startup_notify) {
+      startup_notify(startup_notify),
+      install_time(install_time),
+      last_launch_time(last_launch_time) {
   DCHECK(name.find(std::string()) != name.end());
 }
 
@@ -169,7 +207,7 @@ const std::string& CrostiniRegistryService::Registration::Localize(
 }
 
 CrostiniRegistryService::CrostiniRegistryService(Profile* profile)
-    : prefs_(profile->GetPrefs()) {}
+    : prefs_(profile->GetPrefs()), clock_(base::DefaultClock::GetInstance()) {}
 
 CrostiniRegistryService::~CrostiniRegistryService() = default;
 
@@ -257,7 +295,8 @@ std::vector<std::string> CrostiniRegistryService::GetRegisteredAppIds() const {
   std::vector<std::string> result;
   for (const auto& item : apps->DictItems())
     result.push_back(item.first);
-
+  if (!apps->FindKey(kCrostiniTerminalId))
+    result.push_back(kCrostiniTerminalId);
   return result;
 }
 
@@ -267,6 +306,18 @@ CrostiniRegistryService::GetRegistration(const std::string& app_id) const {
       prefs_->GetDictionary(kCrostiniRegistryPref);
   const base::Value* pref_registration =
       apps->FindKeyOfType(app_id, base::Value::Type::DICTIONARY);
+
+  if (app_id == kCrostiniTerminalId) {
+    std::map<std::string, std::string> name = {
+        {std::string(), kCrostiniTerminalAppName}};
+    return std::make_unique<Registration>(
+        "", kCrostiniDefaultVmName, kCrostiniDefaultContainerName, name,
+        Registration::LocaleString(), std::vector<std::string>(), false, "",
+        false, base::Time(),
+        pref_registration ? GetTime(*pref_registration, kAppLastLaunchTimeKey)
+                          : base::Time());
+  }
+
   if (!pref_registration)
     return nullptr;
 
@@ -296,7 +347,9 @@ CrostiniRegistryService::GetRegistration(const std::string& app_id) const {
       DictionaryToStringMap(comment), ListToStringVector(mime_types),
       no_display->GetBool(),
       startup_wm_class ? startup_wm_class->GetString() : "",
-      startup_notify && startup_notify->GetBool());
+      startup_notify && startup_notify->GetBool(),
+      GetTime(*pref_registration, kAppInstallTimeKey),
+      GetTime(*pref_registration, kAppLastLaunchTimeKey));
 }
 
 void CrostiniRegistryService::UpdateApplicationList(
@@ -356,18 +409,35 @@ void CrostiniRegistryService::UpdateApplicationList(
                                base::Value(app.startup_notify()));
 
       base::Value* old_app = apps->FindKey(app_id);
-      if (old_app && pref_registration == *old_app)
+      if (old_app && EqualsExcludingTimestamps(pref_registration, *old_app))
         continue;
 
-      if (old_app)
+      base::Value* old_install_time = nullptr;
+      base::Value* old_last_launch_time = nullptr;
+      if (old_app) {
         updated_apps.push_back(app_id);
-      else
+        old_install_time = old_app->FindKey(kAppInstallTimeKey);
+        old_last_launch_time = old_app->FindKey(kAppLastLaunchTimeKey);
+      } else {
         inserted_apps.push_back(app_id);
+      }
+
+      if (old_install_time)
+        pref_registration.SetKey(kAppInstallTimeKey, old_install_time->Clone());
+      else
+        SetCurrentTime(&pref_registration, kAppInstallTimeKey);
+
+      if (old_last_launch_time) {
+        pref_registration.SetKey(kAppLastLaunchTimeKey,
+                                 old_last_launch_time->Clone());
+      }
 
       apps->SetKey(app_id, std::move(pref_registration));
     }
 
     for (const auto& item : apps->DictItems()) {
+      if (item.first == kCrostiniTerminalId)
+        continue;
       if (item.second.FindKey(kAppVmNameKey)->GetString() ==
               app_list.vm_name() &&
           item.second.FindKey(kAppContainerNameKey)->GetString() ==
@@ -381,8 +451,11 @@ void CrostiniRegistryService::UpdateApplicationList(
       apps->RemoveKey(removed_app);
   }
 
-  for (Observer& obs : observers_)
-    obs.OnRegistryUpdated(this, updated_apps, removed_apps, inserted_apps);
+  if (!updated_apps.empty() || !removed_apps.empty() ||
+      !inserted_apps.empty()) {
+    for (Observer& obs : observers_)
+      obs.OnRegistryUpdated(this, updated_apps, removed_apps, inserted_apps);
+  }
 }
 
 void CrostiniRegistryService::AddObserver(Observer* observer) {
@@ -391,6 +464,40 @@ void CrostiniRegistryService::AddObserver(Observer* observer) {
 
 void CrostiniRegistryService::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void CrostiniRegistryService::AppLaunched(const std::string& app_id) {
+  DictionaryPrefUpdate update(prefs_, kCrostiniRegistryPref);
+  base::DictionaryValue* apps = update.Get();
+
+  base::Value* app = apps->FindKey(app_id);
+  if (!app) {
+    DCHECK_EQ(app_id, kCrostiniTerminalId);
+    base::Value pref(base::Value::Type::DICTIONARY);
+    SetCurrentTime(&pref, kAppLastLaunchTimeKey);
+    apps->SetKey(app_id, std::move(pref));
+    return;
+  }
+
+  SetCurrentTime(app, kAppLastLaunchTimeKey);
+}
+
+void CrostiniRegistryService::SetCurrentTime(base::Value* dictionary,
+                                             const char* key) const {
+  DCHECK(dictionary);
+  int64_t time = clock_->Now().ToDeltaSinceWindowsEpoch().InMicroseconds();
+  dictionary->SetKey(key, base::Value(base::Int64ToString(time)));
+}
+
+base::Time CrostiniRegistryService::GetTime(const base::Value& dictionary,
+                                            const char* key) const {
+  const base::Value* value =
+      dictionary.FindKeyOfType(key, base::Value::Type::STRING);
+  int64_t time;
+  if (!value || !base::StringToInt64(value->GetString(), &time))
+    return base::Time();
+  return base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(time));
 }
 
 // static

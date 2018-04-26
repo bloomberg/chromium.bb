@@ -75,6 +75,8 @@ bool IsExperimentalCrostiniUIAvailable() {
 
 void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
   auto* crostini_manager = crostini::CrostiniManager::GetInstance();
+  crostini::CrostiniRegistryService* registry_service =
+      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
 
   if (app_id == kCrostiniTerminalId) {
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kTerminal);
@@ -87,11 +89,10 @@ void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
           profile, kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
           base::BindOnce(&MaybeLaunchTerminal, profile));
     }
+    registry_service->AppLaunched(app_id);
     return;
   }
 
-  crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
   std::unique_ptr<crostini::CrostiniRegistryService::Registration>
       registration = registry_service->GetRegistration(app_id);
   if (!registration) {
@@ -105,4 +106,5 @@ void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
       profile, registration->vm_name, registration->container_name,
       base::BindOnce(&MaybeLaunchContainerAppplication,
                      std::move(registration)));
+  registry_service->AppLaunched(app_id);
 }

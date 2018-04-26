@@ -7,6 +7,8 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/test/simple_test_clock.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "components/crx_file/id_util.h"
@@ -14,6 +16,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::_;
 using vm_tools::apps::App;
 using vm_tools::apps::ApplicationList;
 
@@ -26,6 +29,7 @@ class CrostiniRegistryServiceTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     service_ = std::make_unique<CrostiniRegistryService>(&profile_);
+    service_->SetClockForTesting(&test_clock_);
   }
 
  protected:
@@ -70,6 +74,9 @@ class CrostiniRegistryServiceTest : public testing::Test {
   }
 
   CrostiniRegistryService* service() { return service_.get(); }
+
+ protected:
+  base::SimpleTestClock test_clock_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -159,6 +166,53 @@ TEST_F(CrostiniRegistryServiceTest, Observer) {
   service()->UpdateApplicationList(app_list);
 }
 
+TEST_F(CrostiniRegistryServiceTest, InstallAndLaunchTime) {
+  ApplicationList app_list = BasicAppList("app", "vm", "container");
+  std::string app_id = GenerateAppId("app", "vm", "container");
+  test_clock_.Advance(base::TimeDelta::FromHours(1));
+
+  Observer observer;
+  service()->AddObserver(&observer);
+  EXPECT_CALL(observer, OnRegistryUpdated(service(), testing::IsEmpty(),
+                                          testing::IsEmpty(),
+                                          testing::ElementsAre(app_id)));
+  service()->UpdateApplicationList(app_list);
+
+  auto result = service()->GetRegistration(app_id);
+  base::Time install_time = test_clock_.Now();
+  EXPECT_EQ(result->install_time, install_time);
+  EXPECT_EQ(result->last_launch_time, base::Time());
+
+  // UpdateApplicationList with nothing changed. Times shouldn't be updated and
+  // the observer shouldn't fire.
+  test_clock_.Advance(base::TimeDelta::FromHours(1));
+  EXPECT_CALL(observer, OnRegistryUpdated(_, _, _, _)).Times(0);
+  service()->UpdateApplicationList(app_list);
+  result = service()->GetRegistration(app_id);
+  EXPECT_EQ(result->install_time, install_time);
+  EXPECT_EQ(result->last_launch_time, base::Time());
+
+  // Launch the app
+  test_clock_.Advance(base::TimeDelta::FromHours(1));
+  service()->AppLaunched(app_id);
+  result = service()->GetRegistration(app_id);
+  EXPECT_EQ(result->install_time, install_time);
+  EXPECT_EQ(result->last_launch_time,
+            base::Time() + base::TimeDelta::FromHours(3));
+
+  // The install time shouldn't change if fields change.
+  test_clock_.Advance(base::TimeDelta::FromHours(1));
+  app_list.mutable_apps(0)->set_no_display(true);
+  EXPECT_CALL(observer,
+              OnRegistryUpdated(service(), testing::ElementsAre(app_id),
+                                testing::IsEmpty(), testing::IsEmpty()));
+  service()->UpdateApplicationList(app_list);
+  result = service()->GetRegistration(app_id);
+  EXPECT_EQ(result->install_time, install_time);
+  EXPECT_EQ(result->last_launch_time,
+            base::Time() + base::TimeDelta::FromHours(3));
+}
+
 // Test that UpdateApplicationList doesn't clobber apps from different VMs or
 // containers.
 TEST_F(CrostiniRegistryServiceTest, MultipleContainers) {
@@ -170,7 +224,8 @@ TEST_F(CrostiniRegistryServiceTest, MultipleContainers) {
   std::string app_id_3 = GenerateAppId("app", "vm 2", "container 1");
 
   EXPECT_THAT(service()->GetRegisteredAppIds(),
-              testing::UnorderedElementsAre(app_id_1, app_id_2, app_id_3));
+              testing::UnorderedElementsAre(app_id_1, app_id_2, app_id_3,
+                                            kCrostiniTerminalId));
 
   // Clobber app_id_2
   service()->UpdateApplicationList(
@@ -178,7 +233,8 @@ TEST_F(CrostiniRegistryServiceTest, MultipleContainers) {
   std::string new_app_id = GenerateAppId("app 2", "vm 1", "container 2");
 
   EXPECT_THAT(service()->GetRegisteredAppIds(),
-              testing::UnorderedElementsAre(app_id_1, app_id_3, new_app_id));
+              testing::UnorderedElementsAre(app_id_1, app_id_3, new_app_id,
+                                            kCrostiniTerminalId));
 }
 
 TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdNoStartupID) {
@@ -189,7 +245,7 @@ TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdNoStartupID) {
 
   service()->UpdateApplicationList(BasicAppList("super", "vm 2", "container"));
 
-  EXPECT_THAT(service()->GetRegisteredAppIds(), testing::SizeIs(4));
+  EXPECT_THAT(service()->GetRegisteredAppIds(), testing::SizeIs(5));
 
   EXPECT_EQ(
       service()->GetCrostiniShelfAppId(WindowIdForWMClass("App"), nullptr),
@@ -226,7 +282,7 @@ TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdStartupWMClass) {
   app_list.mutable_apps(2)->set_startup_wm_class("app2");
   service()->UpdateApplicationList(app_list);
 
-  EXPECT_THAT(service()->GetRegisteredAppIds(), testing::SizeIs(3));
+  EXPECT_THAT(service()->GetRegisteredAppIds(), testing::SizeIs(4));
 
   EXPECT_EQ(service()->GetCrostiniShelfAppId(WindowIdForWMClass("app_start"),
                                              nullptr),
