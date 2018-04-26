@@ -1022,6 +1022,45 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 	}
 }
 
+static void
+notify_view_output_destroy(struct wl_listener *listener, void *data)
+{
+	struct weston_view *view =
+		container_of(listener,
+		     struct weston_view, output_destroy_listener);
+
+	view->output = NULL;
+	view->output_destroy_listener.notify = NULL;
+}
+
+/** Set the primary output of the view
+ *
+ * \param view The view whose primary output to set
+ * \param output The new primary output for the view
+ *
+ * Set \a output to be the primary output of the \a view.
+ *
+ * Notice that the assignment may be temporary; the primary output could be
+ * automatically changed. Hence, one cannot rely on the value persisting.
+ *
+ * Passing NULL as /a output will set the primary output to NULL.
+ */
+WL_EXPORT void
+weston_view_set_output(struct weston_view *view, struct weston_output *output)
+{
+	if (view->output_destroy_listener.notify) {
+		wl_list_remove(&view->output_destroy_listener.link);
+		view->output_destroy_listener.notify = NULL;
+	}
+	view->output = output;
+	if (output) {
+		view->output_destroy_listener.notify =
+			notify_view_output_destroy;
+		wl_signal_add(&output->destroy_signal,
+			      &view->output_destroy_listener);
+	}
+}
+
 /** Recalculate which output(s) the surface has views displayed on
  *
  * \param es  The surface to remap to outputs
@@ -1113,7 +1152,7 @@ weston_view_assign_output(struct weston_view *ev)
 	}
 	pixman_region32_fini(&region);
 
-	ev->output = new_output;
+	weston_view_set_output(ev, new_output);
 	ev->output_mask = mask;
 
 	weston_surface_assign_output(ev->surface);
@@ -1823,7 +1862,7 @@ weston_view_unmap(struct weston_view *view)
 		return;
 
 	weston_view_damage_below(view);
-	view->output = NULL;
+	weston_view_set_output(view, NULL);
 	view->plane = NULL;
 	view->is_mapped = false;
 	weston_layer_entry_remove(&view->layer_link);

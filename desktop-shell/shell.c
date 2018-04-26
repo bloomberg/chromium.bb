@@ -580,7 +580,7 @@ create_focus_surface(struct weston_compositor *ec,
 		free(fsurf);
 		return NULL;
 	}
-	fsurf->view->output = output;
+	weston_view_set_output(fsurf->view, output);
 	fsurf->view->is_mapped = true;
 
 	weston_surface_set_size(surface, output->width, output->height);
@@ -2464,7 +2464,7 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 	shsurf->view->is_mapped = true;
 	if (shsurf->state.maximized) {
 		surface->output = shsurf->output;
-		shsurf->view->output = shsurf->output;
+		weston_view_set_output(shsurf->view, shsurf->output);
 	}
 
 	if (!shell->locked) {
@@ -2881,6 +2881,9 @@ configure_static_view(struct weston_view *ev, struct weston_layer *layer, int x,
 {
 	struct weston_view *v, *next;
 
+	if (!ev->output)
+		return;
+
 	wl_list_for_each_safe(v, next, &layer->view_list.link, layer_link.link) {
 		if (v->output == ev->output && v != ev) {
 			weston_view_unmap(v);
@@ -2970,7 +2973,7 @@ desktop_shell_set_background(struct wl_client *client,
 	surface->committed_private = shell;
 	weston_surface_set_label_func(surface, background_get_label);
 	surface->output = weston_head_from_resource(output_resource)->output;
-	view->output = surface->output;
+	weston_view_set_output(view, surface->output);
 
 	sh_output = find_shell_output_from_weston_output(shell, surface->output);
 	if (sh_output->background_surface) {
@@ -3067,7 +3070,7 @@ desktop_shell_set_panel(struct wl_client *client,
 	surface->committed_private = shell;
 	weston_surface_set_label_func(surface, panel_get_label);
 	surface->output = weston_head_from_resource(output_resource)->output;
-	view->output = surface->output;
+	weston_view_set_output(view, surface->output);
 
 	sh_output = find_shell_output_from_weston_output(shell, surface->output);
 	if (sh_output->panel_surface) {
