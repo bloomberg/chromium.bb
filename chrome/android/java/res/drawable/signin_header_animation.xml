@@ -238,21 +238,33 @@
                     android:valueFrom="-120"
                     android:valueTo="120"/>
                 <objectAnimator
-                    android:duration="700"
+                    android:duration="1900"
                     android:propertyName="rotation"
-                    android:startOffset="1900"
                     android:valueFrom="120"
-                    android:valueTo="-120"/>
-                <objectAnimator
-                    android:duration="700"
-                    android:propertyName="rotation"
-                    android:startOffset="1900"
-                    android:valueFrom="-120"
                     android:valueTo="120"/>
                 <objectAnimator
                     android:duration="700"
                     android:propertyName="rotation"
-                    android:startOffset="1900"
+                    android:valueFrom="120"
+                    android:valueTo="-120"/>
+                <objectAnimator
+                    android:duration="1900"
+                    android:propertyName="rotation"
+                    android:valueFrom="-120"
+                    android:valueTo="-120"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:valueFrom="-120"
+                    android:valueTo="120"/>
+                <objectAnimator
+                    android:duration="1900"
+                    android:propertyName="rotation"
+                    android:valueFrom="120"
+                    android:valueTo="120"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
                     android:valueFrom="120"
                     android:valueTo="-120"/>
             </set>
