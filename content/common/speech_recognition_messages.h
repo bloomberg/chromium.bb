@@ -38,62 +38,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::SpeechRecognitionResult)
   IPC_STRUCT_TRAITS_MEMBER(hypotheses)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::SpeechRecognitionGrammar)
-  IPC_STRUCT_TRAITS_MEMBER(url)
-  IPC_STRUCT_TRAITS_MEMBER(weight)
-IPC_STRUCT_TRAITS_END()
-
-// ------- Messages for Speech JS APIs (SpeechRecognitionDispatcher) ----------
-
-// Renderer -> Browser messages.
-
-// Used to start a speech recognition session.
-IPC_STRUCT_BEGIN(SpeechRecognitionHostMsg_StartRequest_Params)
-  // The render frame requesting speech recognition.
-  IPC_STRUCT_MEMBER(int, render_frame_id)
-  // Unique ID associated with the JS object making the calls.
-  IPC_STRUCT_MEMBER(int, request_id)
-  // Language to use for speech recognition.
-  IPC_STRUCT_MEMBER(std::string, language)
-  // Speech grammars to use.
-  IPC_STRUCT_MEMBER(content::SpeechRecognitionGrammarArray, grammars)
-  // URL of the page (or iframe if applicable).
-  IPC_STRUCT_MEMBER(std::string, origin_url)
-  // Maximum number of hypotheses allowed for each results.
-  IPC_STRUCT_MEMBER(uint32_t, max_hypotheses)
-  // Whether the user requested continuous recognition or not.
-  IPC_STRUCT_MEMBER(bool, continuous)
-  // Whether the user requested interim results or not.
-  IPC_STRUCT_MEMBER(bool, interim_results)
-IPC_STRUCT_END()
-
-
-// Requests the speech recognition service to start speech recognition.
-IPC_MESSAGE_CONTROL1(SpeechRecognitionHostMsg_StartRequest,
-                     SpeechRecognitionHostMsg_StartRequest_Params)
-
-// Requests the speech recognition service to abort speech recognition on
-// behalf of the given |render_frame_id| and |request_id|. If there are no
-// sessions associated with the |request_id| in the render frame, this call
-// does nothing.
-IPC_MESSAGE_CONTROL2(SpeechRecognitionHostMsg_AbortRequest,
-                     int /* render_frame_id */,
-                     int /* request_id */)
-
-// Requests the speech recognition service to abort all speech recognitions on
-// behalf of the given |render_frame_id|. If speech recognition is not happening
-// or is happening on behalf of some other render frame, this call does nothing.
-IPC_MESSAGE_CONTROL1(SpeechRecognitionHostMsg_AbortAllRequests,
-                     int /* render_frame_id */)
-
-// Requests the speech recognition service to stop audio capture on behalf of
-// the given |render_frame_id|. Any audio recorded so far will be fed to the
-// speech recognizer. If speech recognition is not happening nor or is
-// happening on behalf of some other render frame, this call does nothing.
-IPC_MESSAGE_CONTROL2(SpeechRecognitionHostMsg_StopCaptureRequest,
-                     int /* render_frame_id */,
-                     int /* request_id */)
-
 // Browser -> Renderer messages.
 
 // The messages below follow exactly the same semantic of the corresponding

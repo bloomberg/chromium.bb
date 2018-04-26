@@ -1,0 +1,13 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content.mojom;
+
+// TODO(adithyas): Update users of content::SpeechRecognitionGrammar to use this
+// instead, then remove content::SpeechRecognitionGrammar.
+struct SpeechRecognitionGrammar {
+  // TODO(adithyas): Make this a mojom URL instead.
+  string url;
+  double weight;
+};

@@ -128,7 +128,6 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/streams/stream_context.h"
 #include "content/browser/tracing/trace_message_filter.h"
@@ -1845,8 +1844,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #if BUILDFLAG(ENABLE_PLUGINS)
   AddFilter(new PepperRendererConnection(GetID()));
 #endif
-  AddFilter(new SpeechRecognitionDispatcherHost(
-      GetID(), storage_partition_impl_->GetURLRequestContext()));
   AddFilter(new FileAPIMessageFilter(
       GetID(), storage_partition_impl_->GetURLRequestContext(),
       storage_partition_impl_->GetFileSystemContext(),

@@ -165,6 +165,7 @@
           "content::mojom::RendererAudioInputStreamFactory",
           "content::mojom::RendererAudioOutputStreamFactory",
           "content::mojom::SharedWorkerConnector",
+          "content::mojom::SpeechRecognizer",
           "device::mojom::Geolocation",
           "device::mojom::NFC",
           "device::mojom::SensorProvider",
