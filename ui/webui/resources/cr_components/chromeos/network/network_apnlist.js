@@ -82,7 +82,7 @@ Polymer({
   },
 
   /** @const */
-  DefaultAccessPointName: 'none',
+  DefaultAccessPointName: 'NONE',
 
   /**
    * Polymer networkProperties changed method.
@@ -202,7 +202,12 @@ Polymer({
    * @private
    */
   onOtherApnChange_: function(event) {
-    this.set('otherApn_.' + event.detail.field, event.detail.value);
+    // TODO(benchan/stevenjb): Move this to shill or
+    // onc_translator_onc_to_shill.cc.
+    var value = (event.detail.field == 'AccessPointName') ?
+        event.detail.value.toUpperCase() :
+        event.detail.value;
+    this.set('otherApn_.' + event.detail.field, value);
     // Don't send a change event for 'Other' until the 'Save' button is tapped.
   },
 
