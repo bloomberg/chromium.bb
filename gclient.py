@@ -958,6 +958,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         return origin
       if origin.endswith('.git') and origin[:-len('.git')] in candidates:
         return origin[:-len('.git')]
+      if origin + '.git' in candidates:
+        return origin + '.git'
     if self.name in candidates:
       return self.name
     return None
