@@ -8,6 +8,7 @@
     "ios_deployment_target=\"9.0\"",
     "is_component_build=false",
     "is_debug=true",
+    "symbol_level=1",
     "target_cpu=\"x64\"",
     "target_os=\"ios\"",
     "use_goma=true"
