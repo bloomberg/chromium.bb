@@ -27,7 +27,7 @@ class MockBluetoothGattService : public BluetoothRemoteGattService {
                            const BluetoothUUID& uuid,
                            bool is_primary,
                            bool is_local);
-  virtual ~MockBluetoothGattService();
+  ~MockBluetoothGattService() override;
 
   MOCK_CONST_METHOD0(GetIdentifier, std::string());
   MOCK_CONST_METHOD0(GetUUID, BluetoothUUID());

@@ -44,7 +44,7 @@ class MockUsbDevice : public UsbDevice {
                 const std::string& serial_number,
                 const std::vector<UsbConfigDescriptor>& configurations);
 
-  void Open(OpenCallback callback) { OpenInternal(callback); }
+  void Open(OpenCallback callback) override { OpenInternal(callback); }
   MOCK_METHOD1(OpenInternal, void(OpenCallback&));
 
   void AddMockConfig(const UsbConfigDescriptor& config);

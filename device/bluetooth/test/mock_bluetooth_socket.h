@@ -33,7 +33,7 @@ class MockBluetoothSocket : public BluetoothSocket {
                     const ErrorCompletionCallback& error_callback));
 
  protected:
-  virtual ~MockBluetoothSocket();
+  ~MockBluetoothSocket() override;
 };
 
 }  // namespace device
