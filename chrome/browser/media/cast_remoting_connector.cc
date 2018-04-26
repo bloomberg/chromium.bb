@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "components/mirroring/browser/cast_remoting_sender.h"
@@ -131,6 +132,8 @@ CastRemotingConnector* CastRemotingConnector::Get(
     // remoting on Android.
     const SessionID tab_id = SessionTabHelper::IdForTab(contents);
     if (!tab_id.is_valid())
+      return nullptr;
+    if (!media_router::MediaRouterEnabled(contents->GetBrowserContext()))
       return nullptr;
     connector = new CastRemotingConnector(
         media_router::MediaRouterFactory::GetApiForBrowserContext(
