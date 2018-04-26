@@ -2,27 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EVENTS_EVENT_REWRITER_CONTROLLER_H_
-#define CHROME_BROWSER_CHROMEOS_EVENTS_EVENT_REWRITER_CONTROLLER_H_
+#ifndef ASH_EVENT_REWRITER_CONTROLLER_H_
+#define ASH_EVENT_REWRITER_CONTROLLER_H_
 
 #include <list>
 #include <memory>
 #include <vector>
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/aura/env_observer.h"
-#include "ui/events/event_rewriter.h"
 
 namespace ui {
+class EventRewriter;
 class EventSource;
 }  // namespace ui
 
-namespace chromeos {
+namespace ash {
 
-// Owns |ui::EventRewriter|s and ensures that they are added to all root
-// windows |EventSource|s, current and future, in the order that they are
-// added to this.
-class EventRewriterController : public aura::EnvObserver {
+// Owns ui::EventRewriters and ensures that they are added to each root window
+// EventSource, current and future, in the order that they are added to this.
+// TODO(crbug.com/647781): Avoid exposing this outside of ash.
+class ASH_EXPORT EventRewriterController : public aura::EnvObserver {
  public:
   EventRewriterController();
   ~EventRewriterController() override;
@@ -51,6 +52,6 @@ class EventRewriterController : public aura::EnvObserver {
   DISALLOW_COPY_AND_ASSIGN(EventRewriterController);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_EVENTS_EVENT_REWRITER_CONTROLLER_H_
+#endif  // ASH_EVENT_REWRITER_CONTROLLER_H_

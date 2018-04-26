@@ -43,6 +43,7 @@
 #include "ash/display/screen_position_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/drag_drop/drag_drop_controller.h"
+#include "ash/event_rewriter_controller.h"
 #include "ash/first_run/first_run_helper.h"
 #include "ash/focus_cycler.h"
 #include "ash/frame/custom_frame_view_ash.h"
@@ -738,9 +739,9 @@ Shell::~Shell() {
   RemovePreTargetHandler(system_gesture_filter_.get());
   RemovePreTargetHandler(mouse_cursor_filter_.get());
   RemovePreTargetHandler(modality_filter_.get());
-
-  // TooltipController is deleted with the Shell so removing its references.
   RemovePreTargetHandler(tooltip_controller_.get());
+
+  event_rewriter_controller_.reset();
 
   screen_orientation_controller_.reset();
   screen_layout_observer_.reset();
@@ -1017,6 +1018,8 @@ void Shell::Init(ui::ContextFactory* context_factory,
   // pretarget handler list to ensure that it processes input events when modal
   // windows are active.
   window_modality_controller_.reset(new ::wm::WindowModalityController(this));
+
+  event_rewriter_controller_ = std::make_unique<EventRewriterController>();
 
   env_filter_.reset(new ::wm::CompoundEventFilter);
   AddPreTargetHandler(env_filter_.get());
