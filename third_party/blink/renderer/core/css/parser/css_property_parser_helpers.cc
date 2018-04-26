@@ -539,9 +539,11 @@ CSSURIValue* ConsumeUrl(CSSParserTokenRange& range,
 
 static int ClampRGBComponent(const CSSPrimitiveValue& value) {
   double result = value.GetDoubleValue();
-  if (value.IsPercentage())
-    result *= 2.55;
-  return clampTo<int>(roundf(result), 0, 255);
+  if (value.IsPercentage()) {
+    // 2.55 cannot be precisely represented as a double
+    result = (result / 100.0) * 255.0;
+  }
+  return clampTo<int>(round(result), 0, 255);
 }
 
 static bool ParseRGBParameters(CSSParserTokenRange& range, RGBA32& result) {
@@ -584,11 +586,11 @@ static bool ParseRGBParameters(CSSParserTokenRange& range, RGBA32& result) {
       if (!alpha_percent)
         return false;
       else
-        alpha = alpha_percent->GetDoubleValue() / 100.0f;
+        alpha = alpha_percent->GetDoubleValue() / 100.0;
     }
     // W3 standard stipulates a 2.55 alpha value multiplication factor.
     int alpha_component =
-        static_cast<int>(lroundf(clampTo<double>(alpha, 0.0, 1.0) * 255.0f));
+        static_cast<int>(lround(clampTo<double>(alpha, 0.0, 1.0) * 255.0));
     result = MakeRGBA(color_array[0], color_array[1], color_array[2],
                       alpha_component);
   } else {
@@ -642,7 +644,7 @@ static bool ParseHSLParameters(CSSParserTokenRange& range, RGBA32& result) {
       if (!alpha_percent)
         return false;
       else
-        alpha = alpha_percent->GetDoubleValue() / 100.0f;
+        alpha = alpha_percent->GetDoubleValue() / 100.0;
     }
     alpha = clampTo<double>(alpha, 0.0, 1.0);
   }
