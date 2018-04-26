@@ -96,7 +96,9 @@ class NET_EXPORT HttpStreamFactory {
   // Request a BidirectionalStreamImpl.
   // Will call delegate->OnBidirectionalStreamImplReady on successful
   // completion.
-  std::unique_ptr<HttpStreamRequest> RequestBidirectionalStreamImpl(
+  // TODO(https://crbug.com/836823): This method is virtual to avoid cronet_test
+  // failure on iOS that is caused by Network Thread TLS getting the wrong slot.
+  virtual std::unique_ptr<HttpStreamRequest> RequestBidirectionalStreamImpl(
       const HttpRequestInfo& info,
       RequestPriority priority,
       const SSLConfig& server_ssl_config,
