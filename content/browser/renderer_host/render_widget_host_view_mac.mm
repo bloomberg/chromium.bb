@@ -103,15 +103,6 @@ NSView* RenderWidgetHostViewMac::AcceleratedWidgetGetNSView() const {
   return cocoa_view();
 }
 
-void RenderWidgetHostViewMac::AcceleratedWidgetGetVSyncParameters(
-    base::TimeTicks* timebase, base::TimeDelta* interval) const {
-  if (display_link_ &&
-      display_link_->GetVSyncParameters(timebase, interval))
-    return;
-  *timebase = base::TimeTicks();
-  *interval = base::TimeDelta();
-}
-
 void RenderWidgetHostViewMac::AcceleratedWidgetSwapCompleted() {
   // Set the background color for the root layer from the frame that just
   // swapped. See RenderWidgetHostViewAura for more details. Note that this is
