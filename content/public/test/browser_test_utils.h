@@ -121,6 +121,12 @@ void PrepContentsForBeforeUnloadTest(WebContents* web_contents);
 void WaitForResizeComplete(WebContents* web_contents);
 #endif  // defined(USE_AURA) || defined(OS_ANDROID)
 
+// Allows tests to set the last committed origin of |render_frame_host|, to
+// simulate a scenario that might happen with a compromised renderer or might
+// not otherwise be possible.
+void OverrideLastCommittedOrigin(RenderFrameHost* render_frame_host,
+                                 const url::Origin& origin);
+
 // Causes the specified web_contents to crash. Blocks until it is crashed.
 void CrashTab(WebContents* web_contents);
 

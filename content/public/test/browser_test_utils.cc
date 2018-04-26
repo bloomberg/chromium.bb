@@ -626,6 +626,12 @@ bool IsLastCommittedEntryOfPageType(WebContents* web_contents,
   return last_entry->GetPageType() == page_type;
 }
 
+void OverrideLastCommittedOrigin(RenderFrameHost* render_frame_host,
+                                 const url::Origin& origin) {
+  static_cast<RenderFrameHostImpl*>(render_frame_host)
+      ->SetLastCommittedOriginForTesting(origin);
+}
+
 void CrashTab(WebContents* web_contents) {
   RenderProcessHost* rph = web_contents->GetMainFrame()->GetProcess();
   RenderProcessHostWatcher watcher(

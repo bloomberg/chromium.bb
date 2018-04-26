@@ -77,30 +77,31 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
     }
   }
 
-  if (navigation_handle()->IsInMainFrame()) {
-    // Block top-level navigations to blob: or filesystem: URLs with extension
-    // origin from non-extension processes.  See https://crbug.com/645028.
-    bool current_frame_is_extension_process =
-        !!registry->enabled_extensions().GetExtensionOrAppByURL(
-            navigation_handle()->GetStartingSiteInstance()->GetSiteURL());
+  // Block all navigations to blob: or filesystem: URLs with extension
+  // origin from non-extension processes.  See https://crbug.com/645028 and
+  // https://crbug.com/836858.
+  bool current_frame_is_extension_process =
+      !!registry->enabled_extensions().GetExtensionOrAppByURL(
+          navigation_handle()->GetStartingSiteInstance()->GetSiteURL());
 
-    if (!url_has_extension_scheme && !current_frame_is_extension_process) {
-      // Relax this restriction for navigations that will result in downloads.
-      // See https://crbug.com/714373.
-      if (target_origin.scheme() == kExtensionScheme &&
-          navigation_handle()->GetSuggestedFilename().has_value()) {
-        return content::NavigationThrottle::PROCEED;
-      }
-
-      // Relax this restriction for apps that use <webview>.  See
-      // https://crbug.com/652077.
-      bool has_webview_permission =
-          target_extension->permissions_data()->HasAPIPermission(
-              APIPermission::kWebView);
-      if (!has_webview_permission)
-        return content::NavigationThrottle::CANCEL;
+  if (!url_has_extension_scheme && !current_frame_is_extension_process) {
+    // Relax this restriction for navigations that will result in downloads.
+    // See https://crbug.com/714373.
+    if (target_origin.scheme() == kExtensionScheme &&
+        navigation_handle()->GetSuggestedFilename().has_value()) {
+      return content::NavigationThrottle::PROCEED;
     }
 
+    // Relax this restriction for apps that use <webview>.  See
+    // https://crbug.com/652077.
+    bool has_webview_permission =
+        target_extension->permissions_data()->HasAPIPermission(
+            APIPermission::kWebView);
+    if (!has_webview_permission)
+      return content::NavigationThrottle::CANCEL;
+  }
+
+  if (navigation_handle()->IsInMainFrame()) {
     guest_view::GuestViewBase* guest =
         guest_view::GuestViewBase::FromWebContents(web_contents);
     if (url_has_extension_scheme && guest) {
