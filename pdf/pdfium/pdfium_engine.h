@@ -46,6 +46,11 @@ class PDFiumEngine : public PDFEngine,
   explicit PDFiumEngine(PDFEngine::Client* client);
   ~PDFiumEngine() override;
 
+  using CreateDocumentLoaderFunction =
+      std::unique_ptr<DocumentLoader> (*)(DocumentLoader::Client* client);
+  static void SetCreateDocumentLoaderFunctionForTesting(
+      CreateDocumentLoaderFunction function);
+
   // PDFEngine implementation.
   bool New(const char* url, const char* headers) override;
   void PageOffsetUpdated(const pp::Point& page_offset) override;
