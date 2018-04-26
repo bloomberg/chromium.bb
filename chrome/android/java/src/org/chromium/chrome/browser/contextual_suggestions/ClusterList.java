@@ -22,12 +22,6 @@ class ClusterList extends InnerNode {
         for (ContextualSuggestionsCluster cluster : clusters) {
             addChild(cluster);
         }
-
-        // TODO(twellington): Remove when feedback link is moved into overflow menu
-        // (https://crbug.com/831782).
-        if (clusters.size() > 0) {
-            addChild(new ContextualSuggestionsFooter());
-        }
     }
 
     /** Remove all clusters and detach itself from its parent. */
