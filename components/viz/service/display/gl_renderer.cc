@@ -58,7 +58,6 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "media/base/media_switches.h"
-#include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
@@ -1028,6 +1027,19 @@ bool GLRenderer::InitializeRPDQParameters(
   return true;
 }
 
+// Get a GL texture id from an SkImage. An optional origin pointer can be
+// passed in which will be filled out with the origin for the texture
+// backing the SkImage.
+static GLuint GetGLTextureIDFromSkImage(const SkImage* image,
+                                        GrSurfaceOrigin* origin = nullptr) {
+  GrBackendTexture backend_texture = image->getBackendTexture(true, origin);
+  DCHECK(backend_texture.isValid());
+  GrGLTextureInfo info;
+  bool result = backend_texture.getGLTextureInfo(&info);
+  DCHECK(result);
+  return info.fID;
+}
+
 void GLRenderer::UpdateRPDQShadersForBlending(
     DrawRenderPassDrawQuadParams* params) {
   const RenderPassDrawQuad* quad = params->quad;
@@ -1067,9 +1079,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
             params->background_rect, unclipped_rect);
         if (params->background_image) {
           params->background_image_id =
-              skia::GrBackendObjectToGrGLTextureInfo(
-                  params->background_image->getTextureHandle(true))
-                  ->fID;
+              GetGLTextureIDFromSkImage(params->background_image.get());
           DCHECK(params->background_image_id);
         }
       }
@@ -1211,9 +1221,7 @@ void GLRenderer::UpdateRPDQTexturesForSampling(
   if (params->filter_image) {
     GrSurfaceOrigin origin;
     GLuint filter_image_id =
-        skia::GrBackendObjectToGrGLTextureInfo(
-            params->filter_image->getTextureHandle(true, &origin))
-            ->fID;
+        GetGLTextureIDFromSkImage(params->filter_image.get(), &origin);
     DCHECK(filter_image_id);
     DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
     gl_->BindTexture(GL_TEXTURE_2D, filter_image_id);
