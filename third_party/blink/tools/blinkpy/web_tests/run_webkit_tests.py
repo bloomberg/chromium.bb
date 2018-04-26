@@ -342,6 +342,7 @@ def parse_args(args):
                       "'unexpected' == Ignore any tests that had unexpected results on the bot.")),
             optparse.make_option(
                 '--iterations',
+                '--gtest_repeat',
                 type='int',
                 default=1,
                 help='Number of times to run the set of tests (e.g. ABCABCABC)'),
@@ -378,7 +379,6 @@ def parse_args(args):
                 help='Output per-test profile information, using the specified profiler.'),
             optparse.make_option(
                 '--repeat-each',
-                '--gtest_repeat',
                 type='int',
                 default=1,
                 help='Number of times to run each test (e.g. AAABBBCCC)'),
