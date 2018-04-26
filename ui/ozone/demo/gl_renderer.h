@@ -32,15 +32,13 @@ class GlRenderer : public RendererBase {
   // Renderer:
   bool Initialize() override;
 
- protected:
-  virtual void RenderFrame();
-  virtual void PostRenderFrameTask(gfx::SwapResult result);
+ private:
+  void RenderFrame();
+  void PostRenderFrameTask(gfx::SwapResult result);
+  void OnPresentation(const gfx::PresentationFeedback& feedback);
 
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
-
- private:
-  void OnPresentation(const gfx::PresentationFeedback& feedback);
 
   base::WeakPtrFactory<GlRenderer> weak_ptr_factory_;
 
