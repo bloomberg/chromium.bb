@@ -187,6 +187,11 @@ class PRINTING_EXPORT PrintSettings {
   void set_is_modifiable(bool is_modifiable) { is_modifiable_ = is_modifiable; }
   bool is_modifiable() const { return is_modifiable_; }
 
+  int num_pages_per_sheet() const { return num_pages_per_sheet_; }
+  void set_num_pages_per_sheet(int num_pages_per_sheet) {
+    num_pages_per_sheet_ = num_pages_per_sheet;
+  }
+
   // Cookie generator. It is used to initialize PrintedDocument with its
   // associated PrintSettings, to be sure that each generated PrintedPage is
   // correctly associated with its corresponding PrintedDocument.
@@ -262,6 +267,9 @@ class PRINTING_EXPORT PrintSettings {
 
   // If margin type is custom, this is what was requested.
   PageMargins requested_custom_margins_in_points_;
+
+  // Number of pages per sheet.
+  int num_pages_per_sheet_;
 };
 
 }  // namespace printing

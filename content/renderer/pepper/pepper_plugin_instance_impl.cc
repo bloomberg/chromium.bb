@@ -1974,6 +1974,9 @@ int PepperPluginInstanceImpl::PrintBegin(const WebPrintParams& print_params) {
   print_settings.print_scaling_option =
       static_cast<PP_PrintScalingOption_Dev>(print_params.print_scaling_option);
   print_settings.format = format;
+
+  print_settings.num_pages_per_sheet = print_params.num_pages_per_sheet;
+
   num_pages = plugin_print_interface_->Begin(pp_instance(), &print_settings);
   if (!num_pages)
     return 0;
