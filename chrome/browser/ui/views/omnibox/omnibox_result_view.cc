@@ -33,6 +33,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/vector_icons.h"
+#include "extensions/common/image_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -43,6 +44,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/range/range.h"
@@ -132,6 +134,37 @@ int HorizontalPadding() {
          GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
 }
 
+class PlaceholderImageSource : public gfx::CanvasImageSource {
+ public:
+  PlaceholderImageSource(const gfx::Size& canvas_size, SkColor color);
+  ~PlaceholderImageSource() override;
+
+  // CanvasImageSource override:
+  void Draw(gfx::Canvas* canvas) override;
+
+ private:
+  SkColor color_;
+  gfx::Size size_;
+
+  DISALLOW_COPY_AND_ASSIGN(PlaceholderImageSource);
+};
+
+PlaceholderImageSource::PlaceholderImageSource(const gfx::Size& canvas_size,
+                                               SkColor color)
+    : gfx::CanvasImageSource(canvas_size, false),
+      color_(color),
+      size_(canvas_size) {}
+
+PlaceholderImageSource::~PlaceholderImageSource() = default;
+
+void PlaceholderImageSource::Draw(gfx::Canvas* canvas) {
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setStyle(cc::PaintFlags::kStrokeAndFill_Style);
+  flags.setColor(color_);
+  canvas->sk_canvas()->drawOval(gfx::RectToSkRect(gfx::Rect(size_)), flags);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -180,6 +213,7 @@ class OmniboxSuggestionView : public views::View {
   void LayoutSplit();
 
   bool is_answer_;
+  bool is_entity_;
   bool is_search_type_;
   int text_height_;
 
@@ -197,7 +231,10 @@ class OmniboxSuggestionView : public views::View {
 OmniboxSuggestionView::OmniboxSuggestionView(OmniboxResultView* result_view,
                                              const gfx::FontList& font_list,
                                              int text_height)
-    : is_answer_(false), is_search_type_(false), text_height_(text_height) {
+    : is_answer_(false),
+      is_entity_(false),
+      is_search_type_(false),
+      text_height_(text_height) {
   AddChildView(icon_view_ = new OmniboxImageView());
   AddChildView(image_view_ = new OmniboxImageView());
   AddChildView(content_view_ = new OmniboxTextView(result_view, font_list));
@@ -214,7 +251,7 @@ OmniboxSuggestionView::~OmniboxSuggestionView() = default;
 gfx::Size OmniboxSuggestionView::CalculatePreferredSize() const {
   int height =
       text_height_ + GetVerticalInsets(text_height_, is_answer_).height();
-  if (is_answer_)
+  if (is_answer_ || is_entity_)
     height += GetAnswerHeight();
   return gfx::Size(0, height);
 }
@@ -235,12 +272,14 @@ int OmniboxSuggestionView::GetAnswerHeight() const {
 
 void OmniboxSuggestionView::OnMatchUpdate(const AutocompleteMatch& match) {
   is_answer_ = !!match.answer;
+  if (base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions)) {
+    is_entity_ = !match.image_url.empty();
+  }
   is_search_type_ = AutocompleteMatch::IsSearchType(match.type);
-  if (is_answer_) {
+  if (is_answer_ || is_entity_) {
     separator_view_->SetSize(gfx::Size());
   }
-  if (is_answer_ &&
-      base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions)) {
+  if (is_entity_) {
     icon_view_->SetSize(gfx::Size());
   }
 }
@@ -252,11 +291,9 @@ const char* OmniboxSuggestionView::GetClassName() const {
 void OmniboxSuggestionView::Layout() {
   views::View::Layout();
   if (is_answer_) {
-    if (base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions)) {
-      LayoutEntity();
-    } else {
-      LayoutAnswer();
-    }
+    LayoutAnswer();
+  } else if (is_entity_) {
+    LayoutEntity();
   } else {
     LayoutSplit();
   }
@@ -368,10 +405,19 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   suggestion_view_->OnMatchUpdate(match_);
   keyword_view_->OnMatchUpdate(match_);
 
-  suggestion_view_->image()->SetVisible(
-      false);  // Until SetRichSuggestionImage is called.
+  // Set up default (placeholder) image.
+  SkColor color = GetColor(OmniboxPart::RESULTS_BACKGROUND);
+  extensions::image_util::ParseHexColorString(match_.image_dominant_color,
+                                              &color);
+  color = SkColorSetA(color, 0x40);  // 25% transparency (arbitrary).
+  int image_edge_length = suggestion_view_->description()->GetLineHeight();
+  suggestion_view_->image()->SetImage(
+      gfx::CanvasImageSource::MakeImageSkia<PlaceholderImageSource>(
+          gfx::Size(image_edge_length, image_edge_length), color));
+
   keyword_view_->icon()->SetVisible(match_.associated_keyword.get());
 
+  // Set up 'switch to tab' button.
   if (match.has_tab_match && !keyword_view_->icon()->visible()) {
     suggestion_tab_switch_button_ =
         std::make_unique<OmniboxTabSwitchButton>(this, GetTextHeight());
@@ -380,6 +426,7 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   } else {
     suggestion_tab_switch_button_.reset();
   }
+
   Invalidate();
   if (GetWidget())
     Layout();

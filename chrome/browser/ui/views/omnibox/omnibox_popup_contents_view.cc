@@ -333,9 +333,9 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     const AutocompleteMatch& match = GetMatchAtIndex(i);
     view->SetMatch(match);
     view->SetVisible(true);
-    if (match.answer && !model_->rich_suggestion_bitmap().isNull()) {
-      view->SetRichSuggestionImage(
-          gfx::ImageSkia::CreateFrom1xBitmap(model_->rich_suggestion_bitmap()));
+    const SkBitmap* bitmap = model_->RichSuggestionBitmapAt(i);
+    if (bitmap != nullptr) {
+      view->SetRichSuggestionImage(gfx::ImageSkia::CreateFrom1xBitmap(*bitmap));
     }
   }
 

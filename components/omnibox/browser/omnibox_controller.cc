@@ -81,6 +81,7 @@ void OmniboxController::ClearPopupKeywordMode() const {
     popup_->SetSelectedLineState(OmniboxPopupModel::NORMAL);
 }
 
-void OmniboxController::SetRichSuggestionBitmap(const SkBitmap& bitmap) {
-  popup_->SetRichSuggestionBitmap(bitmap);
+void OmniboxController::SetRichSuggestionBitmap(int result_index,
+                                                const SkBitmap& bitmap) {
+  popup_->SetRichSuggestionBitmap(result_index, bitmap);
 }

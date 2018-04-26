@@ -52,10 +52,11 @@ class ChromeOmniboxClientIOS : public OmniboxClient {
   void OnInputStateChanged() override;
   void OnFocusChanged(OmniboxFocusState state,
                       OmniboxFocusChangeReason reason) override;
-  void OnResultChanged(const AutocompleteResult& result,
-                       bool default_match_changed,
-                       const base::Callback<void(const SkBitmap& bitmap)>&
-                           on_bitmap_fetched) override;
+  void OnResultChanged(
+      const AutocompleteResult& result,
+      bool default_match_changed,
+      const base::Callback<void(int result_index, const SkBitmap& bitmap)>&
+          on_bitmap_fetched) override;
   void OnCurrentMatchChanged(const AutocompleteMatch& match) override;
   void OnURLOpenedFromOmnibox(OmniboxLog* log) override;
   void OnBookmarkLaunched() override;

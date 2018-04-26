@@ -74,6 +74,9 @@ using predictors::AutocompleteActionPredictor;
 
 namespace {
 
+typedef base::RepeatingCallback<void(const SkBitmap& bitmap)>
+    RichSuggestionImageCallback;
+
 // Calls the specified callback when the requested image is downloaded.  This
 // is a separate class instead of being implemented on ChromeOmniboxClient
 // because BitmapFetcherService currently takes ownership of this object.
@@ -82,14 +85,15 @@ namespace {
 // call directly.
 class RichSuggestionImageObserver : public BitmapFetcherService::Observer {
  public:
-  explicit RichSuggestionImageObserver(const BitmapFetchedCallback& callback)
+  explicit RichSuggestionImageObserver(
+      const RichSuggestionImageCallback& callback)
       : callback_(callback) {}
 
   void OnImageChanged(BitmapFetcherService::RequestId request_id,
                       const SkBitmap& image) override;
 
  private:
-  const BitmapFetchedCallback callback_;
+  const RichSuggestionImageCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RichSuggestionImageObserver);
 };
@@ -108,7 +112,6 @@ ChromeOmniboxClient::ChromeOmniboxClient(OmniboxEditController* controller,
     : controller_(static_cast<ChromeOmniboxEditController*>(controller)),
       profile_(profile),
       scheme_classifier_(profile),
-      request_id_(BitmapFetcherService::REQUEST_ID_INVALID),
       favicon_cache_(FaviconServiceFactory::GetForProfile(
                          profile,
                          ServiceAccessType::EXPLICIT_ACCESS),
@@ -119,8 +122,11 @@ ChromeOmniboxClient::ChromeOmniboxClient(OmniboxEditController* controller,
 ChromeOmniboxClient::~ChromeOmniboxClient() {
   BitmapFetcherService* image_service =
       BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
-  if (image_service)
-    image_service->CancelRequest(request_id_);
+  if (image_service) {
+    for (auto request_id : request_ids_) {
+      image_service->CancelRequest(request_id);
+    }
+  }
 }
 
 std::unique_ptr<AutocompleteProviderClient>
@@ -277,16 +283,23 @@ void ChromeOmniboxClient::OnResultChanged(
   if (!image_service) {
     return;
   }
-  image_service->CancelRequest(request_id_);
-  const auto match = std::find_if(
-      result.begin(), result.end(),
-      [](const AutocompleteMatch& current) { return !!current.answer; });
-  if (match != result.end()) {
+  // Clear out the old requests.
+  for (auto request_id : request_ids_) {
+    image_service->CancelRequest(request_id);
+  }
+  request_ids_.clear();
+  // Create new requests.
+  int result_index = -1;
+  for (const auto& match : result) {
+    ++result_index;
+    if (match.ImageUrl().is_empty()) {
+      continue;
+    }
     // TODO(jdonnelly, rhalavati): Create a helper function with Callback to
     // create annotation and pass it to image_service, merging this annotation
     // and the one in
     // chrome/browser/autocomplete/chrome_autocomplete_provider_client.cc
-    net::NetworkTrafficAnnotationTag traffic_annotation =
+    constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
         net::DefineNetworkTrafficAnnotation("omnibox_result_change", R"(
           semantics {
             sender: "Omnibox"
@@ -322,12 +335,12 @@ void ChromeOmniboxClient::OnResultChanged(
             }
           })");
 
-    request_id_ = image_service->RequestImage(
-        match->answer->second_line().image_url(),
-        new RichSuggestionImageObserver(
-            base::BindRepeating(&ChromeOmniboxClient::OnBitmapFetched,
-                                base::Unretained(this), on_bitmap_fetched)),
-        traffic_annotation);
+    request_ids_.push_back(image_service->RequestImage(
+        match.ImageUrl(),
+        new RichSuggestionImageObserver(base::BindRepeating(
+            &ChromeOmniboxClient::OnBitmapFetched, base::Unretained(this),
+            on_bitmap_fetched, result_index)),
+        traffic_annotation));
   }
 }
 
@@ -482,9 +495,9 @@ void ChromeOmniboxClient::DoPreconnect(const AutocompleteMatch& match) {
 }
 
 void ChromeOmniboxClient::OnBitmapFetched(const BitmapFetchedCallback& callback,
+                                          int result_index,
                                           const SkBitmap& bitmap) {
-  request_id_ = BitmapFetcherService::REQUEST_ID_INVALID;
-  callback.Run(bitmap);
+  callback.Run(result_index, bitmap);
 }
 
 void ChromeOmniboxClient::OnDefaultSearchProviderFaviconFetched(

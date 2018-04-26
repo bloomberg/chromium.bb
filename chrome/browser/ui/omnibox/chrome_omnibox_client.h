@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_OMNIBOX_CHROME_OMNIBOX_CLIENT_H_
 #define CHROME_BROWSER_UI_OMNIBOX_CHROME_OMNIBOX_CLIENT_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -87,6 +90,7 @@ class ChromeOmniboxClient : public OmniboxClient {
   void DoPreconnect(const AutocompleteMatch& match);
 
   void OnBitmapFetched(const BitmapFetchedCallback& callback,
+                       int result_index,
                        const SkBitmap& bitmap);
 
   void OnDefaultSearchProviderFaviconFetched(
@@ -95,7 +99,7 @@ class ChromeOmniboxClient : public OmniboxClient {
   ChromeOmniboxEditController* controller_;
   Profile* profile_;
   ChromeAutocompleteSchemeClassifier scheme_classifier_;
-  BitmapFetcherService::RequestId request_id_;
+  std::vector<BitmapFetcherService::RequestId> request_ids_;
   FaviconCache favicon_cache_;
 
   base::CancelableTaskTracker default_search_provider_favicon_task_tracker_;
