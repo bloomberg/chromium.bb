@@ -8,6 +8,7 @@
 
 #include "base/task_scheduler/post_task.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
+#include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/shared_memory_arbiter.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_writer.h"
@@ -85,12 +86,16 @@ void ProducerClient::CreateDataSourceInstance(
     uint64_t id,
     mojom::DataSourceConfigPtr data_source_config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(oysteine): Create the relevant data source instance here.
+  DCHECK(data_source_config);
+
+  // TODO(oysteine): Support concurrent tracing sessions.
+  TraceEventDataSource::GetInstance()->StartTracing(this, *data_source_config);
 }
 
 void ProducerClient::TearDownDataSourceInstance(uint64_t id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  enabled_data_source_instance_.reset();
+
+  TraceEventDataSource::GetInstance()->StopTracing();
 
   // TODO(oysteine): Yak shave: Can only destroy these once the TraceWriters
   // are all cleaned up; have to figure out the TLS bits.
@@ -113,8 +118,6 @@ void ProducerClient::UnregisterDataSource(const std::string& name) {
 
 void ProducerClient::CommitData(const perfetto::CommitDataRequest& commit,
                                 CommitDataCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   // The CommitDataRequest which the SharedMemoryArbiter uses to
   // signal Perfetto that individual chunks have finished being
   // written and is ready for consumption, needs to be serialized
@@ -147,7 +150,25 @@ void ProducerClient::CommitData(const perfetto::CommitDataRequest& commit,
     new_data_request->chunks_to_patch.push_back(std::move(new_chunk_patch));
   }
 
-  producer_host_->CommitData(std::move(new_data_request));
+  // TODO(oysteine): Remove the PostTask once Perfetto is fixed to always call
+  // CommitData on its provided TaskRunner, right now it'll call it on whatever
+  // thread is requesting a new chunk when the SharedMemoryBuffer is full. Until
+  // then this is technically not threadsafe on shutdown (when the
+  // ProducerClient gets destroyed) but should be okay while the Perfetto
+  // integration is behind a flag.
+  if (GetTaskRunner()->RunsTasksInCurrentSequence()) {
+    producer_host_->CommitData(std::move(new_data_request));
+  } else {
+    GetTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ProducerClient::CommitDataOnSequence,
+                       base::Unretained(this), std::move(new_data_request)));
+  }
+}
+
+void ProducerClient::CommitDataOnSequence(mojom::CommitDataRequestPtr request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  producer_host_->CommitData(std::move(request));
 }
 
 perfetto::SharedMemory* ProducerClient::shared_memory() const {

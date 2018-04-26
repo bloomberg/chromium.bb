@@ -41,14 +41,6 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
     : public mojom::ProducerClient,
       public perfetto::Service::ProducerEndpoint {
  public:
-  // Base class for different DataSource implementations,
-  // i.e. something which is able to provide data in the
-  // form of protos of a given type to Perfetto (like trace events).
-  class DataSourceBase {
-   public:
-    virtual ~DataSourceBase() = default;
-  };
-
   ProducerClient();
   ~ProducerClient() override;
 
@@ -98,11 +90,9 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
  protected:
   base::SequencedTaskRunner* GetTaskRunner();
 
-  // TODO(oysteine): Allow multiple enabled data source instances.
-  std::unique_ptr<DataSourceBase> enabled_data_source_instance_;
-
  private:
   void BindOnSequence(mojom::ProducerClientRequest request);
+  void CommitDataOnSequence(mojom::CommitDataRequestPtr request);
 
   // Keep the TaskRunner first in the member list so it outlives
   // everything else and no dependent classes will try to use

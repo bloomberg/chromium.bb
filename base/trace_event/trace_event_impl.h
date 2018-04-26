@@ -129,7 +129,7 @@ class BASE_EXPORT TraceEvent {
   const char* scope() const { return scope_; }
   unsigned long long id() const { return id_; }
   unsigned int flags() const { return flags_; }
-
+  unsigned long long bind_id() const { return bind_id_; }
   // Exposed for unittesting:
 
   const std::string* parameter_copy_storage() const {

@@ -178,6 +178,12 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   // Cancels tracing and discards collected data.
   void CancelTracing(const OutputCallback& cb);
 
+  typedef void (*AddTraceEventOverrideCallback)(const TraceEvent&);
+  // The callback will be called up until the point where the flush is
+  // finished, i.e. must be callable until OutputCallback is called with
+  // has_more_events==false.
+  void SetAddTraceEventOverride(const AddTraceEventOverrideCallback& override);
+
   // Called by TRACE_EVENT* macros, don't call this directly.
   // The name parameter is a category group for example:
   // TRACE_EVENT0("renderer,webkit", "WebViewImpl::HandleInputEvent")
@@ -509,6 +515,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   ArgumentFilterPredicate argument_filter_predicate_;
   subtle::AtomicWord generation_;
   bool use_worker_thread_;
+  subtle::AtomicWord trace_event_override_;
 
   FilterFactoryForTesting filter_factory_for_testing_;
 

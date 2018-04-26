@@ -30,7 +30,7 @@
 #include "ipc/message_router.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
-#include "services/tracing/public/cpp/chrome_trace_event_agent.h"
+#include "services/tracing/public/cpp/trace_event_agent.h"
 
 #if defined(OS_WIN)
 #include "content/public/common/font_cache_win.mojom.h"
@@ -254,7 +254,7 @@ class CONTENT_EXPORT ChildThreadImpl
 
   scoped_refptr<base::SingleThreadTaskRunner> browser_process_io_runner_;
 
-  std::unique_ptr<tracing::ChromeTraceEventAgent> chrome_trace_event_agent_;
+  std::unique_ptr<tracing::TraceEventAgent> trace_event_agent_;
 
   std::unique_ptr<variations::ChildProcessFieldTrialSyncer> field_trial_syncer_;
 

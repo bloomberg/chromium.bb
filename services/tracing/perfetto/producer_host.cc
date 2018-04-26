@@ -8,6 +8,7 @@
 
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h"
+#include "third_party/perfetto/include/perfetto/tracing/core/data_source_descriptor.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
 
 namespace tracing {
@@ -31,7 +32,10 @@ void ProducerHost::Initialize(mojom::ProducerClientPtr producer_client,
       base::BindOnce(&ProducerHost::OnConnectionError, base::Unretained(this)));
 
   // TODO(oysteine): Figure out an uid once we need it.
-  producer_endpoint_ = service->ConnectProducer(this, 0 /* uid */, name);
+  // TODO(oysteine): Figure out a good buffer size.
+  producer_endpoint_ = service->ConnectProducer(
+      this, 0 /* uid */, name,
+      4 * 1024 * 1024 /* shared_memory_size_hint_bytes */);
   DCHECK(producer_endpoint_);
 }
 
@@ -45,6 +49,10 @@ void ProducerHost::OnConnectionError() {
 
 void ProducerHost::OnConnect() {
   // Register data sources with Perfetto here.
+
+  perfetto::DataSourceDescriptor descriptor;
+  descriptor.set_name(mojom::kTraceEventDataSourceName);
+  producer_endpoint_->RegisterDataSource(descriptor);
 }
 
 void ProducerHost::OnDisconnect() {
