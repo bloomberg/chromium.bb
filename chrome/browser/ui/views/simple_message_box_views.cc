@@ -32,6 +32,10 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/ui/cocoa/simple_message_box_cocoa.h"
+#endif
+
 namespace {
 #if defined(OS_WIN)
 UINT GetMessageBoxFlagsFromType(chrome::MessageBoxType type) {
@@ -112,6 +116,17 @@ chrome::MessageBoxResult SimpleMessageBoxViews::Show(
     std::move(callback).Run((result == IDYES || result == IDOK)
                                 ? chrome::MESSAGE_BOX_RESULT_YES
                                 : chrome::MESSAGE_BOX_RESULT_NO);
+    return chrome::MESSAGE_BOX_RESULT_DEFERRED;
+  }
+#elif defined(OS_MACOSX)
+  if (!base::MessageLoopForUI::IsCurrent() ||
+      !base::RunLoop::IsRunningOnCurrentThread() ||
+      !ui::ResourceBundle::HasSharedInstance()) {
+    // Even though this function could return a value synchronously here in
+    // principle, in practice call sites do not expect any behavior other than a
+    // return of DEFERRED and an invocation of the callback.
+    std::move(callback).Run(
+        chrome::ShowMessageBoxCocoa(message, type, checkbox_text));
     return chrome::MESSAGE_BOX_RESULT_DEFERRED;
   }
 #else
