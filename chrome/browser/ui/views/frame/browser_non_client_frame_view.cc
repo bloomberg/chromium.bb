@@ -63,7 +63,7 @@ BrowserNonClientFrameView::~BrowserNonClientFrameView() {
 
 // static
 int BrowserNonClientFrameView::GetAvatarIconPadding() {
-  return MD::IsTouchOptimizedUiEnabled() ? 8 : 4;
+  return MD::IsNewerMaterialUi() ? 8 : 4;
 }
 
 void BrowserNonClientFrameView::OnBrowserViewInitViewsComplete() {
@@ -103,9 +103,9 @@ void BrowserNonClientFrameView::UpdateClientArea() {}
 void BrowserNonClientFrameView::UpdateMinimumSize() {}
 
 int BrowserNonClientFrameView::GetTabStripLeftInset() const {
-  return profile_indicator_icon()
-             ? 2 * GetAvatarIconPadding() + GetIncognitoAvatarIcon().width()
-             : 4;
+  if (profile_indicator_icon())
+    return 2 * GetAvatarIconPadding() + GetIncognitoAvatarIcon().width();
+  return (MD::GetMode() == MD::MATERIAL_REFRESH) ? 8 : 4;
 }
 
 void BrowserNonClientFrameView::ChildPreferredSizeChanged(views::View* child) {

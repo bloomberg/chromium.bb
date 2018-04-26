@@ -60,13 +60,9 @@ int GetLayoutConstant(LayoutConstant constant) {
     case LOCATION_BAR_ICON_INTERIOR_PADDING:
       return touch_optimized_material ? 8 : 4;
     case TABSTRIP_NEW_TAB_BUTTON_SPACING: {
-      // In non-touch optimized UI, we make the new tab button overlap with the
-      // last tab in the tabstrip (i.e negative spacing). However, in
-      // touch-optimized UI, we actually want to push the new tab button
-      // further away from the tab. The distance is 8 DIP from the point at
-      // which the last tab's endcap intersects with the tabstrip separator,
-      // which is actually 6 DIP from the last tab's right point.
-      constexpr int kSpacing[] = {-5, -6, 6, -5};
+      // In older material UI, we make the new tab button overlap with the last
+      // tab in the tabstrip.
+      constexpr int kSpacing[] = {-5, -6, 6, 0};
       return kSpacing[mode];
     }
     case TAB_AFTER_TITLE_PADDING:
