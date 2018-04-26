@@ -104,6 +104,10 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
     return ErrorStatus(apdu::ApduResponse::Status::SW_WRONG_LENGTH);
   }
 
+  if (mutable_state()->simulate_press_callback) {
+    mutable_state()->simulate_press_callback.Run();
+  }
+
   auto challenge_param = data.first(32);
   auto application_parameter = data.last(32);
 
@@ -183,6 +187,10 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoSign(
         p1 == kP1IndividualAttestation) ||
       p2 != 0) {
     return ErrorStatus(apdu::ApduResponse::Status::SW_WRONG_DATA);
+  }
+
+  if (mutable_state()->simulate_press_callback) {
+    mutable_state()->simulate_press_callback.Run();
   }
 
   auto challenge_param = data.first(32);

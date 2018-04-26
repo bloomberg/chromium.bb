@@ -208,3 +208,21 @@ static_library("devtools") {
     deps += [ "//chrome/common/extensions/api" ]
   }
 }
+
+static_library("test_support") {
+  sources = []
+  deps = []
+
+  if (!is_android) {
+    deps += [
+      "//base",
+      "//chrome/browser/ui",
+      "//content/public/browser",
+    ]
+
+    sources += [
+      "devtools_window_testing.cc",
+      "devtools_window_testing.h",
+    ]
+  }
+}

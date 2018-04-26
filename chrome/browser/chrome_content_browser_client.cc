@@ -110,8 +110,10 @@
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
@@ -4273,10 +4275,6 @@ bool ChromeContentBrowserClient::
   return IsWebauthnRPIDListedInEnterprisePolicy(browser_context, rp_id);
 }
 
-bool ChromeContentBrowserClient::ShouldEnforceFocusChecksForWebauthn() {
-  return true;
-}
-
 void ChromeContentBrowserClient::ShouldReturnAttestationForWebauthnRPID(
     content::RenderFrameHost* rfh,
     const std::string& rp_id,
@@ -4305,11 +4303,9 @@ void ChromeContentBrowserClient::ShouldReturnAttestationForWebauthnRPID(
     return;
   }
 
-  // The created AttestationPermissionRequest deletes itself once complete.
-  //
   // |callback| is called via the |MessageLoop| because otherwise the
-  // permissions bubble will have focus and |AuthenticatorImpl| checks that the
-  // frame still has focus before returning any results.
+  // permissions bubble will have focus on ChromeOS and |AuthenticatorImpl|
+  // checks that the |WebContents| still has focus before returning any results.
   permission_request_manager->AddRequest(NewAttestationPermissionRequest(
       origin, base::BindOnce(
                   [](base::OnceCallback<void(bool)> callback, bool result) {
@@ -4317,6 +4313,24 @@ void ChromeContentBrowserClient::ShouldReturnAttestationForWebauthnRPID(
                         FROM_HERE, base::BindOnce(std::move(callback), result));
                   },
                   std::move(callback))));
+#endif
+}
+
+bool ChromeContentBrowserClient::IsFocused(content::WebContents* web_contents) {
+#if defined(OS_ANDROID)
+  // Android is expected to use platform APIs for webauthn.
+  return true;
+#else
+  for (const auto* browser : *BrowserList::GetInstance()) {
+    const int tab_index =
+        browser->tab_strip_model()->GetIndexOfWebContents(web_contents);
+    if (tab_index != TabStripModel::kNoTab &&
+        browser->tab_strip_model()->active_index() == tab_index) {
+      return browser->window()->IsActive();
+    }
+  }
+
+  return false;
 #endif
 }
 
