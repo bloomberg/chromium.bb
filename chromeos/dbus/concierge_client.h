@@ -89,6 +89,13 @@ class CHROMEOS_EXPORT ConciergeClient : public DBusClient {
           vm_tools::concierge::LaunchContainerApplicationResponse>
           callback) = 0;
 
+  // Gets application icons from inside a Container.
+  // |callback| is called after the method call finishes.
+  virtual void GetContainerAppIcons(
+      const vm_tools::concierge::ContainerAppIconRequest& request,
+      DBusMethodCallback<vm_tools::concierge::ContainerAppIconResponse>
+          callback) = 0;
+
   // Registers |callback| to run when the Concierge service becomes available.
   // If the service is already available, or if connecting to the name-owner-
   // changed signal fails, |callback| will be run once asynchronously.

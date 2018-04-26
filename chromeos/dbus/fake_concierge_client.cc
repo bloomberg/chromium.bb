@@ -93,6 +93,15 @@ void FakeConciergeClient::LaunchContainerApplication(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(response)));
 }
 
+void FakeConciergeClient::GetContainerAppIcons(
+    const vm_tools::concierge::ContainerAppIconRequest& request,
+    DBusMethodCallback<vm_tools::concierge::ContainerAppIconResponse>
+        callback) {
+  vm_tools::concierge::ContainerAppIconResponse response;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(response)));
+}
+
 void FakeConciergeClient::WaitForServiceToBeAvailable(
     dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(

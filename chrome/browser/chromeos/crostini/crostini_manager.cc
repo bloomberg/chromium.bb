@@ -494,6 +494,29 @@ void CrostiniManager::LaunchContainerApplication(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void CrostiniManager::GetContainerAppIcons(
+    std::string vm_name,
+    std::string container_name,
+    std::vector<std::string> desktop_file_ids,
+    int icon_size,
+    int scale,
+    GetContainerAppIconsCallback callback) {
+  vm_tools::concierge::ContainerAppIconRequest request;
+  request.set_vm_name(std::move(vm_name));
+  request.set_container_name(std::move(container_name));
+  google::protobuf::RepeatedPtrField<std::string> ids(
+      std::make_move_iterator(desktop_file_ids.begin()),
+      std::make_move_iterator(desktop_file_ids.end()));
+  request.mutable_desktop_file_ids()->Swap(&ids);
+  request.set_size(icon_size);
+  request.set_scale(scale);
+
+  GetConciergeClient()->GetContainerAppIcons(
+      std::move(request),
+      base::BindOnce(&CrostiniManager::OnGetContainerAppIcons,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void CrostiniManager::LaunchContainerTerminal(
     Profile* profile,
     const std::string& vm_name,
@@ -706,6 +729,24 @@ void CrostiniManager::OnLaunchContainerApplication(
     return;
   }
   std::move(callback).Run(ConciergeClientResult::SUCCESS);
+}
+
+void CrostiniManager::OnGetContainerAppIcons(
+    GetContainerAppIconsCallback callback,
+    base::Optional<vm_tools::concierge::ContainerAppIconResponse> reply) {
+  std::vector<Icon> icons;
+  if (!reply.has_value()) {
+    LOG(ERROR) << "Failed to get container application icons. Empty response.";
+    std::move(callback).Run(ConciergeClientResult::DBUS_ERROR, icons);
+    return;
+  }
+  vm_tools::concierge::ContainerAppIconResponse response = reply.value();
+  for (auto& icon : *response.mutable_icons()) {
+    icons.emplace_back(
+        Icon{.desktop_file_id = std::move(*icon.mutable_desktop_file_id()),
+             .content = std::move(*icon.mutable_icon())});
+  }
+  std::move(callback).Run(ConciergeClientResult::SUCCESS, icons);
 }
 
 }  // namespace crostini
