@@ -446,6 +446,8 @@ class WebView : protected WebWidget {
   // The valid flags are defined in
   // third_party/blink/public/platform/autoplay.mojom
   virtual void AddAutoplayFlags(int32_t flags) = 0;
+  virtual void ClearAutoplayFlags() = 0;
+  virtual int32_t AutoplayFlagsForTest() = 0;
 
   // Suspend and resume ---------------------------------------------------
 

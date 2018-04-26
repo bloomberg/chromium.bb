@@ -3849,4 +3849,12 @@ void WebViewImpl::AddAutoplayFlags(int32_t value) {
   page_->AddAutoplayFlags(value);
 }
 
+void WebViewImpl::ClearAutoplayFlags() {
+  page_->ClearAutoplayFlags();
+}
+
+int32_t WebViewImpl::AutoplayFlagsForTest() {
+  return page_->AutoplayFlags();
+}
+
 }  // namespace blink

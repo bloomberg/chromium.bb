@@ -436,6 +436,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void ForceNextDrawingBufferCreationToFail() override;
 
   void AddAutoplayFlags(int32_t) override;
+  void ClearAutoplayFlags() override;
+  int32_t AutoplayFlagsForTest() override;
 
   IntSize MainFrameSize();
   WebDisplayMode DisplayMode() const { return display_mode_; }
