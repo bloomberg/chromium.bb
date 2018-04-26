@@ -97,37 +97,34 @@ def ConfigureDataFVM(output_dir, sparse):
   Returns the path to the new FVM file."""
 
   logging.debug('Building persistent data FVM file.')
-  data_file = os.path.join(output_dir, 'data.minfs.bin')
-  try:
-    # Build up the minfs partition data and install keys into it.
-    ssh_config, ssh_data = _ProvisionSSH(output_dir)
-    manifest = tempfile.NamedTemporaryFile()
-    for dest, src in ssh_data:
-      manifest.write('%s=%s\n' % (dest, src))
-    manifest.flush()
-    minfs_path = os.path.join(common.SDK_ROOT, 'tools', 'minfs')
-    subprocess.check_call([minfs_path, '%s@10m' % data_file, 'create'])
-    subprocess.check_call([minfs_path, data_file, 'manifest', manifest.name])
+  data_file = tempfile.NamedTemporaryFile()
 
-    # Wrap the minfs partition in a FVM container.
-    fvm_path = os.path.join(common.SDK_ROOT, 'tools', 'fvm')
-    fvm_output_path = os.path.join(output_dir, 'fvm.data.blk')
-    if os.path.exists(fvm_output_path):
-      os.remove(fvm_output_path)
+  # Build up the minfs partition data and install keys into it.
+  ssh_config, ssh_data = _ProvisionSSH(output_dir)
+  manifest = tempfile.NamedTemporaryFile()
+  for dest, src in ssh_data:
+    manifest.write('%s=%s\n' % (dest, src))
+  manifest.flush()
+  minfs_path = os.path.join(common.SDK_ROOT, 'tools', 'minfs')
+  subprocess.check_call([minfs_path, '%s@10m' % data_file.name, 'create'])
+  subprocess.check_call([minfs_path, data_file.name, 'manifest', manifest.name])
 
-    if sparse:
-      cmd = [fvm_path, fvm_output_path, 'sparse', '--compress', 'lz4',
-             '--data', data_file]
-    else:
-      cmd = [fvm_path, fvm_output_path, 'create', '--data', data_file]
+  # Wrap the minfs partition in a FVM container.
+  fvm_path = os.path.join(common.SDK_ROOT, 'tools', 'fvm')
+  fvm_output_path = os.path.join(output_dir, 'fvm.data.blk')
+  if os.path.exists(fvm_output_path):
+    os.remove(fvm_output_path)
 
-    logging.debug(' '.join(cmd))
+  if sparse:
+    cmd = [fvm_path, fvm_output_path, 'sparse', '--compress', 'lz4',
+           '--data', data_file.name]
+  else:
+    cmd = [fvm_path, fvm_output_path, 'create', '--data', data_file.name]
 
-    subprocess.check_call(cmd)
-    return fvm_output_path
+  logging.debug(' '.join(cmd))
 
-  finally:
-    os.remove(data_file)
+  subprocess.check_call(cmd)
+  return fvm_output_path
 
 
 def GetNodeName(output_dir):
