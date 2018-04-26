@@ -111,13 +111,8 @@ class Executive(object):
 
         Will fail silently if pid does not exist or insufficient permissions.
         """
-        # This method behaves differently on Windows and Linux. On Windows, it
-        # kills the process as well as all of its subprocesses (because of the
-        # '/t' flag). Some call sites depend on this behaviour (e.g. to kill all
-        # worker processes of wptserve on Windows).
-        # TODO(robertma): Replicate the behaviour on POSIX by calling setsid()
-        # in Popen's preexec_fn hook, and perhaps rename the method to
-        # kill_process_tree.
+        # According to http://docs.python.org/library/os.html
+        # os.kill isn't available on Windows.
         if sys.platform == 'win32':
             command = ['taskkill.exe', '/f', '/t', '/pid', pid]
             # taskkill will exit 128 if the process is not found. We should log.
