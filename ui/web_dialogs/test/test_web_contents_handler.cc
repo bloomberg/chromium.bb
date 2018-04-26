@@ -4,6 +4,8 @@
 
 #include "ui/web_dialogs/test/test_web_contents_handler.h"
 
+#include "content/public/browser/web_contents.h"
+
 namespace ui {
 namespace test {
 
@@ -20,13 +22,13 @@ content::WebContents* TestWebContentsHandler::OpenURLFromTab(
   return NULL;
 }
 
-void TestWebContentsHandler::AddNewContents(content::BrowserContext* context,
-                                            content::WebContents* source,
-                                            content::WebContents* new_contents,
-                                            WindowOpenDisposition disposition,
-                                            const gfx::Rect& initial_rect,
-                                            bool user_gesture) {
-}
+void TestWebContentsHandler::AddNewContents(
+    content::BrowserContext* context,
+    content::WebContents* source,
+    std::unique_ptr<content::WebContents> new_contents,
+    WindowOpenDisposition disposition,
+    const gfx::Rect& initial_rect,
+    bool user_gesture) {}
 
 }  // namespace test
 }  // namespace ui

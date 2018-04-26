@@ -168,7 +168,7 @@ bool GetCurrentTabTitle(const Browser* browser, base::string16* title) {
 
 void NavigateToURL(NavigateParams* params) {
   Navigate(params);
-  content::WaitForLoadStop(params->target_contents);
+  content::WaitForLoadStop(params->navigated_or_inserted_contents);
 }
 
 void NavigateToURLWithPost(Browser* browser, const GURL& url) {

@@ -204,10 +204,10 @@
   params.tabstrip_index = index;
   Navigate(&params);
   CoreTabHelper* core_tab_helper =
-      CoreTabHelper::FromWebContents(params.target_contents);
+      CoreTabHelper::FromWebContents(params.navigated_or_inserted_contents);
   core_tab_helper->set_new_tab_start_time(newTabStartTime);
 
-  [aTab setWebContents:params.target_contents];
+  [aTab setWebContents:params.navigated_or_inserted_contents];
 }
 
 - (void)removeFromTabsAtIndex:(int)index {

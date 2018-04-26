@@ -77,7 +77,7 @@ content::WebContents* OpenURLFromTabInternal(
   new_tab_params.initiating_profile = Profile::FromBrowserContext(context);
   Navigate(&new_tab_params);
 
-  return new_tab_params.target_contents;
+  return new_tab_params.navigated_or_inserted_contents;
 }
 
 void OpenURLAfterCheckIsDefaultBrowser(

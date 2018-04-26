@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/web_contents.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser.h"
@@ -17,8 +18,8 @@ using content::NavigationController;
 using content::WebContents;
 
 #if defined(OS_ANDROID)
-NavigateParams::NavigateParams(WebContents* a_target_contents)
-    : target_contents(a_target_contents) {}
+NavigateParams::NavigateParams(std::unique_ptr<WebContents> contents_to_insert)
+    : contents_to_insert(std::move(contents_to_insert)) {}
 #else
 NavigateParams::NavigateParams(Browser* a_browser,
                                const GURL& a_url,
@@ -26,8 +27,8 @@ NavigateParams::NavigateParams(Browser* a_browser,
     : url(a_url), transition(a_transition), browser(a_browser) {}
 
 NavigateParams::NavigateParams(Browser* a_browser,
-                               WebContents* a_target_contents)
-    : target_contents(a_target_contents), browser(a_browser) {}
+                               std::unique_ptr<WebContents> contents_to_insert)
+    : contents_to_insert(std::move(contents_to_insert)), browser(a_browser) {}
 #endif  // !defined(OS_ANDROID)
 
 NavigateParams::NavigateParams(Profile* a_profile,
@@ -39,7 +40,7 @@ NavigateParams::NavigateParams(Profile* a_profile,
       window_action(SHOW_WINDOW),
       initiating_profile(a_profile) {}
 
-NavigateParams::NavigateParams(const NavigateParams& other) = default;
+NavigateParams::NavigateParams(NavigateParams&&) = default;
 
 NavigateParams::~NavigateParams() {}
 

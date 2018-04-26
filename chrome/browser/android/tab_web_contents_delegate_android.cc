@@ -366,7 +366,7 @@ WebContents* TabWebContentsDelegateAndroid::OpenURLFromTab(
        params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
        params.disposition == WindowOpenDisposition::NEW_WINDOW) &&
       PopupBlockerTabHelper::MaybeBlockPopup(source, base::Optional<GURL>(),
-                                             nav_params, &params,
+                                             &nav_params, &params,
                                              blink::mojom::WindowFeatures())) {
     return nullptr;
   }
@@ -374,12 +374,12 @@ WebContents* TabWebContentsDelegateAndroid::OpenURLFromTab(
   if (disposition == WindowOpenDisposition::CURRENT_TAB) {
     // Only prerender for a current-tab navigation to avoid session storage
     // namespace issues.
-    nav_params.target_contents = source;
+    prerender::PrerenderManager::Params prerender_params(&nav_params, source);
     prerender::PrerenderManager* prerender_manager =
         prerender::PrerenderManagerFactory::GetForBrowserContext(profile);
-    if (prerender_manager &&
-        prerender_manager->MaybeUsePrerenderedPage(params.url, &nav_params)) {
-      return nav_params.target_contents;
+    if (prerender_manager && prerender_manager->MaybeUsePrerenderedPage(
+                                 params.url, &prerender_params)) {
+      return prerender_params.replaced_contents;
     }
   }
 

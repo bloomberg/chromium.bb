@@ -30,11 +30,12 @@ CastExtensionHostDelegate::GetJavaScriptDialogManager() {
   return nullptr;
 }
 
-void CastExtensionHostDelegate::CreateTab(content::WebContents* web_contents,
-                                          const std::string& extension_id,
-                                          WindowOpenDisposition disposition,
-                                          const gfx::Rect& initial_rect,
-                                          bool user_gesture) {
+void CastExtensionHostDelegate::CreateTab(
+    std::unique_ptr<content::WebContents> web_contents,
+    const std::string& extension_id,
+    WindowOpenDisposition disposition,
+    const gfx::Rect& initial_rect,
+    bool user_gesture) {
   NOTREACHED();
 }
 

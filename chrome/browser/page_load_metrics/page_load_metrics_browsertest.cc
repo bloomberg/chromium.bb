@@ -457,7 +457,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPageInNewForegroundTab) {
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
 
   Navigate(&params);
-  auto waiter = std::make_unique<PageLoadMetricsWaiter>(params.target_contents);
+  auto waiter = std::make_unique<PageLoadMetricsWaiter>(
+      params.navigated_or_inserted_contents);
   waiter->AddPageExpectation(TimingField::LOAD_EVENT);
   waiter->Wait();
 

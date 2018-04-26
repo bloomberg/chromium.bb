@@ -2689,7 +2689,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
                                      opener_suppressed);
   NavigateParams nav_params = blocked_params.CreateNavigateParams(web_contents);
   if (PopupBlockerTabHelper::MaybeBlockPopup(
-          web_contents, opener_top_level_frame_url, nav_params,
+          web_contents, opener_top_level_frame_url, &nav_params,
           nullptr /*=open_url_params*/, blocked_params.features())) {
     return false;
   }
@@ -3480,7 +3480,7 @@ void ChromeContentBrowserClient::OpenURL(
   nav_params.user_gesture = params.user_gesture;
 
   Navigate(&nav_params);
-  callback.Run(nav_params.target_contents);
+  callback.Run(nav_params.navigated_or_inserted_contents);
 #endif
 }
 

@@ -2756,7 +2756,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestDisplaysInsecureContentTwoTabs) {
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   Navigate(&params);
-  WebContents* tab2 = params.target_contents;
+  WebContents* tab2 = params.navigated_or_inserted_contents;
   observer.Wait();
 
   // The new tab has insecure content.
@@ -2798,7 +2798,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestRunsInsecureContentTwoTabs) {
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   Navigate(&params);
-  WebContents* tab2 = params.target_contents;
+  WebContents* tab2 = params.navigated_or_inserted_contents;
   observer.Wait();
 
   // Both tabs should have the same process.

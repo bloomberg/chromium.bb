@@ -163,7 +163,7 @@ bool NavigateTab(int index, const GURL& url) {
   params.disposition = WindowOpenDisposition::CURRENT_TAB;
 
   ui_test_utils::NavigateToURL(&params);
-  return WaitForTabToLoad(index, url, params.target_contents);
+  return WaitForTabToLoad(index, url, params.navigated_or_inserted_contents);
 }
 
 void NavigateTabBack(int index) {

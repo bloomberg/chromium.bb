@@ -232,7 +232,7 @@ content::WebContents* AnswerCardWebContents::OpenURLFromTab(
 
   base::RecordAction(base::UserMetricsAction("SearchAnswer_OpenedUrl"));
 
-  return new_tab_params.target_contents;
+  return new_tab_params.navigated_or_inserted_contents;
 }
 
 bool AnswerCardWebContents::HandleContextMenu(

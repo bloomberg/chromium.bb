@@ -141,9 +141,10 @@ ChromeDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
                         ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
-  if (!params.target_contents)
+  if (!params.navigated_or_inserted_contents)
     return nullptr;
-  return DevToolsAgentHost::GetOrCreateFor(params.target_contents);
+  return DevToolsAgentHost::GetOrCreateFor(
+      params.navigated_or_inserted_contents);
 }
 
 std::string ChromeDevToolsManagerDelegate::GetDiscoveryPageHTML() {

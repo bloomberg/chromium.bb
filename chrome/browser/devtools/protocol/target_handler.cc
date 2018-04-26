@@ -81,12 +81,12 @@ protocol::Response TargetHandler::CreateTarget(
   }
 
   Navigate(&params);
-  if (!params.target_contents)
+  if (!params.navigated_or_inserted_contents)
     return protocol::Response::Error("Failed to open a new tab");
 
-  *out_target_id =
-      content::DevToolsAgentHost::GetOrCreateFor(params.target_contents)
-          ->GetId();
+  *out_target_id = content::DevToolsAgentHost::GetOrCreateFor(
+                       params.navigated_or_inserted_contents)
+                       ->GetId();
   return protocol::Response::OK();
 }
 

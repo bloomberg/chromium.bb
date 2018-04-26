@@ -139,7 +139,7 @@ void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {
   params.tabstrip_index = 0;
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
-  CommitPendingLoad(&params.target_contents->GetController());
+  CommitPendingLoad(&params.navigated_or_inserted_contents->GetController());
 }
 
 void BrowserWithTestWindowTest::CommitPendingLoad(

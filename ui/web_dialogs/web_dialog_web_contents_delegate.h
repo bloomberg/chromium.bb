@@ -32,12 +32,13 @@ class WEB_DIALOGS_EXPORT WebDialogWebContentsDelegate
         content::BrowserContext* context,
         content::WebContents* source,
         const content::OpenURLParams& params) = 0;
-    virtual void AddNewContents(content::BrowserContext* context,
-                                content::WebContents* source,
-                                content::WebContents* new_contents,
-                                WindowOpenDisposition disposition,
-                                const gfx::Rect& initial_rect,
-                                bool user_gesture) = 0;
+    virtual void AddNewContents(
+        content::BrowserContext* context,
+        content::WebContents* source,
+        std::unique_ptr<content::WebContents> new_contents,
+        WindowOpenDisposition disposition,
+        const gfx::Rect& initial_rect,
+        bool user_gesture) = 0;
   };
 
   // context and handler must be non-NULL.

@@ -162,7 +162,7 @@ void SigninViewController::ShowDiceSigninTab(
     active_contents->OpenURL(params);
   } else {
     NavigateParams params = GetSingletonTabNavigateParams(browser, signin_url);
-    ShowSingletonTabOverwritingNTP(browser, params);
+    ShowSingletonTabOverwritingNTP(browser, std::move(params));
     active_contents = browser->tab_strip_model()->GetActiveWebContents();
   }
   DCHECK(active_contents);
