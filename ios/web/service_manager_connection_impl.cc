@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ios/web/public/web_thread.h"
@@ -88,15 +89,16 @@ class ServiceManagerConnectionImpl::IOThreadContext
  private:
   friend class base::RefCountedThreadSafe<IOThreadContext>;
 
-  class MessageLoopObserver : public base::MessageLoop::DestructionObserver {
+  class MessageLoopObserver
+      : public base::MessageLoopCurrent::DestructionObserver {
    public:
     explicit MessageLoopObserver(base::WeakPtr<IOThreadContext> context)
         : context_(context) {
-      base::MessageLoop::current()->AddDestructionObserver(this);
+      base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
     }
 
     ~MessageLoopObserver() override {
-      base::MessageLoop::current()->RemoveDestructionObserver(this);
+      base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
     }
 
     void ShutDown() {
