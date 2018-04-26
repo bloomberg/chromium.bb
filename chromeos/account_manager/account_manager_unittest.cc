@@ -37,6 +37,8 @@ class AccountManagerTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir tmp_dir_;
   std::unique_ptr<AccountManager> account_manager_;
+  const AccountManager::AccountKey kAccountKey_{
+      "111", account_manager::AccountType::ACCOUNT_TYPE_GAIA};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountManagerTest);
@@ -47,17 +49,32 @@ class AccountManagerObserver : public AccountManager::Observer {
   AccountManagerObserver() = default;
   ~AccountManagerObserver() override = default;
 
-  void OnAccountListUpdated(const std::vector<std::string>& accounts) override {
+  void OnAccountListUpdated(
+      const std::vector<AccountManager::AccountKey>& accounts) override {
     is_callback_called_ = true;
     accounts_ = accounts;
   }
 
   bool is_callback_called_ = false;
-  std::vector<std::string> accounts_;
+  std::vector<AccountManager::AccountKey> accounts_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountManagerObserver);
 };
+
+TEST(AccountManagerKeyTest, TestValidity) {
+  AccountManager::AccountKey key1{
+      std::string(), account_manager::AccountType::ACCOUNT_TYPE_GAIA};
+  EXPECT_FALSE(key1.IsValid());
+
+  AccountManager::AccountKey key2{
+      "abc", account_manager::AccountType::ACCOUNT_TYPE_UNSPECIFIED};
+  EXPECT_FALSE(key2.IsValid());
+
+  AccountManager::AccountKey key3{
+      "abc", account_manager::AccountType::ACCOUNT_TYPE_GAIA};
+  EXPECT_TRUE(key3.IsValid());
+}
 
 TEST_F(AccountManagerTest, TestInitialization) {
   AccountManager account_manager;
@@ -72,13 +89,14 @@ TEST_F(AccountManagerTest, TestInitialization) {
 }
 
 TEST_F(AccountManagerTest, TestUpsert) {
-  account_manager_->UpsertToken("abc", "123");
+  account_manager_->UpsertToken(kAccountKey_, "123");
 
-  std::vector<std::string> accounts;
+  std::vector<AccountManager::AccountKey> accounts;
   base::RunLoop run_loop;
   account_manager_->GetAccounts(base::BindOnce(
-      [](std::vector<std::string>* accounts, base::OnceClosure quit_closure,
-         std::vector<std::string> stored_accounts) -> void {
+      [](std::vector<AccountManager::AccountKey>* accounts,
+         base::OnceClosure quit_closure,
+         std::vector<AccountManager::AccountKey> stored_accounts) -> void {
         *accounts = stored_accounts;
         std::move(quit_closure).Run();
       },
@@ -86,22 +104,23 @@ TEST_F(AccountManagerTest, TestUpsert) {
   run_loop.Run();
 
   EXPECT_EQ(1UL, accounts.size());
-  EXPECT_EQ("abc", accounts[0]);
+  EXPECT_EQ(kAccountKey_, accounts[0]);
 }
 
 TEST_F(AccountManagerTest, TestPersistence) {
-  account_manager_->UpsertToken("abc", "123");
+  account_manager_->UpsertToken(kAccountKey_, "123");
   scoped_task_environment_.RunUntilIdle();
 
   account_manager_ = std::make_unique<AccountManager>();
   account_manager_->Initialize(tmp_dir_.GetPath(),
                                base::SequencedTaskRunnerHandle::Get());
 
-  std::vector<std::string> accounts;
+  std::vector<AccountManager::AccountKey> accounts;
   base::RunLoop run_loop;
   account_manager_->GetAccounts(base::BindOnce(
-      [](std::vector<std::string>* accounts, base::OnceClosure quit_closure,
-         std::vector<std::string> stored_accounts) -> void {
+      [](std::vector<AccountManager::AccountKey>* accounts,
+         base::OnceClosure quit_closure,
+         std::vector<AccountManager::AccountKey> stored_accounts) -> void {
         *accounts = stored_accounts;
         std::move(quit_closure).Run();
       },
@@ -109,7 +128,7 @@ TEST_F(AccountManagerTest, TestPersistence) {
   run_loop.Run();
 
   EXPECT_EQ(1UL, accounts.size());
-  EXPECT_EQ("abc", accounts[0]);
+  EXPECT_EQ(kAccountKey_, accounts[0]);
 }
 
 TEST_F(AccountManagerTest, TestObserverAddAccount) {
@@ -117,16 +136,16 @@ TEST_F(AccountManagerTest, TestObserverAddAccount) {
   EXPECT_FALSE(observer->is_callback_called_);
 
   account_manager_->AddObserver(observer.get());
-  account_manager_->UpsertToken("abc", "123");
+  account_manager_->UpsertToken(kAccountKey_, "123");
   scoped_task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(observer->is_callback_called_);
   EXPECT_EQ(1UL, observer->accounts_.size());
-  EXPECT_EQ("abc", observer->accounts_[0]);
+  EXPECT_EQ(kAccountKey_, observer->accounts_[0]);
 
   // Observers should not be called if account list does not change.
   observer->is_callback_called_ = false;
-  account_manager_->UpsertToken("abc", "456");
+  account_manager_->UpsertToken(kAccountKey_, "456");
   scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(observer->is_callback_called_);
 

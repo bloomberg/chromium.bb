@@ -5,9 +5,11 @@
 #ifndef CHROMEOS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_H_
 #define CHROMEOS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_H_
 
+#include <map>
 #include <memory>
+#include <ostream>
 #include <string>
-#include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -18,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
+#include "chromeos/account_manager/tokens.pb.h"
 #include "chromeos/chromeos_export.h"
 
 namespace base {
@@ -29,12 +32,21 @@ namespace chromeos {
 
 class CHROMEOS_EXPORT AccountManager {
  public:
-  // A map of account identifiers to login scoped tokens.
-  using TokenMap = std::unordered_map<std::string, std::string>;
+  struct AccountKey {
+    std::string id;
+    account_manager::AccountType account_type;
 
-  // A callback for list of Account Id Keys.
-  using AccountListCallback =
-      base::OnceCallback<void(std::vector<std::string>)>;
+    bool IsValid() const;
+
+    bool operator<(const AccountKey& other) const;
+    bool operator==(const AccountKey& other) const;
+  };
+
+  // A map from |AccountKey| to a raw token.
+  using TokenMap = std::map<AccountKey, std::string>;
+
+  // A callback for list of |AccountKey|s.
+  using AccountListCallback = base::OnceCallback<void(std::vector<AccountKey>)>;
 
   class Observer {
    public:
@@ -43,8 +55,8 @@ class CHROMEOS_EXPORT AccountManager {
 
     // Called when the list of accounts known to |AccountManager| is updated.
     // Use |AccountManager::AddObserver| to add an |Observer|.
-    // Note: This is not called when the refresh token for an already known
-    // account is updated.
+    // Note: This is not called when the token for an already known account is
+    // updated.
     // Note: |Observer|s which register with |AccountManager| before its
     // initialization is complete will get notified when |AccountManager| is
     // fully initialized.
@@ -52,7 +64,7 @@ class CHROMEOS_EXPORT AccountManager {
     // initialization is complete will not get an immediate
     // notification-on-registration.
     virtual void OnAccountListUpdated(
-        const std::vector<std::string>& accounts) = 0;
+        const std::vector<AccountKey>& accounts) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
@@ -66,13 +78,12 @@ class CHROMEOS_EXPORT AccountManager {
   // user's cryptohome). This method MUST be called at least once.
   void Initialize(const base::FilePath& home_dir);
 
-  // Gets (async) a list of account identifiers known to |AccountManager|.
+  // Gets (async) a list of account keys known to |AccountManager|.
   void GetAccounts(AccountListCallback callback);
 
-  // Updates or inserts an LST (Login Scoped Token), for the account
-  // corresponding to the given account id.
-  void UpsertToken(const std::string& account_id,
-                   const std::string& login_scoped_token);
+  // Updates or inserts a token, for the account corresponding to the given
+  // |account_key|. |account_key| must be valid (|AccountKey::IsValid|).
+  void UpsertToken(const AccountKey& account_key, const std::string& token);
 
   // Add a non owning pointer to an |AccountManager::Observer|.
   void AddObserver(Observer* observer);
@@ -112,8 +123,8 @@ class CHROMEOS_EXPORT AccountManager {
 
   // Does the actual work of updating or inserting tokens. Assumes that
   // |AccountManager| initialization (|init_state_|) is complete.
-  void UpsertTokenInternal(const std::string& account_id,
-                           const std::string& login_scoped_token);
+  void UpsertTokenInternal(const AccountKey& account_key,
+                           const std::string& token);
 
   // Posts a task on |task_runner_|, which is usually a background thread, to
   // persist the current state of |tokens_|.
@@ -129,7 +140,7 @@ class CHROMEOS_EXPORT AccountManager {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<base::ImportantFileWriter> writer_;
 
-  // A map of account ids to login scoped tokens.
+  // A map of account keys to tokens.
   TokenMap tokens_;
 
   // Callbacks waiting on class initialization (|init_state_|).
@@ -144,6 +155,11 @@ class CHROMEOS_EXPORT AccountManager {
   base::WeakPtrFactory<AccountManager> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };
+
+// For logging.
+CHROMEOS_EXPORT std::ostream& operator<<(
+    std::ostream& os,
+    const AccountManager::AccountKey& account_key);
 
 }  // namespace chromeos
 
