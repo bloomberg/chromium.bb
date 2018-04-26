@@ -64,7 +64,6 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
   void ResyncUserData() override;
   void ShowEnterpriseEnrollmentScreen() override;
   void ShowEnableDebuggingScreen() override;
-  void ShowDemoModeSetupScreen() override;
   void ShowKioskEnableScreen() override;
   void ShowKioskAutolaunchScreen() override;
   void ShowUpdateRequiredScreen() override;

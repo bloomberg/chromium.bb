@@ -561,7 +561,6 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("sendFeedback", &SigninScreenHandler::HandleSendFeedback);
   AddCallback("sendFeedbackAndResyncUserData",
               &SigninScreenHandler::HandleSendFeedbackAndResyncUserData);
-  AddCallback("setupDemoMode", &SigninScreenHandler::HandleSetupDemoMode);
 
   // This message is sent by the kiosk app menu, but is handled here
   // so we can tell the delegate to launch the app.
@@ -1327,11 +1326,6 @@ void SigninScreenHandler::HandleToggleEnrollmentScreen() {
 void SigninScreenHandler::HandleToggleEnableDebuggingScreen() {
   if (delegate_)
     delegate_->ShowEnableDebuggingScreen();
-}
-
-void SigninScreenHandler::HandleSetupDemoMode() {
-  if (delegate_)
-    delegate_->ShowDemoModeSetupScreen();
 }
 
 void SigninScreenHandler::HandleToggleKioskEnableScreen() {

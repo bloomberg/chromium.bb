@@ -26,8 +26,7 @@ class DemoSetupTest : public LoginManagerTest {
   }
 
   void ShowDemoSetupScreen() {
-    LoginDisplayHost::default_host()->StartWizard(
-        OobeScreen::SCREEN_OOBE_DEMO_SETUP);
+    ASSERT_TRUE(JSExecute("cr.ui.Oobe.handleAccelerator('demo_mode');"));
     OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
     ASSERT_NE(nullptr, GetDemoSetupScreen());
   }

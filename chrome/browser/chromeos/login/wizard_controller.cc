@@ -967,7 +967,8 @@ void WizardController::OnAutoEnrollmentCheckCompleted() {
 }
 
 void WizardController::OnDemoSetupClosed() {
-  ShowLoginScreen(LoginScreenContext());
+  DCHECK(previous_screen_);
+  SetCurrentScreen(previous_screen_);
 }
 
 void WizardController::OnOobeFlowFinished() {
