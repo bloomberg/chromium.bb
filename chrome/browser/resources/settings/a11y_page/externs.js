@@ -22,3 +22,9 @@ Window.prototype.speechSynthesis.speak = function(utterance) {};
  * @constructor
  */
 Window.prototype.SpeechSynthesisUtterance = function() {};
+
+/**
+ * @typedef {{languageCode: string, name: string, displayLanguage: string,
+ *   extensionId: string, id: string}}
+ */
+let TtsHandlerVoice;

@@ -48,6 +48,13 @@ Polymer({
       value: false,
     },
 
+    /** If this is a dictionary pref, this is the key for the item
+        we are interested in. */
+    prefKey: {
+      type: String,
+      value: null,
+    },
+
     /**
      * The value of the "custom" item.
      * @private
@@ -63,7 +70,7 @@ Polymer({
   },
 
   observers: [
-    'updateSelected_(menuOptions, pref.value)',
+    'updateSelected_(menuOptions, pref.value.*, prefKey)',
   ],
 
   /**
@@ -76,10 +83,15 @@ Polymer({
     if (selected == this.notFoundValue_)
       return;
 
-    const prefValue =
-        Settings.PrefUtil.stringToPrefValue(selected, assert(this.pref));
-    if (prefValue !== undefined)
-      this.set('pref.value', prefValue);
+    if (this.prefKey) {
+      assert(this.pref);
+      this.set(`pref.value.${this.prefKey}`, selected);
+    } else {
+      const prefValue =
+          Settings.PrefUtil.stringToPrefValue(selected, assert(this.pref));
+      if (prefValue !== undefined)
+        this.set('pref.value', prefValue);
+    }
   },
 
   /**
@@ -90,7 +102,7 @@ Polymer({
     if (this.menuOptions === null || !this.menuOptions.length)
       return;
 
-    const prefValue = this.pref.value;
+    const prefValue = this.prefStringValue_();
     const option = this.menuOptions.find(function(menuItem) {
       return menuItem.value == prefValue;
     });
@@ -98,10 +110,23 @@ Polymer({
     // Wait for the dom-repeat to populate the <select> before setting
     // <select>#value so the correct option gets selected.
     this.async(() => {
-      this.$.dropdownMenu.value = option == undefined ?
-          this.notFoundValue_ :
-          Settings.PrefUtil.prefToString(assert(this.pref));
+      this.$.dropdownMenu.value =
+          option == undefined ? this.notFoundValue_ : prefValue;
     });
+  },
+
+  /**
+   * Gets the current value of the preference as a string.
+   * @return {string}
+   * @private
+   */
+  prefStringValue_: function() {
+    if (this.prefKey) {
+      // Dictionary pref, values are always strings.
+      return this.pref.value[this.prefKey];
+    } else {
+      return Settings.PrefUtil.prefToString(assert(this.pref));
+    }
   },
 
   /**
@@ -115,8 +140,8 @@ Polymer({
     if (!menuOptions || !menuOptions.length)
       return false;
 
-    const option = menuOptions.find(function(menuItem) {
-      return menuItem.value == prefValue;
+    const option = menuOptions.find((menuItem) => {
+      return menuItem.value == this.prefStringValue_();
     });
     return !option;
   },
