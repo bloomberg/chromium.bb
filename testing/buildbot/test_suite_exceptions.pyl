@@ -3339,7 +3339,7 @@
       'linux-blink-heap-incremental-marking': {
         'args': [
           '--debug',
-          '--additional-driver-flag=--enable-blink-features=HeapIncrementalMarking',
+          '--additional-driver-flag=--enable-blink-features=HeapIncrementalMarkingStress',
         ],
       },
       'WebKit Linux layout_ng Dummy Builder': {

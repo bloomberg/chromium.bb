@@ -8322,7 +8322,7 @@
       {
         "args": [
           "--debug",
-          "--additional-driver-flag=--enable-blink-features=HeapIncrementalMarking"
+          "--additional-driver-flag=--enable-blink-features=HeapIncrementalMarkingStress"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
