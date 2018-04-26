@@ -17,8 +17,7 @@
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
-      "depot_tools@HEAD",
-      "--apply-patch-on-gclient"
+      "depot_tools@HEAD"
     ],
     "env_prefixes": {
       "PATH": [

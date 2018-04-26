@@ -15,7 +15,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
                patch_gerrit_url, revision, parent_got_revision,
                deps_revision_overrides, fail_patch, *args, **kwargs):
     self._apply_patch_on_gclient = properties.get(
-        'apply_patch_on_gclient', True)
+        'apply_patch_on_gclient', False)
     self._issue = patch_issue
     self._patchset = patch_set
     self._repository = repository or patch_repository_url

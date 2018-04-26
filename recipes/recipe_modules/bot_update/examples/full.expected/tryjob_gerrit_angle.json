@@ -68,8 +68,7 @@
       "src@HEAD",
       "--revision",
       "src/third_party/angle@HEAD",
-      "--disable-syntax-validation",
-      "--apply-patch-on-gclient"
+      "--disable-syntax-validation"
     ],
     "env_prefixes": {
       "PATH": [
@@ -169,8 +168,7 @@
       "--revision",
       "src@f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9",
       "--revision",
-      "src/third_party/angle@fac9503c46405f77757b9a728eb85b8d7bc6080c",
-      "--apply-patch-on-gclient"
+      "src/third_party/angle@fac9503c46405f77757b9a728eb85b8d7bc6080c"
     ],
     "env_prefixes": {
       "PATH": [

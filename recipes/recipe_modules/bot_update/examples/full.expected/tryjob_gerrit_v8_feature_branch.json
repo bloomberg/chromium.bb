@@ -68,8 +68,7 @@
       "src@HEAD",
       "--revision",
       "src/v8@experimental/feature",
-      "--disable-syntax-validation",
-      "--apply-patch-on-gclient"
+      "--disable-syntax-validation"
     ],
     "env_prefixes": {
       "PATH": [
@@ -169,8 +168,7 @@
       "--revision",
       "src@f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9",
       "--revision",
-      "src/v8@801ada225ddc271c132c3a35f03975671d43e399",
-      "--apply-patch-on-gclient"
+      "src/v8@801ada225ddc271c132c3a35f03975671d43e399"
     ],
     "env_prefixes": {
       "PATH": [
