@@ -39,6 +39,17 @@ extern const char kAccountConsistencyFeatureMethodDice[];
 
 // Improved and unified consent for privacy-related features.
 extern const base::Feature kUnifiedConsent;
+extern const char kUnifiedConsentShowBumpParameter[];
+
+// State of the "Unified Consent" feature.
+enum class UnifiedConsentFeatureState {
+  // Unified consent is disabled.
+  kDisabled,
+  // Unified consent is enabled, but the bump is not shown.
+  kEnabledNoBump,
+  // Unified consent is enabled and the bump is shown.
+  kEnabledWithBump
+};
 
 // TODO(https://crbug.com/777774): Cleanup this enum and remove related
 // functions once Dice is fully rolled out, and/or Mirror code is removed on
@@ -143,6 +154,9 @@ bool IsExtensionsMultiAccount();
 // a requirement for kDicePrepareMigration and later Dice steps.
 void SetGaiaOriginIsolatedCallback(
     const base::RepeatingCallback<bool()>& is_gaia_isolated);
+
+// Returns the state of the "Unified Consent" feature.
+UnifiedConsentFeatureState GetUnifiedConsentFeatureState();
 
 }  // namespace signin
 

@@ -76,6 +76,7 @@ const char kAccountConsistencyFeatureMethodDice[] = "dice";
 
 const base::Feature kUnifiedConsent{"UnifiedConsent",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+const char kUnifiedConsentShowBumpParameter[] = "show_consent_bump";
 
 bool DiceMethodGreaterOrEqual(AccountConsistencyMethod a,
                               AccountConsistencyMethod b) {
@@ -210,6 +211,16 @@ bool IsExtensionsMultiAccount() {
 void SetGaiaOriginIsolatedCallback(
     const base::RepeatingCallback<bool()>& is_gaia_isolated) {
   *GetIsGaiaIsolatedCallback() = is_gaia_isolated;
+}
+
+UnifiedConsentFeatureState GetUnifiedConsentFeatureState() {
+  if (!base::FeatureList::IsEnabled(signin::kUnifiedConsent))
+    return UnifiedConsentFeatureState::kDisabled;
+
+  std::string show_bump = base::GetFieldTrialParamValueByFeature(
+      kUnifiedConsent, kUnifiedConsentShowBumpParameter);
+  return show_bump.empty() ? UnifiedConsentFeatureState::kEnabledNoBump
+                           : UnifiedConsentFeatureState::kEnabledWithBump;
 }
 
 }  // namespace signin

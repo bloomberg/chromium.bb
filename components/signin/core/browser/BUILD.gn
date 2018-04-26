@@ -194,6 +194,8 @@ static_library("test_support") {
     "fake_signin_manager.h",
     "scoped_account_consistency.cc",
     "scoped_account_consistency.h",
+    "scoped_unified_consent.cc",
+    "scoped_unified_consent.h",
     "test_signin_client.cc",
     "test_signin_client.h",
   ]

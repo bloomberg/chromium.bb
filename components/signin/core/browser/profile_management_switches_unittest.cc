@@ -9,8 +9,10 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "build/buildflag.h"
 #include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/scoped_account_consistency.h"
+#include "components/signin/core/browser/scoped_unified_consent.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -131,5 +133,19 @@ TEST(ProfileManagementSwitchesTest, GaiaSiteIsolation) {
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 #endif  // BUILDFLAG(ENABLE_MIRROR)
+
+TEST(ProfileManagementSwitchesTest, UnifiedConsent) {
+  // Unified consent is disabled by default.
+  EXPECT_EQ(UnifiedConsentFeatureState::kDisabled,
+            GetUnifiedConsentFeatureState());
+
+  for (UnifiedConsentFeatureState state :
+       {UnifiedConsentFeatureState::kDisabled,
+        UnifiedConsentFeatureState::kEnabledNoBump,
+        UnifiedConsentFeatureState::kEnabledWithBump}) {
+    ScopedUnifiedConsent scoped_state(state);
+    EXPECT_EQ(state, GetUnifiedConsentFeatureState());
+  }
+}
 
 }  // namespace signin
