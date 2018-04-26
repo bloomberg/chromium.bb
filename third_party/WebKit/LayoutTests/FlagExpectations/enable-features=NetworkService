@@ -2,13 +2,9 @@
 # See https://crbug.com/729849
 
 Bug(none) external/wpt/clear-site-data/storage.https.html [ Failure ]
-Bug(none) external/wpt/xhr/overridemimetype-blob.html [ Failure ]
 Bug(none) external/wpt/clear-site-data/navigation.https.html [ Timeout ]
 Bug(none) external/wpt/content-security-policy/generic/filesystem-urls-match-filesystem.sub.html [ Failure ]
-Bug(none) external/wpt/content-security-policy/inside-worker/dedicated-inheritance.html [ Failure Timeout ]
 Bug(none) external/wpt/content-security-policy/inside-worker/dedicated-script.html [ Failure Timeout ]
-Bug(none) external/wpt/cookies/secure/set-from-wss.https.sub.html [ Failure ]
-Bug(none) external/wpt/css/css-fonts/font-display/font-display.html [ Failure Timeout ]
 Bug(none) external/wpt/html/browsers/offline/appcache/workers/appcache-worker.html [ Timeout ]
 crbug.com/829417 external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Timeout ]
 Bug(none) external/wpt/service-workers/service-worker/clients-get-client-types.https.html [ Failure ]
@@ -27,25 +23,7 @@ Bug(none) http/tests/appcache/reload.html [ Pass Timeout ]
 Bug(none) external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Pass ]
 crbug.com/830472 external/wpt/service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html [ Pass ]
 
-Bug(none) external/wpt/streams/readable-byte-streams/properties.serviceworker.https.html [ Timeout Pass ]
-Bug(none) external/wpt/wasm/wasm_service_worker_test.https.html [ Crash Timeout ]
-
-Bug(none) fast/files/xhr-response-blob.html [ Crash Failure ]
-Bug(none) fast/history/history-back-twice-with-subframes-assert.html [ Pass Timeout ]
-Bug(none) fast/xsl/import-after-comment.xml [ Skip ]
-Bug(none) fast/xsl/xslt-multiple-relative-import.xml [ Skip ]
-Bug(none) fast/xsl/xslt-nested-stylesheets.xml [ Skip ]
-Bug(none) fast/xsl/xslt-second-level-import.xml [ Skip ]
-
-Bug(none) http/tests/media/video-buffered.html [ Timeout ]
-Bug(none) http/tests/misc/embed-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
-Bug(none) http/tests/misc/image-input-type-outlives-gc-without-crashing.html [ Failure Pass ]
-Bug(none) http/tests/misc/image-load-outlives-gc-without-crashing.html [ Failure Pass ]
 Bug(none) http/tests/misc/redirect-to-about-blank.html [ Timeout ]
-Bug(none) http/tests/misc/resource-timing-sizes-tags.html [ Failure Timeout ]
-Bug(none) http/tests/navigation/start-load-during-provisional-loader-detach.html [ Failure Timeout ]
-Bug(none) http/tests/payments/payment-request-event.html [ Crash Failure Pass Timeout ]
-Bug(none) http/tests/permissions/test-query.html [ Crash Failure ]
 Bug(none) http/tests/security/contentSecurityPolicy/cascade/same-origin-window-open.html [ Timeout Crash ]
 Bug(none) http/tests/security/contentSecurityPolicy/cascade/same-origin-with-own-policy-window-open.html [ Timeout Crash ]
 Bug(none) http/tests/security/cookies/third-party-cookie-blocking.html [ Failure ]
@@ -56,13 +34,9 @@ Bug(none) http/tests/security/cookies/websocket/third-party-cookie-blocked-on-cr
 Bug(none) http/tests/security/cookies/websocket/third-party-cookie-blocked-on-same-origin-websocket.html [ Failure ]
 Bug(none) http/tests/security/cookies/websocket/third-party-cookie-blocked.html [ Failure ]
 Bug(none) http/tests/security/cors-rfc1918 [ Crash Timeout ]
-Bug(none) http/tests/security/media-element-audio-source-node-cross-origin.html [ Failure Pass Timeout ]
-Bug(none) http/tests/security/media-element-audio-source-node-same-origin.html [ Failure Pass ]
 Bug(none) http/tests/security/mime-type-execute-as-html-01.html [ Failure ]
 Bug(none) http/tests/security/mime-type-execute-as-html-04.html [ Failure ]
 Bug(none) http/tests/security/mixedContent/filesystem-url-in-iframe.html [ Failure Timeout ]
-Bug(none) http/tests/security/offscreen-canvas-worker-read-blocked-by-setting.html [ Crash Pass Timeout ]
-Bug(none) plugins/iframe-plugin-bgcolor.html [ Timeout ]
 
 # Cross-Origin Read Blocking is not implemented.
 crbug.com/792546 http/tests/inspector-protocol/network/block_cross_site_document_load.js [ Failure ]
@@ -77,9 +51,6 @@ crbug.com/764474 http/tests/security/contentSecurityPolicy/1.1/plugintypes-affec
 crbug.com/764474 http/tests/security/contentSecurityPolicy/1.1/plugintypes-affects-cross-site-child-allowed.html [ Failure ]
 crbug.com/764474 fast/loader/reload-zero-byte-plugin.html [ Failure ]
 crbug.com/764474 plugins/plugin-document-back-forward.html [ Crash Failure Timeout ]
-
-# Started failing @ r529490
-Bug(none) virtual/layout_ng/fast/inline/positioned-object-between-replaced-elements.html [ Failure ]
 
 crbug.com/816556 external/wpt/html/semantics/text-level-semantics/the-a-element/a-download-click-404.html [ Failure ]
 crbug.com/829721 external/wpt/html/semantics/embedded-content/the-area-element/area-download-click.html [ Crash ]
