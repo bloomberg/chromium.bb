@@ -124,7 +124,8 @@ class DataPromoNotificationTest : public testing::Test {
     home_provider.SetString("name", "Cellular1_Provider");
     home_provider.SetString("country", "us");
     device_test->SetDeviceProperty(kCellularDevicePath,
-                                   shill::kHomeProviderProperty, home_provider);
+                                   shill::kHomeProviderProperty, home_provider,
+                                   /*notify_changed=*/true);
 
     // Create a cellular network and activate it.
     chromeos::ShillServiceClient::TestInterface* service_test =

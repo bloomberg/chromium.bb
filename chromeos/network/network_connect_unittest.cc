@@ -127,9 +127,9 @@ class NetworkConnectTest : public testing::Test {
                             "stub_wifi_device1");
     device_test_->AddDevice(kCellular1DevicePath, shill::kTypeCellular,
                             "stub_cellular_device1");
-    device_test_->SetDeviceProperty(kCellular1DevicePath,
-                                    shill::kTechnologyFamilyProperty,
-                                    base::Value(shill::kNetworkTechnologyGsm));
+    device_test_->SetDeviceProperty(
+        kCellular1DevicePath, shill::kTechnologyFamilyProperty,
+        base::Value(shill::kNetworkTechnologyGsm), /*notify_changed=*/true);
 
     service_test_ =
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();

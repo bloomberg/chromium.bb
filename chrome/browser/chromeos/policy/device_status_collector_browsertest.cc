@@ -1620,17 +1620,19 @@ class DeviceStatusCollectorNetworkInterfacesTest
     for (const FakeDeviceData& dev : kFakeDevices) {
       device_client->AddDevice(dev.device_path, dev.type, dev.object_path);
       if (*dev.mac_address) {
-        device_client->SetDeviceProperty(dev.device_path,
-                                         shill::kAddressProperty,
-                                         base::Value(dev.mac_address));
+        device_client->SetDeviceProperty(
+            dev.device_path, shill::kAddressProperty,
+            base::Value(dev.mac_address), /*notify_changed=*/true);
       }
       if (*dev.meid) {
         device_client->SetDeviceProperty(dev.device_path, shill::kMeidProperty,
-                                         base::Value(dev.meid));
+                                         base::Value(dev.meid),
+                                         /*notify_changed=*/true);
       }
       if (*dev.imei) {
         device_client->SetDeviceProperty(dev.device_path, shill::kImeiProperty,
-                                         base::Value(dev.imei));
+                                         base::Value(dev.imei),
+                                         /*notify_changed=*/true);
       }
     }
 

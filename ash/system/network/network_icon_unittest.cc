@@ -199,7 +199,7 @@ TEST_F(NetworkIconTest, GetCellularUninitializedMsg_CellularScanning) {
       dbus_manager->GetShillDeviceClient()->GetTestInterface();
 
   device_test->SetDeviceProperty("/device/cellular1", shill::kScanningProperty,
-                                 base::Value(true));
+                                 base::Value(true), /*notify_changed=*/true);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(
       handler_->GetScanningByType(chromeos::NetworkTypePattern::Cellular()));
