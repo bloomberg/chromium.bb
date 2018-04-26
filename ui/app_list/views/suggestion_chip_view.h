@@ -6,6 +6,7 @@
 #define UI_APP_LIST_VIEWS_SUGGESTION_CHIP_VIEW_H_
 
 #include "base/macros.h"
+#include "ui/app_list/app_list_export.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -17,7 +18,7 @@ namespace app_list {
 class SuggestionChipView;
 
 // Listener which receives notification of suggestion chip events.
-class SuggestionChipListener {
+class APP_LIST_EXPORT SuggestionChipListener {
  public:
   // Invoked when the specified |sender| is pressed.
   virtual void OnSuggestionChipPressed(SuggestionChipView* sender) = 0;
@@ -27,7 +28,7 @@ class SuggestionChipListener {
 };
 
 // View representing a suggestion chip.
-class SuggestionChipView : public views::View {
+class APP_LIST_EXPORT SuggestionChipView : public views::View {
  public:
   SuggestionChipView(const base::string16& text,
                      SuggestionChipListener* listener = nullptr);
