@@ -227,11 +227,7 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (void)dealloc {
-  if (responderDelegate_ &&
-      [responderDelegate_ respondsToSelector:@selector(viewGone:)])
-    [responderDelegate_ viewGone:self];
-  responderDelegate_.reset();
-
+  DCHECK([self clientIsDisconnected]);
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
   // Update and cache the new input context. Otherwise,
@@ -375,6 +371,15 @@ void ExtractUnderlines(NSAttributedString* string,
 
 - (void)setClientDisconnected {
   client_ = noopClient_.get();
+
+  // |responderDelegate_| may attempt to access the RenderWidgetHostViewMac
+  // through its internal pointers, so detach it here.
+  // TODO(ccameron): Force |responderDelegate_| to use the |client_| as well,
+  // and the viewGone method to clientGone.
+  if (responderDelegate_ &&
+      [responderDelegate_ respondsToSelector:@selector(viewGone:)])
+    [responderDelegate_ viewGone:self];
+  responderDelegate_.reset();
 }
 
 - (bool)clientIsDisconnected {
