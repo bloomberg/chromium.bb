@@ -66,10 +66,10 @@ config("compiler") {
 # Writes an extended version of fvm.blk to fvm.extended.blk.
 blobstore_extended_path = "$root_out_dir/fvm.extended.blk"
 action("blobstore_extended_fvm") {
-  # The file is grown by 500MB, which should be large enough to hold packaged
+  # The file is grown by 1GB, which should be large enough to hold packaged
   # binaries and assets. The value should be increased if the size becomes a
   # limitation in the future.
-  _extend_size = "524288000"  # 500MB = 500 * 1024 * 1024
+  _extend_size = "1073741824"  # 1GB
 
   if (current_cpu == "arm64") {
     _target_dir = "//third_party/fuchsia-sdk/sdk/target/aarch64"

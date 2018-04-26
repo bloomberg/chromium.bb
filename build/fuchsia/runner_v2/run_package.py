@@ -38,44 +38,51 @@ def RunPackage(output_dir, target, package_path, package_name, run_args,
 
 
   logging.info('Copying package to target.')
-  tmp_path = os.path.join('/tmp', os.path.basename(package_path))
-  target.PutFile(package_path, tmp_path)
+  install_path = os.path.join('/data', os.path.basename(package_path))
+  target.PutFile(package_path, install_path)
 
-  logging.info('Installing package.')
-  p = target.RunCommandPiped(['pm', 'install', tmp_path],
-                             stderr=subprocess.PIPE)
-  output = p.stderr.readlines()
-  p.wait()
-  if p.returncode != 0:
-    # Don't error out if the package already exists on the device.
-    if len(output) != 1 or 'ErrAlreadyExists' not in output[0]:
-      raise Exception('Error when installing package: %s' % '\n'.join(output))
+  try:
+    logging.info('Installing package.')
+    p = target.RunCommandPiped(['pm', 'install', install_path],
+                               stderr=subprocess.PIPE)
+    output = p.stderr.readlines()
+    p.wait()
 
-  logging.info('Running package.')
-  command = ['run', package_name] + run_args
-  process = target.RunCommandPiped(command,
-                                   stdin=open(os.devnull, 'r'),
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT)
+    if p.returncode != 0:
+      # Don't error out if the package already exists on the device.
+      if len(output) != 1 or 'ErrAlreadyExists' not in output[0]:
+        raise Exception('Error when installing package: %s' % '\n'.join(output))
 
-  if symbolizer_config:
-    # Decorate the process output stream with the symbolizer.
-    output = FilterStream(process.stdout, package_name,
-                          symbolizer_config, output_dir)
-  else:
-    logging.warn('Symbolization is DISABLED.')
-    output = process.stdout
+    logging.info('Running application.')
+    command = ['run', package_name] + run_args
+    process = target.RunCommandPiped(command,
+                                     stdin=open(os.devnull, 'r'),
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.STDOUT)
 
-  for next_line in output:
-    print next_line.strip()
+    if symbolizer_config:
+      # Decorate the process output stream with the symbolizer.
+      output = FilterStream(process.stdout, package_name,
+                            symbolizer_config, output_dir)
+    else:
+      logging.warn('Symbolization is DISABLED.')
+      output = process.stdout
 
-  process.wait()
-  if process.returncode == 0:
-    logging.info('Process exited normally with status code 0.')
-  else:
-    # The test runner returns an error status code if *any* tests fail,
-    # so we should proceed anyway.
-    logging.warning('Process exited with status code %d.' %
-                    process.returncode)
+    for next_line in output:
+      print next_line.strip()
+
+    process.wait()
+    if process.returncode == 0:
+      logging.info('Process exited normally with status code 0.')
+    else:
+      # The test runner returns an error status code if *any* tests fail,
+      # so we should proceed anyway.
+      logging.warning('Process exited with status code %d.' %
+                      process.returncode)
+
+  finally:
+    logging.info('Removing package source from device.')
+    target.RunCommand(['rm', install_path])
+
 
   return process.returncode

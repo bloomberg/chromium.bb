@@ -28,6 +28,9 @@ Host *
   ControlPersist 1m
   ControlPath /tmp/ssh-%r@%h:%p"""
 
+FVM_TYPE_QCOW = 'qcow'
+FVM_TYPE_SPARSE = 'sparse'
+
 
 def _TargetCpuToSdkBinPath(target_arch):
   """Returns the path to the kernel & bootfs .bin files for |target_cpu|."""
@@ -76,6 +79,18 @@ def _ProvisionSSH(output_dir):
   )
 
 
+def _MakeQcowDisk(output_dir, disk_path):
+  """Creates a QEMU copy-on-write version of |disk_path| in the output
+  directory."""
+
+  qimg_path = os.path.join(common.SDK_ROOT, 'qemu', 'bin', 'qemu-img')
+  output_path = os.path.join(output_dir,
+                             os.path.basename(disk_path) + '.qcow2')
+  subprocess.check_call([qimg_path, 'create', '-q', '-f', 'qcow2',
+                         '-b', disk_path, output_path])
+  return output_path
+
+
 def GetTargetFile(target_arch, filename):
   """Computes a path to |filename| in the Fuchsia target directory specific to
   |target_arch|."""
@@ -87,44 +102,51 @@ def GetSSHConfigPath(output_dir):
   return output_dir + '/ssh_config'
 
 
-def ConfigureDataFVM(output_dir, sparse):
-  """Builds the FVM image for the persistent /data volume and prepopulates it
+def ConfigureDataFVM(output_dir, output_type):
+  """Builds the FVM image for the /data volume and prepopulates it
   with SSH keys.
 
   output_dir: Path to the output directory which will contain the FVM file.
-  sparse: If true, then a netboot-friendly sparse file will be generated.
+  output_type: If FVM_TYPE_QCOW, then returns a path to the qcow2 FVM file,
+               used for QEMU.
 
-  Returns the path to the new FVM file."""
+               If FVM_TYPE_SPARSE, then returns a path to the
+               sparse/compressed FVM file."""
 
-  logging.debug('Building persistent data FVM file.')
-  data_file = tempfile.NamedTemporaryFile()
+  logging.debug('Building /data partition FVM file.')
+  with tempfile.NamedTemporaryFile() as data_file:
+    # Build up the minfs partition data and install keys into it.
+    ssh_config, ssh_data = _ProvisionSSH(output_dir)
+    with tempfile.NamedTemporaryFile() as manifest:
+      for dest, src in ssh_data:
+        manifest.write('%s=%s\n' % (dest, src))
+      manifest.flush()
+      minfs_path = os.path.join(common.SDK_ROOT, 'tools', 'minfs')
+      subprocess.check_call([minfs_path, '%s@1G' % data_file.name, 'create'])
+      subprocess.check_call([minfs_path, data_file.name, 'manifest',
+                             manifest.name])
 
-  # Build up the minfs partition data and install keys into it.
-  ssh_config, ssh_data = _ProvisionSSH(output_dir)
-  manifest = tempfile.NamedTemporaryFile()
-  for dest, src in ssh_data:
-    manifest.write('%s=%s\n' % (dest, src))
-  manifest.flush()
-  minfs_path = os.path.join(common.SDK_ROOT, 'tools', 'minfs')
-  subprocess.check_call([minfs_path, '%s@10m' % data_file.name, 'create'])
-  subprocess.check_call([minfs_path, data_file.name, 'manifest', manifest.name])
+      # Wrap the minfs partition in a FVM container.
+      fvm_path = os.path.join(common.SDK_ROOT, 'tools', 'fvm')
+      fvm_output_path = os.path.join(output_dir, 'fvm.data.blk')
+      if os.path.exists(fvm_output_path):
+        os.remove(fvm_output_path)
 
-  # Wrap the minfs partition in a FVM container.
-  fvm_path = os.path.join(common.SDK_ROOT, 'tools', 'fvm')
-  fvm_output_path = os.path.join(output_dir, 'fvm.data.blk')
-  if os.path.exists(fvm_output_path):
-    os.remove(fvm_output_path)
+      if output_type == FVM_TYPE_SPARSE:
+        cmd = [fvm_path, fvm_output_path, 'sparse', '--compress', 'lz4',
+               '--data', data_file.name]
+      else:
+        cmd = [fvm_path, fvm_output_path, 'create', '--data', data_file.name]
 
-  if sparse:
-    cmd = [fvm_path, fvm_output_path, 'sparse', '--compress', 'lz4',
-           '--data', data_file.name]
-  else:
-    cmd = [fvm_path, fvm_output_path, 'create', '--data', data_file.name]
+      logging.debug(' '.join(cmd))
+      subprocess.check_call(cmd)
 
-  logging.debug(' '.join(cmd))
-
-  subprocess.check_call(cmd)
-  return fvm_output_path
+      if output_type == FVM_TYPE_SPARSE:
+        return fvm_output_path
+      elif output_type == FVM_TYPE_QCOW:
+        return _MakeQcowDisk(output_dir, fvm_output_path)
+      else:
+        raise Exception('Unknown output_type: %r' % output_type)
 
 
 def GetNodeName(output_dir):
