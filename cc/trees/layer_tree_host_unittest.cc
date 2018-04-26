@@ -5707,19 +5707,22 @@ class LayerTreeHostTestBreakSwapPromiseForVisibility
 
   void SetVisibleFalseAndQueueSwapPromise() {
     layer_tree_host()->SetVisible(false);
-    std::unique_ptr<SwapPromise> swap_promise(
-        new TestSwapPromise(&swap_promise_result_));
+    auto swap_promise =
+        std::make_unique<TestSwapPromise>(&swap_promise_result_);
     layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(
         std::move(swap_promise));
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
                                   const viz::BeginFrameArgs& args) override {
-    MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&LayerTreeHostTestBreakSwapPromiseForVisibility::
-                           SetVisibleFalseAndQueueSwapPromise,
-                       base::Unretained(this)));
+    if (!sent_queue_request_) {
+      sent_queue_request_ = true;
+      MainThreadTaskRunner()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&LayerTreeHostTestBreakSwapPromiseForVisibility::
+                             SetVisibleFalseAndQueueSwapPromise,
+                         base::Unretained(this)));
+    }
   }
 
   void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
@@ -5739,11 +5742,10 @@ class LayerTreeHostTestBreakSwapPromiseForVisibility
   }
 
   TestSwapPromiseResult swap_promise_result_;
+  bool sent_queue_request_ = false;
 };
 
-// Flaky: https://crbug.com/657910
-// SINGLE_AND_MULTI_THREAD_TEST_F(
-//     LayerTreeHostTestBreakSwapPromiseForVisibility);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromiseForVisibility);
 
 class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
  public:
