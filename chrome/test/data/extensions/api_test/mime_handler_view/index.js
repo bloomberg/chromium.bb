@@ -217,6 +217,25 @@ var tests = [
     chrome.test.runWithUserGesture(
         () => document.body.webkitRequestFullscreen());
   },
+
+  function testBackgroundPage() {
+    checkStreamDetails('testBackgroundPage.csv', false);
+    chrome.runtime.getBackgroundPage(backgroundPage => {
+      backgroundPage.startBackgroundPageTest(() => {
+        // Fail if the background page receives an onSuspend event.
+        chrome.test.fail('Unexpected onSuspend');
+      });
+      // Wait for the background page to timeout. The timeouts are set to 1ms
+      // for this test, but give it 100ms just in case.
+      window.setTimeout(() => {
+        // If the background page has shut down, its window.localStorage will be
+        // null.
+        chrome.test.assertTrue(backgroundPage.window.localStorage != null);
+        backgroundPage.endBackgroundPageTest();
+        chrome.test.succeed();
+      }, 100);
+    });
+  },
 ];
 
 var testsByName = {};

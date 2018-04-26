@@ -22,6 +22,7 @@
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request_filter.h"
@@ -283,4 +284,11 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, SingleRequest) {
   URLRequestCounter request_counter(url);
   RunTest("testBasic.csv");
   EXPECT_EQ(1, request_counter.GetCount());
+}
+
+// Test that a mime handler view can keep a background page alive.
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, BackgroundPage) {
+  extensions::ProcessManager::SetEventPageIdleTimeForTesting(1);
+  extensions::ProcessManager::SetEventPageSuspendingTimeForTesting(1);
+  RunTest("testBackgroundPage.csv");
 }

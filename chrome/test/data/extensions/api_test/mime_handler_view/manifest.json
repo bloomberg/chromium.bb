@@ -7,6 +7,12 @@
     "text/csv"
   ],
   "mime_types_handler": "index.html",
+  "background": {
+    "persistent": false,
+    "scripts": [
+      "background.js"
+    ]
+  },
   "permissions": [
     "tabs",
     "windows"
