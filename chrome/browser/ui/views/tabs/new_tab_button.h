@@ -79,6 +79,9 @@ class NewTabButton : public views::ImageButton,
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
 
+  // Returns whether this button should draw an incognito icon.
+  bool ShouldDrawIncognitoIcon() const;
+
   // Returns the gfx::Rect around the visible portion of the New Tab Button.
   // Note: This is different than the rect around the entire New Tab Button as
   // it extends to the top of the tabstrip for Fitts' Law interaction in a
