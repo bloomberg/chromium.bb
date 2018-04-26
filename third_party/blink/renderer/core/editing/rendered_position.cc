@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
-#include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_selection.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 
@@ -57,32 +56,24 @@ RenderedPosition::RenderedPosition(const VisiblePositionInFlatTree& position)
 
 RenderedPosition::RenderedPosition(const Position& position,
                                    TextAffinity affinity)
-    : layout_object_(nullptr), inline_box_(nullptr), offset_(0) {
+    : inline_box_(nullptr), offset_(0) {
   if (position.IsNull())
     return;
   InlineBoxPosition box_position =
       ComputeInlineBoxPosition(PositionWithAffinity(position, affinity));
   inline_box_ = box_position.inline_box;
   offset_ = box_position.offset_in_box;
-  if (inline_box_) {
-    layout_object_ =
-        LineLayoutAPIShim::LayoutObjectFrom(inline_box_->GetLineLayoutItem());
-  }
 }
 
 RenderedPosition::RenderedPosition(const PositionInFlatTree& position,
                                    TextAffinity affinity)
-    : layout_object_(nullptr), inline_box_(nullptr), offset_(0) {
+    : inline_box_(nullptr), offset_(0) {
   if (position.IsNull())
     return;
   InlineBoxPosition box_position = ComputeInlineBoxPosition(
       PositionInFlatTreeWithAffinity(position, affinity));
   inline_box_ = box_position.inline_box;
   offset_ = box_position.offset_in_box;
-  if (inline_box_) {
-    layout_object_ =
-        LineLayoutAPIShim::LayoutObjectFrom(inline_box_->GetLineLayoutItem());
-  }
 }
 
 const InlineBox* RenderedPosition::PrevLeafChild() const {
@@ -98,8 +89,7 @@ const InlineBox* RenderedPosition::NextLeafChild() const {
 }
 
 bool RenderedPosition::IsEquivalent(const RenderedPosition& other) const {
-  return (layout_object_ == other.layout_object_ &&
-          inline_box_ == other.inline_box_ && offset_ == other.offset_) ||
+  return (inline_box_ == other.inline_box_ && offset_ == other.offset_) ||
          (AtLeftmostOffsetInBox() && other.AtRightmostOffsetInBox() &&
           PrevLeafChild() == other.inline_box_) ||
          (AtRightmostOffsetInBox() && other.AtLeftmostOffsetInBox() &&
@@ -126,9 +116,7 @@ RenderedPosition RenderedPosition::LeftBoundaryOfBidiRun(
   const InlineBox* const box =
       InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
           *inline_box_, bidi_level_of_run);
-  return RenderedPosition(
-      LineLayoutAPIShim::LayoutObjectFrom(box->GetLineLayoutItem()), box,
-      box->CaretLeftmostOffset());
+  return RenderedPosition(box, box->CaretLeftmostOffset());
 }
 
 RenderedPosition RenderedPosition::RightBoundaryOfBidiRun(
@@ -139,9 +127,7 @@ RenderedPosition RenderedPosition::RightBoundaryOfBidiRun(
   const InlineBox* const box =
       InlineBoxTraversal::FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
           *inline_box_, bidi_level_of_run);
-  return RenderedPosition(
-      LineLayoutAPIShim::LayoutObjectFrom(box->GetLineLayoutItem()), box,
-      box->CaretRightmostOffset());
+  return RenderedPosition(box, box->CaretRightmostOffset());
 }
 
 bool RenderedPosition::AtLeftBoundaryOfBidiRun(
@@ -199,8 +185,10 @@ bool RenderedPosition::AtRightBoundaryOfBidiRun(
 Position RenderedPosition::PositionAtLeftBoundaryOfBiDiRun() const {
   DCHECK(AtLeftBoundaryOfBidiRun());
 
-  if (AtLeftmostOffsetInBox())
-    return Position::EditingPositionOf(layout_object_->GetNode(), offset_);
+  if (AtLeftmostOffsetInBox()) {
+    return Position::EditingPositionOf(
+        inline_box_->GetLineLayoutItem().GetNode(), offset_);
+  }
 
   return Position::EditingPositionOf(
       NextLeafChild()->GetLineLayoutItem().GetNode(),
@@ -210,8 +198,10 @@ Position RenderedPosition::PositionAtLeftBoundaryOfBiDiRun() const {
 Position RenderedPosition::PositionAtRightBoundaryOfBiDiRun() const {
   DCHECK(AtRightBoundaryOfBidiRun());
 
-  if (AtRightmostOffsetInBox())
-    return Position::EditingPositionOf(layout_object_->GetNode(), offset_);
+  if (AtRightmostOffsetInBox()) {
+    return Position::EditingPositionOf(
+        inline_box_->GetLineLayoutItem().GetNode(), offset_);
+  }
 
   return Position::EditingPositionOf(
       PrevLeafChild()->GetLineLayoutItem().GetNode(),

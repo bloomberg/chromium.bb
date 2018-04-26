@@ -40,7 +40,6 @@
 namespace blink {
 
 class FrameSelection;
-class LayoutObject;
 struct CompositedSelection;
 
 class CORE_EXPORT RenderedPosition {
@@ -54,7 +53,7 @@ class CORE_EXPORT RenderedPosition {
   RenderedPosition(const PositionInFlatTree&, TextAffinity);
   bool IsEquivalent(const RenderedPosition&) const;
 
-  bool IsNull() const { return !layout_object_; }
+  bool IsNull() const { return !inline_box_; }
   const RootInlineBox* RootBox() const {
     return inline_box_ ? &inline_box_->Root() : nullptr;
   }
@@ -89,7 +88,7 @@ class CORE_EXPORT RenderedPosition {
 
  private:
   bool operator==(const RenderedPosition&) const { return false; }
-  explicit RenderedPosition(const LayoutObject*, const InlineBox*, int offset);
+  explicit RenderedPosition(const InlineBox*, int offset);
 
   const InlineBox* PrevLeafChild() const;
   const InlineBox* NextLeafChild() const;
@@ -104,7 +103,6 @@ class CORE_EXPORT RenderedPosition {
   bool AtRightBoundaryOfBidiRun(ShouldMatchBidiLevel,
                                 unsigned char bidi_level_of_run) const;
 
-  const LayoutObject* layout_object_;
   const InlineBox* inline_box_;
   int offset_;
 
@@ -113,12 +111,10 @@ class CORE_EXPORT RenderedPosition {
 };
 
 inline RenderedPosition::RenderedPosition()
-    : layout_object_(nullptr), inline_box_(nullptr), offset_(0) {}
+    : inline_box_(nullptr), offset_(0) {}
 
-inline RenderedPosition::RenderedPosition(const LayoutObject* layout_object,
-                                          const InlineBox* box,
-                                          int offset)
-    : layout_object_(layout_object), inline_box_(box), offset_(offset) {}
+inline RenderedPosition::RenderedPosition(const InlineBox* box, int offset)
+    : inline_box_(box), offset_(offset) {}
 
 }  // namespace blink
 
