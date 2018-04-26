@@ -269,8 +269,19 @@ static INLINE void highbd_10_obmc_variance(const uint8_t *pre8, int pre_stride,
   uint64_t sse64 = 0;
   if (w == 4) {
     hbd_obmc_variance_w4(pre8, pre_stride, wsrc, mask, &sse64, &sum64, h);
-  } else {
+  } else if (w < 128 || h < 128) {
     hbd_obmc_variance_w8n(pre8, pre_stride, wsrc, mask, &sse64, &sum64, w, h);
+  } else {
+    assert(w == 128 && h == 128);
+
+    do {
+      hbd_obmc_variance_w8n(pre8, pre_stride, wsrc, mask, &sse64, &sum64, w,
+                            64);
+      pre8 += 64 * pre_stride;
+      wsrc += 64 * w;
+      mask += 64 * w;
+      h -= 64;
+    } while (h > 0);
   }
   *sum = (int)ROUND_POWER_OF_TWO(sum64, 2);
   *sse = (unsigned int)ROUND_POWER_OF_TWO(sse64, 4);
@@ -282,28 +293,23 @@ static INLINE void highbd_12_obmc_variance(const uint8_t *pre8, int pre_stride,
                                            unsigned int *sse, int *sum) {
   int64_t sum64 = 0;
   uint64_t sse64 = 0;
-  if (w == 128) {
-    do {
-      hbd_obmc_variance_w8n(pre8, pre_stride, wsrc, mask, &sse64, &sum64, 128,
-                            32);
-      pre8 += 32 * pre_stride;
-      wsrc += 32 * 128;
-      mask += 32 * 128;
-      h -= 32;
-    } while (h > 0);
-  } else if (w == 64 && h >= 128) {
-    do {
-      hbd_obmc_variance_w8n(pre8, pre_stride, wsrc, mask, &sse64, &sum64, 64,
-                            64);
-      pre8 += 64 * pre_stride;
-      wsrc += 64 * 64;
-      mask += 64 * 64;
-      h -= 64;
-    } while (h > 0);
-  } else if (w == 4) {
+  int max_pel_allowed_per_ovf = 512;
+  if (w == 4) {
     hbd_obmc_variance_w4(pre8, pre_stride, wsrc, mask, &sse64, &sum64, h);
-  } else {
+  } else if (w * h <= max_pel_allowed_per_ovf) {
     hbd_obmc_variance_w8n(pre8, pre_stride, wsrc, mask, &sse64, &sum64, w, h);
+  } else {
+    int h_per_ovf = max_pel_allowed_per_ovf / w;
+
+    assert(max_pel_allowed_per_ovf % w == 0);
+    do {
+      hbd_obmc_variance_w8n(pre8, pre_stride, wsrc, mask, &sse64, &sum64, w,
+                            h_per_ovf);
+      pre8 += h_per_ovf * pre_stride;
+      wsrc += h_per_ovf * w;
+      mask += h_per_ovf * w;
+      h -= h_per_ovf;
+    } while (h > 0);
   }
   *sum = (int)ROUND_POWER_OF_TWO(sum64, 4);
   *sse = (unsigned int)ROUND_POWER_OF_TWO(sse64, 8);
