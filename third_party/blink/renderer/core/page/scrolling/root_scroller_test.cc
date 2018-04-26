@@ -903,6 +903,7 @@ TEST_P(RootScrollerTest, NonMainLocalRootLifecycle) {
   ASSERT_EQ(MainFrame()->GetDocument()->documentElement(),
             global_controller.GlobalRootScroller());
 
+  MainFrameView()->UpdateAllLifecyclePhases();
   GraphicsLayer* scroll_layer = global_controller.RootScrollerLayer();
   GraphicsLayer* container_layer = global_controller.RootContainerLayer();
 
