@@ -1,12 +1,14 @@
 This is a testharness.js-based test.
-Found 72 tests; 68 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 74 tests; 70 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Historical DOM features must be removed: DOMConfiguration
+PASS Historical DOM features must be removed: DOMCursor
 FAIL Historical DOM features must be removed: DOMError assert_equals: expected (undefined) undefined but got (function) function "function DOMError() { [native code] }"
 PASS Historical DOM features must be removed: DOMErrorHandler
 PASS Historical DOM features must be removed: DOMImplementationList
 PASS Historical DOM features must be removed: DOMImplementationSource
 PASS Historical DOM features must be removed: DOMLocator
 PASS Historical DOM features must be removed: DOMObject
+PASS Historical DOM features must be removed: DOMRequest
 PASS Historical DOM features must be removed: DOMSettableTokenList
 PASS Historical DOM features must be removed: DOMUserData
 PASS Historical DOM features must be removed: Entity
