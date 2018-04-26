@@ -526,7 +526,7 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           seq_header_received = 1;
         } else {
           // Seeing another sequence header, skip as all sequence headers
-          // are requred to be identical.
+          // are required to be identical.
           if (payload_size != seq_header_size) {
             cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
             return;
