@@ -37,16 +37,14 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
   // artifact.
   void Generate(const PaintArtifact&,
                 const gfx::Rect& layer_bounds,
-                const PropertyTreeState& layer_state,
-                const FloatSize& visual_rect_subpixel_offset = FloatSize());
+                const PropertyTreeState& layer_state);
 
   // Generate raster invalidations for a subset of the paint chunks in the
   // paint artifact.
   void Generate(const PaintArtifact&,
                 const PaintChunkSubset&,
                 const gfx::Rect& layer_bounds,
-                const PropertyTreeState& layer_state,
-                const FloatSize& visual_rect_subpixel_offset = FloatSize());
+                const PropertyTreeState& layer_state);
 
   bool Matches(const PaintChunk& paint_chunk) const {
     return paint_chunks_info_.size() && paint_chunks_info_[0].is_cacheable &&
@@ -94,7 +92,6 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
   void GenerateRasterInvalidations(const PaintArtifact&,
                                    const PaintChunkSubset&,
                                    const PropertyTreeState& layer_state,
-                                   const FloatSize& visual_rect_subpixel_offset,
                                    Vector<PaintChunkInfo>& new_chunks_info);
   size_t MatchNewChunkToOldChunk(const PaintChunk& new_chunk, size_t old_index);
   void AddDisplayItemRasterInvalidations(const PaintArtifact&,

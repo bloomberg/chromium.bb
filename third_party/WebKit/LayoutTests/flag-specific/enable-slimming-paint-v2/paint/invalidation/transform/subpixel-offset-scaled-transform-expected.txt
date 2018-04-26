@@ -18,6 +18,12 @@
         }
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='container'",
+      "reason": "geometry"
+    }
   ]
 }
 

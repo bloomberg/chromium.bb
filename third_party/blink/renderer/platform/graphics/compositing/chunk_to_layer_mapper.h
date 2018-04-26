@@ -20,11 +20,9 @@ class PLATFORM_EXPORT ChunkToLayerMapper {
 
  public:
   ChunkToLayerMapper(const PropertyTreeState& layer_state,
-                     const gfx::Vector2dF& layer_offset,
-                     const FloatSize& visual_rect_subpixel_offset = FloatSize())
+                     const gfx::Vector2dF& layer_offset)
       : layer_state_(layer_state),
         layer_offset_(layer_offset),
-        visual_rect_subpixel_offset_(visual_rect_subpixel_offset),
         chunk_state_(nullptr, nullptr, nullptr) {}
 
   // This class can map from multiple chunks. Before mapping from a chunk, this
@@ -46,11 +44,9 @@ class PLATFORM_EXPORT ChunkToLayerMapper {
   friend class ChunkToLayerMapperTest;
 
   IntRect MapUsingGeometryMapper(const FloatRect&) const;
-  void AdjustVisualRectBySubpixelOffset(FloatRect&) const;
 
   const PropertyTreeState layer_state_;
   const gfx::Vector2dF layer_offset_;
-  const FloatSize visual_rect_subpixel_offset_;
 
   // The following fields are chunk-specific which are updated in
   // SwitchToChunk().

@@ -74,8 +74,6 @@ IntRect ChunkToLayerMapper::MapVisualRect(const FloatRect& rect) const {
   }
 
   mapped_rect.Inflate(outset_for_raster_effects_);
-  AdjustVisualRectBySubpixelOffset(mapped_rect);
-
   auto result = EnclosingIntRect(mapped_rect);
 #if DCHECK_IS_ON()
   auto slow_result = MapUsingGeometryMapper(rect);
@@ -102,18 +100,7 @@ IntRect ChunkToLayerMapper::MapUsingGeometryMapper(
 
   visual_rect.Rect().Move(-layer_offset_.x(), -layer_offset_.y());
   visual_rect.Rect().Inflate(outset_for_raster_effects_);
-  AdjustVisualRectBySubpixelOffset(visual_rect.Rect());
   return EnclosingIntRect(visual_rect.Rect());
-}
-
-void ChunkToLayerMapper::AdjustVisualRectBySubpixelOffset(
-    FloatRect& rect) const {
-  // Add back the layer's subpixel accumulation that was excluded from the
-  // visual rect by
-  // PaintInvalidator::ExcludeCompositedLayerSubpixelAccumulation().
-  // The condition below should be kept consistent with that function.
-  if (chunk_state_.Transform() == layer_state_.Transform())
-    rect.Move(visual_rect_subpixel_offset_);
 }
 
 }  // namespace blink
