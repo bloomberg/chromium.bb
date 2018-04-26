@@ -13,6 +13,7 @@
 #include "ash/assistant/ash_assistant_controller.h"
 #include "ash/cast_config_controller.h"
 #include "ash/display/ash_display_controller.h"
+#include "ash/display/cros_display_config.h"
 #include "ash/first_run/first_run_helper.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/ime/ime_controller.h"
@@ -80,6 +81,11 @@ void BindAshAssistantControllerRequestOnMainThread(
 void BindAshDisplayControllerRequestOnMainThread(
     mojom::AshDisplayControllerRequest request) {
   Shell::Get()->ash_display_controller()->BindRequest(std::move(request));
+}
+
+void BindCrosDisplayConfigControllerRequestOnMainThread(
+    mojom::CrosDisplayConfigControllerRequest request) {
+  Shell::Get()->cros_display_config()->BindRequest(std::move(request));
 }
 
 void BindAshMessageCenterControllerRequestOnMainThread(
@@ -214,6 +220,9 @@ void RegisterInterfaces(
   }
   registry->AddInterface(
       base::Bind(&BindAshDisplayControllerRequestOnMainThread),
+      main_thread_task_runner);
+  registry->AddInterface(
+      base::BindRepeating(&BindCrosDisplayConfigControllerRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
       base::Bind(&BindAshMessageCenterControllerRequestOnMainThread),

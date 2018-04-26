@@ -26,6 +26,7 @@
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/detachable_base/detachable_base_notification_controller.h"
 #include "ash/display/ash_display_controller.h"
+#include "ash/display/cros_display_config.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_color_manager.h"
 #include "ash/display/display_configuration_controller.h"
@@ -721,6 +722,7 @@ Shell::~Shell() {
 
   shell_delegate_->PreShutdown();
 
+  cros_display_config_.reset();
   display_configuration_observer_.reset();
   display_prefs_.reset();
 
@@ -1287,6 +1289,8 @@ void Shell::InitializeDisplayManager() {
                               false);
   display_configuration_observer_ =
       std::make_unique<DisplayConfigurationObserver>();
+
+  cros_display_config_ = std::make_unique<CrosDisplayConfig>();
 
   persistent_window_controller_ =
       std::make_unique<PersistentWindowController>();

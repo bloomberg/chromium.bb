@@ -95,6 +95,7 @@ class BluetoothNotificationController;
 class BluetoothPowerController;
 class BrightnessControlDelegate;
 class CastConfigController;
+class CrosDisplayConfig;
 class DetachableBaseHandler;
 class DetachableBaseNotificationController;
 class DisplayColorManager;
@@ -357,6 +358,9 @@ class ASH_EXPORT Shell : public SessionObserver,
     return brightness_control_delegate_.get();
   }
   CastConfigController* cast_config() { return cast_config_.get(); }
+  CrosDisplayConfig* cros_display_config() {
+    return cros_display_config_.get();
+  }
 
   // Returns nullptr in mash which has no global cursor manager.
   ::wm::CursorManager* cursor_manager() { return cursor_manager_.get(); }
@@ -700,6 +704,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<BacklightsForcedOffSetter> backlights_forced_off_setter_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<CastConfigController> cast_config_;
+  std::unique_ptr<CrosDisplayConfig> cros_display_config_;
   std::unique_ptr<DetachableBaseHandler> detachable_base_handler_;
   std::unique_ptr<DetachableBaseNotificationController>
       detachable_base_notification_controller_;

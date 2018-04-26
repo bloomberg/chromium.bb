@@ -16,6 +16,7 @@
           "ash::mojom::AshAssistantController",
           "ash::mojom::AshMessageCenterController",
           "ash::mojom::CastConfig",
+          "ash::mojom::CrosDisplayConfigController",
           "ash::mojom::DockedMagnifierController",
           "ash::mojom::FirstRunHelper",
           "ash::mojom::HighlighterController",
