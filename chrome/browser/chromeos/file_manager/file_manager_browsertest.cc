@@ -312,13 +312,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "traverseDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "traverseDrive")));
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_SuggestAppDialog DISABLED_SuggestAppDialog
-#else
-#define MAYBE_SuggestAppDialog SuggestAppDialog
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_SuggestAppDialog,
+    SuggestAppDialog,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "suggestAppDialog")));
 
