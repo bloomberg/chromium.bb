@@ -228,6 +228,8 @@ void OculusRenderLoop::RequestPresent(
 
 void OculusRenderLoop::ExitPresent() {
   is_presenting_ = false;
+  binding_.Close();
+  submit_client_ = nullptr;
 }
 
 void OculusRenderLoop::Init() {}

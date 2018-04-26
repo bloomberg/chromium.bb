@@ -195,6 +195,8 @@ void OpenVRRenderLoop::RequestPresent(
 void OpenVRRenderLoop::ExitPresent() {
   is_presenting_ = false;
   report_webxr_input_ = false;
+  binding_.Close();
+  submit_client_ = nullptr;
   vr_compositor_->SuspendRendering(true);
 }
 
