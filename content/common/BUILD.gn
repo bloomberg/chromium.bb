@@ -541,7 +541,6 @@ mojom("mojo_bindings") {
     "child_control.mojom",
     "child_memory_coordinator.mojom",
     "field_trial_recorder.mojom",
-    "file_utilities.mojom",
     "frame.mojom",
     "frame_sink_provider.mojom",
     "histogram_fetcher.mojom",

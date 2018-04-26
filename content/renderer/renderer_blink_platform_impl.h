@@ -19,7 +19,6 @@
 #include "cc/blink/web_compositor_support_impl.h"
 #include "content/child/blink_platform_impl.h"
 #include "content/common/content_export.h"
-#include "content/common/file_utilities.mojom.h"
 #include "content/common/possibly_associated_interface_ptr.h"
 #include "content/renderer/origin_trials/web_trial_token_validator_impl.h"
 #include "content/renderer/top_level_blame_context.h"
@@ -78,7 +77,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   }
   // Platform methods:
   blink::WebClipboard* Clipboard() override;
-  blink::WebFileUtilities* GetFileUtilities() override;
   blink::WebSandboxSupport* GetSandboxSupport() override;
   blink::WebCookieJar* CookieJar() override;
   blink::WebThemeEngine* ThemeEngine() override;
@@ -292,9 +290,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   std::unique_ptr<blink::WebThread> main_thread_;
   std::unique_ptr<service_manager::Connector> connector_;
 
-  class FileUtilities;
-  std::unique_ptr<FileUtilities> file_utilities_;
-
 #if !defined(OS_ANDROID) && !defined(OS_WIN) && !defined(OS_FUCHSIA)
   class SandboxSupport;
   std::unique_ptr<SandboxSupport> sandbox_support_;
@@ -339,8 +334,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   blink::mojom::WebDatabaseHostPtrInfo web_database_host_info_;
   scoped_refptr<blink::mojom::ThreadSafeWebDatabaseHostPtr> web_database_host_;
-
-  mojom::FileUtilitiesHostPtrInfo file_utilities_host_info_;
 
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
 

@@ -146,11 +146,6 @@ blink::WebClipboard* PpapiBlinkPlatformImpl::Clipboard() {
   return nullptr;
 }
 
-blink::WebFileUtilities* PpapiBlinkPlatformImpl::GetFileUtilities() {
-  NOTREACHED();
-  return nullptr;
-}
-
 blink::WebSandboxSupport* PpapiBlinkPlatformImpl::GetSandboxSupport() {
 #if !defined(OS_ANDROID) && !defined(OS_WIN)
   return sandbox_support_.get();
