@@ -32,10 +32,10 @@ namespace {
 class MockEventDelegate : public IdleManager::EventDelegate {
  public:
   MockEventDelegate() {}
-  virtual ~MockEventDelegate() {}
+  ~MockEventDelegate() override {}
   MOCK_METHOD2(OnStateChanged, void(const std::string&, ui::IdleState));
-  virtual void RegisterObserver(EventRouter::Observer* observer) {}
-  virtual void UnregisterObserver(EventRouter::Observer* observer) {}
+  void RegisterObserver(EventRouter::Observer* observer) override {}
+  void UnregisterObserver(EventRouter::Observer* observer) override {}
 };
 
 class TestIdleProvider : public IdleManager::IdleTimeProvider {

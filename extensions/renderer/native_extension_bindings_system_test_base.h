@@ -44,7 +44,7 @@ class ScriptContextSet;
 class TestIPCMessageSender : public IPCMessageSender {
  public:
   TestIPCMessageSender();
-  ~TestIPCMessageSender();
+  ~TestIPCMessageSender() override;
 
   // IPCMessageSender:
   void SendRequestIPC(ScriptContext* context,
