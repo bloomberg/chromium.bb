@@ -2474,7 +2474,7 @@ class HttpStreamFactoryBidirectionalQuicTest
 };
 
 INSTANTIATE_TEST_CASE_P(
-    VersionIncludeStreamDependencySequnece,
+    VersionIncludeStreamDependencySequence,
     HttpStreamFactoryBidirectionalQuicTest,
     ::testing::Combine(::testing::ValuesIn(AllSupportedTransportVersions()),
                        ::testing::Bool()));

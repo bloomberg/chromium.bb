@@ -838,7 +838,7 @@ class QuicStreamFactoryTest : public QuicStreamFactoryTestBase,
             GetParam().client_headers_include_h2_stream_dependency) {}
 };
 
-INSTANTIATE_TEST_CASE_P(VersionIncludeStreamDependencySequnece,
+INSTANTIATE_TEST_CASE_P(VersionIncludeStreamDependencySequence,
                         QuicStreamFactoryTest,
                         ::testing::ValuesIn(GetTestParams()));
 
@@ -5620,7 +5620,7 @@ class QuicStreamFactoryWithDestinationTest
       sequenced_socket_data_vector_;
 };
 
-INSTANTIATE_TEST_CASE_P(VersionIncludeStreamDependencySequnece,
+INSTANTIATE_TEST_CASE_P(VersionIncludeStreamDependencySequence,
                         QuicStreamFactoryWithDestinationTest,
                         ::testing::ValuesIn(GetPoolingTestParams()));
 

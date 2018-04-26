@@ -1542,7 +1542,7 @@ TEST_P(QuicProxyClientSocketTest, RstWithReadAndWritePendingDelete) {
 }
 
 INSTANTIATE_TEST_CASE_P(
-    VersionIncludeStreamDependencySequnece,
+    VersionIncludeStreamDependencySequence,
     QuicProxyClientSocketTest,
     ::testing::Combine(::testing::ValuesIn(AllSupportedTransportVersions()),
                        ::testing::Bool()));

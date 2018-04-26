@@ -669,7 +669,7 @@ class QuicHttpStreamTest
 };
 
 INSTANTIATE_TEST_CASE_P(
-    VersionIncludeStreamDependencySequnece,
+    VersionIncludeStreamDependencySequence,
     QuicHttpStreamTest,
     ::testing::Combine(::testing::ValuesIn(AllSupportedTransportVersions()),
                        ::testing::Bool()));

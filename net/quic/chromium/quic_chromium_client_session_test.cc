@@ -223,7 +223,7 @@ class QuicChromiumClientSessionTest
 };
 
 INSTANTIATE_TEST_CASE_P(
-    VersionIncludeStreamDependencySequnece,
+    VersionIncludeStreamDependencySequence,
     QuicChromiumClientSessionTest,
     ::testing::Combine(::testing::ValuesIn(AllSupportedTransportVersions()),
                        ::testing::Bool()));
