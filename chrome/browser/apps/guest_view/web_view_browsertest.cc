@@ -1344,26 +1344,11 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, SelectShowHide) {
 }
 #endif
 
-// http://crbug.com/315920
-#if defined(GOOGLE_CHROME_BUILD) && (defined(OS_WIN) || defined(OS_LINUX))
-#define MAYBE_Shim_TestChromeExtensionURL DISABLED_Shim_TestChromeExtensionURL
-#else
-#define MAYBE_Shim_TestChromeExtensionURL Shim_TestChromeExtensionURL
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Shim_TestChromeExtensionURL) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestChromeExtensionURL) {
   TestHelper("testChromeExtensionURL", "web_view/shim", NO_TEST_SERVER);
 }
 
-// http://crbug.com/315920
-#if defined(GOOGLE_CHROME_BUILD) && (defined(OS_WIN) || defined(OS_LINUX))
-#define MAYBE_Shim_TestChromeExtensionRelativePath \
-    DISABLED_Shim_TestChromeExtensionRelativePath
-#else
-#define MAYBE_Shim_TestChromeExtensionRelativePath \
-    Shim_TestChromeExtensionRelativePath
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest,
-                       MAYBE_Shim_TestChromeExtensionRelativePath) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestChromeExtensionRelativePath) {
   TestHelper("testChromeExtensionRelativePath",
              "web_view/shim",
              NO_TEST_SERVER);
