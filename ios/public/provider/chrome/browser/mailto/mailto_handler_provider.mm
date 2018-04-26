@@ -13,6 +13,9 @@ MailtoHandlerProvider::MailtoHandlerProvider() {}
 MailtoHandlerProvider::~MailtoHandlerProvider() {}
 
 void MailtoHandlerProvider::PrepareMailtoHandling(
+    ios::ChromeBrowserState* browserState) {}
+
+void MailtoHandlerProvider::PrepareMailtoHandling(
     SignedInIdentityBlock signed_in_identity_block,
     SignedInIdentitiesBlock signed_in_identities_block) {}
 
