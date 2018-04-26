@@ -345,13 +345,13 @@ void ProfileSyncService::RegisterAuthNotifications() {
   DCHECK(thread_checker_.CalledOnValidThread());
   oauth2_token_service_->AddObserver(this);
   if (signin_)
-    signin_->GetSigninManager()->AddObserver(this);
+    signin_->GetIdentityManager()->AddObserver(this);
 }
 
 void ProfileSyncService::UnregisterAuthNotifications() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (signin_)
-    signin_->GetSigninManager()->RemoveObserver(this);
+    signin_->GetIdentityManager()->RemoveObserver(this);
   if (oauth2_token_service_)
     oauth2_token_service_->RemoveObserver(this);
 }
@@ -1921,8 +1921,8 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
   }
 }
 
-void ProfileSyncService::GoogleSigninSucceeded(const std::string& account_id,
-                                               const std::string& username) {
+void ProfileSyncService::OnPrimaryAccountSet(
+    const AccountInfo& primary_account_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!IsEngineInitialized() ||
       GetAuthError().state() != GoogleServiceAuthError::NONE) {
@@ -1930,12 +1930,14 @@ void ProfileSyncService::GoogleSigninSucceeded(const std::string& account_id,
     is_auth_in_progress_ = true;
   }
 
-  if (oauth2_token_service_->RefreshTokenIsAvailable(account_id))
-    OnRefreshTokenAvailable(account_id);
+  if (oauth2_token_service_->RefreshTokenIsAvailable(
+          primary_account_info.account_id)) {
+    OnRefreshTokenAvailable(primary_account_info.account_id);
+  }
 }
 
-void ProfileSyncService::GoogleSignedOut(const std::string& account_id,
-                                         const std::string& username) {
+void ProfileSyncService::OnPrimaryAccountCleared(
+    const AccountInfo& previous_primary_account_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   sync_disabled_by_admin_ = false;
   UMA_HISTOGRAM_ENUMERATION("Sync.StopSource", syncer::SIGN_OUT,

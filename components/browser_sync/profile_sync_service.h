@@ -20,7 +20,6 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync/base/experiments.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/sync_prefs.h"
@@ -44,6 +43,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "url/gurl.h"
 
 class ProfileOAuth2TokenService;
@@ -168,7 +168,7 @@ class ProfileSyncService : public syncer::SyncServiceBase,
                            public syncer::DataTypeManagerObserver,
                            public syncer::UnrecoverableErrorHandler,
                            public OAuth2TokenService::Observer,
-                           public SigninManagerBase::Observer,
+                           public identity::IdentityManager::Observer,
                            public GaiaCookieManagerService::Observer {
  public:
   using Status = syncer::SyncStatus;
@@ -381,11 +381,10 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   bool IsPassphraseRequired() const override;
   syncer::ModelTypeSet GetEncryptedDataTypes() const override;
 
-  // SigninManagerBase::Observer implementation.
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username) override;
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override;
+  // identity::IdentityManager::Observer implementation.
+  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountCleared(
+      const AccountInfo& previous_primary_account_info) override;
 
   // GaiaCookieManagerService::Observer implementation.
   void OnGaiaAccountsInCookieUpdated(

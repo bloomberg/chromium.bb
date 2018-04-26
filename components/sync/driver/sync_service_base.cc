@@ -13,12 +13,12 @@
 #include "base/syslog_logging.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/engine_components_factory_impl.h"
 #include "components/sync/engine/polling_constants.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace syncer {
 
@@ -86,7 +86,7 @@ bool SyncServiceBase::HasObserver(const SyncServiceObserver* observer) const {
 
 AccountInfo SyncServiceBase::GetAuthenticatedAccountInfo() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return signin_ ? signin_->GetSigninManager()->GetAuthenticatedAccountInfo()
+  return signin_ ? signin_->GetIdentityManager()->GetPrimaryAccountInfo()
                  : AccountInfo();
 }
 
