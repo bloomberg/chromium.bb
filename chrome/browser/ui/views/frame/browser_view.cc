@@ -682,7 +682,14 @@ StatusBubble* BrowserView::GetStatusBubble() {
 }
 
 void BrowserView::UpdateTitleBar() {
+#if !defined(OS_CHROMEOS)
+  if (ShouldShowWindowTitle())
+    frame_->UpdateWindowTitle();
+#else
+  // ChromeOS needs this to be called even on a tabbed browser to
+  // set the accessible title.
   frame_->UpdateWindowTitle();
+#endif
   if (ShouldShowWindowIcon() && !loading_animation_timer_.IsRunning())
     frame_->UpdateWindowIcon();
 }
