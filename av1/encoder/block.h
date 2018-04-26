@@ -265,8 +265,6 @@ struct macroblock {
   MV_REFERENCE_FRAME skip_mode_ref_frame[2];
   int_mv skip_mode_mv[2];
   int compound_idx;
-  int skip_mode_index_candidate;
-  int skip_mode_index;
 
   LV_MAP_COEFF_COST coeff_costs[TX_SIZES][PLANE_TYPES];
   LV_MAP_EOB_COST eob_costs[7][2];

@@ -7798,9 +7798,6 @@ static int64_t skip_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   x->skip_mode_mv[0].as_int = mbmi->mv[0].as_int;
   x->skip_mode_mv[1].as_int = mbmi->mv[1].as_int;
 
-  // Save the mode index
-  x->skip_mode_index = x->skip_mode_index_candidate;
-
   restore_dst_buf(xd, *orig_dst, num_planes);
   return 0;
 }
@@ -8719,8 +8716,9 @@ static const int ref_frame_flag_list[REF_FRAMES] = { 0,
                                                      AOM_ALT_FLAG };
 
 static void estimate_skip_mode_rdcost(
-    const AV1_COMP *const cpi, MACROBLOCK *const x, BLOCK_SIZE bsize,
-    int mi_row, int mi_col, struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE]) {
+    int *mode_index, const AV1_COMP *const cpi, MACROBLOCK *const x,
+    BLOCK_SIZE bsize, int mi_row, int mi_col,
+    struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE]) {
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -8734,14 +8732,11 @@ static void estimate_skip_mode_rdcost(
   const MV_REFERENCE_FRAME ref_frame = LAST_FRAME + cm->ref_frame_idx_0;
   const MV_REFERENCE_FRAME second_ref_frame = LAST_FRAME + cm->ref_frame_idx_1;
   const PREDICTION_MODE this_mode = NEAREST_NEARESTMV;
-  const int mode_index =
-      get_prediction_mode_idx(this_mode, ref_frame, second_ref_frame);
+  *mode_index = get_prediction_mode_idx(this_mode, ref_frame, second_ref_frame);
 
-  if (mode_index == -1) {
+  if (*mode_index == -1) {
     return;
   }
-
-  x->skip_mode_index_candidate = mode_index;
 
   mbmi->mode = this_mode;
   mbmi->uv_mode = UV_DC_PRED;
@@ -9091,7 +9086,6 @@ static void set_params_rd_pick_inter_mode(
     x->use_default_inter_tx_type = 0;
 
   x->skip_mode_rdcost = -1;
-  x->skip_mode_index = -1;
 }
 
 typedef struct InterModeSearchState {
@@ -9393,7 +9387,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     int64_t total_sse = INT64_MAX;
     uint8_t ref_frame_type;
 
-    x->skip_mode_index_candidate = mode_index;
     this_mode = av1_mode_order[mode_index].mode;
     ref_frame = av1_mode_order[mode_index].ref_frame[0];
     second_ref_frame = av1_mode_order[mode_index].ref_frame[1];
@@ -10161,7 +10154,9 @@ PALETTE_EXIT:
       is_comp_ref_allowed(bsize)) {
     // Obtain the rdcost for skip_mode.
     x->compound_idx = 1;  // COMPOUND_AVERAGE
-    estimate_skip_mode_rdcost(cpi, x, bsize, mi_row, mi_col, yv12_mb);
+    int skip_mode_index = -1;
+    estimate_skip_mode_rdcost(&skip_mode_index, cpi, x, bsize, mi_row, mi_col,
+                              yv12_mb);
 
     if (x->skip_mode_rdcost >= 0 && x->skip_mode_rdcost < INT64_MAX) {
       // Update skip mode rdcost.
@@ -10183,6 +10178,7 @@ PALETTE_EXIT:
     }
 
     if (search_state.best_mbmode.skip_mode) {
+      assert(skip_mode_index != -1);
       search_state.best_mbmode = *mbmi;
 
       search_state.best_mbmode.skip_mode = search_state.best_mbmode.skip = 1;
@@ -10219,7 +10215,7 @@ PALETTE_EXIT:
 
       set_default_interp_filters(&search_state.best_mbmode, cm->interp_filter);
 
-      search_state.best_mode_index = x->skip_mode_index;
+      search_state.best_mode_index = skip_mode_index;
 
       // Update rd_cost
       rd_cost->rate = x->skip_mode_rate;
