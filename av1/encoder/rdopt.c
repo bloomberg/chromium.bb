@@ -7765,9 +7765,9 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   return 0;
 }
 
-static int64_t skip_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
-                            BLOCK_SIZE bsize, int mi_row, int mi_col,
-                            BUFFER_SET *const orig_dst) {
+static int64_t skip_mode_rd(RD_STATS *rd_stats, const AV1_COMP *const cpi,
+                            MACROBLOCK *const x, BLOCK_SIZE bsize, int mi_row,
+                            int mi_col, BUFFER_SET *const orig_dst) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -7788,9 +7788,9 @@ static int64_t skip_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
     sse = sse << 4;
     total_sse += sse;
   }
-  x->skip_mode_dist = x->skip_mode_sse = total_sse;
-  x->skip_mode_rate = 0;
-  x->skip_mode_rdcost = RDCOST(x->rdmult, x->skip_mode_rate, x->skip_mode_dist);
+  rd_stats->dist = rd_stats->sse = total_sse;
+  rd_stats->rate = 0;
+  rd_stats->rdcost = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
 
   // Save the ref frames / motion vectors
   x->skip_mode_ref_frame[0] = mbmi->ref_frame[0];
@@ -8716,8 +8716,8 @@ static const int ref_frame_flag_list[REF_FRAMES] = { 0,
                                                      AOM_ALT_FLAG };
 
 static void estimate_skip_mode_rdcost(
-    int *mode_index, const AV1_COMP *const cpi, MACROBLOCK *const x,
-    BLOCK_SIZE bsize, int mi_row, int mi_col,
+    int *mode_index, RD_STATS *rd_stats, const AV1_COMP *const cpi,
+    MACROBLOCK *const x, BLOCK_SIZE bsize, int mi_row, int mi_col,
     struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE]) {
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
@@ -8725,7 +8725,7 @@ static void estimate_skip_mode_rdcost(
   MB_MODE_INFO *const mbmi = xd->mi[0];
 
   if (cm->ref_frame_idx_0 == INVALID_IDX ||
-      cm->ref_frame_idx_1 == INVALID_IDX || x->skip_mode_rdcost == INT64_MAX) {
+      cm->ref_frame_idx_1 == INVALID_IDX) {
     return;
   }
 
@@ -8745,7 +8745,6 @@ static void estimate_skip_mode_rdcost(
 
   assert(this_mode == NEAREST_NEARESTMV);
   if (!build_cur_mv(mbmi->mv, this_mode, cm, x)) {
-    x->skip_mode_rdcost = INT64_MAX;
     return;
   }
 
@@ -8773,7 +8772,7 @@ static void estimate_skip_mode_rdcost(
   }
 
   // Obtain the rdcost for skip_mode.
-  skip_mode_rd(cpi, x, bsize, mi_row, mi_col, &orig_dst);
+  skip_mode_rd(rd_stats, cpi, x, bsize, mi_row, mi_col, &orig_dst);
 }
 
 // speed feature: fast intra/inter transform type search
@@ -9084,8 +9083,6 @@ static void set_params_rd_pick_inter_mode(
     x->use_default_inter_tx_type = 1;
   else
     x->use_default_inter_tx_type = 0;
-
-  x->skip_mode_rdcost = -1;
 }
 
 typedef struct InterModeSearchState {
@@ -10155,15 +10152,17 @@ PALETTE_EXIT:
     // Obtain the rdcost for skip_mode.
     x->compound_idx = 1;  // COMPOUND_AVERAGE
     int skip_mode_index = -1;
-    estimate_skip_mode_rdcost(&skip_mode_index, cpi, x, bsize, mi_row, mi_col,
-                              yv12_mb);
+    RD_STATS skip_mode_rd_stats;
+    av1_invalid_rd_stats(&skip_mode_rd_stats);
+    estimate_skip_mode_rdcost(&skip_mode_index, &skip_mode_rd_stats, cpi, x,
+                              bsize, mi_row, mi_col, yv12_mb);
 
-    if (x->skip_mode_rdcost >= 0 && x->skip_mode_rdcost < INT64_MAX) {
+    if (skip_mode_rd_stats.rdcost != INT64_MAX) {
       // Update skip mode rdcost.
       const int skip_mode_ctx = av1_get_skip_mode_context(xd);
-      x->skip_mode_rate += x->skip_mode_cost[skip_mode_ctx][1];
-      x->skip_mode_rdcost =
-          RDCOST(x->rdmult, x->skip_mode_rate, x->skip_mode_dist);
+      skip_mode_rd_stats.rate += x->skip_mode_cost[skip_mode_ctx][1];
+      skip_mode_rd_stats.rdcost =
+          RDCOST(x->rdmult, skip_mode_rd_stats.rate, skip_mode_rd_stats.dist);
 
       // Compare the use of skip_mode with the best intra/inter mode obtained.
       const int64_t best_intra_inter_mode_cost =
@@ -10173,7 +10172,7 @@ PALETTE_EXIT:
                        rd_cost->dist)
               : INT64_MAX;
 
-      if (x->skip_mode_rdcost <= best_intra_inter_mode_cost)
+      if (skip_mode_rd_stats.rdcost <= best_intra_inter_mode_cost)
         search_state.best_mbmode.skip_mode = 1;
     }
 
@@ -10218,13 +10217,13 @@ PALETTE_EXIT:
       search_state.best_mode_index = skip_mode_index;
 
       // Update rd_cost
-      rd_cost->rate = x->skip_mode_rate;
-      rd_cost->dist = rd_cost->sse = x->skip_mode_dist;
+      rd_cost->rate = skip_mode_rd_stats.rate;
+      rd_cost->dist = rd_cost->sse = skip_mode_rd_stats.dist;
       rd_cost->rdcost = RDCOST(x->rdmult, rd_cost->rate, rd_cost->dist);
 
       search_state.best_rd = rd_cost->rdcost;
       search_state.best_skip2 = 1;
-      search_state.best_mode_skippable = (x->skip_mode_sse == 0);
+      search_state.best_mode_skippable = (skip_mode_rd_stats.sse == 0);
 
       x->skip = 1;
     }
