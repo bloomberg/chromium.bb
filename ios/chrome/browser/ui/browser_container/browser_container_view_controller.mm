@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/browser_container_view_controller.h"
+#import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/util/named_guide.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -30,6 +29,8 @@
   self.view.autoresizingMask =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 }
+
+#pragma mark - Public
 
 - (void)displayContentView:(UIView*)contentView {
   if (_contentView == contentView)
