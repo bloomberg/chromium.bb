@@ -161,8 +161,7 @@ action("generate_accept_languages") {
 static_library("cronet_static") {
   visibility = [ ":*" ]
   deps = _cronet_deps
-  deps += [ ":cronet_sources_with_global_state" ]
-  sources = _cronet_sources
+  sources = _cronet_sources + [ "ios_global_state_configuration.cc" ]
   public_configs = [ ":cronet_include_config" ]
   public_deps = [
     "//components/grpc_support",
