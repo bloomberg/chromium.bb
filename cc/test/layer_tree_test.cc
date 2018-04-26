@@ -618,9 +618,12 @@ gfx::Vector2dF LayerTreeTest::ScrollDelta(LayerImpl* layer_impl) {
 }
 
 void LayerTreeTest::EndTest() {
-  if (ended_)
-    return;
-  ended_ = true;
+  {
+    base::AutoLock hold(test_ended_lock_);
+    if (ended_)
+      return;
+    ended_ = true;
+  }
 
   // For the case where we EndTest during BeginTest(), set a flag to indicate
   // that the test should end the second BeginTest regains control.

@@ -5892,41 +5892,43 @@ class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
     LayerTreeHostTest::SetupTree();
     ui_resource_ =
         FakeScopedUIResource::Create(layer_tree_host()->GetUIResourceManager());
-    client_.set_bounds(layer_tree_host()->root_layer()->bounds());
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    if (TestEnded())
+      return;
+
     host_impl->EvictAllUIResources();
     // Existence of evicted UI resources will trigger NEW_CONTENT_TAKES_PRIORITY
     // mode. Active tree should require high-res to draw after entering this
     // mode to ensure that high-res tiles are also required for a pending tree
     // to be activated.
     EXPECT_TRUE(host_impl->RequiresHighResToDraw());
+
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &LayerTreeHostTestHighResRequiredAfterEvictingUIResources::
+                DeleteResourceAndEndTest,
+            base::Unretained(this)));
   }
 
-  void DidCommit() override {
-    int frame = layer_tree_host()->SourceFrameNumber();
-    switch (frame) {
-      case 1:
-        PostSetNeedsCommitToMainThread();
-        break;
-      case 2:
-        ui_resource_ = nullptr;
-        EndTest();
-        break;
-    }
+  void DeleteResourceAndEndTest() {
+    // This must be destroyed before the test ends and tears down the
+    // LayerTreeHost. It causes another commit+activation though, which
+    // may run before the test exits.
+    ui_resource_ = nullptr;
+    EndTest();
   }
 
   void AfterTest() override {}
 
-  FakeContentLayerClient client_;
   std::unique_ptr<FakeScopedUIResource> ui_resource_;
 };
 
-// This test is flaky, see http://crbug.com/386199
-// MULTI_THREAD_TEST_F(LayerTreeHostTestHighResRequiredAfterEvictingUIResources)
+MULTI_THREAD_TEST_F(LayerTreeHostTestHighResRequiredAfterEvictingUIResources);
 
 class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
  protected:
