@@ -2240,14 +2240,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UpdateLoadState) {
   waiter.Wait(net::LOAD_STATE_IDLE, base::string16());
 }
 
-// Disabled due to flakes on Linux. https://crbug.com/832191
-#if defined(OS_LINUX)
-#define MAYBE_PausePageScheduledTasks DISABLED_PausePageScheduledTasks
-#else
-#define MAYBE_PausePageScheduledTasks PausePageScheduledTasks
-#endif
-IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       MAYBE_PausePageScheduledTasks) {
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, PausePageScheduledTasks) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   GURL test_url = embedded_test_server()->GetURL("/pause_schedule_task.html");
@@ -2283,14 +2276,17 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // Resume the paused blink schedule tasks.
   shell()->web_contents()->PausePageScheduledTasks(false);
 
-  // We call a document.getElementById five times in order to give the
-  // javascript time to run with DOM again.
-  for (int i = 0; i < 5; i++) {
+  // Wait for an amount of time in order to give the javascript time to
+  // work again. If the javascript doesn't work again, the test will fail due to
+  // the time out.
+  while (true) {
     EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
         shell(),
         "domAutomationController.send(document.getElementById('textfield')."
         "value.length)",
         &next_text_length));
+    if (next_text_length > text_length)
+      break;
   }
 
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
