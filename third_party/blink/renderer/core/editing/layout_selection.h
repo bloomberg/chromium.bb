@@ -31,9 +31,9 @@ namespace blink {
 
 class IntRect;
 class LayoutObject;
-class NGPhysicalTextFragment;
+class NGPaintFragment;
 class FrameSelection;
-
+struct LayoutSelectionStatus;
 // This class represents a selection range in layout tree for painting and
 // paint invalidation.
 // The current selection to be painted is represented as 2 pairs of
@@ -105,12 +105,7 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
   void ClearSelection();
   base::Optional<unsigned> SelectionStart() const;
   base::Optional<unsigned> SelectionEnd() const;
-  // This function returns selected part of |text_fragment|.
-  // Returned pair is a partial range of
-  // (text_fragment.StartOffset(), text_fragment.EndOffset()).
-  // If first equals second, it indicates "no selection in fragment".
-  std::pair<unsigned, unsigned> SelectionStartEndForNG(
-      const NGPhysicalTextFragment&) const;
+  LayoutSelectionStatus ComputeSelectionStatus(const NGPaintFragment&) const;
 
   void OnDocumentShutdown();
 
