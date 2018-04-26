@@ -142,6 +142,13 @@ GlassBrowserFrameView::~GlassBrowserFrameView() {
 ///////////////////////////////////////////////////////////////////////////////
 // GlassBrowserFrameView, BrowserNonClientFrameView implementation:
 
+bool GlassBrowserFrameView::CaptionButtonsOnLeadingEdge() const {
+  // Because we don't set WS_EX_LAYOUTRTL (which would conflict with Chrome's
+  // own RTL layout logic), Windows always draws the caption buttons on the
+  // right, even when we want to be RTL. See crbug.com/560619.
+  return !ShouldCustomDrawSystemTitlebar() && base::i18n::IsRTL();
+}
+
 gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
     views::View* tabstrip) const {
   const int x = GetTabStripLeftInset();
@@ -585,13 +592,6 @@ int GlassBrowserFrameView::MinimizeButtonX() const {
 bool GlassBrowserFrameView::IsToolbarVisible() const {
   return browser_view()->IsToolbarVisible() &&
       !browser_view()->toolbar()->GetPreferredSize().IsEmpty();
-}
-
-bool GlassBrowserFrameView::CaptionButtonsOnLeadingEdge() const {
-  // Because we don't set WS_EX_LAYOUTRTL (which would conflict with Chrome's
-  // own RTL layout logic), Windows always draws the caption buttons on the
-  // right, even when we want to be RTL. See crbug.com/560619.
-  return !ShouldCustomDrawSystemTitlebar() && base::i18n::IsRTL();
 }
 
 bool GlassBrowserFrameView::ShowCustomIcon() const {

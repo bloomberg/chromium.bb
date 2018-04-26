@@ -42,6 +42,10 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // unfullscreened.
   virtual void OnFullscreenStateChanged();
 
+  // Returns whether the caption buttons are drawn at the leading edge (i.e. the
+  // left in LTR mode, or the right in RTL mode).
+  virtual bool CaptionButtonsOnLeadingEdge() const;
+
   // Retrieves the bounds, in non-client view coordinates within which the
   // TabStrip should be laid out.
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const = 0;
