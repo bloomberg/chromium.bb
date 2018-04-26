@@ -13,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
@@ -43,7 +44,7 @@ class AudioOutputDevice::AudioThreadCallback
   // Will always return true if DCHECKs are not enabled.
   bool CurrentThreadIsAudioDeviceThread();
 
-  // Sets first_play_start_time_ to the current time unless it's already set,
+  // Sets |first_play_start_time_| to the current time unless it's already set,
   // in which case it's a no-op. The first call to this method MUST have
   // completed by the time we recieve our first Process() callback to avoid
   // data races.
@@ -66,12 +67,10 @@ AudioOutputDevice::AudioOutputDevice(
     int session_id,
     const std::string& device_id,
     base::TimeDelta authorization_timeout)
-    : ScopedTaskRunnerObserver(io_task_runner),
+    : io_task_runner_(io_task_runner),
       callback_(NULL),
       ipc_(std::move(ipc)),
       state_(IDLE),
-      start_on_authorized_(false),
-      play_on_start_(true),
       session_id_(session_id),
       device_id_(device_id),
       stopping_hack_(false),
@@ -80,22 +79,13 @@ AudioOutputDevice::AudioOutputDevice(
       output_params_(AudioParameters::UnavailableDeviceParams()),
       device_status_(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL),
       auth_timeout_(authorization_timeout) {
-  CHECK(ipc_);
-
-  // The correctness of the code depends on the relative values assigned in the
-  // State enum.
-  static_assert(IPC_CLOSED < IDLE, "invalid enum value assignment 0");
-  static_assert(IDLE < AUTHORIZING, "invalid enum value assignment 1");
-  static_assert(AUTHORIZING < AUTHORIZED, "invalid enum value assignment 2");
-  static_assert(AUTHORIZED < CREATING_STREAM,
-                "invalid enum value assignment 3");
-  static_assert(CREATING_STREAM < PAUSED, "invalid enum value assignment 4");
-  static_assert(PAUSED < PLAYING, "invalid enum value assignment 5");
+  DCHECK(ipc_);
+  DCHECK(io_task_runner_);
 }
 
 void AudioOutputDevice::Initialize(const AudioParameters& params,
                                    RenderCallback* callback) {
-  task_runner()->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&AudioOutputDevice::InitializeOnIOThread, this,
                                 params, callback));
 }
@@ -112,7 +102,7 @@ AudioOutputDevice::~AudioOutputDevice() {
 #if DCHECK_IS_ON()
   // Make sure we've stopped the stream properly before destructing |this|.
   DCHECK(audio_thread_lock_.Try());
-  DCHECK_LE(state_, IDLE);
+  DCHECK_EQ(state_, IDLE);
   DCHECK(!audio_thread_);
   DCHECK(!audio_callback_);
   DCHECK(!stopping_hack_);
@@ -122,7 +112,7 @@ AudioOutputDevice::~AudioOutputDevice() {
 
 void AudioOutputDevice::RequestDeviceAuthorization() {
   TRACE_EVENT0("audio", "AudioOutputDevice::RequestDeviceAuthorization");
-  task_runner()->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&AudioOutputDevice::RequestDeviceAuthorizationOnIOThread,
                      this));
@@ -130,7 +120,7 @@ void AudioOutputDevice::RequestDeviceAuthorization() {
 
 void AudioOutputDevice::Start() {
   TRACE_EVENT0("audio", "AudioOutputDevice::Start");
-  task_runner()->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&AudioOutputDevice::CreateStreamOnIOThread, this));
 }
@@ -143,19 +133,19 @@ void AudioOutputDevice::Stop() {
     stopping_hack_ = true;
   }
 
-  task_runner()->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&AudioOutputDevice::ShutDownOnIOThread, this));
 }
 
 void AudioOutputDevice::Play() {
   TRACE_EVENT0("audio", "AudioOutputDevice::Play");
-  task_runner()->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&AudioOutputDevice::PlayOnIOThread, this));
 }
 
 void AudioOutputDevice::Pause() {
   TRACE_EVENT0("audio", "AudioOutputDevice::Pause");
-  task_runner()->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&AudioOutputDevice::PauseOnIOThread, this));
 }
 
@@ -165,14 +155,14 @@ bool AudioOutputDevice::SetVolume(double volume) {
   if (volume < 0 || volume > 1.0)
     return false;
 
-  return task_runner()->PostTask(
+  return io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&AudioOutputDevice::SetVolumeOnIOThread, this, volume));
 }
 
 OutputDeviceInfo AudioOutputDevice::GetOutputDeviceInfo() {
   TRACE_EVENT0("audio", "AudioOutputDevice::GetOutputDeviceInfo");
-  DCHECK(!task_runner()->BelongsToCurrentThread());
+  DCHECK(!io_task_runner_->BelongsToCurrentThread());
 
   did_receive_auth_.Wait();
   return OutputDeviceInfo(AudioDeviceDescription::UseSessionIdToSelectDevice(
@@ -194,10 +184,10 @@ bool AudioOutputDevice::CurrentThreadIsRenderingThread() {
 }
 
 void AudioOutputDevice::RequestDeviceAuthorizationOnIOThread() {
-  DCHECK(task_runner()->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, IDLE);
 
-  state_ = AUTHORIZING;
+  state_ = AUTHORIZATION_REQUESTED;
   ipc_->RequestDeviceAuthorization(this, session_id_, device_id_);
 
   if (auth_timeout_ > base::TimeDelta()) {
@@ -215,79 +205,47 @@ void AudioOutputDevice::RequestDeviceAuthorizationOnIOThread() {
 
 void AudioOutputDevice::CreateStreamOnIOThread() {
   TRACE_EVENT0("audio", "AudioOutputDevice::Create");
-  DCHECK(task_runner()->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(callback_) << "Initialize hasn't been called";
-  switch (state_) {
-    case IPC_CLOSED:
-      // We must make sure to not access |callback_| in case Stop() has already
-      // been called.
-      NotifyRenderCallbackOfError();
-      break;
+  DCHECK_NE(state_, STREAM_CREATION_REQUESTED);
 
-    case IDLE:
-      if (did_receive_auth_.IsSignaled() && device_id_.empty()) {
-        state_ = CREATING_STREAM;
-        ipc_->CreateStream(this, audio_parameters_);
-      } else {
-        RequestDeviceAuthorizationOnIOThread();
-        start_on_authorized_ = true;
-      }
-      break;
-
-    case AUTHORIZING:
-      start_on_authorized_ = true;
-      break;
-
-    case AUTHORIZED:
-      state_ = CREATING_STREAM;
-      ipc_->CreateStream(this, audio_parameters_);
-      start_on_authorized_ = false;
-      break;
-
-    case CREATING_STREAM:
-    case PAUSED:
-    case PLAYING:
-      NOTREACHED();
-      break;
+  if (!ipc_) {
+    NotifyRenderCallbackOfError();
+    return;
   }
+
+  if (state_ == IDLE && !(did_receive_auth_.IsSignaled() && device_id_.empty()))
+    RequestDeviceAuthorizationOnIOThread();
+
+  ipc_->CreateStream(this, audio_parameters_);
+  // By default, start playing right away.
+  ipc_->PlayStream();
+  state_ = STREAM_CREATION_REQUESTED;
 }
 
 void AudioOutputDevice::PlayOnIOThread() {
-  DCHECK(task_runner()->BelongsToCurrentThread());
-  if (state_ == PAUSED) {
-    DCHECK(audio_callback_);
-    TRACE_EVENT_ASYNC_BEGIN0(
-        "audio", "StartingPlayback", audio_callback_.get());
-    // Only the first call alters any state, the rest are no-ops.
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  if (audio_callback_)
     audio_callback_->InitializePlayStartTime();
+
+  if (ipc_)
     ipc_->PlayStream();
-    state_ = PLAYING;
-    play_on_start_ = false;
-  } else {
-    play_on_start_ = true;
-  }
 }
 
 void AudioOutputDevice::PauseOnIOThread() {
-  DCHECK(task_runner()->BelongsToCurrentThread());
-  if (state_ == PLAYING) {
-    TRACE_EVENT_ASYNC_END0(
-        "audio", "StartingPlayback", audio_callback_.get());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+
+  if (ipc_)
     ipc_->PauseStream();
-    state_ = PAUSED;
-  }
-  play_on_start_ = false;
 }
 
 void AudioOutputDevice::ShutDownOnIOThread() {
-  DCHECK(task_runner()->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
-  // Close the stream, if we haven't already.
-  if (state_ >= AUTHORIZING) {
+  if (ipc_)
     ipc_->CloseStream();
-    state_ = IDLE;
-  }
-  start_on_authorized_ = false;
+
+  state_ = IDLE;
 
   // Destoy the timer on the thread it's used on.
   auth_timeout_action_.reset();
@@ -311,18 +269,18 @@ void AudioOutputDevice::ShutDownOnIOThread() {
 }
 
 void AudioOutputDevice::SetVolumeOnIOThread(double volume) {
-  DCHECK(task_runner()->BelongsToCurrentThread());
-  if (state_ >= CREATING_STREAM)
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  if (ipc_)
     ipc_->SetVolume(volume);
 }
 
 void AudioOutputDevice::OnError() {
   TRACE_EVENT0("audio", "AudioOutputDevice::OnError");
 
-  DCHECK(task_runner()->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   // Do nothing if the stream has been closed.
-  if (state_ < CREATING_STREAM)
+  if (state_ == IDLE)
     return;
 
   had_callback_error_ = true;
@@ -339,12 +297,12 @@ void AudioOutputDevice::OnDeviceAuthorized(
     OutputDeviceStatus device_status,
     const media::AudioParameters& output_params,
     const std::string& matched_device_id) {
-  DCHECK(task_runner()->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   auth_timeout_action_.reset();
 
   // Do nothing if late authorization is received after timeout.
-  if (state_ == IPC_CLOSED)
+  if (!ipc_)
     return;
 
   UMA_HISTOGRAM_BOOLEAN("Media.Audio.Render.OutputDeviceAuthorizationTimedOut",
@@ -352,16 +310,14 @@ void AudioOutputDevice::OnDeviceAuthorized(
   LOG_IF(WARNING, device_status == OUTPUT_DEVICE_STATUS_ERROR_TIMED_OUT)
       << "Output device authorization timed out";
 
-  DCHECK_EQ(state_, AUTHORIZING);
-
   // It may happen that a second authorization is received as a result to a
   // call to Start() after Stop(). If the status for the second authorization
   // differs from the first, it will not be reflected in |device_status_|
   // to avoid a race.
   // This scenario is unlikely. If it occurs, the new value will be
   // different from OUTPUT_DEVICE_STATUS_OK, so the AudioOutputDevice
-  // will enter the IPC_CLOSED state anyway, which is the safe thing to do.
-  // This is preferable to holding a lock.
+  // will enter the |ipc_| == nullptr state anyway, which is the safe thing to
+  // do. This is preferable to holding a lock.
   if (!did_receive_auth_.IsSignaled()) {
     device_status_ = device_status;
     UMA_HISTOGRAM_ENUMERATION("Media.Audio.Render.OutputDeviceStatus",
@@ -371,7 +327,6 @@ void AudioOutputDevice::OnDeviceAuthorized(
   if (device_status == OUTPUT_DEVICE_STATUS_OK) {
     TRACE_EVENT0("audio", "AudioOutputDevice authorized");
 
-    state_ = AUTHORIZED;
     if (!did_receive_auth_.IsSignaled()) {
       output_params_ = output_params;
 
@@ -389,8 +344,6 @@ void AudioOutputDevice::OnDeviceAuthorized(
 
       did_receive_auth_.Signal();
     }
-    if (start_on_authorized_)
-      CreateStreamOnIOThread();
   } else {
     TRACE_EVENT1("audio", "AudioOutputDevice not authorized", "auth status",
                  device_status_);
@@ -404,12 +357,12 @@ void AudioOutputDevice::OnDeviceAuthorized(
   }
 }
 
-void AudioOutputDevice::OnStreamCreated(
-    base::SharedMemoryHandle handle,
-    base::SyncSocket::Handle socket_handle) {
+void AudioOutputDevice::OnStreamCreated(base::SharedMemoryHandle handle,
+                                        base::SyncSocket::Handle socket_handle,
+                                        bool playing_automatically) {
   TRACE_EVENT0("audio", "AudioOutputDevice::OnStreamCreated")
 
-  DCHECK(task_runner()->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(base::SharedMemory::IsHandleValid(handle));
 #if defined(OS_WIN)
   DCHECK(socket_handle);
@@ -418,7 +371,7 @@ void AudioOutputDevice::OnStreamCreated(
 #endif
   DCHECK_GT(handle.GetSize(), 0u);
 
-  if (state_ != CREATING_STREAM)
+  if (state_ != STREAM_CREATION_REQUESTED)
     return;
 
   // We can receive OnStreamCreated() on the IO thread after the client has
@@ -443,23 +396,19 @@ void AudioOutputDevice::OnStreamCreated(
 
     audio_callback_.reset(new AudioOutputDevice::AudioThreadCallback(
         audio_parameters_, handle, callback_));
+    if (playing_automatically)
+      audio_callback_->InitializePlayStartTime();
     audio_thread_.reset(new AudioDeviceThread(
         audio_callback_.get(), socket_handle, "AudioOutputDevice"));
-    state_ = PAUSED;
-
-    // We handle the case where Play() and/or Pause() may have been called
-    // multiple times before OnStreamCreated() gets called.
-    if (play_on_start_)
-      PlayOnIOThread();
   }
 }
 
 void AudioOutputDevice::OnIPCClosed() {
   TRACE_EVENT0("audio", "AudioOutputDevice::OnIPCClosed");
-  DCHECK(task_runner()->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
-  state_ = IPC_CLOSED;
   ipc_.reset();
+  state_ = IDLE;
 
   // Signal to unblock any blocked threads waiting for parameters
   did_receive_auth_.Signal();
@@ -467,18 +416,13 @@ void AudioOutputDevice::OnIPCClosed() {
 
 void AudioOutputDevice::NotifyRenderCallbackOfError() {
   TRACE_EVENT0("audio", "AudioOutputDevice::NotifyRenderCallbackOfError");
-  DCHECK(task_runner()->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(audio_thread_lock_);
   // Avoid signaling error if Initialize() hasn't been called yet, or if
   // Stop() has already been called.
   if (callback_ && !stopping_hack_)
     callback_->OnRenderError();
-}
-
-void AudioOutputDevice::WillDestroyCurrentMessageLoop() {
-  LOG(ERROR) << "IO loop going away before the audio device has been stopped";
-  ShutDownOnIOThread();
 }
 
 // AudioOutputDevice::AudioThreadCallback

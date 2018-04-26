@@ -90,7 +90,8 @@ void PepperPlatformAudioOutput::OnDeviceAuthorized(
 
 void PepperPlatformAudioOutput::OnStreamCreated(
     base::SharedMemoryHandle handle,
-    base::SyncSocket::Handle socket_handle) {
+    base::SyncSocket::Handle socket_handle,
+    bool playing_automatically) {
   DCHECK(handle.IsValid());
 #if defined(OS_WIN)
   DCHECK(socket_handle);
@@ -106,8 +107,9 @@ void PepperPlatformAudioOutput::OnStreamCreated(
       client_->StreamCreated(handle, handle.GetSize(), socket_handle);
   } else {
     main_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&PepperPlatformAudioOutput::OnStreamCreated,
-                                  this, handle, socket_handle));
+        FROM_HERE,
+        base::BindOnce(&PepperPlatformAudioOutput::OnStreamCreated, this,
+                       handle, socket_handle, playing_automatically));
   }
 }
 

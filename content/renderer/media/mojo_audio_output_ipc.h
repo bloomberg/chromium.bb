@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
@@ -24,7 +25,7 @@ namespace content {
 // thread.
 class CONTENT_EXPORT MojoAudioOutputIPC
     : public media::AudioOutputIPC,
-      public media::mojom::AudioOutputStreamClient {
+      public media::mojom::AudioOutputStreamProviderClient {
  public:
   using FactoryAccessorCB =
       base::RepeatingCallback<mojom::RendererAudioOutputStreamFactory*()>;
@@ -48,15 +49,22 @@ class CONTENT_EXPORT MojoAudioOutputIPC
   void CloseStream() override;
   void SetVolume(double volume) override;
 
-  // media::mojom::AudioOutputStreamClient implementation.
-  void OnError() override;
+  // media::mojom::AudioOutputStreamProviderClient implementation.
+  void Created(media::mojom::AudioOutputStreamPtr stream,
+               media::mojom::AudioDataPipePtr data_pipe) override;
 
  private:
+  static constexpr double kDefaultVolume = 1.0;
+
   using AuthorizationCB = mojom::RendererAudioOutputStreamFactory::
       RequestDeviceAuthorizationCallback;
 
-  bool AuthorizationRequested();
-  bool StreamCreationRequested();
+  bool AuthorizationRequested() const;
+  bool StreamCreationRequested() const;
+
+  void ProviderClientBindingDisconnected(uint32_t disconnect_reason,
+                                         const std::string& description);
+
   media::mojom::AudioOutputStreamProviderRequest MakeProviderRequest();
 
   // Tries to acquire a RendererAudioOutputStreamFactory and requests device
@@ -71,11 +79,14 @@ class CONTENT_EXPORT MojoAudioOutputIPC
                                    const media::AudioParameters& params,
                                    const std::string& device_id) const;
 
-  void StreamCreated(media::mojom::AudioDataPipePtr data_pipe);
-
   const FactoryAccessorCB factory_accessor_;
 
-  mojo::Binding<media::mojom::AudioOutputStreamClient> binding_;
+  // This is the state that |delegate_| expects the stream to be in. It is
+  // maintained for when the stream is created.
+  enum { kPaused, kPlaying } expected_state_ = kPaused;
+  base::Optional<double> volume_;
+
+  mojo::Binding<media::mojom::AudioOutputStreamProviderClient> binding_;
   media::mojom::AudioOutputStreamProviderPtr stream_provider_;
   media::mojom::AudioOutputStreamPtr stream_;
   media::AudioOutputIPCDelegate* delegate_ = nullptr;

@@ -42,25 +42,25 @@ class MEDIA_MOJO_EXPORT MojoAudioOutputStreamProvider
 
  private:
   // mojom::AudioOutputStreamProvider implementation.
-  void Acquire(mojom::AudioOutputStreamRequest stream_request,
-               mojom::AudioOutputStreamClientPtr client,
-               const AudioParameters& params,
-               AcquireCallback acquire_callback) override;
+  void Acquire(
+      const AudioParameters& params,
+      mojom::AudioOutputStreamProviderClientPtr provider_client) override;
 
   // Called when |audio_output_| had an error.
-  void OnError();
+  void CleanUp(bool had_error);
 
   // Closes mojo connections, reports a bad message, and self-destructs.
   void BadMessage(const std::string& error);
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::Optional<MojoAudioOutputStream> audio_output_;
   mojo::Binding<AudioOutputStreamProvider> binding_;
   CreateDelegateCallback create_delegate_callback_;
   DeleterCallback deleter_callback_;
   std::unique_ptr<mojom::AudioOutputStreamObserver> observer_;
   mojo::Binding<mojom::AudioOutputStreamObserver> observer_binding_;
+  base::Optional<MojoAudioOutputStream> audio_output_;
+  mojom::AudioOutputStreamProviderClientPtr provider_client_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoAudioOutputStreamProvider);
 };

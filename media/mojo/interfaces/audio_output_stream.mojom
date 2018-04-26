@@ -25,21 +25,6 @@ interface AudioOutputStream {
   SetVolume(double volume);
 };
 
-interface AudioOutputStreamClient {
-  // Called if the stream has an error such as failing to open/losing access to
-  // a device. This renders the stream unusable.
-  OnError();
-};
-
-interface AudioOutputStreamProvider {
-  // Creates a new AudioOutputStream using |params|. |data_pipe| is used to
-  // transfer audio data.
-  // Can only be called once.
-  Acquire(AudioOutputStream& output_stream, AudioOutputStreamClient client,
-    AudioParameters params)
-    => (AudioDataPipe data_pipe);
-};
-
 // An AudioOutputStreamObserver gets notifications about events related to an
 // AudioOutputStream. DidStartPlaying() is invoked when the stream starts
 // playing and it is eventually followed by a DidStopPlaying() call. A stream
@@ -48,6 +33,13 @@ interface AudioOutputStreamProvider {
 // Note: It is possible that DidStopPlaying() is not called in shutdown
 // situations.
 interface AudioOutputStreamObserver {
+  // This code is used as disconnect reason when stream ended or failed to
+  // start due to an unrecoverable platform error, e.g. the hardware device is
+  // busy or disconnected.
+  // If the error code isn't used, the stream ended due to being terminated by
+  // the client.
+  const uint32 kPlatformErrorDisconnectReason = 1;
+
   // This notification indicates that the stream started playing. The stream
   // should be considered non-audible until a DidChangeAudibleState() call says
   // otherwise.
@@ -62,4 +54,28 @@ interface AudioOutputStreamObserver {
   // stream. Multiple instances of this notification may occur after
   // DidStartPlaying() and before DidStopPlaying().
   DidChangeAudibleState(bool is_audible);
+};
+
+interface AudioOutputStreamProvider {
+  // Creates a new AudioOutputStream using |params|. |client| is notified when
+  // the stream is ready. The stream lifetime is bound by the lifetime of
+  // |client|. On error, the |client| will have a disconnect reason among the
+  // specified ones in AudioOutputStreamProviderClient.
+  // Can only be called once.
+  Acquire(AudioParameters params, AudioOutputStreamProviderClient client);
+};
+
+interface AudioOutputStreamProviderClient {
+  // This code is used as disconnect reason when stream ended or failed to
+  // start due to an unrecoverable platform error, e.g. the hardware device is
+  // busy or disconnected.
+  // If the error code isn't used, the stream ended/wasn't started due to the
+  // stream becoming unnecessary or unwanted, or the request was dropped.
+  const uint32 kPlatformErrorDisconnectReason = 1;
+
+  // |stream| is used to pass commands to the stream, and |data_pipe| is used
+  // to transfer the audio data.
+  // TODO(https://crbug.com/787806): Currently, this will be called at most
+  // once. In the future, it may be called several times.
+  Created(AudioOutputStream stream, AudioDataPipe data_pipe);
 };
