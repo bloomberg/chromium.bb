@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.ntp;
 
-import android.app.Activity;
 import android.view.View;
 
 import org.junit.Assert;
@@ -97,7 +96,7 @@ public class NativePageFactoryTest {
         }
 
         @Override
-        public NativePage buildBookmarksPage(Activity activity, Tab tab) {
+        public NativePage buildBookmarksPage(ChromeActivity activity, Tab tab) {
             return new MockNativePage(NativePageType.BOOKMARKS);
         }
 

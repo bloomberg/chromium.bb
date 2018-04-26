@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.ntp;
 
-import android.app.Activity;
 import android.net.Uri;
 
 import org.chromium.base.VisibleForTesting;
@@ -44,15 +43,15 @@ public class NativePageFactory {
             return new NewTabPage(activity, new TabShim(tab), tabModelSelector);
         }
 
-        protected NativePage buildBookmarksPage(Activity activity, Tab tab) {
+        protected NativePage buildBookmarksPage(ChromeActivity activity, Tab tab) {
             return new BookmarkPage(activity, new TabShim(tab));
         }
 
-        protected NativePage buildDownloadsPage(Activity activity, Tab tab) {
+        protected NativePage buildDownloadsPage(ChromeActivity activity, Tab tab) {
             return new DownloadPage(activity, new TabShim(tab));
         }
 
-        protected NativePage buildHistoryPage(Activity activity, Tab tab) {
+        protected NativePage buildHistoryPage(ChromeActivity activity, Tab tab) {
             return new HistoryPage(activity, new TabShim(tab));
         }
 
