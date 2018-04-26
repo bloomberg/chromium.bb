@@ -2124,7 +2124,6 @@ crbug.com/591099 tables/mozilla_expected_failures/marvin/table_overflow_caption_
 crbug.com/591099 tables/mozilla_expected_failures/marvin/table_overflow_caption_left.html [ Failure ]
 crbug.com/591099 tables/mozilla_expected_failures/marvin/table_overflow_caption_right.html [ Failure ]
 crbug.com/591099 tables/mozilla_expected_failures/marvin/table_overflow_caption_top.html [ Failure ]
-crbug.com/591099 transforms/2d/hindi-rotated.html [ Failure ]
 crbug.com/591099 transforms/2d/transform-2d.html [ Timeout ]
 crbug.com/591099 transforms/3d/general/perspective-non-layer.html [ Failure ]
 crbug.com/591099 transforms/3d/hit-testing/backface-hit-test.html [ Failure ]
