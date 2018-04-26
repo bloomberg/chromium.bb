@@ -21,7 +21,7 @@ constexpr char kOtherDictionaryKey[] = "another.dictionary.pref";
 class PrefStoreObserverMock : public PrefStore::Observer {
  public:
   PrefStoreObserverMock();
-  ~PrefStoreObserverMock();
+  ~PrefStoreObserverMock() override;
   MOCK_METHOD1(OnPrefValueChanged, void(const std::string&));
   MOCK_METHOD1(OnInitializationCompleted, void(bool));
 };

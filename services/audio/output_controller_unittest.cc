@@ -79,7 +79,7 @@ class MockOutputControllerEventHandler : public OutputController::EventHandler {
   MOCK_METHOD0(OnControllerPlaying, void());
   MOCK_METHOD0(OnControllerPaused, void());
   MOCK_METHOD0(OnControllerError, void());
-  void OnLog(base::StringPiece) {}
+  void OnLog(base::StringPiece) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockOutputControllerEventHandler);
