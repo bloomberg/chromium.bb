@@ -40,17 +40,4 @@ namespace blink {
 LayoutSliderThumb::LayoutSliderThumb(SliderThumbElement* element)
     : LayoutBlockFlow(element) {}
 
-void LayoutSliderThumb::UpdateAppearance(const ComputedStyle& parent_style) {
-  if (parent_style.Appearance() == kSliderVerticalPart)
-    MutableStyleRef().SetAppearance(kSliderThumbVerticalPart);
-  else if (parent_style.Appearance() == kSliderHorizontalPart)
-    MutableStyleRef().SetAppearance(kSliderThumbHorizontalPart);
-  else if (parent_style.Appearance() == kMediaSliderPart)
-    MutableStyleRef().SetAppearance(kMediaSliderThumbPart);
-  else if (parent_style.Appearance() == kMediaVolumeSliderPart)
-    MutableStyleRef().SetAppearance(kMediaVolumeSliderThumbPart);
-  if (StyleRef().HasAppearance())
-    LayoutTheme::GetTheme().AdjustSliderThumbSize(MutableStyleRef());
-}
-
 }  // namespace blink

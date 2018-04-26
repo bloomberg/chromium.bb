@@ -60,6 +60,7 @@ class SliderThumbElement final : public HTMLDivElement {
  private:
   SliderThumbElement(Document&);
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() final;
   Element* CloneWithoutAttributesAndChildren(Document&) const override;
   bool IsDisabledFormControl() const override;
   bool MatchesReadOnlyPseudoClass() const override;
