@@ -11,6 +11,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/message_channel.h"
@@ -22,7 +23,8 @@
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var_tracker.h"
-#include "third_party/blink/public/platform/web_clipboard.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -319,26 +321,40 @@ bool PepperWebPluginImpl::ExecuteEditCommand(const blink::WebString& name,
     if (!HasSelection() || !CanEditText())
       return false;
 
-    blink::Platform::Current()->Clipboard()->WriteHTML(
-        SelectionAsMarkup(), WebURL(), SelectionAsText(), false);
+    if (!clipboard_) {
+      blink::Platform::Current()->GetConnector()->BindInterface(
+          blink::Platform::Current()->GetBrowserServiceName(), &clipboard_);
+    }
+    base::string16 markup;
+    base::string16 text;
+    if (instance_) {
+      markup = instance_->GetSelectedText(true);
+      text = instance_->GetSelectedText(false);
+    }
+    clipboard_->WriteHtml(ui::CLIPBOARD_TYPE_COPY_PASTE, markup, GURL());
+    clipboard_->WriteText(ui::CLIPBOARD_TYPE_COPY_PASTE, text);
+    clipboard_->CommitWrite(ui::CLIPBOARD_TYPE_COPY_PASTE);
 
     instance_->ReplaceSelection("");
     return true;
   }
 
   // If the clipboard contains something other than text (e.g. an image),
-  // WebClipboard::ReadPlainText() returns an empty string. The empty string is
+  // ClipboardHost::ReadText() returns an empty string. The empty string is
   // then pasted, replacing any selected text. This behavior is consistent with
   // that of HTML text form fields.
   if (name == "Paste" || name == "PasteAndMatchStyle") {
     if (!CanEditText())
       return false;
 
-    blink::WebString text =
-        blink::Platform::Current()->Clipboard()->ReadPlainText(
-            blink::mojom::ClipboardBuffer::kStandard);
+    if (!clipboard_) {
+      blink::Platform::Current()->GetConnector()->BindInterface(
+          blink::Platform::Current()->GetBrowserServiceName(), &clipboard_);
+    }
+    base::string16 text;
+    clipboard_->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &text);
 
-    instance_->ReplaceSelection(text.Utf8());
+    instance_->ReplaceSelection(base::UTF16ToUTF8(text));
     return true;
   }
 
