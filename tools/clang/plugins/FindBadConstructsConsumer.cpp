@@ -255,9 +255,6 @@ void FindBadConstructsConsumer::CheckChromeClass(LocationType location_type,
 }
 
 void FindBadConstructsConsumer::CheckEnumMaxValue(EnumDecl* decl) {
-  if (!options_.check_enum_max_value)
-    return;
-
   if (!decl->isScoped())
     return;
 
@@ -468,16 +465,13 @@ FindBadConstructsConsumer::ReportIfSpellingLocNotIgnored(
       ClassifyLocation(instance().getSourceManager().getSpellingLoc(loc));
   bool ignored = type == LocationType::kThirdParty;
   if (type == LocationType::kBlink) {
-    if (!options_.enforce_in_thirdparty_webkit) {
-      ignored = true;
-    } else if (diagnostic_id == diag_no_explicit_ctor_ ||
-               diagnostic_id == diag_no_explicit_copy_ctor_ ||
-               diagnostic_id == diag_inline_complex_ctor_ ||
-               diagnostic_id == diag_no_explicit_dtor_ ||
-               diagnostic_id == diag_inline_complex_dtor_ ||
-               diagnostic_id ==
-                   diag_refcounted_with_protected_non_virtual_dtor_ ||
-               diagnostic_id == diag_virtual_with_inline_body_) {
+    if (diagnostic_id == diag_no_explicit_ctor_ ||
+        diagnostic_id == diag_no_explicit_copy_ctor_ ||
+        diagnostic_id == diag_inline_complex_ctor_ ||
+        diagnostic_id == diag_no_explicit_dtor_ ||
+        diagnostic_id == diag_inline_complex_dtor_ ||
+        diagnostic_id == diag_refcounted_with_protected_non_virtual_dtor_ ||
+        diagnostic_id == diag_virtual_with_inline_body_) {
       // Certain checks are ignored in Blink for historical reasons.
       // TODO(dcheng): Make this list smaller.
       ignored = true;
