@@ -46,6 +46,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
       network_watcher_(FROM_HERE,
                        mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                        base::SequencedTaskRunnerHandle::Get()),
+      non_network_loader_factory_(std::move(non_network_loader_factory)),
       client_(std::move(client)),
       weak_factory_(this) {
   // ServiceWorkerNewScriptLoader is used for fetching the service worker main
@@ -112,8 +113,8 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
 
   network::mojom::URLLoaderClientPtr network_client;
   network_client_binding_.Bind(mojo::MakeRequest(&network_client));
-  if (non_network_loader_factory) {
-    non_network_loader_factory->CreateLoaderAndStart(
+  if (non_network_loader_factory_) {
+    non_network_loader_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
         *resource_request_.get(), std::move(network_client),
         traffic_annotation);

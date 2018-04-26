@@ -154,6 +154,10 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
   mojo::ScopedDataPipeConsumerHandle network_consumer_;
   mojo::SimpleWatcher network_watcher_;
   bool network_load_completed_ = false;
+  // |non_network_loader_factory_| is non-null when the script URL is
+  // non-http(s). It is used to make the "network" request because the usual
+  // network factory can't be used in that case. See class comments.
+  network::mojom::URLLoaderFactoryPtr non_network_loader_factory_;
 
   // Used for responding with the fetched script to this loader's client.
   network::mojom::URLLoaderClientPtr client_;
