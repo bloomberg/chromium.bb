@@ -2294,6 +2294,10 @@ void remote_surface_set_orientation_lock(wl_client* client,
       OrientationLock(orientation_lock));
 }
 
+void remote_surface_pip(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetPip();
+}
+
 const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_destroy,
     remote_surface_set_app_id,
@@ -2334,7 +2338,8 @@ const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_set_frame,
     remote_surface_set_frame_buttons,
     remote_surface_set_extra_title,
-    remote_surface_set_orientation_lock};
+    remote_surface_set_orientation_lock,
+    remote_surface_pip};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:
@@ -2595,6 +2600,9 @@ void HandleRemoteSurfaceStateChangedCallback(
     case ash::mojom::WindowStateType::RIGHT_SNAPPED:
       state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_RIGHT_SNAPPED;
       break;
+    case ash::mojom::WindowStateType::PIP:
+      state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_PIP;
+      break;
     default:
       break;
   }
@@ -2761,7 +2769,7 @@ const struct zcr_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_destroy, remote_shell_get_remote_surface,
     remote_shell_get_notification_surface};
 
-const uint32_t remote_shell_version = 14;
+const uint32_t remote_shell_version = 15;
 
 void bind_remote_shell(wl_client* client,
                        void* data,

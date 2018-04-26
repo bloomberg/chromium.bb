@@ -204,6 +204,10 @@ enum zcr_remote_shell_v1_state_type {
 	 * right snapped window state
 	 */
 	ZCR_REMOTE_SHELL_V1_STATE_TYPE_RIGHT_SNAPPED = 10,
+	/**
+	 * pip window state
+	 */
+	ZCR_REMOTE_SHELL_V1_STATE_TYPE_PIP = 11,
 };
 #endif /* ZCR_REMOTE_SHELL_V1_STATE_TYPE_ENUM */
 
@@ -891,6 +895,7 @@ zcr_remote_surface_v1_add_listener(struct zcr_remote_surface_v1 *zcr_remote_surf
 #define ZCR_REMOTE_SURFACE_V1_SET_FRAME_BUTTONS 37
 #define ZCR_REMOTE_SURFACE_V1_SET_EXTRA_TITLE 38
 #define ZCR_REMOTE_SURFACE_V1_SET_ORIENTATION_LOCK 39
+#define ZCR_REMOTE_SURFACE_V1_PIP 40
 
 /**
  * @ingroup iface_zcr_remote_surface_v1
@@ -1081,6 +1086,10 @@ zcr_remote_surface_v1_add_listener(struct zcr_remote_surface_v1 *zcr_remote_surf
  * @ingroup iface_zcr_remote_surface_v1
  */
 #define ZCR_REMOTE_SURFACE_V1_SET_ORIENTATION_LOCK_SINCE_VERSION 14
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_PIP_SINCE_VERSION 15
 
 /** @ingroup iface_zcr_remote_surface_v1 */
 static inline void
@@ -1754,6 +1763,18 @@ zcr_remote_surface_v1_set_orientation_lock(struct zcr_remote_surface_v1 *zcr_rem
 {
 	wl_proxy_marshal((struct wl_proxy *) zcr_remote_surface_v1,
 			 ZCR_REMOTE_SURFACE_V1_SET_ORIENTATION_LOCK, orientation_lock);
+}
+
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ *
+ * Request that surface is set to Picture-in-Picture (PIP).
+ */
+static inline void
+zcr_remote_surface_v1_pip(struct zcr_remote_surface_v1 *zcr_remote_surface_v1)
+{
+	wl_proxy_marshal((struct wl_proxy *) zcr_remote_surface_v1,
+			 ZCR_REMOTE_SURFACE_V1_PIP);
 }
 
 #define ZCR_NOTIFICATION_SURFACE_V1_DESTROY 0

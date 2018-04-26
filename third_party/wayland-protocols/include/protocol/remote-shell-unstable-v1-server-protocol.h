@@ -207,6 +207,10 @@ enum zcr_remote_shell_v1_state_type {
 	 * right snapped window state
 	 */
 	ZCR_REMOTE_SHELL_V1_STATE_TYPE_RIGHT_SNAPPED = 10,
+	/**
+	 * pip window state
+	 */
+	ZCR_REMOTE_SHELL_V1_STATE_TYPE_PIP = 11,
 };
 #endif /* ZCR_REMOTE_SHELL_V1_STATE_TYPE_ENUM */
 
@@ -1188,6 +1192,14 @@ struct zcr_remote_surface_v1_interface {
 	void (*set_orientation_lock)(struct wl_client *client,
 				     struct wl_resource *resource,
 				     uint32_t orientation_lock);
+	/**
+	 * set pip for a remote surface
+	 *
+	 * Request that surface is set to Picture-in-Picture (PIP).
+	 * @since 15
+	 */
+	void (*pip)(struct wl_client *client,
+		    struct wl_resource *resource);
 };
 
 #define ZCR_REMOTE_SURFACE_V1_CLOSE 0
@@ -1387,6 +1399,10 @@ struct zcr_remote_surface_v1_interface {
  * @ingroup iface_zcr_remote_surface_v1
  */
 #define ZCR_REMOTE_SURFACE_V1_SET_ORIENTATION_LOCK_SINCE_VERSION 14
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_PIP_SINCE_VERSION 15
 
 /**
  * @ingroup iface_zcr_remote_surface_v1

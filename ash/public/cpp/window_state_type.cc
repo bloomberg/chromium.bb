@@ -36,6 +36,7 @@ ui::WindowShowState ToWindowShowState(mojom::WindowStateType type) {
     case mojom::WindowStateType::RIGHT_SNAPPED:
     case mojom::WindowStateType::LEFT_SNAPPED:
     case mojom::WindowStateType::AUTO_POSITIONED:
+    case mojom::WindowStateType::PIP:
       return ui::SHOW_STATE_NORMAL;
 
     case mojom::WindowStateType::MINIMIZED:
@@ -76,7 +77,8 @@ bool IsValidWindowStateType(int64_t value) {
          value == int64_t(mojom::WindowStateType::RIGHT_SNAPPED) ||
          value == int64_t(mojom::WindowStateType::AUTO_POSITIONED) ||
          value == int64_t(mojom::WindowStateType::PINNED) ||
-         value == int64_t(mojom::WindowStateType::TRUSTED_PINNED);
+         value == int64_t(mojom::WindowStateType::TRUSTED_PINNED) ||
+         value == int64_t(mojom::WindowStateType::PIP);
 }
 
 }  // namespace ash

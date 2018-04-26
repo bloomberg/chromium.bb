@@ -32,6 +32,9 @@ enum WindowStateType {
   // pinned one should be hidden.
   PINNED,
   TRUSTED_PINNED,
+
+  // A window in Picture-in-Picture mode (PIP).
+  PIP,
 };
 
 // The window's extended state. Maps to ash::aura::kWindowStateTypeKey.

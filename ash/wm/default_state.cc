@@ -556,6 +556,7 @@ void DefaultState::UpdateBoundsFromState(
       break;
     case mojom::WindowStateType::INACTIVE:
     case mojom::WindowStateType::AUTO_POSITIONED:
+    case mojom::WindowStateType::PIP:
       return;
   }
 
