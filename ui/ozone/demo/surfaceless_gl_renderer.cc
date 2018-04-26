@@ -18,6 +18,7 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_image_native_pixmap.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/init/gl_factory.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -116,10 +117,11 @@ SurfacelessGlRenderer::SurfacelessGlRenderer(
     gfx::AcceleratedWidget widget,
     const scoped_refptr<gl::GLSurface>& surface,
     const gfx::Size& size)
-    : GlRenderer(widget, surface, size),
+    : RendererBase(widget, size),
       overlay_checker_(ui::OzonePlatform::GetInstance()
                            ->GetOverlayManager()
                            ->CreateOverlayCandidates(widget)),
+      surface_(surface),
       weak_ptr_factory_(this) {}
 
 SurfacelessGlRenderer::~SurfacelessGlRenderer() {
@@ -129,8 +131,19 @@ SurfacelessGlRenderer::~SurfacelessGlRenderer() {
 }
 
 bool SurfacelessGlRenderer::Initialize() {
-  if (!GlRenderer::Initialize())
+  context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
+                                       gl::GLContextAttribs());
+  if (!context_.get()) {
+    LOG(ERROR) << "Failed to create GL context";
     return false;
+  }
+
+  surface_->Resize(size_, 1.f, gl::GLSurface::ColorSpace::UNSPECIFIED, true);
+
+  if (!context_->MakeCurrent(surface_.get())) {
+    LOG(ERROR) << "Failed to make GL context current";
+    return false;
+  }
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch("partial-primary-plane"))
@@ -157,6 +170,9 @@ bool SurfacelessGlRenderer::Initialize() {
   }
 
   disable_primary_plane_ = command_line->HasSwitch("disable-primary-plane");
+
+  // Schedule the initial render.
+  PostRenderFrameTask(gfx::SwapResult::SWAP_ACK);
   return true;
 }
 
@@ -234,12 +250,20 @@ void SurfacelessGlRenderer::PostRenderFrameTask(gfx::SwapResult result) {
       }
       FALLTHROUGH;  // We want to render a new frame anyways.
     case gfx::SwapResult::SWAP_ACK:
-      GlRenderer::PostRenderFrameTask(result);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&SurfacelessGlRenderer::RenderFrame,
+                                weak_ptr_factory_.GetWeakPtr()));
       break;
     case gfx::SwapResult::SWAP_FAILED:
       LOG(FATAL) << "Failed to swap buffers";
       break;
   }
+}
+
+void SurfacelessGlRenderer::OnPresentation(
+    const gfx::PresentationFeedback& feedback) {
+  DCHECK(surface_->SupportsPresentationCallback());
+  LOG_IF(ERROR, feedback.timestamp.is_null()) << "Last frame is discarded!";
 }
 
 }  // namespace ui

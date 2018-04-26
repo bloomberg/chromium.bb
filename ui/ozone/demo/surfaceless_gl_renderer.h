@@ -18,7 +18,7 @@ class GLImage;
 namespace ui {
 class OverlayCandidatesOzone;
 
-class SurfacelessGlRenderer : public GlRenderer {
+class SurfacelessGlRenderer : public RendererBase {
  public:
   SurfacelessGlRenderer(gfx::AcceleratedWidget widget,
                         const scoped_refptr<gl::GLSurface>& surface,
@@ -29,9 +29,9 @@ class SurfacelessGlRenderer : public GlRenderer {
   bool Initialize() override;
 
  private:
-  // GlRenderer:
-  void RenderFrame() override;
-  void PostRenderFrameTask(gfx::SwapResult result) override;
+  void RenderFrame();
+  void PostRenderFrameTask(gfx::SwapResult result);
+  void OnPresentation(const gfx::PresentationFeedback& feedback);
 
   class BufferWrapper {
    public:
@@ -63,6 +63,9 @@ class SurfacelessGlRenderer : public GlRenderer {
   std::unique_ptr<OverlayCandidatesOzone> overlay_checker_;
 
   int back_buffer_ = 0;
+
+  scoped_refptr<gl::GLSurface> surface_;
+  scoped_refptr<gl::GLContext> context_;
 
   base::WeakPtrFactory<SurfacelessGlRenderer> weak_ptr_factory_;
 
