@@ -82,7 +82,6 @@ class FrameGenerator : public viz::mojom::CompositorFrameSinkClient {
   viz::BeginFrameAck current_begin_frame_ack_;
   bool high_contrast_mode_enabled_ = false;
   gfx::Size last_submitted_frame_size_;
-  viz::LocalSurfaceId local_surface_id_;
   viz::ParentLocalSurfaceIdAllocator id_allocator_;
   float last_device_scale_factor_ = 0.0f;
 
