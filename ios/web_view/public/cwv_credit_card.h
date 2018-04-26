@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_PUBLIC_CWV_AUTOFILL_CREDIT_CARD_H_
-#define IOS_WEB_VIEW_PUBLIC_CWV_AUTOFILL_CREDIT_CARD_H_
+#ifndef IOS_WEB_VIEW_PUBLIC_CWV_CREDIT_CARD_H_
+#define IOS_WEB_VIEW_PUBLIC_CWV_CREDIT_CARD_H_
 
 #import <Foundation/Foundation.h>
 
@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 CWV_EXPORT
 // Represents a credit card for autofilling payment forms.
-@interface CWVAutofillCreditCard : NSObject
+@interface CWVCreditCard : NSObject
 
 // The full name of the card holder. e.g. "John Doe".
 @property(nonatomic, copy, nullable) NSString* cardHolderFullName;
@@ -38,4 +38,4 @@ CWV_EXPORT
 
 NS_ASSUME_NONNULL_END
 
-#endif  // IOS_WEB_VIEW_PUBLIC_CWV_AUTOFILL_CREDIT_CARD_H_
+#endif  // IOS_WEB_VIEW_PUBLIC_CWV_CREDIT_CARD_H_

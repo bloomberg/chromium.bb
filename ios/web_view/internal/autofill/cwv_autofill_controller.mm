@@ -22,8 +22,8 @@
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_client_ios_bridge.h"
-#import "ios/web_view/internal/autofill/cwv_autofill_credit_card_internal.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
+#import "ios/web_view/internal/autofill/cwv_credit_card_internal.h"
 #import "ios/web_view/internal/autofill/web_view_autofill_client_ios.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
@@ -265,8 +265,7 @@
   if ([_delegate respondsToSelector:@selector
                  (autofillController:decidePolicyForLocalStorageOfCreditCard
                                        :decisionHandler:)]) {
-    CWVAutofillCreditCard* card =
-        [[CWVAutofillCreditCard alloc] initWithCreditCard:creditCard];
+    CWVCreditCard* card = [[CWVCreditCard alloc] initWithCreditCard:creditCard];
     __block base::RepeatingClosure scopedCallback = callback;
     [_delegate autofillController:self
         decidePolicyForLocalStorageOfCreditCard:card

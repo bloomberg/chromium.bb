@@ -107,7 +107,7 @@
 }
 
 - (void)autofillController:(CWVAutofillController*)autofillController
-    decidePolicyForLocalStorageOfCreditCard:(CWVAutofillCreditCard*)creditCard
+    decidePolicyForLocalStorageOfCreditCard:(CWVCreditCard*)creditCard
                             decisionHandler:
                                 (void (^)(CWVStoragePolicy))decisionHandler {
   NSString* cardSummary = [NSString

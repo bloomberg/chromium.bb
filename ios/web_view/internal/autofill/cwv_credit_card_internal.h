@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_INTERNAL_AUTOFILL_CWV_AUTOFILL_CREDIT_CARD_INTERNAL_H_
-#define IOS_WEB_VIEW_INTERNAL_AUTOFILL_CWV_AUTOFILL_CREDIT_CARD_INTERNAL_H_
+#ifndef IOS_WEB_VIEW_INTERNAL_AUTOFILL_CWV_CREDIT_CARD_INTERNAL_H_
+#define IOS_WEB_VIEW_INTERNAL_AUTOFILL_CWV_CREDIT_CARD_INTERNAL_H_
 
-#import "ios/web_view/public/cwv_autofill_credit_card.h"
+#import "ios/web_view/public/cwv_credit_card.h"
 
 namespace autofill {
 class CreditCard;
 }  // namespace autofill
 
-@interface CWVAutofillCreditCard ()
+@interface CWVCreditCard ()
 
 // The internal autofill credit card that is wrapped by this object.
 @property(nonatomic, readonly) autofill::CreditCard* internalCard;
@@ -21,4 +21,4 @@ class CreditCard;
 
 @end
 
-#endif  // IOS_WEB_VIEW_INTERNAL_AUTOFILL_CWV_AUTOFILL_CREDIT_CARD_INTERNAL_H_
+#endif  // IOS_WEB_VIEW_INTERNAL_AUTOFILL_CWV_CREDIT_CARD_INTERNAL_H_

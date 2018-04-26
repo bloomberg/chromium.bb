@@ -11,8 +11,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class CWVAutofillCreditCard;
 @class CWVAutofillProfile;
+@class CWVCreditCard;
 
 CWV_EXPORT
 // Exposes saved autofill data such as address profiles and credit cards.
@@ -22,7 +22,7 @@ CWV_EXPORT
 @property(nonatomic, readonly) NSArray<CWVAutofillProfile*>* profiles;
 
 // Returns all saved credit cards for payment autofill.
-@property(nonatomic, readonly) NSArray<CWVAutofillCreditCard*>* creditCards;
+@property(nonatomic, readonly) NSArray<CWVCreditCard*>* creditCards;
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -33,10 +33,10 @@ CWV_EXPORT
 - (void)deleteProfile:(CWVAutofillProfile*)profile;
 
 // Updates the card.
-- (void)updateCreditCard:(CWVAutofillCreditCard*)creditCard;
+- (void)updateCreditCard:(CWVCreditCard*)creditCard;
 
 // Deletes the card.
-- (void)deleteCreditCard:(CWVAutofillCreditCard*)creditCard;
+- (void)deleteCreditCard:(CWVCreditCard*)creditCard;
 
 @end
 

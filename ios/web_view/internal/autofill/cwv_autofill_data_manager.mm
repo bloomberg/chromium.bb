@@ -5,8 +5,8 @@
 #import "ios/web_view/internal/autofill/cwv_autofill_data_manager_internal.h"
 
 #include "components/autofill/core/browser/personal_data_manager.h"
-#import "ios/web_view/internal/autofill/cwv_autofill_credit_card_internal.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_profile_internal.h"
+#import "ios/web_view/internal/autofill/cwv_credit_card_internal.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -38,12 +38,12 @@
   return [profiles copy];
 }
 
-- (NSArray<CWVAutofillCreditCard*>*)creditCards {
+- (NSArray<CWVCreditCard*>*)creditCards {
   NSMutableArray* creditCards = [NSMutableArray array];
   for (autofill::CreditCard* internalCard :
        _personalDataManager->GetCreditCards()) {
-    CWVAutofillCreditCard* creditCard =
-        [[CWVAutofillCreditCard alloc] initWithCreditCard:*internalCard];
+    CWVCreditCard* creditCard =
+        [[CWVCreditCard alloc] initWithCreditCard:*internalCard];
     [creditCards addObject:creditCard];
   }
   return [creditCards copy];
@@ -57,11 +57,11 @@
   _personalDataManager->RemoveByGUID(profile.internalProfile->guid());
 }
 
-- (void)updateCreditCard:(CWVAutofillCreditCard*)creditCard {
+- (void)updateCreditCard:(CWVCreditCard*)creditCard {
   _personalDataManager->UpdateCreditCard(*creditCard.internalCard);
 }
 
-- (void)deleteCreditCard:(CWVAutofillCreditCard*)creditCard {
+- (void)deleteCreditCard:(CWVCreditCard*)creditCard {
   _personalDataManager->RemoveByGUID(creditCard.internalCard->guid());
 }
 

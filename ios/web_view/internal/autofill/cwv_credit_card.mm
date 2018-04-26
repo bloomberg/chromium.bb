@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web_view/internal/autofill/cwv_autofill_credit_card_internal.h"
+#import "ios/web_view/internal/autofill/cwv_credit_card_internal.h"
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -12,7 +12,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface CWVAutofillCreditCard ()
+@interface CWVCreditCard ()
 
 // Sets |value| for |type| in |_internalCard|.
 - (void)setValue:(NSString*)value forType:(autofill::ServerFieldType)type;
@@ -21,7 +21,7 @@
 
 @end
 
-@implementation CWVAutofillCreditCard {
+@implementation CWVCreditCard {
   autofill::CreditCard _internalCard;
 }
 
