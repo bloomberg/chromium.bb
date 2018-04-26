@@ -19,6 +19,14 @@ namespace {
 
 AppListControllerDelegate* g_controller_for_test = nullptr;
 
+ash::mojom::AppListItemMetadataPtr CreateDefaultMetadata(
+    const std::string& app_id) {
+  return ash::mojom::AppListItemMetadata::New(
+      app_id, std::string() /* name */, std::string() /* short_name */,
+      std::string() /* folder_id */, syncer::StringOrdinal(),
+      false /* is_folder */, gfx::ImageSkia() /* icon */);
+}
+
 }  // namespace
 
 // static
@@ -49,15 +57,14 @@ void ChromeAppListItem::TestApi::SetPosition(
 // ChromeAppListItem
 ChromeAppListItem::ChromeAppListItem(Profile* profile,
                                      const std::string& app_id)
-    : metadata_(
-          ash::mojom::AppListItemMetadata::New(app_id,
-                                               std::string() /* name */,
-                                               std::string() /* short_name */,
-                                               std::string() /* folder_id */,
-                                               syncer::StringOrdinal(),
-                                               false /* is_folder */,
-                                               gfx::ImageSkia() /* icon */)),
-      profile_(profile) {}
+    : metadata_(CreateDefaultMetadata(app_id)), profile_(profile) {}
+
+ChromeAppListItem::ChromeAppListItem(Profile* profile,
+                                     const std::string& app_id,
+                                     AppListModelUpdater* model_updater)
+    : metadata_(CreateDefaultMetadata(app_id)),
+      profile_(profile),
+      model_updater_(model_updater) {}
 
 ChromeAppListItem::~ChromeAppListItem() {
 }

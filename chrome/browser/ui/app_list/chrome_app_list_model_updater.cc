@@ -448,7 +448,7 @@ void ChromeAppListModelUpdater::AddItemToOemFolder(
     ChromeAppListItem* oem_folder = FindFolderItem(oem_folder_id);
     if (!oem_folder) {
       std::unique_ptr<ChromeAppListItem> new_oem_folder =
-          std::make_unique<ChromeAppListItem>(profile_, oem_folder_id);
+          std::make_unique<ChromeAppListItem>(profile_, oem_folder_id, this);
       oem_folder = AddChromeItem(std::move(new_oem_folder));
       oem_folder->SetChromeIsFolder(true);
     }
@@ -504,9 +504,10 @@ void ChromeAppListModelUpdater::OnFolderCreated(
   // Otherwise, we detect an item is created in Ash which is not added into our
   // Chrome list yet. This only happens when a folder is created.
   std::unique_ptr<ChromeAppListItem> new_item =
-      std::make_unique<ChromeAppListItem>(profile_, item->id);
+      std::make_unique<ChromeAppListItem>(profile_, item->id, this);
   chrome_item = AddChromeItem(std::move(new_item));
   chrome_item->SetMetadata(std::move(item));
+
   if (delegate_)
     delegate_->OnAppListItemAdded(chrome_item);
 }
