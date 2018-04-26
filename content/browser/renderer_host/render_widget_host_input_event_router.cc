@@ -1159,9 +1159,10 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     touchscreen_gesture_target_.target = target;
     touchscreen_gesture_target_in_map_ = IsViewInMap(target);
     base::debug::SetCrashKeyString(target_source_key, "touch_id=0");
-    DCHECK(target_location.has_value());
     touchscreen_gesture_target_.delta =
-        target_location.value() - gesture_event.PositionInWidget();
+        target_location.has_value()
+            ? target_location.value() - gesture_event.PositionInWidget()
+            : gfx::Vector2dF();
   } else if (no_matching_id && is_gesture_start) {
     // A long-standing Windows issues where occasionally a GestureStart is
     // encountered with no targets in the event queue. We never had a repro for
