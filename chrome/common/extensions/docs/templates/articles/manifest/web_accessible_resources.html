@@ -27,8 +27,8 @@ etc.) as follows:
 <p>
 These resources would then be available in a webpage via the URL
 <code>chrome-extension://[PACKAGE ID]/[PATH]</code>, which can be generated with
-the <a href="http://developer.chrome.com/extensions/extension#method-getURL">extension.getURL</a> method. Whitelisted resources are served with appropriate
-<a href="http://www.w3.org/TR/cors/">CORS</a> headers, so they're available via
+the <a href="https://developer.chrome.com/extensions/extension#method-getURL">extension.getURL</a> method. Whitelisted resources are served with appropriate
+<a href="https://www.w3.org/TR/cors/">CORS</a> headers, so they're available via
 mechanisms like XHR.
 </p>
 
@@ -45,15 +45,15 @@ owned by the redirecting extension.</li>
 </ul>
 
 <p>
-<a href="http://developer.chrome.com/extensions/content_scripts">Content scripts</a> themselves do not need to be whitelisted.
+<a href="https://developer.chrome.com/extensions/content_scripts">Content scripts</a> themselves do not need to be whitelisted.
 </p>
 
 <p>
 Prior to manifest version 2 all resources within an extension could be accessed
 from any page on the web. This allowed a malicious website to
-<a href="http://en.wikipedia.org/wiki/Device_fingerprint">fingerprint</a> the
+<a href="https://en.wikipedia.org/wiki/Device_fingerprint">fingerprint</a> the
 extensions that a user has installed or exploit vulnerabilities (for example
-<a href="http://en.wikipedia.org/wiki/Cross-site_scripting">XSS bugs</a>) within
+<a href="https://en.wikipedia.org/wiki/Cross-site_scripting">XSS bugs</a>) within
 installed extensions. Limiting availability to only resources which are
 explicitly intended to be web accessible serves to both minimize the available
 attack surface and protect the privacy of users.
@@ -62,7 +62,7 @@ attack surface and protect the privacy of users.
 <h2 id="availability">Default Availability</h2>
 
 <p>
-Resources inside of packages using <a href="http://developer.chrome.com/extensions/manifest#manifest_version"><code>manifest_version</code></a>
+Resources inside of packages using <a href="https://developer.chrome.com/extensions/manifest#manifest_version"><code>manifest_version</code></a>
 2 or above are <strong>blocked by default</strong>, and must be whitelisted
 for use via this property.
 </p>

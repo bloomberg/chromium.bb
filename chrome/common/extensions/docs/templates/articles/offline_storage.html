@@ -13,14 +13,14 @@ HTML5 introduced many storage APIs that let you  store a large amount of data lo
     <li><a href="#table">Comparing Storage Types</a></li>
   </ol>
   </li>
- 
+
   <li><a href="#managing_quota">Managing your quota</a>
   <ol>
   <li><a href="#query">Query  storage usage and availability</a></li>
   <li><a href="#asking_more">Ask for more storage</a></li>
   <li><a href="#reset">Reset quota for testing</a></li>
   </ol>
-  
+
   </li>
   <li><a href="#reference">API reference</a>
     <ol>
@@ -28,7 +28,7 @@ HTML5 introduced many storage APIs that let you  store a large amount of data lo
   <li><a href="#method_overview">Method overview</a></li>
   <li><a href="#methods">Methods</a></li>
   </ol>
-  
+
   </li>
   <li><a href="#future">Future development</a></li>
 </ol>
@@ -57,8 +57,8 @@ HTML5 introduced many storage APIs that let you  store a large amount of data lo
 <p>An application can have a larger quota for persistent storage than temporary storage, but you must request  storage using the Quota Management API and the user must grant you  permission to use more space. Chrome presents an info bar that prompts the user to grant the app more local storage space.</p>
 
 <h3 id="unlimited">Unlimited   storage</h3>
-<p>Unlimited storage is similar to persistent storage, but it is available only to  Chrome apps and extensions (.crx files). The size of unlimited storage is limited only by the availability of space in the user's hard drive. You can ask for the <code>unlimitedStorage</code> permission in the manifest file for an <a href="/chrome/apps/docs/developers_guide#manifest">app</a> or <a href="http://code.google.com/chrome/extensions/manifest.html#permissions">extension</a>. At installation, the user is informed of permissions required by the app or extension. By proceeding with the installation, the user implicitly grants  permission for all pages whose URLs are listed in the manifest.json file.</p>
-<p>To learn more, see the respective developer guides for <a href="/chrome/apps/docs/developers_guide#manifest">apps</a> and <a href="http://code.google.com/chrome/extensions/manifest.html">extensions</a>. </p>
+<p>Unlimited storage is similar to persistent storage, but it is available only to  Chrome apps and extensions (.crx files). The size of unlimited storage is limited only by the availability of space in the user's hard drive. You can ask for the <code>unlimitedStorage</code> permission in the manifest file for an <a href="/chrome/apps/docs/developers_guide#manifest">app</a> or <a href="https://developer.chrome.com/extensions/manifest#permissions">extension</a>. At installation, the user is informed of permissions required by the app or extension. By proceeding with the installation, the user implicitly grants  permission for all pages whose URLs are listed in the manifest.json file.</p>
+<p>To learn more, see the respective developer guides for <a href="/chrome/apps/docs/developers_guide#manifest">apps</a> and <a href="https://developer.chrome.com/extensions/manifest">extensions</a>. </p>
 
 <p class="backtotop"><a href="#top">Back to top</a></p>
 
@@ -83,22 +83,22 @@ HTML5 introduced many storage APIs that let you  store a large amount of data lo
       <td><strong>Availability</strong></td>
       <td><p>All web apps.</p></td>
       <td>All web apps.</td>
-      <td>Unique to  <a href="http://code.google.com/chrome/extensions/index.html">Chrome extensions</a> as well as hosted and installed <a href="http://code.google.com/chrome/apps/index.html">web apps</a>.</td>
+      <td>Unique to  <a href="https://developer.chrome.com/extensions">Chrome extensions</a> as well as hosted and installed <a href="https://developer.chrome.com/apps/">web apps</a>.</td>
     </tr>
     <tr>
       <td><strong>Permission</strong></td>
       <td>None. You can use it without explicitly requesting  it. </td>
       <td><p>You have to request  more storage using the Quota Management API. </p></td>
-      <td>You can ask for the <code>unlimitedStorage</code> permission in the manifest file for the  <a href="/chrome/apps/docs/developers_guide#manifest">app</a> or <a href="http://code.google.com/chrome/extensions/manifest.html#permissions">extension</a>. </td>
+      <td>You can ask for the <code>unlimitedStorage</code> permission in the manifest file for the  <a href="/chrome/apps/docs/developers_guide#manifest">app</a> or <a href="https://developer.chrome.com/extensions/manifest#permissions">extension</a>. </td>
     </tr>
     <tr>
       <td><strong>User experience at first use</strong></td>
       <td>Invisible to the user. The app just runs.</td>
       <td><p>Chrome displays an info bar that prompts the user to either accept or decline the storage request. </p>
       <p>But if the amount of quota you request is actually less than the app's current allocation, no prompt is shown. The larger quota is kept. </p></td>
-      <td><p>At installation, the user is informed of permissions required by the app or extension. By proceeding with the installation, the user implicitly grants  permission for all pages whose URLs are listed in the manifest.json file for <a href="/chrome/apps/docs/developers_guide#manifest">app</a>  or <a href="http://code.google.com/chrome/extensions/manifest.html">extension</a>.   </p></td>
+      <td><p>At installation, the user is informed of permissions required by the app or extension. By proceeding with the installation, the user implicitly grants  permission for all pages whose URLs are listed in the manifest.json file for <a href="/chrome/apps/docs/developers_guide#manifest">app</a>  or <a href="https://developer.chrome.com/extensions/manifest">extension</a>.   </p></td>
     </tr>
-   
+
     <tr>
       <td><strong>User experience at subsequent requests for increased storage </strong></td>
       <td>Not applicable. You cannot ask for more temporary storage.</td>
@@ -141,7 +141,7 @@ HTML5 introduced many storage APIs that let you  store a large amount of data lo
           <li>App Cache </li>
           <li> File System</li>
           <li> IndexedDB </li>
-          <li> WebSQL (<a href="http://www.w3.org/TR/webdatabase/">deprecated</a> since November 18, 2010) </li>
+          <li> WebSQL (<a href="https://www.w3.org/TR/webdatabase/">deprecated</a> since November 18, 2010) </li>
         </ul>
      {% comment %}
 <p class="note"><strong>Note:</strong> Web storage APIs like LocalStorage and SessionStorage remain fixed at 5 MB. </p>
@@ -153,7 +153,7 @@ HTML5 introduced many storage APIs that let you  store a large amount of data lo
           <li>App Cache </li>
           <li> File System</li>
           <li> IndexedDB </li>
-          <li> WebSQL (deprecated) </li>         
+          <li> WebSQL (deprecated) </li>
       </ul>
       {% comment %}
 <p class="note"><strong>Note:</strong> Web storage APIs like LocalStorage and SessionStorage remain fixed at 5 MB.</p>
@@ -185,10 +185,10 @@ HTML5 introduced many storage APIs that let you  store a large amount of data lo
 <pre class="prettyprint">
 // Request storage usage and capacity left
 // Choose either Temporary or Persistent
-navigator.webkitTemporaryStorage.queryUsageAndQuota ( 
-    function(usedBytes, grantedBytes) {  
+navigator.webkitTemporaryStorage.queryUsageAndQuota (
+    function(usedBytes, grantedBytes) {
         console.log('we are using ', usedBytes, ' of ', grantedBytes, 'bytes');
-    }, 
+    },
     function(e) { console.log('Error', e);  }
 );
 </pre>
@@ -212,11 +212,11 @@ navigator.webkitTemporaryStorage.queryUsageAndQuota (
 </ul>
 <p>The following shows how you can ask for more storage space:</p>
 <pre class="prettyprint">
-// Request Quota (only for File System API) </span> 
+// Request Quota (only for File System API) </span>
 var requestedBytes = 1024*1024*10; // 10MB
 
 navigator.webkitPersistentStorage.requestQuota (
-    requestedBytes, function(grantedBytes) {  
+    requestedBytes, function(grantedBytes) {
         window.requestFileSystem(PERSISTENT, grantedBytes, onInitFs, errorHandler);
 
     }, function(e) { console.log('Error', e); }
@@ -307,7 +307,7 @@ navigator.webkitPersistentStorage.requestQuota (
 
 <h5>Parameters</h5>
 <dl>
- 
+
   <dt>newQuotaInBytes</dt>
   <dd>The amount of bytes you want in your storage quota.  </dd>
 </dl>
