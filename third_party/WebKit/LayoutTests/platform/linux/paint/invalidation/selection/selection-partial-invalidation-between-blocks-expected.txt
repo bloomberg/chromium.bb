@@ -18,12 +18,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Second cell'",
-          "rect": [11, 35, 74, 19],
+          "object": "LayoutText #text",
+          "rect": [11, 35, 73, 19],
           "reason": "selection"
         },
         {
-          "object": "InlineTextBox 'First cell'",
+          "object": "LayoutText #text",
           "rect": [11, 11, 58, 19],
           "reason": "geometry"
         }
@@ -32,12 +32,32 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutTable TABLE",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutTableCell TD id='firstCell'",
+      "reason": "selection"
+    },
+    {
       "object": "LayoutText #text",
       "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'First cell'",
       "reason": "geometry"
+    },
+    {
+      "object": "LayoutTableCell TD id='secondCell'",
+      "reason": "selection"
     },
     {
       "object": "LayoutText #text",
