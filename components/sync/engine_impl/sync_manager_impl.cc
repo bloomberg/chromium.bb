@@ -951,7 +951,7 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
 }
 
 bool SyncManagerImpl::HasUnsyncedItemsForTest() {
-  return model_type_registry_->HasUnsyncedItemsForTest();
+  return model_type_registry_->HasUnsyncedItems();
 }
 
 SyncEncryptionHandler* SyncManagerImpl::GetEncryptionHandler() {

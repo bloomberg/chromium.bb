@@ -1720,13 +1720,12 @@ syncer::SyncCycleSnapshot ProfileSyncService::GetLastCycleSnapshot() const {
   return last_snapshot_;
 }
 
-bool ProfileSyncService::HasUnsyncedItemsForTest() const {
+void ProfileSyncService::HasUnsyncedItemsForTest(
+    base::OnceCallback<void(bool)> cb) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (HasSyncingEngine() && engine_initialized_) {
-    return engine_->HasUnsyncedItemsForTest();
-  }
-  NOTREACHED();
-  return false;
+  DCHECK(HasSyncingEngine());
+  DCHECK(engine_initialized_);
+  engine_->HasUnsyncedItemsForTest(std::move(cb));
 }
 
 BackendMigrator* ProfileSyncService::GetBackendMigratorForTest() {

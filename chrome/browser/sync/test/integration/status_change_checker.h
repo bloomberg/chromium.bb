@@ -51,7 +51,7 @@ class StatusChangeChecker {
 
   // Checks IsExitConditionSatisfied() and calls StopWaiting() if it returns
   // true.
-  void CheckExitCondition();
+  virtual void CheckExitCondition();
 
  private:
   // Helper function to start running the nested run loop (run_loop_).

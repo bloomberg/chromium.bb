@@ -47,7 +47,8 @@ const char kEmptyOAuth2Token[] = "";
 
 const char kMalformedOAuth2Token[] = "{ \"foo\": ";
 
-class TestForAuthError : public SingleClientStatusChangeChecker {
+// Waits until local changes are committed or an auth error is encountered.
+class TestForAuthError : public UpdatedProgressMarkerChecker {
  public:
   explicit TestForAuthError(browser_sync::ProfileSyncService* service);
 
@@ -57,12 +58,12 @@ class TestForAuthError : public SingleClientStatusChangeChecker {
 };
 
 TestForAuthError::TestForAuthError(browser_sync::ProfileSyncService* service)
-    : SingleClientStatusChangeChecker(service) {}
+    : UpdatedProgressMarkerChecker(service) {}
 
 bool TestForAuthError::IsExitConditionSatisfied() {
-  return !service()->HasUnsyncedItemsForTest() ||
-         (service()->GetSyncTokenStatus().last_get_token_error.state() !=
-          GoogleServiceAuthError::NONE);
+  return (service()->GetSyncTokenStatus().last_get_token_error.state() !=
+          GoogleServiceAuthError::NONE) ||
+         UpdatedProgressMarkerChecker::IsExitConditionSatisfied();
 }
 
 std::string TestForAuthError::GetDebugMessage() const {

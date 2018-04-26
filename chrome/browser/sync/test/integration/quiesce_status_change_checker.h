@@ -12,9 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "chrome/browser/sync/test/integration/status_change_checker.h"
-
-class ProgressMarkerWatcher;
+#include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 
 namespace browser_sync {
 class ProfileSyncService;
@@ -26,28 +24,19 @@ class ProfileSyncService;
 // This requires that "self-notifications" be enabled.  Otherwise the clients
 // will not fetch the latest progress markers on their own, and the latest
 // progress markers are needed to confirm that clients are in sync.
-//
-// There is a race condition here.  If we manage to perform the check at
-// precisely the wrong time, we could end up seeing stale snapshot state
-// (crbug.com/95742), which would make us think that the client has finished
-// syncing when it hasn't.  In practice, this race is rare enough that it
-// doesn't cause test failures.
-class QuiesceStatusChangeChecker : public StatusChangeChecker {
+class QuiesceStatusChangeChecker : public MultiClientStatusChangeChecker {
  public:
   explicit QuiesceStatusChangeChecker(
       std::vector<browser_sync::ProfileSyncService*> services);
   ~QuiesceStatusChangeChecker() override;
-
-  // A callback function for some helper objects.
-  void OnServiceStateChanged(browser_sync::ProfileSyncService* service);
 
   // Implementation of StatusChangeChecker.
   bool IsExitConditionSatisfied() override;
   std::string GetDebugMessage() const override;
 
  private:
-  std::vector<browser_sync::ProfileSyncService*> services_;
-  std::vector<std::unique_ptr<ProgressMarkerWatcher>> observers_;
+  class NestedUpdatedProgressMarkerChecker;
+  std::vector<std::unique_ptr<NestedUpdatedProgressMarkerChecker>> checkers_;
 
   DISALLOW_COPY_AND_ASSIGN(QuiesceStatusChangeChecker);
 };

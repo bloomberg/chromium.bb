@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
@@ -220,9 +221,13 @@ SyncBackendHostImpl::Status SyncBackendHostImpl::GetDetailedStatus() {
   return core_->sync_manager()->GetDetailedStatus();
 }
 
-bool SyncBackendHostImpl::HasUnsyncedItemsForTest() const {
+void SyncBackendHostImpl::HasUnsyncedItemsForTest(
+    base::OnceCallback<void(bool)> cb) const {
   DCHECK(initialized());
-  return core_->sync_manager()->HasUnsyncedItemsForTest();
+  base::PostTaskAndReplyWithResult(
+      sync_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&SyncBackendHostCore::HasUnsyncedItemsForTest, core_),
+      std::move(cb));
 }
 
 bool SyncBackendHostImpl::IsCryptographerReady(

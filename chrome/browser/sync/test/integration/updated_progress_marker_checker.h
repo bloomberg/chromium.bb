@@ -7,16 +7,17 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
+#include "components/sync/driver/sync_service_observer.h"
 
-// Waits until the latest progress markers are available.
+// Waits until all local changes have been committed and progress markers are
+// updated. This includes local changes posted to the sync thread before the
+// construction of this object.
 //
-// There are several limitations to this checker:
-// - It assumes that this client is the only one committing at this time.
-// - It relies on the test-only 'self-notify' to trigger an extra GetUpdate
-//   cycle after every commit.
-// - It's flaky.  In some rare cases, the IsExitConditionSatisifed() call could
-//   return a false positive.  See comments in the .cc file for details.
+// It relies on the test-only 'self-notify' to trigger an extra GetUpdate cycle
+// after every commit.
 //
 // Because of these limitations, we intend to eventually migrate all tests off
 // of this checker.  Please do not use it in new tests.
@@ -24,10 +25,21 @@ class UpdatedProgressMarkerChecker : public SingleClientStatusChangeChecker {
  public:
   explicit UpdatedProgressMarkerChecker(
       browser_sync::ProfileSyncService* service);
+  ~UpdatedProgressMarkerChecker() override;
 
   // StatusChangeChecker implementation.
   bool IsExitConditionSatisfied() override;
   std::string GetDebugMessage() const override;
+
+  // syncer::SyncServiceObserver implementation.
+  void OnSyncCycleCompleted(syncer::SyncService* sync) override;
+
+ private:
+  void GotHasUnsyncedItems(bool has_unsynced_items);
+
+  base::Optional<bool> has_unsynced_items_;
+
+  base::WeakPtrFactory<UpdatedProgressMarkerChecker> weak_ptr_factory_;
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_UPDATED_PROGRESS_MARKER_CHECKER_H_

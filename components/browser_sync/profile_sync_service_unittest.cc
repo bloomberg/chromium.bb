@@ -1146,7 +1146,8 @@ TEST_F(ProfileSyncServiceTest, ValidPointersInDTCMap) {
       std::vector<int>(syncer::MODEL_TYPE_COUNT, 0),
       sync_pb::SyncEnums::UNKNOWN_ORIGIN,
       /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
-      /*long_poll_interval=*/base::TimeDelta::FromMinutes(180)));
+      /*long_poll_interval=*/base::TimeDelta::FromMinutes(180),
+      /*has_remaining_local_changes=*/false));
 }
 
 // The OpenTabsUIDelegate should only be accessable when PROXY_TABS is enabled.

@@ -287,7 +287,7 @@ void ModelTypeRegistry::RequestEmitDebugInfo() {
   }
 }
 
-bool ModelTypeRegistry::HasUnsyncedItemsForTest() const {
+bool ModelTypeRegistry::HasUnsyncedItems() const {
   // For model type workers, we ask them individually.
   for (const auto& worker : model_type_workers_) {
     if (worker->HasLocalChangesForTest()) {

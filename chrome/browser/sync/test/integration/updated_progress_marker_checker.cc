@@ -9,36 +9,47 @@
 
 UpdatedProgressMarkerChecker::UpdatedProgressMarkerChecker(
     browser_sync::ProfileSyncService* service)
-    : SingleClientStatusChangeChecker(service) {}
+    : SingleClientStatusChangeChecker(service), weak_ptr_factory_(this) {
+  // HasUnsyncedItemsForTest() posts a task to the sync thread which guarantees
+  // that all tasks posted to the sync thread before this constructor have been
+  // processed.
+  service->HasUnsyncedItemsForTest(
+      base::BindOnce(&UpdatedProgressMarkerChecker::GotHasUnsyncedItems,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+UpdatedProgressMarkerChecker::~UpdatedProgressMarkerChecker() {}
 
 bool UpdatedProgressMarkerChecker::IsExitConditionSatisfied() {
-  // Checks to see if our self-notify sync cycle has completed and
-  // there's nothing to commit.
-  //
-  // If we assume that no one else is committing at this time and that the
-  // current client did not commit anything in its previous sync cycle, then
-  // this client has the latest progress markers.
-  //
-  // The !service()->HasUnsyncedItemsForTest() check makes sure that we have
-  // nothing to commit.
-  //
-  // There is a subtle race condition here.  While committing items, the syncer
-  // will unset the IS_UNSYNCED bits in the directory.  However, the evidence of
-  // this current sync cycle won't be available from GetLastCycleSnapshot()
-  // until the sync cycle completes.  If we query this condition between the
-  // commit response processing and the end of the sync cycle, we could return a
-  // false positive.
-  //
-  // In practice, this doesn't happen very often because we only query the
-  // status when the waiting first starts and when we receive notification of a
-  // sync session complete or other significant event from the
-  // ProfileSyncService.  If we're calling this right after the sync session
-  // completes, then the snapshot is much more likely to be up to date.
+  if (!has_unsynced_items_.has_value()) {
+    return false;
+  }
+
   const syncer::SyncCycleSnapshot& snap = service()->GetLastCycleSnapshot();
   return snap.model_neutral_state().num_successful_commits == 0 &&
-         service()->IsSyncActive() && !service()->HasUnsyncedItemsForTest();
+         service()->IsSyncActive() && !has_unsynced_items_.value();
+}
+
+void UpdatedProgressMarkerChecker::GotHasUnsyncedItems(
+    bool has_unsynced_items) {
+  has_unsynced_items_ = has_unsynced_items;
+  CheckExitCondition();
 }
 
 std::string UpdatedProgressMarkerChecker::GetDebugMessage() const {
   return "Waiting for progress markers";
+}
+
+void UpdatedProgressMarkerChecker::OnSyncCycleCompleted(
+    syncer::SyncService* sync) {
+  // Ignore sync cycles that were started before our constructor posted
+  // HasUnsyncedItemsForTest() to the sync thread.
+  if (!has_unsynced_items_.has_value()) {
+    return;
+  }
+
+  // Override |has_unsynced_items_| with the result of the sync cycle.
+  const syncer::SyncCycleSnapshot& snap = service()->GetLastCycleSnapshot();
+  has_unsynced_items_ = snap.has_remaining_local_changes();
+  CheckExitCondition();
 }

@@ -604,6 +604,12 @@ void SyncBackendHostCore::DoOnCookieJarChanged(bool account_mismatch,
   }
 }
 
+bool SyncBackendHostCore::HasUnsyncedItemsForTest() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sync_manager_);
+  return sync_manager_->HasUnsyncedItemsForTest();
+}
+
 void SyncBackendHostCore::ClearServerDataDone(
     const base::Closure& frontend_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());

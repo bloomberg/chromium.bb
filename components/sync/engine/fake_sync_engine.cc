@@ -68,9 +68,8 @@ SyncEngine::Status FakeSyncEngine::GetDetailedStatus() {
   return SyncEngine::Status();
 }
 
-bool FakeSyncEngine::HasUnsyncedItemsForTest() const {
-  return false;
-}
+void FakeSyncEngine::HasUnsyncedItemsForTest(
+    base::OnceCallback<void(bool)> cb) const {}
 
 bool FakeSyncEngine::IsCryptographerReady(const BaseTransaction* trans) const {
   return false;
