@@ -354,19 +354,12 @@ cvox.CommandStore.CMD_WHITELIST = {
     category: 'navigation'
   },
 
-  'performDefaultAction': {
-    disallowContinuation: true,
-    msgId: 'perform_default_action',
-    doDefault: true,
-    skipInput: true,
-    category: 'navigation'
-  },
   'forceClickOnCurrentItem': {
     announce: true,
     disallowContinuation: true,
     allowEvents: true,
     msgId: 'force_click_on_current_item',
-    category: 'navigation'
+    category: 'actions'
   },
   'forceDoubleClickOnCurrentItem':
       {announce: true, allowEvents: true, disallowContinuation: true},
@@ -383,7 +376,7 @@ cvox.CommandStore.CMD_WHITELIST = {
   'speakTimeAndDate':
       {announce: false, msgId: 'speak_time_and_date', category: 'information'},
   'toggleSelection':
-      {announce: true, msgId: 'toggle_selection', category: 'information'},
+      {announce: true, msgId: 'toggle_selection', category: 'actions'},
 
   'toggleSearchWidget': {
     announce: false,

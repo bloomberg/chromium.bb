@@ -857,6 +857,20 @@ void AutomationInternalCustomBindings::AddRoutes() {
             standard_actions.push_back(
                 ToString(static_cast<api::automation::ActionType>(action)));
         }
+
+        // The doDefault action is implied by having a default action verb.
+        int default_action_verb =
+            static_cast<int>(ax::mojom::DefaultActionVerb::kNone);
+        if (node->data().GetIntAttribute(
+                ax::mojom::IntAttribute::kDefaultActionVerb,
+                &default_action_verb) &&
+            default_action_verb !=
+                static_cast<int>(ax::mojom::DefaultActionVerb::kNone)) {
+          standard_actions.push_back(
+              ToString(static_cast<api::automation::ActionType>(
+                  ax::mojom::Action::kDoDefault)));
+        }
+
         auto actions_result = v8::Array::New(isolate, standard_actions.size());
         for (size_t i = 0; i < standard_actions.size(); i++) {
           const v8::Maybe<bool>& did_set_value = actions_result->Set(
