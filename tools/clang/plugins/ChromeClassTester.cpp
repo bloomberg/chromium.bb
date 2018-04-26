@@ -9,6 +9,7 @@
 
 #include <algorithm>
 
+#include "Util.h"
 #include "clang/AST/AST.h"
 #include "clang/Basic/FileManager.h"
 #include "clang/Basic/SourceManager.h"
@@ -63,8 +64,8 @@ void ChromeClassTester::CheckTag(TagDecl* tag) {
 
     // We ignore all classes that end with "Matcher" because they're probably
     // GMock artifacts.
-    if (ends_with(base_name, "Matcher"))
-        return;
+    if (!options_.check_gmock_objects && ends_with(base_name, "Matcher"))
+      return;
 
     CheckChromeClass(location_type, location, record);
   }
@@ -120,10 +121,6 @@ ChromeClassTester::LocationType ChromeClassTester::ClassifyLocation(
   }
 
   return LocationType::kChrome;
-}
-
-std::string ChromeClassTester::GetNamespace(const Decl* record) {
-  return GetNamespaceImpl(record->getDeclContext(), std::string());
 }
 
 bool ChromeClassTester::HasIgnoredBases(const CXXRecordDecl* record) {
@@ -207,29 +204,6 @@ void ChromeClassTester::BuildBannedLists() {
   // Ignore IPC::NoParams bases, since these structs are generated via
   // macros and it makes it difficult to add explicit ctors.
   ignored_base_classes_.emplace("IPC::NoParams");
-}
-
-std::string ChromeClassTester::GetNamespaceImpl(const DeclContext* context,
-                                                const std::string& candidate) {
-  switch (context->getDeclKind()) {
-    case Decl::TranslationUnit: {
-      return candidate;
-    }
-    case Decl::Namespace: {
-      const NamespaceDecl* decl = dyn_cast<NamespaceDecl>(context);
-      std::string name_str;
-      llvm::raw_string_ostream OS(name_str);
-      if (decl->isAnonymousNamespace())
-        OS << "<anonymous namespace>";
-      else
-        OS << *decl;
-      return GetNamespaceImpl(context->getParent(),
-                              OS.str());
-    }
-    default: {
-      return GetNamespaceImpl(context->getParent(), candidate);
-    }
-  }
 }
 
 bool ChromeClassTester::IsIgnoredType(const std::string& base_name) {

@@ -53,6 +53,8 @@ bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
       // TODO(dcheng): Remove completely.
     } else if (args[i] == "check-ipc") {
       options_.check_ipc = true;
+    } else if (args[i] == "check-gmock-objects") {
+      options_.check_gmock_objects = true;
     } else {
       parsed = false;
       llvm::errs() << "Unknown clang plugin argument: " << args[i] << "\n";
