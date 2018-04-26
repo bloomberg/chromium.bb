@@ -1858,8 +1858,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
                                 '-tests_power_DarkResumeShutdownServer',
                                 '-tests_power_DarkResumeDisplay',
                                 '-tests_security_SMMLocked',
-                                '-tests_cheets_SELinuxTest',
-                                'thinlto']),
+                                '-tests_cheets_SELinuxTest']),
       afdo_use=True,
       latest_toolchain=True,
       manifest=constants.OFFICIAL_MANIFEST,
@@ -1968,6 +1967,11 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       useflags=append_useflags(['clang_tidy']),
       boards=['grunt'],
   )
+  for config in site_config:
+    if any(board in config for board in _x86_internal_release_boards):
+      if config.endswith('toolchain'):
+        site_config[config].apply(useflags=append_useflags(['thinlto']))
+
 
 def PreCqBuilders(site_config, boards_dict, ge_build_config):
   """Create all build configs associated with the PreCQ.
