@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.searchwidget;
 
+import android.content.res.ColorStateList;
+
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -108,6 +110,11 @@ class SearchBoxDataProvider implements ToolbarDataProvider {
     @Override
     public int getSecurityIconResource(boolean isTablet) {
         return 0;
+    }
+
+    @Override
+    public ColorStateList getSecurityIconColorStateList() {
+        return null;
     }
 
     @Override

@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -69,7 +70,8 @@ public class LocationBarLayoutTest {
         private Integer mSecurityLevel;
 
         public TestToolbarModel() {
-            super(null /* bottomSheet */, false /* useModernDesign */);
+            super(ContextUtils.getApplicationContext(), null /* bottomSheet */,
+                    false /* useModernDesign */);
             initializeWithNative();
         }
 

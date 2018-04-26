@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.toolbar;
 
+import android.content.res.ColorStateList;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -107,6 +108,11 @@ public interface ToolbarDataProvider {
      */
     @DrawableRes
     int getSecurityIconResource(boolean isTablet);
+
+    /**
+     * @return The {@link ColorStateList} to use to tint the security state icon.
+     */
+    ColorStateList getSecurityIconColorStateList();
 
     /**
      * @return Whether or not we should display search terms instead of a URL for query in omnibox.

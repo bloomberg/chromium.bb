@@ -14,7 +14,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
@@ -84,7 +83,6 @@ import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
-import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ContentUrlConstants;
@@ -1294,43 +1292,6 @@ public class LocationBarLayout
     }
 
     /**
-     * @param provider The {@link ToolbarDataProvider}.
-     * @param resources The Resources for the Context.
-     * @return The {@link ColorStateList} to use to tint the security state icon.
-     */
-    public static ColorStateList getColorStateList(
-            ToolbarDataProvider provider, Resources resources) {
-        int securityLevel = provider.getSecurityLevel();
-
-        ColorStateList list = null;
-        int color = provider.getPrimaryColor();
-        boolean needLightIcon = ColorUtils.shouldUseLightForegroundOnBackground(color);
-        if (provider.isIncognito() || needLightIcon) {
-            // For a dark theme color, use light icons.
-            list = ApiCompatibilityUtils.getColorStateList(resources, R.color.light_mode_tint);
-        } else if (provider.isUsingBrandColor()) {
-            // For theme colors which are not dark and are also not
-            // light enough to warrant an opaque URL bar, use dark
-            // icons.
-            list = ApiCompatibilityUtils.getColorStateList(resources, R.color.dark_mode_tint);
-        } else {
-            // For the default toolbar color, use a green or red icon.
-            if (securityLevel == ConnectionSecurityLevel.DANGEROUS) {
-                assert !provider.shouldDisplaySearchTerms();
-                list = ApiCompatibilityUtils.getColorStateList(resources, R.color.google_red_700);
-            } else if (!provider.shouldDisplaySearchTerms()
-                    && (securityLevel == ConnectionSecurityLevel.SECURE
-                               || securityLevel == ConnectionSecurityLevel.EV_SECURE)) {
-                list = ApiCompatibilityUtils.getColorStateList(resources, R.color.google_green_700);
-            } else {
-                list = ApiCompatibilityUtils.getColorStateList(resources, R.color.dark_mode_tint);
-            }
-        }
-        assert list != null : "Missing ColorStateList for Security Button.";
-        return list;
-    }
-
-    /**
      * Updates the security icon displayed in the LocationBar.
      */
     @Override
@@ -1342,7 +1303,7 @@ public class LocationBarLayout
         } else {
             // ImageView#setImageResource is no-op if given resource is the current one.
             mSecurityButton.setImageResource(id);
-            mSecurityButton.setTint(getColorStateList(mToolbarDataProvider, getResources()));
+            mSecurityButton.setTint(mToolbarDataProvider.getSecurityIconColorStateList());
         }
 
         updateVerboseStatusVisibility();

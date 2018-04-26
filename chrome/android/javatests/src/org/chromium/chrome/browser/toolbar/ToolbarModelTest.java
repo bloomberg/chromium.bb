@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -143,7 +144,8 @@ public class ToolbarModelTest {
         private String mUrl;
 
         public TestToolbarModel() {
-            super(null /* bottomSheet */, false /* useModernDesign */);
+            super(ContextUtils.getApplicationContext(), null /* bottomSheet */,
+                    false /* useModernDesign */);
             initializeWithNative();
 
             Tab tab = new Tab(0, false, null) {

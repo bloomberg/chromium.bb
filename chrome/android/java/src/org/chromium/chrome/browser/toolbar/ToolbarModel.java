@@ -5,10 +5,13 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -39,8 +42,10 @@ import java.net.URI;
  * Provides a way of accessing toolbar data and state.
  */
 public class ToolbarModel implements ToolbarDataProvider {
+    private final Context mContext;
     private final BottomSheet mBottomSheet;
     private final boolean mUseModernDesign;
+
     private Tab mTab;
     private boolean mIsIncognito;
     private int mPrimaryColor;
@@ -57,15 +62,18 @@ public class ToolbarModel implements ToolbarDataProvider {
 
     /**
      * Default constructor for this class.
+     * @param context The Context used for styling the toolbar visuals.
      * @param bottomSheet The {@link BottomSheet} for the activity displaying this toolbar.
      * @param useModernDesign Whether the modern design should be used for the toolbar represented
      *                        by this model.
      */
-    public ToolbarModel(@Nullable BottomSheet bottomSheet, boolean useModernDesign) {
+    public ToolbarModel(
+            Context context, @Nullable BottomSheet bottomSheet, boolean useModernDesign) {
+        mContext = context;
         mBottomSheet = bottomSheet;
         mUseModernDesign = useModernDesign;
-        mPrimaryColor = ColorUtils.getDefaultThemeColor(
-                ContextUtils.getApplicationContext().getResources(), useModernDesign, false);
+        mPrimaryColor =
+                ColorUtils.getDefaultThemeColor(context.getResources(), useModernDesign, false);
     }
 
     /**
@@ -374,6 +382,39 @@ public class ToolbarModel implements ToolbarDataProvider {
                 assert false;
         }
         return 0;
+    }
+
+    @Override
+    public ColorStateList getSecurityIconColorStateList() {
+        int securityLevel = getSecurityLevel();
+
+        Resources resources = mContext.getResources();
+        ColorStateList list = null;
+        int color = getPrimaryColor();
+        boolean needLightIcon = ColorUtils.shouldUseLightForegroundOnBackground(color);
+        if (isIncognito() || needLightIcon) {
+            // For a dark theme color, use light icons.
+            list = ApiCompatibilityUtils.getColorStateList(resources, R.color.light_mode_tint);
+        } else if (isUsingBrandColor()) {
+            // For theme colors which are not dark and are also not
+            // light enough to warrant an opaque URL bar, use dark
+            // icons.
+            list = ApiCompatibilityUtils.getColorStateList(resources, R.color.dark_mode_tint);
+        } else {
+            // For the default toolbar color, use a green or red icon.
+            if (securityLevel == ConnectionSecurityLevel.DANGEROUS) {
+                assert !shouldDisplaySearchTerms();
+                list = ApiCompatibilityUtils.getColorStateList(resources, R.color.google_red_700);
+            } else if (!shouldDisplaySearchTerms()
+                    && (securityLevel == ConnectionSecurityLevel.SECURE
+                               || securityLevel == ConnectionSecurityLevel.EV_SECURE)) {
+                list = ApiCompatibilityUtils.getColorStateList(resources, R.color.google_green_700);
+            } else {
+                list = ApiCompatibilityUtils.getColorStateList(resources, R.color.dark_mode_tint);
+            }
+        }
+        assert list != null : "Missing ColorStateList for Security Button.";
+        return list;
     }
 
     @Override
