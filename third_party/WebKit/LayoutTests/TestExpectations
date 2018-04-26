@@ -4137,7 +4137,6 @@ crbug.com/831796 virtual/mouseevent_fractional/fast/events/autoscroll-in-textfie
 crbug.com/836241 [ Linux ] virtual/android/fullscreen/video-controls-timeline.html [ Pass Failure ]
 crbug.com/836242 [ Linux Mac Win ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]
 crbug.com/836275 [ Linux Mac ] fast/spatial-navigation/snav-two-elements-one-line.html [ Pass Failure ]
-crbug.com/836295 [ Win ] svg/animations/reinserting-svg-into-document.html [ Pass Failure ]
 
 # Sheriff 2018-04-25
 crbug.com/836763 [ Win7 ] external/wpt/websockets/Create-protocols-repeated-case-insensitive.any.js [ Pass Failure ]
