@@ -497,6 +497,8 @@ source_set("chromeos") {
     "chrome_service_name.h",
     "crostini/crostini_manager.cc",
     "crostini/crostini_manager.h",
+    "crostini/crostini_pref_names.cc",
+    "crostini/crostini_pref_names.h",
     "crostini/crostini_registry_service.cc",
     "crostini/crostini_registry_service.h",
     "crostini/crostini_registry_service_factory.cc",

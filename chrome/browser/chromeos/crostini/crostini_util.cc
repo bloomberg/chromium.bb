@@ -7,12 +7,14 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/virtual_machines/virtual_machines_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_installer_view.h"
 #include "chrome/common/chrome_features.h"
+#include "components/prefs/pref_service.h"
 
 namespace {
 
@@ -77,7 +79,8 @@ void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
   if (app_id == kCrostiniTerminalId) {
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kTerminal);
 
-    if (!crostini_manager->IsCrosTerminaInstalled()) {
+    if (!crostini_manager->IsCrosTerminaInstalled() ||
+        !profile->GetPrefs()->GetBoolean(crostini::prefs::kCrostiniEnabled)) {
       CrostiniInstallerView::Show(profile);
     } else {
       crostini_manager->RestartCrostini(
