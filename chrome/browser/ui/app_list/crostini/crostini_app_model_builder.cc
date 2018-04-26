@@ -24,12 +24,6 @@ CrostiniAppModelBuilder::~CrostiniAppModelBuilder() {
 }
 
 void CrostiniAppModelBuilder::BuildModel() {
-  InsertApp(std::make_unique<CrostiniAppItem>(
-      profile(), GetSyncItem(kCrostiniTerminalId), kCrostiniTerminalId,
-      kCrostiniTerminalAppName,
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_LOGO_CROSTINI_TERMINAL)));
-
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile());
   for (const std::string& app_id : registry_service->GetRegisteredAppIds()) {
@@ -54,7 +48,8 @@ void CrostiniAppModelBuilder::InsertCrostiniAppItem(
   InsertApp(std::make_unique<CrostiniAppItem>(
       profile(), GetSyncItem(app_id), app_id, localized_name,
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_LOGO_CROSTINI_DEFAULT)));
+          app_id == kCrostiniTerminalId ? IDR_LOGO_CROSTINI_TERMINAL
+                                        : IDR_LOGO_CROSTINI_DEFAULT)));
 }
 
 void CrostiniAppModelBuilder::OnRegistryUpdated(

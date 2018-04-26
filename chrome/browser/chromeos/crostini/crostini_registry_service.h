@@ -18,6 +18,12 @@ class Profile;
 class PrefRegistrySimple;
 class PrefService;
 
+namespace base {
+class Clock;
+class Time;
+class Value;
+}  // namespace base
+
 namespace vm_tools {
 namespace apps {
 class ApplicationList;
@@ -38,8 +44,7 @@ namespace crostini {
 // 2) Crostini App List Ids (app_id):
 //    - Valid extensions ids for apps stored in the registry, derived from the
 //    desktop file id, vm name, and container name.
-//    - The default Terminal app is a special case app list item, without an
-//    entry in the registry.
+//    - The Terminal is a special case, using kCrostiniTerminalId (see below).
 // 3) Exo Window App Ids (window_app_id):
 //    - Retrieved from exo::ShellSurface::GetApplicationId()
 //    - For Wayland apps, this is the surface class of the app
@@ -50,6 +55,11 @@ namespace crostini {
 //    - Used in ash::ShelfID::app_id
 //    - Either a Window App Id prefixed by "crostini:" or a Crostini App Id.
 //    - For pinned apps, this is a Crostini App Id.
+
+// The default Terminal app does not correspond to a desktop file, but users
+// of the registry can treat it as a regular app that is always installed.
+// Internal to the registry, the pref entry only contains the last launch time
+// so some care is required.
 class CrostiniRegistryService : public KeyedService {
  public:
   struct Registration {
@@ -66,7 +76,9 @@ class CrostiniRegistryService : public KeyedService {
                  const std::vector<std::string>& mime_types,
                  bool no_display,
                  const std::string& startup_wm_class,
-                 bool startup_notify);
+                 bool startup_notify,
+                 base::Time install_time,
+                 base::Time last_launch_time);
     ~Registration();
 
     static const std::string& Localize(const LocaleString& locale_string);
@@ -83,13 +95,17 @@ class CrostiniRegistryService : public KeyedService {
     std::string startup_wm_class;
     bool startup_notify;
 
+    base::Time install_time;
+    base::Time last_launch_time;
+
     DISALLOW_COPY_AND_ASSIGN(Registration);
   };
 
   class Observer {
    public:
     // Called at the end of UpdateApplicationList() with lists of app_ids for
-    // apps which have been updated, removed, and inserted.
+    // apps which have been updated, removed, and inserted. Not called when the
+    // last_launch_time field is updated.
     virtual void OnRegistryUpdated(
         CrostiniRegistryService* registry_service,
         const std::vector<std::string>& updated_apps,
@@ -117,10 +133,10 @@ class CrostiniRegistryService : public KeyedService {
   // Returns whether the app_id is a Crostini app id.
   bool IsCrostiniShelfAppId(const std::string& shelf_app_id);
 
+  // Return all installed apps. This always includes the Terminal app.
   std::vector<std::string> GetRegisteredAppIds() const;
 
   // Return null if |app_id| is not found in the registry.
-  // TODO(timloh): We should probably have an entry for the Terminal app.
   std::unique_ptr<CrostiniRegistryService::Registration> GetRegistration(
       const std::string& app_id) const;
 
@@ -130,6 +146,15 @@ class CrostiniRegistryService : public KeyedService {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Notify the registry to update the last_launched field.
+  void AppLaunched(const std::string& app_id);
+
+  // Serializes the current time and stores it in |dictionary|.
+  void SetCurrentTime(base::Value* dictionary, const char* key) const;
+  // Deserializes a time from |dictionary|.
+  base::Time GetTime(const base::Value& dictionary, const char* key) const;
+  void SetClockForTesting(base::Clock* clock) { clock_ = clock; }
+
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
@@ -137,6 +162,8 @@ class CrostiniRegistryService : public KeyedService {
   PrefService* const prefs_;
 
   base::ObserverList<Observer> observers_;
+
+  const base::Clock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniRegistryService);
 };
