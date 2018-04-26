@@ -7788,8 +7788,9 @@ static int64_t skip_mode_rd(RD_STATS *rd_stats, const AV1_COMP *const cpi,
     sse = sse << 4;
     total_sse += sse;
   }
+  const int skip_mode_ctx = av1_get_skip_mode_context(xd);
   rd_stats->dist = rd_stats->sse = total_sse;
-  rd_stats->rate = 0;
+  rd_stats->rate = x->skip_mode_cost[skip_mode_ctx][1];
   rd_stats->rdcost = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
 
   // Save the ref frames / motion vectors
@@ -10157,27 +10158,18 @@ PALETTE_EXIT:
     estimate_skip_mode_rdcost(&skip_mode_index, &skip_mode_rd_stats, cpi, x,
                               bsize, mi_row, mi_col, yv12_mb);
 
-    if (skip_mode_rd_stats.rdcost != INT64_MAX) {
-      // Update skip mode rdcost.
-      const int skip_mode_ctx = av1_get_skip_mode_context(xd);
-      skip_mode_rd_stats.rate += x->skip_mode_cost[skip_mode_ctx][1];
-      skip_mode_rd_stats.rdcost =
-          RDCOST(x->rdmult, skip_mode_rd_stats.rate, skip_mode_rd_stats.dist);
+    // Compare the use of skip_mode with the best intra/inter mode obtained.
+    const int skip_mode_ctx = av1_get_skip_mode_context(xd);
+    const int64_t best_intra_inter_mode_cost =
+        (rd_cost->dist < INT64_MAX && rd_cost->rate < INT32_MAX)
+            ? RDCOST(x->rdmult,
+                     rd_cost->rate + x->skip_mode_cost[skip_mode_ctx][0],
+                     rd_cost->dist)
+            : INT64_MAX;
 
-      // Compare the use of skip_mode with the best intra/inter mode obtained.
-      const int64_t best_intra_inter_mode_cost =
-          (rd_cost->dist < INT64_MAX && rd_cost->rate < INT32_MAX)
-              ? RDCOST(x->rdmult,
-                       rd_cost->rate + x->skip_mode_cost[skip_mode_ctx][0],
-                       rd_cost->dist)
-              : INT64_MAX;
-
-      if (skip_mode_rd_stats.rdcost <= best_intra_inter_mode_cost)
-        search_state.best_mbmode.skip_mode = 1;
-    }
-
-    if (search_state.best_mbmode.skip_mode) {
+    if (skip_mode_rd_stats.rdcost <= best_intra_inter_mode_cost) {
       assert(skip_mode_index != -1);
+      search_state.best_mbmode.skip_mode = 1;
       search_state.best_mbmode = *mbmi;
 
       search_state.best_mbmode.skip_mode = search_state.best_mbmode.skip = 1;
@@ -10219,7 +10211,7 @@ PALETTE_EXIT:
       // Update rd_cost
       rd_cost->rate = skip_mode_rd_stats.rate;
       rd_cost->dist = rd_cost->sse = skip_mode_rd_stats.dist;
-      rd_cost->rdcost = RDCOST(x->rdmult, rd_cost->rate, rd_cost->dist);
+      rd_cost->rdcost = skip_mode_rd_stats.rdcost;
 
       search_state.best_rd = rd_cost->rdcost;
       search_state.best_skip2 = 1;
