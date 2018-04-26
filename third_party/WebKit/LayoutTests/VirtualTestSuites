@@ -630,8 +630,18 @@
     "args": ["--enable-features=SignedHTTPExchange"]
   },
   {
+    "prefix": "htxg",
+    "base": "http/tests/devtools/htxg",
+    "args": ["--enable-features=SignedHTTPExchange"]
+  },
+  {
     "prefix": "htxg-with-network-service",
     "base": "http/tests/loading/htxg",
+    "args": ["--enable-features=SignedHTTPExchange,NetworkService"]
+  },
+  {
+    "prefix": "htxg-with-network-service",
+    "base": "http/tests/devtools/htxg",
     "args": ["--enable-features=SignedHTTPExchange,NetworkService"]
   },
   {
