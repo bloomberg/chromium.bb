@@ -397,9 +397,9 @@ struct FunctorTraits<R (*)(Args...)> {
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = true;
 
-  template <typename... RunArgs>
-  static R Invoke(R (*function)(Args...), RunArgs&&... args) {
-    return function(std::forward<RunArgs>(args)...);
+  template <typename Function, typename... RunArgs>
+  static R Invoke(Function&& function, RunArgs&&... args) {
+    return std::forward<Function>(function)(std::forward<RunArgs>(args)...);
   }
 };
 
@@ -440,8 +440,8 @@ struct FunctorTraits<R (Receiver::*)(Args...)> {
   static constexpr bool is_method = true;
   static constexpr bool is_nullable = true;
 
-  template <typename ReceiverPtr, typename... RunArgs>
-  static R Invoke(R (Receiver::*method)(Args...),
+  template <typename Method, typename ReceiverPtr, typename... RunArgs>
+  static R Invoke(Method method,
                   ReceiverPtr&& receiver_ptr,
                   RunArgs&&... args) {
     return ((*receiver_ptr).*method)(std::forward<RunArgs>(args)...);
@@ -455,13 +455,30 @@ struct FunctorTraits<R (Receiver::*)(Args...) const> {
   static constexpr bool is_method = true;
   static constexpr bool is_nullable = true;
 
-  template <typename ReceiverPtr, typename... RunArgs>
-  static R Invoke(R (Receiver::*method)(Args...) const,
+  template <typename Method, typename ReceiverPtr, typename... RunArgs>
+  static R Invoke(Method method,
                   ReceiverPtr&& receiver_ptr,
                   RunArgs&&... args) {
     return ((*receiver_ptr).*method)(std::forward<RunArgs>(args)...);
   }
 };
+
+#ifdef __cpp_noexcept_function_type
+// noexcept makes a distinct function type in C++17.
+// I.e. `void(*)()` and `void(*)() noexcept` are same in pre-C++17, and
+// different in C++17.
+template <typename R, typename... Args>
+struct FunctorTraits<R (*)(Args...) noexcept> : FunctorTraits<R (*)(Args...)> {
+};
+
+template <typename R, typename Receiver, typename... Args>
+struct FunctorTraits<R (Receiver::*)(Args...) noexcept>
+    : FunctorTraits<R (Receiver::*)(Args...)> {};
+
+template <typename R, typename Receiver, typename... Args>
+struct FunctorTraits<R (Receiver::*)(Args...) const noexcept>
+    : FunctorTraits<R (Receiver::*)(Args...) const> {};
+#endif
 
 // For IgnoreResults.
 template <typename T>
