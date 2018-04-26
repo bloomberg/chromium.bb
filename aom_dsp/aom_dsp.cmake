@@ -390,10 +390,6 @@ function (setup_aom_dsp_targets)
     endif()
   endif ()
 
-  if (HAVE_SSE3 AND CONFIG_AV1_ENCODER)
-    add_asm_library("aom_dsp_encoder_sse3" "AOM_DSP_ENCODER_ASM_SSE3" "aom")
-  endif ()
-
   if (HAVE_SSSE3)
     add_asm_library("aom_dsp_common_ssse3" "AOM_DSP_COMMON_ASM_SSSE3" "aom")
     add_intrinsics_object_library("-mssse3" "ssse3" "aom_dsp_common"
@@ -420,8 +416,6 @@ function (setup_aom_dsp_targets)
         add_intrinsics_object_library("-msse4.1" "sse4_1" "aom_dsp_encoder"
                                       "AOM_DSP_ENCODER_INTRIN_SSE4_1" "aom")
       endif ()
-      add_asm_library("aom_dsp_encoder_sse4_1" "AOM_DSP_ENCODER_ASM_SSE4_1"
-                      "aom")
     endif ()
   endif ()
 
