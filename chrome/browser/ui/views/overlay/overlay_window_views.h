@@ -25,8 +25,9 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
 
   // OverlayWindow:
   bool IsActive() const override;
-  void Show() override;
   void Close() override;
+  void Show() override;
+  void Hide() override;
   bool IsVisible() const override;
   bool IsAlwaysOnTop() const override;
   ui::Layer* GetLayer() override;

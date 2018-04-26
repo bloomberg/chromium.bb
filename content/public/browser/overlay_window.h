@@ -36,8 +36,9 @@ class OverlayWindow {
       PictureInPictureWindowController* controller);
 
   virtual bool IsActive() const = 0;
-  virtual void Show() = 0;
   virtual void Close() = 0;
+  virtual void Show() = 0;
+  virtual void Hide() = 0;
   virtual bool IsVisible() const = 0;
   virtual bool IsAlwaysOnTop() const = 0;
   virtual ui::Layer* GetLayer() = 0;
