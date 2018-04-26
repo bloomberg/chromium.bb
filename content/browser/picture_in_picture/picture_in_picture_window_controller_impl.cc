@@ -56,12 +56,13 @@ PictureInPictureWindowControllerImpl::PictureInPictureWindowControllerImpl(
 void PictureInPictureWindowControllerImpl::Show() {
   DCHECK(window_);
   DCHECK(surface_id_.is_valid());
+
   window_->Show();
 }
 
 void PictureInPictureWindowControllerImpl::Close() {
-  if (window_)
-    window_->Close();
+  DCHECK(window_);
+  window_->Hide();
 
   surface_id_ = viz::SurfaceId();
 

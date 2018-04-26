@@ -208,12 +208,16 @@ bool OverlayWindowViews::IsActive() const {
   return views::Widget::IsActive();
 }
 
+void OverlayWindowViews::Close() {
+  views::Widget::Close();
+}
+
 void OverlayWindowViews::Show() {
   views::Widget::Show();
 }
 
-void OverlayWindowViews::Close() {
-  views::Widget::Close();
+void OverlayWindowViews::Hide() {
+  views::Widget::Hide();
 }
 
 bool OverlayWindowViews::IsVisible() const {
