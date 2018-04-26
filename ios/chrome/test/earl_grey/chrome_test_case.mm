@@ -123,7 +123,18 @@ const CFTimeInterval kDrainTimeout = 5;
                   error:&error];
   if (error != nil) {
     NSLog(@"System alert view is present, so skipping all tests!");
+#if TARGET_IPHONE_SIMULATOR
     return @[];
+#else
+    // Invoke XCTFail via call to stubbed out test.
+    NSMethodSignature* signature =
+        [ChromeTestCase instanceMethodSignatureForSelector:@selector
+                        (failAllTestsDueToSystemAlertVisible)];
+    NSInvocation* systemAlertTest =
+        [NSInvocation invocationWithMethodSignature:signature];
+    systemAlertTest.selector = @selector(failAllTestsDueToSystemAlertVisible);
+    return @[ systemAlertTest ];
+#endif
   }
 
   // Return specific list of tests based on the target.
@@ -320,6 +331,12 @@ const CFTimeInterval kDrainTimeout = 5;
   }
   free(methods);
   return multitaskingTestNames;
+}
+
+#pragma mark - Handling system alerts
+
+- (void)failAllTestsDueToSystemAlertVisible {
+  XCTFail("System alerts are present on device. Skipping all tests.");
 }
 
 @end
