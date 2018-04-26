@@ -262,6 +262,10 @@ ChromeKeyboardUI::ChromeKeyboardUI(content::BrowserContext* context)
 
 ChromeKeyboardUI::~ChromeKeyboardUI() {
   ResetInsets();
+
+  if (keyboard_contents_)
+    keyboard_contents_->GetNativeView()->RemoveObserver(this);
+
   DCHECK(!keyboard_controller());
 }
 
