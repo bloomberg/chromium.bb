@@ -13,6 +13,7 @@ import itertools
 import logging
 import multiprocessing
 import os
+import re
 import sys
 import time
 import unittest
@@ -2507,15 +2508,18 @@ class CannedChecksUnittest(PresubmitTestsBase):
       change.OriginalOwnersFiles().AndReturn({})
       if not is_committing and uncovered_files:
         fake_db.reviewers_for(set(['foo']),
-            change.author_email).AndReturn(change.author_email)
+            change.author_email).AndReturn([change.author_email])
 
     self.mox.ReplayAll()
     output = presubmit.PresubmitOutput()
     results = presubmit_canned_checks.CheckOwners(input_api,
         presubmit.OutputApi)
-    if results:
-      results[0].handle(output)
-    self.assertEquals(output.getvalue(), expected_output)
+    for result in results:
+      result.handle(output)
+    if isinstance(expected_output, re._pattern_type):
+      self.assertRegexpMatches(output.getvalue(), expected_output)
+    else:
+      self.assertEquals(output.getvalue(), expected_output)
 
   def testCannedCheckOwners_DryRun(self):
     response = {
@@ -2710,8 +2714,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.AssertOwnersWorks(issue=None,
         is_committing=False,
         uncovered_files=set(['foo']),
-        expected_output='Missing OWNER reviewers for these files:\n'
-                        '    foo\n')
+        expected_output=re.compile(
+            'Missing OWNER reviewers for these files:\n'
+            '    foo\n', re.MULTILINE))
 
   def testCannedCheckOwners_NoIssueLocalReviewers(self):
     self.AssertOwnersWorks(issue=None,
@@ -2735,8 +2740,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
         uncovered_files=set(['foo']),
         manually_specified_reviewers=['jane'],
         is_committing=False,
-        expected_output='Missing OWNER reviewers for these files:\n'
-                        '    foo\n')
+        expected_output=re.compile(
+            'Missing OWNER reviewers for these files:\n'
+            '    foo\n', re.MULTILINE))
 
   def testCannedCheckOwners_NoLGTM(self):
     self.AssertOwnersWorks(expected_output='Missing LGTM from someone '
@@ -2760,8 +2766,11 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.AssertOwnersWorks(
         tbr=True, uncovered_files=set(['foo']),
         modified_file='foo/OWNERS',
-        expected_output='Missing LGTM from an OWNER for these files:\n'
-                        '    foo\n')
+        expected_output=re.compile(
+            'Missing LGTM from an OWNER for these files:\n'
+            '    foo\n'
+            '.*TBR does not apply to changes that affect OWNERS files.',
+            re.MULTILINE))
 
   def testCannedCheckOwners_WithoutOwnerLGTM(self):
     self.AssertOwnersWorks(uncovered_files=set(['foo']),
@@ -2769,8 +2778,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
                         '    foo\n')
     self.AssertOwnersWorks(uncovered_files=set(['foo']),
         is_committing=False,
-        expected_output='Missing OWNER reviewers for these files:\n'
-                        '    foo\n')
+        expected_output=re.compile(
+            'Missing OWNER reviewers for these files:\n'
+            '    foo\n', re.MULTILINE))
 
   def testCannedCheckOwners_WithLGTMs(self):
     self.AssertOwnersWorks(approvers=set(['ben@example.com']),

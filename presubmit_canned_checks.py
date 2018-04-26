@@ -845,9 +845,10 @@ def CheckOwnersFormat(input_api, output_api):
 def CheckOwners(input_api, output_api, source_file_filter=None):
   affected_files = set([f.LocalPath() for f in
       input_api.change.AffectedFiles(file_filter=source_file_filter)])
+  affects_owners = any('OWNERS' in name for name in affected_files)
 
   if input_api.is_committing:
-    if input_api.tbr and not any(['OWNERS' in name for name in affected_files]):
+    if input_api.tbr and not affects_owners:
       return [output_api.PresubmitNotifyResult(
           '--tbr was specified, skipping OWNERS check')]
     needed = 'LGTM from an OWNER'
@@ -885,6 +886,9 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
     output_list = [
         output_fn('Missing %s for these files:\n    %s' %
                   (needed, '\n    '.join(sorted(missing_files))))]
+    if input_api.tbr and affects_owners:
+      output_list.append(output_fn('Note that TBR does not apply to changes '
+                                   'that affect OWNERS files.'))
     if not input_api.is_committing:
       suggested_owners = owners_db.reviewers_for(missing_files, owner_email)
       owners_with_comments = []
