@@ -233,7 +233,7 @@ GetActionResult GetAction(
 //
 // Mark as not "safe" (aka return false) on the contrary, most likely those
 // cases will require the user to pass thru the intent picker UI.
-bool IsSafeToRedirectToArcWithoutUserConfirmation(content::WebContents* tab) {
+bool IsSafeToRedirectToArcWithoutUserConfirmation(WebContents* tab) {
   const char* key =
       arc::ArcWebContentsData::ArcWebContentsData::kArcTransitionFlag;
   arc::ArcWebContentsData* arc_data =
@@ -253,11 +253,9 @@ bool HandleUrl(int render_process_host_id,
                size_t selected_app_index,
                GetActionResult* out_result) {
   GurlAndActivityInfo url_and_activity_name(
-      GURL(),
-      ArcIntentHelperBridge::ActivityName{"" /* package */, "" /* activity */});
+      GURL(), ArcIntentHelperBridge::ActivityName{/*package=*/std::string(),
+                                                  /*activity=*/std::string()});
 
-  // TODO(djacobo): Evaluate if passing around WebContents instead of
-  // |render_process_host_id| and |rounting_id| would be equivalent.
   WebContents* tab =
       tab_util::GetWebContentsByID(render_process_host_id, routing_id);
   DCHECK(tab);
@@ -374,7 +372,7 @@ void OnIntentPickerClosed(int render_process_host_id,
 
       // Launch the selected app.
       HandleUrl(render_process_host_id, routing_id, url, handlers,
-                selected_app_index, nullptr);
+                selected_app_index, /*out_result=*/nullptr);
       break;
     case chromeos::IntentPickerCloseReason::PREFERRED_APP_FOUND:
       // We shouldn't be here if a preferred app was found.
@@ -425,8 +423,8 @@ void OnAppIconsReceived(
   auto show_bubble_cb = base::Bind(ShowIntentPickerBubble());
   WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_host_id, routing_id);
-  show_bubble_cb.Run(nullptr /* anchor_view */, web_contents,
-                     std::move(app_info), !IsChromeAnAppCandidate(handlers),
+  show_bubble_cb.Run(/*anchor_view=*/nullptr, web_contents, std::move(app_info),
+                     !IsChromeAnAppCandidate(handlers),
                      base::Bind(OnIntentPickerClosed, render_process_host_id,
                                 routing_id, url, base::Passed(&handlers)));
 }
@@ -468,7 +466,7 @@ void OnUrlHandlerList(int render_process_host_id,
       chromeos::AppsNavigationThrottle::RecordUma(
           std::string(), chromeos::AppType::ARC,
           chromeos::IntentPickerCloseReason::PREFERRED_APP_FOUND,
-          false /* should_persist */);
+          /*should_persist=*/false);
     }
     return;  // the |url| has been handled.
   }
@@ -500,8 +498,8 @@ bool RunArcExternalProtocolDialog(const GURL& url,
       MaskOutPageTransition(page_transition, ui::PAGE_TRANSITION_FROM_API);
 
   if (ShouldIgnoreNavigation(masked_page_transition,
-                             true /* allow_form_submit */,
-                             true /* allow_client_redirect */)) {
+                             /*allow_form_submit=*/true,
+                             /*allow_client_redirect=*/true)) {
     LOG(WARNING) << "RunArcExternalProtocolDialog: ignoring " << url
                  << " with PageTransition=" << masked_page_transition;
     return false;
@@ -547,8 +545,7 @@ GURL GetUrlToNavigateOnDeactivateForTesting(
   return GetUrlToNavigateOnDeactivate(handlers);
 }
 
-bool IsSafeToRedirectToArcWithoutUserConfirmationForTesting(
-    content::WebContents* tab) {
+bool IsSafeToRedirectToArcWithoutUserConfirmationForTesting(WebContents* tab) {
   return IsSafeToRedirectToArcWithoutUserConfirmation(tab);
 }
 
