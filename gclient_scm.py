@@ -357,11 +357,11 @@ class GitWrapper(SCMWrapper):
         # checkout + rebase.
         self._Capture(['rebase', base_rev])
       except subprocess2.CalledProcessError as e:
-        self._Capture(['rebase', '--abort'])
         self.Print('Failed to apply %r @ %r to %r at %r' % (
                 patch_repo, patch_ref, base_rev, self.checkout_path))
         self.Print('git returned non-zero exit status %s:\n%s' % (
             e.returncode, e.stderr))
+        self._Capture(['rebase', '--abort'])
         raise
     if options.reset_patch_ref:
       self._Capture(['reset', '--soft', base_rev])
