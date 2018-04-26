@@ -214,6 +214,18 @@ void LayoutSVGResourceClipper::CalculateLocalClipBounds() {
   }
 }
 
+AffineTransform LayoutSVGResourceClipper::CalculateClipTransform(
+    const FloatRect& reference_box) const {
+  AffineTransform transform =
+      ToSVGClipPathElement(GetElement())
+          ->CalculateTransform(SVGElement::kIncludeMotionTransform);
+  if (ClipPathUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
+    transform.Translate(reference_box.X(), reference_box.Y());
+    transform.ScaleNonUniform(reference_box.Width(), reference_box.Height());
+  }
+  return transform;
+}
+
 bool LayoutSVGResourceClipper::HitTestClipContent(
     const FloatRect& object_bounding_box,
     const FloatPoint& node_at_point) {
@@ -221,21 +233,12 @@ bool LayoutSVGResourceClipper::HitTestClipContent(
   if (!SVGLayoutSupport::PointInClippingArea(*this, point))
     return false;
 
-  if (ClipPathUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
-    AffineTransform transform;
-    transform.Translate(object_bounding_box.X(), object_bounding_box.Y());
-    transform.ScaleNonUniform(object_bounding_box.Width(),
-                              object_bounding_box.Height());
-    point = transform.Inverse().MapPoint(point);
-  }
-
-  AffineTransform animated_local_transform =
-      ToSVGClipPathElement(GetElement())
-          ->CalculateTransform(SVGElement::kIncludeMotionTransform);
-  if (!animated_local_transform.IsInvertible())
+  AffineTransform user_space_transform =
+      CalculateClipTransform(object_bounding_box);
+  if (!user_space_transform.IsInvertible())
     return false;
 
-  point = animated_local_transform.Inverse().MapPoint(point);
+  point = user_space_transform.Inverse().MapPoint(point);
 
   for (const SVGElement& child_element :
        Traversal<SVGElement>::ChildrenOf(*GetElement())) {
@@ -264,14 +267,7 @@ FloatRect LayoutSVGResourceClipper::ResourceBoundingBox(
   if (local_clip_bounds_.IsEmpty())
     CalculateLocalClipBounds();
 
-  AffineTransform transform =
-      ToSVGClipPathElement(GetElement())
-          ->CalculateTransform(SVGElement::kIncludeMotionTransform);
-  if (ClipPathUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
-    transform.Translate(reference_box.X(), reference_box.Y());
-    transform.ScaleNonUniform(reference_box.Width(), reference_box.Height());
-  }
-  return transform.MapRect(local_clip_bounds_);
+  return CalculateClipTransform(reference_box).MapRect(local_clip_bounds_);
 }
 
 void LayoutSVGResourceClipper::WillBeDestroyed() {

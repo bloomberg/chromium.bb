@@ -48,6 +48,7 @@ class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
         ->CurrentValue()
         ->EnumValue();
   }
+  AffineTransform CalculateClipTransform(const FloatRect& reference_box) const;
 
   base::Optional<Path> AsPath();
   sk_sp<const PaintRecord> CreatePaintRecord();
