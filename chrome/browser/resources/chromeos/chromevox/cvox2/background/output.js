@@ -1807,10 +1807,11 @@ Output.prototype = {
       this.append_(buff, Msgs.getMsg('access_key', [node.accessKey]));
 
     // Ancestry based hints.
-    if (uniqueAncestors.find(AutomationPredicate.table))
-      this.format_(node, '@hint_table', buff);
     if (uniqueAncestors.find(
-            AutomationPredicate.roles([RoleType.MENU, RoleType.MENU_BAR])))
+            /** @type {function(?) : boolean} */ (AutomationPredicate.table)))
+      this.format_(node, '@hint_table', buff);
+    if (uniqueAncestors.find(/** @type {function(?) : boolean} */ (
+            AutomationPredicate.roles([RoleType.MENU, RoleType.MENU_BAR]))))
       this.format_(node, '@hint_menu', buff);
   },
 
