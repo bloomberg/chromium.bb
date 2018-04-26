@@ -429,3 +429,15 @@ if (is_android) {
     ]
   }
 }
+
+# Trivial executable which outputs space-delimited argv to stdout,
+# used for testing.
+executable("test_child_process") {
+  testonly = true
+  sources = [
+    "test_child_process.cc",
+  ]
+  deps = [
+    "//build/config:exe_and_shlib_deps",
+  ]
+}
