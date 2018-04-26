@@ -146,10 +146,6 @@ Profile* ExtensionBrowserTest::profile() {
   return profile_;
 }
 
-bool ExtensionBrowserTest::ShouldAllowLegacyExtensionManifests() {
-  return false;
-}
-
 bool ExtensionBrowserTest::ShouldEnableContentVerification() {
   return false;
 }
@@ -185,12 +181,6 @@ void ExtensionBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   // We don't want any warning bubbles for, e.g., unpacked extensions.
   ExtensionMessageBubbleFactory::set_override_for_tests(
       ExtensionMessageBubbleFactory::OVERRIDE_DISABLED);
-
-  // TODO(devlin): Remove this. See https://crbug.com/816679.
-  if (ShouldAllowLegacyExtensionManifests()) {
-    command_line->AppendSwitch(
-        extensions::switches::kAllowLegacyExtensionManifests);
-  }
 
   if (!ShouldEnableContentVerification()) {
     ignore_content_verification_.reset(
