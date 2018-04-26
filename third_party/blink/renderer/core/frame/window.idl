@@ -115,7 +115,7 @@
 
     // CSS Object Model (CSSOM)
     // https://drafts.csswg.org/cssom/#extensions-to-the-window-interface
-    [NewObject] CSSStyleDeclaration getComputedStyle(Element elt, optional DOMString? pseudoElt);
+    [Affects=Nothing, NewObject] CSSStyleDeclaration getComputedStyle(Element elt, optional DOMString? pseudoElt);
 
     // CSSOM View Module
     // https://drafts.csswg.org/cssom-view/#extensions-to-the-window-interface
@@ -129,8 +129,8 @@
     void resizeBy(long x, long y);
 
     // viewport
-    [Replaceable] readonly attribute long innerWidth;
-    [Replaceable] readonly attribute long innerHeight;
+    [Affects=Nothing, Replaceable] readonly attribute long innerWidth;
+    [Affects=Nothing, Replaceable] readonly attribute long innerHeight;
 
     // viewport scrolling
     [Replaceable] readonly attribute double scrollX;
@@ -151,8 +151,8 @@
     // client
     [Affects=Nothing, Replaceable] readonly attribute long screenX;
     [Affects=Nothing, Replaceable] readonly attribute long screenY;
-    [Replaceable] readonly attribute long outerWidth;
-    [Replaceable] readonly attribute long outerHeight;
+    [Affects=Nothing, Replaceable] readonly attribute long outerWidth;
+    [Affects=Nothing, Replaceable] readonly attribute long outerHeight;
     [Affects=Nothing, Replaceable] readonly attribute double devicePixelRatio;
 
     // Selection API

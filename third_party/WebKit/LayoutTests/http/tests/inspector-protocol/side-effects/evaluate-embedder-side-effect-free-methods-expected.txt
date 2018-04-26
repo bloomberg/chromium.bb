@@ -161,4 +161,8 @@ Expression `namedNodeMap.length`
 has side effect: false, expected: false
 Expression `namedNodeMap.attr1`
 has side effect: false, expected: false
+Expression `div.getBoundingClientRect()`
+has side effect: false, expected: false
+Expression `global_getComputedStyle(div)`
+has side effect: false, expected: false
 

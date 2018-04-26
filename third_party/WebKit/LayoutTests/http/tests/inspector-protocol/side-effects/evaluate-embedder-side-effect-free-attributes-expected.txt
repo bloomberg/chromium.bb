@@ -169,4 +169,44 @@ Expression `window`
 has side effect: false, expected: false
 Expression `location`
 has side effect: false, expected: false
+Expression `div.scrollTop`
+has side effect: false, expected: false
+Expression `div.scrollLeft`
+has side effect: false, expected: false
+Expression `div.scrollWidth`
+has side effect: false, expected: false
+Expression `div.scrollHeight`
+has side effect: false, expected: false
+Expression `div.clientTop`
+has side effect: false, expected: false
+Expression `div.clientLeft`
+has side effect: false, expected: false
+Expression `div.clientWidth`
+has side effect: false, expected: false
+Expression `div.clientHeight`
+has side effect: false, expected: false
+Expression `innerWidth`
+has side effect: false, expected: false
+Expression `innerHeight`
+has side effect: false, expected: false
+Expression `outerWidth`
+has side effect: false, expected: false
+Expression `outerHeight`
+has side effect: false, expected: false
+Expression `div.offsetParent`
+has side effect: false, expected: false
+Expression `div.offsetTop`
+has side effect: false, expected: false
+Expression `div.offsetLeft`
+has side effect: false, expected: false
+Expression `div.offsetWidth`
+has side effect: false, expected: false
+Expression `div.offsetHeight`
+has side effect: false, expected: false
+Expression `div.innerText`
+has side effect: false, expected: false
+Expression `div.outerText`
+has side effect: false, expected: false
+Expression `div.style.border`
+has side effect: false, expected: false
 
