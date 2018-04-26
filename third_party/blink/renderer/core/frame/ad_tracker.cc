@@ -93,11 +93,6 @@ void AdTracker::WillSendRequest(ExecutionContext* execution_context,
     AppendToKnownAdScripts(request.Url());
 }
 
-// This is a separate function for testing purposes.
-void AdTracker::AppendToKnownAdScripts(const KURL& url) {
-  known_ad_scripts_.insert(url.GetString());
-}
-
 bool AdTracker::AnyExecutingScriptsTaggedAsAdResource(
     ExecutionContext* execution_context) {
   // The pseudo-stack contains entry points into the stack (e.g., when v8 is
@@ -113,6 +108,11 @@ bool AdTracker::AnyExecutingScriptsTaggedAsAdResource(
       return true;
   }
   return false;
+}
+
+// This is a separate function for testing purposes.
+void AdTracker::AppendToKnownAdScripts(const KURL& url) {
+  known_ad_scripts_.insert(url.GetString());
 }
 
 void AdTracker::Trace(blink::Visitor* visitor) {

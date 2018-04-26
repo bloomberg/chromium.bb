@@ -98,6 +98,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebView* View() const override;
   WebDocument GetDocument() const override;
   WebPerformance Performance() const override;
+  bool IsAdSubframe() const override;
+  void SetIsAdSubframe() override;
   void DispatchUnloadEvent() override;
   void ExecuteScript(const WebScriptSource&) override;
   void ExecuteScriptInIsolatedWorld(int world_id,

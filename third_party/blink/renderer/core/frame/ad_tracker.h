@@ -51,6 +51,10 @@ class CORE_EXPORT AdTracker : public GarbageCollectedFinalized<AdTracker> {
                        const FetchInitiatorInfo&,
                        Resource::Type);
 
+  // Returns true if any script in the pseudo call stack have previously been
+  // identified as an ad resource.
+  bool AnyExecutingScriptsTaggedAsAdResource(ExecutionContext*);
+
   virtual void Trace(blink::Visitor*);
 
   void Shutdown();
@@ -68,11 +72,6 @@ class CORE_EXPORT AdTracker : public GarbageCollectedFinalized<AdTracker> {
   void WillExecuteScript(const String& script_name);
   void DidExecuteScript();
   void AppendToKnownAdScripts(const KURL&);
-
-  // Returns true if any script in the pseudo call stack has been identified as
-  // an ad earlier. An ad is identified as an ad if AppendToKnownAdScripts has
-  // been called on it earlier.
-  bool AnyExecutingScriptsTaggedAsAdResource(ExecutionContext*);
 
   Member<LocalFrame> local_root_;
 

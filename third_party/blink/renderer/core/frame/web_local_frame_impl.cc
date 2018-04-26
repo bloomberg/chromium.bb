@@ -659,6 +659,16 @@ WebPerformance WebLocalFrameImpl::Performance() const {
       DOMWindowPerformance::performance(*(GetFrame()->DomWindow())));
 }
 
+bool WebLocalFrameImpl::IsAdSubframe() const {
+  DCHECK(GetFrame());
+  return GetFrame()->IsAdSubframe();
+}
+
+void WebLocalFrameImpl::SetIsAdSubframe() {
+  DCHECK(GetFrame());
+  GetFrame()->SetIsAdSubframe();
+}
+
 void WebLocalFrameImpl::DispatchUnloadEvent() {
   if (!GetFrame())
     return;

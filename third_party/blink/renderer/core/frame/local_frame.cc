@@ -894,6 +894,9 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
   }
   idleness_detector_ = new IdlenessDetector(this);
   inspector_task_runner_->InitIsolate(V8PerIsolateData::MainThreadIsolate());
+
+  if (ComputeIsAdSubFrame())
+    SetIsAdSubframe();
 }
 
 FrameScheduler* LocalFrame::GetFrameScheduler() {
@@ -1140,6 +1143,20 @@ bool LocalFrame::CanNavigateWithoutFramebusting(const Frame& target_frame,
       "The frame attempting navigation is neither same-origin with the target, "
       "nor is it the target's parent or opener.";
   return false;
+}
+
+bool LocalFrame::ComputeIsAdSubFrame() const {
+  DCHECK(ad_tracker_);
+  Frame* parent = Tree().Parent();
+  if (!parent)
+    return false;
+
+  // If the parent frame is local, directly determine if it's an ad. If
+  // it's remote, then blink relies on the embedder to call SetIsAdFrame.
+  bool parent_is_ad =
+      parent->IsLocalFrame() && ToLocalFrame(parent)->IsAdSubframe();
+  return parent_is_ad ||
+         ad_tracker_->AnyExecutingScriptsTaggedAsAdResource(GetDocument());
 }
 
 service_manager::InterfaceProvider& LocalFrame::GetInterfaceProvider() {

@@ -36,8 +36,6 @@ class CORE_EXPORT SubresourceFilter final
                  SecurityViolationReportingPolicy);
   bool AllowWebSocketConnection(const KURL&);
 
-  bool GetIsAssociatedWithAdSubframe();
-
   // Returns if |resource_url| is an ad resource.
   bool IsAdResource(const KURL& resource_url, WebURLRequest::RequestContext);
 

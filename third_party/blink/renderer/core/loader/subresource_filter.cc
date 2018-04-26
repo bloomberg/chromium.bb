@@ -91,10 +91,6 @@ bool SubresourceFilter::AllowWebSocketConnection(const KURL& url) {
   return load_policy != WebDocumentSubresourceFilter::kDisallow;
 }
 
-bool SubresourceFilter::GetIsAssociatedWithAdSubframe() {
-  return subresource_filter_->GetIsAssociatedWithAdSubframe();
-}
-
 bool SubresourceFilter::IsAdResource(
     const KURL& resource_url,
     WebURLRequest::RequestContext request_context) {
