@@ -208,7 +208,6 @@ void av1_warp_affine_sse4_1(const int32_t *mat, const uint8_t *ref, int width,
                             int subsampling_x, int subsampling_y,
                             ConvolveParams *conv_params, int16_t alpha,
                             int16_t beta, int16_t gamma, int16_t delta) {
-  int comp_avg = conv_params->do_average;
   __m128i tmp[15];
   int i, j, k;
   const int bd = 8;
@@ -238,7 +237,7 @@ void av1_warp_affine_sse4_1(const int32_t *mat, const uint8_t *ref, int width,
   const __m128i wt0 = _mm_set1_epi16(w0);
   const __m128i wt1 = _mm_set1_epi16(w1);
   const __m128i wt = _mm_unpacklo_epi16(wt0, wt1);
-  assert(FILTER_BITS == FILTER_BITS);
+  assert(IMPLIES(conv_params->do_average, conv_params->is_compound));
 
   /* Note: For this code to work, the left/right frame borders need to be
   extended by at least 13 pixels each. By the time we get here, other
@@ -575,13 +574,8 @@ void av1_warp_affine_sse4_1(const int32_t *mat, const uint8_t *ref, int width,
           // to only output 4 pixels at this point, to avoid encode/decode
           // mismatches when encoding with multiple threads.
           if (p_width == 4) {
-            if (comp_avg) {
-              const __m128i orig = _mm_cvtsi32_si128(*(uint32_t *)p);
-              res_8bit = _mm_avg_epu8(res_8bit, orig);
-            }
             *(uint32_t *)p = _mm_cvtsi128_si32(res_8bit);
           } else {
-            if (comp_avg) res_8bit = _mm_avg_epu8(res_8bit, _mm_loadl_epi64(p));
             _mm_storel_epi64(p, res_8bit);
           }
         }

@@ -529,12 +529,7 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
                 &pred[(i - p_row + k + 4) * p_stride + (j - p_col + l + 4)];
             sum = ROUND_POWER_OF_TWO(sum, reduce_bits_vert);
             assert(0 <= sum && sum < (1 << (bd + 2)));
-            uint16_t px =
-                clip_pixel_highbd(sum - (1 << (bd - 1)) - (1 << bd), bd);
-            if (conv_params->do_average)
-              *p = ROUND_POWER_OF_TWO(*p + px, 1);
-            else
-              *p = px;
+            *p = clip_pixel_highbd(sum - (1 << (bd - 1)) - (1 << bd), bd);
           }
           sy += gamma;
         }
@@ -722,6 +717,7 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
   const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
   (void)max_bits_horiz;
   assert(IMPLIES(conv_params->is_compound, conv_params->dst != NULL));
+  assert(IMPLIES(conv_params->do_average, conv_params->is_compound));
 
   for (int i = p_row; i < p_row + p_height; i += 8) {
     for (int j = p_col; j < p_col + p_width; j += 8) {
@@ -820,11 +816,7 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
                 &pred[(i - p_row + k + 4) * p_stride + (j - p_col + l + 4)];
             sum = ROUND_POWER_OF_TWO(sum, reduce_bits_vert);
             assert(0 <= sum && sum < (1 << (bd + 2)));
-            uint8_t px = clip_pixel(sum - (1 << (bd - 1)) - (1 << bd));
-            if (conv_params->do_average)
-              *p = ROUND_POWER_OF_TWO(*p + px, 1);
-            else
-              *p = px;
+            *p = clip_pixel(sum - (1 << (bd - 1)) - (1 << bd));
           }
           sy += gamma;
         }

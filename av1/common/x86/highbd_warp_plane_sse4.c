@@ -21,7 +21,6 @@ void av1_highbd_warp_affine_sse4_1(const int32_t *mat, const uint16_t *ref,
                                    int subsampling_x, int subsampling_y, int bd,
                                    ConvolveParams *conv_params, int16_t alpha,
                                    int16_t beta, int16_t gamma, int16_t delta) {
-  int comp_avg = conv_params->do_average;
   __m128i tmp[15];
   int i, j, k;
   const int reduce_bits_horiz =
@@ -33,6 +32,7 @@ void av1_highbd_warp_affine_sse4_1(const int32_t *mat, const uint16_t *ref,
   const int offset_bits_horiz = bd + FILTER_BITS - 1;
   assert(IMPLIES(conv_params->is_compound, conv_params->dst != NULL));
   assert(!(bd == 12 && reduce_bits_horiz < 5));
+  assert(IMPLIES(conv_params->do_average, conv_params->is_compound));
 
   const int offset_bits_vert = bd + 2 * FILTER_BITS - reduce_bits_horiz;
   const __m128i clip_pixel =
@@ -399,12 +399,8 @@ void av1_highbd_warp_affine_sse4_1(const int32_t *mat, const uint16_t *ref,
           // to only output 4 pixels at this point, to avoid encode/decode
           // mismatches when encoding with multiple threads.
           if (p_width == 4) {
-            if (comp_avg)
-              res_16bit = _mm_avg_epu16(res_16bit, _mm_loadl_epi64(p));
             _mm_storel_epi64(p, res_16bit);
           } else {
-            if (comp_avg)
-              res_16bit = _mm_avg_epu16(res_16bit, _mm_loadu_si128(p));
             _mm_storeu_si128(p, res_16bit);
           }
         }
