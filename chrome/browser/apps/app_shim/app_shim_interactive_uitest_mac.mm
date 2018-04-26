@@ -8,6 +8,7 @@
 #include "apps/app_lifetime_monitor_factory.h"
 #include "apps/switches.h"
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/mac/foundation_util.h"
 #import "base/mac/launch_services_util.h"
 #include "base/mac/mac_util.h"
@@ -17,6 +18,7 @@
 #include "base/process/launch.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
@@ -417,10 +419,23 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_Launch) {
     EXPECT_TRUE(HasAppShimHost(profile(), app->id()));
 
     // If the window is closed, the shim should quit.
+    // Closing the window in views requires this thread to process tasks as the
+    // final request to close the window is posted to this thread's queue.
     GetFirstAppWindow()->GetBaseWindow()->Close();
-    int exit_code;
-    ASSERT_TRUE(shim_process.WaitForExitWithTimeout(
-                    TestTimeouts::action_timeout(), &exit_code));
+    base::RunLoop run_loop;
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(
+            [](base::Process* shim_process) {
+              base::ScopedAllowBaseSyncPrimitivesForTesting
+                  allow_base_sync_primitives;
+              int exit_code;
+              ASSERT_TRUE(shim_process->WaitForExitWithTimeout(
+                  TestTimeouts::action_timeout(), &exit_code));
+            },
+            base::Unretained(&shim_process)),
+        run_loop.QuitClosure());
+    run_loop.Run();
 
     EXPECT_FALSE(GetFirstAppWindow());
     EXPECT_FALSE(HasAppShimHost(profile(), app->id()));
