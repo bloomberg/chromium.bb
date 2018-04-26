@@ -360,7 +360,7 @@ class Mixin : public GarbageCollectedMixin {
   Mixin() : next_(nullptr) {}
   virtual ~Mixin() {}
 
-  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(next_); }
+  void Trace(blink::Visitor* visitor) override { visitor->Trace(next_); }
 
   virtual void Bar() {}
 
@@ -380,12 +380,12 @@ class Child : public GarbageCollected<Child>,
 
  public:
   static Child* Create() { return new Child(); }
-  virtual ~Child() {}
+  ~Child() override {}
 
-  virtual void Trace(blink::Visitor* visitor) { Mixin::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) override { Mixin::Trace(visitor); }
 
-  virtual void Foo() {}
-  virtual void Bar() {}
+  void Foo() override {}
+  void Bar() override {}
 
  protected:
   Child() : ClassWithVirtual(), Mixin() {}
