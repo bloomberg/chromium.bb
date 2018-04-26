@@ -47,6 +47,7 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chrome/browser/chromeos/login/lock_screen_utils.h"
+#include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
@@ -663,14 +664,6 @@ void SigninScreenHandler::ShowImpl() {
     params.SetBoolean("disableAddUser", AllWhitelistedUsersPresent());
     UpdateUIState(UI_STATE_ACCOUNT_PICKER, &params);
   }
-
-  // Enable pin for any users who can use it.
-  if (user_manager::UserManager::IsInitialized()) {
-    for (user_manager::User* user :
-         user_manager::UserManager::Get()->GetLoggedInUsers()) {
-      UpdatePinKeyboardState(user->GetAccountId());
-    }
-  }
 }
 
 void SigninScreenHandler::UpdateUIState(UIState ui_state,
@@ -911,13 +904,10 @@ void SigninScreenHandler::Initialize() {
   if (user_manager::UserManager::IsInitialized()) {
     for (user_manager::User* user :
          user_manager::UserManager::Get()->GetUnlockUsers()) {
-      chromeos::quick_unlock::QuickUnlockStorage* quick_unlock_storage =
-          chromeos::quick_unlock::QuickUnlockFactory::GetForUser(user);
-      if (quick_unlock_storage &&
-          quick_unlock_storage->IsPinAuthenticationAvailable()) {
-        CallJS("cr.ui.Oobe.preloadPinKeyboard");
-        break;
-      }
+      quick_unlock::PinBackend::CanAuthenticate(
+          user->GetAccountId(),
+          base::BindOnce(&SigninScreenHandler::PreloadPinKeyboard,
+                         weak_factory_.GetWeakPtr()));
     }
   }
 
@@ -987,14 +977,20 @@ void SigninScreenHandler::RefocusCurrentPod() {
 }
 
 void SigninScreenHandler::UpdatePinKeyboardState(const AccountId& account_id) {
-  chromeos::quick_unlock::QuickUnlockStorage* quick_unlock_storage =
-      chromeos::quick_unlock::QuickUnlockFactory::GetForAccountId(account_id);
-  if (!quick_unlock_storage)
-    return;
+  quick_unlock::PinBackend::CanAuthenticate(
+      account_id, base::BindOnce(&SigninScreenHandler::SetPinEnabledForUser,
+                                 weak_factory_.GetWeakPtr(), account_id));
+}
 
-  bool is_enabled = quick_unlock_storage->IsPinAuthenticationAvailable();
+void SigninScreenHandler::SetPinEnabledForUser(const AccountId& account_id,
+                                               bool is_enabled) {
   CallJS("login.AccountPickerScreen.setPinEnabledForUser", account_id,
          is_enabled);
+}
+
+void SigninScreenHandler::PreloadPinKeyboard(bool should_preload) {
+  if (should_preload)
+    CallJS("cr.ui.Oobe.preloadPinKeyboard");
 }
 
 void SigninScreenHandler::OnUserRemoved(const AccountId& account_id,
@@ -1215,12 +1211,6 @@ void SigninScreenHandler::HandleAuthenticateUser(const AccountId& account_id,
     return;
   DCHECK_EQ(account_id.GetUserEmail(),
             gaia::SanitizeEmail(account_id.GetUserEmail()));
-  chromeos::quick_unlock::QuickUnlockStorage* quick_unlock_storage =
-      chromeos::quick_unlock::QuickUnlockFactory::GetForAccountId(account_id);
-  // If pin storage is unavailable, authenticated by PIN must be false.
-  DCHECK(!quick_unlock_storage ||
-         quick_unlock_storage->IsPinAuthenticationAvailable() ||
-         !authenticated_by_pin);
 
   UserContext user_context(account_id);
   user_context.SetKey(Key(password));
@@ -1349,6 +1339,13 @@ void SigninScreenHandler::LoadUsers(const user_manager::UserList& users,
                                     const base::ListValue& users_list) {
   CallJSOrDefer("login.AccountPickerScreen.loadUsers", users_list,
                 delegate_->IsShowGuest());
+
+  // Enable pin for any users who can use it.
+  // TODO(jdufault): Cache pin state in BrowserProcess::local_state() so we
+  // don't need to query cryptohome every time we show login. See
+  // https://crbug.com/721938.
+  for (user_manager::User* user : users)
+    UpdatePinKeyboardState(user->GetAccountId());
 }
 
 void SigninScreenHandler::HandleAccountPickerReady() {

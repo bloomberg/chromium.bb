@@ -92,14 +92,9 @@ bool QuickUnlockNotificationController::ShouldShowPinNotification(
     return false;
   }
 
-  // Do not show the notification if the pin is already set.
-  PinStoragePrefs* pin_storage =
-      QuickUnlockFactory::GetForProfile(profile)->pin_storage_prefs();
-  if (pin_storage->IsPinSet())
-    return false;
-
-  // TODO(jdufault): Enable after PIN sign-in is supported. See
-  // https://crbug.com/826773.
+  // TODO(jdufault): Enable once quick unlock settings land. See
+  // https://crbug.com/826773. Do not show the notification if the PIN is
+  // already set.
   return false;
 }
 

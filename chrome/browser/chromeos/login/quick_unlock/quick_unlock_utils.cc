@@ -102,6 +102,8 @@ bool IsPinEnabled(PrefService* pref_service) {
   return base::FeatureList::IsEnabled(features::kQuickUnlockPin);
 }
 
+// TODO(jdufault): Remove PinStorageType and make the backend transparent to
+// callers.
 PinStorageType GetPinStorageType() {
   if (enable_for_testing_)
     return testing_pin_storage_type_;

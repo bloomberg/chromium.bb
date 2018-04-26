@@ -79,6 +79,12 @@ std::string QuickUnlockStorage::GetAuthToken() {
   return *auth_token_->Identifier();
 }
 
+UserContext* QuickUnlockStorage::GetUserContext(const std::string& auth_token) {
+  if (GetAuthToken() != auth_token)
+    return nullptr;
+  return auth_token_->user_context();
+}
+
 void QuickUnlockStorage::Shutdown() {
   fingerprint_storage_.reset();
   pin_storage_prefs_.reset();

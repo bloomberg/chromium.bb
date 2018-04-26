@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/views_screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
+#include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -377,15 +378,32 @@ void ScreenLocker::Authenticate(const UserContext& user_context,
     Key::KeyType key_type = user_context.GetKey()->GetKeyType();
 
     if (unlock_attempt_type_ == AUTH_PIN) {
-      quick_unlock::QuickUnlockStorage* quick_unlock_storage =
-          quick_unlock::QuickUnlockFactory::GetForUser(user);
-      if (quick_unlock_storage &&
-          quick_unlock_storage->TryAuthenticatePin(pin, key_type)) {
-        OnAuthSuccess(user_context);
-        return;
-      }
+      quick_unlock::PinBackend::TryAuthenticate(
+          user_context.GetAccountId(), pin, key_type,
+          base::BindOnce(&ScreenLocker::OnPinAttemptDone,
+                         weak_factory_.GetWeakPtr(), user_context));
+      // OnPinAttemptDone will call ContinueAuthenticate.
+      return;
     }
+  }
 
+  ContinueAuthenticate(user_context);
+}
+
+void ScreenLocker::OnPinAttemptDone(const UserContext& user_context,
+                                    bool success) {
+  if (success) {
+    OnAuthSuccess(user_context);
+  } else {
+    // PIN authentication has failed; try submitting as a normal password.
+    ContinueAuthenticate(user_context);
+  }
+}
+
+void ScreenLocker::ContinueAuthenticate(
+    const chromeos::UserContext& user_context) {
+  const user_manager::User* user = FindUnlockUser(user_context.GetAccountId());
+  if (user) {
     // Special case: supervised users. Use special authenticator.
     if (user->GetType() == user_manager::USER_TYPE_SUPERVISED) {
       UserContext updated_context = ChromeUserManager::Get()
