@@ -1432,7 +1432,12 @@ CommandHandler.COMMANDS_['zip-selection'] = /** @type {Command} */ ({
     if (CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_) {
       fileManager.taskController.getFileTasks()
           .then(function(tasks) {
-            tasks.execute(FileTasks.ZIP_ARCHIVER_ZIP_TASK_ID);
+            if (fileManager.directoryModel.isOnDrive() ||
+                fileManager.directoryModel.isOnMTP()) {
+              tasks.execute(FileTasks.ZIP_ARCHIVER_ZIP_USING_TMP_TASK_ID);
+            } else {
+              tasks.execute(FileTasks.ZIP_ARCHIVER_ZIP_TASK_ID);
+            }
           })
           .catch(function(error) {
             if (error)

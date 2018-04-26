@@ -39,6 +39,11 @@
       "types": ["*"],
       "include_directories": true,
       "verb": "pack_with"
+    },
+    "pack_using_tmp": {
+      "types": ["*"],
+      "include_directories": true,
+      "verb": "pack_with"
     }
   },
   "icons": {
