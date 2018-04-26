@@ -179,6 +179,8 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
   // Initialize libraries for media.
   media::InitializeMediaLibrary();
 
+  file_utilities_.set_sandbox_enabled(false);
+
   if (!file_system_root_.CreateUniqueTempDir()) {
     LOG(WARNING) << "Failed to create a temp dir for the filesystem."
                     "FileSystem feature will be disabled.";
@@ -205,6 +207,10 @@ blink::WebClipboard* TestBlinkWebUnitTestSupport::Clipboard() {
   // Mock out clipboard calls so that tests don't mess
   // with each other's copies/pastes when running in parallel.
   return mock_clipboard_.get();
+}
+
+blink::WebFileUtilities* TestBlinkWebUnitTestSupport::GetFileUtilities() {
+  return &file_utilities_;
 }
 
 blink::WebIDBFactory* TestBlinkWebUnitTestSupport::IdbFactory() {

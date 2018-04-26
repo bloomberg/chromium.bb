@@ -456,6 +456,8 @@ target(link_target_type, "renderer") {
     "web_ui_extension.h",
     "web_ui_extension_data.cc",
     "web_ui_extension_data.h",
+    "webfileutilities_impl.cc",
+    "webfileutilities_impl.h",
     "webgraphicscontext3d_provider_impl.cc",
     "webgraphicscontext3d_provider_impl.h",
     "webpublicsuffixlist_impl.cc",

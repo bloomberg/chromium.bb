@@ -101,6 +101,7 @@ class WebDatabaseObserver;
 class WebPlatformEventListener;
 class WebFallbackThemeEngine;
 class WebFileSystem;
+class WebFileUtilities;
 class WebGestureCurve;
 class WebGraphicsContext3DProvider;
 class WebIDBFactory;
@@ -165,6 +166,9 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Must return non-null.
   virtual WebClipboard* Clipboard();
+
+  // Must return non-null.
+  virtual WebFileUtilities* GetFileUtilities() { return nullptr; }
 
   // May return null if sandbox support is not necessary
   virtual WebSandboxSupport* GetSandboxSupport() { return nullptr; }

@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "cc/blink/web_compositor_support_impl.h"
 #include "content/child/blink_platform_impl.h"
+#include "content/renderer/webfileutilities_impl.h"
 #include "content/test/mock_webblob_registry_impl.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -34,6 +35,7 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
 
   blink::WebBlobRegistry* GetBlobRegistry() override;
   blink::WebClipboard* Clipboard() override;
+  blink::WebFileUtilities* GetFileUtilities() override;
   blink::WebIDBFactory* IdbFactory() override;
 
   std::unique_ptr<blink::WebURLLoaderFactory> CreateDefaultURLLoaderFactory()
@@ -72,6 +74,7 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
  private:
   MockWebBlobRegistryImpl blob_registry_;
   std::unique_ptr<MockWebClipboardImpl> mock_clipboard_;
+  WebFileUtilitiesImpl file_utilities_;
   base::ScopedTempDir file_system_root_;
   std::unique_ptr<blink::WebURLLoaderMockFactory> url_loader_factory_;
   cc_blink::WebCompositorSupportImpl compositor_support_;
