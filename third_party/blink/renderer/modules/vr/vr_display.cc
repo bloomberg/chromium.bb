@@ -471,6 +471,10 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
         WTF::Bind(&VRDisplay::OnPresentationProviderConnectionError,
                   WrapWeakPersistent(this)));
     pending_present_request_ = true;
+
+    // The old vr_presentation_provider_ won't be delivering any vsyncs anymore,
+    // so we aren't waiting on it anymore.
+    pending_presenting_vsync_ = false;
   } else {
     UpdateLayerBounds();
     resolver->Resolve();
