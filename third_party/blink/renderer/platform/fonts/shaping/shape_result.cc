@@ -135,57 +135,35 @@ float ShapeResult::RunInfo::XPositionForOffset(
   return position;
 }
 
-static bool TargetPastEdge(bool rtl, float target_x, float next_x) {
-  // In LTR, the edge belongs to the character on right.
-  if (!rtl)
-    return target_x < next_x;
-
-  // In RTL, the edge belongs to the character on left.
-  return target_x <= next_x;
-}
-
-int ShapeResult::RunInfo::CharacterIndexForXPosition(
+void ShapeResult::RunInfo::CharacterIndexForXPosition(
     float target_x,
-    bool include_partial_glyphs) const {
+    GlyphIndexResult* result) const {
   DCHECK(target_x >= 0 && target_x <= width_);
-  if (target_x <= 0)
-    return !Rtl() ? 0 : num_characters_;
   const unsigned num_glyphs = glyph_data_.size();
   float current_x = 0;
-  float current_advance = 0;
   unsigned glyph_index = 0;
-  unsigned prev_character_index = num_characters_;  // used only when rtl()
 
-  while (glyph_index < num_glyphs) {
-    float prev_advance = current_advance;
+  while (true) {
     unsigned current_character_index = glyph_data_[glyph_index].character_index;
-    current_advance = glyph_data_[glyph_index].advance;
-    while (glyph_index < num_glyphs - 1 &&
+    float current_advance = glyph_data_[glyph_index].advance;
+    unsigned next_glyph_index = glyph_index + 1;
+    while (next_glyph_index < num_glyphs &&
            current_character_index ==
-               glyph_data_[glyph_index + 1].character_index)
-      current_advance += glyph_data_[++glyph_index].advance;
-    float next_x;
-    if (include_partial_glyphs) {
-      // For hit testing, find the closest caret point by incuding
-      // end-half of the previous character and start-half of the current
-      // character.
-      current_advance = current_advance / 2.0;
-      next_x = current_x + prev_advance + current_advance;
-      // When include_partial_glyphs, "<=" or "<" is not a big deal because
-      // |next_x| is not at the character boundary.
-      if (target_x <= next_x)
-        return Rtl() ? prev_character_index : current_character_index;
-    } else {
-      next_x = current_x + current_advance;
-      if (TargetPastEdge(Rtl(), target_x, next_x))
-        return current_character_index;
+               glyph_data_[next_glyph_index].character_index)
+      current_advance += glyph_data_[next_glyph_index++].advance;
+    float next_x = current_x + current_advance;
+    if (target_x < next_x || next_glyph_index == num_glyphs) {
+      result->glyph_index = glyph_index;
+      result->next_glyph_index = next_glyph_index;
+      result->character_index = current_character_index;
+      result->origin_x = current_x;
+      result->advance = current_advance;
+      return;
     }
     current_x = next_x;
-    prev_character_index = current_character_index;
-    ++glyph_index;
+    glyph_index = next_glyph_index;
   }
-
-  return Rtl() ? 0 : num_characters_;
+  NOTREACHED();
 }
 
 void ShapeResult::RunInfo::SetGlyphAndPositions(unsigned index,
@@ -321,50 +299,107 @@ unsigned ShapeResult::PreviousSafeToBreakOffset(unsigned index) const {
   return StartIndexForResult();
 }
 
+// Returns the offset of the character of |result| for LTR.
+unsigned ShapeResult::OffsetLtr(const GlyphIndexResult& result) const {
+  DCHECK(IsLtr(Direction()));
+  return result.characters_on_left_runs + result.character_index;
+}
+
+// Returns the offset of the character of |result| for RTL.
+unsigned ShapeResult::OffsetRtl(const GlyphIndexResult& result, float x) const {
+  DCHECK(IsRtl(Direction()));
+  if (!result.IsInRun())
+    return NumCharacters() - result.characters_on_left_runs;
+  // In RTL, the boundary belongs to the left character. This subtle difference
+  // allows round trips between OffsetForPoint and PointForOffset.
+  if (UNLIKELY(x == result.origin_x))
+    return OffsetLeftRtl(result);
+  return NumCharacters() - result.characters_on_left_runs -
+         runs_[result.run_index]->num_characters_ + result.character_index;
+}
+
+// Returns the offset of the character on the right of |result| for LTR.
+unsigned ShapeResult::OffsetRightLtr(const GlyphIndexResult& result) const {
+  DCHECK(IsLtr(Direction()));
+  if (result.run_index >= runs_.size())
+    return NumCharacters();
+  const RunInfo& run = *runs_[result.run_index];
+  return result.characters_on_left_runs +
+         (result.next_glyph_index < run.glyph_data_.size()
+              ? run.glyph_data_[result.next_glyph_index].character_index
+              : run.num_characters_);
+}
+
+// Returns the offset of the character on the left of |result| for RTL.
+unsigned ShapeResult::OffsetLeftRtl(const GlyphIndexResult& result) const {
+  DCHECK(IsRtl(Direction()));
+  if (!result.glyph_index)
+    return NumCharacters() - result.characters_on_left_runs;
+  const RunInfo& run = *runs_[result.run_index];
+  return NumCharacters() - result.characters_on_left_runs -
+         run.num_characters_ +
+         run.glyph_data_[result.glyph_index - 1].character_index;
+}
+
 // If the position is outside of the result, returns the start or the end offset
 // depends on the position.
-unsigned ShapeResult::OffsetForPosition(float target_x,
-                                        bool include_partial_glyphs) const {
+void ShapeResult::OffsetForPosition(float target_x,
+                                    GlyphIndexResult* result) const {
+  if (target_x <= 0)
+    return;
+
   unsigned characters_so_far = 0;
   float current_x = 0;
-
-  if (Rtl()) {
-    if (target_x <= 0)
-      return num_characters_;
-    characters_so_far = num_characters_;
-    for (unsigned i = 0; i < runs_.size(); ++i) {
-      if (!runs_[i])
-        continue;
-      characters_so_far -= runs_[i]->num_characters_;
-      float next_x = current_x + runs_[i]->width_;
-      float offset_for_run = target_x - current_x;
-      if (offset_for_run >= 0 && offset_for_run <= runs_[i]->width_) {
-        // The x value in question is within this script run.
-        const unsigned index = runs_[i]->CharacterIndexForXPosition(
-            offset_for_run, include_partial_glyphs);
-        return characters_so_far + index;
-      }
-      current_x = next_x;
+  for (unsigned i = 0; i < runs_.size(); ++i) {
+    const RunInfo* run = runs_[i].get();
+    if (!run)
+      continue;
+    float next_x = current_x + run->width_;
+    float offset_for_run = target_x - current_x;
+    if (offset_for_run >= 0 && offset_for_run < run->width_) {
+      // The x value in question is within this script run.
+      run->CharacterIndexForXPosition(offset_for_run, result);
+      result->run_index = i;
+      result->characters_on_left_runs = characters_so_far;
+      result->origin_x += current_x;
+      DCHECK_LE(result->characters_on_left_runs + result->character_index,
+                NumCharacters());
+      return;
     }
-  } else {
-    if (target_x <= 0)
-      return 0;
-    for (unsigned i = 0; i < runs_.size(); ++i) {
-      if (!runs_[i])
-        continue;
-      float next_x = current_x + runs_[i]->width_;
-      float offset_for_run = target_x - current_x;
-      if (offset_for_run >= 0 && offset_for_run <= runs_[i]->width_) {
-        const unsigned index = runs_[i]->CharacterIndexForXPosition(
-            offset_for_run, include_partial_glyphs);
-        return characters_so_far + index;
-      }
-      characters_so_far += runs_[i]->num_characters_;
-      current_x = next_x;
-    }
+    characters_so_far += run->num_characters_;
+    current_x = next_x;
   }
 
-  return characters_so_far;
+  result->run_index = runs_.size();
+  result->characters_on_left_runs = characters_so_far;
+}
+
+unsigned ShapeResult::OffsetForPosition(float x) const {
+  GlyphIndexResult result;
+  OffsetForPosition(x, &result);
+  return IsLtr(Direction()) ? OffsetLtr(result) : OffsetRtl(result, x);
+}
+
+unsigned ShapeResult::OffsetForHitTest(float x) const {
+  GlyphIndexResult result;
+  OffsetForPosition(x, &result);
+  if (IsLtr(Direction())) {
+    if (result.IsInRun() && x > result.origin_x + result.advance / 2)
+      return OffsetRightLtr(result);
+    return OffsetLtr(result);
+  }
+  if (result.IsInRun() && x <= result.origin_x + result.advance / 2)
+    return OffsetLeftRtl(result);
+  return OffsetRtl(result, x);
+}
+
+unsigned ShapeResult::OffsetToFit(float x, TextDirection line_direction) const {
+  GlyphIndexResult result;
+  OffsetForPosition(x, &result);
+  if (IsLtr(line_direction)) {
+    return IsLtr(Direction()) ? OffsetLtr(result) : OffsetLeftRtl(result);
+  }
+  return IsRtl(Direction()) ? OffsetRtl(result, x) : OffsetRightLtr(result);
 }
 
 float ShapeResult::PositionForOffset(

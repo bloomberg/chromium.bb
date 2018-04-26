@@ -87,7 +87,7 @@ struct ShapeResult::RunInfo {
   unsigned PreviousSafeToBreakOffset(unsigned) const;
   float XPositionForVisualOffset(unsigned, AdjustMidCluster) const;
   float XPositionForOffset(unsigned, AdjustMidCluster) const;
-  int CharacterIndexForXPosition(float, bool include_partial_glyphs) const;
+  void CharacterIndexForXPosition(float, GlyphIndexResult*) const;
   void SetGlyphAndPositions(unsigned index,
                             uint16_t glyph_id,
                             float advance,
