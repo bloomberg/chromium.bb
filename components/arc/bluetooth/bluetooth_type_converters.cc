@@ -77,44 +77,6 @@ std::string TypeConverter<std::string, arc::mojom::BluetoothAddress>::Convert(
 }
 
 // static
-arc::mojom::BluetoothGattStatus
-TypeConverter<arc::mojom::BluetoothGattStatus,
-              device::BluetoothGattService::GattErrorCode>::
-    Convert(const device::BluetoothGattService::GattErrorCode& error_code) {
-  arc::mojom::BluetoothGattStatus ret;
-
-  switch (error_code) {
-    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_INVALID_LENGTH:
-      ret = arc::mojom::BluetoothGattStatus::GATT_INVALID_ATTRIBUTE_LENGTH;
-      break;
-
-    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_PERMITTED:
-      ret = arc::mojom::BluetoothGattStatus::GATT_READ_NOT_PERMITTED;
-      break;
-
-    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_AUTHORIZED:
-      ret = arc::mojom::BluetoothGattStatus::GATT_INSUFFICIENT_AUTHENTICATION;
-      break;
-
-    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_SUPPORTED:
-      ret = arc::mojom::BluetoothGattStatus::GATT_REQUEST_NOT_SUPPORTED;
-      break;
-
-    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_UNKNOWN:
-    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_FAILED:
-    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_IN_PROGRESS:
-    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_PAIRED:
-      ret = arc::mojom::BluetoothGattStatus::GATT_FAILURE;
-      break;
-
-    default:
-      ret = arc::mojom::BluetoothGattStatus::GATT_FAILURE;
-      break;
-  }
-  return ret;
-}
-
-// static
 arc::mojom::BluetoothSdpAttributePtr
 TypeConverter<arc::mojom::BluetoothSdpAttributePtr,
               bluez::BluetoothServiceAttributeValueBlueZ>::

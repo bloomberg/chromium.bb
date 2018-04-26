@@ -121,6 +121,29 @@ using CreateSdpRecordCallback =
 using RemoveSdpRecordCallback =
     base::OnceCallback<void(arc::mojom::BluetoothStatus)>;
 
+arc::mojom::BluetoothGattStatus ConvertGattErrorCodeToStatus(
+    const device::BluetoothGattService::GattErrorCode& error_code,
+    bool is_read_operation) {
+  switch (error_code) {
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_INVALID_LENGTH:
+      return arc::mojom::BluetoothGattStatus::GATT_INVALID_ATTRIBUTE_LENGTH;
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_PERMITTED:
+      return is_read_operation
+                 ? arc::mojom::BluetoothGattStatus::GATT_READ_NOT_PERMITTED
+                 : arc::mojom::BluetoothGattStatus::GATT_WRITE_NOT_PERMITTED;
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_AUTHORIZED:
+      return arc::mojom::BluetoothGattStatus::GATT_INSUFFICIENT_AUTHENTICATION;
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_SUPPORTED:
+      return arc::mojom::BluetoothGattStatus::GATT_REQUEST_NOT_SUPPORTED;
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_UNKNOWN:
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_FAILED:
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_IN_PROGRESS:
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_PAIRED:
+    default:
+      return arc::mojom::BluetoothGattStatus::GATT_FAILURE;
+  }
+}
+
 // Example of identifier: /org/bluez/hci0/dev_E0_CF_65_8C_86_1A/service001a
 // Convert the last 4 characters of |identifier| to an
 // int, by interpreting them as hexadecimal digits.
@@ -165,8 +188,8 @@ void OnGattOperationDone(arc::ArcBluetoothBridge::GattStatusCallback callback) {
 // GattStatus back to Android.
 void OnGattOperationError(arc::ArcBluetoothBridge::GattStatusCallback callback,
                           BluetoothGattService::GattErrorCode error_code) {
-  std::move(callback).Run(
-      mojo::ConvertTo<arc::mojom::BluetoothGattStatus>(error_code));
+  std::move(callback).Run(ConvertGattErrorCodeToStatus(
+      error_code, /* is_read_operation = */ false));
 }
 
 // Common success callback for ReadGattCharacteristic and ReadGattDescriptor
@@ -185,7 +208,7 @@ void OnGattReadError(GattReadCallback callback,
   arc::mojom::BluetoothGattValuePtr gattValue =
       arc::mojom::BluetoothGattValue::New();
   gattValue->status =
-      mojo::ConvertTo<arc::mojom::BluetoothGattStatus>(error_code);
+      ConvertGattErrorCodeToStatus(error_code, /* is_read_operation = */ true);
   std::move(callback).Run(std::move(gattValue));
 }
 
