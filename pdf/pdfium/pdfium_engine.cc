@@ -51,7 +51,7 @@
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/var_dictionary.h"
 #include "printing/units.h"
-#include "third_party/pdfium/public/cpp/fpdf_deleters.h"
+#include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
 #include "third_party/pdfium/public/fpdf_attachment.h"
 #include "third_party/pdfium/public/fpdf_catalog.h"
@@ -1608,7 +1608,7 @@ FPDF_DOCUMENT PDFiumEngine::CreateSinglePageRasterPdf(
   }
 
   {
-    std::unique_ptr<void, FPDFPageDeleter> temp_page_holder(
+    ScopedFPDFPage temp_page_holder(
         FPDFPage_New(temp_doc, 0, source_page_width, source_page_height));
     FPDF_PAGE temp_page = temp_page_holder.get();
     if (encoded) {
@@ -4720,7 +4720,7 @@ bool PDFiumEngineExports::RenderPDFPageToDC(const void* pdf_buffer,
                                             int page_number,
                                             const RenderingSettings& settings,
                                             HDC dc) {
-  std::unique_ptr<void, FPDFDocumentDeleter> doc(
+  ScopedFPDFDocument doc(
       FPDF_LoadMemDocument(pdf_buffer, buffer_size, nullptr));
   if (!doc)
     return false;
@@ -4808,7 +4808,7 @@ bool PDFiumEngineExports::RenderPDFPageToBitmap(
     int page_number,
     const RenderingSettings& settings,
     void* bitmap_buffer) {
-  std::unique_ptr<void, FPDFDocumentDeleter> doc(
+  ScopedFPDFDocument doc(
       FPDF_LoadMemDocument(pdf_buffer, pdf_buffer_size, nullptr));
   if (!doc)
     return false;
@@ -4843,7 +4843,7 @@ bool PDFiumEngineExports::GetPDFDocInfo(const void* pdf_buffer,
                                         int buffer_size,
                                         int* page_count,
                                         double* max_page_width) {
-  std::unique_ptr<void, FPDFDocumentDeleter> doc(
+  ScopedFPDFDocument doc(
       FPDF_LoadMemDocument(pdf_buffer, buffer_size, nullptr));
   if (!doc)
     return false;
@@ -4875,7 +4875,7 @@ bool PDFiumEngineExports::GetPDFPageSizeByIndex(const void* pdf_buffer,
                                                 int page_number,
                                                 double* width,
                                                 double* height) {
-  std::unique_ptr<void, FPDFDocumentDeleter> doc(
+  ScopedFPDFDocument doc(
       FPDF_LoadMemDocument(pdf_buffer, pdf_buffer_size, nullptr));
   if (!doc)
     return false;
