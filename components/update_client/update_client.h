@@ -275,8 +275,8 @@ using Callback = base::OnceCallback<void(Error error)>;
 class UpdateClient : public base::RefCounted<UpdateClient> {
  public:
   using CrxDataCallback =
-      base::OnceCallback<void(const std::vector<std::string>& ids,
-                              std::vector<CrxComponent>* components)>;
+      base::OnceCallback<std::vector<std::unique_ptr<CrxComponent>>(
+          const std::vector<std::string>& ids)>;
 
   // Defines an interface to observe the UpdateClient. It provides
   // notifications when state changes occur for the service itself or for the

@@ -27,12 +27,12 @@
 
 // The state machine representing how a CRX component changes during an update.
 //
-//     +------------------------> kNew <---------------------+--------+
-//     |                            |                        |        |
-//     |                            V                        |        |
-//     |                        kChecking                    |        |
-//     |                            |                        |        |
-//     |                error       V     no           no    |        |
+//     +------------------------- kNew
+//     |                            |
+//     |                            V
+//     |                        kChecking
+//     |                            |
+//     V                error       V     no           no
 //  kUpdateError <------------- [update?] -> [action?] -> kUpToDate  kUpdated
 //     ^                            |           |            ^        ^
 //     |                        yes |           | yes        |        |
@@ -212,7 +212,8 @@ CrxUpdateItem Component::GetCrxUpdateItem() const {
   CrxUpdateItem crx_update_item;
   crx_update_item.state = state_->state();
   crx_update_item.id = id_;
-  crx_update_item.component = crx_component_;
+  if (crx_component_)
+    crx_update_item.component = *crx_component_;
   crx_update_item.last_check = last_check_;
   crx_update_item.next_version = next_version_;
   crx_update_item.next_fp = next_fp_;
@@ -256,6 +257,9 @@ void Component::Uninstall(const base::Version& version, int reason) {
 
   DCHECK_EQ(ComponentState::kNew, state());
 
+  crx_component_ = std::make_unique<CrxComponent>();
+  crx_component_->version = version;
+
   previous_version_ = version;
   next_version_ = base::Version("0");
   extra_code1_ = reason;
@@ -274,7 +278,8 @@ void Component::UpdateCheckComplete() {
 
 bool Component::CanDoBackgroundDownload() const {
   // Foreground component updates are always downloaded in foreground.
-  return !is_foreground() && crx_component_.allows_background_download &&
+  return !is_foreground() &&
+         (crx_component() && crx_component()->allows_background_download) &&
          update_context_.config->EnabledBackgroundDownloader();
 }
 
@@ -361,6 +366,7 @@ void Component::StateChecking::DoHandle() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto& component = State::component();
+  DCHECK(component.crx_component());
 
   component.last_check_ = base::TimeTicks::Now();
   component.update_check_complete_ = base::BindOnce(
@@ -421,11 +427,13 @@ void Component::StateCanUpdate::DoHandle() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto& component = State::component();
+  DCHECK(component.crx_component());
 
   component.is_update_available_ = true;
   component.NotifyObservers(Events::COMPONENT_UPDATE_FOUND);
 
-  if (component.crx_component_.supports_group_policy_enable_component_updates &&
+  if (component.crx_component()
+          ->supports_group_policy_enable_component_updates &&
       !component.update_context_.enabled_component_updates) {
     component.error_category_ = static_cast<int>(ErrorCategory::kServiceError);
     component.error_code_ = static_cast<int>(ServiceError::UPDATE_DISABLED);
@@ -462,6 +470,7 @@ void Component::StateUpToDate::DoHandle() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto& component = State::component();
+  DCHECK(component.crx_component());
 
   component.NotifyObservers(Events::COMPONENT_NOT_UPDATED);
   EndState();
@@ -479,6 +488,8 @@ void Component::StateDownloadingDiff::DoHandle() {
 
   const auto& component = Component::State::component();
   const auto& update_context = component.update_context_;
+
+  DCHECK(component.crx_component());
 
   crx_downloader_ = update_context.crx_downloader_factory(
       component.CanDoBackgroundDownload(),
@@ -548,6 +559,8 @@ void Component::StateDownloading::DoHandle() {
   const auto& component = Component::State::component();
   const auto& update_context = component.update_context_;
 
+  DCHECK(component.crx_component());
+
   crx_downloader_ = update_context.crx_downloader_factory(
       component.CanDoBackgroundDownload(),
       update_context.config->RequestContext());
@@ -615,6 +628,8 @@ void Component::StateUpdatingDiff::DoHandle() {
   const auto& component = Component::State::component();
   const auto& update_context = component.update_context_;
 
+  DCHECK(component.crx_component());
+
   component.NotifyObservers(Events::COMPONENT_UPDATE_READY);
 
   // Create a fresh connector that can be used on the other task runner.
@@ -627,8 +642,8 @@ void Component::StateUpdatingDiff::DoHandle() {
           base::BindOnce(
               &update_client::StartInstallOnBlockingTaskRunner,
               base::ThreadTaskRunnerHandle::Get(),
-              component.crx_component_.pk_hash, component.crx_path_,
-              component.next_fp_, component.crx_component_.installer,
+              component.crx_component()->pk_hash, component.crx_path_,
+              component.next_fp_, component.crx_component()->installer,
               std::move(connector),
               base::BindOnce(&Component::StateUpdatingDiff::InstallComplete,
                              base::Unretained(this))));
@@ -679,6 +694,8 @@ void Component::StateUpdating::DoHandle() {
   const auto& component = Component::State::component();
   const auto& update_context = component.update_context_;
 
+  DCHECK(component.crx_component());
+
   component.NotifyObservers(Events::COMPONENT_UPDATE_READY);
 
   // Create a fresh connector that can be used on the other task runner.
@@ -690,8 +707,8 @@ void Component::StateUpdating::DoHandle() {
                  base::BindOnce(
                      &update_client::StartInstallOnBlockingTaskRunner,
                      base::ThreadTaskRunnerHandle::Get(),
-                     component.crx_component_.pk_hash, component.crx_path_,
-                     component.next_fp_, component.crx_component_.installer,
+                     component.crx_component()->pk_hash, component.crx_path_,
+                     component.next_fp_, component.crx_component()->installer,
                      std::move(connector),
                      base::BindOnce(&Component::StateUpdating::InstallComplete,
                                     base::Unretained(this))));
@@ -737,8 +754,10 @@ void Component::StateUpdated::DoHandle() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto& component = State::component();
-  component.crx_component_.version = component.next_version_;
-  component.crx_component_.fingerprint = component.next_fp_;
+  DCHECK(component.crx_component());
+
+  component.crx_component_->version = component.next_version_;
+  component.crx_component_->fingerprint = component.next_fp_;
 
   component.AppendEvent(BuildUpdateCompleteEventElement(component));
 
@@ -759,6 +778,8 @@ void Component::StateUninstalled::DoHandle() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto& component = State::component();
+  DCHECK(component.crx_component());
+
   component.AppendEvent(BuildUninstalledEventElement(component));
 
   EndState();
@@ -775,6 +796,8 @@ void Component::StateRun::DoHandle() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const auto& component = State::component();
+  DCHECK(component.crx_component());
+
   action_runner_ = std::make_unique<ActionRunner>(component);
   action_runner_->Run(
       base::BindOnce(&StateRun::ActionRunComplete, base::Unretained(this)));

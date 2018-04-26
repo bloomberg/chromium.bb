@@ -70,8 +70,10 @@ void PingSender::SendPing(const Component& component, Callback callback) {
     return;
   }
 
+  DCHECK(component.crx_component());
+
   auto urls(config_->PingUrl());
-  if (component.crx_component().requires_network_encryption)
+  if (component.crx_component()->requires_network_encryption)
     RemoveUnsecureUrls(&urls);
 
   if (urls.empty()) {

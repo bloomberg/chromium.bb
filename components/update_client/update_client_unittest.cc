@@ -213,14 +213,16 @@ base::FilePath UpdateClientTest::TestFilePath(const char* file) {
 TEST_F(UpdateClientTest, OneCrxNoUpdate) {
   class DataCallbackMock {
    public:
-    static void Callback(const std::vector<std::string>& ids,
-                         std::vector<CrxComponent>* components) {
-      CrxComponent crx;
-      crx.name = "test_jebg";
-      crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-      crx.version = base::Version("0.9");
-      crx.installer = base::MakeRefCounted<TestInstaller>();
-      components->push_back(crx);
+    static std::vector<std::unique_ptr<CrxComponent>> Callback(
+        const std::vector<std::string>& ids) {
+      std::unique_ptr<CrxComponent> crx = std::make_unique<CrxComponent>();
+      crx->name = "test_jebg";
+      crx->pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
+      crx->version = base::Version("0.9");
+      crx->installer = base::MakeRefCounted<TestInstaller>();
+      std::vector<std::unique_ptr<CrxComponent>> component;
+      component.push_back(std::move(crx));
+      return component;
     }
   };
 
@@ -319,22 +321,24 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
 TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
   class DataCallbackMock {
    public:
-    static void Callback(const std::vector<std::string>& ids,
-                         std::vector<CrxComponent>* components) {
-      CrxComponent crx1;
-      crx1.name = "test_jebg";
-      crx1.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-      crx1.version = base::Version("0.9");
-      crx1.installer = base::MakeRefCounted<TestInstaller>();
+    static std::vector<std::unique_ptr<CrxComponent>> Callback(
+        const std::vector<std::string>& ids) {
+      std::unique_ptr<CrxComponent> crx1 = std::make_unique<CrxComponent>();
+      crx1->name = "test_jebg";
+      crx1->pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
+      crx1->version = base::Version("0.9");
+      crx1->installer = base::MakeRefCounted<TestInstaller>();
 
-      CrxComponent crx2;
-      crx2.name = "test_abag";
-      crx2.pk_hash.assign(abag_hash, abag_hash + arraysize(abag_hash));
-      crx2.version = base::Version("2.2");
-      crx2.installer = base::MakeRefCounted<TestInstaller>();
+      std::unique_ptr<CrxComponent> crx2 = std::make_unique<CrxComponent>();
+      crx2->name = "test_abag";
+      crx2->pk_hash.assign(abag_hash, abag_hash + arraysize(abag_hash));
+      crx2->version = base::Version("2.2");
+      crx2->installer = base::MakeRefCounted<TestInstaller>();
 
-      components->push_back(crx1);
-      components->push_back(crx2);
+      std::vector<std::unique_ptr<CrxComponent>> component;
+      component.push_back(std::move(crx1));
+      component.push_back(std::move(crx2));
+      return component;
     }
   };
 
@@ -532,22 +536,24 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
 TEST_F(UpdateClientTest, TwoCrxUpdate) {
   class DataCallbackMock {
    public:
-    static void Callback(const std::vector<std::string>& ids,
-                         std::vector<CrxComponent>* components) {
-      CrxComponent crx1;
-      crx1.name = "test_jebg";
-      crx1.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-      crx1.version = base::Version("0.9");
-      crx1.installer = base::MakeRefCounted<TestInstaller>();
+    static std::vector<std::unique_ptr<CrxComponent>> Callback(
+        const std::vector<std::string>& ids) {
+      std::unique_ptr<CrxComponent> crx1 = std::make_unique<CrxComponent>();
+      crx1->name = "test_jebg";
+      crx1->pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
+      crx1->version = base::Version("0.9");
+      crx1->installer = base::MakeRefCounted<TestInstaller>();
 
-      CrxComponent crx2;
-      crx2.name = "test_ihfo";
-      crx2.pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
-      crx2.version = base::Version("0.8");
-      crx2.installer = base::MakeRefCounted<TestInstaller>();
+      std::unique_ptr<CrxComponent> crx2 = std::make_unique<CrxComponent>();
+      crx2->name = "test_ihfo";
+      crx2->pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
+      crx2->version = base::Version("0.8");
+      crx2->installer = base::MakeRefCounted<TestInstaller>();
 
-      components->push_back(crx1);
-      components->push_back(crx2);
+      std::vector<std::unique_ptr<CrxComponent>> component;
+      component.push_back(std::move(crx1));
+      component.push_back(std::move(crx2));
+      return component;
     }
   };
 
@@ -804,22 +810,24 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
 TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
   class DataCallbackMock {
    public:
-    static void Callback(const std::vector<std::string>& ids,
-                         std::vector<CrxComponent>* components) {
-      CrxComponent crx1;
-      crx1.name = "test_jebg";
-      crx1.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-      crx1.version = base::Version("0.9");
-      crx1.installer = base::MakeRefCounted<TestInstaller>();
+    static std::vector<std::unique_ptr<CrxComponent>> Callback(
+        const std::vector<std::string>& ids) {
+      std::unique_ptr<CrxComponent> crx1 = std::make_unique<CrxComponent>();
+      crx1->name = "test_jebg";
+      crx1->pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
+      crx1->version = base::Version("0.9");
+      crx1->installer = base::MakeRefCounted<TestInstaller>();
 
-      CrxComponent crx2;
-      crx2.name = "test_ihfo";
-      crx2.pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
-      crx2.version = base::Version("0.8");
-      crx2.installer = base::MakeRefCounted<TestInstaller>();
+      std::unique_ptr<CrxComponent> crx2 = std::make_unique<CrxComponent>();
+      crx2->name = "test_ihfo";
+      crx2->pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
+      crx2->version = base::Version("0.8");
+      crx2->installer = base::MakeRefCounted<TestInstaller>();
 
-      components->push_back(crx1);
-      components->push_back(crx2);
+      std::vector<std::unique_ptr<CrxComponent>> component;
+      component.push_back(std::move(crx1));
+      component.push_back(std::move(crx2));
+      return component;
     }
   };
 
@@ -1068,8 +1076,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
 TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
   class DataCallbackMock {
    public:
-    static void Callback(const std::vector<std::string>& ids,
-                         std::vector<CrxComponent>* components) {
+    static std::vector<std::unique_ptr<CrxComponent>> Callback(
+        const std::vector<std::string>& ids) {
       static int num_calls = 0;
 
       // Must use the same stateful installer object.
@@ -1078,19 +1086,21 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
 
       ++num_calls;
 
-      CrxComponent crx;
-      crx.name = "test_ihfo";
-      crx.pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
-      crx.installer = installer;
+      std::unique_ptr<CrxComponent> crx = std::make_unique<CrxComponent>();
+      crx->name = "test_ihfo";
+      crx->pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
+      crx->installer = installer;
       if (num_calls == 1) {
-        crx.version = base::Version("0.8");
+        crx->version = base::Version("0.8");
       } else if (num_calls == 2) {
-        crx.version = base::Version("1.0");
+        crx->version = base::Version("1.0");
       } else {
         NOTREACHED();
       }
 
-      components->push_back(crx);
+      std::vector<std::unique_ptr<CrxComponent>> component;
+      component.push_back(std::move(crx));
+      return component;
     }
   };
 
@@ -1408,8 +1418,8 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
   class DataCallbackMock {
    public:
-    static void Callback(const std::vector<std::string>& ids,
-                         std::vector<CrxComponent>* components) {
+    static std::vector<std::unique_ptr<CrxComponent>> Callback(
+        const std::vector<std::string>& ids) {
       scoped_refptr<MockInstaller> installer =
           base::MakeRefCounted<MockInstaller>();
 
@@ -1418,12 +1428,15 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
       EXPECT_CALL(*installer, GetInstalledFile(_, _)).Times(0);
       EXPECT_CALL(*installer, Uninstall()).Times(0);
 
-      CrxComponent crx;
-      crx.name = "test_jebg";
-      crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-      crx.version = base::Version("0.9");
-      crx.installer = installer;
-      components->push_back(crx);
+      std::unique_ptr<CrxComponent> crx = std::make_unique<CrxComponent>();
+      crx->name = "test_jebg";
+      crx->pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
+      crx->version = base::Version("0.9");
+      crx->installer = installer;
+
+      std::vector<std::unique_ptr<CrxComponent>> component;
+      component.push_back(std::move(crx));
+      return component;
     }
   };
 
@@ -1593,8 +1606,8 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
   class DataCallbackMock {
    public:
-    static void Callback(const std::vector<std::string>& ids,
-                         std::vector<CrxComponent>* components) {
+    static std::vector<std::unique_ptr<CrxComponent>> Callback(
+        const std::vector<std::string>& ids) {
       static int num_calls = 0;
 
       // Must use the same stateful installer object.
@@ -1603,19 +1616,21 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 
       ++num_calls;
 
-      CrxComponent crx;
-      crx.name = "test_ihfo";
-      crx.pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
-      crx.installer = installer;
+      std::unique_ptr<CrxComponent> crx = std::make_unique<CrxComponent>();
+      crx->name = "test_ihfo";
+      crx->pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
+      crx->installer = installer;
       if (num_calls == 1) {
-        crx.version = base::Version("0.8");
+        crx->version = base::Version("0.8");
       } else if (num_calls == 2) {
-        crx.version = base::Version("1.0");
+        crx->version = base::Version("1.0");
       } else {
         NOTREACHED();
       }
 
-      components->push_back(crx);
+      std::vector<std::unique_ptr<CrxComponent>> component;
+      component.push_back(std::move(crx));
+      return component;
     }
   };
 
@@ -1911,14 +1926,16 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
   class DataCallbackMock {
    public:
-    static void Callback(const std::vector<std::string>& ids,
-                         std::vector<CrxComponent>* components) {
-      CrxComponent crx;
-      crx.name = "test_jebg";
-      crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-      crx.version = base::Version("0.9");
-      crx.installer = base::MakeRefCounted<TestInstaller>();
-      components->push_back(crx);
+    static std::vector<std::unique_ptr<CrxComponent>> Callback(
+        const std::vector<std::string>& ids) {
+      std::unique_ptr<CrxComponent> crx = std::make_unique<CrxComponent>();
+      crx->name = "test_jebg";
+      crx->pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
+      crx->version = base::Version("0.9");
+      crx->installer = base::MakeRefCounted<TestInstaller>();
+      std::vector<std::unique_ptr<CrxComponent>> component;
+      component.push_back(std::move(crx));
+      return component;
     }
   };
 
@@ -2028,15 +2045,17 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
 TEST_F(UpdateClientTest, OneCrxInstall) {
   class DataCallbackMock {
    public:
-    static void Callback(const std::vector<std::string>& ids,
-                         std::vector<CrxComponent>* components) {
-      CrxComponent crx;
-      crx.name = "test_jebg";
-      crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-      crx.version = base::Version("0.0");
-      crx.installer = base::MakeRefCounted<TestInstaller>();
+    static std::vector<std::unique_ptr<CrxComponent>> Callback(
+        const std::vector<std::string>& ids) {
+      std::unique_ptr<CrxComponent> crx = std::make_unique<CrxComponent>();
+      crx->name = "test_jebg";
+      crx->pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
+      crx->version = base::Version("0.0");
+      crx->installer = base::MakeRefCounted<TestInstaller>();
 
-      components->push_back(crx);
+      std::vector<std::unique_ptr<CrxComponent>> component;
+      component.push_back(std::move(crx));
+      return component;
     }
   };
 
@@ -2212,15 +2231,16 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
 TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
   class DataCallbackMock {
    public:
-    static void Callback(const std::vector<std::string>& ids,
-                         std::vector<CrxComponent>* components) {
-      CrxComponent crx;
-      crx.name = "test_jebg";
-      crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-      crx.version = base::Version("0.0");
-      crx.installer = base::MakeRefCounted<TestInstaller>();
-
-      components->push_back(crx);
+    static std::vector<std::unique_ptr<CrxComponent>> Callback(
+        const std::vector<std::string>& ids) {
+      std::unique_ptr<CrxComponent> crx = std::make_unique<CrxComponent>();
+      crx->name = "test_jebg";
+      crx->pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
+      crx->version = base::Version("0.0");
+      crx->installer = base::MakeRefCounted<TestInstaller>();
+      std::vector<std::unique_ptr<CrxComponent>> component;
+      component.push_back(std::move(crx));
+      return component;
     }
   };
 
@@ -2337,8 +2357,10 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
 TEST_F(UpdateClientTest, EmptyIdList) {
   class DataCallbackMock {
    public:
-    static void Callback(const std::vector<std::string>& ids,
-                         std::vector<CrxComponent>* components) {}
+    static std::vector<std::unique_ptr<CrxComponent>> Callback(
+        const std::vector<std::string>& ids) {
+      return {};
+    }
   };
 
   class CompletionCallbackMock {
@@ -2474,14 +2496,16 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
 TEST_F(UpdateClientTest, RetryAfter) {
   class DataCallbackMock {
    public:
-    static void Callback(const std::vector<std::string>& ids,
-                         std::vector<CrxComponent>* components) {
-      CrxComponent crx;
-      crx.name = "test_jebg";
-      crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-      crx.version = base::Version("0.9");
-      crx.installer = base::MakeRefCounted<TestInstaller>();
-      components->push_back(crx);
+    static std::vector<std::unique_ptr<CrxComponent>> Callback(
+        const std::vector<std::string>& ids) {
+      std::unique_ptr<CrxComponent> crx = std::make_unique<CrxComponent>();
+      crx->name = "test_jebg";
+      crx->pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
+      crx->version = base::Version("0.9");
+      crx->installer = base::MakeRefCounted<TestInstaller>();
+      std::vector<std::unique_ptr<CrxComponent>> component;
+      component.push_back(std::move(crx));
+      return component;
     }
   };
 
@@ -2666,23 +2690,25 @@ TEST_F(UpdateClientTest, RetryAfter) {
 TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
   class DataCallbackMock {
    public:
-    static void Callback(const std::vector<std::string>& ids,
-                         std::vector<CrxComponent>* components) {
-      CrxComponent crx1;
-      crx1.name = "test_jebg";
-      crx1.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-      crx1.version = base::Version("0.9");
-      crx1.installer = base::MakeRefCounted<TestInstaller>();
-      crx1.supports_group_policy_enable_component_updates = true;
+    static std::vector<std::unique_ptr<CrxComponent>> Callback(
+        const std::vector<std::string>& ids) {
+      std::unique_ptr<CrxComponent> crx1 = std::make_unique<CrxComponent>();
+      crx1->name = "test_jebg";
+      crx1->pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
+      crx1->version = base::Version("0.9");
+      crx1->installer = base::MakeRefCounted<TestInstaller>();
+      crx1->supports_group_policy_enable_component_updates = true;
 
-      CrxComponent crx2;
-      crx2.name = "test_ihfo";
-      crx2.pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
-      crx2.version = base::Version("0.8");
-      crx2.installer = base::MakeRefCounted<TestInstaller>();
+      std::unique_ptr<CrxComponent> crx2 = std::make_unique<CrxComponent>();
+      crx2->name = "test_ihfo";
+      crx2->pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
+      crx2->version = base::Version("0.8");
+      crx2->installer = base::MakeRefCounted<TestInstaller>();
 
-      components->push_back(crx1);
-      components->push_back(crx2);
+      std::vector<std::unique_ptr<CrxComponent>> component;
+      component.push_back(std::move(crx1));
+      component.push_back(std::move(crx2));
+      return component;
     }
   };
 
@@ -2924,14 +2950,16 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
 TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
   class DataCallbackMock {
    public:
-    static void Callback(const std::vector<std::string>& ids,
-                         std::vector<CrxComponent>* components) {
-      CrxComponent crx;
-      crx.name = "test_jebg";
-      crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-      crx.version = base::Version("0.9");
-      crx.installer = base::MakeRefCounted<TestInstaller>();
-      components->push_back(crx);
+    static std::vector<std::unique_ptr<CrxComponent>> Callback(
+        const std::vector<std::string>& ids) {
+      std::unique_ptr<CrxComponent> crx = std::make_unique<CrxComponent>();
+      crx->name = "test_jebg";
+      crx->pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
+      crx->version = base::Version("0.9");
+      crx->installer = base::MakeRefCounted<TestInstaller>();
+      std::vector<std::unique_ptr<CrxComponent>> component;
+      component.push_back(std::move(crx));
+      return component;
     }
   };
 
@@ -3170,14 +3198,15 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
   // The action is a program which returns 1877345072 as a hardcoded value.
   update_client->Install(
       std::string("gjpmebpgbhcamgdgjcmnjfhggjpgcimm"),
-      base::BindOnce([](const std::vector<std::string>& ids,
-                        std::vector<CrxComponent>* components) {
-        CrxComponent crx;
-        crx.name = "test_niea";
-        crx.pk_hash.assign(gjpm_hash, gjpm_hash + arraysize(gjpm_hash));
-        crx.version = base::Version("0.0");
-        crx.installer = base::MakeRefCounted<VersionedTestInstaller>();
-        components->push_back(crx);
+      base::BindOnce([](const std::vector<std::string>& ids) {
+        auto crx = std::make_unique<CrxComponent>();
+        crx->name = "test_niea";
+        crx->pk_hash.assign(gjpm_hash, gjpm_hash + arraysize(gjpm_hash));
+        crx->version = base::Version("0.0");
+        crx->installer = base::MakeRefCounted<VersionedTestInstaller>();
+        std::vector<std::unique_ptr<CrxComponent>> component;
+        component.push_back(std::move(crx));
+        return component;
       }),
       base::BindOnce(
           [](base::OnceClosure quit_closure, Error error) {
@@ -3278,7 +3307,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
     base::OnceClosure quit_closure = runloop.QuitClosure();
 
     auto config = base::MakeRefCounted<TestConfigurator>();
-    scoped_refptr<ComponentUnpacker> component_unpacker = new ComponentUnpacker(
+    auto component_unpacker = base::MakeRefCounted<ComponentUnpacker>(
         std::vector<uint8_t>(std::begin(gjpm_hash), std::end(gjpm_hash)),
         TestFilePath("runaction_test_win.crx3"), nullptr,
         config->CreateServiceManagerConnector());
@@ -3317,15 +3346,16 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
       ids,
       base::BindOnce(
           [](const base::FilePath& unpack_path,
-             const std::vector<std::string>& ids,
-             std::vector<CrxComponent>* components) {
-            CrxComponent crx;
-            crx.name = "test_niea";
-            crx.pk_hash.assign(gjpm_hash, gjpm_hash + arraysize(gjpm_hash));
-            crx.version = base::Version("1.0");
-            crx.installer =
+             const std::vector<std::string>& ids) {
+            auto crx = std::make_unique<CrxComponent>();
+            crx->name = "test_niea";
+            crx->pk_hash.assign(gjpm_hash, gjpm_hash + arraysize(gjpm_hash));
+            crx->version = base::Version("1.0");
+            crx->installer =
                 base::MakeRefCounted<ReadOnlyTestInstaller>(unpack_path);
-            components->push_back(crx);
+            std::vector<std::unique_ptr<CrxComponent>> component;
+            component.push_back(std::move(crx));
+            return component;
           },
           unpack_path),
       false,

@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_UPDATER_UPDATE_DATA_PROVIDER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -47,9 +48,9 @@ class UpdateDataProvider : public base::RefCounted<UpdateDataProvider> {
   void Shutdown();
 
   // Matches update_client::UpdateClient::CrxDataCallback
-  void GetData(const ExtensionUpdateDataMap& update_info,
-               const std::vector<std::string>& ids,
-               std::vector<update_client::CrxComponent>* data);
+  std::vector<std::unique_ptr<update_client::CrxComponent>> GetData(
+      const ExtensionUpdateDataMap& update_info,
+      const std::vector<std::string>& ids);
 
  private:
   friend class base::RefCounted<UpdateDataProvider>;

@@ -4,6 +4,8 @@
 
 #include "extensions/browser/updater/update_data_provider.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -58,12 +60,12 @@ void UpdateDataProvider::Shutdown() {
   browser_context_ = nullptr;
 }
 
-void UpdateDataProvider::GetData(
-    const ExtensionUpdateDataMap& update_info,
-    const std::vector<std::string>& ids,
-    std::vector<update_client::CrxComponent>* data) {
+std::vector<std::unique_ptr<update_client::CrxComponent>>
+UpdateDataProvider::GetData(const ExtensionUpdateDataMap& update_info,
+                            const std::vector<std::string>& ids) {
+  std::vector<std::unique_ptr<update_client::CrxComponent>> data;
   if (!browser_context_)
-    return;
+    return data;
   const ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
   const ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(browser_context_);
   for (const auto& id : ids) {
@@ -72,8 +74,8 @@ void UpdateDataProvider::GetData(
       continue;
     DCHECK_GT(update_info.count(id), 0ULL);
     const ExtensionUpdateData& extension_data = update_info.at(id);
-    data->push_back(update_client::CrxComponent());
-    update_client::CrxComponent* info = &data->back();
+    data.push_back(std::make_unique<update_client::CrxComponent>());
+    update_client::CrxComponent* info = data.back().get();
     std::string pubkey_bytes;
     base::Base64Decode(extension->public_key(), &pubkey_bytes);
     info->pk_hash.resize(crypto::kSHA256Length, 0);
@@ -105,6 +107,7 @@ void UpdateDataProvider::GetData(
     info->install_location =
         ManifestFetchData::GetSimpleLocationString(extension->location());
   }
+  return data;
 }
 
 void UpdateDataProvider::RunInstallCallback(

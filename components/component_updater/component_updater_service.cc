@@ -291,7 +291,9 @@ void CrxUpdateService::OnDemandUpdateInternal(const std::string& id,
   UMA_HISTOGRAM_ENUMERATION("ComponentUpdater.Calls", UPDATE_TYPE_MANUAL,
                             UPDATE_TYPE_COUNT);
   update_client_->Install(
-      id, base::BindOnce(&CrxUpdateService::OnUpdate, base::Unretained(this)),
+      id,
+      base::BindOnce(&CrxUpdateService::GetCrxComponents,
+                     base::Unretained(this)),
       base::BindOnce(&CrxUpdateService::OnUpdateComplete,
                      base::Unretained(this), std::move(callback),
                      base::TimeTicks::Now()));
@@ -316,23 +318,23 @@ bool CrxUpdateService::CheckForUpdates() {
   }
 
   if (!unsecure_ids.empty()) {
-    update_client_->Update(
-        unsecure_ids,
-        base::BindOnce(&CrxUpdateService::OnUpdate, base::Unretained(this)),
-        false,
-        base::BindOnce(&CrxUpdateService::OnUpdateComplete,
-                       base::Unretained(this), Callback(),
-                       base::TimeTicks::Now()));
+    update_client_->Update(unsecure_ids,
+                           base::BindOnce(&CrxUpdateService::GetCrxComponents,
+                                          base::Unretained(this)),
+                           false,
+                           base::BindOnce(&CrxUpdateService::OnUpdateComplete,
+                                          base::Unretained(this), Callback(),
+                                          base::TimeTicks::Now()));
   }
 
   if (!secure_ids.empty()) {
-    update_client_->Update(
-        secure_ids,
-        base::BindOnce(&CrxUpdateService::OnUpdate, base::Unretained(this)),
-        false,
-        base::BindOnce(&CrxUpdateService::OnUpdateComplete,
-                       base::Unretained(this), Callback(),
-                       base::TimeTicks::Now()));
+    update_client_->Update(secure_ids,
+                           base::BindOnce(&CrxUpdateService::GetCrxComponents,
+                                          base::Unretained(this)),
+                           false,
+                           base::BindOnce(&CrxUpdateService::OnUpdateComplete,
+                                          base::Unretained(this), Callback(),
+                                          base::TimeTicks::Now()));
   }
 
   return true;
@@ -358,16 +360,17 @@ bool CrxUpdateService::GetComponentDetails(const std::string& id,
   return false;
 }
 
-void CrxUpdateService::OnUpdate(const std::vector<std::string>& ids,
-                                std::vector<CrxComponent>* components) {
+std::vector<std::unique_ptr<CrxComponent>> CrxUpdateService::GetCrxComponents(
+    const std::vector<std::string>& ids) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(components->empty());
-
+  std::vector<std::unique_ptr<CrxComponent>> components;
   for (const auto& id : ids) {
-    const update_client::CrxComponent* registered_component(GetComponent(id));
-    if (registered_component)
-      components->push_back(*registered_component);
+    const auto* registered_component = GetComponent(id);
+    components.push_back(registered_component ? std::make_unique<CrxComponent>(
+                                                    *registered_component)
+                                              : nullptr);
   }
+  return components;
 }
 
 void CrxUpdateService::OnUpdateComplete(Callback callback,

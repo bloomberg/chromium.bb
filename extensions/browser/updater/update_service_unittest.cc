@@ -48,7 +48,9 @@ class FakeUpdateClient : public update_client::UpdateClient {
 
   // Returns the data we've gotten from the CrxDataCallback for ids passed to
   // the Update function.
-  std::vector<update_client::CrxComponent>* data() { return &data_; }
+  std::vector<std::unique_ptr<update_client::CrxComponent>>* data() {
+    return &data_;
+  }
 
   // Used for tests that uninstall pings get requested properly.
   struct UninstallPing {
@@ -120,7 +122,7 @@ class FakeUpdateClient : public update_client::UpdateClient {
   friend class base::RefCounted<FakeUpdateClient>;
   ~FakeUpdateClient() override {}
 
-  std::vector<update_client::CrxComponent> data_;
+  std::vector<std::unique_ptr<update_client::CrxComponent>> data_;
   std::vector<UninstallPing> uninstall_pings_;
   std::vector<Observer*> observers_;
 
@@ -137,7 +139,7 @@ void FakeUpdateClient::Update(const std::vector<std::string>& ids,
                               CrxDataCallback crx_data_callback,
                               bool is_foreground,
                               update_client::Callback callback) {
-  std::move(crx_data_callback).Run(ids, &data_);
+  data_ = std::move(crx_data_callback).Run(ids);
 
   if (delay_update()) {
     delayed_requests_.push_back({ids, std::move(callback)});
@@ -329,12 +331,12 @@ TEST_F(UpdateServiceTest, BasicUpdateOperations) {
       update_check_params,
       base::BindOnce([](bool* executed) { *executed = true; }, &executed));
   ASSERT_TRUE(executed);
-  std::vector<update_client::CrxComponent>* data = update_client()->data();
+  const auto* data = update_client()->data();
   ASSERT_NE(nullptr, data);
   ASSERT_EQ(1u, data->size());
 
-  ASSERT_EQ(data->at(0).version, extension1->version());
-  update_client::CrxInstaller* installer = data->at(0).installer.get();
+  ASSERT_EQ(data->at(0)->version, extension1->version());
+  update_client::CrxInstaller* installer = data->at(0)->installer.get();
   ASSERT_NE(installer, nullptr);
 
   // The GetInstalledFile method is used when processing differential updates

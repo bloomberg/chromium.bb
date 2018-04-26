@@ -114,7 +114,7 @@ TEST_F(PingManagerTest, SendPing) {
 
   {
     Component component(*update_context, "abc");
-
+    component.crx_component_ = std::make_unique<CrxComponent>();
     component.state_ = std::make_unique<Component::StateUpdated>(&component);
     component.previous_version_ = base::Version("1.0");
     component.next_version_ = base::Version("2.0");
@@ -147,6 +147,7 @@ TEST_F(PingManagerTest, SendPing) {
   {
     // Test eventresult="0" is sent for failed updates.
     Component component(*update_context, "abc");
+    component.crx_component_ = std::make_unique<CrxComponent>();
     component.state_ =
         std::make_unique<Component::StateUpdateError>(&component);
     component.previous_version_ = base::Version("1.0");
@@ -170,6 +171,7 @@ TEST_F(PingManagerTest, SendPing) {
   {
     // Test the error values and the fingerprints.
     Component component(*update_context, "abc");
+    component.crx_component_ = std::make_unique<CrxComponent>();
     component.state_ =
         std::make_unique<Component::StateUpdateError>(&component);
     component.previous_version_ = base::Version("1.0");
@@ -206,6 +208,7 @@ TEST_F(PingManagerTest, SendPing) {
   {
     // Test an invalid |next_version| is not serialized.
     Component component(*update_context, "abc");
+    component.crx_component_ = std::make_unique<CrxComponent>();
     component.state_ =
         std::make_unique<Component::StateUpdateError>(&component);
     component.previous_version_ = base::Version("1.0");
@@ -229,6 +232,7 @@ TEST_F(PingManagerTest, SendPing) {
     // Test a valid |previouversion| and |next_version| = base::Version("0")
     // are serialized correctly under <event...> for uninstall.
     Component component(*update_context, "abc");
+    component.crx_component_ = std::make_unique<CrxComponent>();
     component.Uninstall(base::Version("1.2.3.4"), 0);
     component.AppendEvent(BuildUninstalledEventElement(component));
 
@@ -249,6 +253,7 @@ TEST_F(PingManagerTest, SendPing) {
   {
     // Test the download metrics.
     Component component(*update_context, "abc");
+    component.crx_component_ = std::make_unique<CrxComponent>();
     component.state_ = std::make_unique<Component::StateUpdated>(&component);
     component.previous_version_ = base::Version("1.0");
     component.next_version_ = base::Version("2.0");
@@ -306,9 +311,10 @@ TEST_F(PingManagerTest, RequiresEncryption) {
   const auto update_context = MakeMockUpdateContext();
 
   Component component(*update_context, "abc");
+  component.crx_component_ = std::make_unique<CrxComponent>();
 
   // The default value for |requires_network_encryption| is true.
-  EXPECT_TRUE(component.crx_component_.requires_network_encryption);
+  EXPECT_TRUE(component.crx_component_->requires_network_encryption);
 
   component.state_ = std::make_unique<Component::StateUpdated>(&component);
   component.previous_version_ = base::Version("1.0");

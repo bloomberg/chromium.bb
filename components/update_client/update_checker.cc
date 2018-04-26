@@ -41,7 +41,8 @@ namespace {
 bool IsEncryptionRequired(const IdToComponentPtrMap& components) {
   for (const auto& item : components) {
     const auto& component = item.second;
-    if (component->crx_component().requires_network_encryption)
+    if (component->crx_component() &&
+        component->crx_component()->requires_network_encryption)
       return true;
   }
   return false;

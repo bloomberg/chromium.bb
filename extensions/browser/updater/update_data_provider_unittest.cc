@@ -138,9 +138,8 @@ TEST_F(UpdateDataProviderTest, GetData_NoDataAdded) {
   scoped_refptr<UpdateDataProvider> data_provider =
       base::MakeRefCounted<UpdateDataProvider>(nullptr);
 
-  std::vector<std::string> ids({kExtensionId1});
-  std::vector<update_client::CrxComponent> data;
-  data_provider->GetData(ExtensionUpdateDataMap(), ids, &data);
+  const auto data =
+      data_provider->GetData(ExtensionUpdateDataMap(), {kExtensionId1});
   EXPECT_EQ(0UL, data.size());
 }
 
@@ -156,14 +155,13 @@ TEST_F(UpdateDataProviderTest, GetData_EnabledExtension) {
   update_data[kExtensionId1] = {};
 
   std::vector<std::string> ids({kExtensionId1});
-  std::vector<update_client::CrxComponent> data;
-  data_provider->GetData(update_data, ids, &data);
+  const auto data = data_provider->GetData(update_data, ids);
 
   ASSERT_EQ(1UL, data.size());
-  EXPECT_EQ(version, data[0].version.GetString());
-  EXPECT_NE(nullptr, data[0].installer.get());
-  EXPECT_EQ(0UL, data[0].disabled_reasons.size());
-  EXPECT_EQ("internal", data[0].install_location);
+  EXPECT_EQ(version, data[0]->version.GetString());
+  EXPECT_NE(nullptr, data[0]->installer.get());
+  EXPECT_EQ(0UL, data[0]->disabled_reasons.size());
+  EXPECT_EQ("internal", data[0]->install_location);
 }
 
 TEST_F(UpdateDataProviderTest, GetData_EnabledExtensionWithData) {
@@ -180,16 +178,14 @@ TEST_F(UpdateDataProviderTest, GetData_EnabledExtensionWithData) {
   info.is_corrupt_reinstall = true;
   info.install_source = "webstore";
 
-  std::vector<std::string> ids({kExtensionId1});
-  std::vector<update_client::CrxComponent> data;
-  data_provider->GetData(update_data, ids, &data);
+  const auto data = data_provider->GetData(update_data, {kExtensionId1});
 
   ASSERT_EQ(1UL, data.size());
-  EXPECT_EQ("0.0.0.0", data[0].version.GetString());
-  EXPECT_EQ("webstore", data[0].install_source);
-  EXPECT_EQ("external", data[0].install_location);
-  EXPECT_NE(nullptr, data[0].installer.get());
-  EXPECT_EQ(0UL, data[0].disabled_reasons.size());
+  EXPECT_EQ("0.0.0.0", data[0]->version.GetString());
+  EXPECT_EQ("webstore", data[0]->install_source);
+  EXPECT_EQ("external", data[0]->install_location);
+  EXPECT_NE(nullptr, data[0]->installer.get());
+  EXPECT_EQ(0UL, data[0]->disabled_reasons.size());
 }
 
 TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_WithNoReason) {
@@ -204,17 +200,15 @@ TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_WithNoReason) {
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
 
-  std::vector<std::string> ids({kExtensionId1});
-  std::vector<update_client::CrxComponent> data;
-  data_provider->GetData(update_data, ids, &data);
+  const auto data = data_provider->GetData(update_data, {kExtensionId1});
 
   ASSERT_EQ(1UL, data.size());
-  EXPECT_EQ(version, data[0].version.GetString());
-  EXPECT_NE(nullptr, data[0].installer.get());
-  ASSERT_EQ(1UL, data[0].disabled_reasons.size());
+  EXPECT_EQ(version, data[0]->version.GetString());
+  EXPECT_NE(nullptr, data[0]->installer.get());
+  ASSERT_EQ(1UL, data[0]->disabled_reasons.size());
   EXPECT_EQ(disable_reason::DisableReason::DISABLE_NONE,
-            data[0].disabled_reasons[0]);
-  EXPECT_EQ("external", data[0].install_location);
+            data[0]->disabled_reasons[0]);
+  EXPECT_EQ("external", data[0]->install_location);
 }
 
 TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_UnknownReason) {
@@ -229,17 +223,15 @@ TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_UnknownReason) {
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
 
-  std::vector<std::string> ids({kExtensionId1});
-  std::vector<update_client::CrxComponent> data;
-  data_provider->GetData(update_data, ids, &data);
+  const auto data = data_provider->GetData(update_data, {kExtensionId1});
 
   ASSERT_EQ(1UL, data.size());
-  EXPECT_EQ(version, data[0].version.GetString());
-  EXPECT_NE(nullptr, data[0].installer.get());
-  ASSERT_EQ(1UL, data[0].disabled_reasons.size());
+  EXPECT_EQ(version, data[0]->version.GetString());
+  EXPECT_NE(nullptr, data[0]->installer.get());
+  ASSERT_EQ(1UL, data[0]->disabled_reasons.size());
   EXPECT_EQ(disable_reason::DisableReason::DISABLE_NONE,
-            data[0].disabled_reasons[0]);
-  EXPECT_EQ("other", data[0].install_location);
+            data[0]->disabled_reasons[0]);
+  EXPECT_EQ("other", data[0]->install_location);
 }
 
 TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_WithReasons) {
@@ -255,19 +247,17 @@ TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_WithReasons) {
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
 
-  std::vector<std::string> ids({kExtensionId1});
-  std::vector<update_client::CrxComponent> data;
-  data_provider->GetData(update_data, ids, &data);
+  const auto data = data_provider->GetData(update_data, {kExtensionId1});
 
   ASSERT_EQ(1UL, data.size());
-  EXPECT_EQ(version, data[0].version.GetString());
-  EXPECT_NE(nullptr, data[0].installer.get());
-  ASSERT_EQ(2UL, data[0].disabled_reasons.size());
+  EXPECT_EQ(version, data[0]->version.GetString());
+  EXPECT_NE(nullptr, data[0]->installer.get());
+  ASSERT_EQ(2UL, data[0]->disabled_reasons.size());
   EXPECT_EQ(disable_reason::DisableReason::DISABLE_USER_ACTION,
-            data[0].disabled_reasons[0]);
+            data[0]->disabled_reasons[0]);
   EXPECT_EQ(disable_reason::DisableReason::DISABLE_CORRUPTED,
-            data[0].disabled_reasons[1]);
-  EXPECT_EQ("policy", data[0].install_location);
+            data[0]->disabled_reasons[1]);
+  EXPECT_EQ("policy", data[0]->install_location);
 }
 
 TEST_F(UpdateDataProviderTest,
@@ -285,21 +275,19 @@ TEST_F(UpdateDataProviderTest,
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
 
-  std::vector<std::string> ids({kExtensionId1});
-  std::vector<update_client::CrxComponent> data;
-  data_provider->GetData(update_data, ids, &data);
+  const auto data = data_provider->GetData(update_data, {kExtensionId1});
 
   ASSERT_EQ(1UL, data.size());
-  EXPECT_EQ(version, data[0].version.GetString());
-  EXPECT_NE(nullptr, data[0].installer.get());
-  ASSERT_EQ(3UL, data[0].disabled_reasons.size());
+  EXPECT_EQ(version, data[0]->version.GetString());
+  EXPECT_NE(nullptr, data[0]->installer.get());
+  ASSERT_EQ(3UL, data[0]->disabled_reasons.size());
   EXPECT_EQ(disable_reason::DisableReason::DISABLE_NONE,
-            data[0].disabled_reasons[0]);
+            data[0]->disabled_reasons[0]);
   EXPECT_EQ(disable_reason::DisableReason::DISABLE_USER_ACTION,
-            data[0].disabled_reasons[1]);
+            data[0]->disabled_reasons[1]);
   EXPECT_EQ(disable_reason::DisableReason::DISABLE_CORRUPTED,
-            data[0].disabled_reasons[2]);
-  EXPECT_EQ("external", data[0].install_location);
+            data[0]->disabled_reasons[2]);
+  EXPECT_EQ("external", data[0]->install_location);
 }
 
 TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions) {
@@ -319,19 +307,18 @@ TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions) {
   update_data[kExtensionId1] = {};
   update_data[kExtensionId2] = {};
 
-  std::vector<std::string> ids({kExtensionId1, kExtensionId2});
-  std::vector<update_client::CrxComponent> data;
-  data_provider->GetData(update_data, ids, &data);
+  const auto data =
+      data_provider->GetData(update_data, {kExtensionId1, kExtensionId2});
 
   ASSERT_EQ(2UL, data.size());
-  EXPECT_EQ(version1, data[0].version.GetString());
-  EXPECT_NE(nullptr, data[0].installer.get());
-  EXPECT_EQ(0UL, data[0].disabled_reasons.size());
-  EXPECT_EQ("external", data[0].install_location);
-  EXPECT_EQ(version2, data[1].version.GetString());
-  EXPECT_NE(nullptr, data[1].installer.get());
-  EXPECT_EQ(0UL, data[1].disabled_reasons.size());
-  EXPECT_EQ("other", data[1].install_location);
+  EXPECT_EQ(version1, data[0]->version.GetString());
+  EXPECT_NE(nullptr, data[0]->installer.get());
+  EXPECT_EQ(0UL, data[0]->disabled_reasons.size());
+  EXPECT_EQ("external", data[0]->install_location);
+  EXPECT_EQ(version2, data[1]->version.GetString());
+  EXPECT_NE(nullptr, data[1]->installer.get());
+  EXPECT_EQ(0UL, data[1]->disabled_reasons.size());
+  EXPECT_EQ("other", data[1]->install_location);
 }
 
 TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions_DisabledExtension) {
@@ -352,22 +339,21 @@ TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions_DisabledExtension) {
   update_data[kExtensionId1] = {};
   update_data[kExtensionId2] = {};
 
-  std::vector<std::string> ids({kExtensionId1, kExtensionId2});
-  std::vector<update_client::CrxComponent> data;
-  data_provider->GetData(update_data, ids, &data);
+  const auto data =
+      data_provider->GetData(update_data, {kExtensionId1, kExtensionId2});
 
   ASSERT_EQ(2UL, data.size());
-  EXPECT_EQ(version1, data[0].version.GetString());
-  EXPECT_NE(nullptr, data[0].installer.get());
-  ASSERT_EQ(1UL, data[0].disabled_reasons.size());
+  EXPECT_EQ(version1, data[0]->version.GetString());
+  EXPECT_NE(nullptr, data[0]->installer.get());
+  ASSERT_EQ(1UL, data[0]->disabled_reasons.size());
   EXPECT_EQ(disable_reason::DisableReason::DISABLE_CORRUPTED,
-            data[0].disabled_reasons[0]);
-  EXPECT_EQ("internal", data[0].install_location);
+            data[0]->disabled_reasons[0]);
+  EXPECT_EQ("internal", data[0]->install_location);
 
-  EXPECT_EQ(version2, data[1].version.GetString());
-  EXPECT_NE(nullptr, data[1].installer.get());
-  EXPECT_EQ(0UL, data[1].disabled_reasons.size());
-  EXPECT_EQ("external", data[1].install_location);
+  EXPECT_EQ(version2, data[1]->version.GetString());
+  EXPECT_NE(nullptr, data[1]->installer.get());
+  EXPECT_EQ(0UL, data[1]->disabled_reasons.size());
+  EXPECT_EQ("external", data[1]->install_location);
 }
 
 TEST_F(UpdateDataProviderTest,
@@ -385,15 +371,14 @@ TEST_F(UpdateDataProviderTest,
   update_data[kExtensionId1] = {};
   update_data[kExtensionId2] = {};
 
-  std::vector<std::string> ids({kExtensionId1, kExtensionId2});
-  std::vector<update_client::CrxComponent> data;
-  data_provider->GetData(update_data, ids, &data);
+  const auto data =
+      data_provider->GetData(update_data, {kExtensionId1, kExtensionId2});
 
   ASSERT_EQ(1UL, data.size());
-  EXPECT_EQ(version, data[0].version.GetString());
-  EXPECT_NE(nullptr, data[0].installer.get());
-  EXPECT_EQ(0UL, data[0].disabled_reasons.size());
-  EXPECT_EQ("other", data[0].install_location);
+  EXPECT_EQ(version, data[0]->version.GetString());
+  EXPECT_NE(nullptr, data[0]->installer.get());
+  EXPECT_EQ(0UL, data[0]->disabled_reasons.size());
+  EXPECT_EQ("other", data[0]->install_location);
 }
 
 TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions_CorruptExtension) {
@@ -420,21 +405,20 @@ TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions_CorruptExtension) {
   info2.is_corrupt_reinstall = true;
   info2.install_source = "sideload";
 
-  std::vector<std::string> ids({kExtensionId1, kExtensionId2});
-  std::vector<update_client::CrxComponent> data;
-  data_provider->GetData(update_data, ids, &data);
+  const auto data =
+      data_provider->GetData(update_data, {kExtensionId1, kExtensionId2});
 
   ASSERT_EQ(2UL, data.size());
-  EXPECT_EQ(version1, data[0].version.GetString());
-  EXPECT_EQ("webstore", data[0].install_source);
-  EXPECT_EQ("other", data[0].install_location);
-  EXPECT_NE(nullptr, data[0].installer.get());
-  EXPECT_EQ(0UL, data[0].disabled_reasons.size());
-  EXPECT_EQ(initial_version, data[1].version.GetString());
-  EXPECT_EQ("sideload", data[1].install_source);
-  EXPECT_EQ("policy", data[1].install_location);
-  EXPECT_NE(nullptr, data[1].installer.get());
-  EXPECT_EQ(0UL, data[1].disabled_reasons.size());
+  EXPECT_EQ(version1, data[0]->version.GetString());
+  EXPECT_EQ("webstore", data[0]->install_source);
+  EXPECT_EQ("other", data[0]->install_location);
+  EXPECT_NE(nullptr, data[0]->installer.get());
+  EXPECT_EQ(0UL, data[0]->disabled_reasons.size());
+  EXPECT_EQ(initial_version, data[1]->version.GetString());
+  EXPECT_EQ("sideload", data[1]->install_source);
+  EXPECT_EQ("policy", data[1]->install_location);
+  EXPECT_NE(nullptr, data[1]->installer.get());
+  EXPECT_EQ(0UL, data[1]->disabled_reasons.size());
 }
 
 }  // namespace

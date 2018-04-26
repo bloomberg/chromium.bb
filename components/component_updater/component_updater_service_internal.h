@@ -76,8 +76,8 @@ class CrxUpdateService : public ComponentUpdateService,
 
   const CrxUpdateItem* GetComponentState(const std::string& id) const;
 
-  void OnUpdate(const std::vector<std::string>& ids,
-                std::vector<CrxComponent>* components);
+  std::vector<std::unique_ptr<CrxComponent>> GetCrxComponents(
+      const std::vector<std::string>& ids);
   void OnUpdateComplete(Callback callback,
                         const base::TimeTicks& start_time,
                         update_client::Error error);

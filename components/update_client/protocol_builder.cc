@@ -334,25 +334,27 @@ std::string BuildUpdateCheckRequest(
   for (const auto& id : ids_checked) {
     DCHECK_EQ(1u, components.count(id));
     const auto& component = *components.at(id);
-    const auto& crx_component = component.crx_component();
     const auto& component_id = component.id();
+    const auto* crx_component = component.crx_component();
+
+    DCHECK(crx_component);
 
     const update_client::InstallerAttributes installer_attributes(
-        SanitizeInstallerAttributes(crx_component.installer_attributes));
+        SanitizeInstallerAttributes(crx_component->installer_attributes));
     std::string app("<app ");
     base::StringAppendF(&app, "appid=\"%s\" version=\"%s\"",
                         component_id.c_str(),
-                        crx_component.version.GetString().c_str());
+                        crx_component->version.GetString().c_str());
     if (!brand.empty())
       base::StringAppendF(&app, " brand=\"%s\"", brand.c_str());
-    if (!crx_component.install_source.empty())
+    if (!crx_component->install_source.empty())
       base::StringAppendF(&app, " installsource=\"%s\"",
-                          crx_component.install_source.c_str());
+                          crx_component->install_source.c_str());
     else if (component.is_foreground())
       base::StringAppendF(&app, " installsource=\"ondemand\"");
-    if (!crx_component.install_location.empty())
+    if (!crx_component->install_location.empty())
       base::StringAppendF(&app, " installedby=\"%s\"",
-                          crx_component.install_location.c_str());
+                          crx_component->install_location.c_str());
     for (const auto& attr : installer_attributes) {
       base::StringAppendF(&app, " %s=\"%s\"", attr.first.c_str(),
                           attr.second.c_str());
@@ -360,7 +362,7 @@ std::string BuildUpdateCheckRequest(
     const auto& cohort = metadata->GetCohort(component_id);
     const auto& cohort_name = metadata->GetCohortName(component_id);
     const auto& cohort_hint = metadata->GetCohortHint(component_id);
-    const auto& disabled_reasons = crx_component.disabled_reasons;
+    const auto& disabled_reasons = crx_component->disabled_reasons;
     if (!cohort.empty())
       base::StringAppendF(&app, " cohort=\"%s\"", cohort.c_str());
     if (!cohort_name.empty())
@@ -374,7 +376,7 @@ std::string BuildUpdateCheckRequest(
       base::StringAppendF(&app, "<disabled reason=\"%d\"/>", disabled_reason);
 
     base::StringAppendF(&app, "<updatecheck");
-    if (crx_component.supports_group_policy_enable_component_updates &&
+    if (crx_component->supports_group_policy_enable_component_updates &&
         !enabled_component_updates) {
       base::StringAppendF(&app, " updatedisabled=\"true\"");
     }
@@ -402,12 +404,12 @@ std::string BuildUpdateCheckRequest(
     base::StringAppendF(&app, " ping_freshness=\"%s\"/>",
                         metadata->GetPingFreshness(component_id).c_str());
 
-    if (!crx_component.fingerprint.empty()) {
+    if (!crx_component->fingerprint.empty()) {
       base::StringAppendF(&app,
                           "<packages>"
                           "<package fp=\"%s\"/>"
                           "</packages>",
-                          crx_component.fingerprint.c_str());
+                          crx_component->fingerprint.c_str());
     }
     base::StringAppendF(&app, "</app>");
     app_elements.append(app);
