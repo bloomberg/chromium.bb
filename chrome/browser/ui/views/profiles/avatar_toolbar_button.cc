@@ -71,6 +71,20 @@ void AvatarToolbarButton::OnAvatarErrorChanged() {
   UpdateIcon();
 }
 
+void AvatarToolbarButton::OnProfileAdded(const base::FilePath& profile_path) {
+  // Adding any profile changes the profile count, we might go from showing a
+  // generic avatar button to profile pictures here. Update icon accordingly.
+  UpdateIcon();
+}
+
+void AvatarToolbarButton::OnProfileWasRemoved(
+    const base::FilePath& profile_path,
+    const base::string16& profile_name) {
+  // Removing a profile changes the profile count, we might go from showing
+  // per-profile icons back to a generic avatar icon. Update icon accordingly.
+  UpdateIcon();
+}
+
 void AvatarToolbarButton::OnProfileAvatarChanged(
     const base::FilePath& profile_path) {
   UpdateIcon();
