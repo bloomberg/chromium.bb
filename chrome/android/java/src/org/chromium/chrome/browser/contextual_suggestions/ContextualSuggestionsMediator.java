@@ -166,6 +166,13 @@ class ContextualSuggestionsMediator
 
     @Override
     public void requestSuggestions(String url) {
+        // Guard against null tabs when requesting suggestions. https://crbug.com/836672.
+        if (mTabModelSelector.getCurrentTab() == null
+                || mTabModelSelector.getCurrentTab().getWebContents() == null) {
+            assert false;
+            return;
+        }
+
         reportEvent(ContextualSuggestionsEvent.FETCH_REQUESTED);
         mCurrentRequestUrl = url;
         mSuggestionsSource.fetchSuggestions(url, (suggestionsResult) -> {
@@ -193,7 +200,8 @@ class ContextualSuggestionsMediator
 
     @Override
     public void reportFetchDelayed(WebContents webContents) {
-        if (mTabModelSelector.getCurrentTab().getWebContents() == webContents) {
+        if (mTabModelSelector.getCurrentTab() != null
+                && mTabModelSelector.getCurrentTab().getWebContents() == webContents) {
             reportEvent(ContextualSuggestionsEvent.FETCH_DELAYED);
         }
     }
@@ -332,6 +340,15 @@ class ContextualSuggestionsMediator
     }
 
     private void reportEvent(@ContextualSuggestionsEvent int event) {
+        if (mTabModelSelector.getCurrentTab() == null
+                || mTabModelSelector.getCurrentTab().getWebContents() == null) {
+            // This method is not expected to be called if the current tab or webcontents are null.
+            // If this assert is hit, please alert someone on the Chrome Explore on Content team.
+            // See https://crbug.com/836672.
+            assert false;
+            return;
+        }
+
         mSuggestionsSource.reportEvent(mTabModelSelector.getCurrentTab().getWebContents(), event);
     }
 

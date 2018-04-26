@@ -185,7 +185,11 @@ class FetchHelper {
 
             @Override
             public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
-                if (tab == null) return;
+                if (tab == null) {
+                    if (mCurrentTab != null) clearState();
+                    mCurrentTab = null;
+                    return;
+                }
 
                 if (mCurrentTab != null && mCurrentTab != tab) {
                     clearState();
@@ -278,6 +282,11 @@ class FetchHelper {
     }
 
     private void postDelayedFetch(final String url, final Tab tab, long delayMillis) {
+        if (tab == null) {
+            assert false;
+            return;
+        }
+
         mDelegate.reportFetchDelayed(tab.getWebContents());
         ThreadUtils.postOnUiThreadDelayed(new Runnable() {
             @Override
