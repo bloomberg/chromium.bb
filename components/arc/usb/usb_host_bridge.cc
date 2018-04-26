@@ -215,9 +215,6 @@ void ArcUsbHostBridge::OnDeviceAdded(scoped_refptr<device::UsbDevice> device) {
 
 void ArcUsbHostBridge::OnDeviceRemoved(
     scoped_refptr<device::UsbDevice> device) {
-  if (ui_delegate_)
-    ui_delegate_->DeviceRemoved(device.get()->guid());
-
   mojom::UsbHostInstance* usb_host_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->usb_host(), OnDeviceAdded);
 
@@ -226,7 +223,11 @@ void ArcUsbHostBridge::OnDeviceRemoved(
     return;
   }
 
-  usb_host_instance->OnDeviceRemoved(device.get()->guid());
+  usb_host_instance->OnDeviceRemoved(
+      device.get()->guid(), GetEventReceiverPackages(device.get()->guid()));
+
+  if (ui_delegate_)
+    ui_delegate_->DeviceRemoved(device.get()->guid());
 }
 
 // Notifies the observer that the UsbService it depends on is shutting down.
@@ -258,6 +259,23 @@ void ArcUsbHostBridge::SetUiDelegate(ArcUsbHostUiDelegate* ui_delegate) {
   ui_delegate_ = ui_delegate;
 }
 
+std::vector<std::string> ArcUsbHostBridge::GetEventReceiverPackages(
+    const std::string& guid) {
+  scoped_refptr<device::UsbDevice> device = usb_service_->GetDevice(guid);
+  if (!device.get()) {
+    LOG(WARNING) << "Unknown USB device " << guid;
+    return std::vector<std::string>();
+  }
+
+  if (!ui_delegate_)
+    return std::vector<std::string>();
+
+  std::unordered_set<std::string> receivers = ui_delegate_->GetEventPackageList(
+      guid, device->serial_number(), device->vendor_id(), device->product_id());
+
+  return std::vector<std::string>(receivers.begin(), receivers.end());
+}
+
 void ArcUsbHostBridge::OnDeviceChecked(const std::string& guid, bool allowed) {
   if (!base::FeatureList::IsEnabled(arc::kUsbHostFeature)) {
     VLOG(1) << "AndroidUSBHost: feature is disabled; ignoring";
@@ -273,7 +291,7 @@ void ArcUsbHostBridge::OnDeviceChecked(const std::string& guid, bool allowed) {
   if (!usb_host_instance)
     return;
 
-  usb_host_instance->OnDeviceAdded(guid);
+  usb_host_instance->OnDeviceAdded(guid, GetEventReceiverPackages(guid));
 }
 
 void ArcUsbHostBridge::DoRequestUserAuthorization(

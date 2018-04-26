@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 2
+// Next MinVersion: 3
 module arc.mojom;
 
 // re-use device.mojom.UsbDeviceInfo
@@ -17,7 +17,7 @@ interface UsbHostHost {
   // is no effective way that host can restrict access to only a specific
   // package at the security boundary formed by this Mojo interface.
   OpenDevice@0(string guid,
-               [Minversion=1] string? pkg_name) => (handle usb_fd);
+               [MinVersion=1] string? pkg_name) => (handle usb_fd);
 
   // Returns the USB device descriptors for the device named 'guid'.
   GetDeviceInfo@1(string guid) => (string device_name,
@@ -40,8 +40,12 @@ interface UsbHostInstance {
   Init@0(UsbHostHost host_ptr) => ();
 
   // Notifies the instance of a new USB device.
-  OnDeviceAdded@1(string guid);
+  // Only packages in |event_receiver_packages| will receive broadcast.
+  OnDeviceAdded@1(string guid,
+                  [MinVersion=2] array<string>? event_receiver_packages);
 
   // Notifies the instance of the removal of a USB device.
-  OnDeviceRemoved@2(string guid);
+  // Only packages in |event_receiver_packages| will receive broadcast.
+  OnDeviceRemoved@2(string guid,
+                    [MinVersion=2] array<string>? event_receiver_packages);
 };
