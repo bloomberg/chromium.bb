@@ -41,8 +41,8 @@ class GIN_EXPORT Dictionary {
     return ConvertFromV8(isolate_, val, out);
   }
 
-  template<typename T>
-  bool Set(const std::string& key, T val) {
+  template <typename T>
+  bool Set(const std::string& key, const T& val) {
     v8::Local<v8::Value> v8_value;
     if (!TryConvertToV8(isolate_, val, &v8_value))
       return false;
