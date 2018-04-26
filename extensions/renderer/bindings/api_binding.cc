@@ -61,6 +61,34 @@ std::string GetJSEnumEntryName(const std::string& original) {
   return result;
 }
 
+struct SignaturePair {
+  std::unique_ptr<APISignature> method_signature;
+  std::unique_ptr<APISignature> callback_signature;
+};
+
+SignaturePair GetAPISignatureFromDictionary(const base::DictionaryValue* dict) {
+  const base::ListValue* params = nullptr;
+  CHECK(dict->GetList("parameters", &params));
+
+  SignaturePair result;
+  result.method_signature = std::make_unique<APISignature>(*params);
+  // If response validation is enabled, parse the callback signature. Otherwise,
+  // there's no reason to, so don't bother.
+  if (result.method_signature->has_callback() &&
+      binding::IsResponseValidationEnabled()) {
+    const base::Value* callback_params = params->GetList().back().FindKeyOfType(
+        "parameters", base::Value::Type::LIST);
+    if (callback_params) {
+      const base::ListValue* params_as_list = nullptr;
+      callback_params->GetAsList(&params_as_list);
+      result.callback_signature =
+          std::make_unique<APISignature>(*params_as_list);
+    }
+  }
+
+  return result;
+}
+
 void RunAPIBindingHandlerCallback(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   gin::Arguments args(info);
@@ -205,20 +233,23 @@ APIBinding::APIBinding(const std::string& api_name,
       std::string name;
       CHECK(func_dict->GetString("name", &name));
 
-      const base::ListValue* params = nullptr;
-      CHECK(func_dict->GetList("parameters", &params));
+      SignaturePair signatures = GetAPISignatureFromDictionary(func_dict);
 
       bool for_io_thread = false;
       func_dict->GetBoolean("forIOThread", &for_io_thread);
 
-      auto signature = std::make_unique<APISignature>(*params);
       std::string full_name =
           base::StringPrintf("%s.%s", api_name_.c_str(), name.c_str());
       methods_[name] = std::make_unique<MethodData>(
-          full_name, signature.get(),
+          full_name, signatures.method_signature.get(),
           for_io_thread ? binding::RequestThread::IO
                         : binding::RequestThread::UI);
-      type_refs->AddAPIMethodSignature(full_name, std::move(signature));
+      type_refs->AddAPIMethodSignature(full_name,
+                                       std::move(signatures.method_signature));
+      if (signatures.callback_signature) {
+        type_refs->AddCallbackSignature(
+            full_name, std::move(signatures.callback_signature));
+      }
     }
   }
 
@@ -254,11 +285,16 @@ APIBinding::APIBinding(const std::string& api_name,
           std::string function_name;
           CHECK(func_dict->GetString("name", &function_name));
 
-          const base::ListValue* params = nullptr;
-          CHECK(func_dict->GetList("parameters", &params));
+          SignaturePair signatures = GetAPISignatureFromDictionary(func_dict);
+
+          std::string full_name =
+              base::StringPrintf("%s.%s", id.c_str(), function_name.c_str());
           type_refs->AddTypeMethodSignature(
-              base::StringPrintf("%s.%s", id.c_str(), function_name.c_str()),
-              std::make_unique<APISignature>(*params));
+              full_name, std::move(signatures.method_signature));
+          if (signatures.callback_signature) {
+            type_refs->AddCallbackSignature(
+                full_name, std::move(signatures.callback_signature));
+          }
         }
       }
     }

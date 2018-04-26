@@ -17,6 +17,7 @@
 #include "extensions/renderer/bindings/api_event_handler.h"
 #include "extensions/renderer/bindings/api_invocation_errors.h"
 #include "extensions/renderer/bindings/api_request_handler.h"
+#include "extensions/renderer/bindings/api_signature.h"
 #include "extensions/renderer/bindings/api_type_reference_map.h"
 #include "extensions/renderer/bindings/binding_access_checker.h"
 #include "extensions/renderer/bindings/test_js_runner.h"
@@ -73,6 +74,32 @@ const char kFunctions[] =
     "    'type': 'function'"
     "  }]"
     "}]";
+
+constexpr char kFunctionsWithCallbackSignatures[] = R"(
+    [{
+       "name": "noCallback",
+       "parameters": [{
+         "name": "int",
+         "type": "integer"
+       }]
+     }, {
+       "name": "intCallback",
+       "parameters": [{
+         "name": "callback",
+         "type": "function",
+         "parameters": [{
+           "name": "int",
+           "type": "integer"
+         }]
+       }]
+     }, {
+       "name": "noParamCallback",
+       "parameters": [{
+         "name": "callback",
+         "type": "function",
+         "parameters": []
+       }]
+     }])";
 
 bool AllowAllFeatures(v8::Local<v8::Context> context, const std::string& name) {
   return true;
@@ -1580,6 +1607,39 @@ TEST_F(APIBindingUnittest, AccessAPIMethodsAndEventsAfterInvalidation) {
   v8::Local<v8::Value> argv[] = {binding_object};
   RunFunctionAndExpectError(function, context, arraysize(argv), argv,
                             "Uncaught Error: Extension context invalidated.");
+}
+
+TEST_F(APIBindingUnittest, CallbackSignaturesAreAdded) {
+  std::unique_ptr<base::AutoReset<bool>> response_validation_override =
+      binding::SetResponseValidationEnabledForTesting(true);
+
+  SetFunctions(kFunctionsWithCallbackSignatures);
+  InitializeBinding();
+
+  EXPECT_FALSE(type_refs().GetCallbackSignature("test.noCallback"));
+
+  const APISignature* int_signature =
+      type_refs().GetCallbackSignature("test.intCallback");
+  ASSERT_TRUE(int_signature);
+  EXPECT_EQ("integer int", int_signature->GetExpectedSignature());
+
+  const APISignature* no_param_signature =
+      type_refs().GetCallbackSignature("test.noParamCallback");
+  ASSERT_TRUE(no_param_signature);
+  EXPECT_EQ("", no_param_signature->GetExpectedSignature());
+}
+
+TEST_F(APIBindingUnittest,
+       CallbackSignaturesAreNotAddedWhenValidationDisabled) {
+  std::unique_ptr<base::AutoReset<bool>> response_validation_override =
+      binding::SetResponseValidationEnabledForTesting(false);
+
+  SetFunctions(kFunctionsWithCallbackSignatures);
+  InitializeBinding();
+
+  EXPECT_FALSE(type_refs().GetCallbackSignature("test.noCallback"));
+  EXPECT_FALSE(type_refs().GetCallbackSignature("test.intCallback"));
+  EXPECT_FALSE(type_refs().GetCallbackSignature("test.noParamCallback"));
 }
 
 }  // namespace extensions

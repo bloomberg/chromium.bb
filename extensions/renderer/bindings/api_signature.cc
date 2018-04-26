@@ -44,7 +44,7 @@ class ArgumentParser {
         error_(error) {}
 
   // Tries to parse the arguments against the expected signature.
-  bool ParseArguments();
+  bool ParseArguments(bool signature_has_callback);
 
  protected:
   v8::Isolate* GetIsolate() { return context_->GetIsolate(); }
@@ -176,7 +176,7 @@ class BaseValueArgumentParser : public ArgumentParser {
   DISALLOW_COPY_AND_ASSIGN(BaseValueArgumentParser);
 };
 
-bool ArgumentParser::ParseArguments() {
+bool ArgumentParser::ParseArguments(bool signature_has_callback) {
   if (provided_arguments_.size() > signature_.size()) {
     *error_ = api_errors::NoMatchingSignature();
     return false;
@@ -190,7 +190,6 @@ bool ArgumentParser::ParseArguments() {
   }
   DCHECK_EQ(resolved_arguments.size(), signature_.size());
 
-  bool signature_has_callback = HasCallback(signature_);
   size_t end_size =
       signature_has_callback ? signature_.size() - 1 : signature_.size();
   for (size_t i = 0; i < end_size; ++i) {
@@ -325,10 +324,13 @@ APISignature::APISignature(const base::ListValue& specification) {
     CHECK(value.GetAsDictionary(&param));
     signature_.push_back(std::make_unique<ArgumentSpec>(*param));
   }
+
+  has_callback_ = HasCallback(signature_);
 }
 
 APISignature::APISignature(std::vector<std::unique_ptr<ArgumentSpec>> signature)
-    : signature_(std::move(signature)) {}
+    : signature_(std::move(signature)),
+      has_callback_(HasCallback(signature_)) {}
 
 APISignature::~APISignature() {}
 
@@ -342,7 +344,7 @@ bool APISignature::ParseArgumentsToV8(
   std::vector<v8::Local<v8::Value>> v8_values;
   V8ArgumentParser parser(
       context, signature_, arguments, type_refs, error, &v8_values);
-  if (!parser.ParseArguments())
+  if (!parser.ParseArguments(has_callback_))
     return false;
   *v8_out = std::move(v8_values);
   return true;
@@ -360,7 +362,7 @@ bool APISignature::ParseArgumentsToJSON(
   std::unique_ptr<base::ListValue> json = std::make_unique<base::ListValue>();
   BaseValueArgumentParser parser(
       context, signature_, arguments, type_refs, error, json.get());
-  if (!parser.ParseArguments())
+  if (!parser.ParseArguments(has_callback_))
     return false;
   *json_out = std::move(json);
   *callback_out = parser.callback();
@@ -412,6 +414,56 @@ bool APISignature::ConvertArgumentsIgnoringSchema(
 
   *json_out = std::move(json);
   *callback_out = callback;
+  return true;
+}
+
+bool APISignature::ValidateResponse(
+    v8::Local<v8::Context> context,
+    const std::vector<v8::Local<v8::Value>>& arguments,
+    const APITypeReferenceMap& type_refs,
+    std::string* error) const {
+  size_t expected_size = signature_.size();
+  size_t actual_size = arguments.size();
+  if (actual_size > expected_size) {
+    *error = api_errors::TooManyArguments();
+    return false;
+  }
+
+  // Easy validation: arguments go in order, and must match the expected schema.
+  // Anything less is failure.
+  std::string parse_error;
+  for (size_t i = 0; i < actual_size; ++i) {
+    DCHECK(!arguments[i].IsEmpty());
+    const ArgumentSpec& spec = *signature_[i];
+    if (arguments[i]->IsNullOrUndefined()) {
+      if (!spec.optional()) {
+        *error = api_errors::MissingRequiredArgument(spec.name().c_str());
+        return false;
+      }
+      continue;
+    }
+
+    if (!spec.ParseArgument(context, arguments[i], type_refs, nullptr, nullptr,
+                            &parse_error)) {
+      *error = api_errors::ArgumentError(spec.name(), parse_error);
+      return false;
+    }
+  }
+
+  // Responses may omit trailing optional parameters (which would then be
+  // undefined for the caller).
+  // NOTE(devlin): It might be nice to see if we could require all arguments to
+  // be present, no matter what. For one, it avoids this loop, and it would also
+  // unify what a "not found" value was (some APIs use undefined, some use
+  // null).
+  for (size_t i = actual_size; i < expected_size; ++i) {
+    if (!signature_[i]->optional()) {
+      *error =
+          api_errors::MissingRequiredArgument(signature_[i]->name().c_str());
+      return false;
+    }
+  }
+
   return true;
 }
 

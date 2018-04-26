@@ -206,6 +206,17 @@ class APISignatureTest : public APIBindingTest {
             expected_error);
   }
 
+  void ExpectResponsePass(const APISignature& signature,
+                          base::StringPiece arg_values) {
+    RunResponseTest(signature, arg_values, base::nullopt);
+  }
+
+  void ExpectResponseFailure(const APISignature& signature,
+                             base::StringPiece arg_values,
+                             const std::string& expected_error) {
+    RunResponseTest(signature, arg_values, expected_error);
+  }
+
   const APITypeReferenceMap& type_refs() const { return type_refs_; }
 
  private:
@@ -237,6 +248,27 @@ class APISignatureTest : public APIBindingTest {
     } else {
       EXPECT_EQ(expected_error, error);
     }
+  }
+
+  void RunResponseTest(const APISignature& signature,
+                       base::StringPiece arg_values,
+                       base::Optional<std::string> expected_error) {
+    SCOPED_TRACE(arg_values);
+    v8::Local<v8::Context> context = MainContext();
+    v8::Local<v8::Value> v8_args = V8ValueFromScriptSource(context, arg_values);
+    ASSERT_FALSE(v8_args.IsEmpty());
+    ASSERT_TRUE(v8_args->IsArray());
+    std::vector<v8::Local<v8::Value>> vector_args;
+    ASSERT_TRUE(gin::ConvertFromV8(isolate(), v8_args, &vector_args));
+
+    std::string error;
+    bool should_succeed = !expected_error;
+    bool success =
+        signature.ValidateResponse(context, vector_args, type_refs_, &error);
+    EXPECT_EQ(should_succeed, success) << error;
+    ASSERT_EQ(should_succeed, error.empty());
+    if (!should_succeed)
+      EXPECT_EQ(*expected_error, error);
   }
 
   APITypeReferenceMap type_refs_;
@@ -521,6 +553,48 @@ TEST_F(APISignatureTest, ParseArgumentsToV8) {
   std::string prop2;
   ASSERT_TRUE(dict.Get("prop2", &prop2));
   EXPECT_EQ("baz", prop2);
+}
+
+// Tests response validation, which is stricter than typical validation.
+TEST_F(APISignatureTest, ValidateResponse) {
+  using namespace api_errors;
+
+  v8::HandleScope handle_scope(isolate());
+
+  {
+    auto signature = StringAndInt();
+    ExpectResponsePass(*signature, "['hello', 42]");
+    ExpectResponseFailure(
+        *signature, "['hello', 'goodbye']",
+        ArgumentError("int", InvalidType(kTypeInteger, kTypeString)));
+  }
+
+  {
+    auto signature = StringOptionalIntAndBool();
+    ExpectResponsePass(*signature, "['hello', 42, true]");
+    ExpectResponsePass(*signature, "['hello', null, true]");
+    // Responses are not allowed to omit optional inner parameters.
+    ExpectResponseFailure(
+        *signature, "['hello', true]",
+        ArgumentError("int", InvalidType(kTypeInteger, kTypeBoolean)));
+  }
+
+  {
+    SpecVector specs;
+    specs.push_back(
+        ArgumentSpecBuilder(ArgumentType::STRING, "string").Build());
+    specs.push_back(ArgumentSpecBuilder(ArgumentType::INTEGER, "int")
+                        .MakeOptional()
+                        .Build());
+    auto signature = std::make_unique<APISignature>(std::move(specs));
+    // Responses *are* allowed to omit optional trailing parameters (which will
+    // then be `undefined` to the caller).
+    ExpectResponsePass(*signature, "['hello']");
+
+    ExpectResponseFailure(
+        *signature, "['hello', true]",
+        ArgumentError("int", InvalidType(kTypeInteger, kTypeBoolean)));
+  }
 }
 
 }  // namespace extensions

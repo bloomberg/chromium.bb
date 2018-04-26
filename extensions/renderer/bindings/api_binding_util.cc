@@ -16,6 +16,17 @@
 namespace extensions {
 namespace binding {
 
+namespace {
+
+bool g_response_validation_enabled =
+#if DCHECK_IS_ON()
+    true;
+#else
+    false;
+#endif
+
+}  // namespace
+
 class ContextInvalidationData : public base::SupportsUserData::Data {
  public:
   ContextInvalidationData();
@@ -148,6 +159,16 @@ void ContextInvalidationListener::OnInvalidated() {
   DCHECK(on_invalidated_);
   context_invalidation_data_ = nullptr;
   std::move(on_invalidated_).Run();
+}
+
+bool IsResponseValidationEnabled() {
+  return g_response_validation_enabled;
+}
+
+std::unique_ptr<base::AutoReset<bool>> SetResponseValidationEnabledForTesting(
+    bool is_enabled) {
+  return std::make_unique<base::AutoReset<bool>>(&g_response_validation_enabled,
+                                                 is_enabled);
 }
 
 }  // namespace binding

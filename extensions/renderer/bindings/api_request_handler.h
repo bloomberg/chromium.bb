@@ -21,6 +21,7 @@ class ListValue;
 }
 
 namespace extensions {
+class APIResponseValidator;
 class ExceptionHandler;
 
 // A wrapper around a map for extension API calls. Contains all pending requests
@@ -85,8 +86,13 @@ class APIRequestHandler {
   // Invalidates any requests that are associated with |context|.
   void InvalidateContext(v8::Local<v8::Context> context);
 
+  void SetResponseValidator(std::unique_ptr<APIResponseValidator> validator);
+
   APILastError* last_error() { return &last_error_; }
   int last_sent_request_id() const { return last_sent_request_id_; }
+  bool has_response_validator_for_testing() const {
+    return response_validator_.get() != nullptr;
+  }
 
   std::set<int> GetPendingRequestIdsForTesting() const;
 
@@ -95,7 +101,8 @@ class APIRequestHandler {
     PendingRequest(v8::Isolate* isolate,
                    v8::Local<v8::Function> callback,
                    v8::Local<v8::Context> context,
-                   const std::vector<v8::Local<v8::Value>>& callback_args);
+                   const std::vector<v8::Local<v8::Value>>& callback_args,
+                   const std::string& method_name);
     ~PendingRequest();
     PendingRequest(PendingRequest&&);
     PendingRequest& operator=(PendingRequest&&);
@@ -104,6 +111,7 @@ class APIRequestHandler {
     v8::Global<v8::Context> context;
     v8::Global<v8::Function> callback;
     std::vector<v8::Global<v8::Value>> callback_arguments;
+    std::string method_name;
     blink::WebUserGestureToken user_gesture_token;
   };
 
@@ -125,6 +133,10 @@ class APIRequestHandler {
   // The exception handler for the bindings system; guaranteed to be valid
   // during this object's lifetime.
   ExceptionHandler* const exception_handler_;
+
+  // The response validator used to check the responses for resolved requests.
+  // Null if response validation is disabled.
+  std::unique_ptr<APIResponseValidator> response_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(APIRequestHandler);
 };

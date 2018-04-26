@@ -5,8 +5,10 @@
 #ifndef EXTENSIONS_RENDERER_BINDING_API_BINDING_UTIL_H_
 #define EXTENSIONS_RENDERER_BINDING_API_BINDING_UTIL_H_
 
+#include <memory>
 #include <string>
 
+#include "base/auto_reset.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "v8/include/v8.h"
@@ -53,6 +55,16 @@ class ContextInvalidationListener {
 // Returns the string version of the current platform, one of "chromeos",
 // "linux", "win", or "mac".
 std::string GetPlatformString();
+
+// Returns true if response validation is enabled, and the bindings system
+// should check the values returned by the browser against the expected results
+// defined in the schemas. By default, this is corresponds to whether DCHECK is
+// enabled.
+bool IsResponseValidationEnabled();
+
+// Override response validation for testing purposes.
+std::unique_ptr<base::AutoReset<bool>> SetResponseValidationEnabledForTesting(
+    bool is_enabled);
 
 }  // namespace binding
 }  // namespace extensions
