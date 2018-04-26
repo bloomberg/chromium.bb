@@ -80,16 +80,16 @@ class SSLServerContextImpl::SocketImpl : public SSLServerSocket,
   // Socket interface (via StreamSocket).
   int Read(IOBuffer* buf,
            int buf_len,
-           const CompletionCallback& callback) override;
+           CompletionOnceCallback callback) override;
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetworkTrafficAnnotationTag& traffic_annotation) override;
   int SetReceiveBufferSize(int32_t size) override;
   int SetSendBufferSize(int32_t size) override;
 
   // StreamSocket implementation.
-  int Connect(const CompletionCallback& callback) override;
+  int Connect(CompletionOnceCallback callback) override;
   void Disconnect() override;
   bool IsConnected() const override;
   bool IsConnectedAndIdle() const override;
@@ -169,9 +169,9 @@ class SSLServerContextImpl::SocketImpl : public SSLServerSocket,
 
   NetLogWithSource net_log_;
 
-  CompletionCallback user_handshake_callback_;
-  CompletionCallback user_read_callback_;
-  CompletionCallback user_write_callback_;
+  CompletionOnceCallback user_handshake_callback_;
+  CompletionOnceCallback user_read_callback_;
+  CompletionOnceCallback user_write_callback_;
 
   // SSLPrivateKey signature.
   int signature_result_;
@@ -384,7 +384,7 @@ int SSLServerContextImpl::SocketImpl::ExportKeyingMaterial(
 
 int SSLServerContextImpl::SocketImpl::Read(IOBuffer* buf,
                                            int buf_len,
-                                           const CompletionCallback& callback) {
+                                           CompletionOnceCallback callback) {
   DCHECK(user_read_callback_.is_null());
   DCHECK(user_handshake_callback_.is_null());
   DCHECK(!user_read_buf_);
@@ -398,7 +398,7 @@ int SSLServerContextImpl::SocketImpl::Read(IOBuffer* buf,
   int rv = DoPayloadRead();
 
   if (rv == ERR_IO_PENDING) {
-    user_read_callback_ = callback;
+    user_read_callback_ = std::move(callback);
   } else {
     user_read_buf_ = NULL;
     user_read_buf_len_ = 0;
@@ -410,7 +410,7 @@ int SSLServerContextImpl::SocketImpl::Read(IOBuffer* buf,
 int SSLServerContextImpl::SocketImpl::Write(
     IOBuffer* buf,
     int buf_len,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(user_write_callback_.is_null());
   DCHECK(!user_write_buf_);
@@ -422,7 +422,7 @@ int SSLServerContextImpl::SocketImpl::Write(
   int rv = DoPayloadWrite();
 
   if (rv == ERR_IO_PENDING) {
-    user_write_callback_ = callback;
+    user_write_callback_ = std::move(callback);
   } else {
     user_write_buf_ = NULL;
     user_write_buf_len_ = 0;
@@ -438,8 +438,7 @@ int SSLServerContextImpl::SocketImpl::SetSendBufferSize(int32_t size) {
   return transport_socket_->SetSendBufferSize(size);
 }
 
-int SSLServerContextImpl::SocketImpl::Connect(
-    const CompletionCallback& callback) {
+int SSLServerContextImpl::SocketImpl::Connect(CompletionOnceCallback callback) {
   NOTIMPLEMENTED();
   return ERR_NOT_IMPLEMENTED;
 }
@@ -694,7 +693,7 @@ int SSLServerContextImpl::SocketImpl::DoHandshake() {
 
 void SSLServerContextImpl::SocketImpl::DoHandshakeCallback(int rv) {
   DCHECK_NE(rv, ERR_IO_PENDING);
-  base::ResetAndReturn(&user_handshake_callback_).Run(rv > OK ? OK : rv);
+  std::move(user_handshake_callback_).Run(rv > OK ? OK : rv);
 }
 
 void SSLServerContextImpl::SocketImpl::DoReadCallback(int rv) {
@@ -703,7 +702,7 @@ void SSLServerContextImpl::SocketImpl::DoReadCallback(int rv) {
 
   user_read_buf_ = NULL;
   user_read_buf_len_ = 0;
-  base::ResetAndReturn(&user_read_callback_).Run(rv);
+  std::move(user_read_callback_).Run(rv);
 }
 
 void SSLServerContextImpl::SocketImpl::DoWriteCallback(int rv) {
@@ -712,7 +711,7 @@ void SSLServerContextImpl::SocketImpl::DoWriteCallback(int rv) {
 
   user_write_buf_ = NULL;
   user_write_buf_len_ = 0;
-  base::ResetAndReturn(&user_write_callback_).Run(rv);
+  std::move(user_write_callback_).Run(rv);
 }
 
 int SSLServerContextImpl::SocketImpl::Init() {

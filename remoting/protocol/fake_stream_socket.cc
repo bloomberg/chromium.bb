@@ -45,7 +45,7 @@ void FakeStreamSocket::AppendInputData(const std::string& data) {
     input_pos_ += result;
     read_buffer_ = nullptr;
 
-    base::ResetAndReturn(&read_callback_).Run(result);
+    std::move(read_callback_).Run(result);
   }
 }
 
@@ -53,7 +53,7 @@ void FakeStreamSocket::SetReadError(int error) {
   EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
   // Complete pending read if any.
   if (!read_callback_.is_null()) {
-    base::ResetAndReturn(&read_callback_).Run(error);
+    std::move(read_callback_).Run(error);
   } else {
     next_read_error_ = error;
   }
@@ -71,7 +71,7 @@ base::WeakPtr<FakeStreamSocket> FakeStreamSocket::GetWeakPtr() {
 
 int FakeStreamSocket::Read(const scoped_refptr<net::IOBuffer>& buf,
                            int buf_len,
-                           const net::CompletionCallback& callback) {
+                           net::CompletionOnceCallback callback) {
   EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
 
   if (input_pos_ < static_cast<int>(input_data_.size())) {
@@ -87,7 +87,7 @@ int FakeStreamSocket::Read(const scoped_refptr<net::IOBuffer>& buf,
   } else {
     read_buffer_ = buf;
     read_buffer_size_ = buf_len;
-    read_callback_ = callback;
+    read_callback_ = std::move(callback);
     return net::ERR_IO_PENDING;
   }
 }
@@ -95,7 +95,7 @@ int FakeStreamSocket::Read(const scoped_refptr<net::IOBuffer>& buf,
 int FakeStreamSocket::Write(
     const scoped_refptr<net::IOBuffer>& buf,
     int buf_len,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
   EXPECT_FALSE(write_pending_);
@@ -104,9 +104,11 @@ int FakeStreamSocket::Write(
     buf_len = std::min(write_limit_, buf_len);
 
   if (async_write_) {
-    task_runner_->PostTask(FROM_HERE, base::Bind(
-        &FakeStreamSocket::DoAsyncWrite, weak_factory_.GetWeakPtr(),
-        scoped_refptr<net::IOBuffer>(buf), buf_len, callback));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&FakeStreamSocket::DoAsyncWrite,
+                                  weak_factory_.GetWeakPtr(),
+                                  scoped_refptr<net::IOBuffer>(buf), buf_len,
+                                  std::move(callback)));
     write_pending_ = true;
     return net::ERR_IO_PENDING;
   } else {
@@ -123,18 +125,18 @@ int FakeStreamSocket::Write(
 
 void FakeStreamSocket::DoAsyncWrite(const scoped_refptr<net::IOBuffer>& buf,
                                     int buf_len,
-                                    const net::CompletionCallback& callback) {
+                                    net::CompletionOnceCallback callback) {
   write_pending_ = false;
 
   if (next_write_error_ != net::OK) {
     int r = next_write_error_;
     next_write_error_ = net::OK;
-    callback.Run(r);
+    std::move(callback).Run(r);
     return;
   }
 
   DoWrite(buf.get(), buf_len);
-  callback.Run(buf_len);
+  std::move(callback).Run(buf_len);
 }
 
 void FakeStreamSocket::DoWrite(const scoped_refptr<net::IOBuffer>& buf,

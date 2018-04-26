@@ -162,10 +162,10 @@ void ClientSocketHandle::SetSocket(std::unique_ptr<StreamSocket> s) {
 
 void ClientSocketHandle::OnIOComplete(int result) {
   TRACE_EVENT0(kNetTracingCategory, "ClientSocketHandle::OnIOComplete");
-  CompletionCallback callback = user_callback_;
+  CompletionOnceCallback callback = std::move(user_callback_);
   user_callback_.Reset();
   HandleInitCompletion(result);
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 std::unique_ptr<StreamSocket> ClientSocketHandle::PassSocket() {

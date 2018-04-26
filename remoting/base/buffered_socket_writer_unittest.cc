@@ -28,9 +28,10 @@ const size_t kWriteChunkSize = 1024U;
 int WriteNetSocket(net::Socket* socket,
                    const scoped_refptr<net::IOBuffer>& buf,
                    int buf_len,
-                   const net::CompletionCallback& callback,
+                   net::CompletionOnceCallback callback,
                    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
-  return socket->Write(buf.get(), buf_len, callback, traffic_annotation);
+  return socket->Write(buf.get(), buf_len, std::move(callback),
+                       traffic_annotation);
 }
 
 class SocketDataProvider: public net::SocketDataProvider {

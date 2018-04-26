@@ -33,14 +33,14 @@ class FailingSSLClientSocket : public SSLClientSocket {
   // Socket implementation:
   int Read(IOBuffer* buf,
            int buf_len,
-           const CompletionCallback& callback) override {
+           CompletionOnceCallback callback) override {
     NOTREACHED();
     return ERR_UNEXPECTED;
   }
 
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetworkTrafficAnnotationTag& traffic_annotation) override {
     NOTREACHED();
     return ERR_UNEXPECTED;
@@ -50,9 +50,7 @@ class FailingSSLClientSocket : public SSLClientSocket {
   int SetSendBufferSize(int32_t size) override { return OK; }
 
   // StreamSocket implementation:
-  int Connect(const CompletionCallback& callback) override {
-    return ERR_FAILED;
-  }
+  int Connect(CompletionOnceCallback callback) override { return ERR_FAILED; }
 
   void Disconnect() override {}
   bool IsConnected() const override { return false; }

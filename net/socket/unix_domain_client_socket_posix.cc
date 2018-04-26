@@ -69,7 +69,7 @@ bool UnixDomainClientSocket::FillAddress(const std::string& socket_path,
 #endif
 }
 
-int UnixDomainClientSocket::Connect(const CompletionCallback& callback) {
+int UnixDomainClientSocket::Connect(CompletionOnceCallback callback) {
   DCHECK(!socket_);
 
   SockaddrStorage address;
@@ -82,7 +82,7 @@ int UnixDomainClientSocket::Connect(const CompletionCallback& callback) {
   if (rv != OK)
     return rv;
 
-  return socket_->Connect(address, callback);
+  return socket_->Connect(address, std::move(callback));
 }
 
 void UnixDomainClientSocket::Disconnect() {
@@ -159,19 +159,20 @@ void UnixDomainClientSocket::ApplySocketTag(const SocketTag& tag) {
   // Ignore socket tags as Unix domain sockets are local only.
 }
 
-int UnixDomainClientSocket::Read(IOBuffer* buf, int buf_len,
-                                 const CompletionCallback& callback) {
+int UnixDomainClientSocket::Read(IOBuffer* buf,
+                                 int buf_len,
+                                 CompletionOnceCallback callback) {
   DCHECK(socket_);
-  return socket_->Read(buf, buf_len, callback);
+  return socket_->Read(buf, buf_len, std::move(callback));
 }
 
 int UnixDomainClientSocket::Write(
     IOBuffer* buf,
     int buf_len,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(socket_);
-  return socket_->Write(buf, buf_len, callback, traffic_annotation);
+  return socket_->Write(buf, buf_len, std::move(callback), traffic_annotation);
 }
 
 int UnixDomainClientSocket::SetReceiveBufferSize(int32_t size) {

@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
@@ -40,6 +41,25 @@ namespace extensions {
 class MockSSLClientSocket : public net::SSLClientSocket {
  public:
   MockSSLClientSocket() {}
+  int Read(net::IOBuffer* buffer,
+           int bytes,
+           net::CompletionOnceCallback callback) override {
+    return Read(buffer, bytes,
+                base::AdaptCallbackForRepeating(std::move(callback)));
+  }
+
+  int Write(net::IOBuffer* buffer,
+            int bytes,
+            net::CompletionOnceCallback callback,
+            const net::NetworkTrafficAnnotationTag& tag) override {
+    return Write(buffer, bytes,
+                 base::AdaptCallbackForRepeating(std::move(callback)), tag);
+  }
+
+  int Connect(net::CompletionOnceCallback callback) override {
+    return Connect(base::AdaptCallbackForRepeating(std::move(callback)));
+  }
+
   MOCK_METHOD0(Disconnect, void());
   MOCK_METHOD3(Read,
                int(net::IOBuffer* buf,
@@ -94,6 +114,21 @@ class MockTCPSocket : public net::TCPClientSocket {
  public:
   explicit MockTCPSocket(const net::AddressList& address_list)
       : net::TCPClientSocket(address_list, NULL, NULL, net::NetLogSource()) {}
+
+  int Read(net::IOBuffer* buffer,
+           int bytes,
+           net::CompletionOnceCallback callback) override {
+    return Read(buffer, bytes,
+                base::AdaptCallbackForRepeating(std::move(callback)));
+  }
+
+  int Write(net::IOBuffer* buffer,
+            int bytes,
+            net::CompletionOnceCallback callback,
+            const net::NetworkTrafficAnnotationTag& tag) override {
+    return Write(buffer, bytes,
+                 base::AdaptCallbackForRepeating(std::move(callback)), tag);
+  }
 
   MOCK_METHOD3(Read,
                int(net::IOBuffer* buf,

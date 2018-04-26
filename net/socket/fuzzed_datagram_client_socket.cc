@@ -93,7 +93,7 @@ void FuzzedDatagramClientSocket::UseNonBlockingIO() {}
 
 int FuzzedDatagramClientSocket::WriteAsync(
     DatagramBuffers buffers,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   return -1;
 }
@@ -101,7 +101,7 @@ int FuzzedDatagramClientSocket::WriteAsync(
 int FuzzedDatagramClientSocket::WriteAsync(
     const char* buffer,
     size_t buf_len,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   return -1;
 }
@@ -126,7 +126,7 @@ const NetLogWithSource& FuzzedDatagramClientSocket::NetLog() const {
 
 int FuzzedDatagramClientSocket::Read(IOBuffer* buf,
                                      int buf_len,
-                                     const CompletionCallback& callback) {
+                                     CompletionOnceCallback callback) {
   CHECK(!callback.is_null());
   CHECK_GT(buf_len, 0);
   CHECK(!read_pending_);
@@ -157,15 +157,16 @@ int FuzzedDatagramClientSocket::Read(IOBuffer* buf,
 
   read_pending_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FuzzedDatagramClientSocket::OnReadComplete,
-                            weak_factory_.GetWeakPtr(), callback, result));
+      FROM_HERE,
+      base::BindOnce(&FuzzedDatagramClientSocket::OnReadComplete,
+                     weak_factory_.GetWeakPtr(), std::move(callback), result));
   return ERR_IO_PENDING;
 }
 
 int FuzzedDatagramClientSocket::Write(
     IOBuffer* buf,
     int buf_len,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& /* traffic_annotation */) {
   CHECK(!callback.is_null());
   CHECK(!write_pending_);
@@ -190,8 +191,9 @@ int FuzzedDatagramClientSocket::Write(
 
   write_pending_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FuzzedDatagramClientSocket::OnWriteComplete,
-                            weak_factory_.GetWeakPtr(), callback, result));
+      FROM_HERE,
+      base::BindOnce(&FuzzedDatagramClientSocket::OnWriteComplete,
+                     weak_factory_.GetWeakPtr(), std::move(callback), result));
   return ERR_IO_PENDING;
 }
 
@@ -208,23 +210,23 @@ int FuzzedDatagramClientSocket::SetDoNotFragment() {
 }
 
 void FuzzedDatagramClientSocket::OnReadComplete(
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     int result) {
   CHECK(connected_);
   CHECK(read_pending_);
 
   read_pending_ = false;
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 void FuzzedDatagramClientSocket::OnWriteComplete(
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     int result) {
   CHECK(connected_);
   CHECK(write_pending_);
 
   write_pending_ = false;
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 }  // namespace net

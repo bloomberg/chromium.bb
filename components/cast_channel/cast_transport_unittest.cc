@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/callback_helpers.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -121,6 +122,21 @@ ACTION_TEMPLATE(EnqueueCallback,
 
 class MockSocket : public net::Socket {
  public:
+  int Read(net::IOBuffer* buffer,
+           int bytes,
+           net::CompletionOnceCallback callback) override {
+    return Read(buffer, bytes,
+                base::AdaptCallbackForRepeating(std::move(callback)));
+  }
+
+  int Write(net::IOBuffer* buffer,
+            int bytes,
+            net::CompletionOnceCallback callback,
+            const net::NetworkTrafficAnnotationTag& tag) override {
+    return Write(buffer, bytes,
+                 base::AdaptCallbackForRepeating(std::move(callback)), tag);
+  }
+
   MOCK_METHOD3(Read,
                int(net::IOBuffer* buf,
                    int buf_len,

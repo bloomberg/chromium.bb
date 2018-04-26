@@ -77,7 +77,7 @@ class NET_EXPORT_PRIVATE DatagramClientSocket : public DatagramSocket,
   // below.
   virtual int WriteAsync(
       DatagramBuffers buffers,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       const NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 
   // |buffer| is copied to an internal |DatagramBuffer|, caller
@@ -85,7 +85,7 @@ class NET_EXPORT_PRIVATE DatagramClientSocket : public DatagramSocket,
   virtual int WriteAsync(
       const char* buffer,
       size_t buf_len,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       const NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 
   // With WriteAsync, the caller may wish to try unwritten buffers on

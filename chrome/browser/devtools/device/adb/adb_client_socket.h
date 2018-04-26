@@ -32,7 +32,7 @@ class AdbClientSocket {
   explicit AdbClientSocket(int port);
   ~AdbClientSocket();
 
-  void Connect(const net::CompletionCallback& callback);
+  void Connect(net::CompletionOnceCallback callback);
 
   void SendCommand(const std::string& command,
                    bool is_void,
@@ -53,6 +53,10 @@ class AdbClientSocket {
                       scoped_refptr<net::IOBuffer> response_buffer,
                       int bytes_left,
                       int result);
+
+  void RunConnectCallback(int result);
+
+  net::CompletionOnceCallback connect_callback_;
 
   std::string host_;
   int port_;

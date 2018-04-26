@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "extensions/browser/api/socket/tcp_socket.h"
 #include "net/base/address_list.h"
@@ -28,6 +29,21 @@ class MockTCPSocket : public net::TCPClientSocket {
  public:
   explicit MockTCPSocket(const net::AddressList& address_list)
       : net::TCPClientSocket(address_list, NULL, NULL, net::NetLogSource()) {}
+
+  int Read(net::IOBuffer* buffer,
+           int bytes,
+           net::CompletionOnceCallback callback) override {
+    return Read(buffer, bytes,
+                base::AdaptCallbackForRepeating(std::move(callback)));
+  }
+
+  int Write(net::IOBuffer* buffer,
+            int bytes,
+            net::CompletionOnceCallback callback,
+            const net::NetworkTrafficAnnotationTag& tag) override {
+    return Write(buffer, bytes,
+                 base::AdaptCallbackForRepeating(std::move(callback)), tag);
+  }
 
   MOCK_METHOD3(Read, int(net::IOBuffer* buf, int buf_len,
                          const net::CompletionCallback& callback));
@@ -77,7 +93,7 @@ class CompleteHandler {
   DISALLOW_COPY_AND_ASSIGN(CompleteHandler);
 };
 
-const std::string FAKE_ID = "abcdefghijklmnopqrst";
+const char FAKE_ID[] = "abcdefghijklmnopqrst";
 
 TEST(SocketTest, TestTCPSocketRead) {
   net::AddressList address_list;

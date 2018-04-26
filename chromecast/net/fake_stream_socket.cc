@@ -28,14 +28,14 @@ class SocketBuffer {
   // ERR_IO_PENDING if the read is asynchronous. If the read is asynchronous,
   // |callback| is called with the number of bytes written to |data| once the
   // data has been written.
-  int Read(char* data, size_t len, const net::CompletionCallback& callback) {
+  int Read(char* data, size_t len, net::CompletionOnceCallback callback) {
     DCHECK(data);
     DCHECK_GT(len, 0u);
     DCHECK(!callback.is_null());
     if (data_.empty()) {
       pending_read_data_ = data;
       pending_read_len_ = len;
-      pending_read_callback_ = callback;
+      pending_read_callback_ = std::move(callback);
       return net::ERR_IO_PENDING;
     }
     return ReadInternal(data, len);
@@ -51,7 +51,7 @@ class SocketBuffer {
       int result = ReadInternal(pending_read_data_, pending_read_len_);
       pending_read_data_ = nullptr;
       pending_read_len_ = 0;
-      base::ResetAndReturn(&pending_read_callback_).Run(result);
+      std::move(pending_read_callback_).Run(result);
     }
   }
 
@@ -68,7 +68,7 @@ class SocketBuffer {
   std::vector<char> data_;
   char* pending_read_data_;
   size_t pending_read_len_;
-  net::CompletionCallback pending_read_callback_;
+  net::CompletionOnceCallback pending_read_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketBuffer);
 };
@@ -91,15 +91,15 @@ void FakeStreamSocket::SetPeer(FakeStreamSocket* peer) {
 
 int FakeStreamSocket::Read(net::IOBuffer* buf,
                            int buf_len,
-                           const net::CompletionCallback& callback) {
+                           net::CompletionOnceCallback callback) {
   DCHECK(buf);
-  return buffer_->Read(buf->data(), buf_len, callback);
+  return buffer_->Read(buf->data(), buf_len, std::move(callback));
 }
 
 int FakeStreamSocket::Write(
     net::IOBuffer* buf,
     int buf_len,
-    const net::CompletionCallback& /* callback */,
+    net::CompletionOnceCallback /* callback */,
     const net::NetworkTrafficAnnotationTag& /*traffic_annotation*/) {
   DCHECK(buf);
   if (!peer_) {
@@ -117,7 +117,7 @@ int FakeStreamSocket::SetSendBufferSize(int32_t /* size */) {
   return net::OK;
 }
 
-int FakeStreamSocket::Connect(const net::CompletionCallback& /* callback */) {
+int FakeStreamSocket::Connect(net::CompletionOnceCallback /* callback */) {
   return net::OK;
 }
 

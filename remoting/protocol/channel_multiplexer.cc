@@ -107,12 +107,13 @@ class ChannelMultiplexer::MuxSocket : public P2PStreamSocket {
   void OnPacketReceived();
 
   // P2PStreamSocket interface.
-  int Read(const scoped_refptr<net::IOBuffer>& buffer, int buffer_len,
-           const net::CompletionCallback& callback) override;
+  int Read(const scoped_refptr<net::IOBuffer>& buffer,
+           int buffer_len,
+           net::CompletionOnceCallback callback) override;
   int Write(
       const scoped_refptr<net::IOBuffer>& buffer,
       int buffer_len,
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
 
  private:
@@ -120,13 +121,13 @@ class ChannelMultiplexer::MuxSocket : public P2PStreamSocket {
 
   int base_channel_error_ = net::OK;
 
-  net::CompletionCallback read_callback_;
+  net::CompletionOnceCallback read_callback_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
 
   bool write_pending_;
   int write_result_;
-  net::CompletionCallback write_callback_;
+  net::CompletionOnceCallback write_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -222,8 +223,9 @@ ChannelMultiplexer::MuxSocket::~MuxSocket() {
 }
 
 int ChannelMultiplexer::MuxSocket::Read(
-    const scoped_refptr<net::IOBuffer>& buffer, int buffer_len,
-    const net::CompletionCallback& callback) {
+    const scoped_refptr<net::IOBuffer>& buffer,
+    int buffer_len,
+    net::CompletionOnceCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(read_callback_.is_null());
 
@@ -234,7 +236,7 @@ int ChannelMultiplexer::MuxSocket::Read(
   if (result == 0) {
     read_buffer_ = buffer;
     read_buffer_size_ = buffer_len;
-    read_callback_ = callback;
+    read_callback_ = std::move(callback);
     return net::ERR_IO_PENDING;
   }
   return result;
@@ -243,7 +245,7 @@ int ChannelMultiplexer::MuxSocket::Read(
 int ChannelMultiplexer::MuxSocket::Write(
     const scoped_refptr<net::IOBuffer>& buffer,
     int buffer_len,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(write_callback_.is_null());
@@ -264,7 +266,7 @@ int ChannelMultiplexer::MuxSocket::Write(
   // OnWriteComplete() might be called above synchronously.
   if (write_pending_) {
     DCHECK(write_callback_.is_null());
-    write_callback_ = callback;
+    write_callback_ = std::move(callback);
     write_result_ = size;
     return net::ERR_IO_PENDING;
   }
@@ -275,8 +277,7 @@ int ChannelMultiplexer::MuxSocket::Write(
 void ChannelMultiplexer::MuxSocket::OnWriteComplete() {
   write_pending_ = false;
   if (!write_callback_.is_null())
-    base::ResetAndReturn(&write_callback_).Run(write_result_);
-
+    std::move(write_callback_).Run(write_result_);
 }
 
 void ChannelMultiplexer::MuxSocket::OnBaseChannelError(int error) {
@@ -290,12 +291,12 @@ void ChannelMultiplexer::MuxSocket::OnBaseChannelError(int error) {
   // callbacks is enough.
 
   if (!read_callback_.is_null()) {
-    base::ResetAndReturn(&read_callback_).Run(error);
+    std::move(read_callback_).Run(error);
     return;
   }
 
   if (!write_callback_.is_null())
-    base::ResetAndReturn(&write_callback_).Run(error);
+    std::move(write_callback_).Run(error);
 }
 
 void ChannelMultiplexer::MuxSocket::OnPacketReceived() {
@@ -303,7 +304,7 @@ void ChannelMultiplexer::MuxSocket::OnPacketReceived() {
     int result = channel_->DoRead(read_buffer_.get(), read_buffer_size_);
     read_buffer_ = nullptr;
     DCHECK_GT(result, 0);
-    base::ResetAndReturn(&read_callback_).Run(result);
+    std::move(read_callback_).Run(result);
   }
 }
 

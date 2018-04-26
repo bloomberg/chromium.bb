@@ -144,7 +144,7 @@ class MockClientSocket : public StreamSocket {
   // Socket implementation.
   int Read(IOBuffer* /* buf */,
            int len,
-           const CompletionCallback& /* callback */) override {
+           CompletionOnceCallback /* callback */) override {
     if (has_unread_data_ && len > 0) {
       has_unread_data_ = false;
       was_used_to_convey_data_ = true;
@@ -156,7 +156,7 @@ class MockClientSocket : public StreamSocket {
   int Write(
       IOBuffer* /* buf */,
       int len,
-      const CompletionCallback& /* callback */,
+      CompletionOnceCallback /* callback */,
       const NetworkTrafficAnnotationTag& /*traffic_annotation*/) override {
     was_used_to_convey_data_ = true;
     return len;
@@ -165,7 +165,7 @@ class MockClientSocket : public StreamSocket {
   int SetSendBufferSize(int32_t size) override { return OK; }
 
   // StreamSocket implementation.
-  int Connect(const CompletionCallback& callback) override {
+  int Connect(CompletionOnceCallback callback) override {
     connected_ = true;
     return OK;
   }

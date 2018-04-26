@@ -80,7 +80,7 @@ SOCKSClientSocket::~SOCKSClientSocket() {
   Disconnect();
 }
 
-int SOCKSClientSocket::Connect(const CompletionCallback& callback) {
+int SOCKSClientSocket::Connect(CompletionOnceCallback callback) {
   DCHECK(transport_.get());
   DCHECK(transport_->socket());
   DCHECK_EQ(STATE_NONE, next_state_);
@@ -96,7 +96,7 @@ int SOCKSClientSocket::Connect(const CompletionCallback& callback) {
 
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING) {
-    user_callback_ = callback;
+    user_callback_ = std::move(callback);
   } else {
     net_log_.EndEventWithNetErrorCode(NetLogEventType::SOCKS_CONNECT, rv);
   }
@@ -184,8 +184,9 @@ void SOCKSClientSocket::ApplySocketTag(const SocketTag& tag) {
 
 // Read is called by the transport layer above to read. This can only be done
 // if the SOCKS handshake is complete.
-int SOCKSClientSocket::Read(IOBuffer* buf, int buf_len,
-                            const CompletionCallback& callback) {
+int SOCKSClientSocket::Read(IOBuffer* buf,
+                            int buf_len,
+                            CompletionOnceCallback callback) {
   DCHECK(completed_handshake_);
   DCHECK_EQ(STATE_NONE, next_state_);
   DCHECK(user_callback_.is_null());
@@ -193,8 +194,8 @@ int SOCKSClientSocket::Read(IOBuffer* buf, int buf_len,
 
   int rv = transport_->socket()->Read(
       buf, buf_len,
-      base::Bind(&SOCKSClientSocket::OnReadWriteComplete,
-                 base::Unretained(this), callback));
+      base::BindOnce(&SOCKSClientSocket::OnReadWriteComplete,
+                     base::Unretained(this), std::move(callback)));
   if (rv > 0)
     was_ever_used_ = true;
   return rv;
@@ -205,7 +206,7 @@ int SOCKSClientSocket::Read(IOBuffer* buf, int buf_len,
 int SOCKSClientSocket::Write(
     IOBuffer* buf,
     int buf_len,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(completed_handshake_);
   DCHECK_EQ(STATE_NONE, next_state_);
@@ -214,8 +215,8 @@ int SOCKSClientSocket::Write(
 
   int rv = transport_->socket()->Write(
       buf, buf_len,
-      base::Bind(&SOCKSClientSocket::OnReadWriteComplete,
-                 base::Unretained(this), callback),
+      base::BindOnce(&SOCKSClientSocket::OnReadWriteComplete,
+                     base::Unretained(this), std::move(callback)),
       traffic_annotation);
   if (rv > 0)
     was_ever_used_ = true;
@@ -237,7 +238,7 @@ void SOCKSClientSocket::DoCallback(int result) {
   // Since Run() may result in Read being called,
   // clear user_callback_ up front.
   DVLOG(1) << "Finished setting up SOCKS handshake";
-  base::ResetAndReturn(&user_callback_).Run(result);
+  std::move(user_callback_).Run(result);
 }
 
 void SOCKSClientSocket::OnIOComplete(int result) {
@@ -249,14 +250,14 @@ void SOCKSClientSocket::OnIOComplete(int result) {
   }
 }
 
-void SOCKSClientSocket::OnReadWriteComplete(const CompletionCallback& callback,
+void SOCKSClientSocket::OnReadWriteComplete(CompletionOnceCallback callback,
                                             int result) {
   DCHECK_NE(ERR_IO_PENDING, result);
   DCHECK(!callback.is_null());
 
   if (result > 0)
     was_ever_used_ = true;
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 int SOCKSClientSocket::DoLoop(int last_io_result) {

@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/feature_list.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -35,8 +35,9 @@ class NET_EXPORT Socket {
   // the provided buffer until the callback is invoked or the socket is
   // closed.  If the socket is Disconnected before the read completes, the
   // callback will not be invoked.
-  virtual int Read(IOBuffer* buf, int buf_len,
-                   const CompletionCallback& callback) = 0;
+  virtual int Read(IOBuffer* buf,
+                   int buf_len,
+                   CompletionOnceCallback callback) = 0;
 
   // Reads data, up to |buf_len| bytes, into |buf| without blocking. Default
   // implementation returns ERR_READ_IF_READY_NOT_IMPLEMENTED. Caller should
@@ -49,7 +50,7 @@ class NET_EXPORT Socket {
   // |callback| will be invoked with the error code.
   virtual int ReadIfReady(IOBuffer* buf,
                           int buf_len,
-                          const CompletionCallback& callback);
+                          CompletionOnceCallback callback);
 
   // Writes data, up to |buf_len| bytes, to the socket.  Note: data may be
   // written partially.  The number of bytes written is returned, or an error
@@ -67,7 +68,7 @@ class NET_EXPORT Socket {
   // refer to //docs/network_traffic_annotations.md for more details.
   virtual int Write(IOBuffer* buf,
                     int buf_len,
-                    const CompletionCallback& callback,
+                    CompletionOnceCallback callback,
                     const NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 
   // Set the receive buffer size (in bytes) for the socket.

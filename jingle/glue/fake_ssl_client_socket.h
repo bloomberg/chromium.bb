@@ -50,15 +50,15 @@ class FakeSSLClientSocket : public net::StreamSocket {
   // net::StreamSocket implementation.
   int Read(net::IOBuffer* buf,
            int buf_len,
-           const net::CompletionCallback& callback) override;
+           net::CompletionOnceCallback callback) override;
   int Write(
       net::IOBuffer* buf,
       int buf_len,
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
   int SetReceiveBufferSize(int32_t size) override;
   int SetSendBufferSize(int32_t size) override;
-  int Connect(const net::CompletionCallback& callback) override;
+  int Connect(net::CompletionOnceCallback callback) override;
   void Disconnect() override;
   bool IsConnected() const override;
   bool IsConnectedAndIdle() const override;
@@ -112,7 +112,7 @@ class FakeSSLClientSocket : public net::StreamSocket {
   bool handshake_completed_;
 
   // The callback passed to Connect().
-  net::CompletionCallback user_connect_callback_;
+  net::CompletionOnceCallback user_connect_callback_;
 
   scoped_refptr<net::DrainableIOBuffer> write_buf_;
   scoped_refptr<net::DrainableIOBuffer> read_buf_;

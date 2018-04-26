@@ -49,7 +49,7 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
   NextProto GetProxyNegotiatedProtocol() const override;
 
   // StreamSocket implementation.
-  int Connect(const CompletionCallback& callback) override;
+  int Connect(CompletionOnceCallback callback) override;
   void Disconnect() override;
   bool IsConnected() const override;
   bool IsConnectedAndIdle() const override;
@@ -69,10 +69,10 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
   // Socket implementation.
   int Read(IOBuffer* buf,
            int buf_len,
-           const CompletionCallback& callback) override;
+           CompletionOnceCallback callback) override;
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetworkTrafficAnnotationTag& traffic_annotation) override;
   int SetReceiveBufferSize(int32_t size) override;
   int SetSendBufferSize(int32_t size) override;
@@ -120,13 +120,13 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
   std::unique_ptr<QuicChromiumClientSession::Handle> session_;
 
   // Stores the callback for Connect().
-  CompletionCallback connect_callback_;
+  CompletionOnceCallback connect_callback_;
   // Stores the callback for Read().
-  CompletionCallback read_callback_;
+  CompletionOnceCallback read_callback_;
   // Stores the read buffer pointer for Read().
   IOBuffer* read_buf_;
   // Stores the callback for Write().
-  CompletionCallback write_callback_;
+  CompletionOnceCallback write_callback_;
   // Stores the write buffer length for Write().
   int write_buf_len_;
 

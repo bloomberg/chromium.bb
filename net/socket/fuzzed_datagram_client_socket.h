@@ -49,11 +49,11 @@ class FuzzedDatagramClientSocket : public DatagramClientSocket {
   int WriteAsync(
       const char* buffer,
       size_t buf_len,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       const NetworkTrafficAnnotationTag& traffic_annotation) override;
   int WriteAsync(
       DatagramBuffers buffers,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       const NetworkTrafficAnnotationTag& traffic_annotation) override;
   DatagramBuffers GetUnwrittenBuffers() override;
   void SetWriteAsyncEnabled(bool enabled) override;
@@ -68,10 +68,10 @@ class FuzzedDatagramClientSocket : public DatagramClientSocket {
   // Socket implementation:
   int Read(IOBuffer* buf,
            int buf_len,
-           const CompletionCallback& callback) override;
+           CompletionOnceCallback callback) override;
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetworkTrafficAnnotationTag& traffic_annotation) override;
   int SetReceiveBufferSize(int32_t size) override;
   int SetSendBufferSize(int32_t size) override;
@@ -79,8 +79,8 @@ class FuzzedDatagramClientSocket : public DatagramClientSocket {
   void SetMsgConfirm(bool confirm) override {}
 
  private:
-  void OnReadComplete(const net::CompletionCallback& callback, int result);
-  void OnWriteComplete(const net::CompletionCallback& callback, int result);
+  void OnReadComplete(net::CompletionOnceCallback callback, int result);
+  void OnWriteComplete(net::CompletionOnceCallback callback, int result);
 
   base::FuzzedDataProvider* data_provider_;
 

@@ -34,9 +34,7 @@ class FakeStreamSocket : public StreamSocket {
   FakeStreamSocket() = default;
 
   // StreamSocket implementation
-  int Connect(const CompletionCallback& callback) override {
-    return ERR_FAILED;
-  }
+  int Connect(CompletionOnceCallback callback) override { return ERR_FAILED; }
 
   void Disconnect() override { return; }
 
@@ -79,13 +77,13 @@ class FakeStreamSocket : public StreamSocket {
   // Socket implementation
   int Read(IOBuffer* buf,
            int buf_len,
-           const CompletionCallback& callback) override {
+           CompletionOnceCallback callback) override {
     return ERR_FAILED;
   }
 
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetworkTrafficAnnotationTag& traffic_annotation) override {
     return ERR_FAILED;
   }

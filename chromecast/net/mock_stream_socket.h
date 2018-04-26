@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 
+#include "base/callback_helpers.h"
 #include "base/macros.h"
+#include "net/base/completion_callback.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/stream_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -20,6 +22,26 @@ class MockStreamSocket : public net::StreamSocket {
  public:
   MockStreamSocket();
   ~MockStreamSocket() override;
+
+  int Read(net::IOBuffer* buffer,
+           int bytes,
+           net::CompletionOnceCallback callback) override {
+    return Read(buffer, bytes,
+                base::AdaptCallbackForRepeating(std::move(callback)));
+  }
+
+  int Write(net::IOBuffer* buffer,
+            int bytes,
+            net::CompletionOnceCallback callback,
+            const net::NetworkTrafficAnnotationTag& tag) override {
+    return Write(buffer, bytes,
+                 base::AdaptCallbackForRepeating(std::move(callback)), tag);
+  }
+
+  int Connect(net::CompletionOnceCallback callback) override {
+    return Connect(base::AdaptCallbackForRepeating(std::move(callback)));
+  }
+
   MOCK_METHOD3(Read, int(net::IOBuffer*, int, const net::CompletionCallback&));
   MOCK_METHOD4(Write,
                int(net::IOBuffer*,

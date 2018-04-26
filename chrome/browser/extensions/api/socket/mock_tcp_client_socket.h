@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SOCKET_MOCK_TCP_CLIENT_SOCKET_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SOCKET_MOCK_TCP_CLIENT_SOCKET_H_
 
+#include "base/callback_helpers.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/tcp_client_socket.h"
@@ -12,11 +13,29 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace extensions {
-
 class MockTCPClientSocket : public net::TCPClientSocket {
  public:
   MockTCPClientSocket();
   virtual ~MockTCPClientSocket();
+
+  int Read(net::IOBuffer* buffer,
+           int bytes,
+           net::CompletionOnceCallback callback) override {
+    return Read(buffer, bytes,
+                base::AdaptCallbackForRepeating(std::move(callback)));
+  }
+
+  int Write(net::IOBuffer* buffer,
+            int bytes,
+            net::CompletionOnceCallback callback,
+            const net::NetworkTrafficAnnotationTag& tag) override {
+    return Write(buffer, bytes,
+                 base::AdaptCallbackForRepeating(std::move(callback)), tag);
+  }
+
+  int Connect(net::CompletionOnceCallback callback) override {
+    return Connect(base::AdaptCallbackForRepeating(std::move(callback)));
+  }
 
   MOCK_METHOD3(Read, int(net::IOBuffer*, int, const net::CompletionCallback&));
   MOCK_METHOD4(Write,
