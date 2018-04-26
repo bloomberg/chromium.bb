@@ -40,10 +40,11 @@ def _LintWPT(input_api, output_api):
         args,
         stdout=input_api.subprocess.PIPE,
         stderr=input_api.subprocess.PIPE)
-    stdout, _ = proc.communicate()
+    stdout, stderr = proc.communicate()
 
-    if stdout:
-        return [output_api.PresubmitError(stdout)]
+    if proc.returncode != 0:
+        return [output_api.PresubmitError('wpt lint failed:',
+                                          long_text=stdout+stderr)]
     return []
 
 
