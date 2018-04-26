@@ -143,14 +143,12 @@
                     android:duration="3900"
                     android:propertyName="translateX"
                     android:valueFrom="0"
-                    android:valueTo="-3.24"
-                    android:valueType="floatType"/>
+                    android:valueTo="-3.24"/>
                 <objectAnimator
                     android:duration="6550"
                     android:propertyName="translateX"
                     android:valueFrom="-3.24"
-                    android:valueTo="0"
-                    android:valueType="floatType"/>
+                    android:valueTo="0"/>
             </set>
         </aapt:attr>
     </target>
@@ -161,14 +159,12 @@
                     android:duration="4650"
                     android:propertyName="translateX"
                     android:valueFrom="0"
-                    android:valueTo="-2.16"
-                    android:valueType="floatType"/>
+                    android:valueTo="-2.16"/>
                 <objectAnimator
                     android:duration="5800"
                     android:propertyName="translateX"
                     android:valueFrom="-2.16"
-                    android:valueTo="0"
-                    android:valueType="floatType"/>
+                    android:valueTo="0"/>
             </set>
         </aapt:attr>
     </target>
@@ -179,14 +175,12 @@
                     android:duration="6150"
                     android:propertyName="translateX"
                     android:valueFrom="0"
-                    android:valueTo="-5.04"
-                    android:valueType="floatType"/>
+                    android:valueTo="-5.04"/>
                 <objectAnimator
                     android:duration="4300"
                     android:propertyName="translateX"
                     android:valueFrom="-5.04"
-                    android:valueTo="0"
-                    android:valueType="floatType"/>
+                    android:valueTo="0"/>
             </set>
         </aapt:attr>
     </target>
@@ -197,14 +191,12 @@
                     android:duration="5550"
                     android:propertyName="translateX"
                     android:valueFrom="0"
-                    android:valueTo="5.04"
-                    android:valueType="floatType"/>
+                    android:valueTo="5.04"/>
                 <objectAnimator
                     android:duration="4900"
                     android:propertyName="translateX"
                     android:valueFrom="5.04"
-                    android:valueTo="0"
-                    android:valueType="floatType"/>
+                    android:valueTo="0"/>
             </set>
         </aapt:attr>
     </target>
@@ -215,29 +207,25 @@
                     android:duration="700"
                     android:propertyName="rotation"
                     android:valueFrom="0"
-                    android:valueTo="-360"
-                    android:valueType="floatType"/>
+                    android:valueTo="-360"/>
                 <objectAnimator
                     android:duration="700"
                     android:propertyName="rotation"
                     android:startOffset="1900"
                     android:valueFrom="0"
-                    android:valueTo="-360"
-                    android:valueType="floatType"/>
+                    android:valueTo="-360"/>
                 <objectAnimator
                     android:duration="700"
                     android:propertyName="rotation"
                     android:startOffset="1900"
                     android:valueFrom="0"
-                    android:valueTo="-360"
-                    android:valueType="floatType"/>
+                    android:valueTo="-360"/>
                 <objectAnimator
                     android:duration="700"
                     android:propertyName="rotation"
                     android:startOffset="1900"
                     android:valueFrom="0"
-                    android:valueTo="-360"
-                    android:valueType="floatType"/>
+                    android:valueTo="-360"/>
             </set>
         </aapt:attr>
     </target>
@@ -248,29 +236,25 @@
                     android:duration="700"
                     android:propertyName="rotation"
                     android:valueFrom="-120"
-                    android:valueTo="120"
-                    android:valueType="floatType"/>
+                    android:valueTo="120"/>
                 <objectAnimator
                     android:duration="700"
                     android:propertyName="rotation"
                     android:startOffset="1900"
                     android:valueFrom="120"
-                    android:valueTo="-120"
-                    android:valueType="floatType"/>
+                    android:valueTo="-120"/>
                 <objectAnimator
                     android:duration="700"
                     android:propertyName="rotation"
                     android:startOffset="1900"
                     android:valueFrom="-120"
-                    android:valueTo="120"
-                    android:valueType="floatType"/>
+                    android:valueTo="120"/>
                 <objectAnimator
                     android:duration="700"
                     android:propertyName="rotation"
                     android:startOffset="1900"
                     android:valueFrom="120"
-                    android:valueTo="-120"
-                    android:valueType="floatType"/>
+                    android:valueTo="-120"/>
             </set>
         </aapt:attr>
     </target>
