@@ -286,13 +286,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(IN_GUEST_MODE, "restoreCurrentView"),
                       TestParameter(NOT_IN_GUEST_MODE, "restoreCurrentView")));
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_ShareDialog DISABLED_ShareDialog
-#else
-#define MAYBE_ShareDialog ShareDialog
-#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_ShareDialog,
+    ShareDialog,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "shareFile"),
                       TestParameter(NOT_IN_GUEST_MODE, "shareDirectory")));

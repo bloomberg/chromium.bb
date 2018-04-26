@@ -106,11 +106,15 @@ function share(path) {
 }
 
 /**
- * Tests sharing a file on Drive
+ * Tests sharing a file on Drive.
  */
-testcase.shareFile = share.bind(null, 'world.ogv');
+testcase.shareFile = function() {
+  share('world.ogv');
+};
 
 /**
- * Tests sharing a directory on Drive
+ * Tests sharing a directory on Drive.
  */
-testcase.shareDirectory = share.bind(null, 'photos');
+testcase.shareDirectory = function() {
+  share('photos');
+};
