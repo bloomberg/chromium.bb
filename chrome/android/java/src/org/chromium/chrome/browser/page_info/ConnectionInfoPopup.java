@@ -154,7 +154,6 @@ public class ConnectionInfoPopup implements OnClickListener {
 
     @CalledByNative
     private void addResetCertDecisionsButton(String label) {
-        assert mNativeConnectionInfoPopup != 0;
         assert mResetCertDecisionsButton == null;
 
         mResetCertDecisionsButton = new Button(mContext);
