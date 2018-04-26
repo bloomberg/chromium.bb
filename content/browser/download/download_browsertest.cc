@@ -3376,7 +3376,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
             std::string("header_value"));
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, ForceDownloadMultipartRelatedPage) {
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       DISABLED_ForceDownloadMultipartRelatedPage) {
   // Force downloading the MHTML.
   DownloadTestContentBrowserClient new_client;
   new_client.set_allowed_rendering_mhtml_over_http(false);
