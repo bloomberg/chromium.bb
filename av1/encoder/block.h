@@ -258,8 +258,6 @@ struct macroblock {
   int skip_mode;  // 0: off; 1: on
   int skip_mode_cost[SKIP_CONTEXTS][2];
 
-  MV_REFERENCE_FRAME skip_mode_ref_frame[2];
-  int_mv skip_mode_mv[2];
   int compound_idx;
 
   LV_MAP_COEFF_COST coeff_costs[TX_SIZES][PLANE_TYPES];
