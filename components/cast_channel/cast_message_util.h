@@ -94,6 +94,8 @@ enum class GetAppAvailabilityResult {
   kUnknown,
 };
 
+const char* GetAppAvailabilityResultToString(GetAppAvailabilityResult result);
+
 // Extracts request ID from |payload| corresponding to a Cast message response.
 // If request ID is available, assigns it to |request_id|. Return |true| if
 // request ID is found.

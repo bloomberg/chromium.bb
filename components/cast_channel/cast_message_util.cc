@@ -277,6 +277,17 @@ CastMessage CreateGetAppAvailabilityRequest(const std::string& source_id,
   return output;
 }
 
+const char* GetAppAvailabilityResultToString(GetAppAvailabilityResult result) {
+  switch (result) {
+    case GetAppAvailabilityResult::kAvailable:
+      return "available";
+    case GetAppAvailabilityResult::kUnavailable:
+      return "unavailable";
+    case GetAppAvailabilityResult::kUnknown:
+      return "unknown";
+  }
+}
+
 bool GetRequestIdFromResponse(const Value& payload, int* request_id) {
   DCHECK(request_id);
   DCHECK(payload.is_dict());

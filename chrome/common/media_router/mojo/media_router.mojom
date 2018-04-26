@@ -413,7 +413,13 @@ interface MediaRouteProvider {
   // already a firewall rule for mDNS.
   EnableMdnsDiscovery();
 
-  // Updates media sinks capable of displaying |media_source|.
+  // Requests the MediaRouteProvider to update the list of media sinks capable
+  // of displaying |media_source|. This call is made when a user gesture is
+  // detected, so MediaRouteProvider may treat this as a signal to take actions
+  // to become more responsive, e.g., initiate a one-off round of device
+  // discovery.
+  // TODO(https://crbug.com/698940): Rename this to OnUserGesture and remove the
+  // |media_source| parameter.
   UpdateMediaSinks(string media_source);
 
   // Indicates that the Media Router is interested in finding a sink that

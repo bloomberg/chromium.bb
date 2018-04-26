@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_app_discovery_service.h"
 
+#include "base/time/tick_clock.h"
 #include "chrome/browser/media/router/providers/cast/cast_media_route_provider_metrics.h"
 #include "components/cast_channel/cast_message_handler.h"
 #include "components/cast_channel/cast_socket.h"
@@ -11,13 +12,43 @@
 
 namespace media_router {
 
+namespace {
+
+// The minimum time that must elapse before an app availability result can be
+// force refreshed.
+static constexpr base::TimeDelta kRefreshThreshold =
+    base::TimeDelta::FromMinutes(1);
+
+bool ShouldRefreshAppAvailability(
+    const CastAppAvailabilityTracker::AppAvailability& availability,
+    base::TimeTicks now) {
+  switch (availability.first) {
+    case cast_channel::GetAppAvailabilityResult::kAvailable:
+      return false;
+    case cast_channel::GetAppAvailabilityResult::kUnavailable:
+      return now - availability.second > kRefreshThreshold;
+    case cast_channel::GetAppAvailabilityResult::kUnknown:
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+}  // namespace
+
 CastAppDiscoveryService::CastAppDiscoveryService(
     cast_channel::CastMessageHandler* message_handler,
-    cast_channel::CastSocketService* socket_service)
+    cast_channel::CastSocketService* socket_service,
+    const base::TickClock* clock)
     : message_handler_(message_handler),
       socket_service_(socket_service),
+      clock_(clock),
       weak_ptr_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
+  DCHECK(message_handler_);
+  DCHECK(socket_service_);
+  DCHECK(clock_);
 }
 
 CastAppDiscoveryService::~CastAppDiscoveryService() {
@@ -70,6 +101,29 @@ CastAppDiscoveryService::StartObservingMediaSinks(
   return callback_list->Add(callback);
 }
 
+void CastAppDiscoveryService::Refresh() {
+  const auto app_ids = availability_tracker_.GetRegisteredApps();
+  base::TimeTicks now = clock_->NowTicks();
+  // Note: The following logic assumes |sinks_| will not change as it is
+  // being iterated.
+  for (const auto& sink : sinks_) {
+    for (const auto& app_id : app_ids) {
+      if (ShouldRefreshAppAvailability(
+              availability_tracker_.GetAvailability(sink.first, app_id), now)) {
+        int channel_id = sink.second.cast_data().cast_channel_id;
+        cast_channel::CastSocket* socket =
+            socket_service_->GetSocket(channel_id);
+        if (!socket) {
+          DVLOG(1) << "Socket not found for id " << channel_id;
+          continue;
+        }
+
+        RequestAppAvailability(socket, app_id, sink.first);
+      }
+    }
+  }
+}
+
 void CastAppDiscoveryService::MaybeRemoveSinkQueryEntry(
     const CastMediaSource& source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -89,7 +143,8 @@ void CastAppDiscoveryService::OnSinkAddedOrUpdated(
   const MediaSink::Id& sink_id = sink.sink().id();
   sinks_.insert_or_assign(sink_id, sink);
   for (const std::string& app_id : availability_tracker_.GetRegisteredApps()) {
-    if (availability_tracker_.IsAvailabilityKnown(sink_id, app_id))
+    auto availability = availability_tracker_.GetAvailability(sink_id, app_id);
+    if (availability.first != cast_channel::GetAppAvailabilityResult::kUnknown)
       continue;
 
     RequestAppAvailability(socket, app_id, sink_id);
@@ -110,7 +165,7 @@ void CastAppDiscoveryService::RequestAppAvailability(
   message_handler_->RequestAppAvailability(
       socket, app_id,
       base::BindOnce(&CastAppDiscoveryService::UpdateAppAvailability,
-                     weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now(),
+                     weak_ptr_factory_.GetWeakPtr(), clock_->NowTicks(),
                      sink_id));
 }
 
@@ -118,28 +173,17 @@ void CastAppDiscoveryService::UpdateAppAvailability(
     base::TimeTicks start_time,
     const MediaSink::Id& sink_id,
     const std::string& app_id,
-    cast_channel::GetAppAvailabilityResult result) {
+    cast_channel::GetAppAvailabilityResult availability) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RecordAppAvailabilityResult(result, base::TimeTicks::Now() - start_time);
+  RecordAppAvailabilityResult(availability, clock_->NowTicks() - start_time);
   if (!base::ContainsKey(sinks_, sink_id))
     return;
 
-  if (result == cast_channel::GetAppAvailabilityResult::kUnknown) {
-    // TODO(crbug.com/779892): Implement retry on user gesture.
-    DVLOG(2) << "App availability unknown for sink: " << sink_id
-             << ", app: " << app_id;
-    return;
-  }
-
-  AppAvailability availability =
-      result == cast_channel::GetAppAvailabilityResult::kAvailable
-          ? AppAvailability::kAvailable
-          : AppAvailability::kUnavailable;
-
   DVLOG(1) << "App " << app_id << " on sink " << sink_id << " is "
-           << (availability == AppAvailability::kAvailable);
-  UpdateSinkQueries(availability_tracker_.UpdateAppAvailability(sink_id, app_id,
-                                                                availability));
+           << cast_channel::GetAppAvailabilityResultToString(availability);
+
+  UpdateSinkQueries(availability_tracker_.UpdateAppAvailability(
+      sink_id, app_id, {availability, clock_->NowTicks()}));
 }
 
 void CastAppDiscoveryService::UpdateSinkQueries(
