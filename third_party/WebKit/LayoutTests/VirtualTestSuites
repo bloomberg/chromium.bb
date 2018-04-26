@@ -606,6 +606,11 @@
   },
   {
     "prefix": "incremental-shadow-dom",
+    "base": "http/tests/devtools/elements/shadow",
+    "args": ["--enable-blink-features=SlotInFlatTree,IncrementalShadowDOM"]
+  },
+  {
+    "prefix": "incremental-shadow-dom",
     "base": "external/wpt/css/css-scoping",
     "args": ["--enable-blink-features=SlotInFlatTree,IncrementalShadowDOM"]
   },
