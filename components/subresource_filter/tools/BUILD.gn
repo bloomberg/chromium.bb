@@ -29,6 +29,7 @@ source_set("unit_tests") {
     "../core/common",
     "../core/common:test_support",
     "rule_parser:unit_tests",
+    "ruleset_converter:unit_tests",
     "//base",
     "//base/test:test_support",
     "//components/url_pattern_index:test_support",
