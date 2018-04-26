@@ -22,8 +22,7 @@ bool IsVideoMediaType(MediaStreamType type) {
 }
 
 bool IsScreenCaptureMediaType(MediaStreamType type) {
-  return (type == MEDIA_TAB_AUDIO_CAPTURE ||
-          type == MEDIA_TAB_VIDEO_CAPTURE ||
+  return (type == MEDIA_TAB_AUDIO_CAPTURE || type == MEDIA_TAB_VIDEO_CAPTURE ||
           type == MEDIA_DESKTOP_AUDIO_CAPTURE ||
           type == MEDIA_DESKTOP_VIDEO_CAPTURE);
 }
@@ -40,15 +39,7 @@ MediaStreamDevice::MediaStreamDevice(MediaStreamType type,
     : type(type),
       id(id),
       video_facing(media::MEDIA_VIDEO_FACING_NONE),
-      name(name) {
-#if defined(OS_ANDROID)
-  if (name.find("front") != std::string::npos) {
-    video_facing = media::MEDIA_VIDEO_FACING_USER;
-  } else if (name.find("back") != std::string::npos) {
-    video_facing = media::MEDIA_VIDEO_FACING_ENVIRONMENT;
-  }
-#endif
-}
+      name(name) {}
 
 MediaStreamDevice::MediaStreamDevice(MediaStreamType type,
                                      const std::string& id,
