@@ -188,9 +188,13 @@
         let buffer =
             new AudioBuffer({length: 128, sampleRate: context.sampleRate});
 
-        let data = buffer.getChannelData(0);
+        // Don't use getChannelData here because we want to be able to use
+        // |data| to compare the final results of playing out this buffer.  (If
+        // we did, |data| gets detached when the sources play.)
+        let data = new Float32Array(buffer.length);
         for (let k = 0; k < data.length; ++k)
           data[k] = 1 + k;
+        buffer.copyToChannel(data, 0);
 
         let c1 = new OfflineAudioContext(1, 128, context.sampleRate);
         let c2 = new OfflineAudioContext(1, 128, context.sampleRate);
