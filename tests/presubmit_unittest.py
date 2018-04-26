@@ -1064,6 +1064,50 @@ class InputApiUnittest(PresubmitTestsBase):
     self.assertEqual(rhs_lines[13][0].LocalPath(),
                      presubmit.normpath(files[4][1]))
 
+  def testInputApiFilterSourceFile(self):
+    files = [
+      ['A', presubmit.os.path.join('foo', 'blat.cc')],
+      ['M', presubmit.os.path.join('foo', 'blat', 'READ_ME2')],
+      ['M', presubmit.os.path.join('foo', 'blat', 'binary.dll')],
+      ['M', presubmit.os.path.join('foo', 'blat', 'weird.xyz')],
+      ['M', presubmit.os.path.join('foo', 'blat', 'another.h')],
+      ['M', presubmit.os.path.join(
+        'foo', 'third_party', 'WebKit', 'WebKit.cpp')],
+      ['M', presubmit.os.path.join(
+        'foo', 'third_party', 'WebKit2', 'WebKit2.cpp')],
+      ['M', presubmit.os.path.join('foo', 'third_party', 'blink', 'blink.cc')],
+      ['M', presubmit.os.path.join(
+        'foo', 'third_party', 'blink1', 'blink1.cc')],
+      ['M', presubmit.os.path.join('foo', 'third_party', 'third', 'third.cc')],
+    ]
+    for _, f, in files:
+      full_file = presubmit.os.path.join(self.fake_root_dir, f)
+      presubmit.os.path.isfile(full_file).AndReturn(True)
+
+    self.mox.ReplayAll()
+
+    change = presubmit.GitChange(
+        'mychange',
+        'description\nlines\n',
+        self.fake_root_dir,
+        [[f[0], f[1]] for f in files],
+        0,
+        0,
+        None)
+    input_api = presubmit.InputApi(
+        change,
+        presubmit.os.path.join(self.fake_root_dir, 'foo', 'PRESUBMIT.py'),
+        False, None, False)
+    # We'd like to test FilterSourceFile, which is used by
+    # AffectedSourceFiles(None).
+    got_files = input_api.AffectedSourceFiles(None)
+    self.assertEquals(len(got_files), 4)
+    # blat.cc, another.h, WebKit.cpp, and blink.cc remain.
+    self.assertEquals(got_files[0].LocalPath(), presubmit.normpath(files[0][1]))
+    self.assertEquals(got_files[1].LocalPath(), presubmit.normpath(files[4][1]))
+    self.assertEquals(got_files[2].LocalPath(), presubmit.normpath(files[5][1]))
+    self.assertEquals(got_files[3].LocalPath(), presubmit.normpath(files[7][1]))
+
   def testDefaultWhiteListBlackListFilters(self):
     def f(x):
       return presubmit.AffectedFile(x, 'M', self.fake_root_dir, None)

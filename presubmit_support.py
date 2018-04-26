@@ -515,8 +515,9 @@ class InputApi(object):
   DEFAULT_BLACK_LIST = (
       r"testing_support[\\\/]google_appengine[\\\/].*",
       r".*\bexperimental[\\\/].*",
-      # Exclude third_party/.* but NOT third_party/WebKit (crbug.com/539768).
-      r".*\bthird_party[\\\/](?!WebKit[\\\/]).*",
+      # Exclude third_party/.* but NOT third_party/{WebKit,blink}
+      # (crbug.com/539768 and crbug.com/836555).
+      r".*\bthird_party[\\\/](?!(WebKit|blink)[\\\/]).*",
       # Output directories (just in case)
       r".*\bDebug[\\\/].*",
       r".*\bRelease[\\\/].*",
