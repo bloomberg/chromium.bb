@@ -185,7 +185,7 @@ def method_context(interface, method, is_visible=True):
     return {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
         'arguments': argument_contexts,
-        'cpp_type': (v8_types.cpp_template_type('Optional', idl_type.cpp_type)
+        'cpp_type': (v8_types.cpp_template_type('base::Optional', idl_type.cpp_type)
                      if idl_type.is_explicit_nullable else idl_type.cpp_type),
         'cpp_value': this_cpp_value,
         'cpp_type_initializer': idl_type.cpp_type_initializer,
@@ -272,7 +272,7 @@ def argument_context(interface, method, argument, index, is_visible=True):
                                            used_as_variadic_argument=argument.is_variadic)
     context = {
         'cpp_type': (
-            v8_types.cpp_template_type('Optional', this_cpp_type)
+            v8_types.cpp_template_type('base::Optional', this_cpp_type)
             if idl_type.is_explicit_nullable and not argument.is_variadic
             else this_cpp_type),
         'cpp_value': this_cpp_value,
