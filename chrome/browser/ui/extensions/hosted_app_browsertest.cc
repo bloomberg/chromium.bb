@@ -803,6 +803,27 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, BookmarkAppThemeColor) {
   }
 }
 
+// Check that no assertions are hit when showing a permission request bubble.
+IN_PROC_BROWSER_TEST_P(HostedAppTest, PermissionBubble) {
+  ASSERT_TRUE(https_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = GetSecureAppURL();
+  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
+
+  ui_test_utils::UrlLoadObserver url_observer(
+      GetSecureAppURL(), content::NotificationService::AllSources());
+  Browser* app_browser = LaunchAppBrowser(app);
+  url_observer.Wait();
+
+  RenderFrameHost* render_frame_host =
+      app_browser->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+  EXPECT_TRUE(content::ExecuteScript(
+      render_frame_host,
+      "navigator.geolocation.getCurrentPosition(function(){});"));
+}
+
 // Ensure that hosted app windows with blank titles don't display the URL as a
 // default window title.
 IN_PROC_BROWSER_TEST_P(HostedAppTest, Title) {
