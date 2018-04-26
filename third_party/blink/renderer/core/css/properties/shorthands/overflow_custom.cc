@@ -19,25 +19,35 @@ bool Overflow::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  CSSValueID id = range.ConsumeIncludingWhitespace().Id();
+  CSSValueID x_id = CSSValueInvalid;
+  // Per the FIXME below, if only one value is specified, it could be a valid
+  // value for overflow-y but not overflow-x. Thus, we first assume it is the
+  // overflow-y value.
+  CSSValueID y_id = range.ConsumeIncludingWhitespace().Id();
+  if (!range.AtEnd()) {
+    x_id = y_id;
+    y_id = range.ConsumeIncludingWhitespace().Id();
+    if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
+            CSSPropertyOverflowX, x_id, context.Mode()))
+      return false;
+  }
   if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(CSSPropertyOverflowY,
-                                                          id, context.Mode()))
+                                                          y_id, context.Mode()))
     return false;
   if (!range.AtEnd())
     return false;
-  CSSValue* overflow_y_value = CSSIdentifierValue::Create(id);
-
   CSSValue* overflow_x_value = nullptr;
+  CSSValue* overflow_y_value = CSSIdentifierValue::Create(y_id);
 
   // FIXME: -webkit-paged-x or -webkit-paged-y only apply to overflow-y.
-  // If
-  // this value has been set using the shorthand, then for now overflow-x
+  // If this value has been set using the shorthand, then for now overflow-x
   // will default to auto, but once we implement pagination controls, it
   // should default to hidden. If the overflow-y value is anything but
   // paged-x or paged-y, then overflow-x and overflow-y should have the
-  // same
-  // value.
-  if (id == CSSValueWebkitPagedX || id == CSSValueWebkitPagedY)
+  // same value.
+  if (x_id)
+    overflow_x_value = CSSIdentifierValue::Create(x_id);
+  else if (y_id == CSSValueWebkitPagedX || y_id == CSSValueWebkitPagedY)
     overflow_x_value = CSSIdentifierValue::Create(CSSValueAuto);
   else
     overflow_x_value = overflow_y_value;
@@ -56,9 +66,12 @@ const CSSValue* Overflow::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     Node* styled_node,
     bool allow_visited_style) const {
-  if (style.OverflowX() == style.OverflowY())
-    return CSSIdentifierValue::Create(style.OverflowX());
-  return nullptr;
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*CSSIdentifierValue::Create(style.OverflowX()));
+  if (style.OverflowX() != style.OverflowY())
+    list->Append(*CSSIdentifierValue::Create(style.OverflowY()));
+
+  return list;
 }
 
 }  // namespace CSSShorthand
