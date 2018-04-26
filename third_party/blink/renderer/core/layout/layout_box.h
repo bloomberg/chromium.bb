@@ -1000,7 +1000,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // scrollWidth. For the full story, visit crbug.com/724255
   LayoutUnit VerticalScrollbarWidthClampedToContentBox() const;
 
-  virtual ScrollResult Scroll(ScrollGranularity, const FloatSize&);
   bool CanBeScrolledAndHasScrollableArea() const;
   virtual bool CanBeProgramaticallyScrolled() const;
   virtual void Autoscroll(const IntPoint&);

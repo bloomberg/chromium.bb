@@ -10667,6 +10667,12 @@ TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerDivOverScroll) {
 }
 
 TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerIFrameOverScroll) {
+  // TODO(bokan): This test will fail without root-layer-scrolls but that's ok
+  // because it's already shipped and non-root-layer-scrolls is no longer
+  // supported. https://crbug.com/823365.
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    return;
+
   OverscrollWebViewClient client;
   RegisterMockedHttpURLLoad("overscroll/iframe-overscroll.html");
   RegisterMockedHttpURLLoad("overscroll/scrollable-iframe.html");

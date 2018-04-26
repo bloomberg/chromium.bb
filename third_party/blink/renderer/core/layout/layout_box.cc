@@ -998,17 +998,6 @@ LayoutUnit LayoutBox::VerticalScrollbarWidthClampedToContentBox() const {
   return width;
 }
 
-ScrollResult LayoutBox::Scroll(ScrollGranularity granularity,
-                               const FloatSize& delta) {
-  // Presumably the same issue as in setScrollTop. See crbug.com/343132.
-  DisableCompositingQueryAsserts disabler;
-
-  if (!GetScrollableArea())
-    return ScrollResult();
-
-  return GetScrollableArea()->UserScroll(granularity, delta);
-}
-
 bool LayoutBox::CanBeScrolledAndHasScrollableArea() const {
   return CanBeProgramaticallyScrolled() &&
          (PixelSnappedScrollHeight() != PixelSnappedClientHeight() ||

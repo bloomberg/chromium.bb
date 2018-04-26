@@ -67,8 +67,6 @@ class LayoutEmbeddedObject final : public LayoutEmbeddedContent {
 
   PaintLayerType LayerTypeRequired() const final;
 
-  ScrollResult Scroll(ScrollGranularity, const FloatSize&) final;
-
   CompositingReasons AdditionalCompositingReasons() const override;
 
   PluginAvailability plugin_availability_ = kPluginAvailable;
