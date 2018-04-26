@@ -199,7 +199,7 @@ cr.define('cr.ui.login', function() {
    * @const
    */
   var DEMO_MODE_SETUP_AVAILABLE_SCREEN_GROUP = [
-    SCREEN_GAIA_SIGNIN,
+    SCREEN_OOBE_NETWORK,
   ];
 
   /**

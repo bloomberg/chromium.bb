@@ -1264,14 +1264,23 @@ class WizardControllerDemoSetupTest : public WizardControllerFlowTest {
 
 IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
                        CloseDemoSetupShouldShowSignIn) {
-  LoginDisplayHost::default_host()->StartSignInScreen(LoginScreenContext());
-  EXPECT_NE(nullptr, ExistingUserController::current_controller());
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+  WaitUntilJSIsReady();
 
-  ExistingUserController::current_controller()->OnStartDemoModeSetupScreen();
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_demo_setup_screen_, Show()).Times(1);
+
+  WizardController::default_controller()->AdvanceToScreen(
+      OobeScreen::SCREEN_OOBE_DEMO_SETUP);
+
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
 
+  EXPECT_CALL(*mock_demo_setup_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
+
   OnExit(*mock_demo_setup_screen_, ScreenExitCode::DEMO_MODE_SETUP_CLOSED);
-  EXPECT_NE(nullptr, ExistingUserController::current_controller());
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
 }
 
 class WizardControllerOobeResumeTest : public WizardControllerTest {

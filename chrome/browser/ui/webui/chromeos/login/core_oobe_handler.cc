@@ -194,6 +194,7 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleSetOobeBootstrappingSlave);
   AddRawCallback("getPrimaryDisplayNameForTesting",
                  &CoreOobeHandler::HandleGetPrimaryDisplayNameForTesting);
+  AddCallback("setupDemoMode", &CoreOobeHandler::HandleSetupDemoMode);
 }
 
 void CoreOobeHandler::ShowSignInError(
@@ -573,6 +574,19 @@ void CoreOobeHandler::HandleGetPrimaryDisplayNameForTesting(
 
   AllowJavascript();
   ResolveJavascriptCallback(*callback_id, base::Value(display_name));
+}
+
+void CoreOobeHandler::HandleSetupDemoMode() {
+  const bool is_demo_mode_enabled =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableDemoMode);
+  if (!is_demo_mode_enabled)
+    return;
+
+  WizardController* wizard_controller = WizardController::default_controller();
+  if (wizard_controller && !wizard_controller->login_screen_started()) {
+    wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
+  }
 }
 
 void CoreOobeHandler::InitDemoModeDetection() {
