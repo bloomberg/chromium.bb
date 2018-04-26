@@ -85,6 +85,19 @@ def PrettyPrintHistograms(raw_xml):
     The pretty-printed version.
   """
   tree = xml.dom.minidom.parseString(raw_xml)
+  return PrettyPrintHistogramsTree(tree)
+
+
+def PrettyPrintHistogramsTree(tree):
+  """Pretty-print the given xml.dom.minidom.Document object.
+
+  Args:
+    tree: The xml.dom.minidom.Document object.
+
+  Returns:
+    The pretty-printed version as an XML string.
+  """
+  assert isinstance(tree, xml.dom.minidom.Document)
   # Prevent accidentally adding enums to histograms.xml
   DropNodesByTagName(tree, 'enums')
   canonicalizeUnits(tree)
