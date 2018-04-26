@@ -30,8 +30,7 @@ TEST(HttpStreamRequestTest, SetPriority) {
 
   std::unique_ptr<HttpNetworkSession> session =
       SpdySessionDependencies::SpdyCreateSession(&session_deps);
-  HttpStreamFactory* factory =
-      static_cast<HttpStreamFactory*>(session->http_stream_factory());
+  HttpStreamFactory* factory = session->http_stream_factory();
   MockHttpStreamRequestDelegate request_delegate;
   TestJobFactory job_factory;
   HttpRequestInfo request_info;

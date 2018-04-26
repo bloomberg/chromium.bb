@@ -443,7 +443,7 @@ class JobControllerReconsiderProxyAfterErrorTest
     session_ = std::make_unique<HttpNetworkSession>(
         SpdySessionDependencies::CreateSessionParams(&session_deps_),
         SpdySessionDependencies::CreateSessionContext(&session_deps_));
-    factory_ = static_cast<HttpStreamFactory*>(session_->http_stream_factory());
+    factory_ = session_->http_stream_factory();
   }
 
   std::unique_ptr<HttpStreamRequest> CreateJobController(
@@ -2514,7 +2514,7 @@ class HttpStreamFactoryImplJobControllerPreconnectTest
     session_deps_.http_server_properties =
         std::make_unique<MockHttpServerProperties>();
     session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
-    factory_ = static_cast<HttpStreamFactory*>(session_->http_stream_factory());
+    factory_ = session_->http_stream_factory();
     request_info_.method = "GET";
     request_info_.url = GURL("https://www.example.com");
     job_controller_ = new HttpStreamFactory::JobController(
