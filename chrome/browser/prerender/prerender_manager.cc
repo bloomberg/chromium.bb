@@ -290,11 +290,27 @@ void PrerenderManager::CancelAllPrerenders() {
   }
 }
 
+PrerenderManager::Params::Params(NavigateParams* params,
+                                 content::WebContents* contents_being_navigated)
+    : uses_post(params->uses_post),
+      extra_headers(params->extra_headers),
+      should_replace_current_entry(params->should_replace_current_entry),
+      contents_being_navigated(contents_being_navigated) {}
+
+PrerenderManager::Params::Params(bool uses_post,
+                                 const std::string& extra_headers,
+                                 bool should_replace_current_entry,
+                                 content::WebContents* contents_being_navigated)
+    : uses_post(uses_post),
+      extra_headers(extra_headers),
+      should_replace_current_entry(should_replace_current_entry),
+      contents_being_navigated(contents_being_navigated) {}
+
 bool PrerenderManager::MaybeUsePrerenderedPage(const GURL& url,
-                                               NavigateParams* params) {
+                                               Params* params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  WebContents* web_contents = params->target_contents;
+  WebContents* web_contents = params->contents_being_navigated;
   DCHECK(!IsWebContentsPrerendering(web_contents, nullptr));
 
   // Don't prerender if the navigation involves some special parameters that
@@ -328,7 +344,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(const GURL& url,
     return false;
 
   // Record the new target_contents for the callers.
-  params->target_contents = new_web_contents;
+  params->replaced_contents = new_web_contents;
   return true;
 }
 

@@ -1466,17 +1466,18 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
   bool is_popup = source && PopupBlockerTabHelper::ConsiderForPopupBlocking(
                                 params.disposition);
   if (is_popup && PopupBlockerTabHelper::MaybeBlockPopup(
-                      source, base::Optional<GURL>(), nav_params, &params,
+                      source, base::Optional<GURL>(), &nav_params, &params,
                       blink::mojom::WindowFeatures())) {
     return nullptr;
   }
 
   Navigate(&nav_params);
 
-  if (is_popup && nav_params.target_contents)
-    PopupTracker::CreateForWebContents(nav_params.target_contents, source);
+  if (is_popup && nav_params.navigated_or_inserted_contents)
+    PopupTracker::CreateForWebContents(
+        nav_params.navigated_or_inserted_contents, source);
 
-  return nav_params.target_contents;
+  return nav_params.navigated_or_inserted_contents;
 }
 
 void Browser::NavigationStateChanged(WebContents* source,

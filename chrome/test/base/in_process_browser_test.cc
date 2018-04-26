@@ -354,10 +354,12 @@ void InProcessBrowserTest::AddTabAtIndexToBrowser(
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
 
-  if (check_navigation_success)
-    content::WaitForLoadStop(params.target_contents);
-  else
-    content::WaitForLoadStopWithoutSuccessCheck(params.target_contents);
+  if (check_navigation_success) {
+    content::WaitForLoadStop(params.navigated_or_inserted_contents);
+  } else {
+    content::WaitForLoadStopWithoutSuccessCheck(
+        params.navigated_or_inserted_contents);
+  }
 }
 
 void InProcessBrowserTest::AddTabAtIndex(

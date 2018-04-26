@@ -297,8 +297,8 @@ void TabAndroid::SetSyncId(int sync_id) {
 
 void TabAndroid::HandlePopupNavigation(NavigateParams* params) {
   DCHECK(params->source_contents == web_contents());
-  DCHECK(params->target_contents == NULL ||
-         params->target_contents == web_contents());
+  DCHECK(!params->contents_to_insert);
+  DCHECK(!params->switch_to_singleton_tab);
 
   WindowOpenDisposition disposition = params->disposition;
   const GURL& url = params->url;
@@ -591,7 +591,9 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
   if (prerender_manager) {
     bool prefetched_page_loaded = HasPrerenderedUrl(gurl);
     // Getting the load status before MaybeUsePrerenderedPage() b/c it resets.
-    NavigateParams params(web_contents());
+    prerender::PrerenderManager::Params params(
+        /*uses_post=*/false, /*extra_headers=*/std::string(),
+        /*should_replace_current_entry=*/false, web_contents());
     if (prerender_manager->MaybeUsePrerenderedPage(gurl, &params)) {
       return prefetched_page_loaded ?
           FULL_PRERENDERED_PAGE_LOAD : PARTIAL_PRERENDERED_PAGE_LOAD;

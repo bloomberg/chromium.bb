@@ -56,25 +56,26 @@ struct OpenURLParams;
 // TODO(thestig): Split or ifdef out more fields that are not used on Android.
 struct NavigateParams {
 #if defined(OS_ANDROID)
-  explicit NavigateParams(content::WebContents* a_target_contents);
+  explicit NavigateParams(
+      std::unique_ptr<content::WebContents> contents_to_insert);
 #else
   NavigateParams(Browser* browser,
                  const GURL& a_url,
                  ui::PageTransition a_transition);
   NavigateParams(Browser* browser,
-                 content::WebContents* a_target_contents);
+                 std::unique_ptr<content::WebContents> contents_to_insert);
 #endif
   NavigateParams(Profile* profile,
                  const GURL& a_url,
                  ui::PageTransition a_transition);
-  NavigateParams(const NavigateParams& other);
+  NavigateParams(NavigateParams&& params);
   ~NavigateParams();
 
   // Copies fields from |params| struct to |nav_params| struct.
   void FillNavigateParamsFromOpenURLParams(
       const content::OpenURLParams& params);
 
-  // The URL/referrer to be loaded. Ignored if |target_contents| is non-NULL.
+  // The URL/referrer to be loaded. Ignored if |contents_to_insert| is non-NULL.
   GURL url;
   content::Referrer referrer;
 
@@ -100,19 +101,26 @@ struct NavigateParams {
   // is terminated by \r\n.  May be empty if no extra headers are needed.
   std::string extra_headers;
 
-  // [in]  A WebContents to be navigated or inserted into the target
-  //       Browser's tabstrip. If NULL, |url| or the homepage will be used
-  //       instead. When non-NULL, Navigate() assumes it has already been
-  //       navigated to its intended destination and will not load any URL in it
-  //       (i.e. |url| is ignored).
-  //       Default is NULL.
-  // [out] The WebContents in which the navigation occurred or that was
-  //       inserted. Guaranteed non-NULL except for note below:
-  // Note: If this field is set to NULL by the caller and Navigate() creates
-  //       a new WebContents, this field will remain NULL and the
-  //       WebContents deleted if the WebContents it created is
-  //       not added to a TabStripModel before Navigate() returns.
-  content::WebContents* target_contents = nullptr;
+  // Input parameter.
+  // WebContents to be inserted into the target Browser's tabstrip. If NULL,
+  // |url| or the homepage will be used instead. When non-NULL, Navigate()
+  // assumes it has already been navigated to its intended destination and will
+  // not load any URL in it (i.e. |url| is ignored). Default is NULL.
+  std::unique_ptr<content::WebContents> contents_to_insert;
+
+  // Input parameter.
+  // Only used by Singleton tabs. Causes a tab-switch in addition to navigation.
+  content::WebContents* switch_to_singleton_tab = nullptr;
+
+  // Output parameter.
+  // The WebContents in which the navigation occurred or that was inserted.
+  // Guaranteed non-NULL except for note below:
+  //
+  // Note: If this field is set to NULL by the caller and Navigate() creates a
+  // new WebContents, this field will remain NULL and the WebContents deleted if
+  // the WebContents it created is not added to a TabStripModel before
+  // Navigate() returns.
+  content::WebContents* navigated_or_inserted_contents = nullptr;
 
   // [in]  The WebContents that initiated the Navigate() request if such
   //       context is necessary. Default is NULL, i.e. no context.
@@ -224,7 +232,8 @@ struct NavigateParams {
   // navigation entry.
   bool should_replace_current_entry = false;
 
-  // Indicates whether |target_contents| is being created with a window.opener.
+  // Indicates whether |contents_to_insert| is being created with a
+  // window.opener.
   bool created_with_opener = false;
 
   // Whether or not the related navigation was started in the context menu.
@@ -248,6 +257,7 @@ struct NavigateParams {
 
  private:
   NavigateParams();
+  DISALLOW_COPY_AND_ASSIGN(NavigateParams);
 };
 
 #endif  // CHROME_BROWSER_UI_BROWSER_NAVIGATOR_PARAMS_H_

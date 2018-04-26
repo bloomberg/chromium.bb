@@ -63,19 +63,20 @@ ChromeExtensionHostDelegate::GetJavaScriptDialogManager() {
   return app_modal::JavaScriptDialogManager::GetInstance();
 }
 
-void ChromeExtensionHostDelegate::CreateTab(content::WebContents* web_contents,
-                                            const std::string& extension_id,
-                                            WindowOpenDisposition disposition,
-                                            const gfx::Rect& initial_rect,
-                                            bool user_gesture) {
+void ChromeExtensionHostDelegate::CreateTab(
+    std::unique_ptr<content::WebContents> web_contents,
+    const std::string& extension_id,
+    WindowOpenDisposition disposition,
+    const gfx::Rect& initial_rect,
+    bool user_gesture) {
   // Verify that the browser is not shutting down. It can be the case if the
   // call is propagated through a posted task that was already in the queue when
   // shutdown started. See crbug.com/625646
   if (g_browser_process->IsShuttingDown())
     return;
 
-  ExtensionTabUtil::CreateTab(
-      web_contents, extension_id, disposition, initial_rect, user_gesture);
+  ExtensionTabUtil::CreateTab(std::move(web_contents), extension_id,
+                              disposition, initial_rect, user_gesture);
 }
 
 void ChromeExtensionHostDelegate::ProcessMediaAccessRequest(

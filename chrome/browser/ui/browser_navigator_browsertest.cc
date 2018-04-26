@@ -119,19 +119,19 @@ bool BrowserNavigatorTest::OpenPOSTURLInNewForegroundTabAndGetTitle(
       post_data.data(), post_data.size());
 
   ui_test_utils::NavigateToURL(&param);
-  if (!param.target_contents)
+  if (!param.navigated_or_inserted_contents)
     return false;
 
   // Navigate() should have opened the contents in new foreground tab in the
   // current Browser.
   EXPECT_EQ(browser(), param.browser);
   EXPECT_EQ(browser()->tab_strip_model()->GetActiveWebContents(),
-            param.target_contents);
+            param.navigated_or_inserted_contents);
   // We should have one window, with one tab.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 
-  *title = param.target_contents->GetTitle();
+  *title = param.navigated_or_inserted_contents->GetTitle();
   return true;
 }
 
@@ -149,7 +149,8 @@ Browser* BrowserNavigatorTest::CreateEmptyBrowserForApp(Profile* profile) {
   return browser;
 }
 
-WebContents* BrowserNavigatorTest::CreateWebContents(bool initialize_renderer) {
+std::unique_ptr<WebContents> BrowserNavigatorTest::CreateWebContents(
+    bool initialize_renderer) {
   content::WebContents::CreateParams create_params(browser()->profile());
   create_params.initialize_renderer = initialize_renderer;
   content::WebContents* base_web_contents =
@@ -158,7 +159,7 @@ WebContents* BrowserNavigatorTest::CreateWebContents(bool initialize_renderer) {
     create_params.initial_size =
         base_web_contents->GetContainerBounds().size();
   }
-  return WebContents::Create(create_params);
+  return base::WrapUnique(WebContents::Create(create_params));
 }
 
 void BrowserNavigatorTest::RunSuppressTest(WindowOpenDisposition disposition) {
@@ -365,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewForegroundTab) {
   EXPECT_NE(old_contents,
             browser()->tab_strip_model()->GetActiveWebContents());
   EXPECT_EQ(browser()->tab_strip_model()->GetActiveWebContents(),
-            params.target_contents);
+            params.navigated_or_inserted_contents);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 }
 
@@ -1044,14 +1045,14 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_IgnoreAction) {
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, TargetContents_ForegroundTab) {
   NavigateParams params(MakeNavigateParams());
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  params.target_contents = CreateWebContents(false);
+  params.contents_to_insert = CreateWebContents(false);
   Navigate(&params);
 
   // Navigate() should have opened the contents in a new foreground tab in the
   // current Browser.
   EXPECT_EQ(browser(), params.browser);
   EXPECT_EQ(browser()->tab_strip_model()->GetActiveWebContents(),
-            params.target_contents);
+            params.navigated_or_inserted_contents);
 
   // We should have one window, with two tabs.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -1063,7 +1064,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, TargetContents_ForegroundTab) {
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, DISABLED_TargetContents_Popup) {
   NavigateParams params(MakeNavigateParams());
   params.disposition = WindowOpenDisposition::NEW_POPUP;
-  params.target_contents = CreateWebContents(false);
+  params.contents_to_insert = CreateWebContents(false);
   params.window_bounds = gfx::Rect(10, 10, 500, 500);
   Navigate(&params);
 
@@ -1087,7 +1088,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, DISABLED_TargetContents_Popup) {
   // All platforms should respect size however provided width > 400 (Mac has a
   // minimum window width of 400).
   EXPECT_EQ(params.window_bounds.size(),
-            params.target_contents->GetContainerBounds().size());
+            params.navigated_or_inserted_contents->GetContainerBounds().size());
 
   // We should have two windows, the new popup and the browser() provided by the
   // framework.
@@ -1103,25 +1104,25 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        CreateWebContentsWithRendererProcess) {
   NavigateParams params(MakeNavigateParams());
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  params.target_contents = CreateWebContents(true);
-  ASSERT_TRUE(params.target_contents);
+  params.contents_to_insert = CreateWebContents(true);
+  ASSERT_TRUE(params.contents_to_insert);
 
   // There is no navigation (to about:blank or something like that).
-  EXPECT_FALSE(params.target_contents->IsLoading());
+  EXPECT_FALSE(params.contents_to_insert->IsLoading());
 
-  ASSERT_TRUE(params.target_contents->GetMainFrame());
-  EXPECT_TRUE(params.target_contents->GetMainFrame()->IsRenderFrameLive());
+  ASSERT_TRUE(params.contents_to_insert->GetMainFrame());
+  EXPECT_TRUE(params.contents_to_insert->GetMainFrame()->IsRenderFrameLive());
   EXPECT_TRUE(
-      params.target_contents->GetController().IsInitialBlankNavigation());
+      params.contents_to_insert->GetController().IsInitialBlankNavigation());
   int renderer_id =
-      params.target_contents->GetMainFrame()->GetProcess()->GetID();
+      params.contents_to_insert->GetMainFrame()->GetProcess()->GetID();
 
   // We should have one window, with one tab of WebContents differ from
   // params.target_contents.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_NE(browser()->tab_strip_model()->GetActiveWebContents(),
-            params.target_contents);
+            params.contents_to_insert.get());
 
   Navigate(&params);
 
@@ -1129,9 +1130,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // current Browser, without changing the renderer process of target_contents.
   EXPECT_EQ(browser(), params.browser);
   EXPECT_EQ(browser()->tab_strip_model()->GetActiveWebContents(),
-            params.target_contents);
-  EXPECT_EQ(renderer_id,
-            params.target_contents->GetMainFrame()->GetProcess()->GetID());
+            params.navigated_or_inserted_contents);
+  EXPECT_EQ(renderer_id, params.navigated_or_inserted_contents->GetMainFrame()
+                             ->GetProcess()
+                             ->GetID());
 
   // We should have one window, with two tabs.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -1153,7 +1155,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Tabstrip_InsertAtIndex) {
   // Navigate() should have inserted a new tab at slot 0 in the tabstrip.
   EXPECT_EQ(browser(), params.browser);
   EXPECT_EQ(0, browser()->tab_strip_model()->GetIndexOfWebContents(
-      static_cast<const WebContents*>(params.target_contents)));
+                   static_cast<const WebContents*>(
+                       params.navigated_or_inserted_contents)));
 
   // We should have one window - the browser() provided by the framework.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -1757,10 +1760,11 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   ui_test_utils::NavigateToURL(&params);
 
   base::string16 expected_title(base::UTF8ToUTF16(unescaped_title));
-  EXPECT_TRUE(params.target_contents);
-  EXPECT_EQ(expected_title, params.target_contents->GetTitle());
+  EXPECT_TRUE(params.navigated_or_inserted_contents);
+  EXPECT_EQ(expected_title, params.navigated_or_inserted_contents->GetTitle());
   // GURL always keeps non-ASCII characters escaped, but check them anyways.
-  EXPECT_EQ(GURL(expected_url).spec(), params.target_contents->GetURL().spec());
+  EXPECT_EQ(GURL(expected_url).spec(),
+            params.navigated_or_inserted_contents->GetURL().spec());
   // Check the omnibox text. It should have escaped RTL with unescaped text.
   LocationBar* location_bar = browser()->window()->GetLocationBar();
   OmniboxView* omnibox_view = location_bar->GetOmniboxView();

@@ -470,7 +470,7 @@ void InspectUI::InspectDevices(Browser* browser) {
   NavigateParams params(GetSingletonTabNavigateParams(
       browser, GURL(chrome::kChromeUIInspectURL)));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(browser, params);
+  ShowSingletonTabOverwritingNTP(browser, std::move(params));
 }
 
 void InspectUI::Observe(int type,

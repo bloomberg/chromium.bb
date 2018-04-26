@@ -417,8 +417,10 @@ void ExtensionHost::AddNewContents(WebContents* source,
     }
   }
 
-  delegate_->CreateTab(
-      new_contents, extension_id_, disposition, initial_rect, user_gesture);
+  // TODO(erikchen): Refactor AddNewContents to take strong ownership semantics.
+  // https://crbug.com/832879.
+  delegate_->CreateTab(base::WrapUnique(new_contents), extension_id_,
+                       disposition, initial_rect, user_gesture);
 }
 
 void ExtensionHost::RenderViewReady() {

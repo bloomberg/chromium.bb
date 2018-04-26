@@ -154,8 +154,8 @@ class MediaEngagementBrowserTest : public InProcessBrowserTest {
     Navigate(&params);
 
     InjectTimerTaskRunner();
-    params.target_contents->SetAudioMuted(false);
-    content::WaitForLoadStop(params.target_contents);
+    params.navigated_or_inserted_contents->SetAudioMuted(false);
+    content::WaitForLoadStop(params.navigated_or_inserted_contents);
   }
 
   void OpenTabAsLink(const GURL& url) {

@@ -74,13 +74,13 @@ void OpenBookmarkManagerForNode(Browser* browser, int64_t node_id) {
                      base::Int64ToString(node_id).c_str()));
   NavigateParams params(GetSingletonTabNavigateParams(browser, url));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(browser, params);
+  ShowSingletonTabOverwritingNTP(browser, std::move(params));
 }
 
 void NavigateToSingletonTab(Browser* browser, const GURL& url) {
   NavigateParams params(GetSingletonTabNavigateParams(browser, url));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(browser, params);
+  ShowSingletonTabOverwritingNTP(browser, std::move(params));
 }
 
 // Shows either the help app or the appropriate help page for |source|. If
@@ -203,7 +203,7 @@ void ShowBookmarkManager(Browser* browser) {
   NavigateParams params(
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIBookmarksURL)));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(browser, params);
+  ShowSingletonTabOverwritingNTP(browser, std::move(params));
 }
 
 void ShowBookmarkManagerForNode(Browser* browser, int64_t node_id) {
@@ -216,7 +216,7 @@ void ShowHistory(Browser* browser) {
   NavigateParams params(
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIHistoryURL)));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(browser, params);
+  ShowSingletonTabOverwritingNTP(browser, std::move(params));
 }
 
 void ShowDownloads(Browser* browser) {
@@ -242,7 +242,7 @@ void ShowExtensions(Browser* browser,
     replacements.SetQueryStr(query);
     params.url = params.url.ReplaceComponents(replacements);
   }
-  ShowSingletonTabOverwritingNTP(browser, params);
+  ShowSingletonTabOverwritingNTP(browser, std::move(params));
 }
 
 void ShowConflicts(Browser* browser) {
@@ -328,7 +328,7 @@ void ShowSettingsSubPageInTabbedBrowser(Browser* browser,
   GURL gurl = GetSettingsUrl(sub_page);
   NavigateParams params(GetSingletonTabNavigateParams(browser, gurl));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(browser, params);
+  ShowSingletonTabOverwritingNTP(browser, std::move(params));
 }
 
 void ShowContentSettingsExceptions(Browser* browser,
@@ -385,7 +385,7 @@ void ShowAboutChrome(Browser* browser) {
   NavigateParams params(
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIHelpURL)));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(browser, params);
+  ShowSingletonTabOverwritingNTP(browser, std::move(params));
 #endif
 }
 

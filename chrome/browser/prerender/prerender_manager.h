@@ -154,11 +154,35 @@ class PrerenderManager : public content::NotificationObserver,
   // Cancels all active prerenders.
   void CancelAllPrerenders();
 
+  // Wraps input and output parameters to MaybeUsePrerenderedPage.
+  struct Params {
+    Params(NavigateParams* params,
+           content::WebContents* contents_being_navigated);
+    Params(bool uses_post,
+           const std::string& extra_headers,
+           bool should_replace_current_entry,
+           content::WebContents* contents_being_navigated);
+
+    // Input parameters.
+    const bool uses_post;
+    const std::string extra_headers;
+    const bool should_replace_current_entry;
+    content::WebContents* const contents_being_navigated;
+
+    // Output parameters.
+    content::WebContents* replaced_contents = nullptr;
+  };
+
   // If |url| matches a valid prerendered page and |params| are compatible, try
-  // to swap it and merge browsing histories. Returns |true| and updates
-  // |params->target_contents| if a prerendered page is swapped in, |false|
-  // otherwise.
-  bool MaybeUsePrerenderedPage(const GURL& url, NavigateParams* params);
+  // to swap it and merge browsing histories.
+  //
+  // Returns true if a prerendered page is swapped in. When this happens, the
+  // PrerenderManager has already swapped out |contents_being_navigated| with
+  // |replaced_contents| in the WebContents container [e.g. TabStripModel on
+  // desktop].
+  //
+  // Returns false if nothing is swapped.
+  bool MaybeUsePrerenderedPage(const GURL& url, Params* params);
 
   // Moves a PrerenderContents to the pending delete list from the list of
   // active prerenders when prerendering should be cancelled.

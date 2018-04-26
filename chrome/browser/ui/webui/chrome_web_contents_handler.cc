@@ -63,7 +63,7 @@ WebContents* ChromeWebContentsHandler::OpenURLFromTab(
   if (browser_created && (browser != nav_params.browser))
     browser->window()->Close();
 
-  return nav_params.target_contents;
+  return nav_params.navigated_or_inserted_contents;
 }
 
 // Creates a new tab with |new_contents|. |context| is the browser context that
@@ -75,7 +75,7 @@ WebContents* ChromeWebContentsHandler::OpenURLFromTab(
 void ChromeWebContentsHandler::AddNewContents(
     content::BrowserContext* context,
     WebContents* source,
-    WebContents* new_contents,
+    std::unique_ptr<WebContents> new_contents,
     WindowOpenDisposition disposition,
     const gfx::Rect& initial_rect,
     bool user_gesture) {
@@ -90,7 +90,7 @@ void ChromeWebContentsHandler::AddNewContents(
     browser = new Browser(
         Browser::CreateParams(Browser::TYPE_TABBED, profile, user_gesture));
   }
-  NavigateParams params(browser, new_contents);
+  NavigateParams params(browser, std::move(new_contents));
   params.source_contents = source;
   params.disposition = disposition;
   params.window_bounds = initial_rect;

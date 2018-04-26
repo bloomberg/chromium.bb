@@ -244,7 +244,7 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params,
     contents = existing_tab;
   } else {
     Navigate(&params);
-    contents = params.target_contents;
+    contents = params.navigated_or_inserted_contents;
   }
 
 #if defined(OS_CHROMEOS)
@@ -376,7 +376,7 @@ WebContents* OpenApplicationWindow(const AppLaunchParams& params,
   nav_params.opener = params.opener;
   Navigate(&nav_params);
 
-  WebContents* web_contents = nav_params.target_contents;
+  WebContents* web_contents = nav_params.navigated_or_inserted_contents;
   extensions::HostedAppBrowserController::SetAppPrefsForWebContents(
       browser->hosted_app_controller(), web_contents);
 

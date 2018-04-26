@@ -1006,9 +1006,11 @@ TEST_F(ContentSettingBubbleModelTest, PopupBubbleModelListItems) {
                              blink::mojom::WindowFeatures(), false, true);
   constexpr size_t kItemCount = 3;
   for (size_t i = 1; i <= kItemCount; i++) {
+    NavigateParams navigate_params =
+        params.CreateNavigateParams(web_contents());
     EXPECT_TRUE(PopupBlockerTabHelper::MaybeBlockPopup(
-        web_contents(), url, params.CreateNavigateParams(web_contents()),
-        nullptr /*=open_url_params*/, params.features()));
+        web_contents(), url, &navigate_params, nullptr /*=open_url_params*/,
+        params.features()));
     EXPECT_EQ(i, list_items.size());
   }
 }

@@ -251,8 +251,8 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
   // The tab may have been created in a different window, so make sure we look
   // at the right tab strip.
   tab_strip = navigate_params.browser->tab_strip_model();
-  int new_index =
-      tab_strip->GetIndexOfWebContents(navigate_params.target_contents);
+  int new_index = tab_strip->GetIndexOfWebContents(
+      navigate_params.navigated_or_inserted_contents);
   if (opener) {
     // Only set the opener if the opener tab is in the same tab strip as the
     // new tab.
@@ -261,12 +261,12 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
   }
 
   if (active)
-    navigate_params.target_contents->SetInitialFocus();
+    navigate_params.navigated_or_inserted_contents->SetInitialFocus();
 
   // Return data about the newly created tab.
-  return ExtensionTabUtil::CreateTabObject(navigate_params.target_contents,
-                                           kScrubTab, function->extension(),
-                                           tab_strip, new_index)
+  return ExtensionTabUtil::CreateTabObject(
+             navigate_params.navigated_or_inserted_contents, kScrubTab,
+             function->extension(), tab_strip, new_index)
       ->ToValue()
       .release();
 }
@@ -620,7 +620,7 @@ bool ExtensionTabUtil::IsKillURL(const GURL& url) {
   return false;
 }
 
-void ExtensionTabUtil::CreateTab(WebContents* web_contents,
+void ExtensionTabUtil::CreateTab(std::unique_ptr<WebContents> web_contents,
                                  const std::string& extension_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_rect,
@@ -633,7 +633,7 @@ void ExtensionTabUtil::CreateTab(WebContents* web_contents,
     Browser::CreateParams params = Browser::CreateParams(profile, user_gesture);
     browser = new Browser(params);
   }
-  NavigateParams params(browser, web_contents);
+  NavigateParams params(browser, std::move(web_contents));
 
   // The extension_app_id parameter ends up as app_name in the Browser
   // which causes the Browser to return true for is_app().  This affects
@@ -731,7 +731,7 @@ bool ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
   params.path_behavior = open_in_tab ? NavigateParams::RESPECT
                                      : NavigateParams::IGNORE_AND_NAVIGATE;
   params.url = url_to_navigate;
-  ShowSingletonTabOverwritingNTP(browser, params);
+  ShowSingletonTabOverwritingNTP(browser, std::move(params));
   return true;
 }
 

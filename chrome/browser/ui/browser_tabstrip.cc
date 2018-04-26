@@ -32,7 +32,7 @@ void AddTabAt(Browser* browser, const GURL& url, int idx, bool foreground) {
   params.tabstrip_index = idx;
   Navigate(&params);
   CoreTabHelper* core_tab_helper =
-      CoreTabHelper::FromWebContents(params.target_contents);
+      CoreTabHelper::FromWebContents(params.navigated_or_inserted_contents);
   core_tab_helper->set_new_tab_start_time(new_tab_start_time);
 }
 
@@ -43,7 +43,7 @@ content::WebContents* AddSelectedTabWithURL(
   NavigateParams params(browser, url, transition);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
-  return params.target_contents;
+  return params.navigated_or_inserted_contents;
 }
 
 void AddWebContents(Browser* browser,
@@ -57,7 +57,8 @@ void AddWebContents(Browser* browser,
   // Can't create a new contents for the current tab - invalid case.
   DCHECK(disposition != WindowOpenDisposition::CURRENT_TAB);
 
-  NavigateParams params(browser, new_contents);
+  // TODO(erikchen): Fix ownership semantics. https://crbug.com/832879.
+  NavigateParams params(browser, base::WrapUnique(new_contents));
   params.source_contents = source_contents;
   params.disposition = disposition;
   params.window_bounds = initial_rect;
