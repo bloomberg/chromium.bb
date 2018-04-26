@@ -68,8 +68,9 @@
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/simple_connection_listener.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -89,6 +90,8 @@ constexpr char kTestUser1[] = "test-user@gmail.com";
 constexpr char kTestUser1GaiaId[] = "1111111111";
 constexpr char kTestUser2[] = "test-user2@gmail.com";
 constexpr char kTestUser2GaiaId[] = "2222222222";
+
+constexpr char kRandomTokenStrForTesting[] = "random-token-str-for-testing";
 
 policy::CloudPolicyStore* GetStoreForUser(const user_manager::User* user) {
   Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
@@ -134,6 +137,33 @@ class UserImageChangeWaiter : public user_manager::UserManager::Observer {
 
 class UserImageManagerTest : public LoginManagerTest,
                              public user_manager::UserManager::Observer {
+ public:
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
+      const net::test_server::HttpRequest& request) {
+    // Check whether the token string is the same.
+    EXPECT_TRUE(request.headers.find(net::HttpRequestHeaders::kAuthorization) !=
+                request.headers.end());
+    const std::string authorization_header =
+        request.headers.at(net::HttpRequestHeaders::kAuthorization);
+    const size_t pos = authorization_header.find(" ");
+    EXPECT_TRUE(pos != std::string::npos);
+    const std::string token = authorization_header.substr(pos + 1);
+    EXPECT_TRUE(token == kRandomTokenStrForTesting);
+
+    std::string profile_image_data;
+    base::FilePath test_data_dir;
+    EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+    EXPECT_TRUE(
+        ReadFileToString(test_data_dir.Append("chromeos").Append("avatar1.jpg"),
+                         &profile_image_data));
+    std::unique_ptr<net::test_server::BasicHttpResponse> response =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    response->set_content_type("image/jpeg");
+    response->set_code(net::HTTP_OK);
+    response->set_content(profile_image_data);
+    return std::move(response);
+  }
+
  protected:
   UserImageManagerTest() : LoginManagerTest(true) {}
 
@@ -156,6 +186,16 @@ class UserImageManagerTest : public LoginManagerTest,
   }
 
   void SetUpOnMainThread() override {
+    // Set up the test server.
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &UserImageManagerTest::HandleRequest, base::Unretained(this)));
+    connection_listener_ =
+        std::make_unique<net::test_server::SimpleConnectionListener>(
+            1, net::test_server::SimpleConnectionListener::
+                   ALLOW_ADDITIONAL_CONNECTIONS);
+    embedded_test_server()->SetConnectionListener(connection_listener_.get());
+    ASSERT_TRUE(embedded_test_server()->Started());
+
     LoginManagerTest::SetUpOnMainThread();
     local_state_ = g_browser_process->local_state();
     user_manager::UserManager::Get()->AddObserver(this);
@@ -231,17 +271,17 @@ class UserImageManagerTest : public LoginManagerTest,
     info.given_name = account_id.GetUserEmail();
     info.hosted_domain = AccountTrackerService::kNoHostedDomainFound;
     info.locale = account_id.GetUserEmail();
-    info.picture_url = "http://localhost/avatar.jpg";
+    info.picture_url = embedded_test_server()->GetURL("/avatar.jpg").spec();
     info.is_child_account = false;
 
     AccountTrackerServiceFactory::GetForProfile(profile)->SeedAccountInfo(info);
   }
 
-  // Completes the download of all non-image profile data for the user
-  // |account_id|.  This method must only be called after a profile data
+  // Triggers the download of all non-image profile data for the user
+  // |account_id|. This method must only be called after a profile data
   // download has been started.
-  // The net::TestURLFetcherFactory instance installed on the caller
-  // side will capture the net::TestURLFetcher created by the ProfileDownloader
+  // The |test_server::EmbeddedTestServer| instance installed on the caller
+  // side will capture the net::SimpleURLLoader created by the ProfileDownloader
   // to download the profile image.
   void CompleteProfileMetadataDownload(const AccountId& account_id) {
     ProfileDownloader* profile_downloader =
@@ -251,7 +291,7 @@ class UserImageManagerTest : public LoginManagerTest,
     ASSERT_TRUE(profile_downloader);
 
     static_cast<OAuth2TokenService::Consumer*>(profile_downloader)
-        ->OnGetTokenSuccess(NULL, std::string(),
+        ->OnGetTokenSuccess(NULL, kRandomTokenStrForTesting,
                             base::Time::Now() + base::TimeDelta::FromDays(1));
   }
 
@@ -259,28 +299,13 @@ class UserImageManagerTest : public LoginManagerTest,
   // This method must only be called after a profile data download including
   // the profile image has been started, the download of all non-image data has
   // been completed by calling CompleteProfileMetadataDownload() and the
-  // net::TestURLFetcher created by the ProfileDownloader to download the
-  // profile image has been captured by |url_fetcher_factory|.
-  void CompleteProfileImageDownload(
-      net::TestURLFetcherFactory* url_fetcher_factory) {
-    std::string profile_image_data;
-    base::FilePath test_data_dir;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-    EXPECT_TRUE(
-        ReadFileToString(test_data_dir.Append("chromeos").Append("avatar1.jpg"),
-                         &profile_image_data));
-
+  // net::SimpleURLLoader created by the ProfileDownloader to download the
+  // profile image has been captured by |embedded_test_server()|.
+  void CompleteProfileImageDownload() {
     base::RunLoop run_loop;
     PrefChangeRegistrar pref_change_registrar;
     pref_change_registrar.Init(local_state_);
     pref_change_registrar.Add("UserDisplayName", run_loop.QuitClosure());
-    net::TestURLFetcher* fetcher = url_fetcher_factory->GetFetcherByID(0);
-    ASSERT_TRUE(fetcher);
-    fetcher->SetResponseString(profile_image_data);
-    fetcher->set_status(
-        net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
-    fetcher->set_response_code(200);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
     run_loop.Run();
 
     const user_manager::User* user =
@@ -311,6 +336,9 @@ class UserImageManagerTest : public LoginManagerTest,
       AccountId::FromUserEmailGaiaId(kEnterpriseUser1, kEnterpriseUser1GaiaId);
   const cryptohome::Identification cryptohome_id_ =
       cryptohome::Identification(enterprise_account_id_);
+
+  std::unique_ptr<net::test_server::SimpleConnectionListener>
+      connection_listener_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UserImageManagerTest);
@@ -509,9 +537,9 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromProfileImage) {
   user_image_manager->SaveUserImageFromProfileImage();
   run_loop_->Run();
 
-  net::TestURLFetcherFactory url_fetcher_factory;
   CompleteProfileMetadataDownload(test_account_id1_);
-  CompleteProfileImageDownload(&url_fetcher_factory);
+  connection_listener_->WaitForConnections();
+  CompleteProfileImageDownload();
 
   const gfx::ImageSkia& profile_image =
       user_image_manager->DownloadedProfileImage();
@@ -561,13 +589,14 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
   user_image_manager->SaveUserImageFromProfileImage();
   run_loop_->Run();
 
-  net::TestURLFetcherFactory url_fetcher_factory;
   CompleteProfileMetadataDownload(test_account_id1_);
 
   user_image_manager->SaveUserDefaultImageIndex(
       default_user_image::kFirstDefaultImageIndex);
 
-  CompleteProfileImageDownload(&url_fetcher_factory);
+  connection_listener_->WaitForConnections();
+
+  CompleteProfileImageDownload();
 
   EXPECT_TRUE(user->HasDefaultImage());
   EXPECT_EQ(default_user_image::kFirstDefaultImageIndex, user->image_index());
