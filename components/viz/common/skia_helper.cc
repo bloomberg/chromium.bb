@@ -4,6 +4,7 @@
 #include "components/viz/common/skia_helper.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gfx/skia_util.h"
 
 namespace viz {
@@ -47,7 +48,7 @@ sk_sp<SkImage> SkiaHelper::ApplyImageFilter(sk_sp<SkImage> src_image,
 
   // Force a flush of the Skia pipeline before we switch back to the compositor
   // context.
-  image->getTextureHandle(true);
+  image->getBackendTexture(true);
   CHECK(image->isTextureBacked());
   return image;
 }
