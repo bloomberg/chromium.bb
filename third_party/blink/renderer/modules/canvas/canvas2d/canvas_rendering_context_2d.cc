@@ -380,8 +380,10 @@ void CanvasRenderingContext2D::clearRect(double x,
                                          double height) {
   BaseRenderingContext2D::clearRect(x, y, width, height);
 
-  if (hit_region_manager_) {
-    FloatRect rect(x, y, width, height);
+  if (hit_region_manager_ && std::isfinite(x) && std::isfinite(y) &&
+      std::isfinite(width) && std::isfinite(height)) {
+    FloatRect rect(clampTo<float>(x), clampTo<float>(y), clampTo<float>(width),
+                   clampTo<float>(height));
     hit_region_manager_->RemoveHitRegionsInRect(rect, GetState().Transform());
   }
 }
@@ -832,7 +834,8 @@ void CanvasRenderingContext2D::DrawTextInternal(
                    override);
   text_run.SetNormalizeSpace(true);
   // Draw the item text at the correct point.
-  FloatPoint location(x, y + GetFontBaseline(font_metrics));
+  FloatPoint location(clampTo<float>(x),
+                      clampTo<float>(y + GetFontBaseline(font_metrics)));
   double font_width = font.Width(text_run);
 
   bool use_max_width = (max_width && *max_width < font_width);
@@ -861,7 +864,8 @@ void CanvasRenderingContext2D::DrawTextInternal(
   text_run_paint_info.bounds =
       FloatRect(location.X() - font_metrics.Height() / 2,
                 location.Y() - font_metrics.Ascent() - font_metrics.LineGap(),
-                width + font_metrics.Height(), font_metrics.LineSpacing());
+                clampTo<float>(width + font_metrics.Height()),
+                font_metrics.LineSpacing());
   if (paint_type == CanvasRenderingContext2DState::kStrokePaintType)
     InflateStrokeRect(text_run_paint_info.bounds);
 
@@ -871,7 +875,8 @@ void CanvasRenderingContext2D::DrawTextInternal(
     DrawingCanvas()->translate(location.X(), location.Y());
     // We draw when fontWidth is 0 so compositing operations (eg, a "copy" op)
     // still work.
-    DrawingCanvas()->scale((font_width > 0 ? (width / font_width) : 0), 1);
+    DrawingCanvas()->scale(
+        (font_width > 0 ? clampTo<float>(width / font_width) : 0), 1);
     location = FloatPoint();
   }
 
