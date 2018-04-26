@@ -33,7 +33,8 @@
     }
   }
   if (!content_suggestions::IsRegularXRegularSizeClass(self.collectionView))
-    minimumHeight -= ntp_header::ToolbarHeight() + topSafeArea;
+    minimumHeight -= ntp_header::ToolbarHeight() + topSafeArea +
+                     self.collectionView.contentInset.bottom;
 
   CGSize contentSize = [super collectionViewContentSize];
   if (contentSize.height < minimumHeight) {
