@@ -40,6 +40,8 @@
 #include "chrome/browser/ui/views/feature_promos/new_tab_promo_bubble_view.h"
 #endif
 
+using MD = ui::MaterialDesignController;
+
 namespace {
 
 constexpr int kDistanceBetweenIcons = 6;
@@ -72,7 +74,7 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
                               ui::EF_MIDDLE_MOUSE_BUTTON);
 #endif
 
-  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
+  if (MD::IsNewerMaterialUi()) {
     // Initialize the ink drop mode for a ripple highlight on button press.
     ink_drop_container_ = new views::InkDropContainerView();
     AddChildView(ink_drop_container_);
@@ -98,7 +100,7 @@ int NewTabButton::GetTopOffset() {
 
   // In newer material UI, the button is placed vertically exactly in the
   // center of the tabstrip.
-  if (ui::MaterialDesignController::IsNewerMaterialUi())
+  if (MD::IsNewerMaterialUi())
     return extra_vertical_space / 2;
 
   // In the non-touch-optimized UI, the new tab button is placed at a fixed
@@ -223,7 +225,6 @@ void NewTabButton::PaintButtonContents(gfx::Canvas* canvas) {
 
   // Fill.
   SkPath fill, stroke;
-  using MD = ui::MaterialDesignController;
   const bool is_touch_ui = MD::IsTouchOptimizedUiEnabled();
   if (MD::GetMode() != MD::MATERIAL_REFRESH) {
     fill = is_touch_ui ? GetTouchOptimizedButtonPath(0, scale, false, true)
@@ -242,7 +243,7 @@ void NewTabButton::PaintButtonContents(gfx::Canvas* canvas) {
     const int plus_icon_offset = GetCornerRadius() - (plus_icon_.width() / 2);
     canvas->DrawImageInt(plus_icon_, plus_icon_offset, plus_icon_offset,
                          paint_flags);
-    if (is_incognito_) {
+    if (ShouldDrawIncognitoIcon()) {
       DCHECK(!incognito_icon_.isNull());
       canvas->DrawImageInt(
           incognito_icon_,
@@ -292,7 +293,7 @@ void NewTabButton::PaintButtonContents(gfx::Canvas* canvas) {
 void NewTabButton::Layout() {
   ImageButton::Layout();
 
-  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
+  if (MD::IsNewerMaterialUi()) {
     // If icons are not initialized, initialize them now. Icons are always
     // initialized together so it's enough to check the |plus_icon_|.
     if (plus_icon_.isNull())
@@ -307,7 +308,7 @@ void NewTabButton::Layout() {
 void NewTabButton::OnThemeChanged() {
   ImageButton::OnThemeChanged();
 
-  if (!ui::MaterialDesignController::IsNewerMaterialUi())
+  if (!MD::IsNewerMaterialUi())
     return;
 
   InitButtonIcons();
@@ -344,6 +345,10 @@ void NewTabButton::OnWidgetDestroying(views::Widget* widget) {
   SchedulePaint();
 }
 
+bool NewTabButton::ShouldDrawIncognitoIcon() const {
+  return is_incognito_ && MD::IsTouchOptimizedUiEnabled();
+}
+
 gfx::Rect NewTabButton::GetVisibleBounds() const {
   // TODO(pkasting): This is correct but inefficient for newer material UI.
   SkPath border;
@@ -365,10 +370,9 @@ void NewTabButton::GetBorderPath(float button_y,
   const int button_height =
       GetLayoutSize(NEW_TAB_BUTTON, is_incognito_).height();
 
-  using MD = ui::MaterialDesignController;
   if (MD::GetMode() == MD::MATERIAL_REFRESH) {
     path->addRect(0, extend_to_top ? 0 : button_y, width() * scale,
-                  button_height * scale);
+                  button_y + button_height * scale);
     return;
   }
 
@@ -391,8 +395,7 @@ void NewTabButton::PaintFill(bool pressed,
   // For unpressed buttons, draw the fill and its shadow.
   // Note that for touch-optimized UI, we always draw the fill since the button
   // has a flat design with no hover highlight.
-  const bool is_touch_ui =
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+  const bool is_touch_ui = MD::IsTouchOptimizedUiEnabled();
   if (is_touch_ui || !pressed) {
     // First we compute the background image coordinates and scale, in case we
     // need to draw a custom background image.
@@ -431,12 +434,12 @@ void NewTabButton::PaintFill(bool pressed,
     shadow_flags.setLooper(
         CreateShadowDrawLooper(SkColorSetA(stroke_color, alpha)));
     canvas->DrawPath(fill, shadow_flags);
-  }
 
-  if (is_touch_ui) {
-    // We don't have hover/pressed states in the touch-optimized UI design.
-    // Instead we are using an ink drop effect.
-    return;
+    if (is_touch_ui) {
+      // We don't have hover/pressed states in the touch-optimized UI design.
+      // Instead we are using an ink drop effect.
+      return;
+    }
   }
 
   // Draw a white highlight on hover.
@@ -469,14 +472,14 @@ SkColor NewTabButton::GetButtonFillColor() const {
 }
 
 void NewTabButton::InitButtonIcons() {
-  DCHECK(ui::MaterialDesignController::IsNewerMaterialUi());
+  DCHECK(MD::IsNewerMaterialUi());
 
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
   DCHECK(theme_provider);
   const SkColor icon_color =
       theme_provider->GetColor(ThemeProperties::COLOR_TAB_TEXT);
   plus_icon_ = gfx::CreateVectorIcon(kNewTabButtonPlusIcon, icon_color);
-  if (is_incognito_) {
+  if (ShouldDrawIncognitoIcon()) {
     incognito_icon_ =
         gfx::CreateVectorIcon(kNewTabButtonIncognitoIcon, icon_color);
   }
@@ -486,7 +489,7 @@ SkPath NewTabButton::GetTouchOptimizedButtonPath(float button_y,
                                                  float scale,
                                                  bool extend_to_top,
                                                  bool for_fill) const {
-  DCHECK(ui::MaterialDesignController::IsTouchOptimizedUiEnabled());
+  DCHECK(MD::IsTouchOptimizedUiEnabled());
 
   const float radius = GetCornerRadius() * scale;
   const float rect_width =
@@ -574,7 +577,7 @@ SkPath NewTabButton::GetNonTouchOptimizedButtonPath(int button_y,
 }
 
 void NewTabButton::UpdateInkDropBaseColor() {
-  DCHECK(ui::MaterialDesignController::IsNewerMaterialUi());
+  DCHECK(MD::IsNewerMaterialUi());
 
   set_ink_drop_base_color(color_utils::BlendTowardOppositeLuma(
       GetButtonFillColor(), SK_AlphaOPAQUE));
