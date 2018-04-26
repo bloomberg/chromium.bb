@@ -1,5 +1,7 @@
 # execution_context OWNERS
-file://third_party/blink/renderer/bindings/OWNERS
+#
+# The owner list is made intentionally empty.
+# Ask core/OWNERS for code reviews.
 
-# TEAM: blink-reviews-bindings@chromium.org
-# COMPONENT: Blink>Bindings
+# TEAM: platform-architecture-dev@chromium.org
+# COMPONENT: Blink>Internals>Frames
