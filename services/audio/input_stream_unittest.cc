@@ -137,7 +137,7 @@ class AudioServiceInputStreamTest : public testing::Test {
         mojo::MakeRequest(&stream_ptr), client_.MakePtr(), observer_.MakePtr(),
         log_.MakePtr(), kDefaultDeviceId,
         media::AudioParameters::UnavailableDeviceParams(),
-        kDefaultSharedMemoryCount, enable_agc,
+        kDefaultSharedMemoryCount, enable_agc, mojo::ScopedSharedBufferHandle(),
         base::BindOnce(&AudioServiceInputStreamTest::OnCreated,
                        base::Unretained(this)));
     return stream_ptr;

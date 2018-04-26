@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "services/audio/user_input_monitor.h"
 
 namespace audio {
 
@@ -28,7 +29,7 @@ InputStream::InputStream(CreatedCallback created_callback,
                          media::mojom::AudioInputStreamObserverPtr observer,
                          media::mojom::AudioLogPtr log,
                          media::AudioManager* audio_manager,
-                         media::UserInputMonitor* user_input_monitor,
+                         std::unique_ptr<UserInputMonitor> user_input_monitor,
                          const std::string& device_id,
                          const media::AudioParameters& params,
                          uint32_t shared_memory_count,
@@ -46,6 +47,7 @@ InputStream::InputStream(CreatedCallback created_callback,
           shared_memory_count,
           params,
           &foreign_socket_)),
+      user_input_monitor_(std::move(user_input_monitor)),
       weak_factory_(this) {
   DCHECK(audio_manager);
   DCHECK(binding_.is_bound());
@@ -75,8 +77,8 @@ InputStream::InputStream(CreatedCallback created_callback,
   }
 
   controller_ = media::AudioInputController::Create(
-      audio_manager, this, writer_.get(), user_input_monitor, params, device_id,
-      enable_agc);
+      audio_manager, this, writer_.get(), user_input_monitor_.get(), params,
+      device_id, enable_agc);
 }
 
 InputStream::~InputStream() {

@@ -57,6 +57,8 @@ source_set("lib") {
     "sync_reader.h",
     "system_info.cc",
     "system_info.h",
+    "user_input_monitor.cc",
+    "user_input_monitor.h",
   ]
 
   public_deps = [
@@ -90,6 +92,7 @@ source_set("tests") {
     "test/service_lifetime_test_template.h",
     "test/service_observer_mock.cc",
     "test/service_observer_mock.h",
+    "user_input_monitor_unittest.cc",
   ]
 
   deps = [

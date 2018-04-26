@@ -33,14 +33,18 @@ interface StreamFactory {
   // obtained from the audio.mojom.SystemInfo interface, or "default".
   // |shared_memory_count| indicates how many buffer segments can the input
   // stream client read at once, to avoid data overwriting. |enable_agc| is used
-  // for enabling automatic gain control.
+  // for enabling automatic gain control. |key_press_count_buffer| is an
+  // optional readonly shared memory handle for reading the current key press
+  // count, updated by browser process in media::UserInputMonitor
+  // implementation.
   CreateInputStream(
     media.mojom.AudioInputStream& stream,
     media.mojom.AudioInputStreamClient client,
     media.mojom.AudioInputStreamObserver observer,
     media.mojom.AudioLog log,
     string device_id, media.mojom.AudioParameters params,
-    uint32 shared_memory_count, bool enable_agc)
+    uint32 shared_memory_count, bool enable_agc,
+    handle<shared_buffer>? key_press_count_buffer)
     => (media.mojom.AudioDataPipe? data_pipe, bool initially_muted);
 
   // Creates an AudioOutputStream and returns the AudioDataPipe it reads data

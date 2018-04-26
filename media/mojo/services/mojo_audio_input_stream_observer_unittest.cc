@@ -29,7 +29,8 @@ class MojoAudioInputStreamObserverTest : public testing::Test {
             base::Unretained(this)),
         base::BindOnce(
             &MojoAudioInputStreamObserverTest::BindingConnectionError,
-            base::Unretained(this)));
+            base::Unretained(this)),
+        nullptr /*user_input_monitor*/);
   }
 
   MOCK_METHOD0(RecordingStartedCallback, void());

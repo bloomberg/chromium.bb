@@ -5,15 +5,11 @@
 #include "media/base/user_input_monitor.h"
 
 #include <memory>
+#include <utility>
 
-#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "build/build_config.h"
-#include "media/base/keyboard_event_counter.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkPoint.h"
 
 #if defined(OS_LINUX)
 #include "base/files/file_descriptor_watcher_posix.h"
@@ -29,7 +25,6 @@ TEST(UserInputMonitorTest, CreatePlatformSpecific) {
   base::MessageLoopForUI message_loop;
 #endif  // defined(OS_LINUX)
 
-  base::RunLoop run_loop;
   std::unique_ptr<UserInputMonitor> monitor = UserInputMonitor::Create(
       message_loop.task_runner(), message_loop.task_runner());
 
@@ -40,7 +35,20 @@ TEST(UserInputMonitorTest, CreatePlatformSpecific) {
   monitor->DisableKeyPressMonitoring();
 
   monitor.reset();
-  run_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST(UserInputMonitorTest, KeyPressMonitorReadWriteCount) {
+  std::unique_ptr<base::MappedReadOnlyRegion> shmem =
+      std::make_unique<base::MappedReadOnlyRegion>(
+          base::ReadOnlySharedMemoryRegion::Create(sizeof(uint32_t)));
+  ASSERT_TRUE(shmem->region.IsValid());
+  ASSERT_TRUE(shmem->mapping.IsValid());
+
+  constexpr uint32_t count = 10;
+  WriteKeyPressMonitorCount(shmem->mapping, count);
+  base::ReadOnlySharedMemoryMapping readonly_mapping = shmem->region.Map();
+  EXPECT_EQ(count, ReadKeyPressMonitorCount(readonly_mapping));
 }
 
 }  // namespace media

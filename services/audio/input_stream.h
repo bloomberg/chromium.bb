@@ -21,11 +21,12 @@ namespace media {
 class AudioInputSyncWriter;
 class AudioManager;
 class AudioParameters;
-class UserInputMonitor;
 
 }  // namespace media
 
 namespace audio {
+
+class UserInputMonitor;
 
 class InputStream final : public media::mojom::AudioInputStream,
                           public media::AudioInputController::EventHandler {
@@ -41,7 +42,7 @@ class InputStream final : public media::mojom::AudioInputStream,
               media::mojom::AudioInputStreamObserverPtr observer,
               media::mojom::AudioLogPtr log,
               media::AudioManager* manager,
-              media::UserInputMonitor* user_input_monitor,
+              std::unique_ptr<UserInputMonitor> user_input_monitor,
               const std::string& device_id,
               const media::AudioParameters& params,
               uint32_t shared_memory_count,
@@ -76,6 +77,7 @@ class InputStream final : public media::mojom::AudioInputStream,
   base::CancelableSyncSocket foreign_socket_;
   const std::unique_ptr<media::AudioInputSyncWriter> writer_;
   scoped_refptr<media::AudioInputController> controller_;
+  const std::unique_ptr<UserInputMonitor> user_input_monitor_;
 
   SEQUENCE_CHECKER(owning_sequence_);
 

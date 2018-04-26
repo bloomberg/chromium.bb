@@ -7,16 +7,16 @@
 #include <utility>
 
 #include "base/unguessable_token.h"
-#include "media/base/user_input_monitor.h"
 #include "services/audio/input_stream.h"
 #include "services/audio/local_muter.h"
 #include "services/audio/output_stream.h"
+#include "services/audio/user_input_monitor.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace audio {
 
 StreamFactory::StreamFactory(media::AudioManager* audio_manager)
-    : audio_manager_(audio_manager), user_input_monitor_(nullptr) {}
+    : audio_manager_(audio_manager) {}
 
 StreamFactory::~StreamFactory() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
@@ -38,6 +38,7 @@ void StreamFactory::CreateInputStream(
     const media::AudioParameters& params,
     uint32_t shared_memory_count,
     bool enable_agc,
+    mojo::ScopedSharedBufferHandle key_press_count_buffer,
     CreateInputStreamCallback created_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
 
@@ -48,8 +49,9 @@ void StreamFactory::CreateInputStream(
   input_streams_.insert(std::make_unique<InputStream>(
       std::move(created_callback), std::move(deleter_callback),
       std::move(stream_request), std::move(client), std::move(observer),
-      std::move(log), audio_manager_, user_input_monitor_, device_id, params,
-      shared_memory_count, enable_agc));
+      std::move(log), audio_manager_,
+      UserInputMonitor::Create(std::move(key_press_count_buffer)), device_id,
+      params, shared_memory_count, enable_agc));
 }
 
 void StreamFactory::CreateOutputStream(

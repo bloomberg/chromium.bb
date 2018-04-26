@@ -11,19 +11,26 @@
 
 namespace media {
 
+class UserInputMonitor;
+
 class MEDIA_MOJO_EXPORT MojoAudioInputStreamObserver
     : public mojom::AudioInputStreamObserver {
  public:
   MojoAudioInputStreamObserver(mojom::AudioInputStreamObserverRequest request,
                                base::OnceClosure recording_started_callback,
-                               base::OnceClosure connection_error_callback);
+                               base::OnceClosure connection_error_callback,
+                               media::UserInputMonitor* user_input_monitor);
   ~MojoAudioInputStreamObserver() override;
 
   void DidStartRecording() override;
 
  private:
+  void OnConnectionError();
+
   mojo::Binding<AudioInputStreamObserver> binding_;
   base::OnceClosure recording_started_callback_;
+  base::OnceClosure connection_error_callback_;
+  media::UserInputMonitor* user_input_monitor_;
 
   SEQUENCE_CHECKER(owning_sequence_);
 
