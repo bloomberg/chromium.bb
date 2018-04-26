@@ -2913,13 +2913,16 @@ class AuraOutput : public WaylandDisplayObserver::ScaleObserver {
         bool rv = display_manager->GetActiveModeForDisplayId(display.id(),
                                                              &active_mode);
         DCHECK(rv);
+        const int32_t current_output_scale =
+            std::round(display_info.zoom_factor() * 1000.f);
         for (double zoom_factor : display::GetDisplayZoomFactors(active_mode)) {
+          const int32_t output_scale = std::round(zoom_factor * 1000.0);
           uint32_t flags = 0;
-          if (zoom_factor == 1.0)
+          if (output_scale == 1000)
             flags |= ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED;
-          if (display_info.zoom_factor() == zoom_factor)
+          if (current_output_scale == output_scale)
             flags |= ZAURA_OUTPUT_SCALE_PROPERTY_CURRENT;
-          zaura_output_send_scale(resource_, flags, zoom_factor * 1000);
+          zaura_output_send_scale(resource_, flags, output_scale);
         }
       } else if (display_manager->GetDisplayIdForUIScaling() == display.id()) {
         display::ManagedDisplayMode active_mode;
