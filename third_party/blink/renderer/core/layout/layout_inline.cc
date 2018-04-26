@@ -1618,9 +1618,6 @@ void LayoutInline::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
 
 void LayoutInline::InvalidateDisplayItemClients(
     PaintInvalidationReason invalidation_reason) const {
-  // TODO(yoichio): Cover other PaintInvalidateionReasons.
-  DCHECK(invalidation_reason != PaintInvalidationReason::kSelection ||
-         !EnclosingNGBlockFlow());
   ObjectPaintInvalidator paint_invalidator(*this);
 
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
