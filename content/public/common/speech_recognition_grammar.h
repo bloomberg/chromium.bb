@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_COMMON_SPEECH_RECOGNITION_GRAMMAR_H_
 #define CONTENT_PUBLIC_COMMON_SPEECH_RECOGNITION_GRAMMAR_H_
 
+#include <string>
 #include <vector>
 
 #include "content/common/content_export.h"
@@ -12,17 +13,11 @@
 namespace content {
 
 struct CONTENT_EXPORT SpeechRecognitionGrammar {
-  SpeechRecognitionGrammar()
-      : weight(0.0f) {
-  }
+  SpeechRecognitionGrammar() : weight(0.0f) {}
   explicit SpeechRecognitionGrammar(const std::string& url_value)
-      : url(url_value),
-        weight(0.0f) {
-  }
+      : url(url_value), weight(0.0f) {}
   SpeechRecognitionGrammar(const std::string& url_value, double weight_value)
-      : url(url_value),
-        weight(weight_value) {
-  }
+      : url(url_value), weight(weight_value) {}
 
   std::string url;
   double weight;

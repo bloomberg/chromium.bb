@@ -84,6 +84,7 @@
 #include "content/browser/scoped_active_url.h"
 #include "content/browser/shared_worker/shared_worker_connector_impl.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
+#include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
 #include "content/browser/webauth/scoped_virtual_authenticator_environment.h"
@@ -3436,6 +3437,15 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   // TODO(crbug.com/775792): Move to RendererInterfaceBinders.
   registry_->AddInterface(base::BindRepeating(
       &QuotaDispatcherHost::CreateForFrame, GetProcess(), routing_id_));
+
+  registry_->AddInterface(
+      base::BindRepeating(
+          SpeechRecognitionDispatcherHost::Create, GetProcess()->GetID(),
+          routing_id_,
+          base::WrapRefCounted(
+              GetProcess()->GetStoragePartition()->GetURLRequestContext()),
+          weak_ptr_factory_.GetWeakPtr()),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     StoragePartitionImpl* storage_partition =

@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "content/common/speech_recognizer.mojom.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/blink/public/web/web_speech_recognition_handle.h"
@@ -59,6 +60,10 @@ class SpeechRecognitionDispatcher : public RenderFrameObserver,
   HandleMap::iterator FindHandleInMap(
       const blink::WebSpeechRecognitionHandle& handle);
   const blink::WebSpeechRecognitionHandle& GetHandleFromID(int handle_id);
+
+  mojom::SpeechRecognizer& GetSpeechRecognitionHost();
+
+  mojom::SpeechRecognizerPtr speech_recognition_host_;
 
   // The Blink client class that we use to send events back to the JS world.
   blink::WebSpeechRecognizerClient recognizer_client_;

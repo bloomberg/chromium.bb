@@ -1,0 +1,56 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content.mojom;
+
+import "content/public/common/speech_recognition_grammar.mojom";
+
+// Used to start a speech recognition session.
+struct StartSpeechRecognitionRequestParams {
+  // Unique ID associated with the JS object making the calls.
+  int32 request_id;
+
+  // Language to use for speech recognition.
+  string language;
+
+  // Speech grammars to use.
+  array<content.mojom.SpeechRecognitionGrammar> grammars;
+
+  // URL of the page (or iframe if applicable).
+  // TODO(adithyas): Make this a mojom origin instead.
+  string origin_url;
+
+  // Maximum number of hypotheses allowed for each results.
+  uint32 max_hypotheses;
+
+  // Whether the user requested continuous recognition.
+  bool continuous;
+
+  // Whether the user requested interim results.
+  bool interim_results;
+};
+
+// API for the renderer process to send speech recognition JS API messages to
+// the browser process.
+// TODO(adithyas): Remove |request_id|.
+interface SpeechRecognizer {
+  // Requests the speech recognition service to start speech recognition.
+  StartRequest(StartSpeechRecognitionRequestParams params);
+
+  // Requests the speech recognition service to abort speech recognition on
+  // behalf of the given |request_id|. If there are no sessions associated with
+  // the |request_id| in the render view, this call does nothing.
+  AbortRequest(int32 request_id);
+
+  // Requests the speech recognition service to abort all speech recognitions on
+  // behalf of the current frame. If speech recognition is not happening or is
+  // happening on behalf of some other render view, this call does nothing.
+  AbortAllRequests();
+
+  // Requests the speech recognition service to stop audio capture on the
+  // current frame. Any audio recorded so far will be fed to the
+  // speech recognizer. If speech recognition is not happening or is happening
+  // on behalf of some other render view, this call does nothing.
+  StopCaptureRequest(int32 request_id);
+};
