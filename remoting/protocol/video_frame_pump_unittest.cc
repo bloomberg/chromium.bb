@@ -55,13 +55,14 @@ std::unique_ptr<webrtc::DesktopFrame> CreateUnchangedFrame(
 class MockVideoEncoder : public VideoEncoder {
  public:
   MockVideoEncoder() = default;
-  ~MockVideoEncoder() = default;
+  ~MockVideoEncoder() override = default;
 
   MOCK_METHOD1(SetLosslessEncode, void(bool));
   MOCK_METHOD1(SetLosslessColor, void(bool));
   MOCK_METHOD1(EncodePtr, VideoPacket*(const webrtc::DesktopFrame&));
 
-  std::unique_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame) {
+  std::unique_ptr<VideoPacket> Encode(
+      const webrtc::DesktopFrame& frame) override {
     return base::WrapUnique(EncodePtr(frame));
   }
 };
