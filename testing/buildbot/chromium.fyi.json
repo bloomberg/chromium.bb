@@ -8010,23 +8010,8 @@
   "Win cl.exe Goma Canary LocalOutputCache": {
     "additional_compile_targets": [
       "v8:gn_all",
-      "webrtc",
       "pdfium_all",
       "libANGLE"
-    ],
-    "gtest_tests": [
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "base_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      }
     ]
   },
   "Win7 Builder (dbg) Goma Canary": {
@@ -8071,23 +8056,8 @@
   "WinMSVC64 Goma Canary": {
     "additional_compile_targets": [
       "v8:gn_all",
-      "webrtc",
       "pdfium_all",
       "libANGLE"
-    ],
-    "gtest_tests": [
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "base_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      }
     ]
   },
   "chromeos-amd64-generic-rel-goma-canary": {
