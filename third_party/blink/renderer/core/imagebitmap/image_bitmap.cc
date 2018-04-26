@@ -338,10 +338,8 @@ scoped_refptr<StaticBitmapImage> ScaleImage(
   auto sk_image = image->PaintImageForCurrentFrame().GetSkImage();
   auto image_info = GetSkImageInfo(image);
   // Avoid sRGB transfer function by setting the color space to nullptr.
-  if (SkColorSpace::Equals(image_info.colorSpace(),
-                           SkColorSpace::MakeSRGB().get())) {
+  if (image_info.colorSpace()->isSRGB())
     image_info = image_info.makeColorSpace(nullptr);
-  }
 
   SkImageInfo resized_info = image_info.makeWH(parsed_options.resize_width,
                                                parsed_options.resize_height);

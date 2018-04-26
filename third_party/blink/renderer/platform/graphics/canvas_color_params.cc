@@ -51,13 +51,13 @@ CanvasColorParams::CanvasColorParams(const SkImageInfo& info) {
   // format).
   if (!info.colorSpace())
     return;
-  if (SkColorSpace::Equals(info.colorSpace(), SkColorSpace::MakeSRGB().get()))
-    color_space_ = kSRGBCanvasColorSpace;
-  else if (SkColorSpace::Equals(
-               info.colorSpace(),
-               SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                                     SkColorSpace::kRec2020_Gamut)
-                   .get()))
+  // kSRGBCanvasColorSpace covers sRGB and linear-rgb. We need to check for
+  // Rec2020 and P3.
+  if (SkColorSpace::Equals(
+          info.colorSpace(),
+          SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
+                                SkColorSpace::kRec2020_Gamut)
+              .get()))
     color_space_ = kRec2020CanvasColorSpace;
   else if (SkColorSpace::Equals(
                info.colorSpace(),
