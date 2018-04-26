@@ -472,6 +472,20 @@ void Shell::CreateKeyboard() {
       keyboard::KeyboardController::GetInstance());
 }
 
+void Shell::ReloadKeyboard() {
+  auto* keyboard_controller = keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller) {
+    for (auto* const controller : GetAllRootWindowControllers())
+      controller->DeactivateKeyboard(keyboard_controller);
+
+    keyboard_controller->ResetKeyboardUI(shell_delegate_->CreateKeyboardUI());
+
+    GetPrimaryRootWindowController()->ActivateKeyboard(keyboard_controller);
+  } else {
+    CreateKeyboard();
+  }
+}
+
 void Shell::DestroyKeyboard() {
   // TODO(jamescook): Move keyboard create and hide into ShellPort.
   keyboard_ui_->Hide();
