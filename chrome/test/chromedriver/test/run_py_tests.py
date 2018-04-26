@@ -109,8 +109,6 @@ _OS_SPECIFIC_FILTER['win'] = [
 _OS_SPECIFIC_FILTER['linux'] = [
     # Xvfb doesn't support maximization.
     'ChromeDriverTest.testWindowMaximize',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2132
-    'MobileEmulationCapabilityTest.testDeviceMetricsWithDeviceWidth',
 ]
 _OS_SPECIFIC_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1927
