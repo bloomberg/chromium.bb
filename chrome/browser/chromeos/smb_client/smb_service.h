@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provider_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
+#include "chrome/browser/chromeos/smb_client/temp_file_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/smb_provider_client.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -84,6 +85,7 @@ class SmbService : public KeyedService,
 
   const ProviderId provider_id_;
   Profile* profile_;
+  TempFileManager temp_file_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SmbService);
 };
