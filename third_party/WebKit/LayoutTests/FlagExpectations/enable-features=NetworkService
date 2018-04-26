@@ -41,12 +41,4 @@ Bug(none) http/tests/security/mixedContent/filesystem-url-in-iframe.html [ Failu
 # Cross-Origin Read Blocking is not implemented.
 crbug.com/792546 http/tests/inspector-protocol/network/block_cross_site_document_load.js [ Failure ]
 
-crbug.com/816556 external/wpt/html/semantics/text-level-semantics/the-a-element/a-download-click-404.html [ Failure ]
-crbug.com/829721 external/wpt/html/semantics/embedded-content/the-area-element/area-download-click.html [ Crash ]
-crbug.com/829721 external/wpt/html/semantics/text-level-semantics/the-a-element/a-download-click.html [ Crash ]
-crbug.com/829721 fast/dom/HTMLAnchorElement/anchor-download.html [ Crash ]
-crbug.com/829721 fast/dom/HTMLAnchorElement/anchor-nodownload-set.html [ Crash ]
-crbug.com/829721 fast/dom/HTMLAreaElement/area-download.html [ Crash ]
-crbug.com/829721 http/tests/security/anchor-download-allow-blob.html [ Crash ]
-
 crbug.com/812464 inspector-protocol/network/interception-file-url.js [ Pass Crash ]
