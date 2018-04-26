@@ -33,7 +33,7 @@ class MockBluetoothDevice : public BluetoothDevice {
                       const std::string& address,
                       bool paired,
                       bool connected);
-  virtual ~MockBluetoothDevice();
+  ~MockBluetoothDevice() override;
 
   MOCK_CONST_METHOD0(GetBluetoothClass, uint32_t());
   MOCK_CONST_METHOD0(GetType, BluetoothTransport());

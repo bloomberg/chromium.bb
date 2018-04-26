@@ -17,7 +17,7 @@ namespace device {
 class MockBluetoothDiscoverySession : public BluetoothDiscoverySession {
  public:
   MockBluetoothDiscoverySession();
-  virtual ~MockBluetoothDiscoverySession();
+  ~MockBluetoothDiscoverySession() override;
 
   MOCK_CONST_METHOD0(IsActive, bool());
   MOCK_METHOD2(Stop,

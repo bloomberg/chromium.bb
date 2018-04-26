@@ -24,7 +24,7 @@ class MockBluetoothAdapter : public BluetoothAdapter {
   class Observer : public BluetoothAdapter::Observer {
    public:
     Observer();
-    virtual ~Observer();
+    ~Observer() override;
 
     MOCK_METHOD2(AdapterPresentChanged, void(BluetoothAdapter*, bool));
     MOCK_METHOD2(AdapterPoweredChanged, void(BluetoothAdapter*, bool));
@@ -36,7 +36,7 @@ class MockBluetoothAdapter : public BluetoothAdapter {
 
   MockBluetoothAdapter();
 
-  virtual bool IsInitialized() const { return true; }
+  bool IsInitialized() const override { return true; }
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
   void Shutdown() override;
@@ -99,7 +99,7 @@ class MockBluetoothAdapter : public BluetoothAdapter {
   void StartDiscoverySessionWithFilter(
       std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
       const DiscoverySessionCallback& callback,
-      const ErrorCallback& error_callback);
+      const ErrorCallback& error_callback) override;
 
   // BluetoothAdapter is supposed to manage the lifetime of BluetoothDevices.
   // This method takes ownership of the MockBluetoothDevice. This is only for
@@ -146,7 +146,7 @@ class MockBluetoothAdapter : public BluetoothAdapter {
       const base::Closure& callback,
       const AdvertisementErrorCallback& error_callback) override;
 #endif
-  virtual ~MockBluetoothAdapter();
+  ~MockBluetoothAdapter() override;
 
   MOCK_METHOD1(RemovePairingDelegateInternal,
                void(BluetoothDevice::PairingDelegate* pairing_delegate));

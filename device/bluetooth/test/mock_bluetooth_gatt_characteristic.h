@@ -33,7 +33,7 @@ class MockBluetoothGattCharacteristic
                                   bool is_local,
                                   Properties properties,
                                   Permissions permissions);
-  virtual ~MockBluetoothGattCharacteristic();
+  ~MockBluetoothGattCharacteristic() override;
 
   MOCK_CONST_METHOD0(GetIdentifier, std::string());
   MOCK_CONST_METHOD0(GetUUID, BluetoothUUID());
