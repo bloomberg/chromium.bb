@@ -111,7 +111,7 @@ inline bool SelectorMatches(const CSSSelector& selector,
 bool SelectorQuery::Matches(Element& target_element) const {
   QUERY_STATS_RESET();
   if (needs_updated_distribution_)
-    target_element.UpdateDistributionForUnknownReasons();
+    target_element.UpdateDistributionForFlatTreeTraversal();
   return SelectorListMatches(target_element, target_element);
 }
 
@@ -120,7 +120,7 @@ Element* SelectorQuery::Closest(Element& target_element) const {
   if (selectors_.IsEmpty())
     return nullptr;
   if (needs_updated_distribution_)
-    target_element.UpdateDistributionForUnknownReasons();
+    target_element.UpdateDistributionForFlatTreeTraversal();
 
   for (Element* current_element = &target_element; current_element;
        current_element = current_element->parentElement()) {
