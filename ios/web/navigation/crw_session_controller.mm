@@ -554,6 +554,10 @@ initiationType:(web::NavigationInitiationType)initiationType;
                                     andItem:(web::NavigationItem*)secondItem {
   if (!firstItem || !secondItem || firstItem == secondItem)
     return NO;
+
+  if (firstItem->GetURL().GetOrigin() != secondItem->GetURL().GetOrigin())
+    return NO;
+
   int firstIndex = [self indexOfItem:firstItem];
   int secondIndex = [self indexOfItem:secondItem];
   if (firstIndex == -1 || secondIndex == -1)

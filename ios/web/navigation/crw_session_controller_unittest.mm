@@ -887,6 +887,8 @@ TEST_F(CRWSessionControllerTest, IsSameDocumentNavigation) {
   // Push state navigation.
   items.push_back(CreateNavigationItem("http://foo.com/bar#bar",
                                        "http://foo.com/bar", @"Sixth"));
+  items.push_back(CreateNavigationItem("http://fooz.com/bar#bar",
+                                       "http://fooz.com/bar", @"Seventh"));
   CRWSessionController* controller =
       [[CRWSessionController alloc] initWithBrowserState:&browser_state_
                                          navigationItems:std::move(items)
@@ -898,9 +900,11 @@ TEST_F(CRWSessionControllerTest, IsSameDocumentNavigation) {
   web::NavigationItemImpl* item3 = [controller items][3].get();
   web::NavigationItemImpl* item4 = [controller items][4].get();
   web::NavigationItemImpl* item5 = [controller items][5].get();
+  web::NavigationItemImpl* item6 = [controller items][6].get();
   item1->SetIsCreatedFromPushState(true);
   item4->SetIsCreatedFromHashChange(true);
   item5->SetIsCreatedFromPushState(true);
+  item6->SetIsCreatedFromHashChange(true);
 
   EXPECT_FALSE(
       [controller isSameDocumentNavigationBetweenItem:item0 andItem:item0]);
@@ -916,6 +920,8 @@ TEST_F(CRWSessionControllerTest, IsSameDocumentNavigation) {
       [controller isSameDocumentNavigationBetweenItem:item0 andItem:item5]);
   EXPECT_FALSE(
       [controller isSameDocumentNavigationBetweenItem:item2 andItem:item4]);
+  EXPECT_FALSE(
+      [controller isSameDocumentNavigationBetweenItem:item6 andItem:item5]);
 }
 
 TEST_F(CRWSessionControllerTest, TestBackwardForwardItems) {
