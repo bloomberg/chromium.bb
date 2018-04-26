@@ -321,6 +321,7 @@
 -DirectoryTreeContextMenu/FileManagerBrowserTest.*
 -RestoreGeometry/FileManagerBrowserTest.*
 -OpenAudioFiles/FileManagerBrowserTest.*
+-OpenImageFiles/FileManagerBrowserTest.*
 -Delete/FileManagerBrowserTest.*
 -SortColumns/FileManagerBrowserTest.*
 -KeyboardOperations/FileManagerBrowserTest.*

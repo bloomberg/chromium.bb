@@ -123,10 +123,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE,
                       "audioRepeatOneModeMultipleFileDrive")));
 
-// Fails on official build. http://crbug.com/429294
-// Flaky: http://crbug.com/711290
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_OpenImageFiles,
+    OpenImageFiles,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "imageOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "imageOpenDownloads"),
