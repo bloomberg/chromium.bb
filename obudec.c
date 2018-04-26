@@ -182,8 +182,8 @@ static int obudec_read_one_obu(FILE *f, uint8_t **obu_buffer,
   if (obu_payload_length > UINT64_MAX - bytes_read) return -1;
 
   if (obu_payload_length > 256 * 1024 * 1024) {
-    warn("obudec: Read invalid OBU size (%u)\n",
-         (unsigned int)obu_payload_length);
+    fprintf(stderr, "obudec: Read invalid OBU size (%u)\n",
+            (unsigned int)obu_payload_length);
     *obu_length = bytes_read + obu_payload_length;
     return -1;
   }
@@ -191,13 +191,21 @@ static int obudec_read_one_obu(FILE *f, uint8_t **obu_buffer,
   if (bytes_read + obu_payload_length > available_buffer_capacity) {
     uint64_t new_capacity =
         obu_bytes_buffered + bytes_read + 2 * obu_payload_length;
+
+#if defined AOM_MAX_ALLOCABLE_MEMORY
+    if (new_capacity > AOM_MAX_ALLOCABLE_MEMORY) {
+      fprintf(stderr, "obudec: OBU size exceeds max alloc size.\n");
+      return -1;
+    }
+#endif
+
     uint8_t *new_buffer = (uint8_t *)realloc(*obu_buffer, new_capacity);
 
     if (new_buffer) {
       *obu_buffer = new_buffer;
       *obu_buffer_capacity = new_capacity;
     } else {
-      warn("obudec: Failed to allocate compressed data buffer\n");
+      fprintf(stderr, "obudec: Failed to allocate compressed data buffer\n");
       *obu_length = bytes_read + obu_payload_length;
       return -1;
     }
