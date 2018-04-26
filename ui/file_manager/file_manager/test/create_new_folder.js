@@ -39,14 +39,12 @@ test.selectFirstListItem = function() {
  */
 test.createNewFolder = function(initialEntrySet) {
   var maxListItemId = test.maxListItemId();
-  return Promise.resolve()
-      .then(() => {
-        // Push Ctrl + E.
-        assertTrue(
-            test.fakeKeyDown('#file-list', 'e', 'U+0045', true, false, false));
-        // Wait for rename text field.
-        return test.waitForElement('li[renaming] input.rename');
-      })
+  // Force focus to file list.
+  document.querySelector('#file-list:not([hidden])').focus();
+  // Press Ctrl+E to create a new folder.
+  assertTrue(test.fakeKeyDown('#file-list', 'e', 'U+0045', true, false, false));
+  // Wait for rename text field.
+  return test.waitForElement('li[renaming] input.rename')
       .then(() => {
         var elements =
             document.querySelectorAll('div.detail-table > list > li[selected]');
