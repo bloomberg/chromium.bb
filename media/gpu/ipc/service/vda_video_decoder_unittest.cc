@@ -87,11 +87,6 @@ VideoDecodeAccelerator::Capabilities GetCapabilities() {
   return capabilities;
 }
 
-void CloseShm(const BitstreamBuffer& bitstream) {
-  DCHECK(base::SharedMemory::IsHandleValid(bitstream.handle()));
-  base::SharedMemory::CloseHandle(bitstream.handle());
-}
-
 }  // namespace
 
 class VdaVideoDecoderTest : public testing::Test {
@@ -110,9 +105,6 @@ class VdaVideoDecoderTest : public testing::Test {
 
     // In either case, vda_->Destroy() should be called once.
     EXPECT_CALL(*vda_, Destroy());
-
-    // vda_->Decode() must close the shared memory handle.
-    ON_CALL(*vda_, Decode(_)).WillByDefault(Invoke(&CloseShm));
 
     vdavd_.reset(new VdaVideoDecoder(
         task_runner, task_runner,
@@ -168,12 +160,11 @@ class VdaVideoDecoderTest : public testing::Test {
   }
 
   int32_t Decode(base::TimeDelta timestamp) {
-    BitstreamBuffer bitstream;
+    int32_t bitstream_id = 0;
     vdavd_->Decode(CreateDecoderBuffer(timestamp), decode_cb_.Get());
-    EXPECT_CALL(*vda_, Decode(_)).WillOnce(SaveArg<0>(&bitstream));
+    EXPECT_CALL(*vda_, Decode(_, _)).WillOnce(SaveArg<1>(&bitstream_id));
     environment_.RunUntilIdle();
-    CloseShm(bitstream);
-    return bitstream.id();
+    return bitstream_id;
   }
 
   void NotifyEndOfBitstreamBuffer(int32_t bitstream_id) {

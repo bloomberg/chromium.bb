@@ -9,8 +9,10 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/time/time.h"
+#include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/media_export.h"
 #include "media/base/timestamp_constants.h"
@@ -43,6 +45,15 @@ class MEDIA_EXPORT BitstreamBuffer {
   BitstreamBuffer(const BitstreamBuffer& other);
 
   ~BitstreamBuffer();
+
+  // Produce an equivalent DecoderBuffer. This consumes handle(), even if
+  // nullptr is returned.
+  //
+  // This method is only intended to be used by VDAs that are being converted to
+  // use DecoderBuffer.
+  //
+  // TODO(sandersd): Remove once all VDAs are converted.
+  scoped_refptr<DecoderBuffer> ToDecoderBuffer() const;
 
   // TODO(crbug.com/813845): As this is only used by Android, include
   // EncryptionMode and optional EncryptionPattern when updating for Android.

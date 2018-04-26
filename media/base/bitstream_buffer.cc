@@ -4,6 +4,8 @@
 
 #include "media/base/bitstream_buffer.h"
 
+#include "media/base/decrypt_config.h"
+
 namespace media {
 
 BitstreamBuffer::BitstreamBuffer()
@@ -23,6 +25,19 @@ BitstreamBuffer::BitstreamBuffer(int32_t id,
 BitstreamBuffer::BitstreamBuffer(const BitstreamBuffer& other) = default;
 
 BitstreamBuffer::~BitstreamBuffer() = default;
+
+scoped_refptr<DecoderBuffer> BitstreamBuffer::ToDecoderBuffer() const {
+  scoped_refptr<DecoderBuffer> buffer =
+      DecoderBuffer::FromSharedMemoryHandle(handle_, offset_, size_);
+  if (!buffer)
+    return nullptr;
+  buffer->set_timestamp(presentation_timestamp_);
+  if (!key_id_.empty()) {
+    buffer->set_decrypt_config(
+        DecryptConfig::CreateCencConfig(key_id_, iv_, subsamples_));
+  }
+  return buffer;
+}
 
 void BitstreamBuffer::SetDecryptionSettings(
     const std::string& key_id,
