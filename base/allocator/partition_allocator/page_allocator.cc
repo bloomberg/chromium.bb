@@ -119,8 +119,8 @@ void* AllocPages(void* address,
   if (length >= kMinimumGuardedMemorySize) {
     CHECK_EQ(PageInaccessible, accessibility);
     CHECK(!commit);
-    if (AdjustAddressSpaceLimit(base::checked_cast<int64_t>(length))) {
-      DLOG(WARNING) << "Could not address space by " << length;
+    if (!AdjustAddressSpaceLimit(base::checked_cast<int64_t>(length))) {
+      DLOG(WARNING) << "Could not adjust address space by " << length;
       // Fall through. Try the allocation, since we may have a reserve.
     }
   }
