@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/smb_client/smb_file_system_id.h"
 #include "chrome/browser/chromeos/smb_client/smb_provider.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
+#include "chrome/browser/chromeos/smb_client/temp_file_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/smb_provider_client.h"
@@ -39,9 +40,13 @@ SmbService* SmbService::Get(content::BrowserContext* context) {
 void SmbService::Mount(const file_system_provider::MountOptions& options,
                        const base::FilePath& share_path,
                        MountResponse callback) {
+  // TODO(allenvic): Implement passing of credentials. This currently passes
+  // empty credentials to SmbProvider.
   GetSmbProviderClient()->Mount(
-      share_path, base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
-                                 base::Passed(&callback), options, share_path));
+      share_path, "" /* workgroup */, "" /* username */,
+      temp_file_manager_.CreatePasswordFile("" /* password */),
+      base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
+                     base::Passed(&callback), options, share_path));
 }
 
 void SmbService::OnMountResponse(
