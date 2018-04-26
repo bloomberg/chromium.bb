@@ -23,6 +23,10 @@
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "components/cast_channel/cast_message_util.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace cast_channel {
 class CastMessageHandler;
 class CastSocket;
@@ -43,7 +47,8 @@ class CastAppDiscoveryService : public CastMediaSinkServiceImpl::Observer {
   using Subscription = std::unique_ptr<SinkQueryCallbackList::Subscription>;
 
   CastAppDiscoveryService(cast_channel::CastMessageHandler* message_handler,
-                          cast_channel::CastSocketService* socket_service);
+                          cast_channel::CastSocketService* socket_service,
+                          const base::TickClock* clock);
   ~CastAppDiscoveryService() override;
 
   // Adds a sink query for |source|. Results will be continuously returned via
@@ -52,6 +57,12 @@ class CastAppDiscoveryService : public CastMediaSinkServiceImpl::Observer {
   // this method returns.
   Subscription StartObservingMediaSinks(const CastMediaSource& source,
                                         const SinkQueryCallback& callback);
+
+  // Reissues app availability requests for currently registered (sink, app_id)
+  // pairs whose status is kUnavailable or kUnknown. It is suitable to call
+  // this method when the user initiates a user gesture (such as opening the
+  // Media Router dialog).
+  void Refresh();
 
  private:
   friend class CastAppDiscoveryServiceTest;
@@ -96,6 +107,8 @@ class CastAppDiscoveryService : public CastMediaSinkServiceImpl::Observer {
 
   CastAppAvailabilityTracker availability_tracker_;
   base::flat_map<MediaSink::Id, MediaSinkInternal> sinks_;
+
+  const base::TickClock* const clock_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<CastAppDiscoveryService> weak_ptr_factory_;

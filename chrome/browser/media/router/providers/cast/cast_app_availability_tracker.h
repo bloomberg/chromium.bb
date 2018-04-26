@@ -11,16 +11,13 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/media_source.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
+#include "components/cast_channel/cast_message_util.h"
 
 namespace media_router {
-
-// Possible app availability values.
-// TODO(crbug.com/809249): Determine whether it's necessary to implement RESCAN
-// statuses, or just do rescan triggered on user gesture.
-enum class AppAvailability { kUnavailable, kAvailable };
 
 // Tracks sink queries and their extracted Cast app IDs and their availabilities
 // on discovered sinks.
@@ -38,7 +35,7 @@ enum class AppAvailability { kUnavailable, kAvailable };
 // (3) Once the caller knows the availability value for a (sink, app) pair, it
 // may inform the tracker to update its results:
 //   auto affected_sources =
-//       tracker.UpdateAppAvailability(sink_id, app_id, availability);
+//       tracker.UpdateAppAvailability(sink_id, app_id, {availability, now});
 //
 // (4) The tracker returns a subset of discovered sources that were affected by
 // the update. The caller can then call |GetAvailableSinks()| to get the updated
@@ -52,6 +49,10 @@ enum class AppAvailability { kUnavailable, kAvailable };
 // source is registered) to determine if there are cached results available.
 class CastAppAvailabilityTracker {
  public:
+  // The result of an app availability request and the time when it is obtained.
+  using AppAvailability =
+      std::pair<cast_channel::GetAppAvailabilityResult, base::TimeTicks>;
+
   CastAppAvailabilityTracker();
   ~CastAppAvailabilityTracker();
 
@@ -62,7 +63,7 @@ class CastAppAvailabilityTracker {
   // Unregisters the source given by |source| with the tracker.
   void UnregisterSource(const CastMediaSource& source);
 
-  // Updates the availability of |app_id| on |sink_id| with |availability|.
+  // Updates the availability of |app_id| on |sink_id| to |availability|.
   // Returns a list of registered CastMediaSources for which the set of
   // available sinks might have been updated by this call. The caller should
   // call |GetAvailableSinks| with the returned CastMediaSources to get the
@@ -81,9 +82,11 @@ class CastAppAvailabilityTracker {
   std::vector<CastMediaSource> RemoveResultsForSink(
       const MediaSink::Id& sink_id);
 
-  // Returns whether availability status is known for |app_id| on |sink_id|.
-  bool IsAvailabilityKnown(const MediaSink::Id& sink_id,
-                           const std::string& app_id) const;
+  // Returns the availability for |app_id| on |sink_id| and the time at
+  // which the availability was determined. If availability is kUnknown, then
+  // the time may be null (e.g. if an availability request was never sent).
+  AppAvailability GetAvailability(const MediaSink::Id& sink_id,
+                                  const std::string& app_id) const;
 
   // Returns a list of registered app IDs.
   std::vector<std::string> GetRegisteredApps() const;
@@ -94,7 +97,7 @@ class CastAppAvailabilityTracker {
       const CastMediaSource& source) const;
 
  private:
-  // App ID to availability value.
+  // App ID to availability.
   using AppAvailabilityMap = base::flat_map<std::string, AppAvailability>;
 
   // Registered sources and corresponding CastMediaSource's.

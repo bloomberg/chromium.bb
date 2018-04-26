@@ -192,7 +192,7 @@ void CastMediaRouteProvider::EnableMdnsDiscovery() {
 }
 
 void CastMediaRouteProvider::UpdateMediaSinks(const std::string& media_source) {
-  NOTIMPLEMENTED();
+  app_discovery_service_->Refresh();
 }
 
 void CastMediaRouteProvider::SearchSinks(

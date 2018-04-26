@@ -4,9 +4,13 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_app_availability_tracker.h"
 
+#include "base/test/simple_test_tick_clock.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
+#include "components/cast_channel/cast_message_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using cast_channel::GetAppAvailabilityResult;
 
 namespace media_router {
 
@@ -29,7 +33,10 @@ class CastAppAvailabilityTrackerTest : public testing::Test {
   CastAppAvailabilityTrackerTest() {}
   ~CastAppAvailabilityTrackerTest() override = default;
 
+  base::TimeTicks Now() const { return clock_.NowTicks(); }
+
  protected:
+  base::SimpleTestTickClock clock_;
   CastAppAvailabilityTracker tracker_;
 
  private:
@@ -98,9 +105,10 @@ TEST_F(CastAppAvailabilityTrackerTest, UpdateAppAvailability) {
   tracker_.RegisterSource(*source3);
 
   // |source3| not affected.
-  EXPECT_THAT(tracker_.UpdateAppAvailability("sinkId1", "AAAAAAAA",
-                                             AppAvailability::kAvailable),
-              CastMediaSourcesEqual(std::vector<CastMediaSource>()));
+  EXPECT_THAT(
+      tracker_.UpdateAppAvailability(
+          "sinkId1", "AAAAAAAA", {GetAppAvailabilityResult::kAvailable, Now()}),
+      CastMediaSourcesEqual(std::vector<CastMediaSource>()));
 
   base::flat_set<MediaSink::Id> sinks_1 = {"sinkId1"};
   base::flat_set<MediaSink::Id> sinks_1_2 = {"sinkId1", "sinkId2"};
@@ -114,42 +122,22 @@ TEST_F(CastAppAvailabilityTrackerTest, UpdateAppAvailability) {
 
   tracker_.RegisterSource(*source1);
   // Only |source1| is registered for this app.
-  EXPECT_THAT(tracker_.UpdateAppAvailability("sinkId2", "AAAAAAAA",
-                                             AppAvailability::kAvailable),
-              CastMediaSourcesEqual(sources_1));
+  EXPECT_THAT(
+      tracker_.UpdateAppAvailability(
+          "sinkId2", "AAAAAAAA", {GetAppAvailabilityResult::kAvailable, Now()}),
+      CastMediaSourcesEqual(sources_1));
   EXPECT_EQ(sinks_1_2, tracker_.GetAvailableSinks(*source1));
   EXPECT_EQ(sinks_1_2, tracker_.GetAvailableSinks(*source2));
   EXPECT_TRUE(tracker_.GetAvailableSinks(*source3).empty());
 
   tracker_.RegisterSource(*source2);
-  EXPECT_THAT(tracker_.UpdateAppAvailability("sinkId2", "AAAAAAAA",
-                                             AppAvailability::kUnavailable),
+  EXPECT_THAT(tracker_.UpdateAppAvailability(
+                  "sinkId2", "AAAAAAAA",
+                  {GetAppAvailabilityResult::kUnavailable, Now()}),
               CastMediaSourcesEqual(sources_1_2));
   EXPECT_EQ(sinks_1, tracker_.GetAvailableSinks(*source1));
   EXPECT_EQ(sinks_1, tracker_.GetAvailableSinks(*source2));
   EXPECT_TRUE(tracker_.GetAvailableSinks(*source3).empty());
-}
-
-TEST_F(CastAppAvailabilityTrackerTest, IsAvailabilityKnown) {
-  EXPECT_FALSE(tracker_.IsAvailabilityKnown("sinkId1", "AAAAAAAA"));
-
-  tracker_.UpdateAppAvailability("sinkId1", "AAAAAAAA",
-                                 AppAvailability::kAvailable);
-  EXPECT_TRUE(tracker_.IsAvailabilityKnown("sinkId1", "AAAAAAAA"));
-  EXPECT_FALSE(tracker_.IsAvailabilityKnown("sinkId1", "BBBBBBBB"));
-  EXPECT_FALSE(tracker_.IsAvailabilityKnown("sinkId2", "AAAAAAAA"));
-
-  tracker_.UpdateAppAvailability("sinkId1", "AAAAAAAA",
-                                 AppAvailability::kUnavailable);
-  EXPECT_TRUE(tracker_.IsAvailabilityKnown("sinkId1", "AAAAAAAA"));
-  EXPECT_FALSE(tracker_.IsAvailabilityKnown("sinkId1", "BBBBBBBB"));
-  EXPECT_FALSE(tracker_.IsAvailabilityKnown("sinkId2", "AAAAAAAA"));
-
-  tracker_.UpdateAppAvailability("sinkId2", "AAAAAAAA",
-                                 AppAvailability::kUnavailable);
-  EXPECT_TRUE(tracker_.IsAvailabilityKnown("sinkId1", "AAAAAAAA"));
-  EXPECT_FALSE(tracker_.IsAvailabilityKnown("sinkId1", "BBBBBBBB"));
-  EXPECT_TRUE(tracker_.IsAvailabilityKnown("sinkId2", "AAAAAAAA"));
 }
 
 TEST_F(CastAppAvailabilityTrackerTest, RemoveResultsForSink) {
@@ -157,20 +145,23 @@ TEST_F(CastAppAvailabilityTrackerTest, RemoveResultsForSink) {
   ASSERT_TRUE(source1);
 
   tracker_.UpdateAppAvailability("sinkId1", "AAAAAAAA",
-                                 AppAvailability::kAvailable);
-  EXPECT_TRUE(tracker_.IsAvailabilityKnown("sinkId1", "AAAAAAAA"));
+                                 {GetAppAvailabilityResult::kAvailable, Now()});
+  EXPECT_EQ(GetAppAvailabilityResult::kAvailable,
+            tracker_.GetAvailability("sinkId1", "AAAAAAAA").first);
 
   base::flat_set<MediaSink::Id> expected_sink_ids = {"sinkId1"};
   EXPECT_EQ(expected_sink_ids, tracker_.GetAvailableSinks(*source1));
 
   // Unrelated sink ID.
   tracker_.RemoveResultsForSink("sinkId2");
-  EXPECT_TRUE(tracker_.IsAvailabilityKnown("sinkId1", "AAAAAAAA"));
+  EXPECT_EQ(GetAppAvailabilityResult::kAvailable,
+            tracker_.GetAvailability("sinkId1", "AAAAAAAA").first);
   EXPECT_EQ(expected_sink_ids, tracker_.GetAvailableSinks(*source1));
 
   expected_sink_ids.clear();
   tracker_.RemoveResultsForSink("sinkId1");
-  EXPECT_FALSE(tracker_.IsAvailabilityKnown("sinkId1", "AAAAAAAA"));
+  EXPECT_EQ(GetAppAvailabilityResult::kUnknown,
+            tracker_.GetAvailability("sinkId1", "AAAAAAAA").first);
   EXPECT_EQ(expected_sink_ids, tracker_.GetAvailableSinks(*source1));
 }
 
