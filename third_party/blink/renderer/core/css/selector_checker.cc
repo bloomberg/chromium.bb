@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css/selector_checker.h"
 
 #include "third_party/blink/renderer/core/css/css_selector_list.h"
+#include "third_party/blink/renderer/core/css/part_names.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -1148,15 +1149,8 @@ bool SelectorChecker::CheckPseudoElement(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoPart:
       if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
         return false;
-      if (const SpaceSplitString* part_names = element.PartNames()) {
-        if (part_names->Contains(selector.Argument())) {
-          // TODO(crbug/805271): Until partmap is implemented, only consider
-          // styling parts from scope directly containing the shadow host.
-          Element* host = element.OwnerShadowHost();
-          return host && host->GetTreeScope() == context.scope->GetTreeScope();
-        }
-      }
-      return false;
+      DCHECK(part_names_);
+      return part_names_->Contains(selector.Argument());
     case CSSSelector::kPseudoPlaceholder:
       if (ShadowRoot* root = element.ContainingShadowRoot()) {
         return root->IsUserAgent() &&

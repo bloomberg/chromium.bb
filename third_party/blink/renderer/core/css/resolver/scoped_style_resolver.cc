@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/font_face.h"
 #include "third_party/blink/renderer/core/css/page_rule_collector.h"
+#include "third_party/blink/renderer/core/css/part_names.h"
 #include "third_party/blink/renderer/core/css/resolver/match_request.h"
 #include "third_party/blink/renderer/core/css/rule_feature_set.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
@@ -267,6 +268,7 @@ void ScopedStyleResolver::CollectMatchingTreeBoundaryCrossingRules(
 
 void ScopedStyleResolver::CollectMatchingPartPseudoRules(
     ElementRuleCollector& collector,
+    PartNames& part_names,
     CascadeOrder cascade_order) {
   if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
     return;
@@ -276,7 +278,8 @@ void ScopedStyleResolver::CollectMatchingPartPseudoRules(
       DCHECK(sheet->ownerNode());
     MatchRequest match_request(&sheet->Contents()->GetRuleSet(),
                                &scope_->RootNode(), sheet, sheet_index++);
-    collector.CollectMatchingPartPseudoRules(match_request, cascade_order);
+    collector.CollectMatchingPartPseudoRules(match_request, part_names,
+                                             cascade_order);
   }
 }
 

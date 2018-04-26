@@ -40,6 +40,7 @@
 namespace blink {
 
 class PageRuleCollector;
+class PartNames;
 class StyleSheetContents;
 
 // ScopedStyleResolver collects the style sheets that occur within a TreeScope
@@ -71,6 +72,7 @@ class ScopedStyleResolver final
       ElementRuleCollector&,
       CascadeOrder = kIgnoreCascadeOrder);
   void CollectMatchingPartPseudoRules(ElementRuleCollector&,
+                                      PartNames& part_names,
                                       CascadeOrder = kIgnoreCascadeOrder);
   void MatchPageRules(PageRuleCollector&);
   void CollectFeaturesTo(RuleFeatureSet&,

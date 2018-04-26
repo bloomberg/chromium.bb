@@ -379,6 +379,8 @@ blink_core_sources("css") {
     "parser/sizes_attribute_parser.h",
     "parser/sizes_calc_parser.cc",
     "parser/sizes_calc_parser.h",
+    "part_names.cc",
+    "part_names.h",
     "properties/computed_style_utils.cc",
     "properties/computed_style_utils.h",
     "properties/css_parsing_utils.cc",
