@@ -19,7 +19,12 @@ class CHROMEOS_EXPORT FakeSmbProviderClient : public SmbProviderClient {
   void Init(dbus::Bus* bus) override;
 
   // SmbProviderClient override.
-  void Mount(const base::FilePath& share_path, MountCallback callback) override;
+  void Mount(const base::FilePath& share_path,
+             const std::string& workgroup,
+             const std::string& username,
+             base::ScopedFD password_fd,
+             MountCallback callback) override;
+
   void Remount(const base::FilePath& share_path,
                int32_t mount_id,
                StatusCallback callback) override;
