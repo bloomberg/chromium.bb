@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_WORKLET_ANIMATION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_WORKLET_ANIMATION_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/document_timeline_or_scroll_timeline.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
@@ -112,7 +113,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   const String animator_name_;
   Animation::AnimationPlayState play_state_;
   // Start time in ms.
-  WTF::Optional<double> start_time_;
+  base::Optional<double> start_time_;
 
   Member<Document> document_;
 

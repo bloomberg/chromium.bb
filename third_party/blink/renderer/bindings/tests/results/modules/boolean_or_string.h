@@ -11,13 +11,13 @@
 #ifndef BooleanOrString_h
 #define BooleanOrString_h
 
+#include "base/optional.h"
 #include "bindings/core/v8/dictionary.h"
 #include "bindings/core/v8/exception_state.h"
 #include "bindings/core/v8/native_value_traits.h"
 #include "bindings/core/v8/v8_binding_for_core.h"
 #include "modules/modules_export.h"
 #include "platform/heap/handle.h"
-#include "platform/wtf/optional.h"
 
 namespace blink {
 

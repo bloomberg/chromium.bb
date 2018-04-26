@@ -11,6 +11,7 @@
 #ifndef StringOrArrayBufferOrArrayBufferView_h
 #define StringOrArrayBufferOrArrayBufferView_h
 
+#include "base/optional.h"
 #include "bindings/core/v8/dictionary.h"
 #include "bindings/core/v8/exception_state.h"
 #include "bindings/core/v8/native_value_traits.h"
@@ -20,7 +21,6 @@
 #include "core/typed_arrays/array_buffer_view_helpers.h"
 #include "core/typed_arrays/flexible_array_buffer_view.h"
 #include "platform/heap/handle.h"
-#include "platform/wtf/optional.h"
 
 namespace blink {
 

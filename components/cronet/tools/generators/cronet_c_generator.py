@@ -544,8 +544,7 @@ class Generator(generator.Generator):
 
   def _GetCppWrapperType(self, kind, add_same_module_namespaces=False):
     def _AddOptional(type_name):
-      pattern = "WTF::Optional<%s>" if self.for_blink else "base::Optional<%s>"
-      return pattern % type_name
+      return "base::Optional<%s>" % type_name
 
     if self._IsTypemappedKind(kind):
       type_name = self._GetNativeTypeName(kind)

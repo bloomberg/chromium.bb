@@ -4,11 +4,8 @@ class {{export_attribute}} {{union.name}} {
   using Data_ = internal::{{union.name}}_Data;
   using Tag = Data_::{{union.name}}_Tag;
 
-{%- set in_place_marker = "WTF::in_place"
-        if for_blink else "base::in_place" %}
-
   static {{union.name}}Ptr New() {
-    return {{union.name}}Ptr({{in_place_marker}});
+    return {{union.name}}Ptr(base::in_place);
   }
 
 {%-  for field in union.fields %}
@@ -16,7 +13,7 @@ class {{export_attribute}} {{union.name}} {
   static {{union.name}}Ptr
   New{{field.name|under_to_camel}}(
       {{field.kind|cpp_wrapper_param_type_new}} {{field.name}}) {
-    auto result = {{union.name}}Ptr({{in_place_marker}});
+    auto result = {{union.name}}Ptr(base::in_place);
     result->set_{{field.name}}(std::move({{field.name}}));
     return result;
   }
