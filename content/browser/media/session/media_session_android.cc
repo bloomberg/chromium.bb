@@ -162,6 +162,14 @@ void MediaSessionAndroid::DidReceiveAction(JNIEnv* env,
       static_cast<blink::mojom::MediaSessionAction>(action));
 }
 
+void MediaSessionAndroid::RequestSystemAudioFocus(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_obj) {
+  DCHECK(media_session());
+  static_cast<MediaSessionImpl*>(media_session())
+      ->RequestSystemAudioFocus(AudioFocusManager::AudioFocusType::Gain);
+}
+
 WebContentsAndroid* MediaSessionAndroid::GetWebContentsAndroid() {
   MediaSessionImpl* session = static_cast<MediaSessionImpl*>(media_session());
   if (!session)

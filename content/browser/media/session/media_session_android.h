@@ -53,6 +53,9 @@ class MediaSessionAndroid final : public MediaSessionObserver {
   void DidReceiveAction(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& j_obj,
                         jint action);
+  void RequestSystemAudioFocus(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_obj);
 
  private:
   WebContentsAndroid* GetWebContentsAndroid();
