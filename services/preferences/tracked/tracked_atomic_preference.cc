@@ -56,8 +56,8 @@ bool TrackedAtomicPreference::EnforceAndReport(
 
   if (delegate_) {
     delegate_->OnAtomicPreferenceValidation(
-        pref_path_, value ? value->CreateDeepCopy() : nullptr, value_state,
-        external_validation_value_state, helper_.IsPersonal());
+        pref_path_, value ? base::make_optional(value->Clone()) : base::nullopt,
+        value_state, external_validation_value_state, helper_.IsPersonal());
   }
   TrackedPreferenceHelper::ResetAction reset_action =
       helper_.GetAction(value_state);
