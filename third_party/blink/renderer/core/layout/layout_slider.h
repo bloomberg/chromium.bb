@@ -53,7 +53,6 @@ class LayoutSlider final : public LayoutFlexibleBox {
   void ComputeIntrinsicLogicalWidths(
       LayoutUnit& min_logical_width,
       LayoutUnit& max_logical_width) const override;
-  void UpdateLayout() override;
 
   SliderThumbElement* GetSliderThumbElement() const;
 };

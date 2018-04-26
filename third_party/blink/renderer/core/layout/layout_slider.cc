@@ -64,16 +64,6 @@ inline SliderThumbElement* LayoutSlider::GetSliderThumbElement() const {
           ShadowElementNames::SliderThumb()));
 }
 
-void LayoutSlider::UpdateLayout() {
-  // FIXME: Find a way to cascade appearance.
-  // http://webkit.org/b/62535
-  LayoutBox* thumb_box = GetSliderThumbElement()->GetLayoutBox();
-  if (thumb_box && thumb_box->IsSliderThumb())
-    ToLayoutSliderThumb(thumb_box)->UpdateAppearance(StyleRef());
-
-  LayoutFlexibleBox::UpdateLayout();
-}
-
 bool LayoutSlider::InDragMode() const {
   return GetSliderThumbElement()->IsActive();
 }

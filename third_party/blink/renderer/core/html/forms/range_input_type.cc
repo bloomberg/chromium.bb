@@ -250,7 +250,6 @@ void RangeInputType::CreateShadowSubtree() {
   HTMLElement* container = SliderContainerElement::Create(document);
   container->AppendChild(track);
   GetElement().UserAgentShadowRoot()->AppendChild(container);
-  container->setAttribute(styleAttr, "-webkit-appearance:inherit");
 }
 
 LayoutObject* RangeInputType::CreateLayoutObject(const ComputedStyle&) const {

@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/html/forms/slider_thumb_element.h"
 
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/events/touch_event.h"
@@ -58,7 +59,9 @@ inline static bool HasVerticalAppearance(HTMLInputElement* input) {
 }
 
 inline SliderThumbElement::SliderThumbElement(Document& document)
-    : HTMLDivElement(document), in_drag_mode_(false) {}
+    : HTMLDivElement(document), in_drag_mode_(false) {
+  SetHasCustomStyleCallbacks();
+}
 
 SliderThumbElement* SliderThumbElement::Create(Document& document) {
   SliderThumbElement* element = new SliderThumbElement(document);
@@ -313,6 +316,26 @@ const AtomicString& SliderThumbElement::ShadowPseudoId() const {
     default:
       return SliderThumbShadowPartId();
   }
+}
+
+scoped_refptr<ComputedStyle> SliderThumbElement::CustomStyleForLayoutObject() {
+  Element* host = OwnerShadowHost();
+  DCHECK(host);
+  const ComputedStyle& host_style = host->ComputedStyleRef();
+  scoped_refptr<ComputedStyle> style = OriginalStyleForLayoutObject();
+
+  if (host_style.Appearance() == kSliderVerticalPart)
+    style->SetAppearance(kSliderThumbVerticalPart);
+  else if (host_style.Appearance() == kSliderHorizontalPart)
+    style->SetAppearance(kSliderThumbHorizontalPart);
+  else if (host_style.Appearance() == kMediaSliderPart)
+    style->SetAppearance(kMediaSliderThumbPart);
+  else if (host_style.Appearance() == kMediaVolumeSliderPart)
+    style->SetAppearance(kMediaVolumeSliderThumbPart);
+  if (style->HasAppearance())
+    LayoutTheme::GetTheme().AdjustSliderThumbSize(*style);
+
+  return style;
 }
 
 // --------------------------------

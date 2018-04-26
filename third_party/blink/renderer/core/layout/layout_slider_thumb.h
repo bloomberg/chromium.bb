@@ -41,7 +41,6 @@ class SliderThumbElement;
 class LayoutSliderThumb final : public LayoutBlockFlow {
  public:
   LayoutSliderThumb(SliderThumbElement*);
-  void UpdateAppearance(const ComputedStyle& parent_style);
 
  private:
   bool IsOfType(LayoutObjectType type) const override {
