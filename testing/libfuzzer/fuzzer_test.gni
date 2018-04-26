@@ -18,6 +18,7 @@ import("//testing/test.gni")
 # - dict - a dictionary file for the fuzzer.
 # - libfuzzer_options - options for the fuzzer (e.g. -max_len or -timeout).
 # - seed_corpus - a directory with seed corpus.
+# - skip_owners - if true, skips writing the owners file.
 #
 # If use_libfuzzer gn flag is defined, then proper fuzzer would be build.
 # Without use_libfuzzer or use_afl a unit-test style binary would be built on
@@ -120,9 +121,10 @@ template("fuzzer_test") {
       test_deps += [ ":" + config_name ]
     }
 
-    # Generate .owners file.
+    # Generate .owners file (if skip_owners is not true).
     # FIXME: Add support for sources parsing in deps attribute.
-    if (invoker.sources != []) {
+    if (invoker.sources != [] &&
+        (!defined(invoker.skip_owners) || !invoker.skip_owners)) {
       owners_name = target_name + ".owners"
       action(owners_name) {
         script = "//testing/libfuzzer/gen_fuzzer_owners.py"
