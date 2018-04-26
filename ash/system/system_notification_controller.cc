@@ -1,0 +1,25 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ash/system/system_notification_controller.h"
+
+#include "ash/system/caps_lock_notification_controller.h"
+#include "ash/system/power/power_notification_controller.h"
+#include "ash/system/screen_security/screen_security_notification_controller.h"
+#include "ash/system/supervised/supervised_notification_controller.h"
+#include "ui/message_center/message_center.h"
+
+namespace ash {
+
+SystemNotificationController::SystemNotificationController()
+    : caps_lock_(std::make_unique<CapsLockNotificationController>()),
+      power_(std::make_unique<PowerNotificationController>(
+          message_center::MessageCenter::Get())),
+      screen_security_(
+          std::make_unique<ScreenSecurityNotificationController>()),
+      supervised_(std::make_unique<SupervisedNotificationController>()) {}
+
+SystemNotificationController::~SystemNotificationController() = default;
+
+}  // namespace ash

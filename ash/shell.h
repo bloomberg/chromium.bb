@@ -94,7 +94,6 @@ class BacklightsForcedOffSetter;
 class BluetoothNotificationController;
 class BluetoothPowerController;
 class BrightnessControlDelegate;
-class CapsLockNotificationController;
 class CastConfigController;
 class DetachableBaseHandler;
 class DetachableBaseNotificationController;
@@ -138,7 +137,6 @@ class PeripheralBatteryNotifier;
 class PersistentWindowController;
 class PowerButtonController;
 class PowerEventObserver;
-class PowerNotificationController;
 class PowerPrefs;
 class ProjectingObserver;
 class ResizeShadowController;
@@ -150,7 +148,6 @@ class ScreenOrientationController;
 class ScreenshotController;
 class ScreenPinningController;
 class ScreenPositionController;
-class ScreenSecurityNotificationController;
 class SessionController;
 class ShelfController;
 class ShelfModel;
@@ -162,9 +159,9 @@ class ShutdownController;
 class SmsObserver;
 class SplitViewController;
 class StickyKeysController;
-class SupervisedNotificationController;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
+class SystemNotificationController;
 class SystemTray;
 class SystemTrayController;
 class SystemTrayModel;
@@ -699,8 +696,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<AshDisplayController> ash_display_controller_;
   std::unique_ptr<BacklightsForcedOffSetter> backlights_forced_off_setter_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
-  std::unique_ptr<CapsLockNotificationController>
-      caps_lock_notification_controller_;
   std::unique_ptr<CastConfigController> cast_config_;
   std::unique_ptr<DetachableBaseHandler> detachable_base_handler_;
   std::unique_ptr<DetachableBaseNotificationController>
@@ -724,15 +719,11 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<SessionController> session_controller_;
   std::unique_ptr<NightLightController> night_light_controller_;
   std::unique_ptr<NoteTakingController> note_taking_controller_;
-  std::unique_ptr<PowerNotificationController> power_notification_controller_;
-  std::unique_ptr<ScreenSecurityNotificationController>
-      screen_security_notification_controller_;
-  std::unique_ptr<SupervisedNotificationController>
-      supervised_notification_controller_;
   std::unique_ptr<ShelfController> shelf_controller_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<ShellDelegate> shell_delegate_;
   std::unique_ptr<ShutdownController> shutdown_controller_;
+  std::unique_ptr<SystemNotificationController> system_notification_controller_;
   std::unique_ptr<SystemTrayController> system_tray_controller_;
   std::unique_ptr<SystemTrayModel> system_tray_model_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;

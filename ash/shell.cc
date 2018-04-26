@@ -100,20 +100,17 @@
 #include "ash/system/power/peripheral_battery_notifier.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/power/power_event_observer.h"
-#include "ash/system/power/power_notification_controller.h"
 #include "ash/system/power/power_prefs.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/video_activity_notifier.h"
 #include "ash/system/screen_layout_observer.h"
-#include "ash/system/screen_security/screen_security_notification_controller.h"
 #include "ash/system/session/logout_button_tray.h"
 #include "ash/system/session/logout_confirmation_controller.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/supervised/supervised_notification_controller.h"
+#include "ash/system/system_notification_controller.h"
 #include "ash/system/toast/toast_manager.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/tray_caps_lock.h"
 #include "ash/touch/ash_touch_transform_controller.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/tray_action/tray_action.h"
@@ -198,7 +195,6 @@
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
-#include "ui/message_center/message_center.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/focus/focus_manager_factory.h"
@@ -804,6 +800,10 @@ Shell::~Shell() {
   // Close all widgets (including the shelf) and destroy all window containers.
   CloseAllRootWindowChildWindows();
 
+  system_notification_controller_.reset();
+  // Should be destroyed after Shelf and |system_notification_controller_|.
+  system_tray_model_.reset();
+
   // MruWindowTracker must be destroyed after all windows have been deleted to
   // avoid a possible crash when Shell is destroyed from a non-normal shutdown
   // path. (crbug.com/485438).
@@ -828,12 +828,8 @@ Shell::~Shell() {
 
   screen_pinning_controller_.reset();
 
-  caps_lock_notification_controller_.reset();
-  power_notification_controller_.reset();
   resolution_notification_controller_.reset();
-  screen_security_notification_controller_.reset();
   screenshot_controller_.reset();
-  supervised_notification_controller_.reset();
   mouse_cursor_filter_.reset();
   modality_filter_.reset();
 
@@ -917,8 +913,6 @@ Shell::~Shell() {
   // Destroys the MessageCenter singleton, so must happen late.
   message_center_controller_.reset();
 
-  system_tray_model_.reset();
-
   local_state_.reset();
   shell_delegate_.reset();
 
@@ -943,19 +937,10 @@ void Shell::Init(ui::ContextFactory* context_factory,
     night_light_controller_ = std::make_unique<NightLightController>();
   touch_devices_controller_ = std::make_unique<TouchDevicesController>();
   bluetooth_power_controller_ = std::make_unique<BluetoothPowerController>();
-  caps_lock_notification_controller_ =
-      std::make_unique<CapsLockNotificationController>();
   detachable_base_handler_ = std::make_unique<DetachableBaseHandler>(this);
   detachable_base_notification_controller_ =
       std::make_unique<DetachableBaseNotificationController>(
           detachable_base_handler_.get());
-  power_notification_controller_ =
-      std::make_unique<PowerNotificationController>(
-          message_center::MessageCenter::Get());
-  screen_security_notification_controller_ =
-      std::make_unique<ScreenSecurityNotificationController>();
-  supervised_notification_controller_ =
-      std::make_unique<SupervisedNotificationController>();
 
   // Connector can be null in tests.
   if (shell_delegate_->GetShellConnector()) {
@@ -1051,8 +1036,6 @@ void Shell::Init(ui::ContextFactory* context_factory,
     cursor_manager_->SetDisplay(
         display::Screen::GetScreen()->GetPrimaryDisplay());
   }
-
-  system_tray_model_ = std::make_unique<SystemTrayModel>();
 
   accelerator_controller_ = shell_port_->CreateAcceleratorController();
   tablet_mode_controller_ = std::make_unique<TabletModeController>();
@@ -1201,6 +1184,13 @@ void Shell::Init(ui::ContextFactory* context_factory,
       shell_port_->CreateTouchTransformDelegate());
 
   keyboard_ui_ = shell_port_->CreateKeyboardUI();
+
+  // |system_tray_model_| should be available before
+  // |system_notification_controller_| is initialized and Shelf is created by
+  // WindowTreeHostManager::InitHosts.
+  system_tray_model_ = std::make_unique<SystemTrayModel>();
+  system_notification_controller_ =
+      std::make_unique<SystemNotificationController>();
 
   window_tree_host_manager_->InitHosts();
   shell_port_->OnHostsInitialized();
