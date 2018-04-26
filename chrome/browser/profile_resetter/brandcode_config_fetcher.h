@@ -12,23 +12,30 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 class BrandcodedDefaultSettings;
 class GURL;
 
+namespace network {
+class SimpleURLLoader;
+namespace mojom {
+class URLLoaderFactory;
+}
+}  // namespace network
+
 // BrandcodeConfigFetcher fetches and parses the xml containing the brandcoded
 // default settings. Caller should provide a FetchCallback.
-class BrandcodeConfigFetcher : public net::URLFetcherDelegate {
+class BrandcodeConfigFetcher {
  public:
   typedef base::Callback<void ()> FetchCallback;
 
-  BrandcodeConfigFetcher(const FetchCallback& callback,
+  BrandcodeConfigFetcher(network::mojom::URLLoaderFactory* url_loader_factory,
+                         const FetchCallback& callback,
                          const GURL& url,
                          const std::string& brandcode);
-  ~BrandcodeConfigFetcher() override;
+  ~BrandcodeConfigFetcher();
 
-  bool IsActive() const { return !!config_fetcher_; }
+  bool IsActive() const { return !!simple_url_loader_; }
 
   std::unique_ptr<BrandcodedDefaultSettings> GetSettings() {
     return std::move(default_settings_);
@@ -38,8 +45,7 @@ class BrandcodeConfigFetcher : public net::URLFetcherDelegate {
   void SetCallback(const FetchCallback& callback);
 
  private:
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   void OnDownloadTimeout();
 
@@ -51,7 +57,7 @@ class BrandcodeConfigFetcher : public net::URLFetcherDelegate {
   FetchCallback fetch_callback_;
 
   // Helper to fetch the online config file.
-  std::unique_ptr<net::URLFetcher> config_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
 
   // Fetched settings.
   std::unique_ptr<BrandcodedDefaultSettings> default_settings_;
