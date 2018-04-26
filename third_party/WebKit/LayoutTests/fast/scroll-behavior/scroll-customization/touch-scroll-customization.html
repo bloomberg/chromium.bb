@@ -114,135 +114,137 @@ function applyDelta(d) {
   eventSender.gestureScrollEnd(0, 0);
 }
 
-if ('ScrollState' in window) {
-  test(function() {
-    reset();
+addEventListener('load', () => {
+  if ('ScrollState' in window) {
+    test(function() {
+      reset();
 
-    // Scroll five times, with three scrollable elements.
-    var cScrollTop = [85, 100, 100, 100, 100];
-    var aScrollTop = [0, 0, 65, 100, 100];
-    var scrollingElementScrollTop = [0, 0, 0, 0, 45];
+      // Scroll five times, with three scrollable elements.
+      var cScrollTop = [85, 100, 100, 100, 100];
+      var aScrollTop = [0, 0, 65, 100, 100];
+      var scrollingElementScrollTop = [0, 0, 0, 0, 45];
 
-    for (var i = 0; i < deltas.length; ++i) {
-      applyDelta(deltas[i]);
-      assert_equals(a.scrollTop, aScrollTop[i], "For id 'a' on step " + i);
-      assert_equals(c.scrollTop, cScrollTop[i], "For id 'c' on step " + i);
-      assert_equals(document.scrollingElement.scrollTop, scrollingElementScrollTop[i], "For scrollingElement on step " + i);
-    }
-  }, "Scroll offsets are modified correctly.");
+      for (var i = 0; i < deltas.length; ++i) {
+        applyDelta(deltas[i]);
+        assert_equals(a.scrollTop, aScrollTop[i], "For id 'a' on step " + i);
+        assert_equals(c.scrollTop, cScrollTop[i], "For id 'c' on step " + i);
+        assert_equals(document.scrollingElement.scrollTop, scrollingElementScrollTop[i], "For scrollingElement on step " + i);
+      }
+    }, "Scroll offsets are modified correctly.");
 
-  test(function() {
-    reset();
+    test(function() {
+      reset();
 
-    // Scroll five times, with five elements.
-    var unapplied = [
-      // d, the innermost element, never applies any scroll.
-      [85, 75, 65, 55, 45],
-      // c applies the first two scrolls, and then hits its scroll extents.
-      [0, 0, 65, 55, 45],
-      // b doesn't scroll, and so leaves the same deltas unapplied as c.
-      [65, 55, 45],
-      // a hits its scroll extent on the second last step.
-      [0, 0, 45],
-      // The scrollingElement performs the frame scroll.
-      [0]];
+      // Scroll five times, with five elements.
+      var unapplied = [
+        // d, the innermost element, never applies any scroll.
+        [85, 75, 65, 55, 45],
+        // c applies the first two scrolls, and then hits its scroll extents.
+        [0, 0, 65, 55, 45],
+        // b doesn't scroll, and so leaves the same deltas unapplied as c.
+        [65, 55, 45],
+        // a hits its scroll extent on the second last step.
+        [0, 0, 45],
+        // The scrollingElement performs the frame scroll.
+        [0]];
 
-    for (var i = 0; i < deltas.length; ++i)
-      applyDelta(deltas[i]);
+      for (var i = 0; i < deltas.length; ++i)
+        applyDelta(deltas[i]);
 
-    for (var i = 0; i < elements.length; ++i) {
-      var el = elements[i];
-      // Every element sees the same deltas being distributed.
-      assert_array_equals(el.distributedDeltaY, deltas, "distributed delta for " + el.id + ":");
-      assert_array_equals(el.unappliedDeltaY, unapplied[i], "unapplied delta for " + el.id + ":");
-    }
+      for (var i = 0; i < elements.length; ++i) {
+        var el = elements[i];
+        // Every element sees the same deltas being distributed.
+        assert_array_equals(el.distributedDeltaY, deltas, "distributed delta for " + el.id + ":");
+        assert_array_equals(el.unappliedDeltaY, unapplied[i], "unapplied delta for " + el.id + ":");
+      }
 
-    // Ensure that the document leaves scroll unapplied when appropriate.
-    var documentUnapplied = document.scrollingElement.unappliedDeltaY;
-    applyDelta(4000);
-    assert_equals(documentUnapplied[documentUnapplied.length - 1], 0);
-    applyDelta(4000);
-    assert_equals(documentUnapplied[documentUnapplied.length - 1], 4000);
-  }, "Correct amount of delta is consumed.");
+      // Ensure that the document leaves scroll unapplied when appropriate.
+      var documentUnapplied = document.scrollingElement.unappliedDeltaY;
+      applyDelta(4000);
+      assert_equals(documentUnapplied[documentUnapplied.length - 1], 0);
+      applyDelta(4000);
+      assert_equals(documentUnapplied[documentUnapplied.length - 1], 4000);
+    }, "Correct amount of delta is consumed.");
 
-  test(function() {
-    reset();
+    test(function() {
+      reset();
 
-    // Scroll five times, with three scrollable elements.
-    var cScrollTop = [85, 100, 100, 100, 100];
-    var aScrollTop = [0, 0, 65, 100, 100];
-    var scrollingElementScrollTop = [0, 0, 0, 0, 45];
-    for (var i = 0; i < deltas.length; ++i) {
-      applyDelta(deltas[i]);
-      assert_equals(c.scrollTop, cScrollTop[i], "For id 'c' on step " + i);
-      assert_equals(a.scrollTop, aScrollTop[i], "For id 'a' on step " + i);
-      assert_equals(document.scrollingElement.scrollTop, scrollingElementScrollTop[i], "For scrollingElement on step " + i);
-    }
-  }, "Scroll propagation behaves correctly.");
+      // Scroll five times, with three scrollable elements.
+      var cScrollTop = [85, 100, 100, 100, 100];
+      var aScrollTop = [0, 0, 65, 100, 100];
+      var scrollingElementScrollTop = [0, 0, 0, 0, 45];
+      for (var i = 0; i < deltas.length; ++i) {
+        applyDelta(deltas[i]);
+        assert_equals(c.scrollTop, cScrollTop[i], "For id 'c' on step " + i);
+        assert_equals(a.scrollTop, aScrollTop[i], "For id 'a' on step " + i);
+        assert_equals(document.scrollingElement.scrollTop, scrollingElementScrollTop[i], "For scrollingElement on step " + i);
+      }
+    }, "Scroll propagation behaves correctly.");
 
-  test(function() {
-    reset();
+    test(function() {
+      reset();
 
-    for (var i = 0; i < deltas.length; ++i)
-      applyDelta(deltas[i]);
+      for (var i = 0; i < deltas.length; ++i)
+        applyDelta(deltas[i]);
 
-    for (var i = 0; i < elements.length; ++i) {
-      assert_equals(elements[i].numberOfScrollBegins, deltas.length, "Incorrect number of begin events for " + elements[i].id);
-      assert_equals(elements[i].numberOfScrollEnds, deltas.length, "Incorrect number of end events for " + elements[i].id);
-    }
-  }, "Correct number of scroll begin and end events observed.");
+      for (var i = 0; i < elements.length; ++i) {
+        assert_equals(elements[i].numberOfScrollBegins, deltas.length, "Incorrect number of begin events for " + elements[i].id);
+        assert_equals(elements[i].numberOfScrollEnds, deltas.length, "Incorrect number of end events for " + elements[i].id);
+      }
+    }, "Correct number of scroll begin and end events observed.");
 
-  {
-    // NOTE - this async test needs to be run last, as it shares state with the
-    // other tests. If other tests are run after it, they'll modify the state
-    // while this test is still running.
-    var flingTest = async_test("Touchscreen fling doesn't propagate.");
-    reset();
+    {
+      // NOTE - this async test needs to be run last, as it shares state with the
+      // other tests. If other tests are run after it, they'll modify the state
+      // while this test is still running.
+      var flingTest = async_test("Touchscreen fling doesn't propagate.");
+      reset();
 
-    function assertScrollTops(cTop, aTop, scrollingElementTop, step) {
-      assert_equals(c.scrollTop, cTop, "For id 'c' on step " + step);
-      assert_equals(a.scrollTop, aTop, "For id 'a' on step " + step);
-      assert_equals(document.scrollingElement.scrollTop, scrollingElementTop, "For scrollingElement on step " + step);
-    };
+      function assertScrollTops(cTop, aTop, scrollingElementTop, step) {
+        assert_equals(c.scrollTop, cTop, "For id 'c' on step " + step);
+        assert_equals(a.scrollTop, aTop, "For id 'a' on step " + step);
+        assert_equals(document.scrollingElement.scrollTop, scrollingElementTop, "For scrollingElement on step " + step);
+      };
 
-    assertScrollTops(0, 0, 0, 0);
+      assertScrollTops(0, 0, 0, 0);
 
-    var frame_actions = [
-      function() {
-        // Touchscreen GFS arrives when there is an ongoing scroll.
-        eventSender.gestureScrollBegin(10, 10);
-        eventSender.gestureFlingStart(10, 10, -1000000, -1000000, "touchscreen");
-      },
-      flingTest.step_func(function() {
-        assertScrollTops(100, 0, 0, 1);
-      }),
-      flingTest.step_func(function() {
-        assertScrollTops(100, 0, 0, 2);
-      }),
-      flingTest.step_func(function() {
-        assertScrollTops(100, 0, 0, 3);
-      }),
-      flingTest.step_func(function() {
-        assertScrollTops(100, 0, 0, 4);
-        flingTest.done();
-      })
-    ]
+      var frame_actions = [
+        function() {
+          // Touchscreen GFS arrives when there is an ongoing scroll.
+          eventSender.gestureScrollBegin(10, 10);
+          eventSender.gestureFlingStart(10, 10, -1000000, -1000000, "touchscreen");
+        },
+        flingTest.step_func(function() {
+          assertScrollTops(100, 0, 0, 1);
+        }),
+        flingTest.step_func(function() {
+          assertScrollTops(100, 0, 0, 2);
+        }),
+        flingTest.step_func(function() {
+          assertScrollTops(100, 0, 0, 3);
+        }),
+        flingTest.step_func(function() {
+          assertScrollTops(100, 0, 0, 4);
+          flingTest.done();
+        })
+      ]
 
-    function executeFrameActions(frame_actions) {
-      var frame = 0;
-      function raf() {
-        frame_actions[frame]();
-        frame++;
-        if (frame >= frame_actions.length)
-          return;
+      function executeFrameActions(frame_actions) {
+        var frame = 0;
+        function raf() {
+          frame_actions[frame]();
+          frame++;
+          if (frame >= frame_actions.length)
+            return;
+          window.requestAnimationFrame(raf);
+        }
         window.requestAnimationFrame(raf);
       }
-      window.requestAnimationFrame(raf);
-    }
 
-    executeFrameActions(frame_actions);
+      executeFrameActions(frame_actions);
+    }
   }
-}
+});
 
 </script>
 </body>
