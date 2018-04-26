@@ -30,11 +30,15 @@
 
 #include "third_party/blink/renderer/platform/file_metadata.h"
 
+#include "base/optional.h"
 #include "net/base/filename_util.h"
+#include "third_party/blink/public/mojom/file/file_utilities.mojom-blink.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_file_info.h"
-#include "third_party/blink/public/platform/web_file_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -56,13 +60,26 @@ bool GetFileModificationTime(const String& path, double& result) {
 }
 
 bool GetFileMetadata(const String& path, FileMetadata& metadata) {
-  WebFileInfo web_file_info;
-  if (!Platform::Current()->GetFileUtilities()->GetFileInfo(path,
-                                                            web_file_info))
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      ThreadSpecific<mojom::blink::FileUtilitiesHostPtr>, thread_specific_host,
+      ());
+  auto& host = *thread_specific_host;
+  if (!host) {
+    Platform::Current()->GetInterfaceProvider()->GetInterface(
+        mojo::MakeRequest(&host));
+  }
+
+  base::Optional<base::File::Info> file_info;
+  if (!host->GetFileInfo(WebStringToFilePath(path), &file_info) || !file_info)
     return false;
-  metadata.modification_time = web_file_info.modification_time;
-  metadata.length = web_file_info.length;
-  metadata.type = static_cast<FileMetadata::Type>(web_file_info.type);
+
+  // Blink now expects NaN as uninitialized/null Date.
+  metadata.modification_time = file_info->last_modified.is_null()
+                                   ? std::numeric_limits<double>::quiet_NaN()
+                                   : file_info->last_modified.ToJsTime();
+  metadata.length = file_info->size;
+  metadata.type = file_info->is_directory ? FileMetadata::kTypeDirectory
+                                          : FileMetadata::kTypeFile;
   return true;
 }
 

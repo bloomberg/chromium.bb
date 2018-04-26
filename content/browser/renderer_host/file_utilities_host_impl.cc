@@ -20,7 +20,7 @@ FileUtilitiesHostImpl::~FileUtilitiesHostImpl() = default;
 
 void FileUtilitiesHostImpl::Create(
     int process_id,
-    content::mojom::FileUtilitiesHostRequest request) {
+    blink::mojom::FileUtilitiesHostRequest request) {
   mojo::MakeStrongBinding(std::make_unique<FileUtilitiesHostImpl>(process_id),
                           std::move(request));
 }
