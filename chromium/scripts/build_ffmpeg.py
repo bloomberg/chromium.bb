@@ -356,10 +356,6 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
     RewriteFile(
         os.path.join(config_dir, 'config.h'), r'(#define HAVE_VFP_ARGS [01])',
         (r'/* \1 -- softfp/hardfp selection is done by the chrome build */'))
-  if target_os == 'win':
-    RewriteFile(
-        os.path.join(config_dir, 'config.h'), r'(#define HAVE_INLINE_ASM [01])',
-        (r'/* \1 -- inline asm selection is done by the chrome build */'))
 
 
 def main(argv):

@@ -332,13 +332,6 @@ target(link_target_type, "ffmpeg_internal") {
       "HAVE_AV_CONFIG_H",
     ]
 
-    # Clang allows inline assembly where MSVC does not.
-    if (is_clang) {
-      defines += [ "HAVE_INLINE_ASM=1" ]
-    } else {
-      defines += [ "HAVE_INLINE_ASM=0" ]
-    }
-
     if (is_component_ffmpeg) {
       # Required to avoid 4049 and 4217 errors around redundant imports.
       cflags += [

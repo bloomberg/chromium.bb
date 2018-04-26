@@ -68,4 +68,6 @@ if ((is_linux || is_chromeos) && is_msan) {
   os_config = "linux-noasm"
 } else if (is_chromeos || is_fuchsia) {
   os_config = "linux"
+} else if (is_win && !is_clang) {
+  os_config = "win-msvc"
 }
