@@ -2300,6 +2300,7 @@ crbug.com/832071 virtual/navigation-mojo-response/external/wpt/service-workers/s
 crbug.com/833215 [ Mac10.12 Mac10.13 Retina ] external/wpt/accelerometer/Accelerometer.https.html [ Pass Timeout ]
 crbug.com/833215 [ Linux ] external/wpt/accelerometer/Accelerometer.https.html [ Pass Failure ]
 
+crbug.com/836627 external/wpt/content-security-policy/inside-worker/dedicated-script.html [ Pass Failure ]
 crbug.com/836627 external/wpt/content-security-policy/inside-worker/dedicated-inheritance.html [ Pass Failure ]
 crbug.com/836627 external/wpt/content-security-policy/inside-worker/shared-inheritance.html [ Pass Failure ]
 
