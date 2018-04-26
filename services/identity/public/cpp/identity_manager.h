@@ -32,7 +32,8 @@ namespace file_manager {
 class MultiProfileFileManagerBrowserTest;
 }
 
-// Necessary to declare this class as a friend.
+// Necessary to declare these classes as friends.
+class MultiProfileDownloadNotificationTest;
 class ProfileSyncServiceHarness;
 
 namespace identity {
@@ -119,6 +120,7 @@ class IdentityManager : public SigninManagerBase::Observer,
       ProfileOAuth2TokenService* token_service,
       IdentityManager* identity_manager,
       const std::string& email);
+  friend MultiProfileDownloadNotificationTest;
   friend ProfileSyncServiceHarness;
   friend file_manager::MultiProfileFileManagerBrowserTest;
 
@@ -150,7 +152,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   void GoogleSignedOut(const AccountInfo& account_info) override;
 
 #if !defined(OS_CHROMEOS)
-  // SigninManagerBase::DiagnosticsClient:
+  // SigninManager::DiagnosticsClient:
   void WillFireGoogleSigninSucceeded(const AccountInfo& account_info) override;
   void WillFireGoogleSignedOut(const AccountInfo& account_info) override;
 #endif

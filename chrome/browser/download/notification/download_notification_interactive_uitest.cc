@@ -18,7 +18,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/chrome_paths.h"
@@ -31,7 +31,6 @@
 #include "components/download/public/common/download_item.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
@@ -39,6 +38,7 @@
 #include "content/public/test/download_test_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_slow_download_job.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -850,8 +850,13 @@ class MultiProfileDownloadNotificationTest
   // This is used for preparing all accounts in PRE_ test setup, and for testing
   // actual login behavior.
   void AddAllUsers() {
-    for (size_t i = 0; i < arraysize(kTestAccounts); ++i)
+    for (size_t i = 0; i < arraysize(kTestAccounts); ++i) {
+      // The primary account was already set up in SetUpOnMainThread, so skip it
+      // here.
+      if (i == PRIMARY_ACCOUNT_INDEX)
+        continue;
       AddUser(kTestAccounts[i], i >= SECONDARY_ACCOUNT_INDEX_START);
+    }
   }
 
   Profile* GetProfileByIndex(int index) {
@@ -869,9 +874,16 @@ class MultiProfileDownloadNotificationTest
     user_manager::UserManager::Get()->SaveUserDisplayName(
         AccountId::FromUserEmailGaiaId(info.email, info.gaia_id),
         base::UTF8ToUTF16(info.display_name));
-    SigninManagerFactory::GetForProfile(
-        chromeos::ProfileHelper::GetProfileByUserIdHashForTest(info.hash))
-        ->SetAuthenticatedAccountInfo(info.gaia_id, info.email);
+    Profile* profile =
+        chromeos::ProfileHelper::GetProfileByUserIdHashForTest(info.hash);
+    // TODO(https://crbug.com/814307): We can't use
+    // identity::MakePrimaryAccountAvailable from identity_test_utils.h here
+    // because that DCHECKs that the SigninManager isn't authenticated yet.
+    // Here, it *can* be already authenticated if a PRE_ test previously set up
+    // the user.
+    IdentityManagerFactory::GetForProfile(profile)
+        ->SetPrimaryAccountSynchronouslyForTests(info.gaia_id, info.email,
+                                                 "refresh_token");
   }
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service1_;
