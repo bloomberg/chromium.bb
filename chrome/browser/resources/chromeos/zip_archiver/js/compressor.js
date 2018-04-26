@@ -13,8 +13,12 @@
  * @constructor
  * @param {!Object} naclModule The nacl module.
  * @param {!Array} items The items to be packed.
+ * @param {boolean} useTemporaryDirectory Whether to use the temporary
+ *     filesystem as work directory for creating a ZIP file. This is used for
+ *     filesystem that degrades performance with frequent write operations,
+ *     like online storages.
  */
-unpacker.Compressor = function(naclModule, items) {
+unpacker.Compressor = function(naclModule, items, useTemporaryDirectory) {
   /**
    * @private {Object}
    * @const
@@ -103,6 +107,12 @@ unpacker.Compressor = function(naclModule, items) {
    * @type {number}
    */
   this.processedSize_ = 0;
+
+  /**
+   * Whether to write in-progress zip file in temporary location or not.
+   * @type {boolean}
+   */
+  this.useTemporaryDirectory_ = useTemporaryDirectory;
 };
 
 /**
@@ -213,8 +223,14 @@ unpacker.Compressor.prototype.getArchiveFile_ = function() {
           this.onErrorInternal_();
         });
   };
+  var getWorkRootPromise;
+  if (this.useTemporaryDirectory_) {
+    getWorkRootPromise = this.getTemporaryRootEntry_();
+  } else {
+    getWorkRootPromise = this.getParentEntry_();
+  }
 
-  this.getTemporaryRootEntry_().then(saveZipFile).catch((domException) => {
+  getWorkRootPromise.then(saveZipFile).catch((domException) => {
     console.error(domException);
     this.onErrorInternal_();
   });
@@ -566,35 +582,32 @@ unpacker.Compressor.prototype.onAddToArchiveDone_ = function() {
 
 /**
  * Moves the temporary file to actual destination folder.
+ * @param {function()} onFinished called when file move is finished.
  */
-unpacker.Compressor.prototype.moveZipFileToActualDestination = function() {
+unpacker.Compressor.prototype.moveZipFileToActualDestination = function(
+    onFinished) {
   var suggestedName = this.getArchiveName_();
-  var moveZipFileToParentDir = (rootEntry) => {
+  const moveZipFileToParentDir = (rootEntry) => {
     // If parent directory of currently selected files is available then we
     // deduplicate |suggestedName| and save the zip file.
-    if (!rootEntry) {
-      console.error('rootEntry of selected files is undefined');
-      this.onErrorInternal_();
-      return;
-    }
+    if (!rootEntry)
+      return Promise.reject('rootEntry of selected files is undefined');
 
-    fileOperationUtils.deduplicateFileName(suggestedName, rootEntry)
-        .then((newName) => {
-          this.archiveFileEntry_.moveTo(
-              rootEntry, newName, function() {},
-              (error) => {
-                console.error('Failed to move the file to destination.');
-                this.onErrorInternal_();
-              });
-        })
-        .catch((error) => {
-          console.error(error);
-          this.onErrorInternal_();
-        });
+    return fileOperationUtils.deduplicateFileName(suggestedName, rootEntry)
+        .then((newName) => new Promise((resolve, reject) => {
+                this.archiveFileEntry_.moveTo(
+                    rootEntry, newName, resolve, (error) => {
+                      reject('Failed to move the file to destination.');
+                    });
+              }));
   };
   this.getParentEntry_()
       .then(moveZipFileToParentDir)
-      .catch(this.onErrorInternal_.bind(this));
+      .then(onFinished)
+      .catch((error) => {
+        this.onErrorInternal_();
+        console.error(error);
+      });
 };
 
 /**
@@ -685,9 +698,11 @@ unpacker.Compressor.prototype.processMessage = function(data, operation) {
       break;
 
     case unpacker.request.Operation.CLOSE_ARCHIVE_DONE:
-      this.moveZipFileToActualDestination();
       this.sendReleaseCompressor();
-      this.onCloseArchiveDone_();
+      if (this.useTemporaryDirectory_)
+        this.moveZipFileToActualDestination(() => this.onCloseArchiveDone_());
+      else
+        this.onCloseArchiveDone_();
       break;
 
     case unpacker.request.Operation.CANCEL_ARCHIVE_DONE:

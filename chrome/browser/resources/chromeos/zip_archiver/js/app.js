@@ -582,8 +582,9 @@ unpacker.app = {
   /**
    * Creates a new compressor and compresses entries.
    * @param {!Object} launchData
+   * @param {boolean} useTemporaryDirectory
    */
-  onLaunchedWithPack: function(launchData) {
+  onLaunchedWithPack: function(launchData, useTemporaryDirectory) {
     unpacker.app.mountProcessCounter++;
 
     // Create a promise to load the NaCL module.
@@ -599,7 +600,7 @@ unpacker.app = {
         .then(function(stringData) {
           var compressor = new unpacker.Compressor(
               /** @type {!Object} */ (unpacker.app.naclModule),
-              launchData.items);
+              launchData.items, useTemporaryDirectory);
 
           var compressorId = compressor.getCompressorId();
           unpacker.app.compressors[compressorId] = compressor;
@@ -876,7 +877,9 @@ unpacker.app = {
     }
 
     if (launchData.id === 'pack')
-      unpacker.app.onLaunchedWithPack(launchData);
+      unpacker.app.onLaunchedWithPack(launchData, false);
+    else if (launchData.id === 'pack_using_tmp')
+      unpacker.app.onLaunchedWithPack(launchData, true);
     else
       unpacker.app.onLaunchedWithUnpack(launchData, opt_onSuccess, opt_onError);
   },
