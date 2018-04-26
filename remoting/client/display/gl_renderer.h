@@ -11,6 +11,7 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/client/display/gl_cursor.h"
 #include "remoting/client/display/gl_cursor_feedback.h"
@@ -51,6 +52,7 @@ class GlRenderer {
   // recreated.
   void RequestCanvasSize();
 
+  // TODO(yuweih): Use ViewMatrix instead of the 3x3 array.
   // Sets the pixel based transformation matrix related to the size of the
   // canvas.
   // 3 by 3 transformation matrix, [ m0, m1, m2, m3, m4, m5, m6, m7, m8 ].
@@ -132,6 +134,9 @@ class GlRenderer {
   int view_height_ = 0;
 
   std::unique_ptr<Canvas> canvas_;
+
+  // Used to recover the transformation matrix when the canvas is recreated.
+  base::Optional<std::array<float, 9>> transformation_matrix_;
 
   GlCursor cursor_;
   GlCursorFeedback cursor_feedback_;
