@@ -394,7 +394,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "searchBoxFocus")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_TabindexFocus,
+    TabindexFocus,
     FileManagerBrowserTestWithLegacyEventDispatch,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "tabindexFocus")));
 
