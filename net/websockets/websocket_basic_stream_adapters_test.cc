@@ -287,7 +287,7 @@ TEST_F(WebSocketClientSocketHandleAdapterTest, AsyncReadAndWrite) {
 
 class MockDelegate : public WebSocketSpdyStreamAdapter::Delegate {
  public:
-  virtual ~MockDelegate() = default;
+  ~MockDelegate() override = default;
   MOCK_METHOD0(OnHeadersSent, void());
   MOCK_METHOD1(OnHeadersReceived, void(const SpdyHeaderBlock&));
   MOCK_METHOD1(OnClose, void(int));

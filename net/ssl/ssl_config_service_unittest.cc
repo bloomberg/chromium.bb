@@ -37,7 +37,7 @@ class MockSSLConfigService : public SSLConfigService {
 class MockSSLConfigServiceObserver : public SSLConfigService::Observer {
  public:
   MockSSLConfigServiceObserver() = default;
-  virtual ~MockSSLConfigServiceObserver() = default;
+  ~MockSSLConfigServiceObserver() override = default;
 
   MOCK_METHOD0(OnSSLConfigChanged, void());
 };

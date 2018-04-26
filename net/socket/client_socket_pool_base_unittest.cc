@@ -3808,9 +3808,7 @@ class MockLayeredPool : public HigherLayeredPool {
     pool_->AddHigherLayeredPool(this);
   }
 
-  ~MockLayeredPool() {
-    pool_->RemoveHigherLayeredPool(this);
-  }
+  ~MockLayeredPool() override { pool_->RemoveHigherLayeredPool(this); }
 
   int RequestSocket(TestClientSocketPool* pool) {
     scoped_refptr<TestSocketParams> params(new TestSocketParams());

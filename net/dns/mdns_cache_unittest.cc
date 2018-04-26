@@ -108,7 +108,7 @@ class MDnsCacheTest : public ::testing::Test {
  public:
   MDnsCacheTest()
       : default_time_(base::Time::FromDoubleT(1234.0)) {}
-  virtual ~MDnsCacheTest() = default;
+  ~MDnsCacheTest() override = default;
 
  protected:
   base::Time default_time_;
