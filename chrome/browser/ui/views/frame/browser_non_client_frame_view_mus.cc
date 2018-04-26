@@ -49,14 +49,8 @@ namespace {
 
 #if defined(FRAME_AVATAR_BUTTON)
 // Space between the new avatar button and the minimize button.
-const int kAvatarButtonOffset = 5;
+constexpr int kAvatarButtonOffset = 5;
 #endif
-// Space between right edge of tabstrip and maximize button.
-const int kTabstripRightSpacing = 10;
-// Height of the shadow in the tab image, used to ensure clicks in the shadow
-// area still drag restored windows.  This keeps the clickable area large enough
-// to hit easily.
-const int kTabShadowHeight = 4;
 
 #if defined(FRAME_AVATAR_BUTTON)
 // Combines View::ConvertPointToTarget() and View::HitTest() for a given
@@ -269,6 +263,7 @@ int BrowserNonClientFrameViewMus::NonClientHitTest(const gfx::Point& point) {
     View::ConvertPointToTarget(this, frame()->client_view(), &client_point);
     // Report hits in shadow at top of tabstrip as caption.
     gfx::Rect tabstrip_bounds(browser_view()->tabstrip()->bounds());
+    constexpr int kTabShadowHeight = 4;
     if (client_point.y() < tabstrip_bounds.y() + kTabShadowHeight)
       hit_test = HTCAPTION;
   }
@@ -386,6 +381,8 @@ void BrowserNonClientFrameViewMus::TabStripDeleted(TabStrip* tab_strip) {
 }
 
 int BrowserNonClientFrameViewMus::GetTabStripRightInset() const {
+  // Space between right edge of tabstrip and maximize button.
+  constexpr int kTabstripRightSpacing = 10;
   const int frame_right_insets = frame_values().normal_insets.right() +
                                  frame_values().max_title_bar_button_width;
   int right_inset = kTabstripRightSpacing + frame_right_insets;

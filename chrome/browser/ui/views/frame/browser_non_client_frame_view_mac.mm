@@ -16,12 +16,7 @@
 
 namespace {
 
-// How far to inset the tabstrip from the sides of the window.
-const int kTabstripTopInset = 8;
-const int kTabstripLeftInset = 70;  // Make room for window control buttons.
-constexpr int kTabstripRightInset = 4;  // Margin for profile switcher.
-constexpr const gfx::Size kMinTabbedWindowSize(400, 272);
-constexpr const gfx::Size kMinPopupWindowSize(100, 122);
+constexpr int kTabstripTopInset = 8;
 
 }  // namespace
 
@@ -57,6 +52,7 @@ int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
 }
 
 int BrowserNonClientFrameViewMac::GetTabStripRightInset() const {
+  constexpr int kTabstripRightInset = 4;  // Margin for profile switcher.
   int inset = kTabstripRightInset;
   views::View* profile_switcher_view = GetProfileSwitcherButton();
   if (profile_switcher_view) {
@@ -76,6 +72,7 @@ void BrowserNonClientFrameViewMac::UpdateThrobber(bool running) {
 }
 
 int BrowserNonClientFrameViewMac::GetTabStripLeftInset() const {
+  constexpr int kTabstripLeftInset = 70;  // Make room for caption buttons.
   return kTabstripLeftInset;
 }
 
@@ -133,6 +130,8 @@ void BrowserNonClientFrameViewMac::SizeConstraintsChanged() {
 
 gfx::Size BrowserNonClientFrameViewMac::GetMinimumSize() const {
   gfx::Size size = browser_view()->GetMinimumSize();
+  constexpr gfx::Size kMinTabbedWindowSize(400, 272);
+  constexpr gfx::Size kMinPopupWindowSize(100, 122);
   size.SetToMax(browser_view()->browser()->is_type_tabbed()
                     ? kMinTabbedWindowSize
                     : kMinPopupWindowSize);

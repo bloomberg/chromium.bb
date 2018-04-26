@@ -18,18 +18,13 @@
 
 namespace {
 
-const int kCaptionButtonHeight = 18;
+constexpr int kCaptionButtonHeight = 18;
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// Default extra space between the top of the frame and the top of the window
-// caption buttons.
-const int kExtraCaption = 2;
-
-// Default extra spacing between individual window caption buttons.
-const int kCaptionButtonSpacing = 2;
+// Default spacing around window caption buttons.
+constexpr int kCaptionButtonSpacing = 2;
 #else
-const int kExtraCaption = 0;
-const int kCaptionButtonSpacing = 0;
+constexpr int kCaptionButtonSpacing = 0;
 #endif
 
 }  // namespace
@@ -79,7 +74,7 @@ OpaqueBrowserFrameViewLayout::OpaqueBrowserFrameViewLayout()
       minimum_size_for_buttons_(0),
       has_leading_buttons_(false),
       has_trailing_buttons_(false),
-      extra_caption_y_(kExtraCaption),
+      extra_caption_y_(kCaptionButtonSpacing),
       forced_window_caption_spacing_(-1),
       minimize_button_(nullptr),
       maximize_button_(nullptr),

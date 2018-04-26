@@ -326,15 +326,6 @@ void TabStrip::RemoveObserver(TabStripObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-TabStrip::NewTabButtonPosition TabStrip::GetNewTabButtonPosition() const {
-  if (MD::GetMode() != MD::MATERIAL_REFRESH)
-    return AFTER_TABS;
-
-  const auto* frame_view = static_cast<const BrowserNonClientFrameView*>(
-      GetWidget()->non_client_view()->frame_view());
-  return frame_view->CaptionButtonsOnLeadingEdge() ? TRAILING : LEADING;
-}
-
 int TabStrip::GetMaxX() const {
   // This function should not currently be called for TRAILING mode; if it is,
   // the API will need changing, since callers assume the tabstrip uses
@@ -1463,6 +1454,15 @@ void TabStrip::AnimateToIdealBounds() {
 
 bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
   return in_tab_close_;
+}
+
+TabStrip::NewTabButtonPosition TabStrip::GetNewTabButtonPosition() const {
+  if (MD::GetMode() != MD::MATERIAL_REFRESH)
+    return AFTER_TABS;
+
+  const auto* frame_view = static_cast<const BrowserNonClientFrameView*>(
+      GetWidget()->non_client_view()->frame_view());
+  return frame_view->CaptionButtonsOnLeadingEdge() ? TRAILING : LEADING;
 }
 
 bool TabStrip::MayHideNewTabButtonWhileDragging() const {

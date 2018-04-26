@@ -62,12 +62,6 @@ class TabStrip : public views::View,
                  public views::ViewTargeterDelegate,
                  public TabController {
  public:
-  enum NewTabButtonPosition {
-    LEADING,     // Pinned to the leading edge of the tabstrip region.
-    AFTER_TABS,  // After the last tab.
-    TRAILING,    // Pinned to the trailing edge of the tabstrip region.
-  };
-
   explicit TabStrip(std::unique_ptr<TabStripController> controller);
   ~TabStrip() override;
 
@@ -77,9 +71,6 @@ class TabStrip : public views::View,
   // Add and remove observers to changes within this TabStrip.
   void AddObserver(TabStripObserver* observer);
   void RemoveObserver(TabStripObserver* observer);
-
-  // Returns the position of the new tab button within the strip.
-  NewTabButtonPosition GetNewTabButtonPosition() const;
 
   // Max x-coordinate the tabstrip draws at, which is the right edge of the new
   // tab button.
@@ -284,6 +275,12 @@ class TabStrip : public views::View,
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
 
  private:
+  enum NewTabButtonPosition {
+    LEADING,     // Pinned to the leading edge of the tabstrip region.
+    AFTER_TABS,  // After the last tab.
+    TRAILING,    // Pinned to the trailing edge of the tabstrip region.
+  };
+
   using Tabs = std::vector<Tab*>;
   using TabsClosingMap = std::map<int, Tabs>;
   using FindClosingTabResult =
@@ -359,6 +356,9 @@ class TabStrip : public views::View,
 
   // Returns whether the close button should be highlighted after a remove.
   bool ShouldHighlightCloseButtonAfterRemove();
+
+  // Returns the position of the new tab button within the strip.
+  NewTabButtonPosition GetNewTabButtonPosition() const;
 
   // Returns whether dragging tabs should ever result in the new tab button
   // being hidden.
