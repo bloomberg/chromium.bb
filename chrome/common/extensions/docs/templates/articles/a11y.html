@@ -76,7 +76,7 @@ by means of a standard set of DOM attributes.
 These attributes provide clues to the screen reader
 about the function and current state of controls on a web page.
 ARIA is a
-<a href=" http://www.w3.org/WAI/intro/aria">work in progress at the W3C</a>.
+<a href="https://www.w3.org/WAI/intro/aria">work in progress at the W3C</a>.
 </p>
 
 <p>
@@ -101,7 +101,7 @@ the role attribute should not change its value.
 </p>
 
 <p>
-The <a href="http://www.w3.org/WAI/PF/aria/roles">ARIA Role Specification</a>
+The <a href="https://www.w3.org/WAI/PF/aria/roles">ARIA Role Specification</a>
 holds detailed information on how to pick the correct role.
 For example, if your extension includes a toolbar,
 set the <code>role</code> attribute of the toolbar's DOM element as follows:
@@ -122,7 +122,7 @@ but is similar to a state
 in that it expresses specific information about a control.
 For more information on ARIA states and properties,
 refer to the
-<a href="http://www.w3.org/TR/wai-aria/states_and_properties">W3C States and Properties specification</a>.
+<a href="https://www.w3.org/TR/wai-aria/#introstates">W3C States and Properties specification</a>.
 </p>
 
 
@@ -144,7 +144,7 @@ to the example toolbar control:
 
 <p>
 The
-<a href="http://www.w3.org/WAI/PF/aria/states_and_properties#aria-activedescendant"><code>aria-activedescendant</code></a>
+<a href="https://www.w3.org/WAI/PF/aria/states_and_properties#aria-activedescendant"><code>aria-activedescendant</code></a>
 property specifies which child of the toolbar receives focus
 when the toolbar receives focus.
 In this example, the toolbar's first button
@@ -174,12 +174,12 @@ Because ARIA support is still a work in progress,
 Google Chrome might not raise an event for every ARIA property,
 and screen readers might not recognize all of the events being raised.
 You can find more information on ARIA support in Google Chrome in the
-<a href="http://www.chromium.org/developers/design-documents/accessibility#TOC-WAI-ARIA-Support">Chromium Accessibility Design Document</a>.
+<a href="https://www.chromium.org/developers/design-documents/accessibility#TOC-WAI-ARIA-Support">Chromium Accessibility Design Document</a>.
 </p>
 
 <p>
 For a quick tutorial on adding ARIA controls to custom controls, see
-<a href="http://www.w3.org/2010/Talks/www2010-dsr-diy-aria/">Dave Raggett's presentation from WWW2010</a>.
+<a href="https://www.w3.org/2010/Talks/www2010-dsr-diy-aria/">Dave Raggett's presentation from WWW2010</a>.
 
 <h3 id="focus">Focus in custom controls</h3>
 
@@ -236,7 +236,7 @@ Check that the user can navigate between
 the different parts of your extension
 without using the mouse.
 Also check that any popups on page actions or browser actions
-are keyboard navigable. 
+are keyboard navigable.
 </p>
 
 <p id="builtin">
@@ -264,7 +264,7 @@ Apple's screenreader.
 Make sure that it's easy to see
 which part of the interface has keyboard focus.
 Usually a focus outline moves around the interface,
-but if you’re using CSS heavily this outline might be suppressed 
+but if you’re using CSS heavily this outline might be suppressed
 or the contrast might be reduced.
 Two examples of focus outline follow.
 </p>
@@ -318,11 +318,11 @@ to reflect the current active toolbar button.
 
 <pre>
 &lt;head&gt;
-&lt;script&gt;		
+&lt;script&gt;
  function optionKeyEvent(event) {
   var tb = event.target;
-  var buttonid; 
- 
+  var buttonid;
+
   ENTER_KEYCODE = 13;
   RIGHT_KEYCODE = 39;
   LEFT_KEYCODE = 37;
@@ -333,29 +333,29 @@ to reflect the current active toolbar button.
       ExecuteButtonAction(getCurrentButtonID());
       <em>// getCurrentButtonID defined elsewhere </em>
     } else if (event.keyCode == event.RIGHT_KEYCODE) {
-      // Change the active toolbar button to the one to the right (circular). 
+      // Change the active toolbar button to the one to the right (circular).
       var buttonid = getNextButtonID();
       <em>// getNextButtonID defined elsewhere </em>
-      tb.setAttribute("aria-activedescendant", buttonid); 
+      tb.setAttribute("aria-activedescendant", buttonid);
     } else if (event.keyCode == event.LEFT_KEYCODE) {
-      // Change the active toolbar button to the one to the left (circular). 
+      // Change the active toolbar button to the one to the left (circular).
       var buttonid = getPrevButtonID();
       <em>// getPrevButtonID defined elsewhere </em>
-      tb.setAttribute("aria-activedescendant", buttonid); 
+      tb.setAttribute("aria-activedescendant", buttonid);
     } else {
       return true;
     }
     return false;
   }
-}  
-&lt;/script&gt;		
+}
+&lt;/script&gt;
 
-&lt;div role="toolbar" tabindex="0" aria-activedescendant="button1" id="tb1" 
+&lt;div role="toolbar" tabindex="0" aria-activedescendant="button1" id="tb1"
      onkeydown="return optionKeyEvent(event);"
      onkeypress="return optionKeyEvent(event);"&gt;
-  &lt;img src="buttoncut" role="button" alt="cut" id="button1"&gt;      
-  &lt;img src="buttoncopy" role="button" alt="copy" id="button1"&gt;     
-  &lt;img src="buttonpaste" role="button" alt="paste" id="button1"&gt;     
+  &lt;img src="buttoncut" role="button" alt="cut" id="button1"&gt;
+  &lt;img src="buttoncopy" role="button" alt="copy" id="button1"&gt;
+  &lt;img src="buttonpaste" role="button" alt="paste" id="button1"&gt;
 &lt;/div&gt;
 </pre>
 
@@ -382,7 +382,7 @@ the zoom shortcuts built into Google Chrome.
 
 <p>
 As an indicator of the flexibility of your UI,
-apply the <a href="http://www.w3.org/TR/2008/REC-WCAG20-20081211/#visual-audio-contrast-scale">200% test</a>.
+apply the <a href="https://www.w3.org/TR/2008/REC-WCAG20-20081211/#visual-audio-contrast-scale">200% test</a>.
 If you increase the text size or page zoom 200%,
 is your extension still usable?
 </p>
@@ -393,7 +393,7 @@ users cannot modify the size of text displayed as an image,
 and screenreaders cannot interpret images.
 Consider using a web font instead,
 such as one of the fonts collected in the
-<a href="http://code.google.com/apis/webfonts/">Google Font API</a>.
+<a href="https://developers.google.com/fonts/">Google Font API</a>.
 Text styled in a web font is searchable,
 scales to different sizes,
 and is accessible to people using screen readers.
@@ -404,7 +404,7 @@ and is accessible to people using screen readers.
 <p>
 Check that there is sufficient contrast between
 background color and foreground/text color in your extension.
-<a href="http://snook.ca/technical/colour_contrast/colour.html">This contrast checking tool</a>
+<a href="https://snook.ca/technical/colour_contrast/colour.html">This contrast checking tool</a>
 checks whether your background and foreground colors
 provide appropriate contrast.
 If you’re developing in a Windows environment,
@@ -421,7 +421,7 @@ to see what an image looks like in various forms of color deficiency.
 <p>
 You might consider offering different color themes,
 or giving the user the ability to customize the color scheme
-for better contrast. 
+for better contrast.
 </p>
 
 <h3 id="sound">Sound</h3>
@@ -430,8 +430,8 @@ for better contrast.
 If your extension relies upon sound or video to convey information,
 ensure that captions or a transcript are available.
 See the
-<a href="http://www.dcmp.org/ciy/">Described and Captioned Media Program guidelines</a>
-for more information on captions. 
+<a href="https://dcmp.org/learn/213">Described and Captioned Media Program guidelines</a>
+for more information on captions.
 </p>
 
 <h3 id="images">Images</h3>
@@ -457,7 +457,7 @@ or be removed from the HTML entirely and placed in the CSS.
 If you must use text in an image,
 include the image text in the alt text.
 A good resource to refer to is the
-<a href="http://www.webaim.org/techniques/alttext/">WebAIM article on appropriate alt text</a>.
+<a href="https://webaim.org/techniques/alttext/">WebAIM article on appropriate alt text</a>.
 
 <h2 id="examples">Examples</h2>
 

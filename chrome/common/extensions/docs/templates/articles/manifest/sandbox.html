@@ -19,7 +19,7 @@ direct access to non-sandboxed pages (it may communicate with them via
 <code>postMessage()</code>).</li>
 <li>
   <p>A sandboxed page is not subject to the
-  <a href="http://developer.chrome.com/extensions/contentSecurityPolicy">Content Security Policy
+  <a href="https://developer.chrome.com/extensions/contentSecurityPolicy">Content Security Policy
   (CSP)</a> used by the rest of the app or extension (it has its own separate
   CSP value). This means that, for example, it can use inline script and
   <code>eval</code>.</p>
@@ -42,7 +42,7 @@ direct access to non-sandboxed pages (it may communicate with them via
   ...
 }
 </pre>
-  
+
   <p>
   If not specified, the default <code>content_security_policy</code> value is
   <code>sandbox allow-scripts allow-forms allow-popups allow-modals;
@@ -50,7 +50,7 @@ direct access to non-sandboxed pages (it may communicate with them via
   You can specify your CSP value to restrict the sandbox even further,
   but it must have the <code>sandbox</code>
   directive and may not have the <code>allow-same-origin</code> token (see
-  <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/the-iframe-element.html#attr-iframe-sandbox">the
+  <a href="https://html.spec.whatwg.org/multipage/iframe-embed-object.html#attr-iframe-sandbox">the
   HTML5 specification</a> for possible sandbox tokens). Also, the CSP you
   specify may not allow loading external web content inside sandboxed pages.
   </p>
@@ -66,14 +66,14 @@ that embeds them.
 </p>
 
 <p>
-<a href="http://developer.chrome.com/extensions/sandboxingEval">"Using eval in Chrome Extensions. Safely."</a>
+<a href="https://developer.chrome.com/extensions/sandboxingEval">"Using eval in Chrome Extensions. Safely."</a>
 goes into more detail about implementing a sandboxing workflow that enables use
 of libraries that would otherwise have issues executing under extension's
-<a href="http://developer.chrome.com/extensions/contentSecurityPolicy">default Content Security
+<a href="https://developer.chrome.com/extensions/contentSecurityPolicy">default Content Security
 Policy</a>.
 </p>
 
 <p>
 Sandboxed page may only be specified when using
-<a href="http://developer.chrome.com/extensions/manifest#manifest_version"><code>manifest_version</code></a> 2 or above.
+<a href="https://developer.chrome.com/extensions/manifest#manifest_version"><code>manifest_version</code></a> 2 or above.
 </p>

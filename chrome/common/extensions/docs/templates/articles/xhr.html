@@ -3,10 +3,10 @@
 
 <p id="classSummary">
 Regular web pages can use the
-<a href="http://www.w3.org/TR/XMLHttpRequest/">XMLHttpRequest</a>
+<a href="https://www.w3.org/TR/XMLHttpRequest/">XMLHttpRequest</a>
 object to send and receive data from remote servers,
 but they're limited by the
-<a href="http://en.wikipedia.org/wiki/Same_origin_policy">same origin policy</a>.
+<a href="https://en.wikipedia.org/wiki/Same_origin_policy">same origin policy</a>.
 Extensions aren't so limited.
 An extension can talk to remote servers outside of its origin,
 as long as it first requests cross-origin permissions.</p>
@@ -27,7 +27,7 @@ xhr.send();
 </pre>
 
 <p>If the extension attempts to use a security origin other than itself,
-say http://www.google.com,
+say https://www.google.com,
 the browser disallows it
 unless the extension has requested the appropriate cross-origin permissions.
 </p>
@@ -44,7 +44,7 @@ remote servers outside of its origin.</p>
   "name": "My extension",
   ...
   <b>"permissions": [
-    "http://www.google.com/"
+    "https://www.google.com/"
   ]</b>,
   ...
 }
@@ -54,19 +54,19 @@ remote servers outside of its origin.</p>
 like these:</p>
 
 <ul>
-  <li> "http://www.google.com/" </li>
-  <li> "http://www.gmail.com/" </li>
+  <li> "https://www.google.com/" </li>
+  <li> "https://www.gmail.com/" </li>
 </ul>
 
 <p>Or they can be match patterns, like these:</p>
 
 <ul>
-  <li> "http://*.google.com/" </li>
-  <li> "http://*/" </li>
+  <li> "https://*.google.com/" </li>
+  <li> "https://*/" </li>
 </ul>
 
 <p>
-A match pattern of "http://*/" allows HTTP access to all reachable domains.
+A match pattern of "https://*/" allows HTTPS access to all reachable domains.
 Note that here,
 match patterns are similar to <a href="match_patterns">content script
 match patterns</a>,
@@ -88,12 +88,12 @@ of hosts, it must declare the permissions separately:</p>
 <p>
 When using resources retrieved via XMLHttpRequest, your background page should
 be careful not to fall victim to <a
-href="http://en.wikipedia.org/wiki/Cross-site_scripting">cross-site
+href="https://en.wikipedia.org/wiki/Cross-site_scripting">cross-site
 scripting</a>.  Specifically, avoid using dangerous APIs such as the below:
 </p>
 <pre data-filename="background.js">
 var xhr = new XMLHttpRequest();
-xhr.open("GET", "http://api.example.com/data.json", true);
+xhr.open("GET", "https://api.example.com/data.json", true);
 xhr.onreadystatechange = function() {
   if (xhr.readyState == 4) {
     // WARNING! Might be evaluating an evil script!
@@ -105,7 +105,7 @@ xhr.send();
 </pre>
 <pre data-filename="background.js">
 var xhr = new XMLHttpRequest();
-xhr.open("GET", "http://api.example.com/data.json", true);
+xhr.open("GET", "https://api.example.com/data.json", true);
 xhr.onreadystatechange = function() {
   if (xhr.readyState == 4) {
     // WARNING! Might be injecting a malicious script!
@@ -120,7 +120,7 @@ Instead, prefer safer APIs that do not run scripts:
 </p>
 <pre data-filename="background.js">
 var xhr = new XMLHttpRequest();
-xhr.open("GET", "http://api.example.com/data.json", true);
+xhr.open("GET", "https://api.example.com/data.json", true);
 xhr.onreadystatechange = function() {
   if (xhr.readyState == 4) {
     // JSON.parse does not evaluate the attacker's scripts.
@@ -131,7 +131,7 @@ xhr.send();
 </pre>
 <pre data-filename="background.js">
 var xhr = new XMLHttpRequest();
-xhr.open("GET", "http://api.example.com/data.json", true);
+xhr.open("GET", "https://api.example.com/data.json", true);
 xhr.onreadystatechange = function() {
   if (xhr.readyState == 4) {
     // innerText does not let the attacker inject HTML elements.
@@ -143,7 +143,7 @@ xhr.send();
 <p>
 Additionally, be especially careful of resources retrieved via HTTP.  If your
 extension is used on a hostile network, an network attacker (aka a <a
-href="http://en.wikipedia.org/wiki/Man-in-the-middle_attack">"man-in-the-middle"</a>)
+href="https://en.wikipedia.org/wiki/Man-in-the-middle_attack">"man-in-the-middle"</a>)
 could modify the response and, potentially, attack your extension.  Instead,
 prefer HTTPS whenever possible.
 </p>
