@@ -352,6 +352,18 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
   EXPECT_EQ(kDefaultVolumeMultiplier, player_observer->GetVolumeMultiplier(0));
 }
 
+IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
+                       CanRequestFocusBeforePlayerCreation) {
+  auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
+
+  media_session_->RequestSystemAudioFocus(
+      content::AudioFocusManager::AudioFocusType::Gain);
+  EXPECT_TRUE(IsActive());
+
+  StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
+  EXPECT_TRUE(IsActive());
+}
+
 IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, StartPlayerGivesFocus) {
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
 

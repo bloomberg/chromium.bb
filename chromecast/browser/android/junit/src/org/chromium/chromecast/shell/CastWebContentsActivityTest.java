@@ -5,7 +5,6 @@
 package org.chromium.chromecast.shell;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.anyObject;
 import static org.mockito.Mockito.mock;
@@ -27,7 +26,6 @@ import org.robolectric.Shadows;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowActivity;
-import org.robolectric.shadows.ShadowAudioManager;
 
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -77,37 +75,6 @@ public class CastWebContentsActivityTest {
         mActivity.finishForTesting();
         Intent intent = mShadowActivity.getNextStartedActivity();
         assertNull(intent);
-    }
-
-    @Test
-    public void testDoesNotRequestAudioFocusBeforeResume() {
-        ShadowAudioManager shadowAudioManager = Shadows.shadowOf(
-                CastAudioManager.getAudioManager(RuntimeEnvironment.application).getInternal());
-        ShadowAudioManager.AudioFocusRequest originalRequest =
-                shadowAudioManager.getLastAudioFocusRequest();
-        mActivityLifecycle.create().start();
-        assertEquals(shadowAudioManager.getLastAudioFocusRequest(), originalRequest);
-    }
-
-    @Test
-    public void testRequestsAudioFocusOnResume() {
-        ShadowAudioManager shadowAudioManager = Shadows.shadowOf(
-                CastAudioManager.getAudioManager(RuntimeEnvironment.application).getInternal());
-        ShadowAudioManager.AudioFocusRequest originalRequest =
-                shadowAudioManager.getLastAudioFocusRequest();
-        mActivityLifecycle.create().start().resume();
-        assertNotEquals(shadowAudioManager.getLastAudioFocusRequest(), originalRequest);
-    }
-
-    @Test
-    public void testAbandonsAudioFocusOnPause() {
-        ShadowAudioManager shadowAudioManager = Shadows.shadowOf(
-                CastAudioManager.getAudioManager(RuntimeEnvironment.application).getInternal());
-        mActivityLifecycle.create().start().resume().pause();
-        ShadowAudioManager.AudioFocusRequest originalRequest =
-                shadowAudioManager.getLastAudioFocusRequest();
-        assertEquals(
-                shadowAudioManager.getLastAbandonedAudioFocusListener(), originalRequest.listener);
     }
 
     @Test

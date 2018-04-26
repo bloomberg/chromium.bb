@@ -24,6 +24,7 @@ import org.chromium.chromecast.base.ScopeFactory;
 import org.chromium.chromecast.base.Unit;
 import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentVideoViewEmbedder;
+import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -56,6 +57,7 @@ class CastWebContentsSurfaceHelper {
 
     private String mInstanceId;
     private ContentVideoViewEmbedderSetter mContentVideoViewEmbedderSetter;
+    private MediaSessionGetter mMediaSessionGetter;
 
     // TODO(vincentli) interrupt touch event from Fragment's root view when it's false.
     private boolean mTouchInputEnabled = false;
@@ -117,6 +119,9 @@ class CastWebContentsSurfaceHelper {
                 (WebContents webContents, ContentVideoViewEmbedder embedder)
                 -> nativeSetContentVideoViewEmbedder(webContents, embedder);
 
+        mMediaSessionGetter =
+                (WebContents webContents) -> MediaSessionImpl.fromWebContents(webContents);
+
         // Receive broadcasts indicating the screen turned off while we have active WebContents.
         mHasUriState.watch((Uri uri) -> {
             IntentFilter filter = new IntentFilter();
@@ -161,6 +166,10 @@ class CastWebContentsSurfaceHelper {
 
         // webContentsView is responsible for displaying each new WebContents.
         mWebContentsState.watch(webContentsView);
+
+        // Take audio focus when receiving new WebContents.
+        mWebContentsState.map(webContents -> mMediaSessionGetter.get(webContents))
+                .watch(ScopeFactories.onEnter(MediaSessionImpl::requestSystemAudioFocus));
 
         // Miscellaneous actions responding to WebContents lifecycle.
         mWebContentsState.watch((WebContents webContents) -> {
@@ -218,6 +227,15 @@ class CastWebContentsSurfaceHelper {
 
     boolean isTouchInputEnabled() {
         return mTouchInputEnabled;
+    }
+
+    @RemovableInRelease
+    void setMediaSessionGetterForTesting(MediaSessionGetter mediaSessionGetter) {
+        mMediaSessionGetter = mediaSessionGetter;
+    }
+
+    interface MediaSessionGetter {
+        MediaSessionImpl get(WebContents webContents);
     }
 
     @RemovableInRelease

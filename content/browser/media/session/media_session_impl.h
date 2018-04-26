@@ -199,6 +199,11 @@ class MediaSessionImpl : public MediaSession,
   // to blink::MediaSession corresponding to the current routed service.
   void DidReceiveAction(blink::mojom::MediaSessionAction action) override;
 
+  // Requests audio focus to the AudioFocusDelegate.
+  // Returns whether the request was granted.
+  CONTENT_EXPORT bool RequestSystemAudioFocus(
+      AudioFocusManager::AudioFocusType audio_focus_type);
+
  private:
   friend class content::WebContentsUserData<MediaSessionImpl>;
   friend class ::MediaSessionImplBrowserTest;
@@ -239,11 +244,6 @@ class MediaSessionImpl : public MediaSession,
   CONTENT_EXPORT void OnSuspendInternal(MediaSession::SuspendType suspend_type,
                                         State new_state);
   CONTENT_EXPORT void OnResumeInternal(MediaSession::SuspendType suspend_type);
-
-  // Requests audio focus to the AudioFocusDelegate.
-  // Returns whether the request was granted.
-  CONTENT_EXPORT bool RequestSystemAudioFocus(
-      AudioFocusManager::AudioFocusType audio_focus_type);
 
   // To be called after a call to AbandonAudioFocus() in order request the
   // delegate to abandon the audio focus.

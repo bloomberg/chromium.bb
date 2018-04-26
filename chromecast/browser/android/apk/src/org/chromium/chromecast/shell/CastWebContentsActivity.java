@@ -102,12 +102,6 @@ public class CastWebContentsActivity extends Activity {
             mAudioManagerState.set(CastAudioManager.getAudioManager(this));
         }));
 
-        // Request audio focus when Activity is resumed.
-        mAudioManagerState.watch(ScopeFactories.onEnter((CastAudioManager audioManager) -> {
-            audioManager.requestAudioFocusWhen(
-                    mResumedState, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-        }));
-
         // Clean up stream mute state on pause events.
         mAudioManagerState.andThen(Observable.not(mResumedState))
                 .watch(ScopeFactories.onEnter((CastAudioManager audioManager, Unit u) -> {

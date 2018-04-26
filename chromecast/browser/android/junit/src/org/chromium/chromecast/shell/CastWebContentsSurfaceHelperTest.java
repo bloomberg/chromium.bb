@@ -35,8 +35,10 @@ import org.chromium.chromecast.base.Consumer;
 import org.chromium.chromecast.base.Scope;
 import org.chromium.chromecast.base.ScopeFactory;
 import org.chromium.chromecast.shell.CastWebContentsSurfaceHelper.ContentVideoViewEmbedderSetter;
+import org.chromium.chromecast.shell.CastWebContentsSurfaceHelper.MediaSessionGetter;
 import org.chromium.chromecast.shell.CastWebContentsSurfaceHelper.StartParams;
 import org.chromium.content.browser.ContentVideoViewEmbedder;
+import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -53,6 +55,8 @@ public class CastWebContentsSurfaceHelperTest {
     private @Mock Consumer<Uri> mFinishCallback;
     private CastWebContentsSurfaceHelper mSurfaceHelper;
     private @Mock ContentVideoViewEmbedderSetter mContentVideoViewEmbedderSetter;
+    private @Mock MediaSessionGetter mMediaSessionGetter;
+    private @Mock MediaSessionImpl mMediaSessionImpl;
 
     private static class StartParamsBuilder {
         private String mId = "0";
@@ -112,9 +116,12 @@ public class CastWebContentsSurfaceHelperTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        when(mMediaSessionGetter.get(any())).thenReturn(mMediaSessionImpl);
+
         mSurfaceHelper =
                 new CastWebContentsSurfaceHelper(mActivity, mWebContentsView, mFinishCallback);
         mSurfaceHelper.setContentVideoViewEmbedderSetterForTesting(mContentVideoViewEmbedderSetter);
+        mSurfaceHelper.setMediaSessionGetterForTesting(mMediaSessionGetter);
     }
 
     @Test
@@ -123,6 +130,14 @@ public class CastWebContentsSurfaceHelperTest {
         StartParams params = new StartParamsBuilder().withWebContents(webContents).build();
         mSurfaceHelper.onNewStartParams(params);
         verify(mWebContentsView).create(webContents);
+    }
+
+    @Test
+    public void testRequestsAudioFocusOnNewStartParams() {
+        WebContents webContents = mock(WebContents.class);
+        StartParams params = new StartParamsBuilder().withWebContents(webContents).build();
+        mSurfaceHelper.onNewStartParams(params);
+        verify(mMediaSessionImpl).requestSystemAudioFocus();
     }
 
     @Test
