@@ -66,8 +66,9 @@ class NetworkDeviceHandlerTest : public testing::Test {
 
     base::ListValue test_ip_configs;
     test_ip_configs.AppendString("ip_config1");
-    device_test->SetDeviceProperty(
-        kDefaultWifiDevicePath, shill::kIPConfigsProperty, test_ip_configs);
+    device_test->SetDeviceProperty(kDefaultWifiDevicePath,
+                                   shill::kIPConfigsProperty, test_ip_configs,
+                                   /*notify_changed=*/true);
 
     base::RunLoop().RunUntilIdle();
   }
@@ -184,7 +185,7 @@ TEST_F(NetworkDeviceHandlerTest, CellularAllowRoaming) {
       fake_device_client_->GetTestInterface();
   device_test->SetDeviceProperty(kDefaultCellularDevicePath,
                                  shill::kCellularAllowRoamingProperty,
-                                 base::Value(false));
+                                 base::Value(false), /*notify_changed=*/true);
 
   network_device_handler_->SetCellularAllowRoaming(true);
   base::RunLoop().RunUntilIdle();

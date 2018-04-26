@@ -56,7 +56,8 @@ class CHROMEOS_EXPORT ShillDeviceClient : public DBusClient {
     virtual void ClearDevices() = 0;
     virtual void SetDeviceProperty(const std::string& device_path,
                                    const std::string& name,
-                                   const base::Value& value) = 0;
+                                   const base::Value& value,
+                                   bool notify_changed) = 0;
     virtual std::string GetDevicePathForType(const std::string& type) = 0;
     virtual void SetTDLSBusyCount(int count) = 0;
     virtual void SetTDLSState(const std::string& state) = 0;

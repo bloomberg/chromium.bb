@@ -1736,7 +1736,7 @@ TEST_F(NetworkStateHandlerTest, DeviceListChanged) {
   EXPECT_EQ(0, test_observer_->PropertyUpdatesForDevice(wifi_device));
   // Change a device property.
   device_test_->SetDeviceProperty(wifi_device, shill::kScanningProperty,
-                                  base::Value(true));
+                                  base::Value(true), /*notify_changed=*/true);
   UpdateManagerProperties();
   EXPECT_EQ(1, test_observer_->PropertyUpdatesForDevice(wifi_device));
 }
@@ -1756,9 +1756,9 @@ TEST_F(NetworkStateHandlerTest, IPConfigChanged) {
   ip_config_test->AddIPConfig(kIPConfigPath, ip_config_properties);
   base::ListValue device_ip_configs;
   device_ip_configs.AppendString(kIPConfigPath);
-  device_test_->SetDeviceProperty(
-      kShillManagerClientStubWifiDevice, shill::kIPConfigsProperty,
-      device_ip_configs);
+  device_test_->SetDeviceProperty(kShillManagerClientStubWifiDevice,
+                                  shill::kIPConfigsProperty, device_ip_configs,
+                                  /*notify_changed=*/true);
   service_test_->SetServiceProperty(kShillManagerClientStubDefaultWifi,
                                     shill::kIPConfigProperty,
                                     base::Value(kIPConfigPath));

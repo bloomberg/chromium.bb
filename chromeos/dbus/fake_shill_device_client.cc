@@ -103,7 +103,8 @@ void FakeShillDeviceClient::SetProperty(const dbus::ObjectPath& device_path,
                                         const ErrorCallback& error_callback) {
   if (IsReadOnlyProperty(name))
     PostError(shill::kErrorResultInvalidArguments, error_callback);
-  SetPropertyInternal(device_path, name, value, callback, error_callback);
+  SetPropertyInternal(device_path, name, value, callback, error_callback,
+                      /*notify_changed=*/true);
 }
 
 void FakeShillDeviceClient::SetPropertyInternal(
@@ -111,7 +112,8 @@ void FakeShillDeviceClient::SetPropertyInternal(
     const std::string& name,
     const base::Value& value,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    const ErrorCallback& error_callback,
+    bool notify_changed) {
   base::DictionaryValue* device_properties = NULL;
   if (!stub_devices_.GetDictionaryWithoutPathExpansion(device_path.value(),
                                                        &device_properties)) {
@@ -119,10 +121,12 @@ void FakeShillDeviceClient::SetPropertyInternal(
     return;
   }
   device_properties->SetKey(name, value.Clone());
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&FakeShillDeviceClient::NotifyObserversPropertyChanged,
-                     weak_ptr_factory_.GetWeakPtr(), device_path, name));
+  if (notify_changed) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&FakeShillDeviceClient::NotifyObserversPropertyChanged,
+                       weak_ptr_factory_.GetWeakPtr(), device_path, name));
+  }
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }
 
@@ -265,7 +269,8 @@ void FakeShillDeviceClient::SetCarrier(const dbus::ObjectPath& device_path,
                                        const base::Closure& callback,
                                        const ErrorCallback& error_callback) {
   SetPropertyInternal(device_path, shill::kCarrierProperty,
-                      base::Value(carrier), callback, error_callback);
+                      base::Value(carrier), callback, error_callback,
+                      /*notify_changed=*/true);
 }
 
 void FakeShillDeviceClient::Reset(const dbus::ObjectPath& device_path,
@@ -417,12 +422,13 @@ void FakeShillDeviceClient::ClearDevices() {
 
 void FakeShillDeviceClient::SetDeviceProperty(const std::string& device_path,
                                               const std::string& name,
-                                              const base::Value& value) {
+                                              const base::Value& value,
+                                              bool notify_changed) {
   VLOG(1) << "SetDeviceProperty: " << device_path
           << ": " << name << " = " << value;
   SetPropertyInternal(dbus::ObjectPath(device_path), name, value,
                       base::DoNothing(),
-                      base::Bind(&ErrorFunction, device_path));
+                      base::Bind(&ErrorFunction, device_path), notify_changed);
 }
 
 std::string FakeShillDeviceClient::GetDevicePathForType(
