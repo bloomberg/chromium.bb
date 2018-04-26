@@ -37,6 +37,7 @@ namespace blink {
 
 class CSSStyleSheet;
 class CSSRuleList;
+class PartNames;
 class RuleData;
 class SelectorFilter;
 class StaticCSSRuleList;
@@ -133,6 +134,7 @@ class ElementRuleCollector {
   void CollectMatchingShadowHostRules(const MatchRequest&,
                                       CascadeOrder = kIgnoreCascadeOrder);
   void CollectMatchingPartPseudoRules(const MatchRequest&,
+                                      PartNames&,
                                       CascadeOrder = kIgnoreCascadeOrder);
   void SortAndTransferMatchedRules();
   void ClearMatchedRules();
@@ -157,7 +159,8 @@ class ElementRuleCollector {
   template <typename RuleDataListType>
   void CollectMatchingRulesForList(const RuleDataListType*,
                                    CascadeOrder,
-                                   const MatchRequest&);
+                                   const MatchRequest&,
+                                   PartNames* = nullptr);
 
   void DidMatchRule(const RuleData&,
                     const SelectorChecker::MatchResult&,

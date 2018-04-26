@@ -116,7 +116,8 @@ template <typename RuleDataListType>
 void ElementRuleCollector::CollectMatchingRulesForList(
     const RuleDataListType* rules,
     CascadeOrder cascade_order,
-    const MatchRequest& match_request) {
+    const MatchRequest& match_request,
+    PartNames* part_names) {
   if (!rules)
     return;
 
@@ -126,6 +127,7 @@ void ElementRuleCollector::CollectMatchingRulesForList(
   init.element_style = style_.get();
   init.scrollbar = pseudo_style_request_.scrollbar;
   init.scrollbar_part = pseudo_style_request_.scrollbar_part;
+  init.part_names = part_names;
   SelectorChecker checker(init);
   SelectorChecker::SelectorCheckingContext context(
       context_.GetElement(), SelectorChecker::kVisitedMatchEnabled);
@@ -249,11 +251,12 @@ void ElementRuleCollector::CollectMatchingShadowHostRules(
 
 void ElementRuleCollector::CollectMatchingPartPseudoRules(
     const MatchRequest& match_request,
+    PartNames& part_names,
     CascadeOrder cascade_order) {
   if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
     return;
   CollectMatchingRulesForList(match_request.rule_set->PartPseudoRules(),
-                              cascade_order, match_request);
+                              cascade_order, match_request, &part_names);
 }
 
 template <class CSSRuleCollection>

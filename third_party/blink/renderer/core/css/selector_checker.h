@@ -42,6 +42,7 @@ class ContainerNode;
 class Element;
 class LayoutScrollbar;
 class ComputedStyle;
+class PartNames;
 
 class SelectorChecker {
   STACK_ALLOCATED();
@@ -84,6 +85,7 @@ class SelectorChecker {
     ComputedStyle* element_style = nullptr;
     Member<LayoutScrollbar> scrollbar = nullptr;
     ScrollbarPart scrollbar_part = kNoPart;
+    PartNames* part_names = nullptr;
   };
 
   explicit SelectorChecker(const Init& init)
@@ -91,7 +93,8 @@ class SelectorChecker {
         is_ua_rule_(init.is_ua_rule),
         element_style_(init.element_style),
         scrollbar_(init.scrollbar),
-        scrollbar_part_(init.scrollbar_part) {}
+        scrollbar_part_(init.scrollbar_part),
+        part_names_(init.part_names) {}
 
   // Wraps the current element and a CSSSelector and stores some other state of
   // the selector matching process.
@@ -202,6 +205,7 @@ class SelectorChecker {
   ComputedStyle* element_style_;
   Member<LayoutScrollbar> scrollbar_;
   ScrollbarPart scrollbar_part_;
+  PartNames* part_names_;
   DISALLOW_COPY_AND_ASSIGN(SelectorChecker);
 };
 

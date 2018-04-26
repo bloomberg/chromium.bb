@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/css/font_face.h"
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/page_rule_collector.h"
+#include "third_party/blink/renderer/core/css/part_names.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/resolver/animated_style_builder.h"
 #include "third_party/blink/renderer/core/css/resolver/css_variable_resolver.h"
@@ -76,6 +77,7 @@
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -91,7 +93,10 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 namespace blink {
 
@@ -255,24 +260,39 @@ void StyleResolver::MatchPseudoPartRules(const Element& element,
   if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
     return;
 
-  if (!element.HasPartName())
+  const SpaceSplitString* part_names = element.PartNames();
+  if (!part_names)
     return;
 
-  TreeScope& tree_scope = element.GetTreeScope();
-  if (tree_scope == GetDocument().GetTreeScope())
+  PartNames current_names(*part_names);
+
+  // ::part selectors in the shadow host's scope and above can match this
+  // element.
+  Element* host = element.OwnerShadowHost();
+  if (!host)
     return;
 
-  TreeScope* parent_tree_scope = &tree_scope;
-  // TODO(b/805271): We can terminate early if we pass through a host with no
-  // exported parts. Requires implementing partmap.
-  while ((parent_tree_scope = parent_tree_scope->ParentTreeScope())) {
-    if (ScopedStyleResolver* resolver =
-            parent_tree_scope->GetScopedStyleResolver()) {
+  while (current_names.size()) {
+    TreeScope& tree_scope = host->GetTreeScope();
+    if (ScopedStyleResolver* resolver = tree_scope.GetScopedStyleResolver()) {
       collector.ClearMatchedRules();
-      resolver->CollectMatchingPartPseudoRules(collector);
+      resolver->CollectMatchingPartPseudoRules(collector, current_names);
       collector.SortAndTransferMatchedRules();
       collector.FinishAddingAuthorRulesForTreeScope();
     }
+
+    // We have reached the top-level document.
+    if (!(host = host->OwnerShadowHost()))
+      return;
+
+    // After the direct host of the element, if the host doesn't forward any
+    // parts using partmap= then the element is unreachable from any scope above
+    // and we can stop.
+    const NamesMap* part_map = host->PartNamesMap();
+    if (!part_map)
+      return;
+
+    current_names.ApplyMap(*part_map);
   }
 }
 
