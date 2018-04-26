@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="14">
+  <interface name="zcr_remote_shell_v1" version="15">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -68,6 +68,7 @@
       <entry name="resizing" value="8" summary="resizing window state"/>
       <entry name="left_snapped" value="9" summary="left snapped window state"/>
       <entry name="right_snapped" value="10" summary="right snapped window state"/>
+      <entry name="pip" value="11" summary="pip window state"/>
     </enum>
 
     <enum name="error">
@@ -183,7 +184,7 @@
     </event>
   </interface>
 
-  <interface name="zcr_remote_surface_v1" version="14">
+  <interface name="zcr_remote_surface_v1" version="15">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -881,6 +882,14 @@
 	Request a specific orientation behavior when this surface is in foreground.
       </description>
       <arg name="orientation_lock" type="uint" summary="the orientation lock"/>
+    </request>
+
+    <!-- Version 15 additions -->
+
+    <request name="pip" since="15">
+      <description summary="set pip for a remote surface">
+  Request that surface is set to Picture-in-Picture (PIP).
+      </description>
     </request>
 
   </interface>

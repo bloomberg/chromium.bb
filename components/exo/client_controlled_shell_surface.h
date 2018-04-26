@@ -77,6 +77,9 @@ class ClientControlledShellSurface
   // Called when the client was snapped to right.
   void SetSnappedToRight();
 
+  // Called when the client was set to PIP.
+  void SetPip();
+
   // Set the callback to run when the surface state changed.
   using StateChangedCallback =
       base::RepeatingCallback<void(ash::mojom::WindowStateType old_state_type,

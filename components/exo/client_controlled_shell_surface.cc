@@ -305,6 +305,11 @@ void ClientControlledShellSurface::SetSnappedToRight() {
   pending_window_state_ = ash::mojom::WindowStateType::RIGHT_SNAPPED;
 }
 
+void ClientControlledShellSurface::SetPip() {
+  TRACE_EVENT0("exo", "ClientControlledShellSurface::SetPip");
+  pending_window_state_ = ash::mojom::WindowStateType::PIP;
+}
+
 void ClientControlledShellSurface::SetPinned(ash::mojom::WindowPinType type) {
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetPinned", "type",
                static_cast<int>(type));
