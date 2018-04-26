@@ -93,6 +93,11 @@
     function step15_ShouldNotCrash(next) {
       ObjectUI.javaScriptAutocomplete._completionsForExpression('arr3.', '')
           .then(checkAgainstGolden.bind(this, ['length'], ['1', '2', '3'], next));
+    },
+
+    function step16(next) {
+      ObjectUI.javaScriptAutocomplete._completionsForExpression('this.', 'win')
+          .then(checkAgainstGolden.bind(this, ['window'], ['arr3'], next));
     }
   ]);
 
