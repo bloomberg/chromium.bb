@@ -5546,13 +5546,17 @@ void RenderFrameImpl::UpdateStateForCommit(
     engagement_level_.first = url::Origin();
   }
 
-  // Set the correct autoplay flags on the webview and wipe the cached origin so
+  // If we are a top frame navigation we should clear any existing autoplay
+  // flags on the Page. This is because flags are stored at the page level so
+  // subframes would only add to them.
+  if (!frame_->Parent())
+    render_view_->webview()->ClearAutoplayFlags();
+
+  // Set the correct autoplay flags on the Page and wipe the cached origin so
   // this will not be used incorrectly.
   if (url::Origin(frame_->GetSecurityOrigin()) == autoplay_flags_.first) {
     render_view_->webview()->AddAutoplayFlags(autoplay_flags_.second);
     autoplay_flags_.first = url::Origin();
-  } else {
-    render_view_->webview()->AddAutoplayFlags(blink::mojom::kAutoplayFlagNone);
   }
 }
 

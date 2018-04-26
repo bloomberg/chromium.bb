@@ -834,7 +834,11 @@ int64_t Page::GetUkmSourceId() {
 }
 
 void Page::AddAutoplayFlags(int32_t value) {
-  autoplay_flags_ = value;
+  autoplay_flags_ |= value;
+}
+
+void Page::ClearAutoplayFlags() {
+  autoplay_flags_ = 0;
 }
 
 int32_t Page::AutoplayFlags() const {

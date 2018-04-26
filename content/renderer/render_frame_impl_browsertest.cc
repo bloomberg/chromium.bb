@@ -60,6 +60,10 @@ constexpr int32_t kSubframeWidgetRouteId = 21;
 constexpr int32_t kFrameProxyRouteId = 22;
 constexpr int32_t kEmbeddedSubframeRouteId = 23;
 
+const char kParentFrameHTML[] = "Parent frame <iframe name='frame'></iframe>";
+
+const char kAutoplayTestOrigin[] = "https://www.google.com";
+
 }  // namespace
 
 // RenderFrameImplTest creates a RenderFrameImpl that is a child of the
@@ -75,13 +79,16 @@ class RenderFrameImplTest : public RenderViewTest {
     RenderViewTest::SetUp();
     EXPECT_TRUE(GetMainRenderFrame()->is_main_frame_);
 
+    IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+
+    LoadHTML(kParentFrameHTML);
+    LoadChildFrame();
+  }
+
+  void LoadChildFrame() {
     mojom::CreateFrameWidgetParams widget_params;
     widget_params.routing_id = kSubframeWidgetRouteId;
     widget_params.hidden = false;
-
-    IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
-
-    LoadHTML("Parent frame <iframe name='frame'></iframe>");
 
     FrameReplicationState frame_replication_state;
     frame_replication_state.name = "frame";
@@ -131,6 +138,14 @@ class RenderFrameImplTest : public RenderViewTest {
 
   content::RenderWidget* frame_widget() const {
     return frame_->render_widget_.get();
+  }
+
+  static url::Origin GetOriginForFrame(TestRenderFrame* frame) {
+    return url::Origin(frame->GetWebFrame()->GetSecurityOrigin());
+  }
+
+  static int32_t AutoplayFlagsForFrame(TestRenderFrame* frame) {
+    return frame->render_view()->webview()->AutoplayFlagsForTest();
   }
 
 #if defined(OS_ANDROID)
@@ -558,6 +573,51 @@ TEST_F(RenderFrameImplTest, GetPreviewsStateForFrame) {
 
   SetPreviewsState(frame(), CLIENT_LOFI_ON | PREVIEWS_OFF);
   EXPECT_DCHECK_DEATH(frame()->GetPreviewsStateForFrame());
+}
+
+TEST_F(RenderFrameImplTest, AutoplayFlags) {
+  // Add autoplay flags to the page.
+  GetMainRenderFrame()->AddAutoplayFlags(
+      url::Origin::Create(GURL(kAutoplayTestOrigin)),
+      blink::mojom::kAutoplayFlagHighMediaEngagement);
+
+  // Navigate the top frame.
+  LoadHTMLWithUrlOverride(kParentFrameHTML, kAutoplayTestOrigin);
+
+  // Check the flags have been set correctly.
+  EXPECT_EQ(blink::mojom::kAutoplayFlagHighMediaEngagement,
+            AutoplayFlagsForFrame(GetMainRenderFrame()));
+
+  // Navigate the child frame.
+  LoadChildFrame();
+
+  // Check the flags are set on both frames.
+  EXPECT_EQ(blink::mojom::kAutoplayFlagHighMediaEngagement,
+            AutoplayFlagsForFrame(GetMainRenderFrame()));
+  EXPECT_EQ(blink::mojom::kAutoplayFlagHighMediaEngagement,
+            AutoplayFlagsForFrame(frame()));
+
+  // Navigate the top frame.
+  LoadHTMLWithUrlOverride(kParentFrameHTML, "https://www.example.com");
+  LoadChildFrame();
+
+  // Check the flags have been cleared.
+  EXPECT_EQ(blink::mojom::kAutoplayFlagNone,
+            AutoplayFlagsForFrame(GetMainRenderFrame()));
+  EXPECT_EQ(blink::mojom::kAutoplayFlagNone, AutoplayFlagsForFrame(frame()));
+}
+
+TEST_F(RenderFrameImplTest, AutoplayFlags_WrongOrigin) {
+  // Add autoplay flags to the page.
+  GetMainRenderFrame()->AddAutoplayFlags(
+      url::Origin(), blink::mojom::kAutoplayFlagHighMediaEngagement);
+
+  // Navigate the top frame.
+  LoadHTMLWithUrlOverride(kParentFrameHTML, kAutoplayTestOrigin);
+
+  // Check the flags have been not been set.
+  EXPECT_EQ(blink::mojom::kAutoplayFlagNone,
+            AutoplayFlagsForFrame(GetMainRenderFrame()));
 }
 
 // RenderFrameRemoteInterfacesTest ------------------------------------

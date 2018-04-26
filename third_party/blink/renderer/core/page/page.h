@@ -322,6 +322,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   int64_t GetUkmSourceId() override;
 
   void AddAutoplayFlags(int32_t flags);
+  void ClearAutoplayFlags();
 
   int32_t AutoplayFlags() const;
 
