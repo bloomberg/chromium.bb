@@ -4,7 +4,7 @@
 
 #include "components/sync/driver/signin_manager_wrapper.h"
 
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 
 SigninManagerWrapper::SigninManagerWrapper(
     identity::IdentityManager* identity_manager,
@@ -22,9 +22,9 @@ SigninManagerBase* SigninManagerWrapper::GetSigninManager() {
 }
 
 std::string SigninManagerWrapper::GetEffectiveUsername() const {
-  return identity_manager_->GetPrimaryAccountInfo().email;
+  return signin_manager_->GetAuthenticatedAccountInfo().email;
 }
 
 std::string SigninManagerWrapper::GetAccountIdToUse() const {
-  return identity_manager_->GetPrimaryAccountInfo().account_id;
+  return signin_manager_->GetAuthenticatedAccountId();
 }
