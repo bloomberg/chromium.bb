@@ -563,7 +563,8 @@ class LayerTreeHostFreesWorkerContextResourcesOnZeroMemoryLimitSynchronous
   }
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
+// Android Webview only runs in multi-threaded compositing mode.
+MULTI_THREAD_TEST_F(
     LayerTreeHostFreesWorkerContextResourcesOnZeroMemoryLimitSynchronous);
 
 // Test if the LTH successfully frees main and worker resources when the
