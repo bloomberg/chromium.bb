@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
@@ -90,15 +91,75 @@ void RemoteFrameView::UpdateViewportIntersectionsForSubtree(
 
     // Translate the intersection rect from the root frame's coordinate space
     // to the remote frame's coordinate space.
-    viewport_intersection = ConvertFromRootFrame(intersected_rect);
+    FloatRect viewport_intersection_float =
+        remote_frame_->OwnerLayoutObject()
+            ->AncestorToLocalQuad(local_root_view->GetLayoutView(),
+                                  FloatQuad(intersected_rect),
+                                  kTraverseDocumentBoundaries | kUseTransforms)
+            .BoundingBox();
+    viewport_intersection_float.Move(
+        -remote_frame_->OwnerLayoutObject()->ContentBoxOffset());
+    viewport_intersection = EnclosingIntRect(viewport_intersection_float);
   }
 
-  if (viewport_intersection != last_viewport_intersection_) {
-    remote_frame_->Client()->UpdateRemoteViewportIntersection(
-        viewport_intersection);
-  }
+  if (viewport_intersection == last_viewport_intersection_)
+    return;
 
   last_viewport_intersection_ = viewport_intersection;
+  remote_frame_->Client()->UpdateRemoteViewportIntersection(
+      viewport_intersection);
+}
+
+IntRect RemoteFrameView::GetCompositingRect() {
+  LocalFrameView* local_root_view =
+      ToLocalFrame(remote_frame_->Tree().Parent())->LocalFrameRoot().View();
+  if (!local_root_view || !remote_frame_->OwnerLayoutObject())
+    return IntRect();
+
+  // For main frames we constrain the rect that gets painted to the viewport.
+  // If the local frame root is an OOPIF itself, then we use the root's
+  // intersection rect. This represents a conservative maximum for the area
+  // that needs to be rastered by the OOPIF compositor.
+  IntSize viewport_size = local_root_view->FrameRect().Size();
+  if (local_root_view->GetPage()->MainFrame() != local_root_view->GetFrame()) {
+    viewport_size = local_root_view->RemoteViewportIntersection().Size();
+  }
+
+  // The viewport size needs to account for intermediate CSS transforms before
+  // being compared to the frame size.
+  FloatQuad viewport_quad =
+      remote_frame_->OwnerLayoutObject()->AncestorToLocalQuad(
+          local_root_view->GetLayoutView(),
+          FloatRect(FloatPoint(), FloatSize(viewport_size)),
+          kTraverseDocumentBoundaries | kUseTransforms);
+  IntSize converted_viewport_size =
+      EnclosingIntRect(viewport_quad.BoundingBox()).Size();
+
+  IntSize frame_size = FrameRect().Size();
+
+  // Iframes that fit within the window viewport get fully rastered. For
+  // iframes that are larger than the window viewport, add a 30% buffer to the
+  // draw area to try to prevent guttering during scroll.
+  // TODO(kenrb): The 30% value is arbitrary, it gives 15% overdraw in both
+  // directions when the iframe extends beyond both edges of the viewport, and
+  // it seems to make guttering rare with slow to medium speed wheel scrolling.
+  // Can we collect UMA data to estimate how much extra rastering this causes,
+  // and possibly how common guttering is?
+  converted_viewport_size.Scale(1.3f);
+  converted_viewport_size.SetWidth(
+      std::min(frame_size.Width(), converted_viewport_size.Width()));
+  converted_viewport_size.SetHeight(
+      std::min(frame_size.Height(), converted_viewport_size.Height()));
+  IntPoint expanded_origin;
+  if (!last_viewport_intersection_.IsEmpty()) {
+    IntSize expanded_size =
+        last_viewport_intersection_.Size().ExpandedTo(converted_viewport_size);
+    expanded_size -= last_viewport_intersection_.Size();
+    expanded_size.Scale(0.5f, 0.5f);
+    expanded_origin = last_viewport_intersection_.Location() - expanded_size;
+    expanded_origin.ClampNegativeToZero();
+  }
+  return IntRect(expanded_origin, converted_viewport_size);
 }
 
 void RemoteFrameView::Dispose() {
@@ -208,17 +269,6 @@ void RemoteFrameView::SetParentVisible(bool visible) {
     return;
 
   remote_frame_->Client()->VisibilityChanged(self_visible_ && parent_visible_);
-}
-
-IntRect RemoteFrameView::ConvertFromRootFrame(
-    const IntRect& rect_in_root_frame) const {
-  if (LocalFrameView* parent = ParentFrameView()) {
-    IntRect parent_rect = parent->ConvertFromRootFrame(rect_in_root_frame);
-    parent_rect.SetLocation(
-        parent->ConvertSelfToChild(*this, parent_rect.Location()));
-    return parent_rect;
-  }
-  return rect_in_root_frame;
 }
 
 void RemoteFrameView::SetupRenderThrottling() {

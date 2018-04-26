@@ -84,6 +84,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void IntrinsicSizingInfoChanged(const WebIntrinsicSizingInfo&) override;
   void SetHasReceivedUserGestureBeforeNavigation(bool value) override;
   v8::Local<v8::Object> GlobalProxy() const override;
+  WebRect GetCompositingRect() override;
 
   void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
   RemoteFrame* GetFrame() const { return frame_.Get(); }

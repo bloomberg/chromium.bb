@@ -190,7 +190,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void FrameRectsChanged(const blink::WebRect& local_frame_rect,
                          const blink::WebRect& screen_space_rect) override;
   void UpdateRemoteViewportIntersection(
-      const blink::WebRect& viewportIntersection) override;
+      const blink::WebRect& viewport_intersection) override;
   void VisibilityChanged(bool visible) override;
   void SetIsInert(bool) override;
   void UpdateRenderThrottlingStatus(bool is_throttled,
@@ -268,8 +268,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   blink::WebLayer* GetLayer() override;
   void SetLayer(std::unique_ptr<blink::WebLayer> web_layer) override;
   SkBitmap* GetSadPageBitmap() override;
-
-  gfx::Rect ComputeCompositingRect(const gfx::Rect& intersection_rect);
 
   const viz::LocalSurfaceId& GetLocalSurfaceId() const;
 

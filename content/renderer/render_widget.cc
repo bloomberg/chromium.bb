@@ -1907,7 +1907,6 @@ void RenderWidget::OnSetViewportIntersection(
     const gfx::Rect& compositor_visible_rect) {
   if (auto* frame_widget = GetFrameWidget()) {
     DCHECK_EQ(popup_type_, WebPopupType::kWebPopupTypeNone);
-    viewport_intersection_ = viewport_intersection;
     compositor_visible_rect_ = compositor_visible_rect;
     frame_widget->SetRemoteViewportIntersection(viewport_intersection);
     compositor_->SetViewportVisibleRect(ViewportVisibleRect());
