@@ -1,7 +1,10 @@
 {
   "key": "AAAAB3NzaC1yc2EAAAADAQABAAAAgQDtKfIKWzC4HnQbyAeddk5h78K7LSyrIEnLKDsQCNxhfsavJ+otV9JprDSz3nF7EHZokXiC72SHxdMndt2IlId/aRfhbU4UGidrmFBKg6v1Fs2zey6niB+xLOhJQMe9XtwVNWDpiGXHLmwNhG/FLhj0bBBf1HZDBV18Xp47ymLiuQ==",
-  "name": "Chrome OS developer shell",
+  "name": "Terminal",
   "manifest_version": 2,
+  "icons": {
+    "192": "images/dev/crostini-192.webp"
+  },
   "content_security_policy": "script-src 'self' blob: filesystem:; object-src 'self' blob: filesystem:",
   "version": "0.8.36",
   "default_locale": "en",
