@@ -39,9 +39,7 @@ class ContextualSuggestionsAdapter
                     return new ContextualSuggestionCardViewHolder(mRecyclerView,
                             mContextMenuManager, mUiDelegate, mUiConfig,
                             OfflinePageBridge.getForProfile(mProfile));
-                case ItemViewType.FOOTER:
-                    return new ContextualSuggestionsFooter.ViewHolder(
-                            mRecyclerView, mUiDelegate.getNavigationDelegate());
+
                 default:
                     assert false;
                     return null;

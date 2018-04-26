@@ -307,7 +307,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/contextual_suggestions/ContextualSuggestionsCoordinator.java",
   "java/src/org/chromium/chrome/browser/contextual_suggestions/ContextualSuggestionsDependencyFactory.java",
   "java/src/org/chromium/chrome/browser/contextual_suggestions/ContextualSuggestionsEventReporter.java",
-  "java/src/org/chromium/chrome/browser/contextual_suggestions/ContextualSuggestionsFooter.java",
   "java/src/org/chromium/chrome/browser/contextual_suggestions/ContextualSuggestionsMediator.java",
   "java/src/org/chromium/chrome/browser/contextual_suggestions/ContextualSuggestionsModel.java",
   "java/src/org/chromium/chrome/browser/contextual_suggestions/ContextualSuggestionsSource.java",

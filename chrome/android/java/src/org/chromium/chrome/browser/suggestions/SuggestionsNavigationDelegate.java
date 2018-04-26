@@ -49,7 +49,4 @@ public interface SuggestionsNavigationDelegate {
      */
     @Nullable
     Tab openUrl(int windowOpenDisposition, LoadUrlParams loadUrlParams);
-
-    /** Start an activity prompting the user to enter feedback. */
-    void showFeedback();
 }
