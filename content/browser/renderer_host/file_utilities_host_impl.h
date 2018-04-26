@@ -5,17 +5,17 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_FILE_UTILITIES_HOST_IMPL_H_
 #define CONTENT_BROWSER_RENDERER_HOST_FILE_UTILITIES_HOST_IMPL_H_
 
-#include "content/common/file_utilities.mojom.h"
+#include "third_party/blink/public/mojom/file/file_utilities.mojom.h"
 
 namespace content {
 
-class FileUtilitiesHostImpl : public content::mojom::FileUtilitiesHost {
+class FileUtilitiesHostImpl : public blink::mojom::FileUtilitiesHost {
  public:
   explicit FileUtilitiesHostImpl(int process_id);
   ~FileUtilitiesHostImpl() override;
 
   static void Create(int process_id,
-                     content::mojom::FileUtilitiesHostRequest request);
+                     blink::mojom::FileUtilitiesHostRequest request);
 
  private:
   // blink::mojom::FileUtilitiesHost implementation.

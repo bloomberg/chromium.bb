@@ -75,7 +75,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/storage_util.h"
 #include "content/renderer/web_database_observer_impl.h"
-#include "content/renderer/webfileutilities_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
 #include "content/renderer/worker_thread_registry.h"
@@ -233,21 +232,6 @@ gpu::ContextType ToGpuContextType(blink::Platform::ContextType type) {
 
 //------------------------------------------------------------------------------
 
-class RendererBlinkPlatformImpl::FileUtilities : public WebFileUtilitiesImpl {
- public:
-  explicit FileUtilities(
-      scoped_refptr<mojom::ThreadSafeFileUtilitiesHostPtr> host)
-      : file_utilities_host_(std::move(host)) {}
-  bool GetFileInfo(const WebString& path, WebFileInfo& result) override;
-
- private:
-  mojom::FileUtilitiesHost& GetFileUtilitiesHost() {
-    return **file_utilities_host_;
-  }
-
-  scoped_refptr<mojom::ThreadSafeFileUtilitiesHostPtr> file_utilities_host_;
-};
-
 #if !defined(OS_ANDROID) && !defined(OS_WIN) && !defined(OS_FUCHSIA)
 class RendererBlinkPlatformImpl::SandboxSupport
     : public blink::WebSandboxSupport {
@@ -326,9 +310,6 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
 
   GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&web_database_host_info_));
-
-  GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&file_utilities_host_info_));
 }
 
 RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
@@ -430,18 +411,6 @@ blink::WebClipboard* RendererBlinkPlatformImpl::Clipboard() {
     return clipboard;
 
   return BlinkPlatformImpl::Clipboard();
-}
-
-blink::WebFileUtilities* RendererBlinkPlatformImpl::GetFileUtilities() {
-  if (!file_utilities_) {
-    file_utilities_.reset(
-        new FileUtilities(mojom::ThreadSafeFileUtilitiesHostPtr::Create(
-            std::move(file_utilities_host_info_),
-            base::CreateSequencedTaskRunnerWithTraits(
-                {base::WithBaseSyncPrimitives()}))));
-    file_utilities_->set_sandbox_enabled(sandboxEnabled());
-  }
-  return file_utilities_.get();
 }
 
 blink::WebSandboxSupport* RendererBlinkPlatformImpl::GetSandboxSupport() {
@@ -625,22 +594,6 @@ WebString RendererBlinkPlatformImpl::FileSystemCreateOriginIdentifier(
     const blink::WebSecurityOrigin& origin) {
   return WebString::FromUTF8(
       storage::GetIdentifierFromOrigin(WebSecurityOriginToGURL(origin)));
-}
-
-//------------------------------------------------------------------------------
-
-bool RendererBlinkPlatformImpl::FileUtilities::GetFileInfo(
-    const WebString& path,
-    WebFileInfo& web_file_info) {
-  base::Optional<base::File::Info> file_info;
-  if (!GetFileUtilitiesHost().GetFileInfo(blink::WebStringToFilePath(path),
-                                          &file_info) ||
-      !file_info) {
-    return false;
-  }
-  FileInfoToWebFileInfo(file_info.value(), &web_file_info);
-  web_file_info.platform_path = path;
-  return true;
 }
 
 //------------------------------------------------------------------------------

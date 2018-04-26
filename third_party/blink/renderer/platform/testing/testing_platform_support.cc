@@ -174,10 +174,6 @@ WebClipboard* TestingPlatformSupport::Clipboard() {
   return old_platform_ ? old_platform_->Clipboard() : nullptr;
 }
 
-WebFileUtilities* TestingPlatformSupport::GetFileUtilities() {
-  return old_platform_ ? old_platform_->GetFileUtilities() : nullptr;
-}
-
 WebIDBFactory* TestingPlatformSupport::IdbFactory() {
   return old_platform_ ? old_platform_->IdbFactory() : nullptr;
 }
