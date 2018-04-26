@@ -496,23 +496,6 @@ std::unique_ptr<base::Value> ModelTypeToValue(ModelType model_type) {
   return std::make_unique<base::Value>(std::string());
 }
 
-ModelType ModelTypeFromValue(const base::Value& value) {
-  if (value.is_string()) {
-    std::string result;
-    bool success = value.GetAsString(&result);
-    DCHECK(success);
-    return ModelTypeFromString(result);
-  } else if (value.is_int()) {
-    int result = 0;
-    bool success = value.GetAsInteger(&result);
-    DCHECK(success);
-    return ModelTypeFromInt(result);
-  } else {
-    NOTREACHED() << "Unsupported value type: " << value.type();
-    return UNSPECIFIED;
-  }
-}
-
 ModelType ModelTypeFromString(const std::string& model_type_string) {
   if (model_type_string != "Unspecified" &&
       model_type_string != "Top Level Folder") {
@@ -571,15 +554,6 @@ std::unique_ptr<base::ListValue> ModelTypeSetToValue(ModelTypeSet model_types) {
     value->AppendString(ModelTypeToString(it.Get()));
   }
   return value;
-}
-
-ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value) {
-  ModelTypeSet result;
-  for (base::ListValue::const_iterator i = value.begin(); i != value.end();
-       ++i) {
-    result.Put(ModelTypeFromValue(*i));
-  }
-  return result;
 }
 
 // TODO(zea): remove all hardcoded tags in model associators and have them use
