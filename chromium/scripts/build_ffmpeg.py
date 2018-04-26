@@ -146,11 +146,13 @@ def GetDsoName(target_os, dso_name, dso_version):
     raise ValueError('Unexpected target_os %s' % target_os)
 
 
-def RewriteFile(path, search, replace):
+def RewriteFile(path, search_replace):
   with open(path) as f:
     contents = f.read()
   with open(path, 'w') as f:
-    f.write(re.sub(search, replace, contents))
+    for search, replace in search_replace:
+      contents = re.sub(search, replace, contents)
+    f.write(contents)
 
 
 # Extracts the Android toolchain version and api level from the Android
@@ -285,26 +287,31 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
   PrintAndCheckCall(
       [os.path.join(FFMPEG_DIR, 'configure')] + configure_flags, cwd=config_dir)
 
-  RewriteFile(
-      os.path.join(config_dir,
-                   'config.h'), r'(#define HAVE_VALGRIND_VALGRIND_H [01])',
-      (r'#define HAVE_VALGRIND_VALGRIND_H 0 /* \1 -- forced to 0. See https://crbug.com/590440 */'
-      ))
+  # These rewrites force disable various features and should be applied before
+  # attempting the standalone ffmpeg build to make sure compilation succeeds.
+  pre_make_rewrites = [
+      (r'(#define HAVE_VALGRIND_VALGRIND_H [01])',
+       r'#define HAVE_VALGRIND_VALGRIND_H 0 /* \1 -- forced to 0. See '
+       r'https://crbug.com/590440 */')
+  ]
 
   if target_os == 'android':
-    RewriteFile(
-        os.path.join(config_dir,
-                     'config.h'), r'(#define HAVE_POSIX_MEMALIGN [01])',
-        (r'#define HAVE_POSIX_MEMALIGN 0 /* \1 -- forced to 0. See https://crbug.com/604451 */'
-        ))
+    pre_make_rewrites += [
+        (r'(#define HAVE_POSIX_MEMALIGN [01])',
+         r'#define HAVE_POSIX_MEMALIGN 0 /* \1 -- forced to 0. See '
+         r'https://crbug.com/604451 */')
+    ]
 
   # Linux configs is also used on Fuchsia. They are mostly compatible with
   # Fuchsia except that Fuchsia doesn't support sysctl(). On Linux sysctl()
   # isn't actually used, so it's safe to set HAVE_SYSCTL to 0.
   if target_os == 'linux':
-    RewriteFile(
-        os.path.join(config_dir, 'config.h'), r'(#define HAVE_SYSCTL [01])',
-        (r'#define HAVE_SYSCTL 0 /* \1 -- forced to 0 for Fuchsia */'))
+    pre_make_rewrites += [
+        (r'(#define HAVE_SYSCTL [01])',
+         r'#define HAVE_SYSCTL 0 /* \1 -- forced to 0 for Fuchsia */')
+    ]
+
+  RewriteFile(os.path.join(config_dir, 'config.h'), pre_make_rewrites)
 
   # Windows linking resolves external symbols. Since generate_gn.py does not
   # need a functioning set of libraries, ignore unresolved symbols here.
@@ -314,7 +321,7 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
   if target_os == 'win':
     RewriteFile(
         os.path.join(config_dir, 'ffbuild/config.mak'), r'(LDFLAGS=.*)',
-        (r'\1 -FORCE:UNRESOLVED'))
+        r'\1 -FORCE:UNRESOLVED')
 
   if target_os in (host_os, host_os + '-noasm', 'android',
                    'win') and not config_only:
@@ -339,22 +346,26 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
           'Host arch : %s\n'
           'Target arch : %s\n' % (host_os, target_os, host_arch, target_arch))
 
-  RewriteFile(
-      os.path.join(config_dir,
-                   'config.h'), r'(#define FFMPEG_CONFIGURATION .*)',
-      (r'/* \1 -- elide long configuration string from binary */'))
+  # These rewrites are necessary to faciliate various Chrome build options.
+  post_make_rewrites = [
+      (r'(#define FFMPEG_CONFIGURATION .*)',
+       r'/* \1 -- elide long configuration string from binary */')
+  ]
 
   # Sanitizers can't compile the h264 code when EBP is used.
   if target_arch == 'ia32':
-    RewriteFile(
-        os.path.join(config_dir,
-                     'config.h'), r'(#define HAVE_EBP_AVAILABLE [01])',
-        (r'/* \1 -- ebp selection is done by the chrome build */'))
+    post_make_rewrites += [
+        (r'(#define HAVE_EBP_AVAILABLE [01])',
+         r'/* \1 -- ebp selection is done by the chrome build */')
+    ]
 
   if target_arch in ('arm', 'arm-neon', 'arm64'):
-    RewriteFile(
-        os.path.join(config_dir, 'config.h'), r'(#define HAVE_VFP_ARGS [01])',
-        (r'/* \1 -- softfp/hardfp selection is done by the chrome build */'))
+    post_make_rewrites += [
+        (r'(#define HAVE_VFP_ARGS [01])',
+         r'/* \1 -- softfp/hardfp selection is done by the chrome build */')
+    ]
+
+  RewriteFile(os.path.join(config_dir, 'config.h'), post_make_rewrites)
 
 
 def main(argv):
