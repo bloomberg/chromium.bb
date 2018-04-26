@@ -1220,9 +1220,9 @@ void FrameSelection::ClearLayoutSelection() {
   layout_selection_->ClearSelection();
 }
 
-std::pair<unsigned, unsigned> FrameSelection::LayoutSelectionStartEndForNG(
-    const NGPhysicalTextFragment& text_fragment) const {
-  return layout_selection_->SelectionStartEndForNG(text_fragment);
+LayoutSelectionStatus FrameSelection::ComputeLayoutSelectionStatus(
+    const NGPaintFragment& text_fragment) const {
+  return layout_selection_->ComputeSelectionStatus(text_fragment);
 }
 
 bool FrameSelection::IsDirectional() const {

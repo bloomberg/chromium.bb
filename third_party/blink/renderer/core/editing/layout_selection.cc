@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 namespace blink {
@@ -657,8 +658,10 @@ static unsigned ClampOffset(unsigned offset,
                   text_fragment.EndOffset());
 }
 
-std::pair<unsigned, unsigned> LayoutSelection::SelectionStartEndForNG(
-    const NGPhysicalTextFragment& text_fragment) const {
+LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
+    const NGPaintFragment& fragment) const {
+  const NGPhysicalTextFragment& text_fragment =
+      ToNGPhysicalTextFragmentOrDie(fragment.PhysicalFragment());
   // FrameSelection holds selection offsets in layout block flow at
   // LayoutSelection::Commit() if selection starts/ends within Text that
   // each LayoutObject::SelectionState indicates.

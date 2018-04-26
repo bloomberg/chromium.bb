@@ -79,13 +79,14 @@ NGTextFragmentPainter::NGTextFragmentPainter(
 // |selection_start| and |selection_end| should be between
 // [text_fragment.StartOffset(), text_fragment.EndOffset()].
 static void PaintSelection(GraphicsContext& context,
-                           const NGPhysicalTextFragment& text_fragment,
+                           const NGPaintFragment& paint_fragment,
                            const Document& document,
                            const ComputedStyle& style,
                            Color text_color,
                            const LayoutRect& box_rect,
-                           unsigned int selection_start,
-                           unsigned int selection_end) {
+                           const LayoutSelectionStatus& selection_status) {
+  const NGPhysicalTextFragment& text_fragment =
+      ToNGPhysicalTextFragment(paint_fragment.PhysicalFragment());
   const Color color =
       SelectionBackgroundColor(document, style, text_fragment, text_color);
   if (!color.Alpha())
@@ -93,14 +94,15 @@ static void PaintSelection(GraphicsContext& context,
 
   GraphicsContextStateSaver state_saver(context);
 
-  DCHECK_LE(text_fragment.StartOffset(), selection_start);
-  DCHECK_LE(text_fragment.StartOffset(), selection_end);
-  DCHECK_GE(text_fragment.EndOffset(), selection_start);
-  DCHECK_GE(text_fragment.EndOffset(), selection_end);
+  DCHECK_LE(text_fragment.StartOffset(), selection_status.start);
+  DCHECK_LE(text_fragment.StartOffset(), selection_status.end);
+  DCHECK_GE(text_fragment.EndOffset(), selection_status.start);
+  DCHECK_GE(text_fragment.EndOffset(), selection_status.end);
   const ShapeResult* shape_result = text_fragment.TextShapeResult();
+  DCHECK(shape_result);
   const CharacterRange& range = shape_result->GetCharacterRange(
-      selection_start - text_fragment.StartOffset(),
-      selection_end - text_fragment.StartOffset());
+      selection_status.start - text_fragment.StartOffset(),
+      selection_status.end - text_fragment.StartOffset());
   const FloatRect& selection_rect = PixelSnappedSelectionRect(
       FloatRect(box_rect.Location().X() + range.start, box_rect.Location().Y(),
                 range.Width(), box_rect.Height().ToFloat()));
@@ -135,13 +137,10 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   bool is_printing = paint_info.IsPrinting();
 
   // Determine whether or not we're selected.
-  int selection_start;
-  int selection_end;
-  std::tie(selection_start, selection_end) =
-      document.GetFrame()->Selection().LayoutSelectionStartEndForNG(
-          text_fragment);
-  DCHECK_LE(selection_start, selection_end);
-  const bool have_selection = selection_start < selection_end;
+  const LayoutSelectionStatus& selection_status =
+      document.GetFrame()->Selection().ComputeLayoutSelectionStatus(fragment_);
+  DCHECK_LE(selection_status.start, selection_status.end);
+  const bool have_selection = selection_status.start < selection_status.end;
   if (!have_selection && paint_info.phase == PaintPhase::kSelection) {
     // When only painting the selection, don't bother to paint if there is none.
     return;
@@ -182,9 +181,8 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   if (have_selection && paint_info.phase != PaintPhase::kSelection &&
       paint_info.phase != PaintPhase::kTextClip && !is_printing) {
     // TODO(yoichio): Implement composition highlights.
-    PaintSelection(context, text_fragment, document, style,
-                   selection_style.fill_color, box_rect, selection_start,
-                   selection_end);
+    PaintSelection(context, fragment_, document, style,
+                   selection_style.fill_color, box_rect, selection_status);
   }
 
   // 2. Now paint the foreground, including text and decorations.
@@ -227,15 +225,19 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
           &has_line_through_decoration);
     }
 
-    int start_offset = text_fragment.StartOffset();
-    int end_offset = start_offset + length;
+    unsigned start_offset = text_fragment.StartOffset();
+    unsigned end_offset = start_offset + length;
 
     if (have_selection && paint_selected_text_separately) {
       // Paint only the text that is not selected.
-      if (start_offset < selection_start)
-        text_painter.Paint(start_offset, selection_start, length, text_style);
-      if (selection_end < end_offset)
-        text_painter.Paint(selection_end, end_offset, length, text_style);
+      if (start_offset < selection_status.start) {
+        text_painter.Paint(start_offset, selection_status.start, length,
+                           text_style);
+      }
+      if (selection_status.end < end_offset) {
+        text_painter.Paint(selection_status.end, end_offset, length,
+                           text_style);
+      }
     } else {
       text_painter.Paint(start_offset, end_offset, length, text_style);
     }
@@ -251,7 +253,8 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   if (have_selection &&
       (paint_selected_text_only || paint_selected_text_separately)) {
     // Paint only the text that is selected.
-    text_painter.Paint(selection_start, selection_end, length, selection_style);
+    text_painter.Paint(selection_status.start, selection_status.end, length,
+                       selection_style);
   }
 }
 

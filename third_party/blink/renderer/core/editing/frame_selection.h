@@ -49,12 +49,13 @@ class LocalFrame;
 class FrameCaret;
 class GranularityStrategy;
 class GraphicsContext;
-class NGPhysicalTextFragment;
+class NGPaintFragment;
 class Range;
 class SelectionEditor;
 class LayoutSelection;
 enum class SelectionModifyAlteration;
 enum class SelectionModifyDirection;
+enum class SelectionState;
 class TextIteratorBehavior;
 struct PaintInvalidatorContext;
 
@@ -63,6 +64,27 @@ enum RevealExtentOption { kRevealExtent, kDoNotRevealExtent };
 enum class CaretVisibility;
 
 enum class HandleVisibility { kNotVisible, kVisible };
+
+// This is return type of ComputeLayoutSelectionStatus(paintfragment).
+// This structure represents how the fragment is selected.
+// |start|, |end| : Selection start/end offset. This offset is based on
+//   the text of NGInlineNode of a parent block thus
+//   |fragemnt.StartOffset <= start <= end <= fragment.EndOffset|.
+// |start| == |end| means this fragment is not selected.
+struct LayoutSelectionStatus {
+  STACK_ALLOCATED();
+
+  LayoutSelectionStatus(unsigned passed_start, unsigned passed_end)
+      : start(passed_start), end(passed_end) {
+    DCHECK_LE(start, end);
+  }
+  bool operator==(const LayoutSelectionStatus& other) const {
+    return start == other.start && end == other.end;
+  }
+
+  unsigned start;
+  unsigned end;
+};
 
 class CORE_EXPORT FrameSelection final
     : public GarbageCollectedFinalized<FrameSelection>,
@@ -220,8 +242,8 @@ class CORE_EXPORT FrameSelection final
   base::Optional<unsigned> LayoutSelectionStart() const;
   base::Optional<unsigned> LayoutSelectionEnd() const;
   void ClearLayoutSelection();
-  std::pair<unsigned, unsigned> LayoutSelectionStartEndForNG(
-      const NGPhysicalTextFragment&) const;
+  LayoutSelectionStatus ComputeLayoutSelectionStatus(
+      const NGPaintFragment&) const;
 
   void Trace(blink::Visitor*) override;
 
