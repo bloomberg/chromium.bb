@@ -24,15 +24,16 @@ CvoxCommandStoreUnitTest.prototype = {
 
 TEST_F('CvoxCommandStoreUnitTest', 'TableData', function() {
   var categories = cvox.CommandStore.categories();
-  assertEquals(10, categories.length);
+  assertEquals(11, categories.length);
   assertEquals('modifier_keys', categories[0]);
   assertEquals('controlling_speech', categories[1]);
   assertEquals('help_commands', categories[2]);
   assertEquals('navigation', categories[3]);
-  assertEquals('information', categories[4]);
-  assertEquals('overview', categories[5]);
-  assertEquals('jump_commands', categories[6]);
-  assertEquals('tables', categories[7]);
+  assertEquals('actions', categories[4]);
+  assertEquals('information', categories[5]);
+  assertEquals('overview', categories[6]);
+  assertEquals('jump_commands', categories[7]);
+  assertEquals('tables', categories[8]);
 
   assertEquals('stop_speech_key',
                cvox.CommandStore.messageForCommand('stopSpeech'));

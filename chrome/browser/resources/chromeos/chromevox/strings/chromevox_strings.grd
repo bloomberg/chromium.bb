@@ -2816,6 +2816,18 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="A hint to the user for interacting with the menu control." name="IDS_CHROMEVOX_HINT_MENU">
         Press up or down arrow to navigate; enter to activate.
       </message>
+      <message desc="Describes the action of decrementing a control." name="IDS_CHROMEVOX_ACTION_DECREMENT_DESCRIPTION">
+        Decrease value
+      </message>
+      <message desc="Describes the action of incrementing a control." name="IDS_CHROMEVOX_ACTION_INCREMENT_DESCRIPTION">
+        Increase value
+      </message>
+      <message desc="Describes the action of scrolling backward." name="IDS_CHROMEVOX_ACTION_SCROLL_BACKWARD_DESCRIPTION">
+        Scroll back
+      </message>
+      <message desc="Describes the action of scrolling forward." name="IDS_CHROMEVOX_ACTION_SCROLL_FORWARD_DESCRIPTION">
+        Scroll forward
+      </message>
     </messages>
   </release>
 </grit>

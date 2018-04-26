@@ -46,6 +46,15 @@ Panel.ModeInfo = {
   search: {title: 'panel_title', location: '#focus'}
 };
 
+Panel.ACTION_TO_MSG_ID = {
+  decrement: 'action_decrement_description',
+  doDefault: 'perform_default_action',
+  increment: 'action_increment_description',
+  scrollBackward: 'action_scroll_backward_description',
+  scrollForward: 'action_scroll_forward_description',
+  showContextMenu: 'show_context_menu'
+};
+
 /**
  * A callback function to be executed to perform the action from selecting
  * a menu item after the menu has been closed and focus has been restored
@@ -335,6 +344,7 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
   var speechMenu = Panel.addMenu('panel_menu_speech');
   var tabsMenu = Panel.addMenu('panel_menu_tabs');
   var chromevoxMenu = Panel.addMenu('panel_menu_chromevox');
+  var actionsMenu = Panel.addMenu('panel_menu_actions');
 
   // Create a mapping between categories from CommandStore, and our
   // top-level menus. Some categories aren't mapped to any menu.
@@ -347,6 +357,7 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
     'information': speechMenu,
     'modifier_keys': chromevoxMenu,
     'help_commands': chromevoxMenu,
+    'actions': actionsMenu,
 
     'braille': null,
     'developer': null
@@ -447,13 +458,25 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
     Panel.addNodeMenu(menuTitle, node, predicate, async);
   }
 
-  // Add actions menu if there are custom actions.
-  if (node.customActions && node.customActions.length > 0) {
-    var actionsMenu = Panel.addMenu('panel_menu_actions');
+  if (node.standardActions) {
+    for (var i = 0; i < node.standardActions.length; i++) {
+      var standardAction = node.standardActions[i];
+      var actionMsg = Panel.ACTION_TO_MSG_ID[standardAction];
+      if (!actionMsg)
+        continue;
+      var actionDesc = Msgs.getMsg(actionMsg);
+      actionsMenu.addMenuItem(
+          actionDesc, '' /* menuItemShortcut */, '' /* menuItemBraille */,
+          node.performStandardAction.bind(node, standardAction));
+    }
+  }
+
+  if (node.customActions) {
     for (var i = 0; i < node.customActions.length; i++) {
       var customAction = node.customActions[i];
-      actionsMenu.addMenuItem(customAction.description,
-          '' /* menuItemShortcut */, '' /* menuItemBraille */,
+      actionsMenu.addMenuItem(
+          customAction.description, '' /* menuItemShortcut */,
+          '' /* menuItemBraille */,
           node.performCustomAction.bind(node, customAction.id));
     }
   }
