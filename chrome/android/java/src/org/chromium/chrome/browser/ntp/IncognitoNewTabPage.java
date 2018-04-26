@@ -14,6 +14,7 @@ import android.widget.TextView;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.UrlConstants;
@@ -47,12 +48,12 @@ public class IncognitoNewTabPage
      * Constructs an Incognito NewTabPage.
      * @param activity The activity used to create the new tab page's View.
      */
-    public IncognitoNewTabPage(Activity activity, NativePageHost host) {
+    public IncognitoNewTabPage(ChromeActivity activity, NativePageHost host) {
         super(activity, host, true);
     }
 
     @Override
-    protected void initialize(Activity activity, final NativePageHost host) {
+    protected void initialize(ChromeActivity activity, final NativePageHost host) {
         mActivity = activity;
 
         mIncognitoNewTabPageManager = new IncognitoNewTabPageManager() {

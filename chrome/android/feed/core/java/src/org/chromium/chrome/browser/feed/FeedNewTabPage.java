@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.feed;
 
-import android.app.Activity;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -46,7 +45,7 @@ public class FeedNewTabPage extends BasicNativePage {
     }
 
     @Override
-    protected void initialize(Activity activity, NativePageHost host) {
+    protected void initialize(ChromeActivity activity, NativePageHost host) {
         mRootView = new FrameLayout(activity);
         mRootView.setLayoutParams(new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));

@@ -31,11 +31,11 @@ public abstract class BasicNativePage extends EmptyTabObserver implements Native
 
     private String mUrl;
 
-    public BasicNativePage(Activity activity, NativePageHost host) {
+    public BasicNativePage(ChromeActivity activity, NativePageHost host) {
         this(activity, host, false);
     }
 
-    public BasicNativePage(Activity activity, NativePageHost host, boolean isIncognito) {
+    public BasicNativePage(ChromeActivity activity, NativePageHost host, boolean isIncognito) {
         initialize(activity, host);
         mActivity = activity;
         mHost = host;
@@ -49,11 +49,7 @@ public abstract class BasicNativePage extends EmptyTabObserver implements Native
         Resources res = mActivity.getResources();
 
         mTopMargin = 0;
-        mBottomMargin = 0;
-        if (activity instanceof ChromeActivity) {
-            mBottomMargin =
-                    ((ChromeActivity) activity).getFullscreenManager().getBottomControlsHeight();
-        }
+        mBottomMargin = activity.getFullscreenManager().getBottomControlsHeight();
         mTopMargin = res.getDimensionPixelSize(R.dimen.tab_strip_height)
                 + res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow);
 
@@ -69,7 +65,7 @@ public abstract class BasicNativePage extends EmptyTabObserver implements Native
     /**
      * Subclasses shall implement this method to initialize the UI that they hold.
      */
-    protected abstract void initialize(Activity activity, NativePageHost host);
+    protected abstract void initialize(ChromeActivity activity, NativePageHost host);
 
     @Override
     public void onBrowserControlsConstraintsUpdated(

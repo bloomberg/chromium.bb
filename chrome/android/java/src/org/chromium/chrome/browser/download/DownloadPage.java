@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.download;
 
-import android.app.Activity;
 import android.view.View;
 
 import org.chromium.base.ActivityState;
@@ -13,6 +12,7 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
@@ -32,12 +32,12 @@ public class DownloadPage extends BasicNativePage {
      * @param activity The activity to get context and manage fragments.
      * @param host A NativePageHost to load urls.
      */
-    public DownloadPage(Activity activity, NativePageHost host) {
+    public DownloadPage(ChromeActivity activity, NativePageHost host) {
         super(activity, host);
     }
 
     @Override
-    protected void initialize(Activity activity, final NativePageHost host) {
+    protected void initialize(ChromeActivity activity, final NativePageHost host) {
         ThreadUtils.assertOnUiThread();
 
         mManager = new DownloadManagerUi(activity, host.isIncognito(), activity.getComponentName(),
