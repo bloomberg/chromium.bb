@@ -204,7 +204,7 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
                           .Text()
                           .ToString());
   // TODO(kojii): This is still incorrect.
-  EXPECT_EQ(LayoutRect(0, 0, 50, 10), outer_text.VisualRect());
+  EXPECT_EQ(LayoutRect(0, 0, 60, 10), outer_text.VisualRect());
 
   // Test |InlineFragmentsFor| can find the outer text.
   LayoutObject* layout_outer_text =

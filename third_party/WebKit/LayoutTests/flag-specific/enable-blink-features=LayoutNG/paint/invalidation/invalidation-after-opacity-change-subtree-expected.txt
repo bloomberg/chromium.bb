@@ -19,7 +19,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow (positioned) DIV id='absolute'",
-          "rect": [8, 2056, 774, 246],
+          "rect": [8, 2046, 774, 257],
           "reason": "appeared"
         }
       ],

@@ -19,62 +19,62 @@
       "paintInvalidations": [
         {
           "object": "NGPaintFragment",
-          "rect": [24, 224, 31, 9],
+          "rect": [8, 221, 48, 16],
           "reason": "style change"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [24, 208, 31, 9],
+          "rect": [8, 205, 48, 16],
           "reason": "style change"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [24, 192, 31, 9],
+          "rect": [8, 189, 48, 16],
           "reason": "style change"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [24, 176, 31, 9],
+          "rect": [8, 173, 48, 16],
           "reason": "style change"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [24, 160, 31, 9],
+          "rect": [8, 157, 48, 16],
           "reason": "style change"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [24, 144, 31, 9],
+          "rect": [8, 141, 48, 16],
           "reason": "style change"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [24, 128, 31, 9],
+          "rect": [8, 125, 48, 16],
           "reason": "style change"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [24, 112, 31, 9],
+          "rect": [8, 109, 48, 16],
           "reason": "style change"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [24, 96, 31, 9],
+          "rect": [8, 93, 48, 16],
           "reason": "style change"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [24, 80, 31, 9],
+          "rect": [8, 77, 48, 16],
           "reason": "style change"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [24, 64, 31, 9],
+          "rect": [8, 61, 48, 16],
           "reason": "style change"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [24, 240, 31, 6],
+          "rect": [8, 237, 48, 9],
           "reason": "style change"
         }
       ]

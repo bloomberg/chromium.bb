@@ -19,7 +19,7 @@
       "paintInvalidations": [
         {
           "object": "NGPaintFragment",
-          "rect": [0, 324, 413, 11],
+          "rect": [0, 320, 413, 19],
           "reason": "style change"
         }
       ],

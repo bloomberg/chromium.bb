@@ -116,6 +116,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   // Start and end offsets must be between StartOffset() and EndOffset().
   NGPhysicalOffsetRect LocalRect(unsigned start_offset,
                                  unsigned end_offset) const;
+  using NGPhysicalFragment::LocalRect;
 
   // The visual bounding box that includes glpyh bounding box and CSS
   // properties, in local coordinates.
@@ -145,6 +146,8 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   LayoutUnit InlinePositionForOffset(unsigned offset,
                                      LayoutUnit (*round)(float),
                                      AdjustMidCluster) const;
+
+  NGPhysicalOffsetRect ConvertToLocal(const LayoutRect&) const;
 
   // The text of NGInlineNode; i.e., of a parent block. The text for this
   // fragment is a substring(start_offset_, end_offset_) of this string.
