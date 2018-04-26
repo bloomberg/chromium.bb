@@ -165,7 +165,9 @@ class GattClientManagerTest : public ::testing::Test {
     device->Connect(cb_.Get());
     bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =
         gatt_client_->delegate();
+    EXPECT_CALL(*gatt_client_, GetServices(kTestAddr1)).WillOnce(Return(true));
     delegate->OnConnectChanged(addr, true /* status */, true /* connected */);
+    delegate->OnGetServices(addr, {});
     ASSERT_TRUE(device->IsConnected());
   }
 
@@ -200,16 +202,15 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnect) {
   EXPECT_CALL(cb_, Run(false));
   device->ConnectionParameterUpdate(10, 10, 50, 100, cb_.Get());
 
-  base::MockCallback<RemoteDevice::DiscoverServicesCb> discover_cb;
-  EXPECT_CALL(discover_cb, Run(false, _));
-  device->DiscoverServices(discover_cb.Get());
-
   EXPECT_CALL(*gatt_client_, Connect(kTestAddr1)).WillOnce(Return(true));
 
   EXPECT_CALL(cb_, Run(true));
   device->Connect(cb_.Get());
+  EXPECT_CALL(*gatt_client_, GetServices(kTestAddr1)).WillOnce(Return(true));
   delegate->OnConnectChanged(kTestAddr1, true /* status */,
                              true /* connected */);
+  EXPECT_CALL(*observer_, OnConnectChanged(device, true));
+  delegate->OnGetServices(kTestAddr1, {});
 
   EXPECT_TRUE(device->IsConnected());
   base::RunLoop().RunUntilIdle();
@@ -282,25 +283,20 @@ TEST_F(GattClientManagerTest, RemoteDeviceServices) {
   const auto kServices = GenerateServices();
   Connect(kTestAddr1);
   scoped_refptr<RemoteDevice> device = GetDevice(kTestAddr1);
+  std::vector<scoped_refptr<RemoteService>> services;
   EXPECT_EQ(0ul, GetServices(device.get()).size());
 
-  EXPECT_CALL(*gatt_client_, GetServices(kTestAddr1)).WillOnce(Return(true));
-
-  bool status = false;
-  std::vector<scoped_refptr<RemoteService>> services;
-  device->DiscoverServices(base::BindOnce(
-      [](bool* pstatus, std::vector<scoped_refptr<RemoteService>>* pservices,
-         bool status, std::vector<scoped_refptr<RemoteService>> services) {
-        *pstatus = status;
-        *pservices = services;
-      },
-      &status, &services));
-  EXPECT_CALL(*observer_, OnServicesUpdated(device, _));
   bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =
       gatt_client_->delegate();
   delegate->OnServicesAdded(kTestAddr1, kServices);
+
+  device->GetServices(base::BindOnce(
+      [](std::vector<scoped_refptr<RemoteService>>* pservices,
+         std::vector<scoped_refptr<RemoteService>> services) {
+        *pservices = services;
+      },
+      &services));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(status);
 
   EXPECT_EQ(kServices.size(), GetServices(device.get()).size());
   for (const auto& service : kServices) {
