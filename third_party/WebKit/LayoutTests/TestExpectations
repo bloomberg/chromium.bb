@@ -863,9 +863,11 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/overflow-content.h
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/overflow-unsplittable.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/pageLogicalOffset-vertical.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/paginate-block-replaced.html [ Failure ]
+
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/positioned-outside-of-columns.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/positioned-split.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/positioned-with-constrained-height.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/positive-leading.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/pushed-line-affected-by-float.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/relayout-and-push-float.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/renderer-positioned-assert-crash.html [ Failure ]

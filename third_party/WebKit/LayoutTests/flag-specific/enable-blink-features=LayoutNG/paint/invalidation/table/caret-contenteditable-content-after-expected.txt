@@ -39,62 +39,62 @@
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 12, 360, 14],
+          "rect": [8, 8, 361, 19],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 12, 360, 14],
+          "rect": [8, 8, 361, 19],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 12, 360, 14],
+          "rect": [8, 8, 361, 19],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 12, 360, 14],
+          "rect": [8, 8, 361, 19],
           "reason": "disappeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 12, 360, 14],
+          "rect": [8, 8, 361, 19],
           "reason": "disappeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 12, 360, 14],
+          "rect": [8, 8, 361, 19],
           "reason": "disappeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 32, 215, 14],
+          "rect": [8, 28, 216, 19],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 32, 215, 14],
+          "rect": [8, 28, 216, 19],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 32, 215, 14],
+          "rect": [8, 28, 216, 19],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 32, 215, 14],
+          "rect": [8, 28, 216, 19],
           "reason": "disappeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 32, 215, 14],
+          "rect": [8, 28, 216, 19],
           "reason": "disappeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 32, 215, 14],
+          "rect": [8, 28, 216, 19],
           "reason": "disappeared"
         },
         {

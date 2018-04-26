@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
@@ -129,6 +130,10 @@ class CORE_EXPORT NGPhysicalFragment
 
   // Returns the border-box size.
   NGPhysicalSize Size() const { return size_; }
+
+  // Returns the rect in the local coordinate of this fragment; i.e., offset is
+  // (0, 0).
+  NGPhysicalOffsetRect LocalRect() const { return {{}, size_}; }
 
   // Bitmask for border edges, see NGBorderEdges::Physical.
   unsigned BorderEdges() const { return border_edge_; }

@@ -39,12 +39,12 @@
         },
         {
           "object": "LayoutSVGForeignObject foreignObject",
-          "rect": [211, 124, 88, 26],
+          "rect": [210, 114, 91, 46],
           "reason": "paint property change"
         },
         {
           "object": "LayoutSVGForeignObject foreignObject",
-          "rect": [211, 24, 88, 26],
+          "rect": [210, 14, 91, 46],
           "reason": "paint property change"
         },
         {
@@ -59,7 +59,7 @@
         },
         {
           "object": "LayoutSVGForeignObject foreignObject",
-          "rect": [6, 3, 3, 2],
+          "rect": [6, 3, 4, 2],
           "reason": "paint property change"
         },
         {

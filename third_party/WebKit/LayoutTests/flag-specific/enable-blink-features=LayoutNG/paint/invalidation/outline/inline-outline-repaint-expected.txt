@@ -39,52 +39,52 @@
         },
         {
           "object": "NGPaintFragment",
-          "rect": [105, 59, 662, 14],
+          "rect": [101, 55, 666, 19],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [105, 59, 662, 14],
+          "rect": [101, 55, 666, 19],
           "reason": "disappeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [103, 121, 631, 14],
+          "rect": [100, 117, 634, 19],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [103, 121, 631, 14],
+          "rect": [100, 117, 634, 19],
           "reason": "disappeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [191, 20, 326, 14],
+          "rect": [191, 16, 326, 19],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [191, 20, 326, 14],
+          "rect": [191, 16, 326, 19],
           "reason": "disappeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [11, 79, 315, 14],
+          "rect": [11, 75, 316, 19],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [11, 79, 315, 14],
+          "rect": [11, 75, 316, 19],
           "reason": "disappeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [74, 20, 117, 14],
+          "rect": [74, 16, 117, 19],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [74, 20, 117, 14],
+          "rect": [74, 16, 117, 19],
           "reason": "disappeared"
         },
         {
@@ -94,12 +94,22 @@
         },
         {
           "object": "NGPaintFragment",
-          "rect": [11, 141, 93, 14],
+          "rect": [11, 137, 94, 19],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [11, 141, 93, 14],
+          "rect": [11, 137, 94, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [11, 55, 90, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [11, 55, 90, 19],
           "reason": "disappeared"
         },
         {
@@ -119,12 +129,12 @@
         },
         {
           "object": "NGPaintFragment",
-          "rect": [11, 59, 89, 11],
+          "rect": [11, 117, 89, 19],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [11, 59, 89, 11],
+          "rect": [11, 117, 89, 19],
           "reason": "disappeared"
         },
         {
@@ -144,22 +154,22 @@
         },
         {
           "object": "NGPaintFragment",
-          "rect": [11, 121, 88, 11],
+          "rect": [8, 16, 62, 19],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [11, 121, 88, 11],
+          "rect": [8, 16, 62, 19],
           "reason": "disappeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 20, 61, 12],
+          "rect": [70, 16, 4, 19],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 20, 61, 12],
+          "rect": [70, 16, 4, 19],
           "reason": "disappeared"
         },
         {

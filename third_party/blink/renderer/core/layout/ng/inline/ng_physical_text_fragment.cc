@@ -16,6 +16,23 @@
 
 namespace blink {
 
+// Convert logical cooridnate to local physical coordinate.
+NGPhysicalOffsetRect NGPhysicalTextFragment::ConvertToLocal(
+    const LayoutRect& logical_rect) const {
+  switch (LineOrientation()) {
+    case NGLineOrientation::kHorizontal:
+      return NGPhysicalOffsetRect(logical_rect);
+    case NGLineOrientation::kClockWiseVertical:
+      return {{size_.width - logical_rect.MaxY(), logical_rect.X()},
+              {logical_rect.Height(), logical_rect.Width()}};
+    case NGLineOrientation::kCounterClockWiseVertical:
+      return {{logical_rect.Y(), size_.height - logical_rect.MaxX()},
+              {logical_rect.Height(), logical_rect.Width()}};
+  }
+  NOTREACHED();
+  return NGPhysicalOffsetRect(logical_rect);
+}
+
 // Compute the inline position from text offset, in logical coordinate relative
 // to this fragment.
 LayoutUnit NGPhysicalTextFragment::InlinePositionForOffset(
@@ -76,8 +93,8 @@ NGPhysicalOffsetRect NGPhysicalTextFragment::LocalRect(
 }
 
 NGPhysicalOffsetRect NGPhysicalTextFragment::SelfVisualRect() const {
-  if (!shape_result_)
-    return {};
+  if (UNLIKELY(!shape_result_))
+    return LocalRect();
 
   // Glyph bounds is in logical coordinate, origin at the alphabetic baseline.
   LayoutRect visual_rect = EnclosingLayoutRect(shape_result_->Bounds());
@@ -85,8 +102,7 @@ NGPhysicalOffsetRect NGPhysicalTextFragment::SelfVisualRect() const {
   // Make the origin at the logical top of this fragment.
   const ComputedStyle& style = Style();
   const Font& font = style.GetFont();
-  const SimpleFontData* font_data = font.PrimaryFont();
-  if (font_data) {
+  if (const SimpleFontData* font_data = font.PrimaryFont()) {
     visual_rect.SetY(visual_rect.Y() + font_data->GetFontMetrics().FixedAscent(
                                            kAlphabeticBaseline));
   }
@@ -120,18 +136,11 @@ NGPhysicalOffsetRect NGPhysicalTextFragment::SelfVisualRect() const {
 
   visual_rect = LayoutRect(EnclosingIntRect(visual_rect));
 
-  switch (LineOrientation()) {
-    case NGLineOrientation::kHorizontal:
-      return NGPhysicalOffsetRect(visual_rect);
-    case NGLineOrientation::kClockWiseVertical:
-      return {{size_.width - visual_rect.MaxY(), visual_rect.X()},
-              {visual_rect.Height(), visual_rect.Width()}};
-    case NGLineOrientation::kCounterClockWiseVertical:
-      return {{visual_rect.Y(), size_.height - visual_rect.MaxX()},
-              {visual_rect.Height(), visual_rect.Width()}};
-  }
-  NOTREACHED();
-  return {};
+  // Uniting the frame rect ensures that non-ink spaces such side bearings, or
+  // even space characters, are included in the visual rect for decorations.
+  NGPhysicalOffsetRect local_visual_rect = ConvertToLocal(visual_rect);
+  local_visual_rect.Unite(LocalRect());
+  return local_visual_rect;
 }
 
 scoped_refptr<NGPhysicalFragment> NGPhysicalTextFragment::CloneWithoutOffset()

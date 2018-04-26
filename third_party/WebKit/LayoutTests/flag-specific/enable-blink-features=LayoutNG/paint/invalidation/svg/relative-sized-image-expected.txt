@@ -19,12 +19,12 @@
       "paintInvalidations": [
         {
           "object": "NGPaintFragment",
-          "rect": [8, 20, 772, 14],
+          "rect": [8, 16, 772, 19],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 20, 772, 14],
+          "rect": [8, 16, 772, 19],
           "reason": "disappeared"
         },
         {
@@ -44,12 +44,12 @@
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 40, 209, 14],
+          "rect": [8, 36, 209, 19],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 40, 209, 14],
+          "rect": [8, 36, 209, 19],
           "reason": "disappeared"
         },
         {

@@ -24,42 +24,42 @@
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 73, 369, 15],
+          "rect": [8, 69, 369, 20],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 73, 369, 15],
+          "rect": [8, 69, 369, 20],
           "reason": "disappeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 53, 345, 15],
+          "rect": [8, 49, 345, 20],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 53, 345, 15],
+          "rect": [8, 49, 345, 20],
           "reason": "disappeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 11, 334, 15],
+          "rect": [8, 8, 334, 19],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 11, 334, 15],
+          "rect": [8, 8, 334, 19],
           "reason": "disappeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 93, 174, 15],
+          "rect": [8, 89, 175, 20],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 93, 174, 15],
+          "rect": [8, 89, 175, 20],
           "reason": "disappeared"
         },
         {
