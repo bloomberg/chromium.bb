@@ -153,9 +153,6 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
 
   done_ = false;
 
-  // TODO(jered): Consider adding locally-sourced zero-suggestions here too.
-  // These may be useful on the NTP or more relevant to the user than server
-  // suggestions, if based on local browsing history.
   MaybeUseCachedSuggestions();
 
   if (result_type_running_ == MOST_VISITED) {
@@ -538,10 +535,6 @@ void ZeroSuggestProvider::MaybeUseCachedSuggestions() {
 ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
     const GURL& current_url,
     const GURL& suggest_url) {
-  // TODO(jered): Consider adding locally-sourced zero-suggestions here too.
-  // These may be useful on the NTP or more relevant to the user than server
-  // suggestions, if based on local browsing history.
-
   // Check if the URL can be sent in any suggest request.
   const TemplateURLService* template_url_service =
       client()->GetTemplateURLService();
