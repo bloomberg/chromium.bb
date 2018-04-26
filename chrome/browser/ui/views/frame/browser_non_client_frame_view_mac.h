@@ -17,6 +17,7 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
   ~BrowserNonClientFrameViewMac() override;
 
   // BrowserNonClientFrameView:
+  bool CaptionButtonsOnLeadingEdge() const override;
   gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;

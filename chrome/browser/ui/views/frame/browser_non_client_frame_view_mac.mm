@@ -39,6 +39,10 @@ BrowserNonClientFrameViewMac::~BrowserNonClientFrameViewMac() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewMac, BrowserNonClientFrameView implementation:
 
+bool BrowserNonClientFrameViewMac::CaptionButtonsOnLeadingEdge() const {
+  return true;
+}
+
 gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStrip(
     views::View* tabstrip) const {
   DCHECK(tabstrip);

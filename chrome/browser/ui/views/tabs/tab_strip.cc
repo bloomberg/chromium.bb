@@ -130,20 +130,6 @@ enum NewTabButtonPosition {
   TRAILING,    // Pinned to the trailing edge of the tabstrip region.
 };
 
-NewTabButtonPosition GetNewTabButtonPosition() {
-  if (MD::GetMode() != MD::MATERIAL_REFRESH)
-    return AFTER_TABS;
-#if defined(OS_MACOSX)
-  return TRAILING;
-#else
-  return LEADING;
-#endif
-}
-
-bool ShouldHideNewTabButtonWhileDragging() {
-  return GetNewTabButtonPosition() == AFTER_TABS;
-}
-
 // Animation delegate used for any automatic tab movement.  Hides the tab if it
 // is not fully visible within the tabstrip area, to prevent overflow clipping.
 class TabAnimationDelegate : public gfx::AnimationDelegate {
@@ -340,6 +326,15 @@ void TabStrip::RemoveObserver(TabStripObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+TabStrip::NewTabButtonPosition TabStrip::GetNewTabButtonPosition() const {
+  if (MD::GetMode() != MD::MATERIAL_REFRESH)
+    return AFTER_TABS;
+
+  const auto* frame_view = static_cast<const BrowserNonClientFrameView*>(
+      GetWidget()->non_client_view()->frame_view());
+  return frame_view->CaptionButtonsOnLeadingEdge() ? TRAILING : LEADING;
+}
+
 int TabStrip::GetMaxX() const {
   // This function should not currently be called for TRAILING mode; if it is,
   // the API will need changing, since callers assume the tabstrip uses
@@ -520,7 +515,7 @@ void TabStrip::MoveTab(int from_model_index,
     tabs_.Move(from_model_index, to_model_index);
   }
   StartMoveTabAnimation();
-  if (ShouldHideNewTabButtonWhileDragging() &&
+  if (MayHideNewTabButtonWhileDragging() &&
       TabDragController::IsAttachedTo(this) &&
       (last_tab != GetLastVisibleTab() || last_tab->dragging())) {
     new_tab_button_->SetVisible(false);
@@ -608,7 +603,7 @@ bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
   int right_edge = tab->bounds().right();
   const bool trailing_new_tab_button =
       (GetNewTabButtonPosition() == TRAILING) ||
-      (ShouldHideNewTabButtonWhileDragging() && !tab->dragging());
+      (MayHideNewTabButtonWhileDragging() && !tab->dragging());
   const int tabstrip_right =
       trailing_new_tab_button ? GetTabAreaWidth() : width();
   if (right_edge > tabstrip_right)
@@ -1470,6 +1465,10 @@ bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
   return in_tab_close_;
 }
 
+bool TabStrip::MayHideNewTabButtonWhileDragging() const {
+  return GetNewTabButtonPosition() == AFTER_TABS;
+}
+
 bool TabStrip::TitlebarBackgroundIsTransparent() const {
 #if defined(OS_WIN)
   // Windows 8+ uses transparent window contents (because the titlebar area is
@@ -1627,7 +1626,7 @@ void TabStrip::LayoutDraggedTabsAt(const Tabs& tabs,
                                    bool initial_drag) {
   // Immediately hide the new tab button if the last tab is being dragged.
   const Tab* last_visible_tab = GetLastVisibleTab();
-  if (ShouldHideNewTabButtonWhileDragging() && last_visible_tab &&
+  if (MayHideNewTabButtonWhileDragging() && last_visible_tab &&
       last_visible_tab->dragging())
     new_tab_button_->SetVisible(false);
   std::vector<gfx::Rect> bounds;
@@ -1770,7 +1769,7 @@ void TabStrip::StartedDraggingTabs(const Tabs& tabs) {
   controller_->OnStartedDraggingTabs();
 
   // Hide the new tab button immediately if we didn't originate the drag.
-  if (ShouldHideNewTabButtonWhileDragging() && !drag_controller_)
+  if (MayHideNewTabButtonWhileDragging() && !drag_controller_)
     new_tab_button_->SetVisible(false);
 
   PrepareForAnimation();

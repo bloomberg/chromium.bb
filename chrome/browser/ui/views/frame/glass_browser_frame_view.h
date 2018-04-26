@@ -35,6 +35,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   ~GlassBrowserFrameView() override;
 
   // BrowserNonClientFrameView:
+  bool CaptionButtonsOnLeadingEdge() const override;
   gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
@@ -127,10 +128,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   // Returns whether the toolbar is currently visible.
   bool IsToolbarVisible() const;
-
-  // Returns whether the caption buttons are drawn at the leading edge (i.e. the
-  // left in LTR mode, or the right in RTL mode).
-  bool CaptionButtonsOnLeadingEdge() const;
 
   bool ShowCustomIcon() const;
   bool ShowCustomTitle() const;
