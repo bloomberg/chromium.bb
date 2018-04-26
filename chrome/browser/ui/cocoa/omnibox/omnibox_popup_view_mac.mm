@@ -105,10 +105,13 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
   CreatePopupIfNeeded();
 
   NSImage* answerImage = nil;
-  if (!model_->rich_suggestion_bitmap().isNull()) {
-    answerImage =
-        gfx::Image::CreateFrom1xBitmap(model_->rich_suggestion_bitmap())
-            .CopyNSImage();
+  const size_t result_size = model_->result().size();
+  for (size_t i = 0; i < result_size; ++i) {
+    const SkBitmap* bitmap = model_->RichSuggestionBitmapAt(i);
+    if (result.match_at(i).answer && bitmap != nullptr) {
+      answerImage = gfx::Image::CreateFrom1xBitmap(*bitmap).CopyNSImage();
+      break;
+    }
   }
   [matrix_ setController:[[[OmniboxPopupTableController alloc]
                              initWithMatchResults:result

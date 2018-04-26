@@ -658,6 +658,10 @@ TemplateURL* AutocompleteMatch::GetTemplateURL(
           destination_url.host() : std::string());
 }
 
+GURL AutocompleteMatch::ImageUrl() const {
+  return answer ? answer->second_line().image_url() : GURL(image_url);
+}
+
 void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
                                              const std::string& value) {
   DCHECK(!property.empty());

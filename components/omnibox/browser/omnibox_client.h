@@ -29,7 +29,7 @@ class Image;
 }
 
 using BitmapFetchedCallback =
-    base::RepeatingCallback<void(const SkBitmap& bitmap)>;
+    base::RepeatingCallback<void(int result_index, const SkBitmap& bitmap)>;
 using FaviconFetchedCallback =
     base::OnceCallback<void(const gfx::Image& favicon)>;
 

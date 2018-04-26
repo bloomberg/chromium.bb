@@ -6,6 +6,7 @@
 #define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_POPUP_MODEL_H_
 
 #include <stddef.h>
+#include <map>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -128,11 +129,10 @@ class OmniboxPopupModel {
   void AddObserver(OmniboxPopupModelObserver* observer);
   void RemoveObserver(OmniboxPopupModelObserver* observer);
 
+  // Lookup the bitmap for |result_index|. Returns nullptr if not found.
+  const SkBitmap* RichSuggestionBitmapAt(int result_index) const;
   // Stores the image in a local data member and schedules a repaint.
-  void SetRichSuggestionBitmap(const SkBitmap& bitmap);
-  const SkBitmap& rich_suggestion_bitmap() const {
-    return rich_suggestion_bitmap_;
-  }
+  void SetRichSuggestionBitmap(int result_index, const SkBitmap& bitmap);
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   // Gets the icon for the match index.
@@ -147,7 +147,7 @@ class OmniboxPopupModel {
  private:
   void OnFaviconFetched(const GURL& page_url, const gfx::Image& icon);
 
-  SkBitmap rich_suggestion_bitmap_;
+  std::map<int, SkBitmap> rich_suggestion_bitmaps_;
 
   OmniboxPopupView* view_;
 

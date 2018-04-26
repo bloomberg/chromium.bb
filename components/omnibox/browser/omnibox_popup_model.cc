@@ -231,7 +231,7 @@ bool OmniboxPopupModel::IsStarredMatch(const AutocompleteMatch& match) const {
 }
 
 void OmniboxPopupModel::OnResultChanged() {
-  rich_suggestion_bitmap_ = SkBitmap();
+  rich_suggestion_bitmaps_.clear();
   const AutocompleteResult& result = this->result();
   selected_line_ = result.default_match() == result.end() ?
       kNoMatch : static_cast<size_t>(result.default_match() - result.begin());
@@ -246,8 +246,18 @@ void OmniboxPopupModel::OnResultChanged() {
     edit_model_->controller()->OnPopupVisibilityChanged();
 }
 
-void OmniboxPopupModel::SetRichSuggestionBitmap(const SkBitmap& bitmap) {
-  rich_suggestion_bitmap_ = bitmap;
+const SkBitmap* OmniboxPopupModel::RichSuggestionBitmapAt(
+    int result_index) const {
+  const auto iter = rich_suggestion_bitmaps_.find(result_index);
+  if (iter == rich_suggestion_bitmaps_.end()) {
+    return nullptr;
+  }
+  return &iter->second;
+}
+
+void OmniboxPopupModel::SetRichSuggestionBitmap(int result_index,
+                                                const SkBitmap& bitmap) {
+  rich_suggestion_bitmaps_[result_index] = bitmap;
   view_->UpdatePopupAppearance();
 }
 

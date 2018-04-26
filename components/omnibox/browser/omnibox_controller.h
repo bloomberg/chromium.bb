@@ -68,7 +68,7 @@ class OmniboxController : public AutocompleteControllerDelegate {
 
  private:
   // Stores the bitmap in the OmniboxPopupModel.
-  void SetRichSuggestionBitmap(const SkBitmap& bitmap);
+  void SetRichSuggestionBitmap(int result_index, const SkBitmap& bitmap);
 
   // Weak, it owns us.
   // TODO(beaudoin): Consider defining a delegate to ease unit testing.
