@@ -22,14 +22,20 @@ extern "C" {
 struct AV1Common;
 struct FRAME_COUNTS;
 
+typedef struct AV1LfMTInfo {
+  int mi_row;
+  int plane;
+  int dir;
+} AV1LfMTInfo;
+
 // Loopfilter row synchronization
 typedef struct AV1LfSyncData {
 #if CONFIG_MULTITHREAD
-  pthread_mutex_t *mutex_;
-  pthread_cond_t *cond_;
+  pthread_mutex_t *mutex_[MAX_MB_PLANE];
+  pthread_cond_t *cond_[MAX_MB_PLANE];
 #endif
   // Allocate memory to store the loop-filtered superblock index in each row.
-  int *cur_sb_col;
+  int *cur_sb_col[MAX_MB_PLANE];
   // The optimal sync_range for different resolution and platform should be
   // determined by testing. Currently, it is chosen to be a power-of-2 number.
   int sync_range;
@@ -38,10 +44,23 @@ typedef struct AV1LfSyncData {
   // Row-based parallel loopfilter data
   LFWorkerData *lfdata;
   int num_workers;
+
+#if CONFIG_MULTITHREAD
+  pthread_mutex_t *job_mutex;
+#endif
+  AV1LfMTInfo *job_queue;
+  int jobs_enqueued;
+  int jobs_dequeued;
 } AV1LfSync;
 
 // Deallocate loopfilter synchronization related mutex and data.
 void av1_loop_filter_dealloc(AV1LfSync *lf_sync);
+
+void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
+                              struct macroblockd *mbd, int plane_start,
+                              int plane_end, int partial_frame,
+                              AVxWorker *workers, int num_workers,
+                              AV1LfSync *lf_sync);
 
 void av1_accumulate_frame_counts(struct FRAME_COUNTS *acc_counts,
                                  struct FRAME_COUNTS *counts);
