@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/views/assistant_bubble_view.h"
+#include "ash/assistant/ui/assistant_bubble_view.h"
 
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,13 +18,11 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
 // Appearance.
-constexpr SkColor kBackgroundColor = SK_ColorWHITE;
-constexpr int kCornerRadiusDip = 16;
 constexpr int kPaddingDip = 8;
 constexpr int kPreferredWidthDip = 364;
 constexpr int kSpacingDip = 8;
@@ -79,7 +77,7 @@ class InteractionContainer : public views::View {
 
   ~InteractionContainer() override = default;
 
-  void SetQuery(const Query& query) {
+  void SetQuery(const app_list::Query& query) {
     // TODO(dmblack): Represent high confidence and low confidence portions of
     // the query with different colors.
     interaction_label_->SetText(base::UTF8ToUTF16(query.high_confidence_text) +
@@ -174,8 +172,9 @@ class UiElementContainer : public views::View {
   void EmbedCard(const base::UnguessableToken& embed_token) {
     // When the card has been rendered in the same process, its view is
     // available in the AnswerCardContentsRegistry's token-to-view map.
-    if (AnswerCardContentsRegistry::Get()) {
-      AddChildView(AnswerCardContentsRegistry::Get()->GetView(embed_token));
+    if (app_list::AnswerCardContentsRegistry::Get()) {
+      AddChildView(
+          app_list::AnswerCardContentsRegistry::Get()->GetView(embed_token));
     }
     // TODO(dmblack): Handle Mash case.
   }
@@ -204,7 +203,7 @@ class UiElementContainer : public views::View {
 
 class SuggestionsContainer : public views::View {
  public:
-  explicit SuggestionsContainer(SuggestionChipListener* listener)
+  explicit SuggestionsContainer(app_list::SuggestionChipListener* listener)
       : suggestion_chip_listener_(listener) {}
 
   ~SuggestionsContainer() override = default;
@@ -253,8 +252,8 @@ class SuggestionsContainer : public views::View {
 
   void AddSuggestions(const std::vector<std::string>& suggestions) {
     for (const std::string& suggestion : suggestions) {
-      AddChildView(new SuggestionChipView(base::UTF8ToUTF16(suggestion),
-                                          suggestion_chip_listener_));
+      AddChildView(new app_list::SuggestionChipView(
+          base::UTF8ToUTF16(suggestion), suggestion_chip_listener_));
     }
     PreferredSizeChanged();
   }
@@ -265,7 +264,7 @@ class SuggestionsContainer : public views::View {
   }
 
  private:
-  SuggestionChipListener* const suggestion_chip_listener_;
+  app_list::SuggestionChipListener* const suggestion_chip_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsContainer);
 };
@@ -275,7 +274,7 @@ class SuggestionsContainer : public views::View {
 // AssistantBubbleView ---------------------------------------------------------
 
 AssistantBubbleView::AssistantBubbleView(
-    AssistantController* assistant_controller)
+    app_list::AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
       interaction_container_(new InteractionContainer()),
       ui_element_container_(new UiElementContainer()),
@@ -308,9 +307,6 @@ void AssistantBubbleView::ChildVisibilityChanged(views::View* child) {
 }
 
 void AssistantBubbleView::InitLayout() {
-  SetBackground(std::make_unique<RoundRectBackground>(kBackgroundColor,
-                                                      kCornerRadiusDip));
-
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(kPaddingDip, 0),
       kSpacingDip));
@@ -342,14 +338,15 @@ void AssistantBubbleView::SetProcessingUiElement(bool is_processing) {
 
 void AssistantBubbleView::ProcessPendingUiElements() {
   while (!is_processing_ui_element_ && !pending_ui_element_list_.empty()) {
-    const AssistantUiElement* ui_element = pending_ui_element_list_.front();
+    const app_list::AssistantUiElement* ui_element =
+        pending_ui_element_list_.front();
     pending_ui_element_list_.pop_front();
     OnUiElementAdded(ui_element);
   }
 }
 
 void AssistantBubbleView::OnUiElementAdded(
-    const AssistantUiElement* ui_element) {
+    const app_list::AssistantUiElement* ui_element) {
   // If we are processing a UI element we need to pend the incoming element
   // instead of handling it immediately.
   if (is_processing_ui_element_) {
@@ -358,11 +355,13 @@ void AssistantBubbleView::OnUiElementAdded(
   }
 
   switch (ui_element->GetType()) {
-    case AssistantUiElementType::kCard:
-      OnCardAdded(static_cast<const AssistantCardElement*>(ui_element));
+    case app_list::AssistantUiElementType::kCard:
+      OnCardAdded(
+          static_cast<const app_list::AssistantCardElement*>(ui_element));
       break;
-    case AssistantUiElementType::kText:
-      OnTextAdded(static_cast<const AssistantTextElement*>(ui_element));
+    case app_list::AssistantUiElementType::kText:
+      OnTextAdded(
+          static_cast<const app_list::AssistantTextElement*>(ui_element));
       break;
   }
 }
@@ -382,7 +381,7 @@ void AssistantBubbleView::OnUiElementsCleared() {
 }
 
 void AssistantBubbleView::OnCardAdded(
-    const AssistantCardElement* card_element) {
+    const app_list::AssistantCardElement* card_element) {
   DCHECK(!is_processing_ui_element_);
 
   // We need to pend any further UI elements until the card has been rendered.
@@ -432,7 +431,7 @@ void AssistantBubbleView::OnReleaseCards() {
   }
 }
 
-void AssistantBubbleView::OnQueryChanged(const Query& query) {
+void AssistantBubbleView::OnQueryChanged(const app_list::Query& query) {
   interaction_container_->SetQuery(query);
 }
 
@@ -452,17 +451,17 @@ void AssistantBubbleView::OnSuggestionsCleared() {
 }
 
 void AssistantBubbleView::OnSuggestionChipPressed(
-    SuggestionChipView* suggestion_chip_view) {
+    app_list::SuggestionChipView* suggestion_chip_view) {
   assistant_controller_->OnSuggestionChipPressed(
       base::UTF16ToUTF8(suggestion_chip_view->GetText()));
 }
 
 void AssistantBubbleView::OnTextAdded(
-    const AssistantTextElement* text_element) {
+    const app_list::AssistantTextElement* text_element) {
   DCHECK(!is_processing_ui_element_);
 
   ui_element_container_->AddText(text_element->GetText());
   ui_element_container_->SetVisible(true);
 }
 
-}  // namespace app_list
+}  // namespace ash
