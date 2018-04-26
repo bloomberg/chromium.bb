@@ -430,6 +430,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                                     "tabindexFocusDirectorySelected")));
 
 // Fails on official cros trunk build. http://crbug.com/480491
+// TODO(crbug.com/836254) test broken when DISABLE removed.
 #if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
 #define MAYBE_TabindexOpenDialog DISABLED_TabindexOpenDialog
 #else
