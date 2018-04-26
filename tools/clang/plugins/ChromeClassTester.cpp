@@ -103,12 +103,9 @@ ChromeClassTester::LocationType ChromeClassTester::ClassifyLocation(
   if (filename.find("/gen/") != std::string::npos)
     return LocationType::kThirdParty;
 
-  // TODO(dcheng, tkent): The WebKit directory is being renamed to Blink. Clean
-  // this up once the rename is done.
-  if (filename.find("/third_party/WebKit/") != std::string::npos ||
-      (filename.find("/third_party/blink/") != std::string::npos &&
-       // Browser-side code should always use the full range of checks.
-       filename.find("/third_party/blink/browser/") == std::string::npos)) {
+  if (filename.find("/third_party/blink/") != std::string::npos &&
+      // Browser-side code should always use the full range of checks.
+      filename.find("/third_party/blink/browser/") == std::string::npos) {
     return LocationType::kBlink;
   }
 

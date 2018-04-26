@@ -48,11 +48,9 @@ bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
       // TODO(rsleevi): Remove this once http://crbug.com/123295 is fixed.
       options_.check_base_classes = true;
     } else if (args[i] == "enforce-in-thirdparty-webkit") {
-      options_.enforce_in_thirdparty_webkit = true;
+      // TODO(dcheng): Remove completely.
     } else if (args[i] == "check-enum-max-value") {
-      // TODO(tsepez): Enable this by default once http://crbug.com/356815
-      // and http://crbug.com/356816 are fixed.
-      options_.check_enum_max_value = true;
+      // TODO(dcheng): Remove completely.
     } else if (args[i] == "check-ipc") {
       options_.check_ipc = true;
     } else {
