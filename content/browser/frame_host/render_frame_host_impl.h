@@ -338,6 +338,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // cases, use GetLastCommittedURL instead.
   const GURL& last_successful_url() { return last_successful_url_; }
 
+  // Allows overriding the last committed origin in tests.
+  void SetLastCommittedOriginForTesting(const url::Origin& origin);
+
   // Fetch the link-rel canonical URL to be used for sharing to external
   // applications.
   void GetCanonicalUrlForSharing(

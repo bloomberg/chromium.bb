@@ -1444,6 +1444,11 @@ void RenderFrameHostImpl::SetLastCommittedOrigin(const url::Origin& origin) {
   CSPContext::SetSelf(origin);
 }
 
+void RenderFrameHostImpl::SetLastCommittedOriginForTesting(
+    const url::Origin& origin) {
+  SetLastCommittedOrigin(origin);
+}
+
 void RenderFrameHostImpl::SetLastCommittedUrl(const GURL& url) {
   last_committed_url_ = url;
 }
