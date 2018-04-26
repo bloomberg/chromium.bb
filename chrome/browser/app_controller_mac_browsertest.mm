@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
+#include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -580,6 +581,29 @@ IN_PROC_BROWSER_TEST_F(AppControllerReplaceNTPBrowserTest,
                 ->tab_strip_model()
                 ->GetActiveWebContents()
                 ->GetLastCommittedURL());
+}
+
+// Tests that when a GURL is opened, it is not opened in incognito mode.
+IN_PROC_BROWSER_TEST_F(AppControllerBrowserTest, OpenInRegularBrowser) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  // Create an incognito browser.
+  Browser* incognito_browser = CreateIncognitoBrowser(browser()->profile());
+  EXPECT_EQ(incognito_browser, chrome::GetLastActiveBrowser());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(1, incognito_browser->tab_strip_model()->count());
+  // Open a url.
+  GURL simple(embedded_test_server()->GetURL("/simple.html"));
+  SendAppleEventToOpenUrlToAppController(simple);
+  // It should be opened in the regular browser.
+  content::TestNavigationObserver event_navigation_observer(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  event_navigation_observer.Wait();
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(1, incognito_browser->tab_strip_model()->count());
+  EXPECT_EQ(simple, browser()
+                        ->tab_strip_model()
+                        ->GetActiveWebContents()
+                        ->GetLastCommittedURL());
 }
 
 class AppControllerMainMenuBrowserTest : public InProcessBrowserTest {

@@ -725,7 +725,10 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // If there's only 1 tab and the tab is NTP, close this NTP tab and open all
   // startup urls in new tabs, because the omnibox will stay focused if we
   // load url in NTP tab.
-  Browser* browser = chrome::GetLastActiveBrowser();
+  Profile* profile =
+      g_browser_process->profile_manager()->GetLastUsedProfileAllowedByPolicy();
+  Browser* browser = chrome::FindLastActiveWithProfile(profile);
+
   int startupIndex = TabStripModel::kNoTab;
   content::WebContents* startupContent = NULL;
 
@@ -1393,8 +1396,10 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
     startupUrls_.insert(startupUrls_.end(), urls.begin(), urls.end());
     return;
   }
-
-  Browser* browser = chrome::GetLastActiveBrowser();
+  // Pick the last used browser from a regular profile to open the urls.
+  Profile* profile =
+      g_browser_process->profile_manager()->GetLastUsedProfileAllowedByPolicy();
+  Browser* browser = chrome::FindLastActiveWithProfile(profile);
   // if no browser window exists then create one with no tabs to be filled in
   if (!browser) {
     browser = new Browser(
