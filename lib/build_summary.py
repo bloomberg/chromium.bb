@@ -29,23 +29,33 @@ class BuildSummary(object):
         or 0 if there isn't one.
     status: One of the status constants from
         chromite.lib.constants.BUILDER_ALL_STATUSES
+    buildroot_layout: Version of the buildroot layout.
+    branch: Name of the branch this repository is associated with.
+    distfiles_ts: Float unix timestamp recording the last time the distfiles
+        cache was cleaned.
   """
 
   # List of attributes that should be saved and restored to represent
   # this object.  We use an explicit list instead of vars() so that future
   # additions can be handled explicitly.
   _PERSIST_ATTRIBUTES = ('build_number', 'buildbucket_id', 'master_build_id',
-                         'status')
+                         'status', 'buildroot_layout', 'branch', 'distfiles_ts')
 
   def __init__(self, build_number=0, buildbucket_id=0, master_build_id=0,
-               status=constants.BUILDER_STATUS_MISSING):
+               status=constants.BUILDER_STATUS_MISSING,
+               buildroot_layout=0, branch='', distfiles_ts=None):
     self.build_number = build_number
     self.buildbucket_id = buildbucket_id
     self.master_build_id = master_build_id
     self.status = status
+    self.buildroot_layout = buildroot_layout
+    self.branch = branch
+    self.distfiles_ts = distfiles_ts
 
   def __eq__(self, other):
     for a in self._PERSIST_ATTRIBUTES:
+      if hasattr(other, a) != hasattr(self, a):
+        return False
       if getattr(other, a) != getattr(self, a):
         return False
     return True

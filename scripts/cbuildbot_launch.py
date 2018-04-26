@@ -125,17 +125,20 @@ def PreParseArguments(argv):
   return options
 
 
-def GetCurrentBuildState(options):
+def GetCurrentBuildState(options, branch):
   """Extract information about the current build state from command-line args.
 
   Args:
     options: A parsed options object from a cbuildbot parser.
+    branch: The name of the branch this builder was called with.
 
   Returns:
     A BuildSummary object describing the current build.
   """
   build_state = build_summary.BuildSummary(
-      status=constants.BUILDER_STATUS_INFLIGHT)
+      status=constants.BUILDER_STATUS_INFLIGHT,
+      buildroot_layout=BUILDROOT_BUILDROOT_LAYOUT,
+      branch=branch)
   if options.buildnumber:
     build_state.build_number = options.buildnumber
   if options.buildbucket_id:
@@ -160,6 +163,13 @@ def GetLastBuildState(root):
   state_file = os.path.join(root, BUILDER_STATE_FILENAME)
 
   state = build_summary.BuildSummary()
+
+  # Merge the old state file into the state.  This will be overwritten by the
+  # new state file if it contains the same fields, which is what we want.
+  # TODO(bmgordon): Remove this once all builders have had time to migrate to
+  # the new file.
+  state.buildroot_layout, state.branch, state.distfiles_ts = GetState(root)
+
   try:
     state_raw = osutils.ReadFile(state_file)
     state.from_json(state_raw)
@@ -172,7 +182,7 @@ def GetLastBuildState(root):
 
   if not state.is_valid():
     logging.warning('Previous build state is not valid.  Ignoring.')
-    return build_summary.BuildSummary()
+    state = build_summary.BuildSummary()
 
   return state
 
@@ -186,6 +196,10 @@ def SetLastBuildState(root, new_state):
   """
   state_file = os.path.join(root, BUILDER_STATE_FILENAME)
   osutils.WriteFile(state_file, new_state.to_json())
+
+  # Remove old state file.  Its contents have been migrated into the new file.
+  old_state_file = os.path.join(root, '.cbuildbot_launch_state')
+  osutils.SafeUnlink(old_state_file)
 
 
 def GetState(root):
@@ -215,24 +229,6 @@ def GetState(root):
   except (IOError, ValueError, IndexError):
     # If we are unable to either read or parse the state file, we get here.
     return 0, '', None
-
-
-def SetState(branchname, root, distfiles_ts=None):
-  """Save the current state of our working directory.
-
-  Args:
-    branchname: Name of branch we prepped for as a string.
-    root: Root of the working directory tree as a string.
-    distfiles_ts: float unix timestamp to include as the distfiles timestamp. If
-        None, current time will be used.
-  """
-  assert branchname
-  state_file = os.path.join(root, '.cbuildbot_launch_state')
-  if distfiles_ts is None:
-    distfiles_ts = time.time()
-  new_state = '%d %s %f' % (
-      BUILDROOT_BUILDROOT_LAYOUT, branchname, distfiles_ts)
-  osutils.WriteFile(state_file, new_state)
 
 
 def _MaybeCleanDistfiles(repo, distfiles_ts, metrics_fields):
@@ -278,12 +274,14 @@ def CleanBuildRoot(root, repo, metrics_fields, build_state):
     repo: repository.RepoRepository instance.
     metrics_fields: Dictionary of fields to include in metrics.
     build_state: BuildSummary object containing the current build state that
-        will be saved into the cleaned root.
+        will be saved into the cleaned root.  The distfiles_ts property will
+        be updated if the distfiles cache is cleaned.
   """
-  old_buildroot_layout, old_branch, distfiles_ts = GetState(root)
-  distfiles_ts = _MaybeCleanDistfiles(repo, distfiles_ts, metrics_fields)
+  previous_state = GetLastBuildState(root)
+  build_state.distfiles_ts = _MaybeCleanDistfiles(
+      repo, previous_state.distfiles_ts, metrics_fields)
 
-  if old_buildroot_layout != BUILDROOT_BUILDROOT_LAYOUT:
+  if previous_state.buildroot_layout != BUILDROOT_BUILDROOT_LAYOUT:
     logging.PrintBuildbotStepText('Unknown layout: Wiping buildroot.')
     metrics.Counter(METRIC_CLOBBER).increment(
         field(metrics_fields, reason='layout_change'))
@@ -292,11 +290,12 @@ def CleanBuildRoot(root, repo, metrics_fields, build_state):
       cros_build_lib.CleanupChrootMount(chroot_dir, delete_image=True)
     osutils.RmDir(root, ignore_missing=True, sudo=True)
   else:
-    if old_branch != repo.branch:
+    if previous_state.branch != repo.branch:
       logging.PrintBuildbotStepText('Branch change: Cleaning buildroot.')
-      logging.info('Unmatched branch: %s -> %s', old_branch, repo.branch)
+      logging.info('Unmatched branch: %s -> %s', previous_state.branch,
+                   repo.branch)
       metrics.Counter(METRIC_BRANCH_CLEANUP).increment(
-          field(metrics_fields, old_branch=old_branch))
+          field(metrics_fields, old_branch=previous_state.branch))
 
       logging.info('Remove Chroot.')
       chroot_dir = os.path.join(repo.directory, constants.DEFAULT_CHROOT_DIR)
@@ -319,7 +318,8 @@ def CleanBuildRoot(root, repo, metrics_fields, build_state):
 
   # Ensure buildroot exists. Save the state we are prepped for.
   osutils.SafeMakedirs(repo.directory)
-  SetState(repo.branch, root, distfiles_ts)
+  if not build_state.distfiles_ts:
+    build_state.distfiles_ts = time.time()
   SetLastBuildState(root, build_state)
 
 
@@ -480,7 +480,7 @@ def _main(argv):
 
       # Clean up the buildroot to a safe state.
       with metrics.SecondsTimer(METRIC_CLEAN, fields=metrics_fields):
-        build_state = GetCurrentBuildState(options)
+        build_state = GetCurrentBuildState(options, branchname)
         CleanBuildRoot(root, repo, metrics_fields, build_state)
 
       # Get a checkout close enough to the branch that cbuildbot can handle it.
