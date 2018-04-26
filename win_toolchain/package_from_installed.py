@@ -198,13 +198,20 @@ def BuildFileList(override_dir):
       # The recommended fix is to copy dbghelp.dll from the VS install instead,
       # as done here:
       if VS_VERSION == '2017' and combined.endswith('dbghelp.dll'):
-        good_dbghelp_path = os.path.join(vs_path, 'Common7', 'IDE',
-                                'CommonExtensions', 'Microsoft', 'TestWindow',
-                                'Extensions', 'CppUnitFramework')
-        if combined.count('\\x64\\') > 0:
-          combined = os.path.join(good_dbghelp_path, 'x64', 'dbghelp.dll')
-        else:
-          combined = os.path.join(good_dbghelp_path, 'dbghelp.dll')
+        prefix_path = os.path.join(vs_path, 'Common7', 'IDE',
+                                   'CommonExtensions', 'Microsoft',
+                                   'TestWindow', 'Extensions')
+        arch_dir = 'x64' if combined.count('\\x64\\') > 0 else ''
+        good_dbghelp_path_candidates = [
+            os.path.join(prefix_path, 'CppUnitFramework', arch_dir,
+                         'dbghelp.dll'),
+            os.path.join(prefix_path, 'Cpp', arch_dir, 'dbghelp.dll')
+        ]
+        combined = good_dbghelp_path_candidates[0]
+        for c in good_dbghelp_path_candidates:
+          if os.path.exists(c):
+            combined = c
+            break
       result.append((combined, to))
 
   # Copy the x86 ucrt DLLs to all directories with 32-bit binaries that are
