@@ -28,14 +28,6 @@ TEST_F(ModelTypeTest, ModelTypeToValue) {
   base::ExpectStringValue("Unspecified", *ModelTypeToValue(UNSPECIFIED));
 }
 
-TEST_F(ModelTypeTest, ModelTypeFromValue) {
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
-    ModelType model_type = ModelTypeFromInt(i);
-    std::unique_ptr<base::Value> value(ModelTypeToValue(model_type));
-    EXPECT_EQ(model_type, ModelTypeFromValue(*value));
-  }
-}
-
 TEST_F(ModelTypeTest, ModelTypeSetToValue) {
   const ModelTypeSet model_types(BOOKMARKS, APPS);
 
@@ -46,19 +38,6 @@ TEST_F(ModelTypeTest, ModelTypeSetToValue) {
   EXPECT_TRUE(value->GetString(1, &types[1]));
   EXPECT_EQ("Bookmarks", types[0]);
   EXPECT_EQ("Apps", types[1]);
-}
-
-TEST_F(ModelTypeTest, ModelTypeSetFromValue) {
-  // Try empty set first.
-  ModelTypeSet model_types;
-  std::unique_ptr<base::ListValue> value(ModelTypeSetToValue(model_types));
-  EXPECT_EQ(model_types, ModelTypeSetFromValue(*value));
-
-  // Now try with a few random types.
-  model_types.Put(BOOKMARKS);
-  model_types.Put(APPS);
-  value = ModelTypeSetToValue(model_types);
-  EXPECT_EQ(model_types, ModelTypeSetFromValue(*value));
 }
 
 TEST_F(ModelTypeTest, IsRealDataType) {

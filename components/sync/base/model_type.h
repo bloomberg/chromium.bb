@@ -343,9 +343,6 @@ int ModelTypeToHistogramInt(ModelType model_type);
 // Handles all model types, and not just real ones.
 std::unique_ptr<base::Value> ModelTypeToValue(ModelType model_type);
 
-// Converts a Value into a ModelType - complement to ModelTypeToValue().
-ModelType ModelTypeFromValue(const base::Value& value);
-
 // Returns the ModelType corresponding to the name |model_type_string|.
 ModelType ModelTypeFromString(const std::string& model_type_string);
 
@@ -360,13 +357,11 @@ ModelTypeSet ModelTypeSetFromString(const std::string& model_type_string);
 
 std::unique_ptr<base::ListValue> ModelTypeSetToValue(ModelTypeSet model_types);
 
-ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value);
-
 // Returns a string corresponding to the syncable tag for this datatype.
 std::string ModelTypeToRootTag(ModelType type);
 
 // Returns root_tag for |model_type| in ModelTypeInfo.
-// Difference with ModelTypeToRootTag(), this just simply return toor_tag in
+// Difference with ModelTypeToRootTag(), this just simply returns root_tag in
 // ModelTypeInfo.
 const char* GetModelTypeRootTag(ModelType model_type);
 
