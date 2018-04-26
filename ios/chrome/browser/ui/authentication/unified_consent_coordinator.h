@@ -19,6 +19,11 @@
 - (void)unifiedConsentCoordinatorDidTapSettingsLink:
     (UnifiedConsentCoordinator*)coordinator;
 
+// Called when the user scrolls down to the bottom (or when the view controller
+// is loaded with no scroll needed).
+- (void)unifiedConsentCoordinatorDidReachBottom:
+    (UnifiedConsentCoordinator*)coordinator;
+
 @end
 
 // UnityConsentCoordinator coordinates UnityConsentViewController, which is a
@@ -38,6 +43,8 @@
 @property(nonatomic, readonly) int openSettingsStringId;
 // View controller used to display the view.
 @property(nonatomic, strong, readonly) UIViewController* viewController;
+// Returns YES if the consent view is scrolled to the bottom.
+@property(nonatomic, readonly) BOOL isScrolledToBottom;
 
 // Starts this coordinator.
 - (void)start;
@@ -45,6 +52,9 @@
 // List of string ids used for the user consent. The string ids order matches
 // the way they appear on the screen.
 - (const std::vector<int>&)consentStringIds;
+
+// Scrolls the consent view to the bottom.
+- (void)scrollToBottom;
 
 @end
 
