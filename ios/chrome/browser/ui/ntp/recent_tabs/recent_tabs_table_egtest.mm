@@ -148,11 +148,17 @@ id<GREYMatcher> TitleOfTestPage() {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Close History.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
-                                   l10n_util::GetNSString(
-                                       IDS_IOS_NAVIGATION_BAR_DONE_BUTTON))]
-      performAction:grey_tap()];
+  if (IsUIRefreshPhase1Enabled()) {
+    id<GREYMatcher> exitMatcher =
+        grey_accessibilityID(kTableViewNavigationDismissButtonId);
+    [[EarlGrey selectElementWithMatcher:exitMatcher] performAction:grey_tap()];
+  } else {
+    [[EarlGrey
+        selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
+                                     l10n_util::GetNSString(
+                                         IDS_IOS_NAVIGATION_BAR_DONE_BUTTON))]
+        performAction:grey_tap()];
+  }
 
   // Close tab.
   chrome_test_util::CloseCurrentTab();

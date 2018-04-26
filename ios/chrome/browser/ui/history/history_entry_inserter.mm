@@ -7,12 +7,12 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/history/history_entry_item_interface.h"
 #include "ios/chrome/browser/ui/history/history_util.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -120,7 +120,7 @@
                            usingComparator:comparator];
   [_dates insertObject:date atIndex:index];
   NSInteger insertionIndex = _firstSectionIndex + index;
-  if (experimental_flags::IsCollectionsUIRebootEnabled()) {
+  if (IsUIRefreshPhase1Enabled()) {
     TableViewTextHeaderFooterItem* header =
         [[TableViewTextHeaderFooterItem alloc] initWithType:kItemTypeEnumZero];
     header.text =

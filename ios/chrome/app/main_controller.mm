@@ -1437,7 +1437,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)showHistory {
-  if (experimental_flags::IsCollectionsUIRebootEnabled()) {
+  if (IsUIRefreshPhase1Enabled()) {
     // New History UIReboot coordinator.
     _historyCoordinator = [[HistoryCoordinator alloc]
         initWithBaseViewController:self.currentBVC
