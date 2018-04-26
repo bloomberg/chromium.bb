@@ -137,7 +137,7 @@ void CanvasRenderingContext2DState::Trace(blink::Visitor* visitor) {
 }
 
 void CanvasRenderingContext2DState::SetLineDashOffset(double offset) {
-  line_dash_offset_ = offset;
+  line_dash_offset_ = clampTo<float>(offset);
   line_dash_dirty_ = true;
 }
 
@@ -147,6 +147,9 @@ void CanvasRenderingContext2DState::SetLineDash(const Vector<double>& dash) {
   // number of elements is odd
   if (dash.size() % 2)
     line_dash_.AppendVector(dash);
+  // clamp the double values to float
+  std::transform(line_dash_.begin(), line_dash_.end(), line_dash_.begin(),
+                 [](double d) { return clampTo<float>(d); });
 
   line_dash_dirty_ = true;
 }
@@ -402,7 +405,8 @@ SkDrawLooper* CanvasRenderingContext2DState::EmptyDrawLooper() const {
 SkDrawLooper* CanvasRenderingContext2DState::ShadowOnlyDrawLooper() const {
   if (!shadow_only_draw_looper_) {
     DrawLooperBuilder draw_looper_builder;
-    draw_looper_builder.AddShadow(shadow_offset_, shadow_blur_, shadow_color_,
+    draw_looper_builder.AddShadow(shadow_offset_, clampTo<float>(shadow_blur_),
+                                  shadow_color_,
                                   DrawLooperBuilder::kShadowIgnoresTransforms,
                                   DrawLooperBuilder::kShadowRespectsAlpha);
     shadow_only_draw_looper_ = draw_looper_builder.DetachDrawLooper();
@@ -414,7 +418,8 @@ SkDrawLooper* CanvasRenderingContext2DState::ShadowAndForegroundDrawLooper()
     const {
   if (!shadow_and_foreground_draw_looper_) {
     DrawLooperBuilder draw_looper_builder;
-    draw_looper_builder.AddShadow(shadow_offset_, shadow_blur_, shadow_color_,
+    draw_looper_builder.AddShadow(shadow_offset_, clampTo<float>(shadow_blur_),
+                                  shadow_color_,
                                   DrawLooperBuilder::kShadowIgnoresTransforms,
                                   DrawLooperBuilder::kShadowRespectsAlpha);
     draw_looper_builder.AddUnmodifiedContent();
@@ -455,17 +460,17 @@ void CanvasRenderingContext2DState::ShadowParameterChanged() {
 }
 
 void CanvasRenderingContext2DState::SetShadowOffsetX(double x) {
-  shadow_offset_.SetWidth(x);
+  shadow_offset_.SetWidth(clampTo<float>(x));
   ShadowParameterChanged();
 }
 
 void CanvasRenderingContext2DState::SetShadowOffsetY(double y) {
-  shadow_offset_.SetHeight(y);
+  shadow_offset_.SetHeight(clampTo<float>(y));
   ShadowParameterChanged();
 }
 
 void CanvasRenderingContext2DState::SetShadowBlur(double shadow_blur) {
-  shadow_blur_ = shadow_blur;
+  shadow_blur_ = clampTo<float>(shadow_blur);
   ShadowParameterChanged();
 }
 

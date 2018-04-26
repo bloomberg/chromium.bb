@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_filter.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -127,7 +128,7 @@ class CanvasRenderingContext2DState final
   TextBaseline GetTextBaseline() const { return text_baseline_; }
 
   void SetLineWidth(double line_width) {
-    stroke_flags_.setStrokeWidth(line_width);
+    stroke_flags_.setStrokeWidth(clampTo<float>(line_width));
   }
   double LineWidth() const { return stroke_flags_.getStrokeWidth(); }
 
@@ -146,7 +147,7 @@ class CanvasRenderingContext2DState final
   }
 
   void SetMiterLimit(double miter_limit) {
-    stroke_flags_.setStrokeMiter(miter_limit);
+    stroke_flags_.setStrokeMiter(clampTo<float>(miter_limit));
   }
   double MiterLimit() const { return stroke_flags_.getStrokeMiter(); }
 
