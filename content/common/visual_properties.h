@@ -33,11 +33,6 @@ struct CONTENT_EXPORT VisualProperties {
   // The maximum size for Blink if auto-resize is enabled.
   gfx::Size max_size_for_auto_resize;
 
-  // This variable is increased after each auto-resize. If the
-  // renderer receives a VisualProperties with stale auto_resize_seqence_number,
-  // then the resize request is dropped.
-  uint64_t auto_resize_sequence_number = 0u;
-
   // The size for the widget in DIPs.
   gfx::Size new_size;
 
