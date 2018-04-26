@@ -54,7 +54,7 @@ class CORE_EXPORT FontResource final : public Resource {
   void SetRevalidatingRequest(const ResourceRequest&) override;
 
   void AllClientsAndObserversRemoved() override;
-  void StartLoadLimitTimers(base::SingleThreadTaskRunner*);
+  void StartLoadLimitTimersIfNecessary(base::SingleThreadTaskRunner*);
 
   String OtsParsingMessage() const { return ots_parsing_message_; }
 
