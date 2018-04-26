@@ -4,6 +4,7 @@
 
   await session.evaluate(`
     var global_getSelection = window.getSelection;
+    var global_getComputedStyle = window.getComputedStyle;
 
     var namespace = 'http://www.w3.org/1999/xhtml';
     document.documentElement.setAttribute('xmlns', namespace);
@@ -119,6 +120,10 @@
 
   // Named getters (e.g. CSSStyleDeclaration)
   await checkHasNoSideEffect(`namedNodeMap.attr1`);
+
+  // May update layout/scroll/style
+  await checkHasNoSideEffect(`div.getBoundingClientRect()`);
+  await checkHasNoSideEffect(`global_getComputedStyle(div)`);
 
   testRunner.completeTest();
 

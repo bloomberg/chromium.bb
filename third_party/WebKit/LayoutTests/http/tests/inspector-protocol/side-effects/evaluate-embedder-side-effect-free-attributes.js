@@ -97,6 +97,28 @@
   await checkHasNoSideEffect(`window`);
   await checkHasNoSideEffect(`location`);
 
+  // May update layout/scroll/style
+  await checkHasNoSideEffect(`div.scrollTop`);
+  await checkHasNoSideEffect(`div.scrollLeft`);
+  await checkHasNoSideEffect(`div.scrollWidth`);
+  await checkHasNoSideEffect(`div.scrollHeight`);
+  await checkHasNoSideEffect(`div.clientTop`);
+  await checkHasNoSideEffect(`div.clientLeft`);
+  await checkHasNoSideEffect(`div.clientWidth`);
+  await checkHasNoSideEffect(`div.clientHeight`);
+  await checkHasNoSideEffect(`innerWidth`);
+  await checkHasNoSideEffect(`innerHeight`);
+  await checkHasNoSideEffect(`outerWidth`);
+  await checkHasNoSideEffect(`outerHeight`);
+  await checkHasNoSideEffect(`div.offsetParent`);
+  await checkHasNoSideEffect(`div.offsetTop`);
+  await checkHasNoSideEffect(`div.offsetLeft`);
+  await checkHasNoSideEffect(`div.offsetWidth`);
+  await checkHasNoSideEffect(`div.offsetHeight`);
+  await checkHasNoSideEffect(`div.innerText`);
+  await checkHasNoSideEffect(`div.outerText`);
+  await checkHasNoSideEffect(`div.style.border`);
+
   testRunner.completeTest();
 
 

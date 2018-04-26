@@ -48,19 +48,19 @@ interface HTMLElement : Element {
 
     // CSSOM View Module
     // https://drafts.csswg.org/cssom-view/#extensions-to-the-htmlelement-interface
-    [PerWorldBindings, ImplementedAs=unclosedOffsetParent] readonly attribute Element? offsetParent;
-    [ImplementedAs=offsetTopForBinding] readonly attribute long offsetTop;
-    [ImplementedAs=offsetLeftForBinding] readonly attribute long offsetLeft;
-    [ImplementedAs=offsetWidthForBinding] readonly attribute long offsetWidth;
-    [ImplementedAs=offsetHeightForBinding] readonly attribute long offsetHeight;
+    [Affects=Nothing, PerWorldBindings, ImplementedAs=unclosedOffsetParent] readonly attribute Element? offsetParent;
+    [Affects=Nothing, ImplementedAs=offsetTopForBinding] readonly attribute long offsetTop;
+    [Affects=Nothing, ImplementedAs=offsetLeftForBinding] readonly attribute long offsetLeft;
+    [Affects=Nothing, ImplementedAs=offsetWidthForBinding] readonly attribute long offsetWidth;
+    [Affects=Nothing, ImplementedAs=offsetHeightForBinding] readonly attribute long offsetHeight;
 
     // CSS Object Model (CSSOM)
     // https://drafts.csswg.org/cssom/#the-elementcssinlinestyle-interface
     [Affects=Nothing, SameObject, PerWorldBindings, PutForwards=cssText] readonly attribute CSSStyleDeclaration style;
 
     // Non-standard APIs
-    [CEReactions, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementInnerText] attribute [TreatNullAs=NullString] DOMString innerText;
-    [CEReactions, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementOuterText] attribute [TreatNullAs=NullString] DOMString outerText;
+    [Affects=Nothing, CEReactions, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementInnerText] attribute [TreatNullAs=NullString] DOMString innerText;
+    [Affects=Nothing, CEReactions, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementOuterText] attribute [TreatNullAs=NullString] DOMString outerText;
 };
 
 HTMLElement implements GlobalEventHandlers;
