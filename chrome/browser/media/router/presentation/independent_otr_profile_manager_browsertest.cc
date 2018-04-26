@@ -272,8 +272,16 @@ IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
   EXPECT_TRUE(destroyed2);
 }
 
+// Flaky on mac, crbug.com/837236
+#if defined(OS_MACOSX)
+#define MAYBE_BrowserClosingDoesntRemoveProfileObserver \
+  DISABLED_BrowserClosingDoesntRemoveProfileObserver
+#else
+#define MAYBE_BrowserClosingDoesntRemoveProfileObserver \
+  BrowserClosingDoesntRemoveProfileObserver
+#endif
 IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
-                       BrowserClosingDoesntRemoveProfileObserver) {
+                       MAYBE_BrowserClosingDoesntRemoveProfileObserver) {
   ProfileDestructionWatcher watcher1;
   ProfileDestructionWatcher watcher2;
   bool destroyed1 = false;
@@ -309,6 +317,7 @@ IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
   EXPECT_TRUE(destroyed1);
 }
 
+// Flaky on mac, crbug.com/835834
 #if defined(OS_MACOSX)
 #define MAYBE_CallbackNotCalledAfterUnregister \
   DISABLED_CallbackNotCalledAfterUnregister
