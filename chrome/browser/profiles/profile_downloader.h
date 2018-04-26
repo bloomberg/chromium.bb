@@ -15,19 +15,15 @@
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class ProfileDownloaderDelegate;
 
-namespace net {
-class URLFetcher;
-}  // namespace net
-
 // Downloads user profile information. The profile picture is decoded in a
 // sandboxed process.
-class ProfileDownloader : public net::URLFetcherDelegate,
-                          public ImageDecoder::ImageRequest,
+class ProfileDownloader : public ImageDecoder::ImageRequest,
                           public OAuth2TokenService::Observer,
                           public OAuth2TokenService::Consumer,
                           public AccountTrackerService::Observer {
@@ -87,8 +83,7 @@ class ProfileDownloader : public net::URLFetcherDelegate,
 
   void FetchImageData();
 
-  // Overriden from net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
 
   // Overriden from ImageDecoder::ImageRequest:
   void OnImageDecoded(const SkBitmap& decoded_image) override;
@@ -121,7 +116,7 @@ class ProfileDownloader : public net::URLFetcherDelegate,
   ProfileDownloaderDelegate* delegate_;
   std::string account_id_;
   std::string auth_token_;
-  std::unique_ptr<net::URLFetcher> profile_image_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader_;
   std::unique_ptr<OAuth2TokenService::Request> oauth2_access_token_request_;
   AccountInfo account_info_;
   SkBitmap profile_picture_;
