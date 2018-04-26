@@ -2303,6 +2303,8 @@ crbug.com/836627 external/wpt/content-security-policy/inside-worker/dedicated-in
 crbug.com/836627 external/wpt/content-security-policy/inside-worker/shared-inheritance.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-break-word-003.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-break-word-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/counter-scoping-002.html [ Failure ]
 crbug.com/626703 virtual/off-main-thread-websocket/external/wpt/websockets/Create-Secure-extensions-empty.any.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-contain/contain-layout-breaks-002.html [ Failure ]
