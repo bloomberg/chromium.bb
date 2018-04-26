@@ -25,6 +25,7 @@
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/exception_code.h"
@@ -146,6 +147,9 @@ void HTMLFrameOwnerElement::SetContentFrame(Frame& frame) {
   DCHECK(!lazy_load_intersection_observer_);
 
   content_frame_ = &frame;
+
+  SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                                             StyleChangeReason::kFrame));
 
   for (ContainerNode* node = this; node; node = node->ParentOrShadowHostNode())
     node->IncrementConnectedSubframeCount();

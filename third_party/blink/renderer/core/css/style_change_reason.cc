@@ -20,6 +20,7 @@ const char kDeclarativeContent[] = "Extension declarativeContent.css";
 const char kDesignMode[] = "DesignMode";
 const char kFontSizeChange[] = "FontSizeChange";
 const char kFonts[] = "Fonts";
+const char kFrame[] = "Frame";
 const char kFullScreen[] = "FullScreen";
 const char kInheritedStyleChangeFromParentFrame[] =
     "InheritedStyleChangeFromParentFrame";
