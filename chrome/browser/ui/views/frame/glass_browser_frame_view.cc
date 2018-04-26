@@ -42,29 +42,9 @@ HICON GlassBrowserFrameView::throbber_icons_[
     GlassBrowserFrameView::kThrobberIconCount];
 
 namespace {
-// Thickness of the frame edge between the non-client area and the web content.
-const int kClientBorderThickness = 3;
-// Besides the frame border, there's empty space atop the window in restored
-// mode, to use to drag the window around.
-const int kNonClientRestoredExtraThickness = 11;
-// At the window corners the resize area is not actually bigger, but the 16
-// pixels at the end of the top and bottom edges trigger diagonal resizing.
-const int kResizeCornerWidth = 16;
+
 // How far the profile switcher button is from the left of the minimize button.
-const int kProfileSwitcherButtonOffset = 1;
-// The content edge images have a shadow built into them.
-const int kContentEdgeShadowThickness = 2;
-// In restored mode, the New Tab button isn't at the same height as the caption
-// buttons, but the space will look cluttered if it actually slides under them,
-// so we stop it when the gap between the two is down to 5 px.
-const int kNewTabCaptionRestoredSpacing = 5;
-// In maximized mode, where the New Tab button and the caption buttons are at
-// similar vertical coordinates, we need to reserve a larger, 16 px gap to avoid
-// looking too cluttered.
-const int kNewTabCaptionMaximizedSpacing = 16;
-// There is a small one-pixel strip right above the caption buttons in which the
-// resize border "peeks" through.
-const int kCaptionButtonTopInset = 1;
+constexpr int kProfileSwitcherButtonOffset = 1;
 
 // Converts the |image| to a Windows icon and returns the corresponding HICON
 // handle. |image| is resized to desired |width| and |height| if needed.
@@ -154,6 +134,14 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
   const int x = GetTabStripLeftInset();
   int end_x = width() - ClientBorderThickness(false);
   if (!CaptionButtonsOnLeadingEdge()) {
+    // In restored mode, the New Tab button isn't at the same height as the
+    // caption buttons, but the space will look cluttered if it actually slides
+    // under them, so we stop it when the gap between the two is down to 5 px.
+    constexpr int kNewTabCaptionRestoredSpacing = 5;
+    // In maximized mode, where the New Tab button and the caption buttons are
+    // at similar vertical coordinates, we need to reserve a larger, 16 px gap
+    // to avoid looking too cluttered.
+    constexpr int kNewTabCaptionMaximizedSpacing = 16;
     end_x = std::min(MinimizeButtonX(), end_x) -
             (IsMaximized() ? kNewTabCaptionMaximizedSpacing
                            : kNewTabCaptionRestoredSpacing);
@@ -214,7 +202,9 @@ gfx::Size GlassBrowserFrameView::GetMinimumSize() const {
   // Account for the client area insets.
   gfx::Insets insets = GetClientAreaInsets(false);
   min_size.Enlarge(insets.width(), insets.height());
-  // Client area insets do not include the shadow thickness.
+  // The content edge images have a shadow built into them.  Client area insets
+  // do not include this shadow thickness.
+  constexpr int kContentEdgeShadowThickness = 2;
   min_size.Enlarge(2 * kContentEdgeShadowThickness, 0);
 
   // Ensure that the minimum width is enough to hold a tab strip with minimum
@@ -338,6 +328,10 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
                                         sizeof(button_bounds)))) {
       gfx::Rect buttons = gfx::ConvertRectToDIP(display::win::GetDPIScale(),
                                                 gfx::Rect(button_bounds));
+
+      // There is a small one-pixel strip right above the caption buttons in
+      // which the resize border "peeks" through.
+      constexpr int kCaptionButtonTopInset = 1;
       // The sizing region at the window edge above the caption buttons is
       // 1 px regardless of scale factor. If we inset by 1 before converting
       // to DIPs, the precision loss might eliminate this region entirely. The
@@ -352,6 +346,9 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   }
 
   int top_border_thickness = FrameTopBorderThickness(false);
+  // At the window corners the resize area is not actually bigger, but the 16
+  // pixels at the end of the top and bottom edges trigger diagonal resizing.
+  constexpr int kResizeCornerWidth = 16;
   // We want the resize corner behavior to apply to the kResizeCornerWidth
   // pixels at each end of the top and bottom edges.  Because |point|'s x
   // coordinate is based on the DWM-inset portion of the window (so, it's 0 at
@@ -510,6 +507,8 @@ int GlassBrowserFrameView::ClientBorderThickness(bool restored) const {
   if ((IsMaximized() || frame()->IsFullscreen()) && !restored)
     return 0;
 
+  // Thickness of the frame edge between the non-client area and web content.
+  constexpr int kClientBorderThickness = 3;
   return kClientBorderThickness;
 }
 
@@ -550,9 +549,13 @@ int GlassBrowserFrameView::TopAreaHeight(bool restored) const {
   // The tab top inset is equal to the height of any shadow region above the
   // tabs, plus a 1 px top stroke.  In maximized mode, we want to push the
   // shadow region off the top of the screen but leave the top stroke.
-  return (IsMaximized() && !restored)
-             ? (top - GetLayoutInsets(TAB).top() + 1)
-             : (top + kNonClientRestoredExtraThickness);
+  if (IsMaximized() && !restored)
+    return top - GetLayoutInsets(TAB).top() + 1;
+
+  // Besides the frame border, there's empty space atop the window in restored
+  // mode, to use to drag the window around.
+  constexpr int kNonClientRestoredExtraThickness = 11;
+  return top + kNonClientRestoredExtraThickness;
 }
 
 int GlassBrowserFrameView::TitlebarMaximizedVisualHeight() const {

@@ -64,19 +64,6 @@
 
 namespace {
 
-// Space between right edge of tabstrip and maximize button.
-constexpr int kTabstripRightSpacing = 10;
-// Height of the shadow in the tab image, used to ensure clicks in the shadow
-// area still drag restored windows.  This keeps the clickable area large enough
-// to hit easily.
-constexpr int kTabShadowHeight = 4;
-
-constexpr SkColor kMdWebUIFrameColor = SkColorSetARGB(0xff, 0x25, 0x4f, 0xae);
-
-// How long to wait before starting the titlebar animation.
-constexpr base::TimeDelta kTitlebarAnimationDelay =
-    base::TimeDelta::FromMilliseconds(750);
-
 bool IsV1AppBackButtonEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ash::switches::kAshEnableV1AppBackButton);
@@ -308,6 +295,7 @@ int BrowserNonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
     gfx::Point client_point(point);
     View::ConvertPointToTarget(this, frame()->client_view(), &client_point);
     gfx::Rect tabstrip_bounds(browser_view()->tabstrip()->bounds());
+    constexpr int kTabShadowHeight = 4;
     if (client_point.y() < tabstrip_bounds.y() + kTabShadowHeight)
       return HTCAPTION;
   }
@@ -565,6 +553,8 @@ AvatarButtonStyle BrowserNonClientFrameViewAsh::GetAvatarButtonStyle() const {
 // BrowserNonClientFrameViewAsh, private:
 
 int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
+  // Space between right edge of tabstrip and maximize button.
+  constexpr int kTabstripRightSpacing = 10;
   return kTabstripRightSpacing +
       caption_button_container_->GetPreferredSize().width();
 }
@@ -657,6 +647,8 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
     AddChildView(frame_header_origin_text_);
 
     // Schedule the title bar animation.
+    constexpr base::TimeDelta kTitlebarAnimationDelay =
+        base::TimeDelta::FromMilliseconds(750);
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&BrowserNonClientFrameViewAsh::StartHostedAppAnimation,
@@ -664,6 +656,8 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
         kTitlebarAnimationDelay);
   } else if (!browser->is_app()) {
     // For non app (i.e. WebUI) windows (e.g. Settings) use MD frame color.
+    constexpr SkColor kMdWebUIFrameColor =
+        SkColorSetARGB(0xff, 0x25, 0x4f, 0xae);
     default_frame_header->SetFrameColors(kMdWebUIFrameColor,
                                          kMdWebUIFrameColor);
   }
