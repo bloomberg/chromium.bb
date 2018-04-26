@@ -1021,8 +1021,9 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
 // Tests that clicking a target=_blank link from a URL out of the Web App's
 // scope but with the same origin to an in-scope URL results in a new App
 // window.
+// TODO(crbug.com/837277): Deflake and reenable.
 IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
-                       FromOutOfScopeUrlToInScopeUrlBlank) {
+                       DISABLED_FromOutOfScopeUrlToInScopeUrlBlank) {
   InstallTestBookmarkApp();
 
   // Navigate to out-of-scope URL. Shouldn't open a new window.
