@@ -6,7 +6,9 @@
 #include "base/command_line.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -103,6 +105,63 @@ IN_PROC_BROWSER_TEST_F(TabletModePageBehaviorTest,
   ValidateWebPrefs(GetWebKitPreferences(web_contents),
                    false /* tablet_mode_enabled */);
   ValidateWebPrefs(GetWebKitPreferences(web_contents_2),
+                   false /* tablet_mode_enabled */);
+}
+
+IN_PROC_BROWSER_TEST_F(TabletModePageBehaviorTest, ExcludeInternalPages) {
+  constexpr char kSettingsUrl[] = "chrome://settings/";
+  AddTabAtIndexToBrowser(browser(), 0, GURL(kSettingsUrl),
+                         ui::PAGE_TRANSITION_LINK,
+                         false /* check_navigation_success */);
+  auto* web_contents = GetActiveWebContents(browser());
+  ASSERT_TRUE(web_contents);
+  EXPECT_STREQ(web_contents->GetLastCommittedURL().spec().c_str(),
+               kSettingsUrl);
+
+  // Now enable tablet mode, and expect that this internal page's web prefs
+  // remain unaffected as if tablet mode is off.
+  ToggleTabletMode();
+  ASSERT_TRUE(GetTabletModeEnabled());
+  ValidateWebPrefs(GetWebKitPreferences(web_contents),
+                   false /* tablet_mode_enabled */);
+}
+
+IN_PROC_BROWSER_TEST_F(TabletModePageBehaviorTest, ExcludeHostedApps) {
+  browser()->window()->Close();
+
+  // Open a new app window.
+  Browser::CreateParams params = Browser::CreateParams::CreateForApp(
+      "test_browser_app", true /* trusted_source */, gfx::Rect(),
+      browser()->profile(), true);
+  params.initial_show_state = ui::SHOW_STATE_DEFAULT;
+  Browser* browser = new Browser(params);
+  AddBlankTabAndShow(browser);
+
+  ASSERT_TRUE(browser->is_app());
+  auto* web_contents = GetActiveWebContents(browser);
+  ASSERT_TRUE(web_contents);
+
+  // Now enable tablet mode, and expect that the page's web prefs of this hosted
+  // app remain unaffected as if tablet mode is off.
+  ToggleTabletMode();
+  ASSERT_TRUE(GetTabletModeEnabled());
+  ValidateWebPrefs(GetWebKitPreferences(web_contents),
+                   false /* tablet_mode_enabled */);
+}
+
+IN_PROC_BROWSER_TEST_F(TabletModePageBehaviorTest, ExcludeNTPs) {
+  AddTabAtIndexToBrowser(browser(), 0, GURL(chrome::kChromeSearchLocalNtpUrl),
+                         ui::PAGE_TRANSITION_LINK,
+                         false /* check_navigation_success */);
+  auto* web_contents = GetActiveWebContents(browser());
+  ASSERT_TRUE(web_contents);
+  EXPECT_STREQ(web_contents->GetLastCommittedURL().spec().c_str(),
+               chrome::kChromeSearchLocalNtpUrl);
+
+  // NTPs should not be affected in tablet mode.
+  ToggleTabletMode();
+  ASSERT_TRUE(GetTabletModeEnabled());
+  ValidateWebPrefs(GetWebKitPreferences(web_contents),
                    false /* tablet_mode_enabled */);
 }
 
