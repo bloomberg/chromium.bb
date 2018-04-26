@@ -2418,6 +2418,7 @@ test("base_unittests") {
   ]
 
   data_deps = [
+    "//base/test:test_child_process",
     "//base/test:test_shared_library",
   ]
 
