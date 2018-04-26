@@ -132,7 +132,6 @@ const char kCryptohomeRemoveFirmwareManagementParameters[] =
 const char kCryptohomeMigrateToDircrypto[] = "MigrateToDircrypto";
 const char kCryptohomeNeedsDircryptoMigration[] = "NeedsDircryptoMigration";
 const char kCryptohomeGetSupportedKeyPolicies[] = "GetSupportedKeyPolicies";
-const char kCryptohomeRespondKeyChallenge[] = "RespondKeyChallenge";
 
 // Signals
 const char kSignalAsyncCallStatus[] = "AsyncCallStatus";
@@ -141,7 +140,7 @@ const char kSignalTpmInitStatus[] = "TpmInitStatus";
 const char kSignalCleanupUsersRemoved[] = "CleanupUsersRemoved";
 const char kSignalLowDiskSpace[] = "LowDiskSpace";
 const char kSignalDircryptoMigrationProgress[] = "DircryptoMigrationProgress";
-const char kSignalKeyChallenge[] = "KeyChallenge";
+
 // Error code
 enum MountError {
   MOUNT_ERROR_NONE = 0,

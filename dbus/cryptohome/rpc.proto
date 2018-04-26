@@ -355,9 +355,6 @@ message MigrateToDircryptoRequest {
 // Request parameters for challenge requests for keys of the
 // |KEY_TYPE_CHALLENGE_RESPONSE| type.
 message KeyChallengeRequest {
-  // An opaque identifier of the request. Should be used for sending the
-  // response back.
-  optional int64 request_id = 1;
   // Specifies challenge types.
   enum ChallengeType {
     // Challenge is a request of a cryptographic signature of the specified data
@@ -365,10 +362,10 @@ message KeyChallengeRequest {
     CHALLENGE_TYPE_SIGNATURE = 1;
   }
   // Type of the requested challenge.
-  optional ChallengeType challenge_type = 2;
+  optional ChallengeType challenge_type = 1;
   // Is set when |challenge_type| is |CHALLENGE_TYPE_SIGNATURE|. Contains the
   // challenge request data.
-  optional SignatureKeyChallengeRequestData signature_request_data = 3;
+  optional SignatureKeyChallengeRequestData signature_request_data = 2;
 }
 
 // Request data for challenge requests of the |CHALLENGE_TYPE_SIGNATURE| request
@@ -385,13 +382,10 @@ message SignatureKeyChallengeRequestData {
 
 // Response for challenge requests.
 message KeyChallengeResponse {
-  // The request identifier. Should be taken from the |request_id| field of the
-  // KeyChallengeRequest message.
-  optional int64 request_id = 1;
   // Is set for responses to challenge requests of the
-  // |CHALLENGE_TYPE_SIGNATURE| challenge type. Contains the challenge
-  // response data.
-  optional SignatureKeyChallengeResponseData signature_response_data = 2;
+  // |CHALLENGE_TYPE_SIGNATURE| challenge type. Contains the challenge response
+  // data.
+  optional SignatureKeyChallengeResponseData signature_response_data = 1;
 }
 
 // Response data for challenge requests of the |CHALLENGE_TYPE_SIGNATURE|
