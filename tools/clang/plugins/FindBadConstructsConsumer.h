@@ -68,9 +68,6 @@ class FindBadConstructsConsumer
   void CheckCtorDtorWeight(clang::SourceLocation record_location,
                            clang::CXXRecordDecl* record);
 
-  bool InTestingNamespace(const clang::Decl* record);
-  bool IsMethodInTestingNamespace(const clang::CXXMethodDecl* method);
-
   // Returns a diagnostic builder that only emits the diagnostic if the spelling
   // location (the actual characters that make up the token) is not in an
   // ignored file. This is useful for situations where the token might originate

@@ -45,11 +45,6 @@ class ChromeClassTester {
   };
   LocationType ClassifyLocation(clang::SourceLocation loc);
 
-  // Utility method for subclasses to determine the namespace of the
-  // specified record, if any. Unnamed namespaces will be identified as
-  // "<anonymous namespace>".
-  std::string GetNamespace(const clang::Decl* record);
-
   // Utility method to check whether the given record has any of the ignored
   // base classes.
   bool HasIgnoredBases(const clang::CXXRecordDecl* record);
@@ -72,8 +67,6 @@ class ChromeClassTester {
 
   // Utility methods used for filtering out non-chrome classes (and ones we
   // deliberately ignore) in HandleTagDeclDefinition().
-  std::string GetNamespaceImpl(const clang::DeclContext* context,
-                               const std::string& candidate);
   bool IsIgnoredType(const std::string& base_name);
 
   // Attempts to determine the filename for the given SourceLocation.

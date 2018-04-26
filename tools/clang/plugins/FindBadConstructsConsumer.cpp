@@ -4,8 +4,9 @@
 
 #include "FindBadConstructsConsumer.h"
 
-#include "clang/Frontend/CompilerInstance.h"
+#include "Util.h"
 #include "clang/AST/Attr.h"
+#include "clang/Frontend/CompilerInstance.h"
 #include "clang/Lex/Lexer.h"
 #include "clang/Sema/Sema.h"
 #include "llvm/Support/raw_ostream.h"
@@ -27,8 +28,45 @@ const Type* UnwrapType(const Type* type) {
   return type;
 }
 
+bool InTestingNamespace(const Decl* record) {
+  return GetNamespace(record).find("testing") != std::string::npos;
+}
+
 bool IsGtestTestFixture(const CXXRecordDecl* decl) {
   return decl->getQualifiedNameAsString() == "testing::Test";
+}
+
+bool IsMethodInTestingNamespace(const CXXMethodDecl* method) {
+  for (auto* overridden : method->overridden_methods()) {
+    if (IsMethodInTestingNamespace(overridden) ||
+        // Provide an exception for ::testing::Test. gtest itself uses some
+        // magic to try to make sure SetUp()/TearDown() aren't capitalized
+        // incorrectly, but having the plugin enforce override is also nice.
+        (InTestingNamespace(overridden) &&
+         !IsGtestTestFixture(overridden->getParent()))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool IsGmockObject(const CXXRecordDecl* decl) {
+  // If |record| has member variables whose types are in the "testing" namespace
+  // (which is how gmock works behind the scenes), there's a really high chance
+  // that |record| is a gmock object.
+  for (auto* field : decl->fields()) {
+    CXXRecordDecl* record_type = field->getTypeSourceInfo()
+                                     ->getTypeLoc()
+                                     .getTypePtr()
+                                     ->getAsCXXRecordDecl();
+    if (record_type) {
+      if (InTestingNamespace(record_type)) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 bool IsPodOrTemplateType(const CXXRecordDecl& record) {
@@ -434,29 +472,6 @@ void FindBadConstructsConsumer::CheckCtorDtorWeight(
   }
 }
 
-bool FindBadConstructsConsumer::InTestingNamespace(const Decl* record) {
-  return GetNamespace(record).find("testing") != std::string::npos;
-}
-
-bool FindBadConstructsConsumer::IsMethodInTestingNamespace(
-    const CXXMethodDecl* method) {
-  for (CXXMethodDecl::method_iterator i = method->begin_overridden_methods();
-       i != method->end_overridden_methods();
-       ++i) {
-    const CXXMethodDecl* overridden = *i;
-    if (IsMethodInTestingNamespace(overridden) ||
-        // Provide an exception for ::testing::Test. gtest itself uses some
-        // magic to try to make sure SetUp()/TearDown() aren't capitalized
-        // incorrectly, but having the plugin enforce override is also nice.
-        (InTestingNamespace(overridden) &&
-         !IsGtestTestFixture(overridden->getParent()))) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
 SuppressibleDiagnosticBuilder
 FindBadConstructsConsumer::ReportIfSpellingLocNotIgnored(
     SourceLocation loc,
@@ -487,22 +502,10 @@ void FindBadConstructsConsumer::CheckVirtualMethods(
     SourceLocation record_location,
     CXXRecordDecl* record,
     bool warn_on_inline_bodies) {
-  // Gmock objects trigger these for each MOCK_BLAH() macro used. So we have a
-  // trick to get around that. If a class has member variables whose types are
-  // in the "testing" namespace (which is how gmock works behind the scenes),
-  // there's a really high chance we won't care about these errors
-  for (CXXRecordDecl::field_iterator it = record->field_begin();
-       it != record->field_end();
-       ++it) {
-    CXXRecordDecl* record_type = it->getTypeSourceInfo()
-                                     ->getTypeLoc()
-                                     .getTypePtr()
-                                     ->getAsCXXRecordDecl();
-    if (record_type) {
-      if (InTestingNamespace(record_type)) {
-        return;
-      }
-    }
+  if (IsGmockObject(record)) {
+    if (!options_.check_gmock_objects)
+      return;
+    warn_on_inline_bodies = false;
   }
 
   for (CXXRecordDecl::method_iterator it = record->method_begin();
@@ -765,7 +768,6 @@ FindBadConstructsConsumer::CheckRecordForRefcountIssue(
 bool FindBadConstructsConsumer::IsRefCounted(
     const CXXBaseSpecifier* base,
     CXXBasePath& path) {
-  FindBadConstructsConsumer* self = this;
   const TemplateSpecializationType* base_type =
       dyn_cast<TemplateSpecializationType>(
           UnwrapType(base->getType().getTypePtr()));
@@ -783,7 +785,7 @@ bool FindBadConstructsConsumer::IsRefCounted(
 
     // Check for both base::RefCounted and base::RefCountedThreadSafe.
     if (base_name.compare(0, 10, "RefCounted") == 0 &&
-        self->GetNamespace(decl) == "base") {
+        GetNamespace(decl) == "base") {
       return true;
     }
   }
