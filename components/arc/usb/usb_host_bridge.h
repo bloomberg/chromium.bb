@@ -74,6 +74,7 @@ class ArcUsbHostBridge : public KeyedService,
   void SetUiDelegate(ArcUsbHostUiDelegate* ui_delegate);
 
  private:
+  std::vector<std::string> GetEventReceiverPackages(const std::string& guid);
   void OnDeviceChecked(const std::string& guid, bool allowed);
   void DoRequestUserAuthorization(const std::string& guid,
                                   const std::string& package,
