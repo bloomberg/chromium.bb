@@ -120,6 +120,14 @@ if (enable_pdf) {
       "//testing/gtest",
       "//ui/gfx/range",
     ]
+
+    data = [
+      "test/data/",
+    ]
+
+    if (pdf_engine == 0) {
+      sources += [ "pdfium/findtext_unittest.cc" ]
+    }
   }
 } else {
   # Dummy group when PDF support is disabled so targets can unconditionally

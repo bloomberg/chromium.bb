@@ -448,6 +448,9 @@ void Release(FPDF_SYSFONTINFO* sysfontinfo) {
 }
 #endif  // defined(OS_LINUX)
 
+PDFiumEngine::CreateDocumentLoaderFunction
+    g_create_document_loader_for_testing = nullptr;
+
 PDFiumEngine* g_engine_for_unsupported = nullptr;
 
 void Unsupported_Handler(UNSUPPORT_INFO*, int type) {
@@ -865,6 +868,12 @@ PDFiumEngine::~PDFiumEngine() {
   FPDFAvail_Destroy(fpdf_availability_);
 }
 
+// static
+void PDFiumEngine::SetCreateDocumentLoaderFunctionForTesting(
+    CreateDocumentLoaderFunction function) {
+  g_create_document_loader_for_testing = function;
+}
+
 #if defined(PDF_ENABLE_XFA)
 
 void PDFiumEngine::Form_EmailTo(FPDF_FORMFILLINFO* param,
@@ -1223,17 +1232,22 @@ void PDFiumEngine::PostPaint() {
 bool PDFiumEngine::HandleDocumentLoad(const pp::URLLoader& loader) {
   password_tries_remaining_ = kMaxPasswordTries;
   process_when_pending_request_complete_ = true;
-  auto loader_wrapper =
-      std::make_unique<URLLoaderWrapperImpl>(GetPluginInstance(), loader);
-  loader_wrapper->SetResponseHeaders(headers_);
 
-  doc_loader_ = std::make_unique<DocumentLoaderImpl>(this);
-  if (doc_loader_->Init(std::move(loader_wrapper), url_)) {
-    // request initial data.
-    doc_loader_->RequestData(0, 1);
-    return true;
+  if (g_create_document_loader_for_testing) {
+    doc_loader_ = g_create_document_loader_for_testing(this);
+  } else {
+    auto loader_wrapper =
+        std::make_unique<URLLoaderWrapperImpl>(GetPluginInstance(), loader);
+    loader_wrapper->SetResponseHeaders(headers_);
+
+    doc_loader_ = std::make_unique<DocumentLoaderImpl>(this);
+    if (!doc_loader_->Init(std::move(loader_wrapper), url_))
+      return false;
   }
-  return false;
+
+  // request initial data.
+  doc_loader_->RequestData(0, 1);
+  return true;
 }
 
 pp::Instance* PDFiumEngine::GetPluginInstance() {
@@ -2437,6 +2451,13 @@ void PDFiumEngine::StartFind(const std::string& text, bool case_sensitive) {
   if (end_of_search) {
     // Send the final notification.
     client_->NotifyNumberOfFindResultsChanged(find_results_.size(), true);
+    return;
+  }
+
+  // In unit tests, PPAPI is not initialized, so just call ContinueFind()
+  // directly.
+  if (g_create_document_loader_for_testing) {
+    ContinueFind(case_sensitive ? 1 : 0);
   } else {
     pp::CompletionCallback callback =
         find_factory_.NewCallback(&PDFiumEngine::ContinueFind);
