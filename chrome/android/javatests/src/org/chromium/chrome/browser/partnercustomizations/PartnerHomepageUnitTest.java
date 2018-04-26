@@ -104,7 +104,7 @@ public class PartnerHomepageUnitTest {
     @Test
     @SmallTest
     @Feature({"Homepage"})
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/836700")
     public void testProviderNotFromSystemPackage() throws InterruptedException {
         mHomepageManager.setPrefHomepageEnabled(true);
         mHomepageManager.setPrefHomepageUseDefaultUri(true);
@@ -142,7 +142,7 @@ public class PartnerHomepageUnitTest {
     @Test
     @SmallTest
     @Feature({"Homepage"})
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/836110")
     public void testNoProvider() throws InterruptedException {
         mHomepageManager.setPrefHomepageEnabled(true);
         mHomepageManager.setPrefHomepageUseDefaultUri(true);
@@ -247,6 +247,7 @@ public class PartnerHomepageUnitTest {
      */
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/837311")
     @Feature({"Homepage"})
     public void testHomepageProviderTimeout() throws InterruptedException {
         mHomepageManager.setPrefHomepageEnabled(true);
@@ -293,7 +294,7 @@ public class PartnerHomepageUnitTest {
     @Test
     @SmallTest
     @Feature({"Homepage"})
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/837130")
     public void testHomepageProviderDelayed() throws InterruptedException {
         mHomepageManager.setPrefHomepageEnabled(true);
         mHomepageManager.setPrefHomepageUseDefaultUri(true);
