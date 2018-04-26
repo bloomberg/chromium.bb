@@ -53,7 +53,7 @@
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/h264_dpb.h"
-#include "media/gpu/video_accelerator_unittest_helpers.h"
+#include "media/gpu/test/video_accelerator_unittest_helpers.h"
 #include "media/video/fake_video_encode_accelerator.h"
 #include "media/video/h264_parser.h"
 #include "media/video/video_encode_accelerator.h"

@@ -4,8 +4,8 @@
 //
 // This file contains helper classes for video accelerator unittests.
 
-#ifndef MEDIA_GPU_VIDEO_ACCELERATOR_UNITTEST_HELPERS_H_
-#define MEDIA_GPU_VIDEO_ACCELERATOR_UNITTEST_HELPERS_H_
+#ifndef MEDIA_GPU_TEST_VIDEO_ACCELERATOR_UNITTEST_HELPERS_H_
+#define MEDIA_GPU_TEST_VIDEO_ACCELERATOR_UNITTEST_HELPERS_H_
 
 #include "base/containers/queue.h"
 #include "base/synchronization/condition_variable.h"
@@ -59,4 +59,4 @@ StateEnum ClientStateNotification<StateEnum>::Wait() {
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_VIDEO_ACCELERATOR_UNITTEST_HELPERS_H_
+#endif  // MEDIA_GPU_TEST_VIDEO_ACCELERATOR_UNITTEST_HELPERS_H_
