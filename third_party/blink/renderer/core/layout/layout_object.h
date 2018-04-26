@@ -1785,6 +1785,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       layout_object_.bitfields_.SetSubtreeNeedsPaintPropertyUpdate(false);
       layout_object_.bitfields_.SetDescendantNeedsPaintPropertyUpdate(false);
     }
+    void SetMayNeedPaintInvalidation() {
+      layout_object_.SetMayNeedPaintInvalidation();
+    }
     void SetShouldDoFullPaintInvalidation(PaintInvalidationReason reason) {
       layout_object_.SetShouldDoFullPaintInvalidation(reason);
     }
