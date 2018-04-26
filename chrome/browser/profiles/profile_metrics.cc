@@ -164,6 +164,7 @@ bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
     if (!HasProfileBeenActiveSince(entry, oldest)) {
       counts->unused++;
     } else {
+      counts->active++;
       if (entry->IsSupervised())
         counts->supervised++;
       if (entry->IsAuthenticated()) {
