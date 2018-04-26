@@ -1,8 +1,3 @@
-#### Dev Tools
-# content::DevToolsProtocolTest::WaitForResponse times out
-# http://crbug.com/784941
--CaptureScreenshotTest.*
-
 #### GPU
 # GPU Shutdown https://crbug.com/781714
 -WebRtcCaptureFromElementBrowserTest.CaptureFromCanvas2DHandlesContextLoss
@@ -75,9 +70,6 @@
 -GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTestHiDPI.*
 -GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTestTabCapture.*
 -GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTestTabCaptureHighDPI.*
-
-# GetSnapshotFromBrowser doesn't return snapshots http://crbug.com/785308
--SnapshotBrowserTest.*
 
 #### VizProcessTransportFactory
 # No ContextProvider http://crbug.com/785268
