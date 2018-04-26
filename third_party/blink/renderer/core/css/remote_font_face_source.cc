@@ -269,17 +269,17 @@ void RemoteFontFaceSource::BeginLoadIfNeeded() {
       // that this font is not required for painting the text.
       font->DidChangePriority(ResourceLoadPriority::kVeryLow, 0);
     }
-    if (font_selector_->GetExecutionContext()->Fetcher()->StartLoad(font)) {
-      // Start timers only when load is actually started asynchronously.
-      if (!IsLoaded()) {
-        font->StartLoadLimitTimers(
-            font_selector_->GetExecutionContext()
-                ->GetTaskRunner(TaskType::kInternalLoading)
-                .get());
-      }
+    if (font_selector_->GetExecutionContext()->Fetcher()->StartLoad(font))
       histograms_.LoadStarted();
-    }
   }
+
+  // Start the timers upon the first load request from RemoteFontFaceSource.
+  // Note that <link rel=preload> may have initiated loading without kicking
+  // off the timers.
+  font->StartLoadLimitTimersIfNecessary(
+      font_selector_->GetExecutionContext()
+          ->GetTaskRunner(TaskType::kInternalLoading)
+          .get());
 
   face_->DidBeginLoad();
 }

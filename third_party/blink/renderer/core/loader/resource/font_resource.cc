@@ -119,10 +119,12 @@ void FontResource::SetRevalidatingRequest(const ResourceRequest& request) {
   Resource::SetRevalidatingRequest(request);
 }
 
-void FontResource::StartLoadLimitTimers(
+void FontResource::StartLoadLimitTimersIfNecessary(
     base::SingleThreadTaskRunner* task_runner) {
-  DCHECK(IsLoading());
-  DCHECK_EQ(load_limit_state_, kLoadNotStarted);
+  if (!IsLoading() || load_limit_state_ != kLoadNotStarted)
+    return;
+  DCHECK(!font_load_short_limit_.IsActive());
+  DCHECK(!font_load_long_limit_.IsActive());
   load_limit_state_ = kUnderLimit;
 
   font_load_short_limit_ = PostDelayedCancellableTask(
