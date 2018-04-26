@@ -7724,7 +7724,7 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
     }
 
     if (this_mode == GLOBALMV || this_mode == GLOBAL_GLOBALMV) {
-      if (is_nontrans_global_motion(xd)) {
+      if (is_nontrans_global_motion(xd, xd->mi[0])) {
         mbmi->interp_filters = av1_broadcast_interp_filter(
             av1_unswitchable_filter(cm->interp_filter));
       }
@@ -10258,12 +10258,12 @@ PALETTE_EXIT:
                   .as_int
             : 0;
 
-    // Check if the global motion mode is non-translational.
-    int is_nontran_gm = cm->global_motion[refs[0]].wmtype <= TRANSLATION;
+    // Check if the global motion mode is translational.
+    int is_tran_gm = cm->global_motion[refs[0]].wmtype <= TRANSLATION;
     if (comp_pred_mode)
-      is_nontran_gm &= cm->global_motion[refs[1]].wmtype <= TRANSLATION;
+      is_tran_gm &= cm->global_motion[refs[1]].wmtype <= TRANSLATION;
     if (AOMMIN(block_size_wide[bsize], block_size_high[bsize]) < 8)
-      is_nontran_gm = 1;
+      is_tran_gm = 1;
 
     if (!comp_pred_mode) {
       int ref_set = (mbmi_ext->ref_mv_count[rf_type] >= 2)
@@ -10282,8 +10282,13 @@ PALETTE_EXIT:
           search_state.best_mbmode.mv[0].as_int)
         search_state.best_mbmode.mode = NEARESTMV;
       else if (search_state.best_mbmode.mv[0].as_int == zeromv[0].as_int &&
-               is_nontran_gm)
+               is_tran_gm) {
         search_state.best_mbmode.mode = GLOBALMV;
+        if (is_nontrans_global_motion(xd, &search_state.best_mbmode)) {
+          search_state.best_mbmode.interp_filters = av1_broadcast_interp_filter(
+              av1_unswitchable_filter(cm->interp_filter));
+        }
+      }
     } else {
       int_mv nearestmv[2];
       int_mv nearmv[2];
@@ -10326,8 +10331,14 @@ PALETTE_EXIT:
         if (search_state.best_mbmode.mode == NEW_NEWMV &&
             search_state.best_mbmode.mv[0].as_int == zeromv[0].as_int &&
             search_state.best_mbmode.mv[1].as_int == zeromv[1].as_int &&
-            is_nontran_gm)
+            is_tran_gm) {
           search_state.best_mbmode.mode = GLOBAL_GLOBALMV;
+          if (is_nontrans_global_motion(xd, &search_state.best_mbmode)) {
+            search_state.best_mbmode.interp_filters =
+                av1_broadcast_interp_filter(
+                    av1_unswitchable_filter(cm->interp_filter));
+          }
+        }
       }
     }
   }
@@ -10372,7 +10383,7 @@ PALETTE_EXIT:
   // GLOBALMV by the all-zero mode handling of ref-mv.
   if (mbmi->mode == GLOBALMV || mbmi->mode == GLOBAL_GLOBALMV) {
     // Correct the interp filters for GLOBALMV
-    if (is_nontrans_global_motion(xd)) {
+    if (is_nontrans_global_motion(xd, xd->mi[0])) {
       assert(mbmi->interp_filters ==
              av1_broadcast_interp_filter(
                  av1_unswitchable_filter(cm->interp_filter)));

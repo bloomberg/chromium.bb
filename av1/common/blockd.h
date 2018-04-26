@@ -1119,8 +1119,8 @@ typedef struct {
   ColorCost color_cost;
 } Av1ColorMapParam;
 
-static INLINE int is_nontrans_global_motion(const MACROBLOCKD *xd) {
-  const MB_MODE_INFO *const mbmi = xd->mi[0];
+static INLINE int is_nontrans_global_motion(const MACROBLOCKD *xd,
+                                            const MB_MODE_INFO *mbmi) {
   int ref;
 
   // First check if all modes are GLOBALMV
@@ -1131,7 +1131,7 @@ static INLINE int is_nontrans_global_motion(const MACROBLOCKD *xd) {
 
   // Now check if all global motion is non translational
   for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
-    if (xd->global_motion[mbmi->ref_frame[ref]].wmtype <= TRANSLATION) return 0;
+    if (xd->global_motion[mbmi->ref_frame[ref]].wmtype == TRANSLATION) return 0;
   }
   return 1;
 }

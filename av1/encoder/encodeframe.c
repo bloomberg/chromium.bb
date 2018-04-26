@@ -495,7 +495,7 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 
     if (cm->interp_filter == SWITCHABLE &&
         mi_addr->motion_mode != WARPED_CAUSAL &&
-        !is_nontrans_global_motion(xd)) {
+        !is_nontrans_global_motion(xd, xd->mi[0])) {
       update_filter_type_count(tile_data->allow_update_cdf, td->counts, xd,
                                mi_addr);
     }
