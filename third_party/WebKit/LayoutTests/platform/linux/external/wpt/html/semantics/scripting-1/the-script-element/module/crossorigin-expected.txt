@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+PASS Root module, Error in CORS-same-origin script
+PASS Root module, Blocked script download, missing CORS ACAO header
+PASS Root module, Blocked script download, crossorigin attribute with missing CORS ACAO header
+FAIL Root module, Blocked script download, mismatched CORS ACAO header assert_equals: Unexpected _log value expected (string) "error" but got (undefined) undefined
+FAIL Imported module, Error in CORS-same-origin script assert_equals: Unexpected _log value expected (string) "running,8-1" but got (undefined) undefined
+PASS Imported module, Blocked script download, missing CORS ACAO header
+PASS Imported module, Blocked script download, crossorigin attribute with missing CORS ACAO header
+PASS Imported module, Blocked script download, mismatched CORS ACAO header
+Harness: the test ran to completion.
+
