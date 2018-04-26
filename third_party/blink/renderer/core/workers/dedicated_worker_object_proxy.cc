@@ -104,7 +104,7 @@ void DedicatedWorkerObjectProxy::ReportException(
     std::unique_ptr<SourceLocation> location,
     int exception_id) {
   PostCrossThreadTask(
-      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnspecedTimer),
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,
       CrossThreadBind(&DedicatedWorkerMessagingProxy::DispatchErrorEvent,
                       messaging_proxy_weak_ptr_, error_message,
@@ -119,7 +119,7 @@ void DedicatedWorkerObjectProxy::DidCreateWorkerGlobalScope(
 
 void DedicatedWorkerObjectProxy::DidEvaluateClassicScript(bool success) {
   PostCrossThreadTask(
-      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnspecedTimer),
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,
       CrossThreadBind(&DedicatedWorkerMessagingProxy::DidEvaluateScript,
                       messaging_proxy_weak_ptr_, success));
@@ -127,7 +127,7 @@ void DedicatedWorkerObjectProxy::DidEvaluateClassicScript(bool success) {
 
 void DedicatedWorkerObjectProxy::DidEvaluateModuleScript(bool success) {
   PostCrossThreadTask(
-      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnspecedTimer),
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,
       CrossThreadBind(&DedicatedWorkerMessagingProxy::DidEvaluateScript,
                       messaging_proxy_weak_ptr_, success));

@@ -28,7 +28,7 @@ SharedWorkerReportingProxy::~SharedWorkerReportingProxy() {
 void SharedWorkerReportingProxy::CountFeature(WebFeature feature) {
   DCHECK(!IsMainThread());
   PostCrossThreadTask(
-      *parent_execution_context_task_runners_->Get(TaskType::kUnspecedTimer),
+      *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
       FROM_HERE,
       CrossThreadBind(&WebSharedWorkerImpl::CountFeature,
                       CrossThreadUnretained(worker_), feature));
@@ -73,7 +73,7 @@ void SharedWorkerReportingProxy::PostMessageToPageInspector(
 void SharedWorkerReportingProxy::DidCloseWorkerGlobalScope() {
   DCHECK(!IsMainThread());
   PostCrossThreadTask(
-      *parent_execution_context_task_runners_->Get(TaskType::kUnspecedTimer),
+      *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
       FROM_HERE,
       CrossThreadBind(&WebSharedWorkerImpl::DidCloseWorkerGlobalScope,
                       CrossThreadUnretained(worker_)));
@@ -82,7 +82,7 @@ void SharedWorkerReportingProxy::DidCloseWorkerGlobalScope() {
 void SharedWorkerReportingProxy::DidTerminateWorkerThread() {
   DCHECK(!IsMainThread());
   PostCrossThreadTask(
-      *parent_execution_context_task_runners_->Get(TaskType::kUnspecedTimer),
+      *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
       FROM_HERE,
       CrossThreadBind(&WebSharedWorkerImpl::DidTerminateWorkerThread,
                       CrossThreadUnretained(worker_)));

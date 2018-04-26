@@ -254,7 +254,7 @@ static void UntrackAllBeforeUnloadEventListeners(LocalDOMWindow* dom_window) {
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     : DOMWindow(frame),
       visualViewport_(DOMVisualViewport::Create(this)),
-      unused_preloads_timer_(frame.GetTaskRunner(TaskType::kUnspecedTimer),
+      unused_preloads_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
                              this,
                              &LocalDOMWindow::WarnUnusedPreloads),
       should_print_when_finished_loading_(false) {}

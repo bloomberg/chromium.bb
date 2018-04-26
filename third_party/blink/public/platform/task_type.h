@@ -9,6 +9,8 @@ namespace blink {
 
 // A list of task sources known to Blink according to the spec.
 // This enum is used for a histogram and it should not be re-numbered.
+//
+// For the task type usage guideline, see https://bit.ly/2vMAsQ4
 enum class TaskType : unsigned {
   ///////////////////////////////////////
   // Speced tasks should use one of the following task types
@@ -115,23 +117,11 @@ enum class TaskType : unsigned {
   kMiscPlatformAPI = 22,
 
   ///////////////////////////////////////
-  // The following task types are DEPRECATED! Use kInternal* instead.
-  ///////////////////////////////////////
-
-  // Other internal tasks that cannot fit any of the above task runners
-  // can be posted here, but the usage is not encouraged. The task runner
-  // may be throttled.
-  //
-  // UnspecedTimer should be used for all other purposes.
-  kUnspecedTimer = 23,
-
-  // Tasks that must not be throttled should be posted here, but the usage
-  // should be very limited.
-  kUnthrottled = 25,
-
-  ///////////////////////////////////////
   // Not-speced tasks should use one of the following task types
   ///////////////////////////////////////
+
+  // The default task type. The task may be throttled or paused.
+  kInternalDefault = 23,
 
   // Tasks used for all tasks associated with loading page content.
   kInternalLoading = 24,
@@ -177,6 +167,14 @@ enum class TaskType : unsigned {
   // * //content/renderer/accessibility
   // * //third_party/blink/renderer/modules/accessibility
   kInternalAccessibility = 35,
+
+  ///////////////////////////////////////
+  // The following task types are DEPRECATED! Use kInternal* instead.
+  ///////////////////////////////////////
+
+  // Tasks that must not be throttled should be posted here, but the usage
+  // should be very limited.
+  kUnthrottled = 25,
 
   kCount = 36,
 };

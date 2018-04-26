@@ -669,7 +669,7 @@ IntRect VisualViewport::VisibleContentRect(
 
 scoped_refptr<base::SingleThreadTaskRunner> VisualViewport::GetTimerTaskRunner()
     const {
-  return MainFrame()->GetTaskRunner(TaskType::kUnspecedTimer);
+  return MainFrame()->GetTaskRunner(TaskType::kInternalDefault);
 }
 
 void VisualViewport::UpdateScrollOffset(const ScrollOffset& position,

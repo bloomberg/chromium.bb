@@ -159,10 +159,10 @@ const char* TaskTypeToString(TaskType task_type) {
       return "IdleTask";
     case TaskType::kMiscPlatformAPI:
       return "MiscPlatformAPI";
-    case TaskType::kUnspecedTimer:
-      return "UnspecedTimer";
+    case TaskType::kInternalDefault:
+      return "InternalDefault";
     case TaskType::kInternalLoading:
-      return "UnspecedLoading";
+      return "InternalLoading";
     case TaskType::kUnthrottled:
       return "Unthrottled";
     case TaskType::kInternalTest:

@@ -66,7 +66,7 @@ ExternalPopupMenu::ExternalPopupMenu(LocalFrame& frame,
     : owner_element_(owner_element),
       local_frame_(frame),
       web_view_(web_view),
-      dispatch_event_timer_(frame.GetTaskRunner(TaskType::kUnspecedTimer),
+      dispatch_event_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
                             this,
                             &ExternalPopupMenu::DispatchEvent),
       web_external_popup_menu_(nullptr) {}

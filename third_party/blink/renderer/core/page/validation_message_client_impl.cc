@@ -109,7 +109,7 @@ void ValidationMessageClientImpl::HideValidationMessage(const Element& anchor) {
   DCHECK(overlay_);
   overlay_delegate_->StartToHide();
   timer_ = std::make_unique<TaskRunnerTimer<ValidationMessageClientImpl>>(
-      anchor.GetDocument().GetTaskRunner(TaskType::kUnspecedTimer), this,
+      anchor.GetDocument().GetTaskRunner(TaskType::kInternalDefault), this,
       &ValidationMessageClientImpl::Reset);
   // This should be equal to or larger than transition duration of
   // #container.hiding in validation_bubble.css.

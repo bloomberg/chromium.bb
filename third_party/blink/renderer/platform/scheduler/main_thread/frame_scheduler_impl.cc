@@ -285,7 +285,7 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
     case TaskType::kPerformanceTimeline:
     case TaskType::kWebGL:
     case TaskType::kIdleTask:
-    case TaskType::kUnspecedTimer:
+    case TaskType::kInternalDefault:
     case TaskType::kMiscPlatformAPI:
     case TaskType::kInternalAccessibility:
       // TODO(altimin): Move appropriate tasks to throttleable task queue.

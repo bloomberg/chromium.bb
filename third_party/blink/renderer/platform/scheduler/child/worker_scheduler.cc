@@ -59,7 +59,7 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kWebGL:
     case TaskType::kIdleTask:
     case TaskType::kMiscPlatformAPI:
-    case TaskType::kUnspecedTimer:
+    case TaskType::kInternalDefault:
     case TaskType::kInternalLoading:
     case TaskType::kUnthrottled:
     case TaskType::kInternalTest:

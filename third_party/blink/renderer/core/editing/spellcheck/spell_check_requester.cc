@@ -161,7 +161,7 @@ SpellCheckRequester::SpellCheckRequester(LocalFrame& frame)
       last_processed_sequence_(0),
       last_request_time_(0.0),
       timer_to_process_queued_request_(
-          frame.GetTaskRunner(TaskType::kUnspecedTimer),
+          frame.GetTaskRunner(TaskType::kInternalDefault),
           this,
           &SpellCheckRequester::TimerFiredToProcessQueuedRequest) {}
 
