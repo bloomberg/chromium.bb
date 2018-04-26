@@ -271,8 +271,6 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   // Overridden from ui::AcceleratedWidgetMac:
   NSView* AcceleratedWidgetGetNSView() const override;
-  void AcceleratedWidgetGetVSyncParameters(
-      base::TimeTicks* timebase, base::TimeDelta* interval) const override;
   void AcceleratedWidgetSwapCompleted() override;
 
   // Overridden from BridgedNativeWidgetOwner:

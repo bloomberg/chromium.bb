@@ -1036,13 +1036,6 @@ NSView* BridgedNativeWidget::AcceleratedWidgetGetNSView() const {
   return compositor_superview_;
 }
 
-void BridgedNativeWidget::AcceleratedWidgetGetVSyncParameters(
-  base::TimeTicks* timebase, base::TimeDelta* interval) const {
-  // TODO(tapted): Add vsync support.
-  *timebase = base::TimeTicks();
-  *interval = base::TimeDelta();
-}
-
 void BridgedNativeWidget::AcceleratedWidgetSwapCompleted() {
   // Ignore frames arriving "late" for an old size. A frame at the new size
   // should arrive soon.

@@ -358,8 +358,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // AcceleratedWidgetMacNSView implementation.
   NSView* AcceleratedWidgetGetNSView() const override;
-  void AcceleratedWidgetGetVSyncParameters(
-      base::TimeTicks* timebase, base::TimeDelta* interval) const override;
   void AcceleratedWidgetSwapCompleted() override;
 
   void SetShowingContextMenu(bool showing) override;

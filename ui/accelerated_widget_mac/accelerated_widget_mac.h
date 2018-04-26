@@ -32,13 +32,6 @@ class AcceleratedWidgetMacNSView {
   // NSView.
   virtual NSView* AcceleratedWidgetGetNSView() const = 0;
 
-  // Retrieve the vsync parameters for the monitor on which the NSView currently
-  // is being displayed.
-  // TODO(ccameron): This is not the appropriate place for this function. A
-  // helper library to query monitor vsync parameters should be added.
-  virtual void AcceleratedWidgetGetVSyncParameters(
-    base::TimeTicks* timebase, base::TimeDelta* interval) const = 0;
-
   // Called on swap completion. This is used to update background colors and to
   // suppressing drawing of blank windows until content is available.
   virtual void AcceleratedWidgetSwapCompleted() = 0;
@@ -87,8 +80,6 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac
   // gfx::CALayerFrameSink implementation:
   void SetSuspended(bool suspended) override;
   void UpdateCALayerTree(const gfx::CALayerParams& ca_layer_params) override;
-  void GetVSyncParameters(base::TimeTicks* timebase,
-                          base::TimeDelta* interval) const override;
 
   // The AcceleratedWidgetMacNSView that is using this as its internals.
   AcceleratedWidgetMacNSView* view_ = nullptr;

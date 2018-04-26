@@ -108,16 +108,6 @@ bool AcceleratedWidgetMac::HasFrameOfSize(
   return last_swap_size_dip_ == dip_size;
 }
 
-void AcceleratedWidgetMac::GetVSyncParameters(
-    base::TimeTicks* timebase, base::TimeDelta* interval) const {
-  if (view_) {
-    view_->AcceleratedWidgetGetVSyncParameters(timebase, interval);
-  } else {
-    *timebase = base::TimeTicks();
-    *interval = base::TimeDelta();
-  }
-}
-
 // static
 AcceleratedWidgetMac* AcceleratedWidgetMac::Get(gfx::AcceleratedWidget widget) {
   WidgetToHelperMap::const_iterator found =

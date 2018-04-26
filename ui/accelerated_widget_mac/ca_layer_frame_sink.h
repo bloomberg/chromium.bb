@@ -24,11 +24,6 @@ class ACCELERATED_WIDGET_MAC_EXPORT CALayerFrameSink {
   // |ca_layer_params|.
   virtual void UpdateCALayerTree(const gfx::CALayerParams& ca_layer_params) = 0;
 
-  // Retrieve the vsync parameters for the monitor on which the embedder is
-  // currently displayed.
-  virtual void GetVSyncParameters(base::TimeTicks* timebase,
-                                  base::TimeDelta* interval) const = 0;
-
   // If suspended, the embedder will ignore updates until un-supended.
   virtual void SetSuspended(bool suspended) = 0;
 };

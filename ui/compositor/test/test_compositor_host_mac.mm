@@ -84,9 +84,6 @@ class TestAcceleratedWidgetMacNSView : public AcceleratedWidgetMacNSView {
 
   // AcceleratedWidgetMacNSView
   NSView* AcceleratedWidgetGetNSView() const override { return view_; }
-  void AcceleratedWidgetGetVSyncParameters(
-      base::TimeTicks* timebase,
-      base::TimeDelta* interval) const override {}
   void AcceleratedWidgetSwapCompleted() override {}
 
  private:
