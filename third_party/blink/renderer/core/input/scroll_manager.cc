@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/overscroll_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
+#include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
 #include "third_party/blink/renderer/core/page/scrolling/scroll_state.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -205,21 +206,51 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
   if (!node)
     return false;
 
-  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  Document& document = node->GetDocument();
 
-  LayoutBox* cur_box = node->GetLayoutObject()->EnclosingBox();
-  while (cur_box) {
+  document.UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  std::deque<int> scroll_chain;
+  std::unique_ptr<ScrollStateData> scroll_state_data =
+      std::make_unique<ScrollStateData>();
+  ScrollState* scroll_state = ScrollState::Create(std::move(scroll_state_data));
+  RecomputeScrollChain(*node, *scroll_state, scroll_chain);
+
+  while (!scroll_chain.empty()) {
+    Node* node = DOMNodeIds::NodeForId(scroll_chain.back());
+    scroll_chain.pop_back();
+    DCHECK(node);
+
+    LayoutBox* box = ToLayoutBox(node->GetLayoutObject());
+    DCHECK(box);
+
     ScrollDirectionPhysical physical_direction =
-        ToPhysicalDirection(direction, cur_box->IsHorizontalWritingMode(),
-                            cur_box->Style()->IsFlippedBlocksWritingMode());
+        ToPhysicalDirection(direction, box->IsHorizontalWritingMode(),
+                            box->Style()->IsFlippedBlocksWritingMode());
 
-    ScrollResult result =
-        cur_box->Scroll(granularity, ToScrollDelta(physical_direction, 1));
+    ScrollableArea* scrollable_area = nullptr;
 
-    if (result.DidScroll())
-      return true;
+    // The global root scroller must be scrolled by the RootFrameViewport.
+    if (RootScrollerUtil::IsGlobal(*box)) {
+      LocalFrame& main_frame = frame_->LocalFrameRoot();
+      // The local root must be the main frame if we have the global root
+      // scroller since it can't yet be set on OOPIFs.
+      DCHECK(main_frame.IsMainFrame());
 
-    cur_box = cur_box->ContainingBlock();
+      scrollable_area = main_frame.View()->GetScrollableArea();
+    } else if (node == document.documentElement()) {
+      scrollable_area = document.GetLayoutView()->GetScrollableArea();
+    } else {
+      scrollable_area = box->GetScrollableArea();
+    }
+
+    if (scrollable_area) {
+      ScrollResult result = scrollable_area->UserScroll(
+          granularity, ToScrollDelta(physical_direction, 1));
+
+      if (result.DidScroll())
+        return true;
+    }
   }
 
   return false;

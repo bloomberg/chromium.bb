@@ -142,11 +142,6 @@ void LayoutEmbeddedObject::UpdateLayout() {
   ClearNeedsLayout();
 }
 
-ScrollResult LayoutEmbeddedObject::Scroll(ScrollGranularity granularity,
-                                          const FloatSize&) {
-  return ScrollResult();
-}
-
 CompositingReasons LayoutEmbeddedObject::AdditionalCompositingReasons() const {
   if (RequiresAcceleratedCompositing())
     return CompositingReason::kPlugin;
