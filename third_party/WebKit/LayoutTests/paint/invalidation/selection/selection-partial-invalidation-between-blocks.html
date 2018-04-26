@@ -14,13 +14,15 @@ window.testIsAsync = true;
 if (window.testRunner)
     testRunner.waitUntilDone();
 
-document.execCommand("selectAll");
-
 function repaintTest() {
     var selection = window.getSelection();
     var firstCell = document.getElementById("firstCell");
     selection.setBaseAndExtent(firstCell, 0, firstCell, 1);
     finishRepaintTest();
 }
-runAfterLayoutAndPaint(runRepaintAndPixelTest);
+
+onload = () => {
+    document.execCommand("selectAll");
+    runAfterLayoutAndPaint(runRepaintAndPixelTest);
+};
 </script>
