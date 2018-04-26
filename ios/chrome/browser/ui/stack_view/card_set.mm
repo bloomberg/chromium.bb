@@ -120,8 +120,7 @@ const CGFloat kMaxCardStaggerPercentage = 0.35;
   // TODO(stuartmorgan): Fix this in TabModel; this is dumb.
   if (currentTabIndex == NSNotFound)
     return nil;
-  DCHECK(currentTabIndex < [self.cards count]);
-  return [self.cards objectAtIndex:currentTabIndex];
+  return currentTabIndex < self.cards.count ? self.cards[currentTabIndex] : nil;
 }
 
 - (void)setCurrentCard:(StackCard*)card {
