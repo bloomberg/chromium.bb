@@ -41,7 +41,9 @@ class ChromeAppListItem {
     ChromeAppListItem* const item_;
   };
 
-  ChromeAppListItem(Profile* profile, const std::string& app_id);
+  ChromeAppListItem(Profile* profile,
+                    const std::string& app_id,
+                    AppListModelUpdater* model_updater);
   virtual ~ChromeAppListItem();
 
   // AppListControllerDelegate is not properly implemented in tests. Use mock
@@ -106,6 +108,8 @@ class ChromeAppListItem {
   std::string ToDebugString() const;
 
  protected:
+  ChromeAppListItem(Profile* profile, const std::string& app_id);
+
   Profile* profile() const { return profile_; }
 
   extensions::AppSorting* GetAppSorting();

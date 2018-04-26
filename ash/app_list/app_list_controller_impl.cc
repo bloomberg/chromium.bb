@@ -181,8 +181,12 @@ void AppListControllerImpl::PublishSearchResults(
 void AppListControllerImpl::SetItemMetadata(const std::string& id,
                                             AppListItemMetadataPtr data) {
   app_list::AppListItem* item = model_.FindItem(id);
-  if (item)
+  if (item) {
+    // data may not contain valid position. Preserve it in this case.
+    if (!data->position.IsValid())
+      data->position = item->position();
     item->SetMetadata(std::move(data));
+  }
 }
 
 void AppListControllerImpl::SetItemIcon(const std::string& id,

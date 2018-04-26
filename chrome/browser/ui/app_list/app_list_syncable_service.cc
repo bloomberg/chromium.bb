@@ -439,7 +439,12 @@ AppListSyncableService::GetSyncItem(const std::string& id) const {
 
 void AppListSyncableService::SetOemFolderName(const std::string& name) {
   oem_folder_name_ = name;
-  model_updater_->SetItemName(ash::kOemFolderId, oem_folder_name_);
+  // Update OEM folder item if it was already created. If it is not created yet
+  // then on creation it will take right name.
+  ChromeAppListItem* oem_folder_item =
+      model_updater_->FindItem(ash::kOemFolderId);
+  if (oem_folder_item)
+    oem_folder_item->SetName(oem_folder_name_);
 }
 
 AppListModelUpdater* AppListSyncableService::GetModelUpdater() {

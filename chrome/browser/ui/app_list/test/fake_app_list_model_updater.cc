@@ -157,7 +157,7 @@ FakeAppListModelUpdater::FindOrCreateOemFolder(
     oem_folder->SetMetadata(std::move(folder_data));
   } else {
     std::unique_ptr<ChromeAppListItem> new_folder =
-        std::make_unique<ChromeAppListItem>(nullptr, oem_folder_id);
+        std::make_unique<ChromeAppListItem>(nullptr, oem_folder_id, nullptr);
     oem_folder = new_folder.get();
     AddItem(std::move(new_folder));
     ash::mojom::AppListItemMetadataPtr folder_data =
