@@ -112,7 +112,20 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   unsigned NextSafeToBreakOffset(unsigned offset) const;
   unsigned PreviousSafeToBreakOffset(unsigned offset) const;
 
-  unsigned OffsetForPosition(float target_x, bool include_partial_glyphs) const;
+  // Returns the offset whose (origin, origin+advance) contains |x|.
+  unsigned OffsetForPosition(float x) const;
+  // Returns the offset whose glyph boundary is nearest to |x|. Depends on
+  // whether |x| is on the left-half or the right-half of the glyph, it
+  // determines the left-boundary or the right-boundary, then computes the
+  // offset from the bidi direction.
+  unsigned OffsetForHitTest(float x) const;
+  // Returns the offset that can fit to between |x| and the left or the right
+  // edge. The side of the edge is determined by |line_direction|.
+  unsigned OffsetToFit(float x, TextDirection line_direction) const;
+  unsigned OffsetForPosition(float x, bool include_partial_glyphs) const {
+    return !include_partial_glyphs ? OffsetForPosition(x) : OffsetForHitTest(x);
+  }
+
   float PositionForOffset(unsigned offset,
                           AdjustMidCluster = AdjustMidCluster::kToEnd) const;
   LayoutUnit SnappedStartPositionForOffset(unsigned offset) const {
@@ -168,6 +181,33 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   static scoped_refptr<ShapeResult> Create(const ShapeResult& other) {
     return base::AdoptRef(new ShapeResult(other));
   }
+
+  struct GlyphIndexResult {
+    STACK_ALLOCATED();
+
+    unsigned run_index = 0;
+    // The total number of characters of runs_[0..run_index - 1].
+    unsigned characters_on_left_runs = 0;
+    unsigned character_index = 0;
+    unsigned glyph_index = 0;
+    // |next_glyph_index| may not be |glyph_index| + 1 when a cluster is of
+    // multiple glyphs; i.e., ligatures or combining glyphs.
+    unsigned next_glyph_index = 0;
+    // The glyph origin of the glyph.
+    float origin_x = 0;
+    // The advance of the glyph.
+    float advance = 0;
+
+    // True if the position was found on a run. False otherwise.
+    bool IsInRun() const { return next_glyph_index; }
+  };
+
+  unsigned OffsetLtr(const GlyphIndexResult&) const;
+  unsigned OffsetRtl(const GlyphIndexResult&, float x) const;
+  unsigned OffsetRightLtr(const GlyphIndexResult&) const;
+  unsigned OffsetLeftRtl(const GlyphIndexResult&) const;
+
+  void OffsetForPosition(float target_x, GlyphIndexResult*) const;
 
   template <typename TextContainerType>
   void ApplySpacingImpl(ShapeResultSpacing<TextContainerType>&,

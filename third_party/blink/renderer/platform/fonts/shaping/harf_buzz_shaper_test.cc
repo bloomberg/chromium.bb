@@ -46,7 +46,6 @@ class HarfBuzzShaperTest : public testing::Test {
     scoped_refptr<ShapeResult> run2 = shape_result->SubRange(offset, length);
     shape_result = shape_result->SubRange(0, offset);
     run2->CopyRange(offset, length, shape_result.get());
-    // LOG(INFO) << shape_result->ToString();
     return shape_result;
   }
 
@@ -570,29 +569,33 @@ static struct OffsetForPositionTestData {
   unsigned offset_rtl;
   unsigned hit_test_ltr;
   unsigned hit_test_rtl;
-} offset_for_position_tet_data[] = {
+  unsigned fit_ltr_ltr;
+  unsigned fit_ltr_rtl;
+  unsigned fit_rtl_ltr;
+  unsigned fit_rtl_rtl;
+} offset_for_position_fixed_pitch_test_data[] = {
     // The left edge.
-    {-1, 0, 5, 0, 5},
-    {0, 0, 5, 0, 5},
+    {-1, 0, 5, 0, 5, 0, 0, 5, 5},
+    {0, 0, 5, 0, 5, 0, 0, 5, 5},
     // Hit test should round to the nearest glyph at the middle of a glyph.
-    {4, 0, 4, 0, 5},
-    {6, 0, 4, 1, 4},
+    {4, 0, 4, 0, 5, 0, 1, 5, 4},
+    {6, 0, 4, 1, 4, 0, 1, 5, 4},
     // Glyph boundary between the 1st and the 2nd glyph.
     // Avoid testing "10.0" to avoid rounding differences on Windows.
-    {9.99, 0, 4, 1, 4},
-    {10.01, 1, 3, 1, 4},
+    {9.9, 0, 4, 1, 4, 0, 1, 5, 4},
+    {10.1, 1, 3, 1, 4, 1, 2, 4, 3},
     // Run boundary is at position 20. The 1st run has 2 characters.
-    {14, 1, 3, 1, 4},
-    {16, 1, 3, 2, 3},
-    {20.01, 2, 2, 2, 3},
-    {24, 2, 2, 2, 3},
-    {26, 2, 2, 3, 2},
+    {14, 1, 3, 1, 4, 1, 2, 4, 3},
+    {16, 1, 3, 2, 3, 1, 2, 4, 3},
+    {20.1, 2, 2, 2, 3, 2, 3, 3, 2},
+    {24, 2, 2, 2, 3, 2, 3, 3, 2},
+    {26, 2, 2, 3, 2, 2, 3, 3, 2},
     // The end of the ShapeResult. The result has 5 characters.
-    {44, 4, 0, 4, 1},
-    {46, 4, 0, 5, 0},
-    {50, 5, 0, 5, 0},
+    {44, 4, 0, 4, 1, 4, 5, 1, 0},
+    {46, 4, 0, 5, 0, 4, 5, 1, 0},
+    {50, 5, 0, 5, 0, 5, 5, 0, 0},
     // Beyond the right edge of the ShapeResult.
-    {51, 5, 0, 5, 0},
+    {51, 5, 0, 5, 0, 5, 5, 0, 0},
 };
 
 std::ostream& operator<<(std::ostream& ostream,
@@ -604,9 +607,10 @@ class OffsetForPositionTest
     : public HarfBuzzShaperTest,
       public testing::WithParamInterface<OffsetForPositionTestData> {};
 
-INSTANTIATE_TEST_CASE_P(HarfBuzzShaperTest,
-                        OffsetForPositionTest,
-                        testing::ValuesIn(offset_for_position_tet_data));
+INSTANTIATE_TEST_CASE_P(
+    HarfBuzzShaperTest,
+    OffsetForPositionTest,
+    testing::ValuesIn(offset_for_position_fixed_pitch_test_data));
 
 TEST_P(OffsetForPositionTest, Data) {
   auto data = GetParam();
@@ -617,10 +621,18 @@ TEST_P(OffsetForPositionTest, Data) {
       SplitRun(shaper.Shape(&ahem, TextDirection::kLtr), 2);
   EXPECT_EQ(data.offset_ltr, result->OffsetForPosition(data.position, false));
   EXPECT_EQ(data.hit_test_ltr, result->OffsetForPosition(data.position, true));
+  EXPECT_EQ(data.fit_ltr_ltr,
+            result->OffsetToFit(data.position, TextDirection::kLtr));
+  EXPECT_EQ(data.fit_ltr_rtl,
+            result->OffsetToFit(data.position, TextDirection::kRtl));
 
   result = SplitRun(shaper.Shape(&ahem, TextDirection::kRtl), 3);
   EXPECT_EQ(data.offset_rtl, result->OffsetForPosition(data.position, false));
   EXPECT_EQ(data.hit_test_rtl, result->OffsetForPosition(data.position, true));
+  EXPECT_EQ(data.fit_rtl_ltr,
+            result->OffsetToFit(data.position, TextDirection::kLtr));
+  EXPECT_EQ(data.fit_rtl_rtl,
+            result->OffsetToFit(data.position, TextDirection::kRtl));
 }
 
 TEST_F(HarfBuzzShaperTest, PositionForOffsetLatin) {
