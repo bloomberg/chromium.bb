@@ -896,6 +896,20 @@ bool LayoutView::AllowsOverflowClip() const {
   return RuntimeEnabledFeatures::RootLayerScrollingEnabled();
 }
 
+ScrollResult LayoutView::Scroll(ScrollGranularity granularity,
+                                const FloatSize& delta) {
+  // TODO(bokan): We shouldn't need this specialization but we currently do
+  // because of the Windows pan scrolling path. That should go through a more
+  // normalized ScrollManager-like scrolling path and we should get rid of
+  // of this override. All frame scrolling should be handled by
+  // ViewportScrollCallback.
+
+  if (!GetFrameView())
+    return ScrollResult(false, false, delta.Width(), delta.Height());
+
+  return GetFrameView()->GetScrollableArea()->UserScroll(granularity, delta);
+}
+
 LayoutRect LayoutView::DebugRect() const {
   LayoutRect rect;
   LayoutBlock* block = ContainingBlock();
