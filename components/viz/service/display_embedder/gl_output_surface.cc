@@ -24,7 +24,6 @@ GLOutputSurface::GLOutputSurface(
     SyntheticBeginFrameSource* synthetic_begin_frame_source)
     : OutputSurface(context_provider),
       synthetic_begin_frame_source_(synthetic_begin_frame_source),
-      latency_tracker_(true),
       latency_info_cache_(this),
       weak_ptr_factory_(this) {
   capabilities_.flipped_output_surface =
@@ -150,9 +149,7 @@ void GLOutputSurface::OnGpuSwapBuffersCompleted(
 
 void GLOutputSurface::LatencyInfoCompleted(
     const std::vector<ui::LatencyInfo>& latency_info) {
-  for (const auto& latency : latency_info) {
-    latency_tracker_.OnGpuSwapBuffersCompleted(latency);
-  }
+  latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
   client_->DidFinishLatencyInfo(latency_info);
 }
 

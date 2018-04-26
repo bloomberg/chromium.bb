@@ -22,11 +22,9 @@ class RenderWidgetHostDelegate;
 
 // Utility class for tracking the latency of events passing through
 // a given RenderWidgetHost.
-class CONTENT_EXPORT RenderWidgetHostLatencyTracker
-    : public ui::LatencyTracker {
+class CONTENT_EXPORT RenderWidgetHostLatencyTracker {
  public:
-  RenderWidgetHostLatencyTracker(bool metric_sampling,
-                                 RenderWidgetHostDelegate* delegate);
+  RenderWidgetHostLatencyTracker(RenderWidgetHostDelegate* delegate);
   virtual ~RenderWidgetHostLatencyTracker();
 
   // Associates the latency tracker with a given route and process.
@@ -59,6 +57,9 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker
   int64_t latency_component_id() const { return latency_component_id_; }
 
  private:
+  void OnEventStart(ui::LatencyInfo* latency);
+
+  ukm::SourceId ukm_source_id_;
   int64_t last_event_id_;
   int64_t latency_component_id_;
   bool has_seen_first_gesture_scroll_update_;

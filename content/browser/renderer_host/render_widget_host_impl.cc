@@ -362,7 +362,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       is_last_unlocked_by_target_(false),
       has_touch_handler_(false),
       is_in_touchpad_gesture_fling_(false),
-      latency_tracker_(true, delegate_),
+      latency_tracker_(delegate_),
       next_browser_snapshot_id_(1),
       owned_by_render_frame_host_(false),
       is_focused_(false),
@@ -2043,8 +2043,6 @@ void RenderWidgetHostImpl::OnGpuSwapBuffersCompletedInternal(
     WindowSnapshotReachedScreen(sequence_number);
 #endif
   }
-
-  latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
 }
 
 void RenderWidgetHostImpl::OnRenderProcessGone(int status, int exit_code) {

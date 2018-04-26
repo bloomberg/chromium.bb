@@ -97,9 +97,8 @@ void RecordEQTAccuracy(base::TimeDelta queueing_time,
 }  // namespace
 
 RenderWidgetHostLatencyTracker::RenderWidgetHostLatencyTracker(
-    bool metric_sampling,
     RenderWidgetHostDelegate* delegate)
-    : LatencyTracker(metric_sampling, GenerateUkmSourceId()),
+    : ukm_source_id_(GenerateUkmSourceId()),
       last_event_id_(0),
       latency_component_id_(0),
       has_seen_first_gesture_scroll_update_(false),
@@ -196,9 +195,9 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
 
   OnEventStart(latency);
   if (!set_url_for_ukm_ && render_widget_host_delegate_ &&
-      ukm_source_id() != ukm::kInvalidSourceId) {
+      ukm_source_id_ != ukm::kInvalidSourceId) {
     render_widget_host_delegate_->UpdateUrlForUkmSource(ukm::UkmRecorder::Get(),
-                                                        ukm_source_id());
+                                                        ukm_source_id_);
     set_url_for_ukm_ = true;
   }
 
@@ -301,6 +300,12 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
 
   ComputeInputLatencyHistograms(event.GetType(), latency_component_id_,
                                 *latency, ack_result);
+}
+
+void RenderWidgetHostLatencyTracker::OnEventStart(ui::LatencyInfo* latency) {
+  static uint64_t global_trace_id = 0;
+  latency->set_trace_id(++global_trace_id);
+  latency->set_ukm_source_id(ukm_source_id_);
 }
 
 }  // namespace content

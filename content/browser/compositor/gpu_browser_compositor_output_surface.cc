@@ -71,6 +71,7 @@ void GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
 void GpuBrowserCompositorOutputSurface::LatencyInfoCompleted(
     const std::vector<ui::LatencyInfo>& latency_info) {
   RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(latency_info);
+  latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
 }
 
 void GpuBrowserCompositorOutputSurface::OnReflectorChanged() {

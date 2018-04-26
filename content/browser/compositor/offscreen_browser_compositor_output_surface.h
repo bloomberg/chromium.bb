@@ -16,6 +16,7 @@
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "gpu/vulkan/buildflags.h"
 #include "ui/latency/latency_info.h"
+#include "ui/latency/latency_tracker.h"
 
 namespace ui {
 class ContextProviderCommandBuffer;
@@ -73,6 +74,7 @@ class OffscreenBrowserCompositorOutputSurface
   bool reflector_changed_ = false;
   std::unique_ptr<ReflectorTexture> reflector_texture_;
   uint64_t swap_id_ = 0;
+  ui::LatencyTracker latency_tracker_;
   base::WeakPtrFactory<OffscreenBrowserCompositorOutputSurface>
       weak_ptr_factory_;
 

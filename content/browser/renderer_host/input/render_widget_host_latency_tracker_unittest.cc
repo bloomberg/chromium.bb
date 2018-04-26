@@ -121,6 +121,8 @@ class RenderWidgetHostLatencyTrackerTest
   }
 
   RenderWidgetHostLatencyTracker* tracker() { return tracker_.get(); }
+  ui::LatencyTracker* viz_tracker() { return &viz_tracker_; }
+
   void ResetHistograms() {
     histogram_tester_.reset(new base::HistogramTester());
   }
@@ -132,9 +134,9 @@ class RenderWidgetHostLatencyTrackerTest
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     old_browser_client_ = SetBrowserClientForTesting(&test_browser_client_);
-    tracker_ =
-        std::make_unique<RenderWidgetHostLatencyTracker>(false, contents());
+    tracker_ = std::make_unique<RenderWidgetHostLatencyTracker>(contents());
     tracker_->Initialize(kTestRoutingId, kTestProcessId);
+    viz_tracker_.DisableMetricSamplingForTesting();
   }
 
   void TearDown() override {
@@ -149,6 +151,7 @@ class RenderWidgetHostLatencyTrackerTest
   const int kTestProcessId = 1;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   std::unique_ptr<RenderWidgetHostLatencyTracker> tracker_;
+  ui::LatencyTracker viz_tracker_;
   RenderWidgetHostLatencyTrackerTestBrowserClient test_browser_client_;
   ContentBrowserClient* old_browser_client_;
 };
@@ -188,7 +191,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestValidEventTiming) {
   latency_info.AddLatencyNumberWithTimestamp(
       ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0, now, 1);
 
-  tracker()->OnGpuSwapBuffersCompleted(latency_info);
+  viz_tracker()->OnGpuSwapBuffersCompleted(latency_info);
 
   // When last_event_time of the end_component is less than the first_event_time
   // of the start_component, zero is recorded instead of a negative value.
@@ -235,7 +238,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
       tracker()->OnInputEventAck(wheel, &wheel_latency,
                                  INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-      tracker()->OnGpuSwapBuffersCompleted(wheel_latency);
+      viz_tracker()->OnGpuSwapBuffersCompleted(wheel_latency);
 
       // UKM metrics.
       total_ukm_entry_count++;
@@ -331,7 +334,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
       tracker()->OnInputEventAck(wheel, &wheel_latency,
                                  INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-      tracker()->OnGpuSwapBuffersCompleted(wheel_latency);
+      viz_tracker()->OnGpuSwapBuffersCompleted(wheel_latency);
 
       // UKM metrics.
       total_ukm_entry_count++;
@@ -449,7 +452,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
       tracker()->OnInputEventAck(touch, &touch_latency,
                                  INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-      tracker()->OnGpuSwapBuffersCompleted(touch_latency);
+      viz_tracker()->OnGpuSwapBuffersCompleted(touch_latency);
     }
 
     // UKM metrics.
@@ -551,7 +554,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
       tracker()->OnInputEventAck(touch, &touch_latency,
                                  INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-      tracker()->OnGpuSwapBuffersCompleted(touch_latency);
+      viz_tracker()->OnGpuSwapBuffersCompleted(touch_latency);
     }
 
     // UKM metrics.
@@ -1036,7 +1039,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, KeyEndToEndLatency) {
           base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[1]),
       1);
 
-  tracker()->OnGpuSwapBuffersCompleted(latency_info);
+  viz_tracker()->OnGpuSwapBuffersCompleted(latency_info);
 
   EXPECT_THAT(
       histogram_tester().GetAllSamples("Event.Latency.EndToEnd.KeyPress"),
