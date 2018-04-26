@@ -41,13 +41,6 @@ struct TypeConverter<std::string, arc::mojom::BluetoothAddress> {
 };
 
 template <>
-struct TypeConverter<arc::mojom::BluetoothGattStatus,
-                     device::BluetoothGattService::GattErrorCode> {
-  static arc::mojom::BluetoothGattStatus Convert(
-      const device::BluetoothGattService::GattErrorCode& error_code);
-};
-
-template <>
 struct TypeConverter<arc::mojom::BluetoothSdpAttributePtr,
                      bluez::BluetoothServiceAttributeValueBlueZ> {
   static arc::mojom::BluetoothSdpAttributePtr Convert(
