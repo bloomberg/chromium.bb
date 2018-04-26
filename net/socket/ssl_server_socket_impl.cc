@@ -651,7 +651,8 @@ int SSLServerContextImpl::SocketImpl::DoHandshake() {
   int rv = SSL_do_handshake(ssl_.get());
   if (rv == 1) {
     completed_handshake_ = true;
-    STACK_OF(CRYPTO_BUFFER)* certs = SSL_get0_peer_certificates(ssl_.get());
+    const STACK_OF(CRYPTO_BUFFER)* certs =
+        SSL_get0_peer_certificates(ssl_.get());
     if (certs) {
       client_cert_ = x509_util::CreateX509CertificateFromBuffers(certs);
       if (!client_cert_)
