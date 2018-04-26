@@ -14,6 +14,10 @@ namespace base {
 class RefCountedMemory;
 }
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace extensions {
 
 class ExtensionsUI : public content::WebUIController {
@@ -23,6 +27,8 @@ class ExtensionsUI : public content::WebUIController {
 
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
   // Called when developer mode is toggled.
