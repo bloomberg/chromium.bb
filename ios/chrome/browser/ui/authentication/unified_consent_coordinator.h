@@ -17,7 +17,7 @@
 
 // Called when the user taps on the settings link.
 - (void)unifiedConsentCoordinatorDidTapSettingsLink:
-    (UnifiedConsentCoordinator*)controller;
+    (UnifiedConsentCoordinator*)coordinator;
 
 @end
 
@@ -29,8 +29,11 @@
 @interface UnifiedConsentCoordinator : NSObject
 
 @property(nonatomic, weak) id<UnifiedConsentCoordinatorDelegate> delegate;
-// Identity selected by the user to sign-in.
-@property(nonatomic, strong, readonly) ChromeIdentity* selectedIdentity;
+// Identity selected by the user to sign-in. By default, the first identity from
+// GetAllIdentitiesSortedForDisplay() is used. If there is no identity in the
+// list, the identity picker will be hidden. Nil is not accepted if at least one
+// identity exists.
+@property(nonatomic, strong) ChromeIdentity* selectedIdentity;
 // String id for text to open the settings (related to record the user consent).
 @property(nonatomic, readonly) int openSettingsStringId;
 // View controller used to display the view.

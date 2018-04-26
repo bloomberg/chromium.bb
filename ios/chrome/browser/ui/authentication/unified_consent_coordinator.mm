@@ -26,17 +26,26 @@
 @synthesize unifiedConsentMediator = _unifiedConsentMediator;
 @synthesize unifiedConsentViewController = _unifiedConsentViewController;
 
+- (instancetype)init {
+  if (self) {
+    _unifiedConsentViewController = [[UnifiedConsentViewController alloc] init];
+    _unifiedConsentViewController.delegate = self;
+    _unifiedConsentMediator = [[UnifiedConsentMediator alloc]
+        initWithUnifiedConsentViewController:_unifiedConsentViewController];
+  }
+  return self;
+}
+
 - (void)start {
-  self.unifiedConsentViewController =
-      [[UnifiedConsentViewController alloc] init];
-  self.unifiedConsentViewController.delegate = self;
-  self.unifiedConsentMediator = [[UnifiedConsentMediator alloc]
-      initWithUnifiedConsentViewController:self.unifiedConsentViewController];
   [self.unifiedConsentMediator start];
 }
 
 - (ChromeIdentity*)selectedIdentity {
   return self.unifiedConsentMediator.selectedIdentity;
+}
+
+- (void)setSelectedIdentity:(ChromeIdentity*)selectedIdentity {
+  self.unifiedConsentMediator.selectedIdentity = selectedIdentity;
 }
 
 - (UIViewController*)viewController {
