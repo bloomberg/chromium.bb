@@ -48,9 +48,13 @@ class CHROMEOS_EXPORT SmbProviderClient
   static SmbProviderClient* Create();
 
   // Calls Mount. It runs OpenDirectory() on |share_path| to check that it is a
-  // valid share. |callback| is called after getting (or failing to get) D-BUS
-  // response.
+  // valid share. |workgroup|, |username|, and |password_fd| will be used as
+  // credentials to access the mount. |callback| is called after getting (or
+  // failing to get) D-BUS response.
   virtual void Mount(const base::FilePath& share_path,
+                     const std::string& workgroup,
+                     const std::string& username,
+                     base::ScopedFD password_fd,
                      MountCallback callback) = 0;
 
   // Calls Remount. This attempts to remount the share at |share_path| with its
