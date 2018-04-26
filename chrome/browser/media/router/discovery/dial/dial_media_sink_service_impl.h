@@ -35,6 +35,15 @@ class DialRegistry;
 class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
                                  public DialRegistry::Observer {
  public:
+  // Callbacks invoked when the list of available sinks for |app_name| changes.
+  // The client can call |GetAvailableSinks()| to obtain the latest sink list.
+  // |app_name|: app name, e.g. YouTube.
+  using SinkQueryByAppFunc = void(const std::string& app_name);
+  using SinkQueryByAppCallback = base::RepeatingCallback<SinkQueryByAppFunc>;
+  using SinkQueryByAppCallbackList = base::CallbackList<SinkQueryByAppFunc>;
+  using SinkQueryByAppSubscription =
+      std::unique_ptr<SinkQueryByAppCallbackList::Subscription>;
+
   // Represents DIAL app status on receiver device.
   enum SinkAppStatus { kUnknown = 0, kAvailable, kUnavailable };
 
@@ -49,7 +58,6 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
       std::unique_ptr<service_manager::Connector> connector,
       const OnSinksDiscoveredCallback& on_sinks_discovered_cb,
       const OnDialSinkAddedCallback& dial_sink_added_cb,
-      const OnAvailableSinksUpdatedCallback& available_sinks_updated_callback,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~DialMediaSinkServiceImpl() override;
 
@@ -63,14 +71,22 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
     return task_runner_;
   }
 
-  // Starts monitoring available sinks for |app_name|. If available sinks
-  // change, invokes |available_sinks_updated_callback_|.
+  // Registers |callback| to callback list entry in |sink_queries_|, with the
+  // key |app_name|. Returns a unique_ptr of callback list subscription. Caller
+  // owns the returned subscription and is responsible for destroying when it
+  // wants to unregister |callback|.
   // Marked virtual for tests.
-  virtual void StartMonitoringAvailableSinksForApp(const std::string& app_name);
+  virtual SinkQueryByAppSubscription StartMonitoringAvailableSinksForApp(
+      const std::string& app_name,
+      const SinkQueryByAppCallback& callback);
 
-  // Stops monitoring available sinks for |app_name|.
+  // Returns the current list of sinks compatible with |app_name|. The caller
+  // can call this method after calling |StartMonitoringAvailableSinksForApp()|
+  // to obtain the initial list, or when the callback fires to get the updated
+  // list.
   // Marked virtual for tests.
-  virtual void StopMonitoringAvailableSinksForApp(const std::string& app_name);
+  virtual std::vector<MediaSinkInternal> GetAvailableSinks(
+      const std::string& app_name) const;
 
  protected:
   // Does not take ownership of |dial_registry|.
@@ -133,10 +149,6 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
                                const std::string& app_name,
                                DialAppInfoResult result);
 
-  // Invokes |available_sinks_updated_callback_| with |app_name| and current
-  // available sinks for |app_name|.
-  void NotifySinkObservers(const std::string& app_name);
-
   // Queries app status of |app_name| on |dial_sink|.
   void FetchAppInfoForSink(const MediaSinkInternal& dial_sink,
                            const std::string& app_name);
@@ -153,11 +165,12 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
                     const std::string& app_name,
                     SinkAppStatus app_status);
 
+  void MaybeRemoveSinkQueryCallbackList(
+      const std::string& app_name,
+      SinkQueryByAppCallbackList* callback_list);
+
   // MediaSinkServiceBase implementation.
   void RecordDeviceCounts() override;
-
-  base::flat_set<MediaSinkInternal> GetAvailableSinks(
-      const std::string& app_name) const;
 
   // Connector to ServiceManager for safe XML parsing requests.
   std::unique_ptr<service_manager::Connector> connector_;
@@ -169,8 +182,6 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   std::unique_ptr<DialAppDiscoveryService> app_discovery_service_;
 
   OnDialSinkAddedCallback dial_sink_added_cb_;
-
-  OnAvailableSinksUpdatedCallback available_sinks_updated_callback_;
 
   // Raw pointer to DialRegistry singleton.
   DialRegistry* dial_registry_ = nullptr;
@@ -184,8 +195,9 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   // Map of app status, keyed by <sink id:app name>.
   base::flat_map<std::string, SinkAppStatus> app_statuses_;
 
-  // Set of registered app names.
-  base::flat_set<std::string> registered_apps_;
+  // Set of sink queries keyed by app name.
+  base::flat_map<std::string, std::unique_ptr<SinkQueryByAppCallbackList>>
+      sink_queries_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

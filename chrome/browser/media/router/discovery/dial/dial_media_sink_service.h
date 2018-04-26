@@ -31,17 +31,6 @@ using OnDialSinkAddedCallback =
 // SequencedTaskRunner.
 class DialMediaSinkService {
  public:
-  // Callback is invoked when available sinks for |app_name| changes.
-  // |app_name|: app name, e.g. YouTube.
-  // |available_sinks|: media sinks on which app with |app_name| is available.
-  using SinkQueryByAppFunc =
-      void(const std::string& app_name,
-           const std::vector<MediaSinkInternal>& available_sinks);
-  using SinkQueryByAppCallback = base::RepeatingCallback<SinkQueryByAppFunc>;
-  using SinkQueryByAppCallbackList = base::CallbackList<SinkQueryByAppFunc>;
-  using SinkQueryByAppSubscription =
-      std::unique_ptr<SinkQueryByAppCallbackList::Subscription>;
-
   DialMediaSinkService();
   virtual ~DialMediaSinkService();
 
@@ -62,57 +51,25 @@ class DialMediaSinkService {
   // Marked virtual for tests.
   virtual void OnUserGesture();
 
-  // Registers |callback| to callback list entry in |sink_queries_|, with the
-  // key |app_name|. Returns a unique_ptr of callback list subscription. Caller
-  // owns the returned subscription and is responsible for destroying when it
-  // wants to unregister |callback|.
-  virtual SinkQueryByAppSubscription StartMonitoringAvailableSinksForApp(
-      const std::string& app_name,
-      const SinkQueryByAppCallback& callback);
-
-  // Returns cached available sinks for |app_name|.
-  virtual std::vector<MediaSinkInternal> GetCachedAvailableSinks(
-      const std::string& app_name);
+  // Returns a raw pointer to |impl_|. This method is only valid to call after
+  // |Start()| has been called. Always returns non-null.
+  DialMediaSinkServiceImpl* impl() {
+    DCHECK(impl_);
+    return impl_.get();
+  }
 
  private:
-  friend class DialMediaSinkServiceTest;
-
-  struct SinkListByAppName {
-    SinkListByAppName();
-    ~SinkListByAppName();
-
-    // Keeps track of callbacks, which could come from different profiles.
-    SinkQueryByAppCallbackList callbacks;
-
-    std::vector<MediaSinkInternal> cached_sinks;
-
-    DISALLOW_COPY_AND_ASSIGN(SinkListByAppName);
-  };
-
   // Marked virtual for tests.
   virtual std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
   CreateImpl(const OnSinksDiscoveredCallback& sink_discovery_cb,
-             const OnDialSinkAddedCallback& dial_sink_added_cb,
-             const OnAvailableSinksUpdatedCallback& available_sinks_updated_cb);
+             const OnDialSinkAddedCallback& dial_sink_added_cb);
 
   void RunSinksDiscoveredCallback(
       const OnSinksDiscoveredCallback& sinks_discovered_cb,
       std::vector<MediaSinkInternal> sinks);
 
-  void RunAvailableSinksUpdatedCallback(
-      const std::string& app_name,
-      std::vector<MediaSinkInternal> available_sinks);
-
-  // Invoked when callback subscription returned by
-  // |StartMonitoringAvailableSinksForApp| is destroyed by the caller.
-  void OnAvailableSinksUpdatedCallbackRemoved(const std::string& app_name);
-
   // Created on the UI thread, used and destroyed on its SequencedTaskRunner.
   std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter> impl_;
-
-  // Map of available sinks and sink query callbacks, keyed by app name.
-  base::flat_map<std::string, std::unique_ptr<SinkListByAppName>>
-      sinks_by_app_name_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<DialMediaSinkService> weak_ptr_factory_;

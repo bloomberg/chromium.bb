@@ -6,13 +6,15 @@
 #define CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_DIAL_DIAL_MEDIA_ROUTE_PROVIDER_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
-#include "chrome/browser/media/router/discovery/dial/dial_media_sink_service.h"
+#include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -23,11 +25,15 @@ class Origin;
 namespace media_router {
 
 // MediaRouteProvider for DIAL sinks.
+// This class is created on the UI thread. All other methods must be invoked
+// on the |task_runner| provided to the constructor.
 class DialMediaRouteProvider : public mojom::MediaRouteProvider {
  public:
-  DialMediaRouteProvider(mojom::MediaRouteProviderRequest request,
-                         mojom::MediaRouterPtr media_router,
-                         DialMediaSinkService* dial_media_sink_service);
+  DialMediaRouteProvider(
+      mojom::MediaRouteProviderRequest request,
+      mojom::MediaRouterPtrInfo media_router,
+      DialMediaSinkServiceImpl* media_sink_service,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~DialMediaRouteProvider() override;
 
   // mojom::MediaRouteProvider:
@@ -85,13 +91,13 @@ class DialMediaRouteProvider : public mojom::MediaRouteProvider {
       CreateMediaRouteControllerCallback callback) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(DialMediaRouteProviderTest, TestAddRemoveSinkQuery);
+  FRIEND_TEST_ALL_PREFIXES(DialMediaRouteProviderTest, AddRemoveSinkQuery);
   FRIEND_TEST_ALL_PREFIXES(DialMediaRouteProviderTest,
-                           TestAddSinkQuerySameMediaSource);
+                           AddSinkQuerySameMediaSource);
   FRIEND_TEST_ALL_PREFIXES(DialMediaRouteProviderTest,
-                           TestAddSinkQuerySameAppDifferentMediaSources);
+                           AddSinkQuerySameAppDifferentMediaSources);
   FRIEND_TEST_ALL_PREFIXES(DialMediaRouteProviderTest,
-                           TestAddSinkQueryDifferentApps);
+                           AddSinkQueryDifferentApps);
 
   struct MediaSinkQuery {
     MediaSinkQuery();
@@ -99,21 +105,20 @@ class DialMediaRouteProvider : public mojom::MediaRouteProvider {
 
     // Set of registered media sources for current sink query.
     base::flat_set<MediaSource> media_sources;
-    DialMediaSinkService::SinkQueryByAppSubscription subscription;
+    DialMediaSinkServiceImpl::SinkQueryByAppSubscription subscription;
 
     DISALLOW_COPY_AND_ASSIGN(MediaSinkQuery);
   };
 
-  void OnAvailableSinksUpdated(
-      const std::string& app_name,
-      const std::vector<MediaSinkInternal>& available_sinks);
+  // Binds the message pipes |request| and |media_router| to |this|.
+  void Init(mojom::MediaRouteProviderRequest request,
+            mojom::MediaRouterPtrInfo media_router);
 
-  void RegisterDialMediaSource(const MediaSource& dial_source);
+  void OnAvailableSinksUpdated(const std::string& app_name);
 
-  void MayNotifyMediaSinksObservers(const MediaSource::Id& media_source_id,
-                                    const std::string& app_name);
-
-  void UnregisterDialMediaSource(const MediaSource& dial_source);
+  void NotifyOnSinksReceived(const MediaSource::Id& source_id,
+                             const std::vector<MediaSinkInternal>& sinks,
+                             const std::vector<url::Origin>& origins);
 
   // Returns a list of valid origins for |app_name|. Returns an empty list if
   // all origins are valid.
@@ -125,15 +130,14 @@ class DialMediaRouteProvider : public mojom::MediaRouteProvider {
   // Mojo pointer to the Media Router.
   mojom::MediaRouterPtr media_router_;
 
-  // Non-owned pointer to the DialMediaSinkService instance.
-  DialMediaSinkService* const dial_media_sink_service_;
+  // Non-owned pointer to the DialMediaSinkServiceImpl instance.
+  DialMediaSinkServiceImpl* const media_sink_service_;
 
   // Map of media sink queries, keyed by app name.
   base::flat_map<std::string, std::unique_ptr<MediaSinkQuery>>
       media_sink_queries_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
   DISALLOW_COPY_AND_ASSIGN(DialMediaRouteProvider);
 };
 

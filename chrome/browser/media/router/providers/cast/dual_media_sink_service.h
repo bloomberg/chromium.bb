@@ -25,6 +25,7 @@ namespace media_router {
 class CastAppDiscoveryService;
 class CastMediaSinkService;
 class DialMediaSinkService;
+class DialMediaSinkServiceImpl;
 
 // This class uses DialMediaSinkService and CastMediaSinkService to discover
 // sinks used by the Cast MediaRouteProvider. It also encapsulates the setup
@@ -57,9 +58,8 @@ class DualMediaSinkService {
     return current_sinks_;
   }
 
-  DialMediaSinkService* dial_media_sink_service() {
-    return dial_media_sink_service_.get();
-  }
+  // Used by DialMediaRouteProvider only.
+  DialMediaSinkServiceImpl* GetDialMediaSinkServiceImpl();
 
   // Adds |callback| to be notified when the list of discovered sinks changes.
   // The caller is responsible for destroying the returned Subscription when it
