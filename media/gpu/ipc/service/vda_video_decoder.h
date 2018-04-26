@@ -131,7 +131,8 @@ class VdaVideoDecoder : public VideoDecoder,
   void DestroyOnGpuThread();
   void InitializeOnGpuThread();
   void InitializeDone(bool status);
-  void DecodeOnGpuThread(BitstreamBuffer bitstream_buffer);
+  void DecodeOnGpuThread(scoped_refptr<DecoderBuffer> buffer,
+                         int32_t bitstream_id);
   void PictureReadyOnParentThread(Picture picture);
   void NotifyEndOfBitstreamBufferOnParentThread(int32_t bitstream_buffer_id);
   void NotifyFlushDoneOnParentThread();

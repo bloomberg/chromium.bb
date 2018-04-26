@@ -46,6 +46,8 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   // VideoDecodeAccelerator implementation.
   bool Initialize(const Config& config, Client* client) override;
   void Decode(const BitstreamBuffer& bitstream) override;
+  void Decode(scoped_refptr<DecoderBuffer> buffer,
+              int32_t bitstream_id) override;
   void AssignPictureBuffers(
       const std::vector<PictureBuffer>& pictures) override;
   void ReusePictureBuffer(int32_t picture_id) override;
@@ -163,7 +165,7 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   bool FinishDelayedFrames();
 
   // |frame| is owned by |pending_frames_|.
-  void DecodeTask(const BitstreamBuffer&, Frame* frame);
+  void DecodeTask(scoped_refptr<DecoderBuffer> buffer, Frame* frame);
   void DecodeDone(Frame* frame);
 
   //

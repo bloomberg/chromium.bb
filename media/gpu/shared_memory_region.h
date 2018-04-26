@@ -5,8 +5,9 @@
 #ifndef MEDIA_GPU_SHARED_MEMORY_REGION_H_
 #define MEDIA_GPU_SHARED_MEMORY_REGION_H_
 
-#include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_handle.h"
 #include "media/base/bitstream_buffer.h"
+#include "media/base/unaligned_shared_memory.h"
 
 namespace media {
 
@@ -15,6 +16,10 @@ namespace media {
 // the value of |SysInfo::VMAllocationGranularity()|, the |offset| of a
 // SharedMemoryRegion needs not to be aligned, this class hides the details
 // and returns the mapped address of the given offset.
+//
+// TODO(sandersd): This is now a trivial wrapper around
+// media::UnalignedSharedMemory. Switch all users over and delete
+// SharedMemoryRegion.
 class SharedMemoryRegion {
  public:
   // Creates a SharedMemoryRegion.
@@ -43,10 +48,9 @@ class SharedMemoryRegion {
   size_t size() const { return size_; }
 
  private:
-  base::SharedMemory shm_;
+  UnalignedSharedMemory shm_;
   off_t offset_;
   size_t size_;
-  size_t alignment_size_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedMemoryRegion);
 };
