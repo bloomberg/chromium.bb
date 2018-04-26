@@ -100,9 +100,9 @@ class PreferenceValidationDelegateTest : public testing::Test {
 
 // Tests that a NULL value results in an incident with no value.
 TEST_F(PreferenceValidationDelegateTest, NullValue) {
-  instance_->OnAtomicPreferenceValidation(kPrefPath, NULL, ValueState::CLEARED,
-                                          ValueState::UNSUPPORTED,
-                                          false /* is_personal */);
+  instance_->OnAtomicPreferenceValidation(
+      kPrefPath, base::nullopt, ValueState::CLEARED, ValueState::UNSUPPORTED,
+      false /* is_personal */);
   std::unique_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
       incidents_.back()->TakePayload());
   EXPECT_FALSE(incident->tracked_preference().has_atomic_value());
@@ -126,36 +126,35 @@ class PreferenceValidationDelegateValues
     expected_value_ = std::get<1>(GetParam());
   }
 
-  static std::unique_ptr<base::Value> MakeValue(base::Value::Type value_type) {
+  static base::Value MakeValue(base::Value::Type value_type) {
     using base::Value;
     switch (value_type) {
       case Value::Type::NONE:
-        return std::make_unique<base::Value>();
+        return Value();
       case Value::Type::BOOLEAN:
-        return std::unique_ptr<Value>(new base::Value(false));
+        return Value(false);
       case Value::Type::INTEGER:
-        return std::unique_ptr<Value>(new base::Value(47));
+        return Value(47);
       case Value::Type::DOUBLE:
-        return std::unique_ptr<Value>(new base::Value(0.47));
+        return Value(0.47);
       case Value::Type::STRING:
-        return std::unique_ptr<Value>(new base::Value("i have a spleen"));
+        return Value("i have a spleen");
       case Value::Type::DICTIONARY: {
-        std::unique_ptr<base::DictionaryValue> value(
-            new base::DictionaryValue());
-        value->SetInteger("twenty-two", 22);
-        value->SetInteger("forty-seven", 47);
-        return std::move(value);
+        Value value(base::Value::Type::DICTIONARY);
+        value.SetKey("twenty-two", Value(22));
+        value.SetKey("forty-seven", Value(47));
+        return value;
       }
       case Value::Type::LIST: {
-        std::unique_ptr<base::ListValue> value(new base::ListValue());
-        value->AppendInteger(22);
-        value->AppendInteger(47);
-        return std::move(value);
+        Value value(base::Value::Type::LIST);
+        value.GetList().emplace_back(22);
+        value.GetList().emplace_back(47);
+        return value;
       }
       default:
         ADD_FAILURE() << "unsupported value type " << value_type;
     }
-    return std::unique_ptr<Value>();
+    return Value();
   }
 
   base::Value::Type value_type_;
@@ -209,7 +208,7 @@ class PreferenceValidationDelegateNoIncident
 
 TEST_P(PreferenceValidationDelegateNoIncident, Atomic) {
   instance_->OnAtomicPreferenceValidation(
-      kPrefPath, std::make_unique<base::Value>(), value_state_,
+      kPrefPath, base::make_optional<base::Value>(), value_state_,
       external_validation_value_state_, false /* is_personal */);
   EXPECT_EQ(0U, incidents_.size());
 }
@@ -252,7 +251,7 @@ class PreferenceValidationDelegateWithIncident
 
 TEST_P(PreferenceValidationDelegateWithIncident, Atomic) {
   instance_->OnAtomicPreferenceValidation(
-      kPrefPath, std::make_unique<base::Value>(), value_state_,
+      kPrefPath, base::make_optional<base::Value>(), value_state_,
       external_validation_value_state_, is_personal_);
   ASSERT_EQ(1U, incidents_.size());
   std::unique_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(

@@ -4,7 +4,7 @@
 
 module prefs.mojom;
 
-import "mojo/common/values.mojom";
+import "mojo/public/mojom/base/values.mojom";
 
 // A TrackedPreferenceValidationDelegate is notified of the results of each
 // tracked preference validation event.
@@ -38,7 +38,7 @@ interface TrackedPreferenceValidationDelegate {
   // or not the value may contain personal information.
   OnAtomicPreferenceValidation(
       string pref_path,
-      mojo.common.mojom.Value? value,
+      mojo_base.mojom.Value? value,
       ValueState value_state,
       ValueState external_validation_value_state,
       bool is_personal);

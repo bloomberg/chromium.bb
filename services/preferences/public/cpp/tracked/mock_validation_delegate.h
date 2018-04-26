@@ -12,6 +12,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/values.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 
@@ -92,7 +94,7 @@ class MockValidationDelegate
   // TrackedPreferenceValidationDelegate implementation.
   void OnAtomicPreferenceValidation(
       const std::string& pref_path,
-      std::unique_ptr<base::Value> value,
+      base::Optional<base::Value> value,
       prefs::mojom::TrackedPreferenceValidationDelegate::ValueState value_state,
       prefs::mojom::TrackedPreferenceValidationDelegate::ValueState
           external_validation_value_state,

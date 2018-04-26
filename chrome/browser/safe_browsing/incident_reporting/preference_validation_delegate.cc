@@ -61,7 +61,7 @@ PreferenceValidationDelegate::~PreferenceValidationDelegate() {
 
 void PreferenceValidationDelegate::OnAtomicPreferenceValidation(
     const std::string& pref_path,
-    std::unique_ptr<base::Value> value,
+    base::Optional<base::Value> value,
     ValueState value_state,
     ValueState external_validation_value_state,
     bool is_personal) {
@@ -71,9 +71,9 @@ void PreferenceValidationDelegate::OnAtomicPreferenceValidation(
     std::unique_ptr<TPIncident> incident(
         new ClientIncidentReport_IncidentData_TrackedPreferenceIncident());
     incident->set_path(pref_path);
-    if (!value ||
-        (!value->GetAsString(incident->mutable_atomic_value()) &&
-         !base::JSONWriter::Write(*value, incident->mutable_atomic_value()))) {
+    if (!value || (!value->GetAsString(incident->mutable_atomic_value()) &&
+                   !base::JSONWriter::Write(
+                       std::move(*value), incident->mutable_atomic_value()))) {
       incident->clear_atomic_value();
     }
     incident->set_value_state(proto_value_state);
