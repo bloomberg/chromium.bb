@@ -20,6 +20,7 @@
     "use_crash_key_stubs=true",
     "is_cronet_build=true",
     "is_debug=true",
+    "symbol_level=1",
     "target_cpu=\"x64\"",
     "target_os=\"ios\"",
     "use_platform_icu_alternatives=true"
