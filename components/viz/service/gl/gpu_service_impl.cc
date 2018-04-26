@@ -442,13 +442,15 @@ void GpuServiceImpl::GetVideoMemoryUsageStats(
 }
 
 // Currently, this function only supports the Windows platform.
-void GpuServiceImpl::GetGpuSupportedRuntimeVersion() {
+void GpuServiceImpl::GetGpuSupportedRuntimeVersion(
+    GetGpuSupportedRuntimeVersionCallback callback) {
 #if defined(OS_WIN)
   if (io_runner_->BelongsToCurrentThread()) {
+    auto wrap_callback = WrapCallback(io_runner_, std::move(callback));
     main_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&GpuServiceImpl::GetGpuSupportedRuntimeVersion,
-                       weak_ptr_));
+                       weak_ptr_, std::move(wrap_callback)));
     return;
   }
   DCHECK(main_runner_->BelongsToCurrentThread());
@@ -459,6 +461,7 @@ void GpuServiceImpl::GetGpuSupportedRuntimeVersion() {
   DCHECK(command_line->HasSwitch("disable-gpu-sandbox") || in_host_process());
 
   gpu::RecordGpuSupportedRuntimeVersionHistograms(&gpu_info_);
+  std::move(callback).Run(gpu_info_);
   if (!in_host_process()) {
     // The unsandboxed GPU process fulfilled its duty. Rest
     // in peace.
@@ -540,9 +543,6 @@ void GpuServiceImpl::UpdateGpuInfoPlatform(
   // or single process/in-process gpu mode on Windows.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   DCHECK(command_line->HasSwitch("disable-gpu-sandbox") || in_host_process());
-
-  gpu::GetGpuSupportedD3D12Version(&gpu_info_);
-  gpu::GetGpuSupportedVulkanVersion(&gpu_info_);
 
   // We can continue on shutdown here because we're not writing any critical
   // state in this task.

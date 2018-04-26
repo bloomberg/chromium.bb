@@ -106,7 +106,8 @@ class TestGpuService : public mojom::GpuService {
   void RequestCompleteGpuInfo(
       RequestCompleteGpuInfoCallback callback) override {}
 
-  void GetGpuSupportedRuntimeVersion() override {}
+  void GetGpuSupportedRuntimeVersion(
+      GetGpuSupportedRuntimeVersionCallback callback) override {}
 
   void RequestHDRStatus(RequestHDRStatusCallback callback) override {}
 

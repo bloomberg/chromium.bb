@@ -362,7 +362,8 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion() {
         GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED, true /* force_create */);
     if (!host)
       return;
-    host->gpu_service()->GetGpuSupportedRuntimeVersion();
+    host->gpu_service()->GetGpuSupportedRuntimeVersion(
+        base::BindOnce(&UpdateGpuInfoOnIO));
   });
 
   BrowserThread::PostDelayedTask(BrowserThread::IO, FROM_HERE, std::move(task),
