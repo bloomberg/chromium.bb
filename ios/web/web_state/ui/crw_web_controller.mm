@@ -576,11 +576,9 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // not be null.
 - (void)loadNativeViewWithSuccess:(BOOL)loadSuccess
                 navigationContext:(web::NavigationContextImpl*)context;
-// Loads the correct HTML page for |error| in a native controller, retrieved
-// from the native provider.
-- (void)loadErrorInNativeViewForNavigationItem:(web::NavigationItemImpl*)item
-                             navigationContext:
-                                 (web::NavigationContextImpl*)context;
+// Loads the error page.
+- (void)loadErrorPageForNavigationItem:(web::NavigationItemImpl*)item
+                     navigationContext:(web::NavigationContextImpl*)context;
 // Aborts any load for both the web view and web controller.
 - (void)abortLoad;
 // Updates the internal state and informs the delegate that any outstanding load
@@ -1721,9 +1719,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 }
 
-- (void)loadErrorInNativeViewForNavigationItem:(web::NavigationItemImpl*)item
-                             navigationContext:
-                                 (web::NavigationContextImpl*)context {
+- (void)loadErrorPageForNavigationItem:(web::NavigationItemImpl*)item
+                     navigationContext:(web::NavigationContextImpl*)context {
   const GURL currentURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
   NSError* error = context->GetError();
   DCHECK(error);
@@ -2998,8 +2995,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 
   if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    [self loadErrorInNativeViewForNavigationItem:self.currentNavItem
-                               navigationContext:navigationContext];
+    [self loadErrorPageForNavigationItem:self.currentNavItem
+                       navigationContext:navigationContext];
   } else {
     web::ErrorRetryState errorRetryState =
         self.currentNavItem->GetErrorRetryState();
@@ -3009,13 +3006,13 @@ registerLoadRequestForURL:(const GURL&)requestURL
       // history. This can arise if the failure occurs after the navigation is
       // committed or if this is is a history navigation to a previously loaded
       // page.
-      [self loadErrorInNativeViewForNavigationItem:self.currentNavItem
-                                 navigationContext:navigationContext];
+      [self loadErrorPageForNavigationItem:self.currentNavItem
+                         navigationContext:navigationContext];
     } else {
       // The navigation item that failed to load is not yet in
       // WKBackForwardList. This can arise when the failure happens during
       // provisional load of a new page. Kick off a placeholder load to insert a
-      // WKBackForwardListItem. |loadErrorInNativeViewForNavigationItem| will be
+      // WKBackForwardListItem. |loadErrorPageForNavigationItem| will be
       // called when the placeholder finishes loading.
       DCHECK_EQ(web::ErrorRetryState::kNoNavigationError, errorRetryState);
       web::NavigationContextImpl* placeholderNavigationContext =
@@ -4730,8 +4727,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
       } else if (context->GetError()) {
         item->SetErrorRetryState(
             web::ErrorRetryState::kReadyToDisplayErrorForFailedNavigation);
-        [self loadErrorInNativeViewForNavigationItem:item
-                                   navigationContext:context];
+        [self loadErrorPageForNavigationItem:item navigationContext:context];
       } else {
         // This is a back/forward navigation to a native error page.
         DCHECK_EQ(
