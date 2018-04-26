@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/cachestorage/cache.h"
+#include "third_party/blink/renderer/modules/cache_storage/cache.h"
 
 #include <memory>
 #include <utility>
@@ -26,7 +26,7 @@
 #include "third_party/blink/renderer/core/fetch/response.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/modules/cachestorage/cache_storage_error.h"
+#include "third_party/blink/renderer/modules/cache_storage/cache_storage_error.h"
 #include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
@@ -89,9 +89,10 @@ class CacheWithResponsesCallbacks
       return;
     ScriptState::Scope scope(resolver_->GetScriptState());
     HeapVector<Member<Response>> responses;
-    for (size_t i = 0; i < web_responses.size(); ++i)
+    for (size_t i = 0; i < web_responses.size(); ++i) {
       responses.push_back(
           Response::Create(resolver_->GetScriptState(), web_responses[i]));
+    }
     resolver_->Resolve(responses);
     resolver_.Clear();
   }
@@ -155,9 +156,10 @@ class CacheWithRequestsCallbacks
       return;
     ScriptState::Scope scope(resolver_->GetScriptState());
     HeapVector<Member<Request>> requests;
-    for (size_t i = 0; i < web_requests.size(); ++i)
+    for (size_t i = 0; i < web_requests.size(); ++i) {
       requests.push_back(
           Request::Create(resolver_->GetScriptState(), web_requests[i]));
+    }
     resolver_->Resolve(requests);
     resolver_.Clear();
   }
@@ -587,10 +589,11 @@ ScriptPromise Cache::put(ScriptState* script_state,
                          Response* response,
                          ExceptionState& exception_state) {
   DCHECK(!request.IsNull());
-  if (request.IsRequest())
+  if (request.IsRequest()) {
     return PutImpl(script_state,
                    HeapVector<Member<Request>>(1, request.GetAsRequest()),
                    HeapVector<Member<Response>>(1, response));
+  }
   Request* new_request =
       Request::Create(script_state, request.GetAsUSVString(), exception_state);
   if (exception_state.HadException())
@@ -692,18 +695,20 @@ ScriptPromise Cache::AddAllImpl(ScriptState* script_state,
   Vector<ScriptPromise> promises;
   promises.resize(requests.size());
   for (size_t i = 0; i < requests.size(); ++i) {
-    if (!requests[i]->url().ProtocolIsInHTTPFamily())
+    if (!requests[i]->url().ProtocolIsInHTTPFamily()) {
       return ScriptPromise::Reject(script_state,
                                    V8ThrowException::CreateTypeError(
                                        script_state->GetIsolate(),
                                        "Add/AddAll does not support schemes "
                                        "other than \"http\" or \"https\""));
-    if (requests[i]->method() != HTTPNames::GET)
+    }
+    if (requests[i]->method() != HTTPNames::GET) {
       return ScriptPromise::Reject(
           script_state,
           V8ThrowException::CreateTypeError(
               script_state->GetIsolate(),
               "Add/AddAll only supports the GET request method."));
+    }
     request_infos[i].SetRequest(requests[i]);
 
     promises[i] = scoped_fetcher_->Fetch(script_state, request_infos[i],

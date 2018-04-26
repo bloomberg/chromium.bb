@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/cachestorage/inspector_cache_storage_agent.h"
+#include "third_party/blink/renderer/modules/cache_storage/inspector_cache_storage_agent.h"
 
 #include <algorithm>
 #include <memory>
 #include <utility>
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_cache.h"
@@ -32,7 +33,6 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -178,8 +178,6 @@ CString CacheStorageErrorString(mojom::CacheStorageError error) {
 
 class RequestCacheNames
     : public WebServiceWorkerCacheStorage::CacheStorageKeysCallbacks {
-  WTF_MAKE_NONCOPYABLE(RequestCacheNames);
-
  public:
   RequestCacheNames(const String& security_origin,
                     std::unique_ptr<RequestCacheNamesCallback> callback)
@@ -212,6 +210,8 @@ class RequestCacheNames
  private:
   String security_origin_;
   std::unique_ptr<RequestCacheNamesCallback> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(RequestCacheNames);
 };
 
 struct DataRequestParams {
@@ -231,8 +231,6 @@ struct RequestResponse {
 };
 
 class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
-  WTF_MAKE_NONCOPYABLE(ResponsesAccumulator);
-
  public:
   ResponsesAccumulator(int num_responses,
                        const DataRequestParams& params,
@@ -312,12 +310,12 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
   int num_responses_left_;
   Vector<RequestResponse> responses_;
   std::unique_ptr<RequestEntriesCallback> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResponsesAccumulator);
 };
 
 class GetCacheResponsesForRequestData
     : public WebServiceWorkerCache::CacheMatchCallbacks {
-  WTF_MAKE_NONCOPYABLE(GetCacheResponsesForRequestData);
-
  public:
   GetCacheResponsesForRequestData(const DataRequestParams& params,
                                   const WebServiceWorkerRequest& request,
@@ -340,12 +338,12 @@ class GetCacheResponsesForRequestData
   DataRequestParams params_;
   WebServiceWorkerRequest request_;
   scoped_refptr<ResponsesAccumulator> accumulator_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetCacheResponsesForRequestData);
 };
 
 class GetCacheKeysForRequestData
     : public WebServiceWorkerCache::CacheWithRequestsCallbacks {
-  WTF_MAKE_NONCOPYABLE(GetCacheKeysForRequestData);
-
  public:
   GetCacheKeysForRequestData(const DataRequestParams& params,
                              std::unique_ptr<WebServiceWorkerCache> cache,
@@ -385,12 +383,12 @@ class GetCacheKeysForRequestData
   DataRequestParams params_;
   std::unique_ptr<WebServiceWorkerCache> cache_;
   std::unique_ptr<RequestEntriesCallback> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetCacheKeysForRequestData);
 };
 
 class GetCacheForRequestData
     : public WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks {
-  WTF_MAKE_NONCOPYABLE(GetCacheForRequestData);
-
  public:
   GetCacheForRequestData(const DataRequestParams& params,
                          std::unique_ptr<RequestEntriesCallback> callback)
@@ -414,11 +412,11 @@ class GetCacheForRequestData
  private:
   DataRequestParams params_;
   std::unique_ptr<RequestEntriesCallback> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetCacheForRequestData);
 };
 
 class DeleteCache : public WebServiceWorkerCacheStorage::CacheStorageCallbacks {
-  WTF_MAKE_NONCOPYABLE(DeleteCache);
-
  public:
   explicit DeleteCache(std::unique_ptr<DeleteCacheCallback> callback)
       : callback_(std::move(callback)) {}
@@ -434,11 +432,11 @@ class DeleteCache : public WebServiceWorkerCacheStorage::CacheStorageCallbacks {
 
  private:
   std::unique_ptr<DeleteCacheCallback> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeleteCache);
 };
 
 class DeleteCacheEntry : public WebServiceWorkerCache::CacheBatchCallbacks {
-  WTF_MAKE_NONCOPYABLE(DeleteCacheEntry);
-
  public:
   explicit DeleteCacheEntry(std::unique_ptr<DeleteEntryCallback> callback)
       : callback_(std::move(callback)) {}
@@ -454,12 +452,12 @@ class DeleteCacheEntry : public WebServiceWorkerCache::CacheBatchCallbacks {
 
  private:
   std::unique_ptr<DeleteEntryCallback> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeleteCacheEntry);
 };
 
 class GetCacheForDeleteEntry
     : public WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks {
-  WTF_MAKE_NONCOPYABLE(GetCacheForDeleteEntry);
-
  public:
   GetCacheForDeleteEntry(const String& request_spec,
                          const String& cache_name,
@@ -492,12 +490,12 @@ class GetCacheForDeleteEntry
   String request_spec_;
   String cache_name_;
   std::unique_ptr<DeleteEntryCallback> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetCacheForDeleteEntry);
 };
 
 class CachedResponseFileReaderLoaderClient final
     : private FileReaderLoaderClient {
-  WTF_MAKE_NONCOPYABLE(CachedResponseFileReaderLoaderClient);
-
  public:
   static void Load(scoped_refptr<BlobDataHandle> blob,
                    std::unique_ptr<RequestCachedResponseCallback> callback) {
@@ -545,12 +543,12 @@ class CachedResponseFileReaderLoaderClient final
   std::unique_ptr<FileReaderLoader> loader_;
   std::unique_ptr<RequestCachedResponseCallback> callback_;
   scoped_refptr<SharedBuffer> data_;
+
+  DISALLOW_COPY_AND_ASSIGN(CachedResponseFileReaderLoaderClient);
 };
 
 class CachedResponseMatchCallback
     : public WebServiceWorkerCacheStorage::CacheStorageMatchCallbacks {
-  WTF_MAKE_NONCOPYABLE(CachedResponseMatchCallback);
-
  public:
   explicit CachedResponseMatchCallback(
       std::unique_ptr<RequestCachedResponseCallback> callback)
@@ -575,6 +573,8 @@ class CachedResponseMatchCallback
 
  private:
   std::unique_ptr<RequestCachedResponseCallback> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(CachedResponseMatchCallback);
 };
 }  // namespace
 

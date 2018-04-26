@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CACHESTORAGE_CACHE_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_CACHESTORAGE_CACHE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CACHE_STORAGE_CACHE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CACHE_STORAGE_CACHE_H_
 
 #include <memory>
+#include "base/macros.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_cache.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/fetch/global_fetch.h"
-#include "third_party/blink/renderer/modules/cachestorage/cache_query_options.h"
+#include "third_party/blink/renderer/modules/cache_storage/cache_query_options.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -28,7 +28,6 @@ typedef RequestOrUSVString RequestInfo;
 
 class MODULES_EXPORT Cache final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
-  WTF_MAKE_NONCOPYABLE(Cache);
 
  public:
   static Cache* Create(GlobalFetch::ScopedFetcher*,
@@ -100,8 +99,10 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
 
   Member<GlobalFetch::ScopedFetcher> scoped_fetcher_;
   std::unique_ptr<WebServiceWorkerCache> web_cache_;
+
+  DISALLOW_COPY_AND_ASSIGN(Cache);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CACHESTORAGE_CACHE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CACHE_STORAGE_CACHE_H_

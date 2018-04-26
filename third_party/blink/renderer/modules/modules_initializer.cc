@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/modules/audio_output_devices/audio_output_device_client.h"
 #include "third_party/blink/renderer/modules/audio_output_devices/audio_output_device_client_impl.h"
 #include "third_party/blink/renderer/modules/audio_output_devices/html_media_element_audio_output_device.h"
-#include "third_party/blink/renderer/modules/cachestorage/inspector_cache_storage_agent.h"
+#include "third_party/blink/renderer/modules/cache_storage/inspector_cache_storage_agent.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.h"
 #include "third_party/blink/renderer/modules/canvas/imagebitmap/image_bitmap_rendering_context.h"
 #include "third_party/blink/renderer/modules/canvas/offscreencanvas2d/offscreen_canvas_rendering_context_2d.h"
