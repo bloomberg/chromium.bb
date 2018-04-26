@@ -76,7 +76,7 @@ int GetLayoutConstant(LayoutConstant constant) {
     case TAB_ALERT_INDICATOR_ICON_WIDTH:
       return touch_optimized_material ? 12 : 16;
     case TAB_HEIGHT: {
-      constexpr int kTabHeight[] = {29, 33, 41, 29};
+      constexpr int kTabHeight[] = {29, 33, 41, 36};
       return kTabHeight[mode];
     }
     case TAB_PRE_TITLE_PADDING:
