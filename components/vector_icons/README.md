@@ -4,19 +4,19 @@
 
 Chrome can draw vectorized images using Skia. Vector images have the advantages of looking better at different scale factors or sizes, can be easily colorized at runtime, and reduce the chrome binary size.
 
-Chrome uses .icon files to describe vector icons. This is a bespoke file format which is actually a C++ array definition. At build time, the .icon files are composed into a .cc file which is compiled into the binary.
+Chrome uses `.icon` files to describe vector icons. This is a bespoke file format which is actually a C++ array definition. At build time, the `.icon` files are composed into a .cc file which is compiled into the binary.
 
-Vector icons can be found in various vector_icons subdirectories throughout the code base. Use `components/vector_icons/` for generic icons shared among many directories and components, or more specific directories such as  `ui/views/vector_icons` or `ash/resources/vector_icons` for less widely used icons.
+Vector icons can be found in various `vector_icons` subdirectories throughout the code base. Use `components/vector_icons/` for generic icons shared among many directories and components, or more specific directories such as `ui/views/vector_icons` or `ash/resources/vector_icons` for less widely used icons.
 
-Some of the icons have **.1x.icon** variants which are used when the device scale factor is 100%. For any other scale factor, the **.icon** variant will be used. The 1x variants are generally only necessary for very small icons which may look fuzzy if shrunk from a larger icon.
+Some of the `.icon` files have multiple variants of the same icon (contained within the same file). See [Why do we need multiples sizes of vector icons](#why-do-we-need-multiple-sizes-of-vector-icons).
 
 ## Converting an SVG to .icon format
 
-[This tool](http://evanstade.github.io/skiafy/) generates .icon file output from SVGs. (If you want to contribute improvements, [here's the project](https://github.com/evanstade/skiafy).)
+[This tool](http://evanstade.github.io/skiafy/) generates `.icon` file output from SVGs. (If you want to contribute improvements, [here's the project](https://github.com/evanstade/skiafy).)
 
-It handles only a small subset of SVG (paths, circles, etc.) and it's finicky about what it expects as the format, but with a minor amount of manual intervention beforehand, it mostly spits out usable .icon output. It will often work better if you run the SVG through SVGO first, which is a separate project (an SVG minifier). [Jake Archibald's SVGOMG](https://jakearchibald.github.io/svgomg/) is a web interface to SVGO. If any manual adjustments need to be made to the output, the [SVG Path spec](https://www.w3.org/TR/SVG/paths.html) is a helpful reference; compare with the relevant [Chromium drawing commands](https://cs.chromium.org/chromium/src/ui/gfx/vector_icon_types.h?rcl=b9bf332694f083c6767416b69d0f8539d1c44707&l=22).
+It handles only a small subset of SVG (paths, circles, etc.) and it's finicky about what it expects as the format, but with a minor amount of manual intervention beforehand, it mostly spits out usable `.icon` output. It will often work better if you run the SVG through SVGO first, which is a separate project (an SVG minifier). [Jake Archibald's SVGOMG](https://jakearchibald.github.io/svgomg/) is a web interface to SVGO. If any manual adjustments need to be made to the output, the [SVG Path spec](https://www.w3.org/TR/SVG/paths.html) is a helpful reference; compare with the relevant [Chromium drawing commands](https://cs.chromium.org/chromium/src/ui/gfx/vector_icon_types.h?rcl=b9bf332694f083c6767416b69d0f8539d1c44707&l=22).
 
-Some SVGs are already pretty minimal, like the ones at [the Material Design Icon repository](https://material.io/icons/) so they don't require much if any adjustment, but some SVG editing tools like Sketch leave a lot of random cruft so SVGOMG helps a lot. Take the output and insert into a .icon file.
+Some SVGs are already pretty minimal, like the ones at [the Material Design Icon repository](https://material.io/icons/) so they don't require much if any adjustment, but some SVG editing tools like Sketch leave a lot of random cruft so SVGOMG helps a lot. Take the output and insert into a `.icon` file.
 
 ### Troubleshooting icon generation
 
@@ -24,11 +24,23 @@ Some SVGs are already pretty minimal, like the ones at [the Material Design Icon
 
 ## Using .icon files
 
-Once you have created an .icon file, place it in an appropriate vector_icon subdirectory and add the filename to the corresponding BUILD.gn. A constant is automatically generated so that the icon can be referenced at runtime. The icon file foo_bar.icon is mapped to the constant name of kFooBarIcon ('k' + camel-cased filename + 'Icon') and a sample call site to create this icon looks something like:
+### Adding new icons
+
+Once you have created an `.icon` file, place it in an appropriate `vector_icon` subdirectory and add the filename to the corresponding `BUILD.gn`. A constant is automatically generated so that the icon can be referenced at runtime. The icon file `foo_bar.icon` is mapped to the constant name of `kFooBarIcon` ('k' + camel-cased filename + 'Icon'), which you can use to reference that icon in code. The icon's name should match its identifier on [the MD icons site](https://material.io/icons/) if that's where it came from. For example, `ic_accessibility` would become `accessibility.icon`.
+
+### Icons with multiple definitions
+
+To add multiple icon definitions to a single `.icon` file, place the definitions generated by Skiafy in descending order of size. Each definition after the first must start with a `CANVAS_DIMENSIONS` directive.
+
+### In code
+
+A sample call site to create an icon for the `foo_bar.icon` file looks something like:
 
     gfx::CreateVectorIcon(kFooBarIcon, 32, color_utils::DeriveDefaultIconColor(text_color));
 
-If the size argument is unspecified, the size will be taken from the .icon file (or the .1x.icon if more than one exists). The icon's name should match its identifier on [the MD icons site](https://material.io/icons/) if that's where it came from. For example, `ic_accessibility` would become `accessibility.icon`.
+If the size argument is unspecified, the size will be taken from the smallest icon size in the `.icon` file.
+
+`CreateVectorIcon()` will use the icon definition that best matches the final pixel size required, which is the product of DIP and the device scale factor (DSF). For example, for a DIP size of 32 and DSF of 100%, a rep with `CANVAS_DIMENSIONS, 32,` would be used, whereas a configuration with DSF of 150% would prefer a rep with `CANVAS_DIMENSIONS, 48`.
 
 ## FAQ
 
@@ -46,7 +58,14 @@ You can also build and run the `views_examples_exe` (or `views_examples_with_con
 
 Yes. You can hard-code colors for specific path elements by adding a `PATH_COLOR_ARGB` command to the appropriate place within the .icon file. Any path elements which are not given a hard-coded color in this manner will use the color provided to `CreateVectorIcon()` at runtime.
 
-
 ### When introducing a new icon, should I use a PNG or a vector icon?
 
 Use a vector icon, unless the icon is extremely complex (e.g., a product logo). Also see above, "Where can I use vector icons?"
+
+### I see mentions of '.1x.icon' files on the bug tracker. What are those?
+
+A deprecated format where different icon representations were spread across different files.
+
+### Why do we need multiple sizes of **vector** icons?
+
+Even though these icons are vector, sometimes they may still be blurry or fuzzy drawn at different sizes. This is due to the icon not being aligned to the pixel grid and is more obvious at small sizes. In these cases, it is better to design an additional icon specifically for that size. For larger icons, the line stroke width used is often thicker (e.g. 2px for 100%, 3px for 200%), or they may include more detail omitted from smaller ones.
