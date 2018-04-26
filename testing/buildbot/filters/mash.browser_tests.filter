@@ -77,10 +77,6 @@
 # Need screenshot support. http://crbug.com/754899
 -ChromeScreenshotGrabberBrowserTest.*
 
-# ChromeBrowserMainExtraPartsAsh: Check failed: views::MusClient::Exists().
--ChromeMainTest.*
--ProfilingBrowserTest.*
-
 # Null immersive_fullscreen_controller_.
 -ChromeNativeAppWindowViewsAuraAshBrowserTest.*
 
