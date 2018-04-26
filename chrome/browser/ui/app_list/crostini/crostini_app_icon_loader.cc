@@ -8,34 +8,38 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 
 CrostiniAppIconLoader::CrostiniAppIconLoader(Profile* profile,
                                              int resource_size_in_dip,
                                              AppIconLoaderDelegate* delegate)
     : AppIconLoader(profile, resource_size_in_dip, delegate),
-      profile_(profile) {}
+      registry_service_(
+          crostini::CrostiniRegistryServiceFactory::GetForProfile(profile)) {
+  DCHECK(registry_service_);
+  registry_service_->AddObserver(this);
+}
 
-CrostiniAppIconLoader::~CrostiniAppIconLoader() = default;
+CrostiniAppIconLoader::~CrostiniAppIconLoader() {
+  registry_service_->RemoveObserver(this);
+}
 
 bool CrostiniAppIconLoader::CanLoadImageForApp(const std::string& app_id) {
   if (icon_map_.find(app_id) != icon_map_.end())
     return true;
 
-  crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile_);
-  return registry_service->IsCrostiniShelfAppId(app_id);
+  return registry_service_->IsCrostiniShelfAppId(app_id);
 }
 
 void CrostiniAppIconLoader::FetchImage(const std::string& app_id) {
   if (icon_map_.find(app_id) != icon_map_.end())
     return;
 
-  // TODO(timzheng): Use a real specific icon for this app.
-  std::unique_ptr<gfx::ImageSkia> image_skia = std::make_unique<gfx::ImageSkia>(
-      *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_LOGO_CROSTINI_DEFAULT));
-  icon_map_[app_id] = std::move(image_skia);
+  std::unique_ptr<CrostiniAppIcon> icon = std::make_unique<CrostiniAppIcon>(
+      profile(), app_id, app_list::kTileIconSize, this);
+  icon->image_skia().EnsureRepsForSupportedScales();
+  icon_map_[app_id] = std::move(icon);
   UpdateImage(app_id);
 }
 
@@ -48,5 +52,17 @@ void CrostiniAppIconLoader::UpdateImage(const std::string& app_id) {
   if (it == icon_map_.end())
     return;
 
-  delegate()->OnAppImageUpdated(app_id, *(it->second));
+  delegate()->OnAppImageUpdated(app_id, it->second->image_skia());
+}
+
+void CrostiniAppIconLoader::OnIconUpdated(CrostiniAppIcon* icon) {
+  UpdateImage(icon->app_id());
+}
+
+void CrostiniAppIconLoader::OnAppIconUpdated(const std::string& app_id,
+                                             ui::ScaleFactor scale_factor) {
+  AppIDToIconMap::const_iterator it = icon_map_.find(app_id);
+  if (it == icon_map_.end())
+    return;
+  it->second->LoadForScaleFactor(scale_factor);
 }

@@ -10,9 +10,13 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "ui/base/resource/scale_factor.h"
 
 class Profile;
 class PrefRegistrySimple;
@@ -87,7 +91,6 @@ class CrostiniRegistryService : public KeyedService {
     std::string vm_name;
     std::string container_name;
 
-    // TODO(timloh): Support icons.
     LocaleString name;
     LocaleString comment;
     std::vector<std::string> mime_types;
@@ -110,7 +113,12 @@ class CrostiniRegistryService : public KeyedService {
         CrostiniRegistryService* registry_service,
         const std::vector<std::string>& updated_apps,
         const std::vector<std::string>& removed_apps,
-        const std::vector<std::string>& inserted_apps) = 0;
+        const std::vector<std::string>& inserted_apps) {}
+
+    // Called when an icon has been installed for the specified app so loading
+    // of that icon should be requested again.
+    virtual void OnAppIconUpdated(const std::string& app_id,
+                                  ui::ScaleFactor scale_factor) {}
 
    protected:
     virtual ~Observer() = default;
@@ -140,6 +148,14 @@ class CrostiniRegistryService : public KeyedService {
   std::unique_ptr<CrostiniRegistryService::Registration> GetRegistration(
       const std::string& app_id) const;
 
+  // Constructs path to app icon for specific scale factor.
+  base::FilePath GetIconPath(const std::string& app_id,
+                             ui::ScaleFactor scale_factor) const;
+
+  // Calls RequestIcon if no request is recorded.
+  void MaybeRequestIcon(const std::string& app_id,
+                        ui::ScaleFactor scale_factor);
+
   // The existing list of apps is replaced by |application_list|.
   void UpdateApplicationList(const vm_tools::apps::ApplicationList& app_list);
 
@@ -158,12 +174,45 @@ class CrostiniRegistryService : public KeyedService {
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
+  // Construct path to app local data.
+  base::FilePath GetAppPath(const std::string& app_id) const;
+  // Called to request an icon from the container.
+  void RequestIcon(const std::string& app_id, ui::ScaleFactor scale_factor);
+  // Callback for when we request an icon from the container.
+  void OnContainerAppIcon(const std::string& app_id,
+                          ui::ScaleFactor scale_factor,
+                          ConciergeClientResult result,
+                          std::vector<Icon>& icons);
+  // Callback for our internal call for saving out icon data.
+  void OnIconInstalled(const std::string& app_id,
+                       ui::ScaleFactor scale_factor,
+                       bool success);
+  // Removes all the icons installed for an application.
+  void RemoveAppData(const std::string& app_id);
+
   // Owned by the BrowserContext.
   PrefService* const prefs_;
+
+  // Keeps root folder where Crostini app icons for different scale factors are
+  // stored.
+  base::FilePath base_icon_path_;
 
   base::ObserverList<Observer> observers_;
 
   const base::Clock* clock_;
+
+  // Keeps record for icon request to avoid duplication. Each app may contain
+  // several requests for different scale factor. Scale factor is defined by
+  // specific bit position. The |active_icon_requests_| holds icon request that
+  // are either in flight or have been completed successfully so they should not
+  // be requested again. |retry_icon_requests| holds failed requests which we
+  // should attempt again when we get an app list refresh from the container
+  // which means there's a good chance the container is online and the request
+  // will then succeed.
+  std::map<std::string, uint32_t> active_icon_requests_;
+  std::map<std::string, uint32_t> retry_icon_requests_;
+
+  base::WeakPtrFactory<CrostiniRegistryService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniRegistryService);
 };

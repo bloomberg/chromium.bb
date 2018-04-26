@@ -6,6 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -18,6 +19,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using vm_tools::apps::App;
@@ -37,6 +39,7 @@ constexpr char kWMClassPrefix[] = "wmclass.";
 constexpr char kCrostiniAppIdPrefix[] = "crostini:";
 
 constexpr char kCrostiniRegistryPref[] = "crostini.registry";
+constexpr char kCrostiniIconFolder[] = "crostini.icons";
 
 // Keys for the Dictionary stored in prefs for each app.
 constexpr char kAppDesktopFileIdKey[] = "desktop_file_id";
@@ -160,6 +163,33 @@ bool EqualsExcludingTimestamps(const base::Value& left,
   return left_iter == left_items.end() && right_iter == right_items.end();
 }
 
+bool InstallIconFromFileThread(const base::FilePath& icon_path,
+                               const std::string& content_png) {
+  DCHECK(!content_png.empty());
+
+  base::CreateDirectory(icon_path.DirName());
+
+  int wrote =
+      base::WriteFile(icon_path, content_png.c_str(), content_png.size());
+  if (wrote != static_cast<int>(content_png.size())) {
+    VLOG(2) << "Failed to write Crostini icon file: "
+            << icon_path.MaybeAsASCII();
+    if (!base::DeleteFile(icon_path, false)) {
+      VLOG(2) << "Couldn't delete broken icon file" << icon_path.MaybeAsASCII();
+    }
+    return false;
+  }
+
+  return true;
+}
+
+void DeleteIconFolderFromFileThread(const base::FilePath& path) {
+  DCHECK(path.DirName().BaseName().MaybeAsASCII() == kCrostiniIconFolder &&
+         (!base::PathExists(path) || base::DirectoryExists(path)));
+  const bool deleted = base::DeleteFile(path, true);
+  DCHECK(deleted);
+}
+
 }  // namespace
 
 CrostiniRegistryService::Registration::Registration(
@@ -207,7 +237,10 @@ const std::string& CrostiniRegistryService::Registration::Localize(
 }
 
 CrostiniRegistryService::CrostiniRegistryService(Profile* profile)
-    : prefs_(profile->GetPrefs()), clock_(base::DefaultClock::GetInstance()) {}
+    : prefs_(profile->GetPrefs()),
+      base_icon_path_(profile->GetPath().AppendASCII(kCrostiniIconFolder)),
+      clock_(base::DefaultClock::GetInstance()),
+      weak_ptr_factory_(this) {}
 
 CrostiniRegistryService::~CrostiniRegistryService() = default;
 
@@ -352,6 +385,60 @@ CrostiniRegistryService::GetRegistration(const std::string& app_id) const {
       GetTime(*pref_registration, kAppLastLaunchTimeKey));
 }
 
+base::FilePath CrostiniRegistryService::GetAppPath(
+    const std::string& app_id) const {
+  return base_icon_path_.AppendASCII(app_id);
+}
+
+base::FilePath CrostiniRegistryService::GetIconPath(
+    const std::string& app_id,
+    ui::ScaleFactor scale_factor) const {
+  const base::FilePath app_path = GetAppPath(app_id);
+  switch (scale_factor) {
+    case ui::SCALE_FACTOR_100P:
+      return app_path.AppendASCII("icon_100p.png");
+    case ui::SCALE_FACTOR_125P:
+      return app_path.AppendASCII("icon_125p.png");
+    case ui::SCALE_FACTOR_133P:
+      return app_path.AppendASCII("icon_133p.png");
+    case ui::SCALE_FACTOR_140P:
+      return app_path.AppendASCII("icon_140p.png");
+    case ui::SCALE_FACTOR_150P:
+      return app_path.AppendASCII("icon_150p.png");
+    case ui::SCALE_FACTOR_180P:
+      return app_path.AppendASCII("icon_180p.png");
+    case ui::SCALE_FACTOR_200P:
+      return app_path.AppendASCII("icon_200p.png");
+    case ui::SCALE_FACTOR_250P:
+      return app_path.AppendASCII("icon_250p.png");
+    case ui::SCALE_FACTOR_300P:
+      return app_path.AppendASCII("icon_300p.png");
+    default:
+      NOTREACHED();
+      return base::FilePath();
+  }
+}
+
+void CrostiniRegistryService::MaybeRequestIcon(const std::string& app_id,
+                                               ui::ScaleFactor scale_factor) {
+  // First check to see if this request is already in process or not.
+  const auto active_iter = active_icon_requests_.find(app_id);
+  if (active_iter != active_icon_requests_.end()) {
+    if (active_iter->second & (1 << scale_factor)) {
+      // Icon request already in progress.
+      return;
+    }
+  }
+  const auto retry_iter = retry_icon_requests_.find(app_id);
+  if (retry_iter != active_icon_requests_.end()) {
+    if (retry_iter->second & (1 << scale_factor)) {
+      // Icon request already setup to be retried when we are active.
+      return;
+    }
+  }
+  RequestIcon(app_id, scale_factor);
+}
+
 void CrostiniRegistryService::UpdateApplicationList(
     const vm_tools::apps::ApplicationList& app_list) {
   if (app_list.vm_name().empty()) {
@@ -447,15 +534,41 @@ void CrostiniRegistryService::UpdateApplicationList(
       }
     }
 
-    for (const std::string& removed_app : removed_apps)
+    for (const std::string& removed_app : removed_apps) {
+      RemoveAppData(removed_app);
       apps->RemoveKey(removed_app);
+    }
   }
+
+  // When we receive notification of the application list then the container
+  // *should* be online and we can retry all of our icon requests that failed
+  // due to the container being offline.
+  for (auto retry_iter = retry_icon_requests_.begin();
+       retry_iter != retry_icon_requests_.end(); ++retry_iter) {
+    for (ui::ScaleFactor scale_factor : ui::GetSupportedScaleFactors()) {
+      if (retry_iter->second & (1 << scale_factor)) {
+        RequestIcon(retry_iter->first, scale_factor);
+      }
+    }
+  }
+  retry_icon_requests_.clear();
 
   if (!updated_apps.empty() || !removed_apps.empty() ||
       !inserted_apps.empty()) {
     for (Observer& obs : observers_)
       obs.OnRegistryUpdated(this, updated_apps, removed_apps, inserted_apps);
   }
+}
+
+void CrostiniRegistryService::RemoveAppData(const std::string& app_id) {
+  // Remove any pending requests we have for this icon.
+  active_icon_requests_.erase(app_id);
+  retry_icon_requests_.erase(app_id);
+
+  // Remove local data on filesystem for the icons.
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::BindOnce(&DeleteIconFolderFromFileThread, GetAppPath(app_id)));
 }
 
 void CrostiniRegistryService::AddObserver(Observer* observer) {
@@ -504,6 +617,79 @@ base::Time CrostiniRegistryService::GetTime(const base::Value& dictionary,
 void CrostiniRegistryService::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kCrostiniRegistryPref);
+}
+
+void CrostiniRegistryService::RequestIcon(const std::string& app_id,
+                                          ui::ScaleFactor scale_factor) {
+  // Ignore requests for app_id that isn't registered.
+  std::unique_ptr<CrostiniRegistryService::Registration> registration =
+      GetRegistration(app_id);
+  if (!registration) {
+    VLOG(2) << "Request to load icon for non-registered app: " << app_id;
+    return;
+  }
+
+  // Mark that we're doing a request for this icon so we don't duplicate
+  // requests.
+  active_icon_requests_[app_id] |= (1 << scale_factor);
+
+  // Now make the call to request the actual icon.
+  std::vector<std::string> desktop_file_ids{registration->desktop_file_id};
+  // We can only send integer scale factors to Crostini, so if we have a
+  // non-integral scale factor we need round the scale factor. We do not expect
+  // Crostini to give us back exactly what we ask for and we deal with that in
+  // the CrostiniAppIcon class and may rescale the result in there to match our
+  // needs.
+  uint32_t icon_scale = 1;
+  switch (scale_factor) {
+    case ui::SCALE_FACTOR_180P:  // Close enough to 2, so use 2.
+    case ui::SCALE_FACTOR_200P:
+    case ui::SCALE_FACTOR_250P:  // Rounding scale factor down is better.
+      icon_scale = 2;
+      break;
+    case ui::SCALE_FACTOR_300P:
+      icon_scale = 3;
+      break;
+    default:
+      break;
+  }
+
+  crostini::CrostiniManager::GetInstance()->GetContainerAppIcons(
+      registration->vm_name, registration->container_name, desktop_file_ids,
+      app_list::kTileIconSize, icon_scale,
+      base::BindOnce(&CrostiniRegistryService::OnContainerAppIcon,
+                     weak_ptr_factory_.GetWeakPtr(), app_id, scale_factor));
+}
+
+void CrostiniRegistryService::OnContainerAppIcon(const std::string& app_id,
+                                                 ui::ScaleFactor scale_factor,
+                                                 ConciergeClientResult result,
+                                                 std::vector<Icon>& icons) {
+  if (result != ConciergeClientResult::SUCCESS) {
+    // Add this to the list of retryable icon requests so we redo this when
+    // we get feedback from the container that it's available.
+    retry_icon_requests_[app_id] |= (1 << scale_factor);
+    return;
+  }
+  if (icons.empty())
+    return;
+  // Now install the icon that we received.
+  const base::FilePath icon_path = GetIconPath(app_id, scale_factor);
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::BindOnce(&InstallIconFromFileThread, icon_path, icons[0].content),
+      base::BindOnce(&CrostiniRegistryService::OnIconInstalled,
+                     weak_ptr_factory_.GetWeakPtr(), app_id, scale_factor));
+}
+
+void CrostiniRegistryService::OnIconInstalled(const std::string& app_id,
+                                              ui::ScaleFactor scale_factor,
+                                              bool success) {
+  if (!success)
+    return;
+
+  for (Observer& obs : observers_)
+    obs.OnAppIconUpdated(app_id, scale_factor);
 }
 
 }  // namespace crostini
