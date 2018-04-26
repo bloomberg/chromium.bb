@@ -2095,7 +2095,8 @@ public class ToolbarPhone extends ToolbarLayout
         // is only needed for RTL calculations, we proceed if the location bar is showing
         // LTR content.
         boolean isLocationBarRtl = ApiCompatibilityUtils.isLayoutRtl(mLocationBar);
-        if (!isLocationBarRtl || mUrlBar.getLayout() != null) {
+        if (!TextUtils.isEmpty(mUrlBar.getText())
+                && (!isLocationBarRtl || mUrlBar.getLayout() != null)) {
             int urlBarStartScrollX = 0;
             if (TextUtils.equals(mUrlBar.getText(), mUrlTextPreFocus)) {
                 urlBarStartScrollX = mUrlScrollXPositionPreFocus;
