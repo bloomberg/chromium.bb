@@ -217,6 +217,7 @@
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_item.h"
 #import "ios/chrome/browser/ui/translate/language_selection_coordinator.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
@@ -1614,8 +1615,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 // Perform additional set up after loading the view, typically from a nib.
 - (void)viewDidLoad {
   CGRect initialViewsRect = self.view.bounds;
-  initialViewsRect.origin.y += StatusBarHeight();
-  initialViewsRect.size.height -= StatusBarHeight();
+  if (!base::FeatureList::IsEnabled(kBrowserContainerFullscreen)) {
+    initialViewsRect.origin.y += StatusBarHeight();
+    initialViewsRect.size.height -= StatusBarHeight();
+  }
   UIViewAutoresizing initialViewAutoresizing =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
@@ -2372,9 +2375,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Adjust the content area to be under the toolbar, for fullscreen or below
   // the toolbar is not fullscreen.
   CGRect contentFrame = self.contentArea.frame;
-  CGFloat marginWithHeader = StatusBarHeight();
-  contentFrame.size.height = CGRectGetMaxY(contentFrame) - marginWithHeader;
-  contentFrame.origin.y = marginWithHeader;
+  if (!base::FeatureList::IsEnabled(kBrowserContainerFullscreen)) {
+    CGFloat marginWithHeader = StatusBarHeight();
+    contentFrame.size.height = CGRectGetMaxY(contentFrame) - marginWithHeader;
+    contentFrame.origin.y = marginWithHeader;
+  }
   self.contentArea.frame = contentFrame;
 
   if (initialLayout) {
@@ -2545,8 +2550,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       height += CGRectGetHeight([header.view frame]) - header.inset;
     }
   }
+  CGFloat statusBarOffset = 0;
+  if (!base::FeatureList::IsEnabled(kBrowserContainerFullscreen)) {
+    statusBarOffset = StatusBarHeight();
+  }
 
-  return height - StatusBarHeight();
+  return height - statusBarOffset;
 }
 
 - (void)setFramesForHeaders:(NSArray<HeaderDefinition*>*)headers
@@ -5121,8 +5130,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
           // Restore content area frame, which was resized to fullscreen for
           // NTP opening animation.
           CGRect contentAreaFrame = self.view.bounds;
-          contentAreaFrame.origin.y += StatusBarHeight();
-          contentAreaFrame.size.height -= StatusBarHeight();
+          if (!base::FeatureList::IsEnabled(kBrowserContainerFullscreen)) {
+            contentAreaFrame.origin.y += StatusBarHeight();
+            contentAreaFrame.size.height -= StatusBarHeight();
+          }
           self.contentArea.frame = contentAreaFrame;
         });
   } else {

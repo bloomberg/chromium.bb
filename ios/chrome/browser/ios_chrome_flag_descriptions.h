@@ -28,6 +28,10 @@ extern const char kAutofillEnforceMinRequiredFieldsForUploadDescription[];
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[];
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
 
+// Title and description for the flag to make browser container fullscreen.
+extern const char kBrowserContainerFullscreenName[];
+extern const char kBrowserContainerFullscreenDescription[];
+
 // Title and description for the flag to control redirection to the task
 // scheduler.
 extern const char kBrowserTaskScheduler[];

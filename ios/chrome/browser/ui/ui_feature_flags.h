@@ -26,4 +26,6 @@ extern const base::Feature kUIRefreshPhase1;
 // experimental_flags::IsCollectionsUIRebootEnabled()
 extern const base::Feature kCollectionsUIReboot;
 
+// Used to make BrowserContainerViewController fullscreen.
+extern const base::Feature kBrowserContainerFullscreen;
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

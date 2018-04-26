@@ -296,6 +296,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnforceMinRequiredFieldsForUpload)},
+    {"browser-container-fullscreen",
+     flag_descriptions::kBrowserContainerFullscreenName,
+     flag_descriptions::kBrowserContainerFullscreenDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kBrowserContainerFullscreen)},
 };
 
 // Add all switches from experimental flags to |command_line|.

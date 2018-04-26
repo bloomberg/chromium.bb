@@ -43,6 +43,11 @@ const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[] =
 const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[] =
     "Restrict extraction of formless forms to checkout flows";
 
+const char kBrowserContainerFullscreenName[] = "Browser Container Fullscreen";
+const char kBrowserContainerFullscreenDescription[] =
+    "When enabled, the BrowserContainer is fullscreen. No UI change should be "
+    "visible.";
+
 const char kBrowserTaskScheduler[] = "Task Scheduler";
 const char kBrowserTaskSchedulerDescription[] =
     "Enables redirection of some task posting APIs to the task scheduler.";
