@@ -1548,30 +1548,35 @@ TEST(IncrementalMarkingTest, WriteBarrierDuringMixinConstruction) {
   IncrementalMarkingScope scope(ThreadState::Current());
   ObjectRegistry registry;
   RegisteringObject* object = new RegisteringObject(&registry);
+
+  // Clear any objects that have been added to the regular marking worklist in
+  // the process of calling the constructor.
   EXPECT_FALSE(scope.marking_worklist()->IsGlobalEmpty());
-  MarkingItem item;
-  EXPECT_TRUE(scope.marking_worklist()->Pop(WorklistTaskId::MainThread, &item));
-  RegisteringObject* recorded_object =
-      reinterpret_cast<RegisteringObject*>(item.object);
-  // In this case, the Member write barrier will also add the object to the
-  // regular marking stack. The not-fully-constructed object marking stack is
-  // only needed when going through custom off-heap data structures that require
-  // eager tracing.
-  EXPECT_EQ(object, recorded_object);
-  // In this example, there are two more objects on the callback stack: the
-  // backing store for which a write barrier triggers after rehashing, and
-  // a write barrier for the Member assignment (which might not always happen).
-  scope.marking_worklist()->Pop(WorklistTaskId::MainThread, &item);
-  scope.marking_worklist()->Pop(WorklistTaskId::MainThread, &item);
-  // The mixin object should be on the not-fully-constructed object marking
-  // stack.
+  MarkingItem marking_item;
+  while (scope.marking_worklist()->Pop(WorklistTaskId::MainThread,
+                                       &marking_item)) {
+    HeapObjectHeader* header =
+        HeapObjectHeader::FromPayload(marking_item.object);
+    if (header->IsMarked())
+      header->Unmark();
+  }
+  EXPECT_TRUE(scope.marking_worklist()->IsGlobalEmpty());
+
   EXPECT_FALSE(scope.not_fully_constructed_worklist()->IsGlobalEmpty());
-  NotFullyConstructedItem item2;
-  EXPECT_TRUE(scope.not_fully_constructed_worklist()->Pop(
-      WorklistTaskId::MainThread, &item2));
-  RegisteringObject* recorded_object2 =
-      reinterpret_cast<RegisteringObject*>(item2);
-  EXPECT_EQ(object, recorded_object2);
+  NotFullyConstructedItem partial_item;
+  bool found_mixin_object = false;
+  // The same object may be on the marking work list because of expanding
+  // and rehashing of the backing store in the registry.
+  while (scope.not_fully_constructed_worklist()->Pop(WorklistTaskId::MainThread,
+                                                     &partial_item)) {
+    if (object == partial_item)
+      found_mixin_object = true;
+    HeapObjectHeader* header = HeapObjectHeader::FromPayload(partial_item);
+    if (header->IsMarked())
+      header->Unmark();
+  }
+  EXPECT_TRUE(found_mixin_object);
+  EXPECT_TRUE(scope.not_fully_constructed_worklist()->IsGlobalEmpty());
 }
 
 TEST(IncrementalMarkingTest, OverrideAfterMixinConstruction) {
