@@ -158,5 +158,40 @@ cr.define('settings_dropdown_menu', function() {
         assertTrue(customOption.disabled);
       });
     });
+
+    test('works with dictionary pref', function testDictionaryPref() {
+      dropdown.pref = {
+        key: 'test.dictionary',
+        type: chrome.settingsPrivate.PrefType.DICTIONARY,
+        value: {
+          'key1': 'value1',
+          'key2': 'value2',
+        },
+      };
+      dropdown.prefKey = 'key2';
+      dropdown.menuOptions = [
+          {value: 'value2', name: 'Option 2'},
+          {value: 'value3', name: 'Option 3'},
+          {value: 'value4', name: 'Option 4'},
+      ];
+
+      return waitUntilDropdownUpdated().then(function() {
+        // Initially selected item.
+        assertEquals(
+            'Option 2',
+            selectElement.selectedOptions[0].textContent.trim());
+
+        // Selecting an item updates the pref.
+        return simulateChangeEvent('value3');
+      }).then(function() {
+        assertEquals('value3', dropdown.pref.value['key2']);
+
+        // Updating the pref selects an item.
+        dropdown.set('pref.value.key2', 'value4');
+        return waitUntilDropdownUpdated();
+      }).then(function() {
+        assertEquals('value4', selectElement.value);
+      });
+    });
   });
 });

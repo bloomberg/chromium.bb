@@ -15,7 +15,7 @@
 
 namespace settings {
 
-void TtsHandler::HandleGetGoogleTtsVoiceData(const base::ListValue* args) {
+void TtsHandler::HandleGetAllTtsVoiceData(const base::ListValue* args) {
   OnVoicesChanged();
 }
 
@@ -25,27 +25,26 @@ void TtsHandler::OnVoicesChanged() {
   impl->GetVoices(Profile::FromWebUI(web_ui()), &voices);
   base::ListValue responses;
   for (const auto& voice : voices) {
-    if (voice.extension_id != extension_misc::kSpeechSynthesisExtensionId)
-      continue;
-
     base::DictionaryValue response;
+    std::string language_code = l10n_util::GetLanguage(voice.lang);
     response.SetPath({"name"}, base::Value(voice.name));
+    response.SetPath({"languageCode"}, base::Value(language_code));
+    response.SetPath({"extensionId"}, base::Value(voice.extension_id));
     response.SetPath(
-        {"language"},
+        {"displayLanguage"},
         base::Value(l10n_util::GetDisplayNameForLocale(
-            voice.lang, g_browser_process->GetApplicationLocale(), true)));
-    response.SetPath({"builtIn"}, base::Value(true));
+            language_code, g_browser_process->GetApplicationLocale(), true)));
     responses.GetList().push_back(std::move(response));
   }
   AllowJavascript();
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::Value("google-voice-data-updated"), responses);
+                         base::Value("all-voice-data-updated"), responses);
 }
 
 void TtsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "getGoogleTtsVoiceData",
-      base::BindRepeating(&TtsHandler::HandleGetGoogleTtsVoiceData,
+      "getAllTtsVoiceData",
+      base::BindRepeating(&TtsHandler::HandleGetAllTtsVoiceData,
                           base::Unretained(this)));
 }
 
