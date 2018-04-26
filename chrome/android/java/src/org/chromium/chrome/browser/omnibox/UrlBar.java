@@ -545,6 +545,9 @@ public class UrlBar extends AutocompleteEditText {
             if (mUrlDirectionListener != null) {
                 mUrlDirectionListener.onUrlDirectionChanged(urlDirection);
             }
+
+            // Ensure the display text is visible after updating the URL direction.
+            scrollDisplayText();
         }
     }
 
