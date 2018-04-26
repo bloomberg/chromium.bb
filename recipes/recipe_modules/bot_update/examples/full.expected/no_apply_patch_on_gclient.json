@@ -69,7 +69,7 @@
       "--revision",
       "src/third_party/angle@HEAD",
       "--disable-syntax-validation",
-      "--apply-patch-on-gclient"
+      "--no-apply-patch-on-gclient"
     ],
     "env_prefixes": {
       "PATH": [
@@ -170,7 +170,7 @@
       "src@f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9",
       "--revision",
       "src/third_party/angle@fac9503c46405f77757b9a728eb85b8d7bc6080c",
-      "--apply-patch-on-gclient"
+      "--no-apply-patch-on-gclient"
     ],
     "env_prefixes": {
       "PATH": [

@@ -14,7 +14,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
                patch_gerrit_url, revision, parent_got_revision,
                deps_revision_overrides, fail_patch, *args, **kwargs):
     self._apply_patch_on_gclient = properties.get(
-        'apply_patch_on_gclient', False)
+        'apply_patch_on_gclient', True)
     self._issue = patch_issue
     self._patchset = patch_set
     self._repository = repository or patch_repository_url
@@ -220,8 +220,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--gerrit_no_rebase_patch_ref')
     if disable_syntax_validation or cfg.disable_syntax_validation:
       cmd.append('--disable-syntax-validation')
-    if self._apply_patch_on_gclient:
-      cmd.append('--apply-patch-on-gclient')
+    if not self._apply_patch_on_gclient:
+      cmd.append('--no-apply-patch-on-gclient')
 
     # Inject Json output for testing.
     first_sln = cfg.solutions[0].name
