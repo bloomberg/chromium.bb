@@ -24,35 +24,19 @@ import os
 import sys
 
 def main():
-  # Redirect execution to the new scripts, if requested.
+  # Redirect execution to the new scripts.
   # Suppress -h/-help behavior so that we don't interfere with the help text
   # output of the runner scripts.
   parser = argparse.ArgumentParser(add_help=False)
   parser.add_argument('--use-new-test-runner', action='store_true',
                       default=False,
-                      help='Uses the runner_v2 scripts for execution.')
+                      help='Transitional flag. To be removed.')
   args, unknown_args = parser.parse_known_args()
-  if args.use_new_test_runner:
-    v2_test_path = sys.argv[0] + '_v2'
-    os.execv(v2_test_path,
-             [v2_test_path] + unknown_args)
-    return 1
 
-  script_directory = os.path.dirname(__file__)
-
-  def ResolvePath(path):
-    \"\"\"Returns an absolute filepath given a path relative to this script.
-    \"\"\"
-    return os.path.abspath(os.path.join(script_directory, path))
-
-  runner_path = ResolvePath('{runner_path}')
-  runner_args = {runner_args}
-  runner_path_args = {runner_path_args}
-  for arg, path in runner_path_args:
-    runner_args.extend([arg, ResolvePath(path)])
-
-  os.execv(runner_path,
-           [runner_path] + runner_args + sys.argv[1:])
+  v2_test_path = sys.argv[0] + '_v2'
+  os.execv(v2_test_path,
+           [v2_test_path, '-vv'] + unknown_args)
+  return 1
 
 if __name__ == '__main__':
   sys.exit(main())
