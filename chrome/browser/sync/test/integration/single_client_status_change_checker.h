@@ -30,7 +30,6 @@ class SingleClientStatusChangeChecker
   bool IsExitConditionSatisfied() override = 0;
   std::string GetDebugMessage() const override = 0;
 
- protected:
   browser_sync::ProfileSyncService* service();
 };
 

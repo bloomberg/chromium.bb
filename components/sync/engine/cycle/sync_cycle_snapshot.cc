@@ -21,6 +21,7 @@ SyncCycleSnapshot::SyncCycleSnapshot()
       num_entries_(0),
       num_entries_by_type_(MODEL_TYPE_COUNT, 0),
       num_to_delete_entries_by_type_(MODEL_TYPE_COUNT, 0),
+      has_remaining_local_changes_(false),
       is_initialized_(false) {}
 
 SyncCycleSnapshot::SyncCycleSnapshot(
@@ -38,7 +39,8 @@ SyncCycleSnapshot::SyncCycleSnapshot(
     const std::vector<int>& num_to_delete_entries_by_type,
     sync_pb::SyncEnums::GetUpdatesOrigin get_updates_origin,
     base::TimeDelta short_poll_interval,
-    base::TimeDelta long_poll_interval)
+    base::TimeDelta long_poll_interval,
+    bool has_remaining_local_changes)
     : model_neutral_state_(model_neutral_state),
       download_progress_markers_(download_progress_markers),
       is_silenced_(is_silenced),
@@ -54,6 +56,7 @@ SyncCycleSnapshot::SyncCycleSnapshot(
       get_updates_origin_(get_updates_origin),
       short_poll_interval_(short_poll_interval),
       long_poll_interval_(long_poll_interval),
+      has_remaining_local_changes_(has_remaining_local_changes),
       is_initialized_(true) {}
 
 SyncCycleSnapshot::SyncCycleSnapshot(const SyncCycleSnapshot& other) = default;
@@ -102,6 +105,7 @@ std::unique_ptr<base::DictionaryValue> SyncCycleSnapshot::ToValue() const {
     counter_entries->Set(model_type, std::move(type_entries));
   }
   value->Set("counter_entries", std::move(counter_entries));
+  value->SetBoolean("hasRemainingLocalChanges", has_remaining_local_changes_);
   return value;
 }
 
@@ -146,6 +150,10 @@ base::Time SyncCycleSnapshot::sync_start_time() const {
 
 base::Time SyncCycleSnapshot::poll_finish_time() const {
   return poll_finish_time_;
+}
+
+bool SyncCycleSnapshot::has_remaining_local_changes() const {
+  return has_remaining_local_changes_;
 }
 
 bool SyncCycleSnapshot::is_initialized() const {

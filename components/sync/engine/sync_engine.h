@@ -158,7 +158,8 @@ class SyncEngine : public ModelTypeConfigurer {
   // Determines if the underlying sync engine has made any local changes to
   // items that have not yet been synced with the server.
   // ONLY CALL THIS IF OnInitializationComplete was called!
-  virtual bool HasUnsyncedItemsForTest() const = 0;
+  virtual void HasUnsyncedItemsForTest(
+      base::OnceCallback<void(bool)> cb) const = 0;
 
   // True if the cryptographer has any keys available to attempt decryption.
   // Could mean we've downloaded and loaded Nigori objects, or we bootstrapped

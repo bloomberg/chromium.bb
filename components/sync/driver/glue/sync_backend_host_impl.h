@@ -81,7 +81,8 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   void EnableEncryptEverything() override;
   UserShare* GetUserShare() const override;
   Status GetDetailedStatus() override;
-  bool HasUnsyncedItemsForTest() const override;
+  void HasUnsyncedItemsForTest(
+      base::OnceCallback<void(bool)> cb) const override;
   bool IsCryptographerReady(const BaseTransaction* trans) const override;
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const override;
   void FlushDirectory() const override;

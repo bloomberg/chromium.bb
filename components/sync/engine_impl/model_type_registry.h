@@ -105,7 +105,7 @@ class ModelTypeRegistry : public ModelTypeConnector,
       const TypeDebugInfoObserver* observer) const;
   void RequestEmitDebugInfo();
 
-  bool HasUnsyncedItemsForTest() const;
+  bool HasUnsyncedItems() const;
 
   base::WeakPtr<ModelTypeConnector> AsWeakPtr();
 

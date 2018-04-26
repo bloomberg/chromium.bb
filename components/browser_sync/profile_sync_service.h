@@ -453,14 +453,10 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // The functions below (until ActivateDataType()) should only be
   // called if IsEngineInitialized() is true.
 
-  // TODO(akalin): These two functions are used only by
-  // ProfileSyncServiceHarness.  Figure out a different way to expose
-  // this info to that class, and remove these functions.
-
   // Returns whether or not the underlying sync engine has made any
   // local changes to items that have not yet been synced with the
   // server.
-  bool HasUnsyncedItemsForTest() const;
+  void HasUnsyncedItemsForTest(base::OnceCallback<void(bool)> cb) const;
 
   // Used by ProfileSyncServiceHarness.  May return null.
   syncer::BackendMigrator* GetBackendMigratorForTest();

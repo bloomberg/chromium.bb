@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -285,6 +286,18 @@ void ProfileSyncServiceHarness::SignoutSyncService() {
       service()->GetAuthenticatedAccountInfo().account_id, username_);
 }
 
+bool ProfileSyncServiceHarness::HasUnsyncedItems() {
+  base::RunLoop loop;
+  bool result = false;
+  service()->HasUnsyncedItemsForTest(
+      base::BindLambdaForTesting([&](bool has_unsynced_items) {
+        result = has_unsynced_items;
+        loop.Quit();
+      }));
+  loop.Run();
+  return result;
+}
+
 bool ProfileSyncServiceHarness::AwaitMutualSyncCycleCompletion(
     ProfileSyncServiceHarness* partner) {
   std::vector<ProfileSyncServiceHarness*> harnesses;
@@ -515,8 +528,7 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
     ProfileSyncService::Status status;
     service()->QueryDetailedSyncStatus(&status);
     // Capture select info from the sync session snapshot and syncer status.
-    os << ", has_unsynced_items: "
-       << (service()->IsSyncActive() ? service()->HasUnsyncedItemsForTest() : 0)
+    os << ", has_unsynced_items: " << snap.has_remaining_local_changes()
        << ", did_commit: "
        << (snap.model_neutral_state().num_successful_commits == 0 &&
            snap.model_neutral_state().commit_result == syncer::SYNCER_OK)

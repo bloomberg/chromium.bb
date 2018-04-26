@@ -185,7 +185,8 @@ class SuggestionsServiceTest : public testing::Test {
             std::vector<int>(syncer::MODEL_TYPE_COUNT, 0),
             sync_pb::SyncEnums::UNKNOWN_ORIGIN,
             /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
-            /*long_poll_interval=*/base::TimeDelta::FromMinutes(180))));
+            /*long_poll_interval=*/base::TimeDelta::FromMinutes(180),
+            /*has_remaining_local_changes=*/false)));
     // These objects are owned by the SuggestionsService, but we keep the
     // pointers around for testing.
     test_suggestions_store_ = new TestSuggestionsStore();

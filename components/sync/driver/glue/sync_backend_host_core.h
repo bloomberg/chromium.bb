@@ -173,6 +173,8 @@ class SyncBackendHostCore
                             bool empty_jar,
                             const base::Closure& callback);
 
+  bool HasUnsyncedItemsForTest() const;
+
  private:
   friend class base::RefCountedThreadSafe<SyncBackendHostCore>;
 

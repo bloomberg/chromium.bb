@@ -32,11 +32,6 @@ class SingleClientPrintersSyncTest : public SyncTest {
 // Verify that printers aren't added with a sync call.
 IN_PROC_BROWSER_TEST_F(SingleClientPrintersSyncTest, NoPrinters) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  // TODO(sync): Should not use UpdatedProgressMarkerChecker here since
-  // UpdatedProgressMarkerChecker is for SyncableService datatype, but
-  // syncer::PRINTERS is ModelTypeSyncBridge datatype. So maybe we should create
-  // another checker for ModelTypeSyncBridge, or some other things to wait for
-  // ModelTypeSyncBridge datatype.
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
   EXPECT_TRUE(ProfileContainsSamePrintersAsVerifier(0));
 }
