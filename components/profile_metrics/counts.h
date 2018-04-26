@@ -13,6 +13,7 @@ struct Counts {
   base::HistogramBase::Sample total;
   base::HistogramBase::Sample signedin;
   base::HistogramBase::Sample supervised;
+  base::HistogramBase::Sample active;
   base::HistogramBase::Sample unused;
   base::HistogramBase::Sample gaia_icon;
   base::HistogramBase::Sample auth_errors;
@@ -21,6 +22,7 @@ struct Counts {
       : total(0),
         signedin(0),
         supervised(0),
+        active(0),
         unused(0),
         gaia_icon(0),
         auth_errors(0) {}

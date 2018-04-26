@@ -19,6 +19,7 @@ void LogProfileMetricsCounts(const Counts& counts) {
                              100 * counts.supervised / counts.total);
     UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSignedInProfiles",
                              counts.signedin);
+    UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfActiveProfiles", counts.active);
     UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfUnusedProfiles", counts.unused);
     UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSignedInProfilesWithGAIAIcons",
                              counts.gaia_icon);
