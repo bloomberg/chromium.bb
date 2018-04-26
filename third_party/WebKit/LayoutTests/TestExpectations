@@ -241,7 +241,6 @@ crbug.com/722825 media/controls/video-enter-exit-fullscreen-while-hovering-shows
 crbug.com/722825 virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Timeout Pass ]
 
 #### crbug.com/783229 overflow
-crbug.com/724697 overflow/overflow-basic-002.html [ Failure ]
 crbug.com/724701 overflow/overflow-basic-004.html [ Failure ]
 
 ### external/wpt/css/css-tables/
@@ -353,7 +352,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-coll
 
 ### virtual/layout_ng/overflow
 crbug.com/724701 virtual/layout_ng/overflow/overflow-basic-004.html [ Failure ]
-crbug.com/728378 virtual/layout_ng/overflow/overflow-position-003.html [ Failure ]
 
 ### single pixel underline Mac failures
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/001.html [ Failure ]

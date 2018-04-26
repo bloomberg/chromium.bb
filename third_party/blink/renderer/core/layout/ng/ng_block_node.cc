@@ -346,9 +346,12 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   }
   logical_height += fragment_logical_size.block_size;
   intrinsic_content_logical_height += layout_result.IntrinsicBlockSize();
-  NGBoxStrut border_scrollbar_padding =
-      ComputeBorders(constraint_space, Style()) +
-      ComputePadding(constraint_space, Style()) + GetScrollbarSizes();
+
+  NGBoxStrut borders = ComputeBorders(constraint_space, Style());
+  NGBoxStrut scrollbars = GetScrollbarSizes();
+  NGBoxStrut padding = ComputePadding(constraint_space, Style());
+  NGBoxStrut border_scrollbar_padding = borders + scrollbars + padding;
+
   if (IsLastFragment(physical_fragment))
     intrinsic_content_logical_height -= border_scrollbar_padding.BlockSum();
   box_->SetLogicalHeight(logical_height);
@@ -390,9 +393,9 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     }
 
     // |ComputeOverflow()| below calls |AddOverflowFromChildren()|, which
-    // computes visual overflow from |RootInlineBox| if |ChildrenInline()|.
-    block->ComputeOverflow(intrinsic_block_size -
-                           border_scrollbar_padding.block_end);
+    // computes visual overflow from |RootInlineBox| if |ChildrenInline()|
+    block->ComputeOverflow(intrinsic_block_size - borders.block_end -
+                           scrollbars.BlockSum());
   }
 
   box_->UpdateAfterLayout();
@@ -471,7 +474,9 @@ void NGBlockNode::CopyChildFragmentPosition(
   // LegacyLayout flips vertical-rl horizontal coordinates before paint.
   // NGLayout flips X location for LegacyLayout compatibility.
   if (containing_block->StyleRef().IsFlippedBlocksWritingMode()) {
-    LayoutUnit container_width = containing_block->Size().Width();
+    NGBoxStrut scrollbars = GetScrollbarSizes();
+    LayoutUnit container_width =
+        containing_block->Size().Width() - scrollbars.block_start;
     layout_box->SetX(container_width - fragment.Offset().left -
                      additional_offset.left - fragment.Size().width);
   } else {
