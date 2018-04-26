@@ -360,8 +360,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   CompositedLayerRasterInvalidator& EnsureRasterInvalidator();
   void SetNeedsDisplayInRectInternal(const IntRect&);
 
-  FloatSize VisualRectSubpixelOffset() const;
-
   GraphicsLayerClient& client_;
 
   // Offset from the owning layoutObject

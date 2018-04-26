@@ -205,13 +205,10 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonBasic) {
       PaintInvalidationReason::kNone,
       ComputePaintInvalidationReason(box, visual_rect, visual_rect.Location()));
 
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    // Location change.
-    EXPECT_EQ(
-        PaintInvalidationReason::kGeometry,
-        ComputePaintInvalidationReason(
-            box, visual_rect, visual_rect.Location() + LayoutSize(10, 20)));
-  }
+  // Location change.
+  EXPECT_EQ(PaintInvalidationReason::kGeometry,
+            ComputePaintInvalidationReason(
+                box, visual_rect, visual_rect.Location() + LayoutSize(10, 20)));
 
   // Visual rect size change.
   LayoutRect old_visual_rect = visual_rect;

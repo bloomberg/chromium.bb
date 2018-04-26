@@ -49,42 +49,6 @@ static LayoutRect SlowMapToVisualRectInAncestorSpace(
   return result;
 }
 
-// If needed, exclude composited layer's subpixel accumulation to avoid full
-// layer raster invalidations during animation with subpixels.
-// See crbug.com/833083 for details.
-template <typename Rect, typename Point>
-void PaintInvalidator::ExcludeCompositedLayerSubpixelAccumulation(
-    const LayoutObject& object,
-    const PaintInvalidatorContext& context,
-    Rect& rect) {
-  // TODO(wangxianzhu): How to handle sub-pixel location animation for SPv2?
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    return;
-
-  if (!(context.paint_invalidation_container->Layer()->GetCompositingReasons() &
-        CompositingReason::kComboAllDirectReasons))
-    return;
-
-  if (object != context.paint_invalidation_container &&
-      context.paint_invalidation_container->FirstFragment()
-              .PostScrollTranslation() !=
-          context.tree_builder_context_->current.transform) {
-    // Subpixel accumulation doesn't propagate through non-translation
-    // transforms. Also skip all transforms, to avoid the runtime cost of
-    // verifying whether the transform is a translation.
-    return;
-  }
-
-  // Exclude the subpixel accumulation so that the paint invalidator won't
-  // see changed visual rects during composited animation with subpixels, to
-  // avoid full layer invalidation. The subpixel accumulation will be added
-  // back in ChunkToLayerMapper::AdjustVisualRectBySubpixelOffset(). Should
-  // make sure the code is synced.
-  // TODO(wangxianzhu): Avoid exposing subpixel accumulation to platform code.
-  rect.MoveBy(Point(LayoutPoint(
-      -context.paint_invalidation_container->Layer()->SubpixelAccumulation())));
-}
-
 // TODO(wangxianzhu): Combine this into
 // PaintInvalidator::mapLocalRectToBacking() when removing
 // PaintInvalidationState.
@@ -146,10 +110,9 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
     // offset doesn't apply.
     if (!is_svg_child)
       rect.MoveBy(Point(context.fragment_data->PaintOffset()));
-    ExcludeCompositedLayerSubpixelAccumulation<Rect, Point>(object, context,
-                                                            rect);
-    // Use EnclosingIntRect to ensure the final visual rect will cover the rect
-    // in source coordinates no matter if the painting will snap to pixels.
+    // Use enclosingIntRect to ensure the final visual rect will cover the
+    // rect in source coordinates no matter if the painting will use pixel
+    // snapping.
     return LayoutRect(EnclosingIntRect(rect));
   }
 

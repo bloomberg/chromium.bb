@@ -101,10 +101,8 @@ void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
     const PaintArtifact& paint_artifact,
     const PaintChunkSubset& new_chunks,
     const PropertyTreeState& layer_state,
-    const FloatSize& visual_rect_subpixel_offset,
     Vector<PaintChunkInfo>& new_chunks_info) {
-  ChunkToLayerMapper mapper(layer_state, layer_bounds_.OffsetFromOrigin(),
-                            visual_rect_subpixel_offset);
+  ChunkToLayerMapper mapper(layer_state, layer_bounds_.OffsetFromOrigin());
   Vector<bool> old_chunks_matched;
   old_chunks_matched.resize(paint_chunks_info_.size());
   size_t old_index = 0;
@@ -258,18 +256,16 @@ RasterInvalidationTracking& CompositedLayerRasterInvalidator::EnsureTracking() {
 void CompositedLayerRasterInvalidator::Generate(
     const PaintArtifact& paint_artifact,
     const gfx::Rect& layer_bounds,
-    const PropertyTreeState& layer_state,
-    const FloatSize& visual_rect_subpixel_offset) {
+    const PropertyTreeState& layer_state) {
   Generate(paint_artifact, paint_artifact.PaintChunks(), layer_bounds,
-           layer_state, visual_rect_subpixel_offset);
+           layer_state);
 }
 
 void CompositedLayerRasterInvalidator::Generate(
     const PaintArtifact& paint_artifact,
     const PaintChunkSubset& paint_chunks,
     const gfx::Rect& layer_bounds,
-    const PropertyTreeState& layer_state,
-    const FloatSize& visual_rect_subpixel_offset) {
+    const PropertyTreeState& layer_state) {
   if (RuntimeEnabledFeatures::DisableRasterInvalidationEnabled())
     return;
 
@@ -293,15 +289,14 @@ void CompositedLayerRasterInvalidator::Generate(
     // No raster invalidation is needed if either the old bounds or the new
     // bounds is empty, but we still need to update new_chunks_info for the
     // next cycle.
-    ChunkToLayerMapper mapper(layer_state, layer_bounds.OffsetFromOrigin(),
-                              visual_rect_subpixel_offset);
+    ChunkToLayerMapper mapper(layer_state, layer_bounds.OffsetFromOrigin());
     for (const auto& chunk : paint_chunks) {
       mapper.SwitchToChunk(chunk);
       new_chunks_info.emplace_back(*this, mapper, chunk);
     }
   } else {
     GenerateRasterInvalidations(paint_artifact, paint_chunks, layer_state,
-                                visual_rect_subpixel_offset, new_chunks_info);
+                                new_chunks_info);
   }
 
   paint_chunks_info_ = std::move(new_chunks_info);

@@ -485,8 +485,7 @@ ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
       context_.old_visual_rect.Location())
     return PaintInvalidationReason::kGeometry;
 
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-      context_.fragment_data->LocationInBacking() != context_.old_location)
+  if (context_.fragment_data->LocationInBacking() != context_.old_location)
     return PaintInvalidationReason::kGeometry;
 
   // Incremental invalidation is only applicable to LayoutBoxes. Return

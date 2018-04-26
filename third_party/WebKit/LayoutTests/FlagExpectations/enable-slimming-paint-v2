@@ -1400,8 +1400,6 @@ Bug(none) paint/invalidation/reflection/scroll-fixed-layer-with-reflection.html 
 Bug(none) paint/invalidation/reflection/scroll-fixed-reflected-layer.html [ Failure ]
 Bug(none) svg/transforms/text-with-mask-with-svg-transform.svg [ Failure ]
 
-crbug.com/833083 paint/invalidation/compositing/composited-layers-move-in-subpixels.html [ Failure ]
-
 Bug(none) compositing/squashing/frame-clip-squashed-scrolled.html [ Failure ]
 Bug(none) fast/block/positioning/vertical-rl/002.html [ Failure ]
 Bug(none) virtual/threaded/fast/animationworklet/animation-worklet-start-delay.html [ Failure ]
