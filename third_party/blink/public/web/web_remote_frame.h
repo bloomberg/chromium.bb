@@ -126,6 +126,8 @@ class WebRemoteFrame : public WebFrame {
 
   virtual void IntrinsicSizingInfoChanged(const WebIntrinsicSizingInfo&) = 0;
 
+  virtual WebRect GetCompositingRect() = 0;
+
  protected:
   explicit WebRemoteFrame(WebTreeScopeType scope) : WebFrame(scope) {}
 

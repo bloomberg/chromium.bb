@@ -60,6 +60,11 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   void SetIntrinsicSizeInfo(const IntrinsicSizingInfo& size_info);
   bool HasIntrinsicSizingInfo() const override;
 
+  // Compute the interest rect of this frame in its unscrolled space. This may
+  // be used by the OOPIF's compositor to limit the amount of rastered tiles,
+  // and reduce the number of paint-ops generated.
+  IntRect GetCompositingRect();
+
   uint32_t Print(const IntRect&, WebCanvas*) const;
 
   void Trace(blink::Visitor*) override;
@@ -68,7 +73,6 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   explicit RemoteFrameView(RemoteFrame*);
 
   LocalFrameView* ParentFrameView() const;
-  IntRect ConvertFromRootFrame(const IntRect&) const;
 
   void UpdateRenderThrottlingStatus(bool hidden, bool subtree_throttled);
   bool CanThrottleRendering() const;

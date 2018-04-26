@@ -673,8 +673,7 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
   // The visible rect that the OOPIF needs to raster depends partially on
   // parameters that might have changed. If they affect the raster area, resend
   // the intersection rects.
-  gfx::Rect new_compositor_visible_rect =
-      ComputeCompositingRect(last_intersection_rect_);
+  gfx::Rect new_compositor_visible_rect = web_frame_->GetCompositingRect();
   if (new_compositor_visible_rect != last_compositor_visible_rect_)
     UpdateRemoteViewportIntersection(last_intersection_rect_);
 }
@@ -797,12 +796,11 @@ void RenderFrameProxy::FrameRectsChanged(
 }
 
 void RenderFrameProxy::UpdateRemoteViewportIntersection(
-    const blink::WebRect& viewportIntersection) {
-  last_intersection_rect_ = viewportIntersection;
-  last_compositor_visible_rect_ =
-      ComputeCompositingRect(gfx::Rect(viewportIntersection));
+    const blink::WebRect& viewport_intersection) {
+  last_intersection_rect_ = viewport_intersection;
+  last_compositor_visible_rect_ = web_frame_->GetCompositingRect();
   Send(new FrameHostMsg_UpdateViewportIntersection(
-      routing_id_, gfx::Rect(viewportIntersection),
+      routing_id_, gfx::Rect(viewport_intersection),
       last_compositor_visible_rect_));
 }
 
@@ -900,61 +898,6 @@ uint32_t RenderFrameProxy::Print(const blink::WebRect& rect,
 #else
   return 0;
 #endif
-}
-
-gfx::Rect RenderFrameProxy::ComputeCompositingRect(
-    const gfx::Rect& intersection_rect) {
-  if (!sent_visual_properties_)
-    return gfx::Rect();
-
-  gfx::Size visible_viewport_size_in_pixels(
-      gfx::ScaleToCeiledSize(render_widget_->visible_viewport_size(),
-                             screen_info().device_scale_factor));
-
-  gfx::Rect screen_space_rect;
-  if (!IsUseZoomForDSFEnabled()) {
-    screen_space_rect =
-        gfx::ScaleToEnclosingRect(sent_visual_properties_->screen_space_rect,
-                                  screen_info().device_scale_factor);
-  } else {
-    screen_space_rect = sent_visual_properties_->screen_space_rect;
-  }
-
-  // For iframes that are larger than the window viewport, add a 30% buffer
-  // to the draw area to try to prevent guttering during scroll.
-  // TODO(kenrb): The 30% value is arbitrary, it gives 15% overdraw in both
-  // directions when the iframe extends beyond both edges of the viewport, and
-  // it seems to make guttering rare with slow to medium speed wheel scrolling.
-  // Can we collect UMA data to estimate how much extra rastering this causes,
-  // and possibly how common guttering is?
-  gfx::SizeF window_viewport = gfx::SizeF(visible_viewport_size_in_pixels);
-  window_viewport.Scale(1.3f);
-  gfx::Size viewport_size = gfx::ToFlooredSize(window_viewport);
-  viewport_size.SetToMin(screen_space_rect.size());
-
-  gfx::Rect viewport_rect(viewport_size);
-  if (!intersection_rect.IsEmpty()) {
-    gfx::RectF viewport_intersection_in_pixels(intersection_rect);
-    if (!IsUseZoomForDSFEnabled()) {
-      viewport_intersection_in_pixels.Scale(screen_info().device_scale_factor);
-    }
-    float left = intersection_rect.origin().x();
-    if (viewport_size.width() > viewport_intersection_in_pixels.width()) {
-      left -=
-          (viewport_size.width() - viewport_intersection_in_pixels.width()) / 2;
-    }
-    left = std::max(left, 0.f);
-    viewport_rect.set_x(gfx::ToCeiledInt(left));
-    float top = intersection_rect.origin().y();
-    if (viewport_size.height() > viewport_intersection_in_pixels.height()) {
-      top -=
-          (viewport_size.height() - viewport_intersection_in_pixels.height()) /
-          2;
-    }
-    top = std::max(top, 0.f);
-    viewport_rect.set_y(gfx::ToCeiledInt(top));
-  }
-  return viewport_rect;
 }
 
 const viz::LocalSurfaceId& RenderFrameProxy::GetLocalSurfaceId() const {
