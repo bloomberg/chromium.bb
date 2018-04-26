@@ -21,7 +21,7 @@ namespace {
 
 // Translates DevTools log level strings into Log::Level.
 bool ConsoleLevelToLogLevel(const std::string& name, Log::Level *out_level) {
-  if (name == "verbose")
+  if (name == "verbose" || name == "debug" || name == "timeEnd")
     *out_level = Log::kDebug;
   else if (name == "log" || name == "info")
     *out_level = Log::kInfo;
