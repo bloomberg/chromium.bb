@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
 
 grit("resources") {
@@ -26,4 +27,22 @@ component("file_manager") {
     "//base",
   ]
   defines = [ "FILE_MANAGER_IMPLEMENTATION" ]
+}
+
+group("closure_compile") {
+  deps = [
+    "audio_player/elements:closure_compile",
+    "audio_player/js:closure_compile",
+    "file_manager/background/js:closure_compile",
+    "file_manager/common/js:closure_compile",
+    "file_manager/foreground/elements:closure_compile",
+    "file_manager/foreground/js:closure_compile",
+    "file_manager/foreground/js/metadata:closure_compile",
+    "file_manager/foreground/js/ui:closure_compile",
+    "gallery/js:closure_compile",
+    "gallery/js/image_editor:closure_compile",
+    "image_loader:closure_compile",
+    "video_player/js:closure_compile",
+    "video_player/js/cast:closure_compile",
+  ]
 }

@@ -29,7 +29,6 @@
         '<(DEPTH)/chrome/browser/resources/print_preview/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/print_preview/new/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/settings/compiled_resources2.gyp:*',
-        '<(DEPTH)/ui/file_manager/compiled_resources2.gyp:*',
         '<(DEPTH)/ui/webui/resources/cr_components/compiled_resources2.gyp:*',
         '<(DEPTH)/ui/webui/resources/cr_elements/compiled_resources2.gyp:*',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:*',
