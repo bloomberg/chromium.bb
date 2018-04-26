@@ -319,9 +319,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   void AddWebExtentPattern(const URLPattern& pattern);
   const URLPatternSet& web_extent() const { return extent_; }
 
-  using ScopedAllowLegacyExtensions = std::unique_ptr<base::AutoReset<bool>>;
-  static ScopedAllowLegacyExtensions allow_legacy_extensions_for_testing();
-
  private:
   friend class base::RefCountedThreadSafe<Extension>;
 
