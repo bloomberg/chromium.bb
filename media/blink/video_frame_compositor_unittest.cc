@@ -46,7 +46,7 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
   VideoFrameCompositorTest()
       : client_(new StrictMock<MockWebVideoFrameSubmitter>()) {}
 
-  void SetUp() {
+  void SetUp() override {
     if (IsSurfaceLayerForVideoEnabled()) {
       feature_list_.InitFromCommandLine("UseSurfaceLayerForVideo", "");
 

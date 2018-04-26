@@ -42,7 +42,7 @@ class MockInputCallback : public AudioInputStream::AudioInputCallback {
             InvokeWithoutArgs(&data_pushed_, &base::WaitableEvent::Signal));
   }
 
-  virtual ~MockInputCallback() = default;
+  ~MockInputCallback() override = default;
 
   MOCK_METHOD3(OnData,
                void(const AudioBus* source,

@@ -187,7 +187,7 @@ class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
 class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
  public:
   MockWebMediaPlayerDelegate() = default;
-  ~MockWebMediaPlayerDelegate() = default;
+  ~MockWebMediaPlayerDelegate() override = default;
 
   // WebMediaPlayerDelegate implementation.
   int AddObserver(Observer* observer) override {
@@ -290,10 +290,10 @@ class MockVideoFrameCompositor : public VideoFrameCompositor {
   MockVideoFrameCompositor(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
       : VideoFrameCompositor(task_runner, nullptr) {}
-  ~MockVideoFrameCompositor() = default;
+  ~MockVideoFrameCompositor() override = default;
 
   // MOCK_METHOD doesn't like OnceCallback.
-  void SetOnNewProcessedFrameCallback(OnNewProcessedFrameCB cb) {}
+  void SetOnNewProcessedFrameCallback(OnNewProcessedFrameCB cb) override {}
   MOCK_METHOD0(GetCurrentFrameAndUpdateIfStale, scoped_refptr<VideoFrame>());
   MOCK_METHOD2(EnableSubmission,
                void(const viz::FrameSinkId&, media::VideoRotation));

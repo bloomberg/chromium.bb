@@ -69,9 +69,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
     corrupt_i_frame_buffer_ = ReadTestDataFile("vp8-corrupt-I-frame");
   }
 
-  virtual ~FFmpegVideoDecoderTest() {
-    Destroy();
-  }
+  ~FFmpegVideoDecoderTest() override { Destroy(); }
 
   void Initialize() {
     InitializeWithConfig(TestVideoConfig::Normal());

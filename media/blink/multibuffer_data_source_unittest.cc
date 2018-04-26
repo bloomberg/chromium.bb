@@ -161,7 +161,7 @@ class TestUrlIndex : public UrlIndex {
 class MockBufferedDataSourceHost : public BufferedDataSourceHost {
  public:
   MockBufferedDataSourceHost() = default;
-  virtual ~MockBufferedDataSourceHost() = default;
+  ~MockBufferedDataSourceHost() override = default;
 
   MOCK_METHOD1(SetTotalBytes, void(int64_t total_bytes));
   MOCK_METHOD2(AddBufferedByteRange, void(int64_t start, int64_t end));

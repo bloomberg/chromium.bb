@@ -14,7 +14,7 @@ namespace cast {
 class MockRtpPayloadFeedback : public RtpPayloadFeedback {
  public:
   MockRtpPayloadFeedback();
-  virtual ~MockRtpPayloadFeedback();
+  ~MockRtpPayloadFeedback() override;
 
   MOCK_METHOD1(CastFeedback, void(const RtcpCastMessage& cast_feedback));
 };

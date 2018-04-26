@@ -17,7 +17,7 @@ namespace media {
 class MockAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
  public:
   MockAudioSourceCallback();
-  virtual ~MockAudioSourceCallback();
+  ~MockAudioSourceCallback() override;
 
   MOCK_METHOD4(OnMoreData,
                int(base::TimeDelta, base::TimeTicks, int, AudioBus*));

@@ -59,9 +59,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
             VideoFrame::CreateBlackFrame(TestVideoConfig::NormalCodedSize())),
         null_video_frame_(scoped_refptr<VideoFrame>()) {}
 
-  virtual ~DecryptingVideoDecoderTest() {
-    Destroy();
-  }
+  ~DecryptingVideoDecoderTest() override { Destroy(); }
 
   enum CdmType { CDM_WITHOUT_DECRYPTOR, CDM_WITH_DECRYPTOR };
 

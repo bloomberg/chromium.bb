@@ -15,7 +15,7 @@ namespace media {
 class MockDemuxerHost : public DemuxerHost {
  public:
   MockDemuxerHost();
-  virtual ~MockDemuxerHost();
+  ~MockDemuxerHost() override;
 
   MOCK_METHOD1(OnBufferedTimeRangesChanged,
                void(const Ranges<base::TimeDelta>&));

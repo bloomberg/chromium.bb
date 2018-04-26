@@ -94,7 +94,7 @@ class RendererImplTest : public ::testing::Test {
     EXPECT_CALL(*demuxer_, GetAllStreams()).WillRepeatedly(Return(streams_));
   }
 
-  virtual ~RendererImplTest() { Destroy(); }
+  ~RendererImplTest() override { Destroy(); }
 
  protected:
   void Destroy() {

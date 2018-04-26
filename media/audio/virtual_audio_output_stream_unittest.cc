@@ -33,7 +33,7 @@ class MockVirtualAudioInputStream : public VirtualAudioInputStream {
             kParams,
             worker_task_runner,
             base::Bind(&base::DeletePointer<VirtualAudioInputStream>)) {}
-  ~MockVirtualAudioInputStream() = default;
+  ~MockVirtualAudioInputStream() override = default;
 
   MOCK_METHOD2(AddInputProvider,
                void(AudioConverter::InputCallback* input,

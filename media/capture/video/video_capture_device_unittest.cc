@@ -202,7 +202,7 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
   }
   Buffer ResurrectLastOutputBuffer(const gfx::Size& dimensions,
                                    VideoPixelFormat format,
-                                   int frame_feedback_id) {
+                                   int frame_feedback_id) override {
     DoResurrectLastOutputBuffer();
     NOTREACHED() << "This should never be called";
     return Buffer();

@@ -106,7 +106,7 @@ class FFmpegDemuxerTest : public testing::Test {
  protected:
   FFmpegDemuxerTest() = default;
 
-  virtual ~FFmpegDemuxerTest() { Shutdown(); }
+  ~FFmpegDemuxerTest() override { Shutdown(); }
 
   void Shutdown() {
     if (demuxer_)

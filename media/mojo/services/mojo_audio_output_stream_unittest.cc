@@ -58,7 +58,7 @@ class TestCancelableSyncSocket : public base::CancelableSyncSocket {
 class MockDelegate : public AudioOutputDelegate {
  public:
   MockDelegate() = default;
-  ~MockDelegate() = default;
+  ~MockDelegate() override = default;
 
   MOCK_METHOD0(GetStreamId, int());
   MOCK_METHOD0(OnPlayStream, void());

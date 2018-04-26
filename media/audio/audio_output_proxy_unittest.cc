@@ -70,17 +70,17 @@ class MockAudioOutputStream : public AudioOutputStream {
             FakeAudioOutputStream::MakeFakeStream(manager, params_)) {
   }
 
-  void Start(AudioSourceCallback* callback) {
+  void Start(AudioSourceCallback* callback) override {
     start_called_ = true;
     fake_output_stream_->Start(callback);
   }
 
-  void Stop() {
+  void Stop() override {
     stop_called_ = true;
     fake_output_stream_->Stop();
   }
 
-  ~MockAudioOutputStream() = default;
+  ~MockAudioOutputStream() override = default;
 
   bool start_called() { return start_called_; }
   bool stop_called() { return stop_called_; }
