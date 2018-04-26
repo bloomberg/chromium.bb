@@ -193,12 +193,12 @@ def GenTests(api):
       patch_issue=338811,
       patch_set=3,
   )
-  yield api.test('apply_patch_on_gclient') + api.properties.tryserver(
+  yield api.test('no_apply_patch_on_gclient') + api.properties.tryserver(
       gerrit_project='angle/angle',
       patch_issue=338811,
       patch_set=3,
   ) + api.bot_update.properties(
-      apply_patch_on_gclient=True,
+      apply_patch_on_gclient=False,
   )
   yield api.test('tryjob_gerrit_v8') + api.properties.tryserver(
       gerrit_project='v8/v8',
