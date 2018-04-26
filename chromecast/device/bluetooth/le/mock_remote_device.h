@@ -29,7 +29,6 @@ class MockRemoteDevice : public RemoteDevice {
                                  int latency,
                                  int timeout,
                                  StatusCallback cb) override {}
-  void DiscoverServices(DiscoverServicesCb cb) override {}
   MOCK_METHOD0(IsConnected, bool());
   MOCK_METHOD0(GetMtu, int());
   void GetServices(

@@ -35,7 +35,6 @@ class RemoteDeviceImpl : public RemoteDevice {
                                  int latency,
                                  int timeout,
                                  StatusCallback cb) override;
-  void DiscoverServices(DiscoverServicesCb cb) override;
   bool IsConnected() override;
   int GetMtu() override;
   void GetServices(
@@ -59,6 +58,8 @@ class RemoteDeviceImpl : public RemoteDevice {
 
   // Friend methods for GattClientManagerImpl
   void SetConnected(bool connected);
+  void SetServicesDiscovered();
+  bool GetServicesDiscovered();
   void SetMtu(int mtu);
 
   scoped_refptr<RemoteCharacteristic> CharacteristicFromHandle(uint16_t handle);
@@ -79,6 +80,8 @@ class RemoteDeviceImpl : public RemoteDevice {
   // should only be accessed on this task_runner.
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
+  bool services_discovered_ = false;
+
   bool connect_pending_ = false;
   StatusCallback connect_cb_;
 
@@ -90,9 +93,6 @@ class RemoteDeviceImpl : public RemoteDevice {
 
   bool mtu_pending_ = false;
   StatusCallback mtu_cb_;
-
-  bool discover_services_pending_ = false;
-  DiscoverServicesCb discover_services_cb_;
 
   std::atomic<bool> connected_{false};
   std::atomic<int> mtu_{kDefaultMtu};

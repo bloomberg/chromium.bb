@@ -124,8 +124,13 @@ void GattClientManagerImpl::OnConnectChanged(
     connected_devices_.erase(addr);
   }
 
-  observers_->Notify(FROM_HERE, &Observer::OnConnectChanged, it->second,
-                     connected);
+  // We won't declare the device connected until service discovery completes.
+  // Only report disconnect callback if the connect callback was called (
+  // service discovery completed).
+  if (!connected && it->second->GetServicesDiscovered()) {
+    observers_->Notify(FROM_HERE, &Observer::OnConnectChanged, it->second,
+                       false);
+  }
 }
 
 void GattClientManagerImpl::OnNotification(const bluetooth_v2_shlib::Addr& addr,
@@ -245,6 +250,12 @@ void GattClientManagerImpl::OnGetServices(
   auto it = addr_to_device_.find(addr);
   CHECK_DEVICE_EXISTS_IT(it);
   it->second->OnGetServices(services);
+
+  if (!it->second->GetServicesDiscovered()) {
+    observers_->Notify(FROM_HERE, &Observer::OnConnectChanged, it->second,
+                       true);
+    it->second->SetServicesDiscovered();
+  }
 
   observers_->Notify(FROM_HERE, &Observer::OnServicesUpdated, it->second,
                      it->second->GetServicesSync());

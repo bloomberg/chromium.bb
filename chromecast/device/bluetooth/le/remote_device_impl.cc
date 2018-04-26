@@ -181,32 +181,6 @@ void RemoteDeviceImpl::ConnectionParameterUpdate(int min_interval,
   LOG_EXEC_CB_AND_RET(cb, ret);
 }
 
-void RemoteDeviceImpl::DiscoverServices(DiscoverServicesCb cb) {
-  MAKE_SURE_IO_THREAD(DiscoverServices, BindToCurrentSequence(std::move(cb)));
-  if (!gatt_client_manager_) {
-    LOG(ERROR) << __func__ << " failed: Destroyed";
-    EXEC_CB_AND_RET(cb, false, {});
-  }
-
-  if (!connected_) {
-    LOG(ERROR) << __func__ << " failed: Not connected";
-    EXEC_CB_AND_RET(cb, false, {});
-  }
-
-  if (discover_services_pending_) {
-    LOG(ERROR) << __func__ << " failed: Already discovering services";
-    EXEC_CB_AND_RET(cb, false, {});
-  }
-
-  if (!gatt_client_manager_->gatt_client()->GetServices(addr_)) {
-    LOG(ERROR) << __func__ << " failed";
-    EXEC_CB_AND_RET(cb, false, {});
-  }
-
-  discover_services_pending_ = true;
-  discover_services_cb_ = std::move(cb);
-}
-
 bool RemoteDeviceImpl::IsConnected() {
   return connected_;
 }
@@ -257,6 +231,10 @@ scoped_refptr<RemoteService> RemoteDeviceImpl::GetServiceByUuidSync(
 
 void RemoteDeviceImpl::SetConnected(bool connected) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
+  // We only set connected = true after services are discovered.
+  if (!connected) {
+    connected_ = false;
+  }
   if (connect_pending_) {
     connect_pending_ = false;
     if (connect_cb_) {
@@ -271,7 +249,6 @@ void RemoteDeviceImpl::SetConnected(bool connected) {
     }
   }
 
-  connected_ = connected;
   if (!connected && rssi_pending_) {
     LOG(ERROR) << "Read remote RSSI failed: disconnected";
     if (rssi_cb_) {
@@ -289,14 +266,6 @@ void RemoteDeviceImpl::SetConnected(bool connected) {
     mtu_pending_ = false;
   }
 
-  if (!connected && discover_services_pending_) {
-    LOG(ERROR) << "Discover services failed: disconnected";
-    if (discover_services_cb_) {
-      std::move(discover_services_cb_).Run(false, {});
-    }
-    discover_services_pending_ = false;
-  }
-
   for (const auto& characteristic : handle_to_characteristic_) {
     auto* char_impl =
         static_cast<RemoteCharacteristicImpl*>(characteristic.second.get());
@@ -308,6 +277,32 @@ void RemoteDeviceImpl::SetConnected(bool connected) {
         static_cast<RemoteDescriptorImpl*>(descriptor.second.get());
     desc_impl->OnConnectChanged(connected);
   }
+
+  if (connected) {
+    if (!gatt_client_manager_) {
+      LOG(ERROR) << "Couldn't discover services: Destroyed";
+      return;
+    }
+
+    if (!gatt_client_manager_->gatt_client()->GetServices(addr_)) {
+      LOG(ERROR) << "Couldn't discover services, disconnecting";
+      Disconnect({});
+    }
+  }
+}
+
+void RemoteDeviceImpl::SetServicesDiscovered() {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  services_discovered_ = true;
+  connected_ = true;
+  if (connect_cb_) {
+    std::move(connect_cb_).Run(true);
+  }
+}
+
+bool RemoteDeviceImpl::GetServicesDiscovered() {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  return services_discovered_;
 }
 
 void RemoteDeviceImpl::SetMtu(int mtu) {
@@ -347,11 +342,6 @@ void RemoteDeviceImpl::OnGetServices(
   handle_to_characteristic_.clear();
   handle_to_descriptor_.clear();
   OnServicesAdded(services);
-
-  discover_services_pending_ = false;
-  if (discover_services_cb_) {
-    std::move(discover_services_cb_).Run(true, GetServicesSync());
-  }
 }
 
 void RemoteDeviceImpl::OnServicesRemoved(uint16_t start_handle,
@@ -371,11 +361,6 @@ void RemoteDeviceImpl::OnServicesRemoved(uint16_t start_handle,
       ++it;
     }
   }
-
-  discover_services_pending_ = false;
-  if (discover_services_cb_) {
-    std::move(discover_services_cb_).Run(true, GetServicesSync());
-  }
 }
 
 void RemoteDeviceImpl::OnServicesAdded(
@@ -394,11 +379,6 @@ void RemoteDeviceImpl::OnServicesAdded(
         handle_to_descriptor_.emplace(descriptor->handle(), descriptor);
       }
     }
-  }
-
-  discover_services_pending_ = false;
-  if (discover_services_cb_) {
-    std::move(discover_services_cb_).Run(true, GetServicesSync());
   }
 }
 

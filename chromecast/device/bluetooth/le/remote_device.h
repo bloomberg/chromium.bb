@@ -58,12 +58,6 @@ class RemoteDevice : public base::RefCountedThreadSafe<RemoteDevice> {
                                          int timeout,
                                          StatusCallback cb) = 0;
 
-  // Initiate service discovery on this device. If it fails, the result will be
-  // empty.
-  using DiscoverServicesCb = base::OnceCallback<
-      void(bool success, std::vector<scoped_refptr<RemoteService>> services)>;
-  virtual void DiscoverServices(DiscoverServicesCb cb) = 0;
-
   // Returns true if this device is connected.
   virtual bool IsConnected() = 0;
 
