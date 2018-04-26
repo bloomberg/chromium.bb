@@ -56,7 +56,7 @@ class ChromeNetLog;
 class NetExportFileWriter {
  public:
   // Special value meaning "can use an unlimited number of bytes".
-  static constexpr size_t kNoLimit = net::FileNetLogObserver::kNoLimit;
+  static constexpr uint64_t kNoLimit = net::FileNetLogObserver::kNoLimit;
 
   // The observer interface to be implemented by code that wishes to be notified
   // of NetExportFileWriter's state changes.
@@ -109,7 +109,7 @@ class NetExportFileWriter {
   // thread.
   void StartNetLog(const base::FilePath& log_path,
                    net::NetLogCaptureMode capture_mode,
-                   size_t max_file_size,
+                   uint64_t max_file_size,
                    const base::CommandLine::StringType& command_line_string,
                    const std::string& channel_string,
                    const URLRequestContextGetterList& context_getters);

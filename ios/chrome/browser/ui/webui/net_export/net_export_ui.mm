@@ -148,7 +148,7 @@ void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
   }
 
   // Determine the max file size.
-  size_t max_log_file_size = net_log::NetExportFileWriter::kNoLimit;
+  uint64_t max_log_file_size = net_log::NetExportFileWriter::kNoLimit;
   if (params.size() > 1 && params[1].is_int() && params[1].GetInt() > 0) {
     max_log_file_size = params[1].GetInt();
   }
