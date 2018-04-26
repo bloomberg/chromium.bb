@@ -65,7 +65,6 @@ class StreamFactory final : public mojom::StreamFactory {
 
   void CreateOutputStream(
       media::mojom::AudioOutputStreamRequest stream_request,
-      media::mojom::AudioOutputStreamClientPtr client,
       media::mojom::AudioOutputStreamObserverAssociatedPtrInfo observer_info,
       media::mojom::AudioLogPtr log,
       const std::string& output_device_id,

@@ -181,7 +181,8 @@ void PepperPlatformAudioOutputDev::OnDeviceAuthorized(
 
 void PepperPlatformAudioOutputDev::OnStreamCreated(
     base::SharedMemoryHandle handle,
-    base::SyncSocket::Handle socket_handle) {
+    base::SyncSocket::Handle socket_handle,
+    bool playing_automatically) {
   DCHECK(handle.IsValid());
 #if defined(OS_WIN)
   DCHECK(socket_handle);
@@ -207,7 +208,7 @@ void PepperPlatformAudioOutputDev::OnStreamCreated(
     main_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&PepperPlatformAudioOutputDev::OnStreamCreated, this,
-                       handle, socket_handle));
+                       handle, socket_handle, playing_automatically));
   }
 }
 

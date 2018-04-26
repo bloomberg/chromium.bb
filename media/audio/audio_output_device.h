@@ -72,7 +72,6 @@
 #include "base/time/time.h"
 #include "media/audio/audio_device_thread.h"
 #include "media/audio/audio_output_ipc.h"
-#include "media/audio/scoped_task_runner_observer.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/media_export.h"
@@ -80,13 +79,13 @@
 
 namespace base {
 class OneShotTimer;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
 
 class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
-                                       public AudioOutputIPCDelegate,
-                                       public ScopedTaskRunnerObserver {
+                                       public AudioOutputIPCDelegate {
  public:
   // NOTE: Clients must call Initialize() before using.
   AudioOutputDevice(
@@ -118,7 +117,8 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
                           const media::AudioParameters& output_params,
                           const std::string& matched_device_id) override;
   void OnStreamCreated(base::SharedMemoryHandle handle,
-                       base::SyncSocket::Handle socket_handle) override;
+                       base::SyncSocket::Handle socket_handle,
+                       bool play_automatically) override;
   void OnIPCClosed() override;
 
  protected:
@@ -128,15 +128,12 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
   ~AudioOutputDevice() override;
 
  private:
-  // Note: The ordering of members in this enum is critical to correct behavior!
-  enum State {
-    IPC_CLOSED,       // No more IPCs can take place.
-    IDLE,             // Not started.
-    AUTHORIZING,      // Sent device authorization request, waiting for reply.
-    AUTHORIZED,       // Successful device authorization received.
-    CREATING_STREAM,  // Waiting for OnStreamCreated() to be called back.
-    PAUSED,   // Paused.  OnStreamCreated() has been called.  Can Play()/Stop().
-    PLAYING,  // Playing back.  Can Pause()/Stop().
+  enum StartupState {
+    IDLE,                       // Authorization not requested.
+    AUTHORIZATION_REQUESTED,    // Sent (possibly completed) device
+                                // authorization request.
+    STREAM_CREATION_REQUESTED,  // Sent (possibly completed) device creation
+                                // request. Can Play()/Pause()/Stop().
   };
 
   // Methods called on IO thread ----------------------------------------------
@@ -161,32 +158,25 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
 
   void NotifyRenderCallbackOfError();
 
-  // base::MessageLoopCurrent::DestructionObserver implementation for the IO
-  // loop. If the IO loop dies before we do, we shut down the audio thread from
-  // here.
-  void WillDestroyCurrentMessageLoop() override;
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   AudioParameters audio_parameters_;
 
   RenderCallback* callback_;
 
   // A pointer to the IPC layer that takes care of sending requests over to
-  // the implementation.  Only valid when state_ != IPC_CLOSED and must only
-  // be accessed on the IO thread.
+  // the implementation. May be set to nullptr after errors.
   std::unique_ptr<AudioOutputIPC> ipc_;
 
   // Current state (must only be accessed from the IO thread).  See comments for
   // State enum above.
-  State state_;
-
-  // State of Start() calls before OnDeviceAuthorized() is called.
-  bool start_on_authorized_;
+  StartupState state_;
 
   // For UMA stats. May only be accessed on the IO thread.
   bool had_callback_error_ = false;
 
-  // State of Play() / Pause() calls before OnStreamCreated() is called.
-  bool play_on_start_;
+  // Last set volume.
+  double volume_ = 1.0;
 
   // The media session ID used to identify which input device to be started.
   // Only used by Unified IO.
