@@ -285,7 +285,7 @@ _OS_NEGATIVE_FILTER['android:chromium'] = (
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2376
         'ImplicitWaitTest.*',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2401
-        'ObjectStateAssumptionsTest.testinitializedWebDriverDoesNotThrowNPE',
+        'JavascriptEnabledDriverTest.testIssue80ClickShouldGenerateClickEvent',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
