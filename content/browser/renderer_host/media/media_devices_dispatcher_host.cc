@@ -226,16 +226,6 @@ void MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities(
         media_stream_manager_->media_devices_manager()->GetVideoInputFormats(
             descriptor.device_id, true /* try_in_use_first */);
     capabilities->facing_mode = descriptor.facing;
-#if defined(OS_ANDROID)
-    // On Android, the facing mode is not available in the |facing| field,
-    // but is available as part of the label.
-    // TODO(guidou): Remove this code once the |facing| field is supported
-    // on Android. See http://crbug.com/672856.
-    if (descriptor.GetNameAndModel().find("front") != std::string::npos)
-      capabilities->facing_mode = media::MEDIA_VIDEO_FACING_USER;
-    else if (descriptor.GetNameAndModel().find("back") != std::string::npos)
-      capabilities->facing_mode = media::MEDIA_VIDEO_FACING_ENVIRONMENT;
-#endif
     if (descriptor.device_id == default_device_id) {
       video_input_capabilities.insert(video_input_capabilities.begin(),
                                       std::move(capabilities));
