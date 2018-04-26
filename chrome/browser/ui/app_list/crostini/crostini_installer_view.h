@@ -52,12 +52,10 @@ class CrostiniInstallerView
   ~CrostiniInstallerView() override;
 
   void HandleError(const base::string16& error_message);
-
   void StartContainerFinished(crostini::ConciergeClientResult result);
-
   void ShowLoginShell();
-
   void StepProgress();
+  void SetMessageLabel();
 
   enum class State {
     PROMPT,  // Prompting the user to allow installation.

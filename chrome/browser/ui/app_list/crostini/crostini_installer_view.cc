@@ -98,9 +98,8 @@ bool CrostiniInstallerView::Accept() {
   state_ = State::INSTALL_START;
   profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
   DialogModelChanged();
+  SetMessageLabel();
   GetWidget()->UpdateWindowTitle();
-
-  message_label_->SetVisible(false);
 
   progress_bar_ = new views::ProgressBar();
   AddChildView(progress_bar_);
@@ -168,13 +167,12 @@ CrostiniInstallerView::~CrostiniInstallerView() {
 }
 
 void CrostiniInstallerView::StepProgress() {
-  constexpr float kBase = static_cast<float>(State::INSTALL_START);
-  constexpr float kNumSteps = static_cast<float>(State::INSTALL_END) - kBase;
-
-  if (State::INSTALL_START < state_ && state_ <= State::INSTALL_END) {
-    progress_bar_->SetValue((static_cast<float>(state_) - kBase) / kNumSteps);
+  if (State::INSTALL_START < state_ && state_ < State::INSTALL_END) {
+    // Setting value to -1 makes the progress bar play the
+    // "indeterminate animation".
+    progress_bar_->SetValue(-1);
   }
-
+  SetMessageLabel();
   DialogModelChanged();
 }
 
@@ -185,6 +183,29 @@ void CrostiniInstallerView::HandleError(const base::string16& error_message) {
   progress_bar_->SetVisible(false);
   GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
   GetWidget()->UpdateWindowTitle();
+}
+
+void CrostiniInstallerView::SetMessageLabel() {
+  int message_id = 0;
+  // The States below refer to stages that have completed.
+  // The messages selected refer to the next stage, now underway.
+  if (state_ == State::INSTALL_START) {
+    message_id = IDS_CROSTINI_INSTALLER_LOAD_TERMINA_MESSAGE;
+  } else if (state_ == State::INSTALL_IMAGE_LOADER) {
+    message_id = IDS_CROSTINI_INSTALLER_START_CONCIERGE_MESSAGE;
+  } else if (state_ == State::START_CONCIERGE) {
+    message_id = IDS_CROSTINI_INSTALLER_CREATE_DISK_IMAGE_MESSAGE;
+  } else if (state_ == State::CREATE_DISK_IMAGE) {
+    message_id = IDS_CROSTINI_INSTALLER_START_TERMINA_VM_MESSAGE;
+  } else if (state_ == State::START_TERMINA_VM) {
+    message_id = IDS_CROSTINI_INSTALLER_START_CONTAINER_MESSAGE;
+  }
+  if (message_id != 0) {
+    message_label_->SetText(l10n_util::GetStringUTF16(message_id));
+    message_label_->SetVisible(true);
+  } else {
+    message_label_->SetVisible(false);
+  }
 }
 
 void CrostiniInstallerView::OnComponentLoaded(ConciergeClientResult result) {
@@ -245,6 +266,7 @@ void CrostiniInstallerView::OnVmStarted(ConciergeClientResult result) {
 void CrostiniInstallerView::StartContainerFinished(
     ConciergeClientResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  state_ = State::START_CONTAINER;
   if (result != ConciergeClientResult::SUCCESS) {
     LOG(ERROR) << "Failed to start container with error code: "
                << static_cast<int>(result);
@@ -263,8 +285,6 @@ void CrostiniInstallerView::ShowLoginShell() {
   crostini::CrostiniManager::GetInstance()->LaunchContainerTerminal(
       profile_, kCrostiniDefaultVmName, kCrostiniDefaultContainerName);
 
-  GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
-  GetWidget()->UpdateWindowTitle();
   StepProgress();
-  GetWidget()->Show();
+  GetWidget()->Close();
 }
