@@ -206,18 +206,10 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
       item_->display_type() == ash::SearchResultDisplayType::kTile &&
       item_->result_type() == ash::SearchResultType::kInstalledApp);
 
-  // Only refresh the icon if it's different from the old one. This prevents
-  // flickering.
   // If the new icon is null, it's being decoded asynchronously. Not updating it
   // now to prevent flickering from showing an empty icon while decoding.
-  if (!item->icon().isNull() &&
-      (!old_item || !item->icon().BackedBySameObjectAs(old_item->icon()))) {
-    OnIconChanged();
-  }
-  if (!old_item ||
-      !item->badge_icon().BackedBySameObjectAs(old_item->badge_icon())) {
-    OnBadgeIconChanged();
-  }
+  if (!item->icon().isNull())
+    OnMetadataChanged();
 
   base::string16 accessible_name = title_->text();
   if (rating_ && rating_->visible()) {
@@ -346,22 +338,12 @@ void SearchResultTileItemView::PaintButtonContents(gfx::Canvas* canvas) {
   }
 }
 
-void SearchResultTileItemView::OnIconChanged() {
+void SearchResultTileItemView::OnMetadataChanged() {
   SetIcon(item_->icon());
-  Layout();
-}
-
-void SearchResultTileItemView::OnBadgeIconChanged() {
   SetBadgeIcon(item_->badge_icon());
-  Layout();
-}
-
-void SearchResultTileItemView::OnRatingChanged() {
   SetRating(item_->rating());
-}
-
-void SearchResultTileItemView::OnFormattedPriceChanged() {
   SetPrice(item_->formatted_price());
+  Layout();
 }
 
 void SearchResultTileItemView::OnResultDestroying() {

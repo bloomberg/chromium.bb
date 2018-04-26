@@ -8,7 +8,9 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/interfaces/app_list.mojom-shared.h"
+#include "base/containers/span.h"
 #include "base/strings/string16.h"
+#include "mojo/public/mojom/base/string16.mojom.h"
 
 namespace mojo {
 
@@ -97,6 +99,14 @@ struct EnumTraits<ash::mojom::SearchResultType, ash::SearchResultType> {
         return ash::mojom::SearchResultType::kInstantApp;
       case ash::SearchResultType::kInternalApp:
         return ash::mojom::SearchResultType::kInternalApp;
+      case ash::SearchResultType::kWebStoreApp:
+        return ash::mojom::SearchResultType::kWebStoreApp;
+      case ash::SearchResultType::kWebStoreSearch:
+        return ash::mojom::SearchResultType::kWebStoreSearch;
+      case ash::SearchResultType::kOmnibox:
+        return ash::mojom::SearchResultType::kOmnibox;
+      case ash::SearchResultType::kLauncher:
+        return ash::mojom::SearchResultType::kLauncher;
       case ash::SearchResultType::kUnknown:
         break;
     }
@@ -118,6 +128,18 @@ struct EnumTraits<ash::mojom::SearchResultType, ash::SearchResultType> {
         return true;
       case ash::mojom::SearchResultType::kInternalApp:
         *out = ash::SearchResultType::kInternalApp;
+        return true;
+      case ash::mojom::SearchResultType::kWebStoreApp:
+        *out = ash::SearchResultType::kWebStoreApp;
+        return true;
+      case ash::mojom::SearchResultType::kWebStoreSearch:
+        *out = ash::SearchResultType::kWebStoreSearch;
+        return true;
+      case ash::mojom::SearchResultType::kOmnibox:
+        *out = ash::SearchResultType::kOmnibox;
+        return true;
+      case ash::mojom::SearchResultType::kLauncher:
+        *out = ash::SearchResultType::kLauncher;
         return true;
     }
     NOTREACHED();
@@ -199,10 +221,48 @@ struct UnionTraits<ash::mojom::SearchResultActionLabelDataView,
 
   static bool Read(ash::mojom::SearchResultActionLabelDataView data,
                    ash::SearchResultAction* out);
+
+  static const ash::SearchResultAction& image_label(
+      const ash::SearchResultAction& action) {
+    return action;
+  }
+
+  static const ash::SearchResultAction& text_label(
+      const ash::SearchResultAction& action) {
+    return action;
+  }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 // SearchResultAction:
+
+template <>
+struct StructTraits<ash::mojom::SearchResultActionImageLabelDataView,
+                    ash::SearchResultAction> {
+  static const gfx::ImageSkia& base_image(
+      const ash::SearchResultAction& action) {
+    return action.base_image;
+  }
+  static const gfx::ImageSkia& hover_image(
+      const ash::SearchResultAction& action) {
+    return action.hover_image;
+  }
+  static const gfx::ImageSkia& pressed_image(
+      const ash::SearchResultAction& action) {
+    return action.pressed_image;
+  }
+};
+
+template <>
+struct StructTraits<mojo_base::mojom::String16DataView,
+                    ash::SearchResultAction> {
+  static base::span<const uint16_t> data(
+      const ash::SearchResultAction& action) {
+    return base::make_span(
+        reinterpret_cast<const uint16_t*>(action.label_text.data()),
+        action.label_text.size());
+  }
+};
 
 template <>
 struct StructTraits<ash::mojom::SearchResultActionDataView,

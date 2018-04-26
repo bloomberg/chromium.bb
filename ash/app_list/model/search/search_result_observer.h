@@ -11,20 +11,8 @@ namespace app_list {
 
 class APP_LIST_MODEL_EXPORT SearchResultObserver {
  public:
-  // Invoked when the SearchResult's icon has changed.
-  virtual void OnIconChanged() {}
-
-  // Invoked when the SearchResult's badge icon has changed.
-  virtual void OnBadgeIconChanged() {}
-
-  // Invoked when the SearchResult's app rating has changed.
-  virtual void OnRatingChanged() {}
-
-  // Invoked when the SearchResult's app formatted price has changed.
-  virtual void OnFormattedPriceChanged() {}
-
-  // Invoked when the SearchResult's actions have changed.
-  virtual void OnActionsChanged() {}
+  // Invoked when the SearchResult's metadata has changed.
+  virtual void OnMetadataChanged() {}
 
   // Invoked when the SearchResult's is_installing flag has changed.
   virtual void OnIsInstallingChanged() {}

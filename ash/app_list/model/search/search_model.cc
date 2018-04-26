@@ -78,7 +78,7 @@ void SearchModel::PublishResults(
       // Update and use the old result if it exists.
       std::unique_ptr<SearchResult> ui_result = std::move(ui_result_it->second);
       UpdateResult(new_result.get(), ui_result.get());
-      ui_result->set_relevance(new_result->relevance());
+      ui_result->set_display_score(new_result->display_score());
 
       results_->Add(std::move(ui_result));
 

@@ -241,7 +241,7 @@ class WebstoreProviderTest : public InProcessBrowserTest {
       }
 
       EXPECT_EQ(std::string(expected_results[i].title),
-                ChromeSearchResult::TagsDebugString(
+                ChromeSearchResult::TagsDebugStringForTest(
                     base::UTF16ToUTF8(result->title()), result->title_tags()));
 
       // Ensure the number of action buttons is appropriate for the item type.

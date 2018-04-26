@@ -81,9 +81,7 @@ void SearchResultView::SetResult(SearchResult* result) {
   if (result_)
     result_->AddObserver(this);
 
-  OnIconChanged();
-  OnBadgeIconChanged();
-  OnActionsChanged();
+  OnMetadataChanged();
   UpdateTitleText();
   UpdateDetailsText();
   OnIsInstallingChanged();
@@ -330,29 +328,30 @@ void SearchResultView::ButtonPressed(views::Button* sender,
   list_view_->SearchResultActivated(this, event.flags());
 }
 
-void SearchResultView::OnIconChanged() {
-  const gfx::ImageSkia image(result_ ? result_->icon() : gfx::ImageSkia());
-  // Note this might leave the view with an old icon. But it is needed to avoid
+void SearchResultView::OnMetadataChanged() {
+  // Updates |icon_|.
+  // Note: this might leave the view with an old icon. But it is needed to avoid
   // flash when a SearchResult's icon is loaded asynchronously. In this case, it
   // looks nicer to keep the stale icon for a little while on screen instead of
   // clearing it out. It should work correctly as long as the SearchResult does
   // not forget to SetIcon when it's ready.
-  if (image.isNull())
-    return;
+  const gfx::ImageSkia icon(result_ ? result_->icon() : gfx::ImageSkia());
+  if (!icon.isNull())
+    SetIconImage(icon, icon_, kListIconSize);
 
-  SetIconImage(image, icon_, kListIconSize);
-}
-
-void SearchResultView::OnBadgeIconChanged() {
-  const gfx::ImageSkia image(result_ ? result_->badge_icon()
-                                     : gfx::ImageSkia());
-  if (image.isNull()) {
+  // Updates |badge_icon_|.
+  const gfx::ImageSkia badge_icon(result_ ? result_->badge_icon()
+                                          : gfx::ImageSkia());
+  if (badge_icon.isNull()) {
     badge_icon_->SetVisible(false);
-    return;
+  } else {
+    SetIconImage(badge_icon, badge_icon_, kListBadgeIconSize);
+    badge_icon_->SetVisible(true);
   }
 
-  SetIconImage(image, badge_icon_, kListBadgeIconSize);
-  badge_icon_->SetVisible(true);
+  // Updates |actions_view_|.
+  actions_view_->SetActions(result_ ? result_->actions()
+                                    : SearchResult::Actions());
 }
 
 void SearchResultView::SetIconImage(const gfx::ImageSkia& source,
@@ -376,11 +375,6 @@ void SearchResultView::SetIconImage(const gfx::ImageSkia& source,
   // buffer pointers remaining the same despite the image changing.
   icon->SetImage(gfx::ImageSkia());
   icon->SetImage(image);
-}
-
-void SearchResultView::OnActionsChanged() {
-  actions_view_->SetActions(result_ ? result_->actions()
-                                    : SearchResult::Actions());
 }
 
 void SearchResultView::OnIsInstallingChanged() {

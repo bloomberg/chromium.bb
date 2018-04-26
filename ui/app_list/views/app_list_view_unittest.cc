@@ -280,16 +280,17 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     SearchModel::SearchResults* results =
         delegate_->GetSearchModel()->results();
     results->DeleteAll();
-    double relevance = result_types.size();
+    double display_score = result_types.size();
     for (const auto& data : result_types) {
-      // Set the relevance of the results in each group in decreasing order (so
-      // the earlier groups have higher relevance, and therefore appear first).
-      relevance -= 0.5;
+      // Set the display score of the results in each group in decreasing order
+      // (so the earlier groups have higher display score, and therefore appear
+      // first).
+      display_score -= 0.5;
       for (int i = 0; i < data.second; ++i) {
         std::unique_ptr<TestSearchResult> result =
             std::make_unique<TestSearchResult>();
         result->set_display_type(data.first);
-        result->set_relevance(relevance);
+        result->set_display_score(display_score);
         if (data.first == ash::SearchResultDisplayType::kCard)
           result->set_answer_card_contents_token(fake_answer_card_token_);
         results->Add(std::move(result));

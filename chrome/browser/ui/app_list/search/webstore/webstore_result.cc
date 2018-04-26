@@ -52,7 +52,7 @@ WebstoreResult::WebstoreResult(Profile* profile,
       extension_registry_(NULL),
       weak_factory_(this) {
   set_id(GetResultIdFromExtensionId(app_id));
-
+  set_result_type(ash::SearchResultType::kWebStoreSearch);
   SetDefaultDetails();
 
   InitAndStartObserving();

@@ -102,6 +102,7 @@ void LauncherSearchResult::Initialize() {
                 static_cast<double>(
                     chromeos::launcher_search_provider::kMaxSearchResultScore));
   set_details(base::UTF8ToUTF16(extension_->name()));
+  set_result_type(ResultType::kLauncher);
 
   icon_image_loader_->AddObserver(this);
 

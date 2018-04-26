@@ -28,7 +28,7 @@ SearchWebstoreResult::SearchWebstoreResult(
       launch_url_(extension_urls::GetWebstoreSearchPageUrl(query)) {
   set_id(launch_url_.spec());
   set_relevance(0.0);
-
+  set_result_type(ash::SearchResultType::kWebStoreApp);
   set_title(base::UTF8ToUTF16(query));
 
   const base::string16 details =

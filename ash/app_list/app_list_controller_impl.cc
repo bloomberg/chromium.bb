@@ -166,6 +166,18 @@ void AppListControllerImpl::UpdateSearchBox(const base::string16& text,
   search_model_.search_box()->Update(text, initiated_by_user);
 }
 
+void AppListControllerImpl::PublishSearchResults(
+    std::vector<SearchResultMetadataPtr> results) {
+  std::vector<std::unique_ptr<app_list::SearchResult>> new_results;
+  for (auto& result_metadata : results) {
+    std::unique_ptr<app_list::SearchResult> result =
+        std::make_unique<app_list::SearchResult>();
+    result->SetMetadata(std::move(result_metadata));
+    new_results.push_back(std::move(result));
+  }
+  search_model_.PublishResults(std::move(new_results));
+}
+
 void AppListControllerImpl::SetItemMetadata(const std::string& id,
                                             AppListItemMetadataPtr data) {
   app_list::AppListItem* item = model_.FindItem(id);
@@ -216,6 +228,35 @@ void AppListControllerImpl::SetModelData(
     AddItem(std::move(app));
   }
   search_model_.SetSearchEngineIsGoogle(is_search_engine_google);
+}
+
+void AppListControllerImpl::SetSearchResultMetadata(
+    SearchResultMetadataPtr metadata) {
+  app_list::SearchResult* result = search_model_.FindSearchResult(metadata->id);
+  if (result)
+    result->SetMetadata(std::move(metadata));
+}
+
+void AppListControllerImpl::SetSearchResultIsInstalling(const std::string& id,
+                                                        bool is_installing) {
+  app_list::SearchResult* result = search_model_.FindSearchResult(id);
+  if (result)
+    result->SetIsInstalling(is_installing);
+}
+
+void AppListControllerImpl::SetSearchResultPercentDownloaded(
+    const std::string& id,
+    int32_t percent_downloaded) {
+  app_list::SearchResult* result = search_model_.FindSearchResult(id);
+  if (result)
+    result->SetPercentDownloaded(percent_downloaded);
+}
+
+void AppListControllerImpl::NotifySearchResultItemInstalled(
+    const std::string& id) {
+  app_list::SearchResult* result = search_model_.FindSearchResult(id);
+  if (result)
+    result->NotifyItemInstalled();
 }
 
 void AppListControllerImpl::GetIdToAppListIndexMap(

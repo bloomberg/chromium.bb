@@ -9,10 +9,12 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/app_list/model/app_list_model_export.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -28,8 +30,6 @@ class MenuModel;
 namespace app_list {
 
 class SearchResultObserver;
-class TokenizedString;
-class TokenizedStringMatch;
 
 // SearchResult consists of an icon, title text and details text. Title and
 // details text can have tagged ranges that are displayed differently from
@@ -46,57 +46,66 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   SearchResult();
   virtual ~SearchResult();
 
-  const gfx::ImageSkia& icon() const { return icon_; }
+  const gfx::ImageSkia& icon() const { return metadata_->icon; }
   void SetIcon(const gfx::ImageSkia& icon);
 
-  const gfx::ImageSkia& badge_icon() const { return badge_icon_; }
+  const gfx::ImageSkia& badge_icon() const { return metadata_->badge_icon; }
   void SetBadgeIcon(const gfx::ImageSkia& badge_icon);
 
-  const base::string16& title() const { return title_; }
-  void set_title(const base::string16& title) { title_ = title; }
+  const base::string16& title() const { return metadata_->title; }
+  void set_title(const base::string16& title) { metadata_->title = title; }
 
-  const Tags& title_tags() const { return title_tags_; }
-  void set_title_tags(const Tags& tags) { title_tags_ = tags; }
+  const Tags& title_tags() const { return metadata_->title_tags; }
+  void set_title_tags(const Tags& tags) { metadata_->title_tags = tags; }
 
-  const base::string16& details() const { return details_; }
-  void set_details(const base::string16& details) { details_ = details; }
+  const base::string16& details() const { return metadata_->details; }
+  void set_details(const base::string16& details) {
+    metadata_->details = details;
+  }
 
-  const Tags& details_tags() const { return details_tags_; }
-  void set_details_tags(const Tags& tags) { details_tags_ = tags; }
+  const Tags& details_tags() const { return metadata_->details_tags; }
+  void set_details_tags(const Tags& tags) { metadata_->details_tags = tags; }
 
-  float rating() const { return rating_; }
+  float rating() const { return metadata_->rating; }
   void SetRating(float rating);
 
-  const base::string16& formatted_price() const { return formatted_price_; }
+  const base::string16& formatted_price() const {
+    return metadata_->formatted_price;
+  }
   void SetFormattedPrice(const base::string16& formatted_price);
 
-  const base::UnguessableToken& answer_card_contents_token() const {
-    return answer_card_contents_token_;
+  const base::Optional<base::UnguessableToken>& answer_card_contents_token()
+      const {
+    return metadata_->answer_card_contents_token;
   }
-  void set_answer_card_contents_token(const base::UnguessableToken& token) {
-    answer_card_contents_token_ = token;
+  void set_answer_card_contents_token(
+      const base::Optional<base::UnguessableToken>& token) {
+    metadata_->answer_card_contents_token = token;
   }
 
-  const std::string& id() const { return id_; }
-  const std::string& comparable_id() const { return comparable_id_; }
+  const std::string& id() const { return metadata_->id; }
 
-  double relevance() const { return relevance_; }
-  void set_relevance(double relevance) { relevance_ = relevance; }
+  double display_score() const { return metadata_->display_score; }
+  void set_display_score(double display_score) {
+    metadata_->display_score = display_score;
+  }
 
-  DisplayType display_type() const { return display_type_; }
+  DisplayType display_type() const { return metadata_->display_type; }
   void set_display_type(DisplayType display_type) {
-    display_type_ = display_type;
+    metadata_->display_type = display_type;
   }
 
-  ResultType result_type() const { return result_type_; }
-  void set_result_type(ResultType result_type) { result_type_ = result_type; }
+  ResultType result_type() const { return metadata_->result_type; }
+  void set_result_type(ResultType result_type) {
+    metadata_->result_type = result_type;
+  }
 
   int distance_from_origin() { return distance_from_origin_; }
   void set_distance_from_origin(int distance) {
     distance_from_origin_ = distance;
   }
 
-  const Actions& actions() const { return actions_; }
+  const Actions& actions() const { return metadata_->actions; }
   void SetActions(const Actions& sets);
 
   bool is_installing() const { return is_installing_; }
@@ -105,20 +114,15 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   int percent_downloaded() const { return percent_downloaded_; }
   void SetPercentDownloaded(int percent_downloaded);
 
-  bool is_omnibox_search() const { return is_omnibox_search_; }
+  bool is_omnibox_search() const { return metadata_->is_omnibox_search; }
   void set_is_omnibox_search(bool is_omnibox_search) {
-    is_omnibox_search_ = is_omnibox_search;
+    metadata_->is_omnibox_search = is_omnibox_search;
   }
 
   void NotifyItemInstalled();
 
   void AddObserver(SearchResultObserver* observer);
   void RemoveObserver(SearchResultObserver* observer);
-
-  // Updates the result's relevance score, and sets its title and title tags,
-  // based on a string match result.
-  void UpdateFromMatch(const TokenizedString& title,
-                       const TokenizedStringMatch& match);
 
   // Invokes a custom action on the result. It does nothing by default.
   virtual void InvokeAction(int action_index, int event_flags);
@@ -130,15 +134,12 @@ class APP_LIST_MODEL_EXPORT SearchResult {
       base::OnceCallback<void(std::unique_ptr<ui::MenuModel>)>;
   virtual void GetContextMenuModel(GetMenuModelCallback callback);
 
-  // Returns a string showing |text| marked up with brackets indicating the
-  // tag positions in |tags|. Useful for debugging and testing.
-  static std::string TagsDebugString(const std::string& text, const Tags& tags);
+  void SetMetadata(ash::mojom::SearchResultMetadataPtr metadata) {
+    metadata_ = std::move(metadata);
+  }
 
  protected:
-  void set_id(const std::string& id) { id_ = id; }
-  void set_comparable_id(const std::string& comparable_id) {
-    comparable_id_ = comparable_id;
-  }
+  void set_id(const std::string& id) { metadata_->id = id; }
 
  private:
   friend class SearchController;
@@ -146,49 +147,14 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   // Opens the result. Clients should use AppListViewDelegate::OpenSearchResult.
   virtual void Open(int event_flags);
 
-  gfx::ImageSkia icon_;
-  gfx::ImageSkia badge_icon_;
-
-  base::string16 title_;
-  Tags title_tags_;
-
-  base::string16 details_;
-  Tags details_tags_;
-
-  // Amount of the app's stars in play store. Not exist if set to negative.
-  float rating_ = -1.0f;
-
-  // Formatted price label of the app in play store. Not exist if set to empty.
-  base::string16 formatted_price_;
-
-  // A token used to show answer card contents. When answer card provider and ui
-  // runs in the same process (i.e classic ash, or mash before UI migration),
-  // AnswerCardContensRegistry could be used to map the token to a view.
-  // Otherwise (mash after UI migration), the token is used to embed the answer
-  // card contents.
-  base::UnguessableToken answer_card_contents_token_;
-
-  std::string id_;
-  // ID that can be compared across results from different providers to remove
-  // duplicates. May be empty, in which case |id_| will be used for comparison.
-  std::string comparable_id_;
-  double relevance_ = 0;
-  DisplayType display_type_ = ash::SearchResultDisplayType::kList;
-
-  ResultType result_type_ = ash::SearchResultType::kUnknown;
-
   // The Manhattan distance from the origin of all search results to this
   // result. This is logged for UMA.
   int distance_from_origin_ = -1;
 
-  Actions actions_;
-
   bool is_installing_ = false;
   int percent_downloaded_ = 0;
 
-  // Indicates whether result is an omnibox non-url search result. Set by
-  // OmniboxResult subclass.
-  bool is_omnibox_search_ = false;
+  ash::mojom::SearchResultMetadataPtr metadata_;
 
   base::ObserverList<SearchResultObserver> observers_;
 
