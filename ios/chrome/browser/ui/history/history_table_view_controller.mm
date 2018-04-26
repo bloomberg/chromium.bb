@@ -156,6 +156,8 @@ const int kMaxFetchCount = 100;
   self.searchController.searchBar.delegate = self;
   self.searchController.searchResultsUpdater = self;
   self.searchController.searchBar.backgroundColor = [UIColor whiteColor];
+  self.searchController.searchBar.accessibilityIdentifier =
+      l10n_util::GetNSStringWithFixup(IDS_IOS_ICON_SEARCH);
   // UIKit needs to know which controller will be presenting the
   // searchController. If we don't add this trying to dismiss while
   // SearchController is active will fail.
@@ -844,6 +846,7 @@ const int kMaxFetchCount = 100;
                 style:UIBarButtonItemStylePlain
                target:self
                action:@selector(animateViewsConfigurationForEditingChange)];
+    _cancelButton.accessibilityIdentifier = titleString;
   }
   return _cancelButton;
 }
@@ -859,6 +862,7 @@ const int kMaxFetchCount = 100;
                                          style:UIBarButtonItemStylePlain
                                         target:self
                                         action:@selector(openPrivacySettings)];
+    _clearBrowsingDataButton.accessibilityIdentifier = titleString;
     _clearBrowsingDataButton.tintColor = [UIColor redColor];
   }
   return _clearBrowsingDataButton;
@@ -873,6 +877,7 @@ const int kMaxFetchCount = 100;
                 style:UIBarButtonItemStylePlain
                target:self
                action:@selector(deleteSelectedItemsFromHistory)];
+    _deleteButton.accessibilityIdentifier = titleString;
     _deleteButton.tintColor = [UIColor redColor];
   }
   return _deleteButton;
@@ -887,6 +892,7 @@ const int kMaxFetchCount = 100;
                 style:UIBarButtonItemStylePlain
                target:self
                action:@selector(animateViewsConfigurationForEditingChange)];
+    _editButton.accessibilityIdentifier = titleString;
   }
   return _editButton;
 }
