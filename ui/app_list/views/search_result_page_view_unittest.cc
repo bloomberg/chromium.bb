@@ -125,18 +125,18 @@ TEST_P(SearchResultPageViewTest, ResultsSorted) {
   // container view.
   TestSearchResult* tile_result = new TestSearchResult();
   tile_result->set_display_type(ash::SearchResultDisplayType::kTile);
-  tile_result->set_relevance(1.0);
+  tile_result->set_display_score(1.0);
   results->Add(base::WrapUnique(tile_result));
   {
     TestSearchResult* list_result = new TestSearchResult();
     list_result->set_display_type(ash::SearchResultDisplayType::kList);
-    list_result->set_relevance(0.5);
+    list_result->set_display_score(0.5);
     results->Add(base::WrapUnique(list_result));
   }
   {
     TestSearchResult* list_result = new TestSearchResult();
     list_result->set_display_type(ash::SearchResultDisplayType::kList);
-    list_result->set_relevance(0.3);
+    list_result->set_display_score(0.3);
     results->Add(base::WrapUnique(list_result));
   }
 
@@ -150,7 +150,7 @@ TEST_P(SearchResultPageViewTest, ResultsSorted) {
   // displayed first.
   // TODO(warx): fullscreen launcher should always have tile list view to be
   // displayed first over list view.
-  tile_result->set_relevance(0.4);
+  tile_result->set_display_score(0.4);
 
   results->NotifyItemsChanged(0, 1);
   RunPendingMessages();

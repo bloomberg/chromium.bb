@@ -144,7 +144,7 @@ int SearchResultTileItemListView::DoUpdate() {
   }
 
   set_container_score(
-      display_results.empty() ? 0 : display_results.front()->relevance());
+      display_results.empty() ? 0 : display_results.front()->display_score());
 
   return display_results.size();
 }

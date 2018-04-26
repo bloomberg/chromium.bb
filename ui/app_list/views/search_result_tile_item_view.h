@@ -63,10 +63,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
   // Overridden from SearchResultObserver:
-  void OnIconChanged() override;
-  void OnBadgeIconChanged() override;
-  void OnRatingChanged() override;
-  void OnFormattedPriceChanged() override;
+  void OnMetadataChanged() override;
   void OnResultDestroying() override;
 
   // views::ContextMenuController overrides:

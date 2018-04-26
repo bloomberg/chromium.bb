@@ -24,7 +24,7 @@ namespace test {
 
 namespace {
 constexpr char kResultTitle[] = "The weather is fine";
-constexpr double kRelevance = 13.0;
+constexpr double kDisplayScore = 13.0;
 }  // namespace
 
 class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
@@ -57,7 +57,7 @@ class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
     result->set_display_type(ash::SearchResultDisplayType::kCard);
     result->set_title(base::UTF8ToUTF16(kResultTitle));
     result->set_answer_card_contents_token(token_);
-    result->set_relevance(kRelevance);
+    result->set_display_score(kDisplayScore);
     results->Add(std::move(result));
 
     // Adding results will schedule Update().
@@ -126,7 +126,7 @@ class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
 };
 
 TEST_F(SearchResultAnswerCardViewTest, Basic) {
-  EXPECT_EQ(kRelevance, GetContainerScore());
+  EXPECT_EQ(kDisplayScore, GetContainerScore());
 
   EXPECT_EQ(1, GetResultCountFromView());
 

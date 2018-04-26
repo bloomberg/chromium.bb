@@ -30,22 +30,23 @@ namespace app_list {
 namespace {
 
 // Helper to get/create answer card view by token.
-views::View* GetViewByToken(const base::UnguessableToken& token) {
+views::View* GetViewByToken(
+    const base::Optional<base::UnguessableToken>& token) {
   // Bail for invalid token.
-  if (token.is_empty())
+  if (!token.has_value() || token->is_empty())
     return nullptr;
 
   // Use AnswerCardContentsRegistry for an in-process token-to-view map. See
   // answer_card_contents_registry.h. Null check because it could be missing in
   // Mash and for tests.
   if (AnswerCardContentsRegistry::Get())
-    return AnswerCardContentsRegistry::Get()->GetView(token);
+    return AnswerCardContentsRegistry::Get()->GetView(token.value());
 
   // Use RemoteViewHost to embed the answer card contents provided in the
   // browser process in Mash.
   if (base::FeatureList::IsEnabled(features::kMash)) {
     views::RemoteViewHost* view = new views::RemoteViewHost();
-    view->EmbedUsingToken(token,
+    view->EmbedUsingToken(token.value(),
                           ui::mojom::kEmbedFlagEmbedderInterceptsEvents |
                               ui::mojom::kEmbedFlagEmbedderControlsVisibility,
                           base::DoNothing());
@@ -199,7 +200,8 @@ int SearchResultAnswerCardView::DoUpdate() {
       have_result ? display_results[0] : nullptr);
   parent()->SetVisible(have_result);
 
-  set_container_score(have_result ? display_results.front()->relevance() : 0);
+  set_container_score(have_result ? display_results.front()->display_score()
+                                  : 0);
   if (title_changed && search_answer_container_view_->HasFocus()) {
     search_answer_container_view_->NotifyAccessibilityEvent(
         ax::mojom::Event::kSelection, true);

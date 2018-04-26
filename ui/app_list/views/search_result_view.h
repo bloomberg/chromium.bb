@@ -106,9 +106,7 @@ class APP_LIST_EXPORT SearchResultView
                         std::unique_ptr<ui::MenuModel> menu_model);
 
   // SearchResultObserver overrides:
-  void OnIconChanged() override;
-  void OnBadgeIconChanged() override;
-  void OnActionsChanged() override;
+  void OnMetadataChanged() override;
   void OnIsInstallingChanged() override;
   void OnPercentDownloadedChanged() override;
   void OnItemInstalled() override;

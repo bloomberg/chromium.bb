@@ -7,13 +7,13 @@ module ash.mojom;
 import "ash/public/interfaces/menu.mojom";
 import "components/sync/mojo/syncer.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/image/mojo/image.mojom";
 import "ui/gfx/range/mojo/range.mojom";
 
-// A structure holding the common information of AppListItem and
-// ChromeAppListItem, which is sent between ash and chrome representing
-// an app list item.
+// A structure holding the common information which is sent between ash and,
+// chrome representing an app list item.
 // This structure should be kept as small as possible so that minimum data
 // is sent via mojo calls when an item is moved or reparented.
 struct AppListItemMetadata {
@@ -25,6 +25,48 @@ struct AppListItemMetadata {
   syncer.mojom.StringOrdinal position; // The position of the item.
   bool is_folder;     // Whether this item is a folder.
   gfx.mojom.ImageSkia? icon;  // The icon of this item.
+};
+
+// A structure holding the common information which is sent from chrome to ash,
+// representing a search result.
+// This structure should be kept as small as possible so that ash can get and
+// render search results as early as possible.
+struct SearchResultMetadata {
+  string id;                  // The id of the result.
+  mojo_base.mojom.String16 title;    // The title of the result, e.g. an app's
+                                     // name, an autocomplete query, etc.
+  mojo_base.mojom.String16 details;  // A detail string of this result.
+  array<SearchResultTag> title_tags;    // How the title matches the query. See
+                                        // the SearchResultTag section for
+                                        // more details.
+  array<SearchResultTag> details_tags;  // How the details match the query. See
+                                        // the SearchResultTag section for
+                                        // more details.
+  array<SearchResultAction> actions;    // Actions that can be performed on this
+                                        // result. See the SearchResultAction
+                                        // section for more details.
+  float rating = -1.0;        // The average rating score of the app
+                              // corresponding to this result, ranged from 0 to
+                              // 5. It's negative if there's no rating for the
+                              // result.
+  mojo_base.mojom.String16 formatted_price;  // A formatted price string, e.g.
+                                             // "$7.09", "HK$3.94", etc.
+  SearchResultType result_type;              // The type of this result.
+  SearchResultDisplayType display_type = kList;
+                                             // How this result is displayed.
+  double display_score;       // A score to determine the result display order.
+  bool is_omnibox_search;     // Whether this result is searched from Omnibox.
+  bool is_installing;         // Whether this result is installing.
+  mojo_base.mojom.UnguessableToken? answer_card_contents_token;
+                              // A token used to render answer card, which is
+                              // empty before initialized. It's illegal to pass
+                              // an empty UnguessableToken across processes. So
+                              // we use a null value when it's empty here.
+  gfx.mojom.ImageSkia? icon;  // The icon of this result.
+  gfx.mojom.ImageSkia? badge_icon;  // The badge icon of this result that
+                                    // indicates its type, e.g. installable from
+                                    // PlayStore, installable from WebStore,
+                                    // etc.
 };
 
 // All possible states of the app list.
@@ -53,10 +95,14 @@ enum SearchResultDisplayType {
 
 // Type of the search result, which is set in Chrome.
 enum SearchResultType {
-  kInstalledApp,  // Installed apps.
-  kPlayStoreApp,  // Uninstalled apps from playstore.
-  kInstantApp,    // Instant apps.
-  kInternalApp,   // Chrome OS apps.
+  kInstalledApp,    // Installed apps.
+  kPlayStoreApp,    // Installable apps from PlayStore.
+  kInstantApp,      // Instant apps.
+  kInternalApp,     // Chrome OS apps.
+  kWebStoreApp,     // Installable apps from WebStore.
+  kWebStoreSearch,  // A search query in WebStore.
+  kOmnibox,         // Results from Omninbox.
+  kLauncher,        // Results from launcher search (currently only from Files).
   // Add new values here.
 };
 
@@ -75,7 +121,7 @@ struct SearchResultTag {
 struct SearchResultActionImageLabel {
   gfx.mojom.ImageSkia base_image;
   gfx.mojom.ImageSkia hover_image;
-  gfx.mojom.ImageSkia pressed_Image;
+  gfx.mojom.ImageSkia pressed_image;
 };
 union SearchResultActionLabel {
   SearchResultActionImageLabel image_label;
@@ -173,6 +219,8 @@ interface AppListController {
   SetSearchHintText(mojo_base.mojom.String16 hint_text);
   // Sets the text for the search box's Textfield and the voice search flag.
   UpdateSearchBox(mojo_base.mojom.String16 text, bool initiated_by_user);
+  // Publishes search results to Ash to render them.
+  PublishSearchResults(array<SearchResultMetadata> results);
   // Update the whole model, usually when profile changes happen in Chrome.
   SetModelData(array<AppListItemMetadata> apps,
                bool is_search_engine_google);
@@ -220,6 +268,13 @@ interface AppListController {
       string oem_folder_id,
       syncer.mojom.StringOrdinal preferred_oem_position)
       => (AppListItemMetadata? oem_folder);
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Interfaces for ChromeSearchReult:
+  SetSearchResultMetadata(SearchResultMetadata metadata);
+  SetSearchResultIsInstalling(string result_id, bool is_installing);
+  SetSearchResultPercentDownloaded(string result_id, int32 percent_downloaded);
+  NotifySearchResultItemInstalled(string result_id);
 
   //////////////////////////////////////////////////////////////////////////////
   // Interfaces for views:

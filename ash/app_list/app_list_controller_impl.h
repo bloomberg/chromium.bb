@@ -49,6 +49,7 @@ class ASH_EXPORT AppListControllerImpl
       public keyboard::KeyboardControllerObserver {
  public:
   using AppListItemMetadataPtr = mojom::AppListItemMetadataPtr;
+  using SearchResultMetadataPtr = mojom::SearchResultMetadataPtr;
   AppListControllerImpl();
   ~AppListControllerImpl() override;
 
@@ -78,6 +79,8 @@ class ASH_EXPORT AppListControllerImpl
   void SetSearchHintText(const base::string16& hint_text) override;
   void UpdateSearchBox(const base::string16& text,
                        bool initiated_by_user) override;
+  void PublishSearchResults(
+      std::vector<SearchResultMetadataPtr> results) override;
   void SetItemMetadata(const std::string& id,
                        AppListItemMetadataPtr data) override;
   void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) override;
@@ -86,6 +89,13 @@ class ASH_EXPORT AppListControllerImpl
                                 int32_t percent_downloaded) override;
   void SetModelData(std::vector<AppListItemMetadataPtr> apps,
                     bool is_search_engine_google) override;
+
+  void SetSearchResultMetadata(SearchResultMetadataPtr metadata) override;
+  void SetSearchResultIsInstalling(const std::string& id,
+                                   bool is_installing) override;
+  void SetSearchResultPercentDownloaded(const std::string& id,
+                                        int32_t percent_downloaded) override;
+  void NotifySearchResultItemInstalled(const std::string& id) override;
 
   void GetIdToAppListIndexMap(GetIdToAppListIndexMapCallback callback) override;
   void FindOrCreateOemFolder(
