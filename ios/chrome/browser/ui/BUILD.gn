@@ -99,7 +99,6 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "browser_container_view_controller_unittest.mm",
     "browser_view_controller_helper_unittest.mm",
     "browser_view_controller_unittest.mm",
     "chrome_web_view_factory_unittest.mm",
@@ -263,8 +262,6 @@ source_set("external_files") {
 source_set("ui_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "browser_container_view_controller.h",
-    "browser_container_view_controller.mm",
     "browser_view_controller.h",
     "browser_view_controller.mm",
     "browser_view_controller_dependency_factory.h",
@@ -352,6 +349,8 @@ source_set("ui_internal") {
     "//ios/chrome/browser/ui/app_launcher",
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/bookmarks",
+    "//ios/chrome/browser/ui/browser_container",
+    "//ios/chrome/browser/ui/browser_container:ui",
     "//ios/chrome/browser/ui/bubble",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",

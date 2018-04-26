@@ -120,7 +120,8 @@
 #import "ios/chrome/browser/ui/background_generator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
-#import "ios/chrome/browser/ui/browser_container_view_controller.h"
+#import "ios/chrome/browser/ui/browser_container/browser_container_coordinator.h"
+#import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/browser_view_controller_helper.h"
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
@@ -616,8 +617,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // or not.
   BOOL _insertedTabWasPrerenderedTab;
 
-  // View Controller for container view.
-  BrowserContainerViewController* _browserContainerViewController;
+  // The coordinator managing the container view controller.
+  BrowserContainerCoordinator* _browserContainerCoordinator;
 }
 
 // The browser's side swipe controller.  Lazily instantiated on the first call.
@@ -1081,7 +1082,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (UIView*)contentArea {
-  return _browserContainerViewController.view;
+  return _browserContainerCoordinator.viewController.view;
 }
 
 - (void)setActive:(BOOL)active {
@@ -1623,9 +1624,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // The WebView is overflowing its bounds to be displayed below the toolbars.
   self.view.clipsToBounds = YES;
 
-  _browserContainerViewController =
-      [[BrowserContainerViewController alloc] init];
-  [self addChildViewController:_browserContainerViewController];
+  _browserContainerCoordinator = [[BrowserContainerCoordinator alloc]
+      initWithBaseViewController:self
+                    browserState:self.browserState];
+  [_browserContainerCoordinator start];
+  UIViewController* containerViewController =
+      _browserContainerCoordinator.viewController;
+  [self addChildViewController:containerViewController];
   self.contentArea.frame = initialViewsRect;
   self.typingShield = [[UIButton alloc] initWithFrame:initialViewsRect];
   self.typingShield.autoresizingMask = initialViewAutoresizing;
@@ -1638,7 +1643,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.view.autoresizingMask = initialViewAutoresizing;
   self.view.backgroundColor = [UIColor colorWithWhite:0.75 alpha:1.0];
   [self.view addSubview:self.contentArea];
-  [_browserContainerViewController didMoveToParentViewController:self];
+  [containerViewController didMoveToParentViewController:self];
   [self.view addSubview:self.typingShield];
   [super viewDidLoad];
 
@@ -1761,7 +1766,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (![self isViewLoaded]) {
     // Do not release |_infoBarContainer|, as this must have the same lifecycle
     // as the BrowserViewController.
-    _browserContainerViewController = nil;
+    [_browserContainerCoordinator stop];
+    _browserContainerCoordinator = nil;
     self.typingShield = nil;
     if (_voiceSearchController)
       _voiceSearchController->SetDelegate(nil);
@@ -2399,7 +2405,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     // Make new content visible, resizing it first as the orientation may
     // have changed from the last time it was displayed.
     tab.view.frame = self.contentArea.bounds;
-    [_browserContainerViewController displayContentView:tab.view];
+    [_browserContainerCoordinator.viewController displayContentView:tab.view];
   }
   [self updateToolbar];
 
@@ -3845,7 +3851,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
                 browserState:_browserState
              toolbarDelegate:self.toolbarInterface
                     tabModel:_model
-        parentViewController:_browserContainerViewController
+        parentViewController:_browserContainerCoordinator.viewController
                   dispatcher:self.dispatcher
                safeAreaInset:safeAreaInset];
     pageController.swipeRecognizerProvider = self.sideSwipeController;
@@ -5237,7 +5243,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (void)tabModel:(TabModel*)model willRemoveTab:(Tab*)tab {
   if (tab == [model currentTab]) {
-    [_browserContainerViewController displayContentView:nil];
+    [_browserContainerCoordinator.viewController displayContentView:nil];
   }
 
   [_paymentRequestManager stopTrackingWebState:tab.webState];
