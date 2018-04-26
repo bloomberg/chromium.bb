@@ -49,7 +49,19 @@ source_set("libc++abi") {
     sources += [ "trunk/src/cxa_thread_atexit.cpp" ]
   }
 
-  defines = [ "LIBCXXABI_SILENT_TERMINATE" ]
+  defines = [
+    "LIBCXXABI_SILENT_TERMINATE",
+    "_LIBCPP_ENABLE_CXX17_REMOVED_UNEXPECTED_FUNCTIONS",
+  ]
+
+  cflags_cc = [
+    # Suppress the redefinition error of
+    # _LIBCPP_ENABLE_CXX17_REMOVED_UNEXPECTED_FUNCTIONS, that is needed
+    # for all sources, but defined only in cxa_exception.cpp.
+    # TODO(tzik): Remove this once https://reviews.llvm.org/D46056
+    # landed to upstream.
+    "-Wno-macro-redefined",
+  ]
 
   configs -= [
     "//build/config/compiler:chromium_code",
