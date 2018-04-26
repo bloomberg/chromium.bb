@@ -26,7 +26,7 @@ class TimeView;
 
 // The bottom row of the system menu. The default view shows the current date
 // and power status. The tray view shows the current time.
-class ASH_EXPORT TraySystemInfo : public SystemTrayItem, public ClockObserver {
+class ASH_EXPORT TraySystemInfo : public SystemTrayItem {
  public:
   explicit TraySystemInfo(SystemTray* system_tray);
   ~TraySystemInfo() override;
@@ -43,18 +43,10 @@ class ASH_EXPORT TraySystemInfo : public SystemTrayItem, public ClockObserver {
   void OnDefaultViewDestroyed() override;
   void UpdateAfterShelfAlignmentChange() override;
 
-  // ClockObserver:
-  void OnDateFormatChanged() override;
-  void OnSystemClockTimeUpdated() override;
-  void OnSystemClockCanSetTimeChanged(bool can_set_time) override;
-  void Refresh() override;
-
   void SetupLabelForTimeTray(views::Label* label);
-  void UpdateTimeFormat();
 
   tray::TimeView* tray_view_;
   SystemInfoDefaultView* default_view_;
-  LoginStatus login_status_;
 
   DISALLOW_COPY_AND_ASSIGN(TraySystemInfo);
 };

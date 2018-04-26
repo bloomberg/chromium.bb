@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/system/date/clock_observer.h"
 #include "ash/system/tray/actionable_view.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
@@ -23,28 +24,42 @@ class Label;
 }
 
 namespace ash {
+
+class ClockModel;
+
 namespace tray {
 
 // Abstract base class containing common updating and layout code for the
 // DateView popup and the TimeView tray icon. Exported for tests.
-class ASH_EXPORT BaseDateTimeView : public ActionableView {
+class ASH_EXPORT BaseDateTimeView : public ActionableView,
+                                    public ClockObserver {
  public:
   ~BaseDateTimeView() override;
 
   // Updates the displayed text for the current time and calls SetTimer().
   void UpdateText();
 
+  // Updates the format of the displayed time.
+  void UpdateTimeFormat();
+
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
+  // ClockObserver:
+  void OnDateFormatChanged() override;
+  void OnSystemClockTimeUpdated() override;
+  void OnSystemClockCanSetTimeChanged(bool can_set_time) override;
+  void Refresh() override;
+
+  base::HourClockType GetHourTypeForTesting() const;
+
  protected:
-  explicit BaseDateTimeView(SystemTrayItem* owner);
+  BaseDateTimeView(SystemTrayItem* owner, ClockModel* model);
 
   // Updates labels to display the current time.
   virtual void UpdateTextInternal(const base::Time& now);
 
-  // Time format (12/24hr) used for accessibility string.
-  base::HourClockType hour_type_;
+  ClockModel* const model_;
 
  private:
   // Starts |timer_| to schedule the next update.
@@ -68,7 +83,7 @@ class ASH_EXPORT DateView : public BaseDateTimeView {
     SHOW_DATE_SETTINGS,
   };
 
-  explicit DateView(SystemTrayItem* owner);
+  DateView(SystemTrayItem* owner, ClockModel* model);
   ~DateView() override;
 
   // Sets the action the view should take. An actionable date view gives visual
@@ -76,10 +91,8 @@ class ASH_EXPORT DateView : public BaseDateTimeView {
   // or enter on the view executes the action.
   void SetAction(DateAction action);
 
-  // Updates the format of the displayed time.
-  void UpdateTimeFormat();
-
-  base::HourClockType GetHourTypeForTesting() const;
+  // ClockObserver:
+  void OnSystemClockCanSetTimeChanged(bool can_set_time) override;
 
  private:
   // Sets active rendering state and updates the color of |date_label_|.
@@ -107,16 +120,14 @@ class ASH_EXPORT TimeView : public BaseDateTimeView {
     VERTICAL_CLOCK,
   };
 
-  explicit TimeView(ClockLayout clock_layout);
+  TimeView(ClockLayout clock_layout, ClockModel* model);
   ~TimeView() override;
-
-  // Updates the format of the displayed time.
-  void UpdateTimeFormat();
 
   // Updates clock layout.
   void UpdateClockLayout(ClockLayout clock_layout);
 
-  base::HourClockType GetHourTypeForTesting() const;
+  // ClockObserver:
+  void Refresh() override;
 
  private:
   friend class TimeViewTest;
