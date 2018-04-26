@@ -6,6 +6,7 @@
 #define CHROMECAST_BROWSER_CAST_CONTENT_WINDOW_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -24,18 +25,23 @@ enum class VisibilityType {
 };
 
 enum class VisibilityPriority {
-  // Default priority, up to system to decide how to show the app.
+  // Default priority. It is up to system to decide how to show the activity.
   DEFAULT = 0,
 
-  // Priority for app need to show in full screen mode but could be timout.
+  // The activity wants to occupy the full screen for some period of time and
+  // then become hidden after a timeout.
   TRANSIENT_ACTIVITY = 1,
 
-  // A high priority interruption takes half screen if a sticky activity
-  // showing on screen, otherwise takes full screen.
+  // A high priority interruption occupies half of the screen if a sticky
+  // activity is showing on the screen. Otherwise, it occupies the full screen.
   HIGH_PRIORITY_INTERRUPTION = 2,
 
-  // Priority for app need to show in full screen mode and stick to screen.
+  // The activity wants to be persistently visible. Unlike TRANSIENT_ACTIVITY,
+  // there should be no timeout.
   STICKY_ACTIVITY = 3,
+
+  // The activity should not be visible.
+  HIDDEN = 4,
 };
 
 enum class GestureType { NO_GESTURE = 0, GO_BACK = 1 };
@@ -64,7 +70,7 @@ class CastContentWindow {
     // Notify visibility change for this window.
     virtual void OnVisibilityChange(VisibilityType visibility_type) {}
 
-    // Returns app ID of cast activity or appliction.
+    // Returns app ID of cast activity or application.
     virtual std::string GetId() = 0;
 
    protected:
