@@ -422,6 +422,11 @@ void BrowserNonClientFrameView::UpdateTaskbarDecoration() {
 }
 
 bool BrowserNonClientFrameView::ShouldShowProfileIndicatorIcon() const {
+  // In Material Refresh, we use a toolbar button for all
+  // profile/incognito-related purposes.
+  if (MD::GetMode() == MD::MATERIAL_REFRESH)
+    return false;
+
   Browser* browser = browser_view()->browser();
   Profile* profile = browser->profile();
   const bool is_incognito =
