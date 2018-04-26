@@ -234,6 +234,11 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
             }
 
             @Override
+            public ColorStateList getSecurityIconColorStateList() {
+                return null;
+            }
+
+            @Override
             public boolean shouldDisplaySearchTerms() {
                 return false;
             }
