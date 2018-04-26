@@ -8,6 +8,7 @@
 #include "base/guid.h"
 #include "base/values.h"
 #include "content/public/renderer/v8_value_converter.h"
+#include "extensions/renderer/bindings/api_response_validator.h"
 #include "extensions/renderer/bindings/exception_handler.h"
 #include "extensions/renderer/bindings/js_runner.h"
 #include "gin/converter.h"
@@ -24,10 +25,12 @@ APIRequestHandler::PendingRequest::PendingRequest(
     v8::Isolate* isolate,
     v8::Local<v8::Function> callback,
     v8::Local<v8::Context> context,
-    const std::vector<v8::Local<v8::Value>>& local_callback_args)
+    const std::vector<v8::Local<v8::Value>>& local_callback_args,
+    const std::string& method_name)
     : isolate(isolate),
       context(isolate, context),
       callback(isolate, callback),
+      method_name(method_name),
       user_gesture_token(
           blink::WebUserGestureIndicator::CurrentUserGestureToken()) {
   if (!local_callback_args.empty()) {
@@ -98,7 +101,8 @@ int APIRequestHandler::StartRequest(v8::Local<v8::Context> context,
 
     request->has_callback = true;
     pending_requests_.insert(std::make_pair(
-        request_id, PendingRequest(isolate, callback, context, callback_args)));
+        request_id,
+        PendingRequest(isolate, callback, context, callback_args, method)));
   }
 
   request->has_user_gesture =
@@ -168,6 +172,15 @@ void APIRequestHandler::CompleteRequest(
   if (!error.empty())
     last_error_.SetError(context, error);
 
+  if (response_validator_) {
+    bool has_custom_callback = !pending_request.callback_arguments.empty();
+    response_validator_->ValidateResponse(
+        context, pending_request.method_name, args, error,
+        has_custom_callback
+            ? APIResponseValidator::CallbackType::kAPIProvided
+            : APIResponseValidator::CallbackType::kCallerProvided);
+  }
+
   v8::TryCatch try_catch(isolate);
   // args.size() is converted to int, but args is controlled by chrome and is
   // never close to std::numeric_limits<int>::max.
@@ -190,8 +203,9 @@ int APIRequestHandler::AddPendingRequest(v8::Local<v8::Context> context,
                                          v8::Local<v8::Function> callback) {
   int request_id = next_request_id_++;
   pending_requests_.emplace(
-      request_id, PendingRequest(context->GetIsolate(), callback, context,
-                                 std::vector<v8::Local<v8::Value>>()));
+      request_id,
+      PendingRequest(context->GetIsolate(), callback, context,
+                     std::vector<v8::Local<v8::Value>>(), std::string()));
   return request_id;
 }
 
@@ -203,6 +217,12 @@ void APIRequestHandler::InvalidateContext(v8::Local<v8::Context> context) {
     else
       ++iter;
   }
+}
+
+void APIRequestHandler::SetResponseValidator(
+    std::unique_ptr<APIResponseValidator> response_validator) {
+  DCHECK(!response_validator_);
+  response_validator_ = std::move(response_validator);
 }
 
 std::set<int> APIRequestHandler::GetPendingRequestIdsForTesting() const {

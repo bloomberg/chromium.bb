@@ -60,14 +60,26 @@ class APISignature {
       std::unique_ptr<base::ListValue>* json_out,
       v8::Local<v8::Function>* callback_out) const;
 
+  // Validates the provided |arguments| as if they were returned as a response
+  // to an API call. This validation is much stricter than the versions above,
+  // since response arguments are not allowed to have optional inner parameters.
+  bool ValidateResponse(v8::Local<v8::Context> context,
+                        const std::vector<v8::Local<v8::Value>>& arguments,
+                        const APITypeReferenceMap& type_refs,
+                        std::string* error) const;
+
   // Returns a developer-readable string of the expected signature. For
   // instance, if this signature expects a string 'someStr' and an optional int
   // 'someInt', this would return "string someStr, optional integer someInt".
   std::string GetExpectedSignature() const;
 
+  bool has_callback() const { return has_callback_; }
+
  private:
   // The list of expected arguments.
   std::vector<std::unique_ptr<ArgumentSpec>> signature_;
+
+  bool has_callback_ = false;
 
   // A developer-readable signature string, lazily set.
   mutable std::string expected_signature_;

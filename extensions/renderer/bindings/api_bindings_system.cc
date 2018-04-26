@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "extensions/renderer/bindings/api_binding_hooks.h"
 #include "extensions/renderer/bindings/api_binding_util.h"
+#include "extensions/renderer/bindings/api_response_validator.h"
 
 namespace extensions {
 
@@ -28,7 +29,12 @@ APIBindingsSystem::APIBindingsSystem(
       event_handler_(event_listeners_changed, &exception_handler_),
       access_checker_(is_available),
       get_api_schema_(get_api_schema),
-      on_silent_request_(on_silent_request) {}
+      on_silent_request_(on_silent_request) {
+  if (binding::IsResponseValidationEnabled()) {
+    request_handler_.SetResponseValidator(
+        std::make_unique<APIResponseValidator>(&type_reference_map_));
+  }
+}
 
 APIBindingsSystem::~APIBindingsSystem() {}
 
