@@ -935,4 +935,10 @@ bool StoreDMToken(const std::string& token) {
   return true;
 }
 
+base::FilePath GetNotificationHelperPath(const base::FilePath& target_path,
+                                         const base::Version& version) {
+  return target_path.AppendASCII(version.GetString())
+      .Append(kNotificationHelperExe);
+}
+
 }  // namespace installer

@@ -204,46 +204,6 @@ bool ProbeNotificationActivatorCallback(const CLSID& toast_activator_clsid,
   return true;
 }
 
-// Adds work items to |list| to register a COM server with the OS after deleting
-// the old ones, which is used to handle the toast notification activation.
-void AddNativeNotificationWorkItems(const InstallerState& installer_state,
-                                    const base::FilePath& target_path,
-                                    const base::Version& new_version,
-                                    WorkItemList* list) {
-  base::string16 toast_activator_reg_path =
-      InstallUtil::GetToastActivatorRegistryPath();
-
-  if (toast_activator_reg_path.empty()) {
-    LOG(DFATAL) << "Cannot retrieve the toast activator registry path";
-    return;
-  }
-
-  HKEY root = installer_state.root_key();
-
-  // Delete the old registration before adding in the new key to ensure that the
-  // COM probe/flush below does its job. Delete both 64-bit and 32-bit keys to
-  // handle 32-bit -> 64-bit or 64-bit -> 32-bit migration.
-  list->AddDeleteRegKeyWorkItem(root, toast_activator_reg_path,
-                                KEY_WOW64_32KEY);
-
-  list->AddDeleteRegKeyWorkItem(root, toast_activator_reg_path,
-                                KEY_WOW64_64KEY);
-
-  // Force COM to flush its cache containing the path to the old handler.
-  list->AddCallbackWorkItem(
-      base::Bind(&ProbeNotificationActivatorCallback,
-                 install_static::GetToastActivatorClsid()));
-
-  // The path to the exe (in the version directory).
-  base::FilePath notification_helper =
-      target_path.AppendASCII(new_version.GetString())
-          .Append(kNotificationHelperExe);
-
-  AddNativeNotificationInstallWorkItems(installer_state.root_key(),
-                                        notification_helper,
-                                        toast_activator_reg_path, list);
-}
-
 // This is called when an MSI installation is run. It may be that a user is
 // attempting to install the MSI on top of a non-MSI managed installation. If
 // so, try and remove any existing "Add/Remove Programs" entry, as we want the
@@ -886,8 +846,9 @@ void AddInstallWorkItems(const InstallationState& original_state,
 
   // We don't have a version check for Win10+ here so that Windows upgrades
   // work.
-  AddNativeNotificationWorkItems(installer_state, target_path, new_version,
-                                 install_list);
+  AddNativeNotificationWorkItems(
+      installer_state.root_key(),
+      GetNotificationHelperPath(target_path, new_version), install_list);
 
   InstallUtil::AddUpdateDowngradeVersionItem(installer_state.system_install(),
                                              current_version, new_version, dist,
@@ -904,17 +865,43 @@ void AddInstallWorkItems(const InstallationState& original_state,
                          install_list);
 }
 
-void AddNativeNotificationInstallWorkItems(
+void AddNativeNotificationWorkItems(
     HKEY root,
-    const base::FilePath& notification_helper,
-    const base::string16& toast_activator_reg_path,
+    const base::FilePath& notification_helper_path,
     WorkItemList* list) {
+  if (notification_helper_path.empty()) {
+    LOG(DFATAL) << "The path to notification_helper.exe is invalid.";
+    return;
+  }
+
+  base::string16 toast_activator_reg_path =
+      InstallUtil::GetToastActivatorRegistryPath();
+
+  if (toast_activator_reg_path.empty()) {
+    LOG(DFATAL) << "Cannot retrieve the toast activator registry path";
+    return;
+  }
+
+  // Delete the old registration before adding in the new key to ensure that the
+  // COM probe/flush below does its job. Delete both 64-bit and 32-bit keys to
+  // handle 32-bit -> 64-bit or 64-bit -> 32-bit migration.
+  list->AddDeleteRegKeyWorkItem(root, toast_activator_reg_path,
+                                KEY_WOW64_32KEY);
+
+  list->AddDeleteRegKeyWorkItem(root, toast_activator_reg_path,
+                                KEY_WOW64_64KEY);
+
+  // Force COM to flush its cache containing the path to the old handler.
+  list->AddCallbackWorkItem(
+      base::BindRepeating(&ProbeNotificationActivatorCallback,
+                          install_static::GetToastActivatorClsid()));
+
   base::string16 toast_activator_server_path =
       toast_activator_reg_path + L"\\LocalServer32";
 
   // Command-line featuring the quoted path to the exe.
   base::string16 command(1, L'"');
-  command.append(notification_helper.value()).append(1, L'"');
+  command.append(notification_helper_path.value()).append(1, L'"');
 
   list->AddCreateRegKeyWorkItem(root, toast_activator_server_path,
                                 WorkItem::kWow64Default);
@@ -924,7 +911,7 @@ void AddNativeNotificationInstallWorkItems(
 
   list->AddSetRegValueWorkItem(root, toast_activator_server_path,
                                WorkItem::kWow64Default, L"ServerExecutable",
-                               notification_helper.value(), true);
+                               notification_helper_path.value(), true);
 }
 
 void AddSetMsiMarkerWorkItem(const InstallerState& installer_state,

@@ -85,12 +85,11 @@ void AddInstallWorkItems(const InstallationState& original_state,
                          const base::Version& new_version,
                          WorkItemList* install_list);
 
-// Adds work items to |list| to register a COM server with the OS, which is used
-// to handle the toast notification activation.
-void AddNativeNotificationInstallWorkItems(
+// Adds work items to |list| to register a COM server with the OS after deleting
+// the old ones, which is used to handle the toast notification activation.
+void AddNativeNotificationWorkItems(
     HKEY root,
-    const base::FilePath& notification_helper,
-    const base::string16& toast_activator_reg_path,
+    const base::FilePath& notification_helper_path,
     WorkItemList* list);
 
 void AddSetMsiMarkerWorkItem(const InstallerState& installer_state,
