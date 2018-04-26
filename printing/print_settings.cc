@@ -181,6 +181,7 @@ void PrintSettings::Clear() {
   printer_type_ = PrintSettings::PrinterType::TYPE_NONE;
 #endif
   is_modifiable_ = true;
+  num_pages_per_sheet_ = 1;
 }
 
 void PrintSettings::SetPrinterPrintableArea(
