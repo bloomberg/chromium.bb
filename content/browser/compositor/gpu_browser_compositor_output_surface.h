@@ -13,6 +13,7 @@
 #include "content/browser/compositor/gpu_vsync_begin_frame_source.h"
 #include "gpu/vulkan/buildflags.h"
 #include "ui/gfx/swap_result.h"
+#include "ui/latency/latency_tracker.h"
 
 namespace viz {
 class CompositorOverlayCandidateValidator;
@@ -102,6 +103,7 @@ class GpuBrowserCompositorOutputSurface
   bool has_set_draw_rectangle_since_last_resize_ = false;
   gfx::Size size_;
   LatencyInfoCache latency_info_cache_;
+  ui::LatencyTracker latency_tracker_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuBrowserCompositorOutputSurface);

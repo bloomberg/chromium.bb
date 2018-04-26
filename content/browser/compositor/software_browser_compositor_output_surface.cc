@@ -79,10 +79,6 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
         ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0,
         swap_time, 1);
   }
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RenderWidgetHostImpl::OnGpuSwapBuffersCompleted,
-                     frame.latency_info));
 
   gfx::VSyncProvider* vsync_provider = software_device()->GetVSyncProvider();
   if (vsync_provider) {
@@ -96,11 +92,14 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
       FROM_HERE,
       base::BindOnce(
           &SoftwareBrowserCompositorOutputSurface::SwapBuffersCallback,
-          weak_factory_.GetWeakPtr(), swap_id_));
+          weak_factory_.GetWeakPtr(), swap_id_, frame.latency_info));
 }
 
 void SoftwareBrowserCompositorOutputSurface::SwapBuffersCallback(
-    uint64_t swap_id) {
+    uint64_t swap_id,
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(latency_info);
+  latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
   client_->DidReceiveSwapBuffersAck(swap_id);
   client_->DidReceivePresentationFeedback(
       swap_id,

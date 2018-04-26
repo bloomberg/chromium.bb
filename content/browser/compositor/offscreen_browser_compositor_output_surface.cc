@@ -199,6 +199,7 @@ void OffscreenBrowserCompositorOutputSurface::OnSwapBuffersComplete(
     const std::vector<ui::LatencyInfo>& latency_info,
     uint64_t swap_id) {
   RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(latency_info);
+  latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
   client_->DidReceiveSwapBuffersAck(swap_id);
   client_->DidReceivePresentationFeedback(swap_id, gfx::PresentationFeedback());
 }

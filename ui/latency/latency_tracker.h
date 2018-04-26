@@ -6,7 +6,6 @@
 #define UI_LATENCY_LATENCY_TRACKER_H_
 
 #include "base/macros.h"
-#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/latency/latency_info.h"
 
 namespace ui {
@@ -15,19 +14,17 @@ namespace ui {
 // components logged by content::RenderWidgetHostLatencyTracker.
 class LatencyTracker {
  public:
-  explicit LatencyTracker(bool metric_sampling,
-                          ukm::SourceId ukm_source_id = ukm::kInvalidSourceId);
+  LatencyTracker();
   ~LatencyTracker() = default;
-
-  void OnEventStart(LatencyInfo* latency);
 
   // Terminates latency tracking for events that triggered rendering, also
   // performing relevant UMA latency reporting.
   // Called when GPU buffers swap completes.
+  void OnGpuSwapBuffersCompleted(const std::vector<LatencyInfo>& latency_info);
   void OnGpuSwapBuffersCompleted(const LatencyInfo& latency);
 
- protected:
-  ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
+  // Disables sampling of high volume metrics in unit tests.
+  void DisableMetricSamplingForTesting();
 
  private:
   enum class InputMetricEvent {
@@ -71,7 +68,8 @@ class LatencyTracker {
   // Whether the sampling is needed for high volume metrics. This will be off
   // when we are in unit tests. This is a temporary field so we can come up with
   // a more permanent solution for crbug.com/739169.
-  bool metric_sampling_;
+  bool metric_sampling_ = true;
+
   // The i'th member of this array stores the sampling rate for the i'th
   // input metric event type. Initializing SamplingScheme with number X means
   // that from every X events one will be reported. Note that the first event
@@ -83,7 +81,6 @@ class LatencyTracker {
           SamplingScheme(5),   // SCROLL_BEGIN_WHEEL
           SamplingScheme(2),   // SCROLL_UPDATE_WHEEL
   };
-  const ukm::SourceId ukm_source_id_;
 
   DISALLOW_COPY_AND_ASSIGN(LatencyTracker);
 };

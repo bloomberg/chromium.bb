@@ -26,7 +26,6 @@ SoftwareOutputSurface::SoftwareOutputSurface(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : OutputSurface(std::move(software_device)),
       task_runner_(std::move(task_runner)),
-      latency_tracker_(true /* metric_sampling */),
       weak_factory_(this) {}
 
 SoftwareOutputSurface::~SoftwareOutputSurface() = default;
@@ -125,8 +124,7 @@ uint32_t SoftwareOutputSurface::GetFramebufferCopyTextureFormat() {
 }
 
 void SoftwareOutputSurface::SwapBuffersCallback(uint64_t swap_id) {
-  for (const auto& latency : stored_latency_info_)
-    latency_tracker_.OnGpuSwapBuffersCompleted(latency);
+  latency_tracker_.OnGpuSwapBuffersCompleted(stored_latency_info_);
   client_->DidFinishLatencyInfo(stored_latency_info_);
   std::vector<ui::LatencyInfo>().swap(stored_latency_info_);
   client_->DidReceiveSwapBuffersAck(swap_id);

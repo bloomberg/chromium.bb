@@ -81,6 +81,7 @@
 #include "ui/gfx/ca_layer_params.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_utils.h"
+#include "ui/latency/latency_tracker.h"
 
 namespace content {
 
@@ -285,6 +286,7 @@ class AndroidOutputSurface
   void LatencyInfoCompleted(
       const std::vector<ui::LatencyInfo>& latency_info) override {
     RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(latency_info);
+    latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
   }
 
   void BindToClient(viz::OutputSurfaceClient* client) override {
@@ -366,6 +368,7 @@ class AndroidOutputSurface
   base::Closure swap_buffers_callback_;
   std::unique_ptr<viz::OverlayCandidateValidator> overlay_candidate_validator_;
   LatencyInfoCache latency_info_cache_;
+  ui::LatencyTracker latency_tracker_;
 
   base::WeakPtrFactory<AndroidOutputSurface> weak_ptr_factory_;
 };
