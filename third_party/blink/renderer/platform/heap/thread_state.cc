@@ -426,10 +426,10 @@ bool ThreadState::JudgeGCThreshold(size_t allocated_object_size_threshold,
 
 bool ThreadState::ShouldScheduleIncrementalMarking() const {
 #if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
-  // TODO(mlippautz): For now immediately schedule incremental marking if
-  // the runtime flag is provided, basically exercising a stress test.
+  // TODO(mlippautz): For now only schedule incremental marking if
+  // the runtime stress flag is provided.
   return GcState() == kNoGCScheduled &&
-         RuntimeEnabledFeatures::HeapIncrementalMarkingEnabled();
+         RuntimeEnabledFeatures::HeapIncrementalMarkingStressEnabled();
 #else
   return false;
 #endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
@@ -1465,6 +1465,15 @@ bool ThreadState::MarkPhaseAdvanceMarking(double deadline_seconds) {
   return complete;
 }
 
+bool ThreadState::ShouldVerifyMarking() const {
+  bool should_verify_marking =
+      RuntimeEnabledFeatures::HeapIncrementalMarkingStressEnabled();
+#if BUILDFLAG(BLINK_HEAP_VERIFICATION)
+  should_verify_marking = true;
+#endif  // BLINK_HEAP_VERIFICATION
+  return should_verify_marking;
+}
+
 void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
   Visitor* visitor = current_gc_data_.visitor.get();
   // Finish marking of not-fully-constructed objects.
@@ -1483,9 +1492,8 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
 
   current_gc_data_.visitor.reset();
 
-#if BUILDFLAG(BLINK_HEAP_VERIFICATION)
-  VerifyMarking(marking_type);
-#endif  // BLINK_HEAP_VERIFICATION
+  if (ShouldVerifyMarking())
+    VerifyMarking(marking_type);
 
   Heap().HeapStats().SetEstimatedMarkingTimePerByte(
       current_gc_data_.marked_object_size

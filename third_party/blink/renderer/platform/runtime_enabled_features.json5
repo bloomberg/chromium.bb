@@ -542,6 +542,9 @@
     {
       name: "HeapIncrementalMarking",
     },
+    {
+      name: "HeapIncrementalMarkingStress"
+    },
     // https://crbug.com/766694 for testing disabling the feature.
     {
       name: "HTMLImports",

@@ -613,6 +613,8 @@ class PLATFORM_EXPORT ThreadState {
     safe_point_scope_marker_ = nullptr;
   }
 
+  bool ShouldVerifyMarking() const;
+
   // shouldScheduleIdleGC and shouldForceConservativeGC
   // implement the heuristics that are used to determine when to collect
   // garbage.
