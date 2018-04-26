@@ -8,7 +8,7 @@
   width: 56px;
   top: 50%;
   left: 50%;
-  margin-top: -36px;
+  margin-top: -37px;
   margin-left: -28px;
   overflow: hidden;
 }
@@ -146,19 +146,19 @@
 #cutoff-1 {
   top: 0;
   bottom: 50%;
-  margin-bottom: 36px;
+  margin-bottom: 37px;
 }
 
 #cutoff-2 {
   top: 50%;
-  bottom: 19px;
-  margin-top: 20px;
+  bottom: 21px;
+  margin-top: 19px;
 }
 
 #cutoff-3,
 #cutoff-4 {
   top: 0;
-  bottom: 19px;
+  bottom: 21px;
 }
 
 #cutoff-3 {
