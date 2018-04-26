@@ -1121,14 +1121,10 @@ class CONTENT_EXPORT ContentBrowserClient {
       const url::Origin& origin,
       base::OnceCallback<void(bool)> callback);
 
-  // Returns whether |web_contents| is the active tab in the focused window.
-  // As an example, webauthn uses this because it doesn't want to allow
-  // authenticator operations to be triggered by background tabs.
-  //
-  // Note that the default implementation of this function, and the
-  // implementation in ChromeContentBrowserClient for Android, return |true| so
-  // that testing is possible.
-  virtual bool IsFocused(content::WebContents* web_contents);
+  // Returns true if the Webauthn implementation should require that the
+  // |RenderFrameHost|'s View has focus before processing requests, and before
+  // sending replies.
+  virtual bool ShouldEnforceFocusChecksForWebauthn();
 
   // Get platform ClientCertStore. May return nullptr.
   virtual std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
