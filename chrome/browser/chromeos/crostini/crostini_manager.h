@@ -35,6 +35,14 @@ enum class ConciergeClientResult {
   UNKNOWN_ERROR,
 };
 
+// Return type when getting app icons from within a container.
+struct Icon {
+  std::string desktop_file_id;
+
+  // Icon file content in PNG format.
+  std::string content;
+};
+
 // CrostiniManager is a singleton which is used to check arguments for the
 // ConciergeClient. ConciergeClient is dedicated to communication with the
 // Concierge service and should remain as thin as possible.
@@ -61,6 +69,10 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   // The type of the callback for CrostiniManager::LaunchContainerApplication.
   using LaunchContainerApplicationCallback =
       base::OnceCallback<void(ConciergeClientResult result)>;
+  // The type of the callback for CrostiniManager::GetContainerAppIcons.
+  using GetContainerAppIconsCallback =
+      base::OnceCallback<void(ConciergeClientResult result,
+                              std::vector<Icon>& icons)>;
   // The type of the callback for CrostiniManager::RestartCrostini.
   using RestartCrostiniCallback =
       base::OnceCallback<void(ConciergeClientResult result)>;
@@ -141,6 +153,15 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
                                   std::string desktop_file_id,
                                   LaunchContainerApplicationCallback callback);
 
+  // Asynchronously gets app icons as specified by their desktop file ids.
+  // |callback| is called after the method call finishes.
+  void GetContainerAppIcons(std::string vm_name,
+                            std::string container_name,
+                            std::vector<std::string> desktop_file_ids,
+                            int icon_size,
+                            int scale,
+                            GetContainerAppIconsCallback callback);
+
   // Launches the crosh-in-a-window that displays a shell in an already running
   // container on a VM.
   void LaunchContainerTerminal(Profile* profile,
@@ -215,6 +236,12 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
       LaunchContainerApplicationCallback callback,
       base::Optional<vm_tools::concierge::LaunchContainerApplicationResponse>
           response);
+
+  // Callback for CrostiniManager::GetContainerAppIcons. Called after the
+  // Concierge service finishes.
+  void OnGetContainerAppIcons(
+      GetContainerAppIconsCallback callback,
+      base::Optional<vm_tools::concierge::ContainerAppIconResponse> response);
 
   // Helper for CrostiniManager::CreateDiskImage. Separated so it can be run
   // off the main thread.

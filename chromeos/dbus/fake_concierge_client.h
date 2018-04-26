@@ -75,6 +75,13 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
           vm_tools::concierge::LaunchContainerApplicationResponse> callback)
       override;
 
+  // Fake version of the method that gets application icons from inside a
+  // Container. |callback| is called after the method call finishes.
+  void GetContainerAppIcons(
+      const vm_tools::concierge::ContainerAppIconRequest& request,
+      DBusMethodCallback<vm_tools::concierge::ContainerAppIconResponse>
+          callback) override;
+
   // Fake version of the method that waits for the Concierge service to be
   // availble.  |callback| is called after the method call finishes.
   void WaitForServiceToBeAvailable(
