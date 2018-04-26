@@ -8,6 +8,10 @@
 #import <UIKit/UIKit.h>
 #include "base/macros.h"
 
+namespace ios {
+class ChromeBrowserState;
+}  // namespace ios
+
 @class ChromeIdentity;
 
 typedef ChromeIdentity* (^SignedInIdentityBlock)(void);
@@ -19,7 +23,10 @@ class MailtoHandlerProvider {
   MailtoHandlerProvider();
   virtual ~MailtoHandlerProvider();
 
-  // Set up mailto handling for the current user.
+  // Set up mailto handling for the current browser state.
+  virtual void PrepareMailtoHandling(ios::ChromeBrowserState* browserState);
+
+  // Deprecated: Set up mailto handling for the current user.
   // The Signed-In Identity Block should return the primary signed in user.
   // The Signed-In Identities Block should return all users signed in to Chrome.
   virtual void PrepareMailtoHandling(
