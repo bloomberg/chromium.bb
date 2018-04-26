@@ -71,7 +71,7 @@ class RecordInterceptor : public mojom::VideoDecodeStatsRecorder {
   ~RecordInterceptor() override = default;
 
   // Until move-only types work.
-  void StartNewRecord(mojom::PredictionFeaturesPtr features) {
+  void StartNewRecord(mojom::PredictionFeaturesPtr features) override {
     MockStartNewRecord(features->profile, features->video_size,
                        features->frames_per_sec);
   }
@@ -81,7 +81,7 @@ class RecordInterceptor : public mojom::VideoDecodeStatsRecorder {
                     const gfx::Size& natural_size,
                     int frames_per_sec));
 
-  void UpdateRecord(mojom::PredictionTargetsPtr targets) {
+  void UpdateRecord(mojom::PredictionTargetsPtr targets) override {
     MockUpdateRecord(targets->frames_decoded, targets->frames_dropped,
                      targets->frames_decoded_power_efficient);
   }

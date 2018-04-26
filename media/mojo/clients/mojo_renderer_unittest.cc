@@ -86,7 +86,7 @@ class MojoRendererTest : public ::testing::Test {
         .WillRepeatedly(Return(base::TimeDelta()));
   }
 
-  virtual ~MojoRendererTest() = default;
+  ~MojoRendererTest() override = default;
 
   void Destroy() {
     mojo_renderer_.reset();

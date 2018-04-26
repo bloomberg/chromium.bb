@@ -99,7 +99,7 @@ class AudioRendererMixerTest
     return mixer_.get();
   };
 
-  void ReturnMixer(AudioRendererMixer* mixer) {
+  void ReturnMixer(AudioRendererMixer* mixer) override {
     EXPECT_EQ(mixer_.get(), mixer);
   }
 

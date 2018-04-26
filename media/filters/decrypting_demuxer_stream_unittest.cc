@@ -82,7 +82,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
         encrypted_buffer_(CreateFakeEncryptedStreamBuffer(false)),
         decrypted_buffer_(new DecoderBuffer(kFakeBufferSize)) {}
 
-  virtual ~DecryptingDemuxerStreamTest() {
+  ~DecryptingDemuxerStreamTest() override {
     if (is_initialized_)
       EXPECT_CALL(*decryptor_, CancelDecrypt(_));
     demuxer_stream_.reset();

@@ -68,7 +68,7 @@ class MockPipelineClient : public Pipeline::Client {
 class MockPipeline : public Pipeline {
  public:
   MockPipeline();
-  virtual ~MockPipeline();
+  ~MockPipeline() override;
 
   // Note: Start() and Resume() declarations are not actually overrides; they
   // take unique_ptr* instead of unique_ptr so that they can be mock methods.
@@ -89,11 +89,11 @@ class MockPipeline : public Pipeline {
                     const PipelineStatusCB&));
 
   void OnEnabledAudioTracksChanged(const std::vector<MediaTrack::Id>& id,
-                                   base::OnceClosure callback) {
+                                   base::OnceClosure callback) override {
     MockOnEnabledAudioTracksChanged(id, callback);
   }
   void OnSelectedVideoTrackChanged(base::Optional<MediaTrack::Id> id,
-                                   base::OnceClosure callback) {
+                                   base::OnceClosure callback) override {
     MockOnSelectedVideoTrackChanged(id, callback);
   }
 
@@ -140,10 +140,10 @@ class MockPipeline : public Pipeline {
 class MockDemuxer : public Demuxer {
  public:
   MockDemuxer();
-  virtual ~MockDemuxer();
+  ~MockDemuxer() override;
 
   // Demuxer implementation.
-  virtual std::string GetDisplayName() const;
+  std::string GetDisplayName() const override;
   MOCK_METHOD3(Initialize,
                void(DemuxerHost* host, const PipelineStatusCB& cb, bool));
   MOCK_METHOD1(StartWaitingForSeek, void(base::TimeDelta));
@@ -159,12 +159,12 @@ class MockDemuxer : public Demuxer {
 
   void OnEnabledAudioTracksChanged(const std::vector<MediaTrack::Id>& id,
                                    base::TimeDelta time,
-                                   TrackChangeCB cb) {
+                                   TrackChangeCB cb) override {
     MockOnEnabledAudioTracksChanged(id, time, cb);
   }
   void OnSelectedVideoTrackChanged(const std::vector<MediaTrack::Id>& id,
                                    base::TimeDelta time,
-                                   TrackChangeCB cb) {
+                                   TrackChangeCB cb) override {
     MockOnSelectedVideoTrackChanged(id, time, cb);
   }
 
@@ -184,7 +184,7 @@ class MockDemuxer : public Demuxer {
 class MockDemuxerStream : public DemuxerStream {
  public:
   explicit MockDemuxerStream(DemuxerStream::Type type);
-  virtual ~MockDemuxerStream();
+  ~MockDemuxerStream() override;
 
   // DemuxerStream implementation.
   Type type() const override;
@@ -212,10 +212,10 @@ class MockVideoDecoder : public VideoDecoder {
  public:
   explicit MockVideoDecoder(
       const std::string& decoder_name = "MockVideoDecoder");
-  virtual ~MockVideoDecoder();
+  ~MockVideoDecoder() override;
 
   // VideoDecoder implementation.
-  virtual std::string GetDisplayName() const;
+  std::string GetDisplayName() const override;
   MOCK_METHOD6(
       Initialize,
       void(const VideoDecoderConfig& config,
@@ -239,10 +239,10 @@ class MockAudioDecoder : public AudioDecoder {
  public:
   explicit MockAudioDecoder(
       const std::string& decoder_name = "MockAudioDecoder");
-  virtual ~MockAudioDecoder();
+  ~MockAudioDecoder() override;
 
   // AudioDecoder implementation.
-  virtual std::string GetDisplayName() const;
+  std::string GetDisplayName() const override;
   MOCK_METHOD5(
       Initialize,
       void(const AudioDecoderConfig& config,
@@ -280,7 +280,7 @@ class MockRendererClient : public RendererClient {
 class MockVideoRenderer : public VideoRenderer {
  public:
   MockVideoRenderer();
-  virtual ~MockVideoRenderer();
+  ~MockVideoRenderer() override;
 
   // VideoRenderer implementation.
   MOCK_METHOD5(Initialize,
@@ -301,7 +301,7 @@ class MockVideoRenderer : public VideoRenderer {
 class MockAudioRenderer : public AudioRenderer {
  public:
   MockAudioRenderer();
-  virtual ~MockAudioRenderer();
+  ~MockAudioRenderer() override;
 
   // AudioRenderer implementation.
   MOCK_METHOD4(Initialize,
@@ -321,7 +321,7 @@ class MockAudioRenderer : public AudioRenderer {
 class MockRenderer : public Renderer {
  public:
   MockRenderer();
-  virtual ~MockRenderer();
+  ~MockRenderer() override;
 
   // Renderer implementation.
   MOCK_METHOD3(Initialize,
@@ -340,7 +340,7 @@ class MockRenderer : public Renderer {
                     const CdmAttachedCB& cdm_attached_cb));
 
   void OnSelectedVideoTracksChanged(const std::vector<DemuxerStream*>& id,
-                                    base::OnceClosure cb) {
+                                    base::OnceClosure cb) override {
     MockOnSelectedVideoTrackChanged(id, cb);
   }
 
@@ -362,7 +362,7 @@ class MockRenderer : public Renderer {
 class MockTimeSource : public TimeSource {
  public:
   MockTimeSource();
-  virtual ~MockTimeSource();
+  ~MockTimeSource() override;
 
   // TimeSource implementation.
   MOCK_METHOD0(StartTicking, void());
@@ -381,7 +381,7 @@ class MockTimeSource : public TimeSource {
 class MockTextTrack : public TextTrack {
  public:
   MockTextTrack();
-  virtual ~MockTextTrack();
+  ~MockTextTrack() override;
 
   MOCK_METHOD5(addWebVTTCue, void(const base::TimeDelta& start,
                                   const base::TimeDelta& end,
@@ -431,7 +431,7 @@ class MockCdmClient {
 class MockDecryptor : public Decryptor {
  public:
   MockDecryptor();
-  virtual ~MockDecryptor();
+  ~MockDecryptor() override;
 
   MOCK_METHOD2(RegisterNewKeyCB, void(StreamType stream_type,
                                       const NewKeyCB& new_key_cb));

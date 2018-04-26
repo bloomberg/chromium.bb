@@ -15,7 +15,7 @@ namespace media {
 class MockVideoEncodeAccelerator : public VideoEncodeAccelerator {
  public:
   MockVideoEncodeAccelerator();
-  virtual ~MockVideoEncodeAccelerator();
+  ~MockVideoEncodeAccelerator() override;
 
   MOCK_METHOD0(GetSupportedProfiles,
                VideoEncodeAccelerator::SupportedProfiles());

@@ -61,7 +61,7 @@ class MockAudioInputControllerEventHandler
  public:
   MockAudioInputControllerEventHandler() = default;
 
-  void OnLog(base::StringPiece) {}
+  void OnLog(base::StringPiece) override {}
 
   MOCK_METHOD1(OnCreated, void(bool initially_muted));
   MOCK_METHOD1(OnError, void(AudioInputController::ErrorCode error_code));
@@ -87,7 +87,7 @@ class MockUserInputMonitor : public UserInputMonitorBase {
  public:
   MockUserInputMonitor() = default;
 
-  uint32_t GetKeyPressCount() const { return 0; }
+  uint32_t GetKeyPressCount() const override { return 0; }
 
   MOCK_METHOD0(StartKeyboardMonitoring, void());
   MOCK_METHOD0(StopKeyboardMonitoring, void());
@@ -98,14 +98,14 @@ class MockAudioInputStream : public AudioInputStream {
   MockAudioInputStream() {}
   ~MockAudioInputStream() override {}
 
-  void Start(AudioInputCallback*) {}
-  void Stop() {}
-  void Close() {}
-  double GetMaxVolume() { return kMaxVolume; }
-  double GetVolume() { return 0; }
-  bool SetAutomaticGainControl(bool) { return false; }
-  bool GetAutomaticGainControl() { return false; }
-  bool IsMuted() { return false; }
+  void Start(AudioInputCallback*) override {}
+  void Stop() override {}
+  void Close() override {}
+  double GetMaxVolume() override { return kMaxVolume; }
+  double GetVolume() override { return 0; }
+  bool SetAutomaticGainControl(bool) override { return false; }
+  bool GetAutomaticGainControl() override { return false; }
+  bool IsMuted() override { return false; }
 
   MOCK_METHOD0(Open, bool());
   MOCK_METHOD1(SetVolume, void(double));

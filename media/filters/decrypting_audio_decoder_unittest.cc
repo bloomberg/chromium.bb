@@ -65,9 +65,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
         decoded_frame_(NULL),
         decoded_frame_list_() {}
 
-  virtual ~DecryptingAudioDecoderTest() {
-    Destroy();
-  }
+  ~DecryptingAudioDecoderTest() override { Destroy(); }
 
   void InitializeAndExpectResult(const AudioDecoderConfig& config,
                                  bool success) {

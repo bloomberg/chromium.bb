@@ -15,7 +15,7 @@ namespace media {
 class MockWebAssociatedURLLoader : public blink::WebAssociatedURLLoader {
  public:
   MockWebAssociatedURLLoader();
-  virtual ~MockWebAssociatedURLLoader();
+  ~MockWebAssociatedURLLoader() override;
 
   MOCK_METHOD2(LoadAsynchronously,
                void(const blink::WebURLRequest& request,

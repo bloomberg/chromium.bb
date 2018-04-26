@@ -117,7 +117,7 @@ class AlsaPcmOutputStreamTest : public testing::Test {
     mock_manager_.reset(new StrictMock<MockAudioManagerAlsa>());
   }
 
-  virtual ~AlsaPcmOutputStreamTest() { mock_manager_->Shutdown(); }
+  ~AlsaPcmOutputStreamTest() override { mock_manager_->Shutdown(); }
 
   AlsaPcmOutputStream* CreateStream(ChannelLayout layout) {
     return CreateStream(layout, kTestFramesPerPacket);

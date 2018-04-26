@@ -103,7 +103,7 @@ class VideoRendererImplTest : public testing::Test {
                        scoped_refptr<DecoderBuffer>(new DecoderBuffer(0))));
   }
 
-  virtual ~VideoRendererImplTest() = default;
+  ~VideoRendererImplTest() override = default;
 
   void Initialize() {
     InitializeWithLowDelay(false);

@@ -58,7 +58,7 @@ class AudioRendererMixerInputTest : public testing::Test,
                                const AudioParameters& params,
                                AudioLatency::LatencyType latency,
                                const std::string& device_id,
-                               OutputDeviceStatus* device_status) {
+                               OutputDeviceStatus* device_status) override {
     EXPECT_TRUE(params.IsValid());
     if (device_id == kNonexistentDeviceId) {
       if (device_status)
@@ -95,7 +95,7 @@ class AudioRendererMixerInputTest : public testing::Test,
 
   OutputDeviceInfo GetOutputDeviceInfo(int source_render_frame_id,
                                        int session_id,
-                                       const std::string& device_id) {
+                                       const std::string& device_id) override {
     OutputDeviceStatus status = OUTPUT_DEVICE_STATUS_OK;
     if (device_id == kNonexistentDeviceId)
       status = OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND;
@@ -121,7 +121,7 @@ class AudioRendererMixerInputTest : public testing::Test,
   AudioRendererMixer* GetInputMixer() { return mixer_input_->mixer_; }
 
  protected:
-  virtual ~AudioRendererMixerInputTest() = default;
+  ~AudioRendererMixerInputTest() override = default;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   AudioParameters audio_parameters_;

@@ -82,7 +82,7 @@ class MojoCdmTest : public ::testing::Test {
                                              &mojo_cdm_service_context_)),
         cdm_binding_(mojo_cdm_service_.get()) {}
 
-  virtual ~MojoCdmTest() = default;
+  ~MojoCdmTest() override = default;
 
   void Initialize(ExpectedResult expected_result) {
     // TODO(xhwang): Add pending init support.

@@ -30,7 +30,7 @@ class MockClient : public VideoCaptureDevice::Client {
                               int clockwise_rotation,
                               base::TimeTicks reference_time,
                               base::TimeDelta timestamp,
-                              int frame_feedback_id = 0) {}
+                              int frame_feedback_id = 0) override {}
 
   MOCK_METHOD3(ReserveOutputBuffer,
                Buffer(const gfx::Size&, VideoPixelFormat, int));

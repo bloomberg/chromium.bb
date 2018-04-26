@@ -66,7 +66,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
     // InitializeDecoderSelector().
   }
 
-  ~AudioDecoderSelectorTest() { base::RunLoop().RunUntilIdle(); }
+  ~AudioDecoderSelectorTest() override { base::RunLoop().RunUntilIdle(); }
 
   MOCK_METHOD2(OnDecoderSelected,
                void(AudioDecoder*, DecryptingDemuxerStream*));

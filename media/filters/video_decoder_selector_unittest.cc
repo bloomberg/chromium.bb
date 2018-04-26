@@ -64,7 +64,7 @@ class VideoDecoderSelectorTest : public ::testing::Test {
     // InitializeDecoderSelector().
   }
 
-  ~VideoDecoderSelectorTest() { base::RunLoop().RunUntilIdle(); }
+  ~VideoDecoderSelectorTest() override { base::RunLoop().RunUntilIdle(); }
 
   MOCK_METHOD2(OnDecoderSelected,
                void(VideoDecoder*, DecryptingDemuxerStream*));

@@ -55,7 +55,7 @@ constexpr size_t kBitstreamDataSize = 512;
 class MockRenderCallback : public AudioRendererSink::RenderCallback {
  public:
   MockRenderCallback() = default;
-  virtual ~MockRenderCallback() = default;
+  ~MockRenderCallback() override = default;
 
   MOCK_METHOD4(Render,
                int(base::TimeDelta delay,
@@ -68,7 +68,7 @@ class MockRenderCallback : public AudioRendererSink::RenderCallback {
 class MockAudioOutputIPC : public AudioOutputIPC {
  public:
   MockAudioOutputIPC() = default;
-  virtual ~MockAudioOutputIPC() = default;
+  ~MockAudioOutputIPC() override = default;
 
   MOCK_METHOD3(RequestDeviceAuthorization,
                void(AudioOutputIPCDelegate* delegate,
@@ -88,7 +88,7 @@ class MockAudioOutputIPC : public AudioOutputIPC {
 class AudioOutputDeviceTest : public testing::Test {
  public:
   AudioOutputDeviceTest();
-  ~AudioOutputDeviceTest();
+  ~AudioOutputDeviceTest() override;
 
   void ReceiveAuthorization(OutputDeviceStatus device_status);
   void StartAudioDevice();

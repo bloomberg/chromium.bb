@@ -18,7 +18,7 @@ namespace media {
 class MojoAudioInputStreamObserverTest : public testing::Test {
  public:
   MojoAudioInputStreamObserverTest() {}
-  ~MojoAudioInputStreamObserverTest() {}
+  ~MojoAudioInputStreamObserverTest() override {}
 
   std::unique_ptr<MojoAudioInputStreamObserver> CreateObserver(
       media::mojom::AudioInputStreamObserverRequest request) {

@@ -65,7 +65,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
         message_loop_.task_runner(), std::move(remote_audio_decoder)));
   }
 
-  virtual ~MojoAudioDecoderTest() {
+  ~MojoAudioDecoderTest() override {
     // Destroy |mojo_audio_decoder_| first so that the service will be
     // destructed. Then stop the service thread. Otherwise we'll leak memory.
     mojo_audio_decoder_.reset();

@@ -16,7 +16,7 @@ namespace cast {
 class MockCastTransport : public CastTransport {
  public:
   MockCastTransport();
-  virtual ~MockCastTransport();
+  ~MockCastTransport() override;
 
   MOCK_METHOD2(InsertFrame, void(uint32_t ssrc, const EncodedFrame& frame));
   MOCK_METHOD3(SendSenderReport,

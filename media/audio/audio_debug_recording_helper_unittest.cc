@@ -41,7 +41,7 @@ class MockAudioDebugFileWriter : public AudioDebugFileWriter {
   ~MockAudioDebugFileWriter() override = default;
 
   MOCK_METHOD1(DoStart, void(bool));
-  void Start(base::File file) { DoStart(file.IsValid()); }
+  void Start(base::File file) override { DoStart(file.IsValid()); }
   MOCK_METHOD0(Stop, void());
 
   // Functions with move-only types as arguments can't be mocked directly, so

@@ -141,7 +141,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     tick_clock_.Advance(base::TimeDelta::FromSeconds(1));
   }
 
-  virtual ~AudioRendererImplTest() {
+  ~AudioRendererImplTest() override {
     SCOPED_TRACE("~AudioRendererImplTest()");
   }
 

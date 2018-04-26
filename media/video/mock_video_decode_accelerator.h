@@ -24,7 +24,7 @@ namespace media {
 class MockVideoDecodeAccelerator : public VideoDecodeAccelerator {
  public:
   MockVideoDecodeAccelerator();
-  virtual ~MockVideoDecodeAccelerator();
+  ~MockVideoDecodeAccelerator() override;
 
   MOCK_METHOD2(Initialize, bool(const Config& config, Client* client));
   MOCK_METHOD1(Decode, void(const BitstreamBuffer& bitstream_buffer));

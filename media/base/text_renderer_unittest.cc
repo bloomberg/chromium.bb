@@ -34,9 +34,7 @@ class FakeTextTrack : public TextTrack {
       : destroy_cb_(destroy_cb),
         config_(config) {
   }
-  virtual ~FakeTextTrack() {
-    destroy_cb_.Run();
-  }
+  ~FakeTextTrack() override { destroy_cb_.Run(); }
 
   MOCK_METHOD5(addWebVTTCue, void(const base::TimeDelta& start,
                                   const base::TimeDelta& end,

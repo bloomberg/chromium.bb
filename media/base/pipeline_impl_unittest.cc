@@ -123,7 +123,7 @@ class PipelineImplTest : public ::testing::Test {
     EXPECT_CALL(*demuxer_, GetStartTime()).WillRepeatedly(Return(start_time_));
   }
 
-  virtual ~PipelineImplTest() {
+  ~PipelineImplTest() override {
     if (pipeline_->IsRunning()) {
       ExpectDemuxerStop();
 

@@ -14,7 +14,7 @@ namespace cast {
 class MockPacedPacketSender : public PacedPacketSender {
  public:
   MockPacedPacketSender();
-  virtual ~MockPacedPacketSender();
+  ~MockPacedPacketSender() override;
 
   MOCK_METHOD1(SendPackets, bool(const SendPacketVector& packets));
   MOCK_METHOD2(ResendPackets, bool(const SendPacketVector& packets,
