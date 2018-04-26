@@ -15,6 +15,14 @@ message SettingsUi {
   optional AboutMeSettingsUi about_me_settings = 5;
 }
 
+message SettingsUiUpdate {
+  optional AboutMeSettingsUiUpdate about_me_settings_update = 4;
+}
+
+message SettingsUiUpdateResult {
+  optional AboutMeSettingsUiUpdateResult about_me_settings_update_result = 4;
+}
+
 // Determines which settings sub-pages should be requested to the server.
 message SettingsUiSelector {
   optional bool about_me_settings = 5;

@@ -78,7 +78,9 @@ void AssistantManagerServiceImpl::SendGetSettingsUiRequest(
   std::string serialized_proto = SerializeGetSettingsUiRequest(selector);
   assistant_manager_internal_->SendGetSettingsUiRequest(
       serialized_proto, std::string(), [
-        callback, weak_ptr = weak_factory_.GetWeakPtr(),
+        repeating_callback =
+            base::AdaptCallbackForRepeating(std::move(callback)),
+        weak_ptr = weak_factory_.GetWeakPtr(),
         task_runner = main_thread_task_runner_
       ](const assistant_client::VoicelessResponse& response) {
         // This callback may be called from server multiple times. We should
@@ -89,7 +91,31 @@ void AssistantManagerServiceImpl::SendGetSettingsUiRequest(
               FROM_HERE,
               base::BindOnce(
                   &AssistantManagerServiceImpl::HandleGetSettingsResponse,
-                  std::move(weak_ptr), callback, settings));
+                  std::move(weak_ptr), repeating_callback, settings));
+        }
+      });
+}
+
+void AssistantManagerServiceImpl::SendUpdateSettingsUiRequest(
+    const std::string& update,
+    UpdateSettingsUiResponseCallback callback) {
+  std::string serialized_proto = SerializeUpdateSettingsUiRequest(update);
+  assistant_manager_internal_->SendUpdateSettingsUiRequest(
+      serialized_proto, std::string(), [
+        repeating_callback =
+            base::AdaptCallbackForRepeating(std::move(callback)),
+        weak_ptr = weak_factory_.GetWeakPtr(),
+        task_runner = main_thread_task_runner_
+      ](const assistant_client::VoicelessResponse& response) {
+        // This callback may be called from server multiple times. We should
+        // only process non-empty response.
+        std::string update = UnwrapUpdateSettingsUiResponse(response);
+        if (!update.empty()) {
+          task_runner->PostTask(
+              FROM_HERE,
+              base::BindOnce(
+                  &AssistantManagerServiceImpl::HandleUpdateSettingsResponse,
+                  std::move(weak_ptr), repeating_callback, update));
         }
       });
 }
@@ -231,9 +257,15 @@ std::string AssistantManagerServiceImpl::BuildUserAgent(
 }
 
 void AssistantManagerServiceImpl::HandleGetSettingsResponse(
-    GetSettingsUiResponseCallback callback,
+    base::RepeatingCallback<void(const std::string&)> callback,
     const std::string& settings) {
   callback.Run(settings);
+}
+
+void AssistantManagerServiceImpl::HandleUpdateSettingsResponse(
+    base::RepeatingCallback<void(const std::string&)> callback,
+    const std::string& result) {
+  callback.Run(result);
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread() {

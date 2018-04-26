@@ -52,6 +52,9 @@ class AssistantManagerServiceImpl
   void SendGetSettingsUiRequest(
       const std::string& selector,
       GetSettingsUiResponseCallback callback) override;
+  void SendUpdateSettingsUiRequest(
+      const std::string& update,
+      UpdateSettingsUiResponseCallback callback) override;
 
   // mojom::Assistant overrides:
   void SendTextQuery(const std::string& query) override;
@@ -85,8 +88,12 @@ class AssistantManagerServiceImpl
       assistant_client::AssistantManager* assistant_manager);
   std::string BuildUserAgent(const std::string& arc_version) const;
 
-  void HandleGetSettingsResponse(GetSettingsUiResponseCallback callback,
-                                 const std::string& settings);
+  void HandleGetSettingsResponse(
+      base::RepeatingCallback<void(const std::string&)> callback,
+      const std::string& settings);
+  void HandleUpdateSettingsResponse(
+      base::RepeatingCallback<void(const std::string&)> callback,
+      const std::string& result);
 
   void OnConversationTurnStartedOnMainThread();
   void OnConversationTurnFinishedOnMainThread(

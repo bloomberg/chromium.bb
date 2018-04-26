@@ -32,6 +32,9 @@ class FakeAssistantManagerServiceImpl : public AssistantManagerService {
   void SendGetSettingsUiRequest(
       const std::string& selector,
       GetSettingsUiResponseCallback callback) override;
+  void SendUpdateSettingsUiRequest(
+      const std::string& update,
+      UpdateSettingsUiResponseCallback callback) override;
 
   // mojom::AssistantEvent overrides:
   void SendTextQuery(const std::string& query) override;

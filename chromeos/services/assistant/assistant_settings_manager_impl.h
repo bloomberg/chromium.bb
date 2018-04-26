@@ -26,6 +26,8 @@ class AssistantSettingsManagerImpl : public AssistantSettingsManager {
   // mojom::AssistantSettingsManager overrides:
   void GetSettings(const std::string& selector,
                    GetSettingsCallback callback) override;
+  void UpdateSettings(const std::string& update,
+                      UpdateSettingsCallback callback) override;
 
   // AssistantSettingsManager overrides:
   void BindRequest(mojom::AssistantSettingsManagerRequest request) override;
