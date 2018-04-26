@@ -40,12 +40,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_OpenSingleImageOnDrive DISABLED_OpenSingleImageOnDrive
-#else
-#define MAYBE_OpenSingleImageOnDrive OpenSingleImageOnDrive
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_OpenSingleImageOnDrive) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenSingleImageOnDrive) {
   set_test_case_name("openSingleImageOnDrive");
   StartTest();
 }
@@ -61,16 +56,8 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_OpenMultipleImagesAndSwitchToSlideModeOnDownloads \
-  DISABLED_OpenMultipleImagesAndSwitchToSlideModeOnDownloads
-#else
-#define MAYBE_OpenMultipleImagesAndSwitchToSlideModeOnDownloads \
-  OpenMultipleImagesAndSwitchToSlideModeOnDownloads
-#endif
-IN_PROC_BROWSER_TEST_F(
-    GalleryBrowserTest,
-    MAYBE_OpenMultipleImagesAndSwitchToSlideModeOnDownloads) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
+                       OpenMultipleImagesAndSwitchToSlideModeOnDownloads) {
   set_test_case_name("openMultipleImagesAndChangeToSlideModeOnDownloads");
   StartTest();
 }
@@ -122,12 +109,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode, RenameImageOnDownloads) {
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_RenameImageOnDrive DISABLED_RenameImageOnDrive
-#else
-#define MAYBE_RenameImageOnDrive RenameImageOnDrive
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_RenameImageOnDrive) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RenameImageOnDrive) {
   set_test_case_name("renameImageOnDrive");
   StartTest();
 }
@@ -147,15 +129,8 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, DeleteImageOnDrive) {
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_CheckAvailabilityOfShareButtonOnDownloads \
-  DISABLED_CheckAvailabilityOfShareButtonOnDownloads
-#else
-#define MAYBE_CheckAvailabilityOfShareButtonOnDownloads \
-  CheckAvailabilityOfShareButtonOnDownloads
-#endif
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       MAYBE_CheckAvailabilityOfShareButtonOnDownloads) {
+                       CheckAvailabilityOfShareButtonOnDownloads) {
   set_test_case_name("checkAvailabilityOfShareButtonOnDownloads");
   StartTest();
 }
@@ -166,15 +141,8 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_CheckAvailabilityOfShareButtonOnDrive \
-  DISABLED_CheckAvailabilityOfShareButtonOnDrive
-#else
-#define MAYBE_CheckAvailabilityOfShareButtonOnDrive \
-  CheckAvailabilityOfShareButtonOnDrive
-#endif
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       MAYBE_CheckAvailabilityOfShareButtonOnDrive) {
+                       CheckAvailabilityOfShareButtonOnDrive) {
   set_test_case_name("checkAvailabilityOfShareButtonOnDrive");
   StartTest();
 }
@@ -194,12 +162,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RotateImageOnDrive) {
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_CropImageOnDownloads DISABLED_CropImageOnDownloads
-#else
-#define MAYBE_CropImageOnDownloads CropImageOnDownloads
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_CropImageOnDownloads) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, CropImageOnDownloads) {
   set_test_case_name("cropImageOnDownloads");
   StartTest();
 }
@@ -214,12 +177,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, CropImageOnDrive) {
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_ExposureImageOnDownloads DISABLED_ExposureImageOnDownloads
-#else
-#define MAYBE_ExposureImageOnDownloads ExposureImageOnDownloads
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_ExposureImageOnDownloads) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, ExposureImageOnDownloads) {
   set_test_case_name("exposureImageOnDownloads");
   StartTest();
 }
@@ -230,22 +188,12 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_ExposureImageOnDrive DISABLED_ExposureImageOnDrive
-#else
-#define MAYBE_ExposureImageOnDrive ExposureImageOnDrive
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_ExposureImageOnDrive) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, ExposureImageOnDrive) {
   set_test_case_name("exposureImageOnDrive");
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_ResizeImageOnDownloads DISABLED_ResizeImageOnDownloads
-#else
-#define MAYBE_ResizeImageOnDownloads ResizeImageOnDownloads
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_ResizeImageOnDownloads) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, ResizeImageOnDownloads) {
   set_test_case_name("resizeImageOnDownloads");
   StartTest();
 }
@@ -255,39 +203,19 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode, ResizeImageOnDownloads) {
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_ResizeImageOnDrive DISABLED_ResizeImageOnDrive
-#else
-#define MAYBE_ResizeImageOnDrive ResizeImageOnDrive
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_ResizeImageOnDrive) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, ResizeImageOnDrive) {
   set_test_case_name("resizeImageOnDrive");
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_EnableDisableOverwriteOriginalCheckboxOnDownloads \
-  DISABLED_EnableDisableOverwriteOriginalCheckboxOnDownloads
-#else
-#define MAYBE_EnableDisableOverwriteOriginalCheckboxOnDownloads \
-  EnableDisableOverwriteOriginalCheckboxOnDownloads
-#endif
-IN_PROC_BROWSER_TEST_F(
-    GalleryBrowserTest,
-    MAYBE_EnableDisableOverwriteOriginalCheckboxOnDownloads) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
+                       EnableDisableOverwriteOriginalCheckboxOnDownloads) {
   set_test_case_name("enableDisableOverwriteOriginalCheckboxOnDownloads");
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_EnableDisableOverwriteOriginalCheckboxOnDrive \
-  DISABLED_EnableDisableOverwriteOriginalCheckboxOnDrive
-#else
-#define MAYBE_EnableDisableOverwriteOriginalCheckboxOnDrive \
-  EnableDisableOverwriteOriginalCheckboxOnDrive
-#endif
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       MAYBE_EnableDisableOverwriteOriginalCheckboxOnDrive) {
+                       EnableDisableOverwriteOriginalCheckboxOnDrive) {
   set_test_case_name("enableDisableOverwriteOriginalCheckboxOnDrive");
   StartTest();
 }
@@ -303,107 +231,50 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RenameImageInThumbnailModeOnDrive) {
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_DeleteAllImagesInThumbnailModeOnDownloads \
-  DISABLED_DeleteAllImagesInThumbnailModeOnDownloads
-#else
-#define MAYBE_DeleteAllImagesInThumbnailModeOnDownloads \
-  DeleteAllImagesInThumbnailModeOnDownloads
-#endif
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       MAYBE_DeleteAllImagesInThumbnailModeOnDownloads) {
+                       DeleteAllImagesInThumbnailModeOnDownloads) {
   set_test_case_name("deleteAllImagesInThumbnailModeOnDownloads");
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_DeleteAllImagesInThumbnailModeOnDrive \
-  DISABLED_DeleteAllImagesInThumbnailModeOnDrive
-#else
-#define MAYBE_DeleteAllImagesInThumbnailModeOnDrive \
-  DeleteAllImagesInThumbnailModeOnDrive
-#endif
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       MAYBE_DeleteAllImagesInThumbnailModeOnDrive) {
+                       DeleteAllImagesInThumbnailModeOnDrive) {
   set_test_case_name("deleteAllImagesInThumbnailModeOnDrive");
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_DeleteAllImagesInThumbnailModeWithEnterKey \
-  DISABLED_DeleteAllImagesInThumbnailModeWithEnterKey
-#else
-#define MAYBE_DeleteAllImagesInThumbnailModeWithEnterKey \
-  DeleteAllImagesInThumbnailModeWithEnterKey
-#endif
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       MAYBE_DeleteAllImagesInThumbnailModeWithEnterKey) {
+                       DeleteAllImagesInThumbnailModeWithEnterKey) {
   set_test_case_name("deleteAllImagesInThumbnailModeWithEnterKey");
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_DeleteAllImagesInThumbnailModeWithDeleteKey \
-  DISABLED_DeleteAllImagesInThumbnailModeWithDeleteKey
-#else
-#define MAYBE_DeleteAllImagesInThumbnailModeWithDeleteKey \
-  DeleteAllImagesInThumbnailModeWithDeleteKey
-#endif
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       MAYBE_DeleteAllImagesInThumbnailModeWithDeleteKey) {
+                       DeleteAllImagesInThumbnailModeWithDeleteKey) {
   set_test_case_name("deleteAllImagesInThumbnailModeWithDeleteKey");
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_EmptySpaceClickUnselectsInThumbnailModeOnDownloads \
-  DISABLED_EmptySpaceClickUnselectsInThumbnailModeOnDownloads
-#else
-#define MAYBE_EmptySpaceClickUnselectsInThumbnailModeOnDownloads \
-  EmptySpaceClickUnselectsInThumbnailModeOnDownloads
-#endif
-IN_PROC_BROWSER_TEST_F(
-    GalleryBrowserTest,
-    MAYBE_EmptySpaceClickUnselectsInThumbnailModeOnDownloads) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
+                       EmptySpaceClickUnselectsInThumbnailModeOnDownloads) {
   set_test_case_name("emptySpaceClickUnselectsInThumbnailModeOnDownloads");
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_EmptySpaceClickUnselectsInThumbnailModeOnDrive \
-  DISABLED_EmptySpaceClickUnselectsInThumbnailModeOnDrive
-#else
-#define MAYBE_EmptySpaceClickUnselectsInThumbnailModeOnDrive \
-  EmptySpaceClickUnselectsInThumbnailModeOnDrive
-#endif
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       MAYBE_EmptySpaceClickUnselectsInThumbnailModeOnDrive) {
+                       EmptySpaceClickUnselectsInThumbnailModeOnDrive) {
   set_test_case_name("emptySpaceClickUnselectsInThumbnailModeOnDrive");
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_SelectMultipleImagesWithShiftKeyOnDownloads \
-  DISABLED_SelectMultipleImagesWithShiftKeyOnDownloads
-#else
-#define MAYBE_SelectMultipleImagesWithShiftKeyOnDownloads \
-  SelectMultipleImagesWithShiftKeyOnDownloads
-#endif
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       MAYBE_SelectMultipleImagesWithShiftKeyOnDownloads) {
+                       SelectMultipleImagesWithShiftKeyOnDownloads) {
   set_test_case_name("selectMultipleImagesWithShiftKeyOnDownloads");
   StartTest();
 }
 
-#if defined(DISABLE_SLOW_FILESAPP_TESTS)
-#define MAYBE_SelectAllImagesAfterImageDeletionOnDownloads \
-  DISABLED_SelectAllImagesAfterImageDeletionOnDownloads
-#else
-#define MAYBE_SelectAllImagesAfterImageDeletionOnDownloads \
-  SelectAllImagesAfterImageDeletionOnDownloads
-#endif
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       MAYBE_SelectAllImagesAfterImageDeletionOnDownloads) {
+                       SelectAllImagesAfterImageDeletionOnDownloads) {
   set_test_case_name("selectAllImagesAfterImageDeletionOnDownloads");
   StartTest();
 }
