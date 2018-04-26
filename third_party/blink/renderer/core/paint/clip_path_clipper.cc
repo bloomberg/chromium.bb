@@ -190,15 +190,7 @@ static AffineTransform MaskToContentTransform(
   }
 
   mask_to_content.Multiply(
-      ToSVGClipPathElement(resource_clipper.GetElement())
-          ->CalculateTransform(SVGElement::kIncludeMotionTransform));
-
-  if (resource_clipper.ClipPathUnits() ==
-      SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
-    mask_to_content.Translate(reference_box.X(), reference_box.Y());
-    mask_to_content.ScaleNonUniform(reference_box.Width(),
-                                    reference_box.Height());
-  }
+      resource_clipper.CalculateClipTransform(reference_box));
   return mask_to_content;
 }
 
