@@ -64,7 +64,9 @@ class CrostiniRegistryService : public KeyedService {
                  const LocaleString& name,
                  const LocaleString& comment,
                  const std::vector<std::string>& mime_types,
-                 bool no_display);
+                 bool no_display,
+                 const std::string& startup_wm_class,
+                 bool startup_notify);
     ~Registration();
 
     static const std::string& Localize(const LocaleString& locale_string);
@@ -78,6 +80,8 @@ class CrostiniRegistryService : public KeyedService {
     LocaleString comment;
     std::vector<std::string> mime_types;
     bool no_display;
+    std::string startup_wm_class;
+    bool startup_notify;
 
     DISALLOW_COPY_AND_ASSIGN(Registration);
   };
@@ -103,8 +107,8 @@ class CrostiniRegistryService : public KeyedService {
   //
   // If the given window app id is not for Crostini (i.e. Arc++), returns an
   // empty string. If we can uniquely identify a registry entry, returns the
-  // crostini app id for that. Otherwise, returns the |window_app_id|, possibly
-  // prefixed "org.chromium.termina.wayland." if it was not already prefixed.
+  // crostini app id for that. Otherwise, returns the |window_app_id|, prefixed
+  // by "crostini:".
   //
   // As the window app id is derived from fields set by the app itself, it is
   // possible for an app to masquerade as a different app.

@@ -217,4 +217,37 @@ TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdNoStartupID) {
             std::string());
 }
 
+TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdStartupWMClass) {
+  ApplicationList app_list = BasicAppList("app", "vm", "container");
+  app_list.mutable_apps(0)->set_startup_wm_class("app_start");
+  *app_list.add_apps() = BasicApp("app2");
+  *app_list.add_apps() = BasicApp("app3");
+  app_list.mutable_apps(1)->set_startup_wm_class("app2");
+  app_list.mutable_apps(2)->set_startup_wm_class("app2");
+  service()->UpdateApplicationList(app_list);
+
+  EXPECT_THAT(service()->GetRegisteredAppIds(), testing::SizeIs(3));
+
+  EXPECT_EQ(service()->GetCrostiniShelfAppId(WindowIdForWMClass("app_start"),
+                                             nullptr),
+            GenerateAppId("app", "vm", "container"));
+  EXPECT_EQ(
+      service()->GetCrostiniShelfAppId(WindowIdForWMClass("app2"), nullptr),
+      "crostini:" + WindowIdForWMClass("app2"));
+}
+
+TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdStartupNotify) {
+  ApplicationList app_list = BasicAppList("app", "vm", "container");
+  app_list.mutable_apps(0)->set_startup_notify(true);
+  *app_list.add_apps() = BasicApp("app2");
+  service()->UpdateApplicationList(app_list);
+
+  std::string startup_id = "app";
+  EXPECT_EQ(service()->GetCrostiniShelfAppId("whatever", &startup_id),
+            GenerateAppId("app", "vm", "container"));
+  startup_id = "app2";
+  EXPECT_EQ(service()->GetCrostiniShelfAppId("whatever", &startup_id),
+            "crostini:whatever");
+}
+
 }  // namespace crostini
