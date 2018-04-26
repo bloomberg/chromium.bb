@@ -149,22 +149,18 @@ void ScrollManager::RecomputeScrollChain(const Node& start_node,
 
 bool ScrollManager::CanScroll(const ScrollState& scroll_state,
                               const Element& current_element) {
-  double delta_x = scroll_state.isBeginning() ? scroll_state.deltaXHint()
-                                              : scroll_state.deltaX();
-  double delta_y = scroll_state.isBeginning() ? scroll_state.deltaYHint()
-                                              : scroll_state.deltaY();
-  if (!delta_x && !delta_y)
-    return true;
-
   ScrollableArea* scrollable_area = nullptr;
-
   if (IsViewportScrollingElement(current_element) ||
       current_element == *(frame_->GetDocument()->documentElement())) {
+    if (!current_element.GetLayoutObject())
+      return false;
+
     if (frame_->IsMainFrame())
       return true;
 
     // For subframes, the viewport is added to the scroll chain only if it can
-    // actually consume some delta hints.
+    // actually consume some delta hints. The main frame always gets added
+    // since it produces overscroll effects.
     scrollable_area =
         frame_->View() ? frame_->View()->GetScrollableArea() : nullptr;
   }
@@ -174,6 +170,13 @@ bool ScrollManager::CanScroll(const ScrollState& scroll_state,
 
   if (!scrollable_area)
     return false;
+
+  double delta_x = scroll_state.isBeginning() ? scroll_state.deltaXHint()
+                                              : scroll_state.deltaX();
+  double delta_y = scroll_state.isBeginning() ? scroll_state.deltaYHint()
+                                              : scroll_state.deltaY();
+  if (!delta_x && !delta_y)
+    return true;
 
   if (!scrollable_area->UserInputScrollable(kHorizontalScrollbar))
     delta_x = 0;
@@ -244,13 +247,12 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
       scrollable_area = box->GetScrollableArea();
     }
 
-    if (scrollable_area) {
-      ScrollResult result = scrollable_area->UserScroll(
-          granularity, ToScrollDelta(physical_direction, 1));
+    DCHECK(scrollable_area);
+    ScrollResult result = scrollable_area->UserScroll(
+        granularity, ToScrollDelta(physical_direction, 1));
 
-      if (result.DidScroll())
-        return true;
-    }
+    if (result.DidScroll())
+      return true;
   }
 
   return false;
