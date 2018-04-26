@@ -47,11 +47,18 @@ class AssistantManagerService : public mojom::Assistant {
   virtual AssistantSettingsManager* GetAssistantSettingsManager() = 0;
 
   using GetSettingsUiResponseCallback =
-      base::RepeatingCallback<void(const std::string&)>;
+      base::OnceCallback<void(const std::string&)>;
   // Send request for getting settings ui.
   virtual void SendGetSettingsUiRequest(
       const std::string& selector,
       GetSettingsUiResponseCallback callback) = 0;
+
+  using UpdateSettingsUiResponseCallback =
+      base::OnceCallback<void(const std::string&)>;
+  // Send request for updating settings ui.
+  virtual void SendUpdateSettingsUiRequest(
+      const std::string& update,
+      UpdateSettingsUiResponseCallback callback) = 0;
 };
 
 }  // namespace assistant

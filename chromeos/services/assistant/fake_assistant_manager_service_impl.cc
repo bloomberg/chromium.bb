@@ -38,6 +38,10 @@ void FakeAssistantManagerServiceImpl::SendGetSettingsUiRequest(
     const std::string& selector,
     GetSettingsUiResponseCallback callback) {}
 
+void FakeAssistantManagerServiceImpl::SendUpdateSettingsUiRequest(
+    const std::string& update,
+    UpdateSettingsUiResponseCallback callback) {}
+
 void FakeAssistantManagerServiceImpl::SendTextQuery(const std::string& query) {}
 
 void FakeAssistantManagerServiceImpl::AddAssistantEventSubscriber(

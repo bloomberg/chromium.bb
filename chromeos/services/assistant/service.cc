@@ -179,15 +179,6 @@ void Service::GetAccessTokenCallback(const base::Optional<std::string>& token,
     assistant_manager_service_->SetAccessToken(token.value());
   }
 
-  if (!assistant_settings_manager_) {
-    assistant_settings_manager_ =
-        assistant_manager_service_.get()->GetAssistantSettingsManager();
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-    registry_.AddInterface<mojom::AssistantSettingsManager>(base::BindRepeating(
-        &Service::BindAssistantSettingsManager, base::Unretained(this)));
-#endif
-  }
-
   token_refresh_timer_->Start(FROM_HERE, expiration_time - base::Time::Now(),
                               this, &Service::RequestAccessToken);
 }
@@ -209,6 +200,11 @@ void Service::FinalizeAssistantManangerService() {
       &Service::BindAssistantConnection, base::Unretained(this)));
   client_->OnAssistantStatusChanged(true);
   DVLOG(1) << "Assistant is running";
+
+  assistant_settings_manager_ =
+      assistant_manager_service_.get()->GetAssistantSettingsManager();
+  registry_.AddInterface<mojom::AssistantSettingsManager>(base::BindRepeating(
+      &Service::BindAssistantSettingsManager, base::Unretained(this)));
 }
 
 void Service::AddAshSessionObserver() {
