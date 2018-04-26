@@ -10,6 +10,7 @@
 
 namespace app_list {
 
+class AssistantBubbleView;
 class ContentsView;
 
 class APP_LIST_EXPORT AssistantContainerView : public HorizontalPage {
@@ -19,12 +20,15 @@ class APP_LIST_EXPORT AssistantContainerView : public HorizontalPage {
 
   // Overridden from views::View.
   gfx::Size CalculatePreferredSize() const override;
+  void ChildPreferredSizeChanged(views::View* child) override;
+  void Layout() override;
 
   // Overridden from HorizontalPage.
   bool ShouldShowSearchBox() const override;
 
  private:
   ContentsView* const contents_view_;  // Not owned.
+  AssistantBubbleView* assistant_bubble_view_;  // Owned by view hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(AssistantContainerView);
 };

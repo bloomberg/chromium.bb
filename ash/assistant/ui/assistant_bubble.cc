@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/assistant/ash_assistant_controller.h"
-#include "ash/assistant/ui/assistant_bubble_view.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -30,8 +29,8 @@ constexpr int kMarginDip = 16;
 
 class AssistantContainerView : public views::BubbleDialogDelegateView {
  public:
-  explicit AssistantContainerView(AshAssistantController* assistant_controller)
-      : assistant_controller_(assistant_controller) {
+  explicit AssistantContainerView(
+      AshAssistantController* assistant_controller) {
     set_accept_events(true);
     SetAnchor();
     set_arrow(views::BubbleBorder::Arrow::BOTTOM_LEFT);
@@ -72,7 +71,12 @@ class AssistantContainerView : public views::BubbleDialogDelegateView {
  private:
   void InitLayout() {
     SetLayoutManager(std::make_unique<views::FillLayout>());
-    AddChildView(new AssistantBubbleView(assistant_controller_));
+
+    // TODO(dmblack): Replace w/ actual bubble view.
+    views::View* bubble_view = new views::View();
+    bubble_view->SetPreferredSize(gfx::Size(360, 48));
+
+    AddChildView(bubble_view);
   }
 
   void SetAnchor() {
@@ -88,8 +92,6 @@ class AssistantContainerView : public views::BubbleDialogDelegateView {
 
     SetAnchorRect(anchor);
   }
-
-  app_list::AssistantController* assistant_controller_;  // Owned by Shell.
 
   DISALLOW_COPY_AND_ASSIGN(AssistantContainerView);
 };
