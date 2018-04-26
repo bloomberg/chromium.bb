@@ -327,6 +327,7 @@
 -KeyboardOperations/FileManagerBrowserTest.*
 -Transfer/FileManagerBrowserTest.*
 -GenericTask/FileManagerBrowserTest.*
+-RestorePrefs/FileManagerBrowserTest.*
 -ShowGridView/FileManagerBrowserTest.*
 -Providers/FileManagerBrowserTest.*
 -OpenFileDialog/FileManagerBrowserTest.*
