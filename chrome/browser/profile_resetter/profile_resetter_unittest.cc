@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
 #include "base/test/scoped_path_override.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -46,9 +45,8 @@
 #include "extensions/common/manifest_constants.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
-#include "net/http/http_util.h"
-#include "services/network/public/cpp/resource_request.h"
-#include "services/network/test/test_url_loader_factory.h"
+#include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
@@ -176,31 +174,46 @@ content::WebContents* PinnedTabsResetTest::CreateWebContents() {
 
 // ConfigParserTest -----------------------------------------------------------
 
+// URLFetcher delegate that simply records the upload data.
+struct URLFetcherRequestListener : net::URLFetcherDelegate {
+  URLFetcherRequestListener();
+  ~URLFetcherRequestListener() override;
+
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
+
+  std::string upload_data;
+  net::URLFetcherDelegate* real_delegate;
+};
+
+URLFetcherRequestListener::URLFetcherRequestListener()
+    : real_delegate(NULL) {
+}
+
+URLFetcherRequestListener::~URLFetcherRequestListener() {
+}
+
+void URLFetcherRequestListener::OnURLFetchComplete(
+    const net::URLFetcher* source) {
+  const net::TestURLFetcher* test_fetcher =
+      static_cast<const net::TestURLFetcher*>(source);
+  upload_data = test_fetcher->upload_data();
+  DCHECK(real_delegate);
+  real_delegate->OnURLFetchComplete(source);
+}
+
 class ConfigParserTest : public testing::Test {
  protected:
   ConfigParserTest();
   virtual ~ConfigParserTest();
 
-  std::string GetBodyFromRequest(const network::ResourceRequest& request) {
-    auto body = request.request_body;
-    if (!body)
-      return std::string();
-
-    CHECK_EQ(1u, body->elements()->size());
-    auto& element = body->elements()->at(0);
-    CHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
-    return std::string(element.bytes(), element.length());
-  }
-
   std::unique_ptr<BrandcodeConfigFetcher> WaitForRequest(const GURL& url);
 
-  network::TestURLLoaderFactory& test_url_loader_factory() {
-    return test_url_loader_factory_;
-  }
+  net::FakeURLFetcherFactory& factory() { return factory_; }
 
  private:
-  std::unique_ptr<network::SimpleURLLoader> CreateFakeURLLoader(
+  std::unique_ptr<net::FakeURLFetcher> CreateFakeURLFetcher(
       const GURL& url,
+      net::URLFetcherDelegate* fetcher_delegate,
       const std::string& response_data,
       net::HttpStatusCode response_code,
       net::URLRequestStatus::Status status);
@@ -208,31 +221,45 @@ class ConfigParserTest : public testing::Test {
   MOCK_METHOD0(Callback, void(void));
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
-  network::TestURLLoaderFactory test_url_loader_factory_;
+  URLFetcherRequestListener request_listener_;
+  net::FakeURLFetcherFactory factory_;
 };
 
 ConfigParserTest::ConfigParserTest()
     : test_browser_thread_bundle_(
-          content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+          content::TestBrowserThreadBundle::IO_MAINLOOP),
+      factory_(NULL,
+               base::Bind(&ConfigParserTest::CreateFakeURLFetcher,
+                          base::Unretained(this))) {}
 
 ConfigParserTest::~ConfigParserTest() {}
 
 std::unique_ptr<BrandcodeConfigFetcher> ConfigParserTest::WaitForRequest(
     const GURL& url) {
   EXPECT_CALL(*this, Callback());
-  std::string upload_data;
-  test_url_loader_factory_.SetInterceptor(
-      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
-        upload_data = GetBodyFromRequest(request);
-      }));
   std::unique_ptr<BrandcodeConfigFetcher> fetcher(new BrandcodeConfigFetcher(
-      &test_url_loader_factory_,
       base::Bind(&ConfigParserTest::Callback, base::Unretained(this)), url,
       "ABCD"));
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(fetcher->IsActive());
   // Look for the brand code in the request.
-  EXPECT_NE(std::string::npos, upload_data.find("ABCD"));
+  EXPECT_NE(std::string::npos, request_listener_.upload_data.find("ABCD"));
+  return fetcher;
+}
+
+std::unique_ptr<net::FakeURLFetcher> ConfigParserTest::CreateFakeURLFetcher(
+    const GURL& url,
+    net::URLFetcherDelegate* fetcher_delegate,
+    const std::string& response_data,
+    net::HttpStatusCode response_code,
+    net::URLRequestStatus::Status status) {
+  request_listener_.real_delegate = fetcher_delegate;
+  std::unique_ptr<net::FakeURLFetcher> fetcher(new net::FakeURLFetcher(
+      url, &request_listener_, response_data, response_code, status));
+  scoped_refptr<net::HttpResponseHeaders> download_headers =
+      new net::HttpResponseHeaders("");
+  download_headers->AddHeader("Content-Type: text/xml");
+  fetcher->set_response_headers(download_headers);
   return fetcher;
 }
 
@@ -744,9 +771,8 @@ TEST_F(ProfileResetterTest, ResetFewFlags) {
 // Tries to load unavailable config file.
 TEST_F(ConfigParserTest, NoConnectivity) {
   const GURL url("http://test");
-  test_url_loader_factory().AddResponse(
-      url, network::ResourceResponseHead(), "",
-      network::URLLoaderCompletionStatus(net::HTTP_INTERNAL_SERVER_ERROR));
+  factory().SetFakeResponse(url, "", net::HTTP_INTERNAL_SERVER_ERROR,
+                            net::URLRequestStatus::FAILED);
 
   std::unique_ptr<BrandcodeConfigFetcher> fetcher = WaitForRequest(GURL(url));
   EXPECT_FALSE(fetcher->GetSettings());
@@ -760,14 +786,8 @@ TEST_F(ConfigParserTest, ParseConfig) {
   ReplaceString(&xml_config,
                 "placeholder_for_id",
                 "abbaabbaabbaabbaabbaabbaabbaabba");
-  network::ResourceResponseHead head;
-  std::string headers("HTTP/1.1 200 OK\nContent-type: text/xml\n\n");
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
-  head.mime_type = "text/xml";
-  network::URLLoaderCompletionStatus status;
-  status.decoded_body_length = xml_config.size();
-  test_url_loader_factory().AddResponse(url, head, xml_config, status);
+  factory().SetFakeResponse(url, xml_config, net::HTTP_OK,
+                            net::URLRequestStatus::SUCCESS);
 
   std::unique_ptr<BrandcodeConfigFetcher> fetcher = WaitForRequest(GURL(url));
   std::unique_ptr<BrandcodedDefaultSettings> settings = fetcher->GetSettings();

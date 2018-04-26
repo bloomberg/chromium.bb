@@ -10,11 +10,9 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "chrome/browser/google/google_brand.h"
-#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profile_resetter/brandcode_config_fetcher.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {
@@ -61,8 +59,6 @@ void DefaultSettingsFetcher::Start() {
   std::string brandcode;
   if (google_brand::GetBrand(&brandcode) && !brandcode.empty()) {
     config_fetcher_.reset(new BrandcodeConfigFetcher(
-        g_browser_process->system_network_context_manager()
-            ->GetURLLoaderFactory(),
         base::Bind(&DefaultSettingsFetcher::OnSettingsFetched,
                    base::Unretained(this)),
         GURL(kOmahaUrl), brandcode));
