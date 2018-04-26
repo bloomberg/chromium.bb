@@ -1900,6 +1900,25 @@
             ]
         }
     ],
+    "MseBufferByPts": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MseBufferByPts"
+                    ]
+                }
+            ]
+        }
+    ],
     "NTPBreakingNewsPush": [
         {
             "platforms": [
