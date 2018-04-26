@@ -1312,13 +1312,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIErrorOccurred) {
 #if defined(USE_AURA)
 // Test validates that select tag can be shown and hidden in webview safely
 // using quick touch.
-// Very high timeout rate under Linux MSAN; see https://crbug.com/818161.
-#if defined(OS_LINUX) && defined(MEMORY_SANITIZER)
-#define MAYBE_SelectShowHide DISABLED_SelectShowHide
-#else
-#define MAYBE_SelectShowHide SelectShowHide
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_SelectShowHide) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, SelectShowHide) {
   LoadAppWithGuest("web_view/select");
 
   content::WebContents* embedder_contents = GetFirstAppWindowWebContents();
