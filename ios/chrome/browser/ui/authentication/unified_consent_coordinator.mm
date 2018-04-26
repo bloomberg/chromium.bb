@@ -60,6 +60,14 @@
   return [self.unifiedConsentViewController consentStringIds];
 }
 
+- (void)scrollToBottom {
+  [self.unifiedConsentViewController scrollToBottom];
+}
+
+- (BOOL)isScrolledToBottom {
+  return self.unifiedConsentViewController.isScrolledToBottom;
+}
+
 #pragma mark - UnifiedConsentViewControllerDelegate
 
 - (void)unifiedConsentViewControllerDidTapSettingsLink:
@@ -72,6 +80,12 @@
     (UnifiedConsentViewController*)controller {
   DCHECK_EQ(self.unifiedConsentViewController, controller);
   // TODO(crbug.com/827072): Needs implementation.
+}
+
+- (void)unifiedConsentViewControllerDidReachBottom:
+    (UnifiedConsentViewController*)controller {
+  DCHECK_EQ(self.unifiedConsentViewController, controller);
+  [self.delegate unifiedConsentCoordinatorDidReachBottom:self];
 }
 
 @end

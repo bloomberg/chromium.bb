@@ -9,7 +9,6 @@
 
 #include <vector>
 
-@class ChromeIdentity;
 @class UnifiedConsentViewController;
 
 // Delegate protocol for UnityConsentViewController.
@@ -21,6 +20,11 @@
 
 // Called when the user taps on the IdentityPickerView.
 - (void)unifiedConsentViewControllerDidTapIdentityPickerView:
+    (UnifiedConsentViewController*)controller;
+
+// Called when the user scrolls down to the bottom (or when the view controller
+// is loaded with no scroll needed).
+- (void)unifiedConsentViewControllerDidReachBottom:
     (UnifiedConsentViewController*)controller;
 
 @end
@@ -35,6 +39,8 @@
 @property(nonatomic, weak) id<UnifiedConsentViewControllerDelegate> delegate;
 // String id for text to open the settings (related to record the user consent).
 @property(nonatomic, readonly) int openSettingsStringId;
+// Returns YES if the consent view is scrolled to the bottom.
+@property(nonatomic, readonly) BOOL isScrolledToBottom;
 
 // -[UnifiedConsentViewController init] should be used.
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
@@ -54,6 +60,9 @@
 
 // Hides the IdentityPickerView.
 - (void)hideIdentityPickerView;
+
+// Scrolls the consent view to the bottom.
+- (void)scrollToBottom;
 
 @end
 

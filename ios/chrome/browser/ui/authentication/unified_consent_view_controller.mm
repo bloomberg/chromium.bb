@@ -61,7 +61,7 @@ const CGFloat kTextColorAlpha = 0.54;
 const char* kSettingsSyncURL = "internal://settings-sync";
 }  // namespace
 
-@interface UnifiedConsentViewController () {
+@interface UnifiedConsentViewController ()<UIScrollViewDelegate> {
   std::vector<int> _consentStringIds;
 }
 
@@ -116,6 +116,22 @@ const char* kSettingsSyncURL = "internal://settings-sync";
   self.identityPickerView.hidden = YES;
   self.withIdentityConstraint.active = NO;
   self.noIdentityConstraint.active = YES;
+}
+
+- (void)scrollToBottom {
+  CGPoint bottomOffset =
+      CGPointMake(0, self.scrollView.contentSize.height -
+                         self.scrollView.bounds.size.height +
+                         self.scrollView.contentInset.bottom);
+  [self.scrollView setContentOffset:bottomOffset animated:YES];
+}
+
+- (BOOL)isScrolledToBottom {
+  CGFloat scrollPosition =
+      self.scrollView.contentOffset.y + self.scrollView.frame.size.height;
+  CGFloat scrollLimit =
+      self.scrollView.contentSize.height + self.scrollView.contentInset.bottom;
+  return scrollPosition >= scrollLimit;
 }
 
 #pragma mark - UIViewController
@@ -297,6 +313,22 @@ const char* kSettingsSyncURL = "internal://settings-sync";
                       completion:nil];
 }
 
+- (void)didMoveToParentViewController:(UIViewController*)parent {
+  if (!parent)
+    return;
+  [parent.view layoutIfNeeded];
+  // Needs to add the scroll view delegate only when all the view layouts are
+  // fully done.
+  dispatch_async(dispatch_get_main_queue(), ^{
+    // Having a layout of the parent view makes the scroll view not being
+    // presented at the top. Scrolling to the top is required.
+    CGPoint topOffset = CGPointMake(0, -self.scrollView.contentInset.top);
+    [self.scrollView setContentOffset:topOffset animated:NO];
+    self.scrollView.delegate = self;
+    [self sendDidReachBottomIfReached];
+  });
+}
+
 #pragma mark - UI actions
 
 - (void)identityPickerAction:(id)sender {
@@ -394,11 +426,30 @@ const char* kSettingsSyncURL = "internal://settings-sync";
     self.scrollView.contentInset = UIEdgeInsetsMake(statusBarHeight, 0, 0, 0);
     self.imageBackgroundViewHeightConstraint.constant = statusBarHeight;
   }
+  if (self.scrollView.delegate == self) {
+    // Don't send the notification if the delegate is not configured yet.
+    [self sendDidReachBottomIfReached];
+  }
 }
 
 // Notifies |delegate| that the user tapped on "Settings" link.
 - (void)openSettings {
   [self.delegate unifiedConsentViewControllerDidTapSettingsLink:self];
+}
+
+// Sends notification to the delegate if the scroll view is scrolled to the
+// bottom.
+- (void)sendDidReachBottomIfReached {
+  if (self.isScrolledToBottom) {
+    [self.delegate unifiedConsentViewControllerDidReachBottom:self];
+  }
+}
+
+#pragma mark - UIScrollViewDelegate
+
+- (void)scrollViewDidScroll:(UIScrollView*)scrollView {
+  DCHECK_EQ(self.scrollView, scrollView);
+  [self sendDidReachBottomIfReached];
 }
 
 @end
