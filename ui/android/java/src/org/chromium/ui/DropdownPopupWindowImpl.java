@@ -82,6 +82,7 @@ class DropdownPopupWindowImpl
         mAnchoredPopupWindow.setPreferredHorizontalOrientation(
                 AnchoredPopupWindow.HORIZONTAL_ORIENTATION_CENTER);
         mAnchoredPopupWindow.setUpdateOrientationOnChange(true);
+        mAnchoredPopupWindow.setOutsideTouchable(true);
     }
 
     /**

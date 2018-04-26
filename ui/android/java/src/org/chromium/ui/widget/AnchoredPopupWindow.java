@@ -248,6 +248,19 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
     }
 
     /**
+     * If set to true, popup will be notified when an outside touch happens.
+     * It is not the equivalent of closing the popup on all touch events. The user can
+     * still interact with the popup by sending inside touch events.
+     * If set to false, the popup won't be notified about the outside touch event.
+     *
+     * @param touchable Whether or not to notify the popup when an outside touch
+     *                  happens. The default is {@code false}.
+     */
+    public void setOutsideTouchable(boolean touchable) {
+        mPopupWindow.setOutsideTouchable(touchable);
+    }
+
+    /**
      * Sets the preferred vertical orientation of the popup with respect to the anchor Rect such as
      * above or below the anchor.  This should be called before the popup is shown.
      * @param orientation The vertical orientation preferred.
