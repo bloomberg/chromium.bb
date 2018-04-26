@@ -2001,14 +2001,6 @@
       # chromium.fyi
       'Fuchsia ARM64',
     ],
-    'modifications': {
-      # chromium.fyi
-      'Fuchsia': {
-        'args': [
-          '--use-new-test-runner',
-        ],
-      },
-    },
   },
   'message_center_unittests': {
     'remove_from': [
