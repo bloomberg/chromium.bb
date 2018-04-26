@@ -418,17 +418,17 @@ class RendererLocalSurfaceIdProvider : public viz::LocalSurfaceIdProvider {
       const viz::CompositorFrame& frame) override {
     auto new_surface_properties =
         RenderWidgetSurfaceProperties::FromCompositorFrame(frame);
-    if (!local_surface_id_.is_valid() ||
+    if (!parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId()
+             .is_valid() ||
         new_surface_properties != surface_properties_) {
-      local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
+      parent_local_surface_id_allocator_.GenerateId();
       surface_properties_ = new_surface_properties;
     }
-    return local_surface_id_;
+    return parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
   }
 
  private:
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
-  viz::LocalSurfaceId local_surface_id_;
   RenderWidgetSurfaceProperties surface_properties_;
 };
 
