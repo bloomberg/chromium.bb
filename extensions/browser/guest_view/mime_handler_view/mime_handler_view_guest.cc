@@ -23,6 +23,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "extensions/strings/grit/extensions_strings.h"
@@ -192,7 +193,9 @@ void MimeHandlerViewGuest::CreateWebContents(
   WebContents::CreateParams params(browser_context(),
                                    guest_site_instance.get());
   params.guest_delegate = this;
-  callback.Run(WebContents::Create(params));
+  auto* web_contents = WebContents::Create(params);
+  SetViewType(web_contents, VIEW_TYPE_EXTENSION_GUEST);
+  callback.Run(web_contents);
 
   registry_.AddInterface(
       base::Bind(&MimeHandlerServiceImpl::Create, stream_->GetWeakPtr()));
