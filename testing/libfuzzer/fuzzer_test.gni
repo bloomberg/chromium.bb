@@ -120,6 +120,26 @@ template("fuzzer_test") {
       test_deps += [ ":" + config_name ]
     }
 
+    # Generate .owners file.
+    # FIXME: Add support for sources parsing in deps attribute.
+    if (invoker.sources != []) {
+      owners_name = target_name + ".owners"
+      action(owners_name) {
+        script = "//testing/libfuzzer/gen_fuzzer_owners.py"
+        args = [
+          "--owners",
+          rebase_path("$root_build_dir/" + owners_name, root_build_dir),
+          "--sources",
+        ]
+        args += rebase_path(invoker.sources, root_build_dir)
+
+        outputs = [
+          "$root_build_dir/$owners_name",
+        ]
+      }
+      test_deps += [ ":" + owners_name ]
+    }
+
     test(target_name) {
       forward_variables_from(invoker,
                              [
