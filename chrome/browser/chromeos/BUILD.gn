@@ -569,8 +569,6 @@ source_set("chromeos") {
     "drive/write_on_cache_file.h",
     "eol_notification.cc",
     "eol_notification.h",
-    "events/event_rewriter_controller.cc",
-    "events/event_rewriter_controller.h",
     "events/event_rewriter_delegate_impl.cc",
     "events/event_rewriter_delegate_impl.h",
     "events/keyboard_driven_event_rewriter.cc",

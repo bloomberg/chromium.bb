@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/event_rewriter_controller.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "base/bind.h"
@@ -53,7 +54,6 @@
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
 #include "chrome/browser/chromeos/dbus/vm_applications_service_provider_delegate.h"
 #include "chrome/browser/chromeos/display/quirks_manager_delegate_impl.h"
-#include "chrome/browser/chromeos/events/event_rewriter_controller.h"
 #include "chrome/browser/chromeos/events/event_rewriter_delegate_impl.h"
 #include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
@@ -1051,17 +1051,18 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   if (chromeos::GetAshConfig() != ash::Config::MASH) {
     // TODO(mash): Support EventRewriterController; see crbug.com/647781
-    keyboard_event_rewriters_.reset(new EventRewriterController());
-    keyboard_event_rewriters_->AddEventRewriter(
+    ash::EventRewriterController* event_rewriter_controller =
+        ash::Shell::Get()->event_rewriter_controller();
+    event_rewriter_controller->AddEventRewriter(
         std::unique_ptr<ui::EventRewriter>(new KeyboardDrivenEventRewriter()));
-    keyboard_event_rewriters_->AddEventRewriter(
+    event_rewriter_controller->AddEventRewriter(
         std::unique_ptr<ui::EventRewriter>(new SpokenFeedbackEventRewriter()));
     event_rewriter_delegate_ = std::make_unique<EventRewriterDelegateImpl>();
-    keyboard_event_rewriters_->AddEventRewriter(
+    event_rewriter_controller->AddEventRewriter(
         std::make_unique<ui::EventRewriterChromeOS>(
             event_rewriter_delegate_.get(),
             ash::Shell::Get()->sticky_keys_controller()));
-    keyboard_event_rewriters_->Init();
+    event_rewriter_controller->Init();
   }
 
   // In classic ash must occur after ash::ShellPort is initialized. Triggers a
@@ -1132,7 +1133,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   wake_on_wifi_manager_.reset();
   network_throttling_observer_.reset();
   ScreenLocker::ShutDownClass();
-  keyboard_event_rewriters_.reset();
   low_disk_notification_.reset();
   user_activity_controller_.reset();
   adaptive_screen_brightness_manager_.reset();

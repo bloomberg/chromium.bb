@@ -39,7 +39,8 @@ include_rules = [
 specific_include_rules = {
   "chrome_browser_main_chromeos\.cc": [
     "-ash",
-    # TODO(mash): Support EventRewriterController, http://crbug.com/647781.
+    # TODO(mash): Support EventRewriters, http://crbug.com/647781.
+    "+ash/event_rewriter_controller.h",
     "+ash/root_window_controller.h",
     "+ash/shell.h",
     "+ash/sticky_keys/sticky_keys_controller.h",
