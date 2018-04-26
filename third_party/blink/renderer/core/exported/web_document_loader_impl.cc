@@ -205,10 +205,6 @@ void WebDocumentLoaderImpl::SetUserActivated() {
   DocumentLoader::SetUserActivated();
 }
 
-bool WebDocumentLoaderImpl::GetIsAdSubframe() const {
-  return GetSubresourceFilter()->GetIsAssociatedWithAdSubframe();
-}
-
 void WebDocumentLoaderImpl::BlockParser() {
   DocumentLoader::BlockParser();
 }

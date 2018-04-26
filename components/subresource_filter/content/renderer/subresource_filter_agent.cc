@@ -37,8 +37,7 @@ SubresourceFilterAgent::SubresourceFilterAgent(
     UnverifiedRulesetDealer* ruleset_dealer)
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<SubresourceFilterAgent>(render_frame),
-      ruleset_dealer_(ruleset_dealer),
-      is_ad_subframe_for_next_commit_(false) {
+      ruleset_dealer_(ruleset_dealer) {
   DCHECK(ruleset_dealer);
 }
 
@@ -70,6 +69,14 @@ void SubresourceFilterAgent::SendDocumentLoadStatistics(
       render_frame()->GetRoutingID(), statistics));
 }
 
+bool SubresourceFilterAgent::IsAdSubframe() {
+  return render_frame()->GetWebFrame()->IsAdSubframe();
+}
+
+void SubresourceFilterAgent::SetIsAdSubframe() {
+  render_frame()->GetWebFrame()->SetIsAdSubframe();
+}
+
 // static
 ActivationState SubresourceFilterAgent::GetParentActivationState(
     content::RenderFrame* render_frame) {
@@ -88,7 +95,8 @@ void SubresourceFilterAgent::OnActivateForNextCommittedLoad(
     const ActivationState& activation_state,
     bool is_ad_subframe) {
   activation_state_for_next_commit_ = activation_state;
-  is_ad_subframe_for_next_commit_ = is_ad_subframe;
+  if (is_ad_subframe)
+    SetIsAdSubframe();
 }
 
 void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted(
@@ -152,7 +160,6 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadFinished() {
 void SubresourceFilterAgent::ResetInfoForNextCommit() {
   activation_state_for_next_commit_ =
       ActivationState(ActivationLevel::DISABLED);
-  is_ad_subframe_for_next_commit_ = false;
 }
 
 void SubresourceFilterAgent::OnDestruct() {
@@ -176,7 +183,6 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
   const ActivationState activation_state =
       use_parent_activation ? GetParentActivationState(render_frame())
                             : activation_state_for_next_commit_;
-  bool is_ad_subframe = is_ad_subframe_for_next_commit_;
 
   ResetInfoForNextCommit();
 
@@ -202,7 +208,7 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
       AsWeakPtr()));
   auto filter = std::make_unique<WebDocumentSubresourceFilterImpl>(
       url::Origin::Create(url), activation_state, std::move(ruleset),
-      std::move(first_disallowed_load_callback), is_ad_subframe);
+      std::move(first_disallowed_load_callback), IsAdSubframe());
 
   filter_for_last_committed_load_ = filter->AsWeakPtr();
   SetSubresourceFilterForCommittedLoad(std::move(filter));
@@ -240,11 +246,6 @@ void SubresourceFilterAgent::WillCreateWorkerFetchContext(
   if (!ruleset_file.IsValid())
     return;
 
-  // Propagate the information to the worker whether this is associated with an
-  // ad subframe.
-  bool is_ad_subframe =
-      render_frame()->GetWebFrame()->GetDocumentLoader()->GetIsAdSubframe();
-
   worker_fetch_context->SetSubresourceFilterBuilder(
       std::make_unique<WebDocumentSubresourceFilterImpl::BuilderImpl>(
           url::Origin::Create(GetDocumentURL()),
@@ -253,7 +254,7 @@ void SubresourceFilterAgent::WillCreateWorkerFetchContext(
           base::BindOnce(&SubresourceFilterAgent::
                              SignalFirstSubresourceDisallowedForCommittedLoad,
                          AsWeakPtr()),
-          is_ad_subframe));
+          IsAdSubframe()));
 }
 
 }  // namespace subresource_filter

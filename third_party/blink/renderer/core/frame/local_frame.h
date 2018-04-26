@@ -327,6 +327,13 @@ class CORE_EXPORT LocalFrame final : public Frame,
   ComputedAccessibleNode* GetOrCreateComputedAccessibleNode(AXID,
                                                             WebComputedAXTree*);
 
+  // True if AdTracker heuristics have determined that this frame is an ad.
+  bool IsAdSubframe() const { return is_ad_subframe_; }
+  void SetIsAdSubframe() {
+    DCHECK(!IsMainFrame());
+    is_ad_subframe_ = true;
+  }
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -344,6 +351,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void DisableNavigation() { ++navigation_disable_count_; }
 
   bool CanNavigateWithoutFramebusting(const Frame&, String& error_reason);
+
+  bool ComputeIsAdSubFrame() const;
 
   void PropagateInertToChildFrames();
 
@@ -389,6 +398,12 @@ class CORE_EXPORT LocalFrame final : public Frame,
   float text_zoom_factor_;
 
   bool in_view_source_mode_;
+
+  // True if this frame is heuristically determined to have been created for
+  // advertising purposes. It's per-frame (as opposed to per-document) because
+  // when an iframe is created on behalf of ad script that same frame is not
+  // typically reused for non-ad purposes.
+  bool is_ad_subframe_ = false;
 
   Member<CoreProbeSink> probe_sink_;
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;

@@ -743,6 +743,12 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
+       DryRun_FrameTaggingDeleted) {
+  NavigateAndCommitMainFrame(GURL(kTestURLWithDryRun));
+  ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */);
+}
+
+TEST_P(ContentSubresourceFilterThrottleManagerTest,
        DryRun_FrameTaggingAsAdPropagatesToChildFrame) {
   NavigateAndCommitMainFrame(GURL(kTestURLWithDryRun));
   ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */);

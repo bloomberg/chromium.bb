@@ -60,6 +60,10 @@ class SubresourceFilterAgent
   virtual void SendDocumentLoadStatistics(
       const DocumentLoadStatistics& statistics);
 
+  // True if the frame has been heuristically determined to be an ad subframe.
+  virtual bool IsAdSubframe();
+  virtual void SetIsAdSubframe();
+
  private:
   // Assumes that the parent will be in a local frame relative to this one, upon
   // construction.
@@ -85,13 +89,6 @@ class SubresourceFilterAgent
   UnverifiedRulesetDealer* ruleset_dealer_;
 
   ActivationState activation_state_for_next_commit_;
-
-  // This is received along with activation state in the
-  // SubresourceFilterMsg_ActivateForNextCommittedLoad IPC message. Specifies
-  // whether this is a subframe which is identified as an ad. Note that this
-  // will only be set in dry run mode because in blocking mode the frame would
-  // have been blocked.
-  bool is_ad_subframe_for_next_commit_;
 
   base::WeakPtr<WebDocumentSubresourceFilterImpl>
       filter_for_last_committed_load_;

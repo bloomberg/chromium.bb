@@ -872,6 +872,16 @@ class WebLocalFrame : public WebFrame {
 
   virtual WebPerformance Performance() const = 0;
 
+  // Ad Tagging ---------------------------------------------------------
+
+  // True if the frame is thought (heuristically) to be created for
+  // advertising purposes.
+  virtual bool IsAdSubframe() const = 0;
+
+  // This setter is available in case the embedder has more information about
+  // whether or not the frame is an ad.
+  virtual void SetIsAdSubframe() = 0;
+
   // Testing ------------------------------------------------------------------
 
   // Dumps the layer tree, used by the accelerated compositor, in

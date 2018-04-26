@@ -146,8 +146,6 @@ class BLINK_EXPORT WebDocumentLoader {
   // initiated loads that may have had a user activation from the browser UI.
   virtual void SetUserActivated() = 0;
 
-  virtual bool GetIsAdSubframe() const = 0;
-
   // Can be used to temporarily suspend feeding the parser with new data. The
   // parser will be allowed to read new data when ResumeParser() is called the
   // same number of time than BlockParser().
