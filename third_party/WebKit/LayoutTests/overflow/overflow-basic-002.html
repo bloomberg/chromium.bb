@@ -7,7 +7,7 @@
   border: 1px solid black;
   width: 200px;
   height: 100px;
-  padding: 50px;
+  padding: 5px 10px 15px 20px;
 }
 #target {
   width: 300px;
@@ -27,17 +27,19 @@ var target = document.querySelector('#target');
 test(function() {
   var containerStyle = window.getComputedStyle(container);
   assert_equals(container.scrollHeight, target.offsetHeight +
-    parseInt(containerStyle.paddingTop));
+    parseInt(containerStyle.paddingTop) +
+    parseInt(containerStyle.paddingBottom));
   assert_equals(container.scrollWidth, target.offsetWidth +
-    parseInt(containerStyle.paddingTop));
+    parseInt(containerStyle.paddingLeft));
 }, "overflow with padding");
 
 test(function() {
   target.style.height = "400px";
   var containerStyle = window.getComputedStyle(container);
   assert_equals(container.scrollHeight, target.offsetHeight +
-    parseInt(containerStyle.paddingTop));
+    parseInt(containerStyle.paddingTop) +
+    parseInt(containerStyle.paddingBottom));
   assert_equals(container.scrollWidth, target.offsetWidth +
-    parseInt(containerStyle.paddingTop));
+    parseInt(containerStyle.paddingLeft));
 }, "overflow with paddding, after resize");
 </script>
