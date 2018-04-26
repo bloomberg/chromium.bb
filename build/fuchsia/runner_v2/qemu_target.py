@@ -79,8 +79,8 @@ class QemuTarget(target.Target):
         '-drive', 'file=%s,format=qcow2,if=none,id=data,snapshot=on' %
             os.path.join(self._output_dir, 'fvm.blk.qcow2'),
         '-drive', 'file=%s,format=qcow2,if=none,id=blobstore,snapshot=on' %
-            self._MakeQcowDisk(boot_data.ConfigureDataFVM(self._output_dir,
-                                                          False)),
+            boot_data.ConfigureDataFVM(self._output_dir,
+                                       boot_data.FVM_TYPE_QCOW),
         '-device', 'virtio-blk-pci,drive=data',
         '-device', 'virtio-blk-pci,drive=blobstore',
 
@@ -154,13 +154,3 @@ class QemuTarget(target.Target):
   def _GetSshConfigPath(self):
     return boot_data.GetSSHConfigPath(self._output_dir)
 
-  def _MakeQcowDisk(self, disk_path):
-    """Creates a QEMU copy-on-write version of |disk_path| in the output
-    directory."""
-
-    qimg_path = os.path.join(common.SDK_ROOT, 'qemu', 'bin', 'qemu-img')
-    output_path = os.path.join(self._output_dir,
-                               os.path.basename(disk_path) + '.qcow2')
-    subprocess.check_call([qimg_path, 'create', '-q', '-f', 'qcow2',
-                           '-b', disk_path, output_path])
-    return output_path

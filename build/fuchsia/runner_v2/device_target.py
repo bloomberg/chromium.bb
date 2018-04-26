@@ -70,7 +70,8 @@ class DeviceTarget(target.Target):
       logging.info('Netbooting Fuchsia. ' +
                    'Please ensure that your device is in bootloader mode.')
       bootserver_path = os.path.join(common.SDK_ROOT, 'tools', 'bootserver')
-      data_fvm_path = boot_data.ConfigureDataFVM(self._output_dir, True)
+      data_fvm_path = boot_data.ConfigureDataFVM(self._output_dir,
+                                                 boot_data.FVM_TYPE_SPARSE)
       bootserver_command = [bootserver_path,
                             '-1',
                             '--efi',
