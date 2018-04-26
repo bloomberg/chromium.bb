@@ -192,17 +192,18 @@ class MockClientProcess : public mojom::ClientProcess {
                void(base::trace_event::HeapProfilingMode mode,
                     EnableHeapProfilingCallback& callback));
 
-  void RequestChromeMemoryDump(const MemoryDumpRequestArgs& args,
-                               RequestChromeMemoryDumpCallback callback) {
+  void RequestChromeMemoryDump(
+      const MemoryDumpRequestArgs& args,
+      RequestChromeMemoryDumpCallback callback) override {
     RequestChromeMemoryDumpMock(args, callback);
   }
   void RequestOSMemoryDump(mojom::MemoryMapOption option,
                            const std::vector<base::ProcessId>& args,
-                           RequestOSMemoryDumpCallback callback) {
+                           RequestOSMemoryDumpCallback callback) override {
     RequestOSMemoryDumpMock(option, args, callback);
   }
   void EnableHeapProfiling(base::trace_event::HeapProfilingMode mode,
-                           EnableHeapProfilingCallback callback) {
+                           EnableHeapProfilingCallback callback) override {
     EnableHeapProfilingMock(mode, callback);
   }
 

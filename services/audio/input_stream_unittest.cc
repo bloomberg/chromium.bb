@@ -118,7 +118,7 @@ class AudioServiceInputStreamTest : public testing::Test {
         stream_factory_binding_(&stream_factory_,
                                 mojo::MakeRequest(&stream_factory_ptr_)) {}
 
-  ~AudioServiceInputStreamTest() { audio_manager_.Shutdown(); }
+  ~AudioServiceInputStreamTest() override { audio_manager_.Shutdown(); }
 
   void SetUp() override {
     mojo::edk::SetDefaultProcessErrorCallback(
