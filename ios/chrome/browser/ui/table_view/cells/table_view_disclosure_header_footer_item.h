@@ -25,7 +25,7 @@
 @interface TableViewDisclosureHeaderFooterView : UITableViewHeaderFooterView
 // Indicates in what direction the disclosure accessory should point.
 typedef NS_ENUM(NSInteger, DisclosureDirection) {
-  DisclosureDirectionRight = 0,
+  DisclosureDirectionUp = 2,
   DisclosureDirectionDown,
 };
 // Shows the text of the TableViewDisclosureHeaderFooterItem.

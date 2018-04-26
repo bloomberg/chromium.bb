@@ -15,11 +15,10 @@
 #endif
 
 namespace {
-// Rotates the disclosure back to its original position.
-const float kToggleDisclosureOriginalPositionAngle = 0;
-
-// 90 degree CCW rotation
-constexpr float kRotationNinetyCCW = (90 / 180.0) * M_PI;
+// Identity rotation angle that positions disclosure pointing down.
+constexpr float kRotationNinetyCW = (90 / 180.0) * M_PI;
+// Identity rotation angle that positions disclosure pointing up.
+constexpr float kRotationNinetyCCW = -(90 / 180.0) * M_PI;
 }
 
 @implementation TableViewDisclosureHeaderFooterItem
@@ -48,7 +47,7 @@ constexpr float kRotationNinetyCCW = (90 / 180.0) * M_PI;
   header.titleLabel.text = self.text;
   header.subtitleLabel.text = self.subtitleText;
   DisclosureDirection direction =
-      self.collapsed ? DisclosureDirectionRight : DisclosureDirectionDown;
+      self.collapsed ? DisclosureDirectionUp : DisclosureDirectionDown;
   [header setInitialDirection:direction];
 }
 
@@ -193,9 +192,8 @@ constexpr float kRotationNinetyCCW = (90 / 180.0) * M_PI;
   DisclosureDirection originalDirection = self.disclosureDirection;
   if (originalDirection != direction) {
     self.disclosureDirection = direction;
-    CGFloat angle = direction == DisclosureDirectionDown
-                        ? kRotationNinetyCCW
-                        : kToggleDisclosureOriginalPositionAngle;
+    CGFloat angle = direction == DisclosureDirectionDown ? kRotationNinetyCW
+                                                         : kRotationNinetyCCW;
     if (animate) {
       __weak TableViewDisclosureHeaderFooterView* weakSelf = self;
       [self.cellAnimator addAnimations:^{

@@ -817,7 +817,7 @@ const int kRelativeTimeMaxHours = 4;
           sectionIsCollapsed:[self.tableViewModel
                                  sectionIdentifierForSection:section]];
       DisclosureDirection direction =
-          collapsed ? DisclosureDirectionRight : DisclosureDirectionDown;
+          collapsed ? DisclosureDirectionUp : DisclosureDirectionDown;
 
       [disclosureHeaderView animateHighlightAndRotateToDirection:direction];
       disclosureItem.collapsed = collapsed;
