@@ -1197,12 +1197,28 @@ void NavigationRequest::OnStartChecksComplete(
       !base_url.is_empty()
           ? base_url
           : frame_tree_node_->frame_tree()->root()->current_url();
+
+  // Walk the ancestor chain to determine whether all frames are same-site. If
+  // not, the |site_for_cookies| is set to an empty URL.
+  //
   // TODO(mkwst): This is incorrect. It ought to use the definition from
-  // 'Document::firstPartyForCookies()' in Blink, which walks the ancestor tree
-  // and verifies that all origins are PSL-matches (and special-cases extension
-  // URLs).
+  // 'Document::SiteForCookies()' in Blink, which special-cases extension
+  // URLs and a few other sharp edges.
+  const FrameTreeNode* current = frame_tree_node_->parent();
+  bool ancestors_are_same_site = true;
+  while (current && ancestors_are_same_site) {
+    if (!net::registry_controlled_domains::SameDomainOrHost(
+            top_document_url, current->current_url(),
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+      ancestors_are_same_site = false;
+    }
+    current = current->parent();
+  }
   const GURL& site_for_cookies =
-      frame_tree_node_->IsMainFrame() ? common_params_.url : top_document_url;
+      ancestors_are_same_site
+          ? (frame_tree_node_->IsMainFrame() ? common_params_.url
+                                             : top_document_url)
+          : GURL::EmptyGURL();
   bool parent_is_main_frame = !frame_tree_node_->parent()
                                   ? false
                                   : frame_tree_node_->parent()->IsMainFrame();
