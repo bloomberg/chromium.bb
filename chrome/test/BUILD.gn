@@ -3183,7 +3183,10 @@ test("unit_tests") {
         "../browser/notifications/notification_platform_bridge_win_unittest.cc",
       ]
 
-      deps += [ "//chrome/installer/util:with_no_strings" ]
+      deps += [
+        "//chrome/installer/setup:lib",
+        "//chrome/installer/util:with_no_strings",
+      ]
 
       data_deps += [ "//chrome/notification_helper" ]
     }

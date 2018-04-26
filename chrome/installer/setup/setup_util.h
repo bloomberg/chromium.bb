@@ -173,6 +173,10 @@ base::Optional<std::string> DecodeDMTokenSwitchValue(
 // install modes of the browser (i.e., stable and all three side-by-side modes).
 bool StoreDMToken(const std::string& token);
 
+// Returns the file path to notification_helper.exe (in |version| directory).
+base::FilePath GetNotificationHelperPath(const base::FilePath& target_path,
+                                         const base::Version& version);
+
 }  // namespace installer
 
 #endif  // CHROME_INSTALLER_SETUP_SETUP_UTIL_H_

@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 // This test file is an evolution of
-// notification_helper/notification_helper_process_unittest.cc. In addition to
-// testing launching notification_helper.exe by the OS via registry which is
-// what notification_helper_process_unittest is all about, this test also tests
-// if chrome.exe can be successfully launched by notification_helper.exe via the
-// NotificationActivator::Activate function.
+// chrome/notification_helper/notification_helper_process_unittest.cc. In
+// addition to testing launching notification_helper.exe by the OS via registry
+// which is what notification_helper_process_unittest is all about, this test
+// also tests if chrome.exe can be successfully launched by
+// notification_helper.exe via the NotificationActivator::Activate function.
 //
 // This test is compiled into unit_tests.exe under chrome rather than
 // notification_helper_unittests.exe. This is because unit_tests.exe has data
@@ -22,6 +22,7 @@
 #include "base/base_paths.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
@@ -29,11 +30,11 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/test/test_timeouts.h"
-#include "base/win/scoped_winrt_initializer.h"
+#include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
 #include "chrome/install_static/install_util.h"
+#include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/registry_key_backup.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item.h"
 #include "chrome/installer/util/work_item_list.h"
@@ -189,84 +190,52 @@ class ChildProcessFilter : public base::ProcessFilter {
 
 class NotificationHelperLaunchesChrome : public testing::Test {
  protected:
-  NotificationHelperLaunchesChrome()
-      : toast_activator_reg_path_(InstallUtil::GetToastActivatorRegistryPath()),
-        root_(HKEY_CURRENT_USER) {}
+  NotificationHelperLaunchesChrome() : root_(HKEY_CURRENT_USER) {}
 
   ~NotificationHelperLaunchesChrome() override = default;
 
   void SetUp() override {
-    // Back up the existing registration.
-    ASSERT_TRUE(backup_.Initialize(root_, toast_activator_reg_path_.c_str(),
-                                   WorkItem::kWow64Default));
-
     ASSERT_NO_FATAL_FAILURE(RegisterServer());
   }
 
   void TearDown() override {
     ASSERT_NO_FATAL_FAILURE(UnregisterServer());
-
-    // Restore the registration.
-    ASSERT_TRUE(backup_.WriteTo(root_, toast_activator_reg_path_.c_str(),
-                                WorkItem::kWow64Default));
   }
 
  private:
   // Registers notification_helper.exe as the server.
-  // TODO(chengx): Remove duplicated code by reusing the code in
-  // chrome/installer/setup/install_worker.cc
   void RegisterServer() {
-    std::unique_ptr<WorkItemList> list(WorkItem::CreateWorkItemList());
-
-    // Delete the old registration to ensure a clean environment for server
-    // registration. This is okay because we have already backed up the existing
-    // registration in SetUp(), and will restore it in TearDown().
-    list->AddDeleteRegKeyWorkItem(root_, toast_activator_reg_path_,
-                                  WorkItem::kWow64Default);
+    ASSERT_TRUE(scoped_com_initializer_.Succeeded());
 
     // Notification_helper.exe is in the build output directory next to this
     // test executable, as the test build target has a data_deps dependency on
     // it.
     base::FilePath dir_exe;
     ASSERT_TRUE(PathService::Get(base::DIR_EXE, &dir_exe));
-    base::FilePath notification_helper =
+    base::FilePath notification_helper_path =
         dir_exe.Append(installer::kNotificationHelperExe);
 
-    base::string16 toast_activator_server_path = toast_activator_reg_path_;
-    toast_activator_server_path.append(L"\\LocalServer32");
+    work_item_list_ = base::WrapUnique(WorkItem::CreateWorkItemList());
 
-    // Command-line featuring the quoted path to the exe.
-    base::string16 command(1, L'"');
-    command.append(notification_helper.value()).append(1, L'"');
+    installer::AddNativeNotificationWorkItems(root_, notification_helper_path,
+                                              work_item_list_.get());
 
-    list->AddCreateRegKeyWorkItem(root_, toast_activator_server_path,
-                                  WorkItem::kWow64Default);
-
-    list->AddSetRegValueWorkItem(root_, toast_activator_server_path,
-                                 WorkItem::kWow64Default, L"", command, true);
-
-    list->AddSetRegValueWorkItem(root_, toast_activator_server_path,
-                                 WorkItem::kWow64Default, L"ServerExecutable",
-                                 notification_helper.value(), true);
-
-    ASSERT_TRUE(list->Do());
+    ASSERT_TRUE(work_item_list_->Do());
   }
 
-  // Unregisters the server by deleting the registry key installed during the
-  // test.
+  // Unregisters the server by rolling back the work item list.
   void UnregisterServer() {
-    ASSERT_TRUE(InstallUtil::DeleteRegistryKey(root_, toast_activator_reg_path_,
-                                               WorkItem::kWow64Default));
+    if (work_item_list_)
+      work_item_list_->Rollback();
   }
-
-  // Path to the toast activator registry.
-  const base::string16 toast_activator_reg_path_;
 
   // Predefined handle to the registry.
   const HKEY root_;
 
-  // Backup of the deleted registry.
-  RegistryKeyBackup backup_;
+  // A list of work items on the registry.
+  std::unique_ptr<WorkItemList> work_item_list_;
+
+  base::win::ScopedCOMInitializer scoped_com_initializer_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationHelperLaunchesChrome);
 };
@@ -276,9 +245,6 @@ TEST_F(NotificationHelperLaunchesChrome, ChromeLaunchTest) {
   // older versions of Windows.
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
-
-  base::win::ScopedWinrtInitializer winrt_initializer;
-  ASSERT_TRUE(winrt_initializer.Succeeded());
 
   // There isn't a way to directly correlate the notification_helper.exe server
   // to this test. So we need to hunt for the server.
