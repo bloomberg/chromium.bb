@@ -157,6 +157,8 @@ FormFieldData::~FormFieldData() {}
 bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
   // A FormFieldData stores a value, but the value is not part of the identity
   // of the field, so we don't want to compare the values.
+  // Similarly, flags like is_enabled, which are only used for parsing but are
+  // not stored persistently, are not used for comparison.
   return name == field.name && id == field.id &&
          form_control_type == field.form_control_type &&
          autocomplete_attribute == field.autocomplete_attribute &&
@@ -168,8 +170,7 @@ bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
          is_focusable == field.is_focusable &&
          should_autocomplete == field.should_autocomplete &&
          role == field.role && text_direction == field.text_direction &&
-         is_enabled == field.is_enabled && is_readonly == field.is_readonly &&
-         is_default == field.is_default && HaveSameLabel(*this, field);
+         HaveSameLabel(*this, field);
   // The option values/contents which are the list of items in the list
   // of a drop-down are currently not considered part of the identity of
   // a form element. This is debatable, since one might base heuristics
@@ -263,19 +264,8 @@ bool FormFieldData::operator<(const FormFieldData& field) const {
     return true;
   if (text_direction > field.text_direction)
     return false;
-  if (is_enabled < field.is_enabled)
-    return true;
-  if (is_enabled > field.is_enabled)
-    return false;
-  if (is_readonly < field.is_readonly)
-    return true;
-  if (is_readonly > field.is_readonly)
-    return false;
-  if (is_default < field.is_default)
-    return true;
-  if (is_default > field.is_default)
-    return false;
-  // See SameFieldAs above for why we don't check option_values/contents.
+  // See SameFieldAs above for why we don't check option_values/contents and
+  // flags like is_enabled.
   return false;
 }
 
