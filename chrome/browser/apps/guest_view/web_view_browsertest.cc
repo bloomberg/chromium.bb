@@ -1283,9 +1283,8 @@ IN_PROC_BROWSER_TEST_F(WebViewSizeTest, Shim_TestAutosizeRemoveAttributes) {
   TestHelper("testAutosizeRemoveAttributes", "web_view/shim", NO_TEST_SERVER);
 }
 
-// This test is disabled due to being flaky. http://crbug.com/282116
 IN_PROC_BROWSER_TEST_F(WebViewSizeTest,
-                       DISABLED_Shim_TestAutosizeWithPartialAttributes) {
+                       Shim_TestAutosizeWithPartialAttributes) {
   TestHelper("testAutosizeWithPartialAttributes",
              "web_view/shim",
              NO_TEST_SERVER);
