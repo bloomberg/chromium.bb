@@ -154,7 +154,7 @@ class NetExportMessageHandler
   // the save dialog. Their values are only valid while the save dialog is open
   // on the desktop UI.
   net::NetLogCaptureMode capture_mode_;
-  size_t max_log_file_size_;
+  uint64_t max_log_file_size_;
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 

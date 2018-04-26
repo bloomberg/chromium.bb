@@ -137,7 +137,7 @@ class FileNetLogObserver::WriteQueue
   // |memory_max| indicates the maximum amount of memory that the virtual write
   // queue can use. If |memory_| exceeds |memory_max_|, the |queue_| of events
   // is overwritten.
-  explicit WriteQueue(size_t memory_max);
+  explicit WriteQueue(uint64_t memory_max);
 
   // Adds |event| to |queue_|. Also manages the size of |memory_|; if it
   // exceeds |memory_max_|, then old events are dropped from |queue_| without
@@ -168,11 +168,11 @@ class FileNetLogObserver::WriteQueue
   // runner's local queue is swapped with the shared write queue.
   //
   // |lock_| must be acquired to read or write to this.
-  size_t memory_;
+  uint64_t memory_;
 
   // Indicates the maximum amount of memory that the |queue_| is allowed to
   // use.
-  const size_t memory_max_;
+  const uint64_t memory_max_;
 
   // Protects access to |queue_| and |memory_|.
   //
@@ -199,7 +199,7 @@ class FileNetLogObserver::FileWriter {
   FileWriter(const base::FilePath& log_path,
              const base::FilePath& inprogress_dir_path,
              base::Optional<base::File> pre_existing_log_file,
-             size_t max_event_file_size,
+             uint64_t max_event_file_size,
              size_t total_num_event_files,
              scoped_refptr<base::SequencedTaskRunner> task_runner);
 
@@ -302,7 +302,7 @@ class FileNetLogObserver::FileWriter {
   // The file may be !IsValid() if an error previously occurred opening the
   // file, or logging has been stopped.
   base::File current_event_file_;
-  size_t current_event_file_size_;
+  uint64_t current_event_file_size_;
 
   // Indicates the total number of netlog event files allowed.
   // (The files GetConstantsFilePath() and GetClosingFilePath() do
@@ -315,7 +315,7 @@ class FileNetLogObserver::FileWriter {
 
   // Indicates the maximum size of each individual events file. May be kNoLimit
   // to indicate that it can grow arbitrarily large.
-  const size_t max_event_file_size_;
+  const uint64_t max_event_file_size_;
 
   // Whether any bytes were written for events. This is used to properly format
   // JSON (events list shouldn't end with a comma).
@@ -329,7 +329,7 @@ class FileNetLogObserver::FileWriter {
 
 std::unique_ptr<FileNetLogObserver> FileNetLogObserver::CreateBounded(
     const base::FilePath& log_path,
-    size_t max_total_size,
+    uint64_t max_total_size,
     std::unique_ptr<base::Value> constants) {
   return CreateInternal(log_path, SiblingInprogressDirectory(log_path),
                         base::nullopt, max_total_size, kDefaultNumFiles,
@@ -347,7 +347,7 @@ std::unique_ptr<FileNetLogObserver>
 FileNetLogObserver::CreateBoundedPreExisting(
     const base::FilePath& inprogress_dir_path,
     base::File output_file,
-    size_t max_total_size,
+    uint64_t max_total_size,
     std::unique_ptr<base::Value> constants) {
   return CreateInternal(base::FilePath(), inprogress_dir_path,
                         base::make_optional<base::File>(std::move(output_file)),
@@ -421,7 +421,7 @@ void FileNetLogObserver::OnAddEntry(const NetLogEntry& entry) {
 
 std::unique_ptr<FileNetLogObserver> FileNetLogObserver::CreateBoundedForTests(
     const base::FilePath& log_path,
-    size_t max_total_size,
+    uint64_t max_total_size,
     size_t total_num_event_files,
     std::unique_ptr<base::Value> constants) {
   return CreateInternal(log_path, SiblingInprogressDirectory(log_path),
@@ -433,7 +433,7 @@ std::unique_ptr<FileNetLogObserver> FileNetLogObserver::CreateInternal(
     const base::FilePath& log_path,
     const base::FilePath& inprogress_dir_path,
     base::Optional<base::File> pre_existing_log_file,
-    size_t max_total_size,
+    uint64_t max_total_size,
     size_t total_num_event_files,
     std::unique_ptr<base::Value> constants) {
   DCHECK_GT(total_num_event_files, 0u);
@@ -441,7 +441,7 @@ std::unique_ptr<FileNetLogObserver> FileNetLogObserver::CreateInternal(
   scoped_refptr<base::SequencedTaskRunner> file_task_runner =
       CreateFileTaskRunner();
 
-  const size_t max_event_file_size =
+  const uint64_t max_event_file_size =
       max_total_size == kNoLimit ? kNoLimit
                                  : max_total_size / total_num_event_files;
 
@@ -484,7 +484,7 @@ FileNetLogObserver::FileNetLogObserver(
                             base::Passed(&constants)));
 }
 
-FileNetLogObserver::WriteQueue::WriteQueue(size_t memory_max)
+FileNetLogObserver::WriteQueue::WriteQueue(uint64_t memory_max)
     : memory_(0), memory_max_(memory_max) {}
 
 size_t FileNetLogObserver::WriteQueue::AddEntryToQueue(
@@ -517,7 +517,7 @@ FileNetLogObserver::FileWriter::FileWriter(
     const base::FilePath& log_path,
     const base::FilePath& inprogress_dir_path,
     base::Optional<base::File> pre_existing_log_file,
-    size_t max_event_file_size,
+    uint64_t max_event_file_size,
     size_t total_num_event_files,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : final_log_path_(log_path),

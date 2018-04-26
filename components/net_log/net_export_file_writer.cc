@@ -164,7 +164,7 @@ void NetExportFileWriter::Initialize(
 void NetExportFileWriter::StartNetLog(
     const base::FilePath& log_path,
     net::NetLogCaptureMode capture_mode,
-    size_t max_file_size,
+    uint64_t max_file_size,
     const base::CommandLine::StringType& command_line_string,
     const std::string& channel_string,
     const URLRequestContextGetterList& context_getters) {

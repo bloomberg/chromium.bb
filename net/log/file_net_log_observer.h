@@ -39,7 +39,7 @@ class NetLogCaptureMode;
 class NET_EXPORT FileNetLogObserver : public NetLog::ThreadSafeObserver {
  public:
   // Special value meaning "can use an unlimited number of bytes".
-  static constexpr size_t kNoLimit = std::numeric_limits<size_t>::max();
+  static constexpr uint64_t kNoLimit = std::numeric_limits<uint64_t>::max();
 
   // Creates an instance of FileNetLogObserver that writes observed netlog
   // events to |log_path|.
@@ -58,7 +58,7 @@ class NET_EXPORT FileNetLogObserver : public NetLog::ThreadSafeObserver {
   // If not present, the output of GetNetConstants() will be used.
   static std::unique_ptr<FileNetLogObserver> CreateBounded(
       const base::FilePath& log_path,
-      size_t max_total_size,
+      uint64_t max_total_size,
       std::unique_ptr<base::Value> constants);
 
   // Shortcut for calling CreateBounded() with kNoLimit.
@@ -73,7 +73,7 @@ class NET_EXPORT FileNetLogObserver : public NetLog::ThreadSafeObserver {
   static std::unique_ptr<FileNetLogObserver> CreateBoundedPreExisting(
       const base::FilePath& inprogress_dir_path,
       base::File output_file,
-      size_t max_total_size,
+      uint64_t max_total_size,
       std::unique_ptr<base::Value> constants);
 
   // Creates an unbounded log that writes to a pre-existing file (truncating
@@ -111,7 +111,7 @@ class NET_EXPORT FileNetLogObserver : public NetLog::ThreadSafeObserver {
   // |total_num_event_files|.
   static std::unique_ptr<FileNetLogObserver> CreateBoundedForTests(
       const base::FilePath& log_path,
-      size_t max_total_size,
+      uint64_t max_total_size,
       size_t total_num_event_files,
       std::unique_ptr<base::Value> constants);
 
@@ -123,7 +123,7 @@ class NET_EXPORT FileNetLogObserver : public NetLog::ThreadSafeObserver {
       const base::FilePath& log_path,
       const base::FilePath& inprogress_dir_path,
       base::Optional<base::File> pre_existing_out_file,
-      size_t max_total_size,
+      uint64_t max_total_size,
       size_t total_num_event_files,
       std::unique_ptr<base::Value> constants);
 
