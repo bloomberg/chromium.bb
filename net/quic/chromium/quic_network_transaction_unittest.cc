@@ -6182,7 +6182,7 @@ class QuicNetworkTransactionWithDestinationTest
   SSLSocketDataProvider ssl_data_;
 };
 
-INSTANTIATE_TEST_CASE_P(VersionIncludeStreamDependencySequnece,
+INSTANTIATE_TEST_CASE_P(VersionIncludeStreamDependencySequence,
                         QuicNetworkTransactionWithDestinationTest,
                         ::testing::ValuesIn(GetPoolingTestParams()));
 

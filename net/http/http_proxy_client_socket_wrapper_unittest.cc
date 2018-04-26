@@ -347,7 +347,7 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxySocketTag) {
 #endif
 
 INSTANTIATE_TEST_CASE_P(
-    VersionIncludeStreamDependencySequnece,
+    VersionIncludeStreamDependencySequence,
     HttpProxyClientSocketWrapperTest,
     ::testing::Combine(::testing::ValuesIn(AllSupportedTransportVersions()),
                        ::testing::Bool()));
