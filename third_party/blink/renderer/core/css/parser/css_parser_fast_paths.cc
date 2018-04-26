@@ -356,7 +356,7 @@ static bool ParseColorNumberOrPercentage(const CharacterType*& string,
     current++;
 
   // Clamp negative values at zero.
-  value = negative ? 0 : static_cast<int>(roundf(local_value));
+  value = negative ? 0 : static_cast<int>(round(local_value));
   string = current;
   return true;
 }
@@ -427,8 +427,7 @@ static inline bool ParseAlphaValue(const CharacterType*& string,
   double alpha = 0;
   if (!ParseDouble(string, end, terminator, false, alpha))
     return false;
-  value =
-      negative ? 0 : static_cast<int>(roundf(std::min(alpha, 1.0) * 255.0f));
+  value = negative ? 0 : static_cast<int>(round(std::min(alpha, 1.0) * 255.0));
   string = end;
   return true;
 }
