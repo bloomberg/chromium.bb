@@ -31,6 +31,13 @@ class ChromeLKGMCommitter(object):
 
   _COMMIT_MSG_TEMPLATE = ('LKGM %(version)s for chromeos.'
                           '\n\nBUG=762641')
+  # Files needed in a local checkout to successfully update the LKGM. The OWNERS
+  # file allows the --tbr-owners mechanism to select an appropriate OWNER to
+  # TBR.
+  _NEEDED_FILES = [
+      constants.PATH_TO_CHROME_CHROMEOS_OWNERS,
+      constants.PATH_TO_CHROME_LKGM,
+  ]
 
   def __init__(self, args):
     self._committer = chrome_committer.ChromeCommitter(args)
@@ -46,14 +53,14 @@ class ChromeLKGMCommitter(object):
 
   def Run(self):
     self._committer.Cleanup()
-    self._committer.Checkout([constants.PATH_TO_CHROME_LKGM])
+    self._committer.Checkout(self._NEEDED_FILES)
     self.UpdateLKGM()
     self.CommitNewLKGM()
     self._committer.Upload()
 
   def CheckoutChrome(self):
     """Checks out chrome into tmp checkout_dir."""
-    self._committer.Checkout([constants.PATH_TO_CHROME_LKGM])
+    self._committer.Checkout(self._NEEDED_FILES)
 
   @property
   def lkgm_file(self):
