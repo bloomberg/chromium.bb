@@ -84,7 +84,7 @@ TEST(TestMockTimeTaskRunnerTest, DefaultUnbound) {
   auto unbound_mock_time_task_runner = MakeRefCounted<TestMockTimeTaskRunner>();
   EXPECT_FALSE(ThreadTaskRunnerHandle::IsSet());
   EXPECT_FALSE(SequencedTaskRunnerHandle::IsSet());
-  EXPECT_DCHECK_DEATH({ RunLoop().RunUntilIdle(); });
+  EXPECT_DEATH_IF_SUPPORTED({ RunLoop().RunUntilIdle(); }, "");
 }
 
 TEST(TestMockTimeTaskRunnerTest, RunLoopDriveableWhenBound) {
