@@ -173,6 +173,13 @@ static_library("test_support") {
     deps += [ "//ui/gfx/x" ]
   }
 
+  if (is_mac) {
+    deps += [
+      "//gpu/ipc/service:service",
+      "//ui/accelerated_widget_mac",
+    ]
+  }
+
   if (use_ozone) {
     sources += [ "test/test_compositor_host_ozone.cc" ]
 

@@ -21,6 +21,12 @@
 #include "ui/display/win/dpi.h"
 #endif
 
+#if defined(OS_MACOSX)
+// gn check complains on other platforms, because //gpu/ipc/service:service
+// is added to dependencies only for mac.
+#include "gpu/ipc/service/image_transport_surface.h"  // nogncheck
+#endif
+
 namespace ui {
 namespace test {
 
@@ -43,6 +49,10 @@ void CompositorTestSuite::Initialize() {
 
 #if defined(OS_WIN)
   display::win::SetDefaultDeviceScaleFactor(1.0f);
+#endif
+
+#if defined(OS_MACOSX)
+  gpu::ImageTransportSurface::SetAllowOSMesaForTesting(true);
 #endif
 
   scoped_task_environment_ =

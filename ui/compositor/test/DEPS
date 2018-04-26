@@ -8,6 +8,7 @@ include_rules = [
   "+gpu/ipc",
   "+gpu/skia_bindings",
   "+skia/ext",
+  "+ui/accelerated_widget_mac",
   "+ui/base/x",
   "+ui/display",
   "+ui/ozone",
