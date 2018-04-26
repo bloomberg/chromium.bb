@@ -167,11 +167,11 @@ TEST_F(FindTextTest, FindText) {
   {
     InSequence sequence;
 
-    for (int i = 0; i < 10; ++i)
+    EXPECT_CALL(client, NotifyNumberOfFindResultsChanged(1, false));
+    EXPECT_CALL(client, NotifySelectedFindResultChanged(0));
+    for (int i = 1; i < 10; ++i)
       EXPECT_CALL(client, NotifyNumberOfFindResultsChanged(i + 1, false));
     EXPECT_CALL(client, NotifyNumberOfFindResultsChanged(10, true));
-
-    EXPECT_CALL(client, NotifySelectedFindResultChanged(_)).Times(0);
   }
 
   engine.StartFind("o", /*case_sensitive=*/true);
