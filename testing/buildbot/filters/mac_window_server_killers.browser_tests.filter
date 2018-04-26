@@ -11,15 +11,15 @@
 # -PluginPowerSaverBrowserTest.*
 # -SubresourceFilterPopupBrowserTest.*
 # -FindInPageControllerTest.*
-# -TestStatsDictionaryTest.*
-# -PlatformAppWithFileBrowserTest.*
-# -PermissionDialogTest.*
-# -SecurityStateTabHelperTest.*
-# -PrerenderBrowserTest.*
-# -DomDistillerViewerSourceBrowserTest.*
-# -PredictorBrowserTest.*
-# -TabManagerTest.*
-# -PasswordManagerBrowserTestBase.*
+-TestStatsDictionaryTest.*
+-PlatformAppWithFileBrowserTest.*
+-PermissionDialogTest.*
+-SecurityStateTabHelperTest.*
+-PrerenderBrowserTest.*
+-DomDistillerViewerSourceBrowserTest.*
+-PredictorBrowserTest.*
+-TabManagerTest.*
+-PasswordManagerBrowserTestBase.*
 -DevToolsSanityTest.*
 -WebRtcBrowserTest.*
 -LoginPromptBrowserTest.*
