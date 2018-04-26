@@ -243,6 +243,10 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
     return false;
   }
 
+  // The rootLayerScrolls setting will ultimately determine whether
+  // LocalFrameView or PaintLayerScrollableArea handle the scroll.
+  ScrollResult Scroll(ScrollGranularity, const FloatSize&) override;
+
   LayoutRect DebugRect() const override;
 
   IntSize ScrolledContentOffset() const override;

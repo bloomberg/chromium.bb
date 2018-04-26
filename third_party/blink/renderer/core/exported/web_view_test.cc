@@ -3064,12 +3064,6 @@ TEST_P(WebViewTest, SelectionOnReadOnlyInput) {
 }
 
 TEST_P(WebViewTest, KeyDownScrollsHandled) {
-  // TODO(bokan): This test will fail without root-layer-scrolls but that's ok
-  // because it's already shipped and non-root-layer-scrolls is no longer
-  // supported. https://crbug.com/823365.
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    return;
-
   RegisterMockedHttpURLLoad("content-width-1000.html");
 
   WebViewImpl* web_view =
