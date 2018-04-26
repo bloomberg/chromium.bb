@@ -130,7 +130,10 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   TaskGraphRunner* task_graph_runner() const {
     return task_graph_runner_.get();
   }
-  bool TestEnded() const { return ended_; }
+  bool TestEnded() const {
+    base::AutoLock hold(test_ended_lock_);
+    return ended_;
+  }
 
   LayerTreeHost* layer_tree_host();
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager() {
@@ -202,6 +205,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   bool timed_out_ = false;
   bool scheduled_ = false;
   bool started_ = false;
+
+  mutable base::Lock test_ended_lock_;
   bool ended_ = false;
 
   int timeout_seconds_ = false;
