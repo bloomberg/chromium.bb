@@ -19,15 +19,6 @@ video:-webkit-full-page-media {
 }
 
 /**
- * The audio controls have a height of 54px, but the video tag has an intrinsic
- * height of 150px. To center a 54px within a 150px box, shift up by
- * ((150-54)/2) = 48px.
- */
-video:-webkit-full-page-media::-webkit-media-controls.audio-only {
-  transform: translateY(-48px);
-}
-
-/**
  * Panel Structure
  */
 
