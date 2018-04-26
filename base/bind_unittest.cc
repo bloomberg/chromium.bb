@@ -311,6 +311,10 @@ void TakesACallback(const Closure& callback) {
   callback.Run();
 }
 
+int Noexcept() noexcept {
+  return 42;
+}
+
 class BindTest : public ::testing::Test {
  public:
   BindTest() {
@@ -326,6 +330,8 @@ class BindTest : public ::testing::Test {
   }
 
   static int IntFunc0() { return static_func_mock_ptr->IntMethod0(); }
+  int NoexceptMethod() noexcept { return 42; }
+  int ConstNoexceptMethod() const noexcept { return 42; }
 
  protected:
   StrictMock<NoRef> no_ref_;
@@ -1467,6 +1473,16 @@ TEST_F(BindTest, UnwrapPassed) {
 
   p = new int;
   EXPECT_EQ(p, internal::Unwrap(Passed(WrapUnique(p))).get());
+}
+
+TEST_F(BindTest, BindNoexcept) {
+  EXPECT_EQ(42, base::BindOnce(&Noexcept).Run());
+  EXPECT_EQ(
+      42,
+      base::BindOnce(&BindTest::NoexceptMethod, base::Unretained(this)).Run());
+  EXPECT_EQ(
+      42, base::BindOnce(&BindTest::ConstNoexceptMethod, base::Unretained(this))
+              .Run());
 }
 
 // Test null callbacks cause a DCHECK.
