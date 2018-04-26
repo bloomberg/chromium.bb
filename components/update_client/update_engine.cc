@@ -99,23 +99,21 @@ void UpdateEngine::Update(bool is_foreground,
   // update context.
   DCHECK_EQ(ids.size(), update_context->ids.size());
   DCHECK_EQ(update_context->ids.size(), update_context->components.size());
-  std::vector<CrxComponent> crx_components;
-  std::move(update_context->crx_data_callback)
-      .Run(update_context->ids, &crx_components);
+  std::vector<std::unique_ptr<CrxComponent>> crx_components =
+      std::move(update_context->crx_data_callback).Run(update_context->ids);
   DCHECK_EQ(update_context->ids.size(), crx_components.size());
 
   for (size_t i = 0; i != update_context->ids.size(); ++i) {
     const auto& id = update_context->ids[i];
-    const auto& crx_component = crx_components[i];
 
-    DCHECK_EQ(id, GetCrxComponentID(crx_component));
+    DCHECK_EQ(id, GetCrxComponentID(*crx_components[i]));
     DCHECK_EQ(1u, update_context->components.count(id));
     DCHECK(update_context->components.at(id));
 
     auto& component = *update_context->components.at(id);
-    component.set_crx_component(crx_component);
-    component.set_previous_version(crx_component.version);
-    component.set_previous_fp(crx_component.fingerprint);
+    component.set_crx_component(std::move(crx_components[i]));
+    component.set_previous_version(component.crx_component()->version);
+    component.set_previous_fp(component.crx_component()->fingerprint);
 
     // Handle |kNew| state. This will transition the components to |kChecking|.
     component.Handle(
