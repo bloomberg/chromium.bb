@@ -1266,10 +1266,6 @@ crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-wo
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Timeout ]
 
 # Failing tests in dictionary order.
-crbug.com/802835 virtual/outofblink-cors/external/wpt/fetch/corb/img-mime-types-coverage.tentative.sub.html [ Failure ]
-crbug.com/802835 virtual/outofblink-cors/external/wpt/fetch/corb/img-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
-crbug.com/802835 virtual/outofblink-cors/external/wpt/fetch/corb/preload-image-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
-crbug.com/802835 virtual/outofblink-cors/external/wpt/fetch/corb/script-html-correctly-labeled.tentative.sub.html [ Failure ]
 crbug.com/834183 virtual/outofblink-cors/external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/update.https.html [ Failure Pass ]
 crbug.com/745327 virtual/outofblink-cors/external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html [ Failure Pass ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-image-cache.https.html [ Failure ]
@@ -3972,12 +3968,6 @@ crbug.com/811605 media/video-poster-after-loadedmetadata.html [ Failure Pass ]
 
 # TODO(senorblanco): rebaseline after Skia roll
 crbug.com/802896 virtual/gpu/fast/canvas/canvas-ellipse-circumference-fill.html [ Failure Pass ]
-
-# TODO(lukasza): Remove these once CORB is enabled by default.
-crbug.com/802835 external/wpt/fetch/corb/img-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
-crbug.com/802835 external/wpt/fetch/corb/img-mime-types-coverage.tentative.sub.html [ Failure ]
-crbug.com/802835 external/wpt/fetch/corb/script-html-correctly-labeled.tentative.sub.html [ Failure ]
-crbug.com/802835 external/wpt/fetch/corb/preload-image-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
 
 crbug.com/813704 http/tests/images/png-partial-load-as-document.html [ Failure Pass ]
 
