@@ -28,7 +28,7 @@
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/gpu_jpeg_decode_accelerator_factory.h"
-#include "media/gpu/video_accelerator_unittest_helpers.h"
+#include "media/gpu/test/video_accelerator_unittest_helpers.h"
 #include "media/video/jpeg_decode_accelerator.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/codec/jpeg_codec.h"

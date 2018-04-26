@@ -353,7 +353,7 @@ source_set("common") {
 if (is_win || is_android || use_v4l2_codec || use_vaapi) {
   test("video_decode_accelerator_unittest") {
     sources = [
-      "video_accelerator_unittest_helpers.h",
+      "test/video_accelerator_unittest_helpers.h",
     ]
 
     data = [
@@ -381,8 +381,8 @@ if (is_win || is_android || use_v4l2_codec || use_vaapi) {
 
     if (is_win || is_chromeos || use_v4l2_codec) {
       sources += [
-        "rendering_helper.cc",
-        "rendering_helper.h",
+        "test/rendering_helper.cc",
+        "test/rendering_helper.h",
         "video_decode_accelerator_unittest.cc",
       ]
       deps += [
@@ -483,7 +483,7 @@ if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
     ]
     configs += [ "//third_party/libyuv:libyuv_config" ]
     sources = [
-      "video_accelerator_unittest_helpers.h",
+      "test/video_accelerator_unittest_helpers.h",
       "video_encode_accelerator_unittest.cc",
     ]
     if (use_x11) {
@@ -515,7 +515,7 @@ if (use_vaapi) {
     configs += [ "//third_party/libyuv:libyuv_config" ]
     sources = [
       "jpeg_encode_accelerator_unittest.cc",
-      "video_accelerator_unittest_helpers.h",
+      "test/video_accelerator_unittest_helpers.h",
     ]
     if (use_x11) {
       deps += [ "//ui/gfx/x" ]
@@ -545,7 +545,7 @@ if (use_v4l2_codec || use_vaapi) {
     configs += [ "//third_party/libyuv:libyuv_config" ]
     sources = [
       "jpeg_decode_accelerator_unittest.cc",
-      "video_accelerator_unittest_helpers.h",
+      "test/video_accelerator_unittest_helpers.h",
     ]
     if (use_x11) {
       deps += [ "//ui/gfx/x" ]
