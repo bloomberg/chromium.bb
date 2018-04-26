@@ -213,7 +213,7 @@
       "--limit",
       "1",
       "-p",
-      "change=123"
+      "change=122"
     ],
     "env": {
       "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
@@ -239,7 +239,7 @@
       "--limit",
       "1",
       "-p",
-      "change=123",
+      "change=122",
       "-o",
       "ALL_REVISIONS",
       "-o",
@@ -276,7 +276,7 @@
   },
   {
     "name": "$result",
-    "reason": "2 out of 2 aggregated steps failed. Failures: Error quering for branch of CL 123, Error querying for CL description: host:'https://chromium-review.googlesource.com' change:123; patchset:3",
+    "reason": "2 out of 2 aggregated steps failed. Failures: Error quering for branch of CL 122, Error querying for CL description: host:'https://chromium-review.googlesource.com' change:122; patchset:3",
     "recipe_result": null,
     "status_code": 1
   }

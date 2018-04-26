@@ -309,18 +309,18 @@ revision map. This doesn't overwrite the revision if it was already set.
 
 Module for interact with gerrit endpoints
 
-&mdash; **def [\_\_call\_\_](/recipes/recipe_modules/gerrit/api.py#10)(self, name, cmd, infra_step=True, \*\*kwargs):**
+&mdash; **def [\_\_call\_\_](/recipes/recipe_modules/gerrit/api.py#14)(self, name, cmd, infra_step=True, \*\*kwargs):**
 
 Wrapper for easy calling of gerrit_utils steps.
 
-&mdash; **def [create\_gerrit\_branch](/recipes/recipe_modules/gerrit/api.py#27)(self, host, project, branch, commit, \*\*kwargs):**
+&mdash; **def [create\_gerrit\_branch](/recipes/recipe_modules/gerrit/api.py#31)(self, host, project, branch, commit, \*\*kwargs):**
 
 Create a new branch from given project and commit
 
 Returns:
   the ref of the branch created
 
-&mdash; **def [get\_change\_description](/recipes/recipe_modules/gerrit/api.py#93)(self, host, change, patchset):**
+&mdash; **def [get\_change\_description](/recipes/recipe_modules/gerrit/api.py#106)(self, host, change, patchset):**
 
 Get the description for a given CL and patchset.
 
@@ -332,9 +332,11 @@ Args:
 Returns:
   The description corresponding to given CL and patchset.
 
-&mdash; **def [get\_change\_destination\_branch](/recipes/recipe_modules/gerrit/api.py#68)(self, host, change, \*\*kwargs):**
+&mdash; **def [get\_change\_destination\_branch](/recipes/recipe_modules/gerrit/api.py#72)(self, host, change, name=None, step_test_data=None):**
 
 Get the upstream branch for a given CL.
+
+Result is cached.
 
 Args:
   host: Gerrit host to query.
@@ -343,7 +345,7 @@ Args:
 Returns:
   the name of the branch
 
-&mdash; **def [get\_changes](/recipes/recipe_modules/gerrit/api.py#122)(self, host, query_params, start=None, limit=None, o_params=None, step_test_data=None, \*\*kwargs):**
+&mdash; **def [get\_changes](/recipes/recipe_modules/gerrit/api.py#135)(self, host, query_params, start=None, limit=None, o_params=None, step_test_data=None, \*\*kwargs):**
 
 Query changes for the given host.
 
@@ -361,7 +363,7 @@ Returns:
   A list of change dicts as documented here:
       https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
 
-&mdash; **def [get\_gerrit\_branch](/recipes/recipe_modules/gerrit/api.py#49)(self, host, project, branch, \*\*kwargs):**
+&mdash; **def [get\_gerrit\_branch](/recipes/recipe_modules/gerrit/api.py#53)(self, host, project, branch, \*\*kwargs):**
 
 Get a branch from given project and commit
 

@@ -7,6 +7,10 @@ from recipe_engine import recipe_api
 class GerritApi(recipe_api.RecipeApi):
   """Module for interact with gerrit endpoints"""
 
+  def __init__(self, *args, **kwargs):
+    super(GerritApi, self).__init__(*args, **kwargs)
+    self._changes_target_branch_cache = {}
+
   def __call__(self, name, cmd, infra_step=True, **kwargs):
     """Wrapper for easy calling of gerrit_utils steps."""
     assert isinstance(cmd, (list, tuple))
@@ -65,9 +69,12 @@ class GerritApi(recipe_api.RecipeApi):
     revision = step_result.json.output.get('revision')
     return revision
 
-  def get_change_destination_branch(self, host, change, **kwargs):
+  def get_change_destination_branch(
+      self, host, change, name=None, step_test_data=None):
     """
     Get the upstream branch for a given CL.
+
+    Result is cached.
 
     Args:
       host: Gerrit host to query.
@@ -76,19 +83,25 @@ class GerritApi(recipe_api.RecipeApi):
     Returns:
       the name of the branch
     """
-    assert int(change)
-    kwargs.setdefault('name', 'get_change_destination_branch')
+    assert int(change), change
+    change = int(change)
+    branch = self._changes_target_branch_cache.get((host, change))
+    if branch is not None:
+      return branch
     changes = self.get_changes(
         host,
         [('change', change)],
         limit=1,
-        **kwargs
+        name=name or 'get_change_destination_branch',
+        step_test_data=step_test_data,
     )
     if not changes or 'branch' not in changes[0]:
       self.m.step.active_result.presentation.status = self.m.step.EXCEPTION
       raise self.m.step.InfraFailure(
           'Error quering for branch of CL %s' % change)
-    return changes[0]['branch']
+    branch = changes[0]['branch']
+    self._changes_target_branch_cache[(host, change)] = branch
+    return branch
 
   def get_change_description(self, host, change, patchset):
     """
