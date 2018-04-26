@@ -11,10 +11,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -94,6 +96,7 @@ bool CrostiniInstallerView::ShouldShowCloseButton() const {
 bool CrostiniInstallerView::Accept() {
   DCHECK_EQ(state_, State::PROMPT);
   state_ = State::INSTALL_START;
+  profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
   DialogModelChanged();
   GetWidget()->UpdateWindowTitle();
 
