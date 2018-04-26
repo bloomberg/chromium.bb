@@ -163,9 +163,10 @@ static size_t get_obu_length_field_size(const uint8_t *data, size_t data_sz) {
   return length_field_size;
 }
 
-static void parse_operating_points(struct aom_read_bit_buffer *rb, int red_hdr,
+static void parse_operating_points(struct aom_read_bit_buffer *rb,
+                                   int is_reduced_header,
                                    aom_codec_stream_info_t *si) {
-  if (red_hdr) {
+  if (is_reduced_header) {
     aom_rb_read_literal(rb, LEVEL_BITS);  // level
   } else {
     const uint8_t operating_points_minus1_cnt =
