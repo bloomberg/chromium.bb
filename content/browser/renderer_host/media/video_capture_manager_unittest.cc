@@ -142,7 +142,7 @@ class WrappedDeviceFactory : public media::FakeVideoCaptureDeviceFactory {
 class MockMediaStreamProviderListener : public MediaStreamProviderListener {
  public:
   MockMediaStreamProviderListener() {}
-  ~MockMediaStreamProviderListener() {}
+  ~MockMediaStreamProviderListener() override {}
 
   MOCK_METHOD2(Opened, void(MediaStreamType, int));
   MOCK_METHOD2(Closed, void(MediaStreamType, int));

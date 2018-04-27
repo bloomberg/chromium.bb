@@ -97,7 +97,7 @@ class RendererWebAudioDeviceImplTest
       SourceType source_type,
       int render_frame_id,
       int session_id,
-      const std::string& device_id) {
+      const std::string& device_id) override {
     scoped_refptr<media::MockAudioRendererSink> mock_sink =
         new media::MockAudioRendererSink(
             device_id, media::OUTPUT_DEVICE_STATUS_OK,

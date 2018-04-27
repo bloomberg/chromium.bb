@@ -18,7 +18,7 @@ namespace content {
 class MockMojoIndexedDBCallbacks : public ::indexed_db::mojom::Callbacks {
  public:
   explicit MockMojoIndexedDBCallbacks();
-  ~MockMojoIndexedDBCallbacks();
+  ~MockMojoIndexedDBCallbacks() override;
 
   ::indexed_db::mojom::CallbacksAssociatedPtrInfo CreateInterfacePtrAndBind();
 

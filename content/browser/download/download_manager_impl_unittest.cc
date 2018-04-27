@@ -72,7 +72,7 @@ namespace {
 class MockDownloadManagerDelegate : public DownloadManagerDelegate {
  public:
   MockDownloadManagerDelegate();
-  virtual ~MockDownloadManagerDelegate();
+  ~MockDownloadManagerDelegate() override;
 
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD1(GetNextId, void(const DownloadIdCallback&));
@@ -285,7 +285,7 @@ class MockDownloadFileFactory
       public base::SupportsWeakPtr<MockDownloadFileFactory> {
  public:
   MockDownloadFileFactory() {}
-  virtual ~MockDownloadFileFactory() {}
+  ~MockDownloadFileFactory() override {}
 
   // Overridden method from DownloadFileFactory
   MOCK_METHOD2(MockCreateFile,
@@ -305,7 +305,7 @@ class MockDownloadFileFactory
 class MockDownloadManagerObserver : public DownloadManager::Observer {
  public:
   MockDownloadManagerObserver() {}
-  ~MockDownloadManagerObserver() {}
+  ~MockDownloadManagerObserver() override {}
   MOCK_METHOD2(OnDownloadCreated,
                void(DownloadManager*, download::DownloadItem*));
   MOCK_METHOD1(ManagerGoingDown, void(DownloadManager*));
@@ -314,7 +314,7 @@ class MockDownloadManagerObserver : public DownloadManager::Observer {
 
 class MockByteStreamReader : public ByteStreamReader {
  public:
-  virtual ~MockByteStreamReader() {}
+  ~MockByteStreamReader() override {}
   MOCK_METHOD2(Read, StreamState(scoped_refptr<net::IOBuffer>*, size_t*));
   MOCK_CONST_METHOD0(GetStatus, int());
   MOCK_METHOD1(RegisterCallback, void(const base::Closure&));

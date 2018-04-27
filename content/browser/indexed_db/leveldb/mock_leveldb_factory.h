@@ -14,7 +14,7 @@ namespace content {
 class MockLevelDBFactory : public LevelDBFactory {
  public:
   MockLevelDBFactory();
-  ~MockLevelDBFactory();
+  ~MockLevelDBFactory() override;
   MOCK_METHOD4(OpenLevelDB,
                leveldb::Status(const base::FilePath& file_name,
                                const LevelDBComparator* comparator,

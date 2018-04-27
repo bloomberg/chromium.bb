@@ -109,7 +109,7 @@ class MockUserInputMonitor : public media::UserInputMonitorBase {
  public:
   MockUserInputMonitor() {}
 
-  uint32_t GetKeyPressCount() const { return 0; }
+  uint32_t GetKeyPressCount() const override { return 0; }
 
   MOCK_METHOD0(StartKeyboardMonitoring, void());
   MOCK_METHOD0(StopKeyboardMonitoring, void());
@@ -156,7 +156,7 @@ class AudioInputDelegateTest : public testing::Test {
         base::BindRepeating(&ExpectNoOutputStreamCreation));
   }
 
-  ~AudioInputDelegateTest() {
+  ~AudioInputDelegateTest() override {
     audio_manager_.Shutdown();
 
     // MediaStreamManager expects to outlive the IO thread.

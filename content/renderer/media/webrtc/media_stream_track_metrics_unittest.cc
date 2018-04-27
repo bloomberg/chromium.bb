@@ -29,9 +29,9 @@ namespace content {
 class MockAudioTrackInterface : public AudioTrackInterface {
  public:
   explicit MockAudioTrackInterface(const std::string& id) : id_(id) {}
-  virtual ~MockAudioTrackInterface() {}
+  ~MockAudioTrackInterface() override {}
 
-  virtual std::string id() const override { return id_; }
+  std::string id() const override { return id_; }
 
   MOCK_METHOD1(RegisterObserver, void(ObserverInterface*));
   MOCK_METHOD1(UnregisterObserver, void(ObserverInterface*));
@@ -52,9 +52,9 @@ class MockAudioTrackInterface : public AudioTrackInterface {
 class MockVideoTrackInterface : public VideoTrackInterface {
  public:
   explicit MockVideoTrackInterface(const std::string& id) : id_(id) {}
-  virtual ~MockVideoTrackInterface() {}
+  ~MockVideoTrackInterface() override {}
 
-  virtual std::string id() const override { return id_; }
+  std::string id() const override { return id_; }
 
   MOCK_METHOD1(RegisterObserver, void(ObserverInterface*));
   MOCK_METHOD1(UnregisterObserver, void(ObserverInterface*));

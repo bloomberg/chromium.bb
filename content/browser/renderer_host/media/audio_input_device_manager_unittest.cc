@@ -37,7 +37,7 @@ class MockAudioInputDeviceManagerListener
     : public MediaStreamProviderListener {
  public:
   MockAudioInputDeviceManagerListener() {}
-  virtual ~MockAudioInputDeviceManagerListener() {}
+  ~MockAudioInputDeviceManagerListener() override {}
 
   MOCK_METHOD2(Opened, void(MediaStreamType, const int));
   MOCK_METHOD2(Closed, void(MediaStreamType, const int));

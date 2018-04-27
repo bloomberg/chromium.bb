@@ -85,7 +85,7 @@ class MockLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
 
   void SetPhotoOptions(
       media::mojom::PhotoSettingsPtr settings,
-      media::VideoCaptureDevice::SetPhotoOptionsCallback callback) {
+      media::VideoCaptureDevice::SetPhotoOptionsCallback callback) override {
     DoSetPhotoOptions(&settings, &callback);
   }
 

@@ -29,7 +29,7 @@ const uint16_t kTestPort2 = 543;
 class MockIPCSender : public IPC::Sender {
  public:
   MockIPCSender();
-  virtual ~MockIPCSender();
+  ~MockIPCSender() override;
 
   MOCK_METHOD1(Send, bool(IPC::Message* msg));
 };

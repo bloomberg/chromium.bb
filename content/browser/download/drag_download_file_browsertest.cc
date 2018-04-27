@@ -42,7 +42,7 @@ class MockDownloadFileObserver : public ui::DownloadFileObserver {
   MOCK_METHOD0(OnDownloadAborted, void());
 
  private:
-  virtual ~MockDownloadFileObserver() {}
+  ~MockDownloadFileObserver() override {}
 
   DISALLOW_COPY_AND_ASSIGN(MockDownloadFileObserver);
 };

@@ -16,7 +16,7 @@ class NotificationSource;
 class MockNotificationObserver : public NotificationObserver {
  public:
   MockNotificationObserver();
-  virtual ~MockNotificationObserver();
+  ~MockNotificationObserver() override;
 
   MOCK_METHOD3(Observe, void(int type,
                              const NotificationSource& source,

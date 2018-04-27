@@ -71,7 +71,7 @@ class MockAudioOutputDelegate : public media::AudioOutputDelegate {
       base::OnceClosure on_destruction = base::OnceClosure())
       : on_destruction_(std::move(on_destruction)) {}
 
-  ~MockAudioOutputDelegate() {
+  ~MockAudioOutputDelegate() override {
     if (on_destruction_)
       std::move(on_destruction_).Run();
   }
@@ -180,7 +180,7 @@ class MockClient : public AudioOutputStreamProviderClient {
   }
 
   void Created(AudioOutputStreamPtr stream,
-               media::mojom::AudioDataPipePtr data_pipe) {
+               media::mojom::AudioDataPipePtr data_pipe) override {
     was_called_ = true;
     stream_ = std::move(stream);
   }
