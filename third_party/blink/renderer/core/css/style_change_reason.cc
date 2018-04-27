@@ -31,6 +31,7 @@ const char kInspector[] = "Inspector";
 const char kLanguage[] = "Language";
 const char kLinkColorChange[] = "LinkColorChange";
 const char kPlatformColorChange[] = "PlatformColorChange";
+const char kPolicyViolation[] = "Feature Policy Violation";
 const char kPropagateInheritChangeToDistributedNodes[] =
     "PropagateInheritChangeToDistributedNodes";
 const char kPropertyRegistration[] = "PropertyRegistration";

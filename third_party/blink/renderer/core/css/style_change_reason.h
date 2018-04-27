@@ -33,6 +33,7 @@ extern const char kInspector[];
 extern const char kLanguage[];
 extern const char kLinkColorChange[];
 extern const char kPlatformColorChange[];
+extern const char kPolicyViolation[];
 extern const char kPropagateInheritChangeToDistributedNodes[];
 extern const char kPropertyRegistration[];
 extern const char kPropertyUnregistration[];
