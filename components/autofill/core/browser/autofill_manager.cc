@@ -385,7 +385,7 @@ bool AutofillManager::OnFormSubmittedImpl(const FormData& form,
   submitted_form = ValidateSubmittedForm(form);
   DCHECK(submitted_form);
   if (!submitted_form)
-    return false;
+    return ret;
 
   CreditCard credit_card =
       form_data_importer_->ExtractCreditCardFromForm(*submitted_form);

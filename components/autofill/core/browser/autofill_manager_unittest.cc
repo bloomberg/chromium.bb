@@ -405,12 +405,8 @@ class AutofillManagerTest : public testing::Test {
   }
 
   void FormSubmitted(const FormData& form) {
-    autofill_manager_->ResetRunLoop();
-    if (autofill_manager_->OnFormSubmitted(form, false,
-                                           SubmissionSource::FORM_SUBMISSION,
-                                           base::TimeTicks::Now())) {
-      autofill_manager_->WaitForAsyncUploadProcess();
-    }
+    autofill_manager_->OnFormSubmitted(
+        form, false, SubmissionSource::FORM_SUBMISSION, base::TimeTicks::Now());
   }
 
   void FillAutofillFormData(int query_id,
@@ -3938,11 +3934,9 @@ TEST_F(AutofillManagerTest, FormSubmittedSaveData) {
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
                                false);
 
-  autofill_manager_->ResetRunLoop();
   autofill_manager_->OnFormSubmitted(response_data, false,
                                      SubmissionSource::FORM_SUBMISSION,
                                      base::TimeTicks::Now());
-  autofill_manager_->WaitForAsyncUploadProcess();
   EXPECT_EQ(1, personal_data_.num_times_save_imported_profile_called());
 }
 
@@ -4956,11 +4950,8 @@ TEST_F(AutofillManagerTest, OnTextFieldDidChangeAndUnfocus_Upload) {
   autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
                                           gfx::RectF(), base::TimeTicks::Now());
 
-  autofill_manager_->ResetRunLoop();
   // Simulate lost of focus on the form.
   autofill_manager_->OnFocusNoLongerOnForm();
-  // Wait for upload to complete (will check expected types as well).
-  autofill_manager_->WaitForAsyncUploadProcess();
 }
 
 // Test that navigating with a filled form sends an upload with types matching
@@ -5009,11 +5000,8 @@ TEST_F(AutofillManagerTest, OnTextFieldDidChangeAndNavigation_Upload) {
   autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
                                           gfx::RectF(), base::TimeTicks::Now());
 
-  autofill_manager_->ResetRunLoop();
   // Simulate a navigation so that the pending form is uploaded.
   autofill_manager_->Reset();
-  // Wait for upload to complete (will check expected types as well).
-  autofill_manager_->WaitForAsyncUploadProcess();
 }
 
 // Test that unfocusing a filled form sends an upload with types matching the
@@ -5060,11 +5048,8 @@ TEST_F(AutofillManagerTest, OnDidFillAutofillFormDataAndUnfocus_Upload) {
   form.fields[2].value = ASCIIToUTF16("theking@gmail.com");
   autofill_manager_->OnDidFillAutofillFormData(form, base::TimeTicks::Now());
 
-  autofill_manager_->ResetRunLoop();
   // Simulate lost of focus on the form.
   autofill_manager_->OnFocusNoLongerOnForm();
-  // Wait for upload to complete.
-  autofill_manager_->WaitForAsyncUploadProcess();
 }
 
 // Test that suggestions are returned for credit card fields with an
@@ -5967,7 +5952,6 @@ TEST_F(AutofillManagerTest, SignInFormSubmission_Upload) {
   autofill_manager_->SetExpectedSubmittedFieldTypes(expected_types);
   autofill_manager_->SetExpectedObservedSubmission(true);
   autofill_manager_->SetCallParentUploadFormData(true);
-  autofill_manager_->ResetRunLoop();
 
   std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
   form_structure->set_is_signin_upload(true);
@@ -5982,9 +5966,6 @@ TEST_F(AutofillManagerTest, SignInFormSubmission_Upload) {
       .WillOnce(DoAll(SaveArg<2>(&uploaded_available_types), Return(true)));
   autofill_manager_->StartUploadProcess(std::move(form_structure),
                                         base::TimeTicks::Now(), true);
-
-  // Wait for upload to complete (will check expected types as well).
-  autofill_manager_->WaitForAsyncUploadProcess();
 
   EXPECT_EQ(signature, autofill_manager_->GetSubmittedFormSignature());
   EXPECT_NE(uploaded_available_types.end(),

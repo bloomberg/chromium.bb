@@ -64,6 +64,19 @@ void TestAutofillManager::UploadFormData(const FormStructure& submitted_form,
     AutofillManager::UploadFormData(submitted_form, observed_submission);
 }
 
+bool TestAutofillManager::StartUploadProcess(
+    std::unique_ptr<FormStructure> form_structure,
+    const base::TimeTicks& timestamp,
+    bool observed_submission) {
+  run_loop_ = std::make_unique<base::RunLoop>();
+  if (AutofillManager::StartUploadProcess(std::move(form_structure), timestamp,
+                                          observed_submission)) {
+    run_loop_->Run();
+    return true;
+  }
+  return false;
+}
+
 void TestAutofillManager::UploadFormDataAsyncCallback(
     const FormStructure* submitted_form,
     const base::TimeTicks& load_time,
@@ -101,18 +114,6 @@ void TestAutofillManager::UploadFormDataAsyncCallback(
       observed_submission);
 }
 
-void TestAutofillManager::ResetRunLoop() {
-  run_loop_.reset(new base::RunLoop());
-}
-
-void TestAutofillManager::RunRunLoop() {
-  run_loop_->Run();
-}
-
-void TestAutofillManager::WaitForAsyncUploadProcess() {
-  run_loop_->Run();
-}
-
 int TestAutofillManager::GetPackedCreditCardID(int credit_card_id) {
   std::string credit_card_guid =
       base::StringPrintf("00000000-0000-0000-0000-%012d", credit_card_id);
@@ -142,20 +143,6 @@ void TestAutofillManager::AddSeenFormStructure(
     std::unique_ptr<FormStructure> form_structure) {
   form_structure->set_form_parsed_timestamp(base::TimeTicks::Now());
   form_structures()->push_back(std::move(form_structure));
-}
-
-void TestAutofillManager::SubmitForm(const FormData& form,
-                                     const TimeTicks& timestamp) {
-  ResetRunLoop();
-  if (!OnFormSubmitted(form, false, SubmissionSource::FORM_SUBMISSION,
-                       timestamp))
-    return;
-
-  RunRunLoop();
-}
-
-void TestAutofillManager::SubmitForm(const FormData& form) {
-  SubmitForm(form, TimeTicks::Now());
 }
 
 void TestAutofillManager::ClearFormStructures() {
