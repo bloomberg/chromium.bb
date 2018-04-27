@@ -274,15 +274,6 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const uint8_t kP1IndividualAttestation;
 COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kMaxKeyHandleLength;
 COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kU2fParameterLength;
 
-// Suffix added to APDU encoded command for legacy version request.
-COMPONENT_EXPORT(DEVICE_FIDO)
-extern const std::array<uint8_t, 2> kLegacyVersionSuffix;
-
-// Expected response data for version request from U2F device.
-// https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#getversion-request-and-response---u2f_version
-COMPONENT_EXPORT(DEVICE_FIDO)
-extern const std::array<uint8_t, 6> kU2fVersionResponse;
-
 // Maximum wait time before client error outs on device.
 COMPONENT_EXPORT(DEVICE_FIDO) extern const base::TimeDelta kDeviceTimeout;
 

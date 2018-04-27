@@ -74,16 +74,6 @@ void MockFidoDevice::NoErrorRegister(const std::vector<uint8_t>& command,
 }
 
 // static
-void MockFidoDevice::NoErrorVersion(const std::vector<uint8_t>& command,
-                                    DeviceCallback& cb) {
-  std::move(cb).Run(
-      apdu::ApduResponse(std::vector<uint8_t>(kU2fVersionResponse.cbegin(),
-                                              kU2fVersionResponse.cend()),
-                         apdu::ApduResponse::Status::SW_NO_ERROR)
-          .GetEncodedResponse());
-}
-
-// static
 void MockFidoDevice::SignWithCorruptedResponse(
     const std::vector<uint8_t>& command,
     DeviceCallback& cb) {

@@ -361,47 +361,4 @@ TEST_F(U2fRequestTest, TestMultipleDiscoveriesWithFailures) {
   }
 }
 
-TEST_F(U2fRequestTest, TestEncodeVersionRequest) {
-  constexpr uint8_t kEncodedU2fVersionRequest[] = {0x00, 0x03, 0x00, 0x00,
-                                                   0x00, 0x00, 0x00};
-  EXPECT_THAT(U2fRequest::GetU2fVersionApduCommand(),
-              ::testing::ElementsAreArray(kEncodedU2fVersionRequest));
-
-  // Legacy version command contains 2 extra null bytes compared to ISO 7816-4
-  // format.
-  constexpr uint8_t kEncodedU2fLegacyVersionRequest[] = {
-      0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  EXPECT_THAT(U2fRequest::GetU2fVersionApduCommand(true),
-              ::testing::ElementsAreArray(kEncodedU2fLegacyVersionRequest));
-}
-
-// Test a scenario when version request is sent to legacy U2F token.
-// After non-legacy version requests fails, legacy version request should be
-// sent to device as a retry.
-TEST_F(U2fRequestTest, TestLegacyVersionRequest) {
-  auto* discovery = discovery_factory().ForgeNextHidDiscovery();
-  FakeU2fRequest request({FidoTransportProtocol::kUsbHumanInterfaceDevice});
-  request.Start();
-
-  auto device0 = std::make_unique<MockFidoDevice>();
-  EXPECT_CALL(*device0, GetId()).WillRepeatedly(::testing::Return("device0"));
-  EXPECT_CALL(*device0,
-              DeviceTransactPtr(U2fRequest::GetU2fVersionApduCommand(true), _))
-      // Success response for legacy version request after retry.
-      .WillOnce(testing::Invoke(MockFidoDevice::NoErrorVersion));
-
-  auto* device_ptr = device0.get();
-  discovery->AddDevice(std::move(device0));
-
-  // Represents version callback received from legacy U2F token on initial
-  // version request. Device responses with invalid protocol version (in this
-  // case, empty byte array). Retry version request with legacy bit is expected
-  // to be issued afterwards.
-  request.OnDeviceVersionRequest(version_callback_receiver().callback(),
-                                 device_ptr->GetWeakPtr(), false /* legacy */,
-                                 std::vector<uint8_t>());
-
-  EXPECT_EQ(ProtocolVersion::kU2f, version_callback_receiver().value());
-}
-
 }  // namespace device

@@ -54,10 +54,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRequest
   //
   // Returns bogus register command to be used to verify user presence.
   static std::vector<uint8_t> GetBogusRegisterCommand();
-  // Returns APDU formatted U2F version request command. If |is_legacy_version|
-  // is set to true, suffix {0x00, 0x00} is added at the end.
-  static std::vector<uint8_t> GetU2fVersionApduCommand(
-      bool is_legacy_version = false);
   // Returns APDU U2F request commands. Null optional is returned for
   // incorrectly formatted parameter.
   base::Optional<std::vector<uint8_t>> GetU2fSignApduCommand(
@@ -83,12 +79,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRequest
   // |current_device_|.
   void InitiateDeviceTransaction(base::Optional<std::vector<uint8_t>> cmd,
                                  FidoDevice::DeviceCallback callback);
-  // Callback function to U2F version request. If non-legacy version request
-  // fails, retry with legacy version request.
-  void OnDeviceVersionRequest(VersionCallback callback,
-                              base::WeakPtr<FidoDevice> device,
-                              bool legacy,
-                              base::Optional<std::vector<uint8_t>> response);
 
   virtual void TryDevice() = 0;
 
