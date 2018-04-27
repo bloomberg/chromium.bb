@@ -24,7 +24,11 @@ enum class RulesetFormat {
   kUnindexedRuleset,
 };
 
-RulesetFormat ParseFlag(const std::string& text);
+// Functions used for compatibility with "base/commandlineflags.h".
+bool ParseFlag(const std::string& text,
+               RulesetFormat* format,
+               std::string* error);
+std::string UnparseFlag(RulesetFormat format);
 
 }  // namespace subresource_filter
 

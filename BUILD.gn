@@ -101,7 +101,6 @@ group("gn_all") {
       "//chrome/test:interactive_ui_tests",
       "//chrome/test:sync_integration_tests",
       "//chrome/test/chromedriver:chromedriver_unittests",
-      "//components/subresource_filter/tools:subresource_filter_tools",
       "//components/sync/tools:sync_client",
       "//components/sync/tools:sync_listen_notifications",
       "//components/zucchini:zucchini",

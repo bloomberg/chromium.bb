@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/chromecast_build.gni")
-
 static_library("tools_lib") {
   sources = [
     "filter_tool.cc",
@@ -40,10 +38,9 @@ source_set("unit_tests") {
     "//url",
   ]
 }
-if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
+
+if (is_linux || is_mac || is_win) {
   executable("subresource_filter_tool") {
-    # Production code should not depend on this.
-    testonly = true
     sources = [
       "filter_tool_main.cc",
     ]
@@ -55,8 +52,6 @@ if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
   }
 
   executable("subresource_indexing_tool") {
-    # Production code should not depend on this.
-    testonly = true
     sources = [
       "indexing_tool_main.cc",
     ]
@@ -64,16 +59,6 @@ if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
       ":tools_lib",
       "//base",
       "//build/config:exe_and_shlib_deps",
-    ]
-  }
-
-  group("subresource_filter_tools") {
-    # Production code should not depend on this.
-    testonly = true
-    deps = [
-      ":subresource_filter_tool",
-      ":subresource_indexing_tool",
-      "ruleset_converter",
     ]
   }
 }

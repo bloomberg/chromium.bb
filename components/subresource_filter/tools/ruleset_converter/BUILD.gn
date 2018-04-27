@@ -2,9 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/chromecast_build.gni")
-
-source_set("support") {
+source_set("ruleset_converter_support") {
   sources = [
     "//third_party/protobuf:protobuf_lite",
     "rule_stream.cc",
@@ -27,7 +25,7 @@ source_set("unit_tests") {
     "rule_stream_test.cc",
   ]
   deps = [
-    ":support",
+    ":ruleset_converter_support",
     "../rule_parser",
     "//base",
     "//base/test:test_support",
@@ -36,18 +34,4 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
-}
-
-if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
-  executable("ruleset_converter") {
-    sources = [
-      "main.cc",
-    ]
-    deps = [
-      ":support",
-      "//base",
-      "//build/config:exe_and_shlib_deps",
-      "//third_party/protobuf:protobuf_lite",
-    ]
-  }
 }
