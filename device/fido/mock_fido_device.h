@@ -51,8 +51,6 @@ class MockFidoDevice : public FidoDevice {
                           DeviceCallback& cb);
   static void NoErrorRegister(const std::vector<uint8_t>& command,
                               DeviceCallback& cb);
-  static void NoErrorVersion(const std::vector<uint8_t>& command,
-                             DeviceCallback& cb);
   static void SignWithCorruptedResponse(const std::vector<uint8_t>& command,
                                         DeviceCallback& cb);
   static void WinkDoNothing(WinkCallback& cb);

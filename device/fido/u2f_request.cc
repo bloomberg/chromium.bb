@@ -13,7 +13,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/apdu/apdu_command.h"
-#include "components/apdu/apdu_response.h"
 #include "device/fido/u2f_command_constructor.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -62,24 +61,6 @@ std::vector<uint8_t> U2fRequest::GetBogusRegisterCommand() {
   return command.GetEncodedCommand();
 }
 
-// static
-std::vector<uint8_t> U2fRequest::GetU2fVersionApduCommand(
-    bool is_legacy_version) {
-  apdu::ApduCommand command;
-  command.set_ins(base::strict_cast<uint8_t>(U2fApduInstruction::kVersion));
-  // Set maximum expected response length to maximum length possible.
-  command.set_response_length(kU2fMaxResponseSize);
-  // Early U2F drafts defined the U2F version command a format
-  // incompatible with ISO 7816-4, so 2 additional 0x0 bytes are necessary.
-  // https://fidoalliance.org/specs/fido-u2f-v1.1-id-20160915/fido-u2f-raw-message-formats-v1.1-id-20160915.html#implementation-considerations
-  auto version_cmd = command.GetEncodedCommand();
-  if (is_legacy_version)
-    version_cmd.insert(version_cmd.end(), kLegacyVersionSuffix.cbegin(),
-                       kLegacyVersionSuffix.cend());
-
-  return version_cmd;
-}
-
 base::Optional<std::vector<uint8_t>> U2fRequest::GetU2fSignApduCommand(
     const std::vector<uint8_t>& application_parameter,
     const std::vector<uint8_t>& key_handle,
@@ -124,31 +105,6 @@ void U2fRequest::InitiateDeviceTransaction(
     return;
   }
   current_device_->DeviceTransact(std::move(*cmd), std::move(callback));
-}
-
-void U2fRequest::OnDeviceVersionRequest(
-    VersionCallback callback,
-    base::WeakPtr<FidoDevice> device,
-    bool legacy,
-    base::Optional<std::vector<uint8_t>> response) {
-  const auto apdu_response =
-      response ? apdu::ApduResponse::CreateFromMessage(std::move(*response))
-               : base::nullopt;
-  if (apdu_response &&
-      apdu_response->status() == apdu::ApduResponse::Status::SW_NO_ERROR &&
-      std::equal(apdu_response->data().cbegin(), apdu_response->data().cend(),
-                 kU2fVersionResponse.cbegin(), kU2fVersionResponse.cend())) {
-    std::move(callback).Run(ProtocolVersion::kU2f);
-  } else if (!legacy) {
-    // Standard GetVersion failed, attempt legacy GetVersion command.
-    device->DeviceTransact(
-        GetU2fVersionApduCommand(true),
-        base::BindOnce(&U2fRequest::OnDeviceVersionRequest,
-                       weak_factory_.GetWeakPtr(), std::move(callback), device,
-                       true /* legacy */));
-  } else {
-    std::move(callback).Run(ProtocolVersion::kUnknown);
-  }
 }
 
 void U2fRequest::AbandonCurrentDeviceAndTransition() {

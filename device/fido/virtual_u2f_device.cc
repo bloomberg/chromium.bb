@@ -71,6 +71,8 @@ void VirtualU2fDevice::DeviceTransact(std::vector<uint8_t> command,
   base::Optional<std::vector<uint8_t>> response;
 
   switch (parsed_command->ins()) {
+    // Version request is defined by the U2F spec, but is never used in
+    // production code.
     case base::strict_cast<uint8_t>(U2fApduInstruction::kVersion):
       break;
     case base::strict_cast<uint8_t>(U2fApduInstruction::kRegister):

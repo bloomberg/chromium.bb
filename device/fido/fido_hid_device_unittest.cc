@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/fido/fido_hid_device.h"
+
+#include <memory>
 #include <tuple>
 
 #include "base/bind.h"
@@ -11,14 +14,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/apdu/apdu_command.h"
-#include "components/apdu/apdu_response.h"
 #include "device/fido/fake_hid_impl_for_testing.h"
 #include "device/fido/fido_constants.h"
-#include "device/fido/fido_hid_device.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/test_callback_receiver.h"
-#include "device/fido/u2f_request.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/cpp/hid/hid_device_filter.h"
@@ -33,10 +32,17 @@ using ::testing::Invoke;
 
 namespace {
 
-// HID_MSG(83), followed by payload length(0008), followed by 'U2F_V2', followed
-// by APDU response code(9000).
-constexpr uint8_t kMockVersionResponseSuffix[] = {
-    0x83, 0x00, 0x08, 0x55, 0x32, 0x46, 0x5f, 0x56, 0x32, 0x90, 0x00};
+// HID_MSG(83), followed by payload length(000b), followed by response data
+// "MOCK_DATA", followed by APDU SW_NO_ERROR response code(9000).
+constexpr uint8_t kU2fMockResponseMessage[] = {
+    0x83, 0x00, 0x0b, 0x4d, 0x4f, 0x43, 0x4b,
+    0x5f, 0x44, 0x41, 0x54, 0x41, 0x90, 0x00,
+};
+
+// APDU encoded success response with data "MOCK_DATA" followed by a SW_NO_ERROR
+// APDU response code(9000).
+constexpr uint8_t kU2fMockResponseData[] = {0x4d, 0x4f, 0x43, 0x4b, 0x5f, 0x44,
+                                            0x41, 0x54, 0x41, 0x90, 0x00};
 
 // HID_KEEP_ALIVE(bb), followed by payload length(0001), followed by
 // status processing(01) byte.
@@ -48,6 +54,10 @@ constexpr uint8_t kMockKeepAliveResponseSuffix[] = {0xbb, 0x00, 0x01, 0x01};
 constexpr uint8_t kInitResponsePrefix[] = {
     0xff, 0xff, 0xff, 0xff, 0x86, 0x00, 0x11,
 };
+
+// Mock APDU encoded U2F request with empty data and mock P1 parameter(0x04).
+constexpr uint8_t kMockU2fRequest[] = {0x00, 0x04, 0x00, 0x00,
+                                       0x00, 0x00, 0x00};
 
 // Returns HID_INIT request to send to device with mock connection.
 std::vector<uint8_t> CreateMockInitResponse(
@@ -70,7 +80,7 @@ std::vector<uint8_t> GetKeepAliveHidMessage(
 }
 
 // Returns "U2F_v2" as a mock response to version request with given channel id.
-std::vector<uint8_t> CreateMockResponse(
+std::vector<uint8_t> CreateMockResponseWithChannelId(
     base::span<const uint8_t> channel_id,
     base::span<const uint8_t> response_buffer) {
   auto response = fido_parsing_utils::Materialize(channel_id);
@@ -79,12 +89,9 @@ std::vector<uint8_t> CreateMockResponse(
   return response;
 }
 
-// Returns U2F_V2 version response formatted in APDU response encoding.
-std::vector<uint8_t> GetValidU2fVersionResponse() {
-  return apdu::ApduResponse(std::vector<uint8_t>(kU2fVersionResponse.begin(),
-                                                 kU2fVersionResponse.end()),
-                            apdu::ApduResponse::Status::SW_NO_ERROR)
-      .GetEncodedResponse();
+// Returns a APDU encoded U2F version request for testing.
+std::vector<uint8_t> GetMockDeviceRequest() {
+  return fido_parsing_utils::Materialize(kMockU2fRequest);
 }
 
 device::mojom::HidDeviceInfoPtr TestHidDevice() {
@@ -170,14 +177,13 @@ TEST_F(FidoHidDeviceTest, TestConnectionFailure) {
 
   // Add pending transactions manually and ensure they are processed.
   TestDeviceCallbackReceiver receiver_1;
-  device->pending_transactions_.emplace(U2fRequest::GetU2fVersionApduCommand(),
+  device->pending_transactions_.emplace(GetMockDeviceRequest(),
                                         receiver_1.callback());
   TestDeviceCallbackReceiver receiver_2;
-  device->pending_transactions_.emplace(U2fRequest::GetU2fVersionApduCommand(),
+  device->pending_transactions_.emplace(GetMockDeviceRequest(),
                                         receiver_2.callback());
   TestDeviceCallbackReceiver receiver_3;
-  device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(),
-                         receiver_3.callback());
+  device->DeviceTransact(GetMockDeviceRequest(), receiver_3.callback());
 
   EXPECT_EQ(FidoDevice::State::kDeviceError, device->state_);
 
@@ -206,21 +212,19 @@ TEST_F(FidoHidDeviceTest, TestDeviceError) {
   device->state_ = FidoDevice::State::kReady;
 
   TestDeviceCallbackReceiver receiver_0;
-  device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(),
-                         receiver_0.callback());
+  device->DeviceTransact(GetMockDeviceRequest(), receiver_0.callback());
   EXPECT_FALSE(receiver_0.value());
   EXPECT_EQ(FidoDevice::State::kDeviceError, device->state_);
 
   // Add pending transactions manually and ensure they are processed.
   TestDeviceCallbackReceiver receiver_1;
-  device->pending_transactions_.emplace(U2fRequest::GetU2fVersionApduCommand(),
+  device->pending_transactions_.emplace(GetMockDeviceRequest(),
                                         receiver_1.callback());
   TestDeviceCallbackReceiver receiver_2;
-  device->pending_transactions_.emplace(U2fRequest::GetU2fVersionApduCommand(),
+  device->pending_transactions_.emplace(GetMockDeviceRequest(),
                                         receiver_2.callback());
   TestDeviceCallbackReceiver receiver_3;
-  device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(),
-                         receiver_3.callback());
+  device->DeviceTransact(GetMockDeviceRequest(), receiver_3.callback());
   FakeHidConnection::mock_connection_error_ = false;
 
   EXPECT_EQ(FidoDevice::State::kDeviceError, device->state_);
@@ -270,10 +274,10 @@ TEST_F(FidoHidDeviceTest, TestRetryChannelAllocation) {
       // Version response from the authenticator.
       .WillOnce(Invoke(
           [&mock_connection](device::mojom::HidConnection::ReadCallback* cb) {
-            std::move(*cb).Run(
-                true, 0,
-                CreateMockResponse(mock_connection.connection_channel_id(),
-                                   kMockVersionResponseSuffix));
+            std::move(*cb).Run(true, 0,
+                               CreateMockResponseWithChannelId(
+                                   mock_connection.connection_channel_id(),
+                                   kU2fMockResponseMessage));
           }));
 
   // Add device and set mock connection to fake hid manager.
@@ -289,13 +293,12 @@ TEST_F(FidoHidDeviceTest, TestRetryChannelAllocation) {
   auto& device = u2f_devices.front();
 
   TestDeviceCallbackReceiver cb;
-  device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(false),
-                         cb.callback());
+  device->DeviceTransact(GetMockDeviceRequest(), cb.callback());
   cb.WaitForCallback();
 
   const auto& value = cb.value();
   ASSERT_TRUE(value);
-  EXPECT_THAT(*value, testing::ElementsAreArray(GetValidU2fVersionResponse()));
+  EXPECT_THAT(*value, testing::ElementsAreArray(kU2fMockResponseData));
 }
 
 TEST_F(FidoHidDeviceTest, TestKeepAliveMessage) {
@@ -337,10 +340,10 @@ TEST_F(FidoHidDeviceTest, TestKeepAliveMessage) {
             kDeviceTimeout - base::TimeDelta::FromMicroseconds(1);
         scoped_task_environment_.FastForwardBy(almost_time_out);
 
-        std::move(*cb).Run(
-            true, 0,
-            CreateMockResponse(mock_connection.connection_channel_id(),
-                               kMockVersionResponseSuffix));
+        std::move(*cb).Run(true, 0,
+                           CreateMockResponseWithChannelId(
+                               mock_connection.connection_channel_id(),
+                               kU2fMockResponseMessage));
       }));
 
   // Add device and set mock connection to fake hid manager.
@@ -359,12 +362,11 @@ TEST_F(FidoHidDeviceTest, TestKeepAliveMessage) {
   // Keep alive message handling is only supported for CTAP HID device.
   device->set_supported_protocol(ProtocolVersion::kCtap);
   TestDeviceCallbackReceiver cb;
-  device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(false),
-                         cb.callback());
+  device->DeviceTransact(GetMockDeviceRequest(), cb.callback());
   cb.WaitForCallback();
   const auto& value = cb.value();
   ASSERT_TRUE(value);
-  EXPECT_THAT(*value, testing::ElementsAreArray(GetValidU2fVersionResponse()));
+  EXPECT_THAT(*value, testing::ElementsAreArray(kU2fMockResponseData));
 }
 
 TEST_F(FidoHidDeviceTest, TestDeviceTimeoutAfterKeepAliveMessage) {
@@ -403,10 +405,10 @@ TEST_F(FidoHidDeviceTest, TestDeviceTimeoutAfterKeepAliveMessage) {
       // is invoked only after 3 seconds, which should cause device to timeout.
       .WillOnce(Invoke([&](device::mojom::HidConnection::ReadCallback* cb) {
         scoped_task_environment_.FastForwardBy(kDeviceTimeout);
-        std::move(*cb).Run(
-            true, 0,
-            CreateMockResponse(mock_connection.connection_channel_id(),
-                               kMockVersionResponseSuffix));
+        std::move(*cb).Run(true, 0,
+                           CreateMockResponseWithChannelId(
+                               mock_connection.connection_channel_id(),
+                               kU2fMockResponseMessage));
       }));
 
   // Add device and set mock connection to fake hid manager.
@@ -425,8 +427,7 @@ TEST_F(FidoHidDeviceTest, TestDeviceTimeoutAfterKeepAliveMessage) {
   // Keep alive message handling is only supported for CTAP HID device.
   device->set_supported_protocol(ProtocolVersion::kCtap);
   TestDeviceCallbackReceiver cb;
-  device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(false),
-                         cb.callback());
+  device->DeviceTransact(GetMockDeviceRequest(), cb.callback());
   cb.WaitForCallback();
   const auto& value = cb.value();
   EXPECT_FALSE(value);
@@ -467,10 +468,10 @@ TEST_F(FidoHidDeviceTest, TestCancel) {
         auto delay = base::TimeDelta::FromSeconds(2);
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
             FROM_HERE,
-            base::BindOnce(
-                std::move(*cb), true, 0,
-                CreateMockResponse(mock_connection.connection_channel_id(),
-                                   kMockVersionResponseSuffix)),
+            base::BindOnce(std::move(*cb), true, 0,
+                           CreateMockResponseWithChannelId(
+                               mock_connection.connection_channel_id(),
+                               kU2fMockResponseMessage)),
             delay);
       }));
 
@@ -490,8 +491,7 @@ TEST_F(FidoHidDeviceTest, TestCancel) {
   // Keep alive message handling is only supported for CTAP HID device.
   device->set_supported_protocol(ProtocolVersion::kCtap);
   TestDeviceCallbackReceiver cb;
-  device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(false),
-                         cb.callback());
+  device->DeviceTransact(GetMockDeviceRequest(), cb.callback());
   device->Cancel();
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
 }
