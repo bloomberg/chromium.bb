@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/net/network_portal_notification_controller.h"
+#include "chrome/browser/ui/ash/network/network_portal_notification_controller.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 namespace views {

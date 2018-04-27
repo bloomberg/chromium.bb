@@ -9,7 +9,6 @@
 #include <set>
 
 #include "ash/system/network/network_observer.h"
-#include "ash/system/network/network_portal_detector_observer.h"
 #include "ash/system/network/tray_network_state_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/macros.h"
@@ -24,7 +23,6 @@ class NetworkTrayView;
 
 class TrayNetwork : public SystemTrayItem,
                     public NetworkObserver,
-                    public NetworkPortalDetectorObserver,
                     public TrayNetworkStateObserver::Delegate {
  public:
   explicit TrayNetwork(SystemTray* system_tray);
@@ -42,9 +40,6 @@ class TrayNetwork : public SystemTrayItem,
 
   // NetworkObserver
   void RequestToggleWifi() override;
-
-  // NetworkPortalDetectorObserver
-  void OnCaptivePortalDetected(const std::string& guid) override;
 
   // TrayNetworkStateObserver::Delegate
   void NetworkStateChanged(bool notify_a11y) override;

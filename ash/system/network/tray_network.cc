@@ -239,13 +239,11 @@ TrayNetwork::TrayNetwork(SystemTray* system_tray)
   network_state_observer_.reset(new TrayNetworkStateObserver(this));
   SystemTrayNotifier* notifier = Shell::Get()->system_tray_notifier();
   notifier->AddNetworkObserver(this);
-  notifier->AddNetworkPortalDetectorObserver(this);
 }
 
 TrayNetwork::~TrayNetwork() {
   SystemTrayNotifier* notifier = Shell::Get()->system_tray_notifier();
   notifier->RemoveNetworkObserver(this);
-  notifier->RemoveNetworkPortalDetectorObserver(this);
 }
 
 views::View* TrayNetwork::CreateTrayView(LoginStatus status) {
@@ -304,10 +302,6 @@ void TrayNetwork::RequestToggleWifi() {
     message_center->RemoveNotification(tray::kWifiToggleNotificationId, false);
   }
   message_center->AddNotification(tray::CreateNotification(!enabled));
-}
-
-void TrayNetwork::OnCaptivePortalDetected(const std::string& /* guid */) {
-  NetworkStateChanged(true /* notify_a11y */);
 }
 
 void TrayNetwork::NetworkStateChanged(bool notify_a11y) {

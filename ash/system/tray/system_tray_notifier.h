@@ -19,7 +19,6 @@ namespace ash {
 class BluetoothObserver;
 class IMEObserver;
 class NetworkObserver;
-class NetworkPortalDetectorObserver;
 class ScreenCaptureObserver;
 class ScreenShareObserver;
 class SystemTrayFocusObserver;
@@ -52,13 +51,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void RemoveNetworkObserver(NetworkObserver* observer);
   void NotifyRequestToggleWifi();
 
-  // Network portal detector.
-  void AddNetworkPortalDetectorObserver(
-      NetworkPortalDetectorObserver* observer);
-  void RemoveNetworkPortalDetectorObserver(
-      NetworkPortalDetectorObserver* observer);
-  void NotifyOnCaptivePortalDetected(const std::string& guid);
-
   // Screen capture.
   void AddScreenCaptureObserver(ScreenCaptureObserver* observer);
   void RemoveScreenCaptureObserver(ScreenCaptureObserver* observer);
@@ -87,8 +79,6 @@ class ASH_EXPORT SystemTrayNotifier {
   base::ObserverList<BluetoothObserver> bluetooth_observers_;
   base::ObserverList<IMEObserver> ime_observers_;
   base::ObserverList<NetworkObserver> network_observers_;
-  base::ObserverList<NetworkPortalDetectorObserver>
-      network_portal_detector_observers_;
   base::ObserverList<ScreenCaptureObserver> screen_capture_observers_;
   base::ObserverList<ScreenShareObserver> screen_share_observers_;
   base::ObserverList<SystemTrayFocusObserver> system_tray_focus_observers_;

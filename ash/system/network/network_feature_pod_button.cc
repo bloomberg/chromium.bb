@@ -27,14 +27,11 @@ NetworkFeaturePodButton::NetworkFeaturePodButton(
     FeaturePodControllerBase* controller)
     : FeaturePodButton(controller) {
   network_state_observer_ = std::make_unique<TrayNetworkStateObserver>(this);
-  Shell::Get()->system_tray_notifier()->AddNetworkPortalDetectorObserver(this);
   Update();
 }
 
 NetworkFeaturePodButton::~NetworkFeaturePodButton() {
   network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
-  Shell::Get()->system_tray_notifier()->RemoveNetworkPortalDetectorObserver(
-      this);
 }
 
 void NetworkFeaturePodButton::NetworkIconChanged() {
@@ -42,10 +39,6 @@ void NetworkFeaturePodButton::NetworkIconChanged() {
 }
 
 void NetworkFeaturePodButton::NetworkStateChanged(bool notify_a11y) {
-  Update();
-}
-
-void NetworkFeaturePodButton::OnCaptivePortalDetected(const std::string& guid) {
   Update();
 }
 
