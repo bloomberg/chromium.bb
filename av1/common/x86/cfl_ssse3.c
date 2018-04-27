@@ -97,37 +97,30 @@ static INLINE void cfl_luma_subsampling_422_lbd_ssse3(const uint8_t *input,
                                                       int16_t *pred_buf_q3,
                                                       int width, int height) {
   const __m128i fours = _mm_set1_epi8(4);
-  const int16_t *end = pred_buf_q3 + height * CFL_BUF_LINE;
-  const int luma_stride = input_stride;
-  __m128i top, next_top, top_16x8, next_top_16x8;
+  __m128i *pred_buf_m128i = (__m128i *)pred_buf_q3;
+  const __m128i *end = pred_buf_m128i + height * CFL_BUF_LINE_I128;
   do {
-    switch (width) {
-      case 4: top = _mm_loadh_epi32((__m128i *)input); break;
-      case 8: top = _mm_loadl_epi64((__m128i *)input); break;
-      case 16: top = _mm_loadu_si128((__m128i *)input); break;
-      case 32:
-        top = _mm_loadu_si128((__m128i *)input);
-        next_top = _mm_loadu_si128((__m128i *)(input + 16));
-        break;
-      default: assert(0);
+    if (width == 4) {
+      __m128i top = _mm_loadh_epi32((__m128i *)input);
+      top = _mm_maddubs_epi16(top, fours);
+      _mm_storeh_epi32(pred_buf_m128i, top);
+    } else if (width == 8) {
+      __m128i top = _mm_loadl_epi64((__m128i *)input);
+      top = _mm_maddubs_epi16(top, fours);
+      _mm_storel_epi64(pred_buf_m128i, top);
+    } else {
+      __m128i top = _mm_loadu_si128((__m128i *)input);
+      top = _mm_maddubs_epi16(top, fours);
+      _mm_storeu_si128(pred_buf_m128i, top);
+      if (width == 32) {
+        __m128i top_1 = _mm_loadu_si128(((__m128i *)input) + 1);
+        top_1 = _mm_maddubs_epi16(top_1, fours);
+        _mm_storeu_si128(pred_buf_m128i + 1, top_1);
+      }
     }
-    top_16x8 = _mm_maddubs_epi16(top, fours);
-    if (width == 32) {
-      next_top_16x8 = _mm_maddubs_epi16(next_top, fours);
-    }
-    switch (width) {
-      case 4: _mm_storeh_epi32((__m128i *)pred_buf_q3, top_16x8); break;
-      case 8: _mm_storel_epi64((__m128i *)pred_buf_q3, top_16x8); break;
-      case 16: _mm_storeu_si128((__m128i *)pred_buf_q3, top_16x8); break;
-      case 32:
-        _mm_storeu_si128((__m128i *)pred_buf_q3, top_16x8);
-        _mm_storeu_si128((__m128i *)(pred_buf_q3 + 8), next_top_16x8);
-        break;
-      default: assert(0);
-    }
-    input += luma_stride;
-    pred_buf_q3 += CFL_BUF_LINE;
-  } while (pred_buf_q3 < end);
+    input += input_stride;
+    pred_buf_m128i += CFL_BUF_LINE_I128;
+  } while (pred_buf_m128i < end);
 }
 
 /**
