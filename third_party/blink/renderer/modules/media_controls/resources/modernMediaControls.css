@@ -289,6 +289,13 @@ video::-webkit-media-controls-overlay-play-button {
   background: transparent;
   margin-bottom: -40px;
   position: relative;
+  opacity: 1;
+  transition: opacity 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+video::-webkit-media-controls-overlay-play-button.hidden {
+  opacity: 0;
+  transition: opacity 0.75s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
