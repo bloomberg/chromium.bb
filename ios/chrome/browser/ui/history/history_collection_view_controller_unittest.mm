@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/browsing_history_service.h"
@@ -24,6 +25,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
 #import "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
 #include "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/web/public/test/test_web_thread.h"
@@ -145,6 +147,8 @@ class LegacyHistoryCollectionViewControllerTest : public BlockCleanupTest {
 
 // Tests that isEmpty property returns NO after entries have been received.
 TEST_F(LegacyHistoryCollectionViewControllerTest, IsEmpty) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(kUIRefreshPhase1);
   QueryHistory({{GURL(kTestUrl1), Time::Now()}});
   EXPECT_FALSE([history_collection_view_controller_ isEmpty]);
 }
@@ -154,6 +158,8 @@ TEST_F(LegacyHistoryCollectionViewControllerTest, IsEmpty) {
 // This ensures that when HISTORY_DELETE_DIRECTIVES is disabled,
 // only local device history items are shown.
 TEST_F(LegacyHistoryCollectionViewControllerTest, IsNotEmptyWhenSyncEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(kUIRefreshPhase1);
   EXPECT_CALL(*sync_setup_service_mock_, IsSyncEnabled())
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*sync_setup_service_mock_,
@@ -167,6 +173,8 @@ TEST_F(LegacyHistoryCollectionViewControllerTest, IsNotEmptyWhenSyncEnabled) {
 // Tests adding two entries to history from the same day, then deleting the
 // first of them results in one history entry in the collection.
 TEST_F(LegacyHistoryCollectionViewControllerTest, DeleteSingleEntry) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(kUIRefreshPhase1);
   QueryHistory(
       {{GURL(kTestUrl1), Time::Now()}, {GURL(kTestUrl2), Time::Now()}});
 
@@ -186,6 +194,9 @@ TEST_F(LegacyHistoryCollectionViewControllerTest, DeleteSingleEntry) {
 // Tests that adding two entries to history from the same day then deleting
 // both of them results in only the header section in the collection.
 TEST_F(LegacyHistoryCollectionViewControllerTest, DeleteMultipleEntries) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(kUIRefreshPhase1);
+
   QueryHistory(
       {{GURL(kTestUrl1), Time::Now()}, {GURL(kTestUrl2), Time::Now()}});
 
@@ -211,6 +222,8 @@ TEST_F(LegacyHistoryCollectionViewControllerTest, DeleteMultipleEntries) {
 // Tests that adding two entries to history from different days then deleting
 // both of them results in only the header section in the collection.
 TEST_F(LegacyHistoryCollectionViewControllerTest, DeleteMultipleSections) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(kUIRefreshPhase1);
   QueryHistory({{GURL(kTestUrl1), Time::Now() - TimeDelta::FromDays(1)},
                 {GURL(kTestUrl2), Time::Now()}});
 

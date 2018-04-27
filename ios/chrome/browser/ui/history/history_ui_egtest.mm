@@ -16,10 +16,10 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
+#import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #import "ios/chrome/browser/ui/history/legacy_history_entry_item.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
-#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -110,25 +110,11 @@ id<GREYMatcher> HistoryButton() {
 }
 // Matcher for the edit button in the navigation bar.
 id<GREYMatcher> NavigationEditButton() {
-  if (IsUIRefreshPhase1Enabled()) {
-    return grey_accessibilityID(
-        l10n_util::GetNSStringWithFixup(IDS_HISTORY_START_EDITING_BUTTON));
-  } else {
-    return ButtonWithAccessibilityLabelId(IDS_HISTORY_START_EDITING_BUTTON);
-  }
+  return grey_accessibilityID(kHistoryToolbarEditButtonIdentifier);
 }
 // Matcher for the delete button.
 id<GREYMatcher> DeleteHistoryEntriesButton() {
-  // Include class restriction to exclude MDCCollectionViewInfoBar, which is
-  // hidden.
-  if (IsUIRefreshPhase1Enabled()) {
-    return grey_accessibilityID(l10n_util::GetNSStringWithFixup(
-        IDS_HISTORY_DELETE_SELECTED_ENTRIES_BUTTON));
-  } else {
-    return grey_allOf(ButtonWithAccessibilityLabelId(
-                          IDS_HISTORY_DELETE_SELECTED_ENTRIES_BUTTON),
-                      grey_kindOfClass([UIButton class]), nil);
-  }
+  return grey_accessibilityID(kHistoryToolbarDeleteButtonIdentifier);
 }
 // Matcher for the search button.
 id<GREYMatcher> SearchIconButton() {
@@ -141,17 +127,11 @@ id<GREYMatcher> SearchIconButton() {
 }
 // Matcher for the cancel button.
 id<GREYMatcher> CancelButton() {
-  return ButtonWithAccessibilityLabelId(IDS_HISTORY_CANCEL_EDITING_BUTTON);
+  return grey_accessibilityID(kHistoryToolbarCancelButtonIdentifier);
 }
 // Matcher for the button to open the clear browsing data panel.
 id<GREYMatcher> OpenClearBrowsingDataButton() {
-  if (IsUIRefreshPhase1Enabled()) {
-    return grey_accessibilityID(l10n_util::GetNSStringWithFixup(
-        IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG));
-  } else {
-    return ButtonWithAccessibilityLabelId(
-        IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG);
-  }
+  return grey_accessibilityID(kHistoryToolbarClearBrowsingButtonIdentifier);
 }
 // Matcher for the Open in New Incognito Tab option in the context menu.
 id<GREYMatcher> OpenInNewIncognitoTabButton() {
@@ -453,7 +433,7 @@ id<GREYMatcher> ConfirmClearBrowsingDataButton() {
   // Close history.
   if (IsUIRefreshPhase1Enabled()) {
     id<GREYMatcher> exitMatcher =
-        grey_accessibilityID(kTableViewNavigationDismissButtonId);
+        grey_accessibilityID(kHistoryNavigationControllerDoneButtonIdentifier);
     [[EarlGrey selectElementWithMatcher:exitMatcher] performAction:grey_tap()];
   } else {
     [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
