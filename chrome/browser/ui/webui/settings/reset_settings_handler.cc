@@ -14,7 +14,9 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_brand.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/profile_resetter/brandcode_config_fetcher.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
@@ -26,6 +28,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -212,10 +215,11 @@ void ResetSettingsHandler::OnShowResetProfileDialog(
   if (brandcode_.empty())
     return;
   config_fetcher_.reset(new BrandcodeConfigFetcher(
+      g_browser_process->system_network_context_manager()
+          ->GetURLLoaderFactory(),
       base::Bind(&ResetSettingsHandler::OnSettingsFetched,
                  base::Unretained(this)),
-      GURL("https://tools.google.com/service/update2"),
-      brandcode_));
+      GURL("https://tools.google.com/service/update2"), brandcode_));
 }
 
 void ResetSettingsHandler::OnHideResetProfileDialog(
