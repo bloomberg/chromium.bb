@@ -47198,6 +47198,12 @@ Full version information for the fingerprint enum values:
   <int value="3" label="Both"/>
 </enum>
 
+<enum name="WebRequestWSRequestHeadersModification">
+  <int value="0" label="None"/>
+  <int value="1" label="Setting User-Agent only"/>
+  <int value="2" label="Risky modifications"/>
+</enum>
+
 <enum name="WebRTCAecDelayEstimateReliability">
   <int value="0" label="None."/>
   <int value="1" label="Poor."/>

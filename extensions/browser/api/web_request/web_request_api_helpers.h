@@ -274,6 +274,7 @@ void MergeOnBeforeRequestResponses(
 // |deltas.request_cookie_modifications|. Conflicts are currently ignored
 // silently.
 void MergeCookiesInOnBeforeSendHeadersResponses(
+    const GURL& gurl,
     const EventResponseDeltas& deltas,
     net::HttpRequestHeaders* request_headers,
     extensions::WarningSet* conflicting_extensions,
@@ -283,6 +284,7 @@ void MergeCookiesInOnBeforeSendHeadersResponses(
 // Stores in |request_headers_modified| whether the request headers were
 // modified.
 void MergeOnBeforeSendHeadersResponses(
+    const GURL& url,
     const EventResponseDeltas& deltas,
     net::HttpRequestHeaders* request_headers,
     extensions::WarningSet* conflicting_extensions,
@@ -293,6 +295,7 @@ void MergeOnBeforeSendHeadersResponses(
 // NULL, a copy of |original_response_headers| is created. Conflicts are
 // currently ignored silently.
 void MergeCookiesInOnHeadersReceivedResponses(
+    const GURL& url,
     const EventResponseDeltas& deltas,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
