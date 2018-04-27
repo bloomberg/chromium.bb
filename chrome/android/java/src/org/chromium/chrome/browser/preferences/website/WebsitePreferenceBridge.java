@@ -213,25 +213,26 @@ public abstract class WebsitePreferenceBridge {
     }
 
     /**
-     * Returns the list of all USB device permissions.
+     * Returns the list of all chosen object permissions for the given ContentSettingsType.
      *
-     * There will be one UsbInfo instance for each granted permission. That
-     * means that if two origin/embedder pairs have permission for the same
-     * device there will be two UsbInfo instances.
+     * There will be one ChosenObjectInfo instance for each granted permission. That means that if
+     * two origin/embedder pairs have permission for the same object there will be two
+     * ChosenObjectInfo instances.
      */
-    public static List<UsbInfo> getUsbInfo() {
-        ArrayList<UsbInfo> list = new ArrayList<UsbInfo>();
-        nativeGetUsbOrigins(list);
+    public static List<ChosenObjectInfo> getChosenObjectInfo(
+            @ContentSettingsType int contentSettingsType) {
+        ArrayList<ChosenObjectInfo> list = new ArrayList<ChosenObjectInfo>();
+        nativeGetChosenObjects(contentSettingsType, list);
         return list;
     }
 
     /**
-     * Inserts USB device information into a list.
+     * Inserts a ChosenObjectInfo into a list.
      */
     @CalledByNative
-    private static void insertUsbInfoIntoList(
-            ArrayList<UsbInfo> list, String origin, String embedder, String name, String object) {
-        list.add(new UsbInfo(origin, embedder, name, object));
+    private static void insertChosenObjectInfoIntoList(ArrayList<ChosenObjectInfo> list,
+            int contentSettingsType, String origin, String embedder, String name, String object) {
+        list.add(new ChosenObjectInfo(contentSettingsType, origin, embedder, name, object));
     }
 
     /**
@@ -294,8 +295,9 @@ public abstract class WebsitePreferenceBridge {
     private static native void nativeFetchStorageInfo(Object callback);
     static native boolean nativeIsContentSettingsPatternValid(String pattern);
     static native boolean nativeUrlMatchesContentSettingsPattern(String url, String pattern);
-    static native void nativeGetUsbOrigins(Object list);
-    static native void nativeRevokeUsbPermission(String origin, String embedder, String object);
+    static native void nativeGetChosenObjects(@ContentSettingsType int type, Object list);
+    static native void nativeRevokeObjectPermission(
+            @ContentSettingsType int type, String origin, String embedder, String object);
     static native void nativeClearBannerData(String origin);
     private static native boolean nativeIsPermissionControlledByDSE(
             @ContentSettingsType int contentSettingsType, String origin, boolean isIncognito);

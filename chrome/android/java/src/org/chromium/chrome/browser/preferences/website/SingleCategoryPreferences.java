@@ -18,6 +18,7 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SearchView;
 import android.text.format.Formatter;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -52,7 +53,9 @@ import org.chromium.ui.widget.Toast;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Shows a list of sites in a particular Site Settings category. For example, this could show all
@@ -129,84 +132,16 @@ public class SingleCategoryPreferences extends PreferenceFragment
             if (getActivity() == null) return;
             mWebsites = null;
 
-            // Find origins matching the current search.
-            List<WebsitePreference> websites = new ArrayList<>();
-            for (Website site : sites) {
-                if (mSearch.isEmpty() || site.getTitle().contains(mSearch)) {
-                    websites.add(new WebsitePreference(getActivity(), site, mCategory));
-                }
-            }
-
             resetList();
-            Collections.sort(websites);
-            mAllowedSiteCount = 0;
-            int blocked = 0;
-            if (websites.size() > 0) {
-                if (!mGroupByAllowBlock) {
-                    // We're not grouping sites into Allowed/Blocked lists, so show all in order
-                    // (will be alphabetical).
-                    for (WebsitePreference website : websites) {
-                        getPreferenceScreen().addPreference(website);
-                    }
-                } else {
-                    // Group sites into Allowed/Blocked lists.
-                    PreferenceGroup allowedGroup =
-                            (PreferenceGroup) getPreferenceScreen().findPreference(
-                                    ALLOWED_GROUP);
-                    PreferenceGroup blockedGroup =
-                            (PreferenceGroup) getPreferenceScreen().findPreference(
-                                    BLOCKED_GROUP);
 
-                    for (WebsitePreference website : websites) {
-                        if (isOnBlockList(website)) {
-                            blockedGroup.addPreference(website);
-                            blocked += 1;
-                        } else {
-                            allowedGroup.addPreference(website);
-                            mAllowedSiteCount += 1;
-                        }
-                    }
-
-                    // For the ads permission, the Allowed list should appear first. Default
-                    // collapsed settings should not change.
-                    if (mCategory.showAdsSites()) {
-                        blockedGroup.setOrder(allowedGroup.getOrder() + 1);
-                    }
-
-                    // The default, when the two lists are shown for the first time, is for the
-                    // Blocked list to be collapsed and Allowed expanded -- because the data in
-                    // the Allowed list is normally more useful than the data in the Blocked
-                    // list. A collapsed initial Blocked list works well *except* when there's
-                    // nothing in the Allowed list because then there's only Blocked items to
-                    // show and it doesn't make sense for those items to be hidden. So, in that
-                    // case (and only when the list is shown for the first time) do we ignore
-                    // the collapsed directive. The user can still collapse and expand the
-                    // Blocked list at will.
-                    if (mIsInitialRun) {
-                        if (allowedGroup.getPreferenceCount() == 0) mBlockListExpanded = true;
-                        mIsInitialRun = false;
-                    }
-
-                    if (!mBlockListExpanded) {
-                        blockedGroup.removeAll();
-                    }
-
-                    if (!mAllowListExpanded) {
-                        allowedGroup.removeAll();
-                    }
-                }
-
-                mWebsites = websites;
-                updateBlockedHeader(blocked);
-                ChromeSwitchPreference globalToggle = (ChromeSwitchPreference)
-                        getPreferenceScreen().findPreference(READ_WRITE_TOGGLE_KEY);
-                updateAllowedHeader(mAllowedSiteCount,
-                                    (globalToggle != null ? globalToggle.isChecked() : true));
+            boolean hasEntries;
+            if (mCategory.showUsbDevices()) {
+                hasEntries = addChosenObjects(sites);
             } else {
-                displayEmptyScreenMessage();
-                updateBlockedHeader(0);
-                updateAllowedHeader(0, true);
+                hasEntries = addWebsites(sites);
             }
+
+            if (!hasEntries) displayEmptyScreenMessage();
         }
     }
 
@@ -528,6 +463,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
                         (boolean) newValue);
             } else if (mCategory.showSoundSites()) {
                 PrefServiceBridge.getInstance().setSoundEnabled((boolean) newValue);
+            } else if (mCategory.showUsbDevices()) {
+                PrefServiceBridge.getInstance().setUsbEnabled((boolean) newValue);
             }
 
             // Categories that support adding exceptions also manage the 'Add site' preference.
@@ -646,6 +583,131 @@ public class SingleCategoryPreferences extends PreferenceFragment
                     new AddExceptionPreference(getActivity(), ADD_EXCEPTION_KEY,
                             getAddExceptionDialogMessage(), this));
         }
+    }
+
+    private boolean addWebsites(Collection<Website> sites) {
+        List<WebsitePreference> websites = new ArrayList<>();
+
+        // Find origins matching the current search.
+        for (Website site : sites) {
+            if (mSearch.isEmpty() || site.getTitle().contains(mSearch)) {
+                websites.add(new WebsitePreference(getActivity(), site, mCategory));
+            }
+        }
+
+        if (websites.size() == 0) {
+            updateBlockedHeader(0);
+            updateAllowedHeader(0, true);
+            return false;
+        }
+
+        Collections.sort(websites);
+        mAllowedSiteCount = 0;
+        int blocked = 0;
+
+        if (!mGroupByAllowBlock) {
+            // We're not grouping sites into Allowed/Blocked lists, so show all in order
+            // (will be alphabetical).
+            for (WebsitePreference website : websites) {
+                getPreferenceScreen().addPreference(website);
+            }
+        } else {
+            // Group sites into Allowed/Blocked lists.
+            PreferenceGroup allowedGroup =
+                    (PreferenceGroup) getPreferenceScreen().findPreference(ALLOWED_GROUP);
+            PreferenceGroup blockedGroup =
+                    (PreferenceGroup) getPreferenceScreen().findPreference(BLOCKED_GROUP);
+
+            for (WebsitePreference website : websites) {
+                if (isOnBlockList(website)) {
+                    blockedGroup.addPreference(website);
+                    blocked += 1;
+                } else {
+                    allowedGroup.addPreference(website);
+                    mAllowedSiteCount += 1;
+                }
+            }
+
+            // For the ads permission, the Allowed list should appear first. Default
+            // collapsed settings should not change.
+            if (mCategory.showAdsSites()) {
+                blockedGroup.setOrder(allowedGroup.getOrder() + 1);
+            }
+
+            // The default, when the two lists are shown for the first time, is for the
+            // Blocked list to be collapsed and Allowed expanded -- because the data in
+            // the Allowed list is normally more useful than the data in the Blocked
+            // list. A collapsed initial Blocked list works well *except* when there's
+            // nothing in the Allowed list because then there's only Blocked items to
+            // show and it doesn't make sense for those items to be hidden. So, in that
+            // case (and only when the list is shown for the first time) do we ignore
+            // the collapsed directive. The user can still collapse and expand the
+            // Blocked list at will.
+            if (mIsInitialRun) {
+                if (allowedGroup.getPreferenceCount() == 0) mBlockListExpanded = true;
+                mIsInitialRun = false;
+            }
+
+            if (!mBlockListExpanded) {
+                blockedGroup.removeAll();
+            }
+
+            if (!mAllowListExpanded) {
+                allowedGroup.removeAll();
+            }
+        }
+
+        mWebsites = websites;
+        updateBlockedHeader(blocked);
+        ChromeSwitchPreference globalToggle =
+                (ChromeSwitchPreference) getPreferenceScreen().findPreference(
+                        READ_WRITE_TOGGLE_KEY);
+        updateAllowedHeader(
+                mAllowedSiteCount, (globalToggle != null ? globalToggle.isChecked() : true));
+
+        return websites.size() != 0;
+    }
+
+    private boolean addChosenObjects(Collection<Website> sites) {
+        Map<String, Pair<ArrayList<ChosenObjectInfo>, ArrayList<Website>>> objects =
+                new HashMap<>();
+
+        // Find chosen objects matching the current search and collect the list of sites
+        // that have permission to access each.
+        for (Website site : sites) {
+            for (ChosenObjectInfo info : site.getChosenObjectInfo()) {
+                if (mSearch.isEmpty() || info.getName().toLowerCase().contains(mSearch)) {
+                    Pair<ArrayList<ChosenObjectInfo>, ArrayList<Website>> entry =
+                            objects.get(info.getObject());
+                    if (entry == null) {
+                        entry = Pair.create(
+                                new ArrayList<ChosenObjectInfo>(), new ArrayList<Website>());
+                        objects.put(info.getObject(), entry);
+                    }
+                    entry.first.add(info);
+                    entry.second.add(site);
+                }
+            }
+        }
+
+        updateBlockedHeader(0);
+        updateAllowedHeader(0, true);
+
+        for (Pair<ArrayList<ChosenObjectInfo>, ArrayList<Website>> entry : objects.values()) {
+            Preference preference = new Preference(getActivity());
+            Bundle extras = preference.getExtras();
+            extras.putInt(
+                    ChosenObjectPreferences.EXTRA_CATEGORY, mCategory.toContentSettingsType());
+            extras.putString(EXTRA_TITLE, getActivity().getTitle().toString());
+            extras.putSerializable(ChosenObjectPreferences.EXTRA_OBJECT_INFOS, entry.first);
+            extras.putSerializable(ChosenObjectPreferences.EXTRA_SITES, entry.second);
+            preference.setIcon(ContentSettingsResources.getIcon(mCategory.toContentSettingsType()));
+            preference.setTitle(entry.first.get(0).getName());
+            preference.setFragment(ChosenObjectPreferences.class.getCanonicalName());
+            getPreferenceScreen().addPreference(preference);
+        }
+
+        return objects.size() != 0;
     }
 
     private void configureGlobalToggles() {
@@ -779,6 +841,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
                             PrefServiceBridge.getInstance().isProtectedMediaIdentifierEnabled());
                 } else if (mCategory.showSoundSites()) {
                     globalToggle.setChecked(PrefServiceBridge.getInstance().isSoundEnabled());
+                } else if (mCategory.showUsbDevices()) {
+                    globalToggle.setChecked(PrefServiceBridge.getInstance().isUsbEnabled());
                 }
             }
         }

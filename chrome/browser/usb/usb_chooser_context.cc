@@ -204,6 +204,15 @@ bool UsbChooserContext::IsValidObject(const base::DictionaryValue& object) {
          object.HasKey(kSerialNumberKey);
 }
 
+std::string UsbChooserContext::GetObjectName(
+    const base::DictionaryValue& object) {
+  DCHECK(IsValidObject(object));
+  std::string name;
+  bool found = object.GetString(kDeviceNameKey, &name);
+  DCHECK(found);
+  return name;
+}
+
 void UsbChooserContext::OnDeviceRemovedCleanup(
     scoped_refptr<UsbDevice> device) {
   for (auto& map_entry : ephemeral_devices_)

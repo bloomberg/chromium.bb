@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ListView;
 
+import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
@@ -23,13 +24,15 @@ import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Locale;
 
 /**
- * Shows the list of sites that the user has granted access to a particular USB device.
+ * Shows a particular chosen object (e.g. a USB device) and the list of sites that have been
+ * granted access to it by the user.
  */
-public class UsbDevicePreferences
+public class ChosenObjectPreferences
         extends PreferenceFragment implements Preference.OnPreferenceClickListener {
-    public static final String EXTRA_USB_INFOS = "org.chromium.chrome.preferences.usb_infos";
+    public static final String EXTRA_OBJECT_INFOS = "org.chromium.chrome.preferences.object_infos";
     public static final String EXTRA_SITES = "org.chromium.chrome.preferences.site_set";
     public static final String EXTRA_CATEGORY =
             "org.chromium.chrome.preferences.content_settings_type";
@@ -38,10 +41,8 @@ public class UsbDevicePreferences
 
     // The site settings category we are showing.
     private SiteSettingsCategory mCategory;
-    // Canonical example of the USB device being examined.
-    private UsbInfo mUsbInfo;
-    // All of the USB device permission entries matching the canonical device.
-    private ArrayList<UsbInfo> mUsbInfos;
+    // The set of object permissions being examined.
+    private ArrayList<ChosenObjectInfo> mObjectInfos;
     // The set of sites to display.
     private ArrayList<Website> mSites;
     // The view for searching the list of items.
@@ -52,14 +53,15 @@ public class UsbDevicePreferences
     @Override
     @SuppressWarnings("unchecked")
     public void onActivityCreated(Bundle savedInstanceState) {
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.usb_device_preferences);
+        PreferenceUtils.addPreferencesFromResource(this, R.xml.chosen_object_preferences);
         ListView listView = (ListView) getView().findViewById(android.R.id.list);
         listView.setDivider(null);
 
         int contentSettingsType = getArguments().getInt(EXTRA_CATEGORY);
         mCategory = SiteSettingsCategory.fromContentSettingsType(contentSettingsType);
-        mUsbInfos = (ArrayList<UsbInfo>) getArguments().getSerializable(EXTRA_USB_INFOS);
-        mUsbInfo = mUsbInfos.get(0);
+        mObjectInfos =
+                (ArrayList<ChosenObjectInfo>) getArguments().getSerializable(EXTRA_OBJECT_INFOS);
+        checkObjectConsistency();
         mSites = (ArrayList<Website>) getArguments().getSerializable(EXTRA_SITES);
         String title = getArguments().getString(SingleCategoryPreferences.EXTRA_TITLE);
         if (title != null) getActivity().setTitle(title);
@@ -67,6 +69,21 @@ public class UsbDevicePreferences
         setHasOptionsMenu(true);
 
         super.onActivityCreated(savedInstanceState);
+    }
+
+    /**
+     * Checks the consistency of |mObjectInfos|.
+     *
+     * This method asserts that for all the entries in |mObjectInfos| the getObject() method
+     * returns the same value. This must be true because this activity is displaying permissions
+     * for a single object. Each instance varies only in which site it represents.
+     */
+    @RemovableInRelease
+    private void checkObjectConsistency() {
+        String exampleObject = mObjectInfos.get(0).getObject();
+        for (ChosenObjectInfo info : mObjectInfos) {
+            assert info.getObject().equals(exampleObject);
+        }
     }
 
     @Override
@@ -86,7 +103,7 @@ public class UsbDevicePreferences
             @Override
             public boolean onQueryTextChange(String query) {
                 // Make search case-insensitive.
-                query = query.toLowerCase();
+                query = query.toLowerCase(Locale.getDefault());
 
                 if (query.equals(mSearch)) return true;
 
@@ -127,7 +144,7 @@ public class UsbDevicePreferences
     @Override
     public boolean onPreferenceClick(Preference preference) {
         if (PREF_OBJECT_NAME.equals(preference.getKey())) {
-            for (int i = 0; i < mUsbInfos.size(); ++i) mUsbInfos.get(i).revoke();
+            for (int i = 0; i < mObjectInfos.size(); ++i) mObjectInfos.get(i).revoke();
             getActivity().finish();
             return true;
         }
@@ -142,25 +159,32 @@ public class UsbDevicePreferences
             // In that case, bail out.
             if (getActivity() == null) return;
 
-            mUsbInfos.clear();
+            // Remember the object being examined in this view so that we can filter the results
+            // to only include sites with permission for this particular object.
+            String exampleObject = mObjectInfos.get(0).getObject();
+
+            mObjectInfos.clear();
             mSites = new ArrayList<Website>();
             for (Website site : sites) {
-                for (UsbInfo info : site.getUsbInfo()) {
-                    if (info.getObject().equals(mUsbInfo.getObject())) {
-                        mUsbInfos.add(info);
-                        if (mSearch.isEmpty() || site.getTitle().toLowerCase().contains(mSearch)) {
+                for (ChosenObjectInfo info : site.getChosenObjectInfo()) {
+                    if (info.getObject().equals(exampleObject)) {
+                        mObjectInfos.add(info);
+                        if (mSearch.isEmpty()
+                                || site.getTitle()
+                                           .toLowerCase(Locale.getDefault())
+                                           .contains(mSearch)) {
                             mSites.add(site);
                         }
                     }
                 }
             }
 
-            // After revoking a site's permission to access a device the user may end up back at
+            // After revoking a site's permission to access an object the user may end up back at
             // this activity. It is awkward to display this empty list because there's no action
             // that can be taken from it. In this case we dismiss this activity as well, taking
-            // them back to UsbChooserPreferences which will now no longer offer the option to
-            // examine the permissions for this device.
-            if (mUsbInfos.isEmpty()) {
+            // them back to SingleCategoryPreferences which will now no longer offer the option to
+            // examine the permissions for this object.
+            if (mObjectInfos.isEmpty()) {
                 getActivity().finish();
             } else {
                 resetList();
@@ -180,11 +204,13 @@ public class UsbDevicePreferences
 
     private void resetList() {
         getPreferenceScreen().removeAll();
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.usb_device_preferences);
+        PreferenceUtils.addPreferencesFromResource(this, R.xml.chosen_object_preferences);
 
         PreferenceScreen preferenceScreen = getPreferenceScreen();
         Preference header = preferenceScreen.findPreference(PREF_OBJECT_NAME);
-        header.setTitle(mUsbInfo.getName());
+        // All the ChosenObjectInfo instances represent the same object so we may arbitrarily
+        // use the name of the first one.
+        header.setTitle(mObjectInfos.get(0).getName());
         header.setOnPreferenceClickListener(this);
 
         for (int i = 0; i < mSites.size(); ++i) {

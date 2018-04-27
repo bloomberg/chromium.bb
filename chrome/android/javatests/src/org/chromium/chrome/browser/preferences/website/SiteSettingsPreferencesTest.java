@@ -218,79 +218,42 @@ public class SiteSettingsPreferencesTest {
         });
     }
 
-    private void setEnablePopups(final boolean enabled) {
-        final Preferences preferenceActivity =
-                startSiteSettingsCategory(SiteSettingsPreferences.POPUPS_KEY);
+    private void setGlobalToggleForCategory(final String category, final boolean enabled) {
+        final Preferences preferenceActivity = startSiteSettingsCategory(category);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                SingleCategoryPreferences websitePreferences =
+                SingleCategoryPreferences preferences =
                         (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
-                ChromeSwitchPreference popups = (ChromeSwitchPreference)
-                        websitePreferences.findPreference(
-                                SingleCategoryPreferences.READ_WRITE_TOGGLE_KEY);
-                websitePreferences.onPreferenceChange(popups, enabled);
+                ChromeSwitchPreference toggle = (ChromeSwitchPreference) preferences.findPreference(
+                        SingleCategoryPreferences.READ_WRITE_TOGGLE_KEY);
+                preferences.onPreferenceChange(toggle, enabled);
+            }
+        });
+        preferenceActivity.finish();
+    }
+
+    private void setEnablePopups(final boolean enabled) {
+        setGlobalToggleForCategory(SiteSettingsCategory.CATEGORY_POPUPS, enabled);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
                 Assert.assertEquals("Popups should be " + (enabled ? "allowed" : "blocked"),
                         enabled, PrefServiceBridge.getInstance().popupsEnabled());
             }
         });
-        preferenceActivity.finish();
     }
 
     private void setEnableCamera(final boolean enabled) {
-        final Preferences preferenceActivity =
-                startSiteSettingsCategory(SiteSettingsPreferences.CAMERA_KEY);
-
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                SingleCategoryPreferences websitePreferences =
-                        (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
-                ChromeSwitchPreference toggle = (ChromeSwitchPreference)
-                        websitePreferences.findPreference(
-                                SingleCategoryPreferences.READ_WRITE_TOGGLE_KEY);
-                websitePreferences.onPreferenceChange(toggle, enabled);
-                Assert.assertEquals("Camera should be " + (enabled ? "allowed" : "blocked"),
-                        enabled, PrefServiceBridge.getInstance().isCameraEnabled());
-            }
-        });
-        preferenceActivity.finish();
-    }
-
-    private void setEnableMic(final boolean enabled) {
-        final Preferences preferenceActivity =
-                startSiteSettingsCategory(SiteSettingsPreferences.MICROPHONE_KEY);
-
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                SingleCategoryPreferences websitePreferences =
-                        (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
-                ChromeSwitchPreference toggle = (ChromeSwitchPreference)
-                        websitePreferences.findPreference(
-                                SingleCategoryPreferences.READ_WRITE_TOGGLE_KEY);
-                websitePreferences.onPreferenceChange(toggle, enabled);
-                Assert.assertEquals("Mic should be " + (enabled ? "allowed" : "blocked"), enabled,
-                        PrefServiceBridge.getInstance().isMicEnabled());
-            }
-        });
-        preferenceActivity.finish();
-    }
-
-    private void setEnableBackgroundSync(final boolean enabled) {
-        final Preferences preferenceActivity =
-                startSiteSettingsCategory(SiteSettingsCategory.CATEGORY_BACKGROUND_SYNC);
+        setGlobalToggleForCategory(SiteSettingsCategory.CATEGORY_CAMERA, enabled);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                SingleCategoryPreferences backgroundSyncPreferences =
-                        (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
-                ChromeSwitchPreference toggle =
-                        (ChromeSwitchPreference) backgroundSyncPreferences.findPreference(
-                                SingleCategoryPreferences.READ_WRITE_TOGGLE_KEY);
-                backgroundSyncPreferences.onPreferenceChange(toggle, enabled);
+                Assert.assertEquals("Camera should be " + (enabled ? "allowed" : "blocked"),
+                        enabled, PrefServiceBridge.getInstance().isCameraEnabled());
             }
         });
     }
@@ -501,7 +464,15 @@ public class SiteSettingsPreferencesTest {
     @CommandLineFlags.Add({ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM,
             "disable-features=" + ChromeFeatureList.MODAL_PERMISSION_PROMPTS})
     public void testMicBlocked() throws Exception {
-        setEnableMic(false);
+        setGlobalToggleForCategory(SiteSettingsCategory.CATEGORY_MICROPHONE, false);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Assert.assertFalse(
+                        "Mic should be blocked", PrefServiceBridge.getInstance().isMicEnabled());
+            }
+        });
 
         // Test that the microphone permission doesn't get requested.
         mActivityTestRule.loadUrl(mTestServer.getURL("/content/test/data/media/getusermedia.html"));
@@ -569,7 +540,7 @@ public class SiteSettingsPreferencesTest {
      * @param enabled true to test enabling background sync, false to test disabling the feature.
      */
     private void doTestBackgroundSyncPermission(final boolean enabled) {
-        setEnableBackgroundSync(enabled);
+        setGlobalToggleForCategory(SiteSettingsCategory.CATEGORY_BACKGROUND_SYNC, enabled);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -592,6 +563,35 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testBlockBackgroundSync() {
         doTestBackgroundSyncPermission(false);
+    }
+
+    /**
+     * Helper function to test allowing and blocking the USB chooser.
+     * @param enabled true to test enabling the USB chooser, false to test disabling the feature.
+     */
+    private void doTestUsbGuardPermission(final boolean enabled) {
+        setGlobalToggleForCategory(SiteSettingsCategory.CATEGORY_USB, enabled);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Assert.assertEquals("USB should be " + (enabled ? "enabled" : "disabled"),
+                        PrefServiceBridge.getInstance().isUsbEnabled(), enabled);
+            }
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testAllowUsb() {
+        doTestUsbGuardPermission(true);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testBlockUsb() {
+        doTestUsbGuardPermission(false);
     }
 
     private int getTabCount() {

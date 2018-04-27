@@ -57,8 +57,6 @@ Still reading?
     <ignore regexp="clank"/>
     <ignore regexp="com/android/tv"/>
     <ignore regexp="org/chromium/chrome/browser/payments/PaymentRequestMetricsTest.class"/>
-    <ignore regexp="org/chromium/chrome/browser/preferences/website/UsbChooserPreferences"/>
-    <ignore regexp="org/chromium/chrome/browser/preferences/website/UsbDevicePreferences"/>
     <ignore regexp="third_party/cacheinvalidation/src/java/com/google/ipc/invalidation/external/client/contrib/AndroidListenerState.java"/>
   </issue>
   <!-- TODO(crbug.com/635567): Fix this properly. -->

@@ -14,6 +14,7 @@
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -32,11 +33,6 @@ constexpr char kAppName[] = "appName";
 constexpr char kAppId[] = "appId";
 constexpr char kObject[] = "object";
 constexpr char kObjectName[] = "objectName";
-
-ChooserContextBase* GetUsbChooserContext(Profile* profile) {
-  return reinterpret_cast<ChooserContextBase*>(
-      UsbChooserContextFactory::GetForProfile(profile));
-}
 
 namespace {
 
@@ -203,6 +199,14 @@ SiteSettingSource CalculateSiteSettingSource(
   NOTREACHED();
   return SiteSettingSource::kPreference;
 }
+
+ChooserContextBase* GetUsbChooserContext(Profile* profile) {
+  return UsbChooserContextFactory::GetForProfile(profile);
+}
+
+const ChooserTypeNameEntry kChooserTypeGroupNames[] = {
+    {&GetUsbChooserContext, kGroupTypeUsb},
+};
 
 }  // namespace
 
@@ -588,9 +592,7 @@ void GetChooserExceptionsFromProfile(Profile* profile,
       chooser_context->GetAllGrantedObjects();
   AllOriginObjects all_origin_objects;
   for (const auto& object : objects) {
-    std::string name;
-    bool found = object->object.GetString(chooser_type.ui_name_key, &name);
-    DCHECK(found);
+    std::string name = chooser_context->GetObjectName(object->object);
     // It is safe for this structure to hold references into |objects| because
     // they are both destroyed at the end of this function.
     all_origin_objects[make_pair(object->requesting_origin, object->source)]

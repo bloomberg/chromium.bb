@@ -6,7 +6,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <Preference
         android:key="object_name"
-        android:widgetLayout="@layout/usb_permission" />
+        android:widgetLayout="@layout/object_permission" />
     <Preference
         android:key="divider"
         android:layout="@layout/divider_preference" />

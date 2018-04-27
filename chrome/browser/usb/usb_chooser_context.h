@@ -54,6 +54,7 @@ class UsbChooserContext : public ChooserContextBase,
  private:
   // ChooserContextBase implementation.
   bool IsValidObject(const base::DictionaryValue& object) override;
+  std::string GetObjectName(const base::DictionaryValue& object) override;
 
   // device::UsbService::Observer implementation.
   void OnDeviceRemovedCleanup(scoped_refptr<device::UsbDevice> device) override;

@@ -133,22 +133,13 @@ void GetPolicyAllowedUrls(
 // for a given content settings type and is declared early so that it can used
 // by functions below.
 struct ChooserTypeNameEntry {
-  ContentSettingsType type;
   ChooserContextBase* (*get_context)(Profile*);
   const char* name;
-  const char* ui_name_key;
 };
-
-ChooserContextBase* GetUsbChooserContext(Profile* profile);
 
 struct ContentSettingsTypeNameEntry {
   ContentSettingsType type;
   const char* name;
-};
-
-const ChooserTypeNameEntry kChooserTypeGroupNames[] = {
-    {CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, &GetUsbChooserContext,
-     kGroupTypeUsb, "name"},
 };
 
 const ChooserTypeNameEntry* ChooserTypeFromGroupName(const std::string& name);

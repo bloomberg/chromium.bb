@@ -46,7 +46,11 @@ public class Website implements Serializable {
     private ContentSettingException mSoundException;
     private final List<StorageInfo> mStorageInfo = new ArrayList<StorageInfo>();
     private int mStorageInfoCallbacksLeft;
-    private final List<UsbInfo> mUsbInfo = new ArrayList<UsbInfo>();
+
+    // The collection of chooser-based permissions (e.g. USB device access) granted to this site.
+    // Each entry declares its own ContentSettingsType and so depending on how this object was
+    // built this list could contain multiple types of objects.
+    private final List<ChosenObjectInfo> mObjectInfo = new ArrayList<ChosenObjectInfo>();
 
     public Website(WebsiteAddress origin, WebsiteAddress embedder) {
         mOrigin = origin;
@@ -555,16 +559,16 @@ public class Website implements Serializable {
     }
 
     /**
-     * Add information about a USB device permission to the set stored in this object.
+     * Add information about an object the user has granted permission for this site to access.
      */
-    public void addUsbInfo(UsbInfo info) {
-        mUsbInfo.add(info);
+    public void addChosenObjectInfo(ChosenObjectInfo info) {
+        mObjectInfo.add(info);
     }
 
     /**
-     * Returns the set of USB devices this website has been granted permission to access.
+     * Returns the set of objects this website has been granted permission to access.
      */
-    public List<UsbInfo> getUsbInfo() {
-        return new ArrayList<UsbInfo>(mUsbInfo);
+    public List<ChosenObjectInfo> getChosenObjectInfo() {
+        return new ArrayList<ChosenObjectInfo>(mObjectInfo);
     }
 }

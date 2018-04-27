@@ -461,11 +461,12 @@ public class WebsitePermissionsFetcher {
     private class UsbInfoFetcher extends Task {
         @Override
         public void run() {
-            for (UsbInfo info : WebsitePreferenceBridge.getUsbInfo()) {
+            for (ChosenObjectInfo info : WebsitePreferenceBridge.getChosenObjectInfo(
+                         ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA)) {
                 WebsiteAddress origin = WebsiteAddress.create(info.getOrigin());
                 if (origin == null) continue;
                 WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-                findOrCreateSite(origin, embedder).addUsbInfo(info);
+                findOrCreateSite(origin, embedder).addChosenObjectInfo(info);
             }
         }
     }
