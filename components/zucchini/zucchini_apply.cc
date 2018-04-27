@@ -26,13 +26,6 @@ bool ApplyEquivalenceAndExtraData(ConstBufferView old_image,
 
   for (auto equivalence = equiv_source.GetNext(); equivalence.has_value();
        equivalence = equiv_source.GetNext()) {
-    // TODO(ckitagawa): Ensure guards don't overflow. Move these validation
-    // check to the patch reader.
-    // Validate that the |equivalence| is within the |new_image|.
-    if (equivalence->dst_end() > new_image.size()) {
-      LOG(ERROR) << "Out of bounds equivalence";
-      return false;
-    }
     MutableBufferView::iterator next_dst_it =
         new_image.begin() + equivalence->dst_offset;
     CHECK(next_dst_it >= dst_it);
@@ -47,12 +40,6 @@ bool ApplyEquivalenceAndExtraData(ConstBufferView old_image,
     // copy should be valid.
     dst_it = std::copy(extra_data->begin(), extra_data->end(), dst_it);
     CHECK_EQ(dst_it, next_dst_it);
-
-    // Validate that the |equivalence| is within the |old_image|.
-    if (equivalence->src_end() > old_image.size()) {
-      LOG(ERROR) << "Out of bounds equivalence";
-      return false;
-    }
     dst_it = std::copy_n(old_image.begin() + equivalence->src_offset,
                          equivalence->length, dst_it);
     CHECK_EQ(dst_it, next_dst_it + equivalence->length);

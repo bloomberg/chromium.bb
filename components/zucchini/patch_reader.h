@@ -218,7 +218,11 @@ class PatchElementReader {
   const Element& old_element() const { return element_match_.old_element; }
   const Element& new_element() const { return element_match_.new_element; }
 
-  // The Get*() functions below return copies of cached sources.
+  // The Get*() functions below return copies of cached sources. Callers may
+  // assume the following:
+  // - Equivalences satisfy basic boundary constraints
+  //   - "Old" / "new" blocks lie entirely in "old" / "new" images.
+  //   - "New" blocks are sorted.
   EquivalenceSource GetEquivalenceSource() const { return equivalences_; }
   ExtraDataSource GetExtraDataSource() const { return extra_data_; }
   RawDeltaSource GetRawDeltaSource() const { return raw_delta_; }
@@ -231,6 +235,11 @@ class PatchElementReader {
   }
 
  private:
+  // Checks that "old" and "new" blocks of each item in |equivalences_| satisfy
+  // basic order and image bound constraints (using |element_match_| data).
+  // Returns true if successful.
+  bool ValidateEquivalences();
+
   ElementMatch element_match_;
 
   // Cached sources.

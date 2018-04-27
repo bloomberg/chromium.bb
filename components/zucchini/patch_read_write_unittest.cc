@@ -55,6 +55,52 @@ void TestSerialize(const ByteVector& expected, const T& value) {
   EXPECT_EQ(expected, buffer);
 }
 
+ByteVector CreatePatchElement() {
+  return {
+      0x01, 0,   0,   0,    // old_offset
+      0x03, 0,   0,   0,    // new_offset
+      0x51, 0,   0,   0,    // old_length
+      0x50, 0,   0,   0,    // new_length
+      'P',  'x', '8', '6',  // EXE_TYPE_WIN32_X86
+
+      1,    0,   0,   0,  // src_skip size
+      0x10,               // src_skip content
+      1,    0,   0,   0,  // dst_skip size
+      0x11,               // dst_skip content
+      1,    0,   0,   0,  // copy_count size
+      0x12,               // copy_count content
+
+      1,    0,   0,   0,  // extra_data size
+      0x13,               // extra_data content
+
+      1,    0,   0,   0,  // raw_delta_skip size
+      0x14,               // raw_delta_skip content
+      1,    0,   0,   0,  // raw_delta_diff size
+      0x15,               // raw_delta_diff content
+
+      1,    0,   0,   0,  // reference_delta size
+      0x16,               // reference_delta content
+
+      2,    0,   0,   0,  // pool count
+      0,                  // pool_tag
+      1,    0,   0,   0,  // extra_targets size
+      0x17,               // extra_targets content
+      2,                  // pool_tag
+      1,    0,   0,   0,  // extra_targets size
+      0x18,               // extra_targets content
+  };
+}
+
+// Helper to mutate test |data| (e.g., from CreatePatchElement()) at |idx| from |from_val| (as
+// sanity check) to |to_val|.
+void ModifyByte(size_t idx,
+                uint8_t from_val,
+                uint8_t to_val,
+                std::vector<uint8_t>* data) {
+  ASSERT_EQ(from_val, (*data)[idx]);
+  (*data)[idx] = to_val;
+}
+
 }  // namespace
 
 bool operator==(const ByteVector& a, ConstBufferView b) {
@@ -391,39 +437,7 @@ TEST(TargetSourceSinkTest, Normal) {
 }
 
 TEST(PatchElementTest, Normal) {
-  ByteVector data = {
-      0x01, 0,   0,   0,    // old_offset
-      0x03, 0,   0,   0,    // new_offset
-      0x02, 0,   0,   0,    // old_length
-      0x04, 0,   0,   0,    // new_length
-      'P',  'x', '8', '6',  // EXE_TYPE_WIN32_X86
-
-      1,    0,   0,   0,  // src_skip size
-      0x10,               // src_skip content
-      1,    0,   0,   0,  // dst_skip size
-      0x11,               // dst_skip content
-      1,    0,   0,   0,  // copy_count size
-      0x12,               // copy_count content
-
-      1,    0,   0,   0,  // extra_data size
-      0x13,               // extra_data content
-
-      1,    0,   0,   0,  // raw_delta_skip size
-      0x14,               // raw_delta_skip content
-      1,    0,   0,   0,  // raw_delta_diff size
-      0x15,               // raw_delta_diff content
-
-      1,    0,   0,   0,  // reference_delta size
-      0x16,               // reference_delta content
-
-      2,    0,   0,   0,  // pool count
-      0,                  // pool_tag
-      1,    0,   0,   0,  // extra_targets size
-      0x17,               // extra_targets content
-      2,                  // pool_tag
-      1,    0,   0,   0,  // extra_targets size
-      0x18,               // extra_targets content
-  };
+  ByteVector data = CreatePatchElement();
 
   PatchElementReader patch_element_reader =
       TestInitialize<PatchElementReader>(&data);
@@ -433,9 +447,9 @@ TEST(PatchElementTest, Normal) {
   EXPECT_EQ(kExeTypeWin32X86, element_match.old_element.exe_type);
   EXPECT_EQ(kExeTypeWin32X86, element_match.new_element.exe_type);
   EXPECT_EQ(0x1U, element_match.old_element.offset);
-  EXPECT_EQ(0x2U, element_match.old_element.size);
+  EXPECT_EQ(0x51U, element_match.old_element.size);
   EXPECT_EQ(0x3U, element_match.new_element.offset);
-  EXPECT_EQ(0x4U, element_match.new_element.size);
+  EXPECT_EQ(0x50U, element_match.new_element.size);
 
   EquivalenceSource equivalence_source =
       patch_element_reader.GetEquivalenceSource();
@@ -474,6 +488,22 @@ TEST(PatchElementTest, Normal) {
   patch_element_writer.SetTargetSink(PoolTag(0), TargetSink({0x17}));
   patch_element_writer.SetTargetSink(PoolTag(2), TargetSink({0x18}));
   TestSerialize(data, patch_element_writer);
+}
+
+TEST(PatchElementTest, BadEquivalence) {
+  // If the "old" element is too small the test should fail.
+  {
+    ByteVector data = CreatePatchElement();
+    ModifyByte(8, 0x51, 0x04, &data);  // old_length (too small)
+    TestInvalidInitialize<PatchElementReader>(&data);
+  }
+
+  // If the "new" element is too small the test should fail.
+  {
+    ByteVector data = CreatePatchElement();
+    ModifyByte(12, 0x50, 0x05, &data);  // new_length (too small)
+    TestInvalidInitialize<PatchElementReader>(&data);
+  }
 }
 
 TEST(EnsemblePatchTest, RawPatch) {
