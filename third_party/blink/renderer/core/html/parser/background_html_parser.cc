@@ -50,19 +50,21 @@ namespace blink {
 // potentially time if the speculation fails). So we limit our outstanding
 // tokens arbitrarily to 10,000. Our maximal memory spent speculating will be
 // approximately:
-// (defaultOutstandingTokenLimit + defaultPendingTokenLimit) *
-// sizeof(CompactToken)
+// (kOutstandingTokenLimit + kPendingTokenLimit) * sizeof(CompactToken)
 //
 // We use a separate low and high water mark to avoid
 // constantly topping off the main thread's token buffer. At time of writing,
 // this is (10000 + 1000) * 28 bytes = ~308kb of memory. These numbers have not
 // been tuned.
-static const size_t kDefaultOutstandingTokenLimit = 10000;
+static const size_t kOutstandingTokenLimit = 10000;
 
 // We limit our chucks to 1000 tokens, to make sure the main thread is never
 // waiting on the parser thread for tokens. This was tuned in
 // https://bugs.webkit.org/show_bug.cgi?id=110408.
-static const size_t kDefaultPendingTokenLimit = 1000;
+static const size_t kPendingTokenLimit = 1000;
+
+static_assert(kOutstandingTokenLimit > kPendingTokenLimit,
+              "Outstanding token limit is applied after pending token limit.");
 
 using namespace HTMLNames;
 
@@ -106,9 +108,7 @@ void BackgroundHTMLParser::Init(
       TokenPreloadScanner::ScannerType::kMainDocument));
 }
 
-BackgroundHTMLParser::Configuration::Configuration()
-    : outstanding_token_limit(kDefaultOutstandingTokenLimit),
-      pending_token_limit(kDefaultPendingTokenLimit) {}
+BackgroundHTMLParser::Configuration::Configuration() {}
 
 BackgroundHTMLParser::BackgroundHTMLParser(
     std::unique_ptr<Configuration> config,
@@ -117,9 +117,7 @@ BackgroundHTMLParser::BackgroundHTMLParser(
       tokenizer_(HTMLTokenizer::Create(config->options)),
       tree_builder_simulator_(config->options),
       options_(config->options),
-      outstanding_token_limit_(config->outstanding_token_limit),
       parser_(config->parser),
-      pending_token_limit_(config->pending_token_limit),
       xss_auditor_(std::move(config->xss_auditor)),
       decoder_(std::move(config->decoder)),
       loading_task_runner_(std::move(loading_task_runner)),
@@ -127,9 +125,6 @@ BackgroundHTMLParser::BackgroundHTMLParser(
           HTMLDocumentParser::TokenizedChunk::kNoPendingToken),
       starting_script_(false),
       weak_factory_(this) {
-  DCHECK_GT(outstanding_token_limit_, 0u);
-  DCHECK_GT(pending_token_limit_, 0u);
-  DCHECK_GE(outstanding_token_limit_, pending_token_limit_);
 }
 
 BackgroundHTMLParser::~BackgroundHTMLParser() = default;
@@ -223,7 +218,7 @@ void BackgroundHTMLParser::PumpTokenizer() {
       HTMLTreeBuilderSimulator::kOtherToken;
 
   // No need to start speculating until the main thread has almost caught up.
-  if (input_.TotalCheckpointTokenCount() > outstanding_token_limit_)
+  if (input_.TotalCheckpointTokenCount() > kOutstandingTokenLimit)
     return;
 
   while (true) {
@@ -277,12 +272,12 @@ void BackgroundHTMLParser::PumpTokenizer() {
     if (simulated_token == HTMLTreeBuilderSimulator::kScriptEnd ||
         simulated_token == HTMLTreeBuilderSimulator::kStyleEnd ||
         simulated_token == HTMLTreeBuilderSimulator::kLink ||
-        pending_tokens_.size() >= pending_token_limit_) {
+        pending_tokens_.size() >= kPendingTokenLimit) {
       EnqueueTokenizedChunk();
 
       // If we're far ahead of the main thread, yield for a bit to avoid
       // consuming too much memory.
-      if (input_.TotalCheckpointTokenCount() > outstanding_token_limit_)
+      if (input_.TotalCheckpointTokenCount() > kOutstandingTokenLimit)
         break;
     }
   }

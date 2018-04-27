@@ -59,10 +59,6 @@ class BackgroundHTMLParser {
     base::WeakPtr<HTMLDocumentParser> parser;
     std::unique_ptr<XSSAuditor> xss_auditor;
     std::unique_ptr<TextResourceDecoder> decoder;
-    // outstandingTokenLimit must be greater than or equal to
-    // pendingTokenLimit
-    size_t outstanding_token_limit;
-    size_t pending_token_limit;
   };
 
   // The returned BackgroundHTMLParser should only be used on the parser
@@ -119,11 +115,9 @@ class BackgroundHTMLParser {
   std::unique_ptr<HTMLTokenizer> tokenizer_;
   HTMLTreeBuilderSimulator tree_builder_simulator_;
   HTMLParserOptions options_;
-  const size_t outstanding_token_limit_;
   base::WeakPtr<HTMLDocumentParser> parser_;
 
   CompactHTMLTokenStream pending_tokens_;
-  const size_t pending_token_limit_;
   PreloadRequestStream pending_preloads_;
   ViewportDescriptionWrapper viewport_description_;
   XSSInfoStream pending_xss_infos_;

@@ -530,19 +530,6 @@
       type: "ImageAnimationPolicy",
     },
 
-    // Number of outstanding and pending tokens allowed in the background HTML
-    // parser. A value of 0 indicates the parser should use its default value.
-    {
-      name: "backgroundHtmlParserOutstandingTokenLimit",
-      initial: 0,
-      type: "unsigned",
-    },
-    {
-      name: "backgroundHtmlParserPendingTokenLimit",
-      initial: 0,
-      type: "unsigned",
-    },
-
     // Html preload scanning is a fast, early scan of HTML documents to find loadable
     // resources before the parser advances to them. If it is disabled, resources will
     // be loaded later.

@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/parser/atomic_html_token.h"
 #include "third_party/blink/renderer/core/html/parser/background_html_parser.h"
@@ -803,24 +802,6 @@ void HTMLDocumentParser::StartBackgroundParser() {
   config->xss_auditor->Init(GetDocument(), &xss_auditor_delegate_);
 
   config->decoder = TakeDecoder();
-  if (GetDocument()->GetSettings()) {
-    if (GetDocument()
-            ->GetSettings()
-            ->GetBackgroundHtmlParserOutstandingTokenLimit()) {
-      config->outstanding_token_limit =
-          GetDocument()
-              ->GetSettings()
-              ->GetBackgroundHtmlParserOutstandingTokenLimit();
-    }
-    if (GetDocument()
-            ->GetSettings()
-            ->GetBackgroundHtmlParserPendingTokenLimit()) {
-      config->pending_token_limit =
-          GetDocument()
-              ->GetSettings()
-              ->GetBackgroundHtmlParserPendingTokenLimit();
-    }
-  }
 
   DCHECK(config->xss_auditor->IsSafeToSendToAnotherThread());
 
