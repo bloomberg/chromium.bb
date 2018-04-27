@@ -198,7 +198,6 @@ SyncTest::SyncTest(TestType test_type)
       server_type_(SERVER_TYPE_UNDECIDED),
       previous_profile_(nullptr),
       num_clients_(-1),
-      configuration_refresher_(std::make_unique<ConfigurationRefresher>()),
       use_verifier_(true),
       create_gaia_account_at_runtime_(false) {
   sync_datatype_helper::AssociateWithTest(this);
@@ -611,7 +610,12 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
   InitializeInvalidations(index);
 }
 
+void SyncTest::DisableNotificationsForClient(int index) {
+  fake_server_->RemoveObserver(fake_server_invalidation_services_[index]);
+}
+
 void SyncTest::InitializeInvalidations(int index) {
+  configuration_refresher_ = std::make_unique<ConfigurationRefresher>();
   if (UsingExternalServers()) {
     // DO NOTHING. External live sync servers use GCM to notify profiles of any
     // invalidations in sync'ed data. In this case, to notify other profiles of
@@ -1168,6 +1172,10 @@ void SyncTest::TriggerSyncForModelTypes(int index,
   GetSyncService(index)->TriggerRefresh(model_types);
 }
 
+void SyncTest::StopConfigurationRefresher() {
+  configuration_refresher_.reset();
+}
+
 arc::SyncArcPackageHelper* SyncTest::sync_arc_helper() {
 #if defined(OS_CHROMEOS)
   return arc::SyncArcPackageHelper::GetInstance();
@@ -1189,5 +1197,6 @@ bool SyncTest::ClearServerData(ProfileSyncServiceHarness* harness) {
 
   // Our birthday is invalidated on the server here so restart sync to get
   // the new birthday from the server.
-  return harness->RestartSyncService();
+  harness->StopSyncService(syncer::SyncService::CLEAR_DATA);
+  return harness->StartSyncService();
 }

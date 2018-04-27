@@ -14,11 +14,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type_test_util.h"
+#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/engine_impl/backoff_delay_provider.h"
 #include "components/sync/engine_impl/cycle/test_util.h"
 #include "components/sync/syncable/test_user_share.h"
@@ -35,7 +37,11 @@ using base::TimeTicks;
 using testing::_;
 using testing::AtLeast;
 using testing::DoAll;
+using testing::Eq;
+using testing::Ge;
+using testing::Gt;
 using testing::Invoke;
+using testing::Lt;
 using testing::Mock;
 using testing::Return;
 using testing::WithArg;
@@ -292,6 +298,14 @@ class SyncSchedulerImplTest : public testing::Test {
   TimeDelta GetPendingWakeupTimerDelay() {
     EXPECT_TRUE(scheduler_->pending_wakeup_timer_.IsRunning());
     return scheduler_->pending_wakeup_timer_.GetCurrentDelay();
+  }
+
+  // Provide access for tests to private method.
+  base::Time ComputeLastPollOnStart(base::Time last_poll,
+                                    base::TimeDelta poll_interval,
+                                    base::Time now) {
+    return SyncSchedulerImpl::ComputeLastPollOnStart(last_poll, poll_interval,
+                                                     now);
   }
 
  private:
@@ -2004,6 +2018,59 @@ TEST_F(SyncSchedulerImplTest, InterleavedNudgesStillRestart) {
   EXPECT_TRUE(BlockTimerIsRunning());
   EXPECT_LT(TimeDelta::FromSeconds(50), GetPendingWakeupTimerDelay());
   EXPECT_TRUE(scheduler()->IsGlobalBackoff());
+}
+
+TEST_F(SyncSchedulerImplTest, PollOnStartUpAfterLongPause) {
+  base::Time now = base::Time::Now();
+  base::TimeDelta poll_interval = base::TimeDelta::FromHours(4);
+  base::Time last_reset = ComputeLastPollOnStart(
+      /*last_poll=*/now - base::TimeDelta::FromDays(1), poll_interval, now);
+  EXPECT_THAT(last_reset, Gt(now - poll_interval));
+  // The max poll delay is 1% of the poll_interval.
+  EXPECT_THAT(last_reset, Lt(now - 0.99 * poll_interval));
+}
+
+TEST_F(SyncSchedulerImplTest, PollOnStartUpAfterShortPause) {
+  base::Time now = base::Time::Now();
+  base::TimeDelta poll_interval = base::TimeDelta::FromHours(4);
+  base::Time last_poll = now - base::TimeDelta::FromHours(2);
+  EXPECT_THAT(ComputeLastPollOnStart(last_poll, poll_interval, now),
+              Eq(last_poll));
+}
+
+// Verifies that the delay is in [0, 0.01*poll_interval) and spot checks the
+// random number generation.
+TEST_F(SyncSchedulerImplTest, PollOnStartUpWithinBoundsAfterLongPause) {
+  base::Time now = base::Time::Now();
+  base::TimeDelta poll_interval = base::TimeDelta::FromHours(4);
+  base::Time last_poll = now - base::TimeDelta::FromDays(2);
+  bool found_delay_greater_than_5_permille = false;
+  bool found_delay_less_or_equal_5_permille = false;
+  for (int i = 0; i < 10000; ++i) {
+    base::Time result = ComputeLastPollOnStart(last_poll, poll_interval, now);
+    base::TimeDelta delay = result + poll_interval - now;
+    double fraction = delay.InSeconds() * 1.0 / poll_interval.InSeconds();
+    if (fraction > 0.005) {
+      found_delay_greater_than_5_permille = true;
+    } else {
+      found_delay_less_or_equal_5_permille = true;
+    }
+    EXPECT_THAT(fraction, Ge(0));
+    EXPECT_THAT(fraction, Lt(0.01));
+  }
+  EXPECT_TRUE(found_delay_greater_than_5_permille);
+  EXPECT_TRUE(found_delay_less_or_equal_5_permille);
+}
+
+TEST_F(SyncSchedulerImplTest, TestResetPollIntervalOnStartFeatureFlag) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(switches::kSyncResetPollIntervalOnStart);
+  base::Time now = base::Time::Now();
+  base::TimeDelta poll_interval = base::TimeDelta::FromHours(4);
+  EXPECT_THAT(
+      ComputeLastPollOnStart(
+          /*last_poll=*/now - base::TimeDelta::FromDays(1), poll_interval, now),
+      Eq(now));
 }
 
 }  // namespace syncer

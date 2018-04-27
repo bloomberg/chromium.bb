@@ -220,6 +220,8 @@ jumbo_static_library("sync") {
     "engine/sync_engine.h",
     "engine/sync_engine_host.cc",
     "engine/sync_engine_host.h",
+    "engine/sync_engine_switches.cc",
+    "engine/sync_engine_switches.h",
     "engine/sync_manager.cc",
     "engine/sync_manager.h",
     "engine/sync_manager_factory.cc",

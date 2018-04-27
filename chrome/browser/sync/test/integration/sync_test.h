@@ -250,6 +250,11 @@ class SyncTest : public InProcessBrowserTest {
   // Triggers a sync for the given |model_types| for the Profile at |index|.
   void TriggerSyncForModelTypes(int index, syncer::ModelTypeSet model_types);
 
+  // The configuration refresher is triggering refreshes after the configuration
+  // phase is done (during start-up). Call this function before SetupSync() to
+  // avoid its effects.
+  void StopConfigurationRefresher();
+
   arc::SyncArcPackageHelper* sync_arc_helper();
 
  protected:
@@ -276,6 +281,9 @@ class SyncTest : public InProcessBrowserTest {
   // Helper to ProfileManager::CreateProfileAsync that creates a new profile
   // used for UI Signin. Blocks until profile is created.
   static Profile* MakeProfileForUISignin(base::FilePath profile_path);
+
+  // Stops notificatinos being sent to a client.
+  void DisableNotificationsForClient(int index);
 
   base::test::ScopedFeatureList feature_list_;
 

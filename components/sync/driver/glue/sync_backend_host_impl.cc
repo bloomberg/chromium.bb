@@ -102,10 +102,16 @@ void SyncBackendHostImpl::StartConfiguration() {
 
 void SyncBackendHostImpl::StartSyncingWithServer() {
   SDVLOG(1) << "SyncBackendHostImpl::StartSyncingWithServer called.";
-
+  base::Time last_poll_time = sync_prefs_->GetLastPollTime();
+  // If there's no known last poll time (e.g. on initial start-up), we treat
+  // this as if a poll just happened.
+  if (last_poll_time.is_null()) {
+    last_poll_time = base::Time::Now();
+    sync_prefs_->SetLastPollTime(last_poll_time);
+  }
   sync_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendHostCore::DoStartSyncing, core_,
-                            sync_prefs_->GetLastPollTime()));
+      FROM_HERE, base::BindOnce(&SyncBackendHostCore::DoStartSyncing, core_,
+                                last_poll_time));
 }
 
 void SyncBackendHostImpl::SetEncryptionPassphrase(const std::string& passphrase,

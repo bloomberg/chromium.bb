@@ -219,6 +219,11 @@ class SyncSchedulerImpl : public SyncScheduler {
 
   bool IsEarlierThanCurrentPendingJob(const base::TimeDelta& delay);
 
+  // Computes the last poll time the system should assume on start-up.
+  static base::Time ComputeLastPollOnStart(base::Time last_poll,
+                                           base::TimeDelta poll_interval,
+                                           base::Time now);
+
   // Used for logging.
   const std::string name_;
 

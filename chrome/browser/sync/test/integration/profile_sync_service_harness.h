@@ -11,14 +11,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
 class Profile;
-
-namespace browser_sync {
-class ProfileSyncService;
-}  // namespace browser_sync
 
 namespace syncer {
 class SyncSetupInProgressHandle;
@@ -55,7 +52,7 @@ class ProfileSyncServiceHarness {
 
   // Setup sync without the authenticating through the passphrase encryption.
   // Use this method when you need to setup a client that you're going to call
-  // RestartSyncService() directly after.
+  // StopSyncService(), StartSyncService() directly after.
   bool SetupSyncForClearingServerData();
 
   // Both SetupSync and SetupSyncForClear call into this method.
@@ -64,10 +61,20 @@ class ProfileSyncServiceHarness {
   bool SetupSync(syncer::ModelTypeSet synced_datatypes,
                  bool skip_passphrase_verification = false);
 
-  // Restart sync service to simulate a sign-in/sign-out. This is useful
-  // to recover from a lost birthday. Use directly after a clear server data
-  // command to start from clean slate.
-  bool RestartSyncService();
+  // Methods to stop and restart the sync service.
+  //
+  // For example, this can be used to simulate a sign-in/sign-out or can be
+  // useful to recover from a lost birthday.
+  // To start from a clear slate, clear server
+  // data first, then call StopSyncService(syncer::SyncService::CLEAR_DATA)
+  // followed by StartSyncService().
+  // To simulate the user being offline for a while, call
+  // StopSyncService(syncer::SyncService::KEEP_DATA) followed by
+  // StartSyncService();
+  // Stops the sync service.
+  void StopSyncService(syncer::SyncService::SyncStopDataFate data_fate);
+  // Starts the sync service after a previous stop.
+  bool StartSyncService();
 
   // Sign out of sync service.
   void SignoutSyncService();
