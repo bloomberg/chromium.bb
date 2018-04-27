@@ -47,8 +47,7 @@ class TrafficAnnotationTestsChecker():
     configs = [
       ["--test-only", "--error-resilient"],  # Similar to trybot.
       ["--test-only"],                       # Failing on any runtime error.
-      # TODO(https://crbug.com/690323): Reenable the test.
-      # ["--test-only", "--no-filtering"]      # Not using heuristic filtering.
+      ["--test-only", "--no-filtering"]      # Not using heuristic filtering.
     ]
 
     last_result = None
