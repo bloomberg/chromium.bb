@@ -556,6 +556,11 @@ void LockContentsView::OnPublicSessionLocalesChanged(
   user_view->UpdateForUser(user_info, false /*animate*/);
 }
 
+void LockContentsView::OnPublicSessionKeyboardLayoutsChanged(
+    const AccountId& account_id,
+    const std::string& locale,
+    const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts) {}
+
 void LockContentsView::OnDetachableBasePairingStatusChanged(
     DetachableBasePairingStatus pairing_status) {
   const mojom::UserInfoPtr& user_info =

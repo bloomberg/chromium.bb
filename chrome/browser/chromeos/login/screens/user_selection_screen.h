@@ -120,9 +120,6 @@ class UserSelectionScreen
       const user_manager::User* user);
 
   // Fills |user_info| with information about |user|.
-  // TODO: Public sesssions exist in login screen, but not lock screen.
-  // We will need public session locales in the future when we change login
-  // screen to view-based as well. See crbug.com/732452.
   static void FillUserMojoStruct(
       const user_manager::User* user,
       bool is_owner,

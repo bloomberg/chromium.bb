@@ -264,6 +264,14 @@ class LockDebugView::DebugDataDispatcherTransformer
     debug_dispatcher_.SetDetachableBasePairingStatus(pairing_status);
   }
 
+  void OnPublicSessionKeyboardLayoutsChanged(
+      const AccountId& account_id,
+      const std::string& locale,
+      const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts) override {
+    debug_dispatcher_.SetPublicSessionKeyboardLayouts(account_id, locale,
+                                                      keyboard_layouts);
+  }
+
  private:
   // The debug overlay UI takes ground-truth data from |root_dispatcher_|,
   // applies a series of transformations to it, and exposes it to the UI via

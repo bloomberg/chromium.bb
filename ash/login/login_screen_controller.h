@@ -74,6 +74,8 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   void LaunchPublicSession(const AccountId& account_id,
                            const std::string& locale,
                            const std::string& input_method);
+  void RequestPublicSessionKeyboardLayouts(const AccountId& account_id,
+                                           const std::string& locale);
 
   // Add or remove an observer.
   void AddObserver(LoginScreenControllerObserver* observer);
@@ -117,6 +119,10 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
                                base::Value locales,
                                const std::string& default_locale,
                                bool show_advanced_view) override;
+  void SetPublicSessionKeyboardLayouts(
+      const AccountId& account_id,
+      const std::string& locale,
+      std::vector<mojom::InputMethodItemPtr> keyboard_layouts) override;
 
   // Flushes the mojo pipes - to be used in tests.
   void FlushForTesting();

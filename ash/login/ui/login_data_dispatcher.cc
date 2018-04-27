@@ -41,6 +41,11 @@ void LoginDataDispatcher::Observer::OnPublicSessionLocalesChanged(
     const std::string& default_locale,
     bool show_advanced_view) {}
 
+void LoginDataDispatcher::Observer::OnPublicSessionKeyboardLayoutsChanged(
+    const AccountId& account_id,
+    const std::string& locale,
+    const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts) {}
+
 void LoginDataDispatcher::Observer::OnDetachableBasePairingStatusChanged(
     DetachableBasePairingStatus pairing_status) {}
 
@@ -111,6 +116,16 @@ void LoginDataDispatcher::SetPublicSessionLocales(
   for (auto& observer : observers_) {
     observer.OnPublicSessionLocalesChanged(account_id, *locales, default_locale,
                                            show_advanced_view);
+  }
+}
+
+void LoginDataDispatcher::SetPublicSessionKeyboardLayouts(
+    const AccountId& account_id,
+    const std::string& locale,
+    const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts) {
+  for (auto& observer : observers_) {
+    observer.OnPublicSessionKeyboardLayoutsChanged(account_id, locale,
+                                                   keyboard_layouts);
   }
 }
 

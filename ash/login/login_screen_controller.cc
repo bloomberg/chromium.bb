@@ -221,6 +221,14 @@ void LoginScreenController::LaunchPublicSession(
   login_screen_client_->LaunchPublicSession(account_id, locale, input_method);
 }
 
+void LoginScreenController::RequestPublicSessionKeyboardLayouts(
+    const AccountId& account_id,
+    const std::string& locale) {
+  if (!login_screen_client_)
+    return;
+  login_screen_client_->RequestPublicSessionKeyboardLayouts(account_id, locale);
+}
+
 void LoginScreenController::AddObserver(
     LoginScreenControllerObserver* observer) {
   observers_.AddObserver(observer);
@@ -358,6 +366,16 @@ void LoginScreenController::SetPublicSessionLocales(
         base::ListValue::From(
             base::Value::ToUniquePtrValue(std::move(locales))),
         default_locale, show_advanced_view);
+  }
+}
+
+void LoginScreenController::SetPublicSessionKeyboardLayouts(
+    const AccountId& account_id,
+    const std::string& locale,
+    std::vector<mojom::InputMethodItemPtr> keyboard_layouts) {
+  if (DataDispatcher()) {
+    DataDispatcher()->SetPublicSessionKeyboardLayouts(account_id, locale,
+                                                      keyboard_layouts);
   }
 }
 

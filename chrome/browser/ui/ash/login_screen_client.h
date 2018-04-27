@@ -82,14 +82,23 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
   void LaunchPublicSession(const AccountId& account_id,
                            const std::string& locale,
                            const std::string& input_method) override;
+  void RequestPublicSessionKeyboardLayouts(const AccountId& account_id,
+                                           const std::string& locale) override;
 
  private:
+  void SetPublicSessionKeyboardLayout(
+      const AccountId& account_id,
+      const std::string& locale,
+      std::unique_ptr<base::ListValue> keyboard_layouts);
+
   // Lock screen mojo service in ash.
   ash::mojom::LoginScreenPtr login_screen_;
 
   // Binds this object to the client interface.
   mojo::Binding<ash::mojom::LoginScreenClient> binding_;
   Delegate* delegate_ = nullptr;
+
+  base::WeakPtrFactory<LoginScreenClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginScreenClient);
 };
