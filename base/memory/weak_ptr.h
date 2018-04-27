@@ -104,7 +104,7 @@ class BASE_EXPORT WeakReference {
 
     ~Flag();
 
-    SequenceChecker sequence_checker_;
+    SEQUENCE_CHECKER(sequence_checker_);
     bool is_valid_;
   };
 
@@ -153,8 +153,13 @@ class BASE_EXPORT WeakPtrBase {
   WeakPtrBase& operator=(WeakPtrBase&& other) = default;
 
   void reset() {
-    ref_ = internal::WeakReference();
-    ptr_ = 0;
+    // Resetting is only ever necessary on a valid pointer
+    // Checking validity has the side effect of verifying
+    // we are on the right sequence.
+    if (ref_.is_valid()) {
+      ref_ = internal::WeakReference();
+      ptr_ = 0;
+    }
   }
 
  protected:
@@ -163,8 +168,9 @@ class BASE_EXPORT WeakPtrBase {
   WeakReference ref_;
 
   // This pointer is only valid when ref_.is_valid() is true.  Otherwise, its
-  // value is undefined (as opposed to nullptr).
-  uintptr_t ptr_;
+  // value is undefined (as opposed to nullptr). On the flipside, if the pointer
+  // is nullptr, this WeakPtr is guaranteed to be invalid."
+  uintptr_t ptr_ = 0;
 };
 
 // This class provides a common implementation of common functions that would
@@ -253,7 +259,10 @@ class WeakPtr : public internal::WeakPtrBase {
   }
 
   // Allow conditionals to test validity, e.g. if (weak_ptr) {...};
-  explicit operator bool() const { return get() != nullptr; }
+  // We test for a null pointer value first (which can be invalidated
+  // by reset()). Direct access of ptr_ is favored to facilitate
+  // detection of improper access by TSAN
+  explicit operator bool() const { return ptr_ != 0 && ref_.is_valid(); }
 
  private:
   friend class internal::SupportsWeakPtrBase;
