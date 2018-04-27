@@ -62,24 +62,6 @@ public class SupportLibWebViewContentsClientAdapter {
         }
     };
 
-    private static class WebResourceErrorDelegate implements WebResourceErrorBoundaryInterface {
-        private AwWebResourceError mError;
-
-        WebResourceErrorDelegate(AwWebResourceError error) {
-            mError = error;
-        }
-
-        @Override
-        public int getErrorCode() {
-            return mError.errorCode;
-        }
-
-        @Override
-        public CharSequence getDescription() {
-            return mError.description;
-        }
-    };
-
     public SupportLibWebViewContentsClientAdapter() {
         mWebViewClientSupportedFeatures = EMPTY_FEATURE_LIST;
     }
@@ -135,9 +117,9 @@ public class SupportLibWebViewContentsClientAdapter {
     public void onReceivedError(
             WebView webView, WebResourceRequest request, final AwWebResourceError error) {
         assert isFeatureAvailable(Features.RECEIVE_WEB_RESOURCE_ERROR);
-        WebResourceErrorBoundaryInterface errorDelegate = new WebResourceErrorDelegate(error);
+        WebResourceErrorBoundaryInterface supportLibError = new SupportLibWebResourceError(error);
         InvocationHandler errorHandler =
-                BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(errorDelegate);
+                BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(supportLibError);
         mWebViewClient.onReceivedError(webView, request, errorHandler);
     }
 

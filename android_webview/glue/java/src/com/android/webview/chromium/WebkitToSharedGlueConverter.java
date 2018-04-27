@@ -5,10 +5,12 @@
 package com.android.webview.chromium;
 
 import android.webkit.ServiceWorkerWebSettings;
+import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import org.chromium.android_webview.AwContentsClient.AwWebResourceError;
 import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
 import org.chromium.android_webview.AwServiceWorkerSettings;
 import org.chromium.android_webview.AwSettings;
@@ -42,5 +44,9 @@ public class WebkitToSharedGlueConverter {
     public static AwWebResourceRequest getWebResourceRequest(WebResourceRequest request) {
         WebResourceRequestAdapter adapter = (WebResourceRequestAdapter) request;
         return adapter.getAwResourceRequest();
+    }
+
+    public static AwWebResourceError getAwWebResourceError(WebResourceError error) {
+        return ((WebResourceErrorAdapter) error).getAwWebResourceError();
     }
 }

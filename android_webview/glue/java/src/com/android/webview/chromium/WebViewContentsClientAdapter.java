@@ -35,7 +35,6 @@ import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebChromeClient.CustomViewCallback;
-import android.webkit.WebResourceError;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -267,25 +266,6 @@ class WebViewContentsClientAdapter extends AwContentsClient {
             }
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.onProgressChanged");
-        }
-    }
-
-    @TargetApi(Build.VERSION_CODES.M)
-    private static class WebResourceErrorImpl extends WebResourceError {
-        private final AwWebResourceError mError;
-
-        public WebResourceErrorImpl(AwWebResourceError error) {
-            mError = error;
-        }
-
-        @Override
-        public int getErrorCode() {
-            return mError.errorCode;
-        }
-
-        @Override
-        public CharSequence getDescription() {
-            return mError.description;
         }
     }
 
@@ -618,7 +598,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
                         mWebView, new WebResourceRequestAdapter(request), error);
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 mWebViewClient.onReceivedError(mWebView, new WebResourceRequestAdapter(request),
-                        new WebResourceErrorImpl(error));
+                        new WebResourceErrorAdapter(error));
             }
             // Otherwise, this is handled by {@link #onReceivedError}.
         } finally {
