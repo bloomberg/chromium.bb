@@ -83,6 +83,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
       return canonical_mime_type_;
     }
 
+    // Value of the content-length response header if available. -1 if not
+    // available.
+    int64_t content_length() const { return content_length_; }
+
     // Allows ResponseAnalyzer to sniff the response body.
     void SniffResponseBody(base::StringPiece data, size_t new_data_offset);
 
@@ -91,6 +95,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     class ConfirmationSniffer;
     class SimpleConfirmationSniffer;
     class FetchOnlyResourceSniffer;
+
+    void LogAllowedResponse();
+    void LogBlockedResponse();
 
    private:
     // Three conclusions are possible from looking at the headers:
@@ -111,6 +118,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // if ShouldBlockBasedOnHeaders returns kNeedToSniffMore
     void CreateSniffers();
 
+    // Logs bytes read for sniffing, but only if sniffing actually happened.
+    void LogBytesReadForSniffing();
+
     // Outcome of ShouldBlockBasedOnHeaders recorded inside the Create method.
     BlockingDecision should_block_based_on_headers_;
 
@@ -119,12 +129,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // sniffing to perform.
     MimeType canonical_mime_type_ = MimeType::kInvalidMimeType;
 
+    // Content length if available. -1 if not available.
+    int64_t content_length_ = -1;
+
     // The sniffers to be used.
     std::vector<std::unique_ptr<ConfirmationSniffer>> sniffers_;
 
     // Sniffing results.
     bool found_blockable_content_ = false;
     bool found_parser_breaker_ = false;
+    int bytes_read_for_sniffing_ = -1;
 
     DISALLOW_COPY_AND_ASSIGN(ResponseAnalyzer);
   };
@@ -140,6 +154,29 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
   // that the list of allowed headers below doesn't have to consider header
   // names listed in the Access-Control-Expose-Headers header.
   static std::vector<std::string> GetCorsSafelistedHeadersForTesting();
+
+  // This enum backs a histogram, so do not change the order of entries or
+  // remove entries. When adding new entries update |kMaxValue| and enums.xml
+  // (see the SiteIsolationResponseAction enum).
+  enum class Action {
+    // Logged at OnResponseStarted.
+    kResponseStarted = 0,
+
+    // Logged when a response is blocked without requiring sniffing.
+    kBlockedWithoutSniffing = 1,
+
+    // Logged when a response is blocked as a result of sniffing the content.
+    kBlockedAfterSniffing = 2,
+
+    // Logged when a response is allowed without requiring sniffing.
+    kAllowedWithoutSniffing = 3,
+
+    // Logged when a response is allowed as a result of sniffing the content.
+    kAllowedAfterSniffing = 4,
+
+    kMaxValue = kAllowedAfterSniffing
+  };
+  static void LogAction(Action action);
 
   // Three conclusions are possible from sniffing a byte sequence:
   //  - No: meaning that the data definitively doesn't match the indicated type.

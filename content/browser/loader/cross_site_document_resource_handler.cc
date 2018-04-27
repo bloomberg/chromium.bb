@@ -38,12 +38,6 @@ namespace content {
 
 namespace {
 
-void LogCrossSiteDocumentAction(
-    CrossSiteDocumentResourceHandler::Action action) {
-  UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Action", action,
-                            CrossSiteDocumentResourceHandler::Action::kCount);
-}
-
 // An IOBuffer to enable writing into a existing IOBuffer at a given offset.
 class LocalIoBufferWithOffset : public net::WrappedIOBuffer {
  public:
@@ -84,36 +78,20 @@ void CrossSiteDocumentResourceHandler::LogBlockedResponseOnUIThread(
       .Record(recorder);
 }
 
-// static
 void CrossSiteDocumentResourceHandler::LogBlockedResponse(
     ResourceRequestInfoImpl* resource_request_info,
-    bool needed_sniffing,
-    bool found_parser_breaker,
-    MimeType canonical_mime_type,
-    int http_response_code,
-    int64_t content_length) {
+    int http_response_code) {
   DCHECK(resource_request_info);
+  DCHECK(analyzer_);
   DCHECK_NE(network::CrossOriginReadBlocking::MimeType::kInvalidMimeType,
-            canonical_mime_type);
+            analyzer_->canonical_mime_type());
 
-  LogCrossSiteDocumentAction(
-      needed_sniffing
-          ? CrossSiteDocumentResourceHandler::Action::kBlockedAfterSniffing
-          : CrossSiteDocumentResourceHandler::Action::kBlockedWithoutSniffing);
-
-  UMA_HISTOGRAM_BOOLEAN(
-      "SiteIsolation.XSD.Browser.Blocked.ContentLength.WasAvailable",
-      content_length >= 0);
-  if (content_length >= 0) {
-    UMA_HISTOGRAM_COUNTS_10000(
-        "SiteIsolation.XSD.Browser.Blocked.ContentLength.ValueIfAvailable",
-        content_length);
-  }
+  analyzer_->LogBlockedResponse();
 
   ResourceType resource_type = resource_request_info->GetResourceType();
   UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked", resource_type,
                             content::RESOURCE_TYPE_LAST_TYPE);
-  switch (canonical_mime_type) {
+  switch (analyzer_->canonical_mime_type()) {
     case MimeType::kHtml:
       UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked.HTML",
                                 resource_type,
@@ -142,7 +120,7 @@ void CrossSiteDocumentResourceHandler::LogBlockedResponse(
     default:
       NOTREACHED();
   }
-  if (found_parser_breaker) {
+  if (analyzer_->found_parser_breaker()) {
     UMA_HISTOGRAM_ENUMERATION(
         "SiteIsolation.XSD.Browser.BlockedForParserBreaker", resource_type,
         content::RESOURCE_TYPE_LAST_TYPE);
@@ -158,8 +136,8 @@ void CrossSiteDocumentResourceHandler::LogBlockedResponse(
       base::BindOnce(
           &CrossSiteDocumentResourceHandler::LogBlockedResponseOnUIThread,
           resource_request_info->GetWebContentsGetterForRequest(),
-          needed_sniffing, canonical_mime_type, resource_type,
-          http_response_code, content_length));
+          analyzer_->needs_sniffing(), analyzer_->canonical_mime_type(),
+          resource_type, http_response_code, analyzer_->content_length()));
 }
 
 // ResourceController that runs a closure on Resume(), and forwards failures
@@ -233,13 +211,12 @@ CrossSiteDocumentResourceHandler::~CrossSiteDocumentResourceHandler() {}
 void CrossSiteDocumentResourceHandler::OnResponseStarted(
     network::ResourceResponse* response,
     std::unique_ptr<ResourceController> controller) {
-  content_length_ = response->head.content_length;
   has_response_started_ = true;
   http_response_code_ =
       response->head.headers ? response->head.headers->response_code() : 0;
 
-  LogCrossSiteDocumentAction(
-      CrossSiteDocumentResourceHandler::Action::kResponseStarted);
+  network::CrossOriginReadBlocking::LogAction(
+      network::CrossOriginReadBlocking::Action::kResponseStarted);
 
   should_block_based_on_headers_ = ShouldBlockBasedOnHeaders(*response);
 
@@ -409,8 +386,7 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
     base::StringPiece data(local_buffer_->data(), bytes_to_sniff);
 
     // If we have some new data, ask the |analyzer_| to sniff it.
-    if (new_data_offset < data.size())
-      analyzer_->SniffResponseBody(data, new_data_offset);
+    analyzer_->SniffResponseBody(data, new_data_offset);
 
     const bool confirmed_allowed = analyzer_->should_allow();
     confirmed_blockable = analyzer_->should_block();
@@ -422,11 +398,6 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
       controller->Resume();
       return;
     }
-  }
-
-  if (analyzer_->needs_sniffing()) {
-    UMA_HISTOGRAM_COUNTS("SiteIsolation.XSD.Browser.BytesReadForSniffing",
-                         local_buffer_bytes_read_);
   }
 
   // At this point we have already made a block-vs-allow decision and we know
@@ -454,9 +425,7 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
                      : "null",
                  "url", request()->url().spec());
 
-    LogBlockedResponse(
-        info, analyzer_->needs_sniffing(), analyzer_->found_parser_breaker(),
-        analyzer_->canonical_mime_type(), http_response_code_, content_length_);
+    LogBlockedResponse(info, http_response_code_);
 
     // Block the response and throw away the data.  Report zero bytes read.
     blocked_read_completed_ = true;
@@ -557,13 +526,8 @@ void CrossSiteDocumentResourceHandler::OnResponseCompleted(
   } else {
     // Only report XSDB status for successful (i.e. non-aborted,
     // non-errored-out) requests.
-    if (status.is_success()) {
-      LogCrossSiteDocumentAction(
-          analyzer_->needs_sniffing()
-              ? CrossSiteDocumentResourceHandler::Action::kAllowedAfterSniffing
-              : CrossSiteDocumentResourceHandler::Action::
-                    kAllowedWithoutSniffing);
-    }
+    if (status.is_success())
+      analyzer_->LogAllowedResponse();
 
     next_handler_->OnResponseCompleted(status, std::move(controller));
   }
