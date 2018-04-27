@@ -2473,7 +2473,7 @@ class GLRendererWithOverlaysTest : public testing::Test {
     child_provider_->BindToCurrentThread();
     child_resource_provider_ =
         cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
-            child_provider_.get(), nullptr);
+            child_provider_.get());
   }
 
   void Init(bool use_validator) {

@@ -74,7 +74,7 @@ class OneCopyRasterBufferProvider::OneCopyGpuBacking
 
 OneCopyRasterBufferProvider::RasterBufferImpl::RasterBufferImpl(
     OneCopyRasterBufferProvider* client,
-    LayerTreeResourceProvider* resource_provider,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const ResourcePool::InUsePoolResource& in_use_resource,
     OneCopyGpuBacking* backing,
     const gpu::SyncToken& before_raster_sync_token,
@@ -128,7 +128,7 @@ OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     viz::ContextProvider* compositor_context_provider,
     viz::RasterContextProvider* worker_context_provider,
-    LayerTreeResourceProvider* resource_provider,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     int max_copy_texture_chromium_size,
     bool use_partial_raster,
     bool use_gpu_memory_buffer_resources,
@@ -136,7 +136,7 @@ OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
     viz::ResourceFormat tile_format)
     : compositor_context_provider_(compositor_context_provider),
       worker_context_provider_(worker_context_provider),
-      resource_provider_(resource_provider),
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       max_bytes_per_copy_operation_(
           max_copy_texture_chromium_size
               ? std::min(kMaxBytesPerCopyOperation,
@@ -148,7 +148,6 @@ OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
       tile_format_(tile_format),
       staging_pool_(std::move(task_runner),
                     worker_context_provider,
-                    resource_provider,
                     use_partial_raster,
                     max_staging_buffer_usage_in_bytes) {
   DCHECK(compositor_context_provider);
@@ -194,9 +193,9 @@ OneCopyRasterBufferProvider::AcquireBufferForRaster(
 
   // TODO(danakj): If resource_content_id != 0, we only need to copy/upload
   // the dirty rect.
-  return std::make_unique<RasterBufferImpl>(this, resource_provider_, resource,
-                                            backing, before_raster_sync_token,
-                                            previous_content_id);
+  return std::make_unique<RasterBufferImpl>(
+      this, gpu_memory_buffer_manager_, resource, backing,
+      before_raster_sync_token, previous_content_id);
 }
 
 void OneCopyRasterBufferProvider::Flush() {
@@ -321,7 +320,7 @@ void OneCopyRasterBufferProvider::PlaybackToStagingBuffer(
   // must allocate a buffer with BufferUsage CPU_READ_WRITE_PERSISTENT.
   if (!staging_buffer->gpu_memory_buffer) {
     staging_buffer->gpu_memory_buffer =
-        resource_provider_->gpu_memory_buffer_manager()->CreateGpuMemoryBuffer(
+        gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
             staging_buffer->size, BufferFormat(format), StagingBufferUsage(),
             gpu::kNullSurfaceHandle);
   }
@@ -436,7 +435,7 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
   // TODO(vmiura): Need a way to ensure we don't hold onto bindings?
   // ri->BindTexture(image_target, 0);
 
-  if (resource_provider_->use_sync_query()) {
+  if (worker_context_provider_->ContextCapabilities().sync_query) {
     if (!staging_buffer->query_id)
       ri->GenQueriesEXT(1, &staging_buffer->query_id);
 
@@ -483,7 +482,7 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
     }
   }
 
-  if (resource_provider_->use_sync_query()) {
+  if (worker_context_provider_->ContextCapabilities().sync_query) {
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
     ri->EndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
 #else

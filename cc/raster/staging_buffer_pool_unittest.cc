@@ -16,14 +16,13 @@ namespace cc {
 
 TEST(StagingBufferPoolTest, ShutdownImmediatelyAfterCreation) {
   auto context_provider = viz::TestContextProvider::CreateWorker();
-  LayerTreeResourceProvider* resource_provider = nullptr;
   bool use_partial_raster = false;
   int max_staging_buffer_usage_in_bytes = 1024;
   auto task_runner = base::ThreadTaskRunnerHandle::Get();
   // Create a StagingBufferPool and immediately shut it down.
   auto pool = std::make_unique<StagingBufferPool>(
-      task_runner.get(), context_provider.get(), resource_provider,
-      use_partial_raster, max_staging_buffer_usage_in_bytes);
+      task_runner.get(), context_provider.get(), use_partial_raster,
+      max_staging_buffer_usage_in_bytes);
   pool->Shutdown();
   // Flush the message loop.
   auto flush_message_loop = [] {

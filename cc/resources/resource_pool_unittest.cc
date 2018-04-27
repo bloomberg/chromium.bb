@@ -23,7 +23,7 @@ class ResourcePoolTest : public testing::Test {
     context_provider_ = viz::TestContextProvider::Create();
     context_provider_->BindToCurrentThread();
     resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
-        context_provider_.get(), nullptr);
+        context_provider_.get());
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
     resource_pool_ = std::make_unique<ResourcePool>(
         resource_provider_.get(), task_runner_,

@@ -361,7 +361,7 @@ class RasterBufferProviderPerfTest
         Create3dResourceProvider();
         raster_buffer_provider_ = std::make_unique<OneCopyRasterBufferProvider>(
             task_runner_.get(), compositor_context_provider_.get(),
-            worker_context_provider_.get(), resource_provider_.get(),
+            worker_context_provider_.get(), &gpu_memory_buffer_manager_,
             std::numeric_limits<int>::max(), false, false,
             std::numeric_limits<int>::max(), viz::RGBA_8888);
         resource_pool_ = std::make_unique<ResourcePool>(
@@ -516,13 +516,13 @@ class RasterBufferProviderPerfTest
  private:
   void Create3dResourceProvider() {
     resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
-        compositor_context_provider_.get(), &gpu_memory_buffer_manager_);
+        compositor_context_provider_.get());
   }
 
   void CreateSoftwareResourceProvider() {
     layer_tree_frame_sink_ = FakeLayerTreeFrameSink::CreateSoftware();
     resource_provider_ =
-        FakeResourceProvider::CreateLayerTreeResourceProvider(nullptr, nullptr);
+        FakeResourceProvider::CreateLayerTreeResourceProvider(nullptr);
   }
 
   std::string TestModifierString() const {
@@ -586,7 +586,7 @@ class RasterBufferProviderCommonPerfTest
   // Overridden from testing::Test:
   void SetUp() override {
     resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
-        compositor_context_provider_.get(), nullptr);
+        compositor_context_provider_.get());
     resource_pool_ = std::make_unique<ResourcePool>(
         resource_provider_.get(), task_runner_,
         ResourcePool::kDefaultExpirationDelay, ResourcePool::Mode::kGpu, false);

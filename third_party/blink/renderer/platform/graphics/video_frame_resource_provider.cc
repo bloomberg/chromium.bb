@@ -16,18 +16,12 @@
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "media/base/video_frame.h"
 
-namespace cc {
-class VideoFrameExternalResources;
-}  // namespace cc
-
 namespace blink {
 
 VideoFrameResourceProvider::VideoFrameResourceProvider(
     WebContextProviderCallback context_provider_callback,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const cc::LayerTreeSettings& settings)
     : context_provider_callback_(std::move(context_provider_callback)),
-      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       settings_(settings),
       weak_ptr_factory_(this) {}
 
@@ -51,8 +45,7 @@ void VideoFrameResourceProvider::Initialize(
   context_provider_ = media_context_provider;
 
   resource_provider_ = std::make_unique<cc::LayerTreeResourceProvider>(
-      media_context_provider, gpu_memory_buffer_manager_, true,
-      settings_.resource_settings);
+      media_context_provider, true, settings_.resource_settings);
 
   // TODO(kylechar): VideoResourceUpdater needs something it can notify about
   // SharedBitmaps that isn't a LayerTreeFrameSink. https://crbug.com/730660#c88

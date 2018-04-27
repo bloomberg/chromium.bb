@@ -13,10 +13,6 @@
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
-namespace gpu {
-class GpuMemoryBufferManager;
-}
-
 namespace viz {
 class RenderPass;
 }
@@ -31,7 +27,6 @@ namespace blink {
 class PLATFORM_EXPORT VideoFrameResourceProvider {
  public:
   explicit VideoFrameResourceProvider(WebContextProviderCallback,
-                                      gpu::GpuMemoryBufferManager*,
                                       const cc::LayerTreeSettings&);
 
   virtual ~VideoFrameResourceProvider();
@@ -51,7 +46,6 @@ class PLATFORM_EXPORT VideoFrameResourceProvider {
 
  private:
   WebContextProviderCallback context_provider_callback_;
-  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   cc::LayerTreeSettings settings_;
   std::unique_ptr<cc::VideoResourceUpdater> resource_updater_;
   std::unique_ptr<cc::LayerTreeResourceProvider> resource_provider_;

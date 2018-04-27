@@ -21,7 +21,6 @@
 #include "third_party/skia/include/gpu/GrContext.h"
 
 namespace gpu {
-class GpuMemoryBufferManager;
 namespace gles2 {
 class GLES2Interface;
 }
@@ -42,7 +41,6 @@ class CC_EXPORT LayerTreeResourceProvider {
  public:
   LayerTreeResourceProvider(
       viz::ContextProvider* compositor_context_provider,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       bool delegated_sync_points_required,
       const viz::ResourceSettings& resource_settings);
   ~LayerTreeResourceProvider();
@@ -94,15 +92,9 @@ class CC_EXPORT LayerTreeResourceProvider {
 
   bool IsSoftware() const { return !compositor_context_provider_; }
 
-  bool use_sync_query() const { return settings_.use_sync_query; }
-
   int max_texture_size() const { return settings_.max_texture_size; }
 
   viz::ResourceFormat YuvResourceFormat(int bits) const;
-
-  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager() {
-    return gpu_memory_buffer_manager_;
-  }
 
   class CC_EXPORT ScopedSkSurface {
    public:
@@ -133,7 +125,6 @@ class CC_EXPORT LayerTreeResourceProvider {
              const viz::ResourceSettings& resource_settings);
 
     int max_texture_size = 0;
-    bool use_sync_query = false;
     viz::ResourceFormat yuv_resource_format = viz::LUMINANCE_8;
     viz::ResourceFormat yuv_highbit_resource_format = viz::LUMINANCE_8;
     bool delegated_sync_points_required = false;
@@ -146,7 +137,6 @@ class CC_EXPORT LayerTreeResourceProvider {
   THREAD_CHECKER(thread_checker_);
   base::flat_map<viz::ResourceId, ImportedResource> imported_resources_;
   viz::ContextProvider* compositor_context_provider_;
-  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   viz::ResourceId next_id_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeResourceProvider);

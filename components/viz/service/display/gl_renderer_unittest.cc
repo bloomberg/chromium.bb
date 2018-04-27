@@ -2635,7 +2635,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
   child_context_provider->BindToCurrentThread();
   auto child_resource_provider =
       cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
-          child_context_provider.get(), nullptr);
+          child_context_provider.get());
 
   auto transfer_resource = TransferableResource::MakeGLOverlay(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
