@@ -59,7 +59,7 @@ class DialogExample::Delegate : public virtual DialogType {
   }
 
   // DialogDelegate:
-  View* CreateExtraView() {
+  View* CreateExtraView() override {
     if (!parent_->has_extra_button_->checked())
       return nullptr;
     return MdTextButton::CreateSecondaryUiButton(
