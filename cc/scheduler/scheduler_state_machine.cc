@@ -489,19 +489,6 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
   if (!HasInitializedLayerTreeFrameSink())
     return false;
 
-  if (!settings_.main_frame_while_submit_frame_throttled_enabled) {
-    // Throttle the BeginMainFrames on CompositorFrameAck unless we just
-    // submitted a frame to potentially improve impl-thread latency over
-    // main-thread throughput.
-    // TODO(brianderson): Remove this restriction to improve throughput or
-    // make it conditional on ImplLatencyTakesPriority.
-    bool just_submitted_in_deadline =
-        begin_impl_frame_state_ == BeginImplFrameState::INSIDE_DEADLINE &&
-        did_submit_in_last_frame_;
-    if (IsDrawThrottled() && !just_submitted_in_deadline)
-      return false;
-  }
-
   if (skip_next_begin_main_frame_to_reduce_latency_)
     return false;
 

@@ -18,8 +18,6 @@ std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 SchedulerSettings::AsValue() const {
   std::unique_ptr<base::trace_event::TracedValue> state(
       new base::trace_event::TracedValue());
-  state->SetBoolean("main_frame_while_submit_frame_throttled_enabled",
-                    main_frame_while_submit_frame_throttled_enabled);
   state->SetBoolean("main_frame_before_activation_enabled",
                     main_frame_before_activation_enabled);
   state->SetBoolean("commit_to_active_tree", commit_to_active_tree);

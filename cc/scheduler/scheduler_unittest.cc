@@ -1854,7 +1854,7 @@ void SchedulerTest::ImplFrameNotSkippedAfterLateAck() {
     scheduler_->SetNeedsBeginMainFrame();
     EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
     SendNextBeginFrame();
-    EXPECT_ACTIONS("WillBeginImplFrame");
+    EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame");
     EXPECT_TRUE(client_->IsInsideBeginImplFrame());
     EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
 
@@ -1866,8 +1866,7 @@ void SchedulerTest::ImplFrameNotSkippedAfterLateAck() {
     task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
 
     // Verify that we don't skip the actions of the BeginImplFrame
-    EXPECT_ACTIONS("ScheduledActionSendBeginMainFrame", "ScheduledActionCommit",
-                   "ScheduledActionActivateSyncTree",
+    EXPECT_ACTIONS("ScheduledActionCommit", "ScheduledActionActivateSyncTree",
                    "ScheduledActionDrawIfPossible");
   }
 }
@@ -1943,7 +1942,8 @@ TEST_F(SchedulerTest, MainFrameThenImplFrameSkippedAfterLateCommitAndLateAck) {
                  "ScheduledActionSendBeginMainFrame", "ScheduledActionCommit",
                  "ScheduledActionActivateSyncTree");
 
-  // Draw and swap for first commit, start second commit.
+  // Draw and swap for first commit, start second commit which also misses
+  // deadline.
   client_->Reset();
   scheduler_->SetNeedsBeginMainFrame();
   EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
@@ -1959,39 +1959,31 @@ TEST_F(SchedulerTest, MainFrameThenImplFrameSkippedAfterLateCommitAndLateAck) {
                  "ScheduledActionActivateSyncTree");
 
   // Don't call scheduler_->DidReceiveCompositorFrameAck() until after next
-  // frame
-  // to put the impl thread in a high latency mode.
+  // frame to put the impl thread in a high latency mode.
   client_->Reset();
-  scheduler_->SetNeedsBeginMainFrame();
   EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
   EXPECT_SCOPED(AdvanceFrame());
-  EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
-
   EXPECT_ACTIONS("WillBeginImplFrame");
-  // Note: BeginMainFrame and swap are skipped here because of
-  // swap ack backpressure, not because of latency recovery.
-  EXPECT_FALSE(client_->HasAction("ScheduledActionSendBeginMainFrame"));
-  EXPECT_FALSE(client_->HasAction("ScheduledActionDrawIfPossible"));
   EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
 
   // Lower estimates so that the scheduler will attempt latency recovery.
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
 
-  // Now that both threads are in a high latency mode, make sure we
-  // skip the BeginMainFrame, then the BeginImplFrame, but not both
-  // at the same time.
+  // Now that both threads are in a high latency mode, make sure we skip the
+  // BeginMainFrame, then the BeginImplFrame, but not both at the same time.
 
   // Verify we skip BeginMainFrame first.
   client_->Reset();
-  // Previous commit request is still outstanding.
-  EXPECT_TRUE(scheduler_->NeedsBeginMainFrame());
+  scheduler_->SetNeedsBeginMainFrame();
   EXPECT_TRUE(scheduler_->IsDrawThrottled());
   SendNextBeginFrame();
   EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
   scheduler_->DidReceiveCompositorFrameAck();
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
 
+  // Main thread missed last deadline state is reset after main thread's tree is
+  // drawn.
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionDrawIfPossible");
 
@@ -2014,27 +2006,22 @@ TEST_F(SchedulerTest, MainFrameThenImplFrameSkippedAfterLateCommitAndLateAck) {
   EXPECT_TRUE(scheduler_->NeedsBeginMainFrame());
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   SendNextBeginFrame();
-  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   scheduler_->NotifyBeginMainFrameStarted(now_src()->NowTicks());
   scheduler_->NotifyReadyToCommit();
   scheduler_->NotifyReadyToActivate();
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
-  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   scheduler_->DidReceiveCompositorFrameAck();
-  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
 
   EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame",
                  "ScheduledActionCommit", "ScheduledActionActivateSyncTree",
                  "ScheduledActionDrawIfPossible");
 }
 
-TEST_F(
-    SchedulerTest,
-    Deadlock_CommitMakesProgressWhileSwapTrottledAndActiveTreeNeedsFirstDraw) {
+TEST_F(SchedulerTest,
+       CommitMakesProgressWhileSwapTrottledAndActiveTreeNeedsFirstDraw) {
+  // Historical note:
   // NPAPI plugins on Windows block the Browser UI thread on the Renderer main
   // thread. This prevents the scheduler from receiving any pending swap acks.
-
-  scheduler_settings_.main_frame_while_submit_frame_throttled_enabled = true;
   SetUpScheduler(EXTERNAL_BFS);
 
   // Disables automatic swap acks so this test can force swap ack throttling
@@ -2094,7 +2081,6 @@ TEST_F(
 
   // Since we are simulating a long commit, set up a client with draw duration
   // estimates that prevent skipping main frames to get to low latency mode.
-  scheduler_settings_.main_frame_while_submit_frame_throttled_enabled = true;
   scheduler_settings_.main_frame_before_activation_enabled = true;
   SetUpScheduler(EXTERNAL_BFS);
 
@@ -2246,7 +2232,7 @@ void SchedulerTest::BeginFramesNotFromClient_IsDrawThrottled(
   scheduler_->SetNeedsBeginMainFrame();
   scheduler_->SetNeedsRedraw();
   EXPECT_SCOPED(AdvanceFrame());  // Run posted BeginFrame.
-  EXPECT_ACTIONS("WillBeginImplFrame");
+  EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame");
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 
@@ -2271,7 +2257,7 @@ void SchedulerTest::BeginFramesNotFromClient_IsDrawThrottled(
 
   // Take us out of a swap throttled state.
   scheduler_->DidReceiveCompositorFrameAck();
-  EXPECT_ACTIONS("ScheduledActionSendBeginMainFrame");
+  EXPECT_NO_ACTION();
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 

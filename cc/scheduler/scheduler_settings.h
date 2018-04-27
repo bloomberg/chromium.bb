@@ -26,7 +26,6 @@ class CC_EXPORT SchedulerSettings {
   SchedulerSettings(const SchedulerSettings& other);
   ~SchedulerSettings();
 
-  bool main_frame_while_submit_frame_throttled_enabled = false;
   bool main_frame_before_activation_enabled = false;
   bool commit_to_active_tree = false;
   bool timeout_and_draw_when_animation_checkerboards = true;
