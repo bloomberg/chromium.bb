@@ -22,7 +22,6 @@ import android.os.Process;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.accessibility.AccessibilityManager;
 
@@ -99,7 +98,6 @@ public class WindowAndroid {
     private HashSet<Animator> mAnimationsOverContent = new HashSet<>();
     private View mAnimationPlaceholderView;
 
-    private ViewGroup mKeyboardAccessoryView;
 
     protected boolean mIsKeyboardShowing;
 
@@ -630,22 +628,6 @@ public class WindowAndroid {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             mTouchExplorationMonitor = new TouchExplorationMonitor();
         }
-    }
-
-    /**
-     * Sets the keyboard accessory view.
-     * @param view This view sits at the bottom of the content area and pushes the content up rather
-     *             than overlaying it. Currently used as a container for Autofill suggestions.
-     */
-    public void setKeyboardAccessoryView(ViewGroup view) {
-        mKeyboardAccessoryView = view;
-    }
-
-    /**
-     * @see #setKeyboardAccessoryView(ViewGroup)
-     */
-    public ViewGroup getKeyboardAccessoryView() {
-        return mKeyboardAccessoryView;
     }
 
     protected void registerKeyboardVisibilityCallbacks() {

@@ -11,8 +11,10 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import android.support.test.filters.SmallTest;
+import android.view.ViewStub;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +26,9 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.modelutil.ListObservable;
+import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.PropertyObservable.PropertyObserver;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,11 +40,20 @@ import java.util.List;
 @Config(manifest = Config.NONE)
 public class KeyboardAccessoryControllerTest {
     @Mock
-    PropertyObserver<KeyboardAccessoryModel.PropertyKey> mMockPropertyObserver;
+    private PropertyObserver<KeyboardAccessoryModel.PropertyKey> mMockPropertyObserver;
     @Mock
-    ListObservable.ListObserver mMockTabListObserver;
+    private ListObservable.ListObserver mMockTabListObserver;
     @Mock
-    ListObservable.ListObserver mMockActionListObserver;
+    private ListObservable.ListObserver mMockActionListObserver;
+    @Mock
+    private WindowAndroid mMockWindow;
+    @Mock
+    private ViewStub mMockViewStub;
+    @Mock
+    private KeyboardAccessoryView mMockView;
+    @Mock
+    private PropertyModelChangeProcessor<KeyboardAccessoryModel, KeyboardAccessoryView,
+            KeyboardAccessoryModel.PropertyKey> mMockModelChangeProcessor;
 
     private class TestActionListProvider implements KeyboardAccessoryData.ActionListProvider {
         private final List<KeyboardAccessoryData.ActionListObserver> mObservers = new ArrayList<>();
@@ -60,101 +73,117 @@ public class KeyboardAccessoryControllerTest {
     private static class FakeTab implements KeyboardAccessoryData.Tab {}
     private static class FakeAction implements KeyboardAccessoryData.Action {}
 
+    private KeyboardAccessoryCoordinator mCoordinator;
+    private KeyboardAccessoryModel mModel;
+    private KeyboardAccessoryMediator mMediator;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        when(mMockViewStub.inflate()).thenReturn(mMockView);
+        mCoordinator = new KeyboardAccessoryCoordinator(mMockWindow, mMockViewStub);
+        mMediator = mCoordinator.getMediatorForTesting();
+        mModel = mMediator.getModelForTesting();
     }
 
     @Test
     @SmallTest
     @Feature({"keyboard-accessory"})
     public void testCreatesValidSubComponents() {
-        final KeyboardAccessoryCoordinator coordinator = new KeyboardAccessoryCoordinator();
-        final KeyboardAccessoryMediator mediator = coordinator.getMediatorForTesting();
-        assertThat(mediator, is(notNullValue()));
-        final KeyboardAccessoryModel model = mediator.getModelForTesting();
-        assertThat(model, is(notNullValue()));
+        assertThat(mCoordinator, is(notNullValue()));
+        assertThat(mMediator, is(notNullValue()));
+        assertThat(mModel, is(notNullValue()));
+        verify(mMockWindow).addKeyboardVisibilityListener(mMediator);
     }
 
     @Test
     @SmallTest
     @Feature({"keyboard-accessory"})
     public void testModelNotifiesVisibilityChangeOnShowAndHide() {
-        final KeyboardAccessoryCoordinator coordinator = new KeyboardAccessoryCoordinator();
-        final KeyboardAccessoryModel model =
-                coordinator.getMediatorForTesting().getModelForTesting();
-        model.addObserver(mMockPropertyObserver);
+        mModel.addObserver(mMockPropertyObserver);
 
-        // Calling show on the coordinator should make model propagate that it's visible.
-        coordinator.show();
+        // Calling show on the mediator should make model propagate that it's visible.
+        mMediator.show();
         verify(mMockPropertyObserver)
-                .onPropertyChanged(model, KeyboardAccessoryModel.PropertyKey.VISIBLE);
-        assertThat(model.isVisible(), is(true));
+                .onPropertyChanged(mModel, KeyboardAccessoryModel.PropertyKey.VISIBLE);
+        assertThat(mModel.isVisible(), is(true));
 
-        // Calling hide on the coordinator should make model propagate that it's invisible.
-        coordinator.hide();
+        // Calling hide on the mediator should make model propagate that it's invisible.
+        mMediator.hide();
         verify(mMockPropertyObserver, times(2))
-                .onPropertyChanged(model, KeyboardAccessoryModel.PropertyKey.VISIBLE);
-        assertThat(model.isVisible(), is(false));
+                .onPropertyChanged(mModel, KeyboardAccessoryModel.PropertyKey.VISIBLE);
+        assertThat(mModel.isVisible(), is(false));
     }
 
     @Test
     @SmallTest
     @Feature({"keyboard-accessory"})
     public void testChangingTabsNotifiesTabObserver() {
-        final KeyboardAccessoryCoordinator coordinator = new KeyboardAccessoryCoordinator();
-        final KeyboardAccessoryModel model =
-                coordinator.getMediatorForTesting().getModelForTesting();
         final FakeTab testTab = new FakeTab();
 
-        model.addTabListObserver(mMockTabListObserver);
+        mModel.addTabListObserver(mMockTabListObserver);
 
         // Calling addTab on the coordinator should make model propagate that it has a new tab.
-        coordinator.addTab(testTab);
-        verify(mMockTabListObserver).onItemRangeInserted(model.getTabList(), 0, 1);
-        assertThat(model.getTabList().getItemCount(), is(1));
-        assertThat(model.getTabList().get(0), is(equalTo(testTab)));
+        mCoordinator.addTab(testTab);
+        verify(mMockTabListObserver).onItemRangeInserted(mModel.getTabList(), 0, 1);
+        assertThat(mModel.getTabList().getItemCount(), is(1));
+        assertThat(mModel.getTabList().get(0), is(equalTo(testTab)));
 
         // Calling hide on the coordinator should make model propagate that it's invisible.
-        coordinator.removeTab(testTab);
-        verify(mMockTabListObserver).onItemRangeRemoved(model.getTabList(), 0, 1);
-        assertThat(model.getTabList().getItemCount(), is(0));
+        mCoordinator.removeTab(testTab);
+        verify(mMockTabListObserver).onItemRangeRemoved(mModel.getTabList(), 0, 1);
+        assertThat(mModel.getTabList().getItemCount(), is(0));
     }
 
     @Test
     @SmallTest
     @Feature({"keyboard-accessory"})
     public void testModelNotifiesAboutActionsChangedByProvider() {
-        final KeyboardAccessoryCoordinator coordinator = new KeyboardAccessoryCoordinator();
-        final KeyboardAccessoryModel model =
-                coordinator.getMediatorForTesting().getModelForTesting();
-
         final TestActionListProvider testProvider = new TestActionListProvider();
         final FakeAction testAction = new FakeAction();
 
-        model.addActionListObserver(mMockActionListObserver);
-        coordinator.registerActionListProvider(testProvider);
+        mModel.addActionListObserver(mMockActionListObserver);
+        mCoordinator.registerActionListProvider(testProvider);
 
-        // If the mediator receives an initial set of actions, the model should report an insertion.
+        // If the coordinator receives an initial actions, the model should report an insertion.
         testProvider.sendActionsToReceivers(new KeyboardAccessoryData.Action[] {testAction});
-        verify(mMockActionListObserver).onItemRangeInserted(model.getActionList(), 0, 1);
-        assertThat(model.getActionList().getItemCount(), is(1));
-        assertThat(model.getActionList().get(0), is(equalTo(testAction)));
+        verify(mMockActionListObserver).onItemRangeInserted(mModel.getActionList(), 0, 1);
+        assertThat(mModel.getActionList().getItemCount(), is(1));
+        assertThat(mModel.getActionList().get(0), is(equalTo(testAction)));
 
-        // If the mediator receives a new set of actions, the model should report a change.
+        // If the coordinator receives a new set of actions, the model should report a change.
         testProvider.sendActionsToReceivers(new KeyboardAccessoryData.Action[] {testAction});
         verify(mMockActionListObserver)
-                .onItemRangeChanged(model.getActionList(), 0, 1, model.getActionList());
-        assertThat(model.getActionList().getItemCount(), is(1));
-        assertThat(model.getActionList().get(0), is(equalTo(testAction)));
+                .onItemRangeChanged(mModel.getActionList(), 0, 1, mModel.getActionList());
+        assertThat(mModel.getActionList().getItemCount(), is(1));
+        assertThat(mModel.getActionList().get(0), is(equalTo(testAction)));
 
-        // If the mediator receives an empty set of actions, the model should report a deletion.
+        // If the coordinator receives an empty set of actions, the model should report a deletion.
         testProvider.sendActionsToReceivers(new KeyboardAccessoryData.Action[] {});
-        verify(mMockActionListObserver).onItemRangeRemoved(model.getActionList(), 0, 1);
-        assertThat(model.getActionList().getItemCount(), is(0));
+        verify(mMockActionListObserver).onItemRangeRemoved(mModel.getActionList(), 0, 1);
+        assertThat(mModel.getActionList().getItemCount(), is(0));
 
         // There should be no notification if no actions are reported repeatedly.
         testProvider.sendActionsToReceivers(new KeyboardAccessoryData.Action[] {});
         verifyNoMoreInteractions(mMockActionListObserver);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"keyboard-accessory"})
+    public void testModelDoesntNotifyUnchangedData() {
+        mModel.addObserver(mMockPropertyObserver);
+
+        // Calling show on the coordinator should make model propagate that it's visible.
+        mCoordinator.show();
+        verify(mMockPropertyObserver)
+                .onPropertyChanged(mModel, KeyboardAccessoryModel.PropertyKey.VISIBLE);
+        assertThat(mModel.isVisible(), is(true));
+
+        // Marking it as visible again should not result in a second notification.
+        mCoordinator.show();
+        verify(mMockPropertyObserver) // Unchanged number of invocations.
+                .onPropertyChanged(mModel, KeyboardAccessoryModel.PropertyKey.VISIBLE);
+        assertThat(mModel.isVisible(), is(true));
     }
 }

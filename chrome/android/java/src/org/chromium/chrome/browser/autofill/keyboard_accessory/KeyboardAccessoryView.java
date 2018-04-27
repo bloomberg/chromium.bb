@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import static org.chromium.ui.base.LocalizationUtils.isLayoutRtl;
 
+import android.content.Context;
+import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
@@ -13,85 +15,70 @@ import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillKeyboardSuggestions;
-import org.chromium.ui.UiUtils;
-import org.chromium.ui.base.WindowAndroid;
+
+import javax.annotation.Nullable;
 
 /**
  * The Accessory sitting above the keyboard and below the content area. It is used for autofill
  * suggestions and manual entry points assisting the user in filling forms.
  */
-public class KeyboardAccessoryView
-        extends LinearLayout implements WindowAndroid.KeyboardVisibilityListener {
-    private final WindowAndroid mWindowAndroid;
-
-    private AutofillKeyboardSuggestions mAutofillSuggestions;
-
-    // Boolean to track if the keyboard accessory has just popped up or has already been showing.
-    private boolean mFirstAppearance;
+class KeyboardAccessoryView extends LinearLayout {
+    private HorizontalScrollView mSuggestionsView;
 
     /**
-     * Creates an AutofillKeyboardAccessory with specified parameters.
-     * @param windowAndroid The owning WindowAndroid.
+     * Constructor for inflating from XML.
      */
-    public KeyboardAccessoryView(WindowAndroid windowAndroid) {
-        super(windowAndroid.getActivity().get());
-        assert windowAndroid.getActivity().get() != null;
-        mWindowAndroid = windowAndroid;
-        mWindowAndroid.addKeyboardVisibilityListener(this);
-    }
-
-    // TODO(crbug/722897): Check to handle RTL.
-    public void show() {
-        removeAllViews();
-        if (mAutofillSuggestions != null) {
-            HorizontalScrollView scrollView = new HorizontalScrollView(getContext());
-            scrollView.scrollTo(scrollView.getRight(), 0);
-            ApiCompatibilityUtils.setLayoutDirection(scrollView,
-                    isLayoutRtl() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
-            scrollView.addView(mAutofillSuggestions);
-            addView(scrollView);
-        }
-
-        final ViewGroup container = mWindowAndroid.getKeyboardAccessoryView();
-
-        if (getParent() == null) {
-            container.addView(this);
-            container.setVisibility(View.VISIBLE);
-            container.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED);
-        }
-        if (mFirstAppearance) {
-            announceForAccessibility(container.getContentDescription());
-        }
-    }
-
-    /**
-     * Shows the given suggestions.
-     * @param suggestions Autofill suggestion data.
-     */
-    public void setSuggestions(AutofillKeyboardSuggestions suggestions) {
-        mAutofillSuggestions = suggestions;
-    }
-
-    /**
-     * Called to hide the suggestion view.
-     */
-    public void dismiss() {
-        UiUtils.hideKeyboard(this); // TODO(fhorschig): Double-check for autofill sheet.
-        if (mAutofillSuggestions != null) mAutofillSuggestions.dismiss();
-        ViewGroup container = mWindowAndroid.getKeyboardAccessoryView();
-        container.removeView(this);
-        container.setVisibility(View.GONE);
-        mWindowAndroid.removeKeyboardVisibilityListener(this);
-        container.getParent().requestLayout();
-        // Next time the keyboard accessory appears, do accessibility work.
-        mFirstAppearance = true;
+    public KeyboardAccessoryView(Context context, AttributeSet attrs) {
+        super(context, attrs);
     }
 
     @Override
-    public void keyboardVisibilityChanged(boolean isShowing) {
-        if (!isShowing) { // TODO(fhorschig): ... and no bottom sheet.
-            dismiss();
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+        sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED);
+
+        mSuggestionsView = findViewById(R.id.suggestions_view);
+
+        // Apply RTL layout changes to the views childen:
+        ApiCompatibilityUtils.setLayoutDirection(mSuggestionsView,
+                isLayoutRtl() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        // When the size changes, the scrolling should be reset.
+        mSuggestionsView.fullScroll(isLayoutRtl() ? FOCUS_RIGHT : FOCUS_LEFT);
+    }
+
+    void setVisible(boolean visible) {
+        if (visible) {
+            show();
+        } else {
+            hide();
         }
+    }
+
+    // TODO(crbug/722897): Check to handle RTL.
+    // TODO(fhorschig): This should use a RecyclerView. The model should contain single suggestions.
+    /**
+     * Shows the given suggestions. If set to null, it only removes existing suggestions.
+     * @param suggestions Autofill suggestion data.
+     */
+    void updateSuggestions(@Nullable AutofillKeyboardSuggestions suggestions) {
+        mSuggestionsView.removeAllViews();
+        if (suggestions == null) return;
+        mSuggestionsView.addView(suggestions);
+    }
+
+    private void show() {
+        setVisibility(View.VISIBLE);
+        announceForAccessibility(((ViewGroup) getParent()).getContentDescription());
+    }
+
+    private void hide() {
+        setVisibility(View.GONE);
     }
 }
