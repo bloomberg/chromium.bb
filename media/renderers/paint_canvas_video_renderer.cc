@@ -1021,13 +1021,13 @@ void PaintCanvasVideoRenderer::ResetCache() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Clear cached values.
   last_image_ = cc::PaintImage();
-  last_timestamp_ = kNoTimestamp;
+  last_id_.reset();
 }
 
 bool PaintCanvasVideoRenderer::UpdateLastImage(
     const scoped_refptr<VideoFrame>& video_frame,
     const Context3D& context_3d) {
-  if (!last_image_ || video_frame->timestamp() != last_timestamp_ ||
+  if (!last_image_ || video_frame->unique_id() != last_id_ ||
       !last_image_.GetSkImage()->getBackendTexture(true).isValid()) {
     ResetCache();
 
@@ -1062,7 +1062,7 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
     CorrectLastImageDimensions(gfx::RectToSkIRect(video_frame->visible_rect()));
     if (!last_image_)  // Couldn't create the SkImage.
       return false;
-    last_timestamp_ = video_frame->timestamp();
+    last_id_ = video_frame->unique_id();
   }
   last_image_deleting_timer_.Reset();
   DCHECK(!!last_image_);

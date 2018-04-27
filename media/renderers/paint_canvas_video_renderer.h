@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -160,8 +161,10 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
 
   // Last image used to draw to the canvas.
   cc::PaintImage last_image_;
-  // Timestamp of the videoframe used to generate |last_image_|.
-  base::TimeDelta last_timestamp_ = media::kNoTimestamp;
+
+  // VideoFrame::unique_id() of the videoframe used to generate |last_image_|.
+  base::Optional<int> last_id_;
+
   // If |last_image_| is not used for a while, it's deleted to save memory.
   base::DelayTimer last_image_deleting_timer_;
   // Stable paint image id to provide to draw image calls.
