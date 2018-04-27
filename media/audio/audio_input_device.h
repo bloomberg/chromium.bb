@@ -70,8 +70,7 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
 
   // AudioCapturerSource implementation.
   void Initialize(const AudioParameters& params,
-                  CaptureCallback* callback,
-                  int session_id) override;
+                  CaptureCallback* callback) override;
   void Start() override;
   void Stop() override;
   void SetVolume(double volume) override;
@@ -118,10 +117,6 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
 
   // For UMA stats.
   bool had_callback_error_ = false;
-
-  // The media session ID used to identify which input device to be started.
-  // Only modified in Initialize().
-  int session_id_;
 
   // Stores the Automatic Gain Control state. Default is false.
   bool agc_is_enabled_;

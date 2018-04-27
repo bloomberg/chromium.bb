@@ -19,8 +19,8 @@ namespace {
 
 void CreateMojoAudioInputStreamOnMainThread(
     int frame_id,
-    mojom::RendererAudioInputStreamFactoryClientPtr client,
     int32_t session_id,
+    mojom::RendererAudioInputStreamFactoryClientPtr client,
     const media::AudioParameters& params,
     bool automatic_gain_control,
     uint32_t total_segments) {
@@ -35,14 +35,14 @@ void CreateMojoAudioInputStreamOnMainThread(
 void CreateMojoAudioInputStream(
     scoped_refptr<base::SequencedTaskRunner> main_task_runner,
     int frame_id,
-    mojom::RendererAudioInputStreamFactoryClientPtr client,
     int32_t session_id,
+    mojom::RendererAudioInputStreamFactoryClientPtr client,
     const media::AudioParameters& params,
     bool automatic_gain_control,
     uint32_t total_segments) {
   main_task_runner->PostTask(
       FROM_HERE, base::BindOnce(&CreateMojoAudioInputStreamOnMainThread,
-                                frame_id, std::move(client), session_id, params,
+                                frame_id, session_id, std::move(client), params,
                                 automatic_gain_control, total_segments));
 }
 
@@ -65,9 +65,11 @@ AudioInputIPCFactory::~AudioInputIPCFactory() {
 }
 
 std::unique_ptr<media::AudioInputIPC> AudioInputIPCFactory::CreateAudioInputIPC(
-    int frame_id) const {
+    int frame_id,
+    int session_id) const {
+  DCHECK_NE(0, session_id);
   return std::make_unique<MojoAudioInputIPC>(base::BindRepeating(
-      &CreateMojoAudioInputStream, main_task_runner_, frame_id));
+      &CreateMojoAudioInputStream, main_task_runner_, frame_id, session_id));
 }
 
 }  // namespace content

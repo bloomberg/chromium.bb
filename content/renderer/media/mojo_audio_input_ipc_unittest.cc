@@ -32,7 +32,6 @@ namespace content {
 
 namespace {
 
-const int kSessionId = 1234;
 const size_t kMemoryLength = 4321;
 const size_t kTotalSegments = 1;
 const double kNewVolume = 0.271828;
@@ -74,7 +73,6 @@ class FakeStreamCreator {
       : stream_(stream), binding_(stream_), initially_muted_(initially_muted) {}
 
   void Create(mojom::RendererAudioInputStreamFactoryClientPtr factory_client,
-              int32_t session_id,
               const media::AudioParameters& params,
               bool automatic_gain_control,
               uint32_t total_segments) {
@@ -133,7 +131,7 @@ TEST(MojoAudioInputIPC, OnStreamCreated_Propagates) {
 
   EXPECT_CALL(delegate, GotOnStreamCreated(false));
 
-  ipc->CreateStream(&delegate, kSessionId, Params(), false, kTotalSegments);
+  ipc->CreateStream(&delegate, Params(), false, kTotalSegments);
   base::RunLoop().RunUntilIdle();
 
   ipc->CloseStream();
@@ -147,12 +145,12 @@ TEST(MojoAudioInputIPC, FactoryDisconnected_SendsError) {
   const std::unique_ptr<media::AudioInputIPC> ipc =
       std::make_unique<MojoAudioInputIPC>(base::BindRepeating(
           [](mojom::RendererAudioInputStreamFactoryClientPtr factory_client,
-             int32_t session_id, const media::AudioParameters& params,
-             bool automatic_gain_control, uint32_t total_segments) {}));
+             const media::AudioParameters& params, bool automatic_gain_control,
+             uint32_t total_segments) {}));
 
   EXPECT_CALL(delegate, OnError());
 
-  ipc->CreateStream(&delegate, kSessionId, Params(), false, kTotalSegments);
+  ipc->CreateStream(&delegate, Params(), false, kTotalSegments);
   base::RunLoop().RunUntilIdle();
 
   ipc->CloseStream();
@@ -170,7 +168,7 @@ TEST(MojoAudioInputIPC, OnStreamCreated_PropagatesInitiallyMuted) {
 
   EXPECT_CALL(delegate, GotOnStreamCreated(true));
 
-  ipc->CreateStream(&delegate, kSessionId, Params(), false, kTotalSegments);
+  ipc->CreateStream(&delegate, Params(), false, kTotalSegments);
   base::RunLoop().RunUntilIdle();
 
   ipc->CloseStream();
@@ -191,7 +189,7 @@ TEST(MojoAudioInputIPC, IsReusable) {
 
     EXPECT_CALL(delegate, GotOnStreamCreated(_));
 
-    ipc->CreateStream(&delegate, kSessionId, Params(), false, kTotalSegments);
+    ipc->CreateStream(&delegate, Params(), false, kTotalSegments);
     base::RunLoop().RunUntilIdle();
     Mock::VerifyAndClearExpectations(&delegate);
 
@@ -214,7 +212,7 @@ TEST(MojoAudioInputIPC, IsReusableAfterError) {
 
     EXPECT_CALL(delegate, GotOnStreamCreated(_));
 
-    ipc->CreateStream(&delegate, kSessionId, Params(), false, kTotalSegments);
+    ipc->CreateStream(&delegate, Params(), false, kTotalSegments);
     base::RunLoop().RunUntilIdle();
     Mock::VerifyAndClearExpectations(&delegate);
 
@@ -240,7 +238,7 @@ TEST(MojoAudioInputIPC, Record_Records) {
   EXPECT_CALL(delegate, GotOnStreamCreated(_));
   EXPECT_CALL(stream, Record());
 
-  ipc->CreateStream(&delegate, kSessionId, Params(), false, kTotalSegments);
+  ipc->CreateStream(&delegate, Params(), false, kTotalSegments);
   base::RunLoop().RunUntilIdle();
   ipc->RecordStream();
   base::RunLoop().RunUntilIdle();
@@ -261,7 +259,7 @@ TEST(MojoAudioInputIPC, SetVolume_SetsVolume) {
   EXPECT_CALL(delegate, GotOnStreamCreated(_));
   EXPECT_CALL(stream, SetVolume(kNewVolume));
 
-  ipc->CreateStream(&delegate, kSessionId, Params(), false, kTotalSegments);
+  ipc->CreateStream(&delegate, Params(), false, kTotalSegments);
   base::RunLoop().RunUntilIdle();
   ipc->SetVolume(kNewVolume);
   base::RunLoop().RunUntilIdle();

@@ -133,7 +133,8 @@ PepperPlatformAudioInput::PepperPlatformAudioInput()
       render_frame_id_(MSG_ROUTING_NONE),
       create_stream_sent_(false),
       pending_open_device_(false),
-      pending_open_device_id_(-1) {}
+      pending_open_device_id_(-1),
+      ipc_startup_state_(kIdle) {}
 
 bool PepperPlatformAudioInput::Initialize(
     int render_frame_id,
@@ -154,7 +155,6 @@ bool PepperPlatformAudioInput::Initialize(
   if (!GetMediaDeviceManager())
     return false;
 
-  ipc_ = AudioInputIPCFactory::get()->CreateAudioInputIPC(render_frame_id);
 
   params_.Reset(media::AudioParameters::AUDIO_PCM_LINEAR,
                 media::CHANNEL_LAYOUT_MONO,
@@ -178,23 +178,38 @@ bool PepperPlatformAudioInput::Initialize(
 void PepperPlatformAudioInput::InitializeOnIOThread(int session_id) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
+  if (ipc_startup_state_ != kStopped)
+    ipc_ = AudioInputIPCFactory::get()->CreateAudioInputIPC(render_frame_id_,
+                                                            session_id);
   if (!ipc_)
     return;
 
   // We will be notified by OnStreamCreated().
   create_stream_sent_ = true;
-  ipc_->CreateStream(this, session_id, params_, false, 1);
+  ipc_->CreateStream(this, params_, false, 1);
+
+  if (ipc_startup_state_ == kStarted)
+    ipc_->RecordStream();
 }
 
 void PepperPlatformAudioInput::StartCaptureOnIOThread() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
-  if (ipc_)
-    ipc_->RecordStream();
+  if (!ipc_) {
+    ipc_startup_state_ = kStarted;
+    return;
+  }
+
+  ipc_->RecordStream();
 }
 
 void PepperPlatformAudioInput::StopCaptureOnIOThread() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
+
+  if (!ipc_) {
+    ipc_startup_state_ = kStopped;
+    return;
+  }
 
   // TODO(yzshen): We cannot re-start capturing if the stream is closed.
   if (ipc_ && create_stream_sent_) {

@@ -25,7 +25,6 @@ MojoAudioInputIPC::MojoAudioInputIPC(StreamCreatorCB stream_creator)
 MojoAudioInputIPC::~MojoAudioInputIPC() = default;
 
 void MojoAudioInputIPC::CreateStream(media::AudioInputIPCDelegate* delegate,
-                                     int session_id,
                                      const media::AudioParameters& params,
                                      bool automatic_gain_control,
                                      uint32_t total_segments) {
@@ -41,8 +40,8 @@ void MojoAudioInputIPC::CreateStream(media::AudioInputIPCDelegate* delegate,
       &media::AudioInputIPCDelegate::OnError, base::Unretained(delegate_)));
 
   stream_creation_start_time_ = base::TimeTicks::Now();
-  stream_creator_.Run(std::move(client), session_id, params,
-                      automatic_gain_control, total_segments);
+  stream_creator_.Run(std::move(client), params, automatic_gain_control,
+                      total_segments);
 }
 
 void MojoAudioInputIPC::RecordStream() {

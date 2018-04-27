@@ -33,7 +33,6 @@ class CONTENT_EXPORT MojoAudioInputIPC
   // called or |client| is destructed.
   using StreamCreatorCB = base::RepeatingCallback<void(
       mojom::RendererAudioInputStreamFactoryClientPtr client,
-      int32_t session_id,
       const media::AudioParameters& params,
       bool automatic_gain_control,
       uint32_t total_segments)>;
@@ -43,7 +42,6 @@ class CONTENT_EXPORT MojoAudioInputIPC
 
   // AudioInputIPC implementation
   void CreateStream(media::AudioInputIPCDelegate* delegate,
-                    int session_id,
                     const media::AudioParameters& params,
                     bool automatic_gain_control,
                     uint32_t total_segments) override;
