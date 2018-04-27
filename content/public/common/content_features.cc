@@ -515,6 +515,11 @@ const base::Feature kWebRtcAecBoundedErlSetup{
 const base::Feature kWebRtcAecClockDriftSetup{
     "WebRtcAecClockDriftSetup", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Informs the WebRTC Acoustic Echo Canceler (AEC) that the feature providing
+// echo canceller transparency to render noise should be used.
+const base::Feature kWebRtcAecNoiseTransparency{
+    "WebRtcAecNoiseTransparency", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Makes WebRTC use ECDSA certs by default (i.e., when no cert type was
 // specified in JS).
 const base::Feature kWebRtcEcdsaDefault{"WebRTC-EnableWebRtcEcdsa",
