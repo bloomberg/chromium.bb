@@ -1164,11 +1164,7 @@ jumbo_component("base") {
     ]
 
     if (is_linux) {
-      sources += [
-        "base_paths_posix.cc",
-        "debug/elf_reader_linux.cc",
-        "debug/elf_reader_linux.h",
-      ]
+      sources += [ "base_paths_posix.cc" ]
     }
   }
 
@@ -1268,8 +1264,6 @@ jumbo_component("base") {
     # Android uses some Linux sources, put those back.
     set_sources_assignment_filter([])
     sources += [
-      "debug/elf_reader_linux.cc",
-      "debug/elf_reader_linux.h",
       "debug/proc_maps_linux.cc",
       "debug/proc_maps_linux.h",
       "files/file_path_watcher_linux.cc",
@@ -2143,7 +2137,6 @@ test("base_unittests") {
     "debug/alias_unittest.cc",
     "debug/crash_logging_unittest.cc",
     "debug/debugger_unittest.cc",
-    "debug/elf_reader_linux_unittest.cc",
     "debug/leak_tracker_unittest.cc",
     "debug/proc_maps_linux_unittest.cc",
     "debug/stack_trace_unittest.cc",
@@ -2585,7 +2578,6 @@ test("base_unittests") {
     deps += [ "//testing/android/native_test:native_test_native_code" ]
     set_sources_assignment_filter([])
     sources += [
-      "debug/elf_reader_linux_unittest.cc",
       "debug/proc_maps_linux_unittest.cc",
       "trace_event/trace_event_android_unittest.cc",
     ]
