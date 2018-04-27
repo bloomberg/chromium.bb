@@ -27,7 +27,7 @@ class PowerSaverTestInstance : public pp::Instance {
       : pp::Instance(instance) {}
   ~PowerSaverTestInstance() override {}
 
-  bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
+  bool Init(uint32_t argc, const char* argn[], const char* argv[]) override {
     GetTestingInterface()->SubscribeToPowerSaverNotifications(pp_instance());
     return true;
   }
