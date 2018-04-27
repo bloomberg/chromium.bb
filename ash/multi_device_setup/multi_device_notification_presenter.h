@@ -9,15 +9,21 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "ash/session/session_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace message_center {
 class MessageCenter;
 class Notification;
 }  // namespace message_center
+
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
 
 namespace ash {
 
@@ -27,31 +33,38 @@ namespace ash {
 //     flow before,
 // (2) the host has switched for someone who has, or
 // (3) a new Chromebook has been added to an account for someone who has.
-
+//
 // The behavior caused by clicking a notification depends its content as
 // described above:
 // (1) triggers the setup UI to appear to prompt setup flow,
 // (2) opens Settings/Connected Devices/Change Device, and
 // (3) opens Setting/Connected Devices.
-
+//
 // Note that if one notification is showing and another one is triggered, the
 // old text is replaced (if it's different) and the notification pops up again.
 class ASH_EXPORT MultiDeviceNotificationPresenter
-    : public chromeos::multidevice_setup::mojom::MultiDeviceSetupObserver {
+    : public chromeos::multidevice_setup::mojom::MultiDeviceSetupObserver,
+      public SessionObserver {
  public:
-  explicit MultiDeviceNotificationPresenter(
-      message_center::MessageCenter* message_center);
+  MultiDeviceNotificationPresenter(
+      message_center::MessageCenter* message_center,
+      service_manager::Connector* connector);
   ~MultiDeviceNotificationPresenter() override;
-
-  // multidevice_setup::mojom::MultiDeviceSetupObserver:
-  void OnPotentialHostExistsForNewUser() override;
-  void OnConnectedHostSwitchedForExistingUser() override;
-  void OnNewChromebookAddedForExistingUser() override;
 
   // Removes the notification created by NotifyPotentialHostExists() or does
   // nothing if that notification is not currently displayed.
   // TODO(khorimoto): Change this to Mojo function.
   void RemoveMultiDeviceSetupNotification();
+
+ protected:
+  // multidevice_setup::mojom::MultiDeviceSetupObserver:
+  void OnPotentialHostExistsForNewUser() override;
+  void OnConnectedHostSwitchedForExistingUser() override;
+  void OnNewChromebookAddedForExistingUser() override;
+
+  // SessionObserver:
+  void OnUserSessionAdded(const AccountId& account_id) override;
+  void OnSessionStateChanged(session_manager::SessionState state) override;
 
  private:
   friend class MultiDeviceNotificationPresenterTest;
@@ -95,6 +108,7 @@ class ASH_EXPORT MultiDeviceNotificationPresenter
   static std::string GetNotificationDescriptionForLogging(
       Status notification_status);
 
+  void ObserveMultiDeviceSetupIfPossible();
   void OnNotificationClicked();
   void ShowNotification(const Status notification_status,
                         const base::string16& title,
@@ -103,11 +117,19 @@ class ASH_EXPORT MultiDeviceNotificationPresenter
       const base::string16& title,
       const base::string16& message);
 
+  void FlushForTesting();
+
   message_center::MessageCenter* message_center_;
+  service_manager::Connector* connector_;
 
   // Notification currently showing or
   // Status::kNoNotificationVisible if there isn't one.
   Status notification_status_ = Status::kNoNotificationVisible;
+
+  chromeos::multidevice_setup::mojom::MultiDeviceSetupPtr
+      multidevice_setup_ptr_;
+  mojo::Binding<chromeos::multidevice_setup::mojom::MultiDeviceSetupObserver>
+      binding_;
 
   std::unique_ptr<OpenUiDelegate> open_ui_delegate_;
   base::WeakPtrFactory<MultiDeviceNotificationPresenter> weak_ptr_factory_;
