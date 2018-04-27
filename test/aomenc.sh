@@ -82,11 +82,50 @@ aomenc() {
 
 aomenc_av1_ivf() {
   if [ "$(aomenc_can_encode_av1)" = "yes" ]; then
-    local readonly output="${AOM_TEST_OUTPUT_DIR}/av1.ivf"
+    local output="${AV1_IVF_FILE}"
+    if [ -e "${AV1_IVF_FILE}" ]; then
+      output="${AOM_TEST_OUTPUT_DIR}/av1_test.ivf"
+    fi
     aomenc $(yuv_raw_input) \
       $(aomenc_encode_test_fast_params) \
-      --passes=1 \
       --ivf \
+      --output="${output}"
+
+    if [ ! -e "${output}" ]; then
+      elog "Output file does not exist."
+      return 1
+    fi
+  fi
+}
+
+aomenc_av1_obu_annexb() {
+   if [ "$(aomenc_can_encode_av1)" = "yes" ]; then
+    local output="${AV1_OBU_ANNEXB_FILE}"
+    if [ -e "${AV1_OBU_ANNEXB_FILE}" ]; then
+      output="${AOM_TEST_OUTPUT_DIR}/av1_test.annexb.obu"
+    fi
+    aomenc $(yuv_raw_input) \
+      $(aomenc_encode_test_fast_params) \
+      --obu \
+      --annexb=1 \
+      --output="${output}"
+
+    if [ ! -e "${output}" ]; then
+      elog "Output file does not exist."
+      return 1
+    fi
+  fi
+}
+
+aomenc_av1_obu_section5() {
+   if [ "$(aomenc_can_encode_av1)" = "yes" ]; then
+    local output="${AV1_OBU_SEC5_FILE}"
+    if [ -e "${AV1_OBU_SEC5_FILE}" ]; then
+      output="${AOM_TEST_OUTPUT_DIR}/av1_test.section5.obu"
+    fi
+    aomenc $(yuv_raw_input) \
+      $(aomenc_encode_test_fast_params) \
+      --obu \
       --output="${output}"
 
     if [ ! -e "${output}" ]; then
@@ -99,11 +138,12 @@ aomenc_av1_ivf() {
 aomenc_av1_webm() {
   if [ "$(aomenc_can_encode_av1)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
-    local readonly output="${AOM_TEST_OUTPUT_DIR}/av1.webm"
+    local output="${AV1_WEBM_FILE}"
+    if [ -e "${AV1_WEBM_FILE}" ]; then
+      output="${AOM_TEST_OUTPUT_DIR}/av1_test.webm"
+    fi
     aomenc $(yuv_raw_input) \
-      --codec=av1 \
       $(aomenc_encode_test_fast_params) \
-      --passes=1 \
       --output="${output}"
 
     if [ ! -e "${output}" ]; then
@@ -113,13 +153,13 @@ aomenc_av1_webm() {
   fi
 }
 
-aomenc_av1_webm_2pass() {
+aomenc_av1_webm_1pass() {
   if [ "$(aomenc_can_encode_av1)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
-    local readonly output="${AOM_TEST_OUTPUT_DIR}/av1.webm"
+    local readonly output="${AOM_TEST_OUTPUT_DIR}/av1_test.webm"
     aomenc $(yuv_raw_input) \
       $(aomenc_encode_test_fast_params) \
-      --passes=2 \
+      --passes=1 \
       --output="${output}"
 
     if [ ! -e "${output}" ]; then
@@ -172,8 +212,7 @@ aomenc_av1_webm_lag5_frames10() {
       $(aomenc_encode_test_fast_params) \
       --limit=${lag_total_frames} \
       --lag-in-frames=${lag_frames} \
-      --output="${output}" \
-      --passes=2
+      --output="${output}"
 
     if [ ! -e "${output}" ]; then
       elog "Output file does not exist."
@@ -204,10 +243,7 @@ aomenc_av1_webm_cdf_update_mode() {
     for mode in 0 1 2; do
       local readonly output="${AOM_TEST_OUTPUT_DIR}/cdf_mode_${mode}.webm"
       aomenc $(yuv_raw_input) \
-        --codec=av1 \
         $(aomenc_encode_test_fast_params) \
-        --passes=2 \
-        --cpu-used=2 \
         --cdf-update-mode=${mode} \
         --output="${output}"
 
@@ -220,8 +256,10 @@ aomenc_av1_webm_cdf_update_mode() {
 }
 
 aomenc_tests="aomenc_av1_ivf
+              aomenc_av1_obu_annexb
+              aomenc_av1_obu_section5
               aomenc_av1_webm
-              aomenc_av1_webm_2pass
+              aomenc_av1_webm_1pass
               aomenc_av1_ivf_lossless
               aomenc_av1_ivf_minq0_maxq0
               aomenc_av1_webm_lag5_frames10

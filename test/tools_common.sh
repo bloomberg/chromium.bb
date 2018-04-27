@@ -17,7 +17,6 @@ AOM_TEST_TOOLS_COMMON_SH=included
 set -e
 devnull='> /dev/null 2>&1'
 AOM_TEST_PREFIX=""
-readonly AOM_ENCODE_TEST_FRAME_LIMIT=5
 
 elog() {
   echo "$@" 1>&2
@@ -76,6 +75,9 @@ test_configuration_target() {
 cleanup() {
   if [ -n "${AOM_TOOL_TEST}" ] && [ "${AOM_TOOL_TEST}" != '<unset>' ]; then
     echo "FAIL: $AOM_TOOL_TEST"
+  fi
+  if [ "${AOM_TEST_PRESERVE_OUTPUT}" = "yes" ]; then
+    return
   fi
   if [ -n "${AOM_TEST_OUTPUT_DIR}" ] && [ -d "${AOM_TEST_OUTPUT_DIR}" ]; then
     rm -rf "${AOM_TEST_OUTPUT_DIR}"
@@ -205,7 +207,7 @@ av1_encode_available() {
 # Echoes "fast" encode params for use with aomenc.
 aomenc_encode_test_fast_params() {
   echo "--cpu-used=1
-        --limit=${AOM_ENCODE_TEST_FRAME_LIMIT}
+        --limit=${AV1_ENCODE_TEST_FRAME_LIMIT}
         --lag-in-frames=0
         --test-decode=fatal"
 }
@@ -350,10 +352,9 @@ encode_yuv_raw_input_av1() {
     local readonly encoder="$(aom_tool_path aomenc)"
     shift
     eval "${encoder}" $(yuv_raw_input) \
-      --codec=av1 \
-      $@ \
-      --limit=5 \
+      $(aomenc_encode_test_fast_params) \
       --output="${output}" \
+      $@ \
       ${devnull}
 
     if [ ! -e "${output}" ]; then
@@ -425,7 +426,7 @@ else
   AOM_TEST_TEMP_ROOT=/tmp
 fi
 
-AOM_TEST_OUTPUT_DIR="${AOM_TEST_TEMP_ROOT}/aom_test_$$"
+AOM_TEST_OUTPUT_DIR="${AOM_TEST_OUTPUT_DIR:-${AOM_TEST_TEMP_ROOT}/aom_test_$$}"
 
 if ! mkdir -p "${AOM_TEST_OUTPUT_DIR}" || \
    [ ! -d "${AOM_TEST_OUTPUT_DIR}" ]; then
@@ -434,17 +435,19 @@ if ! mkdir -p "${AOM_TEST_OUTPUT_DIR}" || \
   exit 1
 fi
 
+AOM_TEST_PRESERVE_OUTPUT=${AOM_TEST_PRESERVE_OUTPUT:-no}
+
 if [ "$(is_windows_target)" = "yes" ]; then
   AOM_TEST_EXE_SUFFIX=".exe"
 fi
 
 # Variables shared by tests.
-VP8_IVF_FILE="${LIBAOM_TEST_DATA_PATH}/vp80-00-comprehensive-001.ivf"
-AV1_IVF_FILE=""
-
-AV1_WEBM_FILE=""
-AV1_FPM_WEBM_FILE=""
-AV1_LT_50_FRAMES_WEBM_FILE=""
+AV1_ENCODE_CPU_USED=${AV1_ENCODE_CPU_USED:-1}
+AV1_ENCODE_TEST_FRAME_LIMIT=${AV1_ENCODE_TEST_FRAME_LIMIT:-5}
+AV1_IVF_FILE="${AV1_IVF_FILE:-${AOM_TEST_OUTPUT_DIR}/av1.ivf}"
+AV1_OBU_ANNEXB_FILE="${AV1_OBU_ANNEXB_FILE:-${AOM_TEST_OUTPUT_DIR}/av1.annexb.obu}"
+AV1_OBU_SEC5_FILE="${AV1_OBU_SEC5_FILE:-${AOM_TEST_OUTPUT_DIR}/av1.section5.obu}"
+AV1_WEBM_FILE="${AV1_WEBM_FILE:-${AOM_TEST_OUTPUT_DIR}/av1.webm}"
 
 YUV_RAW_INPUT="${LIBAOM_TEST_DATA_PATH}/hantro_collage_w352h288.yuv"
 YUV_RAW_INPUT_WIDTH=352
@@ -460,18 +463,22 @@ vlog "$(basename "${0%.*}") test configuration:
   LIBAOM_BIN_PATH=${LIBAOM_BIN_PATH}
   LIBAOM_CONFIG_PATH=${LIBAOM_CONFIG_PATH}
   LIBAOM_TEST_DATA_PATH=${LIBAOM_TEST_DATA_PATH}
-  AOM_IVF_FILE=${AOM_IVF_FILE}
-  AV1_IVF_FILE=${AV1_IVF_FILE}
-  AV1_WEBM_FILE=${AV1_WEBM_FILE}
   AOM_TEST_EXE_SUFFIX=${AOM_TEST_EXE_SUFFIX}
   AOM_TEST_FILTER=${AOM_TEST_FILTER}
   AOM_TEST_LIST_TESTS=${AOM_TEST_LIST_TESTS}
   AOM_TEST_OUTPUT_DIR=${AOM_TEST_OUTPUT_DIR}
   AOM_TEST_PREFIX=${AOM_TEST_PREFIX}
+  AOM_TEST_PRESERVE_OUTPUT=${AOM_TEST_PRESERVE_OUTPUT}
   AOM_TEST_RUN_DISABLED_TESTS=${AOM_TEST_RUN_DISABLED_TESTS}
   AOM_TEST_SHOW_PROGRAM_OUTPUT=${AOM_TEST_SHOW_PROGRAM_OUTPUT}
   AOM_TEST_TEMP_ROOT=${AOM_TEST_TEMP_ROOT}
   AOM_TEST_VERBOSE_OUTPUT=${AOM_TEST_VERBOSE_OUTPUT}
+  AV1_ENCODE_CPU_USED=${AV1_ENCODE_CPU_USED}
+  AV1_ENCODE_TEST_FRAME_LIMIT=${AV1_ENCODE_TEST_FRAME_LIMIT}
+  AV1_IVF_FILE=${AV1_IVF_FILE}
+  AV1_OBU_ANNEXB_FILE=${AV1_OBU_ANNEXB_FILE}
+  AV1_OBU_SEC5_FILE=${AV1_OBU_SEC5_FILE}
+  AV1_WEBM_FILE=${AV1_WEBM_FILE}
   YUV_RAW_INPUT=${YUV_RAW_INPUT}
   YUV_RAW_INPUT_WIDTH=${YUV_RAW_INPUT_WIDTH}
   YUV_RAW_INPUT_HEIGHT=${YUV_RAW_INPUT_HEIGHT}

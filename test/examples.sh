@@ -12,7 +12,7 @@
 ##
 . $(dirname $0)/tools_common.sh
 
-example_tests=$(ls $(dirname $0)/*.sh)
+example_tests=$(ls -r $(dirname $0)/*.sh)
 
 # List of script names to exclude.
 exclude_list="best_encode decode_to_md5 examples run_encodes tools_common"
