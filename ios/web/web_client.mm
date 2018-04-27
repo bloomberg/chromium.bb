@@ -104,9 +104,7 @@ void WebClient::PrepareErrorPage(NSError* error,
                                  bool is_off_the_record,
                                  NSString** error_html) {
   DCHECK(error);
-  if (error_html) {
-    *error_html = error.localizedDescription;
-  }
+  *error_html = error.localizedDescription;
 }
 
 }  // namespace web

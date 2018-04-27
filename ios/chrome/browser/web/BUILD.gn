@@ -256,6 +256,7 @@ source_set("unit_tests_internal") {
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/web",
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",

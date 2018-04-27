@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "ios/web/public/web_client.h"
+#import "ios/web/public/web_client.h"
 
 // Chrome implementation of WebClient.
 class ChromeWebClient : public web::WebClient {
@@ -49,6 +49,10 @@ class ChromeWebClient : public web::WebClient {
       const GURL& request_url,
       bool overridable,
       const base::Callback<void(bool)>& callback) override;
+  void PrepareErrorPage(NSError* error,
+                        bool is_post,
+                        bool is_off_the_record,
+                        NSString** error_html) override;
   void RegisterServices(StaticServiceMap* services) override;
 
  private:
