@@ -33,6 +33,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -683,7 +684,9 @@ public class ShortcutHelper {
     private static void checkIfRequestPinShortcutSupported() {
         sShortcutManager =
                 ContextUtils.getApplicationContext().getSystemService(ShortcutManager.class);
-        sIsRequestPinShortcutSupported = sShortcutManager.isRequestPinShortcutSupported();
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            sIsRequestPinShortcutSupported = sShortcutManager.isRequestPinShortcutSupported();
+        }
     }
 
     private static int getSizeFromResourceInPx(Context context, int resource) {
