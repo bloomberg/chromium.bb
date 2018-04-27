@@ -251,7 +251,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   app_window_controllers_.push_back(std::move(extension_app_window_controller));
   app_window_controllers_.push_back(
       std::make_unique<ArcAppWindowLauncherController>(this));
-  if (IsCrostiniUIAllowedForProfile(profile)) {
+  if (IsExperimentalCrostiniUIAvailable()) {
     app_window_controllers_.push_back(
         std::make_unique<CrostiniAppWindowShelfController>(this));
   }
@@ -1150,7 +1150,7 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
           profile_, extension_misc::EXTENSION_ICON_SMALL, this);
   app_icon_loaders_.push_back(std::move(internal_app_icon_loader));
 
-  if (IsCrostiniUIAllowedForProfile(profile_)) {
+  if (IsExperimentalCrostiniUIAvailable()) {
     std::unique_ptr<AppIconLoader> crostini_app_icon_loader =
         std::make_unique<CrostiniAppIconLoader>(
             profile_, extension_misc::EXTENSION_ICON_SMALL, this);
