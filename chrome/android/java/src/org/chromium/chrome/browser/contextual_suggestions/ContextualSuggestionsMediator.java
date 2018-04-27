@@ -239,6 +239,7 @@ class ContextualSuggestionsMediator
         mModel.setClusterList(new ClusterList(Collections.emptyList()));
         mModel.setCloseButtonOnClickListener(null);
         mModel.setMenuButtonVisibility(false);
+        mModel.setMenuButtonAlpha(0f);
         mModel.setMenuButtonDelegate(null);
         mModel.setDefaultToolbarClickListener(null);
         mModel.setTitle(null);
@@ -266,6 +267,7 @@ class ContextualSuggestionsMediator
             clearSuggestions();
         });
         mModel.setMenuButtonVisibility(false);
+        mModel.setMenuButtonAlpha(0f);
         mModel.setMenuButtonDelegate(this);
         mModel.setDefaultToolbarClickListener(view -> mCoordinator.expandBottomSheet());
         mModel.setTitle(title);
@@ -309,6 +311,11 @@ class ContextualSuggestionsMediator
             @Override
             public void onSheetClosed(int reason) {
                 mModel.setMenuButtonVisibility(false);
+            }
+
+            @Override
+            public void onTransitionPeekToHalf(float transitionFraction) {
+                mModel.setMenuButtonAlpha(transitionFraction);
             }
         };
 

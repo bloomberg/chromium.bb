@@ -46,6 +46,10 @@ public class ToolbarView extends LinearLayout {
         mMenuButton.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
+    void setMenuButtonAlpha(float alpha) {
+        mMenuButton.setAlpha(alpha);
+    }
+
     void setTitle(String title) {
         mTitle.setText(title);
     }

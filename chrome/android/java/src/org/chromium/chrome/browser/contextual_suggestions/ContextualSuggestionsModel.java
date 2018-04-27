@@ -23,6 +23,7 @@ class ContextualSuggestionsModel
     static class PropertyKey {
         static final PropertyKey CLOSE_BUTTON_ON_CLICK_LISTENER = new PropertyKey();
         static final PropertyKey MENU_BUTTON_VISIBILITY = new PropertyKey();
+        static final PropertyKey MENU_BUTTON_ALPHA = new PropertyKey();
         static final PropertyKey MENU_BUTTON_DELEGATE = new PropertyKey();
         static final PropertyKey TITLE = new PropertyKey();
         static final PropertyKey TOOLBAR_SHADOW_VISIBILITY = new PropertyKey();
@@ -81,6 +82,7 @@ class ContextualSuggestionsModel
     ClusterListObservable mClusterListObservable = new ClusterListObservable();
     private OnClickListener mCloseButtonOnClickListener;
     private boolean mMenuButtonVisibility;
+    private float mMenuButtonAlpha;
     private ListMenuButton.Delegate mMenuButtonDelegate;
     private OnClickListener mDefaultToolbarOnClickListener;
     private String mTitle;
@@ -116,6 +118,17 @@ class ContextualSuggestionsModel
     /** @return Whether the menu button is visible. */
     boolean getMenuButtonVisibility() {
         return mMenuButtonVisibility;
+    }
+
+    /** @param alpha The opacity of the menu button. */
+    void setMenuButtonAlpha(float alpha) {
+        mMenuButtonAlpha = alpha;
+        notifyPropertyChanged(PropertyKey.MENU_BUTTON_ALPHA);
+    }
+
+    /** @return The opacity of the menu button. */
+    float getMenuButtonAlpha() {
+        return mMenuButtonAlpha;
     }
 
     /** @param delegate The delegate for handles actions for the menu. */
