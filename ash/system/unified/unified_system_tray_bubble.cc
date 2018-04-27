@@ -36,8 +36,9 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray)
   init_params.has_shadow = false;
 
   auto* bubble_view = new views::TrayBubbleView(init_params);
-  int max_height =
-      tray->shelf()->GetUserWorkAreaBounds().height() - kPaddingFromScreenTop;
+  int max_height = tray->shelf()->GetUserWorkAreaBounds().height() -
+                   kPaddingFromScreenTop -
+                   bubble_view->GetBorderInsets().height();
   auto* unified_view = controller_->CreateView();
   unified_view->SetMaxHeight(max_height);
   bubble_view->SetMaxHeight(max_height);
