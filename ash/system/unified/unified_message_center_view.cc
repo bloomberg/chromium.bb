@@ -131,9 +131,8 @@ void UnifiedMessageCenterView::OnViewPreferredSizeChanged(
 void UnifiedMessageCenterView::Update() {
   SetVisible(message_list_view_->GetNotificationCount() > 0);
 
-  scroller_->InvalidateLayout();
+  scroller_->Layout();
   PreferredSizeChanged();
-  Layout();
 }
 
 void UnifiedMessageCenterView::AddNotificationAt(
