@@ -456,7 +456,7 @@
     'midi_unittests': {},
     'net_unittests': {
       'android_swarming': {
-        'hard_timeout': 900,
+        'hard_timeout': 1800,
         'shards': 3,
       },
     },
