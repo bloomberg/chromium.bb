@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="input_css.html">
 <link rel="import" href="input_behavior.html">
 <link rel="import" href="print_preview_shared_css.html">
@@ -8,7 +7,7 @@
 
 <dom-module id="print-preview-number-settings-section">
   <template>
-    <style include="print-preview-shared input cr-hidden-style">
+    <style include="print-preview-shared input">
       input[type='number'] {
         -webkit-margin-end: 16px;
         margin-bottom: 2.5px;
@@ -33,7 +32,7 @@
       <span slot="title" id="section-title">[[inputLabel]]</span>
       <div slot="controls">
         <slot name="opt-outside-content"></slot>
-        <span class="input-wrapper" hidden="[[hideInput]]">
+        <span class="input-wrapper">
           <input id="userValue" class="user-value" type="number"
               max="[[maxValue]]" min="[[minValue]]" data-timeout-delay="250"
               disabled$="[[getDisabled_(inputValid, disabled)]]"

@@ -21,11 +21,7 @@ cr.define('print_preview_new', function() {
       },
     },
 
-    /**
-     * @param {boolean} showCollapsible Whether collapsible subsections
-     *     should be shown.
-     */
-    show: function(showCollapsible) {
+    show: function() {
       this.hidden = false;
     },
 

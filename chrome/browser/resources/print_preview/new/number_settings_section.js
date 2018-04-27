@@ -40,8 +40,6 @@ Polymer({
     hintMessage: String,
 
     disabled: Boolean,
-
-    hideInput: Boolean,
   },
 
   listeners: {

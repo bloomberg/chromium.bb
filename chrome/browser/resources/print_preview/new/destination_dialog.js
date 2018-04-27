@@ -90,6 +90,8 @@ Polymer({
           attrs: {
             'is': (node, v) => v == 'action-link',
             'class': (node, v) => v == 'sign-in',
+            'tabindex': (node, v) => v == '0',
+            'role': (node, v) => v == 'link',
           },
         });
   },

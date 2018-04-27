@@ -17,34 +17,38 @@
     <print-preview-settings-section class="multirow-controls">
       <span slot="title" id="options-label">$i18n{optionsLabel}</span>
       <div slot="controls" class="checkbox">
-        <label id="headerFooterContainer" aria-live="polite">
+        <label hidden$="[[!settings.headerFooter.available]]"
+            aria-live="polite">
           <input type="checkbox" id="headerFooter"
               disabled$="[[disabled]]"
               on-change="onHeaderFooterChange_"
               checked$="[[settings.headerFooter.value]]">
           <span>$i18n{optionHeaderFooter}</span>
         </label>
-        <label id="duplexContainer" aria-live="polite">
+        <label hidden$="[[!settings.duplex.available]]"
+            aria-live="polite">
           <input type="checkbox" id="duplex" on-change="onDuplexChange_"
               disabled$="[[disabled]]"
               checked$="[[settings.duplex.value]]">
           <span>$i18n{optionTwoSided}</span>
         </label>
-        <label id="cssBackgroundContainer" aria-live="polite">
+        <label hidden$="[[!settings.cssBackground.available]]"
+            aria-live="polite">
           <input type="checkbox" id="cssBackground"
               on-change="onCssBackgroundChange_"
               disabled$="[[disabled]]"
               checked$="[[settings.cssBackground.value]]">
           <span>$i18n{optionBackgroundColorsAndImages}</span>
         </label>
-        <label id="rasterizeContainer" aria-live="polite">
+        <label hidden$="[[!settings.rasterize.available]]"
+            aria-live="polite">
           <input type="checkbox" id="rasterize"
               disabled$="[[disabled]]" on-change="onRasterizeChange_"
               checked$="[[settings.rasterize.value]]">
           <span>$i18n{optionRasterize}</span>
         </label>
-        <label id="selectionOnlyContainer" aria-live="polite"
-            hidden$="[[!settings.selectionOnly.available]]">
+        <label hidden$="[[!settings.selectionOnly.available]]"
+            aria-live="polite">
           <input type="checkbox" id="selectionOnly"
               disabled$="[[disabled]]"
               on-change="onSelectionOnlyChange_"
