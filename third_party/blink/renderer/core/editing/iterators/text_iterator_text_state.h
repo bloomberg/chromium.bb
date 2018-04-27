@@ -69,13 +69,16 @@ class CORE_EXPORT TextIteratorTextState {
                 unsigned text_start_offset,
                 unsigned text_end_offset);
   void EmitAltText(const Node*);
-  void UpdateForReplacedElement(const Node* base_node);
+  void UpdateForReplacedElement(const Node& parent_node, const Node& base_node);
 
   // Return position of the current text.
-  void FlushPositionOffsets() const;
+  void UpdatePositionOffsets(unsigned node_index) const;
   unsigned PositionStartOffset() const { return position_start_offset_; }
   unsigned PositionEndOffset() const { return position_end_offset_; }
   const Node* PositionNode() const { return position_node_; }
+  const Node* PositionOffsetBaseNode() const {
+    return position_offset_base_node_;
+  }
 
   bool HasEmitted() const { return has_emitted_; }
   UChar LastCharacter() const { return last_character_; }
