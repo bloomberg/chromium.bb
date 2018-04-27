@@ -204,6 +204,7 @@ source_set("test_support") {
   sources = [
     "test/test_data_pipe_getter.cc",
     "test/test_data_pipe_getter.h",
+    "test/test_network_context.h",
     "test/test_url_loader_client.cc",
     "test/test_url_loader_client.h",
     "test/test_url_loader_factory.cc",
