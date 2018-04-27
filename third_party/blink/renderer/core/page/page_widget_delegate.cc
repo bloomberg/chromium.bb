@@ -54,8 +54,8 @@
 namespace blink {
 
 void PageWidgetDelegate::Animate(Page& page,
-                                 double monotonic_frame_begin_time) {
-  page.GetAutoscrollController().Animate(monotonic_frame_begin_time);
+                                 base::TimeTicks monotonic_frame_begin_time) {
+  page.GetAutoscrollController().Animate();
   page.Animator().ServiceScriptedAnimations(monotonic_frame_begin_time);
 }
 

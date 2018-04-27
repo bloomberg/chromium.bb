@@ -598,7 +598,8 @@ bool SVGImage::MaybeAnimated() {
              .HasPendingUpdates();
 }
 
-void SVGImage::ServiceAnimations(double monotonic_animation_start_time) {
+void SVGImage::ServiceAnimations(
+    base::TimeTicks monotonic_animation_start_time) {
   if (!GetImageObserver())
     return;
 
@@ -620,6 +621,7 @@ void SVGImage::ServiceAnimations(double monotonic_animation_start_time) {
   // alive.
   Persistent<ImageObserver> protect(GetImageObserver());
   page_->Animator().ServiceScriptedAnimations(monotonic_animation_start_time);
+
   // Do *not* update the paint phase. It's critical to paint only when
   // actually generating painted output, not only for performance reasons,
   // but to preserve correct coherence of the cache of the output with
@@ -658,7 +660,9 @@ void SVGImage::AdvanceAnimationForTesting() {
     // but will not permanently change the animation timeline.
     // TODO(pdr): Actually advance the document timeline so CSS animations
     // can be properly tested.
-    page_->Animator().ServiceScriptedAnimations(root_element->getCurrentTime());
+    page_->Animator().ServiceScriptedAnimations(
+        base::TimeTicks() +
+        base::TimeDelta::FromSecondsD(root_element->getCurrentTime()));
     GetImageObserver()->AnimationAdvanced(this);
   }
 }

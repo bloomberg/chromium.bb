@@ -1179,7 +1179,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   int RequestAnimationFrame(FrameRequestCallbackCollection::FrameCallback*);
   void CancelAnimationFrame(int id);
-  void ServiceScriptedAnimations(double monotonic_animation_start_time);
+  void ServiceScriptedAnimations(
+      base::TimeTicks monotonic_animation_start_time);
 
   int RequestIdleCallback(ScriptedIdleTaskController::IdleTask*,
                           const IdleRequestOptions&);

@@ -29,9 +29,10 @@ void PageAnimator::Trace(blink::Visitor* visitor) {
 }
 
 void PageAnimator::ServiceScriptedAnimations(
-    double monotonic_animation_start_time) {
+    base::TimeTicks monotonic_animation_start_time) {
   AutoReset<bool> servicing(&servicing_animations_, true);
-  Clock().UpdateTime(monotonic_animation_start_time);
+  Clock().UpdateTime(
+      monotonic_animation_start_time.since_origin().InSecondsF());
 
   HeapVector<Member<Document>, 32> documents;
   for (Frame* frame = page_->MainFrame(); frame;
@@ -52,9 +53,10 @@ void PageAnimator::ServiceScriptedAnimations(
       DocumentLifecycle::DisallowThrottlingScope no_throttling_scope(
           document->Lifecycle());
       if (ScrollableArea* scrollable_area =
-              document->View()->GetScrollableArea())
+              document->View()->GetScrollableArea()) {
         scrollable_area->ServiceScrollAnimations(
-            monotonic_animation_start_time);
+            monotonic_animation_start_time.since_origin().InSecondsF());
+      }
 
       if (const LocalFrameView::ScrollableAreaSet* animating_scrollable_areas =
               document->View()->AnimatingScrollableAreas()) {
@@ -63,9 +65,11 @@ void PageAnimator::ServiceScriptedAnimations(
         HeapVector<Member<ScrollableArea>> animating_scrollable_areas_copy;
         CopyToVector(*animating_scrollable_areas,
                      animating_scrollable_areas_copy);
-        for (ScrollableArea* scrollable_area : animating_scrollable_areas_copy)
+        for (ScrollableArea* scrollable_area :
+             animating_scrollable_areas_copy) {
           scrollable_area->ServiceScrollAnimations(
-              monotonic_animation_start_time);
+              monotonic_animation_start_time.since_origin().InSecondsF());
+        }
       }
       SVGDocumentExtensions::ServiceOnAnimationFrame(*document);
     }
