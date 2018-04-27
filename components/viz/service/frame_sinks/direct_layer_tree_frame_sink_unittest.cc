@@ -157,21 +157,6 @@ TEST_F(DirectLayerTreeFrameSinkTest, NoDamageDoesNotTriggerSwapBuffers) {
   EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
 }
 
-TEST_F(DirectLayerTreeFrameSinkTest, SuspendedDoesNotTriggerSwapBuffers) {
-  SwapBuffersWithDamage(display_rect_);
-  EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
-  display_output_surface_->set_suspended_for_recycle(true);
-  task_runner_->RunUntilIdle();
-  EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
-  SwapBuffersWithDamage(display_rect_);
-  task_runner_->RunUntilIdle();
-  EXPECT_EQ(1u, display_output_surface_->num_sent_frames());
-  display_output_surface_->set_suspended_for_recycle(false);
-  SwapBuffersWithDamage(display_rect_);
-  task_runner_->RunUntilIdle();
-  EXPECT_EQ(2u, display_output_surface_->num_sent_frames());
-}
-
 // Test that hit_test_region_list are created correctly for the browser.
 TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionList) {
   RenderPassList pass_list;

@@ -113,10 +113,6 @@ bool SoftwareOutputSurface::HasExternalStencilTest() const {
 
 void SoftwareOutputSurface::ApplyExternalStencil() {}
 
-bool SoftwareOutputSurface::SurfaceIsSuspendForRecycle() const {
-  return false;
-}
-
 uint32_t SoftwareOutputSurface::GetFramebufferCopyTextureFormat() {
   // Not used for software surfaces.
   NOTREACHED();

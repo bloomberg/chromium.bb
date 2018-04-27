@@ -84,10 +84,6 @@ bool FakeOutputSurface::HasExternalStencilTest() const {
   return has_external_stencil_test_;
 }
 
-bool FakeOutputSurface::SurfaceIsSuspendForRecycle() const {
-  return suspended_for_recycle_;
-}
-
 OverlayCandidateValidator* FakeOutputSurface::GetOverlayCandidateValidator()
     const {
   return overlay_candidate_validator_;

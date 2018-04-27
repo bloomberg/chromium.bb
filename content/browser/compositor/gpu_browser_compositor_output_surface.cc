@@ -173,15 +173,6 @@ gfx::BufferFormat GpuBrowserCompositorOutputSurface::GetOverlayBufferFormat()
   return gfx::BufferFormat::RGBX_8888;
 }
 
-bool GpuBrowserCompositorOutputSurface::SurfaceIsSuspendForRecycle() const {
-  return false;
-}
-
-#if defined(OS_MACOSX)
-void GpuBrowserCompositorOutputSurface::SetSurfaceSuspendedForRecycle(
-    bool suspended) {}
-#endif
-
 void GpuBrowserCompositorOutputSurface::SetDrawRectangle(
     const gfx::Rect& rect) {
   if (set_draw_rectangle_for_frame_)

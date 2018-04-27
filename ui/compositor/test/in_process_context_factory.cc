@@ -118,7 +118,6 @@ class DirectOutputSurface : public viz::OutputSurface {
   gfx::BufferFormat GetOverlayBufferFormat() const override {
     return gfx::BufferFormat::RGBX_8888;
   }
-  bool SurfaceIsSuspendForRecycle() const override { return false; }
   bool HasExternalStencilTest() const override { return false; }
   void ApplyExternalStencil() override {}
 #if BUILDFLAG(ENABLE_VULKAN)

@@ -178,11 +178,6 @@ OffscreenBrowserCompositorOutputSurface::GetOverlayBufferFormat() const {
   return gfx::BufferFormat::RGBX_8888;
 }
 
-bool OffscreenBrowserCompositorOutputSurface::SurfaceIsSuspendForRecycle()
-    const {
-  return false;
-}
-
 GLenum
 OffscreenBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
   return GLCopyTextureInternalFormat(kFboTextureFormat);

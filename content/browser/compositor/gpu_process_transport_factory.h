@@ -105,10 +105,6 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
   viz::FrameSinkManagerImpl* GetFrameSinkManager() override;
   viz::GLHelper* GetGLHelper() override;
-#if defined(OS_MACOSX)
-  void SetCompositorSuspendedForRecycle(ui::Compositor* compositor,
-                                        bool suspended) override;
-#endif
 
  private:
   struct PerCompositorData;

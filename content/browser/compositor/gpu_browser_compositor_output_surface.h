@@ -57,9 +57,6 @@ class GpuBrowserCompositorOutputSurface
 
   // BrowserCompositorOutputSurface implementation.
   void OnReflectorChanged() override;
-#if defined(OS_MACOSX)
-  void SetSurfaceSuspendedForRecycle(bool suspended) override;
-#endif
 
   // viz::OutputSurface implementation.
   void BindToClient(viz::OutputSurfaceClient* client) override;
@@ -77,7 +74,6 @@ class GpuBrowserCompositorOutputSurface
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
 
-  bool SurfaceIsSuspendForRecycle() const override;
   void SetDrawRectangle(const gfx::Rect& rect) override;
 
   // GpuVSyncControl implementation.

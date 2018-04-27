@@ -45,18 +45,12 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
-  bool SurfaceIsSuspendForRecycle() const override;
   uint32_t GetFramebufferCopyTextureFormat() override;
 #if BUILDFLAG(ENABLE_VULKAN)
   gpu::VulkanSurface* GetVulkanSurface() override;
 #endif
 
  private:
-  // BrowserCompositorOutputSurface implementation.
-#if defined(OS_MACOSX)
-  void SetSurfaceSuspendedForRecycle(bool suspended) override;
-#endif
-
   void SwapBuffersCallback(uint64_t swap_id,
                            const std::vector<ui::LatencyInfo>& latency_info);
   void UpdateVSyncCallback(const base::TimeTicks timebase,

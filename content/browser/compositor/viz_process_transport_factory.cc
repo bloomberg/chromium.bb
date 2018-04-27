@@ -360,14 +360,6 @@ viz::GLHelper* VizProcessTransportFactory::GetGLHelper() {
   return nullptr;
 }
 
-#if defined(OS_MACOSX)
-void VizProcessTransportFactory::SetCompositorSuspendedForRecycle(
-    ui::Compositor* compositor,
-    bool suspended) {
-  NOTIMPLEMENTED();
-}
-#endif
-
 void VizProcessTransportFactory::CompositingModeFallbackToSoftware() {
   // This may happen multiple times, since when the viz process (re)starts, it
   // will send this notification if gpu is disabled.

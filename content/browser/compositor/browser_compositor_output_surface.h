@@ -43,10 +43,6 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   // Called when |reflector_| was updated.
   virtual void OnReflectorChanged();
 
-#if defined(OS_MACOSX)
-  virtual void SetSurfaceSuspendedForRecycle(bool suspended) = 0;
-#endif
-
  protected:
   // Constructor used by the accelerated implementation.
   BrowserCompositorOutputSurface(

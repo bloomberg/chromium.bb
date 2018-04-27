@@ -102,7 +102,6 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
   gfx::BufferFormat GetOverlayBufferFormat() const override {
     return gfx::BufferFormat::RGBX_8888;
   }
-  bool SurfaceIsSuspendForRecycle() const override { return false; }
 
   void OnReflectorChanged() override {
     if (!reflector_) {
@@ -112,10 +111,6 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
       reflector_->OnSourceTextureMailboxUpdated(reflector_texture_->mailbox());
     }
   }
-
-#if defined(OS_MACOSX)
-  void SetSurfaceSuspendedForRecycle(bool suspended) override {}
-#endif
 
 #if BUILDFLAG(ENABLE_VULKAN)
   gpu::VulkanSurface* GetVulkanSurface() override { return nullptr; }

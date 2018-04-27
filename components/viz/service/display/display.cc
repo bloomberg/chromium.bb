@@ -328,15 +328,6 @@ bool Display::DrawAndSwap() {
     TRACE_EVENT_INSTANT0("viz", "Size mismatch.", TRACE_EVENT_SCOPE_THREAD);
 
   bool should_draw = have_copy_requests || (have_damage && size_matches);
-
-  // If the surface is suspended then the resources to be used by the draw are
-  // likely destroyed.
-  if (output_surface_->SurfaceIsSuspendForRecycle()) {
-    TRACE_EVENT_INSTANT0("viz", "Surface is suspended for recycle.",
-                         TRACE_EVENT_SCOPE_THREAD);
-    should_draw = false;
-  }
-
   client_->DisplayWillDrawAndSwap(should_draw, frame.render_pass_list);
 
   if (should_draw) {

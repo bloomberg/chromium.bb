@@ -211,7 +211,6 @@ class OverlayOutputSurface : public OutputSurface {
   gfx::BufferFormat GetOverlayBufferFormat() const override {
     return gfx::BufferFormat::RGBX_8888;
   }
-  bool SurfaceIsSuspendForRecycle() const override { return false; }
 
   void set_is_displayed_as_overlay_plane(bool value) {
     is_displayed_as_overlay_plane_ = value;

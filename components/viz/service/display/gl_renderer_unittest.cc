@@ -1911,7 +1911,6 @@ class MockOutputSurface : public OutputSurface {
   MOCK_CONST_METHOD0(IsDisplayedAsOverlayPlane, bool());
   MOCK_CONST_METHOD0(GetOverlayTextureId, unsigned());
   MOCK_CONST_METHOD0(GetOverlayBufferFormat, gfx::BufferFormat());
-  MOCK_CONST_METHOD0(SurfaceIsSuspendForRecycle, bool());
   MOCK_CONST_METHOD0(HasExternalStencilTest, bool());
   MOCK_METHOD0(ApplyExternalStencil, void());
 };

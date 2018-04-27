@@ -39,7 +39,6 @@ class VulkanBrowserCompositorOutputSurface
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
-  bool SurfaceIsSuspendForRecycle() const override;
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,

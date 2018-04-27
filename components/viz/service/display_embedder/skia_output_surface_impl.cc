@@ -182,12 +182,6 @@ gfx::BufferFormat SkiaOutputSurfaceImpl::GetOverlayBufferFormat() const {
   return gfx::BufferFormat::RGBX_8888;
 }
 
-bool SkiaOutputSurfaceImpl::SurfaceIsSuspendForRecycle() const {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
-
-  return false;
-}
-
 bool SkiaOutputSurfaceImpl::HasExternalStencilTest() const {
   DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
 

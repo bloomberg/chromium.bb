@@ -132,8 +132,7 @@ void RecyclableCompositorMac::Unsuspend() {
 void RecyclableCompositorMac::OnCompositingDidCommit(
     ui::Compositor* compositor_that_did_commit) {
   DCHECK_EQ(compositor_that_did_commit, compositor());
-  content::ImageTransportFactory::GetInstance()
-      ->SetCompositorSuspendedForRecycle(compositor(), false);
+  accelerated_widget_mac_->SetSuspended(false);
 }
 
 // static
@@ -151,8 +150,7 @@ std::unique_ptr<RecyclableCompositorMac> RecyclableCompositorMac::Create() {
 // static
 void RecyclableCompositorMac::Recycle(
     std::unique_ptr<RecyclableCompositorMac> compositor) {
-  content::ImageTransportFactory::GetInstance()
-      ->SetCompositorSuspendedForRecycle(compositor->compositor(), true);
+  compositor->accelerated_widget_mac_->SetSuspended(true);
 
   // Make this RecyclableCompositorMac recyclable for future instances.
   g_spare_recyclable_compositors.Get().push_back(std::move(compositor));
