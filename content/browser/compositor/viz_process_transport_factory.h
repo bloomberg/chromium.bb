@@ -15,9 +15,9 @@
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/compositor/in_process_display_client.h"
+#include "gpu/command_buffer/common/context_result.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
-#include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/compositor/compositor.h"
 
@@ -53,7 +53,6 @@ class ExternalBeginFrameControllerClientImpl;
 class VizProcessTransportFactory : public ui::ContextFactory,
                                    public ui::ContextFactoryPrivate,
                                    public ImageTransportFactory,
-                                   public viz::mojom::CompositingModeWatcher,
                                    public viz::ContextLostObserver {
  public:
   VizProcessTransportFactory(
@@ -107,9 +106,6 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
   viz::GLHelper* GetGLHelper() override;
 
-  // viz::mojom::CompositingModeWatcher implementation.
-  void CompositingModeFallbackToSoftware() override;
-
   // viz::ContextLostObserver implementation.
   void OnContextLost() override;
 
@@ -134,6 +130,12 @@ class VizProcessTransportFactory : public ui::ContextFactory,
     DISALLOW_COPY_AND_ASSIGN(CompositorData);
   };
 
+  // Disables GPU compositing. This notifies UI and renderer compositors to drop
+  // LayerTreeFrameSinks and request new ones. If fallback happens while
+  // creating a new LayerTreeFrameSink for UI compositor it should be passed in
+  // as |guilty_compositor| to avoid extra work and reentrancy problems.
+  void DisableGpuCompositing(ui::Compositor* guilty_compositor);
+
   // Provided as a callback when the GPU process has crashed.
   void OnGpuProcessLost();
 
@@ -143,10 +145,15 @@ class VizProcessTransportFactory : public ui::ContextFactory,
       base::WeakPtr<ui::Compositor> compositor_weak_ptr,
       scoped_refptr<gpu::GpuChannelHost> gpu_channel);
 
-  // Creates the necessary shared worker and compositor ContextProviders. If the
-  // ContextProviders already exist and haven't been lost then it will do
-  // nothing. Returns true if ContextProviders exist.
-  bool CreateContextProviders(
+  // Tries to create the raster and main thread ContextProviders. If the
+  // ContextProviders already exist and haven't been lost then this will do
+  // nothing. Also verifies |gpu_channel_host| and checks if GPU compositing is
+  // blacklisted.
+  //
+  // Returns kSuccess if caller can use GPU compositing, kTransientFailure if
+  // caller should try again or kFatalFailure if caller should fallback to
+  // software compositing.
+  gpu::ContextResult TryCreateContextsForGpuCompositing(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel_host);
 
   void OnLostMainThreadSharedContext();

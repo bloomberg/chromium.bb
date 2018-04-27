@@ -653,6 +653,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
 void GpuProcessTransportFactory::DisableGpuCompositing(
     ui::Compositor* guilty_compositor) {
+  DLOG(ERROR) << "Switching to software compositing.";
+
   // Change the result of IsGpuCompositingDisabled() before notifying anything.
   is_gpu_compositing_disabled_ = true;
 
