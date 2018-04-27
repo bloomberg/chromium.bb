@@ -551,8 +551,7 @@ void av1_selfguided_restoration_avx2(const uint8_t *dgd8, int width, int height,
 
   DECLARE_ALIGNED(32, int32_t,
                   buf[4 * ALIGN_POWER_OF_TWO(RESTORATION_PROC_UNIT_PELS, 3)]);
-  // we don't need memset below because all buf fields are filled in later
-  // memset(buf, 0, sizeof(buf));
+  memset(buf, 0, sizeof(buf));
 
   const int width_ext = width + 2 * SGRPROJ_BORDER_HORZ;
   const int height_ext = height + 2 * SGRPROJ_BORDER_VERT;
