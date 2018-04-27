@@ -298,6 +298,7 @@ std::unique_ptr<RuleInputStream> RuleInputStream::Create(
     std::unique_ptr<std::istream> input,
     RulesetFormat format) {
   CHECK(input);
+  CHECK(!input->bad());
   std::unique_ptr<RuleInputStream> result;
   switch (format) {
     case RulesetFormat::kFilterList:
@@ -321,6 +322,7 @@ std::unique_ptr<RuleOutputStream> RuleOutputStream::Create(
     std::unique_ptr<std::ostream> output,
     RulesetFormat format) {
   CHECK(output);
+  CHECK(!output->bad());
   std::unique_ptr<RuleOutputStream> result;
   switch (format) {
     case RulesetFormat::kFilterList:
