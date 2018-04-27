@@ -20,6 +20,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
+#include "headless/public/devtools/domains/browser.h"
 #include "headless/public/devtools/domains/dom_snapshot.h"
 #include "headless/public/devtools/domains/emulation.h"
 #include "headless/public/devtools/domains/headless_experimental.h"
@@ -436,6 +437,42 @@ HEADLESS_ASYNC_DEVTOOLED_TEST_P(HeadlessWebContentsScreenshotTest);
 // Instantiate test case for both software and gpu compositing modes.
 INSTANTIATE_TEST_CASE_P(HeadlessWebContentsScreenshotTests,
                         HeadlessWebContentsScreenshotTest,
+                        ::testing::Bool());
+
+// Regression test for crbug.com/832138.
+class HeadlessWebContentsScreenshotWindowPositionTest
+    : public HeadlessWebContentsScreenshotTest {
+ public:
+  void RunDevTooledTest() override {
+    browser_devtools_client_->GetBrowser()->GetExperimental()->SetWindowBounds(
+        browser::SetWindowBoundsParams::Builder()
+            .SetWindowId(
+                HeadlessWebContentsImpl::From(web_contents_)->window_id())
+            .SetBounds(browser::Bounds::Builder()
+                           .SetLeft(600)
+                           .SetTop(100)
+                           .SetWidth(800)
+                           .SetHeight(600)
+                           .Build())
+            .Build(),
+        base::BindOnce(
+            &HeadlessWebContentsScreenshotWindowPositionTest::OnWindowBoundsSet,
+            base::Unretained(this)));
+  }
+
+  void OnWindowBoundsSet(
+      std::unique_ptr<browser::SetWindowBoundsResult> result) {
+    EXPECT_TRUE(result);
+    HeadlessWebContentsScreenshotTest::RunDevTooledTest();
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_P(
+    HeadlessWebContentsScreenshotWindowPositionTest);
+
+// Instantiate test case for both software and gpu compositing modes.
+INSTANTIATE_TEST_CASE_P(HeadlessWebContentsScreenshotWindowPositionTests,
+                        HeadlessWebContentsScreenshotWindowPositionTest,
                         ::testing::Bool());
 
 #if BUILDFLAG(ENABLE_PRINTING)

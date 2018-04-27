@@ -53,9 +53,16 @@ void HeadlessBrowserImpl::PlatformInitializeWebContents(
 void HeadlessBrowserImpl::PlatformSetWebContentsBounds(
     HeadlessWebContentsImpl* web_contents,
     const gfx::Rect& bounds) {
-  web_contents->window_tree_host()->SetBoundsInPixels(bounds,
+  // Browser's window bounds should contain all web contents, so that we're sure
+  // that we will actually produce visible damage when taking a screenshot.
+  gfx::Rect old_host_bounds =
+      web_contents->window_tree_host()->GetBoundsInPixels();
+  gfx::Rect new_host_bounds(
+      0, 0, std::max(old_host_bounds.width(), bounds.x() + bounds.width()),
+      std::max(old_host_bounds.height(), bounds.y() + bounds.height()));
+  web_contents->window_tree_host()->SetBoundsInPixels(new_host_bounds,
                                                       viz::LocalSurfaceId());
-  web_contents->window_tree_host()->window()->SetBounds(bounds);
+  web_contents->window_tree_host()->window()->SetBounds(new_host_bounds);
 
   gfx::NativeView native_view = web_contents->web_contents()->GetNativeView();
   native_view->SetBounds(bounds);
