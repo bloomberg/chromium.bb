@@ -186,7 +186,7 @@ class ObserverListThreadSafe : public internal::ObserverListThreadSafeBase {
     Callback<void(ObserverType*)> method;
   };
 
-  ~ObserverListThreadSafe() = default;
+  ~ObserverListThreadSafe() override = default;
 
   void NotifyWrapper(ObserverType* observer,
                      const NotificationData& notification) {
