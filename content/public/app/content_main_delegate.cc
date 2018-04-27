@@ -26,6 +26,10 @@ int ContentMainDelegate::RunProcess(
   return -1;
 }
 
+ui::DataPack* ContentMainDelegate::LoadServiceManifestDataPack() {
+  return nullptr;
+}
+
 #if defined(OS_MACOSX)
 
 bool ContentMainDelegate::ProcessRegistersWithSystemProcess(

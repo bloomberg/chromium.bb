@@ -124,4 +124,8 @@ ContentServiceManagerMainDelegate::CreateEmbeddedService(
   return nullptr;
 }
 
+ui::DataPack* ContentServiceManagerMainDelegate::LoadServiceManifestDataPack() {
+  return content_main_params_.delegate->LoadServiceManifestDataPack();
+}
+
 }  // namespace content

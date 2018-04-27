@@ -34,9 +34,9 @@
 #include "ui/base/ui_base_paths.h"
 
 ChromeBrowserMainPartsAndroid::ChromeBrowserMainPartsAndroid(
-    const content::MainFunctionParams& parameters)
-    : ChromeBrowserMainParts(parameters) {
-}
+    const content::MainFunctionParams& parameters,
+    std::unique_ptr<ui::DataPack> data_pack)
+    : ChromeBrowserMainParts(parameters, std::move(data_pack)) {}
 
 ChromeBrowserMainPartsAndroid::~ChromeBrowserMainPartsAndroid() {
 }

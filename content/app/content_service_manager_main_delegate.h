@@ -39,6 +39,7 @@ class ContentServiceManagerMainDelegate : public service_manager::MainDelegate {
       service_manager::BackgroundServiceManager* service_manager) override;
   std::unique_ptr<service_manager::Service> CreateEmbeddedService(
       const std::string& service_name) override;
+  ui::DataPack* LoadServiceManifestDataPack() override;
 
  private:
   ContentMainParams content_main_params_;
