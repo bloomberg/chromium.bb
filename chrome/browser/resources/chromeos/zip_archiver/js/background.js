@@ -5,10 +5,6 @@
 'use strict';
 
 function setupZipArchiver() {
-  // Event called on opening a file with the extension or mime type
-  // declared in the manifest file.
-  chrome.app.runtime.onLaunched.addListener(unpacker.app.onLaunched);
-
   // Save the state before suspending the event page, so we can resume it
   // once new events arrive.
   chrome.runtime.onSuspend.addListener(unpacker.app.onSuspend);
@@ -37,8 +33,15 @@ function setupZipArchiver() {
   unpacker.app.cleanWorkDirectory();
 }
 
+// Event called on opening a file with the extension or mime type
+// declared in the manifest file.
+chrome.app.runtime.onLaunched.addListener(unpacker.app.onLaunched);
+
 // Avoid handling events duplicatedly if this is in incognito context in a
 // regular session. https://crbug.com/833603
+// onLaunched must be registered without waiting for the profile to resolved,
+// or otherwise it misses the first onLaunched event sent right after the
+// extension is loaded. https://crbug.com/837251
 chrome.fileManagerPrivate.getProfiles((profiles) => {
   if ((profiles[0] && profiles[0].profileId == '$guest') ||
       !chrome.extension.inIncognitoContext) {
