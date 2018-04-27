@@ -19,6 +19,8 @@ class ToolbarViewBinder
             view.setCloseButtonOnClickListener(model.getCloseButtonOnClickListener());
         } else if (propertyKey == PropertyKey.MENU_BUTTON_VISIBILITY) {
             view.setMenuButtonVisibility(model.getMenuButtonVisibility());
+        } else if (propertyKey == PropertyKey.MENU_BUTTON_ALPHA) {
+            view.setMenuButtonAlpha(model.getMenuButtonAlpha());
         } else if (propertyKey == PropertyKey.MENU_BUTTON_DELEGATE) {
             view.setMenuButtonDelegate(model.getMenuButtonDelegate());
         } else if (propertyKey == PropertyKey.TITLE) {
