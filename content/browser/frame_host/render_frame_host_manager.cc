@@ -1262,10 +1262,9 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   // redirect arbitary requests to those URLs using webRequest or
   // declarativeWebRequest API.  For these cases, the content isn't controlled
   // by the source SiteInstance, so it need not use it.
-  GURL about_blank(url::kAboutBlankURL);
   GURL about_srcdoc(content::kAboutSrcDocURL);
   bool dest_is_data_or_about = dest_url == about_srcdoc ||
-                               dest_url == about_blank ||
+                               dest_url.IsAboutBlank() ||
                                dest_url.scheme() == url::kDataScheme;
   if (source_instance && dest_is_data_or_about && !was_server_redirect)
     return SiteInstanceDescriptor(source_instance);
