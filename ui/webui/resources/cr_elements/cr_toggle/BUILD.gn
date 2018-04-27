@@ -15,5 +15,4 @@ js_library("cr_toggle") {
     "//third_party/polymer/v1_0/components-chromium/iron-behaviors:iron-button-state-extracted",
     "//third_party/polymer/v1_0/components-chromium/paper-behaviors:paper-ripple-behavior-extracted",
   ]
-  externs_list = [ "$externs_path/pending.js" ]
 }
