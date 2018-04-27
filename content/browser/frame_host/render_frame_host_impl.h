@@ -232,8 +232,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       int max_length) override;
   void AllowBindings(int binding_flags) override;
   int GetEnabledBindings() const override;
-  void BlockRequestsForFrame() override;
-  void ResumeBlockedRequestsForFrame() override;
   void DisableBeforeUnloadHangMonitorForTesting() override;
   bool IsBeforeUnloadHangMonitorDisabledForTesting() override;
   bool GetSuddenTerminationDisablerState(
@@ -651,6 +649,19 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool has_focused_editable_element() const {
     return has_focused_editable_element_;
   }
+
+  // Note: The methods for blocking / resuming / cancelling requests per
+  // RenderFrameHost are deprecated and will not work in the network service,
+  // please avoid using them.
+  //
+  // Causes all new requests for the root RenderFrameHost and its children to
+  // be blocked (not being started) until ResumeBlockedRequestsForFrame is
+  // called.
+  void BlockRequestsForFrame();
+
+  // Resumes any blocked request for the specified root RenderFrameHost and
+  // child frame hosts.
+  void ResumeBlockedRequestsForFrame();
 
   // Cancels any blocked request for the frame and its subframes.
   void CancelBlockedRequestsForFrame();
