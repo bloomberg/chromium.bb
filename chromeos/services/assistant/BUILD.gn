@@ -54,6 +54,8 @@ source_set("lib") {
       "platform/system_provider_impl.h",
       "platform_api_impl.cc",
       "platform_api_impl.h",
+      "utils.cc",
+      "utils.h",
     ]
 
     deps += [

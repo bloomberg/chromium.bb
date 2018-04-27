@@ -15,6 +15,7 @@
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/services/assistant/service.h"
+#include "chromeos/services/assistant/utils.h"
 #include "chromeos/system/version_loader.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 #include "url/gurl.h"
@@ -24,7 +25,7 @@ namespace assistant {
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     mojom::AudioInputPtr audio_input)
-    : platform_api_(kDefaultConfigStr, std::move(audio_input)),
+    : platform_api_(CreateLibAssistantConfig(), std::move(audio_input)),
       action_module_(std::make_unique<action::CrosActionModule>(this)),
       display_connection_(std::make_unique<CrosDisplayConnection>(this)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -39,7 +40,7 @@ void AssistantManagerServiceImpl::Start(const std::string& access_token,
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&assistant_client::AssistantManager::Create,
-                     &platform_api_, kDefaultConfigStr),
+                     &platform_api_, CreateLibAssistantConfig()),
       base::BindOnce(&AssistantManagerServiceImpl::StartAssistantInternal,
                      base::Unretained(this), std::move(callback), access_token,
                      chromeos::version_loader::GetARCVersion()));
