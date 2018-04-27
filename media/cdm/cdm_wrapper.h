@@ -305,7 +305,7 @@ class CdmWrapperImpl : public CdmWrapper {
 
   void OnStorageId(uint32_t version,
                    const uint8_t* storage_id,
-                   uint32_t storage_id_size) {
+                   uint32_t storage_id_size) override {
     cdm_->OnStorageId(version, storage_id, storage_id_size);
   }
 
