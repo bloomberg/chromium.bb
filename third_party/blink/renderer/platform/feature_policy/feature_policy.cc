@@ -151,9 +151,8 @@ bool IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature feature) {
     case mojom::FeaturePolicyFeature::kSyncXHR:
       return true;
     case mojom::FeaturePolicyFeature::kUnsizedMedia:
-      return RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled();
     case mojom::FeaturePolicyFeature::kVerticalScroll:
-      return RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled();
+      return RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled();
     default:
       return false;
   }
@@ -195,6 +194,14 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
       default_feature_name_map.Set(
           "picture-in-picture", mojom::FeaturePolicyFeature::kPictureInPicture);
     }
+    if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
+      default_feature_name_map.Set("sync-script",
+                                   mojom::FeaturePolicyFeature::kSyncScript);
+      default_feature_name_map.Set("unsized-media",
+                                   mojom::FeaturePolicyFeature::kUnsizedMedia);
+      default_feature_name_map.Set(
+          "vertical-scroll", mojom::FeaturePolicyFeature::kVerticalScroll);
+    }
     if (RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled()) {
       default_feature_name_map.Set(
           "cookie", mojom::FeaturePolicyFeature::kDocumentCookie);
@@ -202,12 +209,6 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
           "domain", mojom::FeaturePolicyFeature::kDocumentDomain);
       default_feature_name_map.Set("docwrite",
                                    mojom::FeaturePolicyFeature::kDocumentWrite);
-      default_feature_name_map.Set("sync-script",
-                                   mojom::FeaturePolicyFeature::kSyncScript);
-      default_feature_name_map.Set("unsized-media",
-                                   mojom::FeaturePolicyFeature::kUnsizedMedia);
-      default_feature_name_map.Set(
-          "vertical-scroll", mojom::FeaturePolicyFeature::kVerticalScroll);
     }
     if (RuntimeEnabledFeatures::FeaturePolicyAutoplayFeatureEnabled()) {
       default_feature_name_map.Set("autoplay",

@@ -425,6 +425,14 @@
       origin_trial_feature_name: "ExperimentalHardwareEchoCancellation",
       status: "experimental",
     },
+    // Enables a set of features intended to help improve web developer
+    // productivity, by restricting the use of potentially problematic web-
+    // platform behaviors, as well as adding new high-level APIs for common
+    // development patterns.
+    {
+      name: "ExperimentalProductivityFeatures",
+      status: "experimental"
+    },
     {
       name: "ExperimentalV8Extras",
       status: "experimental",
