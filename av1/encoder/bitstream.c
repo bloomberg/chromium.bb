@@ -2635,6 +2635,8 @@ static void write_film_grain_params(AV1_COMP *cpi,
 
   if (!cm->seq_params.monochrome)
     aom_wb_write_bit(wb, pars->chroma_scaling_from_luma);
+  else
+    pars->chroma_scaling_from_luma = 0;  // for monochrome override to 0
 
   if (cm->seq_params.monochrome || pars->chroma_scaling_from_luma ||
       ((cm->subsampling_x == 1) && (cm->subsampling_y == 1) &&
