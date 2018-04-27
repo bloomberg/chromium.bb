@@ -28,9 +28,8 @@ class FidoDevice;
 class FidoTask;
 class AuthenticatorMakeCredentialResponse;
 
-using RegisterResponseCallback = base::OnceCallback<void(
-    FidoReturnCode status_code,
-    base::Optional<AuthenticatorMakeCredentialResponse> response_data)>;
+using RegisterResponseCallback = base::OnceCallback<
+    void(FidoReturnCode, base::Optional<AuthenticatorMakeCredentialResponse>)>;
 
 class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
     : public FidoRequestHandler<AuthenticatorMakeCredentialResponse> {

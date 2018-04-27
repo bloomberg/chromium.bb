@@ -27,8 +27,8 @@ class AuthenticatorGetAssertionResponse;
 class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
  public:
   using GetAssertionTaskCallback = base::OnceCallback<void(
-      CtapDeviceResponseCode return_code,
-      base::Optional<AuthenticatorGetAssertionResponse> response_data)>;
+      CtapDeviceResponseCode,
+      base::Optional<AuthenticatorGetAssertionResponse>)>;
 
   GetAssertionTask(FidoDevice* device,
                    CtapGetAssertionRequest request,
