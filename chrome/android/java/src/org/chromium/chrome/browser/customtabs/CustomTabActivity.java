@@ -67,6 +67,7 @@ import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.page_info.PageInfoPopup;
+import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -872,6 +873,14 @@ public class CustomTabActivity extends ChromeActivity {
     public final void finishAndClose(boolean reparenting) {
         if (mIsClosing) return;
         mIsClosing = true;
+
+        // Notify the window is closing so as to abort invoking payment app early.
+        if (mIntentDataProvider.isForPaymentRequest()
+                && getActivityTab().getWebContents() != null) {
+            ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(
+                    getActivityTab().getWebContents());
+        }
+
         if (!reparenting) {
             // Closing the activity destroys the renderer as well. Re-create a spare renderer some
             // time after, so that we have one ready for the next tab open. This does not increase

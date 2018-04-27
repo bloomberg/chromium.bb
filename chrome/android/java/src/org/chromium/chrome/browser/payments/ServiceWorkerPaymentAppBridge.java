@@ -236,6 +236,10 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
         nativeAbortPaymentApp(webContents, registrationId, callback);
     }
 
+    public static void onClosingPaymentAppWindow(WebContents webContents) {
+        nativeOnClosingPaymentAppWindow(webContents);
+    }
+
     @CalledByNative
     private static String[] getSupportedMethodsFromMethodData(PaymentMethodData data) {
         return data.supportedMethods;
@@ -436,4 +440,6 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     private static native void nativeCanMakePayment(WebContents webContents, long registrationId,
             String topLevelOrigin, String paymentRequestOrigin, PaymentMethodData[] methodData,
             PaymentDetailsModifier[] modifiers, CanMakePaymentCallback callback);
+
+    private static native void nativeOnClosingPaymentAppWindow(WebContents webContents);
 }

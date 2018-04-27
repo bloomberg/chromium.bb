@@ -573,4 +573,11 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     boolean shouldShowDownloadButton() {
         return !mDisableDownload;
     }
+
+    /**
+     * @return Whether the Custom Tab is opened for payment request.
+     */
+    boolean isForPaymentRequest() {
+        return mUiType == CUSTOM_TABS_UI_TYPE_PAYMENT_REQUEST;
+    }
 }
