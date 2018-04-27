@@ -33,7 +33,7 @@ class MockObjectManager : public ObjectManager {
                                            const std::string&));
 
  protected:
-  virtual ~MockObjectManager();
+  ~MockObjectManager() override;
 };
 
 }  // namespace dbus
