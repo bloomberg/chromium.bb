@@ -156,7 +156,7 @@ class RawCanonOutputT : public CanonOutputT<T> {
     this->buffer_ = fixed_buffer_;
     this->buffer_len_ = fixed_capacity;
   }
-  virtual ~RawCanonOutputT() {
+  ~RawCanonOutputT() override {
     if (this->buffer_ != fixed_buffer_)
       delete[] this->buffer_;
   }
