@@ -464,7 +464,7 @@ def remove_images(unsupported_images):
 
 TRADITIONAL_VM_TESTS_SUPPORTED = [
     config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
-                            test_suite='smoke', retry=True),
+                            test_suite='smoke'),
     config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE),
     config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)]
 
@@ -1079,8 +1079,7 @@ def GeneralTemplates(site_config, ge_build_config):
       # This only applies to vmtest enabled boards like betty and novato.
       vm_tests=[config_lib.VMTestConfig(
           constants.VM_SUITE_TEST_TYPE,
-          test_suite='smoke',
-          retry=True)],
+          test_suite='smoke')],
       vm_tests_override=TRADITIONAL_VM_TESTS_SUPPORTED,
   )
 
