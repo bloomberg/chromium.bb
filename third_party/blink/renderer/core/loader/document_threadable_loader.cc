@@ -381,7 +381,7 @@ void DocumentThreadableLoader::Start(const ResourceRequest& request) {
 
 void DocumentThreadableLoader::DispatchInitialRequest(
     ResourceRequest& request) {
-  if (!request.IsExternalRequest() && !cors_flag_) {
+  if (out_of_blink_cors_ || (!request.IsExternalRequest() && !cors_flag_)) {
     LoadRequest(request, resource_loader_options_);
     return;
   }
@@ -828,20 +828,18 @@ void DocumentThreadableLoader::ResponseReceived(
 
 void DocumentThreadableLoader::HandlePreflightResponse(
     const ResourceResponse& response) {
-  base::Optional<network::mojom::CORSError> cors_error = CORS::CheckAccess(
-      response.Url(), response.HttpStatusCode(), response.HttpHeaderFields(),
-      actual_request_.GetFetchCredentialsMode(), *GetSecurityOrigin());
+  base::Optional<network::mojom::CORSError> cors_error =
+      CORS::CheckPreflightAccess(response.Url(), response.HttpStatusCode(),
+                                 response.HttpHeaderFields(),
+                                 actual_request_.GetFetchCredentialsMode(),
+                                 *GetSecurityOrigin());
   if (cors_error) {
-    StringBuilder builder;
-    builder.Append(
-        "Response to preflight request doesn't pass access "
-        "control check: ");
-    builder.Append(
+    HandlePreflightFailure(
+        response.Url(),
         CORS::GetErrorString(CORS::ErrorParameter::CreateForAccessCheck(
-            *cors_error, response.Url(), response.HttpStatusCode(),
+            *cors_error, response.Url(), 0 /* do not provide the status_code */,
             response.HttpHeaderFields(), *GetSecurityOrigin(),
             request_context_)));
-    HandlePreflightFailure(response.Url(), builder.ToString());
     return;
   }
 
@@ -900,6 +898,8 @@ void DocumentThreadableLoader::HandleResponse(
   DCHECK(client_);
 
   // TODO(toyoshim): Support OOR-CORS preflight and Service Worker case.
+  // Note that CORS-preflight is usually handled in the Network Service side,
+  // but still done in Blink side when it is needed on redirects.
   // https://crbug.com/736308.
   if (out_of_blink_cors_ && actual_request_.IsNull() &&
       !response.WasFetchedViaServiceWorker()) {
@@ -1205,8 +1205,7 @@ void DocumentThreadableLoader::LoadRequestSync(
   // we have an HTTP response, then it wasn't a network error in fact.
   if (resource->LoadFailedOrCanceled() && !request_url.IsLocalFile() &&
       response.HttpStatusCode() <= 0) {
-    client_ = nullptr;
-    client->DidFail(resource->GetResourceError());
+    DispatchDidFail(resource->GetResourceError());
     return;
   }
 

@@ -30,6 +30,13 @@ PLATFORM_EXPORT base::Optional<network::mojom::CORSError> CheckAccess(
     network::mojom::FetchCredentialsMode,
     const SecurityOrigin&);
 
+PLATFORM_EXPORT base::Optional<network::mojom::CORSError> CheckPreflightAccess(
+    const KURL&,
+    const int response_status_code,
+    const HTTPHeaderMap&,
+    network::mojom::FetchCredentialsMode,
+    const SecurityOrigin&);
+
 PLATFORM_EXPORT base::Optional<network::mojom::CORSError> CheckRedirectLocation(
     const KURL&);
 

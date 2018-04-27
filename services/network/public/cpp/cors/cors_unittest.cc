@@ -142,9 +142,8 @@ TEST_F(CORSTest, CheckAccessDetectsAllowOriginMismatch) {
   EXPECT_FALSE(error3);
 }
 
-// Tests if cors::CheckAccess detects kDisallowCredentialsNotSetToTrue error
-// correctly.
-TEST_F(CORSTest, CheckAccessDetectsDisallowCredentialsNotSetToTrue) {
+// Tests if cors::CheckAccess detects kInvalidAllowCredentials error correctly.
+TEST_F(CORSTest, CheckAccessDetectsInvalidAllowCredential) {
   const GURL response_url("http://example.com/data");
   const url::Origin origin = url::Origin::Create(GURL("http://google.com"));
   const int response_status_code = 200;
@@ -162,7 +161,7 @@ TEST_F(CORSTest, CheckAccessDetectsDisallowCredentialsNotSetToTrue) {
                         base::nullopt /* allow_credentials_header */,
                         network::mojom::FetchCredentialsMode::kInclude, origin);
   ASSERT_TRUE(error2);
-  EXPECT_EQ(mojom::CORSError::kDisallowCredentialsNotSetToTrue, *error2);
+  EXPECT_EQ(mojom::CORSError::kInvalidAllowCredentials, *error2);
 }
 
 // Tests if cors::CheckRedirectLocation detects kRedirectDisallowedScheme and

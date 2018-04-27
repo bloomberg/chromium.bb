@@ -5,6 +5,7 @@
 #include "services/network/cors/cors_url_loader.h"
 
 #include "base/stl_util.h"
+#include "services/network/cors/preflight_controller.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/cors_legacy.h"
 #include "url/url_util.h"
@@ -24,7 +25,7 @@ bool IsOriginWhiteListedTrustworthy(const url::Origin& origin) {
   if (base::ContainsValue(url::GetNoAccessSchemes(), origin.scheme()))
     return false;
 
-  return base::ContainsValue(cors::legacy::GetSecureOrigins(), origin);
+  return base::ContainsValue(legacy::GetSecureOrigins(), origin);
 }
 
 bool CalculateCORSFlag(const ResourceRequest& request) {
@@ -48,11 +49,31 @@ base::Optional<std::string> GetHeaderString(
   return header_value;
 }
 
+bool NeedsPreflight(const ResourceRequest& request) {
+  if (request.is_external_request)
+    return true;
+
+  if (request.fetch_request_mode ==
+      mojom::FetchRequestMode::kCORSWithForcedPreflight) {
+    return true;
+  }
+
+  if (!IsCORSSafelistedMethod(request.method))
+    return true;
+
+  for (const auto& header : request.headers.GetHeaderVector()) {
+    if (!IsCORSSafelistedHeader(header.key, header.value) &&
+        !IsForbiddenHeader(header.key)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
-// TODO(toyoshim): At the moment this class simply forwards all calls to the
-// underlying network loader. Part of the effort to move CORS handling out of
-// Blink: http://crbug/736308.
+// TODO(toyoshim): This class still lacks right CORS checks in redirects.
+// See http://crbug/736308 to track the progress.
 CORSURLLoader::CORSURLLoader(
     int32_t routing_id,
     int32_t request_id,
@@ -65,16 +86,17 @@ CORSURLLoader::CORSURLLoader(
       network_client_binding_(this),
       request_(resource_request),
       forwarding_client_(std::move(client)),
-      security_origin_(
-          resource_request.request_initiator.value_or(url::Origin())),
       last_response_url_(resource_request.url),
-      fetch_cors_flag_(CalculateCORSFlag(resource_request)) {
+      fetch_cors_flag_(CalculateCORSFlag(resource_request)),
+      weak_factory_(this) {
   DCHECK(network_loader_factory_);
+  DCHECK(resource_request.request_initiator);
 
   if (fetch_cors_flag_ &&
       request_.fetch_request_mode == mojom::FetchRequestMode::kSameOrigin) {
     forwarding_client_->OnComplete(URLLoaderCompletionStatus(
         CORSErrorStatus(mojom::CORSError::kDisallowedByMode)));
+    forwarding_client_.reset();
     return;
   }
 
@@ -90,18 +112,24 @@ CORSURLLoader::CORSURLLoader(
     }
   }
 
-  // TODO(toyoshim): Needs some checks if the calculated fetch_cors_flag_ is
-  // allowed in this request or not.
+  if (fetch_cors_flag_) {
+    request_.headers.SetHeader(net::HttpRequestHeaders::kOrigin,
+                               request_.request_initiator->Serialize());
+  }
 
-  mojom::URLLoaderClientPtr network_client;
-  network_client_binding_.Bind(mojo::MakeRequest(&network_client));
-  // Binding |this| as an unretained pointer is safe because
-  // |network_client_binding_| shares this object's lifetime.
-  network_client_binding_.set_connection_error_handler(base::BindOnce(
-      &CORSURLLoader::OnUpstreamConnectionError, base::Unretained(this)));
-  network_loader_factory_->CreateLoaderAndStart(
-      mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
-      request_, std::move(network_client), traffic_annotation);
+  if (!fetch_cors_flag_ || !NeedsPreflight(request_)) {
+    StartNetworkRequest(routing_id, request_id, options, traffic_annotation,
+                        base::nullopt);
+    return;
+  }
+
+  PreflightController::GetDefaultController()->PerformPreflightCheck(
+      base::BindOnce(&CORSURLLoader::StartNetworkRequest,
+                     weak_factory_.GetWeakPtr(), routing_id, request_id,
+                     options, traffic_annotation),
+      request_id, request_,
+      net::NetworkTrafficAnnotationTag(traffic_annotation),
+      network_loader_factory);
 }
 
 CORSURLLoader::~CORSURLLoader() {}
@@ -119,9 +147,6 @@ void CORSURLLoader::ProceedWithResponse() {
 
 void CORSURLLoader::SetPriority(net::RequestPriority priority,
                                 int32_t intra_priority_value) {
-  // TODO(toyoshim): Should not be called during the redirect decisions, but
-  // Blink calls actually.
-  // DCHECK(!is_waiting_follow_redirect_call_);
   if (network_loader_)
     network_loader_->SetPriority(priority, intra_priority_value);
 }
@@ -145,15 +170,15 @@ void CORSURLLoader::OnReceiveResponse(
   DCHECK(forwarding_client_);
   DCHECK(!is_waiting_follow_redirect_call_);
   if (fetch_cors_flag_ &&
-      cors::IsCORSEnabledRequestMode(request_.fetch_request_mode)) {
+      IsCORSEnabledRequestMode(request_.fetch_request_mode)) {
     // TODO(toyoshim): Reflect --allow-file-access-from-files flag.
-    base::Optional<mojom::CORSError> cors_error = cors::CheckAccess(
+    base::Optional<mojom::CORSError> cors_error = CheckAccess(
         last_response_url_, response_head.headers->response_code(),
         GetHeaderString(response_head.headers,
-                        cors::header_names::kAccessControlAllowOrigin),
+                        header_names::kAccessControlAllowOrigin),
         GetHeaderString(response_head.headers,
-                        cors::header_names::kAccessControlAllowCredentials),
-        request_.fetch_credentials_mode, security_origin_);
+                        header_names::kAccessControlAllowCredentials),
+        request_.fetch_credentials_mode, *request_.request_initiator);
     if (cors_error) {
       // TODO(toyoshim): Generate related_response_headers here.
       CORSErrorStatus cors_error_status(*cors_error);
@@ -227,6 +252,29 @@ void CORSURLLoader::OnComplete(const URLLoaderCompletionStatus& status) {
   DCHECK(forwarding_client_);
   DCHECK(!is_waiting_follow_redirect_call_);
   HandleComplete(status);
+}
+
+void CORSURLLoader::StartNetworkRequest(
+    int32_t routing_id,
+    int32_t request_id,
+    uint32_t options,
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+    base::Optional<CORSErrorStatus> status) {
+  if (status) {
+    forwarding_client_->OnComplete(URLLoaderCompletionStatus(*status));
+    forwarding_client_.reset();
+    return;
+  }
+
+  mojom::URLLoaderClientPtr network_client;
+  network_client_binding_.Bind(mojo::MakeRequest(&network_client));
+  // Binding |this| as an unretained pointer is safe because
+  // |network_client_binding_| shares this object's lifetime.
+  network_client_binding_.set_connection_error_handler(base::BindOnce(
+      &CORSURLLoader::OnUpstreamConnectionError, base::Unretained(this)));
+  network_loader_factory_->CreateLoaderAndStart(
+      mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
+      request_, std::move(network_client), traffic_annotation);
 }
 
 void CORSURLLoader::OnUpstreamConnectionError() {

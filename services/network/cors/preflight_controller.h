@@ -39,14 +39,20 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
   static std::unique_ptr<ResourceRequest> CreatePreflightRequestForTesting(
       const ResourceRequest& request);
 
+  // Obtains the shared default controller instance.
+  // TODO(toyoshim): Find a right owner rather than a single design.
+  static PreflightController* GetDefaultController();
+
   PreflightController();
   ~PreflightController();
 
   // Determines if a CORS-preflight request is needed, and checks the cache, or
   // makes a preflight request if it is needed. A result will be notified
   // synchronously or asynchronously.
+  // TODO(toyoshim): Remove |request_id| once the Network Service is enabled.
   void PerformPreflightCheck(
       CompletionCallback callback,
+      int32_t request_id,
       const ResourceRequest& resource_request,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactory* loader_factory);

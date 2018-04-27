@@ -83,6 +83,8 @@ base::Optional<mojom::CORSError> CheckAccess(
     mojom::FetchCredentialsMode credentials_mode,
     const url::Origin& origin,
     bool allow_file_origin) {
+  // TODO(toyoshim): This response status code check should not be needed. We
+  // have another status code check after a CheckAccess() call if it is needed.
   if (!response_status_code)
     return mojom::CORSError::kInvalidResponse;
 
@@ -92,6 +94,7 @@ base::Optional<mojom::CORSError> CheckAccess(
     // See https://fetch.spec.whatwg.org/#cors-protocol-and-credentials.
     if (credentials_mode != mojom::FetchCredentialsMode::kInclude)
       return base::nullopt;
+
     // Since the credential is a concept for network schemes, we perform the
     // wildcard check only for HTTP and HTTPS. This is a quick hack to allow
     // data URL (see https://crbug.com/315152).
@@ -140,9 +143,48 @@ base::Optional<mojom::CORSError> CheckAccess(
     // This check should be case sensitive.
     // See also https://fetch.spec.whatwg.org/#http-new-header-syntax.
     if (allow_credentials_header != kLowerCaseTrue)
-      return mojom::CORSError::kDisallowCredentialsNotSetToTrue;
+      return mojom::CORSError::kInvalidAllowCredentials;
   }
   return base::nullopt;
+}
+
+base::Optional<mojom::CORSError> CheckPreflightAccess(
+    const GURL& response_url,
+    const int response_status_code,
+    const base::Optional<std::string>& allow_origin_header,
+    const base::Optional<std::string>& allow_credentials_header,
+    mojom::FetchCredentialsMode actual_credentials_mode,
+    const url::Origin& origin,
+    bool allow_file_origin) {
+  base::Optional<mojom::CORSError> error =
+      CheckAccess(response_url, response_status_code, allow_origin_header,
+                  allow_credentials_header, actual_credentials_mode, origin,
+                  allow_file_origin);
+  if (!error)
+    return base::nullopt;
+
+  // TODO(toyoshim): Remove following two lines when the status code check is
+  // removed from CheckAccess().
+  if (*error == mojom::CORSError::kInvalidResponse)
+    return error;
+
+  switch (*error) {
+    case mojom::CORSError::kWildcardOriginNotAllowed:
+      return mojom::CORSError::kPreflightWildcardOriginNotAllowed;
+    case mojom::CORSError::kMissingAllowOriginHeader:
+      return mojom::CORSError::kPreflightMissingAllowOriginHeader;
+    case mojom::CORSError::kMultipleAllowOriginValues:
+      return mojom::CORSError::kPreflightMultipleAllowOriginValues;
+    case mojom::CORSError::kInvalidAllowOriginValue:
+      return mojom::CORSError::kPreflightInvalidAllowOriginValue;
+    case mojom::CORSError::kAllowOriginMismatch:
+      return mojom::CORSError::kPreflightAllowOriginMismatch;
+    case mojom::CORSError::kInvalidAllowCredentials:
+      return mojom::CORSError::kPreflightInvalidAllowCredentials;
+    default:
+      NOTREACHED();
+  }
+  return error;
 }
 
 base::Optional<mojom::CORSError> CheckRedirectLocation(const GURL& redirect_url,
@@ -237,6 +279,14 @@ bool IsCORSSafelistedHeader(const std::string& name, const std::string& value) {
     return IsCORSSafelistedContentType(value);
 
   return false;
+}
+
+bool IsForbiddenMethod(const std::string& method) {
+  static const std::vector<std::string> forbidden_methods = {"trace", "track",
+                                                             "connect"};
+  const std::string lower_method = base::ToLowerASCII(method);
+  return std::find(forbidden_methods.begin(), forbidden_methods.end(),
+                   lower_method) != forbidden_methods.end();
 }
 
 bool IsForbiddenHeader(const std::string& name) {

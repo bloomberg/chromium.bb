@@ -15,16 +15,54 @@ enum CORSError {
   // Access control
   kDisallowedByMode,
   kInvalidResponse,
-  kAllowOriginMismatch,
+
+  // Not allowed wildcard origin was found in Access-Control-Allow-Origin
+  // response header when the credentials mode is 'include'.
   kWildcardOriginNotAllowed,
+
+  // Access-Control-Allow-Origin response header was not found.
   kMissingAllowOriginHeader,
+
+  // Not allowed multiple origin values was found in Access-Control-Allow-Origin
+  // response header.
   kMultipleAllowOriginValues,
+
+  // Invalid origin was found in Access-Control-Allow-Origin response header.
   kInvalidAllowOriginValue,
-  kDisallowCredentialsNotSetToTrue,
+
+  // Not allowed by Access-Control-Allow-Origin response header.
+  kAllowOriginMismatch,
+
+  // Invalid value was found in Access-Control-Allow-Credentials response
+  // header.
+  kInvalidAllowCredentials,
 
   // Preflight
-  // Failed to check HTTP response ok status in CORS-preflight response.
+  // Failed to check HTTP response ok status in a CORS-preflight response.
   kPreflightInvalidStatus,
+
+  // Not allowed wildcard origin was found in Access-Control-Allow-Origin
+  // CORS-preflight response header when the credentials mode is 'include'.
+  kPreflightWildcardOriginNotAllowed,
+
+  // Access-Control-Allow-Origin response header was not found in a
+  // CORS-preflight response.
+  kPreflightMissingAllowOriginHeader,
+
+  // Not allowed multiple origin values was found in Access-Control-Allow-Origin
+  // CORS-preflight response header.
+  kPreflightMultipleAllowOriginValues,
+
+  // Invalid origin was found in Access-Control-Allow-Origin CORS-preflight
+  // response header.
+  kPreflightInvalidAllowOriginValue,
+
+  // Not allowed by Access-Control-Allow-Origin CORS-preflight response header.
+  kPreflightAllowOriginMismatch,
+
+  // Invalid value was found in Access-Control-Allow-Credentials CORS-preflight
+  // response header.
+  kPreflightInvalidAllowCredentials,
 
   // "Access-Control-Allow-External:"
   // ( https://wicg.github.io/cors-rfc1918/#headers ) specific error
