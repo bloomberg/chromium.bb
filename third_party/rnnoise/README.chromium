@@ -22,3 +22,4 @@ Local Modifications:
 * KissFFT: non-floating point parts removed, code clean, from C to C++,
   class wrapper added
 * BUILD targets and KissFFT unit tests added
+* rnn_vad_weights.h: output layer sizes + weights scaling factor
