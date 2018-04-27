@@ -9,13 +9,6 @@
  */
 
 /**
- * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/setPointerCapture
- * @param {number} pointerId
- * TODO(dpapad): Remove this once it is added to Closure Compiler itself.
- */
-Element.prototype.setPointerCapture = function(pointerId) {};
-
-/**
  * @see https://drafts.fxtf.org/geometry-1/#domrectreadonly
  * TODO(scottchen): Remove this once it is added to Closure Compiler itself.
  */
