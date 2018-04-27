@@ -23,7 +23,14 @@ class MockUiBrowserInterface : public UiBrowserInterface {
   MOCK_METHOD0(NavigateForward, void());
   MOCK_METHOD0(ReloadTab, void());
   MOCK_METHOD1(OpenNewTab, void(bool));
+  MOCK_METHOD0(OpenBookmarks, void());
+  MOCK_METHOD0(OpenRecentTabs, void());
+  MOCK_METHOD0(OpenHistory, void());
+  MOCK_METHOD0(OpenDownloads, void());
+  MOCK_METHOD0(OpenSettings, void());
+  MOCK_METHOD0(CloseAllTabs, void());
   MOCK_METHOD0(CloseAllIncognitoTabs, void());
+  MOCK_METHOD0(OpenFeedback, void());
   MOCK_METHOD0(ExitCct, void());
   MOCK_METHOD0(CloseHostedDialog, void());
   MOCK_METHOD1(OnUnsupportedMode, void(UiUnsupportedMode mode));

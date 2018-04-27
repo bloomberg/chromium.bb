@@ -45,6 +45,7 @@ class BrowserUiInterface {
                               std::unique_ptr<Assets> assets,
                               const base::Version& component_version) = 0;
   virtual void OnAssetsUnavailable() = 0;
+  virtual void SetRegularTabsOpen(bool open) = 0;
   virtual void SetIncognitoTabsOpen(bool open) = 0;
   virtual void SetOverlayTextureEmpty(bool empty) = 0;
 

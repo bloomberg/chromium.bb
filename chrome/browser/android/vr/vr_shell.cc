@@ -373,9 +373,44 @@ void VrShell::OpenNewTab(bool incognito) {
   Java_VrShellImpl_openNewTab(env, j_vr_shell_, incognito);
 }
 
+void VrShell::OpenBookmarks() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_VrShellImpl_openBookmarks(env, j_vr_shell_);
+}
+
+void VrShell::OpenRecentTabs() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_VrShellImpl_openRecentTabs(env, j_vr_shell_);
+}
+
+void VrShell::OpenHistory() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_VrShellImpl_openHistory(env, j_vr_shell_);
+}
+
+void VrShell::OpenDownloads() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_VrShellImpl_openDownloads(env, j_vr_shell_);
+}
+
+void VrShell::OpenSettings() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_VrShellImpl_openSettings(env, j_vr_shell_);
+}
+
+void VrShell::CloseAllTabs() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_VrShellImpl_closeAllTabs(env, j_vr_shell_);
+}
+
 void VrShell::CloseAllIncognitoTabs() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_VrShellImpl_closeAllIncognitoTabs(env, j_vr_shell_);
+}
+
+void VrShell::OpenFeedback() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_VrShellImpl_openFeedback(env, j_vr_shell_);
 }
 
 void VrShell::ExitCct() {
@@ -552,6 +587,7 @@ void VrShell::OnTabListCreated(JNIEnv* env,
                                jobjectArray tabs,
                                jobjectArray incognito_tabs) {
   incognito_tab_ids_.clear();
+  regular_tab_ids_.clear();
   size_t len = env->GetArrayLength(incognito_tabs);
   for (size_t i = 0; i < len; ++i) {
     ScopedJavaLocalRef<jobject> j_tab(
@@ -559,7 +595,15 @@ void VrShell::OnTabListCreated(JNIEnv* env,
     TabAndroid* tab = TabAndroid::GetNativeTab(env, j_tab);
     incognito_tab_ids_.insert(tab->GetAndroidId());
   }
+
+  len = env->GetArrayLength(tabs);
+  for (size_t i = 0; i < len; ++i) {
+    ScopedJavaLocalRef<jobject> j_tab(env, env->GetObjectArrayElement(tabs, i));
+    TabAndroid* tab = TabAndroid::GetNativeTab(env, j_tab);
+    regular_tab_ids_.insert(tab->GetAndroidId());
+  }
   ui_->SetIncognitoTabsOpen(!incognito_tab_ids_.empty());
+  ui_->SetRegularTabsOpen(!regular_tab_ids_.empty());
 }
 
 void VrShell::OnTabUpdated(JNIEnv* env,
@@ -570,6 +614,9 @@ void VrShell::OnTabUpdated(JNIEnv* env,
   if (incognito) {
     incognito_tab_ids_.insert(id);
     ui_->SetIncognitoTabsOpen(!incognito_tab_ids_.empty());
+  } else {
+    regular_tab_ids_.insert(id);
+    ui_->SetRegularTabsOpen(!regular_tab_ids_.empty());
   }
 }
 
@@ -580,6 +627,9 @@ void VrShell::OnTabRemoved(JNIEnv* env,
   if (incognito) {
     incognito_tab_ids_.erase(id);
     ui_->SetIncognitoTabsOpen(!incognito_tab_ids_.empty());
+  } else {
+    regular_tab_ids_.erase(id);
+    ui_->SetRegularTabsOpen(!regular_tab_ids_.empty());
   }
 }
 
@@ -1265,7 +1315,8 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
                            jint display_width_pixels,
                            jint display_pixel_height,
                            jboolean pause_content,
-                           jboolean low_density) {
+                           jboolean low_density,
+                           jboolean is_standalone_vr_device) {
   UiInitialState ui_initial_state;
   ui_initial_state.browsing_disabled = browsing_disabled;
   ui_initial_state.in_cct = in_cct;
@@ -1277,6 +1328,7 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
   ui_initial_state.skips_redraw_when_not_dirty =
       base::FeatureList::IsEnabled(features::kVrBrowsingExperimentalRendering);
   ui_initial_state.assets_supported = AssetsLoader::AssetsSupported();
+  ui_initial_state.is_standalone_vr_device = is_standalone_vr_device;
 
   return reinterpret_cast<intptr_t>(new VrShell(
       env, obj, ui_initial_state,

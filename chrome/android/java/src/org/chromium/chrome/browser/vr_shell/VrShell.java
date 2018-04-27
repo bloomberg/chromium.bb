@@ -15,7 +15,8 @@ public interface VrShell extends VrDialogManager, VrToastManager {
     /**
      * Performs native VrShell initialization.
      */
-    void initializeNative(boolean forWebVr, boolean webVrAutopresentationExpected, boolean inCct);
+    void initializeNative(boolean forWebVr, boolean webVrAutopresentationExpected, boolean inCct,
+            boolean isStandaloneVrDevice);
 
     /**
      * Pauses VrShell.
@@ -76,21 +77,6 @@ public interface VrShell extends VrDialogManager, VrToastManager {
      *  Triggers VrShell to navigate backward.
      */
     void navigateBack();
-
-    /**
-     *  Asks VrShell to reload the current page.
-     */
-    void reloadTab();
-
-    /**
-     *  Asks VrShell to open a new tab.
-     */
-    void openNewTab(boolean incognito);
-
-    /**
-     *  Asks VrShell to close all incognito tabs.
-     */
-    void closeAllIncognitoTabs();
 
     /**
      * Simulates a user accepting the currently visible DOFF prompt.

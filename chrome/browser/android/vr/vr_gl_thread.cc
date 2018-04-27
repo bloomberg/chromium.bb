@@ -249,11 +249,53 @@ void VrGLThread::OpenNewTab(bool incognito) {
       base::BindOnce(&VrShell::OpenNewTab, weak_vr_shell_, incognito));
 }
 
+void VrGLThread::OpenBookmarks() {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VrShell::OpenBookmarks, weak_vr_shell_));
+}
+
+void VrGLThread::OpenRecentTabs() {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VrShell::OpenRecentTabs, weak_vr_shell_));
+}
+
+void VrGLThread::OpenHistory() {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VrShell::OpenHistory, weak_vr_shell_));
+}
+
+void VrGLThread::OpenDownloads() {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VrShell::OpenDownloads, weak_vr_shell_));
+}
+
+void VrGLThread::OpenSettings() {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VrShell::OpenSettings, weak_vr_shell_));
+}
+
+void VrGLThread::CloseAllTabs() {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VrShell::CloseAllTabs, weak_vr_shell_));
+}
+
 void VrGLThread::CloseAllIncognitoTabs() {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&VrShell::CloseAllIncognitoTabs, weak_vr_shell_));
+}
+
+void VrGLThread::OpenFeedback() {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VrShell::OpenFeedback, weak_vr_shell_));
 }
 
 void VrGLThread::ExitCct() {
@@ -441,6 +483,13 @@ void VrGLThread::OnAssetsUnavailable() {
   task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&BrowserUiInterface::OnAssetsUnavailable,
                                 weak_browser_ui_));
+}
+
+void VrGLThread::SetRegularTabsOpen(bool open) {
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&BrowserUiInterface::SetRegularTabsOpen,
+                                weak_browser_ui_, open));
 }
 
 void VrGLThread::SetIncognitoTabsOpen(bool open) {

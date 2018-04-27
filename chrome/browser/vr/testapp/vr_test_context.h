@@ -47,7 +47,14 @@ class VrTestContext : public vr::UiBrowserInterface {
   void NavigateForward() override;
   void ReloadTab() override;
   void OpenNewTab(bool incognito) override;
+  void OpenBookmarks() override;
+  void OpenRecentTabs() override;
+  void OpenHistory() override;
+  void OpenDownloads() override;
+  void OpenSettings() override;
+  void CloseAllTabs() override;
   void CloseAllIncognitoTabs() override;
+  void OpenFeedback() override;
   void ExitCct() override;
   void CloseHostedDialog() override;
   void OnUnsupportedMode(vr::UiUnsupportedMode mode) override;
