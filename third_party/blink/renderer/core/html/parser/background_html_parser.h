@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/core/html/parser/html_source_tracker.h"
 #include "third_party/blink/renderer/core/html/parser/html_tree_builder_simulator.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
-#include "third_party/blink/renderer/core/html/parser/tokenized_chunk_queue.h"
 #include "third_party/blink/renderer/core/html/parser/xss_auditor_delegate.h"
 
 namespace blink {
@@ -60,7 +59,6 @@ class BackgroundHTMLParser {
     base::WeakPtr<HTMLDocumentParser> parser;
     std::unique_ptr<XSSAuditor> xss_auditor;
     std::unique_ptr<TextResourceDecoder> decoder;
-    scoped_refptr<TokenizedChunkQueue> tokenized_chunk_queue;
     // outstandingTokenLimit must be greater than or equal to
     // pendingTokenLimit
     size_t outstanding_token_limit;
@@ -109,10 +107,7 @@ class BackgroundHTMLParser {
   void MarkEndOfFile();
   void PumpTokenizer();
 
-  // Returns whether or not the HTMLDocumentParser should be notified of
-  // pending chunks.
-  bool QueueChunkForMainThread();
-  void NotifyMainThreadOfNewChunks();
+  void EnqueueTokenizedChunk();
   void UpdateDocument(const String& decoded_data);
 
   template <typename FunctionType, typename... Ps>
@@ -127,7 +122,7 @@ class BackgroundHTMLParser {
   const size_t outstanding_token_limit_;
   base::WeakPtr<HTMLDocumentParser> parser_;
 
-  std::unique_ptr<CompactHTMLTokenStream> pending_tokens_;
+  CompactHTMLTokenStream pending_tokens_;
   const size_t pending_token_limit_;
   PreloadRequestStream pending_preloads_;
   ViewportDescriptionWrapper viewport_description_;
@@ -138,7 +133,6 @@ class BackgroundHTMLParser {
   std::unique_ptr<TextResourceDecoder> decoder_;
   DocumentEncodingData last_seen_encoding_data_;
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
-  scoped_refptr<TokenizedChunkQueue> tokenized_chunk_queue_;
 
   // Index into |m_pendingTokens| of the last <meta> csp token found. Will be
   // |TokenizedChunk::noPendingToken| if none have been found.

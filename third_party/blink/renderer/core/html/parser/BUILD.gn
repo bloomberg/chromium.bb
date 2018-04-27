@@ -71,8 +71,6 @@ blink_core_sources("parser") {
     "text_document_parser.h",
     "text_resource_decoder.cc",
     "text_resource_decoder.h",
-    "tokenized_chunk_queue.cc",
-    "tokenized_chunk_queue.h",
     "xss_auditor.cc",
     "xss_auditor.h",
     "xss_auditor_delegate.cc",
