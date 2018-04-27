@@ -82,11 +82,9 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
                                 public RunLoop::Delegate,
                                 public MessageLoopCurrent {
  public:
-  // TODO(gab): Migrate usage of these classes to MessageLoopCurrent and remove
-  // these forwarded declarations.
+  // TODO(gab): Migrate usage of this class to MessageLoopCurrent and remove
+  // this forwarded declaration.
   using DestructionObserver = MessageLoopCurrent::DestructionObserver;
-  using ScopedNestableTaskAllower =
-      MessageLoopCurrent::ScopedNestableTaskAllower;
 
   // A MessageLoop has a particular type, which indicates the set of
   // asynchronous events it may process in addition to tasks and timers.
