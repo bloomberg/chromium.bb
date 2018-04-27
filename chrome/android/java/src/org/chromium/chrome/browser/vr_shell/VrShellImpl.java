@@ -314,8 +314,8 @@ public class VrShellImpl
 
     @Override
     @TargetApi(Build.VERSION_CODES.N)
-    public void initializeNative(
-            boolean forWebVr, boolean webVrAutopresentationExpected, boolean inCct) {
+    public void initializeNative(boolean forWebVr, boolean webVrAutopresentationExpected,
+            boolean inCct, boolean isStandaloneVrDevice) {
         Tab tab = mActivity.getActivityTab();
         if (mActivity.isInOverviewMode() || tab == null) {
             launchNTP();
@@ -360,7 +360,8 @@ public class VrShellImpl
         mNativeVrShell = nativeInit(mDelegate, forWebVr, webVrAutopresentationExpected, inCct,
                 !mVrBrowsingEnabled, hasOrCanRequestAudioPermission,
                 getGvrApi().getNativeGvrContext(), mReprojectedRendering, displayWidthMeters,
-                displayHeightMeters, dm.widthPixels, dm.heightPixels, pauseContent, lowDensity);
+                displayHeightMeters, dm.widthPixels, dm.heightPixels, pauseContent, lowDensity,
+                isStandaloneVrDevice);
 
         swapToTab(tab);
         createTabList();
@@ -981,22 +982,54 @@ public class VrShellImpl
         updateHistoryButtonsVisibility();
     }
 
-    @Override
     @CalledByNative
     public void reloadTab() {
         mTab.reload();
     }
 
-    @Override
     @CalledByNative
     public void openNewTab(boolean incognito) {
         mActivity.getTabCreator(incognito).launchNTP();
     }
 
-    @Override
+    @CalledByNative
+    public void openBookmarks() {
+        mActivity.onMenuOrKeyboardAction(R.id.all_bookmarks_menu_id, true);
+    }
+
+    @CalledByNative
+    public void openRecentTabs() {
+        mActivity.onMenuOrKeyboardAction(R.id.recent_tabs_menu_id, true);
+    }
+
+    @CalledByNative
+    public void openHistory() {
+        mActivity.onMenuOrKeyboardAction(R.id.open_history_menu_id, true);
+    }
+
+    @CalledByNative
+    public void openDownloads() {
+        mActivity.onMenuOrKeyboardAction(R.id.downloads_menu_id, true);
+    }
+
+    @CalledByNative
+    public void openSettings() {
+        mActivity.onMenuOrKeyboardAction(R.id.preferences_id, true);
+    }
+
+    @CalledByNative
+    public void closeAllTabs() {
+        mTabModelSelector.closeAllTabs();
+    }
+
     @CalledByNative
     public void closeAllIncognitoTabs() {
         mTabModelSelector.getModel(true).closeAllTabs();
+    }
+
+    @CalledByNative
+    public void openFeedback() {
+        mActivity.onMenuOrKeyboardAction(R.id.help_id, true);
     }
 
     private void updateHistoryButtonsVisibility() {
@@ -1141,7 +1174,8 @@ public class VrShellImpl
             boolean webVrAutopresentationExpected, boolean inCct, boolean browsingDisabled,
             boolean hasOrCanRequestAudioPermission, long gvrApi, boolean reprojectedRendering,
             float displayWidthMeters, float displayHeightMeters, int displayWidthPixels,
-            int displayHeightPixels, boolean pauseContent, boolean lowDensity);
+            int displayHeightPixels, boolean pauseContent, boolean lowDensity,
+            boolean isStandaloneVrDevice);
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
     private native void nativeSwapContents(long nativeVrShell, Tab tab);
     private native void nativeSetAndroidGestureTarget(

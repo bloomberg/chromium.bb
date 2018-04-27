@@ -34,6 +34,9 @@
 
 namespace vr {
 
+UiInitialState::UiInitialState() = default;
+UiInitialState::UiInitialState(const UiInitialState& other) = default;
+
 Ui::Ui(UiBrowserInterface* browser,
        ContentInputForwarder* content_input_forwarder,
        KeyboardDelegate* keyboard_delegate,
@@ -457,6 +460,10 @@ void Ui::OnAssetsUnavailable() {
   model_->waiting_for_background = false;
 }
 
+void Ui::SetRegularTabsOpen(bool open) {
+  model_->regular_tabs_open = open;
+}
+
 void Ui::SetIncognitoTabsOpen(bool open) {
   model_->incognito_tabs_open = open;
 }
@@ -495,6 +502,7 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
   model_->waiting_for_background = ui_initial_state.assets_supported;
   model_->supports_selection = ui_initial_state.supports_selection;
   model_->needs_keyboard_update = ui_initial_state.needs_keyboard_update;
+  model_->standalone_vr_device = ui_initial_state.is_standalone_vr_device;
 }
 
 void Ui::AcceptDoffPromptForTesting() {

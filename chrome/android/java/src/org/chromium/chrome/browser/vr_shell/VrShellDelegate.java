@@ -1231,13 +1231,6 @@ public class VrShellDelegate
         // UI which is gone.
         assert !mPaused;
         if (mInVr) return;
-        if (!mRequestedWebVr && !tentativeWebVrMode && !mAutopresentWebVr
-                && getVrClassesWrapper().bootsToVr()) {
-            // We don't support VR browsing on standalone devices, so if we try to enter browsing
-            // mode, just drop back to the 2D-in-VR path.
-            cancelPendingVrEntry();
-            return;
-        }
         if (mNativeVrShellDelegate == 0) {
             cancelPendingVrEntry();
             return;
@@ -1258,8 +1251,8 @@ public class VrShellDelegate
 
         addVrViews();
         boolean webVrMode = mRequestedWebVr || tentativeWebVrMode || mAutopresentWebVr;
-        mVrShell.initializeNative(
-                webVrMode, mAutopresentWebVr, mActivity instanceof CustomTabActivity);
+        mVrShell.initializeNative(webVrMode, mAutopresentWebVr,
+                mActivity instanceof CustomTabActivity, getVrClassesWrapper().bootsToVr());
         mVrShell.setWebVrModeEnabled(webVrMode);
 
         // We're entering VR, but not in WebVr mode.
@@ -1603,11 +1596,6 @@ public class VrShellDelegate
             // ever exit WebVR for whatever reason (navigation, call exitPresent etc), go back to
             // Daydream home.
             getVrDaydreamApi().launchVrHomescreen();
-            return;
-        }
-
-        if (getVrClassesWrapper().bootsToVr()) {
-            shutdownVr(true /* disableVrMode */, true /* stayingInChrome */);
             return;
         }
 

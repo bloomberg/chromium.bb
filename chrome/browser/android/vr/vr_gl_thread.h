@@ -86,7 +86,14 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void NavigateForward() override;
   void ReloadTab() override;
   void OpenNewTab(bool incognito) override;
+  void OpenBookmarks() override;
+  void OpenRecentTabs() override;
+  void OpenHistory() override;
+  void OpenDownloads() override;
+  void OpenSettings() override;
+  void CloseAllTabs() override;
   void CloseAllIncognitoTabs() override;
+  void OpenFeedback() override;
   void ExitCct() override;
   void CloseHostedDialog() override;
   void OnUnsupportedMode(UiUnsupportedMode mode) override;
@@ -118,6 +125,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
                       std::unique_ptr<Assets> assets,
                       const base::Version& component_version) override;
   void OnAssetsUnavailable() override;
+  void SetRegularTabsOpen(bool open) override;
   void SetIncognitoTabsOpen(bool open) override;
   void SetOverlayTextureEmpty(bool empty) override;
   void ShowSoftInput(bool show) override;

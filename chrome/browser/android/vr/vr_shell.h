@@ -135,7 +135,14 @@ class VrShell : device::GvrGamepadDataProvider,
   void NavigateForward();
   void ReloadTab();
   void OpenNewTab(bool incognito);
+  void OpenBookmarks();
+  void OpenRecentTabs();
+  void OpenHistory();
+  void OpenDownloads();
+  void OpenSettings();
+  void CloseAllTabs();
   void CloseAllIncognitoTabs();
+  void OpenFeedback();
   void ExitCct();
   void CloseHostedDialog();
   void ToggleCardboardGamepad(bool enabled);
@@ -359,6 +366,7 @@ class VrShell : device::GvrGamepadDataProvider,
 
   base::Timer waiting_for_assets_component_timer_;
 
+  std::set<int> regular_tab_ids_;
   std::set<int> incognito_tab_ids_;
 
   base::WeakPtrFactory<VrShell> weak_ptr_factory_;

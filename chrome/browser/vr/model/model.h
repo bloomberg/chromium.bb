@@ -54,7 +54,9 @@ struct Model {
   bool supports_selection = true;
   bool needs_keyboard_update = false;
   bool overflow_menu_enabled = false;
+  bool regular_tabs_open = false;
   bool incognito_tabs_open = false;
+  bool standalone_vr_device = false;
 
   // WebVR state.
   WebVrModel web_vr;

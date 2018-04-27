@@ -516,17 +516,31 @@ void VrTestContext::ReloadTab() {
 }
 
 void VrTestContext::OpenNewTab(bool incognito) {
-  DCHECK(incognito);
-  incognito_ = true;
-  ui_->SetIncognito(true);
-  model_->incognito_tabs_open = true;
+  incognito_ = incognito;
+  ui_->SetIncognito(incognito);
+  model_->incognito_tabs_open = model_->incognito_tabs_open || incognito;
+}
+
+void VrTestContext::OpenBookmarks() {}
+void VrTestContext::OpenRecentTabs() {}
+void VrTestContext::OpenHistory() {}
+void VrTestContext::OpenDownloads() {}
+void VrTestContext::OpenSettings() {}
+
+void VrTestContext::CloseAllTabs() {
+  incognito_ = false;
+  ui_->SetIncognito(false);
+  model_->incognito_tabs_open = false;
+  model_->regular_tabs_open = false;
 }
 
 void VrTestContext::CloseAllIncognitoTabs() {
-  incognito_ = true;
+  incognito_ = false;
   ui_->SetIncognito(false);
   model_->incognito_tabs_open = false;
 }
+
+void VrTestContext::OpenFeedback() {}
 
 void VrTestContext::ExitCct() {}
 

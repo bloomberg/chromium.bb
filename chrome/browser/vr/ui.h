@@ -38,6 +38,8 @@ struct OmniboxSuggestions;
 struct ReticleModel;
 
 struct UiInitialState {
+  UiInitialState();
+  UiInitialState(const UiInitialState& other);
   bool in_cct = false;
   bool in_web_vr = false;
   bool web_vr_autopresentation_expected = false;
@@ -47,6 +49,7 @@ struct UiInitialState {
   bool assets_supported = false;
   bool supports_selection = true;
   bool needs_keyboard_update = false;
+  bool is_standalone_vr_device = false;
 };
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.
@@ -99,6 +102,7 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
                       std::unique_ptr<Assets> assets,
                       const base::Version& component_version) override;
   void OnAssetsUnavailable() override;
+  void SetRegularTabsOpen(bool open) override;
   void SetIncognitoTabsOpen(bool open) override;
   void SetOverlayTextureEmpty(bool empty) override;
 
