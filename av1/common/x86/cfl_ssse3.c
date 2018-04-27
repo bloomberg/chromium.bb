@@ -17,6 +17,16 @@
 
 #include "av1/common/x86/cfl_simd.h"
 
+// Load 32-bit integer from memory into the first element of dst.
+static INLINE __m128i _mm_loadh_epi32(__m128i const *mem_addr) {
+  return _mm_cvtsi32_si128(*((int *)mem_addr));
+}
+
+// Store 32-bit integer from the first element of a into memory.
+static INLINE void _mm_storeh_epi32(__m128i const *mem_addr, __m128i a) {
+  *((int *)mem_addr) = _mm_cvtsi128_si32(a);
+}
+
 /**
  * Adds 4 pixels (in a 2x2 grid) and multiplies them by 2. Resulting in a more
  * precise version of a box filter 4:2:0 pixel subsampling in Q3.
@@ -37,12 +47,12 @@ static INLINE void cfl_luma_subsampling_420_lbd_ssse3(const uint8_t *input,
   const int luma_stride = input_stride << 1;
   do {
     if (width == 4) {
-      __m128i top = _mm_cvtsi32_si128(*((int *)input));
+      __m128i top = _mm_loadh_epi32((__m128i *)input);
       top = _mm_maddubs_epi16(top, twos);
-      __m128i bot = _mm_cvtsi32_si128(*((int *)(input + input_stride)));
+      __m128i bot = _mm_loadh_epi32((__m128i *)(input + input_stride));
       bot = _mm_maddubs_epi16(bot, twos);
       const __m128i sum = _mm_add_epi16(top, bot);
-      *((int *)pred_buf_m128i) = _mm_cvtsi128_si32(sum);
+      _mm_storeh_epi32(pred_buf_m128i, sum);
     } else if (width == 8) {
       __m128i top = _mm_loadl_epi64((__m128i *)input);
       top = _mm_maddubs_epi16(top, twos);
@@ -92,7 +102,7 @@ static INLINE void cfl_luma_subsampling_422_lbd_ssse3(const uint8_t *input,
   __m128i top, next_top, top_16x8, next_top_16x8;
   do {
     switch (width) {
-      case 4: top = _mm_cvtsi32_si128(*((int *)input)); break;
+      case 4: top = _mm_loadh_epi32((__m128i *)input); break;
       case 8: top = _mm_loadl_epi64((__m128i *)input); break;
       case 16: top = _mm_loadu_si128((__m128i *)input); break;
       case 32:
@@ -106,7 +116,7 @@ static INLINE void cfl_luma_subsampling_422_lbd_ssse3(const uint8_t *input,
       next_top_16x8 = _mm_maddubs_epi16(next_top, fours);
     }
     switch (width) {
-      case 4: *((int *)pred_buf_q3) = _mm_cvtsi128_si32(top_16x8); break;
+      case 4: _mm_storeh_epi32((__m128i *)pred_buf_q3, top_16x8); break;
       case 8: _mm_storel_epi64((__m128i *)pred_buf_q3, top_16x8); break;
       case 16: _mm_storeu_si128((__m128i *)pred_buf_q3, top_16x8); break;
       case 32:
@@ -139,7 +149,7 @@ static INLINE void cfl_luma_subsampling_444_lbd_ssse3(const uint8_t *input,
   const __m128i *end = pred_buf_m128i + height * CFL_BUF_LINE_I128;
   do {
     if (width == 4) {
-      __m128i row = _mm_cvtsi32_si128(*((int *)input));
+      __m128i row = _mm_loadh_epi32((__m128i *)input);
       row = _mm_unpacklo_epi8(row, zeros);
       _mm_storel_epi64(pred_buf_m128i, _mm_slli_epi16(row, 3));
     } else if (width == 8) {
@@ -248,7 +258,7 @@ static INLINE void cfl_predict_lbd_ssse3(const int16_t *pred_buf_q3,
     if (width < 16) {
       res = _mm_packus_epi16(res, res);
       if (width == 4)
-        *(uint32_t *)dst = _mm_cvtsi128_si32(res);
+        _mm_storeh_epi32((__m128i *)dst, res);
       else
         _mm_storel_epi64((__m128i *)dst, res);
     } else {
