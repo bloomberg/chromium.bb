@@ -1594,7 +1594,9 @@
               "device_type": "sprout"
             }
           ],
-          "expiration": 14400
+          "expiration": 14400,
+          "hard_timeout": 1800,
+          "shards": 3
         },
         "test": "net_unittests"
       },
@@ -2870,7 +2872,7 @@
             }
           ],
           "expiration": 10800,
-          "hard_timeout": 1200,
+          "hard_timeout": 1800,
           "output_links": [
             {
               "link": [
@@ -2881,7 +2883,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 2
+          "shards": 3
         },
         "test": "net_unittests"
       },
@@ -4528,7 +4530,8 @@
             {
               "device_type": "coho"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "net_unittests"
       },
@@ -5396,7 +5399,9 @@
             {
               "device_type": "gce_x86"
             }
-          ]
+          ],
+          "hard_timeout": 1800,
+          "shards": 3
         },
         "test": "net_unittests"
       },
