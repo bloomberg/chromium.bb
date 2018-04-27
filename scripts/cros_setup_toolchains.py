@@ -919,7 +919,32 @@ def _GetFilesForTarget(target, root='/'):
     if pkg == 'ex_go':
       continue
 
-    atom = GetPortagePackage(target, pkg)
+    # Use armv7a-cros-linux-gnueabi/compiler-rt for
+    # armv7a-cros-linux-gnueabihf/compiler-rt.
+    # Currently the armv7a-cros-linux-gnueabi is actually
+    # the same as armv7a-cros-linux-gnueabihf with different names.
+    # Because of that, for compiler-rt, it generates the same binary in
+    # the same location. To avoid the installation conflict, we do not
+    # install anything for 'armv7a-cros-linux-gnueabihf'. This would cause
+    # problem if other people try to use standalone armv7a-cros-linux-gnueabihf
+    # toolchain.
+    if 'compiler-rt' in pkg and 'armv7a-cros-linux-gnueabi' in target:
+      atom = GetPortagePackage(target, pkg)
+      cat, pn = atom.split('/')
+      ver = GetInstalledPackageVersions(atom, root=root)[0]
+      # pylint: disable=E1101
+      dblink = portage.dblink(cat, pn + '-' + ver, myroot=root,
+                              settings=portage.settings)
+      contents = dblink.getcontents()
+      if not contents:
+        if 'hf' in target:
+          new_target = 'armv7a-cros-linux-gnueabi'
+        else:
+          new_target = 'armv7a-cros-linux-gnueabihf'
+        atom = GetPortagePackage(new_target, pkg)
+    else:
+      atom = GetPortagePackage(target, pkg)
+
     cat, pn = atom.split('/')
     ver = GetInstalledPackageVersions(atom, root=root)[0]
     logging.info('packaging %s-%s', atom, ver)
