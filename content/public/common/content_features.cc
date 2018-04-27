@@ -432,8 +432,7 @@ const base::Feature kUserActivationV2{"UserActivationV2",
 // captured from the renderer for DevTools performance timeline and eyedropper
 // tool.
 const base::Feature kUseVideoCaptureApiForDevToolsSnapshots{
-    "UseVideoCaptureApiForDevToolsSnapshots",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseVideoCaptureApiForDevToolsSnapshots", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables to use a snapshot file in creating V8 contexts.
 const base::Feature kV8ContextSnapshot{"V8ContextSnapshot",
