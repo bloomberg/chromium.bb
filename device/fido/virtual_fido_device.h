@@ -70,10 +70,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
              fido_parsing_utils::SpanLess>
         registrations;
 
-    // If set, this callback is called whenever a "press" is required. It allows
-    // tests to change the state of the world during processing.
-    base::RepeatingCallback<void(void)> simulate_press_callback;
-
     // Adds a registration for the specified credential ID with the application
     // parameter set to be valid for the given relying party ID (which would
     // typically be a domain, e.g. "example.com").
