@@ -41,3 +41,4 @@
 -ContextMenuBrowserTest.*
 -ChromeSitePerProcessTest.*
 -InterstitialUITest.*
+-ConstrainedWebDialogBrowserTest.*
