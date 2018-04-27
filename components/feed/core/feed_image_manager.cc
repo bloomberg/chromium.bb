@@ -18,7 +18,7 @@ const int kDefaultGarbageCollectionExpiredDays = 30;
 const int kLongGarbageCollectionInterval = 12 * 60 * 60;  // 12 hours
 const int kShortGarbageCollectionInterval = 5 * 60;       // 5 minutes
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
-    net::DefineNetworkTrafficAnnotation("Feed_Image_fetcher", R"(
+    net::DefineNetworkTrafficAnnotation("feed_image_fetcher", R"(
         semantics {
           sender: "Feed Library Image Fetch"
           description:
@@ -32,11 +32,11 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
         }
         policy {
           cookies_allowed: NO
-          setting: "This can be disabled from the New Tab Page by collapsing "
-          "the articles section."
+          setting:
+            "This can be disabled from the New Tab Page by collapsing the "
+            "articles section."
         chrome_policy {
           NTPContentSuggestionsEnabled {
-            policy_options {mode: MANDATORY}
             NTPContentSuggestionsEnabled: false
           }
         }
