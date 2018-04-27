@@ -971,7 +971,14 @@ FileTable.prototype.updateListItemsMetadata = function(type, entries) {
  */
 FileTable.prototype.renderTableRow_ = function(baseRenderFunction, entry) {
   var item = baseRenderFunction(entry, this);
+  var nameId = item.id + '-entry-name';
+  var sizeId = item.id + '-size';
+  var dateId = item.id + '-date';
   filelist.decorateListItem(item, entry, this.metadataModel_);
+  item.querySelector('.entry-name').setAttribute('id', nameId);
+  item.querySelector('.size').setAttribute('id', sizeId);
+  item.querySelector('.date').setAttribute('id', dateId);
+  item.setAttribute('aria-labelledby', nameId + ' ' + sizeId + ' ' + dateId);
   return item;
 };
 
