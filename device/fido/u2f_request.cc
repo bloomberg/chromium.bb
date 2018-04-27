@@ -50,17 +50,6 @@ void U2fRequest::Start() {
   }
 }
 
-// static
-std::vector<uint8_t> U2fRequest::GetBogusRegisterCommand() {
-  apdu::ApduCommand command;
-  std::vector<uint8_t> data(kBogusChallenge.cbegin(), kBogusChallenge.cend());
-  data.insert(data.end(), kBogusAppParam.cbegin(), kBogusAppParam.cend());
-  command.set_ins(base::strict_cast<uint8_t>(U2fApduInstruction::kRegister));
-  command.set_p1(kP1TupRequiredConsumed);
-  command.set_data(data);
-  return command.GetEncodedCommand();
-}
-
 base::Optional<std::vector<uint8_t>> U2fRequest::GetU2fSignApduCommand(
     const std::vector<uint8_t>& application_parameter,
     const std::vector<uint8_t>& key_handle,

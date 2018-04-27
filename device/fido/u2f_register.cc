@@ -10,6 +10,7 @@
 #include "components/apdu/apdu_command.h"
 #include "components/apdu/apdu_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
+#include "device/fido/u2f_command_constructor.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
@@ -82,7 +83,7 @@ void U2fRegister::OnTryCheckRegistration(
       // Duplicate registration found. Call bogus registration to check for
       // user presence (touch) and terminate the registration process.
       InitiateDeviceTransaction(
-          U2fRequest::GetBogusRegisterCommand(),
+          ConstructBogusU2fRegistrationCommand(),
           base::BindOnce(&U2fRegister::OnTryDevice, weak_factory_.GetWeakPtr(),
                          true /* is_duplicate_registration */));
       break;

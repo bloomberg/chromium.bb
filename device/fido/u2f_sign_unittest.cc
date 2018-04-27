@@ -9,7 +9,6 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "crypto/ec_private_key.h"
-#include "device/fido/authenticator_data.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fido_constants.h"
@@ -34,29 +33,6 @@ std::vector<uint8_t> GetTestCredentialRawIdBytes() {
 
 std::vector<uint8_t> GetU2fSignCommandWithCorrectCredential() {
   return fido_parsing_utils::Materialize(test_data::kU2fSignCommandApdu);
-}
-
-std::vector<uint8_t> GetTestSignResponse() {
-  return fido_parsing_utils::Materialize(test_data::kTestU2fSignResponse);
-}
-
-std::vector<uint8_t> GetTestAuthenticatorData() {
-  return fido_parsing_utils::Materialize(test_data::kTestSignAuthenticatorData);
-}
-
-std::vector<uint8_t> GetTestAssertionSignature() {
-  return fido_parsing_utils::Materialize(test_data::kU2fSignature);
-}
-
-std::vector<uint8_t> GetTestSignatureCounter() {
-  return fido_parsing_utils::Materialize(test_data::kTestSignatureCounter);
-}
-
-// Get a subset of the response for testing error handling.
-std::vector<uint8_t> GetTestCorruptedSignResponse(size_t length) {
-  DCHECK_LE(length, arraysize(test_data::kTestU2fSignResponse));
-  return fido_parsing_utils::Materialize(fido_parsing_utils::ExtractSpan(
-      test_data::kTestU2fSignResponse, 0, length));
 }
 
 using TestSignCallback = ::device::test::StatusAndValueCallbackReceiver<
@@ -86,8 +62,10 @@ class U2fSignTest : public ::testing::Test {
         nullptr /* connector */,
         base::flat_set<FidoTransportProtocol>(
             {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
-        std::move(registered_keys), challenge_parameter_,
-        application_parameter_, base::nullopt,
+        std::move(registered_keys),
+        fido_parsing_utils::Materialize(test_data::kChallengeParameter),
+        fido_parsing_utils::Materialize(test_data::kApplicationParameter),
+        base::nullopt /* alt_application_parameter*/,
         sign_callback_receiver_.callback());
   }
 
@@ -96,31 +74,11 @@ class U2fSignTest : public ::testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::vector<uint8_t> application_parameter_ =
-      fido_parsing_utils::Materialize(test_data::kApplicationParameter);
-  std::vector<uint8_t> challenge_parameter_ =
-      fido_parsing_utils::Materialize(test_data::kChallengeParameter);
   test::ScopedFakeFidoDiscoveryFactory scoped_fake_discovery_factory_;
   test::FakeFidoDiscovery* discovery_;
   TestSignCallback sign_callback_receiver_;
   base::flat_set<FidoTransportProtocol> protocols_;
 };
-
-TEST_F(U2fSignTest, TestCreateSignApduCommand) {
-  const auto u2f_sign = CreateSignRequest();
-  const auto encoded_sign = u2f_sign->GetU2fSignApduCommand(
-      application_parameter_, GetTestCredentialRawIdBytes());
-  ASSERT_TRUE(encoded_sign);
-  EXPECT_THAT(*encoded_sign,
-              ::testing::ElementsAreArray(test_data::kU2fSignCommandApdu));
-
-  const auto encoded_sign_check_only = u2f_sign->GetU2fSignApduCommand(
-      application_parameter_, GetTestCredentialRawIdBytes(), true);
-  ASSERT_TRUE(encoded_sign_check_only);
-  EXPECT_THAT(
-      *encoded_sign_check_only,
-      ::testing::ElementsAreArray(test_data::kU2fCheckOnlySignCommandApdu));
-}
 
 TEST_F(U2fSignTest, TestSignSuccess) {
   auto request = CreateSignRequest();
@@ -140,8 +98,8 @@ TEST_F(U2fSignTest, TestSignSuccess) {
   EXPECT_EQ(FidoReturnCode::kSuccess, sign_callback_receiver().status());
 
   // Correct key was sent so a sign response is expected.
-  EXPECT_EQ(GetTestAssertionSignature(),
-            sign_callback_receiver().value()->signature());
+  EXPECT_THAT(sign_callback_receiver().value()->signature(),
+              ::testing::ElementsAreArray(test_data::kU2fSignature));
 
   // Verify that we get the key handle used for signing.
   EXPECT_THAT(GetTestCredentialRawIdBytes(),
@@ -162,8 +120,11 @@ TEST_F(U2fSignTest, TestSignSuccessWithFake) {
 
   auto device = std::make_unique<VirtualU2fDevice>();
   device->mutable_state()->registrations.emplace(
-      key_handle, VirtualFidoDevice::RegistrationData(
-                      std::move(private_key), application_parameter_, 42));
+      key_handle,
+      VirtualFidoDevice::RegistrationData(
+          std::move(private_key),
+          fido_parsing_utils::Materialize(test_data::kApplicationParameter),
+          42));
   discovery()->AddDevice(std::move(device));
 
   sign_callback_receiver().WaitForCallback();
@@ -208,8 +169,8 @@ TEST_F(U2fSignTest, TestDelayedSuccess) {
   EXPECT_EQ(FidoReturnCode::kSuccess, sign_callback_receiver().status());
 
   // Correct key was sent so a sign response is expected.
-  EXPECT_EQ(GetTestAssertionSignature(),
-            sign_callback_receiver().value()->signature());
+  EXPECT_THAT(sign_callback_receiver().value()->signature(),
+              ::testing::ElementsAreArray(test_data::kU2fSignature));
 
   // Verify that we get the key handle used for signing.
   EXPECT_THAT(GetTestCredentialRawIdBytes(),
@@ -255,9 +216,8 @@ TEST_F(U2fSignTest, TestMultipleHandles) {
   EXPECT_EQ(FidoReturnCode::kSuccess, sign_callback_receiver().status());
 
   // Correct key was sent so a sign response is expected.
-  EXPECT_EQ(GetTestAssertionSignature(),
-            sign_callback_receiver().value()->signature());
-
+  EXPECT_THAT(sign_callback_receiver().value()->signature(),
+              ::testing::ElementsAreArray(test_data::kU2fSignature));
   // Verify that we get the key handle used for signing.
   EXPECT_EQ(correct_key_handle,
             sign_callback_receiver().value()->raw_credential_id());
@@ -302,8 +262,8 @@ TEST_F(U2fSignTest, TestMultipleDevices) {
   EXPECT_EQ(FidoReturnCode::kSuccess, sign_callback_receiver().status());
 
   // Correct key was sent so a sign response is expected.
-  EXPECT_EQ(GetTestAssertionSignature(),
-            sign_callback_receiver().value()->signature());
+  EXPECT_THAT(sign_callback_receiver().value()->signature(),
+              ::testing::ElementsAreArray(test_data::kU2fSignature));
 
   // Verify that we get the key handle used for signing.
   EXPECT_EQ(correct_key_handle,
@@ -401,65 +361,8 @@ TEST_F(U2fSignTest, TestFakeEnrollErroringOut) {
 
   // Correct key was sent so a sign response is expected.
   sign_callback_receiver().WaitForCallback();
-  EXPECT_EQ(GetTestAssertionSignature(),
-            sign_callback_receiver().value()->signature());
-}
-
-TEST_F(U2fSignTest, TestAuthenticatorDataForSign) {
-  constexpr uint8_t flags =
-      static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence);
-
-  EXPECT_EQ(GetTestAuthenticatorData(),
-            AuthenticatorData(fido_parsing_utils::Materialize(
-                                  test_data::kApplicationParameter),
-                              flags, GetTestSignatureCounter(), base::nullopt)
-                .SerializeToByteArray());
-}
-
-TEST_F(U2fSignTest, TestSignResponseData) {
-  base::Optional<AuthenticatorGetAssertionResponse> response =
-      AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
-          fido_parsing_utils::Materialize(test_data::kApplicationParameter),
-          GetTestSignResponse(), GetTestCredentialRawIdBytes());
-  ASSERT_TRUE(response.has_value());
-  EXPECT_EQ(GetTestCredentialRawIdBytes(), response->raw_credential_id());
-  EXPECT_EQ(GetTestAuthenticatorData(),
-            response->auth_data().SerializeToByteArray());
-  EXPECT_EQ(GetTestAssertionSignature(), response->signature());
-}
-
-TEST_F(U2fSignTest, TestNullKeyHandle) {
-  base::Optional<AuthenticatorGetAssertionResponse> response =
-      AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
-          fido_parsing_utils::Materialize(test_data::kApplicationParameter),
-          GetTestSignResponse(), std::vector<uint8_t>());
-  EXPECT_FALSE(response);
-}
-
-TEST_F(U2fSignTest, TestNullResponse) {
-  base::Optional<AuthenticatorGetAssertionResponse> response =
-      AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
-          fido_parsing_utils::Materialize(test_data::kApplicationParameter),
-          std::vector<uint8_t>(), GetTestCredentialRawIdBytes());
-  EXPECT_FALSE(response);
-}
-
-TEST_F(U2fSignTest, TestCorruptedCounter) {
-  // A sign response of less than 5 bytes.
-  base::Optional<AuthenticatorGetAssertionResponse> response =
-      AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
-          fido_parsing_utils::Materialize(test_data::kApplicationParameter),
-          GetTestCorruptedSignResponse(3), GetTestCredentialRawIdBytes());
-  EXPECT_FALSE(response);
-}
-
-TEST_F(U2fSignTest, TestCorruptedSignature) {
-  // A sign response no more than 5 bytes.
-  base::Optional<AuthenticatorGetAssertionResponse> response =
-      AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
-          fido_parsing_utils::Materialize(test_data::kApplicationParameter),
-          GetTestCorruptedSignResponse(5), GetTestCredentialRawIdBytes());
-  EXPECT_FALSE(response);
+  EXPECT_THAT(sign_callback_receiver().value()->signature(),
+              ::testing::ElementsAreArray(test_data::kU2fSignature));
 }
 
 // Device returns success, but the response is unparse-able.
@@ -536,8 +439,8 @@ TEST_F(U2fSignTest, TestAlternativeApplicationParameter) {
   sign_callback_receiver().WaitForCallback();
   EXPECT_EQ(FidoReturnCode::kSuccess, sign_callback_receiver().status());
 
-  EXPECT_EQ(GetTestAssertionSignature(),
-            sign_callback_receiver().value()->signature());
+  EXPECT_THAT(sign_callback_receiver().value()->signature(),
+              ::testing::ElementsAreArray(test_data::kU2fSignature));
   EXPECT_EQ(signing_key_handle,
             sign_callback_receiver().value()->raw_credential_id());
 }

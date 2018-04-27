@@ -9,14 +9,8 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/cbor/cbor_writer.h"
-#include "device/fido/attestation_object.h"
-#include "device/fido/attested_credential_data.h"
-#include "device/fido/authenticator_data.h"
 #include "device/fido/authenticator_make_credential_response.h"
-#include "device/fido/ec_public_key.h"
 #include "device/fido/fake_fido_discovery.h"
-#include "device/fido/fido_attestation_statement.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_test_data.h"
@@ -33,129 +27,8 @@ using ::testing::_;
 
 namespace {
 
-constexpr bool kNoIndividualAttestation = false;
-constexpr bool kIndividualAttestation = true;
-
-// The attested credential data, excluding the public key bytes. Append
-// with kTestECPublicKeyCOSE to get the complete attestation data.
-constexpr uint8_t kTestAttestedCredentialDataPrefix[] = {
-    // clang-format off
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00,  // 16-byte aaguid
-    0x00, 0x40,  // 2-byte length
-    0x3E, 0xBD, 0x89, 0xBF, 0x77, 0xEC, 0x50, 0x97, 0x55, 0xEE, 0x9C,
-    0x26, 0x35, 0xEF, 0xAA, 0xAC, 0x7B, 0x2B, 0x9C, 0x5C, 0xEF, 0x17,
-    0x36, 0xC3, 0x71, 0x7D, 0xA4, 0x85, 0x34, 0xC8, 0xC6, 0xB6, 0x54,
-    0xD7, 0xFF, 0x94, 0x5F, 0x50, 0xB5, 0xCC, 0x4E, 0x78, 0x05, 0x5B,
-    0xDD, 0x39, 0x6B, 0x64, 0xF7, 0x8D, 0xA2, 0xC5, 0xF9, 0x62, 0x00,
-    0xCC, 0xD4, 0x15, 0xCD, 0x08, 0xFE, 0x42, 0x00, 0x38,  // 64-byte key handle
-    // clang-format on
-};
-
-// The authenticator data, excluding the attested credential data bytes. Append
-// with attested credential data to get the complete authenticator data.
-constexpr uint8_t kTestAuthenticatorDataPrefix[] = {
-    // clang-format off
-    // sha256 hash of rp id.
-    0x11, 0x94, 0x22, 0x8D, 0xA8, 0xFD, 0xBD, 0xEE, 0xFD, 0x26, 0x1B,
-    0xD7, 0xB6, 0x59, 0x5C, 0xFD, 0x70, 0xA5, 0x0D, 0x70, 0xC6, 0x40,
-    0x7B, 0xCF, 0x01, 0x3D, 0xE9, 0x6D, 0x4E, 0xFB, 0x17, 0xDE,
-    0x41,  // flags (TUP and AT bits set)
-    0x00, 0x00, 0x00, 0x00  // counter
-    // clang-format on
-};
-
-// Components of the CBOR needed to form an authenticator object.
-// Combined diagnostic notation:
-// {"fmt": "fido-u2f", "attStmt": {"sig": h'30...}, "authData": h'D4C9D9...'}
-constexpr uint8_t kFormatFidoU2fCBOR[] = {
-    // clang-format off
-    0xA3,  // map(3)
-      0x63,  // text(3)
-        0x66, 0x6D, 0x74,  // "fmt"
-      0x68,  // text(8)
-        0x66, 0x69, 0x64, 0x6F, 0x2D, 0x75, 0x32, 0x66  // "fido-u2f"
-    // clang-format on
-};
-
-constexpr uint8_t kAttStmtCBOR[] = {
-    // clang-format off
-      0x67,  // text(7)
-        0x61, 0x74, 0x74, 0x53, 0x74, 0x6D, 0x74  // "attStmt"
-    // clang-format on
-};
-
-constexpr uint8_t kAuthDataCBOR[] = {
-    // clang-format off
-    0x68,  // text(8)
-      0x61, 0x75, 0x74, 0x68, 0x44, 0x61, 0x74, 0x61,  // "authData"
-    0x58, 0xC4  // bytes(196). i.e.,the authenticator_data bytearray
-    // clang-format on
-};
-
-// Helpers for testing U2f register responses.
-std::vector<uint8_t> GetTestECPublicKeyCOSE() {
-  return fido_parsing_utils::Materialize(test_data::kTestECPublicKeyCOSE);
-}
-
-std::vector<uint8_t> GetTestRegisterResponse() {
-  return fido_parsing_utils::Materialize(test_data::kTestU2fRegisterResponse);
-}
-
 std::vector<uint8_t> GetTestRegisterRequest() {
   return fido_parsing_utils::Materialize(test_data::kU2fRegisterCommandApdu);
-}
-
-std::vector<uint8_t> GetTestCredentialRawIdBytes() {
-  return fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle);
-}
-
-std::vector<uint8_t> GetU2fAttestationStatementCBOR() {
-  return fido_parsing_utils::Materialize(
-      test_data::kU2fAttestationStatementCBOR);
-}
-
-std::vector<uint8_t> GetTestAttestedCredentialDataBytes() {
-  // Combine kTestAttestedCredentialDataPrefix and kTestECPublicKeyCOSE.
-  auto test_attested_data =
-      fido_parsing_utils::Materialize(kTestAttestedCredentialDataPrefix);
-  test_attested_data.insert(test_attested_data.end(),
-                            std::begin(test_data::kTestECPublicKeyCOSE),
-                            std::end(test_data::kTestECPublicKeyCOSE));
-  return test_attested_data;
-}
-
-std::vector<uint8_t> GetTestAuthenticatorDataBytes() {
-  // Build the test authenticator data.
-  auto test_authenticator_data =
-      fido_parsing_utils::Materialize(kTestAuthenticatorDataPrefix);
-  std::vector<uint8_t> test_attested_data =
-      GetTestAttestedCredentialDataBytes();
-  test_authenticator_data.insert(test_authenticator_data.end(),
-                                 test_attested_data.begin(),
-                                 test_attested_data.end());
-  return test_authenticator_data;
-}
-
-std::vector<uint8_t> GetTestAttestationObjectBytes() {
-  auto test_authenticator_object =
-      fido_parsing_utils::Materialize(kFormatFidoU2fCBOR);
-  test_authenticator_object.insert(test_authenticator_object.end(),
-                                   std::begin(kAttStmtCBOR),
-                                   std::end(kAttStmtCBOR));
-  test_authenticator_object.insert(
-      test_authenticator_object.end(),
-      std::begin(test_data::kU2fAttestationStatementCBOR),
-      std::end(test_data::kU2fAttestationStatementCBOR));
-  test_authenticator_object.insert(test_authenticator_object.end(),
-                                   std::begin(kAuthDataCBOR),
-                                   std::end(kAuthDataCBOR));
-  std::vector<uint8_t> test_authenticator_data =
-      GetTestAuthenticatorDataBytes();
-  test_authenticator_object.insert(test_authenticator_object.end(),
-                                   test_authenticator_data.begin(),
-                                   test_authenticator_data.end());
-  return test_authenticator_object;
 }
 
 using TestRegisterCallback = ::device::test::StatusAndValueCallbackReceiver<
@@ -187,20 +60,18 @@ class U2fRegisterTest : public ::testing::Test {
         registered_keys,
         fido_parsing_utils::Materialize(test_data::kChallengeParameter),
         fido_parsing_utils::Materialize(test_data::kApplicationParameter),
-        kNoIndividualAttestation, register_callback_receiver_.callback());
+        false /* is_individual_attestation */,
+        register_callback_receiver_.callback());
   }
 
   test::FakeFidoDiscovery* discovery() const { return discovery_; }
+
   TestRegisterCallback& register_callback_receiver() {
     return register_callback_receiver_;
   }
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::vector<uint8_t> application_parameter_ =
-      fido_parsing_utils::Materialize(test_data::kApplicationParameter);
-  std::vector<uint8_t> challenge_parameter_ =
-      fido_parsing_utils::Materialize(test_data::kChallengeParameter);
   std::vector<std::vector<uint8_t>> key_handles_;
   base::flat_set<FidoTransportProtocol> protocols_;
   test::ScopedFakeFidoDiscoveryFactory scoped_fake_discovery_factory_;
@@ -208,69 +79,6 @@ class U2fRegisterTest : public ::testing::Test {
   TestRegisterCallback register_callback_receiver_;
 };
 
-TEST_F(U2fRegisterTest, TestCreateU2fRegisterCommand) {
-  U2fRegister register_request(nullptr /* connector */, protocols_,
-                               key_handles_, challenge_parameter_,
-                               application_parameter_, kNoIndividualAttestation,
-                               register_callback_receiver().callback());
-
-  const auto register_command_without_individual_attestation =
-      register_request.GetU2fRegisterApduCommand(kNoIndividualAttestation);
-
-  ASSERT_TRUE(register_command_without_individual_attestation);
-  EXPECT_THAT(*register_command_without_individual_attestation,
-              ::testing::ElementsAreArray(test_data::kU2fRegisterCommandApdu));
-
-  const auto register_command_with_individual_attestation =
-      register_request.GetU2fRegisterApduCommand(kIndividualAttestation);
-  ASSERT_TRUE(register_command_with_individual_attestation);
-  EXPECT_THAT(*register_command_with_individual_attestation,
-              ::testing::ElementsAreArray(
-                  test_data::kU2fRegisterCommandApduWithIndividualAttestation));
-}
-
-TEST_F(U2fRegisterTest, TestCreateRegisterWithIncorrectParameters) {
-  std::vector<uint8_t> application_parameter(kU2fParameterLength, 0x01);
-  std::vector<uint8_t> challenge_parameter(kU2fParameterLength, 0xff);
-
-  U2fRegister register_request(nullptr, protocols_, key_handles_,
-                               challenge_parameter, application_parameter,
-                               kNoIndividualAttestation,
-                               register_callback_receiver().callback());
-  const auto register_without_individual_attestation =
-      register_request.GetU2fRegisterApduCommand(kNoIndividualAttestation);
-
-  ASSERT_TRUE(register_without_individual_attestation);
-  ASSERT_LE(3u, register_without_individual_attestation->size());
-  // Individual attestation bit should be cleared.
-  EXPECT_EQ(0, (*register_without_individual_attestation)[2] & 0x80);
-
-  const auto register_request_with_individual_attestation =
-      register_request.GetU2fRegisterApduCommand(kIndividualAttestation);
-  ASSERT_TRUE(register_request_with_individual_attestation);
-  ASSERT_LE(3u, register_request_with_individual_attestation->size());
-  // Individual attestation bit should be set.
-  EXPECT_EQ(0x80, (*register_request_with_individual_attestation)[2] & 0x80);
-
-  // Expect null result with incorrectly sized application_parameter.
-  application_parameter.push_back(0xff);
-  auto incorrect_register_cmd =
-      U2fRegister(nullptr, protocols_, key_handles_, challenge_parameter,
-                  application_parameter, kNoIndividualAttestation,
-                  register_callback_receiver().callback())
-          .GetU2fRegisterApduCommand(kNoIndividualAttestation);
-  EXPECT_FALSE(incorrect_register_cmd);
-  application_parameter.pop_back();
-
-  // Expect null result with incorrectly sized challenge.
-  challenge_parameter.push_back(0xff);
-  incorrect_register_cmd =
-      U2fRegister(nullptr, protocols_, key_handles_, challenge_parameter,
-                  application_parameter, kNoIndividualAttestation,
-                  register_callback_receiver().callback())
-          .GetU2fRegisterApduCommand(kNoIndividualAttestation);
-  EXPECT_FALSE(incorrect_register_cmd);
-}
 
 TEST_F(U2fRegisterTest, TestRegisterSuccess) {
   auto request = CreateRegisterRequest();
@@ -288,8 +96,8 @@ TEST_F(U2fRegisterTest, TestRegisterSuccess) {
   register_callback_receiver().WaitForCallback();
   EXPECT_EQ(FidoReturnCode::kSuccess, register_callback_receiver().status());
   ASSERT_TRUE(register_callback_receiver().value());
-  EXPECT_EQ(GetTestCredentialRawIdBytes(),
-            register_callback_receiver().value()->raw_credential_id());
+  EXPECT_THAT(register_callback_receiver().value()->raw_credential_id(),
+              ::testing::ElementsAreArray(test_data::kU2fSignKeyHandle));
 }
 
 TEST_F(U2fRegisterTest, TestRegisterSuccessWithFake) {
@@ -328,8 +136,8 @@ TEST_F(U2fRegisterTest, TestDelayedSuccess) {
   register_callback_receiver().WaitForCallback();
   EXPECT_EQ(FidoReturnCode::kSuccess, register_callback_receiver().status());
   ASSERT_TRUE(register_callback_receiver().value());
-  EXPECT_EQ(GetTestCredentialRawIdBytes(),
-            register_callback_receiver().value()->raw_credential_id());
+  EXPECT_THAT(register_callback_receiver().value()->raw_credential_id(),
+              ::testing::ElementsAreArray(test_data::kU2fSignKeyHandle));
 }
 
 TEST_F(U2fRegisterTest, TestMultipleDevices) {
@@ -359,8 +167,8 @@ TEST_F(U2fRegisterTest, TestMultipleDevices) {
   register_callback_receiver().WaitForCallback();
   EXPECT_EQ(FidoReturnCode::kSuccess, register_callback_receiver().status());
   ASSERT_TRUE(register_callback_receiver().value());
-  EXPECT_EQ(GetTestCredentialRawIdBytes(),
-            register_callback_receiver().value()->raw_credential_id());
+  EXPECT_THAT(register_callback_receiver().value()->raw_credential_id(),
+              ::testing::ElementsAreArray(test_data::kU2fSignKeyHandle));
 }
 
 // Tests a scenario where a single device is connected and registration call
@@ -409,8 +217,8 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithExclusionList) {
   register_callback_receiver().WaitForCallback();
   ASSERT_TRUE(register_callback_receiver().value());
   EXPECT_EQ(FidoReturnCode::kSuccess, register_callback_receiver().status());
-  EXPECT_EQ(GetTestCredentialRawIdBytes(),
-            register_callback_receiver().value()->raw_credential_id());
+  EXPECT_THAT(register_callback_receiver().value()->raw_credential_id(),
+              ::testing::ElementsAreArray(test_data::kU2fSignKeyHandle));
 }
 
 // Tests a scenario where two devices are connected and registration call is
@@ -501,8 +309,8 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithExclusionList) {
   register_callback_receiver().WaitForCallback();
   EXPECT_EQ(FidoReturnCode::kSuccess, register_callback_receiver().status());
   ASSERT_TRUE(register_callback_receiver().value());
-  EXPECT_EQ(GetTestCredentialRawIdBytes(),
-            register_callback_receiver().value()->raw_credential_id());
+  EXPECT_THAT(register_callback_receiver().value()->raw_credential_id(),
+              ::testing::ElementsAreArray(test_data::kU2fSignKeyHandle));
 }
 
 // Tests a scenario where single device is connected and registration is called
@@ -654,100 +462,6 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithDuplicateHandle) {
   EXPECT_FALSE(register_callback_receiver().value());
 }
 
-// These test the parsing of the U2F raw bytes of the registration response.
-// Test that an EC public key serializes to CBOR properly.
-TEST_F(U2fRegisterTest, TestSerializedPublicKey) {
-  std::unique_ptr<ECPublicKey> public_key =
-      ECPublicKey::ExtractFromU2fRegistrationResponse(
-          fido_parsing_utils::kEs256, GetTestRegisterResponse());
-  EXPECT_EQ(GetTestECPublicKeyCOSE(), public_key->EncodeAsCOSEKey());
-}
-
-// Test that the attestation statement cbor map is constructed properly.
-TEST_F(U2fRegisterTest, TestU2fAttestationStatementCBOR) {
-  std::unique_ptr<FidoAttestationStatement> fido_attestation_statement =
-      FidoAttestationStatement::CreateFromU2fRegisterResponse(
-          GetTestRegisterResponse());
-  auto cbor = cbor::CBORWriter::Write(
-      cbor::CBORValue(fido_attestation_statement->GetAsCBORMap()));
-  ASSERT_TRUE(cbor);
-  EXPECT_EQ(GetU2fAttestationStatementCBOR(), *cbor);
-}
-
-// Tests that well-formed attested credential data serializes properly.
-TEST_F(U2fRegisterTest, TestAttestedCredentialData) {
-  std::unique_ptr<ECPublicKey> public_key =
-      ECPublicKey::ExtractFromU2fRegistrationResponse(
-          fido_parsing_utils::kEs256, GetTestRegisterResponse());
-  base::Optional<AttestedCredentialData> attested_data =
-      AttestedCredentialData::CreateFromU2fRegisterResponse(
-          GetTestRegisterResponse(), std::move(public_key));
-
-  EXPECT_EQ(GetTestAttestedCredentialDataBytes(),
-            attested_data->SerializeAsBytes());
-}
-
-// Tests that well-formed authenticator data serializes properly.
-TEST_F(U2fRegisterTest, TestAuthenticatorData) {
-  std::unique_ptr<ECPublicKey> public_key =
-      ECPublicKey::ExtractFromU2fRegistrationResponse(
-          fido_parsing_utils::kEs256, GetTestRegisterResponse());
-  base::Optional<AttestedCredentialData> attested_data =
-      AttestedCredentialData::CreateFromU2fRegisterResponse(
-          GetTestRegisterResponse(), std::move(public_key));
-
-  constexpr uint8_t flags =
-      static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence) |
-      static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
-
-  AuthenticatorData authenticator_data(
-      fido_parsing_utils::Materialize(test_data::kApplicationParameter), flags,
-      std::vector<uint8_t>(4) /* counter */, std::move(attested_data));
-
-  EXPECT_EQ(GetTestAuthenticatorDataBytes(),
-            authenticator_data.SerializeToByteArray());
-}
-
-// Tests that a U2F attestation object serializes properly.
-TEST_F(U2fRegisterTest, TestU2fAttestationObject) {
-  std::unique_ptr<ECPublicKey> public_key =
-      ECPublicKey::ExtractFromU2fRegistrationResponse(
-          fido_parsing_utils::kEs256, GetTestRegisterResponse());
-  base::Optional<AttestedCredentialData> attested_data =
-      AttestedCredentialData::CreateFromU2fRegisterResponse(
-          GetTestRegisterResponse(), std::move(public_key));
-
-  constexpr uint8_t flags =
-      static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence) |
-      static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
-  AuthenticatorData authenticator_data(
-      fido_parsing_utils::Materialize(test_data::kApplicationParameter), flags,
-      std::vector<uint8_t>(4) /* counter */, std::move(attested_data));
-
-  // Construct the attestation statement.
-  std::unique_ptr<FidoAttestationStatement> fido_attestation_statement =
-      FidoAttestationStatement::CreateFromU2fRegisterResponse(
-          GetTestRegisterResponse());
-
-  // Construct the attestation object.
-  auto attestation_object = std::make_unique<AttestationObject>(
-      std::move(authenticator_data), std::move(fido_attestation_statement));
-
-  EXPECT_EQ(GetTestAttestationObjectBytes(),
-            attestation_object->SerializeToCBOREncodedBytes());
-}
-
-// Test that a U2F register response is properly parsed.
-TEST_F(U2fRegisterTest, TestRegisterResponseData) {
-  base::Optional<AuthenticatorMakeCredentialResponse> response =
-      AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
-          fido_parsing_utils::Materialize(test_data::kApplicationParameter),
-          GetTestRegisterResponse());
-  EXPECT_EQ(GetTestCredentialRawIdBytes(), response->raw_credential_id());
-  EXPECT_EQ(GetTestAttestationObjectBytes(),
-            response->GetCBOREncodedAttestationObject());
-}
-
 MATCHER_P(IndicatesIndividualAttestation, expected, "") {
   return arg.size() > 2 && ((arg[2] & 0x80) == 0x80) == expected;
 }
@@ -764,7 +478,9 @@ TEST_F(U2fRegisterTest, TestIndividualAttestation) {
         nullptr /* connector */,
         base::flat_set<FidoTransportProtocol>(
             {FidoTransportProtocol::kUsbHumanInterfaceDevice}) /* transports */,
-        key_handles_, challenge_parameter_, application_parameter_,
+        key_handles_,
+        fido_parsing_utils::Materialize(test_data::kChallengeParameter),
+        fido_parsing_utils::Materialize(test_data::kApplicationParameter),
         individual_attestation, cb.callback());
     request->Start();
     discovery()->WaitForCallToStartAndSimulateSuccess();
@@ -782,7 +498,8 @@ TEST_F(U2fRegisterTest, TestIndividualAttestation) {
     cb.WaitForCallback();
     EXPECT_EQ(FidoReturnCode::kSuccess, cb.status());
     ASSERT_TRUE(cb.value());
-    EXPECT_EQ(GetTestCredentialRawIdBytes(), cb.value()->raw_credential_id());
+    EXPECT_THAT(cb.value()->raw_credential_id(),
+                ::testing::ElementsAreArray(test_data::kU2fSignKeyHandle));
   }
 }
 

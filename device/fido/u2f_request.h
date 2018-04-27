@@ -52,8 +52,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRequest
   // registration process. That is, check-only sign command is sent during
   // registration to prevent duplicate registration.
   //
-  // Returns bogus register command to be used to verify user presence.
-  static std::vector<uint8_t> GetBogusRegisterCommand();
   // Returns APDU U2F request commands. Null optional is returned for
   // incorrectly formatted parameter.
   base::Optional<std::vector<uint8_t>> GetU2fSignApduCommand(

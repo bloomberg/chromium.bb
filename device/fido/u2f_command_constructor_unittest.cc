@@ -16,6 +16,67 @@
 
 namespace device {
 
+TEST(U2fCommandConstructorTest, TestCreateU2fRegisterCommand) {
+  const auto& register_command_without_individual_attestation =
+      ConstructU2fRegisterCommand(test_data::kApplicationParameter,
+                                  test_data::kChallengeParameter,
+                                  false /* is_individual_attestation */);
+
+  ASSERT_TRUE(register_command_without_individual_attestation);
+  EXPECT_THAT(*register_command_without_individual_attestation,
+              ::testing::ElementsAreArray(test_data::kU2fRegisterCommandApdu));
+
+  const auto& register_command_with_individual_attestation =
+      ConstructU2fRegisterCommand(test_data::kApplicationParameter,
+                                  test_data::kChallengeParameter,
+                                  true /* is_individual_attestation */);
+
+  ASSERT_TRUE(register_command_with_individual_attestation);
+  EXPECT_THAT(*register_command_with_individual_attestation,
+              ::testing::ElementsAreArray(
+                  test_data::kU2fRegisterCommandApduWithIndividualAttestation));
+}
+
+TEST(U2fCommandConstructorTest, TestCreateRegisterWithIncorrectParameters) {
+  std::vector<uint8_t> application_parameter(kU2fParameterLength, 0x01);
+  std::vector<uint8_t> challenge_parameter(kU2fParameterLength, 0xff);
+
+  const auto& register_command_without_individual_attestation =
+      ConstructU2fRegisterCommand(application_parameter, challenge_parameter,
+                                  false /* is_individual_attestation */);
+
+  ASSERT_TRUE(register_command_without_individual_attestation);
+  ASSERT_LE(3u, register_command_without_individual_attestation->size());
+  // Individual attestation bit should be cleared.
+  EXPECT_EQ(0, (*register_command_without_individual_attestation)[2] & 0x80);
+
+  const auto register_request_with_individual_attestation =
+      ConstructU2fRegisterCommand(application_parameter, challenge_parameter,
+                                  true /* is_individual_attestation */);
+
+  ASSERT_TRUE(register_request_with_individual_attestation);
+  ASSERT_LE(3u, register_request_with_individual_attestation->size());
+  // Individual attestation bit should be set.
+  EXPECT_EQ(0x80, (*register_request_with_individual_attestation)[2] & 0x80);
+
+  // Expect null result with incorrectly sized application_parameter.
+  application_parameter.push_back(0xff);
+  auto incorrect_register_cmd =
+      ConstructU2fRegisterCommand(application_parameter, challenge_parameter,
+                                  false /* is_individual_attestation */);
+
+  EXPECT_FALSE(incorrect_register_cmd);
+  application_parameter.pop_back();
+
+  // Expect null result with incorrectly sized challenge.
+  challenge_parameter.push_back(0xff);
+  incorrect_register_cmd =
+      ConstructU2fRegisterCommand(application_parameter, challenge_parameter,
+                                  false /* is_individual_attestation */);
+
+  EXPECT_FALSE(incorrect_register_cmd);
+}
+
 TEST(U2fCommandConstructorTest, TestConvertCtapMakeCredentialToU2fRegister) {
   PublicKeyCredentialRpEntity rp("acme.com");
   rp.SetRpName("acme.com");
@@ -95,6 +156,23 @@ TEST(U2fCommandConstructorTest, TestU2fRegisterResidentKeyRequirement) {
   make_credential_param.SetResidentKeySupported(true);
 
   EXPECT_FALSE(IsConvertibleToU2fRegisterCommand(make_credential_param));
+}
+
+TEST(U2fCommandConstructorTest, TestCreateSignApduCommand) {
+  const auto& encoded_sign = ConstructU2fSignCommand(
+      test_data::kApplicationParameter, test_data::kChallengeParameter,
+      test_data::kU2fSignKeyHandle);
+  ASSERT_TRUE(encoded_sign);
+  EXPECT_THAT(*encoded_sign,
+              ::testing::ElementsAreArray(test_data::kU2fSignCommandApdu));
+
+  const auto encoded_sign_check_only = ConstructU2fSignCommand(
+      test_data::kApplicationParameter, test_data::kChallengeParameter,
+      test_data::kU2fSignKeyHandle, true /* check_only */);
+  ASSERT_TRUE(encoded_sign_check_only);
+  EXPECT_THAT(
+      *encoded_sign_check_only,
+      ::testing::ElementsAreArray(test_data::kU2fCheckOnlySignCommandApdu));
 }
 
 TEST(U2fCommandConstructorTest, TestConvertCtapGetAssertionToU2fSignRequest) {

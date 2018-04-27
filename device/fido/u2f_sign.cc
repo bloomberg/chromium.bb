@@ -8,6 +8,7 @@
 
 #include "components/apdu/apdu_command.h"
 #include "components/apdu/apdu_response.h"
+#include "device/fido/u2f_command_constructor.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
@@ -137,7 +138,7 @@ void U2fSign::OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
         // it's not registered. Once the user consents to use the device,
         // the relying party can inform them that it hasn't been registered.
         InitiateDeviceTransaction(
-            U2fRequest::GetBogusRegisterCommand(),
+            ConstructBogusU2fRegistrationCommand(),
             base::BindOnce(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(),
                            registered_keys_.cend(),
                            ApplicationParameterType::kPrimary));
