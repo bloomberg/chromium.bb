@@ -164,11 +164,11 @@ void ArcUsbHostPermissionManager::RestorePermissionFromChromePrefs() {
     const base::Value* access_permision_list_value =
         arc_app_list_prefs_->GetPackagePrefs(package, kUsbAccessPermission);
     if (!access_permision_list_value)
-      return;
+      continue;
 
     if (!access_permision_list_value->is_list()) {
       LOG(ERROR) << "Wrong value type found for device access permission list.";
-      return;
+      continue;
     }
 
     for (const auto& access_permision :
