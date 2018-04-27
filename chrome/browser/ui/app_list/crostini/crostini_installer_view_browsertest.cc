@@ -6,15 +6,18 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_model_builder.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/crx_file/id_util.h"
+#include "components/prefs/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -33,6 +36,11 @@ class CrostiniInstallerViewBrowserTest : public DialogBrowserTest {
     scoped_feature_list_.InitAndEnableFeature(
         features::kExperimentalCrostiniUI);
     DialogBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    browser()->profile()->GetPrefs()->SetBoolean(
+        crostini::prefs::kCrostiniEnabled, true);
   }
 
   CrostiniInstallerView* ActiveView() {

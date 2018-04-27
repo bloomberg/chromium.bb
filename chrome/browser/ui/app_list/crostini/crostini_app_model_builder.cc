@@ -5,12 +5,16 @@
 #include "chrome/browser/ui/app_list/crostini/crostini_app_model_builder.h"
 
 #include "ash/resources/grit/ash_resources.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_item.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "components/crx_file/id_util.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -31,11 +35,23 @@ void CrostiniAppModelBuilder::BuildModel() {
   }
 
   registry_service->AddObserver(this);
+
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(profile()->GetPrefs());
+  pref_change_registrar_->Add(
+      crostini::prefs::kCrostiniEnabled,
+      base::BindRepeating(&CrostiniAppModelBuilder::OnCrostiniEnabledChanged,
+                          base::Unretained(this)));
 }
 
 void CrostiniAppModelBuilder::InsertCrostiniAppItem(
     const crostini::CrostiniRegistryService* registry_service,
     const std::string& app_id) {
+  if (app_id == kCrostiniTerminalId && !IsCrostiniEnabled(profile())) {
+    // If Crostini isn't enabled, don't show the Terminal item until it
+    // becomes enabled.
+    return;
+  }
   std::unique_ptr<crostini::CrostiniRegistryService::Registration>
       registration = registry_service->GetRegistration(app_id);
   DCHECK(registration);
@@ -75,4 +91,15 @@ void CrostiniAppModelBuilder::OnAppIconUpdated(const std::string& app_id,
 
   // Initiate async icon reloading.
   app_item->crostini_app_icon()->LoadForScaleFactor(scale_factor);
+}
+
+void CrostiniAppModelBuilder::OnCrostiniEnabledChanged() {
+  if (IsCrostiniEnabled(profile())) {
+    crostini::CrostiniRegistryService* registry_service =
+        crostini::CrostiniRegistryServiceFactory::GetForProfile(profile());
+    InsertCrostiniAppItem(registry_service, kCrostiniTerminalId);
+  } else {
+    const bool unsynced_change = false;
+    RemoveApp(kCrostiniTerminalId, unsynced_change);
+  }
 }

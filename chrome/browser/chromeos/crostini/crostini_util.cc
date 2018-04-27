@@ -80,6 +80,10 @@ bool IsCrostiniUIAllowedForProfile(Profile* profile) {
          base::FeatureList::IsEnabled(features::kExperimentalCrostiniUI);
 }
 
+bool IsCrostiniEnabled(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(crostini::prefs::kCrostiniEnabled);
+}
+
 void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
   auto* crostini_manager = crostini::CrostiniManager::GetInstance();
   crostini::CrostiniRegistryService* registry_service =
@@ -89,7 +93,7 @@ void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kTerminal);
 
     if (!crostini_manager->IsCrosTerminaInstalled() ||
-        !profile->GetPrefs()->GetBoolean(crostini::prefs::kCrostiniEnabled)) {
+        !IsCrostiniEnabled(profile)) {
       CrostiniInstallerView::Show(profile);
     } else {
       crostini_manager->RestartCrostini(
