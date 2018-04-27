@@ -38,7 +38,7 @@ class BlinkTestInstance : public pp::Instance {
       : pp::Instance(instance), first_paint_(true) {}
   ~BlinkTestInstance() override {}
 
-  bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
+  bool Init(uint32_t argc, const char* argn[], const char* argv[]) override {
     // It's hard / impossible for some layout tests to listen for a message from
     // the plugin. For example, a plugin in PluginDocuments is unreachable from
     // a cross-origin parent frame, since the actual plugin element is in a
