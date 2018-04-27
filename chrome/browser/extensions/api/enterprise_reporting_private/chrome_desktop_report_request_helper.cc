@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/base_paths.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/policy/policy_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/chrome_paths.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
@@ -52,11 +52,8 @@ enum Type {
 
 std::string GetChromePath() {
   base::FilePath path;
-  base::PathService::Get(chrome::DIR_APP, &path);
-  // The goal of this function is to return a unique path that will be used to
-  // identify this browser instance. Since the last component is contains the
-  // version number (which changes with every upgrade), it is stripped.
-  return path.DirName().AsUTF8Unsafe();
+  base::PathService::Get(base::DIR_EXE, &path);
+  return path.AsUTF8Unsafe();
 }
 
 std::string GetProfileId(const Profile* profile) {
