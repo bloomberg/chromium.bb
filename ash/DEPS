@@ -57,6 +57,7 @@ include_rules = [
   "-chromeos",
   "+chromeos/accelerometer",
   "+chromeos/audio",
+  "+chromeos/chromeos_features.h",
   "+chromeos/chromeos_switches.h",
   "+chromeos/chromeos_paths.h",
   "+chromeos/components/proximity_auth/logging/logging.h",

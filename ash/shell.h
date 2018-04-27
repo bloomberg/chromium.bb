@@ -129,6 +129,7 @@ class MediaController;
 class MessageCenterController;
 class MouseCursorEventFilter;
 class MruWindowTracker;
+class MultiDeviceNotificationPresenter;
 class NewWindowController;
 class NightLightController;
 class NoteTakingController;
@@ -725,6 +726,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<TabletModeController> tablet_mode_controller_;
   std::unique_ptr<MediaController> media_controller_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
+  std::unique_ptr<MultiDeviceNotificationPresenter>
+      multidevice_notification_presenter_;
   std::unique_ptr<NewWindowController> new_window_controller_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
   std::unique_ptr<SessionController> session_controller_;

@@ -1785,6 +1785,7 @@ test("ash_unittests") {
     "//chromeos:power_manager_proto",
     "//chromeos:test_support",
     "//chromeos:test_support_without_gmock",
+    "//chromeos/services/multidevice_setup/public/mojom",
     "//components/password_manager/core/browser:hash_password_manager",
     "//components/prefs:test_support",
     "//components/quirks",

@@ -62,6 +62,7 @@
 #include "ash/media_controller.h"
 #include "ash/message_center/message_center_controller.h"
 #include "ash/metrics/time_to_first_present_recorder.h"
+#include "ash/multi_device_setup/multi_device_notification_presenter.h"
 #include "ash/new_window_controller.h"
 #include "ash/note_taking_controller.h"
 #include "ash/public/cpp/ash_features.h"
@@ -155,6 +156,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/system/devicemode.h"
@@ -844,6 +846,7 @@ Shell::~Shell() {
 
   screen_pinning_controller_.reset();
 
+  multidevice_notification_presenter_.reset();
   resolution_notification_controller_.reset();
   screenshot_controller_.reset();
   mouse_cursor_filter_.reset();
@@ -955,6 +958,15 @@ void Shell::Init(ui::ContextFactory* context_factory,
   detachable_base_notification_controller_ =
       std::make_unique<DetachableBaseNotificationController>(
           detachable_base_handler_.get());
+  // Connector can be null in tests.
+  if (shell_delegate_->GetShellConnector() &&
+      base::FeatureList::IsEnabled(
+          chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
+    multidevice_notification_presenter_ =
+        std::make_unique<MultiDeviceNotificationPresenter>(
+            message_center::MessageCenter::Get(),
+            shell_delegate_->GetShellConnector());
+  }
 
   // Connector can be null in tests.
   if (shell_delegate_->GetShellConnector()) {
