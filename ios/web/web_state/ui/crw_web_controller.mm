@@ -112,7 +112,6 @@
 #error "This file requires ARC support."
 #endif
 
-using base::UserMetricsAction;
 using web::NavigationManager;
 using web::NavigationManagerImpl;
 using web::WebState;
@@ -142,19 +141,11 @@ NSString* const kUserIsInteractingKey = @"userIsInteracting";
 NSString* const kOriginURLKey = @"originURL";
 NSString* const kIsMainFrame = @"isMainFrame";
 
+// URL scheme for messages sent from javascript for asynchronous processing.
+NSString* const kScriptMessageName = @"crwebinvoke";
+
 // Standard User Defaults key for "Log JS" debug setting.
 NSString* const kLogJavaScript = @"LogJavascript";
-
-// Key of UMA IOSFix.ViewportZoomBugCount histogram.
-const char kUMAViewportZoomBugCount[] = "Renderer.ViewportZoomBugCount";
-
-// Key of UMA Renderer.WKWebViewCallbackAfterDestroy histogram.
-const char kUMAWKWebViewCallbackAfterDestroy[] =
-    "Renderer.WKWebViewCallbackAfterDestroy";
-
-// Key of the UMA Navigation.IOSWKWebViewSlowFastBackForward histogram.
-const char kUMAWKWebViewSlowFastBackForwardNavigationKey[] =
-    "Navigation.IOSWKWebViewSlowFastBackForward";
 
 // Values for the histogram that counts slow/fast back/forward navigations.
 enum class BackForwardNavigationType {
@@ -168,9 +159,6 @@ enum class BackForwardNavigationType {
   SLOW_FORWARD = 3,
   BACK_FORWARD_NAVIGATION_TYPE_COUNT
 };
-
-// URL scheme for messages sent from javascript for asynchronous processing.
-NSString* const kScriptMessageName = @"crwebinvoke";
 
 // Constants for storing the source of NSErrors received by WKWebViews:
 // - Errors received by |-webView:didFailProvisionalNavigation:withError:| are
@@ -273,7 +261,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
                                CRWWebViewScrollViewProxyObserver,
                                WKNavigationDelegate,
                                WKUIDelegate> {
-  __weak id<CRWWebDelegate> _delegate;
   // The WKWebView managed by this instance.
   WKWebView* _webView;
   // The view used to display content.  Must outlive |_webViewProxy|. The
@@ -681,7 +668,6 @@ registerLoadRequestForURL:(const GURL&)URL
 // cleaned up manually by calling this method.
 - (void)forgetNullWKNavigation:(WKNavigation*)navigation;
 
-- (BOOL)isLoaded;
 // Returns YES if the current live view is a web view with an image MIME type.
 - (BOOL)contentIsImage;
 // Extracts the current page's viewport tag information and calls |completion|.
@@ -739,8 +725,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Finds all the scrollviews in the view hierarchy and makes sure they do not
 // interfere with scroll to top when tapping the statusbar.
 - (void)optOutScrollsToTopForSubviews;
-// Tears down the old native controller, and then replaces it with the new one.
-- (void)setNativeController:(id<CRWNativeContent>)nativeController;
 // Returns whether |url| should be opened.
 - (BOOL)shouldOpenURL:(const GURL&)url
       mainDocumentURL:(const GURL&)mainDocumentURL;
@@ -922,6 +906,7 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 @implementation CRWWebController
 
+@synthesize delegate = _delegate;
 @synthesize webUsageEnabled = _webUsageEnabled;
 @synthesize loadPhase = _loadPhase;
 @synthesize shouldSuppressDialogs = _shouldSuppressDialogs;
@@ -952,8 +937,8 @@ GURL URLEscapedForHistory(const GURL& url) {
     web::BrowserState* browserState = _webStateImpl->GetBrowserState();
     _certVerificationController = [[CRWCertVerificationController alloc]
         initWithBrowserState:browserState];
-    _certVerificationErrors.reset(
-        new CertVerificationErrorsCacheType(kMaxCertErrorsCount));
+    _certVerificationErrors =
+        std::make_unique<CertVerificationErrorsCacheType>(kMaxCertErrorsCount);
     _navigationStates = [[CRWWKNavigationStates alloc] init];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
@@ -988,10 +973,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   // is restructured so that subviews are not added during |layoutSubviews|.
   // DCHECK([contentView.scrollView isDescendantOfView:contentView]);
   [_containerView displayTransientContent:contentView];
-}
-
-- (id<CRWWebDelegate>)delegate {
-  return _delegate;
 }
 
 - (void)setDelegate:(id<CRWWebDelegate>)delegate {
@@ -1167,9 +1148,6 @@ GURL URLEscapedForHistory(const GURL& url) {
 }
 
 - (CGPoint)scrollPosition {
-  CGPoint position = CGPointMake(0.0, 0.0);
-  if (!self.webScrollView)
-    return position;
   return self.webScrollView.contentOffset;
 }
 
@@ -1420,7 +1398,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     self.navigationManagerImpl->AddPendingItem(
         requestURL, referrer, transition,
         web::NavigationInitiationType::RENDERER_INITIATED,
-        web::NavigationManager::UserAgentOverrideOption::INHERIT);
+        NavigationManager::UserAgentOverrideOption::INHERIT);
     item = self.navigationManagerImpl->GetPendingItem();
   }
 
@@ -1700,7 +1678,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // No DidStartNavigation callback for displaying error page.
     _webStateImpl->OnNavigationStarted(context);
   }
-  const GURL currentURL([self currentURL]);
   [self didStartLoading];
   self.navigationManagerImpl->CommitPendingItem();
   if (loadSuccess) {
@@ -1800,8 +1777,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (web::NavigationContextImpl*)loadPlaceholderInWebViewForURL:
     (const GURL&)originalURL {
-  web::WebClient* webClient = web::GetWebClient();
-  DCHECK(webClient->IsSlimNavigationManagerEnabled());
+  DCHECK(web::GetWebClient()->IsSlimNavigationManagerEnabled());
 
   GURL placeholderURL = CreatePlaceholderUrlForUrl(originalURL);
   [self ensureWebViewCreated];
@@ -1916,12 +1892,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // TODO(crbug.com/546337): Move to after the load commits, in the subclass
   // implementation. This will be inaccurate if the reload fails or is
   // cancelled.
-  _lastUserInteraction = nil;
-  base::RecordAction(UserMetricsAction("Reload"));
-  GURL url = self.currentNavItem->GetURL();
-  if ([self shouldLoadURLInNativeView:url]) {
+  _lastUserInteraction = nullptr;
+  base::RecordAction(base::UserMetricsAction("Reload"));
+  GURL URL = self.currentNavItem->GetURL();
+  if ([self shouldLoadURLInNativeView:URL]) {
     std::unique_ptr<web::NavigationContextImpl> navigationContext = [self
-        registerLoadRequestForURL:url
+        registerLoadRequestForURL:URL
                          referrer:self.currentNavItemReferrer
                        transition:ui::PageTransition::PAGE_TRANSITION_RELOAD
            sameDocumentNavigation:NO];
@@ -1975,10 +1951,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
       _webStateImpl->SetIsLoading(false);
     }
   }
-}
-
-- (BOOL)isLoaded {
-  return _loadPhase == web::PAGE_LOADED;
 }
 
 - (BOOL)contentIsImage {
@@ -2317,9 +2289,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage {
-  GURL message_frame_origin = web::GURLOriginWithWKSecurityOrigin(
+  GURL messageFrameOrigin = web::GURLOriginWithWKSecurityOrigin(
       scriptMessage.frameInfo.securityOrigin);
-  if (message_frame_origin.GetOrigin() != _documentURL.GetOrigin()) {
+  if (messageFrameOrigin.GetOrigin() != _documentURL.GetOrigin()) {
     // Messages from cross-origin iframes are not currently supported.
     return NO;
   }
@@ -2736,7 +2708,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (void)resetDocumentSpecificState {
-  _lastUserInteraction = nil;
+  _lastUserInteraction = nullptr;
   _clickInProgress = NO;
 }
 
@@ -2932,7 +2904,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   // Reset SSL status to default, unless the load was cancelled (manually or by
   // back-forward navigation).
-  web::NavigationManager* navManager = self.webState->GetNavigationManager();
+  NavigationManager* navManager = self.webState->GetNavigationManager();
   web::NavigationItem* lastCommittedItem = navManager->GetLastCommittedItem();
   if (lastCommittedItem)
     lastCommittedItem->GetSSL() = web::SSLStatus();
@@ -2982,16 +2954,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // to start the download task.
     _webStateImpl->SetIsLoading(false);
     return;
-
-    // The wrapper error uses the URL of the error and not the requested URL
-    // (which can be different in case of a redirect) to match desktop Chrome
-    // behavior.
-    error = [NSError errorWithDomain:error.domain
-                                code:error.code
-                            userInfo:@{
-                              NSURLErrorFailingURLStringErrorKey : errorURLSpec,
-                              NSUnderlyingErrorKey : error,
-                            }];
   }
 
   if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
@@ -3070,7 +3032,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)didReceiveWebViewNavigationDelegateCallback {
   if (_isBeingDestroyed) {
-    UMA_HISTOGRAM_BOOLEAN(kUMAWKWebViewCallbackAfterDestroy, true);
+    UMA_HISTOGRAM_BOOLEAN("Renderer.WKWebViewCallbackAfterDestroy", true);
   }
 }
 
@@ -3202,13 +3164,13 @@ registerLoadRequestForURL:(const GURL&)requestURL
     _userInteractedWithWebController = YES;
     if (_isBeingDestroyed)
       return;
-    const web::NavigationManagerImpl& navigationManager =
-        self.webStateImpl->GetNavigationManagerImpl();
+    const NavigationManagerImpl* navigationManager = self.navigationManagerImpl;
     GURL mainDocumentURL =
-        navigationManager.GetItemCount()
-            ? navigationManager.GetLastCommittedItem()->GetURL()
+        navigationManager->GetItemCount()
+            ? navigationManager->GetLastCommittedItem()->GetURL()
             : [self currentURL];
-    _lastUserInteraction.reset(new UserInteractionEvent(mainDocumentURL));
+    _lastUserInteraction =
+        std::make_unique<UserInteractionEvent>(mainDocumentURL);
   }
 }
 
@@ -3305,7 +3267,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     if (viewportState && !viewportState->viewport_tag_present() &&
         [scrollView minimumZoomScale] == [scrollView maximumZoomScale] &&
         [scrollView zoomScale] > 1.0) {
-      UMA_HISTOGRAM_BOOLEAN(kUMAViewportZoomBugCount, true);
+      UMA_HISTOGRAM_BOOLEAN("Renderer.ViewportZoomBugCount", true);
     }
   }];
 }
@@ -3655,9 +3617,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
 
-  web::NavigationManagerImpl& navManager =
-      _webStateImpl->GetNavigationManagerImpl();
-  web::NavigationItem* currentNavItem = navManager.GetLastCommittedItem();
+  NavigationManagerImpl* navManager = self.navigationManagerImpl;
+  web::NavigationItem* currentNavItem = navManager->GetLastCommittedItem();
   if (!currentNavItem) {
     return;
   }
@@ -3665,7 +3626,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (!_SSLStatusUpdater) {
     _SSLStatusUpdater =
         [[CRWSSLStatusUpdater alloc] initWithDataSource:self
-                                      navigationManager:&navManager];
+                                      navigationManager:navManager];
     [_SSLStatusUpdater setDelegate:self];
   }
   NSString* host = base::SysUTF8ToNSString(_documentURL.host());
@@ -3744,8 +3705,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
           // NavigationManager.  Additionally, if a page with a certificate
           // error is opened in a new tab, its last committed NavigationItem
           // will be null.
-          web::NavigationManager* navigationManager =
-              self.navigationManagerImpl;
+          NavigationManager* navigationManager = self.navigationManagerImpl;
           web::NavigationItem* item =
               navigationManager ? navigationManager->GetLastCommittedItem()
                                 : nullptr;
@@ -3848,7 +3808,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // delegate must be specified.
   return web::BuildWKWebView(CGRectZero, config,
                              self.webStateImpl->GetBrowserState(),
-                             self.userAgentType);
+                             [self userAgentType]);
 }
 
 - (void)setWebView:(WKWebView*)webView {
@@ -4005,7 +3965,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (void)stopLoading {
   _stoppedWKNavigation = [_navigationStates lastAddedNavigation];
 
-  base::RecordAction(UserMetricsAction("Stop"));
+  base::RecordAction(base::UserMetricsAction("Stop"));
   // Discard the pending and transient entried before notifying the tab model
   // observers of the change via |-abortLoad|.
   self.navigationManagerImpl->DiscardNonCommittedItems();
@@ -4216,7 +4176,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     BOOL isMainFrame = action.targetFrame.mainFrame;
     if (isFirstLoadInOpenedWindow && isMainFrame) {
       GURL aboutBlankURL(url::kAboutBlankURL);
-      web::NavigationManager::WebLoadParams loadParams(aboutBlankURL);
+      NavigationManager::WebLoadParams loadParams(aboutBlankURL);
       loadParams.referrer = [self currentReferrer];
       self.webState->GetNavigationManager()->LoadURLWithParams(loadParams);
     }
@@ -5437,7 +5397,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 
   UMA_HISTOGRAM_ENUMERATION(
-      kUMAWKWebViewSlowFastBackForwardNavigationKey, type,
+      "Navigation.IOSWKWebViewSlowFastBackForward", type,
       BackForwardNavigationType::BACK_FORWARD_NAVIGATION_TYPE_COUNT);
 }
 
