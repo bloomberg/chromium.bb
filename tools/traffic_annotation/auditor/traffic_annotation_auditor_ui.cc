@@ -288,7 +288,9 @@ int wmain(int argc, wchar_t* argv[]) {
 #else
 int main(int argc, char* argv[]) {
 #endif
-  printf("Starting traffic annotation auditor. This may take a few minutes.\n");
+  printf(
+      "Starting traffic annotation auditor. This may take from a few "
+      "minutes to a few hours based on the scope of the test.\n");
 
   // Parse switches.
   base::CommandLine command_line = base::CommandLine(argc, argv);
