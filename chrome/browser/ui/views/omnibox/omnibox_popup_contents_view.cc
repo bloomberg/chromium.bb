@@ -247,6 +247,12 @@ void OmniboxPopupContentsView::OpenMatch(size_t index,
                            GURL(), base::string16(), index);
 }
 
+void OmniboxPopupContentsView::OpenMatch(WindowOpenDisposition disposition) {
+  size_t index = model_->selected_line();
+  omnibox_view_->OpenMatch(model_->result().match_at(index), disposition,
+                           GURL(), base::string16(), index);
+}
+
 gfx::Image OmniboxPopupContentsView::GetMatchIcon(
     const AutocompleteMatch& match,
     SkColor vector_icon_color) const {
@@ -282,6 +288,14 @@ void OmniboxPopupContentsView::SetSelectedLine(size_t index) {
 
 bool OmniboxPopupContentsView::IsSelectedIndex(size_t index) const {
   return index == model_->selected_line();
+}
+
+bool OmniboxPopupContentsView::IsButtonSelected() const {
+  return model_->selected_line_state() == OmniboxPopupModel::TAB_SWITCH;
+}
+
+void OmniboxPopupContentsView::UnselectButton() {
+  model_->SetSelectedLineState(OmniboxPopupModel::NORMAL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

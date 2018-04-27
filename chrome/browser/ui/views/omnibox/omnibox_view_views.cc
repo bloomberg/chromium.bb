@@ -423,12 +423,44 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
   if (!model()->popup_model()->IsOpen())
     return false;
 
-  if (event.IsShiftDown() &&
-      (model()->popup_model()->selected_line_state() ==
-          OmniboxPopupModel::KEYWORD))
+  if (event.IsShiftDown() && (model()->popup_model()->selected_line_state() ==
+                              OmniboxPopupModel::KEYWORD)) {
     model()->ClearKeyword();
-  else
-    model()->OnUpOrDownKeyPressed(event.IsShiftDown() ? -1 : 1);
+    return true;
+  }
+
+  // If tabbing forwards (shift is not pressed) and tab switch button is not
+  // selected, selected it.
+  if (model()->popup_model()->SelectedLineHasTabMatch() &&
+      model()->popup_model()->selected_line_state() ==
+          OmniboxPopupModel::NORMAL &&
+      !event.IsShiftDown()) {
+    model()->popup_model()->SetSelectedLineState(OmniboxPopupModel::TAB_SWITCH);
+    return true;
+  }
+
+  // If tabbing backwards (shift is pressed), handle cases involving selecting
+  // the tab switch button.
+  if (event.IsShiftDown()) {
+    // If tab switch button is focused, unfocus it.
+    if (model()->popup_model()->selected_line_state() ==
+        OmniboxPopupModel::TAB_SWITCH) {
+      model()->popup_model()->SetSelectedLineState(OmniboxPopupModel::NORMAL);
+      return true;
+    }
+    // Otherwise, if at top of results, do nothing.
+    if (model()->popup_model()->selected_line() == 0)
+      return false;
+  }
+
+  // Translate tab and shift-tab into down and up respectively.
+  model()->OnUpOrDownKeyPressed(event.IsShiftDown() ? -1 : 1);
+  // If we shift-tabbed (and actually moved) to a suggestion with a tab
+  // switch button, select it.
+  if (event.IsShiftDown() &&
+      model()->popup_model()->SelectedLineHasTabMatch()) {
+    model()->popup_model()->SetSelectedLineState(OmniboxPopupModel::TAB_SWITCH);
+  }
 
   return true;
 }
@@ -1096,10 +1128,16 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
 #endif
   switch (event.key_code()) {
     case ui::VKEY_RETURN:
-      model()->AcceptInput(alt || command
-                               ? WindowOpenDisposition::NEW_FOREGROUND_TAB
-                               : WindowOpenDisposition::CURRENT_TAB,
-                           false);
+      if (model()->popup_model()->SelectedLineHasTabMatch() &&
+          model()->popup_model()->selected_line_state() ==
+              OmniboxPopupModel::TAB_SWITCH) {
+        popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB);
+      } else {
+        model()->AcceptInput(alt || command
+                                 ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+                                 : WindowOpenDisposition::CURRENT_TAB,
+                             false);
+      }
       return true;
 
     case ui::VKEY_ESCAPE:

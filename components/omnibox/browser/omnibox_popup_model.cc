@@ -186,8 +186,15 @@ void OmniboxPopupModel::SetSelectedLineState(LineState state) {
   DCHECK(!result().empty());
   DCHECK_NE(kNoMatch, selected_line_);
 
-  const AutocompleteMatch& match = result().match_at(selected_line_);
-  DCHECK(match.associated_keyword.get());
+  if (state == KEYWORD) {
+    const AutocompleteMatch& match = result().match_at(selected_line_);
+    DCHECK(match.associated_keyword.get());
+  }
+
+  if (state == TAB_SWITCH) {
+    const AutocompleteMatch& match = result().match_at(selected_line_);
+    DCHECK(match.has_tab_match);
+  }
 
   selected_line_state_ = state;
   view_->InvalidateLine(selected_line_);
@@ -293,6 +300,11 @@ gfx::Image OmniboxPopupModel::GetMatchIcon(const AutocompleteMatch& match,
                                              vector_icon_color);
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+
+bool OmniboxPopupModel::SelectedLineHasTabMatch() {
+  return selected_line_ != kNoMatch &&
+         result().match_at(selected_line_).has_tab_match;
+}
 
 void OmniboxPopupModel::OnFaviconFetched(const GURL& page_url,
                                          const gfx::Image& icon) {

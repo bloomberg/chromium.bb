@@ -31,7 +31,8 @@ class OmniboxPopupModel {
   // See selected_line_state_ for details.
   enum LineState {
     NORMAL = 0,
-    KEYWORD
+    KEYWORD,
+    TAB_SWITCH
   };
 
   OmniboxPopupModel(OmniboxPopupView* popup_view, OmniboxEditModel* edit_model);
@@ -140,6 +141,10 @@ class OmniboxPopupModel {
                           SkColor vector_icon_color);
 #endif
 
+  // Helper function to see if current selection has button and can accept
+  // the tab key.
+  bool SelectedLineHasTabMatch();
+
   // The token value for selected_line_ and functions dealing with a "line
   // number" that indicates "no line".
   static const size_t kNoMatch;
@@ -159,7 +164,9 @@ class OmniboxPopupModel {
 
   // If the selected line has both a normal match and a keyword match, this
   // determines whether the normal match (if NORMAL) or the keyword match
-  // (if KEYWORD) is selected.
+  // (if KEYWORD) is selected. Likewise, if the selected line has a normal
+  // match and a tab switch match, this determines whether the tab switch match
+  // (if TAB_SWITCH) is selected.
   LineState selected_line_state_;
 
   // The user has manually selected a match.
