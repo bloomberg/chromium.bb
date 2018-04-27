@@ -97,8 +97,10 @@ class ASH_EXPORT FeaturePodButton : public views::View,
   void SetToggled(bool toggled);
   bool IsToggled() const { return icon_button_->toggled(); }
 
-  // Change the expanded state. If not expanded, the labels are not shown.
-  void SetExpanded(bool expanded);
+  // Change the expanded state. 0.0 if collapsed, and 1.0 if expanded.
+  // Otherwise, it shows intermediate state. In the collapsed state, the labels
+  // are not shown.
+  void SetExpandedAmount(double expanded_amount);
 
   // Only called by the container. Same as SetVisible but doesn't change
   // |visible_preferred_| flag.

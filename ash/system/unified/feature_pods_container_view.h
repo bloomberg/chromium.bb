@@ -11,10 +11,10 @@
 namespace ash {
 
 // Container of feature pods buttons in the middle of UnifiedSystemTrayView.
-// The container has number of buttons placed in plane at regular distances such
-// as 3x2. FeaturePodButtons implements these individual buttons.
-// The container will also implement collapsed state where all the buttons are
-// horizontally placed.
+// The container has number of buttons placed in 3x3 plane at regular distances.
+// FeaturePodButtons implements these individual buttons.
+// The container also implements collapsed state where the top 5 buttons are
+// horizontally placed and others are hidden.
 class ASH_EXPORT FeaturePodsContainerView : public views::View {
  public:
   explicit FeaturePodsContainerView(bool initially_expanded);

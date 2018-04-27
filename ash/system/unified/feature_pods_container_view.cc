@@ -48,7 +48,7 @@ void FeaturePodsContainerView::SetExpandedAmount(double expanded_amount) {
 
   for (int i = 0; i < child_count(); ++i) {
     auto* child = static_cast<FeaturePodButton*>(child_at(i));
-    child->SetExpanded(expanded_amount_ > 0.0);
+    child->SetExpandedAmount(expanded_amount_);
   }
   UpdateChildVisibility();
   // We have to call Layout() explicitly here.
