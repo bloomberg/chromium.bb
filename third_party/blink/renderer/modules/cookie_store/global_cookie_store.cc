@@ -55,7 +55,7 @@ class GlobalCookieStoreImpl final
     return cookie_store_;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(cookie_store_);
     Supplement<T>::Trace(visitor);
   }

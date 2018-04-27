@@ -81,7 +81,7 @@ class GlobalCacheStorageImpl final
 
   // Promptly dispose of associated CacheStorage.
   EAGERLY_FINALIZE();
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(caches_);
     Supplement<T>::Trace(visitor);
   }

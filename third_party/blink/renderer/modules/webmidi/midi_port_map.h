@@ -76,7 +76,7 @@ class MIDIPortMap : public ScriptWrappable, public Maplike<String, T*> {
       return true;
     }
 
-    virtual void Trace(blink::Visitor* visitor) {
+    void Trace(blink::Visitor* visitor) override {
       visitor->Trace(map_);
       PairIterable<String, T*>::IterationSource::Trace(visitor);
     }

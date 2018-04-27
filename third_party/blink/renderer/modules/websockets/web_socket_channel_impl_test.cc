@@ -66,7 +66,7 @@ class MockWebSocketChannelClient
                     unsigned short,
                     const String&));
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     WebSocketChannelClient::Trace(visitor);
   }
 };
@@ -87,7 +87,7 @@ class MockWebSocketHandle : public WebSocketHandle {
                const KURL& site_for_cookies,
                const String& user_agent_override,
                WebSocketHandleClient* client,
-               base::SingleThreadTaskRunner*) {
+               base::SingleThreadTaskRunner*) override {
     Connect(url, protocols, site_for_cookies, user_agent_override, client);
   }
   MOCK_METHOD5(Connect,

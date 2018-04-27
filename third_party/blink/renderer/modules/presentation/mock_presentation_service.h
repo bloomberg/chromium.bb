@@ -21,7 +21,7 @@ class MockPresentationService : public mojom::blink::PresentationService {
   // TODO(crbug.com/729950): Use MOCK_METHOD directly once GMock gets the
   // move-only type support.
   void StartPresentation(const Vector<KURL>& presentation_urls,
-                         StartPresentationCallback callback) {
+                         StartPresentationCallback callback) override {
     StartPresentationInternal(presentation_urls, callback);
   }
   MOCK_METHOD2(StartPresentationInternal,
@@ -29,7 +29,7 @@ class MockPresentationService : public mojom::blink::PresentationService {
 
   void ReconnectPresentation(const Vector<KURL>& presentation_urls,
                              const String& presentation_id,
-                             ReconnectPresentationCallback callback) {
+                             ReconnectPresentationCallback callback) override {
     ReconnectPresentationInternal(presentation_urls, presentation_id, callback);
   }
   MOCK_METHOD3(ReconnectPresentationInternal,

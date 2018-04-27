@@ -41,7 +41,7 @@ class NavigatorLocksImpl final : public GarbageCollected<NavigatorLocksImpl<T>>,
     return lock_manager_.Get();
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(lock_manager_);
     Supplement<T>::Trace(visitor);
   }

@@ -33,7 +33,7 @@ class CORE_EXPORT TestPermissiveDictionary : public IDLDictionaryBase {
   inline void setBooleanMember(bool);
 
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   bool has_boolean_member_ = false;
