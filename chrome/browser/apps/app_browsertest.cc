@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/chrome_switches.h"
@@ -1172,7 +1173,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 }
 
 // This test currently only passes on OS X (on other platforms the print preview
-// dialog's size is limited by the size of the window being printed).
+// dialog's size is limited by the size of the window being printed). It also
+// doesn't pass in Views mode on OS X.
 #if !defined(OS_MACOSX)
 #define MAYBE_PrintPreviewShouldNotBeTooSmall \
     DISABLED_PrintPreviewShouldNotBeTooSmall
@@ -1183,6 +1185,10 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        MAYBE_PrintPreviewShouldNotBeTooSmall) {
+#if defined(OS_MACOSX)
+  if (!views_mode_controller::IsViewsBrowserCocoa())
+    return;
+#endif
   // Print preview dialogs with widths less than 410 pixels will have preview
   // areas that are too small, and ones with heights less than 191 pixels will
   // have vertical scrollers for their controls that are too small.
