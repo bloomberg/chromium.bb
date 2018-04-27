@@ -8,12 +8,14 @@ from __future__ import print_function
 
 import json
 import os
+import time
 
 from chromite.lib import constants
 from chromite.cli import command
 from chromite.lib import config_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import git
 from chromite.lib import remote_try
 
 from chromite.cbuildbot import trybot_patch_pool
@@ -235,13 +237,75 @@ def DisplayLabel(site_config, options, build_config_name):
   return config_lib.DISPLAY_LABEL_TRYJOB
 
 
+def FindUserEmail(options):
+  """Decide which email address is submitting the job.
+
+  Args:
+    options: Parsed command line options for cros tryjob.
+
+  Returns:
+    Email address for the tryjob as a string.
+  """
+
+  if options.committer_email:
+    return options.committer_email
+
+  cwd = os.path.dirname(os.path.realpath(__file__))
+  return git.GetProjectUserEmail(cwd)
+
+
+def PushLocalPatches(site_config, local_patches, user_email, dryrun=False):
+  """Push local changes to a remote ref, and generate args to send.
+
+  Args:
+    site_config: config_lib.SiteConfig containing all config info.
+    local_patches: patch_pool.local_patches from verified patch_pool.
+    user_email: Unique id for user submitting this tryjob.
+    dryrun: Is this a dryrun? If so, don't really push.
+
+  Returns:
+    List of strings to pass to builder to include these patches.
+  """
+  manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
+
+  current_time = str(int(time.time()))
+  ref_base = os.path.join('refs/tryjobs', user_email, current_time)
+
+  extra_args = []
+  for patch in local_patches:
+    # Isolate the name; if it's a tag or a remote, let through.
+    # Else if it's a branch, get the full branch name minus refs/heads.
+    local_branch = git.StripRefsHeads(patch.ref, False)
+    ref_final = os.path.join(ref_base, local_branch, patch.sha1)
+
+    checkout = patch.GetCheckout(manifest)
+    checkout.AssertPushable()
+    print('Uploading patch %s' % patch)
+    patch.Upload(checkout['push_url'], ref_final, dryrun=dryrun)
+
+    # TODO(rcui): Pass in the remote instead of tag. http://crosbug.com/33937.
+    tag = constants.EXTERNAL_PATCH_TAG
+    if checkout['remote'] == site_config.params.INTERNAL_REMOTE:
+      tag = constants.INTERNAL_PATCH_TAG
+
+    extra_args.append('--remote-patches=%s:%s:%s:%s:%s'
+                      % (patch.project, local_branch, ref_final,
+                         patch.tracking_branch, tag))
+
+  return extra_args
+
+
 def RunRemote(site_config, options, patch_pool):
   """Schedule remote tryjobs."""
   logging.info('Scheduling remote tryjob(s): %s',
                ', '.join(options.build_configs))
 
+  user_email = FindUserEmail(options)
+
   # Figure out the cbuildbot command line to pass in.
   args = CbuildbotArgs(options)
+  args += PushLocalPatches(
+      site_config, patch_pool.local_patches, user_email)
 
   logging.info('Submitting tryjob...')
   results = []
@@ -250,9 +314,8 @@ def RunRemote(site_config, options, patch_pool):
         build_config=build_config,
         display_label=DisplayLabel(site_config, options, build_config),
         branch=options.branch,
-        pass_through_args=args,
-        local_patches=patch_pool.local_patches,
-        committer_email=options.committer_email,
+        extra_args=args,
+        user_email=user_email,
         master_buildbucket_id='',  # TODO: Add new option to populate.
     )
     results.append(tryjob.Submit(dryrun=False))

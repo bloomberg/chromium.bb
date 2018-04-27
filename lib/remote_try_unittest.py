@@ -37,23 +37,30 @@ class RemoteTryHelperTestsBase(cros_test_lib.MockTestCase):
 
   def _CreateJobMin(self):
     return remote_try.RemoteTryJob(
-        self.BUILD_CONFIG,
-        self.DISPLAY_LABEL)
+        build_config=self.BUILD_CONFIG,
+        display_label=self.DISPLAY_LABEL,
+        branch='master',
+        extra_args=(),
+        user_email='default_email',
+        master_buildbucket_id=None)
 
   def _CreateJobMax(self):
     return remote_try.RemoteTryJob(
-        self.BUILD_CONFIG,
-        self.DISPLAY_LABEL,
+        build_config=self.BUILD_CONFIG,
+        display_label=self.DISPLAY_LABEL,
         branch=self.BRANCH,
-        pass_through_args=self.PASS_THROUGH_ARGS,
-        local_patches=(),  # TODO: Populate/test these, somehow.
-        committer_email=self.TEST_EMAIL,
+        extra_args=self.PASS_THROUGH_ARGS,
+        user_email=self.TEST_EMAIL,
         master_buildbucket_id=self.MASTER_BUILDBUCKET_ID)
 
   def _CreateJobUnknown(self):
     return remote_try.RemoteTryJob(
-        self.UNKNOWN_CONFIG,
-        self.DISPLAY_LABEL)
+        build_config=self.UNKNOWN_CONFIG,
+        display_label=self.DISPLAY_LABEL,
+        branch='master',
+        extra_args=(),
+        user_email='default_email',
+        master_buildbucket_id=None)
 
 
 class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
@@ -67,20 +74,6 @@ class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
     client_mock().PutBuildRequest.return_value = {
         'build': {'id': 'fake_buildbucket_id'}
     }
-
-  def testDefaultEmail(self):
-    """Verify a default discovered email address."""
-    job = self._CreateJobMin()
-
-    # Verify default email detection.
-    self.assertEqual(job.user_email, 'default_email')
-
-  def testExplicitEmail(self):
-    """Verify an explicitly set email address."""
-    job = self._CreateJobMax()
-
-    # Verify explicit email detection.
-    self.assertEqual(job.user_email, self.TEST_EMAIL)
 
   def testMinRequestBody(self):
     """Verify our request body with min options."""
@@ -176,13 +169,13 @@ class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
   def testMinDryRun(self):
     """Do a dryrun of posting the request, min options."""
     job = self._CreateJobMin()
-    job._PostConfigToBuildBucket(testjob=True, dryrun=True)
+    job.Submit(testjob=True, dryrun=True)
     # TODO: Improve coverage to all of Submit. Verify behavior.
 
   def testMaxDryRun(self):
     """Do a dryrun of posting the request, max options."""
     job = self._CreateJobMax()
-    job._PostConfigToBuildBucket(testjob=True, dryrun=True)
+    job.Submit(testjob=True, dryrun=True)
     # TODO: Improve coverage to all of Submit. Verify behavior.
 
 
@@ -301,8 +294,13 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
     """Check syntax for PostConfigsToBuildBucket."""
     self.PatchObject(auth, 'Login')
     self.PatchObject(auth, 'Token')
-    self.PatchObject(remote_try.RemoteTryJob, '_PutConfigToBuildBucket')
+    self.PatchObject(remote_try.RemoteTryJob, '_PutConfigToBuildBucket')\
+
     remote_try_job = remote_try.RemoteTryJob(
-        ['build_config'],
-        'display_label')
-    remote_try_job._PostConfigToBuildBucket(testjob=True, dryrun=True)
+        build_config=self.BUILD_CONFIG,
+        display_label=self.DISPLAY_LABEL,
+        branch='master',
+        extra_args=(),
+        user_email='default_email',
+        master_buildbucket_id=None)
+    remote_try_job.Submit(testjob=True, dryrun=True)
