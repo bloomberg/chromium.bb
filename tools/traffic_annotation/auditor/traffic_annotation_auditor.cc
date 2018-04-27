@@ -211,8 +211,16 @@ bool TrafficAnnotationAuditor::RunClangTool(
 
   // If running clang tool had no output, it means that the script running it
   // could not perform the task.
-  if (clang_tool_raw_output_.empty())
+  if (clang_tool_raw_output_.empty()) {
     result = false;
+  } else if (!result) {
+    // If clang tool had errors but also returned results, the errors can be
+    // ignored as we do not separate platform specific files here and processing
+    // them fails. This is a post-build test and if there exists any actual
+    // compile error, it should be noted when the code is built.
+    printf("WARNING: Ignoring clang tool's returned errors.\n");
+    result = true;
+  }
 
   if (!result) {
     if (use_compile_commands && !clang_tool_raw_output_.empty()) {
@@ -398,6 +406,10 @@ bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
     if (block_type == "ANNOTATION") {
       AnnotationInstance new_annotation;
       result = new_annotation.Deserialize(lines, current, end_line);
+      if (IsSafeListed(new_annotation.proto.source().file(),
+                       AuditorException::ExceptionType::ALL)) {
+        result = AuditorResult(AuditorResult::Type::RESULT_IGNORE);
+      }
       switch (result.type()) {
         case AuditorResult::Type::RESULT_OK:
           extracted_annotations_.push_back(new_annotation);
@@ -420,11 +432,19 @@ bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
     } else if (block_type == "CALL") {
       CallInstance new_call;
       result = new_call.Deserialize(lines, current, end_line);
+      if (IsSafeListed(new_call.file_path,
+                       AuditorException::ExceptionType::ALL)) {
+        result = AuditorResult(AuditorResult::Type::RESULT_IGNORE);
+      }
       if (result.IsOK())
         extracted_calls_.push_back(new_call);
     } else if (block_type == "ASSIGNMENT") {
       AssignmentInstance new_assignment;
       result = new_assignment.Deserialize(lines, current, end_line);
+      if (IsSafeListed(new_assignment.file_path,
+                       AuditorException::ExceptionType::ALL)) {
+        result = AuditorResult(AuditorResult::Type::RESULT_IGNORE);
+      }
       if (result.IsOK() &&
           !IsSafeListed(base::StringPrintf(
                             "%s@%s", new_assignment.function_context.c_str(),

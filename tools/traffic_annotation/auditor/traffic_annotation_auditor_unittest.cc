@@ -668,19 +668,20 @@ TEST_F(TrafficAnnotationAuditorTest, CheckAllRequiredFunctionsAreAnnotated) {
           auditor().CheckAllRequiredFunctionsAreAnnotated();
           // Error should be issued if all the following is met:
           //   1- Function is not annotated.
-          //   2- It's a unittest or chrome::chrome depends on it.
+          //   2- chrome::chrome depends on it.
           //   3- The filepath is not safelisted.
           //   4- Function name is either of the two specified ones.
           bool is_unittest = file_path.find("unittest") != std::string::npos;
           bool is_safelist =
               file_path == "net/url_request/url_fetcher.cc" ||
-              file_path == "net/url_request/url_request_context.cc";
+              file_path == "net/url_request/url_request_context.cc" ||
+              is_unittest;
           bool monitored_function =
               function_name == "net::URLFetcher::Create" ||
               function_name == "net::URLRequestContext::CreateRequest";
-          EXPECT_EQ(auditor().errors().size() == 1,
-                    !annotated && (dependent || is_unittest) && !is_safelist &&
-                        monitored_function)
+          EXPECT_EQ(auditor().errors().size() == 1, !annotated && dependent &&
+                                                        !is_safelist &&
+                                                        monitored_function)
               << base::StringPrintf(
                      "Annotated:%i, Depending:%i, IsUnitTest:%i, "
                      "IsSafeListed:%i, MonitoredFunction:%i",
