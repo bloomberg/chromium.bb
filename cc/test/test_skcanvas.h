@@ -32,7 +32,7 @@ class SaveCountingCanvas : public SkNoDrawCanvas {
 class MockCanvas : public SkNoDrawCanvas {
  public:
   MockCanvas();
-  ~MockCanvas();
+  ~MockCanvas() override;
 
   SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec& rec) override {
     OnSaveLayer();

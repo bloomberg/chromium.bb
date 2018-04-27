@@ -41,7 +41,7 @@ class VideoFrameProviderClientImplTest : public testing::Test,
     DebugSetImplThreadAndMainThreadBlocked(impl_.task_runner_provider());
   }
 
-  ~VideoFrameProviderClientImplTest() {
+  ~VideoFrameProviderClientImplTest() override {
     if (!client_impl_->Stopped()) {
       client_impl_->Stop();
       DCHECK(client_impl_->Stopped());
