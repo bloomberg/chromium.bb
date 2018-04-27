@@ -266,22 +266,24 @@ DrawingBuffer::RegisteredBitmap DrawingBuffer::CreateOrRecycleBitmap(
     cc::SharedBitmapIdRegistrar* bitmap_registrar) {
   auto* it = std::remove_if(recycled_bitmaps_.begin(), recycled_bitmaps_.end(),
                             [this](const RegisteredBitmap& registered) {
-                              return registered.bitmap->size() != size_;
+                              return registered.bitmap->size() !=
+                                     static_cast<gfx::Size>(size_);
                             });
   recycled_bitmaps_.Shrink(it - recycled_bitmaps_.begin());
 
   if (!recycled_bitmaps_.IsEmpty()) {
     RegisteredBitmap recycled = std::move(recycled_bitmaps_.back());
     recycled_bitmaps_.pop_back();
-    DCHECK(recycled.bitmap->size() == size_);
+    DCHECK(recycled.bitmap->size() == static_cast<gfx::Size>(size_));
     return recycled;
   }
 
   viz::SharedBitmapId id = viz::SharedBitmap::GenerateId();
   std::unique_ptr<base::SharedMemory> shm =
-      viz::bitmap_allocation::AllocateMappedBitmap(size_, viz::RGBA_8888);
+      viz::bitmap_allocation::AllocateMappedBitmap(
+          static_cast<gfx::Size>(size_), viz::RGBA_8888);
   auto bitmap = base::MakeRefCounted<cc::CrossThreadSharedBitmap>(
-      id, std::move(shm), size_, viz::RGBA_8888);
+      id, std::move(shm), static_cast<gfx::Size>(size_), viz::RGBA_8888);
   RegisteredBitmap registered = {
       bitmap, bitmap_registrar->RegisterSharedBitmapId(id, bitmap)};
   return registered;
@@ -358,7 +360,7 @@ void DrawingBuffer::FinishPrepareTransferableResourceSoftware(
   }
 
   *out_resource = viz::TransferableResource::MakeSoftware(
-      registered.bitmap->id(), size_, viz::RGBA_8888);
+      registered.bitmap->id(), static_cast<gfx::Size>(size_), viz::RGBA_8888);
   out_resource->color_space = storage_color_space_;
 
   // This holds a ref on the DrawingBuffer that will keep it alive until the
@@ -501,7 +503,7 @@ void DrawingBuffer::MailboxReleasedSoftware(RegisteredBitmap registered,
                                             bool lost_resource) {
   DCHECK(!sync_token.HasData());  // No sync tokens for software resources.
   if (destruction_in_progress_ || lost_resource || is_hidden_ ||
-      registered.bitmap->size() != size_) {
+      registered.bitmap->size() != static_cast<gfx::Size>(size_)) {
     // Just delete the RegisteredBitmap, which will free the memory and
     // unregister it with the compositor.
     return;

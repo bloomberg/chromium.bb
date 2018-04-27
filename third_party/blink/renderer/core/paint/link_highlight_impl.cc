@@ -288,10 +288,8 @@ void LinkHighlightImpl::PaintContents(
   flags.setColor(node_->GetLayoutObject()->Style()->TapHighlightColor().Rgb());
   canvas->drawPath(path_.GetSkPath(), flags);
 
-  web_display_item_list->AppendDrawingItem(
-      WebRect(record_bounds.x(), record_bounds.y(), record_bounds.width(),
-              record_bounds.height()),
-      recorder.finishRecordingAsPicture());
+  web_display_item_list->AppendDrawingItem(record_bounds,
+                                           recorder.finishRecordingAsPicture());
 }
 
 void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {

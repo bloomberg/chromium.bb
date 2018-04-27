@@ -25,7 +25,8 @@ class DrawingDisplayItemTest : public testing::Test {
 class MockWebDisplayItemList : public WebDisplayItemList {
  public:
   MOCK_METHOD2(AppendDrawingItem,
-               void(const WebRect& visual_rect, sk_sp<const cc::PaintRecord>));
+               void(const gfx::Rect& visual_rect,
+                    sk_sp<const cc::PaintRecord>));
 };
 
 static sk_sp<PaintRecord> CreateRectRecord(const FloatRect& record_bounds) {
@@ -60,14 +61,14 @@ TEST_F(DrawingDisplayItemTest, VisualRectAndDrawingBounds) {
   EXPECT_EQ(FloatRect(drawing_bounds), item.VisualRect());
 
   MockWebDisplayItemList list1;
-  WebRect expected_rect = EnclosingIntRect(drawing_bounds);
+  gfx::Rect expected_rect = EnclosingIntRect(drawing_bounds);
   EXPECT_CALL(list1, AppendDrawingItem(expected_rect, _)).Times(1);
   item.AppendToWebDisplayItemList(FloatSize(), &list1);
 
   FloatSize offset(2.1, 3.6);
   FloatRect visual_rect_with_offset(drawing_bounds);
   visual_rect_with_offset.Move(-offset);
-  WebRect expected_visual_rect = EnclosingIntRect(visual_rect_with_offset);
+  gfx::Rect expected_visual_rect = EnclosingIntRect(visual_rect_with_offset);
   MockWebDisplayItemList list2;
   EXPECT_CALL(list2, AppendDrawingItem(expected_visual_rect, _)).Times(1);
   item.AppendToWebDisplayItemList(offset, &list2);

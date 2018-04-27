@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkPoint.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace blink {
 
@@ -112,6 +113,10 @@ bool FindIntersection(const FloatPoint& p1,
 
 FloatPoint::operator SkPoint() const {
   return SkPoint::Make(x_, y_);
+}
+
+FloatPoint::operator gfx::PointF() const {
+  return gfx::PointF(x_, y_);
 }
 
 std::ostream& operator<<(std::ostream& ostream, const FloatPoint& point) {

@@ -44,6 +44,7 @@ typedef struct CGSize CGSize;
 
 namespace gfx {
 class Size;
+class Vector2d;
 }
 
 namespace blink {
@@ -113,7 +114,12 @@ class PLATFORM_EXPORT IntSize {
   explicit operator CGSize() const;
 #endif
 
-  operator gfx::Size() const;
+  // Use this only for logical sizes, which can not be negative. Things that are
+  // offsets instead, and can be negative, should use a gfx::Vector2d.
+  explicit operator gfx::Size() const;
+  // IntSize is used as an offset, which can be negative, but gfx::Size can not.
+  // The Vector2d type is used for offsets instead.
+  explicit operator gfx::Vector2d() const;
 
   String ToString() const;
 

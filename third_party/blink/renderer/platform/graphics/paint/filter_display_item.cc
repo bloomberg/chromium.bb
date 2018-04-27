@@ -6,6 +6,8 @@
 
 #include "third_party/blink/public/platform/web_display_item_list.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace blink {
 

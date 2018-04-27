@@ -30,10 +30,8 @@ TEST(WebDisplayItemListImpl, ClipWhenCompositing) {
     static constexpr SkColor background_color = SK_ColorMAGENTA;
     static constexpr SkColor clip_color = SK_ColorYELLOW;
 
-    blink::WebRect full_bounds(0, 0, size, size);
-    blink::WebRect clip_bounds(5, 3, 13, 9);
-    SkRect sk_clip_bounds = SkRect::MakeXYWH(
-        clip_bounds.x, clip_bounds.y, clip_bounds.width, clip_bounds.height);
+    gfx::Rect full_bounds(0, 0, size, size);
+    SkRect sk_clip_bounds = SkRect::MakeXYWH(5, 3, 13, 9);
     SkIRect clip_irect = sk_clip_bounds.roundOut();
 
     auto cc_list = base::MakeRefCounted<cc::DisplayItemList>();

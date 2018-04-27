@@ -44,6 +44,10 @@ typedef struct CGPoint CGPoint;
 
 struct SkPoint;
 
+namespace gfx {
+class PointF;
+}
+
 namespace blink {
 
 class DoublePoint;
@@ -132,6 +136,7 @@ class PLATFORM_EXPORT FloatPoint {
   SkPoint Data() const;
 
   operator SkPoint() const;
+  operator gfx::PointF() const;
 
   String ToString() const;
 

@@ -19,7 +19,8 @@ void BeginScrollDisplayItem::AppendToWebDisplayItemList(
     const FloatSize&,
     WebDisplayItemList* list) const {
   WebDisplayItemList::ScrollContainerId scroll_container_id = &Client();
-  list->AppendScrollItem(current_offset_, scroll_container_id);
+  list->AppendScrollItem(static_cast<gfx::Vector2d>(current_offset_),
+                         scroll_container_id);
 }
 
 #if DCHECK_IS_ON()

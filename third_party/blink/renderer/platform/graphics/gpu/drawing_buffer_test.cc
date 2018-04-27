@@ -439,7 +439,7 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
                                                            &release_callback));
   EXPECT_EQ(initial_size, gl_->MostRecentlyProducedSize());
   EXPECT_TRUE(resource.is_overlay_candidate);
-  EXPECT_EQ(initial_size, resource.size);
+  EXPECT_EQ(static_cast<gfx::Size>(initial_size), resource.size);
   testing::Mock::VerifyAndClearExpectations(gl_);
   VerifyStateWasRestored();
 
@@ -464,7 +464,7 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
                                                            &release_callback));
   EXPECT_EQ(alternate_size, gl_->MostRecentlyProducedSize());
   EXPECT_TRUE(resource.is_overlay_candidate);
-  EXPECT_EQ(alternate_size, resource.size);
+  EXPECT_EQ(static_cast<gfx::Size>(alternate_size), resource.size);
   testing::Mock::VerifyAndClearExpectations(gl_);
 
   GLuint image_id4 = gl_->NextImageIdToBeCreated();
@@ -488,7 +488,7 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
                                                            &release_callback));
   EXPECT_EQ(initial_size, gl_->MostRecentlyProducedSize());
   EXPECT_TRUE(resource.is_overlay_candidate);
-  EXPECT_EQ(initial_size, resource.size);
+  EXPECT_EQ(static_cast<gfx::Size>(initial_size), resource.size);
   testing::Mock::VerifyAndClearExpectations(gl_);
 
   // Prepare one final resource and verify that it's the correct size.
@@ -498,7 +498,7 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
                                                            &release_callback));
   EXPECT_EQ(initial_size, gl_->MostRecentlyProducedSize());
   EXPECT_TRUE(resource.is_overlay_candidate);
-  EXPECT_EQ(initial_size, resource.size);
+  EXPECT_EQ(static_cast<gfx::Size>(initial_size), resource.size);
   release_callback->Run(gpu::SyncToken(), false /* lostResource */);
 
   EXPECT_CALL(*gl_, DestroyImageMock(image_id5)).Times(1);

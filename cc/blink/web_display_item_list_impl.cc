@@ -1,3 +1,4 @@
+#include "base/strings/stringprintf.h"
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -12,12 +13,14 @@
 #include "cc/paint/paint_filter.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/render_surface_filters.h"
-#include "third_party/blink/public/platform/web_float_rect.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
+#include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 
@@ -38,7 +41,7 @@ WebDisplayItemListImpl::WebDisplayItemListImpl(
 WebDisplayItemListImpl::~WebDisplayItemListImpl() = default;
 
 void WebDisplayItemListImpl::AppendDrawingItem(
-    const blink::WebRect& visual_rect,
+    const gfx::Rect& visual_rect,
     sk_sp<const cc::PaintOpBuffer> record) {
   display_item_list_->StartPaint();
   display_item_list_->push<cc::DrawRecordOp>(std::move(record));
@@ -46,7 +49,7 @@ void WebDisplayItemListImpl::AppendDrawingItem(
 }
 
 void WebDisplayItemListImpl::AppendClipItem(
-    const blink::WebRect& clip_rect,
+    const gfx::Rect& clip_rect,
     const blink::WebVector<SkRRect>& rounded_clip_rects) {
   bool antialias = true;
   display_item_list_->StartPaint();
@@ -82,8 +85,7 @@ void WebDisplayItemListImpl::AppendEndClipPathItem() {
   AppendRestore();
 }
 
-void WebDisplayItemListImpl::AppendFloatClipItem(
-    const blink::WebFloatRect& clip_rect) {
+void WebDisplayItemListImpl::AppendFloatClipItem(const gfx::RectF& clip_rect) {
   bool antialias = true;
   display_item_list_->StartPaint();
   display_item_list_->push<cc::SaveOp>();
@@ -151,24 +153,24 @@ void WebDisplayItemListImpl::AppendEndCompositingItem() {
 
 void WebDisplayItemListImpl::AppendFilterItem(
     const cc::FilterOperations& filters,
-    const blink::WebFloatRect& filter_bounds,
-    const blink::WebFloatPoint& origin) {
+    const gfx::RectF& filter_bounds,
+    const gfx::PointF& origin) {
   display_item_list_->StartPaint();
 
   // TODO(danakj): Skip the save+translate+restore if the origin is 0,0. This
   // should be easier to do when this code is part of the blink DisplayItem
   // which can keep related state.
   display_item_list_->push<cc::SaveOp>();
-  display_item_list_->push<cc::TranslateOp>(origin.x, origin.y);
+  display_item_list_->push<cc::TranslateOp>(origin.x(), origin.y());
 
   cc::PaintFlags flags;
   flags.setImageFilter(cc::RenderSurfaceFilters::BuildImageFilter(
-      filters, gfx::SizeF(filter_bounds.width, filter_bounds.height)));
+      filters, gfx::SizeF(filter_bounds.width(), filter_bounds.height())));
 
   SkRect layer_bounds = gfx::RectFToSkRect(filter_bounds);
-  layer_bounds.offset(-origin.x, -origin.y);
+  layer_bounds.offset(-origin.x(), -origin.y());
   display_item_list_->push<cc::SaveLayerOp>(&layer_bounds, &flags);
-  display_item_list_->push<cc::TranslateOp>(-origin.x, -origin.y);
+  display_item_list_->push<cc::TranslateOp>(-origin.x(), -origin.y());
 
   display_item_list_->EndPaintOfPairedBegin(
       gfx::ToEnclosingRect(filter_bounds));
@@ -182,13 +184,13 @@ void WebDisplayItemListImpl::AppendEndFilterItem() {
 }
 
 void WebDisplayItemListImpl::AppendScrollItem(
-    const blink::WebSize& scroll_offset,
+    const gfx::Vector2d& scroll_offset,
     ScrollContainerId) {
   display_item_list_->StartPaint();
   display_item_list_->push<cc::SaveOp>();
   display_item_list_->push<cc::TranslateOp>(
-      static_cast<float>(-scroll_offset.width),
-      static_cast<float>(-scroll_offset.height));
+      static_cast<float>(-scroll_offset.x()),
+      static_cast<float>(-scroll_offset.y()));
   display_item_list_->EndPaintOfPairedBegin();
 }
 
