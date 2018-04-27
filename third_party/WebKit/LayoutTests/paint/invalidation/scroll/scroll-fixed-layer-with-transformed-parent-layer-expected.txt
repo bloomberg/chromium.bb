@@ -25,7 +25,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
           "rect": [93, 234, 142, 143],
-          "reason": "paint property change"
+          "reason": "disappeared"
         }
       ],
       "transform": 1

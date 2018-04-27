@@ -8,8 +8,18 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [10, 10, 100, 100],
+          "rect": [10, 10, 774, 191],
           "reason": "disappeared"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [10, 126, 774, 75],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='overlay'",
+          "rect": [35, 35, 50, 50],
+          "reason": "appeared"
         },
         {
           "object": "LayoutBlockFlow DIV id='square'",

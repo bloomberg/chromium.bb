@@ -33,7 +33,7 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutBlockFlow DIV id='editor'",
           "rect": [3, 39, 794, 28],
           "reason": "appeared"
         },

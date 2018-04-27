@@ -24,16 +24,6 @@
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [19, 189, 200, 60],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [19, 29, 200, 60],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
           "rect": [19, 29, 200, 60],
           "reason": "geometry"
         },

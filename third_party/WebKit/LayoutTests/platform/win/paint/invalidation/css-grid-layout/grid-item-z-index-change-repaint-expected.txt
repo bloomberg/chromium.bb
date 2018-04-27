@@ -19,12 +19,17 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [28, 56, 500, 50],
+          "rect": [8, 16, 432, 320],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [8, 16, 432, 320],
           "reason": "disappeared"
         },
         {
-          "object": "LayoutBlockFlow DIV id='test' class='stretchy'",
-          "rect": [28, 56, 250, 50],
+          "object": "LayoutBlockFlow DIV id='item2' class='sizedToGridArea green'",
+          "rect": [8, 236, 200, 100],
           "reason": "appeared"
         }
       ]
@@ -32,7 +37,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV id='test' class='stretchy'",
+      "object": "LayoutBlockFlow DIV id='item2' class='sizedToGridArea green'",
       "reason": "style change"
     }
   ]

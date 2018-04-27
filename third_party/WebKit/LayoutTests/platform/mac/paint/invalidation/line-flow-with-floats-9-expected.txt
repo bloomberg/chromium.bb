@@ -19,18 +19,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [14, 452, 434, 18],
+          "rect": [8, 572, 440, 18],
           "reason": "incremental"
         },
         {
           "object": "LayoutBlockFlow P",
           "rect": [8, 74, 418, 516],
           "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [8, 572, 418, 18],
-          "reason": "incremental"
         },
         {
           "object": "InlineTextBox 'Alice soon came to the conclusion that it was a very'",
@@ -271,11 +266,6 @@
           "object": "InlineTextBox 'to\n'",
           "rect": [14, 188, 406, 72],
           "reason": "disappeared"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [14, 566, 406, 18],
-          "reason": "incremental"
         },
         {
           "object": "InlineTextBox 'about once in a minute.\n'",

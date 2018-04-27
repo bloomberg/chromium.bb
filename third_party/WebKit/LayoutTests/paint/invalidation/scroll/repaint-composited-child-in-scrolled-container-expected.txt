@@ -37,7 +37,7 @@
       "backgroundColor": "#FF0000",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='container'",
+          "object": "LayoutBlockFlow DIV id='inner'",
           "rect": [0, 0, 600, 600],
           "reason": "appeared"
         }

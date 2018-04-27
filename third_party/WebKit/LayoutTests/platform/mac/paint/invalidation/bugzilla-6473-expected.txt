@@ -20,42 +20,17 @@
         {
           "object": "LayoutBlockFlow (relative positioned) P",
           "rect": [8, 146, 784, 18],
-          "reason": "geometry"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) P",
           "rect": [8, 130, 784, 18],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) P",
-          "rect": [8, 148, 784, 16],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) P",
-          "rect": [8, 130, 784, 16],
-          "reason": "incremental"
-        },
-        {
-          "object": "InlineTextBox 'SUCCESS'",
-          "rect": [8, 146, 70, 18],
-          "reason": "disappeared"
+          "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'SUCCESS'",
           "rect": [8, 130, 70, 18],
           "reason": "appeared"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) P",
-          "rect": [8, 148, 70, 16],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) P",
-          "rect": [8, 130, 70, 16],
-          "reason": "incremental"
         }
       ]
     }

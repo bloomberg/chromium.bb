@@ -1401,6 +1401,7 @@ Bug(none) paint/invalidation/reflection/scroll-fixed-reflected-layer.html [ Fail
 Bug(none) svg/transforms/text-with-mask-with-svg-transform.svg [ Failure ]
 
 crbug.com/833083 paint/invalidation/compositing/composited-layers-move-in-subpixels.html [ Failure ]
+crbug.com/837467 paint/invalidation/compositing/end-of-opacity-transition.html [ Failure ]
 
 Bug(none) compositing/squashing/frame-clip-squashed-scrolled.html [ Failure ]
 Bug(none) fast/block/positioning/vertical-rl/002.html [ Failure ]

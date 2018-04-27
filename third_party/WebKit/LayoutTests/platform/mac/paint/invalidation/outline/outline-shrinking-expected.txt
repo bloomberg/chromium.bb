@@ -21,11 +21,6 @@
           "object": "LayoutBlockFlow DIV id='t'",
           "rect": [4, 108, 108, 108],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='t'",
-          "rect": [4, 108, 108, 108],
-          "reason": "disappeared"
         }
       ]
     }

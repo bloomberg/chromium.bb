@@ -18,7 +18,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutBlockFlow A id='link'",
           "rect": [43, 79, 754, 28],
           "reason": "appeared"
         },

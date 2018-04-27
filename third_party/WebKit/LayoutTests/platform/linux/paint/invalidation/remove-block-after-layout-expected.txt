@@ -23,7 +23,12 @@
           "reason": "disappeared"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "object": "InlineTextBox 'This div should'",
+          "rect": [8, 108, 98, 39],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'disappear.'",
           "rect": [8, 108, 98, 39],
           "reason": "disappeared"
         }

@@ -18,21 +18,26 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='t'",
-          "rect": [4, 114, 108, 108],
-          "reason": "style change"
+          "object": "LayoutBlockFlow HTML",
+          "rect": [8, 16, 464, 320],
+          "reason": "appeared"
         },
         {
-          "object": "LayoutBlockFlow DIV id='t'",
-          "rect": [4, 114, 108, 108],
+          "object": "LayoutBlockFlow HTML",
+          "rect": [8, 16, 464, 320],
           "reason": "disappeared"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='item2' class='sizedToGridArea green'",
+          "rect": [8, 236, 200, 100],
+          "reason": "appeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV id='t'",
+      "object": "LayoutBlockFlow DIV id='item2' class='sizedToGridArea green'",
       "reason": "style change"
     }
   ]

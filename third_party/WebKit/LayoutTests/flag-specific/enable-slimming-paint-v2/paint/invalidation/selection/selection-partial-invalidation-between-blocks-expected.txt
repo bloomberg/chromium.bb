@@ -21,32 +21,12 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutTable TABLE",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutTableCell TD id='firstCell'",
-      "reason": "selection"
-    },
-    {
       "object": "LayoutText #text",
       "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'First cell'",
       "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableCell TD id='secondCell'",
-      "reason": "selection"
     },
     {
       "object": "LayoutText #text",

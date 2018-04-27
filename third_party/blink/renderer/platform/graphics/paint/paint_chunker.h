@@ -36,7 +36,7 @@ class PLATFORM_EXPORT PaintChunker final {
   void UpdateCurrentPaintChunkProperties(const base::Optional<PaintChunk::Id>&,
                                          const PropertyTreeState&);
 
-  void ForceNewChunk() { force_new_chunk_ = true; }
+  void ForceNewChunk();
 
   // Returns true if a new chunk is created.
   bool IncrementDisplayItemIndex(const DisplayItem&);
@@ -81,14 +81,19 @@ class PLATFORM_EXPORT PaintChunker final {
 
   PaintChunksAndRasterInvalidations data_;
 
-  // TODO(pdr): Refactor current_chunk_id_ so that it is always the equal to
-  // the current chunk id. This is currently not true when there is a forced
-  // chunk because the current_chunk_id_ is cleared for subsequent chunks, even
-  // though those subsequent chunks will have valid chunk ids.
-  base::Optional<PaintChunk::Id> current_chunk_id_;
+  // The id specified by UpdateCurrentPaintChunkProperties(). If it is not
+  // nullopt, we will use it as the id of the next new chunk. Otherwise we will
+  // use the id of the first display item of the new chunk as the id.
+  // It's cleared when we create a new chunk with the id, or decide not to
+  // create a chunk with it (e.g. when properties don't change and we are not
+  // forced to create a new chunk).
+  base::Optional<PaintChunk::Id> next_chunk_id_;
+
   PropertyTreeState current_properties_;
+
   // True when an item forces a new chunk (e.g., foreign display items), and for
-  // the item following a forced chunk.
+  // the item following a forced chunk. PaintController also forces new chunks
+  // before and after subsequences by calling ForceNewChunk().
   bool force_new_chunk_;
 };
 

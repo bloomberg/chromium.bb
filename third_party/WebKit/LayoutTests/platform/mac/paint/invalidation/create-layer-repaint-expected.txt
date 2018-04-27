@@ -18,7 +18,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutBlockFlow DIV id='test' class='big stretchy'",
           "rect": [28, 54, 500, 50],
           "reason": "disappeared"
         },

@@ -13,12 +13,6 @@ using testing::ElementsAre;
 
 namespace blink {
 
-static bool operator==(const PaintChunk& a, const PaintChunk& b) {
-  return a.begin_index == b.begin_index && a.end_index == b.end_index &&
-         a.id == b.id && a.properties == b.properties &&
-         a.is_cacheable == b.is_cacheable;
-}
-
 namespace {
 
 class PaintChunkerTest : public testing::Test,
@@ -345,12 +339,34 @@ TEST_F(PaintChunkerTest, ForceNewChunkWithoutNewId) {
   chunker.IncrementDisplayItemIndex(
       TestChunkerDisplayItem(client_, DisplayItemType(21)));
 
-  Vector<PaintChunk> chunks = chunker.PaintChunks();
+  const auto& chunks = chunker.PaintChunks();
   EXPECT_THAT(
       chunks,
       ElementsAre(PaintChunk(0, 2, id0, DefaultPaintChunkProperties()),
                   PaintChunk(2, 4, id1, DefaultPaintChunkProperties()),
                   PaintChunk(4, 6, id2, DefaultPaintChunkProperties())));
+}
+
+TEST_F(PaintChunkerTest, NoNewChunkForSamePropertyDifferentIds) {
+  PaintChunker chunker;
+  PaintChunk::Id id0(client_, DisplayItemType(0));
+  chunker.UpdateCurrentPaintChunkProperties(id0, DefaultPaintChunkProperties());
+  chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
+
+  PaintChunk::Id id1(client_, DisplayItemType(1));
+  chunker.UpdateCurrentPaintChunkProperties(id1, DefaultPaintChunkProperties());
+  chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
+
+  chunker.UpdateCurrentPaintChunkProperties(base::nullopt,
+                                            DefaultPaintChunkProperties());
+  chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
+
+  EXPECT_THAT(
+      chunker.PaintChunks(),
+      ElementsAre(PaintChunk(0, 6, id0, DefaultPaintChunkProperties())));
 }
 
 class TestScrollHitTestRequiringSeparateChunk : public TestChunkerDisplayItem {

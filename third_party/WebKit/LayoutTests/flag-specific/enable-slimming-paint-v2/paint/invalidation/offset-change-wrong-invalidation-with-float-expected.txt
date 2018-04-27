@@ -12,7 +12,7 @@
           "reason": "disappeared"
         },
         {
-          "object": "LayoutBlockFlow (positioned) UL id='submenu'",
+          "object": "LayoutListMarker (anonymous)",
           "rect": [70, 94, 7, 19],
           "reason": "disappeared"
         },

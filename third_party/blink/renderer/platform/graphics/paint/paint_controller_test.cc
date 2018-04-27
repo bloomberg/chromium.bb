@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 
+using testing::ElementsAre;
 using testing::UnorderedElementsAre;
 
 namespace blink {
@@ -1135,7 +1136,7 @@ TEST_P(PaintControllerTest, CachedSubsequenceAndDisplayItemsSwapOrder) {
   EXPECT_EQ(4u, markers->end);
 }
 
-TEST_P(PaintControllerTest, CachedSubsequenceWithFragments) {
+TEST_P(PaintControllerTest, CachedSubsequenceContainingFragments) {
   if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
 
@@ -1166,23 +1167,19 @@ TEST_P(PaintControllerTest, CachedSubsequenceWithFragments) {
   }
   GetPaintController().CommitNewDisplayItems();
 
-  // Check results of the first paint.
-  auto check_paint_results = [this, &root, &container, kFragmentCount]() {
-    const auto& chunks = GetPaintController().PaintChunks();
-    ASSERT_EQ(2u + kFragmentCount, chunks.size());
-    EXPECT_EQ(root, chunks[0].id.client);
-    EXPECT_EQ(kBackgroundType, chunks[0].id.type);
-    EXPECT_EQ(0u, chunks[0].id.fragment);
-    for (size_t i = 0; i < kFragmentCount; ++i) {
-      const auto& id = chunks[i + 1].id;
-      EXPECT_EQ(container, id.client);
-      EXPECT_EQ(kBackgroundType, id.type);
-      EXPECT_EQ(i, id.fragment);
-    }
-    EXPECT_EQ(root, chunks.back().id.client);
-    EXPECT_EQ(kForegroundType, chunks.back().id.type);
-    EXPECT_EQ(0u, chunks.back().id.fragment);
+  auto check_paint_results = [this, &root, &container]() {
+    EXPECT_THAT(
+        GetPaintController().PaintChunks(),
+        ElementsAre(PaintChunk(0, 1, PaintChunk::Id(root, kBackgroundType),
+                               DefaultPaintChunkProperties()),
+                    // One chunk for all of the fragments because they have the
+                    // same properties.
+                    PaintChunk(1, 4, PaintChunk::Id(container, kBackgroundType),
+                               DefaultPaintChunkProperties()),
+                    PaintChunk(4, 5, PaintChunk::Id(root, kForegroundType),
+                               DefaultPaintChunkProperties())));
   };
+  // Check results of the first paint.
   check_paint_results();
 
   // The second paint.
