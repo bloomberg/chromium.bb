@@ -1329,8 +1329,8 @@ std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
                 .SetLogDescription(sct.sct->log_description)
                 .SetLogId(base::HexEncode(sct.sct->log_id.c_str(),
                                           sct.sct->log_id.length()))
-                .SetTimestamp(
-                    (sct.sct->timestamp - base::Time()).InMillisecondsF())
+                .SetTimestamp((sct.sct->timestamp - base::Time::UnixEpoch())
+                                  .InMillisecondsF())
                 .SetHashAlgorithm(net::ct::HashAlgorithmToString(
                     sct.sct->signature.hash_algorithm))
                 .SetSignatureAlgorithm(net::ct::SignatureAlgorithmToString(
