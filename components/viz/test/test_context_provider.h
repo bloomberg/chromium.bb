@@ -50,6 +50,8 @@ class TestContextProvider
       std::unique_ptr<TestContextSupport> support);
   static scoped_refptr<TestContextProvider> Create(
       std::unique_ptr<TestGLES2Interface> gl);
+  static scoped_refptr<TestContextProvider> Create(
+      std::unique_ptr<TestContextSupport> support);
 
   // ContextProvider / RasterContextProvider implementation.
   void AddRef() const override;
