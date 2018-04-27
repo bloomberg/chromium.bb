@@ -93,10 +93,11 @@ void TextIteratorTextState::AppendTextToStringBuilder(
   }
 }
 
-void TextIteratorTextState::UpdateForReplacedElement(const Node* base_node) {
+void TextIteratorTextState::UpdateForReplacedElement(const Node& parent_node,
+                                                     const Node& base_node) {
   has_emitted_ = true;
-  position_node_ = base_node->parentNode();
-  position_offset_base_node_ = base_node;
+  position_node_ = &parent_node;
+  position_offset_base_node_ = &base_node;
   position_start_offset_ = 0;
   position_end_offset_ = 1;
   single_character_buffer_ = 0;
@@ -113,10 +114,8 @@ void TextIteratorTextState::EmitAltText(const Node* node) {
   last_character_ = text_length_ ? text_[text_length_ - 1] : 0;
 }
 
-void TextIteratorTextState::FlushPositionOffsets() const {
-  if (!position_offset_base_node_)
-    return;
-  unsigned index = position_offset_base_node_->NodeIndex();
+void TextIteratorTextState::UpdatePositionOffsets(unsigned index) const {
+  DCHECK(position_offset_base_node_);
   position_start_offset_ += index;
   position_end_offset_ += index;
   position_offset_base_node_ = nullptr;

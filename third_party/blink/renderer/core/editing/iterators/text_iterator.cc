@@ -535,7 +535,7 @@ void TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
     return;
   }
 
-  text_state_.UpdateForReplacedElement(node_);
+  text_state_.UpdateForReplacedElement(*Strategy::Parent(*node_), *node_);
 
   if (EmitsImageAltText() && TextIterator::SupportsAltText(*node_)) {
     text_state_.EmitAltText(node_);
@@ -842,8 +842,9 @@ const Node* TextIteratorAlgorithm<Strategy>::GetNode() const {
 
 template <typename Strategy>
 int TextIteratorAlgorithm<Strategy>::StartOffsetInCurrentContainer() const {
-  if (text_state_.PositionNode()) {
-    text_state_.FlushPositionOffsets();
+  if (const Node* node = text_state_.PositionNode()) {
+    if (const Node* base_node = text_state_.PositionOffsetBaseNode())
+      text_state_.UpdatePositionOffsets(Strategy::Index(*base_node));
     return text_state_.PositionStartOffset();
   }
   return end_offset_;
@@ -851,8 +852,9 @@ int TextIteratorAlgorithm<Strategy>::StartOffsetInCurrentContainer() const {
 
 template <typename Strategy>
 int TextIteratorAlgorithm<Strategy>::EndOffsetInCurrentContainer() const {
-  if (text_state_.PositionNode()) {
-    text_state_.FlushPositionOffsets();
+  if (const Node* node = text_state_.PositionNode()) {
+    if (const Node* base_node = text_state_.PositionOffsetBaseNode())
+      text_state_.UpdatePositionOffsets(Strategy::Index(*base_node));
     return text_state_.PositionEndOffset();
   }
   return end_offset_;

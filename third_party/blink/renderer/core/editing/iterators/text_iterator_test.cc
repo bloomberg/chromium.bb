@@ -1087,5 +1087,37 @@ TEST_P(ParameterizedTextIteratorTest, NoZWSForSpaceAfterNoWrapSpace) {
   EXPECT_EQ("[foo ][bar]", Iterate<DOMTree>());
 }
 
+TEST_P(ParameterizedTextIteratorTest, PositionInShadowTree) {
+  // Flat Tree: <div id=host>A<slot name=c><img slot=c alt=C></slot></div>
+  SetBodyContent("<div id=host><a></a><b></b><img slot=c alt=C></div>");
+  Element& host = *GetDocument().getElementById("host");
+  ShadowRoot& shadow_root =
+      host.AttachShadowRootInternal(ShadowRootType::kOpen);
+  shadow_root.SetInnerHTMLFromString("A<slot name=c></slot>");
+  GetDocument().UpdateStyleAndLayout();
+  Element& body = *GetDocument().body();
+  Node& text_a = *shadow_root.firstChild();
+  Node& slot = *shadow_root.lastChild();
+  ASSERT_EQ("[A][C]", Iterate<FlatTree>(EmitsImageAltTextBehavior()));
+
+  TextIteratorInFlatTree it(EphemeralRangeInFlatTree::RangeOfContents(body));
+
+  EXPECT_EQ(PositionInFlatTree(text_a, 0),
+            it.StartPositionInCurrentContainer());
+  EXPECT_EQ(PositionInFlatTree(text_a, 1), it.EndPositionInCurrentContainer());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance();
+  EXPECT_EQ(PositionInFlatTree(slot, 0), it.StartPositionInCurrentContainer());
+  EXPECT_EQ(PositionInFlatTree(slot, 1), it.EndPositionInCurrentContainer());
+
+  ASSERT_FALSE(it.AtEnd());
+  it.Advance();
+  EXPECT_EQ(PositionInFlatTree(body, 1), it.StartPositionInCurrentContainer());
+  EXPECT_EQ(PositionInFlatTree(body, 1), it.EndPositionInCurrentContainer());
+
+  ASSERT_TRUE(it.AtEnd());
+}
+
 }  // namespace text_iterator_test
 }  // namespace blink
