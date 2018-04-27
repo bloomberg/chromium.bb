@@ -137,4 +137,4 @@ as tests for script-added tokens. For examples, refer to the existing tests in
 [OriginTrialEnabled]: /third_party/blink/renderer/bindings/IDLExtendedAttributes.md#_OriginTrialEnabled_i_m_a_c_
 [origin_trials/webexposed]: /third_party/WebKit/LayoutTests/http/tests/origin_trials/webexposed/
 [runtime\_enabled\_features.json5]: /third_party/blink/renderer/platform/runtime_enabled_features.json5
-[trial_token_unittest.cc]: /content/common/origin_trials/trial_token_unittest.cc
+[trial_token_unittest.cc]: /third_party/blink/common/origin_trials/trial_token_unittest.cc

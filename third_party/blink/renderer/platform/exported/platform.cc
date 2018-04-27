@@ -37,7 +37,6 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/common/origin_trials/trial_policy.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_cache_storage.h"
 #include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor.h"
@@ -53,7 +52,6 @@
 #include "third_party/blink/public/platform/web_socket_handshake_throttle.h"
 #include "third_party/blink/public/platform/web_storage_namespace.h"
 #include "third_party/blink/public/platform/web_thread.h"
-#include "third_party/blink/public/platform/web_trial_token_validator.h"
 #include "third_party/blink/renderer/platform/exported/web_clipboard_impl.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache_memory_dump_provider.h"
@@ -275,10 +273,6 @@ Platform::CreateWebSocketHandshakeThrottle() {
 
 std::unique_ptr<WebImageCaptureFrameGrabber>
 Platform::CreateImageCaptureFrameGrabber() {
-  return nullptr;
-}
-
-std::unique_ptr<WebTrialTokenValidator> Platform::CreateTrialTokenValidator() {
   return nullptr;
 }
 

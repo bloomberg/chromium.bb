@@ -91,7 +91,7 @@ class ChromeContentClient : public content::ContentClient {
 
   bool AllowScriptExtensionForServiceWorker(const GURL& script_url) override;
 
-  content::OriginTrialPolicy* GetOriginTrialPolicy() override;
+  blink::OriginTrialPolicy* GetOriginTrialPolicy() override;
 
 #if defined(OS_ANDROID)
   media::MediaDrmBridgeClient* GetMediaDrmBridgeClient() override;

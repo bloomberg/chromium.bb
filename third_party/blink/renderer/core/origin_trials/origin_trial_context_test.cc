@@ -7,7 +7,7 @@
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/origin_trials/trial_token.h"
-#include "third_party/blink/public/platform/web_trial_token_validator.h"
+#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
@@ -35,23 +35,25 @@ const char kResultHistogram[] = "OriginTrials.ValidationResult";
 // Trial token placeholder for mocked calls to validator
 const char kTokenPlaceholder[] = "The token contents are not used";
 
-class MockTokenValidator : public WebTrialTokenValidator {
+class MockTokenValidator : public TrialTokenValidator {
  public:
   MockTokenValidator()
       : response_(OriginTrialTokenStatus::kNotSupported), call_count_(0) {}
   ~MockTokenValidator() override = default;
 
   // blink::WebTrialTokenValidator implementation
-  OriginTrialTokenStatus ValidateToken(const WebString& token,
-                                       const WebSecurityOrigin& origin,
-                                       WebString* feature_name) override {
+  OriginTrialTokenStatus ValidateToken(base::StringPiece token,
+                                       const url::Origin& origin,
+                                       std::string* feature_name,
+                                       base::Time current_time) const override {
     call_count_++;
     *feature_name = feature_;
     return response_;
   }
 
   // Useful methods for controlling the validator
-  void SetResponse(OriginTrialTokenStatus response, const WebString& feature) {
+  void SetResponse(OriginTrialTokenStatus response,
+                   const std::string& feature) {
     response_ = response;
     feature_ = feature;
   }
@@ -59,8 +61,8 @@ class MockTokenValidator : public WebTrialTokenValidator {
 
  private:
   OriginTrialTokenStatus response_;
-  WebString feature_;
-  int call_count_;
+  std::string feature_;
+  mutable int call_count_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTokenValidator);
 };

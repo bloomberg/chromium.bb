@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ORIGIN_TRIALS_ORIGIN_TRIAL_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ORIGIN_TRIALS_ORIGIN_TRIAL_CONTEXT_H_
 
-#include "third_party/blink/public/platform/web_trial_token_validator.h"
+#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -39,8 +39,7 @@ class CORE_EXPORT OriginTrialContext final
  public:
   static const char kSupplementName[];
 
-  OriginTrialContext(ExecutionContext&,
-                     std::unique_ptr<WebTrialTokenValidator>);
+  OriginTrialContext(ExecutionContext&, std::unique_ptr<TrialTokenValidator>);
 
   // Returns the OriginTrialContext for a specific ExecutionContext, if one
   // exists.
@@ -98,7 +97,7 @@ class CORE_EXPORT OriginTrialContext final
   Vector<String> tokens_;
   HashSet<String> enabled_trials_;
   HashSet<String> installed_trials_;
-  std::unique_ptr<WebTrialTokenValidator> trial_token_validator_;
+  std::unique_ptr<TrialTokenValidator> trial_token_validator_;
 };
 
 }  // namespace blink

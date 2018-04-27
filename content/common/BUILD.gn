@@ -230,8 +230,6 @@ source_set("common") {
     "net/url_request_user_data.h",
     "notifications/notification_struct_traits.cc",
     "notifications/notification_struct_traits.h",
-    "origin_trials/trial_policy_impl.cc",
-    "origin_trials/trial_policy_impl.h",
     "origin_util.cc",
     "page_message_enums.h",
     "page_messages.h",

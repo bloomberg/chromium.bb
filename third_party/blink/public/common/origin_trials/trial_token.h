@@ -57,7 +57,7 @@ class BLINK_COMMON_EXPORT TrialToken {
   // appropriate for a given origin / feature. It only means that it is
   // correctly formatted and signed by the supplied public key, and can be
   // parsed.
-  static std::unique_ptr<TrialToken> From(const std::string& token_text,
+  static std::unique_ptr<TrialToken> From(base::StringPiece token_text,
                                           base::StringPiece public_key,
                                           OriginTrialTokenStatus* out_status);
 
@@ -86,7 +86,7 @@ class BLINK_COMMON_EXPORT TrialToken {
   // |out_token_payload| and |out_token_signature| parameters, respectively.
   // Otherwise,the return code indicates what was wrong with the string, and
   // |out_token_payload| and |out_token_signature| are unchanged.
-  static OriginTrialTokenStatus Extract(const std::string& token_text,
+  static OriginTrialTokenStatus Extract(base::StringPiece token_text,
                                         base::StringPiece public_key,
                                         std::string* out_token_payload,
                                         std::string* out_token_signature);

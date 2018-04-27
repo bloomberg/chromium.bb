@@ -87,7 +87,7 @@ gfx::Image& ShellContentClient::GetNativeImageNamed(int resource_id) const {
       resource_id);
 }
 
-OriginTrialPolicy* ShellContentClient::GetOriginTrialPolicy() {
+blink::OriginTrialPolicy* ShellContentClient::GetOriginTrialPolicy() {
   return &origin_trial_policy_;
 }
 

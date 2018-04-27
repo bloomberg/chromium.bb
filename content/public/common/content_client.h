@@ -22,6 +22,10 @@ namespace base {
 class RefCountedMemory;
 }
 
+namespace blink {
+class OriginTrialPolicy;
+}
+
 namespace IPC {
 class Message;
 }
@@ -46,7 +50,6 @@ class ContentClient;
 class ContentGpuClient;
 class ContentRendererClient;
 class ContentUtilityClient;
-class OriginTrialPolicy;
 class ServiceManagerConnection;
 struct CdmInfo;
 struct PepperPluginInfo;
@@ -173,7 +176,7 @@ class CONTENT_EXPORT ContentClient {
 
   // Returns the origin trial policy, or nullptr if origin trials are not
   // supported by the embedder.
-  virtual OriginTrialPolicy* GetOriginTrialPolicy();
+  virtual blink::OriginTrialPolicy* GetOriginTrialPolicy();
 
 #if defined(OS_ANDROID)
   // Returns true for clients like Android WebView that uses synchronous

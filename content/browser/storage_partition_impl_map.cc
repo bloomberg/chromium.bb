@@ -44,7 +44,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/origin_trial_policy.h"
 #include "content/public/common/url_constants.h"
 #include "crypto/sha2.h"
 #include "net/url_request/url_request_context.h"

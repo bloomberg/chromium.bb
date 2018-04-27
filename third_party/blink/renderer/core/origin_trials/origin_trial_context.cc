@@ -4,11 +4,11 @@
 
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 
+#include "base/time/time.h"
 #include "third_party/blink/public/common/origin_trials/trial_token.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
-#include "third_party/blink/public/platform/web_trial_token_validator.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
@@ -88,7 +89,7 @@ String ExtractTokenOrQuotedString(const String& header_value, unsigned& pos) {
 
 OriginTrialContext::OriginTrialContext(
     ExecutionContext& context,
-    std::unique_ptr<WebTrialTokenValidator> validator)
+    std::unique_ptr<TrialTokenValidator> validator)
     : Supplement<ExecutionContext>(context),
       trial_token_validator_(std::move(validator)) {}
 
@@ -108,7 +109,9 @@ OriginTrialContext* OriginTrialContext::FromOrCreate(
       Supplement<ExecutionContext>::From<OriginTrialContext>(context);
   if (!origin_trials) {
     origin_trials = new OriginTrialContext(
-        *context, Platform::Current()->CreateTrialTokenValidator());
+        *context, TrialTokenValidator::Policy()
+                      ? std::make_unique<TrialTokenValidator>()
+                      : nullptr);
     Supplement<ExecutionContext>::ProvideTo(*context, origin_trials);
   }
   return origin_trials;
@@ -251,20 +254,22 @@ bool OriginTrialContext::EnableTrialFromToken(const String& token) {
     return false;
   }
 
-  WebSecurityOrigin origin;
-  if (context->IsWorkletGlobalScope()) {
-    origin = WebSecurityOrigin(
-        ToWorkletGlobalScope(context)->DocumentSecurityOrigin());
-  } else {
-    origin = WebSecurityOrigin(context->GetSecurityOrigin());
-  }
+  const SecurityOrigin* origin;
+  if (context->IsWorkletGlobalScope())
+    origin = ToWorkletGlobalScope(context)->DocumentSecurityOrigin();
+  else
+    origin = context->GetSecurityOrigin();
 
-  WebString trial_name;
   bool valid = false;
-  OriginTrialTokenStatus token_result =
-      trial_token_validator_->ValidateToken(token, origin, &trial_name);
+  StringUTF8Adaptor token_string(token);
+  std::string trial_name_str;
+  OriginTrialTokenStatus token_result = trial_token_validator_->ValidateToken(
+      token_string.AsStringPiece(), origin->ToUrlOrigin(), &trial_name_str,
+      base::Time::Now());
   if (token_result == OriginTrialTokenStatus::kSuccess) {
     valid = true;
+    String trial_name =
+        String::FromUTF8(trial_name_str.data(), trial_name_str.size());
     enabled_trials_.insert(trial_name);
     // Also enable any trials implied by this trial
     Vector<AtomicString> implied_trials =

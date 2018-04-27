@@ -33,7 +33,6 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu_stream_constants.h"
-#include "content/common/origin_trials/trial_policy_impl.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/wrapper_shared_url_loader_factory.h"
 #include "content/public/common/content_features.h"
@@ -1291,14 +1290,6 @@ void RendererBlinkPlatformImpl::StopListening(
 
 blink::WebPushProvider* RendererBlinkPlatformImpl::PushProvider() {
   return PushProvider::ThreadSpecificInstance(default_task_runner_);
-}
-
-//------------------------------------------------------------------------------
-
-std::unique_ptr<blink::WebTrialTokenValidator>
-RendererBlinkPlatformImpl::CreateTrialTokenValidator() {
-  return std::make_unique<WebTrialTokenValidatorImpl>(
-      TrialPolicyImpl::CreateValidatorForPolicy());
 }
 
 //------------------------------------------------------------------------------

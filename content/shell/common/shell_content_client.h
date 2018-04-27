@@ -10,7 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/origin_trial_policy.h"
 #include "content/shell/common/shell_origin_trial_policy.h"
 
 namespace content {
@@ -30,7 +29,7 @@ class ShellContentClient : public ContentClient {
   base::RefCountedMemory* GetDataResourceBytes(
       int resource_id) const override;
   gfx::Image& GetNativeImageNamed(int resource_id) const override;
-  OriginTrialPolicy* GetOriginTrialPolicy() override;
+  blink::OriginTrialPolicy* GetOriginTrialPolicy() override;
 
  private:
   ShellOriginTrialPolicy origin_trial_policy_;
