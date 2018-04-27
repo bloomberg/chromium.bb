@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 65 tests; 63 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 68 tests; 64 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Request interface: existence and properties of interface object
 PASS Request interface object length
 PASS Request interface object name
@@ -28,6 +28,8 @@ PASS Request interface: attribute redirect
 PASS Unscopable handled correctly for redirect property on Request
 PASS Request interface: attribute integrity
 PASS Unscopable handled correctly for integrity property on Request
+FAIL Request interface: attribute isReloadNavigation assert_true: The prototype object must have a property "isReloadNavigation" expected true got false
+PASS Unscopable handled correctly for isReloadNavigation property on Request
 PASS Request interface: operation clone()
 PASS Unscopable handled correctly for clone() on Request
 FAIL Request interface: attribute body assert_true: The prototype object must have a property "body" expected true got false
@@ -57,6 +59,7 @@ PASS Request interface: new Request("") must inherit property "credentials" with
 PASS Request interface: new Request("") must inherit property "cache" with the proper type
 PASS Request interface: new Request("") must inherit property "redirect" with the proper type
 PASS Request interface: new Request("") must inherit property "integrity" with the proper type
+FAIL Request interface: new Request("") must inherit property "isReloadNavigation" with the proper type assert_inherits: property "isReloadNavigation" not found in prototype chain
 PASS Request interface: new Request("") must inherit property "clone()" with the proper type
 FAIL Request interface: new Request("") must inherit property "body" with the proper type assert_inherits: property "body" not found in prototype chain
 PASS Request interface: new Request("") must inherit property "bodyUsed" with the proper type
