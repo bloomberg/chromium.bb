@@ -26,6 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -451,7 +452,9 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
   }
 
   auto proxy = base::MakeRefCounted<WebRequestProxyingURLLoaderFactory>(
-      frame->GetProcess()->GetBrowserContext(), info_map_);
+      frame->GetProcess()->GetBrowserContext(),
+      frame->GetProcess()->GetBrowserContext()->GetResourceContext(),
+      info_map_);
   proxies_.emplace(proxy.get(), proxy);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

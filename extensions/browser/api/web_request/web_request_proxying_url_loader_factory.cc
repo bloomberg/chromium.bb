@@ -52,7 +52,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::Restart() {
       request_id_, factory_->render_process_id_, factory_->render_frame_id_,
       factory_->navigation_ui_data_ ? factory_->navigation_ui_data_->DeepCopy()
                                     : nullptr,
-      routing_id_, request_);
+      routing_id_, factory_->resource_context_, request_);
 
   auto continuation =
       base::BindRepeating(&InProgressRequest::ContinueToBeforeSendHeaders,
@@ -404,10 +404,12 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError(
 
 WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
     void* browser_context,
+    content::ResourceContext* resource_context,
     InfoMap* info_map)
     : RefCountedDeleteOnSequence(content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO)),
       browser_context_(browser_context),
+      resource_context_(resource_context),
       info_map_(info_map) {}
 
 void WebRequestProxyingURLLoaderFactory::StartProxying(
