@@ -45,6 +45,11 @@ class MockAcceleratedVideoDecoder : public AcceleratedVideoDecoder {
   ~MockAcceleratedVideoDecoder() override = default;
 
   MOCK_METHOD3(SetStream, void(int32_t id, const uint8_t* ptr, size_t size));
+  MOCK_METHOD4(SetEncryptedStream,
+               void(int32_t id,
+                    const uint8_t* ptr,
+                    size_t size,
+                    const DecryptConfig& config));
   MOCK_METHOD0(Flush, bool());
   MOCK_METHOD0(Reset, void());
   MOCK_METHOD0(Decode, DecodeResult());

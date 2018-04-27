@@ -448,6 +448,13 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
         RETURN_AND_NOTIFY_ON_FAILURE(false, "Error decoding stream",
                                      PLATFORM_FAILURE, );
         return;
+
+      case AcceleratedVideoDecoder::kNoKey:
+        NOTREACHED() << "Should not reach here unless this class accepts "
+                        "encrypted streams.";
+        RETURN_AND_NOTIFY_ON_FAILURE(false, "Error decoding stream",
+                                     PLATFORM_FAILURE, );
+        return;
     }
   }
 }

@@ -36,6 +36,14 @@ void VP9Decoder::SetStream(int32_t id, const uint8_t* ptr, size_t size) {
   parser_.SetStream(ptr, size);
 }
 
+void VP9Decoder::SetEncryptedStream(int32_t id,
+                                    const uint8_t* ptr,
+                                    size_t size,
+                                    const DecryptConfig& decrypt_config) {
+  state_ = kError;
+  NOTIMPLEMENTED();
+}
+
 bool VP9Decoder::Flush() {
   DVLOG(2) << "Decoder flush";
   Reset();

@@ -38,6 +38,14 @@ void VP8Decoder::SetStream(int32_t id, const uint8_t* ptr, size_t size) {
   frame_size_ = size;
 }
 
+void VP8Decoder::SetEncryptedStream(int32_t id,
+                                    const uint8_t* ptr,
+                                    size_t size,
+                                    const DecryptConfig& decrypt_config) {
+  state_ = kError;
+  NOTIMPLEMENTED();
+}
+
 void VP8Decoder::Reset() {
   curr_pic_ = nullptr;
   curr_frame_hdr_ = nullptr;
