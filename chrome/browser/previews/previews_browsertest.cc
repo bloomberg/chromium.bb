@@ -142,15 +142,16 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
 
 // Previews InfoBar (which these tests triggers) does not work on Mac.
 // See crbug.com/782322 for detail.
-// Also occasional flakes on win7 (crbug.com/789542).
-#if defined(OS_MACOSX) || defined(OS_WIN)
+// Also occasional flakes on win7 (crbug.com/789542) and Ubuntu 16.04
+// (crbug.com/831838)
+#if defined(OS_ANDROID)
 #define MAYBE_NoScriptPreviewsEnabled DISABLED_NoScriptPreviewsEnabled
 #define MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps \
-  DISABLED_NoScriptPreviewsEnabledHttpRedirectToHttps
+  NoScriptPreviewsEnabledHttpRedirectToHttps
 #else
 #define MAYBE_NoScriptPreviewsEnabled NoScriptPreviewsEnabled
 #define MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps \
-  NoScriptPreviewsEnabledHttpRedirectToHttps
+  DISABLED_NoScriptPreviewsEnabledHttpRedirectToHttps
 #endif
 
 // Loads a webpage that has both script and noscript tags and also requests
@@ -246,13 +247,14 @@ class PreviewsOptimizationGuideBrowserTest : public PreviewsBrowserTest {
 
 // Previews InfoBar (which this test triggers) does not work on Mac.
 // See crbug.com/782322 for detail.
-// Also occasional flakes on win7 (crbug.com/789948).
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_NoScriptPreviewsEnabledByWhitelist \
-  DISABLED_NoScriptPreviewsEnabledByWhitelist
-#else
+// Also occasional flakes on win7 (crbug.com/789948) and Ubuntu 16.04
+// (crbug.com/831838)
+#if defined(OS_ANDROID)
 #define MAYBE_NoScriptPreviewsEnabledByWhitelist \
   NoScriptPreviewsEnabledByWhitelist
+#else
+#define MAYBE_NoScriptPreviewsEnabledByWhitelist \
+  DISABLED_NoScriptPreviewsEnabledByWhitelist
 #endif
 
 IN_PROC_BROWSER_TEST_F(PreviewsOptimizationGuideBrowserTest,
