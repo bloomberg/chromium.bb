@@ -8,6 +8,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/cdm_factory.h"
 #include "media/cdm/cdm_adapter.h"
+#include "media/cdm/cdm_module.h"
 #include "url/origin.h"
 
 namespace media {
@@ -37,6 +38,15 @@ void CdmAdapterFactory::Create(
     return;
   }
 
+  CdmAdapter::CreateCdmFunc create_cdm_func =
+      CdmModule::GetInstance()->GetCreateCdmFunc();
+  if (!create_cdm_func) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(cdm_created_cb, nullptr, "CreateCdmFunc not available."));
+    return;
+  }
+
   std::unique_ptr<CdmAuxiliaryHelper> cdm_helper = helper_creation_cb_.Run();
   if (!cdm_helper) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -45,7 +55,7 @@ void CdmAdapterFactory::Create(
     return;
   }
 
-  CdmAdapter::Create(key_system, security_origin, cdm_config,
+  CdmAdapter::Create(key_system, security_origin, cdm_config, create_cdm_func,
                      std::move(cdm_helper), session_message_cb,
                      session_closed_cb, session_keys_change_cb,
                      session_expiration_update_cb, cdm_created_cb);

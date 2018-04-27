@@ -14,12 +14,6 @@ MockCdmAuxiliaryHelper::~MockCdmAuxiliaryHelper() = default;
 
 void MockCdmAuxiliaryHelper::SetFileReadCB(FileReadCB file_read_cb) {}
 
-cdm::FileIO* MockCdmAuxiliaryHelper::CreateCdmFileIO(
-    cdm::FileIOClient* client) {
-  NOTREACHED();
-  return nullptr;
-}
-
 cdm::Buffer* MockCdmAuxiliaryHelper::CreateCdmBuffer(size_t capacity) {
   return allocator_->CreateCdmBuffer(capacity);
 }

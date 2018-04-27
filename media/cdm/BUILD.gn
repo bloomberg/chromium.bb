@@ -160,7 +160,6 @@ source_set("unit_tests") {
 
   data_deps = []
 
-  # If ExternalClearKey is built, we can test CdmAdapter.
   if (enable_library_cdms) {
     sources += [
       "cdm_adapter_unittest.cc",
@@ -179,6 +178,8 @@ source_set("unit_tests") {
     deps += [
       ":cdm_api",
       ":cdm_paths",
+      "//media/cdm/library_cdm:cdm_host_proxy",
+      "//media/cdm/library_cdm:test_support",
     ]
   }
 
