@@ -35,12 +35,11 @@ class MockIndexedDBFactory : public IndexedDBFactory {
            const url::Origin& origin,
            const base::FilePath& data_directory));
   // Googlemock can't deal with move-only types, so *Proxy() is a workaround.
-  virtual void Open(
-      const base::string16& name,
-      std::unique_ptr<IndexedDBPendingConnection> connection,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-      const url::Origin& origin,
-      const base::FilePath& data_directory) {
+  void Open(const base::string16& name,
+            std::unique_ptr<IndexedDBPendingConnection> connection,
+            scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+            const url::Origin& origin,
+            const base::FilePath& data_directory) override {
     OpenProxy(name, connection.get(), request_context_getter, origin,
               data_directory);
   }
@@ -55,18 +54,18 @@ class MockIndexedDBFactory : public IndexedDBFactory {
   MOCK_METHOD2(AbortTransactionsAndCompactDatabaseProxy,
                void(base::OnceCallback<void(leveldb::Status)>* callback,
                     const url::Origin& origin));
-  virtual void AbortTransactionsAndCompactDatabase(
+  void AbortTransactionsAndCompactDatabase(
       base::OnceCallback<void(leveldb::Status)> callback,
-      const url::Origin& origin) {
+      const url::Origin& origin) override {
     base::OnceCallback<void(leveldb::Status)>* callback_ref = &callback;
     AbortTransactionsAndCompactDatabaseProxy(callback_ref, origin);
   }
   MOCK_METHOD2(AbortTransactionsForDatabaseProxy,
                void(base::OnceCallback<void(leveldb::Status)>* callback,
                     const url::Origin& origin));
-  virtual void AbortTransactionsForDatabase(
+  void AbortTransactionsForDatabase(
       base::OnceCallback<void(leveldb::Status)> callback,
-      const url::Origin& origin) {
+      const url::Origin& origin) override {
     base::OnceCallback<void(leveldb::Status)>* callback_ref = &callback;
     AbortTransactionsForDatabaseProxy(callback_ref, origin);
   }
@@ -101,7 +100,7 @@ class MockIndexedDBFactory : public IndexedDBFactory {
                     const base::string16& object_store_name));
 
  protected:
-  virtual ~MockIndexedDBFactory();
+  ~MockIndexedDBFactory() override;
 
   MOCK_METHOD6(
       OpenBackingStore,

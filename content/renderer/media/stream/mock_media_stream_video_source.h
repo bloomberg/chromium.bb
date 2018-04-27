@@ -18,7 +18,7 @@ class MockMediaStreamVideoSource : public MediaStreamVideoSource {
   explicit MockMediaStreamVideoSource(bool respond_to_request_refresh_frame);
   MockMediaStreamVideoSource(const media::VideoCaptureFormat& format,
                              bool respond_to_request_refresh_frame);
-  virtual ~MockMediaStreamVideoSource();
+  ~MockMediaStreamVideoSource() override;
 
   MOCK_METHOD1(DoSetMutedState, void(bool muted_state));
 

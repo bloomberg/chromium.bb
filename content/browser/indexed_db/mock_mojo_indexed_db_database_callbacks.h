@@ -18,7 +18,7 @@ class MockMojoIndexedDBDatabaseCallbacks
     : public ::indexed_db::mojom::DatabaseCallbacks {
  public:
   MockMojoIndexedDBDatabaseCallbacks();
-  ~MockMojoIndexedDBDatabaseCallbacks();
+  ~MockMojoIndexedDBDatabaseCallbacks() override;
 
   ::indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo
   CreateInterfacePtrAndBind();

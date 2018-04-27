@@ -65,7 +65,7 @@ const AudioParameters& TestAudioParameters() {
 class MockAudioMirroringManager : public AudioMirroringManager {
  public:
   MockAudioMirroringManager() : AudioMirroringManager() {}
-  virtual ~MockAudioMirroringManager() {}
+  ~MockAudioMirroringManager() override {}
 
   MOCK_METHOD1(StartMirroring, void(MirroringDestination* destination));
   MOCK_METHOD1(StopMirroring, void(MirroringDestination* destination));
@@ -84,7 +84,7 @@ class MockWebContentsTracker : public WebContentsTracker {
   MOCK_METHOD0(Stop, void());
 
  private:
-  virtual ~MockWebContentsTracker() {}
+  ~MockWebContentsTracker() override {}
 
   DISALLOW_COPY_AND_ASSIGN(MockWebContentsTracker);
 };
@@ -131,9 +131,7 @@ class MockVirtualAudioInputStream : public VirtualAudioInputStream {
             Invoke(&real_, &VirtualAudioInputStream::RemoveInputProvider));
   }
 
-  ~MockVirtualAudioInputStream() {
-    DCHECK(real_stream_is_closed_);
-  }
+  ~MockVirtualAudioInputStream() override { DCHECK(real_stream_is_closed_); }
 
   MOCK_METHOD0(Open, bool());
   MOCK_METHOD1(Start, void(AudioInputStream::AudioInputCallback*));

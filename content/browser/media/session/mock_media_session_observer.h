@@ -13,7 +13,7 @@ namespace content {
 class MockMediaSessionObserver : public MediaSessionObserver {
  public:
   MockMediaSessionObserver(MediaSession* media_session);
-  virtual ~MockMediaSessionObserver() override;
+  ~MockMediaSessionObserver() override;
 
   MOCK_METHOD0(MediaSessionDestroyed, void());
   MOCK_METHOD2(MediaSessionStateChanged,

@@ -44,7 +44,7 @@ ACTION_P(RunClosure, closure) {
 class MockMediaStreamAudioSink final : public MediaStreamAudioSink {
  public:
   MockMediaStreamAudioSink() : MediaStreamAudioSink() {}
-  ~MockMediaStreamAudioSink() = default;
+  ~MockMediaStreamAudioSink() override = default;
 
   MOCK_METHOD1(OnSetFormat, void(const media::AudioParameters& params));
   MOCK_METHOD2(OnData,

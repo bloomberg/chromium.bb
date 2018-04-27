@@ -20,7 +20,7 @@ class MockMojoMediaStreamDispatcherHost
     : public mojom::MediaStreamDispatcherHost {
  public:
   MockMojoMediaStreamDispatcherHost();
-  ~MockMojoMediaStreamDispatcherHost();
+  ~MockMojoMediaStreamDispatcherHost() override;
 
   mojom::MediaStreamDispatcherHostPtr CreateInterfacePtrAndBind();
 

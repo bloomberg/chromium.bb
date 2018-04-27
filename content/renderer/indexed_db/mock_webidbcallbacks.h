@@ -19,7 +19,7 @@ namespace content {
 class MockWebIDBCallbacks : public blink::WebIDBCallbacks {
  public:
   MockWebIDBCallbacks();
-  ~MockWebIDBCallbacks();
+  ~MockWebIDBCallbacks() override;
   MOCK_METHOD1(OnError, void(const blink::WebIDBDatabaseError&));
 
   void OnSuccess(blink::WebIDBKey,

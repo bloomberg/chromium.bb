@@ -100,19 +100,21 @@ class MockPresentationServiceDelegate
 
   // TODO(crbug.com/729950): Use MOCK_METHOD directly once GMock gets the
   // move-only type support.
-  void StartPresentation(const PresentationRequest& request,
-                         PresentationConnectionCallback success_cb,
-                         PresentationConnectionErrorCallback error_cb) {
+  void StartPresentation(
+      const PresentationRequest& request,
+      PresentationConnectionCallback success_cb,
+      PresentationConnectionErrorCallback error_cb) override {
     StartPresentationInternal(request, success_cb, error_cb);
   }
   MOCK_METHOD3(StartPresentationInternal,
                void(const PresentationRequest& request,
                     PresentationConnectionCallback& success_cb,
                     PresentationConnectionErrorCallback& error_cb));
-  void ReconnectPresentation(const PresentationRequest& request,
-                             const std::string& presentation_id,
-                             PresentationConnectionCallback success_cb,
-                             PresentationConnectionErrorCallback error_cb) {
+  void ReconnectPresentation(
+      const PresentationRequest& request,
+      const std::string& presentation_id,
+      PresentationConnectionCallback success_cb,
+      PresentationConnectionErrorCallback error_cb) override {
     ReconnectPresentationInternal(request, presentation_id, success_cb,
                                   error_cb);
   }
@@ -217,7 +219,7 @@ class MockPresentationConnection : public blink::mojom::PresentationConnection {
  public:
   // PresentationConnectionMessage is move-only.
   void OnMessage(PresentationConnectionMessage message,
-                 base::OnceCallback<void(bool)> send_message_cb) {
+                 base::OnceCallback<void(bool)> send_message_cb) override {
     OnMessageInternal(message, send_message_cb);
   }
   MOCK_METHOD2(OnMessageInternal,

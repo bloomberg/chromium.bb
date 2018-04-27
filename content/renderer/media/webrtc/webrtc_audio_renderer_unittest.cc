@@ -41,7 +41,7 @@ const char kInvalidOutputDeviceId[] = "invalid-device";
 class MockAudioRendererSource : public WebRtcAudioRendererSource {
  public:
   MockAudioRendererSource() {}
-  virtual ~MockAudioRendererSource() {}
+  ~MockAudioRendererSource() override {}
   MOCK_METHOD4(RenderData, void(media::AudioBus* audio_bus,
                                 int sample_rate,
                                 int audio_delay_milliseconds,
@@ -99,7 +99,7 @@ class WebRtcAudioRendererTest : public testing::Test,
       SourceType source_type,
       int render_frame_id,
       int session_id,
-      const std::string& device_id) {
+      const std::string& device_id) override {
     mock_sink_ = new media::MockAudioRendererSink(
         device_id,
         device_id == kInvalidOutputDeviceId

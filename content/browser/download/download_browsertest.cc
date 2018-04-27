@@ -126,7 +126,7 @@ class DownloadTestContentBrowserClient : public TestContentBrowserClient {
 class MockDownloadItemObserver : public download::DownloadItem::Observer {
  public:
   MockDownloadItemObserver() {}
-  virtual ~MockDownloadItemObserver() {}
+  ~MockDownloadItemObserver() override {}
 
   MOCK_METHOD1(OnDownloadUpdated, void(download::DownloadItem*));
   MOCK_METHOD1(OnDownloadOpened, void(download::DownloadItem*));
@@ -140,7 +140,7 @@ class MockDownloadManagerObserver : public DownloadManager::Observer {
     manager_ = manager;
     manager->AddObserver(this);
   }
-  virtual ~MockDownloadManagerObserver() {
+  ~MockDownloadManagerObserver() override {
     if (manager_)
       manager_->RemoveObserver(this);
   }
@@ -148,7 +148,7 @@ class MockDownloadManagerObserver : public DownloadManager::Observer {
   MOCK_METHOD2(OnDownloadCreated,
                void(DownloadManager*, download::DownloadItem*));
   MOCK_METHOD1(ModelChanged, void(DownloadManager*));
-  void ManagerGoingDown(DownloadManager* manager) {
+  void ManagerGoingDown(DownloadManager* manager) override {
     DCHECK_EQ(manager_, manager);
     MockManagerGoingDown(manager);
 

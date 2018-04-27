@@ -123,7 +123,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                        base::Unretained(this)));
   }
 
-  void OnStreamStarted(const std::string& label) {
+  void OnStreamStarted(const std::string& label) override {
     MediaStreamDispatcherHost::OnStreamStarted(label);
   }
 

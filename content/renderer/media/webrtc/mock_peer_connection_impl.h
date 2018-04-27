@@ -202,7 +202,7 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   static const char kDummyAnswer[];
 
  protected:
-  virtual ~MockPeerConnectionImpl();
+  ~MockPeerConnectionImpl() override;
 
  private:
   // Used for creating MockSessionDescription.

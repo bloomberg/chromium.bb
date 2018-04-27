@@ -13,7 +13,7 @@ namespace leveldb {
 class MockIterator : public Iterator {
  public:
   MockIterator();
-  ~MockIterator();
+  ~MockIterator() override;
 
   MOCK_CONST_METHOD0(Valid, bool());
 
@@ -32,7 +32,7 @@ class MockIterator : public Iterator {
 class MockLevelDB : public DB {
  public:
   MockLevelDB();
-  ~MockLevelDB();
+  ~MockLevelDB() override;
 
   MOCK_METHOD3(Put,
                Status(const WriteOptions& options,

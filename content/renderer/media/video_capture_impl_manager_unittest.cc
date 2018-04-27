@@ -69,7 +69,9 @@ class MockVideoCaptureImpl : public VideoCaptureImpl,
 
   MOCK_METHOD1(Stop, void(int32_t));
 
-  void Pause(int device_id) { pause_callback_->OnPaused(session_id()); }
+  void Pause(int device_id) override {
+    pause_callback_->OnPaused(session_id());
+  }
 
   void Resume(int32_t device_id,
               int32_t session_id,

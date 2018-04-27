@@ -38,7 +38,7 @@ ACTION_P2(RunClosureThenReturn, closure, ret) {
 class MockPreCloseTask : public PreCloseTask {
  public:
   MockPreCloseTask() {}
-  ~MockPreCloseTask() {}
+  ~MockPreCloseTask() override {}
 
   MOCK_METHOD1(SetMetadata,
                void(std::vector<IndexedDBDatabaseMetadata> const* metadata));
