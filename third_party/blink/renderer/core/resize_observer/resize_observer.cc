@@ -187,8 +187,7 @@ void ResizeObserver::Trace(blink::Visitor* visitor) {
   ContextClient::Trace(visitor);
 }
 
-void ResizeObserver::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+void ResizeObserver::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(callback_);
   ScriptWrappable::TraceWrappers(visitor);
 }

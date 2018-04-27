@@ -192,7 +192,7 @@ void MIDIPort::Trace(blink::Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 
-void MIDIPort::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+void MIDIPort::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(access_);
   EventTargetWithInlineData::TraceWrappers(visitor);
 }

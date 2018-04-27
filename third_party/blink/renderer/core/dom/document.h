@@ -1300,7 +1300,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void Trace(blink::Visitor*) override;
 
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
   AtomicString ConvertLocalName(const AtomicString&);
 

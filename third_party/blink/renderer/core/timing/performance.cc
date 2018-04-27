@@ -716,7 +716,7 @@ void Performance::Trace(blink::Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
 }
 
-void Performance::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+void Performance::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   for (const auto& observer : observers_)
     visitor->TraceWrappers(observer);
   EventTargetWithInlineData::TraceWrappers(visitor);

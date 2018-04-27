@@ -56,7 +56,7 @@ void MojoWatcher::Trace(blink::Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 
-void MojoWatcher::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+void MojoWatcher::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   ScriptWrappable::TraceWrappers(visitor);
   visitor->TraceWrappers(callback_);
 }

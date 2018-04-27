@@ -53,8 +53,7 @@ void ModuleTreeLinker::Trace(blink::Visitor* visitor) {
   SingleModuleClient::Trace(visitor);
 }
 
-void ModuleTreeLinker::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+void ModuleTreeLinker::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(result_);
   SingleModuleClient::TraceWrappers(visitor);
 }

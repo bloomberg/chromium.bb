@@ -87,7 +87,7 @@ void FrameRequestCallbackCollection::Trace(blink::Visitor* visitor) {
 }
 
 void FrameRequestCallbackCollection::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   for (const auto& callback : callbacks_)
     visitor->TraceWrappers(callback);
   for (const auto& callback_to_invoke : callbacks_to_invoke_)
@@ -105,7 +105,7 @@ void FrameRequestCallbackCollection::V8FrameCallback::Trace(
 }
 
 void FrameRequestCallbackCollection::V8FrameCallback::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(callback_);
   FrameRequestCallbackCollection::FrameCallback::TraceWrappers(visitor);
 }

@@ -209,7 +209,7 @@ bool ScriptWrappableMarkingVisitor::AdvanceTracing(
 }
 
 void ScriptWrappableMarkingVisitor::MarkWrapperHeader(
-    HeapObjectHeader* header) const {
+    HeapObjectHeader* header) {
   DCHECK(!header->IsWrapperHeaderMarked());
   // Verify that no compactable & movable objects are slated for
   // lazy unmarking.
@@ -243,7 +243,7 @@ void ScriptWrappableMarkingVisitor::WriteBarrier(
 }
 
 void ScriptWrappableMarkingVisitor::Visit(
-    const TraceWrapperV8Reference<v8::Value>& traced_wrapper) const {
+    const TraceWrapperV8Reference<v8::Value>& traced_wrapper) {
   // The write barrier may try to mark a wrapper because cleanup is still
   // delayed. Bail out in this case. We also allow unconditional marking which
   // requires us to bail out here when tracing is not in progress.
@@ -253,7 +253,7 @@ void ScriptWrappableMarkingVisitor::Visit(
 }
 
 void ScriptWrappableMarkingVisitor::Visit(
-    const TraceWrapperDescriptor& wrapper_descriptor) const {
+    const TraceWrapperDescriptor& wrapper_descriptor) {
   HeapObjectHeader* header =
       HeapObjectHeader::FromPayload(wrapper_descriptor.base_object_payload);
   if (header->IsWrapperHeaderMarked())
@@ -271,7 +271,7 @@ void ScriptWrappableMarkingVisitor::Visit(
 
 void ScriptWrappableMarkingVisitor::Visit(
     DOMWrapperMap<ScriptWrappable>* wrapper_map,
-    const ScriptWrappable* key) const {
+    const ScriptWrappable* key) {
   wrapper_map->MarkWrapper(const_cast<ScriptWrappable*>(key));
 }
 

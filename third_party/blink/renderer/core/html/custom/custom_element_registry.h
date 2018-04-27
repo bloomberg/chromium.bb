@@ -69,7 +69,7 @@ class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
   void Entangle(V0CustomElementRegistrationContext*);
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  private:
   friend class CustomElementRegistryTest;

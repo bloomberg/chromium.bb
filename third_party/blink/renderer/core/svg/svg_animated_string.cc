@@ -24,8 +24,7 @@ void SVGAnimatedString::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-void SVGAnimatedString::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+void SVGAnimatedString::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   SVGAnimatedProperty<SVGString>::TraceWrappers(visitor);
   ScriptWrappable::TraceWrappers(visitor);
 }

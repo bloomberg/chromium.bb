@@ -20,7 +20,7 @@ class PLATFORM_EXPORT TraceWrapperBase {
   ~TraceWrapperBase() = default;
   virtual bool IsScriptWrappable() const { return false; }
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const = 0;
+  virtual void TraceWrappers(ScriptWrappableVisitor*) const = 0;
 
   // Human-readable name of this object. The DevTools heap snapshot uses
   // this method to show the object.

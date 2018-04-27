@@ -442,7 +442,7 @@ void DOMWindow::Trace(blink::Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
 }
 
-void DOMWindow::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+void DOMWindow::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(location_);
   EventTargetWithInlineData::TraceWrappers(visitor);
 }

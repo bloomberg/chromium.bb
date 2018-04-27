@@ -32,7 +32,7 @@ class PLATFORM_EXPORT TraceWrapperV8String final : public TraceWrapperBase {
   void Concat(v8::Isolate*, const String&);
   String Flatten(v8::Isolate*) const;
 
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappers(string_);
   }
   const char* NameInHeapSnapshot() const override {

@@ -151,11 +151,11 @@ TEST(ScriptWrappableMarkingVisitorTest, OilpanClearsHeadersWhenObjectDied) {
           ->GetScriptWrappableMarkingVisitor();
   visitor->TracePrologue();
   auto* header = HeapObjectHeader::FromPayload(object);
-  visitor->HeadersToUnmark()->push_back(header);
+  visitor->headers_to_unmark_.push_back(header);
 
   PreciselyCollectGarbage();
 
-  EXPECT_FALSE(visitor->HeadersToUnmark()->Contains(header));
+  EXPECT_FALSE(visitor->headers_to_unmark_.Contains(header));
   visitor->AbortTracing();
 }
 
@@ -248,7 +248,7 @@ class HandleContainer
   virtual ~HandleContainer() = default;
 
   void Trace(blink::Visitor* visitor) {}
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappers(handle_.Cast<v8::Value>());
   }
   const char* NameInHeapSnapshot() const override { return "HandleContainer"; }
@@ -273,7 +273,7 @@ class InterceptingScriptWrappableMarkingVisitor
     delete marked_wrappers_;
   }
 
-  void Visit(const TraceWrapperV8Reference<v8::Value>&) const override {
+  void Visit(const TraceWrapperV8Reference<v8::Value>&) override {
     *marked_wrappers_ += 1;
     // Do not actually mark this visitor, as this would call into v8, which
     // would require executing an actual GC.
@@ -451,7 +451,7 @@ class Mixin : public GarbageCollectedMixin {
   explicit Mixin(DeathAwareScriptWrappable* wrapper_in_mixin)
       : wrapper_in_mixin_(wrapper_in_mixin) {}
 
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const {
     visitor->TraceWrappers(wrapper_in_mixin_);
   }
 
@@ -476,7 +476,7 @@ class Base : public blink::GarbageCollected<Base>,
     return new Base(wrapper_in_base, wrapper_in_mixin);
   }
 
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappers(wrapper_in_base_);
     Mixin::TraceWrappers(visitor);
   }

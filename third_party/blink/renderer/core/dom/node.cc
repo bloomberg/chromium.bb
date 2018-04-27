@@ -2775,7 +2775,7 @@ void Node::Trace(blink::Visitor* visitor) {
   EventTarget::Trace(visitor);
 }
 
-void Node::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+void Node::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(parent_or_shadow_host_node_);
   visitor->TraceWrappers(previous_);
   visitor->TraceWrappers(next_);

@@ -39,7 +39,7 @@ void NavigatorNFC::Trace(blink::Visitor* visitor) {
   Supplement<Navigator>::Trace(visitor);
 }
 
-void NavigatorNFC::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+void NavigatorNFC::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(nfc_);
   Supplement<Navigator>::TraceWrappers(visitor);
 }

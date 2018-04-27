@@ -117,7 +117,7 @@ class WebGLFramebuffer final : public WebGLContextObject {
   GLenum GetReadBuffer() const { return read_buffer_; }
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override { return "WebGLFramebuffer"; }
 
  protected:

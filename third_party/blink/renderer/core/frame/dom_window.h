@@ -51,7 +51,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
   // GarbageCollectedFinalized overrides:
   void Trace(blink::Visitor*) override;
 
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
   virtual bool IsLocalDOMWindow() const = 0;
   virtual bool IsRemoteDOMWindow() const = 0;

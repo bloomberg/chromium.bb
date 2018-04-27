@@ -72,7 +72,7 @@ class SVGPropertyTearOffBase : public ScriptWrappable {
     attribute_name_ = attribute_name;
   }
 
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappersWithManualWriteBarrier(context_element_.Get());
     ScriptWrappable::TraceWrappers(visitor);
   }
@@ -114,7 +114,7 @@ class SVGPropertyTearOff : public SVGPropertyTearOffBase {
     SVGPropertyTearOffBase::Trace(visitor);
   }
 
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
     SVGPropertyTearOffBase::TraceWrappers(visitor);
   }
 

@@ -53,7 +53,7 @@ class SVGAnimatedEnumerationBase
     ScriptWrappable::Trace(visitor);
   }
 
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
     SVGAnimatedProperty<SVGEnumerationBase>::TraceWrappers(visitor);
     ScriptWrappable::TraceWrappers(visitor);
   }

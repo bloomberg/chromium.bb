@@ -43,7 +43,7 @@ void GeoNotifier::Trace(blink::Visitor* visitor) {
   visitor->Trace(fatal_error_);
 }
 
-void GeoNotifier::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+void GeoNotifier::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(success_callback_);
   visitor->TraceWrappers(error_callback_);
 }

@@ -223,7 +223,7 @@ void ModuleScript::Trace(blink::Visitor* visitor) {
   visitor->Trace(settings_object_);
   Script::Trace(visitor);
 }
-void ModuleScript::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+void ModuleScript::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   // TODO(mlippautz): Support TraceWrappers(const
   // TraceWrapperV8Reference<v8::Module>&) to remove the cast.
   visitor->TraceWrappers(record_.UnsafeCast<v8::Value>());

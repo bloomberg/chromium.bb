@@ -116,7 +116,7 @@ void DOMWrapperWorld::AllWorldsInCurrentThread(
 }
 
 void DOMWrapperWorld::TraceWrappers(const ScriptWrappable* script_wrappable,
-                                    const ScriptWrappableVisitor* visitor) {
+                                    ScriptWrappableVisitor* visitor) {
   // Marking for worlds other than the main world.
   DCHECK(ThreadState::Current()->GetIsolate());
   for (DOMWrapperWorld* world : GetWorldMap().Values()) {

@@ -93,7 +93,7 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
   void SendPings(const KURL& destination_url) const;
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  protected:
   HTMLAnchorElement(const QualifiedName&, Document&);

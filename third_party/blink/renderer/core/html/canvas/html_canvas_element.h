@@ -223,7 +223,7 @@ class CORE_EXPORT HTMLCanvasElement final
                            unsigned resource_id) override;
   void Trace(blink::Visitor*) override;
 
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
   void CreateCanvas2DLayerBridgeForTesting(std::unique_ptr<Canvas2DLayerBridge>,
                                            const IntSize&);

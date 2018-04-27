@@ -154,8 +154,7 @@ void CSSPaintDefinition::MaybeCreatePaintInstance() {
   did_call_constructor_ = true;
 }
 
-void CSSPaintDefinition::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+void CSSPaintDefinition::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(constructor_.Cast<v8::Value>());
   visitor->TraceWrappers(paint_.Cast<v8::Value>());
   visitor->TraceWrappers(instance_.Cast<v8::Value>());

@@ -44,7 +44,7 @@ class DeathAwareScriptWrappable : public ScriptWrappable {
     ScriptWrappable::Trace(visitor);
   }
 
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappers(wrapped_dependency_);
     for (auto dep : wrapped_vector_dependency_) {
       visitor->TraceWrappers(dep);

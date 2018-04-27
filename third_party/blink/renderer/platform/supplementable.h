@@ -112,7 +112,7 @@ class Supplementable;
 // support wrapper-tracing.
 class PLATFORM_EXPORT TraceWrapperBaseForSupplement {
  public:
-  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {}
+  virtual void TraceWrappers(ScriptWrappableVisitor* visitor) const {}
 };
 
 template <typename T>
@@ -205,7 +205,7 @@ class Supplementable : public GarbageCollectedMixin {
   }
 
   void Trace(blink::Visitor* visitor) override { visitor->Trace(supplements_); }
-  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  virtual void TraceWrappers(ScriptWrappableVisitor* visitor) const {
     for (const auto& supplement : supplements_.Values())
       visitor->TraceWrappers(supplement);
   }

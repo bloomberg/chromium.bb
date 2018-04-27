@@ -156,7 +156,7 @@ void MutationObserverRegistration::Trace(blink::Visitor* visitor) {
 }
 
 void MutationObserverRegistration::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(observer_);
 }
 

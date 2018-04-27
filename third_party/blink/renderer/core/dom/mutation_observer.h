@@ -95,7 +95,7 @@ class CORE_EXPORT MutationObserver final
     virtual void Deliver(const MutationRecordVector& records,
                          MutationObserver&) = 0;
     virtual void Trace(blink::Visitor* visitor) {}
-    void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {}
+    void TraceWrappers(ScriptWrappableVisitor* visitor) const override {}
     const char* NameInHeapSnapshot() const override {
       return "MutationObserver::Delegate";
     }
@@ -128,7 +128,7 @@ class CORE_EXPORT MutationObserver final
   EAGERLY_FINALIZE();
   void Trace(blink::Visitor*) override;
 
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  private:
   struct ObserverLessThan;

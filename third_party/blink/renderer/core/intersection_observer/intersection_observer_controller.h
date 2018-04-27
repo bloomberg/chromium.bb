@@ -37,7 +37,7 @@ class IntersectionObserverController
   void RemoveTrackedObserversForRoot(const Node&);
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "IntersectionObserverController";
   }

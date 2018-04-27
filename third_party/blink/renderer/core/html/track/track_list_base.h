@@ -85,7 +85,7 @@ class TrackListBase : public EventTargetWithInlineData {
     EventTargetWithInlineData::Trace(visitor);
   }
 
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
     for (auto track : tracks_) {
       visitor->TraceWrappers(track);
     }

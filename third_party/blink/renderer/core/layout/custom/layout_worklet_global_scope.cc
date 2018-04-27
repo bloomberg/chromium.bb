@@ -163,7 +163,7 @@ void LayoutWorkletGlobalScope::Trace(blink::Visitor* visitor) {
 }
 
 void LayoutWorkletGlobalScope::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   for (auto definition : layout_definitions_)
     visitor->TraceWrappers(definition.value);
   MainThreadWorkletGlobalScope::TraceWrappers(visitor);

@@ -17,7 +17,7 @@ participate in wrapper tracing.
 find other wrappers that this object should keep alive.
 3. Use `TraceWrapperV8Reference<T>` to annotate references to V8 that this
 object should keep alive.
-4. Declare a `virtual void TraceWrappers(const ScriptWrappableVisitor*) const`
+4. Declare a `virtual void TraceWrappers(ScriptWrappableVisitor*) const`
 method to trace other wrappers.
 5. Define the method and trace all fields that received a wrapper tracing type
 in (1) and (2) using `visitor->TraceWrappers(<field_>)` in the body.
@@ -34,7 +34,7 @@ class SomeDOMObject : public ScriptWrappable {          // (1)
 
  public:
   virtual void TraceWrappers(
-      const ScriptWrappableVisitor*) const;             // (4)
+      ScriptWrappableVisitor*) const;             // (4)
 
  private:
   TraceWrapperMember<OtherWrappable> other_wrappable_;  // (2)
@@ -44,7 +44,7 @@ class SomeDOMObject : public ScriptWrappable {          // (1)
 };
 
 void SomeDOMObject::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {      // (5)
+    ScriptWrappableVisitor* visitor) const {      // (5)
   visitor->TraceWrappers(other_wrappable_);             // (5)
   visitor->TraceWrappers(v8object_);                    // (5)
 }
@@ -112,7 +112,7 @@ class SomeDOMObject : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  virtual void TraceWrappers(ScriptWrappableVisitor*) const;
 
  private:
   Member<OtherWrappable> other_wrappable_;
@@ -120,7 +120,7 @@ class SomeDOMObject : public ScriptWrappable {
 };
 
 void SomeDOMObject::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(other_wrappable_);
 }
 ```
@@ -147,7 +147,7 @@ class SomeDOMObject : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  virtual void TraceWrappers(ScriptWrappableVisitor*) const;
 
  private:
   TraceWrapperMember<OtherWrappable> other_wrappable_;
@@ -155,7 +155,7 @@ class SomeDOMObject : public ScriptWrappable {
 };
 
 void SomeDOMObject::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(other_wrappable_);
 }
 ```
@@ -176,14 +176,14 @@ class SomeDOMObject : public ScriptWrappable {
  public:
   // ...
   void AppendNewValue(OtherWrappable* newValue);
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  virtual void TraceWrappers(ScriptWrappableVisitor*) const;
 
  private:
   HeapVector<TraceWrapperMember<OtherWrappable>> other_wrappables_;
 };
 
 void SomeDOMObject::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   for (auto other : other_wrappables_)
     visitor->TraceWrappers(other);
 }
@@ -253,13 +253,13 @@ class ManualWrappable : public ScriptWrappable {
     SriptWrappableVisitor::WriteBarrier(other_wrappable_);
   }
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  virtual void TraceWrappers(ScriptWrappableVisitor*) const;
  private:
   Member<OtherWrappable>> other_wrappable_;
 };
 
 void ManualWrappable::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappersWithManualWriteBarrier(other_wrappable_);
 }
 ```

@@ -221,7 +221,7 @@ void WebGLRenderingContext::Trace(blink::Visitor* visitor) {
 }
 
 void WebGLRenderingContext::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   // Extensions are managed base WebGLRenderingContextBase.
   WebGLRenderingContextBase::TraceWrappers(visitor);
 }

@@ -56,7 +56,7 @@ class RegisteredEventListener {
         passive_specified_(options.PassiveSpecified()) {}
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(callback_); }
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const {
     visitor->TraceWrappers(callback_);
   }
 

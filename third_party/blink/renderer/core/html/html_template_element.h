@@ -52,7 +52,7 @@ class CORE_EXPORT HTMLTemplateElement final : public HTMLElement {
 
   DocumentFragment* content() const;
 
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  private:
   void CloneNonAttributePropertiesFrom(const Element&,

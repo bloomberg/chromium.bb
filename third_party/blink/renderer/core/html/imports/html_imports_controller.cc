@@ -148,7 +148,7 @@ void HTMLImportsController::Trace(blink::Visitor* visitor) {
 }
 
 void HTMLImportsController::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(root_);
 }
 

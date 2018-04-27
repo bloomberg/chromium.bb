@@ -39,7 +39,7 @@ class CORE_EXPORT WorkerAnimationFrameProvider
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(callback_collection_); }
 
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const {
     visitor->TraceWrappers(callback_collection_);
   }
 

@@ -126,7 +126,7 @@ void V8EmbedderGraphBuilder::VisitPersistentHandle(
 }
 
 void V8EmbedderGraphBuilder::Visit(
-    const TraceWrapperV8Reference<v8::Value>& traced_wrapper) const {
+    const TraceWrapperV8Reference<v8::Value>& traced_wrapper) {
   const v8::PersistentBase<v8::Value>* value = &traced_wrapper.Get();
   // Add an edge from the current parent to the V8 object.
   v8::Local<v8::Value> v8_value = v8::Local<v8::Value>::New(isolate_, *value);
@@ -136,7 +136,7 @@ void V8EmbedderGraphBuilder::Visit(
 }
 
 void V8EmbedderGraphBuilder::Visit(
-    const TraceWrapperDescriptor& wrapper_descriptor) const {
+    const TraceWrapperDescriptor& wrapper_descriptor) {
   // Add an edge from the current parent to this object.
   // Also push the object to the worklist in order to process its members.
   const void* traceable = wrapper_descriptor.base_object_payload;
@@ -148,7 +148,7 @@ void V8EmbedderGraphBuilder::Visit(
 }
 
 void V8EmbedderGraphBuilder::Visit(DOMWrapperMap<ScriptWrappable>* wrapper_map,
-                                   const ScriptWrappable* key) const {
+                                   const ScriptWrappable* key) {
   // Add an edge from the current parent to the V8 object.
   v8::Local<v8::Value> v8_value =
       wrapper_map->NewLocal(isolate_, const_cast<ScriptWrappable*>(key));

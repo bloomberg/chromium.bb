@@ -144,7 +144,7 @@ class DOMDataStore {
   }
 
   void TraceWrappers(const ScriptWrappable* script_wrappable,
-                     const ScriptWrappableVisitor* visitor) {
+                     ScriptWrappableVisitor* visitor) {
     visitor->TraceWrappers(&wrapper_map_.value(), script_wrappable);
   }
 

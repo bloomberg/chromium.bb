@@ -72,7 +72,7 @@ class HTMLImportsController final
 
   void Dispose();
 
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "HTMLImportsController";
   }

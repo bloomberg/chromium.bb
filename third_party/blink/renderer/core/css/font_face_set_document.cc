@@ -207,8 +207,7 @@ void FontFaceSetDocument::Trace(blink::Visitor* visitor) {
   FontFaceSet::Trace(visitor);
 }
 
-void FontFaceSetDocument::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+void FontFaceSetDocument::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   FontFaceSet::TraceWrappers(visitor);
   Supplement<Document>::TraceWrappers(visitor);
 }

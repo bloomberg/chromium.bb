@@ -149,7 +149,7 @@ void WebGLTransformFeedback::Trace(blink::Visitor* visitor) {
 }
 
 void WebGLTransformFeedback::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   for (auto& buf : bound_indexed_transform_feedback_buffers_) {
     visitor->TraceWrappers(buf);
   }

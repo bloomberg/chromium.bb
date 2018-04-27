@@ -62,7 +62,7 @@ class PLATFORM_EXPORT ScriptWrappableVisitor {
   // for some reason (e.g., unions using raw pointers), see
   // |TraceWrappersWithManualWriteBarrier()| below.
   template <typename T>
-  void TraceWrappers(const TraceWrapperMember<T>& traceable) const {
+  void TraceWrappers(const TraceWrapperMember<T>& traceable) {
     static_assert(sizeof(T), "T must be fully defined");
     Visit(traceable.Get());
   }
@@ -70,14 +70,14 @@ class PLATFORM_EXPORT ScriptWrappableVisitor {
   // Enable partial tracing of objects. This is used when tracing interior
   // objects without their own header.
   template <typename T>
-  void TraceWrappers(const T& traceable) const {
+  void TraceWrappers(const T& traceable) {
     static_assert(sizeof(T), "T must be fully defined");
     traceable.TraceWrappers(this);
   }
 
   // Only called from automatically generated bindings code.
   template <typename T>
-  void TraceWrappersFromGeneratedCode(const T* traceable) const {
+  void TraceWrappersFromGeneratedCode(const T* traceable) {
     Visit(traceable);
   }
 
@@ -87,23 +87,23 @@ class PLATFORM_EXPORT ScriptWrappableVisitor {
   // assignments to the field. Otherwise, the objects may be collected
   // prematurely.
   template <typename T>
-  void TraceWrappersWithManualWriteBarrier(const T* traceable) const {
+  void TraceWrappersWithManualWriteBarrier(const T* traceable) {
     Visit(traceable);
   }
 
   template <typename V8Type>
-  void TraceWrappers(const TraceWrapperV8Reference<V8Type>& v8reference) const {
+  void TraceWrappers(const TraceWrapperV8Reference<V8Type>& v8reference) {
     Visit(v8reference.template Cast<v8::Value>());
   }
 
   // Trace wrappers in non-main worlds.
   void TraceWrappers(DOMWrapperMap<ScriptWrappable>*,
-                     const ScriptWrappable* key) const;
+                     const ScriptWrappable* key);
 
-  virtual void DispatchTraceWrappers(const TraceWrapperBase*) const;
+  virtual void DispatchTraceWrappers(TraceWrapperBase*);
   template <typename T>
-  void DispatchTraceWrappers(const Supplement<T>* traceable) const {
-    const TraceWrapperBaseForSupplement* base = traceable;
+  void DispatchTraceWrappers(Supplement<T>* traceable) {
+    TraceWrapperBaseForSupplement* base = traceable;
     DispatchTraceWrappersForSupplement(base);
   }
   // Catch all handlers needed because of mixins except for Supplement<T>.
@@ -112,10 +112,10 @@ class PLATFORM_EXPORT ScriptWrappableVisitor {
  protected:
   // The visitor interface. Derived visitors should override this
   // function to visit V8 references and ScriptWrappables.
-  virtual void Visit(const TraceWrapperV8Reference<v8::Value>&) const = 0;
-  virtual void Visit(const TraceWrapperDescriptor&) const = 0;
+  virtual void Visit(const TraceWrapperV8Reference<v8::Value>&) = 0;
+  virtual void Visit(const TraceWrapperDescriptor&) = 0;
   virtual void Visit(DOMWrapperMap<ScriptWrappable>*,
-                     const ScriptWrappable* key) const = 0;
+                     const ScriptWrappable* key) = 0;
 
   template <typename T>
   static TraceWrapperDescriptor WrapperDescriptorFor(const T* traceable) {
@@ -134,7 +134,7 @@ class PLATFORM_EXPORT ScriptWrappableVisitor {
 
   // Helper method to invoke the virtual Visit method with wrapper descriptor.
   template <typename T>
-  void Visit(const T* traceable) const {
+  void Visit(const T* traceable) {
     static_assert(sizeof(T), "T must be fully defined");
     if (!traceable)
       return;
@@ -144,8 +144,7 @@ class PLATFORM_EXPORT ScriptWrappableVisitor {
   // Supplement-specific implementation of DispatchTraceWrappers.  The suffix of
   // "ForSupplement" is necessary not to make this member function a candidate
   // of overload resolutions.
-  void DispatchTraceWrappersForSupplement(
-      const TraceWrapperBaseForSupplement*) const;
+  void DispatchTraceWrappersForSupplement(TraceWrapperBaseForSupplement*);
 };
 
 }  // namespace blink

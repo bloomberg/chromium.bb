@@ -14,8 +14,8 @@ namespace blink {
 // is also marked.
 class ScriptWrappableVisitorVerifier final : public ScriptWrappableVisitor {
  protected:
-  void Visit(const TraceWrapperV8Reference<v8::Value>&) const final {}
-  void Visit(const TraceWrapperDescriptor& descriptor) const final {
+  void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
+  void Visit(const TraceWrapperDescriptor& descriptor) final {
     if (!HeapObjectHeader::FromPayload(descriptor.base_object_payload)
              ->IsWrapperHeaderMarked()) {
       // If this branch is hit, it means that a white (not discovered by
@@ -33,7 +33,7 @@ class ScriptWrappableVisitorVerifier final : public ScriptWrappableVisitor {
     }
   }
   void Visit(DOMWrapperMap<ScriptWrappable>*,
-             const ScriptWrappable* key) const final {}
+             const ScriptWrappable* key) final {}
 };
 }
 #endif

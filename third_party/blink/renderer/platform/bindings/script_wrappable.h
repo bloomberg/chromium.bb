@@ -60,7 +60,7 @@ class PLATFORM_EXPORT ScriptWrappable
   virtual void Trace(blink::Visitor*) {}
 
   // Traces wrapper objects corresponding to this ScriptWrappable in all worlds.
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
   bool IsScriptWrappable() const override { return true; }
 

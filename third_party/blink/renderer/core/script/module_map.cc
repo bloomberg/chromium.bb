@@ -23,7 +23,7 @@ class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
   ~Entry() override {}
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override { return "ModuleMap::Entry"; }
 
   // Notify fetched |m_moduleScript| to the client asynchronously.
@@ -59,8 +59,7 @@ void ModuleMap::Entry::Trace(blink::Visitor* visitor) {
   visitor->Trace(clients_);
 }
 
-void ModuleMap::Entry::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+void ModuleMap::Entry::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(module_script_);
 }
 
@@ -108,7 +107,7 @@ void ModuleMap::Trace(blink::Visitor* visitor) {
   visitor->Trace(modulator_);
 }
 
-void ModuleMap::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+void ModuleMap::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   for (const auto& it : map_)
     visitor->TraceWrappers(it.value);
 }

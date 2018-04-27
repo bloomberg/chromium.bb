@@ -77,7 +77,7 @@ class SVGAnimatedPropertyBase : public GarbageCollectedMixin {
   bool IsSpecified() const;
 
   void Trace(blink::Visitor* visitor) override {}
-  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  virtual void TraceWrappers(ScriptWrappableVisitor* visitor) const {
     visitor->TraceWrappersWithManualWriteBarrier(context_element_.Get());
   }
 

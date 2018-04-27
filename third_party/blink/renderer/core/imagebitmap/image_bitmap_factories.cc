@@ -262,7 +262,7 @@ void ImageBitmapFactories::Trace(blink::Visitor* visitor) {
 }
 
 void ImageBitmapFactories::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   Supplement<LocalDOMWindow>::TraceWrappers(visitor);
   Supplement<WorkerGlobalScope>::TraceWrappers(visitor);
 }

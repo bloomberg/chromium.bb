@@ -141,8 +141,7 @@ void PerformanceObserver::Trace(blink::Visitor* visitor) {
   ContextClient::Trace(visitor);
 }
 
-void PerformanceObserver::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+void PerformanceObserver::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(callback_);
   ScriptWrappable::TraceWrappers(visitor);
 }

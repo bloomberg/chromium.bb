@@ -43,7 +43,7 @@ class CORE_EXPORT ScriptCustomElementDefinition final
 
   ~ScriptCustomElementDefinition() override = default;
 
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
   v8::Local<v8::Object> Constructor() const;
 

@@ -116,7 +116,7 @@ void Navigator::Trace(blink::Visitor* visitor) {
   Supplementable<Navigator>::Trace(visitor);
 }
 
-void Navigator::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+void Navigator::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   ScriptWrappable::TraceWrappers(visitor);
   Supplementable<Navigator>::TraceWrappers(visitor);
 }

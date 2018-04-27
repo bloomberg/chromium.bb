@@ -604,8 +604,7 @@ void XRSession::Trace(blink::Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
 }
 
-void XRSession::TraceWrappers(
-    const blink::ScriptWrappableVisitor* visitor) const {
+void XRSession::TraceWrappers(blink::ScriptWrappableVisitor* visitor) const {
   for (const auto& input_source : input_sources_.Values())
     visitor->TraceWrappers(input_source);
 
