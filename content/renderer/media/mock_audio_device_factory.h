@@ -18,9 +18,9 @@ namespace content {
 class MockCapturerSource : public media::AudioCapturerSource {
  public:
   MockCapturerSource();
-  MOCK_METHOD3(Initialize, void(const media::AudioParameters& params,
-                                CaptureCallback* callback,
-                                int session_id));
+  MOCK_METHOD2(Initialize,
+               void(const media::AudioParameters& params,
+                    CaptureCallback* callback));
   MOCK_METHOD0(Start, void());
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD1(SetAutomaticGainControl, void(bool enable));

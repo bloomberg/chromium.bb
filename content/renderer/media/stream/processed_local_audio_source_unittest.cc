@@ -168,7 +168,7 @@ TEST_F(ProcessedLocalAudioSourceTest, VerifyAudioFlowWithoutAudioProcessing) {
   // Connect the track, and expect the MockCapturerSource to be initialized and
   // started by ProcessedLocalAudioSource.
   EXPECT_CALL(*mock_audio_device_factory()->mock_capturer_source(),
-              Initialize(_, capture_source_callback(), -1))
+              Initialize(_, capture_source_callback()))
       .WillOnce(WithArg<0>(Invoke(this, &ThisTest::CheckSourceFormatMatches)));
   EXPECT_CALL(*mock_audio_device_factory()->mock_capturer_source(),
               SetAutomaticGainControl(true));

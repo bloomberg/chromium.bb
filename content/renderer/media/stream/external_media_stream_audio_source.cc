@@ -39,7 +39,7 @@ bool ExternalMediaStreamAudioSource::EnsureSourceIsStarted() {
           << (is_local_source() ? "local" : "remote")
           << " source with audio parameters={"
           << GetAudioParameters().AsHumanReadableString() << "}.";
-  source_->Initialize(GetAudioParameters(), this, -1);
+  source_->Initialize(GetAudioParameters(), this);
   source_->Start();
   was_started_ = true;
   return true;

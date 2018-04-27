@@ -93,7 +93,8 @@ class CONTENT_EXPORT AudioDeviceFactory {
   // |render_frame_id| refers to the RenderFrame containing the entity
   // consuming the audio.
   static scoped_refptr<media::AudioCapturerSource> NewAudioCapturerSource(
-      int render_frame_id);
+      int render_frame_id,
+      int session_id);
 
  protected:
   AudioDeviceFactory();

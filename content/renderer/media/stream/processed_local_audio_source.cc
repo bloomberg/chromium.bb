@@ -201,8 +201,9 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
           << params.AsHumanReadableString() << "} and output parameters={"
           << GetAudioParameters().AsHumanReadableString() << '}';
   scoped_refptr<media::AudioCapturerSource> new_source =
-      AudioDeviceFactory::NewAudioCapturerSource(consumer_render_frame_id_);
-  new_source->Initialize(params, this, device().session_id);
+      AudioDeviceFactory::NewAudioCapturerSource(consumer_render_frame_id_,
+                                                 device().session_id);
+  new_source->Initialize(params, this);
   // We need to set the AGC control before starting the stream.
   new_source->SetAutomaticGainControl(true);
   {

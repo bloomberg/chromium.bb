@@ -41,7 +41,9 @@ class CONTENT_EXPORT AudioInputIPCFactory {
   }
 
   // The returned object may only be used on io_task_runner().
-  std::unique_ptr<media::AudioInputIPC> CreateAudioInputIPC(int frame_id) const;
+  std::unique_ptr<media::AudioInputIPC> CreateAudioInputIPC(
+      int frame_id,
+      int session_id) const;
 
  private:
   const scoped_refptr<base::SequencedTaskRunner> main_task_runner_;

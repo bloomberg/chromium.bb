@@ -56,7 +56,6 @@ class MEDIA_EXPORT AudioInputIPC {
   // memory buffer.  Once the stream has been created, the implementation will
   // notify |delegate| by calling OnStreamCreated().
   virtual void CreateStream(AudioInputIPCDelegate* delegate,
-                            int session_id,
                             const AudioParameters& params,
                             bool automatic_gain_control,
                             uint32_t total_segments) = 0;

@@ -49,15 +49,10 @@ class AudioCapturerSource
     virtual ~CaptureCallback() {}
   };
 
-  // Sets information about the audio stream format and the device
-  // to be used. It must be called before any of the other methods.
-  // The |session_id| is used by the browser to identify which input device to
-  // be used. For clients who do not care about device permission and device
-  // selection, pass |session_id| using
-  // AudioInputDeviceManager::kFakeOpenSessionId.
+  // Sets information about the audio stream format and the device to be used.
+  // It must be called exactly once before any of the other methods.
   virtual void Initialize(const AudioParameters& params,
-                          CaptureCallback* callback,
-                          int session_id) = 0;
+                          CaptureCallback* callback) = 0;
 
   // Starts the audio recording.
   virtual void Start() = 0;

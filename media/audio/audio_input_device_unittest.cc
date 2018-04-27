@@ -33,9 +33,8 @@ class MockAudioInputIPC : public AudioInputIPC {
   MockAudioInputIPC() = default;
   ~MockAudioInputIPC() override = default;
 
-  MOCK_METHOD5(CreateStream,
+  MOCK_METHOD4(CreateStream,
                void(AudioInputIPCDelegate* delegate,
-                    int session_id,
                     const AudioParameters& params,
                     bool automatic_gain_control,
                     uint32_t total_segments));
@@ -83,8 +82,8 @@ TEST(AudioInputDeviceTest, FailToCreateStream) {
   MockAudioInputIPC* input_ipc = new MockAudioInputIPC();
   scoped_refptr<AudioInputDevice> device(
       new AudioInputDevice(base::WrapUnique(input_ipc)));
-  device->Initialize(params, &callback, 1);
-  EXPECT_CALL(*input_ipc, CreateStream(_, _, _, _, _))
+  device->Initialize(params, &callback);
+  EXPECT_CALL(*input_ipc, CreateStream(_, _, _, _))
       .WillOnce(ReportStateChange(device.get()));
   EXPECT_CALL(callback, OnCaptureError(_));
   device->Start();
@@ -123,9 +122,9 @@ TEST(AudioInputDeviceTest, CreateStream) {
   MockAudioInputIPC* input_ipc = new MockAudioInputIPC();
   scoped_refptr<AudioInputDevice> device(
       new AudioInputDevice(base::WrapUnique(input_ipc)));
-  device->Initialize(params, &callback, 1);
+  device->Initialize(params, &callback);
 
-  EXPECT_CALL(*input_ipc, CreateStream(_, _, _, _, _))
+  EXPECT_CALL(*input_ipc, CreateStream(_, _, _, _))
       .WillOnce(ReportOnStreamCreated(
           device.get(), duplicated_memory_handle,
           SyncSocket::UnwrapHandle(audio_device_socket_descriptor)));

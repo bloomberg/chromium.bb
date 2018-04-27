@@ -88,7 +88,7 @@ class LocalWebRtcMediaStreamAdapterTest : public WebRtcMediaStreamAdapterTest {
     audio_tracks[0].Initialize(blink::WebString::FromUTF8(audio_track_id),
                                audio_source);
     EXPECT_CALL(*mock_audio_device_factory_.mock_capturer_source(),
-                Initialize(_, _, -1));
+                Initialize(_, _));
     EXPECT_CALL(*mock_audio_device_factory_.mock_capturer_source(),
                 SetAutomaticGainControl(true));
     EXPECT_CALL(*mock_audio_device_factory_.mock_capturer_source(), Start());

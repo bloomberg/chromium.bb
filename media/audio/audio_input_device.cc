@@ -89,7 +89,6 @@ AudioInputDevice::AudioInputDevice(std::unique_ptr<AudioInputIPC> ipc)
     : callback_(nullptr),
       ipc_(std::move(ipc)),
       state_(IDLE),
-      session_id_(0),
       agc_is_enabled_(false) {
   CHECK(ipc_);
 
@@ -101,15 +100,12 @@ AudioInputDevice::AudioInputDevice(std::unique_ptr<AudioInputIPC> ipc)
 }
 
 void AudioInputDevice::Initialize(const AudioParameters& params,
-                                  CaptureCallback* callback,
-                                  int session_id) {
+                                  CaptureCallback* callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(params.IsValid());
   DCHECK(!callback_);
-  DCHECK_EQ(0, session_id_);
   audio_parameters_ = params;
   callback_ = callback;
-  session_id_ = session_id;
 }
 
 void AudioInputDevice::Start() {
@@ -121,13 +117,8 @@ void AudioInputDevice::Start() {
   if (state_ != IDLE)
     return;
 
-  if (session_id_ <= 0) {
-    DLOG(WARNING) << "Invalid session id for the input stream " << session_id_;
-    return;
-  }
-
   state_ = CREATING_STREAM;
-  ipc_->CreateStream(this, session_id_, audio_parameters_, agc_is_enabled_,
+  ipc_->CreateStream(this, audio_parameters_, agc_is_enabled_,
                      kRequestedSharedMemoryCount);
 }
 

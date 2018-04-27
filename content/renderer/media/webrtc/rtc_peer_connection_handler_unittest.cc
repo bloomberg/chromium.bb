@@ -334,7 +334,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
         static_cast<size_t>(1));
     audio_tracks[0].Initialize(blink_audio_source.Id(), blink_audio_source);
     EXPECT_CALL(*mock_audio_device_factory_.mock_capturer_source(),
-                Initialize(_, _, -1));
+                Initialize(_, _));
     EXPECT_CALL(*mock_audio_device_factory_.mock_capturer_source(),
                 SetAutomaticGainControl(true));
     EXPECT_CALL(*mock_audio_device_factory_.mock_capturer_source(), Start());

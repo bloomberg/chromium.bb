@@ -182,8 +182,7 @@ class MockAudioCapturerSource : public media::AudioCapturerSource {
   MockAudioCapturerSource() = default;
 
   void Initialize(const media::AudioParameters& params,
-                  CaptureCallback* callback,
-                  int session_id) override {}
+                  CaptureCallback* callback) override {}
   void Start() override {}
   void Stop() override {}
   void SetVolume(double volume) override {}
