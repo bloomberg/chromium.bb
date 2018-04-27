@@ -11,19 +11,21 @@ WeakReference::Flag::Flag() : is_valid_(true) {
   // Flags only become bound when checked for validity, or invalidated,
   // so that we can check that later validity/invalidation operations on
   // the same Flag take place on the same sequenced thread.
-  sequence_checker_.DetachFromSequence();
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 void WeakReference::Flag::Invalidate() {
   // The flag being invalidated with a single ref implies that there are no
   // weak pointers in existence. Allow deletion on other thread in this case.
+#if DCHECK_IS_ON()
   DCHECK(sequence_checker_.CalledOnValidSequence() || HasOneRef())
       << "WeakPtrs must be invalidated on the same sequenced thread.";
+#endif
   is_valid_ = false;
 }
 
 bool WeakReference::Flag::IsValid() const {
-  DCHECK(sequence_checker_.CalledOnValidSequence())
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_)
       << "WeakPtrs must be checked on the same sequenced thread.";
   return is_valid_;
 }
@@ -65,7 +67,7 @@ void WeakReferenceOwner::Invalidate() {
   }
 }
 
-WeakPtrBase::WeakPtrBase() : ptr_(0) {}
+WeakPtrBase::WeakPtrBase() = default;
 
 WeakPtrBase::~WeakPtrBase() = default;
 

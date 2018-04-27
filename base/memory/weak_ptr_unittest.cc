@@ -99,6 +99,15 @@ class BackgroundThread : public Thread {
     completion.Wait();
   }
 
+  void ResetArrow(Arrow* arrow) {
+    WaitableEvent completion(WaitableEvent::ResetPolicy::MANUAL,
+                             WaitableEvent::InitialState::NOT_SIGNALED);
+    task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&BackgroundThread::DoResetArrow, arrow, &completion));
+    completion.Wait();
+  }
+
   void CreateArrowFromArrow(Arrow** arrow, const Arrow* other) {
     WaitableEvent completion(WaitableEvent::ResetPolicy::MANUAL,
                              WaitableEvent::InitialState::NOT_SIGNALED);
@@ -161,6 +170,11 @@ class BackgroundThread : public Thread {
                                      WaitableEvent* completion) {
     *arrow = new Arrow;
     **arrow = *other;
+    completion->Signal();
+  }
+
+  static void DoResetArrow(Arrow* arrow, WaitableEvent* completion) {
+    arrow->target.reset();
     completion->Signal();
   }
 
@@ -468,7 +482,7 @@ TEST(WeakPtrTest, MoveOwnershipOfUnreferencedObject) {
     EXPECT_EQ(&target, background.DeRef(arrow));
 
     // Release the only WeakPtr.
-    arrow->target.reset();
+    background.ResetArrow(arrow);
 
     // Now we should be able to create a new reference from this thread.
     arrow->target = target.AsWeakPtr();
@@ -648,6 +662,26 @@ TEST(WeakPtrDeathTest, NonOwnerThreadDereferencesWeakPtrAfterReference) {
   BackgroundThread background;
   background.Start();
   ASSERT_DCHECK_DEATH(background.DeRef(&arrow));
+}
+
+TEST(WeakPtrDeathTest, NonOwnerThreadResetsWeakPtrAfterReference) {
+  // The default style "fast" does not support multi-threaded tests
+  // (introduces deadlock on Linux).
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+
+  std::unique_ptr<Target> target(new Target());
+
+  // Main thread creates an arrow referencing the Target.
+  Arrow arrow;
+  arrow.target = target->AsWeakPtr();
+
+  // Background thread tries to deref target, binding it to the thread.
+  BackgroundThread background;
+  background.Start();
+  background.DeRef(&arrow);
+
+  // Main thread resets weak_ptr, violating thread binding.
+  ASSERT_DCHECK_DEATH(arrow.target.reset());
 }
 
 TEST(WeakPtrDeathTest, NonOwnerThreadDeletesWeakPtrAfterReference) {
