@@ -1126,19 +1126,24 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 - (void)initializeMailtoHandling {
   if (base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI)) {
-    __weak __typeof(self) weakSelf = self;
     [[DeferredInitializationRunner sharedInstance]
         enqueueBlockNamed:kMailtoHandlingInitialization
                     block:^{
-                      __strong __typeof(weakSelf) strongSelf = weakSelf;
-                      if (!strongSelf) {
-                        return;
-                      }
                       MailtoHandlerProvider* provider =
                           ios::GetChromeBrowserProvider()
                               ->GetMailtoHandlerProvider();
+                      ios::ChromeIdentityService* identityService =
+                          ios::GetChromeBrowserProvider()
+                              ->GetChromeIdentityService();
                       provider->PrepareMailtoHandling(
-                          strongSelf->_mainBrowserState);
+                          ^ChromeIdentity* {
+                            // TODO:(crbug.com/810904) Replace with currently
+                            // signed-in user.
+                            return nil;
+                          },
+                          ^NSArray<ChromeIdentity*>* {
+                            return identityService->GetAllIdentities();
+                          });
                     }];
   }
 }
