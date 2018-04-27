@@ -34,6 +34,9 @@ class CrostiniAppWindowShelfController : public AppWindowLauncherController,
   explicit CrostiniAppWindowShelfController(ChromeLauncherController* owner);
   ~CrostiniAppWindowShelfController() override;
 
+  // AppWindowLauncherController:
+  void ActiveUserChanged(const std::string& user_email) override;
+
   // aura::EnvObserver:
   void OnWindowInitialized(aura::Window* window) override;
 
@@ -47,6 +50,8 @@ class CrostiniAppWindowShelfController : public AppWindowLauncherController,
 
   void RegisterAppWindow(aura::Window* window, const std::string& shelf_app_id);
   void UnregisterAppWindow(AppWindowBase* app_window);
+  void AddToShelf(aura::Window* window, AppWindowBase* app_window);
+  void RemoveFromShelf(aura::Window* window, AppWindowBase* app_window);
 
   // AppWindowLauncherController:
   AppWindowLauncherItemController* ControllerForWindow(
