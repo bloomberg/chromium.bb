@@ -92,6 +92,12 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   // Frames and corresponding timestamps in encode as FIFO.
   base::queue<VideoParamsAndTimestamp> frames_in_encode_;
 
+  // Number of encoded frames produced consecutively without a keyframe.
+  uint32_t num_frames_after_keyframe_;
+
+  // Forces next frame to be a keyframe.
+  bool force_next_frame_to_be_keyframe_;
+
   // This callback can be exercised on any thread.
   const VideoTrackRecorder::OnErrorCB on_error_callback_;
 };
