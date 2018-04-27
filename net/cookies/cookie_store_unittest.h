@@ -1938,14 +1938,14 @@ TYPED_TEST_P(CookieStoreTest, CookieDeletionInfoMatchesDomainList) {
   // With two empty lists (default) should match any domain.
   EXPECT_TRUE(delete_info.Matches(create_cookie("anything.com")));
 
-  // With only an inclusion list.
+  // With only an "to_delete" list.
   delete_info.domains_and_ips_to_delete =
       std::set<std::string>({"includea.com", "includeb.com"});
   EXPECT_TRUE(delete_info.Matches(create_cookie("includea.com")));
   EXPECT_TRUE(delete_info.Matches(create_cookie("includeb.com")));
   EXPECT_FALSE(delete_info.Matches(create_cookie("anything.com")));
 
-  // With only an exclusion list.
+  // With only an "to_ignore" list.
   delete_info.domains_and_ips_to_delete.clear();
   delete_info.domains_and_ips_to_ignore.insert("exclude.com");
   EXPECT_TRUE(delete_info.Matches(create_cookie("anything.com")));
@@ -1954,10 +1954,10 @@ TYPED_TEST_P(CookieStoreTest, CookieDeletionInfoMatchesDomainList) {
   // Now with both lists populated.
   //
   // +----------------------+
-  // | inclusion            |  outside.com
+  // | to_delete            |  outside.com
   // |                      |
   // |  left.com  +---------------------+
-  // |            | mid.com | exclusion |
+  // |            | mid.com | to_ignore |
   // |            |         |           |
   // +------------|---------+           |
   //              |           right.com |
