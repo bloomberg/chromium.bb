@@ -127,7 +127,7 @@ class HorzSuperresEndToEndTest
                                   ::libaom_test::Encoder *encoder) {
     if (video->frame() == 1) {
       encoder->Control(AV1E_SET_FRAME_PARALLEL_DECODING, 1);
-      encoder->Control(AV1E_SET_TILE_COLUMNS, 0);
+      encoder->Control(AV1E_SET_TILE_COLUMNS, 4);
 
       // Set cpu-used = 8 for speed
       encoder->Control(AOME_SET_CPUUSED, 8);
