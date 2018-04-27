@@ -162,15 +162,10 @@ class BASE_EXPORT MessageLoopCurrent {
   class BASE_EXPORT ScopedNestableTaskAllower {
    public:
     ScopedNestableTaskAllower();
-
-    // DEPRECATED(https://crbug.com/750779): Prefer the argument less
-    // constructor to obtaining and injecting MessageLoopCurrent manually.
-    explicit ScopedNestableTaskAllower(MessageLoop* loop);
-
     ~ScopedNestableTaskAllower();
 
    private:
-    MessageLoop* loop_;
+    MessageLoop* const loop_;
     const bool old_state_;
   };
 

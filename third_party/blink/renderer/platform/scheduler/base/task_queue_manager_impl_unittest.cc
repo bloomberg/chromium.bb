@@ -138,7 +138,6 @@ class TaskQueueManagerTest : public testing::Test {
 };
 
 void PostFromNestedRunloop(
-    base::MessageLoop* message_loop,
     base::SingleThreadTaskRunner* runner,
     std::vector<std::pair<base::OnceClosure, bool>>* tasks) {
   for (std::pair<base::OnceClosure, bool>& pair : *tasks) {
@@ -204,8 +203,7 @@ TEST_F(TaskQueueManagerTest, NowNotCalledForNestedTasks) {
 
   runners_[0]->PostTask(
       FROM_HERE,
-      base::BindOnce(&PostFromNestedRunloop, message_loop_.get(),
-                     base::RetainedRef(runners_[0]),
+      base::BindOnce(&PostFromNestedRunloop, base::RetainedRef(runners_[0]),
                      base::Unretained(&tasks_to_post_from_nested_loop)));
 
   base::RunLoop().RunUntilIdle();
@@ -302,8 +300,7 @@ TEST_F(TaskQueueManagerTest, NonNestableTasksDoesntExecuteInNestedLoop) {
 
   runners_[0]->PostTask(
       FROM_HERE,
-      base::BindOnce(&PostFromNestedRunloop, message_loop_.get(),
-                     base::RetainedRef(runners_[0]),
+      base::BindOnce(&PostFromNestedRunloop, base::RetainedRef(runners_[0]),
                      base::Unretained(&tasks_to_post_from_nested_loop)));
 
   base::RunLoop().RunUntilIdle();
@@ -342,8 +339,7 @@ TEST_F(TaskQueueManagerTest, TaskQueueDisabledFromNestedLoop) {
 
   runners_[0]->PostTask(
       FROM_HERE,
-      base::BindOnce(&PostFromNestedRunloop, message_loop_.get(),
-                     base::RetainedRef(runners_[0]),
+      base::BindOnce(&PostFromNestedRunloop, base::RetainedRef(runners_[0]),
                      base::Unretained(&tasks_to_post_from_nested_loop)));
   base::RunLoop().RunUntilIdle();
 
@@ -1060,8 +1056,7 @@ TEST_F(TaskQueueManagerTest, PostFromNestedRunloop) {
   runners_[0]->PostTask(FROM_HERE, base::BindOnce(&TestTask, 0, &run_order));
   runners_[0]->PostTask(
       FROM_HERE,
-      base::BindOnce(&PostFromNestedRunloop, message_loop_.get(),
-                     base::RetainedRef(runners_[0]),
+      base::BindOnce(&PostFromNestedRunloop, base::RetainedRef(runners_[0]),
                      base::Unretained(&tasks_to_post_from_nested_loop)));
   runners_[0]->PostTask(FROM_HERE, base::BindOnce(&TestTask, 2, &run_order));
 
@@ -1436,7 +1431,6 @@ void CheckIsNested(bool* is_nested) {
 void PostAndQuitFromNestedRunloop(base::RunLoop* run_loop,
                                   base::SingleThreadTaskRunner* runner,
                                   bool* was_nested) {
-  base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
   runner->PostTask(FROM_HERE, run_loop->QuitClosure());
   runner->PostTask(FROM_HERE, base::BindOnce(&CheckIsNested, was_nested));
   run_loop->Run();
@@ -1449,7 +1443,7 @@ TEST_F(TaskQueueManagerTest, QuitWhileNested) {
   manager_->SetWorkBatchSize(2);
 
   bool was_nested = true;
-  base::RunLoop run_loop;
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   runners_[0]->PostTask(
       FROM_HERE,
       base::BindOnce(&PostAndQuitFromNestedRunloop, base::Unretained(&run_loop),
@@ -1627,8 +1621,7 @@ TEST_F(TaskQueueManagerTest, ShutdownTaskQueueInNestedLoop) {
       std::make_pair(base::BindOnce(&NopTask), true));
   runners_[0]->PostTask(
       FROM_HERE,
-      base::BindOnce(&PostFromNestedRunloop, message_loop_.get(),
-                     base::RetainedRef(runners_[0]),
+      base::BindOnce(&PostFromNestedRunloop, base::RetainedRef(runners_[0]),
                      base::Unretained(&tasks_to_post_from_nested_loop)));
   base::RunLoop().RunUntilIdle();
 
@@ -2263,18 +2256,16 @@ TEST_F(TaskQueueManagerTest, CurrentlyExecutingTaskQueue_TaskRunning) {
 
 namespace {
 void RunloopCurrentlyExecutingTaskQueueTestTask(
-    base::MessageLoop* message_loop,
     TaskQueueManagerImpl* task_queue_manager,
     std::vector<internal::TaskQueueImpl*>* task_sources,
     std::vector<std::pair<base::OnceClosure, TestTaskQueue*>>* tasks) {
-  base::MessageLoop::ScopedNestableTaskAllower allow(message_loop);
   task_sources->push_back(task_queue_manager->currently_executing_task_queue());
 
   for (std::pair<base::OnceClosure, TestTaskQueue*>& pair : *tasks) {
     pair.second->PostTask(FROM_HERE, std::move(pair.first));
   }
 
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
   task_sources->push_back(task_queue_manager->currently_executing_task_queue());
 }
 }  // namespace
@@ -2298,11 +2289,10 @@ TEST_F(TaskQueueManagerTest, CurrentlyExecutingTaskQueue_NestedLoop) {
                                     manager_.get(), &task_sources),
                      queue2));
 
-  queue0->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RunloopCurrentlyExecutingTaskQueueTestTask,
-                     message_loop_.get(), manager_.get(), &task_sources,
-                     &tasks_to_post_from_nested_loop));
+  queue0->PostTask(FROM_HERE,
+                   base::BindOnce(&RunloopCurrentlyExecutingTaskQueueTestTask,
+                                  manager_.get(), &task_sources,
+                                  &tasks_to_post_from_nested_loop));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(
@@ -2703,11 +2693,9 @@ TEST_F(TaskQueueManagerTest, DelayTillNextTask_DelayedTaskReady) {
 }
 
 namespace {
-void MessageLoopTaskWithDelayedQuit(base::MessageLoop* message_loop,
-                                    base::SimpleTestTickClock* now_src,
+void MessageLoopTaskWithDelayedQuit(base::SimpleTestTickClock* now_src,
                                     scoped_refptr<TaskQueue> task_queue) {
-  base::MessageLoop::ScopedNestableTaskAllower allow(message_loop);
-  base::RunLoop run_loop;
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   task_queue->PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
                               base::TimeDelta::FromMilliseconds(100));
   now_src->Advance(base::TimeDelta::FromMilliseconds(200));
@@ -2719,19 +2707,15 @@ TEST_F(TaskQueueManagerTest, DelayedTaskRunsInNestedMessageLoop) {
   InitializeWithRealMessageLoop(1u);
   base::RunLoop run_loop;
   runners_[0]->PostTask(
-      FROM_HERE,
-      base::BindOnce(&MessageLoopTaskWithDelayedQuit, message_loop_.get(),
-                     &now_src_, base::RetainedRef(runners_[0])));
+      FROM_HERE, base::BindOnce(&MessageLoopTaskWithDelayedQuit, &now_src_,
+                                base::RetainedRef(runners_[0])));
   run_loop.RunUntilIdle();
 }
 
 namespace {
-void MessageLoopTaskWithImmediateQuit(base::MessageLoop* message_loop,
-                                      base::OnceClosure non_nested_quit_closure,
+void MessageLoopTaskWithImmediateQuit(base::OnceClosure non_nested_quit_closure,
                                       scoped_refptr<TaskQueue> task_queue) {
-  base::MessageLoop::ScopedNestableTaskAllower allow(message_loop);
-
-  base::RunLoop run_loop;
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   // Needed because entering the nested run loop causes a DoWork to get
   // posted.
   task_queue->PostTask(FROM_HERE, base::BindOnce(&NopTask));
@@ -2747,8 +2731,8 @@ TEST_F(TaskQueueManagerTest,
   base::RunLoop run_loop;
   runners_[0]->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&MessageLoopTaskWithImmediateQuit, message_loop_.get(),
-                     run_loop.QuitClosure(), base::RetainedRef(runners_[0])),
+      base::BindOnce(&MessageLoopTaskWithImmediateQuit, run_loop.QuitClosure(),
+                     base::RetainedRef(runners_[0])),
       base::TimeDelta::FromMilliseconds(100));
 
   now_src_.Advance(base::TimeDelta::FromMilliseconds(200));

@@ -79,9 +79,7 @@ void FakeGCMConnectionObserver::OnDisconnected() {
 }
 
 void PumpCurrentLoop() {
-  base::MessageLoop::ScopedNestableTaskAllower nestable_task_allower(
-      base::MessageLoopCurrent::Get());
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
 }
 
 void PumpUILoop() {

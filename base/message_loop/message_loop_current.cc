@@ -95,11 +95,8 @@ bool MessageLoopCurrent::NestableTasksAllowed() const {
 }
 
 MessageLoopCurrent::ScopedNestableTaskAllower::ScopedNestableTaskAllower()
-    : ScopedNestableTaskAllower(MessageLoopCurrent::Get()) {}
-
-MessageLoopCurrent::ScopedNestableTaskAllower::ScopedNestableTaskAllower(
-    MessageLoop* loop)
-    : loop_(loop), old_state_(loop_->NestableTasksAllowed()) {
+    : loop_(GetTLSMessageLoop()->Get()),
+      old_state_(loop_->NestableTasksAllowed()) {
   loop_->SetNestableTasksAllowed(true);
 }
 
