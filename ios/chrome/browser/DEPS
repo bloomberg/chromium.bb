@@ -103,6 +103,7 @@ include_rules = [
   "+rlz/buildflags",
   "+services/identity/public",
   "+services/metrics/public",
+  "+services/network/public/mojom",
   "+services/service_manager/public",
   "+third_party/breakpad/breakpad/src/client/ios",
   "+third_party/breakpad/breakpad/src/common",

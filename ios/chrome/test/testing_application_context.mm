@@ -86,6 +86,13 @@ TestingApplicationContext::GetSystemURLRequestContext() {
   return nullptr;
 }
 
+network::mojom::NetworkContext*
+TestingApplicationContext::GetSystemNetworkContext() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  NOTREACHED();
+  return nullptr;
+}
+
 const std::string& TestingApplicationContext::GetApplicationLocale() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!application_locale_.empty());

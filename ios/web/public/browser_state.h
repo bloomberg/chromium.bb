@@ -32,6 +32,7 @@ class Connector;
 
 namespace web {
 class CertificatePolicyCache;
+class NetworkContextOwner;
 class ServiceManagerConnection;
 class URLDataManagerIOS;
 class URLDataManagerIOSBackend;
@@ -100,7 +101,6 @@ class BrowserState : public base::SupportsUserData {
                          const base::FilePath& path);
 
  private:
-  class NetworkContextOwner;
   friend class URLDataManagerIOS;
   friend class URLRequestChromeJob;
 
