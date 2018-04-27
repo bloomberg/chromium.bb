@@ -65,7 +65,6 @@ class HTMLParserScriptRunner;
 class HTMLPreloadScanner;
 class HTMLResourcePreloader;
 class HTMLTreeBuilder;
-class TokenizedChunkQueue;
 
 class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
                                        private HTMLParserScriptRunnerHost {
@@ -114,7 +113,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
     USING_FAST_MALLOC(TokenizedChunk);
 
    public:
-    std::unique_ptr<CompactHTMLTokenStream> tokens;
+    CompactHTMLTokenStream tokens;
     PreloadRequestStream preloads;
     ViewportDescriptionWrapper viewport;
     XSSInfoStream xss_infos;
@@ -130,7 +129,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
 
     static constexpr int kNoPendingToken = -1;
   };
-  void NotifyPendingTokenizedChunks();
+  void EnqueueTokenizedChunk(std::unique_ptr<TokenizedChunk>);
   void DidReceiveEncodingDataFromBackgroundParser(const DocumentEncodingData&);
 
   void AppendBytes(const char* bytes, size_t length) override;
@@ -262,7 +261,6 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   base::WeakPtr<BackgroundHTMLParser> background_parser_;
   Member<HTMLResourcePreloader> preloader_;
   PreloadRequestStream queued_preloads_;
-  scoped_refptr<TokenizedChunkQueue> tokenized_chunk_queue_;
 
   // If this is non-null, then there is a meta CSP token somewhere in the
   // speculation buffer. Preloads will be deferred until a token matching this
