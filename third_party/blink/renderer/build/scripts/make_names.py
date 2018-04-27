@@ -64,8 +64,8 @@ class MakeNamesWriter(json5_generator.Writer):
         'to_macro_style': name_utilities.to_macro_style,
     }
 
-    def __init__(self, json5_file_path):
-        super(MakeNamesWriter, self).__init__(json5_file_path)
+    def __init__(self, json5_file_path, output_dir):
+        super(MakeNamesWriter, self).__init__(json5_file_path, output_dir)
 
         namespace = self.json5_file.metadata['namespace'].strip('"')
         suffix = self.json5_file.metadata['suffix'].strip('"')
@@ -78,13 +78,15 @@ class MakeNamesWriter(json5_generator.Writer):
             (basename + '.h'): self.generate_header,
             (basename + '.cc'): self.generate_implementation,
         }
+        qualified_header = self._relative_output_dir + basename + '.h'
         self._template_context = {
             'namespace': namespace,
             'suffix': suffix,
             'export': export,
             'entries': self.json5_file.name_dictionaries,
+            'header_guard': self.make_header_guard(qualified_header),
             'input_files': self._input_files,
-            'this_include_header_name': basename + '.h',
+            'this_include_path': qualified_header,
         }
 
     @template_expander.use_jinja("templates/make_names.h.tmpl", filters=filters)

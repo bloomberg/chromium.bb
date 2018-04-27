@@ -14,8 +14,8 @@ import gperf
 
 
 class CSSValueKeywordsWriter(json5_generator.Writer):
-    def __init__(self, file_paths):
-        json5_generator.Writer.__init__(self, file_paths)
+    def __init__(self, file_paths, output_dir):
+        json5_generator.Writer.__init__(self, file_paths, output_dir)
         self._outputs = {
             "css_value_keywords.h": self.generate_header,
             "css_value_keywords.cc": self.generate_implementation

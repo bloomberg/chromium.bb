@@ -14,8 +14,8 @@ from core.css import css_properties
 
 
 class ComputedStyleInitialValuesWriter(json5_generator.Writer):
-    def __init__(self, json5_file_paths):
-        super(ComputedStyleInitialValuesWriter, self).__init__([])
+    def __init__(self, json5_file_paths, output_dir):
+        super(ComputedStyleInitialValuesWriter, self).__init__([], output_dir)
 
         json_properties = css_properties.CSSProperties(json5_file_paths)
 

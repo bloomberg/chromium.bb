@@ -19,8 +19,8 @@ class AtRuleNamesWriter(json5_generator.Writer):
     Generates AtRuleNames. This class provides utility methods for parsing
     @rules (e.g. @font-face, @viewport, etc)
     """
-    def __init__(self, json5_file_paths):
-        super(AtRuleNamesWriter, self).__init__(json5_file_paths)
+    def __init__(self, json5_file_paths, output_dir):
+        super(AtRuleNamesWriter, self).__init__(json5_file_paths, output_dir)
 
         self._outputs = {
             'at_rule_descriptors.h': self.generate_header,

@@ -42,8 +42,8 @@ class MakeElementTypeHelpersWriter(json5_generator.Writer):
         'symbol': _symbol,
     }
 
-    def __init__(self, json5_file_path):
-        super(MakeElementTypeHelpersWriter, self).__init__(json5_file_path)
+    def __init__(self, json5_file_path, output_dir):
+        super(MakeElementTypeHelpersWriter, self).__init__(json5_file_path, output_dir)
 
         self.namespace = self.json5_file.metadata['namespace'].strip('"')
         self.fallback_interface = self.json5_file.metadata['fallbackInterfaceName'].strip('"')

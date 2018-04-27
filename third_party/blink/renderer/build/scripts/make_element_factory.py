@@ -54,8 +54,8 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
     })
     filters = MakeQualifiedNamesWriter.filters
 
-    def __init__(self, json5_file_paths):
-        super(MakeElementFactoryWriter, self).__init__(json5_file_paths)
+    def __init__(self, json5_file_paths, output_dir):
+        super(MakeElementFactoryWriter, self).__init__(json5_file_paths, output_dir)
 
         basename = self.namespace.lower() + '_element_factory'
         self._outputs.update({

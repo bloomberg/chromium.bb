@@ -25,8 +25,8 @@ class MakeMediaFeaturesWriter(json5_generator.Writer):
         'upper_first_letter': name_utilities.upper_first_letter,
     }
 
-    def __init__(self, json5_file_path):
-        super(MakeMediaFeaturesWriter, self).__init__(json5_file_path)
+    def __init__(self, json5_file_path, output_dir):
+        super(MakeMediaFeaturesWriter, self).__init__(json5_file_path, output_dir)
 
         self._outputs = {
             ('media_features.h'): self.generate_header,

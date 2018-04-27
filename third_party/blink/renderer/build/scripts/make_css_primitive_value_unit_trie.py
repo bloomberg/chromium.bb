@@ -11,8 +11,8 @@ import template_expander
 
 
 class UnitTrieWriter(json5_generator.Writer):
-    def __init__(self, json5_file_paths):
-        super(UnitTrieWriter, self).__init__(json5_file_paths)
+    def __init__(self, json5_file_paths, output_dir):
+        super(UnitTrieWriter, self).__init__(json5_file_paths, output_dir)
 
         self._units = {entry['name']: entry['unit_type'] for entry in self.json5_file.name_dictionaries}
 

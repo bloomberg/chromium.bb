@@ -66,8 +66,8 @@ class StyleBuilderWriter(json5_generator.Writer):
         'lower_first': lower_first,
     }
 
-    def __init__(self, json5_file_paths):
-        super(StyleBuilderWriter, self).__init__([])
+    def __init__(self, json5_file_paths, output_dir):
+        super(StyleBuilderWriter, self).__init__([], output_dir)
         self._outputs = {
             'style_builder_functions.h': self.generate_style_builder_functions_h,
             'style_builder_functions.cc':
