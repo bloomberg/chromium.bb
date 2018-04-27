@@ -244,7 +244,14 @@ void BrowserCommandControllerInteractiveTest::SendFullscreenShortcutAndWait() {
       GetActiveBrowser(), ui::VKEY_F11, false, false, false, false));
 #endif
 
+// Mac fullscreen is simulated in tests and is performed synchronously with the
+// keyboard events. As a result, content doesn't actually know it has entered
+// fullscreen. For more details, see ScopedFakeNSWindowFullscreen.
+// TODO(crbug.com/837438): Remove this once ScopedFakeNSWindowFullscreen fires
+// NOTIFICATION_FULLSCREEN_CHANGED.
+#if !defined(OS_MACOSX)
   observer.Wait();
+#endif
 }
 
 void BrowserCommandControllerInteractiveTest::
