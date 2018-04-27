@@ -313,7 +313,7 @@
     },
     {
       name: "CSSPartPseudoElement",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "CSSScrollSnapPoints",
