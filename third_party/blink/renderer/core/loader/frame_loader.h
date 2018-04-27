@@ -307,6 +307,7 @@ class CORE_EXPORT FrameLoader final {
   Member<DocumentLoader> provisional_document_loader_;
 
   bool in_stop_all_loaders_;
+  bool in_restore_scroll_;
 
   SandboxFlags forced_sandbox_flags_;
 
