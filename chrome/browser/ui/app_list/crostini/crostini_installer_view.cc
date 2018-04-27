@@ -97,14 +97,13 @@ bool CrostiniInstallerView::Accept() {
   DCHECK_EQ(state_, State::PROMPT);
   state_ = State::INSTALL_START;
   profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
-  DialogModelChanged();
-  SetMessageLabel();
   GetWidget()->UpdateWindowTitle();
 
   progress_bar_ = new views::ProgressBar();
   AddChildView(progress_bar_);
 
   GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
+  StepProgress();
 
   // Kick off the Crostini Restart sequence. We will be added as an observer.
   restart_id_ = crostini::CrostiniManager::GetInstance()->RestartCrostini(
@@ -167,7 +166,7 @@ CrostiniInstallerView::~CrostiniInstallerView() {
 }
 
 void CrostiniInstallerView::StepProgress() {
-  if (State::INSTALL_START < state_ && state_ < State::INSTALL_END) {
+  if (State::INSTALL_START <= state_ && state_ < State::INSTALL_END) {
     // Setting value to -1 makes the progress bar play the
     // "indeterminate animation".
     progress_bar_->SetValue(-1);

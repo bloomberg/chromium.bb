@@ -4,8 +4,10 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_remover.h"
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/component_updater/cros_component_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -64,7 +66,20 @@ void CrostiniRemover::DestroyDiskImageFinished(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Only set kCrostiniEnabled to false once cleanup is completely finished.
   if (result == crostini::ConciergeClientResult::SUCCESS) {
-    profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, false);
+    crostini::CrostiniManager::GetInstance()->StopVmConcierge(
+        base::BindOnce(&CrostiniRemover::StopConciergeFinished, this));
+  }
+}
+
+void CrostiniRemover::StopConciergeFinished(bool success) {
+  // The success parameter is never set by debugd.
+  auto* cros_component_manager =
+      g_browser_process->platform_part()->cros_component_manager();
+  if (cros_component_manager) {
+    if (cros_component_manager->Unload("cros-termina")) {
+      profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled,
+                                       false);
+    }
   }
 }
 

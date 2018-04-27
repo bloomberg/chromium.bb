@@ -64,7 +64,7 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
     auto* cros_component_manager =
         g_browser_process->platform_part()->cros_component_manager();
     if (cros_component_manager) {
-      g_browser_process->platform_part()->cros_component_manager()->Load(
+      cros_component_manager->Load(
           "cros-termina",
           component_updater::CrOSComponentManager::MountPolicy::kMount,
           base::BindOnce(&CrostiniRestarter::InstallImageLoaderFinished,
@@ -274,6 +274,23 @@ void CrostiniManager::OnStartVmConcierge(StartVmConciergeCallback callback,
   VLOG(1) << "Waiting for VmConcierge to announce availability.";
 
   GetConciergeClient()->WaitForServiceToBeAvailable(std::move(callback));
+}
+
+void CrostiniManager::StopVmConcierge(StopVmConciergeCallback callback) {
+  VLOG(1) << "Stopping VmConcierge service";
+  chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->StopVmConcierge(
+      base::BindOnce(&CrostiniManager::OnStopVmConcierge,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void CrostiniManager::OnStopVmConcierge(StopVmConciergeCallback callback,
+                                        bool success) {
+  if (!success) {
+    LOG(ERROR) << "Failed to stop Concierge service";
+  } else {
+    VLOG(1) << "VmConcierge service stopped";
+  }
+  std::move(callback).Run(success);
 }
 
 void CrostiniManager::CreateDiskImage(
