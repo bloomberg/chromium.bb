@@ -23,9 +23,11 @@ PartNames::PartNames(const SpaceSplitString& names) {
   AddToSet(names, &names_);
 }
 
+void PartNames::PushMap(const NamesMap& names_map) {
+  pending_maps_.push_back(&names_map);
+}
+
 void PartNames::ApplyMap(const NamesMap& names_map) {
-  // TODO(crbug/805271): Don't apply mappings immediately, instead, queue them
-  // up and only apply them if Contains is actually called.
   HashSet<AtomicString> new_names;
   for (const AtomicString& name : names_) {
     if (base::Optional<SpaceSplitString> mapped_names = names_map.Get(name))
@@ -35,6 +37,13 @@ void PartNames::ApplyMap(const NamesMap& names_map) {
 }
 
 bool PartNames::Contains(const AtomicString& name) {
+  // If we have any, apply all pending maps and clear the queue.
+  if (pending_maps_.size()) {
+    for (const NamesMap* pending_map : pending_maps_) {
+      ApplyMap(*pending_map);
+    }
+    pending_maps_.clear();
+  }
   return names_.Contains(name);
 }
 
