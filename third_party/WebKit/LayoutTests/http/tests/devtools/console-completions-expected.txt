@@ -33,16 +33,8 @@ Completions for objectC.:
 }
 {
     priority : 2
-    text : "shadowedMember"
-}
-{
-    priority : 2
     subtitle : "A"
     text : "aMember"
-}
-{
-    priority : 2
-    text : "shadowedMember"
 }
 Completions for prefix:
 {

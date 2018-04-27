@@ -64,6 +64,11 @@
         new Map(suggestions.map(suggestion => [suggestion, suggestion.text]))
             .inverse();
 
+    for (const suggestionText of completions.keysArray()) {
+      const size = completions.get(suggestionText).size;
+      if (size > 1)
+        TestRunner.addResult(`ERROR! ${size} duplicates found for '${suggestionText}'!`)
+    }
 
     for (var i = 0; i < expected.length; i++) {
       if (completions.has(expected[i])) {
