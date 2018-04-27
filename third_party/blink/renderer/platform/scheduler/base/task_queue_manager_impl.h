@@ -164,7 +164,8 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
       std::unordered_map<internal::TaskQueueImpl*, internal::EnqueueOrder>;
 
   struct AnyThread {
-    AnyThread() = default;
+    AnyThread();
+    ~AnyThread();
 
     // Task queues with newly available work on the incoming queue.
     IncomingImmediateWorkMap has_incoming_immediate_work;
@@ -201,6 +202,7 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
 
   struct MainThreadOnly {
     MainThreadOnly();
+    ~MainThreadOnly();
 
     int nesting_depth = 0;
     NonNestableTaskDeque non_nestable_task_queue;

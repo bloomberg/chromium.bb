@@ -66,11 +66,16 @@ TaskQueueImpl::~TaskQueueImpl() {
 }
 
 TaskQueueImpl::PostTaskResult::PostTaskResult()
-    : task(base::OnceClosure(), base::Location()) {}
+    : success(false), task(base::OnceClosure(), base::Location()) {}
 
 TaskQueueImpl::PostTaskResult::PostTaskResult(bool success,
                                               TaskQueue::PostedTask task)
     : success(success), task(std::move(task)) {}
+
+TaskQueueImpl::PostTaskResult::PostTaskResult(PostTaskResult&& move_from)
+    : success(move_from.success), task(std::move(move_from.task)) {}
+
+TaskQueueImpl::PostTaskResult::~PostTaskResult() = default;
 
 TaskQueueImpl::PostTaskResult TaskQueueImpl::PostTaskResult::Success() {
   return PostTaskResult(

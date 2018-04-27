@@ -72,7 +72,8 @@ class PLATFORM_EXPORT ThreadControllerImpl
   void DoWork(SequencedTaskSource::WorkType work_type);
 
   struct AnySequence {
-    AnySequence() = default;
+    AnySequence();
+    ~AnySequence();
 
     int do_work_running_count = 0;
     int nesting_depth = 0;
@@ -92,7 +93,8 @@ class PLATFORM_EXPORT ThreadControllerImpl
   }
 
   struct MainSequenceOnly {
-    MainSequenceOnly() = default;
+    MainSequenceOnly();
+    ~MainSequenceOnly();
 
     int do_work_running_count = 0;
     int nesting_depth = 0;

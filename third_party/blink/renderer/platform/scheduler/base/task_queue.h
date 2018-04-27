@@ -62,6 +62,9 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
                base::TimeDelta delay = base::TimeDelta(),
                base::Nestable nestable = base::Nestable::kNestable,
                int task_type = 0);
+    PostedTask(PostedTask&& move_from);
+    PostedTask(const PostedTask& copy_from) = delete;
+    ~PostedTask();
 
     base::OnceClosure callback;
     base::Location posted_from;
