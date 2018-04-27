@@ -10221,112 +10221,44 @@ PALETTE_EXIT:
   // Therefore, sometimes, NEWMV is chosen instead of NEARESTMV, NEARMV, and
   // GLOBALMV. Here, checks are added for those cases, and the mode decisions
   // are corrected.
-  if ((search_state.best_mbmode.mode == NEWMV ||
-       search_state.best_mbmode.mode == NEW_NEWMV)) {
+  if (search_state.best_mbmode.mode == NEWMV) {
     const MV_REFERENCE_FRAME refs[2] = {
       search_state.best_mbmode.ref_frame[0],
       search_state.best_mbmode.ref_frame[1]
     };
-    int comp_pred_mode = refs[1] > INTRA_FRAME;
-    int_mv zeromv[2];
+    int_mv zeromv;
     const uint8_t rf_type =
         av1_ref_frame_type(search_state.best_mbmode.ref_frame);
-    zeromv[0].as_int =
+    zeromv.as_int =
         gm_get_motion_vector(&cm->global_motion[refs[0]],
                              cm->allow_high_precision_mv, bsize, mi_col, mi_row,
                              cm->cur_frame_force_integer_mv)
             .as_int;
-    zeromv[1].as_int =
-        comp_pred_mode
-            ? gm_get_motion_vector(&cm->global_motion[refs[1]],
-                                   cm->allow_high_precision_mv, bsize, mi_col,
-                                   mi_row, cm->cur_frame_force_integer_mv)
-                  .as_int
-            : 0;
 
     // Check if the global motion mode is translational.
     int is_tran_gm = cm->global_motion[refs[0]].wmtype <= TRANSLATION;
-    if (comp_pred_mode)
-      is_tran_gm &= cm->global_motion[refs[1]].wmtype <= TRANSLATION;
     if (AOMMIN(block_size_wide[bsize], block_size_high[bsize]) < 8)
       is_tran_gm = 1;
+    assert(refs[1] <= INTRA_FRAME);
 
-    if (!comp_pred_mode) {
-      int ref_set = (mbmi_ext->ref_mv_count[rf_type] >= 2)
-                        ? AOMMIN(2, mbmi_ext->ref_mv_count[rf_type] - 2)
-                        : INT_MAX;
+    int ref_set = (mbmi_ext->ref_mv_count[rf_type] >= 2)
+                      ? AOMMIN(2, mbmi_ext->ref_mv_count[rf_type] - 2)
+                      : INT_MAX;
 
-      for (i = 0; i <= ref_set && ref_set != INT_MAX; ++i) {
-        int_mv cur_mv = mbmi_ext->ref_mv_stack[rf_type][i + 1].this_mv;
-        if (cur_mv.as_int == search_state.best_mbmode.mv[0].as_int) {
-          search_state.best_mbmode.mode = NEARMV;
-          search_state.best_mbmode.ref_mv_idx = i;
-        }
-      }
-
-      if (search_state.frame_mv[NEARESTMV][refs[0]].as_int ==
-          search_state.best_mbmode.mv[0].as_int)
-        search_state.best_mbmode.mode = NEARESTMV;
-      else if (search_state.best_mbmode.mv[0].as_int == zeromv[0].as_int &&
-               is_tran_gm) {
-        search_state.best_mbmode.mode = GLOBALMV;
-        if (is_nontrans_global_motion(xd, &search_state.best_mbmode)) {
-          search_state.best_mbmode.interp_filters = av1_broadcast_interp_filter(
-              av1_unswitchable_filter(cm->interp_filter));
-        }
-      }
-    } else {
-      int_mv nearestmv[2];
-      int_mv nearmv[2];
-
-      if (mbmi_ext->ref_mv_count[rf_type] > 1) {
-        nearmv[0] = mbmi_ext->ref_mv_stack[rf_type][1].this_mv;
-        nearmv[1] = mbmi_ext->ref_mv_stack[rf_type][1].comp_mv;
-      } else {
-        nearmv[0] = search_state.frame_mv[NEARMV][refs[0]];
-        nearmv[1] = search_state.frame_mv[NEARMV][refs[1]];
-      }
-      if (mbmi_ext->ref_mv_count[rf_type] >= 1) {
-        nearestmv[0] = mbmi_ext->ref_mv_stack[rf_type][0].this_mv;
-        nearestmv[1] = mbmi_ext->ref_mv_stack[rf_type][0].comp_mv;
-      } else {
-        nearestmv[0] = search_state.frame_mv[NEARESTMV][refs[0]];
-        nearestmv[1] = search_state.frame_mv[NEARESTMV][refs[1]];
-      }
-
-      if (nearestmv[0].as_int == search_state.best_mbmode.mv[0].as_int &&
-          nearestmv[1].as_int == search_state.best_mbmode.mv[1].as_int) {
-        search_state.best_mbmode.mode = NEAREST_NEARESTMV;
-      } else {
-        int ref_set = (mbmi_ext->ref_mv_count[rf_type] >= 2)
-                          ? AOMMIN(2, mbmi_ext->ref_mv_count[rf_type] - 2)
-                          : INT_MAX;
-
-        for (i = 0; i <= ref_set && ref_set != INT_MAX; ++i) {
-          nearmv[0] = mbmi_ext->ref_mv_stack[rf_type][i + 1].this_mv;
-          nearmv[1] = mbmi_ext->ref_mv_stack[rf_type][i + 1].comp_mv;
-
-          // Try switching to the NEAR_NEARMV mode
-          if (nearmv[0].as_int == search_state.best_mbmode.mv[0].as_int &&
-              nearmv[1].as_int == search_state.best_mbmode.mv[1].as_int) {
-            search_state.best_mbmode.mode = NEAR_NEARMV;
-            search_state.best_mbmode.ref_mv_idx = i;
-          }
-        }
-
-        if (search_state.best_mbmode.mode == NEW_NEWMV &&
-            search_state.best_mbmode.mv[0].as_int == zeromv[0].as_int &&
-            search_state.best_mbmode.mv[1].as_int == zeromv[1].as_int &&
-            is_tran_gm) {
-          search_state.best_mbmode.mode = GLOBAL_GLOBALMV;
-          if (is_nontrans_global_motion(xd, &search_state.best_mbmode)) {
-            search_state.best_mbmode.interp_filters =
-                av1_broadcast_interp_filter(
-                    av1_unswitchable_filter(cm->interp_filter));
-          }
-        }
+    for (i = 0; i <= ref_set && ref_set != INT_MAX; ++i) {
+      int_mv cur_mv = mbmi_ext->ref_mv_stack[rf_type][i + 1].this_mv;
+      if (cur_mv.as_int == search_state.best_mbmode.mv[0].as_int) {
+        search_state.best_mbmode.mode = NEARMV;
+        search_state.best_mbmode.ref_mv_idx = i;
       }
     }
+
+    if (search_state.frame_mv[NEARESTMV][refs[0]].as_int ==
+        search_state.best_mbmode.mv[0].as_int)
+      search_state.best_mbmode.mode = NEARESTMV;
+    else if (search_state.best_mbmode.mv[0].as_int == zeromv.as_int &&
+             is_tran_gm)
+      search_state.best_mbmode.mode = GLOBALMV;
   }
 #endif  // USE_DISCOUNT_NEWMV_TEST
 
