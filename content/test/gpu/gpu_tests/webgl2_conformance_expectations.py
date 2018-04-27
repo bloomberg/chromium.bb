@@ -382,6 +382,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=793055)
     self.Fail('deqp/functional/gles3/shadercommonfunction.html',
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=793055)
+    self.Fail('deqp/functional/gles3/shadercommonfunction.html',
+        ['win', 'nvidia', 'opengl'], bug=795030)
     self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=794341)
 
