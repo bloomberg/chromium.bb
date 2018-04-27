@@ -48,10 +48,11 @@ FieldCandidatesMap FormField::ParseFormFields(
     // Ignore checkable fields as they interfere with parsers assuming context.
     // Eg., while parsing address, "Is PO box" checkbox after ADDRESS_LINE1
     // interferes with correctly understanding ADDRESS_LINE2.
-    // Ignore fields marked as presentational. See
-    // http://www.w3.org/TR/wai-aria/roles#presentation
+    // Ignore fields marked as presentational, unless for 'select' fields (for
+    // synthetic fields.)
     if (IsCheckable(field->check_status) ||
-        field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION) {
+        (field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION &&
+         field->form_control_type != "select-one")) {
       continue;
     }
     processed_fields.push_back(field.get());
