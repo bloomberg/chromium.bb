@@ -100,7 +100,7 @@ class Wrappable : public WrappableBase {
 
  protected:
   Wrappable() {}
-  virtual ~Wrappable() {}
+  ~Wrappable() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Wrappable);
