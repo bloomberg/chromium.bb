@@ -413,67 +413,10 @@ cr.define('settings_privacy_page', function() {
     });
   }
 
-  function registerSafeBrowsingExtendedReportingTests() {
-    suite('SafeBrowsingExtendedReporting', function() {
-      /** @type {settings.TestPrivacyPageBrowserProxy} */
-      let testBrowserProxy;
-
-      /** @type {SettingsPrivacyPageElement} */
-      let page;
-
-      setup(function() {
-        testBrowserProxy = new TestPrivacyPageBrowserProxy();
-        settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
-        PolymerTest.clearBody();
-        page = document.createElement('settings-privacy-page');
-      });
-
-      teardown(function() { page.remove(); });
-
-      test('test whether extended reporting is enabled/managed', function() {
-        return testBrowserProxy.whenCalled(
-            'getSafeBrowsingExtendedReporting').then(function() {
-          Polymer.dom.flush();
-
-          // Control starts checked and managed by default.
-          assertTrue(testBrowserProxy.sberPrefState.enabled);
-          assertTrue(testBrowserProxy.sberPrefState.managed);
-
-          const control = page.$$('#safeBrowsingExtendedReportingControl');
-          assertEquals(true, control.checked);
-          assertEquals(true, !!control.pref.controlledBy);
-
-          // Change the managed and checked states
-          const changedPrefState = {
-            enabled: false,
-            managed: false,
-          };
-          // Notification from browser can uncheck the box and make it not
-          // managed.
-          cr.webUIListenerCallback('safe-browsing-extended-reporting-change',
-                                   changedPrefState);
-          Polymer.dom.flush();
-          assertEquals(false, control.checked);
-          assertEquals(false, !!control.pref.controlledBy);
-
-          // Tapping on the box will check it again.
-          MockInteractions.tap(control);
-
-          return testBrowserProxy.whenCalled(
-            'setSafeBrowsingExtendedReportingEnabled');
-        })
-        .then(function(enabled) {
-          assertTrue(enabled);
-        });
-      });
-    });
-  }
-
   if (cr.isMac || cr.isWin)
     registerNativeCertificateManagerTests();
 
   registerClearBrowsingDataTests();
   registerImportantSitesTests();
   registerPrivacyPageTests();
-  registerSafeBrowsingExtendedReportingTests();
 });
