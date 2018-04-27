@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/display/window_tree_host_manager.h"
 #include "ash/public/interfaces/night_light_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/system/night_light/time_of_day.h"
@@ -18,6 +17,7 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/aura/env_observer.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -27,10 +27,17 @@ namespace ash {
 class ColorTemperatureAnimation;
 
 // Controls the NightLight feature that adjusts the color temperature of the
-// screen.
+// screen. It uses the display's hardware CRTC (Cathode Ray Tube Controller)
+// color transform matrix (CTM) when possible for efficiency, and can fall back
+// to setting a color matrix on the compositor if the display doesn't support
+// color transformation.
+// For Unified Desktop mode, the color matrix is set on the mirroring actual
+// displays' hosts, rather than on the Unified host, so that we can use the
+// CRTC matrix if available (the Unified host doesn't correspond to an actual
+// display).
 class ASH_EXPORT NightLightController
     : public mojom::NightLightController,
-      public WindowTreeHostManager::Observer,
+      public aura::EnvObserver,
       public SessionObserver,
       public chromeos::PowerManagerClient::Observer {
  public:
@@ -118,8 +125,9 @@ class ASH_EXPORT NightLightController
   // AnimationDurationType::kShort.
   void Toggle();
 
-  // ash::WindowTreeHostManager::Observer:
-  void OnDisplayConfigurationChanged() override;
+  // aura::EnvObserver:
+  void OnWindowInitialized(aura::Window* window) override {}
+  void OnHostInitialized(aura::WindowTreeHost* host) override;
 
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;

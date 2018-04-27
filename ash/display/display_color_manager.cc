@@ -166,6 +166,10 @@ void ColorMatrixVectorFromSkMatrix44(
 
 SkMatrix44 SkMatrix44FromColorMatrixVector(
     const std::vector<float>& matrix_vector) {
+  if (matrix_vector.empty())
+    return SkMatrix44::I();
+
+  DCHECK_EQ(matrix_vector.size(), 9u);
   SkMatrix44 matrix(SkMatrix44::kUninitialized_Constructor);
   matrix.set3x3RowMajorf(matrix_vector.data());
   return matrix;
@@ -181,6 +185,7 @@ DisplayColorManager::DisplayColorManager(
       sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+      displays_ctm_support_(DisplayCtmSupport::kNone),
       screen_to_observe_(screen_to_observe),
       weak_ptr_factory_(this) {
   configurator_->AddObserver(this);
@@ -206,10 +211,12 @@ bool DisplayColorManager::SetDisplayColorMatrix(
       return false;
     }
 
-    displays_color_matrix_map_.emplace(display_id, color_matrix);
+    // Always overwrite any existing matrix for this display.
+    displays_color_matrix_map_[display_id] = color_matrix;
     const auto iter = calibration_map_.find(display_snapshot->product_code());
     SkMatrix44 combined_matrix = color_matrix;
-    if (iter != calibration_map_.end() && iter->second) {
+    if (iter != calibration_map_.end()) {
+      DCHECK(iter->second);
       combined_matrix.preConcat(
           SkMatrix44FromColorMatrixVector(iter->second->correction_matrix));
     }
@@ -224,31 +231,34 @@ bool DisplayColorManager::SetDisplayColorMatrix(
 
 void DisplayColorManager::OnDisplayModeChanged(
     const display::DisplayConfigurator::DisplayStateList& display_states) {
+  size_t displays_with_ctm_support_count = 0;
   for (const display::DisplaySnapshot* state : display_states) {
     UMA_HISTOGRAM_BOOLEAN("Ash.DisplayColorManager.ValidDisplayColorSpace",
                           state->color_space().IsValid());
 
-    // Always reset the configuration before setting a new one, because some
-    // drivers hold on to it across screen changes, http://crrev.com/1914343003.
-    configurator_->SetColorCorrection(
-        state->display_id(), std::vector<display::GammaRampRGBEntry>(),
-        std::vector<display::GammaRampRGBEntry>(), std::vector<float>());
+    if (state->has_color_correction_matrix())
+      ++displays_with_ctm_support_count;
 
     UMA_HISTOGRAM_BOOLEAN("Ash.DisplayColorManager.HasColorCorrectionMatrix",
                           state->has_color_correction_matrix());
-    if (calibration_map_[state->product_code()]) {
-      ApplyDisplayColorCalibration(state->display_id(), state->product_code());
-    } else {
-      const bool valid_product_code =
-          state->product_code() !=
-          display::DisplaySnapshot::kInvalidProductCode;
-      // TODO(mcasas): correct UMA s/Id/Code/, https://crbug.com/821393.
-      UMA_HISTOGRAM_BOOLEAN("Ash.DisplayColorManager.ValidProductId",
-                            valid_product_code);
-      if (valid_product_code)
-        LoadCalibrationForDisplay(state);
+    const int64_t display_id = state->display_id();
+    const auto calibration_iter = calibration_map_.find(state->product_code());
+    if (calibration_iter != calibration_map_.end()) {
+      DCHECK(calibration_iter->second);
+      ApplyDisplayColorCalibration(display_id, *(calibration_iter->second));
+    } else if (!LoadCalibrationForDisplay(state)) {
+      // Failed to start loading ICC profile. Reset calibration or reapply an
+      // existing color matrix we have for this display.
+      ResetDisplayColorCalibration(display_id);
     }
   }
+
+  if (!displays_with_ctm_support_count)
+    displays_ctm_support_ = DisplayCtmSupport::kNone;
+  else if (displays_with_ctm_support_count == display_states.size())
+    displays_ctm_support_ = DisplayCtmSupport::kAll;
+  else
+    displays_ctm_support_ = DisplayCtmSupport::kMixed;
 }
 
 void DisplayColorManager::OnDisplayRemoved(
@@ -256,42 +266,46 @@ void DisplayColorManager::OnDisplayRemoved(
   displays_color_matrix_map_.erase(old_display.id());
 }
 
-void DisplayColorManager::ApplyDisplayColorCalibration(int64_t display_id,
-                                                       int64_t product_code) {
-  const auto calibration_iter = calibration_map_.find(product_code);
-  if (calibration_iter == calibration_map_.end() || !calibration_iter->second)
-    return;
-
+void DisplayColorManager::ApplyDisplayColorCalibration(
+    int64_t display_id,
+    const ColorCalibrationData& calibration_data) {
   const auto color_matrix_iter = displays_color_matrix_map_.find(display_id);
-  ColorCalibrationData* data = calibration_iter->second.get();
-  const std::vector<float>* final_matrix = &data->correction_matrix;
+  const std::vector<float>* final_matrix = &calibration_data.correction_matrix;
   if (color_matrix_iter != displays_color_matrix_map_.end()) {
     SkMatrix44 combined_matrix = color_matrix_iter->second;
-    combined_matrix.preConcat(
-        SkMatrix44FromColorMatrixVector(data->correction_matrix));
+    combined_matrix.preConcat(SkMatrix44FromColorMatrixVector(*final_matrix));
     ColorMatrixVectorFromSkMatrix44(combined_matrix, &matrix_buffer_);
     final_matrix = &matrix_buffer_;
   }
 
-  if (!configurator_->SetColorCorrection(display_id, data->degamma_lut,
-                                         data->gamma_lut, *final_matrix)) {
+  if (!configurator_->SetColorCorrection(
+          display_id, calibration_data.degamma_lut, calibration_data.gamma_lut,
+          *final_matrix)) {
     LOG(WARNING) << "Error applying color correction data";
   }
 }
 
-void DisplayColorManager::LoadCalibrationForDisplay(
+bool DisplayColorManager::LoadCalibrationForDisplay(
     const display::DisplaySnapshot* display) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (display->display_id() == display::kInvalidDisplayId) {
     LOG(WARNING) << "Trying to load calibration data for invalid display id";
-    return;
+    return false;
   }
 
   // TODO: enable QuirksManager for mash. http://crbug.com/728748. Some tests
   // don't create the Shell when running this code, hence the
   // Shell::HasInstance() conditional.
   if (Shell::HasInstance() && Shell::GetAshConfig() == Config::MASH)
-    return;
+    return false;
+
+  const bool valid_product_code =
+      display->product_code() != display::DisplaySnapshot::kInvalidProductCode;
+  // TODO(mcasas): correct UMA s/Id/Code/, https://crbug.com/821393.
+  UMA_HISTOGRAM_BOOLEAN("Ash.DisplayColorManager.ValidProductId",
+                        valid_product_code);
+  if (!valid_product_code)
+    return false;
 
   quirks::QuirksManager::Get()->RequestIccProfilePath(
       display->product_code(), display->display_name(),
@@ -299,6 +313,7 @@ void DisplayColorManager::LoadCalibrationForDisplay(
                  weak_ptr_factory_.GetWeakPtr(), display->display_id(),
                  display->product_code(),
                  display->has_color_correction_matrix(), display->type()));
+  return true;
 }
 
 void DisplayColorManager::FinishLoadCalibrationForDisplay(
@@ -314,16 +329,17 @@ void DisplayColorManager::FinishLoadCalibrationForDisplay(
   if (path.empty()) {
     VLOG(1) << "No ICC file found with product id: " << product_string
             << " for display id: " << display_id;
+    ResetDisplayColorCalibration(display_id);
     return;
-  } else {
-    UMA_HISTOGRAM_BOOLEAN("Ash.DisplayColorManager.IccFileDownloaded",
-                          file_downloaded);
   }
 
+  UMA_HISTOGRAM_BOOLEAN("Ash.DisplayColorManager.IccFileDownloaded",
+                        file_downloaded);
   if (file_downloaded && type == display::DISPLAY_CONNECTION_TYPE_INTERNAL) {
     VLOG(1) << "Downloaded ICC file with product id: " << product_string
             << " for internal display id: " << display_id
             << ". Profile will be applied on next startup.";
+    ResetDisplayColorCalibration(display_id);
     return;
   }
 
@@ -343,10 +359,33 @@ void DisplayColorManager::UpdateCalibrationData(
     int64_t product_id,
     std::unique_ptr<ColorCalibrationData> data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Apply the received |data| if valid or reset color calibration.
   if (data) {
+    ApplyDisplayColorCalibration(display_id, *data);
     calibration_map_[product_id] = std::move(data);
-    ApplyDisplayColorCalibration(display_id, product_id);
+  } else {
+    ResetDisplayColorCalibration(display_id);
   }
+}
+
+void DisplayColorManager::ResetDisplayColorCalibration(int64_t display_id) {
+  // We must call this in every potential failure point at loading the ICC
+  // profile of the displays when the displays have been reconfigured. This is
+  // due to the following reason:
+  // With the DRM drivers on ChromeOS, the color management tables and matrices
+  // are stored at the pipe level (part of the display hardware that is
+  // configurable regardless of the actual connector it is attached to). This
+  // allows display configuration to remain active while different processes are
+  // using the driver (for example switching VT).
+  //
+  // As a result, when an external screen is connected to a Chromebook, a given
+  // color configuration might be applied to it and remain stored in the driver
+  // after the screen is disconnected. If another external screen is now
+  // connected the previously applied color management will remain if there is
+  // not a profile for that display.
+  //
+  // For more details, please refer to https://crrev.com/1914343003.
+  ApplyDisplayColorCalibration(display_id, {} /* calibration_data */);
 }
 
 DisplayColorManager::ColorCalibrationData::ColorCalibrationData() = default;

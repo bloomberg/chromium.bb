@@ -379,6 +379,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   display::DisplayConfigurator* display_configurator() {
     return display_configurator_.get();
   }
+  DisplayColorManager* display_color_manager() {
+    return display_color_manager_.get();
+  }
   DisplayErrorObserver* display_error_observer() {
     return display_error_observer_.get();
   }

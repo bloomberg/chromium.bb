@@ -7,9 +7,10 @@
 #include <cmath>
 #include <memory>
 
+#include "ash/display/display_color_manager.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "base/i18n/time_formatting.h"
@@ -21,9 +22,13 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "third_party/icu/source/i18n/astro.h"
+#include "ui/aura/env.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
 
@@ -105,9 +110,8 @@ int GetTemperatureRange(float temperature) {
   return std::floor(5 * temperature);
 }
 
-// Applies the given |temperature| value by converting it to the corresponding
-// color matrix that will be set on the output display.
-void ApplyTemperatureToCompositors(float temperature) {
+// Returns the color matrix that corresponds to the given |temperature|.
+SkMatrix44 MatrixFromTemperature(float temperature) {
   SkMatrix44 matrix(SkMatrix44::kIdentity_Constructor);
   if (temperature != 0.0f) {
     const float blue_scale =
@@ -118,10 +122,66 @@ void ApplyTemperatureToCompositors(float temperature) {
     matrix.set(1, 1, green_scale);
     matrix.set(2, 2, blue_scale);
   }
+  return matrix;
+}
 
-  for (auto* controller : RootWindowController::root_window_controllers()) {
-    if (controller->GetHost()->compositor())
-      controller->GetHost()->compositor()->SetDisplayColorMatrix(matrix);
+// Applies the given |temperature| to the display associated with the given
+// |host|. This is useful for when we have a host and not a display ID.
+void ApplyTemperatureToHost(aura::WindowTreeHost* host, float temperature) {
+  DCHECK(host);
+  const int64_t display_id = host->GetDisplayId();
+  DCHECK_NE(display_id, display::kInvalidDisplayId);
+  if (display_id == display::kUnifiedDisplayId) {
+    // In Unified Desktop mode, applying the color matrix to either the CRTC or
+    // the compositor of the mirroring (actual) displays is sufficient. If we
+    // apply it to the compositor of the Unified host (since there's no actual
+    // display CRTC for |display::kUnifiedDisplayId|), then we'll end up with
+    // double the temperature.
+    return;
+  }
+
+  const SkMatrix44 matrix = MatrixFromTemperature(temperature);
+  if (!Shell::Get()->display_color_manager()->SetDisplayColorMatrix(
+          host->GetDisplayId(), matrix)) {
+    // This display doesn't support CRTC matrix. Fall back to the composited
+    // matrix.
+    if (host->compositor())
+      host->compositor()->SetDisplayColorMatrix(matrix);
+  }
+}
+
+// Applies the given |temperature| value by converting it to the corresponding
+// color matrix that will be set on the output displays.
+void ApplyTemperatureToAllDisplays(float temperature) {
+  const SkMatrix44 matrix = MatrixFromTemperature(temperature);
+
+  Shell* shell = Shell::Get();
+  DisplayColorManager* color_manager = shell->display_color_manager();
+  WindowTreeHostManager* wth_manager = shell->window_tree_host_manager();
+  for (int64_t display_id :
+       shell->display_manager()->GetCurrentDisplayIdList()) {
+    DCHECK_NE(display_id, display::kUnifiedDisplayId);
+
+    if (color_manager->SetDisplayColorMatrix(display_id, matrix)) {
+      // Setting the hardware CRTC matrix was successful.
+      continue;
+    }
+
+    // This display doesn't support CRTC matrix. Fall back to the composited
+    // matrix.
+    aura::Window* root_window =
+        wth_manager->GetRootWindowForDisplayId(display_id);
+    if (!root_window) {
+      // Some displays' hosts may have not being initialized yet. In this case
+      // NightLightController::OnHostInitialized() will take care of those
+      // hosts.
+      continue;
+    }
+
+    auto* host = root_window->GetHost();
+    DCHECK(host);
+    if (host->compositor())
+      host->compositor()->SetDisplayColorMatrix(matrix);
   }
 }
 
@@ -153,7 +213,7 @@ class ColorTemperatureAnimation : public gfx::LinearAnimation,
       // Animations are disabled. Apply the target temperature directly to the
       // compositors.
       current_temperature_ = target_temperature_;
-      ApplyTemperatureToCompositors(target_temperature_);
+      ApplyTemperatureToAllDisplays(target_temperature_);
       Stop();
       return;
     }
@@ -180,7 +240,7 @@ class ColorTemperatureAnimation : public gfx::LinearAnimation,
       Stop();
     }
 
-    ApplyTemperatureToCompositors(current_temperature_);
+    ApplyTemperatureToAllDisplays(current_temperature_);
   }
 
   float start_temperature_ = 0.0f;
@@ -195,7 +255,7 @@ NightLightController::NightLightController()
       temperature_animation_(std::make_unique<ColorTemperatureAnimation>()),
       binding_(this) {
   Shell::Get()->session_controller()->AddObserver(this);
-  Shell::Get()->window_tree_host_manager()->AddObserver(this);
+  aura::Env::GetInstance()->AddObserver(this);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
 }
@@ -203,7 +263,7 @@ NightLightController::NightLightController()
 NightLightController::~NightLightController() {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
-  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
+  aura::Env::GetInstance()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
@@ -344,12 +404,11 @@ void NightLightController::Toggle() {
   SetEnabled(!GetEnabled(), AnimationDuration::kShort);
 }
 
-void NightLightController::OnDisplayConfigurationChanged() {
-  // Since the color temperature matrix is a per-display output surface
-  // property, then when displays are added, removed, mirrored, extended, or
-  // switched to Unified Mode, we need to apply the current temperature
-  // immediately without animation.
-  ApplyTemperatureToCompositors(GetEnabled() ? GetColorTemperature() : 0.0f);
+void NightLightController::OnHostInitialized(aura::WindowTreeHost* host) {
+  // This newly initialized |host| could be of a newly added display, or of a
+  // newly created mirroring display (either for mirroring or unified). we need
+  // to apply the current temperature immediately without animation.
+  ApplyTemperatureToHost(host, GetEnabled() ? GetColorTemperature() : 0.0f);
 }
 
 void NightLightController::OnActiveUserPrefServiceChanged(

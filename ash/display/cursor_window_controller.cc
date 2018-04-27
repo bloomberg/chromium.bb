@@ -6,6 +6,7 @@
 
 #include "ash/ash_constants.h"
 #include "ash/components/cursor/cursor_view.h"
+#include "ash/display/display_color_manager.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/magnifier/magnification_controller.h"
@@ -16,6 +17,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/prefs/pref_service.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/env.h"
@@ -128,7 +130,8 @@ bool CursorWindowController::ShouldEnableCursorCompositing() {
   // During startup, we may not have a preference service yet. We need to check
   // display manager state first so that we don't accidentally ignore it while
   // early outing when there isn't a PrefService yet.
-  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  Shell* shell = Shell::Get();
+  display::DisplayManager* display_manager = shell->display_manager();
   if ((display_manager->is_multi_mirroring_enabled() &&
        display_manager->IsInSoftwareMirrorMode()) ||
       display_manager->IsInUnifiedMode() ||
@@ -136,19 +139,33 @@ bool CursorWindowController::ShouldEnableCursorCompositing() {
     return true;
   }
 
-  if (ash::Shell::Get()->magnification_controller()->IsEnabled())
+  if (shell->magnification_controller()->IsEnabled())
     return true;
 
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetActivePrefService();
+  PrefService* prefs = shell->session_controller()->GetActivePrefService();
   if (!prefs) {
     // The active pref service can be null early in startup.
     return false;
   }
+
+  if (prefs->GetBoolean(prefs::kNightLightEnabled)) {
+    // All or some displays don't support setting a CRTC matrix, which means
+    // Night Light is using the composited color matrix, and hence software
+    // cursor should be used.
+    // TODO(afakhry): Instead of switching to the composited cursor on all
+    // displays if any of them don't support a CRTC matrix, we should provide
+    // the functionality to turn on the composited cursor on a per-display basis
+    // (i.e. use it only on the displays that don't support CRTC matrices).
+    const DisplayColorManager::DisplayCtmSupport displays_ctm_support =
+        shell->display_color_manager()->displays_ctm_support();
+    UMA_HISTOGRAM_ENUMERATION("Ash.NightLight.DisplayCrtcCtmSupport",
+                              displays_ctm_support);
+    return displays_ctm_support != DisplayColorManager::DisplayCtmSupport::kAll;
+  }
+
   return prefs->GetBoolean(prefs::kAccessibilityLargeCursorEnabled) ||
          prefs->GetBoolean(prefs::kAccessibilityHighContrastEnabled) ||
-         prefs->GetBoolean(prefs::kDockedMagnifierEnabled) ||
-         prefs->GetBoolean(prefs::kNightLightEnabled);
+         prefs->GetBoolean(prefs::kDockedMagnifierEnabled);
 }
 
 void CursorWindowController::SetCursorCompositingEnabled(bool enabled) {
