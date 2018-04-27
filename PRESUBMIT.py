@@ -568,6 +568,15 @@ _BANNED_CPP_FUNCTIONS = (
         r'.*[\\\/]tools[\\\/].*\.(cc|h)$',
       ),
     ),
+    (
+      r'/\barraysize\b',
+      (
+          "arraysize is deprecated, please use base::size(array) instead ",
+          "(https://crbug.com/837308). ",
+      ),
+      False,
+      (),
+    ),
 )
 
 
