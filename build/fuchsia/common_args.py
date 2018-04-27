@@ -26,8 +26,8 @@ def AddCommonArgs(arg_parser):
                            help='Path to the Fuchsia package manifest file.')
   common_args.add_argument('--output-directory',
                            type=os.path.realpath, required=True,
-                           help=('Path to the directory in which build files are'
-                                 ' located (must include build type).'))
+                           help=('Path to the directory in which build files '
+                                 'are located (must include build type).'))
   common_args.add_argument('--target-cpu', required=True,
                            help='GN target_cpu setting for the build.')
   common_args.add_argument('--device', '-d', action='store_true', default=False,
@@ -40,7 +40,8 @@ def AddCommonArgs(arg_parser):
   common_args.add_argument('--ssh-config', '-F',
                            help='The path to the SSH configuration used for '
                                 'connecting to the target device.')
-  common_args.add_argument('--verbose', '-v', default=False, action='store_true',
+  common_args.add_argument('--verbose', '-v', default=False,
+                           action='store_true',
                            help='Show more logging information.')
   common_args.add_argument('--really-verbose', '-vv', default=False,
                            action='store_true',

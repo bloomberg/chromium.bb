@@ -2809,8 +2809,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.base_unittests.filter",
-          "--use-new-test-runner"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.base_unittests.filter"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2859,9 +2858,6 @@
         "test": "cronet_unittests"
       },
       {
-        "args": [
-          "--use-new-test-runner"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2874,8 +2870,7 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ipc_tests.filter",
-          "--use-new-test-runner"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ipc_tests.filter"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2900,8 +2895,7 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_unittests.filter",
-          "--use-new-test-runner"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_unittests.filter"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2930,8 +2924,7 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.service_manager_unittests.filter",
-          "--use-new-test-runner"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.service_manager_unittests.filter"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2944,10 +2937,6 @@
         "test": "service_manager_unittests"
       },
       {
-        "args": [
-          "--use-new-test-runner",
-          "-v"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2959,10 +2948,6 @@
         "test": "skia_unittests"
       },
       {
-        "args": [
-          "--use-new-test-runner",
-          "-v"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

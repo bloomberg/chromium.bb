@@ -59,7 +59,8 @@ class Target(object):
 
     command: A list of strings representing the command and arguments.
     kwargs: A dictionary of parameters to be passed to subprocess.Popen().
-            The parameters can be used to override stdin and stdout, for example.
+            The parameters can be used to override stdin and stdout, for
+            example.
 
     Returns: a Popen object.
 
