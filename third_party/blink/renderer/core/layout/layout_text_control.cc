@@ -54,12 +54,6 @@ void LayoutTextControl::StyleDidChange(StyleDifference diff,
   LayoutBlock* inner_editor_layout_object =
       ToLayoutBlock(inner_editor->GetLayoutObject());
   if (inner_editor_layout_object) {
-    // We may have set the width and the height in the old style in layout().
-    // Reset them now to avoid getting a spurious layout hint.
-    inner_editor_layout_object->MutableStyleRef().SetHeight(Length());
-    inner_editor_layout_object->MutableStyleRef().SetWidth(Length());
-    inner_editor_layout_object->SetStyle(
-        inner_editor->CreateInnerEditorStyle());
     inner_editor->SetNeedsStyleRecalc(
         kSubtreeStyleChange,
         StyleChangeReasonForTracing::Create(StyleChangeReason::kControl));
