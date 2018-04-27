@@ -184,10 +184,9 @@ void NGBoxFragmentPainter::PaintObject(
   if (paint_phase != PaintPhase::kSelfOutlineOnly) {
     // TODO(layout-dev): Figure out where paint properties should live.
     const auto& layout_object = *box_fragment_.GetLayoutObject();
+    base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
     base::Optional<PaintInfo> scrolled_paint_info;
     if (const auto* fragment = paint_info.FragmentToPaint(layout_object)) {
-      base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
-      base::Optional<ScrollRecorder> scroll_recorder;
       DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
       const auto* object_properties = fragment->PaintProperties();
       auto* scroll_translation =
