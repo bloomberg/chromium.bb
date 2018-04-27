@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "device/fido/ctap_empty_authenticator_request.h"
+#include "device/fido/ctap_register_operation.h"
 #include "device/fido/device_response_converter.h"
 
 namespace device {
@@ -40,10 +41,11 @@ void MakeCredentialTask::MakeCredential() {
     return;
   }
 
-  device()->DeviceTransact(
-      request_parameter_.EncodeAsCBOR(),
+  register_operation_ = std::make_unique<CtapRegisterOperation>(
+      device(), &request_parameter_,
       base::BindOnce(&MakeCredentialTask::OnCtapMakeCredentialResponseReceived,
                      weak_factory_.GetWeakPtr()));
+  register_operation_->Start();
 }
 
 void MakeCredentialTask::U2fRegister() {
@@ -56,28 +58,21 @@ void MakeCredentialTask::U2fRegister() {
 }
 
 void MakeCredentialTask::OnCtapMakeCredentialResponseReceived(
-    base::Optional<std::vector<uint8_t>> device_response) {
-  if (!device_response) {
+    CtapDeviceResponseCode return_code,
+    base::Optional<AuthenticatorMakeCredentialResponse> response_data) {
+  if (return_code != CtapDeviceResponseCode::kSuccess) {
+    std::move(callback_).Run(return_code, base::nullopt);
+    return;
+  }
+
+  if (!response_data ||
+      !response_data->CheckRpIdHash(request_parameter_.rp().rp_id())) {
     std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
                              base::nullopt);
     return;
   }
 
-  auto response_code = GetResponseCode(*device_response);
-  if (response_code != CtapDeviceResponseCode::kSuccess) {
-    std::move(callback_).Run(response_code, base::nullopt);
-    return;
-  }
-
-  auto parsed_response = ReadCTAPMakeCredentialResponse(*device_response);
-  if (!parsed_response ||
-      !parsed_response->CheckRpIdHash(request_parameter_.rp().rp_id())) {
-    std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
-                             base::nullopt);
-    return;
-  }
-
-  std::move(callback_).Run(response_code, std::move(parsed_response));
+  std::move(callback_).Run(return_code, std::move(response_data));
 }
 
 bool MakeCredentialTask::CheckIfAuthenticatorSelectionCriteriaAreSatisfied() {

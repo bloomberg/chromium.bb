@@ -25,7 +25,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
  public:
   using WinkCallback = base::OnceClosure;
   using DeviceCallback =
-      base::OnceCallback<void(base::Optional<std::vector<uint8_t>> response)>;
+      base::OnceCallback<void(base::Optional<std::vector<uint8_t>>)>;
 
   // Internal state machine states.
   enum class State { kInit, kConnected, kBusy, kReady, kDeviceError };

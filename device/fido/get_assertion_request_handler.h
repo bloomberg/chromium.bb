@@ -26,9 +26,9 @@ class FidoDevice;
 class FidoTask;
 class AuthenticatorGetAssertionResponse;
 
-using SignResponseCallback = base::OnceCallback<void(
-    FidoReturnCode status_code,
-    base::Optional<AuthenticatorGetAssertionResponse> response_data)>;
+using SignResponseCallback =
+    base::OnceCallback<void(FidoReturnCode,
+                            base::Optional<AuthenticatorGetAssertionResponse>)>;
 
 class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
     : public FidoRequestHandler<AuthenticatorGetAssertionResponse> {
