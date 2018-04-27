@@ -424,7 +424,7 @@ class CrossOriginReadBlocking::ResponseAnalyzer::ConfirmationSniffer {
 
 // A ConfirmationSniffer that wraps one of the sniffing functions from
 // network::CrossOriginReadBlocking.
-class SimpleConfirmationSniffer
+class CrossOriginReadBlocking::ResponseAnalyzer::SimpleConfirmationSniffer
     : public CrossOriginReadBlocking::ResponseAnalyzer::ConfirmationSniffer {
  public:
   // The function pointer type corresponding to one of the available sniffing
@@ -479,7 +479,9 @@ class SimpleConfirmationSniffer
 
 // A ConfirmationSniffer for parser breakers (fetch-only resources). This logs
 // to an UMA histogram whenever it is the reason for a response being blocked.
-class FetchOnlyResourceSniffer : public SimpleConfirmationSniffer {
+class CrossOriginReadBlocking::ResponseAnalyzer::FetchOnlyResourceSniffer
+    : public CrossOriginReadBlocking::ResponseAnalyzer::
+          SimpleConfirmationSniffer {
  public:
   FetchOnlyResourceSniffer()
       : SimpleConfirmationSniffer(

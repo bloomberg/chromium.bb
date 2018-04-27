@@ -10,11 +10,16 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece_forward.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+namespace content {
+FORWARD_DECLARE_TEST(CrossSiteDocumentResourceHandlerTest, ResponseBlocking);
+}  // namespace content
 
 namespace net {
 class URLRequest;
@@ -84,6 +89,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     bool found_parser_breaker() const { return found_parser_breaker_; }
 
     class ConfirmationSniffer;
+    class SimpleConfirmationSniffer;
+    class FetchOnlyResourceSniffer;
 
    private:
     // Three conclusions are possible from looking at the headers:
@@ -147,14 +154,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     kYes,
   };
 
+ private:
+  CrossOriginReadBlocking();  // Not instantiable.
+
   // Returns the representative mime type enum value of the mime type of
   // response. For example, this returns the same value for all text/xml mime
   // type families such as application/xml, application/rss+xml.
   static MimeType GetCanonicalMimeType(base::StringPiece mime_type);
+  FRIEND_TEST_ALL_PREFIXES(CrossOriginReadBlockingTest, GetCanonicalMimeType);
 
   // Returns whether this scheme is a target of the cross-origin read blocking
   // (CORB) policy.  This returns true only for http://* and https://* urls.
   static bool IsBlockableScheme(const GURL& frame_origin);
+  FRIEND_TEST_ALL_PREFIXES(CrossOriginReadBlockingTest, IsBlockableScheme);
 
   // Returns whether there's a valid CORS header for frame_origin.  This is
   // simliar to CrossOriginAccessControl::passesAccessControlCheck(), but we use
@@ -166,19 +178,22 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
   // decide whether to block a response or not on the client side.
   static bool IsValidCorsHeaderSet(const url::Origin& frame_origin,
                                    const std::string& access_control_origin);
+  FRIEND_TEST_ALL_PREFIXES(CrossOriginReadBlockingTest, IsValidCorsHeaderSet);
 
   static SniffingResult SniffForHTML(base::StringPiece data);
   static SniffingResult SniffForXML(base::StringPiece data);
   static SniffingResult SniffForJSON(base::StringPiece data);
+  FRIEND_TEST_ALL_PREFIXES(CrossOriginReadBlockingTest, SniffForHTML);
+  FRIEND_TEST_ALL_PREFIXES(CrossOriginReadBlockingTest, SniffForXML);
+  FRIEND_TEST_ALL_PREFIXES(CrossOriginReadBlockingTest, SniffForJSON);
+  FRIEND_TEST_ALL_PREFIXES(content::CrossSiteDocumentResourceHandlerTest,
+                           ResponseBlocking);
 
   // Sniff for patterns that indicate |data| only ought to be consumed by XHR()
   // or fetch(). This detects Javascript parser-breaker and particular JS
   // infinite-loop patterns, which are used conventionally as a defense against
   // JSON data exfiltration by means of a <script> tag.
   static SniffingResult SniffForFetchOnlyResource(base::StringPiece data);
-
- private:
-  CrossOriginReadBlocking();  // Not instantiable.
 
   DISALLOW_COPY_AND_ASSIGN(CrossOriginReadBlocking);
 };
