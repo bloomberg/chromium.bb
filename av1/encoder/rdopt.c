@@ -5682,9 +5682,11 @@ static INLINE int get_single_mode(int this_mode, int ref_idx,
   return single_mode;
 }
 
-static int check_best_zero_mv(const AV1_COMMON *const cm,
-                              const MACROBLOCK *const x, int this_mode,
-                              const MV_REFERENCE_FRAME ref_frames[2]) {
+/* If the current mode shares the same mv with other modes with higher prority,
+ * skip this mode. This priority order is nearest > global > near. */
+static int skip_repeated_mv(const AV1_COMMON *const cm,
+                            const MACROBLOCK *const x, int this_mode,
+                            const MV_REFERENCE_FRAME ref_frames[2]) {
   const int is_comp_pred = ref_frames[1] > INTRA_FRAME;
   const uint8_t ref_frame_type = av1_ref_frame_type(ref_frames);
   const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
@@ -5692,19 +5694,19 @@ static int check_best_zero_mv(const AV1_COMMON *const cm,
     if (this_mode == NEARMV) {
       if (mbmi_ext->ref_mv_count[ref_frame_type] == 0) {
         // NEARMV has the same motion vector as NEARESTMV
-        return 0;
+        return 1;
       }
       if (mbmi_ext->ref_mv_count[ref_frame_type] == 1 &&
           cm->global_motion[ref_frames[0]].wmtype <= TRANSLATION) {
         // NEARMV has the same motion vector as GLOBALMV
-        return 0;
+        return 1;
       }
     }
     if (this_mode == GLOBALMV) {
       if (mbmi_ext->ref_mv_count[ref_frame_type] == 0 &&
           cm->global_motion[ref_frames[0]].wmtype <= TRANSLATION) {
         // GLOBALMV has the same motion vector as NEARESTMV
-        return 0;
+        return 1;
       }
     }
   } else {
@@ -5713,7 +5715,7 @@ static int check_best_zero_mv(const AV1_COMMON *const cm,
       if (single_mode == NEARMV) {
         if (mbmi_ext->ref_mv_count[ref_frame_type] == 0) {
           // NEARMV has the same motion vector as NEARESTMV in compound mode
-          return 0;
+          return 1;
         }
       }
     }
@@ -5722,7 +5724,7 @@ static int check_best_zero_mv(const AV1_COMMON *const cm,
           cm->global_motion[ref_frames[0]].wmtype <= TRANSLATION &&
           cm->global_motion[ref_frames[1]].wmtype <= TRANSLATION) {
         // NEAR_NEARMV has the same motion vector as GLOBAL_GLOBALMV
-        return 0;
+        return 1;
       }
     }
     if (this_mode == GLOBAL_GLOBALMV) {
@@ -5730,11 +5732,11 @@ static int check_best_zero_mv(const AV1_COMMON *const cm,
           cm->global_motion[ref_frames[0]].wmtype <= TRANSLATION &&
           cm->global_motion[ref_frames[1]].wmtype <= TRANSLATION) {
         // GLOBAL_GLOBALMV has the same motion vector as NEARST_NEARSTMV
-        return 0;
+        return 1;
       }
     }
   }
-  return 1;
+  return 0;
 }
 
 static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
@@ -9526,7 +9528,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
     {
       const MV_REFERENCE_FRAME ref_frames[2] = { ref_frame, second_ref_frame };
-      if (!check_best_zero_mv(cm, x, this_mode, ref_frames)) {
+      if (skip_repeated_mv(cm, x, this_mode, ref_frames)) {
         continue;
       }
     }
