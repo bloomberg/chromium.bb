@@ -38,18 +38,11 @@ bool IsPinDisabledByPolicy(PrefService* pref_service);
 // Returns true if the quick unlock feature flag is present.
 bool IsPinEnabled(PrefService* pref_service);
 
-// What subsystem should provide pin storage and authentication?
-enum class PinStorageType { kPrefs, kCryptohome };
-
-// Returns the pin storage type that should be used. IsPinEnabled() must
-// return true for this result to be valid.
-PinStorageType GetPinStorageType();
-
 // Returns true if the fingerprint unlock feature flag is present.
 bool IsFingerprintEnabled();
 
 // Forcibly enable all quick-unlock modes for testing.
-void EnableForTesting(PinStorageType pin_storage_type);
+void EnableForTesting();
 
 // Forcibly disable PIN for testing purposes.
 void DisablePinByPolicyForTesting(bool disable);

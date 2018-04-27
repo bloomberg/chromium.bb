@@ -22,9 +22,7 @@ class PinStoragePrefsUnitTest : public testing::Test {
   ~PinStoragePrefsUnitTest() override = default;
 
   // testing::Test:
-  void SetUp() override {
-    quick_unlock::EnableForTesting(quick_unlock::PinStorageType::kPrefs);
-  }
+  void SetUp() override { quick_unlock::EnableForTesting(); }
 
   quick_unlock::PinStoragePrefs* PinStoragePrefs() const {
     return quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get())
