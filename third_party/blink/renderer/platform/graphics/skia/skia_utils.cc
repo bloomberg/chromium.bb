@@ -35,6 +35,9 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/skia/include/effects/SkCornerPathEffect.h"
 
+#include <algorithm>
+#include <cmath>
+
 namespace blink {
 
 static const struct CompositOpToXfermodeMode {
@@ -295,22 +298,11 @@ InterpolationQuality ComputeInterpolationQuality(float src_width,
   return kInterpolationDefault;
 }
 
-int ClampedAlphaForBlending(float alpha) {
-  if (alpha < 0)
-    return 0;
-  int rounded_alpha = roundf(alpha * 256);
-  if (rounded_alpha > 256)
-    rounded_alpha = 256;
-  return rounded_alpha;
-}
-
 SkColor ScaleAlpha(SkColor color, float alpha) {
-  return ScaleAlpha(color, ClampedAlphaForBlending(alpha));
-}
+  const auto clamped_alpha = std::max(0.0f, std::min(1.0f, alpha));
+  const auto rounded_alpha = std::lround(SkColorGetA(color) * clamped_alpha);
 
-SkColor ScaleAlpha(SkColor color, int alpha) {
-  int a = (SkColorGetA(color) * alpha) >> 8;
-  return (color & 0x00FFFFFF) | (a << 24);
+  return SkColorSetA(color, rounded_alpha);
 }
 
 template <typename PrimitiveType>

@@ -192,11 +192,10 @@ void CanvasRenderingContext2DState::UpdateStrokeStyle() const {
   if (!stroke_style_dirty_)
     return;
 
-  int clamped_alpha = ClampedAlphaForBlending(global_alpha_);
   DCHECK(stroke_style_);
   stroke_style_->ApplyToFlags(stroke_flags_);
   stroke_flags_.setColor(
-      ScaleAlpha(stroke_style_->PaintColor(), clamped_alpha));
+      ScaleAlpha(stroke_style_->PaintColor(), global_alpha_));
   stroke_style_dirty_ = false;
 }
 
@@ -204,10 +203,9 @@ void CanvasRenderingContext2DState::UpdateFillStyle() const {
   if (!fill_style_dirty_)
     return;
 
-  int clamped_alpha = ClampedAlphaForBlending(global_alpha_);
   DCHECK(fill_style_);
   fill_style_->ApplyToFlags(fill_flags_);
-  fill_flags_.setColor(ScaleAlpha(fill_style_->PaintColor(), clamped_alpha));
+  fill_flags_.setColor(ScaleAlpha(fill_style_->PaintColor(), global_alpha_));
   fill_style_dirty_ = false;
 }
 
@@ -240,8 +238,7 @@ void CanvasRenderingContext2DState::SetGlobalAlpha(double alpha) {
   global_alpha_ = alpha;
   stroke_style_dirty_ = true;
   fill_style_dirty_ = true;
-  int image_alpha = ClampedAlphaForBlending(alpha);
-  image_flags_.setAlpha(image_alpha > 255 ? 255 : image_alpha);
+  image_flags_.setColor(ScaleAlpha(SK_ColorBLACK, alpha));
 }
 
 void CanvasRenderingContext2DState::ClipPath(
