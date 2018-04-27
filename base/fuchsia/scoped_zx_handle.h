@@ -11,6 +11,10 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/scoped_generic.h"
 
+namespace zx {
+class channel;
+}
+
 namespace base {
 
 namespace internal {
@@ -25,8 +29,17 @@ struct ScopedZxHandleTraits {
 
 }  // namespace internal
 
-using ScopedZxHandle =
-    ScopedGeneric<zx_handle_t, internal::ScopedZxHandleTraits>;
+class ScopedZxHandle
+    : public ScopedGeneric<zx_handle_t, internal::ScopedZxHandleTraits> {
+ public:
+  ScopedZxHandle() = default;
+  explicit ScopedZxHandle(zx_handle_t value) : ScopedGeneric(value) {}
+
+  explicit operator bool() const { return get() != ZX_HANDLE_INVALID; }
+
+  // Helper to converts zx::channel to ScopedZxHandle.
+  static ScopedZxHandle FromZxChannel(zx::channel channel);
+};
 
 }  // namespace base
 

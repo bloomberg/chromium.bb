@@ -1324,10 +1324,15 @@ jumbo_component("base") {
       "files/memory_mapped_file_posix.cc",
       "fuchsia/async_dispatcher.cc",
       "fuchsia/async_dispatcher.h",
+      "fuchsia/component_context.cc",
+      "fuchsia/component_context.h",
       "fuchsia/default_job.cc",
       "fuchsia/default_job.h",
+      "fuchsia/fidl_interface_request.cc",
+      "fuchsia/fidl_interface_request.h",
       "fuchsia/fuchsia_logging.cc",
       "fuchsia/fuchsia_logging.h",
+      "fuchsia/scoped_zx_handle.cc",
       "fuchsia/scoped_zx_handle.h",
       "memory/platform_shared_memory_region_fuchsia.cc",
       "memory/protected_memory_posix.cc",
@@ -1378,7 +1383,11 @@ jumbo_component("base") {
 
     libs = [ "launchpad" ]
     public_deps += [ "//third_party/fuchsia-sdk:async" ]
-    deps += [ "//third_party/fuchsia-sdk:async_default" ]
+    deps += [
+      "//third_party/fuchsia-sdk:async_default",
+      "//third_party/fuchsia-sdk:fdio",
+      "//third_party/fuchsia-sdk:zx",
+    ]
   } else {
     sources += [
       "message_loop/message_pump_libevent.cc",
