@@ -58,14 +58,16 @@ const char kInvalidTicketPrintError[] = "INVALID_TICKET";
 
 const char kProvisionalUsbLabel[] = "provisional-usb";
 
-// Updates |job| with raster file path, size and last modification time.
-// Returns the updated print job.
+// Updates |job| with raster data. Returns the updated print job.
+// TODO(thestig): Remove this function once PWG files are no longer written to
+// disk. https://crbug.com/827332
 std::unique_ptr<extensions::PrinterProviderPrintJob>
 UpdateJobFileInfoOnWorkerThread(
     const base::FilePath& raster_path,
     std::unique_ptr<extensions::PrinterProviderPrintJob> job) {
-  if (base::GetFileInfo(raster_path, &job->file_info))
-    job->document_path = raster_path;
+  std::string file_contents;
+  if (base::ReadFileToString(raster_path, &file_contents))
+    job->document_bytes = base::RefCountedString::TakeString(&file_contents);
   return job;
 }
 
@@ -281,7 +283,7 @@ void ExtensionPrinterHandler::ConvertToPWGRaster(
 void ExtensionPrinterHandler::DispatchPrintJob(
     PrintCallback callback,
     std::unique_ptr<extensions::PrinterProviderPrintJob> print_job) {
-  if (print_job->document_path.empty() && !print_job->document_bytes) {
+  if (!print_job->document_bytes) {
     WrapPrintCallback(std::move(callback), base::Value(kInvalidDataPrintError));
     return;
   }

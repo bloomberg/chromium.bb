@@ -339,26 +339,6 @@ void BrowserContext::CreateMemoryBackedBlob(BrowserContext* browser_context,
 }
 
 // static
-void BrowserContext::CreateFileBackedBlob(
-    BrowserContext* browser_context,
-    const base::FilePath& path,
-    int64_t offset,
-    int64_t size,
-    const base::Time& expected_modification_time,
-    BlobCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  ChromeBlobStorageContext* blob_context =
-      ChromeBlobStorageContext::GetFor(browser_context);
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ChromeBlobStorageContext::CreateFileBackedBlob,
-                     base::WrapRefCounted(blob_context), path, offset, size,
-                     expected_modification_time),
-      std::move(callback));
-}
-
-// static
 BrowserContext::BlobContextGetter BrowserContext::GetBlobStorageContext(
     BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

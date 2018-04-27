@@ -29,7 +29,6 @@ class GURL;
 
 namespace base {
 class FilePath;
-class Time;
 }
 
 namespace service_manager {
@@ -141,14 +140,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
                                      size_t length,
                                      const std::string& content_type,
                                      BlobCallback callback);
-
-  // |callback| returns a nullptr scoped_ptr on failure.
-  static void CreateFileBackedBlob(BrowserContext* browser_context,
-                                   const base::FilePath& path,
-                                   int64_t offset,
-                                   int64_t size,
-                                   const base::Time& expected_modification_time,
-                                   BlobCallback callback);
 
   // Get a BlobStorageContext getter that needs to run on IO thread.
   static BlobContextGetter GetBlobStorageContext(
