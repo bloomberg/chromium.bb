@@ -55,10 +55,17 @@ bool SyncWebSocketImpl::Core::Connect(const GURL& url) {
   bool success = false;
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
-  context_getter_->GetNetworkTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&SyncWebSocketImpl::Core::ConnectOnIO, this,
-                                url, &success, &event));
-  event.Wait();
+  // Try to connect up to 3 times, with 10 seconds delay in between.
+  base::TimeDelta waitTime = base::TimeDelta::FromSeconds(10);
+  for (int i = 0; i < 3; i++) {
+    context_getter_->GetNetworkTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(&SyncWebSocketImpl::Core::ConnectOnIO, this,
+                                  url, &success, &event));
+    if (event.TimedWait(waitTime))
+      break;
+    LOG(WARNING) << "Timed out connecting to Chrome, "
+                 << (i < 2 ? "retrying..." : "giving up.");
+  }
   return success;
 }
 
@@ -117,6 +124,14 @@ void SyncWebSocketImpl::Core::ConnectOnIO(
     base::AutoLock lock(lock_);
     received_queue_.clear();
   }
+  // If this is a retry to connect, there is a chance that the original attempt
+  // to connect has succeeded after the retry was initiated, so double check if
+  // we are already connected. The is_connected_ flag is only set on the I/O
+  // thread, so no additional synchronization is needed to check it here.
+  // Note: If is_connected_ is true, both |success| and |event| may point to
+  // stale memory, so don't use either parameters before returning.
+  if (socket_ && is_connected_)
+    return;
   socket_.reset(new WebSocket(url, this));
   socket_->Connect(base::Bind(
       &SyncWebSocketImpl::Core::OnConnectCompletedOnIO,
