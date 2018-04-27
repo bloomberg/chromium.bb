@@ -58,9 +58,6 @@
       Nếu chính sách này không được đặt thì tần suất mặc định là 3 giờ. Tần
       suất nhỏ nhất được phép là 60 giây.</translation>
 <translation id="1204263402976895730">Đã bật máy in dành cho doanh nghiệp</translation>
-<translation id="1216758672198492382">Cho phép bạn cài đặt liệu có cho phép các trang web truy cập vào các thiết bị USB đã kết nối hay không. Quyền truy cập có thể bị chặn hoàn toàn hoặc người dùng có thể được hỏi mỗi khi một trang web muốn truy cập vào các thiết bị USB đã kết nối.
-
-          Nếu bạn không đặt chính sách này, giá trị "3" sẽ được dùng và người dùng sẽ có thể thay đổi cài đặt này.</translation>
 <translation id="1219695476179627719">Chỉ định xem thiết bị có phải khôi phục về phiên bản do <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> đặt không nếu đã chạy phiên bản mới hơn.
 
       Mặc định là RollbackDisabled.</translation>
@@ -305,7 +302,7 @@
 
       <ph name="PRINTER_EFFECTIVE_MODEL" /> phải khớp với một trong các chuỗi đại diện cho một máy in được hỗ trợ <ph name="PRODUCT_NAME" />. Chuỗi này dùng để nhận diện và cài đặt PPD thích hợp cho máy in. Bạn có thể xem thêm thông tin tại https://support.google.com/chrome?p=noncloudprint.
 
-      Thiết lập máy in được hoàn tất trong lần đầu tiên sử dụng máy in.  PPD sẽ không tải xuống cho đến khi máy in được sử dụng.  Sau lần đó, các PPD dùng thường xuyên sẽ được lưu vào bộ nhớ đệm.
+      Quá trình thiết lập máy in được hoàn tất trong lần đầu tiên sử dụng máy in.  PPD sẽ không tải xuống cho đến khi máy in được sử dụng.  Sau lần đó, các PPD dùng thường xuyên sẽ được lưu vào bộ nhớ đệm.
 
       Chính sách này không ảnh hưởng đến việc người dùng có thể định cấu hình máy in trên từng thiết bị hay không.  Chính sách này nhằm bổ sung cho quá trình định cấu hình máy in theo từng người dùng.
 
@@ -579,7 +576,7 @@
 
       Chính sách này cho phép bạn cung cấp cấu hình máy in cho các thiết bị <ph name="PRODUCT_OS_NAME" />.  Định dạng này giống với định dạng của từ điển NativePrinters với trường "id" hoặc "guid" bổ sung bắt buộc trên mỗi máy in để đưa vào danh sách cho phép hoặc danh sách cấm.
 
-      Kích thước tệp không được vượt quá 5MB và phải được mã hóa ở định dạng JSON.  Theo ước tính, tệp có chứa khoảng 21.000 máy in sẽ mã hóa dưới dạng tệp 5MB.  Hàm băm mật mã được sử dụng để xác minh tính toàn vẹn của nội dung tải xuống.
+      Kích thước tệp không được vượt quá 5MB và phải được mã hóa ở định dạng JSON.  Theo ước tính, một tệp có chứa khoảng 21.000 máy in sẽ mã hóa dưới dạng tệp 5MB.  Hàm băm mật mã được sử dụng để xác minh tính toàn vẹn của nội dung tải xuống.
 
       Tệp sẽ được tải xuống và lưu vào bộ nhớ đệm. Bất cứ khi nào URL hoặc hàm băm thay đổi thì tệp này sẽ được tải xuống lại.
 
@@ -658,7 +655,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Chỉ dùng chính sách này nếu đã chọn <ph name="PRINTERS_WHITELIST" /> cho <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
 
-      Nếu bạn sử dụng chính sách này thì chỉ những máy in có id phù hợp với các giá trị trong chính sách này mới được cung cấp cho người dùng. Các id này phải tương ứng với các trường "id" hoặc "guid" trong tệp đã chỉ định trong <ph name="DEVICE_PRINTERS_POLICY" />.
+      Nếu bạn sử dụng chính sách này thì chỉ những máy in có id khớp với các giá trị trong chính sách này mới được cung cấp cho người dùng. Các id này phải tương ứng với các trường "id" hoặc "guid" trong tệp đã chỉ định trong <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
 <translation id="2844404652289407061">Cho phép sử dụng Chạm để tìm kiếm trong chế độ xem nội dung của <ph name="PRODUCT_NAME" />.
 
@@ -1112,7 +1109,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Chỉ sử dụng chính sách này nếu đã chọn <ph name="PRINTERS_WHITELIST" /> cho <ph name="BULK_PRINTERS_ACCESS_MODE" />.
 
-      Nếu bạn sử dụng chính sách này thì chỉ những máy in có id phù hợp với các giá trị trong chính sách này mới được cung cấp cho người dùng. Các id này phải tương ứng với các trường "id" hoặc "guid" trong tệp đã chỉ định trong <ph name="BULK_PRINTERS_POLICY" />.
+      Nếu bạn sử dụng chính sách này thì chỉ những máy in có id khớp với các giá trị trong chính sách này mới được cung cấp cho người dùng. Các id này phải tương ứng với các trường "id" hoặc "guid" trong tệp đã chỉ định trong <ph name="BULK_PRINTERS_POLICY" />.
       </translation>
 <translation id="427632463972968153">Chỉ định tham số được dùng khi thực hiện tìm kiếm theo hình ảnh với POST. Tham số này bao gồm các cặp tên/giá trị phân tách bằng dấu phẩy. Nếu một giá trị là tham số mẫu như {searchTerms} trong ví dụ trên thì tham số đó sẽ được thay thế bằng dữ liệu hình thu nhỏ thực.
 

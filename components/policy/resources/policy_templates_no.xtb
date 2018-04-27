@@ -58,9 +58,6 @@
       Hvis denne regelen ikke spesifiseres, er standardfrekvensen 3 timer. 
       Korteste tillatte frekvens er 60 sekunder.</translation>
 <translation id="1204263402976895730">Aktiverte bedriftsskrivere</translation>
-<translation id="1216758672198492382">Gjør det mulig å velge om nettsteder kan få tilgang til tilkoblede USB-enheter. Tilgangen kan blokkeres helt, eller brukeren kan bli spurt hver gang et nettsted vil ha tilgang til tilkoblede USB-enheter.
-
-          Hvis denne regelen ikke angis, brukes «3», og brukeren kan endre denne innstillingen.</translation>
 <translation id="1219695476179627719">Spesifiserer om enheten skal rulles tilbake til versjonen som er angitt av <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, hvis den allerede kjører en nyere versjon.
 
       Standardverdien er RollbackDisabled.</translation>
@@ -252,6 +249,22 @@
       Hvis regelen er angitt som «False» (usann), er rapportering av beregninger og diagnostikkdata deaktivert.
 
       Hvis den ikke er konfigurert, er rapportering av beregninger og diagnostikkdata deaktivert på ikke-administrerte enheter og aktivert på administrerte enheter.</translation>
+<translation id="1929709556673267855">Gir konfigurasjoner for bedriftsskrivere som er bundet til enheter.
+
+      Med denne regelen kan du gi skriverkonfigurasjoner til enheter med <ph name="PRODUCT_OS_NAME" />.  Formatet er det samme som for NativePrinters-ordlisten, med et ekstra påkrevd «id»- eller «quid»-felt per skriver for godkjenning eller sperring.
+
+      Størrelsen på filen må ikke overskride 5 MB, og den må være i JSON-format.  Det anslås at en fil som inneholder omtrent 21 000 skrivere, opptar 5 MB.  Den kryptografiske hashen brukes for å bekrefte integriteten for nedlastingen.
+
+      Filen lastes ned og bufres. Den blir lastet ned på nytt hver gang nettadressen eller hashen endres.
+
+      Hvis denne regelen er angitt, laster <ph name="PRODUCT_OS_NAME" /> ned filen for skriverkonfigurasjoner og gjør skrivere tilgjengelig i henhold til <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> og <ph name="DEVICE_PRINTERS_BLACKLIST" />.
+
+      Denne regelen påvirker ikke hvorvidt brukere kan konfigurere skrivere på enkeltenheter.  Den er ment å supplere konfigurering av skrivere utført av enkeltbrukere.
+
+      Denne regelen kommer i tillegg til <ph name="BULK_PRINTERS_POLICY" />.
+
+      Hvis denne regelen ikke er angitt (er deaktivert), blir ingen skrivere bundet til enheter, og de andre <ph name="DEVICE_PRINTERS_POLICY_PATTERN" />-reglene blir ignorert.
+      </translation>
 <translation id="193259052151668190">Godkjenningsliste for frakoblingsbare USB-enheter</translation>
 <translation id="1933378685401357864">Bakgrunnsbilde</translation>
 <translation id="1956493342242507974">Konfigurer strømstrømstyring på påloggingssiden i <ph name="PRODUCT_OS_NAME" />.
@@ -284,6 +297,21 @@
 
       Merk: Hvis plattformen støtter varsler om brudd på reglene, angis forsinkelsen for ny innlasting til 24 timer (dette ignorerer alle standarder og verdier i regelen), fordi det forventes at varsler om brudd på reglene fremtvinger en nye innlasting automatisk når regelen endres. Dette gjør at det ikke er nødvendig med hyppige nye innlastinger.</translation>
 <translation id="2024476116966025075">Konfigurer det nødvendige domenenavnet for klienter med ekstern tilgang</translation>
+<translation id="202757291638965203">Konfigurerer en liste over skrivere.
+
+      Denne regelen gjør det mulig for administratorer å gi ut skriverkonfigurasjoner til
+      brukerne sine.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> og <ph name="PRINTER_DESCRIPTION" /> er strenger i et fritt format som kan tilpasses for å gjøre det enklere å velge skriver. <ph name="PRINTER_MANUFACTURER" /> og <ph name="PRINTER_MODEL" /> brukes til å gjøre det lettere for brukerne å identifisere skrivere. De representerer skrivermodellen og -produsenten. <ph name="PRINTER_URI" /> bør være en adresse som kan nås fra en klientdatamaskin, inkludert <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> og <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> er valgfritt.  Hvis den oppgis, brukes den til å deduplisere <ph name="ZEROCONF_DISCOVERY" />-skrivere.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> må samsvare med en av strengene som representerer en <ph name="PRODUCT_NAME" />-støttet skriver. Strengen blir brukt til å identifisere og installere den riktige PPD-en for skriveren. Du finner mer informasjon på https://support.google.com/chrome?p=noncloudprint.
+
+      Skriverkonfigureringen er fullført når en skriver brukes for første gang.  PPD-er lastes ikke ned før skriveren brukes.  Etter det blir PPD-er som brukes ofte, bufret.
+
+      Denne regelen kan ikke brukes til å bestemme om brukere kan konfigurere skrivere på individuelle enheter.  Den er ment å være et supplement til konfigureringen av skrivere som er gjort av individuelle brukere.
+
+      For Active Directory-administrerte enheter, støtter denne regelen utvidelsen av <ph name="MACHINE_NAME_VARIABLE" /> til maskinnavnet eller en tilknyttet understreng for Active Directory. Hvis maskinnavnet for eksempel er <ph name="MACHINE_NAME_EXAMPLE" />, erstattes <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> med de 4 tegnene etter 6. posisjon, dvs. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Merk at posisjonen er null-basert.
+      </translation>
 <translation id="2030905906517501646">Søkeord for standard søkeleverandør</translation>
 <translation id="203096360153626918">Denne regelen har ingen innvirkning på Android-apper. Android-apper kan brukes i fullskjermmodus selv om denne regelen er angitt som <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Deaktiverte bedriftsskrivere</translation>
@@ -536,6 +564,20 @@
           Når denne regelen ikke er definert, er standardverdien «true» (sann) og NTLMv2 er slått på.</translation>
 <translation id="2623014935069176671">Vent på første brukeraktivitet</translation>
 <translation id="262740370354162807">Aktiver sending av dokumenter til <ph name="CLOUD_PRINT_NAME" /></translation>
+<translation id="2627554163382448569">Gir konfigurasjoner for bedriftsskrivere.
+
+      Med denne regelen kan du gi skriverkonfigurasjoner til enheter med <ph name="PRODUCT_OS_NAME" />.  Formatet er det samme som for NativePrinters-ordlisten, med et ekstra påkrevd «id»- eller «quid»-felt per skriver for godkjenning eller sperring.
+
+      Størrelsen på filen må ikke overskride 5 MB, og den må være i JSON-format.  Det anslås at en fil som inneholder omtrent 21 000 skrivere, opptar 5 MB.  Den kryptografiske hashen brukes for å bekrefte integriteten for nedlastingen.
+
+      Filen lastes ned og bufres. Den blir lastet ned på nytt hver gang nettadressen eller hashen endres.
+
+      Hvis denne regelen er angitt, laster <ph name="PRODUCT_OS_NAME" /> ned filen for skriverkonfigurasjoner og gjør skrivere tilgjengelig i henhold til <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> og <ph name="BULK_PRINTERS_BLACKLIST" />.
+
+      Hvis du angir denne innstillingen, kan ikke brukere endre eller overstyre den.
+
+      Denne regelen kan ikke brukes til å bestemme om brukere kan konfigurere skrivere på individuelle enheter.  Den er ment å være et supplement til konfigureringen av skrivere som er gjort av individuelle brukere.
+      </translation>
 <translation id="2633084400146331575">Aktiverer talerespons</translation>
 <translation id="2646290749315461919">Gjør at du kan angi om nettsteder tillates å spore brukernes fysiske posisjon. Sporing av brukernes fysiske posisjon kan tillates som standard, nektes som standard, eller brukeren kan blir spurt hver gang et nettsted ber om den fysiske posisjonen. Hvis denne retningslinjen ikke angis, brukes AskGeolocation, og brukeren kan endre på dette.</translation>
 <translation id="2647069081229792812">Slå på eller av bokmerkeredigering</translation>
@@ -598,6 +640,12 @@
 <translation id="2823870601012066791">Plasseringen av Windows-registeret for <ph name="PRODUCT_OS_NAME" />-klienter:</translation>
 <translation id="2824715612115726353">Aktiver inkognitomodus</translation>
 <translation id="2838830882081735096">Ikke tillat dataoverføring og ARC</translation>
+<translation id="2840269525054388612">Angir skriverne som en bruker kan bruke.
+
+      Denne regelen brukes bare hvis <ph name="PRINTERS_WHITELIST" /> er valgt for <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
+
+      Hvis denne regelen brukes, blir bare skriverne med ID-er som samsvarer med verdiene i denne regelen, tilgjengelige for brukeren. ID-ene må samsvare med «id»- eller «quid»-feltene i filen spesifisert i <ph name="DEVICE_PRINTERS_POLICY" />.
+      </translation>
 <translation id="2844404652289407061">Gjør «Trykk for å søke» tilgjengelig i innholdsvisningen i <ph name="PRODUCT_NAME" />.
 
       Hvis du slår på denne innstillingen, blir «Trykk for å søke»-funksjonen tilgjengelig for brukerne, og de kan velge om de vil slå den på eller av.
@@ -1038,6 +1086,12 @@
 <translation id="4239720644496144453">Bufferen brukes ikke til Android-apper. Hvis flere brukere installerer den samme Android-appen, blir den lastet ned på nytt for hver bruker.</translation>
 <translation id="4250680216510889253">Nei</translation>
 <translation id="4261820385751181068">Lokalitet for påloggingsskjermen på enheten</translation>
+<translation id="427220754384423013">Angir skriverne som en bruker kan bruke.
+
+      Denne regelen brukes bare hvis <ph name="PRINTERS_WHITELIST" /> er valgt for <ph name="BULK_PRINTERS_ACCESS_MODE" />.
+
+      Hvis denne regelen brukes, blir bare skriverne med ID-er som samsvarer med verdiene i denne regelen, tilgjengelige for brukeren. ID-ene må samsvare med «id»- eller «quid»-feltene i filen spesifisert i <ph name="BULK_PRINTERS_POLICY" />.
+      </translation>
 <translation id="427632463972968153">Angir parameterene som brukes når du utfører et bildesøk med POST. De består av kommainndelte navn og verdi-par. Hvis en verdi er et malparameter, som {imageThumbnail} i eksempelet ovenfor, blir den erstattet med virkelige miniatyrbildedata.
 
           Denne innstillingen er valgfri. Hvis den ikke er angitt, blir forespørsler om bildesøk sendt via GET-metoden.
@@ -2097,6 +2151,12 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="749556411189861380">Operativsystem for rapportering og fastvareversjon for registrerte enheter.
 
       Hvis denne innstillingen ikke angis eller angis som «true», rapporterer registrerte enheter om eget operativsystem og fastvareversjon med jevne mellomrom. Hvis innstillingen angis som «false», blir ikke versjonsinformasjon rapportert.</translation>
+<translation id="7498946151094347510">Angir skriverne som en bruker ikke kan bruke.
+
+      Denne regelen brukes bare hvis <ph name="PRINTERS_BLACKLIST" /> er valgt for <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
+
+      Hvis denne regelen brukes, får brukeren tilgang til alle skrivere – unntatt eventuelle ID-er som er oppført i denne regelen. ID-ene må samsvare med «id»- eller «quid»-feltene i filen spesifisert i <ph name="DEVICE_PRINTERS_POLICY" />.
+      </translation>
 <translation id="7511361072385293666">Hvis denne regelen settes til «sann» eller ikke spesifiseres, er bruk av QUIC-protokollen tillatt i <ph name="PRODUCT_NAME" />.
       Hvis denne regelen settes til «usann», er ikke bruk av QUIC-protokollen tillatt.</translation>
 <translation id="7519251620064708155">Tillat nøkkelgenerering på disse nettstedene</translation>
@@ -2461,6 +2521,12 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="8544375438507658205">Standard gjengivelse av HTML for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Varsle ved besøk på nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="8566842294717252664">Skjul nettbutikken fra nye faner og appvelgeren</translation>
+<translation id="8586528890725660268">Angir skriverne som en bruker ikke kan bruke.
+
+      Denne regelen brukes bare hvis <ph name="PRINTERS_BLACKLIST" /> er valgt for <ph name="BULK_PRINTERS_ACCESS_MODE" />.
+
+      Hvis denne regelen brukes, får brukeren tilgang til alle skrivere – unntatt eventuelle ID-er som er oppført i denne regelen. ID-ene må samsvare med «id»- eller «quid»-feltene i filen spesifisert i <ph name="BULK_PRINTERS_POLICY" />.
+      </translation>
 <translation id="8587229956764455752">Tillat oppretting av nye brukerkontoer</translation>
 <translation id="8598350264853261122">Hvis regelen er satt til «usann», har ikke brukere uten tilknytning tillatelse til å bruke ARC.
 

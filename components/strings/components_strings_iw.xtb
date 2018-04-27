@@ -594,7 +594,7 @@ Del</translation>
 <translation id="5141240743006678641">‏הצפן סיסמאות מסונכרנות באמצעות פרטי הכניסה שלך ל-Google</translation>
 <translation id="5145883236150621069">קיים קוד שגיאה בתגובת המדיניות</translation>
 <translation id="5159010409087891077">‏פתח את הדף בחלון חדש של גלישה בסתר (‎⇧⌘N)</translation>
-<translation id="5169827969064885044">‏ייתכן שלא יתאפשר לך לגשת לחשבון הארגוני והזהות שלך עלולה להיגנב. לגלישה בטוחה ב-Chrome, מומלץ לשנות את הסיסמה עכשיו.</translation>
+<translation id="5169827969064885044">‏ייתכן שלא יתאפשר לך לגשת לחשבון הארגוני, והזהות שלך עלולה להיגנב. לגלישה בטוחה ב-Chrome, מומלץ לשנות את הסיסמה עכשיו.</translation>
 <translation id="5171045022955879922">חפש או הקלד כתובת אתר</translation>
 <translation id="5172758083709347301">מכונה</translation>
 <translation id="5179510805599951267">לא ב<ph name="ORIGINAL_LANGUAGE" />? דיווח על שגיאה זו</translation>
@@ -741,6 +741,7 @@ Del</translation>
 <translation id="6263376278284652872">סימניות <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">חזרה לחוף מבטחים</translation>
 <translation id="6276112860590028508">דפים מרשימת הקריאה שלך מופיעים כאן</translation>
+<translation id="627746635834430766">‏כדי לשלם מהר יותר בפעם הבאה, אפשר לשמור בחשבון Google את פרטי הכרטיס ואת הכתובת לחיוב.</translation>
 <translation id="6280223929691119688">לא ניתן לבצע מסירה בכתובת זו. עליך לבחור כתובת אחרת.</translation>
 <translation id="6282194474023008486">מיקוד</translation>
 <translation id="6290238015253830360">הצעות של מאמרים עבורך מופיעות כאן</translation>
@@ -755,6 +756,7 @@ Del</translation>
 <translation id="6355080345576803305">שינוי הפעלה ציבורית</translation>
 <translation id="6358450015545214790">מה זה אומר?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{הצעה אחת נוספת}two{שתי הצעות נוספות}many{# הצעות נוספות}other{# הצעות נוספות}}</translation>
+<translation id="6387754724289022810">‏כדי לשלם מהר יותר בפעם הבאה, אפשר לשמור בחשבון Google ובמכשיר הזה את פרטי הכרטיס ואת הכתובת לחיוב.</translation>
 <translation id="6397451950548600259">‏יש תוכנה במחשב שלך שמונעת מ-Chrome להתחבר באופן מאובטח אל האינטרנט</translation>
 <translation id="6404511346730675251">ערוך סימניה</translation>
 <translation id="6410264514553301377">הזן את תאריך התפוגה ואת קוד האימות של <ph name="CREDIT_CARD" /></translation>

@@ -736,6 +736,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" />-bogmærker</translation>
 <translation id="6264485186158353794">Tilbage i sikkerhed</translation>
 <translation id="6276112860590028508">Sider fra din læseliste vises her</translation>
+<translation id="627746635834430766">Gem dit kort og din faktureringsadresse på din Google-konto for at betale hurtigere næste gang.</translation>
 <translation id="6280223929691119688">Der kan ikke leveres til denne adresse. Vælg en anden adresse.</translation>
 <translation id="6282194474023008486">Postnummer</translation>
 <translation id="6290238015253830360">Forslag til artikler til dig vises her</translation>
@@ -750,6 +751,7 @@
 <translation id="6355080345576803305">Tilsidesættelse af offentlig session</translation>
 <translation id="6358450015545214790">Hvad betyder dette?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 andet forslag}one{# andet forslag}other{# andre forslag}}</translation>
+<translation id="6387754724289022810">Gem dit kort og din faktureringsadresse på din Google-konto og denne enhed for at betale hurtigere næste gang.</translation>
 <translation id="6397451950548600259">Der er software på computeren, som forhindrer, at Chrome kan oprette en sikker forbindelse til nettet</translation>
 <translation id="6404511346730675251">Rediger bogmærke</translation>
 <translation id="6410264514553301377">Indtast udløbsdatoen og kontrolkoden for <ph name="CREDIT_CARD" /></translation>

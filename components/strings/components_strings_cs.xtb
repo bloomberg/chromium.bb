@@ -731,6 +731,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6263376278284652872">Záložky webu <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Zpět na bezpečnější stránku</translation>
 <translation id="6276112860590028508">Zde naleznete stránky ze seznamu četby</translation>
+<translation id="627746635834430766">Abyste příště mohli zaplatit rychleji, uložte si kartu a fakturační adresu do účtu Google.</translation>
 <translation id="6280223929691119688">Doručení na tuto adresu není možné. Vyberte jinou adresu.</translation>
 <translation id="6282194474023008486">PSČ</translation>
 <translation id="6290238015253830360">Zde se zobrazí navrhované články</translation>
@@ -745,6 +746,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6355080345576803305">Přepsání veřejné relace</translation>
 <translation id="6358450015545214790">Nápověda</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 další návrh}few{# další návrhy}many{# dalšího návrhu}other{# dalších návrhů}}</translation>
+<translation id="6387754724289022810">Abyste příště mohli zaplatit rychleji, uložte si kartu a fakturační adresu do účtu Google a do tohoto zařízení.</translation>
 <translation id="6397451950548600259">Software na počítači Chromu brání v bezpečném připojení k webu.</translation>
 <translation id="6404511346730675251">Upravit záložku</translation>
 <translation id="6410264514553301377">Zadejte datum vypršení platnosti a kód CVC karty <ph name="CREDIT_CARD" />.</translation>
@@ -977,7 +979,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8201077131113104583">Neplatná adresa URL aktualizace rozšíření s ID <ph name="EXTENSION_ID" />.</translation>
 <translation id="8202097416529803614">Shrnutí objednávky</translation>
 <translation id="8205463626947051446">Tento web často zobrazuje rušivé reklamy</translation>
-<translation id="8211406090763984747">Připojení není zabezpečené</translation>
+<translation id="8211406090763984747">Spojení je bezpečné</translation>
 <translation id="8218327578424803826">Přiřazené místo:</translation>
 <translation id="8225771182978767009">Uživatel, který tento počítač nastavoval, se rozhodl tento web blokovat.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>

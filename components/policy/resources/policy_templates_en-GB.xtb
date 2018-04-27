@@ -58,9 +58,6 @@
       If this policy is unset, the default frequency is 3 hours. The minimum
       allowed frequency is 60 seconds.</translation>
 <translation id="1204263402976895730">Enabled enterprise printers</translation>
-<translation id="1216758672198492382">Allows you to set whether websites are allowed to get access to connected USB devices. Access can be completely blocked, or the user can be asked every time a website wants to get access to connected USB devices.
-
-          If this policy is not left set, '3' will be used, and the user will be able to change it.</translation>
 <translation id="1219695476179627719">Specifies whether the device should roll back to the version set by <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> if it's already running a later version.
 
       Default is RollbackDisabled.</translation>
@@ -422,6 +419,27 @@
           When this policy is unset, no warning dialogue is shown.
 
           The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.</translation>
+<translation id="2289578386193672044">Specifies a list of apps and extensions that are installed silently,
+          without user interaction, and which cannot be uninstalled or
+          disabled by the user. All permissions requested by the
+          apps/extensions are granted implicitly, without user interaction,
+          including any additional permissions requested by future versions of
+          the app/extension. Furthermore, permissions are granted for the
+          enterprise.deviceAttributes and enterprise.platformKeys extension
+          APIs. (These two APIs are not available to apps/extensions that are
+          not force-installed.)
+
+          This policy takes precedence over a potentially conflicting <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> policy. If an app or extension that previously had been force-installed is removed from this list, it is automatically uninstalled by <ph name="PRODUCT_NAME" />.
+
+          For Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain, forced installation is limited to apps and extensions listed in the Chrome Web Store.
+
+          Note that the source code of any extension may be altered by users via Developer Tools (potentially rendering the extension dysfunctional). If this is a concern, the <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> policy should be set.
+
+          Each list item of the policy is a string that contains an extension ID and, optionally, an 'update' URL separated by a semicolon (<ph name="SEMICOLON" />). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK" /> when in developer mode. The 'update' URL, if specified, should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1" />. By default, the Chrome Web Store's update URL is used (which currently is 'https://clients2.google.com/service/update2/crx'). Note that the 'update'URL set in this policy is only used for the initial installation; subsequent updates of the extension employ the update URL indicated in the extension's manifest. Note also that specifying the 'update' URL explicitly was mandatory in <ph name="PRODUCT_NAME" /> versions up to and including 67.
+
+          For example, <ph name="EXTENSION_POLICY_EXAMPLE" /> installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> app from the standard Chrome Web Store 'update' URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          If this policy is left not set, no apps or extensions are installed automatically and the user can uninstall any app or extension in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> can use a Google web service to help resolve spelling errors. If this setting is enabled, then this service is always used. If this setting is disabled, then this service is never used.
 
       Spell checking can still be performed using a downloaded dictionary; this policy only controls the usage of the online service.
@@ -728,6 +746,16 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           This policy is optional. If not set, no search term replacement will be performed.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
+<translation id="3056439054015239107">
+      This policy applies to the sign-in screen. Please see also the <ph name="SITE_PER_PROCESS_POLICY_NAME" /> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      You might want to look at the IsolateOrigins policy setting to get the
+      best of both worlds, isolation and limited impact for users, by using
+      IsolateOrigins with a list of the sites you want to isolate. This setting,
+      SitePerProcess, isolates all sites.
+      If the policy is enabled, each site will run in its own process.
+      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable SitePerProcess manually.
+      If the policy is not configured, the user will be able to change this setting.
+      </translation>
 <translation id="306887062252197004">This policy allows users of the WebDriver feature to override
       policies which can interfere with its operation.
 
@@ -893,6 +921,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3660562134618097814">Transfer SAML IdP cookies during login</translation>
 <translation id="3709266154059827597">Configure extension installation blacklist</translation>
 <translation id="3711895659073496551">Suspend</translation>
+<translation id="3715569262675717862">Authentication based on client certificates</translation>
 <translation id="3736879847913515635">Enable add person in user manager</translation>
 <translation id="3737544779868348650">Device network hostname</translation>
 <translation id="3740754010292550733">Set the period for update relaunch notifications</translation>
@@ -1935,6 +1964,15 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       In case signing in to a different account shouldn't be allowed via the Incognito mode, consider blocking that mode using the IncognitoModeAvailability policy.
 
       Note that users will be able to access Google services in an unauthenticated state by blocking their cookies.</translation>
+<translation id="6738326937072482736">Configures availability and behaviour of <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update functionality.
+
+      Individual settings can be specified in JSON properties:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, users will be able to trigger the powerwash flow to install a <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, users will be able to invoke the <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update flow that preserves device-wide state (including enterprise enrolment), but loses user data. This update flow is available starting from version 68.
+
+      If the policy is not set, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update functionality will not be available.</translation>
 <translation id="6757438632136860443">Allows you to set a list of URL patterns that specify sites which are allowed to run the <ph name="FLASH_PLUGIN_NAME" /> plug-in.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.</translation>
@@ -1955,6 +1993,16 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Memory info is reported to page anyway, regardless of the option value, but the sizes reported are
       quantised and the rate of updates is limited for security reasons. To obtain real-time precise data,
       please use tools like Telemetry.</translation>
+<translation id="6870914592443697993">
+      This policy applies to the sign-in screen. Please see also the <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      If the policy is enabled, each of the named origins in a
+      comma-separated list will run in its own process. This will also isolate
+      origins named by subdomains, e.g. specifying https://example.com/ will
+      also cause https://foo.example.com/ to be isolated as part of the
+      https://example.com/ site.
+      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable IsolateOrigins manually.
+      If the policy is not configured, the platform default site isolation settings will be used for the sign-in screen.
+      </translation>
 <translation id="6894178810167845842">New Tab page URL</translation>
 <translation id="6899705656741990703">Auto detect proxy settings</translation>
 <translation id="6903814433019432303">This policy is active in retail mode only.
@@ -2219,6 +2267,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If set to False, updates to components are disabled. However, some components are exempt from this policy: updates to any component that does not contain executable code, does not significantly alter the behaviour of the browser or is critical for its security will not be disabled.
       Examples of such components include the certificate revocation lists and Safe Browsing data.
       See https://developers.google.com/safe-browsing for more info on Safe Browsing.</translation>
+<translation id="7566878661979235378">SAML login authentication type</translation>
 <translation id="757395965347379751">When this setting is enabled, <ph name="PRODUCT_NAME" /> allows SHA-1 signed certificates as long as they successfully validate and chain to a locally-installed CA certificates.
 
       Note that this policy depends on the operating system certificate verification stack allowing SHA-1 signatures. If an OS update changes the OS handling of SHA-1 certificates, this policy may no longer have effect. Furthermore, this policy is intended as a temporary workaround to give enterprises more time to move away from SHA-1. This policy will be removed on or around 1 January 2019.
@@ -2394,6 +2443,16 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine can only connect to host machines within the local network.</translation>
 <translation id="7976157349247117979">Name of the <ph name="PRODUCT_NAME" /> destination</translation>
+<translation id="7978060394348264922">
+      You might want to look at the IsolateOrigins policy setting to get the
+      best of both worlds, isolation and limited impact for users, by using
+      IsolateOrigins with a list of the sites that you want to isolate. This setting,
+      SitePerProcess, isolates all sites.
+      If the policy is enabled, each site will run in its own process.
+      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable SitePerProcess manually.
+      If the policy is not configured, the user will be able to change this setting.
+      On <ph name="PRODUCT_OS_NAME" />, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      </translation>
 <translation id="7980227303582973781">No special restrictions</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotate screen by 0 degrees</translation>
@@ -2593,6 +2652,13 @@ The recommended way to configure policy on Windows is via GPO, although provisio
           Separate multiple server names with commas. Wildcards (*) are allowed.
 
           If you leave this policy unset <ph name="PRODUCT_NAME" /> will try to detect if a server is on the Intranet and only then will it respond to IWA requests. If a server is detected as Internet then IWA requests from it will be ignored by <ph name="PRODUCT_NAME" />.</translation>
+<translation id="8667812577403206506">Allows you to control whether virtual machines are allowed to run on Chrome OS.
+
+      If the policy is set to True, the device is allowed to run virtual machines.
+      If the policy is set to False, the device will not be allowed to run virtual machines.
+      When this policy is changed to False, it applies to starting new virtual machines but does not shut down virtual machines which are already running.
+      When this policy is not set on a managed device, the device is not allowed to run virtual machines.
+      Unmanaged devices are allowed to run virtual machines.</translation>
 <translation id="8672321184841719703">Target Auto-Update Version</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">Password protection warning is triggered by password reuse</translation>
@@ -2713,6 +2779,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
       This policy should not be enabled when <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> policy is set to enabled as that feature shares the same client-side functionality. The Google-hosted synchronisation is disabled in this case completely.</translation>
 <translation id="8955719471735800169">Back to top</translation>
+<translation id="8959992920425111821">Default configuration</translation>
 <translation id="8960850473856121830">Patterns in this list will be matched against the security
       origin of the requesting URL. If a match is found, access to audio
       capture devices will be granted without prompt.
@@ -2723,6 +2790,16 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8976248126101463034">Allow gnubby authentication for remote access hosts</translation>
 <translation id="8976531594979650914">Use System Default Printer as Default</translation>
 <translation id="8992176907758534924">Do not allow any site to show images</translation>
+<translation id="9034729899149506577">
+      If the policy is enabled, each of the named origins in a
+      comma-separated list will run in its own process. This will also isolate
+      origins named by subdomains, e.g. specifying https://example.com/ will
+      also cause https://foo.example.com/ to be isolated as part of the
+      https://example.com/ site.
+      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable IsolateOrigins manually.
+      If the policy is not configured, the user will be able to change this setting.
+      On <ph name="PRODUCT_OS_NAME" />, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      </translation>
 <translation id="9035964157729712237">Extension IDs to exempt from the blacklist</translation>
 <translation id="9042911395677044526">Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME" /> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Specify whether video activity affects power management</translation>
@@ -2774,6 +2851,13 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="9187743794267626640">Disable mounting of external storage</translation>
 <translation id="9197740283131855199">Percentage by which to scale the screen dim delay if the user becomes active after dimming</translation>
 <translation id="9200828125069750521">Parameters for image URL which uses POST</translation>
+<translation id="9210953373038593554">Configures the type of authentication for SAML logins.
+
+      When this policy is unset or set to Default (value 0), the behaviour of SAML logins is determined by the browser depending on other factors. In the most basic scenario, the user authentication and the protection of the cached user data are based on passwords manually entered by users.
+
+      When this policy is set to ClientCertificate (value 1), client certificate authentication is used for newly added users which log in via SAML. No passwords are used for such users, and their cached local data is protected using corresponding cryptographic keys. For instance, this setting allows configuring smart card-based user authentication (note that smart card middleware apps have to be installed via the DeviceLoginScreenAppInstallList policy).
+
+      This policy only affects users who authenticate using SAML.</translation>
 <translation id="9213347477683611358">Configure device-level wallpaper image that is shown on the login screen if no user has yet signed in to the device. The policy is set by specifying the URL from which the Chrome OS device can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its file size must not exceed 16 MB. The URL must be accessible without any authentication. The wallpaper image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
 
       The policy should be specified as a string that expresses the URL and hash in JSON format, e.g.,

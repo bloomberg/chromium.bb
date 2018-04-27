@@ -58,9 +58,6 @@
       Če ta pravilnik ni nastavljen, je vrednost privzete pogostosti 3 ure. Najmanjša
       dovoljena vrednost pogostosti je 60 sekund.</translation>
 <translation id="1204263402976895730">Omogočeni tiskalniki v podjetjih</translation>
-<translation id="1216758672198492382">Omogoča nastavitev, ali lahko spletna mesta dostopajo do povezanih naprav USB. Dostop je mogoče v celoti blokirati ali pa je uporabnik vprašan, ko želi spletno mesto dostopati do povezanih naprav USB.
-
-          Če ta pravilnik ni nastavljen, je uporabljeno »3« in uporabnik lahko to spremeni.</translation>
 <translation id="1219695476179627719">Določa, ali naj se naprava povrne na različico, ki jo določa pravilnik <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, če se v njej že izvaja novejša različica.
 
       Privzeta nastavitev je RollbackDisabled (povrnitev onemogočena).</translation>
@@ -164,9 +161,9 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       okoljih ne bodo mogli uporabljati ARC-ja.</translation>
 <translation id="1561424797596341174">Preglasitve pravilnika za delovne različice gostitelja za oddaljeni dostop, namenjene odpravljanju napak</translation>
 <translation id="1561967320164410511">U2F in razširitve za posamezno potrditev</translation>
-<translation id="1574554504290354326">Ta nastavitev je zastarela, uporabite SafeBrowsingExtendedReportingEnabled. Če omogočite ali onemogočite SafeBrowsingExtendedReportingEnabled, je to enakovredno, kot če onemogočite SafeBrowsingExtendedReportingOptInAllowed.
+<translation id="1574554504290354326">Ta nastavitev je zastarela, uporabite SafeBrowsingExtendedReportingEnabled. Če omogočite ali onemogočite SafeBrowsingExtendedReportingEnabled, je to enakovredno, kot če nastavite SafeBrowsingExtendedReportingOptInAllowed na »false«.
 
-      Če onemogočite ta pravilnik, uporabnikom preprečite, da bi pošiljali nekatere informacije o sistemu in vsebino strani v Googlove strežnike. Če je ta nastavitev omogočena ali ni nastavljena, je uporabnikom dovoljeno pošiljati nekatere informacije o sistemu in vsebino strani Varnemu brskanju zaradi zaznavanja nevarnih aplikacij in spletnih mest.
+      Če ta pravilnik nastavite na »false«, uporabnikom preprečite, da bi pošiljali nekatere informacije o sistemu in vsebino strani v Googlove strežnike. Če je ta nastavitev nastavljena na »true« ali ni nastavljena, je uporabnikom dovoljeno pošiljati nekatere informacije o sistemu in vsebino strani Varnemu brskanju zaradi zaznavanja nevarnih aplikacij in spletnih mest.
 
       Več informacij o Varnem brskanju je na voljo na https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Privzeto uporabi <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -919,7 +916,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Zgoščevalna vrednost subjectPublicKeyInfo je določena s sestavljanjem imena zgoščevalnega algoritma, znaka »/« in kodiranja Base64 zgoščevalnega algoritma, uporabljenega za subjectPublicKeyInfo navedenega potrdila, ki je kodiran s pravili DER. To kodiranje Base64 ima enako obliko zapisa kot prstni odtis za SPKI, kot je opredeljeno v razdelku 2.4 dokumenta RFC 7469. Neprepoznani zgoščevalni algoritmi se prezrejo. Trenutno je edini podprt zgoščevalni algoritem »sha256«.
 
-      Če ta pravilnik ni nastavljen, bo vsako potrdilo, ki ga je treba razkriti prek preglednosti potrdil, obravnava kot tako, ki ni zaupanja vredno, če ni razkrito skladno s pravilnikom o preglednosti potrdil.</translation>
+      Če ta pravilnik ni nastavljen, bo vsako potrdilo, ki ga je treba razkriti prek preglednosti potrdil, obravnavano kot tako, ki ni zaupanja vredno, če ni razkrito skladno s pravilnikom o preglednosti potrdil.</translation>
 <translation id="3765260570442823273">Trajanje opozorila o odjavi zaradi nedejavnosti</translation>
 <translation id="377044054160169374">Uveljavitev posredovanja pri zlorabi</translation>
 <translation id="3780152581321609624">Vključi nestandardna vrata v SPN za Kerberos</translation>
@@ -1164,7 +1161,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="437791893267799639">Preklic nastavitev pravilnika, prepoved selitve podatkov in ARC-ja</translation>
 <translation id="4389091865841123886">Konfiguriranje potrditve na daljavo z mehanizmom TPM.</translation>
 <translation id="4410236409016356088">Omogoči omejevanje omrežne pasovne širine</translation>
-<translation id="441217499641439905">Onemogoči Google Drive prek povezav v mobilnih omrežjih v aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /></translation>
+<translation id="441217499641439905">Onemogoči sinhronizacijo z Googlom Drive prek povezav v mobilnih omrežjih v aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4418726081189202489">Če onemogočite ta pravilnik, izdelku <ph name="PRODUCT_NAME" /> preprečite občasno pošiljanje poizvedb v Googlove storitve zaradi prejemanja točnega časovnega žiga. Te poizvedbe bodo omogočene, če je ta pravilnik omogočen ali ni nastavljen.</translation>
 <translation id="4423597592074154136">Ročna izbira nastavitev proxyja</translation>
 <translation id="4429220551923452215">Omogoči ali onemogoči bližnjico za aplikacije v vrstici z zaznamki.
@@ -1847,7 +1844,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Če izberete, da se samodejno zazna strežnik proxy, se aplikacijam za Android posreduje URL skripta »http://wpad/wpad.dat«. Ne uporabi se noben drug del protokola za samodejno zaznavanje strežnika proxy.
 
           Če izberete, da se uporablja skript .pac za strežnik proxy, se aplikacijam za Android posreduje URL skripta.</translation>
-<translation id="6440051664870270040">Spletnim mestom dovoli hkratno premikanje in odpiranje pojavnih oken</translation>
+<translation id="6440051664870270040">Spletnim mestom dovoli hkratno krmarjenje in odpiranje pojavnih oken</translation>
 <translation id="645425387487868471">Omogoči vsiljeno prijavo za izdelek <ph name="PRODUCT_NAME" /></translation>
 <translation id="6473623140202114570">Konfigurirajte seznam domen, v katerih funkcija varnega brskanja ne bo sprožila opozoril.</translation>
 <translation id="6491139795995924304">Omogočanje Bluetootha v napravi</translation>
@@ -1921,7 +1918,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Podrobno pojasnilo je na strani https://www.chromestatus.com/features/5675755719622656.
       Če je ta pravilnik omogočen, bo spletnim mestom dovoljeno hkratno premikanje in odpiranje novih oken/zavihkov.
-      Če je ta pravilnik omogočen, spletnim mestom ne bo dovoljeno hkratno premikanje in odpiranje novih oken/zavihkov.</translation>
+      Če je ta pravilnik onemogočen ali ni nastavljen, spletnim mestom ne bo dovoljeno hkratno premikanje in odpiranje novih oken/zavihkov.</translation>
 <translation id="6724842112053619797">Če omogočite to nastavitev, se podatki, shranjeni v profilih izdelka <ph name="PRODUCT_NAME" />, kot so zaznamki, podatki samodejnega izpolnjevanja, gesla in drugi podatki, prav tako zapišejo v datoteko, shranjeno v mapo uporabniškega profila za gostovanje ali na lokacijo, ki jo določi skrbnik s pravilnikom <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Če omogočite ta pravilnik, onemogočite sinhronizacijo z oblakom.
 
       Če je ta pravilnik onemogočen ali ni nastavljen, se uporabijo samo lokalni profili.
@@ -2216,7 +2213,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je nastavljen na GAIA, je prijava izvedena prek običajnega preverjanja pristnosti GAIA.
 
       Če je nastavljen na SAML_INTERSTITIAL, je pri prijavi prikazan vmesni zaslon, na katerem se lahko uporabnik odloči, ali bo nadaljeval preverjanje pristnosti prek SAML IdP domene za včlanitev naprave ali se bo vrnil na običajno prijavo GAIA.</translation>
-<translation id="755951849901630953">Omogoča posodobitve komponent za vse komponente v izdelku <ph name="PRODUCT_NAME" />, če pravilnik ni nastavljen ali je nastavljena na »True«.
+<translation id="755951849901630953">Omogoča posodobitve komponent za vse komponente v izdelku <ph name="PRODUCT_NAME" />, če pravilnik ni nastavljen ali je nastavljen na »True«.
 
       Če je pravilnik nastavljena na »False«, so posodobitve komponent onemogočene. Vendar pa so nekatere komponente izvzete iz tega pravilnika: onemogočene niso posodobitve komponent, ki ne vsebujejo izvedljive kode, bistveno ne spreminjajo delovanja brskalnika ali so pomembne za varnost brskalnika.
       Primeri takih komponent so na primer seznami ukinjenih potrdil in podatki Varnega brskanja.
@@ -2249,7 +2246,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
      Če to nastavitev onemogočite ali je ne nastavite, <ph name="PRODUCT_NAME" /> uporabi prednostne območne nastavitve, ki jih izbere uporabnik (če so nastavljene), sistemske območne nastavitve ali rezervne območne nastavitve (»en-US«).</translation>
 <translation id="7641363659597330616">Konfigurira vrste prenosov, ki jih bo izdelek <ph name="PRODUCT_NAME" /> popolnoma blokiral, ne da bi uporabniki imeli možnost preglasiti varnostno odločitev.
 
-      Če nastavite ta pravilnik, bo izdelek <ph name="PRODUCT_NAME" /> preprečil določene vrste prenosov, in uporabnikom ne bo dovolil, da obidejo varnostna opozorila.
+      Če nastavite ta pravilnik, bo izdelek <ph name="PRODUCT_NAME" /> preprečil določene vrste prenosov in uporabnikom ne bo dovolil, da obidejo varnostna opozorila.
 
       Če je izbrana možnost »Blokiraj nevarne prenose«, so dovoljeni vsi prenosi, razen tistih z opozorili Varnega brskanja.
 
@@ -2613,7 +2610,7 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 
       Če je nastavitev nastavljena na »false«, poročila ne bodo poslana.
 
-      Če je ta pravilnik omogočen ali onemogočen, uporabnik ne more spremeniti nastavitve.
+      Če je ta pravilnik nastavljen na »true« ali »false«, uporabnik ne more spremeniti nastavitve.
 
       Če ta pravilnik ni nastavljen, uporabnik lahko spremeni nastavitev in se odloči, ali se poročila pošljejo.
 

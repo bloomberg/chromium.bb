@@ -58,9 +58,6 @@
       Ha nem állítja be a házirendet, az alapértelmezett gyakoriság három óra.
       A legkisebb megengedett gyakoriság hatvan másodperc.</translation>
 <translation id="1204263402976895730">Engedélyezett vállalati nyomtatók</translation>
-<translation id="1216758672198492382">Lehetővé teszi annak beállítását, hogy a webhelyek hozzáférhetnek-e a csatlakoztatott USB-eszközökhöz. A hozzáférés teljes mértékben letiltható, vagy a rendszer minden olyan alkalommal rákérdezhet a felhasználónál az engedélyezésre, amikor valamelyik webhely csatlakoztatott USB-eszközökhöz szeretne hozzáférni.
-
-          Ha nincs beállítva a házirend, akkor az érték „3” lesz, amit a felhasználó bármikor módosíthat.</translation>
 <translation id="1219695476179627719">Megadja, hogy az eszköz visszaálljon-e a(z) <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> házirend által beállított verzióra, ha az eszközön már újabb verzió fut.
 
       Az alapértelmezett érték: RollbackDisabled.</translation>
@@ -298,7 +295,7 @@
       Ez a házirend lehetővé teszi a rendszergazdák számára, hogy 
       nyomtatóbeállításokat biztosítsanak felhasználóiknak.
 
-      A(z) <ph name="PRINTER_DISPLAY_NAME" /> és <ph name="PRINTER_DESCRIPTION" /> szabad formájú karakterláncok, amelyek személyre szabhatók a nyomtatóválasztás megkönnyítése érdekében. A(z) <ph name="PRINTER_MANUFACTURER" /> és <ph name="PRINTER_MODEL" /> a nyomtató végfelhasználó általi azonosításának megkönnyítésére szolgálnak. A nyomtató gyártóját és modelljét jelölik. A(z)<ph name="PRINTER_URI" /> linknek olyan címnek kell lennie, amelyhez hozzáfér az ügyfélszámítógép, és amely tartalmazza a következőket: <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> és <ph name="URI_QUEUE" />. A(z) <ph name="PRINTER_UUID" /> megadása nem kötelező. Ha meg van adva, segít elkerülni a(z) <ph name="ZEROCONF_DISCOVERY" /> nyomtatók ismétlődését.
+      A(z) <ph name="PRINTER_DISPLAY_NAME" /> és <ph name="PRINTER_DESCRIPTION" /> szabad formájú karakterláncok, amelyek személyre szabhatók a nyomtatóválasztás megkönnyítése érdekében. A(z) <ph name="PRINTER_MANUFACTURER" /> és <ph name="PRINTER_MODEL" /> a nyomtató végfelhasználó általi azonosításának megkönnyítésére szolgálnak. A nyomtató gyártóját és modelljét jelölik. A(z) <ph name="PRINTER_URI" /> linknek olyan címnek kell lennie, amelyhez hozzáfér az ügyfélszámítógép, és amely tartalmazza a következőket: <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> és <ph name="URI_QUEUE" />. A(z) <ph name="PRINTER_UUID" /> megadása nem kötelező. Ha meg van adva, segít elkerülni a(z) <ph name="ZEROCONF_DISCOVERY" /> nyomtatók ismétlődését.
 
       A(z) <ph name="PRINTER_EFFECTIVE_MODEL" /> karakterláncnak meg kell egyeznie a(z) <ph name="PRODUCT_NAME" /> támogatott nyomtatóinak egyikét képviselő karakterlánccal. A karakterlánc a nyomtatóhoz tartozó megfelelő PPD azonosításához és telepítéséhez szükséges. További információ a következő linken található: https://support.google.com/chrome?p=noncloudprint.
 

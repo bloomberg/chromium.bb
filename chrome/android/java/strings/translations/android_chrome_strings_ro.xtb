@@ -25,7 +25,6 @@
 <translation id="1204037785786432551">Descarcă linkul</translation>
 <translation id="1206892813135768548">Copiați textul linkului</translation>
 <translation id="1209206284964581585">Ascunde momentan</translation>
-<translation id="1211530540767271776">Aici nu există dispozitive USB</translation>
 <translation id="123724288017357924">Reîncarcă pagina, ignorând conținutul din cache</translation>
 <translation id="124116460088058876">Mai multe limbi</translation>
 <translation id="124678866338384709">Închide fila actuală</translation>
@@ -299,6 +298,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> descărcări șterse</translation>
 <translation id="3822502789641063741">Ștergi stocarea site-urilor?</translation>
 <translation id="3859306556332390985">Derulează înainte</translation>
+<translation id="3871936494901781193">Când derulezi în sus, afișezi linkuri rapide către pagini similare.</translation>
 <translation id="3894427358181296146">Adaugă un dosar</translation>
 <translation id="3895926599014793903">Forțează activarea zoomului</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -306,6 +306,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="393697183122708255">Nu există căutare vocală activată</translation>
 <translation id="3950820424414687140">Conectează-te</translation>
 <translation id="395206256282351086">Sugestiile de căutare și de site-uri sunt dezactivate</translation>
+<translation id="3952533382939530115">Această funcție folosește <ph name="BEGIN_LINK" />sincronizarea<ph name="END_LINK" />. Adresele URL ale paginilor pe care le accesezi sunt trimise la Google.</translation>
 <translation id="3967822245660637423">Descărcare finalizată</translation>
 <translation id="397583555483684758">Sincronizarea nu mai funcționează</translation>
 <translation id="3976396876660209797">Elimină și recreează această comandă rapidă</translation>
@@ -773,6 +774,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8087000398470557479">Acest conținut provine de pe <ph name="DOMAIN_NAME" />, oferit de Google.</translation>
 <translation id="8100932616285851614">Panoul de navigare este închis</translation>
 <translation id="8103578431304235997">Filă incognito</translation>
+<translation id="8105951947646329362">Sugerează pagini similare</translation>
 <translation id="8116925261070264013">Cu sunetul dezactivat</translation>
 <translation id="813082847718468539">Afișează informațiile privind site-ul</translation>
 <translation id="8137558756159375272">Funcția Atinge pentru a căuta trimite cuvântul selectat și pagina actuală drept context către Căutare Google. Poți dezactiva această funcție din <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" />.</translation>

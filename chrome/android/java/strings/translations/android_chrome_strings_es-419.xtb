@@ -25,7 +25,6 @@
 <translation id="1204037785786432551">Descargar vínculo</translation>
 <translation id="1206892813135768548">Copiar texto del vínculo</translation>
 <translation id="1209206284964581585">Ocultar por el momento</translation>
-<translation id="1211530540767271776">No hay dispositivos USB aquí</translation>
 <translation id="123724288017357924">Volver a cargar página actual; ignorar contenido en caché</translation>
 <translation id="124116460088058876">Más idiomas</translation>
 <translation id="124678866338384709">Cerrar la pestaña actual</translation>
@@ -307,7 +306,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="393697183122708255">La búsqueda por voz no está habilitada</translation>
 <translation id="3950820424414687140">Acceder</translation>
 <translation id="395206256282351086">Se inhabilitaron las sugerencias de sitios y búsqueda</translation>
-<translation id="3952533382939530115">Esta función usa la <ph name="BEGIN_LINK" />sincronización<ph name="END_LINK" />. Las URL de las páginas que visites se envían a Google.</translation>
+<translation id="3952533382939530115">Esta función usa la <ph name="BEGIN_LINK" />sincronización<ph name="END_LINK" />. Se enviarán a Google las URL de las páginas que visites.</translation>
 <translation id="3967822245660637423">Descarga completa</translation>
 <translation id="397583555483684758">La sincronización dejó de funcionar</translation>
 <translation id="3976396876660209797">Quita y vuelve a crear este acceso directo</translation>

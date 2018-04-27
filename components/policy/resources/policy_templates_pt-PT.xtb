@@ -58,9 +58,6 @@
       Se esta política não for definida, a frequência predefinida é de 3 horas. A frequência mínima
       permitida é de 60 segundos.</translation>
 <translation id="1204263402976895730">Impressoras empresariais ativadas</translation>
-<translation id="1216758672198492382">Permite definir se os Websites estão autorizados a obter acesso a dispositivos USB ligados. É possível bloquear completamente o acesso ou o utilizador pode ser consultado sempre que um Website pretenda obter acesso a dispositivos USB ligados.
-
-          Se esta política não for definida, é utilizada a definição "3" e o utilizador poderá alterá-la.</translation>
 <translation id="1219695476179627719">Especifica se o dispositivo deve reverter para a versão definida por <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> se já estiver a executar uma versão posterior.
 
       A predefinição é RollbackDisabled.</translation>

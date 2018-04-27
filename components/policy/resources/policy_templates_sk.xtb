@@ -57,9 +57,6 @@
       Ak toto pravidlo nie je nastavené, použije sa predvolená frekvencia 3 hodiny. Minimálna
       povolená frekvencia je 60 sekúnd.</translation>
 <translation id="1204263402976895730">Povolené podnikové tlačiarne</translation>
-<translation id="1216758672198492382">Umožňuje nastaviť, či môžu weby získať prístup k pripojeným zariadeniam USB. Prístup môže byť úplne zablokovaný alebo je možné používateľa požiadať, keď chce web získať prístup k pripojeným zariadeniam USB.
-
-          Ak toto pravidlo ponecháte nenastavené, použije sa hodnota 3 a používateľ ju bude môcť zmeniť.</translation>
 <translation id="1219695476179627719">Určuje, či má byť zariadenie vrátené na verziu nastavenú pravidlom <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, ak už používa novšiu verziu.
 
       Predvolene je pravidlo zakázané (hodnota RollbackDisabled).</translation>

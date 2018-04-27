@@ -736,6 +736,7 @@
 <translation id="6263376278284652872">Dấu trang trên <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Quay lại an toàn</translation>
 <translation id="6276112860590028508">Các trang từ danh sách đọc của bạn sẽ xuất hiện tại đây</translation>
+<translation id="627746635834430766">Để thanh toán nhanh hơn vào lần tiếp theo, hãy lưu địa chỉ thanh toán và thẻ vào Tài khoản Google của bạn.</translation>
 <translation id="6280223929691119688">Không thể phân phối đến địa chỉ này. Chọn một địa chỉ khác.</translation>
 <translation id="6282194474023008486">Mã bưu chính</translation>
 <translation id="6290238015253830360">Bài viết được đề xuất của bạn sẽ xuất hiện ở đây</translation>
@@ -750,6 +751,7 @@
 <translation id="6355080345576803305">Ghi đè phiên công khai</translation>
 <translation id="6358450015545214790">Những phần này có ý nghĩa gì?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 đề xuất khác}other{# đề xuất khác}}</translation>
+<translation id="6387754724289022810">Để thanh toán nhanh hơn vào lần tiếp theo, hãy lưu địa chỉ thanh toán và thẻ vào Tài khoản Google của bạn và thiết bị này.</translation>
 <translation id="6397451950548600259">Phần mềm trên máy tính của bạn đang ngăn Chrome kết nối an toàn với web</translation>
 <translation id="6404511346730675251">Chỉnh sửa dấu trang</translation>
 <translation id="6410264514553301377">Nhập ngày hết hạn và CVC cho <ph name="CREDIT_CARD" /></translation>

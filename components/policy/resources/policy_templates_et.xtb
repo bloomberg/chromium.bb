@@ -58,9 +58,6 @@
       Kui see reegel on määramata, on vaikesagedus 3 tundi. Minimaalne
       lubatud sagedus on 60 sekundit.</translation>
 <translation id="1204263402976895730">Ettevõtte lubatud printerid</translation>
-<translation id="1216758672198492382">Võimaldab määrata, kas veebisaitidel on juurdepääs ühendatud USB-seadmetele. Juurdepääsu saab täielikult blokeerida või küsida kasutaja käest iga kord luba, kui veebisait soovib juurdepääsu ühendatud USB-seadmetele.
-
-          Kui reegel jäetakse määramata, kasutatakse väärtust „3” ja kasutaja saab seda muuta.</translation>
 <translation id="1219695476179627719">Määrab, kas seade peaks tagasi minema reegliga <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> määratud versioonile, kui see käitab juba hilisemat versiooni.
 
       Vaikereegel on RollbackDisabled.</translation>
@@ -268,7 +265,7 @@
 
       See reegel on reegli <ph name="BULK_PRINTERS_POLICY" /> lisa.
 
-      Kui see reegel on määramata, siis seadme printereid ei ole ja teisi reegleid <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> eiratakse.
+      Kui see reegel on määramata, siis seadmete printereid ei ole ja teisi reegleid <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> eiratakse.
       </translation>
 <translation id="193259052151668190">Eemaldatavate USB-seadmete lubatud üksuste loend</translation>
 <translation id="1933378685401357864">Taustapildi kujutis</translation>
@@ -307,7 +304,7 @@
       See reegel võimaldab administraatoritel kasutajatele printerite seadistusi
       pakkuda.
 
-      <ph name="PRINTER_DISPLAY_NAME" /> ja <ph name="PRINTER_DESCRIPTION" /> on vabas vormis stringid, mida saab printeri valimise hõlbustamiseks kohandada. <ph name="PRINTER_MANUFACTURER" /> ja <ph name="PRINTER_MODEL" /> lihtsustavad printeri tuvastamist lõppkasutajatele. Need näitavad printeri tootjat ja mudelit. <ph name="PRINTER_URI" /> peab olema aadress, mida saab külastada klientarvutist, sh <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> ja <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> on valikuline. Selle olemasolul aitab see seadistus <ph name="ZEROCONF_DISCOVERY" />-printerite duplikaate eemaldada.
+      <ph name="PRINTER_DISPLAY_NAME" /> ja <ph name="PRINTER_DESCRIPTION" /> on vabas vormis stringid, mida saab printeri valimise hõlbustamiseks kohandada. <ph name="PRINTER_MANUFACTURER" /> ja <ph name="PRINTER_MODEL" /> lihtsustavad printeri tuvastamist lõppkasutajatele. Need näitavad printeri tootjat ja mudelit. <ph name="PRINTER_URI" /> peab olema aadress, mida saab külastada klientarvutist, sh <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> ja <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> on valikuline. Selle olemasolul aitab see seadistus printerite <ph name="ZEROCONF_DISCOVERY" /> duplikaate eemaldada.
 
       <ph name="PRINTER_EFFECTIVE_MODEL" /> peab ühtima mõne stringiga, mis esindab teenuses <ph name="PRODUCT_NAME" /> toetatud printerit. Stringi kasutatakse printeri vastava PPD tuvastamiseks ja installimiseks. Lisateavet leiate aadressilt https://support.google.com/chrome?p=noncloudprint.
 

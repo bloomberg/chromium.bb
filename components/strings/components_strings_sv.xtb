@@ -736,6 +736,7 @@
 <translation id="6263376278284652872">Bokmärken för <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Tillbaka till säker webbplats</translation>
 <translation id="6276112860590028508">Sidor från läslistan visas här</translation>
+<translation id="627746635834430766">Spara kortet och faktureringsadressen i Google-kontot så går det snabbare att betala nästa gång.</translation>
 <translation id="6280223929691119688">Det går inte att leverera till den här adressen. Välj en annan adress.</translation>
 <translation id="6282194474023008486">Postnummer</translation>
 <translation id="6290238015253830360">Rekommenderade artiklar visas här</translation>
@@ -750,6 +751,7 @@
 <translation id="6355080345576803305">Åsidosätt offentlig session</translation>
 <translation id="6358450015545214790">Vad innebär dessa?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 annat förslag}other{# andra förslag}}</translation>
+<translation id="6387754724289022810">Spara kortet och faktureringsadressen i Google-kontot och på enheten så går det snabbare att betala nästa gång.</translation>
 <translation id="6397451950548600259">Programvara på datorn förhindrar att Chrome ansluter till internet på ett säkert sätt</translation>
 <translation id="6404511346730675251">Redigera bokmärke</translation>
 <translation id="6410264514553301377">Ange utgångsdatum och CVC-kod för <ph name="CREDIT_CARD" /></translation>

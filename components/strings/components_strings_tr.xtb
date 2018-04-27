@@ -736,6 +736,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> yer işaretleri</translation>
 <translation id="6264485186158353794">Güvenliğe geri dön</translation>
 <translation id="6276112860590028508">Okuma listenize ait sayfalar burada görünür</translation>
+<translation id="627746635834430766">Bir dahaki sefere daha hızlı ödeme yapmak için kartınızı ve fatura adresinizi Google Hesabınıza kaydedin.</translation>
 <translation id="6280223929691119688">Bu adrese teslimat yapılamıyor. Farklı bir adres seçin.</translation>
 <translation id="6282194474023008486">Posta kodu</translation>
 <translation id="6290238015253830360">Önerilen makaleler burada görünür</translation>
@@ -750,6 +751,7 @@
 <translation id="6355080345576803305">Herkese açık oturumu geçersiz kılma</translation>
 <translation id="6358450015545214790">Bunlar ne anlama geliyor?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 öneri daha}other{# öneri daha}}</translation>
+<translation id="6387754724289022810">Bir dahaki sefere daha hızlı ödeme yapmak için kartınızı ve fatura adresinizi Google Hesabınıza ve bu cihaza kaydedin.</translation>
 <translation id="6397451950548600259">Bilgisayarınızdaki yazılım, Chrome'un web'e güvenli bir şekilde bağlanmasını engelliyor</translation>
 <translation id="6404511346730675251">Yer işaretini düzenle</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> numaralı kartın son kullanma tarihini ve CVC kodunu girin</translation>

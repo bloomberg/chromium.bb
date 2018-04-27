@@ -58,9 +58,6 @@
       Si aquesta política no s'estableix, s'envien cada 3 hores de manera
       predeterminada. La freqüència mínima permesa és de 60 segons.</translation>
 <translation id="1204263402976895730">Impressores d'empresa activades</translation>
-<translation id="1216758672198492382">Permet definir si els llocs web poden obtenir accés a dispositius USB connectats. L'accés es pot bloquejar completament o es pot consultar a l'usuari cada cop que un lloc web vulgui obtenir accés a dispositius USB connectats.
-
-          Si aquesta política no es defineix, es farà servir el valor "3" i l'usuari podrà canviar-lo.</translation>
 <translation id="1219695476179627719">Indica si cal que el dispositiu torni a la versió establerta per la política <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> si ja s'hi executa una versió posterior.
 
       L'opció predeterminada és RollbackDisabled.</translation>
@@ -244,7 +241,7 @@
       Si no es configura, els informes de mètriques i de dades de diagnòstic es desactivaran als dispositius no gestionats i s'activaran als dispositius gestionats.</translation>
 <translation id="1929709556673267855">Proporciona configuracions per a les impressores d'empresa vinculades a dispositius.
 
-      Aquesta política et permet proporcionar configuracions d'impressores als dispositius <ph name="PRODUCT_OS_NAME" />. El format és el mateix que el del diccionari NativePrinters, amb un camp addicional "id" o "guid" obligatori per afegir cada impressora a la llista blanca o negra.
+      Aquesta política et permet proporcionar configuracions d'impressores als dispositius <ph name="PRODUCT_OS_NAME" />. El format és el mateix que el del diccionari NativePrinters, amb un camp addicional "id" o "guid" obligatori a cada impressora per afegir-les a la llista blanca o negra.
 
       El fitxer ha d'estar codificat en JSON i no pot superar els 5 MB. Es calcula que 5 MB corresponen a un fitxer amb unes 21.000 impressores. El resum criptogràfic serveix per verificar la integritat de la baixada.
 
@@ -555,7 +552,7 @@
 <translation id="262740370354162807">Activa l'enviament de documents a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Proporciona configuracions per a les impressores d'empresa.
 
-      Aquesta política et permet proporcionar configuracions d'impressores als dispositius <ph name="PRODUCT_OS_NAME" />. El format és el mateix que el del diccionari NativePrinters, amb un camp addicional "id" o "guid" obligatori per afegir cada impressora a la llista blanca o negra.
+      Aquesta política et permet proporcionar configuracions d'impressores als dispositius <ph name="PRODUCT_OS_NAME" />. El format és el mateix que el del diccionari NativePrinters, amb un camp addicional "id" o "guid" obligatori a cada impressora per afegir-les a la llista blanca o negra.
 
       El fitxer ha d'estar codificat en JSON i no pot superar els 5 MB. Es calcula que 5 MB corresponen a un fitxer amb unes 21.000 impressores. El resum criptogràfic serveix per verificar la integritat de la baixada.
 

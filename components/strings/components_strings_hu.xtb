@@ -734,6 +734,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> könyvjelzők</translation>
 <translation id="6264485186158353794">Vissza a biztonsághoz</translation>
 <translation id="6276112860590028508">Az olvasási listájának adatai itt jelennek meg</translation>
+<translation id="627746635834430766">A következő alkalommal gyorsabban fizethet, ha Google-fiókjába menti kártyáját és számlázási címét.</translation>
 <translation id="6280223929691119688">Erre a címre nem lehetséges a kézbesítés. Válasszon másik címet.</translation>
 <translation id="6282194474023008486">Irányítószám</translation>
 <translation id="6290238015253830360">A javasolt cikkek helye</translation>
@@ -748,6 +749,7 @@
 <translation id="6355080345576803305">Nyilvános munkamenet általi felülbírálás</translation>
 <translation id="6358450015545214790">Mit jelent ez?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 egyéb javaslat}other{# egyéb javaslat}}</translation>
+<translation id="6387754724289022810">A következő alkalommal gyorsabban fizethet, ha kártyáját és számlázási címét elmenti Google-fiókjába és az eszközre.</translation>
 <translation id="6397451950548600259">A számítógépen található valamelyik szoftver megakadályozza a Chrome-ot abban, hogy biztonságosan csatlakozzon az internetre</translation>
 <translation id="6404511346730675251">Könyvjelző szerkesztése</translation>
 <translation id="6410264514553301377">Írja be a(z) <ph name="CREDIT_CARD" /> kártyán szereplő lejárati dátumot és CVC-t</translation>

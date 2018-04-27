@@ -25,7 +25,6 @@
 <translation id="1204037785786432551">Link herunterladen</translation>
 <translation id="1206892813135768548">Linktext kopieren</translation>
 <translation id="1209206284964581585">Vorerst ausblenden</translation>
-<translation id="1211530540767271776">Kein USB-Gerät vorhanden</translation>
 <translation id="123724288017357924">Aktuelle Seite neu laden, Cache-Inhalte ignorieren</translation>
 <translation id="124116460088058876">Weitere Sprachen</translation>
 <translation id="124678866338384709">Aktuellen Tab schließen</translation>
@@ -299,7 +298,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> Downloads gelöscht</translation>
 <translation id="3822502789641063741">Websitespeicher löschen?</translation>
 <translation id="3859306556332390985">Nach vorne navigieren</translation>
-<translation id="3871936494901781193">Beim Scrollen nach oben werden Direktlinks zu verwandten Seiten eingeblendet.</translation>
+<translation id="3871936494901781193">Beim Scrollen nach oben werden Direktlinks zu ähnlichen Seiten eingeblendet.</translation>
 <translation id="3894427358181296146">Ordner hinzufügen</translation>
 <translation id="3895926599014793903">Zoom zwingend aktivieren</translation>
 <translation id="3927692899758076493">Serifenlose Schrift</translation>
@@ -776,7 +775,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8087000398470557479">Dieser Inhalt ist von <ph name="DOMAIN_NAME" /> und wurde von Google bereitgestellt.</translation>
 <translation id="8100932616285851614">Navigationsbereich geschlossen</translation>
 <translation id="8103578431304235997">Inkognito-Tab</translation>
-<translation id="8105951947646329362">Verwandte Seiten vorschlagen</translation>
+<translation id="8105951947646329362">Ähnliche Seiten vorschlagen</translation>
 <translation id="8116925261070264013">Stummgeschaltet</translation>
 <translation id="813082847718468539">Website-Informationen anzeigen</translation>
 <translation id="8137558756159375272">Mit "Zum Suchen tippen" werden das ausgewählte Wort und die aktuelle Seite als Kontext an die Google-Suche gesendet. Sie können die Funktion in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> deaktivieren.</translation>

@@ -736,6 +736,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> のブックマーク</translation>
 <translation id="6264485186158353794">セキュリティで保護されたページに戻る</translation>
 <translation id="6276112860590028508">リーディング リストに登録されたページがここに表示されます</translation>
+<translation id="627746635834430766">カードと請求先住所を Google アカウントに保存すると、次回のお支払いが簡単になります。</translation>
 <translation id="6280223929691119688">この住所には配達できません。別の住所を選択してください。</translation>
 <translation id="6282194474023008486">郵便番号</translation>
 <translation id="6290238015253830360">おすすめの記事がここに表示されます</translation>
@@ -750,6 +751,7 @@
 <translation id="6355080345576803305">公開セッションのオーバーライド</translation>
 <translation id="6358450015545214790">ヘルプ</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{他 1 件の候補}other{他 # 件の候補}}</translation>
+<translation id="6387754724289022810">カードと請求先住所を Google アカウントとこの端末に保存すると、次回のお支払いが簡単になります。</translation>
 <translation id="6397451950548600259">パソコンにインストールされているソフトウェアが原因で、Chrome からインターネットに安全に接続することができません</translation>
 <translation id="6404511346730675251">ブックマークを編集</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> の有効期限と CVC を入力</translation>

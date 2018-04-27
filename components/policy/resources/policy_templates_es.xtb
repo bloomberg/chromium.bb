@@ -57,9 +57,6 @@ Si esta política se establece en False, no se informará sobre el estado del co
 
 Si no se establece ningún valor para esta política, la frecuencia predeterminada serán 3 horas. La frecuencia mínima permitida son 60 segundos.</translation>
 <translation id="1204263402976895730">Impresoras de empresa habilitadas</translation>
-<translation id="1216758672198492382">Permite establecer si los sitios web pueden acceder a los dispositivos USB conectados. El acceso se puede bloquear por completo, o se le puede preguntar al usuario cada vez que un sitio web quiera acceder a los dispositivos USB conectados.
-
-          Si no se le asigna ningún valor a esta política, se usará el "3" y el usuario podrá cambiarlo.</translation>
 <translation id="1219695476179627719">Especifica si el dispositivo debería volver a instalar la versión establecida por <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> si utiliza una versión posterior.
 
       El valor predeterminado es RollbackDisabled.</translation>
@@ -302,7 +299,7 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
       Esta política permite que los administradores proporcionen opciones de configuración de impresoras a
       sus usuarios.
 
-      <ph name="PRINTER_DISPLAY_NAME" /> y <ph name="PRINTER_DESCRIPTION" /> son cadenas de formato libre que se pueden personalizar para que la selección de impresoras sea sencilla. <ph name="PRINTER_MANUFACTURER" /> y <ph name="PRINTER_MODEL" /> permiten que la identificación de la impresora sea sencilla para los usuarios finales. Representan el fabricante y el modelo de la impresora. <ph name="PRINTER_URI" /> debería ser una dirección que esté disponible desde un ordenador cliente (incluidos <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> y <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> es opcional.  Si se especifica, se utiliza para anular el duplicado de impresoras <ph name="ZEROCONF_DISCOVERY" />.
+      <ph name="PRINTER_DISPLAY_NAME" /> y <ph name="PRINTER_DESCRIPTION" /> son cadenas de formato libre que se pueden personalizar para que la selección de impresoras sea sencilla. <ph name="PRINTER_MANUFACTURER" /> y <ph name="PRINTER_MODEL" /> permiten que la identificación de la impresora sea sencilla para los usuarios finales. Representan el fabricante y el modelo de la impresora. <ph name="PRINTER_URI" /> debería ser una dirección que esté disponible desde un ordenador cliente (incluidos <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> y <ph name="URI_QUEUE" />). <ph name="PRINTER_UUID" /> es opcional.  Si se especifica, se utiliza para anular el duplicado de impresoras <ph name="ZEROCONF_DISCOVERY" />.
 
       <ph name="PRINTER_EFFECTIVE_MODEL" /> must match one of the strings which represent a <ph name="PRODUCT_NAME" /> supported printer. The string will be used to identify and install the appropriate PPD for the printer. More information can be found at https://support.google.com/chrome?p=noncloudprint.
 

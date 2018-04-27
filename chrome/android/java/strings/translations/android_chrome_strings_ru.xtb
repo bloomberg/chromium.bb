@@ -25,7 +25,6 @@
 <translation id="1204037785786432551">Сохранить данные по ссылке</translation>
 <translation id="1206892813135768548">Копировать текст ссылки</translation>
 <translation id="1209206284964581585">Скрыть</translation>
-<translation id="1211530540767271776">Нет USB-устройств</translation>
 <translation id="123724288017357924">Обновить страницу без учета кешированного контента</translation>
 <translation id="124116460088058876">Другие языки</translation>
 <translation id="124678866338384709">Закрыть вкладку</translation>
@@ -307,7 +306,7 @@
 <translation id="393697183122708255">Голосовой поиск недоступен</translation>
 <translation id="3950820424414687140">Вход</translation>
 <translation id="395206256282351086">Подсказки запросов и сайтов отключены</translation>
-<translation id="3952533382939530115">Для этой функции используется <ph name="BEGIN_LINK" />синхронизация<ph name="END_LINK" />. Адреса URL посещаемых вами страниц будут отправлены в Google.</translation>
+<translation id="3952533382939530115">Для этой функции используется <ph name="BEGIN_LINK" />синхронизация<ph name="END_LINK" />. URL посещаемых вами страниц будут отправлены в Google.</translation>
 <translation id="3967822245660637423">Скачивание завершено</translation>
 <translation id="397583555483684758">Ошибка синхронизации</translation>
 <translation id="3976396876660209797">Удалите этот ярлык и создайте его заново</translation>

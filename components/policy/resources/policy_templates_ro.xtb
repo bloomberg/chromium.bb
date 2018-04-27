@@ -58,9 +58,6 @@
       Dacă această politică nu este configurată, frecvența prestabilită este de 3
       ore. Frecvența minimă permisă este de 60 de secunde.</translation>
 <translation id="1204263402976895730">Imprimantele activate ale companiei</translation>
-<translation id="1216758672198492382">Îți permite să setezi dacă site-urile primesc acces la dispozitivele USB conectate. Accesul poate fi blocat complet sau utilizatorul poate fi întrebat de fiecare dată când un site dorește să primească acces la dispozitivele USB conectate.
-
-          Dacă această politică nu este configurată, va fi folosită valoarea „3”, iar utilizatorul o va putea modifica.</translation>
 <translation id="1219695476179627719">Specifică dacă dispozitivul trebuie să revină la versiunea setată de <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> dacă rulează deja o versiune superioară.
 
       Valoarea prestabilită este RollbackDisabled.</translation>
@@ -247,6 +244,22 @@
       Dacă politica este dezactivată, raportarea valorilor și a datelor de diagnosticare va fi dezactivată.
 
       Dacă politica nu este configurată, raportarea valorilor și a datelor de diagnosticare va fi dezactivată pe dispozitivele negestionate și activată pe dispozitivele gestionate.</translation>
+<translation id="1929709556673267855">Specifică configurațiile pentru imprimantele companiei asociate dispozitivelor.
+
+      Această politică îți permite să specifici configurațiile imprimantelor pentru dispozitivele <ph name="PRODUCT_OS_NAME" />. Formatul este același cu cel al dicționarului NativePrinters, având în plus un câmp „id” sau „guid” obligatoriu pentru fiecare imprimantă, pentru trecerea pe lista albă sau pe lista neagră.
+
+      Dimensiunea fișierului nu trebuie să depășească 5 MB, iar fișierul trebuie codificat în format JSON. Se estimează că un fișier care conține aproximativ 21.000 de imprimante va fi codificat într-un fișier de 5 MB. Codul hash criptografic este folosit pentru a se verifica integritatea descărcării.
+
+      Fișierul este descărcat și stocat în memoria cache. Va fi descărcat din nou, ori de câte ori adresa URL sau codul hash se modifică.
+
+      Dacă politica este configurată, <ph name="PRODUCT_OS_NAME" /> va descărca fișierul pentru configurațiile imprimantelor și va face imprimantele disponibile, conform cu <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> și <ph name="DEVICE_PRINTERS_BLACKLIST" />.
+
+      Această politică nu afectează opțiunea utilizatorilor de a configura imprimantele pe dispozitive individuale. Este menită să fie suplimentară față de configurarea imprimantelor de către utilizatori individuali.
+
+      Această politică se adaugă politicii <ph name="BULK_PRINTERS_POLICY" />.
+
+      Dacă politica nu este configurată, nu vor exista imprimante asociate dispozitivelor, iar celelalte politici <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> vor fi ignorate.
+      </translation>
 <translation id="193259052151668190">Listă albă de dispozitive USB detașabile</translation>
 <translation id="1933378685401357864">Imagine de fundal</translation>
 <translation id="1956493342242507974">Configurează gestionarea consumului de energie pe ecranul de conectare din <ph name="PRODUCT_OS_NAME" />.
@@ -279,6 +292,21 @@
 
       Reține că dacă platforma acceptă notificări privind politica, întârzierea actualizării va fi setată la 24 de ore (vor fi ignorate valorile prestabilite și valoarea acestei politici), deoarece se așteaptă ca notificările privind politica să forțeze automat o actualizare ori de câte ori politica se modifică, actualizările mai frecvente fiind inutile.</translation>
 <translation id="2024476116966025075">Configurează numele de domeniu necesar pentru clienții cu acces la distanță</translation>
+<translation id="202757291638965203">Configurează o listă de imprimante.
+
+      Această politică permite administratorilor să ofere utilizatorilor configurații ale
+      imprimantelor.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> și <ph name="PRINTER_DESCRIPTION" /> sunt șiruri cu formă liberă care pot fi personalizate pentru a selecta mai ușor o imprimantă. <ph name="PRINTER_MANUFACTURER" /> și <ph name="PRINTER_MODEL" /> sunt folosite pentru a simplifica identificarea imprimantei de către utilizatorii finali. Acestea reprezintă producătorul și modelul imprimantei. <ph name="PRINTER_URI" /> trebuie să fie o adresă care poate fi accesată de pe computerul unui client, inclusiv <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> și <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> este opțional. Dacă este specificat, acesta este folosit pentru a deduplica imprimantele <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> trebuie să corespundă unuia dintre șirurile care reprezintă o imprimantă <ph name="PRODUCT_NAME" /> compatibilă. Șirul va fi folosit pentru a identifica și instala PPD-ul corespunzător imprimantei. Mai multe informații sunt disponibile la https://support.google.com/chrome?p=noncloudprint.
+
+      Configurarea imprimantei este finalizată la prima folosire a acesteia. PPD-urile nu sunt descărcate înainte de folosirea imprimantei. După aceea, PPD-urile folosite frecvent sunt stocate în memoria cache.
+
+      Această politică nu afectează opțiunea utilizatorilor de a configura imprimantele pe dispozitive individuale. Este menită să fie suplimentară față de configurarea imprimantelor de către utilizatori individuali.
+
+      Pentru dispozitivele gestionate cu Active Directory, această politică acceptă extinderea <ph name="MACHINE_NAME_VARIABLE" /> la numele computerului cu Active Directory sau la un subșir al acestuia. De exemplu, dacă numele computerului este <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> va fi înlocuit de cele 4 caractere care urmează după cea de-a 6-a poziție, adică <ph name="MACHINE_NAME_PART_EXAMPLE" />. Reține că poziția începe de la zero.
+      </translation>
 <translation id="2030905906517501646">Cuvânt cheie pentru furnizorul de căutare prestabilit</translation>
 <translation id="203096360153626918">Această politică nu afectează aplicațiile Android. Acestea vor putea fi deschise în modul ecran complet, chiar dacă politica este setată la <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Imprimantele dezactivate ale companiei</translation>
@@ -529,6 +557,20 @@
           Dacă această politică nu este setată, valoarea standard este „true”, iar autentificarea NTLMv2 este activată.</translation>
 <translation id="2623014935069176671">Se așteaptă prima activitate a utilizatorului</translation>
 <translation id="262740370354162807">Activează trimiterea documentelor la <ph name="CLOUD_PRINT_NAME" /></translation>
+<translation id="2627554163382448569">Specifică configurațiile pentru imprimantele companiei.
+
+      Această politică îți permite să specifici configurațiile imprimantelor pentru dispozitivele <ph name="PRODUCT_OS_NAME" />. Formatul este același cu cel al dicționarului NativePrinters, având în plus un câmp „id” sau „guid” obligatoriu pentru fiecare imprimantă, pentru trecerea pe lista albă sau pe lista neagră.
+
+      Dimensiunea fișierului nu trebuie să depășească 5 MB, iar fișierul trebuie codificat în format JSON. Se estimează că un fișier care conține aproximativ 21.000 de imprimante va fi codificat într-un fișier de 5 MB. Codul hash criptografic este folosit pentru a se verifica integritatea descărcării.
+
+      Fișierul este descărcat și stocat în memoria cache. Va fi descărcat din nou, ori de câte ori adresa URL sau codul hash se modifică.
+
+      Dacă politica este configurată, <ph name="PRODUCT_OS_NAME" /> va descărca fișierul pentru configurațiile imprimantelor și va face imprimantele disponibile, conform cu <ph name="BULK_PRINTERS_ACCESS_MODE" />, <ph name="BULK_PRINTERS_WHITELIST" /> și <ph name="BULK_PRINTERS_BLACKLIST" />.
+
+      Dacă această politică este configurată, utilizatorii nu pot să o modifice sau să o ignore.
+
+      Această politică nu afectează opțiunea utilizatorilor de a configura imprimantele pe dispozitive individuale. Este menită să fie suplimentară față de configurarea imprimantelor de către utilizatori individuali.
+      </translation>
 <translation id="2633084400146331575">Activați feedbackul vocal</translation>
 <translation id="2646290749315461919">Vă permite să setați dacă site-urile web au permisiunea să urmărească locația fizică a utilizatorilor. Urmărirea locației fizice a utilizatorilor poate fi permisă în mod prestabilit, refuzată în mod prestabilit sau utilizatorul poate fi întrebat de fiecare dată când un site web solicită locația fizică. Dacă politica este lăsată nesetată, va fi utilizată politica „AskGeolocation”, dar utilizatorul va putea să o schimbe.</translation>
 <translation id="2647069081229792812">Activează sau dezactivează modificarea marcajelor</translation>
@@ -587,6 +629,12 @@
 <translation id="2823870601012066791">Locația din registry-ul Windows pentru clienții <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Activează modul incognito</translation>
 <translation id="2838830882081735096">Nu permite migrarea datelor și ARC</translation>
+<translation id="2840269525054388612">Specifică imprimantele pe care le poate folosi un utilizator.
+
+      Această politică este folosită numai dacă opțiunea <ph name="PRINTERS_WHITELIST" /> este aleasă pentru <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
+
+      Dacă această politică este folosită, utilizatorilor le sunt disponibile numai imprimantele ale căror ID-uri se potrivesc cu valorile din politică. ID-urile trebuie să corespundă câmpurilor „id” sau „guid” din fișierul specificat în <ph name="DEVICE_PRINTERS_POLICY" />.
+      </translation>
 <translation id="2844404652289407061">Activează disponibilitatea funcției Atinge pentru a căuta în timpul afișării conținutului din <ph name="PRODUCT_NAME" />.
 
       Dacă activezi această setare, funcția Atinge pentru a căuta va fi disponibilă utilizatorului și acesta va putea activa sau dezactiva funcția.
@@ -1033,6 +1081,12 @@
 <translation id="4239720644496144453">Memoria cache nu este folosită pentru aplicațiile Android. Dacă mai mulți utilizatori instalează aceeași aplicație Android, aceasta va fi descărcată din nou pentru fiecare utilizator.</translation>
 <translation id="4250680216510889253">Nu</translation>
 <translation id="4261820385751181068">Limba de pe ecranul de conectare al dispozitivului</translation>
+<translation id="427220754384423013">Specifică imprimantele pe care le poate folosi un utilizator.
+
+      Această politică este folosită numai dacă opțiunea <ph name="PRINTERS_WHITELIST" /> este aleasă pentru <ph name="BULK_PRINTERS_ACCESS_MODE" />.
+
+      Dacă această politică este folosită, utilizatorilor le sunt disponibile numai imprimantele ale căror ID-uri se potrivesc cu valorile din politică. ID-urile trebuie să corespundă câmpurilor „id” sau „guid” din fișierul specificat în <ph name="BULK_PRINTERS_POLICY" />.
+      </translation>
 <translation id="427632463972968153">Specifică parametrii utilizați la căutarea de imagini cu POST. Politica este alcătuită din perechi nume/valoare separate prin virgulă. Dacă o valoare este un parametru șablon, precum {imageThumbnail} din exemplul de mai sus, acesta va fi înlocuit cu datele miniaturii imaginii reale.
 
           Această politică este opțională. Dacă nu este setată, solicitarea de căutare a imaginilor va fi trimisă prin metoda GET.
@@ -2041,6 +2095,12 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="749556411189861380">Raportează versiunea sistemului de operare și versiunea de firmware ale dispozitivelor înscrise.
 
       Dacă setarea nu este configurată sau dacă este activată, dispozitivele înscrise vor raporta periodic versiunea sistemului de operare și versiunea de firmware. Dacă setarea este dezactivată, nu vor fi raportate informații privind versiunea.</translation>
+<translation id="7498946151094347510">Specifică imprimantele pe care nu le poate folosi un utilizator.
+
+      Această politică este folosită numai dacă opțiunea <ph name="PRINTERS_BLACKLIST" /> este aleasă pentru <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
+
+      Dacă această politică este folosită, utilizatorii vor putea folosi toate imprimantele, cu excepția celor ale căror ID-uri sunt specificate în politică. ID-urile trebuie să corespundă câmpurilor „id” sau „guid” din fișierul specificat în <ph name="DEVICE_PRINTERS_POLICY" />.
+      </translation>
 <translation id="7511361072385293666">Dacă această politică este activată sau nu este configurată, este permisă folosirea protocolului QUIC în <ph name="PRODUCT_NAME" />.
       Dacă această politică este dezactivată, nu este permisă folosirea protocolului QUIC.</translation>
 <translation id="7519251620064708155">Permite generarea cheilor pe aceste site-uri</translation>
@@ -2395,6 +2455,12 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="8544375438507658205">Motor de redare HTML prestabilit pentru <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Avertisment la accesarea site-urilor din afara pachetelor de conținut</translation>
 <translation id="8566842294717252664">Ascunde magazinul web în pagina Filă nouă și în lansatorul de aplicații</translation>
+<translation id="8586528890725660268">Specifică imprimantele pe care nu le poate folosi un utilizator.
+
+      Această politică este folosită numai dacă opțiunea <ph name="PRINTERS_BLACKLIST" /> este aleasă pentru <ph name="BULK_PRINTERS_ACCESS_MODE" />.
+
+      Dacă această politică este folosită, utilizatorii vor putea folosi toate imprimantele, cu excepția celor ale căror ID-uri sunt specificate în politică. ID-urile trebuie să corespundă câmpurilor „id” sau „guid” din fișierul specificat în <ph name="BULK_PRINTERS_POLICY" />.
+      </translation>
 <translation id="8587229956764455752">Permite crearea de noi conturi de utilizator</translation>
 <translation id="8598350264853261122">Dacă politica este setată la false, utilizatorii neafiliați nu vor avea permisiunea de a folosi ARC.
 

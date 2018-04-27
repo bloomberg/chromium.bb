@@ -737,6 +737,7 @@
 <translation id="6263376278284652872">Favoritos de <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Volver a seguridad</translation>
 <translation id="6276112860590028508">Las páginas de tu lista de lectura aparecen aquí</translation>
+<translation id="627746635834430766">Para realizar pagos de forma más rápida la próxima vez, guarda tu tarjeta y dirección de facturación en tu cuenta de Google.</translation>
 <translation id="6280223929691119688">La dirección de envío no es válida. Selecciona una dirección diferente.</translation>
 <translation id="6282194474023008486">Código postal</translation>
 <translation id="6290238015253830360">Tus artículos sugeridos aparecen aquí</translation>
@@ -751,6 +752,7 @@
 <translation id="6355080345576803305">Anulación de sesión pública</translation>
 <translation id="6358450015545214790">¿Qué significa esto?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 sugerencia más}other{# sugerencias más}}</translation>
+<translation id="6387754724289022810">Para realizar pagos de forma más rápida la próxima vez, guarda tu tarjeta y dirección de facturación en tu cuenta de Google y en este dispositivo.</translation>
 <translation id="6397451950548600259">Un software en tu computadora evita que Chrome se conecte de forma segura a la Web</translation>
 <translation id="6404511346730675251">Editar marcador</translation>
 <translation id="6410264514553301377">Ingresar la fecha de vencimiento y el CVC para <ph name="CREDIT_CARD" /></translation>

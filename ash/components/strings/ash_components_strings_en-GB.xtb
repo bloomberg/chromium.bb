@@ -102,6 +102,7 @@
 <translation id="5236674127086649162">Reload your current page without using cached content</translation>
 <translation id="526651782186312376">Select text to the beginning of the line</translation>
 <translation id="5316716239522500219">Mirror monitors</translation>
+<translation id="5487187679583934283">Starts or stops typing what you speak</translation>
 <translation id="5541719484267030947">While dragging the tab, press <ph name="ESC" /></translation>
 <translation id="5554139136362089836">Search the current page</translation>
 <translation id="5563050856984839829">Press <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> and click a link</translation>
@@ -144,6 +145,7 @@
 <translation id="6981982820502123353">Accessibility</translation>
 <translation id="7020813747703216897">No matching results found</translation>
 <translation id="7025325401470358758">Next pane</translation>
+<translation id="7076878155205969899">Mute sound</translation>
 <translation id="7077383985738259936">Focus on or Highlight the bookmarks bar (if shown)</translation>
 <translation id="7237562915163138771">Type a web address in the address bar, then press <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Put device in sleep mode (suspend)</translation>

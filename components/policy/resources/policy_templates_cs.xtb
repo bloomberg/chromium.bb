@@ -57,9 +57,6 @@ Pokud je nastavena na hodnotu true nebo nastavena není, statistiky hlášeny bu
 
 Není-li tato zásada nastavena, výchozí frekvence je 3 hodiny. Minimální povolená frekvence je 60 sekund.</translation>
 <translation id="1204263402976895730">Povolené podnikové tiskárny</translation>
-<translation id="1216758672198492382">Umožňuje nastavit, zda weby mají povoleno získat přístup k připojeným zařízením USB. Přístup lze zcela zablokovat, nebo je možné uživatele požádat pokaždé, když chce web k připojeným zařízením USB získat přístup.
-
-          Pokud je tato zásada ponechána nenastavená, použije se hodnota „3“ a uživatel ji bude moci změnit.</translation>
 <translation id="1219695476179627719">Určuje, zda se má zařízení vrátit k verzi nastavené v zásadě <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, pokud je v něm již spuštěna novější verze.
 
       Výchozí nastavení je RollbackDisabled.</translation>
@@ -294,7 +291,7 @@ Tato zásada administrátorům umožňuje poskytnout uživatelům konfigurace ti
 
 Hodnoty <ph name="PRINTER_DISPLAY_NAME" /> a <ph name="PRINTER_DESCRIPTION" /> jsou volně upravitelné textové řetězce, pomocí kterých lze usnadnit výběr tiskárny. Hodnoty <ph name="PRINTER_MANUFACTURER" /> a <ph name="PRINTER_MODEL" /> koncovým uživatelům umožní snáze tiskárnu rozpoznat. Představují výrobce a model tiskárny. Hodnota <ph name="PRINTER_URI" /> by měla být adresa přístupná z klientského počítače, včetně údajů <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> a <ph name="URI_QUEUE" />. Hodnota <ph name="PRINTER_UUID" /> je volitelná. Pokud je zadána, slouží k odebrání duplicitních tiskáren <ph name="ZEROCONF_DISCOVERY" />.
 
-Hodnota <ph name="PRINTER_EFFECTIVE_MODEL" /> musí odpovídat jednomu z řetězců, které představují tiskárny podporované systémem <ph name="PRODUCT_NAME" />. Řetězec se použije k identifikaci a instalaci vhodného souboru PPD pro tiskárnu. Další informace najdete na stránce https://support.google.com/chrome?p=noncloudprint.
+Hodnota <ph name="PRINTER_EFFECTIVE_MODEL" /> musí odpovídat jednomu z řetězců, které představují tiskárny podporované systémem <ph name="PRODUCT_NAME" />. Řetězec se použije k identifikaci a instalaci vhodného souboru PPD pro tiskárnu. Další informace naleznete na stránce https://support.google.com/chrome?p=noncloudprint.
 
 Nastavení tiskárny se dokončí při jejím prvním použití. Soubory PPD se stáhnou až při použití tiskárny. Často používané soubory PPD budou následně uloženy do mezipaměti.
 

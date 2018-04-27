@@ -58,9 +58,6 @@
       Si cette règle n'est pas définie, le délai par défaut entre deux transmissions
       est de 3 heures. Le délai minimal autorisé est de 60 secondes.</translation>
 <translation id="1204263402976895730">Imprimantes d'entreprise activées</translation>
-<translation id="1216758672198492382">Permet de définir si les sites Web sont autorisés à accéder aux appareils USB connectés. Soit l'accès est complètement bloqué, soit l'utilisateur reçoit un message chaque fois qu'un site Web souhaite accéder aux appareils USB connectés.
-
-          Si cette règle n'est pas configurée, la valeur "3" est utilisée et peut être modifiée par l'utilisateur.</translation>
 <translation id="1219695476179627719">Spécifie si la version définie par <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> doit être rétablie sur l'appareil s'il exécute une version ultérieure.
 
       La valeur par défaut est RollbackDisabled.</translation>
@@ -309,11 +306,11 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Cette règle autorise les administrateurs à fournir des configurations d'imprimante
       pour leurs utilisateurs.
 
-      <ph name="PRINTER_DISPLAY_NAME" /> et <ph name="PRINTER_DESCRIPTION" /> sont des champs de formulaire libres que vous pouvez personnaliser pour sélectionner facilement l'imprimante. <ph name="PRINTER_MANUFACTURER" /> et <ph name="PRINTER_MODEL" /> servent à faciliter l'identification de l'imprimante par les utilisateurs finaux. Ces champs correspondent au fabricant et au modèle de l'imprimante. <ph name="PRINTER_URI" /> doit être une adresse accessible à partir d'un ordinateur client, et contenir le <ph name="URI_SCHEME" />, le <ph name="URI_PORT" /> et la <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> est un champ facultatif. S'il est indiqué, il est utilisé pour supprimer les imprimantes en double <ph name="ZEROCONF_DISCOVERY" />.
+      <ph name="PRINTER_DISPLAY_NAME" /> et <ph name="PRINTER_DESCRIPTION" /> sont des chaînes au format libre que vous pouvez personnaliser pour sélectionner facilement l'imprimante. <ph name="PRINTER_MANUFACTURER" /> et <ph name="PRINTER_MODEL" /> servent à faciliter l'identification de l'imprimante par les utilisateurs finaux. Ces chaînes correspondent au fabricant et au modèle de l'imprimante. <ph name="PRINTER_URI" /> doit être une adresse accessible à partir d'un ordinateur client, et contenir le <ph name="URI_SCHEME" />, le <ph name="URI_PORT" /> et la <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> est facultatif. S'il est indiqué, il est utilisé pour supprimer les imprimantes en double <ph name="ZEROCONF_DISCOVERY" />.
 
       <ph name="PRINTER_EFFECTIVE_MODEL" /> doit correspondre à l'une des chaînes qui représentent une imprimante  <ph name="PRODUCT_NAME" /> compatible. La chaîne est utilisée pour identifier et installer le fichier PPD approprié pour l'imprimante. Pour plus d'informations, consultez la page https://support.google.com/chrome?p=noncloudprint.
 
-      La configuration d'une imprimante est terminée à sa première utilisation. Les fichiers PPD ne sont pas téléchargés tant que l'imprimante n'a pas été utilisée. Par la suite, les fichiers PPD fréquemment utilisés sont mis en cache.
+      La configuration d'une imprimante est effectuée lors de sa première utilisation. Les fichiers PPD ne sont pas téléchargés tant que l'imprimante n'a pas été utilisée. Par la suite, les fichiers PPD fréquemment utilisés sont mis en cache.
 
       Cette règle n'a aucune incidence sur la capacité ou non des utilisateurs à configurer des imprimantes sur différents appareils. Elle est destinée à compléter la configuration des imprimantes effectuée par les différents utilisateurs.
 
