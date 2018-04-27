@@ -1283,7 +1283,7 @@ class TestGitCl(TestCase):
     if notify:
       ref_suffix = '%ready,notify=ALL'
     else:
-      if not issue:
+      if not issue and squash:
         ref_suffix = '%wip'
       else:
         ref_suffix = '%notify=NONE'

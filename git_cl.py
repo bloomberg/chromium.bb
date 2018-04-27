@@ -3043,7 +3043,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if options.send_mail:
       refspec_opts.append('ready')
       refspec_opts.append('notify=ALL')
-    elif not self.GetIssue():
+    elif not self.GetIssue() and options.squash:
       refspec_opts.append('wip')
     else:
       refspec_opts.append('notify=NONE')
