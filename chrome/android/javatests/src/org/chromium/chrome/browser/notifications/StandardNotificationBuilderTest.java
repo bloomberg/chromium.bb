@@ -215,7 +215,7 @@ public class StandardNotificationBuilderTest {
     }
 
     /**
-     * Regression test for crash observed on Samsung Marshmallow devices - see crbug/829367.
+     * Regression test for crash observed on Samsung/Coolpad Marshmallow devices - see crbug/829367.
      */
     @Test
     @MinAndroidSdkLevel(Build.VERSION_CODES.M)
