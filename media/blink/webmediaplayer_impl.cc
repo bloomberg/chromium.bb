@@ -400,6 +400,8 @@ void WebMediaPlayerImpl::OnSurfaceIdUpdated(viz::SurfaceId surface_id) {
 
   // TODO(726619): Handle the behavior when Picture-in-Picture mode is
   // disabled.
+  // The viz::SurfaceId may be updated when the video begins playback or when
+  // the size of the video changes.
   if (client_ && client_->IsInPictureInPictureMode())
     pip_surface_info_cb_.Run(pip_surface_id_, pipeline_metadata_.natural_size);
 }
