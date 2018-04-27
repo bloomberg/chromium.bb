@@ -2490,13 +2490,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ScreenCoordinates) {
           << message_;
 }
 
-// Flaky on Windows. http://crbug.com/303966
-#if defined(OS_WIN)
-#define MAYBE_TearDownTest DISABLED_TearDownTest
-#else
-#define MAYBE_TearDownTest TearDownTest
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_TearDownTest) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, TearDownTest) {
   const extensions::Extension* extension =
       LoadAndLaunchPlatformApp("web_view/simple", "WebViewTest.LAUNCHED");
   extensions::AppWindow* window = NULL;
