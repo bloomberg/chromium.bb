@@ -1347,15 +1347,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
 // Now we need to make sure TextInputTypeChanged fires properly for the guest's
 // view upon step #3. We simply read the input type's state after #3 to
 // make sure it's not TEXT_INPUT_TYPE_NONE.
-
-// Flaky on Linux - https://crbug.com/702572
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_Focus_FocusRestored DISABLED_Focus_FocusRestored
-#else
-#define MAYBE_Focus_FocusRestored Focus_FocusRestored
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest, MAYBE_Focus_FocusRestored) {
+IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest, Focus_FocusRestored) {
   TestHelper("testFocusRestored", "web_view/focus", NO_TEST_SERVER);
   content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(embedder_web_contents);
