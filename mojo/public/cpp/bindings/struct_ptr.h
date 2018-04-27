@@ -36,6 +36,7 @@ class StructPtr {
 
   StructPtr() = default;
   StructPtr(decltype(nullptr)) {}
+  StructPtr(int) = delete;
 
   ~StructPtr() = default;
 
@@ -43,6 +44,7 @@ class StructPtr {
     reset();
     return *this;
   }
+  StructPtr& operator=(int) = delete;
 
   StructPtr(StructPtr&& other) { Take(&other); }
   StructPtr& operator=(StructPtr&& other) {
@@ -131,6 +133,7 @@ class InlinedStructPtr {
 
   InlinedStructPtr() : state_(NIL) {}
   InlinedStructPtr(decltype(nullptr)) : state_(NIL) {}
+  InlinedStructPtr(int) = delete;
 
   ~InlinedStructPtr() {}
 
@@ -138,6 +141,7 @@ class InlinedStructPtr {
     reset();
     return *this;
   }
+  InlinedStructPtr& operator=(int) = delete;
 
   InlinedStructPtr(InlinedStructPtr&& other) : state_(NIL) { Take(&other); }
   InlinedStructPtr& operator=(InlinedStructPtr&& other) {
