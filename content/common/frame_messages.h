@@ -565,6 +565,7 @@ IPC_STRUCT_BEGIN(FrameHostMsg_DownloadUrl_Params)
   IPC_STRUCT_MEMBER(content::Referrer, referrer)
   IPC_STRUCT_MEMBER(url::Origin, initiator_origin)
   IPC_STRUCT_MEMBER(base::string16, suggested_name)
+  IPC_STRUCT_MEMBER(mojo::MessagePipeHandle, blob_url_token)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(FrameMsg_TextTrackSettings_Params)

@@ -90,9 +90,10 @@ class CONTENT_EXPORT DownloadManagerImpl
       base::Time remove_end) override;
   void DownloadUrl(
       std::unique_ptr<download::DownloadUrlParameters> parameters) override;
-  void DownloadUrl(
-      std::unique_ptr<download::DownloadUrlParameters> params,
-      std::unique_ptr<storage::BlobDataHandle> blob_data_handle) override;
+  void DownloadUrl(std::unique_ptr<download::DownloadUrlParameters> params,
+                   std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
+                   scoped_refptr<network::SharedURLLoaderFactory>
+                       blob_url_loader_factory) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   download::DownloadItem* CreateDownloadItem(
@@ -245,6 +246,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   void BeginDownloadInternal(
       std::unique_ptr<download::DownloadUrlParameters> params,
       std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       uint32_t id,
       StoragePartitionImpl* storage_partition);
 

@@ -320,7 +320,10 @@ class BLINK_EXPORT WebFrameClient {
   // Load commands -------------------------------------------------------
 
   // The client should handle the request as a download.
-  virtual void DownloadURL(const WebURLRequest&) {}
+  // If the request is for a blob: URL, a BlobURLTokenPtr should be provided
+  // as |blob_url_token| to ensure the correct blob gets downloaded.
+  virtual void DownloadURL(const WebURLRequest&,
+                           mojo::ScopedMessagePipeHandle blob_url_token) {}
 
   // The client should load an error page in the current frame.
   virtual void LoadErrorPage(int reason) {}

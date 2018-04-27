@@ -43,6 +43,7 @@
 #include "components/download/public/common/input_stream.h"
 #include "content/common/content_export.h"
 #include "net/base/net_errors.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "storage/browser/blob/blob_data_handle.h"
 
 class GURL;
@@ -149,7 +150,9 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
   // fail.
   virtual void DownloadUrl(
       std::unique_ptr<download::DownloadUrlParameters> parameters,
-      std::unique_ptr<storage::BlobDataHandle> blob_data_handle) = 0;
+      std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
+      scoped_refptr<network::SharedURLLoaderFactory>
+          blob_url_loader_factory) = 0;
 
   // Allow objects to observe the download creation process.
   virtual void AddObserver(Observer* observer) = 0;

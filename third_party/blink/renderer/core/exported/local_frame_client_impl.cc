@@ -67,6 +67,7 @@
 #include "third_party/blink/renderer/core/exported/web_document_loader_impl.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -638,7 +639,15 @@ void LocalFrameClientImpl::DownloadURL(const ResourceRequest& request) {
   if (!web_frame_->Client())
     return;
   DCHECK(web_frame_->GetFrame()->GetDocument());
-  web_frame_->Client()->DownloadURL(WrappedResourceRequest(request));
+  mojom::blink::BlobURLTokenPtr blob_url_token;
+  if (request.Url().ProtocolIs("blob") &&
+      RuntimeEnabledFeatures::MojoBlobURLsEnabled()) {
+    web_frame_->GetFrame()->GetDocument()->GetPublicURLManager().Resolve(
+        request.Url(), MakeRequest(&blob_url_token));
+  }
+  web_frame_->Client()->DownloadURL(
+      WrappedResourceRequest(request),
+      blob_url_token.PassInterface().PassHandle());
 }
 
 void LocalFrameClientImpl::LoadErrorPage(int reason) {

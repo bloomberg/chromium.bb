@@ -622,7 +622,8 @@ class CONTENT_EXPORT RenderFrameImpl
                               const blink::WebString& source_name,
                               unsigned source_line,
                               const blink::WebString& stack_trace) override;
-  void DownloadURL(const blink::WebURLRequest& request) override;
+  void DownloadURL(const blink::WebURLRequest& request,
+                   mojo::ScopedMessagePipeHandle blob_url_token) override;
   void LoadErrorPage(int reason) override;
   blink::WebNavigationPolicy DecidePolicyForNavigation(
       const NavigationPolicyInfo& info) override;
