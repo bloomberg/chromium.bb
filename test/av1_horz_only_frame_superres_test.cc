@@ -231,7 +231,7 @@ class ConvolveHorizRSTestBase : public ::testing::Test {
               << " ms, SIMD time = " << tst_time / 1000 << " ms\n";
 
     EXPECT_GT(ref_time, tst_time)
-        << "Error: CDEFSpeedTest, SIMD slower than C.\n"
+        << "Error: ConvolveHorizRSTest (Speed Test), SIMD slower than C.\n"
         << "C time: " << ref_time << " us\n"
         << "SIMD time: " << tst_time << " us\n";
   }
