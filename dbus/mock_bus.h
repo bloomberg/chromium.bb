@@ -68,7 +68,7 @@ class MockBus : public Bus {
   MOCK_METHOD0(AssertOnDBusThread, void());
 
  protected:
-  virtual ~MockBus();
+  ~MockBus() override;
 };
 
 }  // namespace dbus

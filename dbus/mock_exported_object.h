@@ -32,7 +32,7 @@ class MockExportedObject : public ExportedObject {
   MOCK_METHOD0(Unregister, void());
 
  protected:
-  virtual ~MockExportedObject();
+  ~MockExportedObject() override;
 };
 
 }  // namespace dbus
