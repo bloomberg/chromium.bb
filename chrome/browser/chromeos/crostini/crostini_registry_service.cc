@@ -122,11 +122,22 @@ FindAppIdResult FindAppId(const base::DictionaryValue* prefs,
              ->GetBool())
       continue;
 
-    const std::string& value =
-        item.second.FindKeyOfType(prefs_key, base::Value::Type::STRING)
-            ->GetString();
-    if (!EqualsCaseInsensitiveASCII(search_value, value))
+    const base::Value* value = item.second.FindKey(prefs_key);
+    if (!value)
       continue;
+    if (value->type() == base::Value::Type::STRING) {
+      if (!EqualsCaseInsensitiveASCII(search_value, value->GetString()))
+        continue;
+    } else if (value->type() == base::Value::Type::DICTIONARY) {
+      // Look at the unlocalized name to see if that matches.
+      value = value->FindKeyOfType("", base::Value::Type::STRING);
+      if (!value ||
+          !EqualsCaseInsensitiveASCII(search_value, value->GetString())) {
+        continue;
+      }
+    } else {
+      continue;
+    }
 
     if (!result->empty())
       return FindAppIdResult::NonUniqueMatch;
@@ -249,9 +260,11 @@ CrostiniRegistryService::~CrostiniRegistryService() = default;
 // 2) If the Startup Id is set, look for a matching desktop file id.
 // 3) If the App Id is not prefixed by org.chromium.termina., it's an app with
 // native Wayland support. Look for a matching desktop file id.
-// 4) If the App Id is prefixed by org.chromium.wmclass.:
+// 4) If the App Id is prefixed by org.chromium.termina.wmclass.:
 // 4.1) Look for an app where StartupWMClass is matches the suffix.
 // 4.2) Look for an app where the desktop file id matches the suffix.
+// 4.3) Look for an app where the unlocalized name matches the suffix. This
+//      handles the xterm & uxterm examples.
 // 5) If we couldn't find a match, prefix the app id with 'crostini:' so we can
 // easily identify shelf entries as Crostini apps.
 std::string CrostiniRegistryService::GetCrostiniShelfAppId(
@@ -305,6 +318,11 @@ std::string CrostiniRegistryService::GetCrostiniShelfAppId(
   if (FindAppId(apps, kAppDesktopFileIdKey, key, &app_id) ==
       FindAppIdResult::UniqueMatch)
     return app_id;
+
+  if (FindAppId(apps, kAppNameKey, key, &app_id) ==
+      FindAppIdResult::UniqueMatch)
+    return app_id;
+
   return kCrostiniAppIdPrefix + window_app_id;
 }
 
