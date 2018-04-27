@@ -15,5 +15,20 @@ Polymer({
      * @type {string}
      */
     headerText: String,
+
+    /**
+     * Name of icon within icon set.
+     *
+     * @type {string}
+     */
+    iconName: String,
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  computeIconIdentifier_: function() {
+    return 'multidevice-setup-icons:' + this.iconName;
   },
 });

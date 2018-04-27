@@ -21,6 +21,9 @@
       <structure name="IDR_MULTIDEVICE_SETUP_I18N_SETUP_HTML"
                  file="i18n_setup.html"
                  type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_ICONS_HTML"
+                 file="icons.html"
+                 type="chrome_html" />
       <structure name="IDR_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_DIALOG_HTML"
                  file="multidevice_setup_dialog.html"
                  flattenhtml="true"
