@@ -13,7 +13,7 @@ import org.chromium.components.offline_items_collection.PendingState;
 
 /**
  * Class representing information relating to an update in download status.
- * TODO(jming): Consolidate with other downloads-related objects (http://crbug.com/746692).
+ * TODO(crbug.com/691805): Consolidate with other downloads-related objects.
  */
 public final class DownloadUpdate {
     private final ContentId mContentId;

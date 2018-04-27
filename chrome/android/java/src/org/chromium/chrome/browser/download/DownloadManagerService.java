@@ -374,7 +374,6 @@ public class DownloadManagerService
      * will not be called.
      */
     public void onActivityLaunched() {
-        // TODO(jming): Remove this after M-62.
         DownloadNotificationService.clearResumptionAttemptLeft();
 
         DownloadManagerService.getDownloadManagerService().checkForExternallyRemovedDownloads(

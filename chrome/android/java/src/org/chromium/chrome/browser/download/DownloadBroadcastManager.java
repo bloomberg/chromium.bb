@@ -48,7 +48,6 @@ import org.chromium.components.offline_items_collection.PendingState;
  */
 public class DownloadBroadcastManager extends Service {
     private static final String TAG = "DLBroadcastManager";
-    // TODO(jming): Check to see if this wait time is long enough to execute commands on native.
     private static final int WAIT_TIME_MS = 5000;
 
     private final DownloadSharedPreferenceHelper mDownloadSharedPreferenceHelper =
@@ -264,7 +263,8 @@ public class DownloadBroadcastManager extends Service {
 
     /**
      * Retrieves DownloadSharedPreferenceEntry from a download action intent.
-     * TODO(jming): Instead of getting entire entry, pass only id/isOffTheRecord (crbug.com/749323).
+     * TODO(crbug.com/691805):  Instead of getting entire entry, pass only id/isOffTheRecord, after
+     *                          consolidating all downloads-related objects.
      * @param intent Intent that contains the download action.
      */
     private DownloadSharedPreferenceEntry getDownloadEntryFromIntent(Intent intent) {

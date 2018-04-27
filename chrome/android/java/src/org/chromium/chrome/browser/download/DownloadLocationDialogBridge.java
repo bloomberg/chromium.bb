@@ -105,8 +105,6 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
             nativeOnComplete(mNativeDownloadLocationDialogBridge, filePath.getAbsolutePath());
         }
 
-        // TODO(jming): Right now this doesn't stay checked if a second error is displayed.
-        // Figure out if this needs to be fixed (depending on if we want it pre-checked anyways).
         // Update preference to show prompt based on whether checkbox is checked.
         if (dontShowAgain) {
             PrefServiceBridge.getInstance().setPromptForDownloadAndroid(
