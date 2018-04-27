@@ -42,7 +42,7 @@ class MEDIA_GPU_EXPORT GLES2DecoderHelper {
   virtual bool MakeContextCurrent() = 0;
 
   // Creates a texture and configures it as a video frame (linear filtering,
-  // clamp to edge, no mipmaps). The context must be current.
+  // clamp to edge). The context must be current.
   //
   // See glTexImage2D() for parameter definitions.
   //

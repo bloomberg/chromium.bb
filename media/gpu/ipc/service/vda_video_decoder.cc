@@ -253,9 +253,9 @@ void VdaVideoDecoder::Initialize(
   config_ = config;
 
   if (reinitializing) {
-    gpu_task_runner_->PostTask(FROM_HERE,
-                               base::BindOnce(&VdaVideoDecoder::InitializeDone,
-                                              parent_weak_this_, true));
+    parent_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&VdaVideoDecoder::InitializeDone,
+                                  parent_weak_this_, true));
     return;
   }
 

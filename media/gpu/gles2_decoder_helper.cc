@@ -89,12 +89,6 @@ class GLES2DecoderHelperImpl : public GLES2DecoderHelper {
                                     texture_ref.get(), GL_TEXTURE_WRAP_T,
                                     GL_CLAMP_TO_EDGE);
 
-    texture_manager_->SetParameteri(__func__, decoder_->GetErrorState(),
-                                    texture_ref.get(), GL_TEXTURE_BASE_LEVEL,
-                                    0);
-    texture_manager_->SetParameteri(__func__, decoder_->GetErrorState(),
-                                    texture_ref.get(), GL_TEXTURE_MAX_LEVEL, 0);
-
     // TODO(sandersd): Do we always want to allocate for GL_TEXTURE_2D?
     if (target == GL_TEXTURE_2D) {
       glTexImage2D(target,           // target
