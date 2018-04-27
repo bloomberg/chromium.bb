@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/mock_network_change_notifier.h"
@@ -101,6 +102,8 @@ const char kDefaultUrl[] = "https://www.example.org/";
 const char kServer2Url[] = "https://mail.example.org/";
 const char kServer3Url[] = "https://docs.example.org/";
 const char kServer4Url[] = "https://images.example.org/";
+const int kDefaultRTTMilliSecs = 300;
+const size_t kMinRetryTimeForDefaultNetworkSecs = 1;
 
 // Run QuicStreamFactoryTest instances with all value combinations of version
 // and enable_connection_racting.
@@ -3059,6 +3062,153 @@ TEST_P(QuicStreamFactoryTest, NewNetworkConnectedAfterNoNetwork) {
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
   EXPECT_TRUE(socket_data1.AllReadDataConsumed());
   EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+}
+
+// This test verifies that the connection migrates to the alternate network
+// early when path degrading is detected.
+TEST_P(QuicStreamFactoryTest, MigrateEarlyOnPathDegrading) {
+  InitializeConnectionMigrationV2Test(
+      {kDefaultNetworkForTests, kNewNetworkForTests});
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  // Using a testing task runner so that we can control time.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
+
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->QueueNetworkMadeDefault(kDefaultNetworkForTests);
+
+  MockQuicData quic_data1;
+  QuicStreamOffset header_stream_offset = 0;
+  quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging Read.
+  quic_data1.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
+  quic_data1.AddWrite(SYNCHRONOUS, ConstructGetRequestPacket(
+      2, GetNthClientInitiatedStreamId(0), true, true, &header_stream_offset));
+  quic_data1.AddSocketDataToFactory(socket_factory_.get());
+
+  // Set up the second socket data provider that is used after migration.
+  // The response to the earlier request is read on the new socket.
+  MockQuicData quic_data2;
+  // Connectivity probe to be sent on the new path.
+  quic_data2.AddWrite(SYNCHRONOUS,
+      client_maker_.MakeConnectivityProbingPacket(3, true, 1338));
+  quic_data2.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
+  // Connectivity probe to receive from the server.
+  quic_data2.AddRead(ASYNC,
+      server_maker_.MakeConnectivityProbingPacket(1, false, 1338));
+  // Ping packet to send after migration is completed.
+  quic_data2.AddWrite(ASYNC,
+      client_maker_.MakeAckAndPingPacket(4, false, 1, 1, 1));
+  quic_data2.AddRead(ASYNC, ConstructOkResponsePacket(
+      2, GetNthClientInitiatedStreamId(0), false, false));
+  quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  quic_data2.AddWrite(SYNCHRONOUS, client_maker_.MakeAckAndRstPacket(
+      5, false, GetNthClientInitiatedStreamId(0), QUIC_STREAM_CANCELLED, 2, 2,
+      1, true));
+  quic_data2.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, version_, privacy_mode_,
+                            DEFAULT_PRIORITY, SocketTag(),
+                            /*cert_verify_flags=*/0, url_, net_log_,
+                            &net_error_details_, callback_.callback()));
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  std::unique_ptr<HttpStream> stream = CreateStream(&request);
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = url_;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
+                                         net_log_, CompletionOnceCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Send GET request on stream.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
+                                    callback_.callback()));
+
+  // Notify the session that path is degrading. Session will start to probe the
+  // alternate network.
+  session->OnPathDegrading();
+
+  // Next connectivity probe is scheduled to be sent in 2 *
+  // kDefaultRTTMilliSecs.
+  EXPECT_EQ(1u, task_runner->GetPendingTaskCount());
+  base::TimeDelta next_task_delay = task_runner->NextPendingTaskDelay();
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(2 * kDefaultRTTMilliSecs),
+            next_task_delay);
+
+  // The connection should still be alive, and not marked as going away.
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+  EXPECT_EQ(ERR_IO_PENDING, stream->ReadResponseHeaders(callback_.callback()));
+
+  // Resume quic data and a connectivity probe response will be read on the new
+  // socket.
+  quic_data2.Resume();
+
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  // There should be three pending tasks, the nearest one will complete
+  // migration to the new network.
+  EXPECT_EQ(3u, task_runner->GetPendingTaskCount());
+  next_task_delay = task_runner->NextPendingTaskDelay();
+  EXPECT_EQ(base::TimeDelta(), next_task_delay);
+  task_runner->FastForwardBy(next_task_delay);
+
+  // Response headers are received over the new network.
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  EXPECT_EQ(200, response.headers->response_code());
+
+  // Now there are two pending tasks, the nearest one was to send connectivity
+  // probe and has been cancelled due to successful migration.
+  EXPECT_EQ(2u, task_runner->GetPendingTaskCount());
+  next_task_delay = task_runner->NextPendingTaskDelay();
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(2 * kDefaultRTTMilliSecs),
+            next_task_delay);
+  task_runner->FastForwardBy(next_task_delay);
+
+  // There's one more task to mgirate back to the default network in 0.4s.
+  EXPECT_EQ(1u, task_runner->GetPendingTaskCount());
+  next_task_delay = task_runner->NextPendingTaskDelay();
+  base::TimeDelta expected_delay =
+      base::TimeDelta::FromSeconds(kMinRetryTimeForDefaultNetworkSecs) -
+      base::TimeDelta::FromMilliseconds(2 * kDefaultRTTMilliSecs);
+  EXPECT_EQ(expected_delay, next_task_delay);
+
+  // Deliver a signal that the alternate network now becomes default to session,
+  // this will cancel mgirate back to default network timer.
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkMadeDefault(kNewNetworkForTests);
+
+  task_runner->FastForwardBy(next_task_delay);
+  EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
+
+  // Verify that the session is still alive.
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  stream.reset();
+  EXPECT_TRUE(quic_data1.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data1.AllWriteDataConsumed());
+  EXPECT_TRUE(quic_data2.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data2.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnectedPauseBeforeConnected) {
