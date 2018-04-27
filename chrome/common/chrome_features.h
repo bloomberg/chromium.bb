@@ -118,11 +118,6 @@ extern const base::Feature kDownloadsForeground;
 extern const base::Feature kDownloadsLocationChange;
 #endif
 
-#if defined(OS_CHROMEOS)
-extern const base::Feature kEnableUnifiedMultiDeviceSettings;
-extern const base::Feature kEnableUnifiedMultiDeviceSetup;
-#endif
-
 extern const base::Feature kExpectCTReporting;
 
 extern const base::Feature kExperimentalAppBanners;

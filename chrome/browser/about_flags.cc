@@ -139,6 +139,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_features.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
@@ -1537,11 +1538,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable_unified_multidevice_settings",
      flag_descriptions::kEnableUnifiedMultiDeviceSettingsName,
      flag_descriptions::kEnableUnifiedMultiDeviceSettingsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kEnableUnifiedMultiDeviceSettings)},
+     FEATURE_VALUE_TYPE(chromeos::features::kEnableUnifiedMultiDeviceSettings)},
     {"enable_unified_multidevice_setup",
      flag_descriptions::kEnableUnifiedMultiDeviceSetupName,
      flag_descriptions::kEnableUnifiedMultiDeviceSetupDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kEnableUnifiedMultiDeviceSetup)},
+     FEATURE_VALUE_TYPE(chromeos::features::kEnableUnifiedMultiDeviceSetup)},
     {"enable-video-player-chromecast-support",
      flag_descriptions::kVideoPlayerChromecastSupportName,
      flag_descriptions::kVideoPlayerChromecastSupportDescription, kOsCrOS,

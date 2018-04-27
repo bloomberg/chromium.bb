@@ -119,6 +119,8 @@ component("chromeos") {
     "chromeos_constants.cc",
     "chromeos_constants.h",
     "chromeos_export.h",
+    "chromeos_features.cc",
+    "chromeos_features.h",
     "chromeos_paths.cc",
     "chromeos_paths.h",
     "chromeos_pref_names.cc",
