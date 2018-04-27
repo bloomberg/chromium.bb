@@ -45,6 +45,8 @@ void SimulateConnectionFailure(ModelTypeSet requested_types,
                                SyncCycle* cycle);
 
 // Poll successes and failures.
+// TODO(tschumann): Move poll simulations into the only call site,
+// sync_scheduler_impl_unittest.cc.
 void SimulatePollSuccess(ModelTypeSet requested_types, SyncCycle* cycle);
 void SimulatePollFailed(ModelTypeSet requested_types, SyncCycle* cycle);
 
@@ -63,6 +65,9 @@ void SimulatePollIntervalUpdateImpl(ModelTypeSet requested_types,
                                     SyncCycle* cycle,
                                     const base::TimeDelta& new_poll);
 
+// TODO(tschumann): Most of these actions are only used by
+// sync_scheduler_impl_unittest.cc. Move them there to avoid unneccesary
+// redirection and keep the context in one place.
 ACTION_P(SimulateThrottled, throttle) {
   SimulateThrottledImpl(arg0, throttle);
 }

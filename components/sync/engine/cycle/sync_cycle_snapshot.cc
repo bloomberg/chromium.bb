@@ -6,11 +6,25 @@
 
 #include <utility>
 
+#include "base/i18n/time_formatting.h"
 #include "base/json/json_writer.h"
+#include "base/strings/string16.h"
 #include "base/values.h"
 #include "components/sync/protocol/proto_enum_conversions.h"
 
 namespace syncer {
+
+namespace {
+
+base::string16 FormatTimeDelta(base::TimeDelta delta) {
+  base::string16 value;
+  bool ok =
+      base::TimeDurationFormat(delta, base::DURATION_WIDTH_NARROW, &value);
+  DCHECK(ok);
+  return value;
+}
+
+}  // namespace
 
 SyncCycleSnapshot::SyncCycleSnapshot()
     : is_silenced_(false),
@@ -106,6 +120,12 @@ std::unique_ptr<base::DictionaryValue> SyncCycleSnapshot::ToValue() const {
   }
   value->Set("counter_entries", std::move(counter_entries));
   value->SetBoolean("hasRemainingLocalChanges", has_remaining_local_changes_);
+  value->SetString("short_poll_interval",
+                   FormatTimeDelta(short_poll_interval_));
+  value->SetString("long_poll_interval", FormatTimeDelta(long_poll_interval_));
+  value->SetString(
+      "poll_finish_time",
+      base::TimeFormatShortDateAndTimeWithTimeZone(poll_finish_time_));
   return value;
 }
 

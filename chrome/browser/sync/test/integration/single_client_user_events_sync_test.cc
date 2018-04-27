@@ -360,7 +360,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest,
   event_service->RecordUserEvent(testEvent1);
   event_service->RecordUserEvent(consent1);
 
-  ASSERT_TRUE(GetClient(0)->RestartSyncService());
+  GetClient(0)->StopSyncService(syncer::SyncService::CLEAR_DATA);
+  ASSERT_TRUE(GetClient(0)->StartSyncService());
 
   EXPECT_TRUE(ExpectUserEvents({consent1}));
 }

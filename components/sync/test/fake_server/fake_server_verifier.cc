@@ -137,10 +137,11 @@ AssertionResult FakeServerVerifier::VerifySessions(
 
     // Ensure that all session tags match the first entity. Only one session is
     // supported for verification at this time.
-    if (session_tag.empty())
+    if (session_tag.empty()) {
       session_tag = session_specifics.session_tag();
-    else if (session_specifics.session_tag() != session_tag)
+    } else if (session_specifics.session_tag() != session_tag) {
       return AssertionFailure() << "Multiple session tags found.";
+    }
 
     if (session_specifics.has_header()) {
       session_header = session_specifics.header();

@@ -200,12 +200,12 @@ bool Syncer::HandleCycleEnd(SyncCycle* cycle,
   if (ExitRequested())
     return false;
 
-  cycle->SendSyncCycleEndEventNotification(origin);
   bool success =
       !HasSyncerError(cycle->status_controller().model_neutral_state());
   if (success && origin == sync_pb::SyncEnums::PERIODIC) {
     cycle->mutable_status_controller()->UpdatePollTime();
   }
+  cycle->SendSyncCycleEndEventNotification(origin);
 
   return success;
 }

@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/p2p_invalidation_service.h"
 #include "components/sync/base/progress_marker_map.h"
 #include "components/sync/driver/about_sync_util.h"
@@ -243,10 +242,13 @@ bool ProfileSyncServiceHarness::SetupSync(syncer::ModelTypeSet synced_datatypes,
   return true;
 }
 
-bool ProfileSyncServiceHarness::RestartSyncService() {
+void ProfileSyncServiceHarness::StopSyncService(
+    syncer::SyncService::SyncStopDataFate data_fate) {
   DVLOG(1) << "Requesting stop for service.";
-  service()->RequestStop(ProfileSyncService::CLEAR_DATA);
+  service()->RequestStop(data_fate);
+}
 
+bool ProfileSyncServiceHarness::StartSyncService() {
   std::unique_ptr<syncer::SyncSetupInProgressHandle> blocker =
       service()->GetSetupInProgressHandle();
   DVLOG(1) << "Requesting start for service";
