@@ -64,7 +64,7 @@ const char kManagedStorageExtensionId[] = "kjmkgkdkpedkejedfhmfcenooemhbpbo";
 class MockSchemaRegistryObserver : public policy::SchemaRegistry::Observer {
  public:
   MockSchemaRegistryObserver() {}
-  virtual ~MockSchemaRegistryObserver() {}
+  ~MockSchemaRegistryObserver() override {}
 
   MOCK_METHOD1(OnSchemaRegistryUpdated, void(bool));
 };

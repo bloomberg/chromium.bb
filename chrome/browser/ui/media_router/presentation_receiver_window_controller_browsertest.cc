@@ -101,7 +101,7 @@ class FakeControllerConnection final
 
   // blink::mojom::PresentationConnection implementation
   void OnMessage(content::PresentationConnectionMessage message,
-                 OnMessageCallback callback) {
+                 OnMessageCallback callback) override {
     OnMessageMock(message);
     std::move(callback).Run(true);
   }

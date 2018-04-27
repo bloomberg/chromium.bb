@@ -28,7 +28,7 @@ class MockSiteDataObserver
       : SiteDataObserver(tab_specific_content_settings) {
   }
 
-  virtual ~MockSiteDataObserver() {}
+  ~MockSiteDataObserver() override {}
 
   MOCK_METHOD0(OnSiteDataAccessed, void());
 

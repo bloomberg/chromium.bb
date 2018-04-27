@@ -20,7 +20,7 @@ namespace {
 class MockButtonListener : public views::ButtonListener {
  public:
   MockButtonListener() = default;
-  ~MockButtonListener() = default;
+  ~MockButtonListener() override = default;
 
   MOCK_METHOD2(ButtonPressed,
                void(views::Button* sender, const ui::Event& event));

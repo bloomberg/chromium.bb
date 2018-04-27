@@ -28,7 +28,7 @@ namespace sync_file_system {
 class MockRemoteFileSyncService : public RemoteFileSyncService {
  public:
   MockRemoteFileSyncService();
-  virtual ~MockRemoteFileSyncService();
+  ~MockRemoteFileSyncService() override;
 
   // RemoteFileSyncService overrides.
   MOCK_METHOD1(AddServiceObserver,

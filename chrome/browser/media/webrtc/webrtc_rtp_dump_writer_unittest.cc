@@ -62,7 +62,7 @@ class WebRtcRtpDumpWriterTest : public testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         temp_dir_(new base::ScopedTempDir()) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_->CreateUniqueTempDir());
 
     incoming_dump_path_ = temp_dir_->GetPath().AppendASCII("rtpdump_recv");

@@ -25,7 +25,7 @@ namespace sync_file_system {
 class MockRemoteChangeProcessor : public RemoteChangeProcessor {
  public:
   MockRemoteChangeProcessor();
-  virtual ~MockRemoteChangeProcessor();
+  ~MockRemoteChangeProcessor() override;
 
   // RemoteChangeProcessor overrides.
   MOCK_METHOD2(PrepareForProcessRemoteChange,

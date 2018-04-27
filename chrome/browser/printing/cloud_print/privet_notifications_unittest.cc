@@ -100,7 +100,7 @@ class PrivetNotificationsListenerTest : public testing::Test {
     description_.description = kExampleDeviceDescription;
   }
 
-  virtual ~PrivetNotificationsListenerTest() {}
+  ~PrivetNotificationsListenerTest() override {}
 
   bool SuccessfulResponseToInfo(const std::string& response) {
     net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);

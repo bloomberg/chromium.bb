@@ -458,7 +458,7 @@ class TranslateManagerRenderViewHostTest
   MOCK_METHOD1(OnPreferenceChanged, void(const std::string&));
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     // Setup the test environment, including the threads and message loops. This
     // must be done before base::ThreadTaskRunnerHandle::Get() is called when
     // setting up the net::TestURLRequestContextGetter below.
@@ -484,7 +484,7 @@ class TranslateManagerRenderViewHostTest
     infobar_observer_.Add(infobar_service());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     infobar_observer_.Remove(infobar_service());
 
     ChromeRenderViewHostTestHarness::TearDown();

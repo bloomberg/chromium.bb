@@ -52,7 +52,7 @@ bool MatchPrimaryPattern(const ContentSettingsPattern& expected_primary,
 class MockUserModifiableProvider
     : public content_settings::UserModifiableProvider {
  public:
-  ~MockUserModifiableProvider() = default;
+  ~MockUserModifiableProvider() override = default;
   MOCK_CONST_METHOD3(GetRuleIterator,
                      std::unique_ptr<content_settings::RuleIterator>(
                          ContentSettingsType,

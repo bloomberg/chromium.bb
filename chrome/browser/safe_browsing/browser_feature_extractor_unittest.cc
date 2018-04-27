@@ -57,7 +57,7 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   MOCK_METHOD1(MatchMalwareIP, bool(const std::string& ip_address));
 
  protected:
-  virtual ~MockSafeBrowsingDatabaseManager() {}
+  ~MockSafeBrowsingDatabaseManager() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
@@ -72,7 +72,7 @@ class MockClientSideDetectionHost : public ClientSideDetectionHost {
     set_safe_browsing_managers(NULL, database_manager);
   }
 
-  virtual ~MockClientSideDetectionHost() {}
+  ~MockClientSideDetectionHost() override {}
 
   MOCK_METHOD1(IsBadIpAddress, bool(const std::string&));
 };

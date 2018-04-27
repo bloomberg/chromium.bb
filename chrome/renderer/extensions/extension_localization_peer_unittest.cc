@@ -50,7 +50,7 @@ class MockIpcMessageSender : public IPC::Sender {
         .WillByDefault(DoAll(Invoke(MessageDeleter), Return(true)));
   }
 
-  virtual ~MockIpcMessageSender() {}
+  ~MockIpcMessageSender() override {}
 
   MOCK_METHOD1(Send, bool(IPC::Message* message));
 
@@ -61,7 +61,7 @@ class MockIpcMessageSender : public IPC::Sender {
 class MockRequestPeer : public content::RequestPeer {
  public:
   MockRequestPeer() {}
-  virtual ~MockRequestPeer() {}
+  ~MockRequestPeer() override {}
 
   MOCK_METHOD2(OnUploadProgress, void(uint64_t position, uint64_t size));
   MOCK_METHOD2(OnReceivedRedirect,

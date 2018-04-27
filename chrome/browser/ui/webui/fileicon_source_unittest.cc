@@ -25,7 +25,7 @@ class TestFileIconSource : public FileIconSource {
                     IconLoader::IconSize icon_size,
                     const content::URLDataSource::GotDataCallback& callback));
 
-  virtual ~TestFileIconSource() {}
+  ~TestFileIconSource() override {}
 };
 
 class FileIconSourceTest : public testing::Test {

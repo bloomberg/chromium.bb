@@ -105,7 +105,7 @@ class MockPresentationConnectionProxy
   MockPresentationConnectionProxy();
   ~MockPresentationConnectionProxy() override;
   void OnMessage(content::PresentationConnectionMessage message,
-                 OnMessageCallback cb) {
+                 OnMessageCallback cb) override {
     OnMessageInternal(message, cb);
   }
   MOCK_METHOD2(OnMessageInternal,

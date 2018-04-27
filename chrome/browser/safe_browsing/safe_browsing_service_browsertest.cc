@@ -691,7 +691,7 @@ class TestSBProtocolManagerFactory : public SBProtocolManagerFactory {
 class MockObserver : public SafeBrowsingUIManager::Observer {
  public:
   MockObserver() {}
-  virtual ~MockObserver() {}
+  ~MockObserver() override {}
   MOCK_METHOD1(OnSafeBrowsingHit,
                void(const security_interstitials::UnsafeResource&));
 };

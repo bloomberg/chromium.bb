@@ -16,7 +16,7 @@ namespace extensions {
 class MockTCPClientSocket : public net::TCPClientSocket {
  public:
   MockTCPClientSocket();
-  virtual ~MockTCPClientSocket();
+  ~MockTCPClientSocket() override;
 
   int Read(net::IOBuffer* buffer,
            int bytes,

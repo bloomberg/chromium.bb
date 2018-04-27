@@ -29,7 +29,7 @@ using media_router::MediaRouterDialogControllerWebUIImpl;
 class MockToolbarActionViewDelegate : public ToolbarActionViewDelegate {
  public:
   MockToolbarActionViewDelegate() {}
-  ~MockToolbarActionViewDelegate() {}
+  ~MockToolbarActionViewDelegate() override {}
 
   MOCK_CONST_METHOD0(GetCurrentWebContents, WebContents*());
   MOCK_METHOD0(UpdateState, void());

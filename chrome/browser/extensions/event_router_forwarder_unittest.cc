@@ -42,19 +42,19 @@ class MockEventRouterForwarder : public EventRouterForwarder {
                     Profile*,
                     const GURL&));
 
-  virtual void CallEventRouter(Profile* profile,
-                               const std::string& extension_id,
-                               events::HistogramValue histogram_value,
-                               const std::string& event_name,
-                               std::unique_ptr<base::ListValue> event_args,
-                               Profile* restrict_to_profile,
-                               const GURL& event_url) {
+  void CallEventRouter(Profile* profile,
+                       const std::string& extension_id,
+                       events::HistogramValue histogram_value,
+                       const std::string& event_name,
+                       std::unique_ptr<base::ListValue> event_args,
+                       Profile* restrict_to_profile,
+                       const GURL& event_url) override {
     CallEventRouter(profile, extension_id, histogram_value, event_name,
                     restrict_to_profile, event_url);
   }
 
  protected:
-  virtual ~MockEventRouterForwarder() {}
+  ~MockEventRouterForwarder() override {}
 };
 
 static void BroadcastEventToRenderers(EventRouterForwarder* event_router,

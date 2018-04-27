@@ -58,7 +58,7 @@ class MockPrivetURLFetcherDelegate : public PrivetURLFetcher::Delegate {
 
   bool OnRawData(bool response_is_file,
                  const std::string& data,
-                 const base::FilePath& response_file) {
+                 const base::FilePath& response_file) override {
     if (!raw_mode_) return false;
 
     if (response_is_file) {

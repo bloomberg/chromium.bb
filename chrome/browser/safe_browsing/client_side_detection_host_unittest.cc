@@ -115,7 +115,7 @@ ACTION_P(InvokeMalwareCallback, verdict) {
 class MockClientSideDetectionService : public ClientSideDetectionService {
  public:
   MockClientSideDetectionService() : ClientSideDetectionService(NULL) {}
-  virtual ~MockClientSideDetectionService() {}
+  ~MockClientSideDetectionService() override {}
 
   MOCK_METHOD3(SendClientReportPhishingRequest,
                void(ClientPhishingRequest*,
@@ -153,7 +153,7 @@ class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
   }
 
  protected:
-  virtual ~MockSafeBrowsingUIManager() { }
+  ~MockSafeBrowsingUIManager() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingUIManager);
@@ -168,7 +168,7 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   MOCK_METHOD1(MatchMalwareIP, bool(const std::string& ip_address));
 
  protected:
-  virtual ~MockSafeBrowsingDatabaseManager() {}
+  ~MockSafeBrowsingDatabaseManager() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
@@ -177,7 +177,7 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
 class MockTestingProfile : public TestingProfile {
  public:
   MockTestingProfile() {}
-  virtual ~MockTestingProfile() {}
+  ~MockTestingProfile() override {}
 
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
 };
@@ -188,7 +188,7 @@ class MockBrowserFeatureExtractor : public BrowserFeatureExtractor {
       WebContents* tab,
       ClientSideDetectionHost* host)
       : BrowserFeatureExtractor(tab, host) {}
-  virtual ~MockBrowserFeatureExtractor() {}
+  ~MockBrowserFeatureExtractor() override {}
 
   MOCK_METHOD3(ExtractFeatures,
                void(const BrowseInfo*,

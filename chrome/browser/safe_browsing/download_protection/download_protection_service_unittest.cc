@@ -100,7 +100,7 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
                     SafeBrowsingDatabaseManager::Client* client));
 
  private:
-  virtual ~MockSafeBrowsingDatabaseManager() {}
+  ~MockSafeBrowsingDatabaseManager() override {}
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
 };
 
@@ -189,7 +189,7 @@ class MockBinaryFeatureExtractor : public BinaryFeatureExtractor {
                     google::protobuf::RepeatedPtrField<std::string>*));
 
  protected:
-  virtual ~MockBinaryFeatureExtractor() {}
+  ~MockBinaryFeatureExtractor() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBinaryFeatureExtractor);

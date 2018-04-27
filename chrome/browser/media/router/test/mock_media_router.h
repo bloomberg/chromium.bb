@@ -45,7 +45,7 @@ class MockMediaRouter : public MediaRouterBase {
                    content::WebContents* web_contents,
                    std::vector<MediaRouteResponseCallback> callbacks,
                    base::TimeDelta timeout,
-                   bool incognito) {
+                   bool incognito) override {
     CreateRouteInternal(source, sink_id, origin, web_contents, callbacks,
                         timeout, incognito);
   }
@@ -64,7 +64,7 @@ class MockMediaRouter : public MediaRouterBase {
                  content::WebContents* web_contents,
                  std::vector<MediaRouteResponseCallback> callbacks,
                  base::TimeDelta timeout,
-                 bool incognito) {
+                 bool incognito) override {
     JoinRouteInternal(source, presentation_id, origin, web_contents, callbacks,
                       timeout, incognito);
   }
@@ -83,7 +83,7 @@ class MockMediaRouter : public MediaRouterBase {
                              content::WebContents* web_contents,
                              std::vector<MediaRouteResponseCallback> callbacks,
                              base::TimeDelta timeout,
-                             bool incognito) {
+                             bool incognito) override {
     ConnectRouteByRouteIdInternal(source, route_id, origin, web_contents,
                                   callbacks, timeout, incognito);
   }
@@ -101,7 +101,7 @@ class MockMediaRouter : public MediaRouterBase {
 
   void SendRouteMessage(const MediaRoute::Id& route_id,
                         const std::string& message,
-                        SendRouteMessageCallback callback) {
+                        SendRouteMessageCallback callback) override {
     SendRouteMessageInternal(route_id, message, callback);
   }
   MOCK_METHOD3(SendRouteMessageInternal,
@@ -125,7 +125,7 @@ class MockMediaRouter : public MediaRouterBase {
                    const MediaSource::Id& source_id,
                    const std::string& search_input,
                    const std::string& domain,
-                   MediaSinkSearchResponseCallback sink_callback) {
+                   MediaSinkSearchResponseCallback sink_callback) override {
     SearchSinksInternal(sink_id, source_id, search_input, domain,
                         sink_callback);
   }

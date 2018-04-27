@@ -14,7 +14,7 @@ class MediaGalleriesDialogControllerMock
     : public MediaGalleriesDialogController {
  public:
   MediaGalleriesDialogControllerMock();
-  virtual ~MediaGalleriesDialogControllerMock();
+  ~MediaGalleriesDialogControllerMock() override;
 
   MOCK_CONST_METHOD0(GetHeader, base::string16());
   MOCK_CONST_METHOD0(GetSubtext, base::string16());

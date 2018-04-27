@@ -14,7 +14,7 @@ namespace sync_file_system {
 class MockSyncStatusObserver : public LocalFileSyncStatus::Observer {
  public:
   MockSyncStatusObserver();
-  virtual ~MockSyncStatusObserver();
+  ~MockSyncStatusObserver() override;
 
   // LocalFileSyncStatus::Observer overrides.
   MOCK_METHOD1(OnSyncEnabled, void(const storage::FileSystemURL& url));

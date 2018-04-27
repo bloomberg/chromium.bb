@@ -81,7 +81,7 @@ int SetSSLCipherSuite(int connection_status, int cipher_suite) {
 
 class MockPageInfoUI : public PageInfoUI {
  public:
-  virtual ~MockPageInfoUI() {}
+  ~MockPageInfoUI() override {}
   MOCK_METHOD1(SetCookieInfo, void(const CookieInfoList& cookie_info_list));
   MOCK_METHOD0(SetPermissionInfoStub, void());
   MOCK_METHOD1(SetIdentityInfo, void(const IdentityInfo& identity_info));

@@ -204,7 +204,7 @@ void URLFetcherRequestListener::OnURLFetchComplete(
 class ConfigParserTest : public testing::Test {
  protected:
   ConfigParserTest();
-  virtual ~ConfigParserTest();
+  ~ConfigParserTest() override;
 
   std::unique_ptr<BrandcodeConfigFetcher> WaitForRequest(const GURL& url);
 
