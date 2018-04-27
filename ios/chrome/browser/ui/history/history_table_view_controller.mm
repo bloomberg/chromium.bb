@@ -21,6 +21,7 @@
 #include "ios/chrome/browser/ui/history/history_entry_inserter.h"
 #import "ios/chrome/browser/ui/history/history_entry_item.h"
 #include "ios/chrome/browser/ui/history/history_local_commands.h"
+#import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #include "ios/chrome/browser/ui/history/history_util.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
@@ -143,8 +144,8 @@ const int kMaxFetchCount = 100;
       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                            target:self
                            action:@selector(dismissHistory)];
-  [dismissButton
-      setAccessibilityIdentifier:kTableViewNavigationDismissButtonId];
+  [dismissButton setAccessibilityIdentifier:
+                     kHistoryNavigationControllerDoneButtonIdentifier];
   self.navigationItem.rightBarButtonItem = dismissButton;
 
   // SearchController Configuration.
@@ -846,7 +847,8 @@ const int kMaxFetchCount = 100;
                 style:UIBarButtonItemStylePlain
                target:self
                action:@selector(animateViewsConfigurationForEditingChange)];
-    _cancelButton.accessibilityIdentifier = titleString;
+    _cancelButton.accessibilityIdentifier =
+        kHistoryToolbarCancelButtonIdentifier;
   }
   return _cancelButton;
 }
@@ -862,7 +864,8 @@ const int kMaxFetchCount = 100;
                                          style:UIBarButtonItemStylePlain
                                         target:self
                                         action:@selector(openPrivacySettings)];
-    _clearBrowsingDataButton.accessibilityIdentifier = titleString;
+    _clearBrowsingDataButton.accessibilityIdentifier =
+        kHistoryToolbarClearBrowsingButtonIdentifier;
     _clearBrowsingDataButton.tintColor = [UIColor redColor];
   }
   return _clearBrowsingDataButton;
@@ -877,7 +880,8 @@ const int kMaxFetchCount = 100;
                 style:UIBarButtonItemStylePlain
                target:self
                action:@selector(deleteSelectedItemsFromHistory)];
-    _deleteButton.accessibilityIdentifier = titleString;
+    _deleteButton.accessibilityIdentifier =
+        kHistoryToolbarDeleteButtonIdentifier;
     _deleteButton.tintColor = [UIColor redColor];
   }
   return _deleteButton;
@@ -892,7 +896,7 @@ const int kMaxFetchCount = 100;
                 style:UIBarButtonItemStylePlain
                target:self
                action:@selector(animateViewsConfigurationForEditingChange)];
-    _editButton.accessibilityIdentifier = titleString;
+    _editButton.accessibilityIdentifier = kHistoryToolbarEditButtonIdentifier;
   }
   return _editButton;
 }

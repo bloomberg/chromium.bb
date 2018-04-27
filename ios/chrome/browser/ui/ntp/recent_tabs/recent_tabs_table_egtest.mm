@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
+#import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -150,7 +151,7 @@ id<GREYMatcher> TitleOfTestPage() {
   // Close History.
   if (IsUIRefreshPhase1Enabled()) {
     id<GREYMatcher> exitMatcher =
-        grey_accessibilityID(kTableViewNavigationDismissButtonId);
+        grey_accessibilityID(kHistoryNavigationControllerDoneButtonIdentifier);
     [[EarlGrey selectElementWithMatcher:exitMatcher] performAction:grey_tap()];
   } else {
     [[EarlGrey

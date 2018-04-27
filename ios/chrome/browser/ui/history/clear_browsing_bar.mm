@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
@@ -91,6 +92,8 @@ typedef NS_ENUM(BOOL, ButtonPlacement) { Leading, Trailing };
         setTitle:l10n_util::GetNSStringWithFixup(
                      IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG)
         forState:UIControlStateNormal];
+    _clearBrowsingDataButton.accessibilityIdentifier =
+        kHistoryToolbarClearBrowsingButtonIdentifier;
 
     [self styleButton:_clearBrowsingDataButton forPlacement:Leading];
     _clearButtonContainer = [[UIView alloc] init];
@@ -106,6 +109,7 @@ typedef NS_ENUM(BOOL, ButtonPlacement) { Leading, Trailing };
     [_editButton
         setTitle:l10n_util::GetNSString(IDS_HISTORY_START_EDITING_BUTTON)
         forState:UIControlStateNormal];
+    _editButton.accessibilityIdentifier = kHistoryToolbarEditButtonIdentifier;
 
     [self styleButton:_editButton forPlacement:Trailing];
     _editButtonContainer = [[UIView alloc] init];
@@ -121,6 +125,8 @@ typedef NS_ENUM(BOOL, ButtonPlacement) { Leading, Trailing };
     [_deleteButton setTitle:l10n_util::GetNSString(
                                 IDS_HISTORY_DELETE_SELECTED_ENTRIES_BUTTON)
                    forState:UIControlStateNormal];
+    _deleteButton.accessibilityIdentifier =
+        kHistoryToolbarDeleteButtonIdentifier;
     [self styleButton:_deleteButton forPlacement:Leading];
     _deleteButtonContainer = [[UIView alloc] init];
     [_deleteButtonContainer addSubview:_deleteButton];
@@ -135,6 +141,8 @@ typedef NS_ENUM(BOOL, ButtonPlacement) { Leading, Trailing };
     [_cancelButton
         setTitle:l10n_util::GetNSString(IDS_HISTORY_CANCEL_EDITING_BUTTON)
         forState:UIControlStateNormal];
+    _cancelButton.accessibilityIdentifier =
+        kHistoryToolbarCancelButtonIdentifier;
     [self styleButton:_cancelButton forPlacement:Trailing];
     _cancelButtonContainer = [[UIView alloc] init];
     [_cancelButtonContainer addSubview:_cancelButton];
