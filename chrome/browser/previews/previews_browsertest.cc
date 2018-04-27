@@ -145,11 +145,11 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
 // Also occasional flakes on win7 (crbug.com/789542) and Ubuntu 16.04
 // (crbug.com/831838)
 #if defined(OS_ANDROID)
-#define MAYBE_NoScriptPreviewsEnabled DISABLED_NoScriptPreviewsEnabled
+#define MAYBE_NoScriptPreviewsEnabled NoScriptPreviewsEnabled
 #define MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps \
   NoScriptPreviewsEnabledHttpRedirectToHttps
 #else
-#define MAYBE_NoScriptPreviewsEnabled NoScriptPreviewsEnabled
+#define MAYBE_NoScriptPreviewsEnabled DISABLED_NoScriptPreviewsEnabled
 #define MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps \
   DISABLED_NoScriptPreviewsEnabledHttpRedirectToHttps
 #endif
