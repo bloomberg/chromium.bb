@@ -12,9 +12,9 @@ import mock
 
 from chromite.lib import auth
 from chromite.lib import buildbucket_lib
+from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
-from chromite.lib import git
 from chromite.lib import remote_try
 
 # Tests need internal access.
@@ -24,7 +24,8 @@ class RemoteTryHelperTestsBase(cros_test_lib.MockTestCase):
   """Tests for RemoteTryJob."""
   BRANCH = 'test-branch'
   PATCHES = ('5555', '6666')
-  BUILD_CONFIG = 'amd64-generic-paladin'
+  BUILD_CONFIG_MIN = 'amd64-generic-paladin-tryjob'
+  BUILD_CONFIG_MAX = 'amd64-generic-paladin'
   UNKNOWN_CONFIG = 'unknown-config'
   DISPLAY_LABEL = 'display'
   PASS_THROUGH_ARGS = ['funky', 'cold', 'medina']
@@ -33,20 +34,13 @@ class RemoteTryHelperTestsBase(cros_test_lib.MockTestCase):
 
   def setUp(self):
     self.maxDiff = None
-    self.PatchObject(git, 'GetProjectUserEmail', return_value='default_email')
 
   def _CreateJobMin(self):
-    return remote_try.RemoteTryJob(
-        build_config=self.BUILD_CONFIG,
-        display_label=self.DISPLAY_LABEL,
-        branch='master',
-        extra_args=(),
-        user_email='default_email',
-        master_buildbucket_id=None)
+    return remote_try.RemoteTryJob(build_config=self.BUILD_CONFIG_MIN)
 
   def _CreateJobMax(self):
     return remote_try.RemoteTryJob(
-        build_config=self.BUILD_CONFIG,
+        build_config=self.BUILD_CONFIG_MAX,
         display_label=self.DISPLAY_LABEL,
         branch=self.BRANCH,
         extra_args=self.PASS_THROUGH_ARGS,
@@ -77,37 +71,46 @@ class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
 
   def testMinRequestBody(self):
     """Verify our request body with min options."""
-    body = self._CreateJobMin()._GetRequestBody(self.BUILD_CONFIG)
+    job = self._CreateJobMin()
+
+    self.assertEqual(job.bucket, constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET)
+    self.assertEqual(job.luci_builder, config_lib.LUCI_BUILDER_TRY)
+    self.assertEqual(job.display_label, config_lib.DISPLAY_LABEL_TRYJOB)
+
+    body = job._GetRequestBody()
 
     self.assertEqual(body, {
         'parameters_json': mock.ANY,
         'bucket': 'luci.chromeos.general',
         'tags': [
             'cbb_branch:master',
-            'cbb_config:amd64-generic-paladin',
-            'cbb_display_label:display',
-            'cbb_email:default_email',
+            'cbb_config:amd64-generic-paladin-tryjob',
+            'cbb_display_label:tryjob',
         ]
     })
 
     parameters_parsed = json.loads(body['parameters_json'])
 
     self.assertEqual(parameters_parsed, {
-        u'builder_name': u'Prod',
-        u'email_notify': [{u'email': u'default_email'}],
+        u'builder_name': u'Try',
         u'properties': {
             u'cbb_branch': u'master',
-            u'cbb_config': u'amd64-generic-paladin',
-            u'cbb_display_label': u'display',
-            u'cbb_email': u'default_email',
+            u'cbb_config': u'amd64-generic-paladin-tryjob',
+            u'cbb_display_label': u'tryjob',
             u'cbb_extra_args': [],
         }
     })
 
+
   def testMaxRequestBody(self):
     """Verify our request body with max options."""
-    self.maxDiff = None
-    body = self._CreateJobMax()._GetRequestBody(self.BUILD_CONFIG)
+    job = self._CreateJobMax()
+
+    self.assertEqual(job.bucket, constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET)
+    self.assertEqual(job.luci_builder, config_lib.LUCI_BUILDER_PROD)
+    self.assertEqual(job.display_label, 'display')
+
+    body = job._GetRequestBody()
 
     self.assertEqual(body, {
         'parameters_json': mock.ANY,
@@ -139,7 +142,7 @@ class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
   def testUnknownRequestBody(self):
     """Verify our request body with max options."""
     self.maxDiff = None
-    body = self._CreateJobUnknown()._GetRequestBody('unknown-config')
+    body = self._CreateJobUnknown()._GetRequestBody()
 
     self.assertEqual(body, {
         'parameters_json': mock.ANY,
@@ -170,13 +173,11 @@ class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
     """Do a dryrun of posting the request, min options."""
     job = self._CreateJobMin()
     job.Submit(testjob=True, dryrun=True)
-    # TODO: Improve coverage to all of Submit. Verify behavior.
 
   def testMaxDryRun(self):
     """Do a dryrun of posting the request, max options."""
     job = self._CreateJobMax()
     job.Submit(testjob=True, dryrun=True)
-    # TODO: Improve coverage to all of Submit. Verify behavior.
 
 
 class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
@@ -213,7 +214,6 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
   @cros_test_lib.NetworkTest()
   def testMinTestBucket(self):
     """Talk to a test buildbucket instance with min job settings."""
-    # Submit jobs
     job = self._CreateJobMin()
     result = job.Submit(testjob=True)
 
@@ -221,20 +221,17 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
         result.buildbucket_id,
         'luci.chromeos.general',
         [
-            'builder:Prod',
+            'builder:Try',
             'cbb_branch:master',
-            'cbb_config:amd64-generic-paladin',
-            'cbb_display_label:display',
-            'cbb_email:default_email',
+            'cbb_config:amd64-generic-paladin-tryjob',
+            'cbb_display_label:tryjob',
         ],
         {
-            u'builder_name': u'Prod',
-            u'email_notify': [{u'email': u'default_email'}],
+            u'builder_name': u'Try',
             u'properties': {
                 u'cbb_branch': u'master',
-                u'cbb_config': u'amd64-generic-paladin',
-                u'cbb_display_label': u'display',
-                u'cbb_email': u'default_email',
+                u'cbb_config': u'amd64-generic-paladin-tryjob',
+                u'cbb_display_label': u'tryjob',
                 u'cbb_extra_args': [],
             },
         })
@@ -243,7 +240,7 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
         result,
         remote_try.ScheduledBuild(
             buildbucket_id=result.buildbucket_id,
-            build_config='amd64-generic-paladin',
+            build_config='amd64-generic-paladin-tryjob',
             url=(u'http://cros-goldeneye/chromeos/healthmonitoring/'
                  u'buildDetails?buildbucketId=%s' % result.buildbucket_id)),
     )
@@ -251,11 +248,9 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
   @cros_test_lib.NetworkTest()
   def testMaxTestBucket(self):
     """Talk to a test buildbucket instance with max job settings."""
-    # Submit jobs
     job = self._CreateJobMax()
     result = job.Submit(testjob=True)
 
-    # Verify buildbucket contents.
     self.verifyBuildbucketRequest(
         result.buildbucket_id,
         'luci.chromeos.general',
@@ -290,14 +285,14 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
     )
 
   # pylint: disable=protected-access
-  def testPostConfigsToBuildBucket(self):
+  def testPostConfigToBuildBucket(self):
     """Check syntax for PostConfigsToBuildBucket."""
     self.PatchObject(auth, 'Login')
     self.PatchObject(auth, 'Token')
-    self.PatchObject(remote_try.RemoteTryJob, '_PutConfigToBuildBucket')\
+    self.PatchObject(remote_try.RemoteTryJob, '_PutConfigToBuildBucket')
 
     remote_try_job = remote_try.RemoteTryJob(
-        build_config=self.BUILD_CONFIG,
+        build_config=self.BUILD_CONFIG_MIN,
         display_label=self.DISPLAY_LABEL,
         branch='master',
         extra_args=(),

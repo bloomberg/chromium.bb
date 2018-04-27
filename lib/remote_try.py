@@ -54,29 +54,108 @@ class RemoteTryJob(object):
 
   def __init__(self,
                build_config,
-               display_label,
-               branch,
-               extra_args,
-               user_email,
-               master_buildbucket_id):
+               display_label=None,
+               branch='master',
+               extra_args=(),
+               user_email=None,
+               master_buildbucket_id=None):
     """Construct the object.
 
     Args:
-      build_config: A list of configs to run tryjobs for.
-      display_label: String describing how build group on waterfall.
+      build_config: A build config name to schedule.
+      display_label: String describing how build group on waterfall, or None.
       branch: Name of branch to build for.
       extra_args: Command line arguments to pass to cbuildbot in job.
       user_email: Email address of person requesting job, or None.
-      master_buildbucket_id: String with buildbucket id of scheduling builder.
+      master_buildbucket_id: buildbucket id of scheduling builder, or None.
     """
+    self.bucket = constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET
+
+    # Extract from build_config, if possible.
+    if build_config in site_config:
+      self.luci_builder = site_config[build_config].luci_builder
+      self.display_label = site_config[build_config].display_label
+    else:
+      self.luci_builder = config_lib.LUCI_BUILDER_TRY
+      self.display_label = config_lib.DISPLAY_LABEL_TRYJOB
+
+    # But allow an explicit display_label override.
+    if display_label:
+      self.display_label = display_label
+
     self.build_config = build_config
-    self.display_label = display_label
     self.branch = branch
     self.extra_args = extra_args
     self.user_email = user_email
     self.master_buildbucket_id = master_buildbucket_id
 
-    logging.info('Using email:%s', self.user_email)
+  def _GetRequestBody(self):
+    """Generate the request body for a swarming buildbucket request.
+
+    Returns:
+      buildbucket request properties as a python dict.
+    """
+    tags = {
+        'cbb_display_label': self.display_label,
+        'cbb_branch': self.branch,
+        'cbb_config': self.build_config,
+        'cbb_email': self.user_email,
+        'cbb_master_build_id': self.master_buildbucket_id,
+    }
+
+    # Don't include tags with no value, there is no point.
+    tags = {k: v for k, v in tags.iteritems() if v}
+
+    # All tags should also be listed as properties.
+    properties = tags.copy()
+    properties['cbb_extra_args'] = self.extra_args
+
+    parameters = {
+        'builder_name': self.luci_builder,
+        'properties': properties,
+    }
+
+    if self.user_email:
+      parameters['email_notify'] = [{'email': self.user_email}]
+
+    return {
+        'bucket': self.bucket,
+        'parameters_json': json.dumps(parameters, sort_keys=True),
+        # These tags are indexed and searchable in buildbucket.
+        'tags': ['%s:%s' % (k, tags[k]) for k in sorted(tags.keys())],
+    }
+
+  def _PutConfigToBuildBucket(self, buildbucket_client, dryrun):
+    """Put the tryjob request to buildbucket.
+
+    Args:
+      buildbucket_client: The buildbucket client instance.
+      dryrun: bool controlling dryrun behavior.
+
+    Returns:
+      ScheduledBuild describing the scheduled build.
+
+    Raises:
+      RemoteRequestFailure.
+    """
+    request_body = self._GetRequestBody()
+    content = buildbucket_client.PutBuildRequest(
+        json.dumps(request_body), dryrun)
+
+    if buildbucket_lib.GetNestedAttr(content, ['error']):
+      raise RemoteRequestFailure(
+          'buildbucket error.\nReason: %s\n Message: %s' %
+          (buildbucket_lib.GetErrorReason(content),
+           buildbucket_lib.GetErrorMessage(content)))
+
+    buildbucket_id = buildbucket_lib.GetBuildId(content)
+
+    result = ScheduledBuild(
+        buildbucket_id, self.build_config, TryJobUrl(buildbucket_id))
+
+    logging.info(self.BUILDBUCKET_PUT_RESP_FORMAT, result)
+
+    return result
 
   def Submit(self, testjob=False, dryrun=False):
     """Submit the tryjob through Git.
@@ -96,80 +175,4 @@ class RemoteTryJob(object):
         service_account_json=buildbucket_lib.GetServiceAccount(
             constants.CHROMEOS_SERVICE_ACCOUNT))
 
-    return self._PutConfigToBuildBucket(
-        buildbucket_client, self.build_config, dryrun)
-
-  def _GetRequestBody(self, bot):
-    """Generate the request body for a swarming buildbucket request.
-
-    Args:
-      bot: The bot config to put.
-
-    Returns:
-      buildbucket request properties as a python dict.
-    """
-    bucket = constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET
-
-    tags = {
-        'cbb_display_label': self.display_label,
-        'cbb_branch': self.branch,
-        'cbb_config': bot,
-        'cbb_email': self.user_email,
-        'cbb_master_build_id': self.master_buildbucket_id,
-    }
-
-    # Don't include tags with no value, there is no point.
-    tags = {k: v for k, v in tags.iteritems() if v}
-
-    # All tags should also be listed as properties.
-    properties = tags.copy()
-    properties['cbb_extra_args'] = self.extra_args
-
-    luci_builder = config_lib.LUCI_BUILDER_TRY
-    if bot in site_config:
-      luci_builder = site_config[bot].luci_builder
-
-    parameters = {
-        'builder_name': luci_builder,
-        'properties': properties,
-    }
-
-    if self.user_email:
-      parameters['email_notify'] = [{'email': self.user_email}]
-
-    return {
-        'bucket': bucket,
-        'parameters_json': json.dumps(parameters, sort_keys=True),
-        # These tags are indexed and searchable in buildbucket.
-        'tags': ['%s:%s' % (k, tags[k]) for k in sorted(tags.keys())],
-    }
-
-  def _PutConfigToBuildBucket(self, buildbucket_client, bot, dryrun):
-    """Put the tryjob request to buildbucket.
-
-    Args:
-      buildbucket_client: The buildbucket client instance.
-      bot: The bot config to put.
-      dryrun: bool controlling dryrun behavior.
-
-    Returns:
-      ScheduledBuild describing the scheduled build.
-
-    Raises:
-      RemoteRequestFailure.
-    """
-    request_body = self._GetRequestBody(bot)
-    content = buildbucket_client.PutBuildRequest(
-        json.dumps(request_body), dryrun)
-
-    if buildbucket_lib.GetNestedAttr(content, ['error']):
-      raise RemoteRequestFailure(
-          'buildbucket error.\nReason: %s\n Message: %s' %
-          (buildbucket_lib.GetErrorReason(content),
-           buildbucket_lib.GetErrorMessage(content)))
-
-    buildbucket_id = buildbucket_lib.GetBuildId(content)
-    logging.info(self.BUILDBUCKET_PUT_RESP_FORMAT,
-                 (constants.TRYSERVER_BUILDBUCKET_BUCKET, bot, buildbucket_id))
-
-    return ScheduledBuild(buildbucket_id, bot, TryJobUrl(buildbucket_id))
+    return self._PutConfigToBuildBucket(buildbucket_client, dryrun)
