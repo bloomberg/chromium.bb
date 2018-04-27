@@ -684,6 +684,16 @@ STDMETHODIMP AXPlatformNodeWin::get_accName(
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, name, target);
 
+  // Ignored items are also marked invisible, but NVDA was not actually ignoring
+  // them.
+  // TODO(accessibility) Find a way to not expose ignored items at all, which
+  // would be less hacky but more code. Using a nameless object is a workaround,
+  // although it does not currently cause any known user-facing issues.
+  if (target->GetData().role == ax::mojom::Role::kIgnored) {
+    *name = nullptr;
+    return S_FALSE;
+  }
+
   HRESULT result =
       target->GetStringAttributeAsBstr(ax::mojom::StringAttribute::kName, name);
   if (FAILED(result) && MSAARole() == ROLE_SYSTEM_DOCUMENT && GetParent()) {
