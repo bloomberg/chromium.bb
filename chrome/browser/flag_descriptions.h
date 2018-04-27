@@ -428,6 +428,9 @@ extern const char kEnableZeroSuggestRedirectToChromeDescription[];
 extern const char kEnableWasmStreamingName[];
 extern const char kEnableWasmStreamingDescription[];
 
+extern const char kEnableWasmBaselineName[];
+extern const char kEnableWasmBaselineDescription[];
+
 extern const char kExpensiveBackgroundTimerThrottlingName[];
 extern const char kExpensiveBackgroundTimerThrottlingDescription[];
 

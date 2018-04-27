@@ -456,7 +456,11 @@ const base::Feature kWebAssembly{"WebAssembly",
 const base::Feature kWebAssemblyStreaming{"WebAssemblyStreaming",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable WebAssembly streamed compilation.
+// Enable WebAssembly baseline compilation and tier up.
+const base::Feature kWebAssemblyBaseline{"WebAssemblyBaseline",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable WebAssembly trap handler.
 const base::Feature kWebAssemblyTrapHandler{"WebAssemblyTrapHandler",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 

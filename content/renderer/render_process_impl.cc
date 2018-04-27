@@ -143,6 +143,10 @@ RenderProcessImpl::RenderProcessImpl(
 
   SetV8FlagIfFeature(features::kV8VmFuture, "--future");
   SetV8FlagIfNotFeature(features::kV8VmFuture, "--no-future");
+
+  SetV8FlagIfFeature(features::kWebAssemblyBaseline, "--wasm-tier-up");
+  SetV8FlagIfNotFeature(features::kWebAssemblyBaseline, "--no-wasm-tier-up");
+
   SetV8FlagIfFeature(features::kSharedArrayBuffer,
                      "--harmony-sharedarraybuffer");
   SetV8FlagIfNotFeature(features::kSharedArrayBuffer,

@@ -27200,6 +27200,7 @@ from previous Chrome versions.
       label="enable-manual-fallback-for-password-saving:disabled"/>
   <int value="241187301" label="BrowserTouchBar:disabled"/>
   <int value="244697230" label="enable-theme-color-in-tabbed-mode"/>
+  <int value="250855010" label="WebAssemblyBaseline:disabled"/>
   <int value="255375615" label="stop-non-timers-in-background:enabled"/>
   <int value="259021228" label="OffMainThreadFetch:disabled"/>
   <int value="262382944" label="GuestViewCrossProcessFrames:disabled"/>
@@ -27605,6 +27606,7 @@ from previous Chrome versions.
   <int value="1179936481" label="enable-android-pay-integration-v1"/>
   <int value="1180722846" label="OculusVR:disabled"/>
   <int value="1181056275" label="enable-cloud-backup"/>
+  <int value="1183260592" label="WebAssemblyBaseline:enabled"/>
   <int value="1183431946" label="v8-cache-options"/>
   <int value="1185424279" label="enable-media-router"/>
   <int value="1190035852" label="MediaRemoting:enabled"/>

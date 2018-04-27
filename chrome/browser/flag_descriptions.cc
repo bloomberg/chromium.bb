@@ -668,6 +668,10 @@ const char kEnableWasmStreamingName[] =
 const char kEnableWasmStreamingDescription[] =
     "WebAssembly.{compile|instantiate} taking a Response as parameter.";
 
+const char kEnableWasmBaselineName[] = "WebAssembly baseline compiler";
+const char kEnableWasmBaselineDescription[] =
+    "Enables WebAssembly baseline compilation and tier up.";
+
 const char kExpensiveBackgroundTimerThrottlingName[] =
     "Throttle expensive background timers";
 const char kExpensiveBackgroundTimerThrottlingDescription[] =
