@@ -341,10 +341,6 @@ const char kEnablePrintPreviewRegisterPromos[] =
 // Enable background mode for the Push API.
 const char kEnablePushApiBackgroundMode[] = "enable-push-api-background-mode";
 
-// Enables the site settings all sites list and site details pages in the Chrome
-// settings UI.
-const char kEnableSiteSettings[] = "enable-site-settings";
-
 // Enables user control over muting tab audio from the tab strip.
 const char kEnableTabAudioMuting[]  = "enable-tab-audio-muting";
 

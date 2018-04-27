@@ -109,7 +109,6 @@ extern const char kEnablePotentiallyAnnoyingSecurityFeatures[];
 extern const char kEnablePowerOverlay[];
 extern const char kEnablePrintPreviewRegisterPromos[];
 extern const char kEnablePushApiBackgroundMode[];
-extern const char kEnableSiteSettings[];
 extern const char kEnableTabAudioMuting[];
 extern const char kEnableUiDevTools[];
 extern const char kExtensionContentVerification[];

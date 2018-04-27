@@ -2242,9 +2242,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 
-  html_source->AddBoolean("enableSiteSettings",
-                          base::CommandLine::ForCurrentProcess()->HasSwitch(
-                              switches::kEnableSiteSettings));
+  html_source->AddBoolean("enableSiteSettings", base::FeatureList::IsEnabled(
+                                                    features::kSiteSettings));
   html_source->AddBoolean(
       "enableSafeBrowsingSubresourceFilter",
       base::FeatureList::IsEnabled(

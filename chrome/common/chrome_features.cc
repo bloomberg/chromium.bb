@@ -562,6 +562,10 @@ const char kSitePerProcessOnlyForHighMemoryClientsParamName[] =
 const base::Feature kSimplifiedFullscreenUI{"ViewsSimplifiedFullscreenUI",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+// The site settings all sites list page in the Chrome settings UI.
+const base::Feature kSiteSettings{"SiteSettings",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 // Enables separate notification channels in Android O for notifications from
 // different origins, instead of sending them all to a single 'Sites' channel.
