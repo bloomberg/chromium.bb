@@ -38,7 +38,7 @@ namespace {
 const QuicPacketNumber kEpoch = UINT64_C(1) << 32;
 const QuicPacketNumber kMask = kEpoch - 1;
 
-const uint128 kTestStatelessResetToken = 1010101;  // 0x0F69B5
+const QuicUint128 kTestStatelessResetToken = 1010101;  // 0x0F69B5
 
 // Use fields in which each byte is distinct to ensure that every byte is
 // framed correctly. The values are otherwise arbitrary.
@@ -264,7 +264,7 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
-  bool IsValidStatelessResetToken(uint128 token) const override {
+  bool IsValidStatelessResetToken(QuicUint128 token) const override {
     return token == kTestStatelessResetToken;
   }
 
@@ -326,6 +326,7 @@ class QuicFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
                 start_,
                 Perspective::IS_SERVER) {
     SetQuicFlag(&FLAGS_quic_supports_tls_handshake, true);
+    SetQuicReloadableFlag(quic_respect_ietf_header, true);
     framer_.set_version(version_);
     framer_.SetDecrypter(ENCRYPTION_NONE,
                          std::unique_ptr<QuicDecrypter>(decrypter_));

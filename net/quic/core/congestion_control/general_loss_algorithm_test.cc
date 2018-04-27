@@ -156,11 +156,19 @@ TEST_F(GeneralLossAlgorithmTest, EarlyRetransmitAllPackets) {
             loss_algorithm_.GetLossTimeout());
 
   clock_.AdvanceTime(rtt_stats_.smoothed_rtt());
-  VerifyLosses(kNumSentPackets, {1, 2, 3});
+  if (GetQuicReloadableFlag(quic_incremental_loss_detection)) {
+    VerifyLosses(kNumSentPackets, {3});
+  } else {
+    VerifyLosses(kNumSentPackets, {1, 2, 3});
+  }
   EXPECT_EQ(clock_.Now() + 0.25 * rtt_stats_.smoothed_rtt(),
             loss_algorithm_.GetLossTimeout());
   clock_.AdvanceTime(0.25 * rtt_stats_.smoothed_rtt());
-  VerifyLosses(kNumSentPackets, {1, 2, 3, 4});
+  if (GetQuicReloadableFlag(quic_incremental_loss_detection)) {
+    VerifyLosses(kNumSentPackets, {4});
+  } else {
+    VerifyLosses(kNumSentPackets, {1, 2, 3, 4});
+  }
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }
 

@@ -276,13 +276,31 @@ StreamPendingRetransmission QuicStreamSendBuffer::NextPendingRetransmission()
 bool QuicStreamSendBuffer::FreeMemSlices(QuicStreamOffset start,
                                          QuicStreamOffset end) {
   DCHECK(free_mem_slice_out_of_order_);
+  auto it = buffered_slices_.begin();
   // Find it, such that buffered_slices_[it - 1].end < start <=
   // buffered_slices_[it].end.
-  auto it = std::lower_bound(buffered_slices_.begin(), buffered_slices_.end(),
-                             start, CompareOffset());
+  bool found = false;
+  if (GetQuicReloadableFlag(quic_fast_free_mem_slice)) {
+    if (it == buffered_slices_.end() || it->slice.empty()) {
+      QUIC_BUG << "Trying to ack stream data [" << start << ", " << end << "), "
+               << (it == buffered_slices_.end()
+                       ? "and there is no outstanding data."
+                       : "and the first slice is empty.");
+      return false;
+    }
+    // Fast path that the earliest outstanding data gets acked.
+    found = start >= it->offset && start < it->offset + it->slice.length();
+    if (found) {
+      QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fast_free_mem_slice);
+    }
+  }
+  if (!found) {
+    it = std::lower_bound(buffered_slices_.begin(), buffered_slices_.end(),
+                          start, CompareOffset());
+  }
   if (it == buffered_slices_.end() || it->slice.empty()) {
-    QUIC_DLOG(ERROR) << "Offset " << start
-                     << " does not exist or it has already been acked.";
+    QUIC_BUG << "Offset " << start
+             << " does not exist or it has already been acked.";
     return false;
   }
   for (; it != buffered_slices_.end(); ++it) {

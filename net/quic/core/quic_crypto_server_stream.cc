@@ -57,28 +57,10 @@ QuicCryptoServerStream::QuicCryptoServerStream(
       use_stateless_rejects_if_peer_supported_(
           use_stateless_rejects_if_peer_supported),
       peer_supports_stateless_rejects_(false),
-      delay_handshaker_construction_(
-          GetQuicReloadableFlag(delay_quic_server_handshaker_construction)),
       crypto_config_(crypto_config),
       compressed_certs_cache_(compressed_certs_cache),
       helper_(helper) {
   DCHECK_EQ(Perspective::IS_SERVER, session->connection()->perspective());
-  if (!delay_handshaker_construction_) {
-    switch (session->connection()->version().handshake_protocol) {
-      case PROTOCOL_QUIC_CRYPTO:
-        handshaker_ = QuicMakeUnique<QuicCryptoServerHandshaker>(
-            crypto_config_, this, compressed_certs_cache_, session, helper_);
-        break;
-      case PROTOCOL_TLS1_3:
-        handshaker_ = QuicMakeUnique<TlsServerHandshaker>(
-            this, session, crypto_config_->ssl_ctx(),
-            crypto_config_->proof_source());
-        break;
-      case PROTOCOL_UNSUPPORTED:
-        QUIC_BUG << "Attempting to create QuicCryptoServerStream for unknown "
-                    "handshake protocol";
-    }
-  }
 }
 
 QuicCryptoServerStream::~QuicCryptoServerStream() {}
@@ -170,15 +152,7 @@ CryptoMessageParser* QuicCryptoServerStream::crypto_message_parser() {
 
 void QuicCryptoServerStream::OnSuccessfulVersionNegotiation(
     const ParsedQuicVersion& version) {
-  // TODO(nharper): Uncomment this DCHECK once
-  // quic_reloadable_flag_quic_store_version_before_signalling has been flipped
-  // and removed.
-  // DCHECK_EQ(version, session()->connection()->version());
-  if (!delay_handshaker_construction_) {
-    return;
-  }
-  QUIC_FLAG_COUNT(
-      quic_reloadable_flag_delay_quic_server_handshaker_construction);
+  DCHECK_EQ(version, session()->connection()->version());
   CHECK(!handshaker_);
   switch (session()->connection()->version().handshake_protocol) {
     case PROTOCOL_QUIC_CRYPTO:

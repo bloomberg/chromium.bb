@@ -151,6 +151,7 @@ class QuicPacketGeneratorTest : public QuicTest {
                 Perspective::IS_CLIENT),
         generator_(42, &framer_, &random_generator_, &delegate_, &producer_),
         creator_(QuicPacketGeneratorPeer::GetPacketCreator(&generator_)) {
+    SetQuicReloadableFlag(quic_respect_ietf_header, true);
     creator_->SetEncrypter(
         ENCRYPTION_FORWARD_SECURE,
         QuicMakeUnique<NullEncrypter>(Perspective::IS_CLIENT));

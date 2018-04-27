@@ -18,6 +18,9 @@ namespace net {
 struct QUIC_EXPORT_PRIVATE QuicBlockedFrame : public QuicControlFrame {
   QuicBlockedFrame();
   QuicBlockedFrame(QuicControlFrameId control_frame_id, QuicStreamId stream_id);
+  QuicBlockedFrame(QuicControlFrameId control_frame_id,
+                   QuicStreamId stream_id,
+                   QuicStreamOffset offset);
 
   friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(
       std::ostream& os,
@@ -25,7 +28,15 @@ struct QUIC_EXPORT_PRIVATE QuicBlockedFrame : public QuicControlFrame {
 
   // The stream this frame applies to.  0 is a special case meaning the overall
   // connection rather than a specific stream.
+  //
+  // For IETF QUIC, the stream_id controls whether an IETF QUIC
+  // BLOCKED or STREAM_BLOCKED frame is generated.
+  // If stream_id is 0 then a BLOCKED frame is generated and transmitted,
+  // if non-0, a STREAM_BLOCKED.
   QuicStreamId stream_id;
+
+  // For Google QUIC, the offset is ignored.
+  QuicStreamOffset offset;
 };
 
 }  // namespace net

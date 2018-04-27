@@ -10,9 +10,9 @@
 namespace net {
 
 using QuicUint128 = QuicUint128Impl;
-#define MakeQuicUint128(hi, lo) MakeQuicUint128Impl(hi, lo);
-#define QuicUint128Low64(x) QuicUint128Low64Impl(x);
-#define QuicUint128High64(x) QuicUint128High64Impl(x);
+#define MakeQuicUint128(hi, lo) MakeQuicUint128Impl(hi, lo)
+#define QuicUint128Low64(x) QuicUint128Low64Impl(x)
+#define QuicUint128High64(x) QuicUint128High64Impl(x)
 
 }  // namespace net
 

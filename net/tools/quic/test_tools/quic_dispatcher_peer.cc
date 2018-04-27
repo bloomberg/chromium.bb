@@ -92,5 +92,18 @@ void QuicDispatcherPeer::SendPublicReset(
       dispatcher->framer_.last_packet_is_ietf_quic());
 }
 
+// static
+std::unique_ptr<QuicDispatcher::PerPacketContext>
+QuicDispatcherPeer::GetPerPacketContext(QuicDispatcher* dispatcher) {
+  return dispatcher->GetPerPacketContext();
+}
+
+// static
+void QuicDispatcherPeer::RestorePerPacketContext(
+    QuicDispatcher* dispatcher,
+    std::unique_ptr<QuicDispatcher::PerPacketContext> context) {
+  dispatcher->RestorePerPacketContext(std::move(context));
+}
+
 }  // namespace test
 }  // namespace net

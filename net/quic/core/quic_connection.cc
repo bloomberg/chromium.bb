@@ -248,7 +248,9 @@ QuicConnection::QuicConnection(
       last_ack_had_missing_packets_(false),
       num_packets_received_since_last_ack_sent_(0),
       stop_waiting_count_(0),
-      ack_mode_(TCP_ACKING),
+      ack_mode_(GetQuicReloadableFlag(quic_enable_ack_decimation)
+                    ? ACK_DECIMATION
+                    : TCP_ACKING),
       ack_decimation_delay_(kAckDecimationDelay),
       unlimited_ack_decimation_(false),
       delay_setting_retransmission_alarm_(false),
@@ -322,7 +324,10 @@ QuicConnection::QuicConnection(
           quic_handle_write_results_for_connectivity_probe)),
       use_path_degrading_alarm_(
           GetQuicReloadableFlag(quic_path_degrading_alarm2)),
-      enable_server_proxy_(GetQuicReloadableFlag(quic_enable_server_proxy)) {
+      enable_server_proxy_(GetQuicReloadableFlag(quic_enable_server_proxy2)) {
+  if (ack_mode_ == ACK_DECIMATION) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_enable_ack_decimation);
+  }
   QUIC_DLOG(INFO) << ENDPOINT
                   << "Created connection with connection_id: " << connection_id
                   << " and version: "
@@ -390,17 +395,23 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnSetFromConfig(config);
   }
+  if (GetQuicReloadableFlag(quic_enable_ack_decimation) &&
+      config.HasClientSentConnectionOption(kACD0, perspective_)) {
+    ack_mode_ = TCP_ACKING;
+  }
   if (config.HasClientSentConnectionOption(kACKD, perspective_)) {
     ack_mode_ = ACK_DECIMATION;
   }
-  if (config.HasClientSentConnectionOption(kAKD2, perspective_)) {
+  if (!GetQuicReloadableFlag(quic_enable_ack_decimation) &&
+      config.HasClientSentConnectionOption(kAKD2, perspective_)) {
     ack_mode_ = ACK_DECIMATION_WITH_REORDERING;
   }
   if (config.HasClientSentConnectionOption(kAKD3, perspective_)) {
     ack_mode_ = ACK_DECIMATION;
     ack_decimation_delay_ = kShortAckDecimationDelay;
   }
-  if (config.HasClientSentConnectionOption(kAKD4, perspective_)) {
+  if (!GetQuicReloadableFlag(quic_enable_ack_decimation) &&
+      config.HasClientSentConnectionOption(kAKD4, perspective_)) {
     ack_mode_ = ACK_DECIMATION_WITH_REORDERING;
     ack_decimation_delay_ = kShortAckDecimationDelay;
   }
@@ -553,13 +564,8 @@ bool QuicConnection::OnProtocolVersionMismatch(
       DCHECK(false);
   }
 
-  const bool set_version_early =
-      GetQuicReloadableFlag(quic_store_version_before_signalling);
-  if (set_version_early) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_store_version_before_signalling);
-    // Store the new version.
-    framer_.set_version(received_version);
-  }
+  // Store the new version.
+  framer_.set_version(received_version);
 
   version_negotiation_state_ = NEGOTIATED_VERSION;
   visitor_->OnSuccessfulVersionNegotiation(received_version);
@@ -568,11 +574,6 @@ bool QuicConnection::OnProtocolVersionMismatch(
   }
   QUIC_DLOG(INFO) << ENDPOINT << "version negotiated "
                   << ParsedQuicVersionToString(received_version);
-
-  if (!set_version_early) {
-    // Store the new version.
-    framer_.set_version(received_version);
-  }
 
   MaybeEnableSessionDecidesWhatToWrite();
 
@@ -806,14 +807,12 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
               << GetEffectivePeerAddressFromCurrentPacket().ToString()
               << ", active_effective_peer_migration_type is "
               << active_effective_peer_migration_type_;
-          if (active_effective_peer_migration_type_ == NO_CHANGE) {
-            // Only migrate connection to a new effective peer address if there
-            // is no pending change underway. Cache the current migration change
-            // type, which will start effective peer migration immediately if
-            // this packet is not a connectivity probing packet.
-            current_effective_peer_migration_type_ =
-                effective_peer_migration_type;
-          }
+          // Migrate connection to a new effective peer address even if there is
+          // a pending change underway. Cache the current migration change type,
+          // which will start effective peer migration immediately if this
+          // packet is not a connectivity probing packet.
+          current_effective_peer_migration_type_ =
+              effective_peer_migration_type;
         }
       }
     }
@@ -1281,7 +1280,7 @@ void QuicConnection::OnPacketComplete() {
   CloseIfTooManyOutstandingSentPackets();
 }
 
-bool QuicConnection::IsValidStatelessResetToken(uint128 token) const {
+bool QuicConnection::IsValidStatelessResetToken(QuicUint128 token) const {
   return stateless_reset_token_received_ &&
          token == received_stateless_reset_token_;
 }
@@ -1346,6 +1345,7 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
     // If there are new missing packets to report, send an ack immediately.
     if (received_packet_manager_.HasNewMissingPackets()) {
       if (ack_mode_ == ACK_DECIMATION_WITH_REORDERING) {
+        DCHECK(!GetQuicReloadableFlag(quic_enable_ack_decimation));
         // Wait the minimum of an eighth min_rtt and the existing ack time.
         QuicTime ack_time =
             clock_->ApproximateNow() +
@@ -1563,7 +1563,7 @@ void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
     }
 
     if (!effective_peer_address_.IsInitialized()) {
-      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_enable_server_proxy, 1, 3);
+      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_enable_server_proxy2, 1, 3);
       const QuicSocketAddress effective_peer_addr =
           GetEffectivePeerAddressFromCurrentPacket();
 
@@ -1674,6 +1674,7 @@ void QuicConnection::OnCanWrite() {
   }
 
   if (GetQuicReloadableFlag(quic_unified_send_alarm)) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_unified_send_alarm);
     // After the visitor writes, it may have caused the socket to become write
     // blocked or the congestion manager to prohibit sending, so check again.
     if (visitor_->WillingAndAbleToWrite() && !send_alarm_->IsSet() &&
@@ -1842,42 +1843,30 @@ void QuicConnection::WriteQueuedPackets() {
 
   UMA_HISTOGRAM_COUNTS_1000("Net.QuicSession.NumQueuedPacketsBeforeWrite",
                             queued_packets_.size());
-  if (GetQuicReloadableFlag(quic_fix_write_out_of_order_queued_packet_crash)) {
-    while (!queued_packets_.empty()) {
-      QUIC_FLAG_COUNT(
-          quic_reloadable_flag_quic_fix_write_out_of_order_queued_packet_crash);
-      // WritePacket() can potentially clear all queued packets, so we need to
-      // save the first queued packet to a local variable before calling it.
-      SerializedPacket packet(std::move(queued_packets_.front()));
-      queued_packets_.pop_front();
+  while (!queued_packets_.empty()) {
+    // WritePacket() can potentially clear all queued packets, so we need to
+    // save the first queued packet to a local variable before calling it.
+    SerializedPacket packet(std::move(queued_packets_.front()));
+    queued_packets_.pop_front();
 
-      const bool write_result = WritePacket(&packet);
+    const bool write_result = WritePacket(&packet);
 
-      if (connected_ && !write_result) {
-        // Write failed but connection is open, re-insert |packet| into the
-        // front of the queue, it will be retried later.
-        queued_packets_.emplace_front(std::move(packet));
-        break;
-      }
-
-      delete[] packet.encrypted_buffer;
-      ClearSerializedPacket(&packet);
-      if (!connected_) {
-        DCHECK(queued_packets_.empty()) << "Queued packets should have been "
-                                           "cleared while closing connection";
-        break;
-      }
-
-      // Continue to send the next packet in queue.
+    if (connected_ && !write_result) {
+      // Write failed but connection is open, re-insert |packet| into the
+      // front of the queue, it will be retried later.
+      queued_packets_.emplace_front(std::move(packet));
+      break;
     }
-  } else {
-    QueuedPacketList::iterator packet_iterator = queued_packets_.begin();
-    while (packet_iterator != queued_packets_.end() &&
-           WritePacket(&(*packet_iterator))) {
-      delete[] packet_iterator->encrypted_buffer;
-      ClearSerializedPacket(&(*packet_iterator));
-      packet_iterator = queued_packets_.erase(packet_iterator);
+
+    delete[] packet.encrypted_buffer;
+    ClearSerializedPacket(&packet);
+    if (!connected_) {
+      DCHECK(queued_packets_.empty()) << "Queued packets should have been "
+                                         "cleared while closing connection";
+      break;
     }
+
+    // Continue to send the next packet in queue.
   }
 }
 
@@ -2900,8 +2889,7 @@ bool QuicConnection::SendConnectivityProbingPacket(
     return true;
   }
 
-  if (GetQuicReloadableFlag(quic_fix_write_out_of_order_queued_packet_crash) &&
-      GetQuicReloadableFlag(
+  if (GetQuicReloadableFlag(
           quic_clear_queued_packets_before_sending_connectivity_probing)) {
     QUIC_FLAG_COUNT(
         quic_reloadable_flag_quic_clear_queued_packets_before_sending_connectivity_probing);  // NOLINT
@@ -3027,7 +3015,7 @@ void QuicConnection::StartPeerMigration(AddressChangeType peer_migration_type) {
 
 void QuicConnection::OnEffectivePeerMigrationValidated() {
   DCHECK(enable_server_proxy_);
-  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_enable_server_proxy, 3, 3);
+  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_enable_server_proxy2, 3, 3);
   if (active_effective_peer_migration_type_ == NO_CHANGE) {
     QUIC_BUG << "No migration underway.";
     return;
@@ -3042,17 +3030,18 @@ void QuicConnection::OnEffectivePeerMigrationValidated() {
 // most recent migration is the one that we should pay attention to.
 void QuicConnection::StartEffectivePeerMigration(AddressChangeType type) {
   DCHECK(enable_server_proxy_);
-  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_enable_server_proxy, 2, 3);
+  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_enable_server_proxy2, 2, 3);
   // TODO(fayang): Currently, all peer address change type are allowed. Need to
   // add a method ShouldAllowPeerAddressChange(PeerAddressChangeType type) to
   // determine whether |type| is allowed.
-  if (active_effective_peer_migration_type_ != NO_CHANGE || type == NO_CHANGE) {
-    QUIC_BUG << "Migration underway or no new migration started.";
+  if (type == NO_CHANGE) {
+    QUIC_BUG << "EffectivePeerMigration started without address change.";
     return;
   }
   QUIC_DLOG(INFO) << ENDPOINT << "Effective peer's ip:port changed from "
                   << effective_peer_address_.ToString() << " to "
                   << GetEffectivePeerAddressFromCurrentPacket().ToString()
+                  << ", address change type is " << type
                   << ", migrating connection.";
 
   highest_packet_sent_before_effective_peer_migration_ =

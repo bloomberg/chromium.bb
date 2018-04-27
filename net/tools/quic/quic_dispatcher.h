@@ -150,7 +150,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
   void OnPacketComplete() override;
-  bool IsValidStatelessResetToken(uint128 token) const override;
+  bool IsValidStatelessResetToken(QuicUint128 token) const override;
   void OnAuthenticatedIetfStatelessResetPacket(
       const QuicIetfStatelessResetPacket& packet) override;
 
@@ -164,6 +164,11 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
 
   // Return true if there is CHLO buffered.
   virtual bool HasChlosBuffered() const;
+
+  // Used by subclass of QuicDispatcher, to track its per packet context.
+  struct PerPacketContext {
+    virtual ~PerPacketContext() {}
+  };
 
  protected:
   virtual QuicSession* CreateQuicSession(QuicConnectionId connection_id,
@@ -312,6 +317,11 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
 
   // Return true if the blocked writer should be added to blocked list.
   virtual bool ShouldAddToBlockedList();
+
+  // Save/Restore per packet context. Used by async stateless rejector.
+  virtual std::unique_ptr<PerPacketContext> GetPerPacketContext() const;
+  virtual void RestorePerPacketContext(
+      std::unique_ptr<PerPacketContext> /*context*/) {}
 
  private:
   friend class test::QuicDispatcherPeer;

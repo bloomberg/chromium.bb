@@ -145,6 +145,7 @@ class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
         data_("foo"),
         creator_(connection_id_, &client_framer_, &delegate_, &producer_),
         serialized_packet_(creator_.NoPacket()) {
+    SetQuicReloadableFlag(quic_respect_ietf_header, true);
     creator_.SetEncrypter(ENCRYPTION_INITIAL, QuicMakeUnique<NullEncrypter>(
                                                   Perspective::IS_CLIENT));
     creator_.SetEncrypter(

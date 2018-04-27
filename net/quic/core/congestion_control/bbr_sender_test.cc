@@ -260,6 +260,9 @@ TEST_F(BbrSenderTest, SetInitialCongestionWindow) {
 TEST_F(BbrSenderTest, SimpleTransfer) {
   // Adding TSO CWND causes packet loss before exiting startup.
   SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
+  // Disable Ack Decimation on the receiver, because it can increase srtt.
+  QuicConnectionPeer::SetAckMode(receiver_.connection(),
+                                 QuicConnection::AckMode::TCP_ACKING);
   CreateDefaultSetup();
 
   // At startup make sure we are at the default.
@@ -367,7 +370,9 @@ TEST_F(BbrSenderTest, SimpleTransferAckDecimation) {
 // Test a simple long data transfer with 2 rtts of aggregation.
 TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes4) {
   SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
-
+  // Disable Ack Decimation on the receiver, because it can increase srtt.
+  QuicConnectionPeer::SetAckMode(receiver_.connection(),
+                                 QuicConnection::AckMode::TCP_ACKING);
   CreateDefaultSetup();
   // Enable ack aggregation that forces the queue to be drained.
   SetConnectionOption(kBBR1);
@@ -433,6 +438,9 @@ TEST_F(BbrSenderTest, SimpleTransferAckDecimation4) {
 // Test a simple long data transfer with 2 rtts of aggregation.
 TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes20RTTWindow) {
   SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
+  // Disable Ack Decimation on the receiver, because it can increase srtt.
+  QuicConnectionPeer::SetAckMode(receiver_.connection(),
+                                 QuicConnection::AckMode::TCP_ACKING);
   CreateDefaultSetup();
   SetConnectionOption(kBBR4);
   // 2 RTTs of aggregation, with a max of 10kb.
@@ -459,6 +467,9 @@ TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes20RTTWindow) {
 // Test a simple long data transfer with 2 rtts of aggregation.
 TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes40RTTWindow) {
   SetQuicReloadableFlag(quic_bbr_add_tso_cwnd, false);
+  // Disable Ack Decimation on the receiver, because it can increase srtt.
+  QuicConnectionPeer::SetAckMode(receiver_.connection(),
+                                 QuicConnection::AckMode::TCP_ACKING);
   CreateDefaultSetup();
   SetConnectionOption(kBBR5);
   // 2 RTTs of aggregation, with a max of 10kb.
@@ -663,6 +674,9 @@ TEST_F(BbrSenderTest, ApplicationLimitedBurstsWithoutPrior) {
 
 // Verify that the DRAIN phase works correctly.
 TEST_F(BbrSenderTest, Drain) {
+  // Disable Ack Decimation on the receiver, because it can increase srtt.
+  QuicConnectionPeer::SetAckMode(receiver_.connection(),
+                                 QuicConnection::AckMode::TCP_ACKING);
   CreateDefaultSetup();
   const QuicTime::Delta timeout = QuicTime::Delta::FromSeconds(10);
   // Get the queue at the bottleneck, which is the outgoing queue at the port to
@@ -821,6 +835,9 @@ TEST_F(BbrSenderTest, ProbeRttSkippedAfterAppLimited) {
 // bandwidth will not exit high gain phase, and similarly ensure that the
 // connection will exit low gain early if the number of bytes in flight is low.
 TEST_F(BbrSenderTest, InFlightAwareGainCycling) {
+  // Disable Ack Decimation on the receiver, because it can increase srtt.
+  QuicConnectionPeer::SetAckMode(receiver_.connection(),
+                                 QuicConnection::AckMode::TCP_ACKING);
   CreateDefaultSetup();
   DriveOutOfStartup();
 

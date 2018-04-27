@@ -151,7 +151,7 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   virtual void OnPacketComplete() = 0;
 
   // Called to check whether |token| is a valid stateless reset token.
-  virtual bool IsValidStatelessResetToken(uint128 token) const = 0;
+  virtual bool IsValidStatelessResetToken(QuicUint128 token) const = 0;
 
   // Called when an IETF stateless reset packet has been parsed and validated
   // with the stateless reset token.
@@ -289,7 +289,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Returns a new IETF stateless reset packet.
   static std::unique_ptr<QuicEncryptedPacket> BuildIetfStatelessResetPacket(
       QuicConnectionId connection_id,
-      uint128 stateless_reset_token);
+      QuicUint128 stateless_reset_token);
 
   // Returns a new version negotiation packet.
   static std::unique_ptr<QuicEncryptedPacket> BuildVersionNegotiationPacket(
@@ -565,7 +565,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool ProcessIetfAckFrame(QuicDataReader* reader,
                            uint8_t frame_type,
                            QuicAckFrame* ack_frame);
-  void ProcessIetfPaddingFrame(QuicDataReader* reader, QuicPaddingFrame* frame);
   bool ProcessIetfPathChallengeFrame(QuicDataReader* reader,
                                      QuicPathChallengeFrame* frame);
   bool ProcessIetfPathResponseFrame(QuicDataReader* reader,
@@ -588,8 +587,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                             const QuicString& phrase,
                             QuicDataWriter* writer);
   bool AppendIetfAckFrame(const QuicAckFrame& frame, QuicDataWriter* writer);
-  bool AppendIetfPaddingFrame(const QuicPaddingFrame& frame,
-                              QuicDataWriter* writer);
   bool AppendIetfPathChallengeFrame(const QuicPathChallengeFrame& frame,
                                     QuicDataWriter* writer);
   bool AppendIetfPathResponseFrame(const QuicPathResponseFrame& frame,
@@ -610,25 +607,24 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool ProcessIetfMaxStreamDataFrame(QuicDataReader* reader,
                                      QuicWindowUpdateFrame* frame);
 
-  bool AppendIetfMaxStreamIdFrame(const QuicIetfMaxStreamIdFrame& frame,
-                                  QuicDataWriter* writer);
-  bool ProcessIetfMaxStreamIdFrame(QuicDataReader* reader,
-                                   QuicIetfMaxStreamIdFrame* frame);
-
-  bool AppendIetfBlockedFrame(const QuicIetfBlockedFrame& frame,
+  bool AppendMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame,
                               QuicDataWriter* writer);
-  bool ProcessIetfBlockedFrame(QuicDataReader* reader,
-                               QuicIetfBlockedFrame* frame);
+  bool ProcessMaxStreamIdFrame(QuicDataReader* reader,
+                               QuicMaxStreamIdFrame* frame);
 
-  bool AppendIetfStreamBlockedFrame(const QuicWindowUpdateFrame& frame,
+  bool AppendIetfBlockedFrame(const QuicBlockedFrame& frame,
+                              QuicDataWriter* writer);
+  bool ProcessIetfBlockedFrame(QuicDataReader* reader, QuicBlockedFrame* frame);
+
+  bool AppendIetfStreamBlockedFrame(const QuicBlockedFrame& frame,
                                     QuicDataWriter* writer);
   bool ProcessIetfStreamBlockedFrame(QuicDataReader* reader,
-                                     QuicWindowUpdateFrame* frame);
+                                     QuicBlockedFrame* frame);
 
-  bool AppendIetfStreamIdBlockedFrame(const QuicIetfStreamIdBlockedFrame& frame,
-                                      QuicDataWriter* writer);
-  bool ProcessIetfStreamIdBlockedFrame(QuicDataReader* reader,
-                                       QuicIetfStreamIdBlockedFrame* frame);
+  bool AppendStreamIdBlockedFrame(const QuicStreamIdBlockedFrame& frame,
+                                  QuicDataWriter* writer);
+  bool ProcessStreamIdBlockedFrame(QuicDataReader* reader,
+                                   QuicStreamIdBlockedFrame* frame);
 
   bool RaiseError(QuicErrorCode error);
 

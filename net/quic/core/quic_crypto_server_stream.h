@@ -213,11 +213,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
   // becomes the default.
   bool peer_supports_stateless_rejects_;
 
-  // Signifies whether |handshaker_| should be constructed in the
-  // QuicCryptoServerStream constructor, or whether it should be delayed until
-  // OnSuccessfulVersionNegotiation is called.
-  bool delay_handshaker_construction_;
-
   // Arguments from QuicCryptoServerStream constructor that might need to be
   // passed to the HandshakerDelegate constructor in its late construction.
   const QuicCryptoServerConfig* crypto_config_;

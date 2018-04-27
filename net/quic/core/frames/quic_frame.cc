@@ -45,6 +45,18 @@ QuicFrame::QuicFrame(QuicWindowUpdateFrame* frame)
 QuicFrame::QuicFrame(QuicBlockedFrame* frame)
     : type(BLOCKED_FRAME), blocked_frame(frame) {}
 
+QuicFrame::QuicFrame(QuicApplicationCloseFrame* frame)
+    : type(APPLICATION_CLOSE_FRAME), application_close_frame(frame) {}
+
+QuicFrame::QuicFrame(QuicNewConnectionIdFrame* frame)
+    : type(NEW_CONNECTION_ID_FRAME), new_connection_id_frame(frame) {}
+
+QuicFrame::QuicFrame(QuicMaxStreamIdFrame frame)
+    : type(MAX_STREAM_ID_FRAME), max_stream_id_frame(frame) {}
+
+QuicFrame::QuicFrame(QuicStreamIdBlockedFrame frame)
+    : type(STREAM_ID_BLOCKED_FRAME), stream_id_blocked_frame(frame) {}
+
 void DeleteFrames(QuicFrames* frames) {
   for (QuicFrame& frame : *frames) {
     DeleteFrame(&frame);
@@ -58,6 +70,8 @@ void DeleteFrame(QuicFrame* frame) {
     case PADDING_FRAME:
     case MTU_DISCOVERY_FRAME:
     case PING_FRAME:
+    case MAX_STREAM_ID_FRAME:
+    case STREAM_ID_BLOCKED_FRAME:
       break;
     case STREAM_FRAME:
       delete frame->stream_frame;
@@ -83,6 +97,13 @@ void DeleteFrame(QuicFrame* frame) {
     case WINDOW_UPDATE_FRAME:
       delete frame->window_update_frame;
       break;
+    case APPLICATION_CLOSE_FRAME:
+      delete frame->application_close_frame;
+      break;
+    case NEW_CONNECTION_ID_FRAME:
+      delete frame->new_connection_id_frame;
+      break;
+
     case NUM_FRAME_TYPES:
       DCHECK(false) << "Cannot delete type: " << frame->type;
   }
@@ -106,6 +127,8 @@ bool IsControlFrame(QuicFrameType type) {
     case GOAWAY_FRAME:
     case WINDOW_UPDATE_FRAME:
     case BLOCKED_FRAME:
+    case STREAM_ID_BLOCKED_FRAME:
+    case MAX_STREAM_ID_FRAME:
     case PING_FRAME:
       return true;
     default:
@@ -123,6 +146,10 @@ QuicControlFrameId GetControlFrameId(const QuicFrame& frame) {
       return frame.window_update_frame->control_frame_id;
     case BLOCKED_FRAME:
       return frame.blocked_frame->control_frame_id;
+    case STREAM_ID_BLOCKED_FRAME:
+      return frame.stream_id_blocked_frame.control_frame_id;
+    case MAX_STREAM_ID_FRAME:
+      return frame.max_stream_id_frame.control_frame_id;
     case PING_FRAME:
       return frame.ping_frame.control_frame_id;
     default:
@@ -146,6 +173,12 @@ void SetControlFrameId(QuicControlFrameId control_frame_id, QuicFrame* frame) {
       return;
     case PING_FRAME:
       frame->ping_frame.control_frame_id = control_frame_id;
+      return;
+    case STREAM_ID_BLOCKED_FRAME:
+      frame->stream_id_blocked_frame.control_frame_id = control_frame_id;
+      return;
+    case MAX_STREAM_ID_FRAME:
+      frame->max_stream_id_frame.control_frame_id = control_frame_id;
       return;
     default:
       QUIC_BUG
@@ -226,6 +259,18 @@ std::ostream& operator<<(std::ostream& os, const QuicFrame& frame) {
       os << "type { MTU_DISCOVERY_FRAME } ";
       break;
     }
+    case APPLICATION_CLOSE_FRAME:
+      os << "type { APPLICATION_CLOSE } " << *(frame.connection_close_frame);
+      break;
+    case NEW_CONNECTION_ID_FRAME:
+      os << "type { NEW_CONNECTION_ID } " << *(frame.new_connection_id_frame);
+      break;
+    case MAX_STREAM_ID_FRAME:
+      os << "type { MAX_STREAM_ID } " << frame.max_stream_id_frame;
+      break;
+    case STREAM_ID_BLOCKED_FRAME:
+      os << "type { STREAM_ID_BLOCKED } " << frame.stream_id_blocked_frame;
+      break;
     default: {
       QUIC_LOG(ERROR) << "Unknown frame type: " << frame.type;
       break;

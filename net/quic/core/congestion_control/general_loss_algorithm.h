@@ -68,6 +68,8 @@ class QUIC_EXPORT_PRIVATE GeneralLossAlgorithm : public LossDetectionInterface {
   int reordering_shift_;
   // The largest newly acked from the previous call to DetectLosses.
   QuicPacketNumber largest_previously_acked_;
+  // The largest lost packet.
+  QuicPacketNumber largest_lost_;
 
   DISALLOW_COPY_AND_ASSIGN(GeneralLossAlgorithm);
 };

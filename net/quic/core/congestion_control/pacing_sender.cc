@@ -28,6 +28,7 @@ PacingSender::PacingSender()
       ideal_next_packet_send_time_(QuicTime::Zero()),
       was_last_send_delayed_(false),
       initial_burst_size_(kInitialUnpacedBurst),
+      lumpy_tokens_(0),
       pacing_limited_(false),
       is_simplified_pacing_(
           GetQuicReloadableFlag(quic_simplify_pacing_sender)) {}
@@ -88,6 +89,19 @@ void PacingSender::OnPacketSent(
       PacingRate(bytes_in_flight + bytes).TransferTime(bytes);
   if (is_simplified_pacing_) {
     QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_simplify_pacing_sender, 1, 2);
+    if (!pacing_limited_ || lumpy_tokens_ == 0) {
+      // Reset lumpy_tokens_ if either application or cwnd throttles sending or
+      // token runs out.
+      lumpy_tokens_ = std::max(
+          1u,
+          std::min(
+              static_cast<uint32_t>(GetQuicFlag(FLAGS_quic_lumpy_pacing_size)),
+              static_cast<uint32_t>(
+                  (sender_->GetCongestionWindow() *
+                   GetQuicFlag(FLAGS_quic_lumpy_pacing_cwnd_fraction)) /
+                  kDefaultTCPMSS)));
+    }
+    --lumpy_tokens_;
     if (pacing_limited_) {
       // Make up for lost time since pacing throttles the sending.
       ideal_next_packet_send_time_ = ideal_next_packet_send_time_ + delay;
@@ -140,7 +154,7 @@ QuicTime::Delta PacingSender::TimeUntilSend(QuicTime now,
     return QuicTime::Delta::Infinite();
   }
 
-  if (burst_tokens_ > 0 || bytes_in_flight == 0) {
+  if (burst_tokens_ > 0 || bytes_in_flight == 0 || lumpy_tokens_ > 0) {
     // Don't pace if we have burst tokens available or leaving quiescence.
     return QuicTime::Delta::Zero();
   }

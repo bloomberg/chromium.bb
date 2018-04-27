@@ -527,6 +527,11 @@ bool QuicDispatcher::ShouldAddToBlockedList() {
   return writer_->IsWriteBlocked();
 }
 
+std::unique_ptr<QuicDispatcher::PerPacketContext>
+QuicDispatcher::GetPerPacketContext() const {
+  return nullptr;
+}
+
 void QuicDispatcher::DeleteSessions() {
   closed_session_list_.clear();
 }
@@ -729,7 +734,7 @@ void QuicDispatcher::OnPacketComplete() {
   DCHECK(false);
 }
 
-bool QuicDispatcher::IsValidStatelessResetToken(uint128 token) const {
+bool QuicDispatcher::IsValidStatelessResetToken(QuicUint128 token) const {
   DCHECK(false);
   return false;
 }
@@ -912,11 +917,15 @@ class StatelessRejectorProcessDoneCallback
         current_client_address_(dispatcher->current_client_address_),
         current_peer_address_(dispatcher->current_peer_address_),
         current_self_address_(dispatcher->current_self_address_),
+        additional_context_(dispatcher->GetPerPacketContext()),
         current_packet_(
             dispatcher->current_packet_->Clone()),  // Note: copies the packet
         first_version_(first_version) {}
 
   void Run(std::unique_ptr<StatelessRejector> rejector) override {
+    if (additional_context_ != nullptr) {
+      dispatcher_->RestorePerPacketContext(std::move(additional_context_));
+    }
     dispatcher_->OnStatelessRejectorProcessDone(
         std::move(rejector), current_client_address_, current_peer_address_,
         current_self_address_, std::move(current_packet_), first_version_);
@@ -927,6 +936,9 @@ class StatelessRejectorProcessDoneCallback
   QuicSocketAddress current_client_address_;
   QuicSocketAddress current_peer_address_;
   QuicSocketAddress current_self_address_;
+  // TODO(wub): Wrap all current_* variables into PerPacketContext. And rename
+  // |additional_context_| to |context_|.
+  std::unique_ptr<QuicDispatcher::PerPacketContext> additional_context_;
   std::unique_ptr<QuicReceivedPacket> current_packet_;
   ParsedQuicVersion first_version_;
 };

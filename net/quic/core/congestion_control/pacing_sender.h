@@ -86,6 +86,10 @@ class QUIC_EXPORT_PRIVATE PacingSender {
   bool was_last_send_delayed_;  // True when the last send was delayed.
   uint32_t initial_burst_size_;
 
+  // Number of unpaced packets to be sent before packets are delayed. This token
+  // is consumed after burst_tokens_ ran out.
+  uint32_t lumpy_tokens_;
+
   // Indicates whether pacing throttles the sending. If true, make up for lost
   // time.
   bool pacing_limited_;

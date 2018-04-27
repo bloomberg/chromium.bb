@@ -108,20 +108,6 @@ bool QuicFramerPeer::ProcessIetfApplicationCloseFrame(
 }
 
 // static
-bool QuicFramerPeer::AppendIetfPaddingFrame(QuicFramer* framer,
-                                            const QuicPaddingFrame& frame,
-                                            QuicDataWriter* writer) {
-  return framer->AppendIetfPaddingFrame(frame, writer);
-}
-
-// static
-void QuicFramerPeer::ProcessIetfPaddingFrame(QuicFramer* framer,
-                                             QuicDataReader* reader,
-                                             QuicPaddingFrame* frame) {
-  framer->ProcessIetfPaddingFrame(reader, frame);
-}
-
-// static
 bool QuicFramerPeer::ProcessIetfPathChallengeFrame(
     QuicFramer* framer,
     QuicDataReader* reader,
@@ -216,24 +202,22 @@ bool QuicFramerPeer::ProcessIetfMaxStreamDataFrame(
 }
 
 // static
-bool QuicFramerPeer::AppendIetfMaxStreamIdFrame(
-    QuicFramer* framer,
-    const QuicIetfMaxStreamIdFrame& frame,
-    QuicDataWriter* writer) {
-  return framer->AppendIetfMaxStreamIdFrame(frame, writer);
+bool QuicFramerPeer::AppendMaxStreamIdFrame(QuicFramer* framer,
+                                            const QuicMaxStreamIdFrame& frame,
+                                            QuicDataWriter* writer) {
+  return framer->AppendMaxStreamIdFrame(frame, writer);
 }
 
 // static
-bool QuicFramerPeer::ProcessIetfMaxStreamIdFrame(
-    QuicFramer* framer,
-    QuicDataReader* reader,
-    QuicIetfMaxStreamIdFrame* frame) {
-  return framer->ProcessIetfMaxStreamIdFrame(reader, frame);
+bool QuicFramerPeer::ProcessMaxStreamIdFrame(QuicFramer* framer,
+                                             QuicDataReader* reader,
+                                             QuicMaxStreamIdFrame* frame) {
+  return framer->ProcessMaxStreamIdFrame(reader, frame);
 }
 
 // static
 bool QuicFramerPeer::AppendIetfBlockedFrame(QuicFramer* framer,
-                                            const QuicIetfBlockedFrame& frame,
+                                            const QuicBlockedFrame& frame,
                                             QuicDataWriter* writer) {
   return framer->AppendIetfBlockedFrame(frame, writer);
 }
@@ -241,40 +225,38 @@ bool QuicFramerPeer::AppendIetfBlockedFrame(QuicFramer* framer,
 // static
 bool QuicFramerPeer::ProcessIetfBlockedFrame(QuicFramer* framer,
                                              QuicDataReader* reader,
-                                             QuicIetfBlockedFrame* frame) {
+                                             QuicBlockedFrame* frame) {
   return framer->ProcessIetfBlockedFrame(reader, frame);
 }
 
 // static
-bool QuicFramerPeer::AppendIetfStreamBlockedFrame(
-    QuicFramer* framer,
-    const QuicWindowUpdateFrame& frame,
-    QuicDataWriter* writer) {
+bool QuicFramerPeer::AppendIetfStreamBlockedFrame(QuicFramer* framer,
+                                                  const QuicBlockedFrame& frame,
+                                                  QuicDataWriter* writer) {
   return framer->AppendIetfStreamBlockedFrame(frame, writer);
 }
 
 // static
-bool QuicFramerPeer::ProcessIetfStreamBlockedFrame(
-    QuicFramer* framer,
-    QuicDataReader* reader,
-    QuicWindowUpdateFrame* frame) {
+bool QuicFramerPeer::ProcessIetfStreamBlockedFrame(QuicFramer* framer,
+                                                   QuicDataReader* reader,
+                                                   QuicBlockedFrame* frame) {
   return framer->ProcessIetfStreamBlockedFrame(reader, frame);
 }
 
 // static
-bool QuicFramerPeer::AppendIetfStreamIdBlockedFrame(
+bool QuicFramerPeer::AppendStreamIdBlockedFrame(
     QuicFramer* framer,
-    const QuicIetfStreamIdBlockedFrame& frame,
+    const QuicStreamIdBlockedFrame& frame,
     QuicDataWriter* writer) {
-  return framer->AppendIetfStreamIdBlockedFrame(frame, writer);
+  return framer->AppendStreamIdBlockedFrame(frame, writer);
 }
 
 // static
-bool QuicFramerPeer::ProcessIetfStreamIdBlockedFrame(
+bool QuicFramerPeer::ProcessStreamIdBlockedFrame(
     QuicFramer* framer,
     QuicDataReader* reader,
-    QuicIetfStreamIdBlockedFrame* frame) {
-  return framer->ProcessIetfStreamIdBlockedFrame(reader, frame);
+    QuicStreamIdBlockedFrame* frame) {
+  return framer->ProcessStreamIdBlockedFrame(reader, frame);
 }
 
 // static

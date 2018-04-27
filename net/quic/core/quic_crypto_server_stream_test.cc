@@ -92,6 +92,7 @@ class QuicCryptoServerStreamTest : public QuicTestWithParam<bool> {
   // Initializes the crypto server stream state for testing.  May be
   // called multiple times.
   void InitializeServer() {
+    SetQuicReloadableFlag(quic_respect_ietf_header, true);
     TestQuicSpdyServerSession* server_session = nullptr;
     helpers_.push_back(QuicMakeUnique<NiceMock<MockQuicConnectionHelper>>());
     alarm_factories_.push_back(QuicMakeUnique<MockAlarmFactory>());
