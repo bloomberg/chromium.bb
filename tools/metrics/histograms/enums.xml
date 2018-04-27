@@ -13062,6 +13062,8 @@ Called by update_net_error_codes.py.-->
       label="CertificateTransparencyEnforcementDisabledForLegacyCas"/>
   <int value="437" label="MediaRouterCastAllowAllIPs"/>
   <int value="438" label="DeviceSamlLoginAuthenticationType"/>
+  <int value="439" label="WebUsbAskForUrls"/>
+  <int value="440" label="WebUsbBlockedForUrls"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

@@ -798,6 +798,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDefaultWebUsbGuardSetting,
     prefs::kManagedDefaultWebUsbGuardSetting,
     base::Value::Type::INTEGER },
+  { key::kWebUsbAskForUrls,
+    prefs::kManagedWebUsbAskForUrls,
+    base::Value::Type::LIST },
+  { key::kWebUsbBlockedForUrls,
+    prefs::kManagedWebUsbBlockedForUrls,
+    base::Value::Type::LIST },
 };
 // clang-format on
 

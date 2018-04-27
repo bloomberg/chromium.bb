@@ -145,7 +145,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 438
+#   For your editing convenience: highest ID currently used: 440
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -438,6 +438,8 @@
         'PopupsBlockedForUrls',
         'NotificationsAllowedForUrls',
         'NotificationsBlockedForUrls',
+        'WebUsbAskForUrls',
+        'WebUsbBlockedForUrls',
       ],
     },
     {
@@ -3804,7 +3806,53 @@
       'tags': ['website-sharing'],
       'desc': '''Allows you to set whether websites are allowed to get access to connected USB devices. Access can be completely blocked, or the user can be asked every time a website wants to get access to connected USB devices.
 
+          This policy can be overridden for specific URL patterns using the 'WebUsbAskForUrls' and 'WebUsbBlockedForUrls' policies.
+
           If this policy is left not set, '3' will be used, and the user will be able to change it.''',
+    },
+    {
+      'name': 'WebUsbAskForUrls',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:68-', 'android:68-', 'chrome.*:68-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 439,
+      'caption': '''Allow WebUSB on these sites''',
+      'tags': ['website-sharing'],
+      'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to ask the user to grant them access to a USB device.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
+
+          URL patterns in this policy should not clash with ones configured via WebUsbBlockedForUrls. It is unspecified which of the two policies takes precedence if a URL matches with both.''',
+    },
+    {
+      'name': 'WebUsbBlockedForUrls',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:68-', 'android:68-', 'chrome.*:68-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 440,
+      'caption': '''Block WebUSB on these sites''',
+      'tags': [],
+      'desc': '''Allows you to set a list of url patterns that specify sites which are prevented from asking the user to grant them access to a USB device.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
+
+          URL patterns in this policy should not clash with ones configured via WebUsbAskForUrls. It is unspecified which of the two policies takes precedence if a URL matches with both.''',
     },
     {
       'name': 'AutoSelectCertificateForUrls',
