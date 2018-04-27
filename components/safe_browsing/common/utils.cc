@@ -6,7 +6,12 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "crypto/sha2.h"
+
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif
 
 namespace safe_browsing {
 
@@ -25,6 +30,18 @@ std::string ShortURLForReporting(const GURL& url) {
 
 void LogNoUserActionResourceLoadingDelay(base::TimeDelta time) {
   UMA_HISTOGRAM_LONG_TIMES("SB2.NoUserActionResourceLoadingDelay", time);
+}
+
+ChromeUserPopulation::ProfileManagementStatus GetProfileManagementStatus() {
+#if defined(OS_WIN)
+  if (base::win::IsEnterpriseManaged())
+    return ChromeUserPopulation::ENTERPRISE_MANAGED;
+  else
+    return ChromeUserPopulation::NOT_MANAGED;
+#else
+  // TODO(crbug/796332): Add check for OS_CHROMEOS also.
+  return ChromeUserPopulation::UNAVAILABLE;
+#endif  // #if defined(OS_WIN)
 }
 
 }  // namespace safe_browsing

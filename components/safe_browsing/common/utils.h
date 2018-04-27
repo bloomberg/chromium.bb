@@ -8,6 +8,7 @@
 #define COMPONENTS_SAFE_BROWSING_COMMON_UTILS_H_
 
 #include "base/time/time.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {
@@ -22,6 +23,8 @@ std::string ShortURLForReporting(const GURL& url);
 // for each resource load. If SafeBrowsing causes delays at different stages of
 // a load, the sum of all the delays will be reported.
 void LogNoUserActionResourceLoadingDelay(base::TimeDelta time);
+
+ChromeUserPopulation::ProfileManagementStatus GetProfileManagementStatus();
 
 }  // namespace safe_browsing
 

@@ -17,6 +17,7 @@ source_set("common") {
 
   deps = [
     "//base",
+    "//components/safe_browsing:csd_proto",
     "//crypto:crypto",
     "//ipc",
     "//url/ipc:url_ipc",
