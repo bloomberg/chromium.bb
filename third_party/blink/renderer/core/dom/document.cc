@@ -6203,7 +6203,15 @@ bool Document::IsSecureTransitionTo(const KURL& url) const {
 }
 
 bool Document::CanExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
-  if (IsSandboxed(kSandboxScripts)) {
+  DCHECK(GetFrame())
+      << "you are querying canExecuteScripts on a non contextDocument.";
+
+  // Normally, scripts are not allowed in sandboxed contexts that disallow them.
+  // However, there is an exception for cases when the script should bypass the
+  // main world's CSP (such as for privileged isolated worlds). See
+  // https://crbug.com/811528.
+  if (IsSandboxed(kSandboxScripts) &&
+      !GetFrame()->GetScriptController().ShouldBypassMainWorldCSP()) {
     // FIXME: This message should be moved off the console once a solution to
     // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
     if (reason == kAboutToExecuteScript) {
@@ -6215,9 +6223,6 @@ bool Document::CanExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
     }
     return false;
   }
-
-  DCHECK(GetFrame())
-      << "you are querying canExecuteScripts on a non contextDocument.";
 
   ContentSettingsClient* settings_client =
       GetFrame()->GetContentSettingsClient();

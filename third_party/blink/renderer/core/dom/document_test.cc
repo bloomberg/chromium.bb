@@ -35,6 +35,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/node_with_index.h"
@@ -943,6 +944,53 @@ TEST_F(DocumentTest, InterfaceInvalidatorDestruction) {
   GetDocument().Shutdown();
   EXPECT_FALSE(GetDocument().GetInterfaceInvalidator());
   EXPECT_EQ(1, obs.CountInvalidateCalled());
+}
+
+TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
+  constexpr SandboxFlags kSandboxMask = kSandboxScripts;
+  GetDocument().EnforceSandboxFlags(kSandboxMask);
+
+  LocalFrame* frame = GetDocument().GetFrame();
+  frame->GetSettings()->SetScriptEnabled(true);
+  ScriptState* main_world_script_state = ToScriptStateForMainWorld(frame);
+  v8::Isolate* isolate = main_world_script_state->GetIsolate();
+
+  constexpr int kIsolatedWorldWithoutCSPId = 1;
+  scoped_refptr<DOMWrapperWorld> world_without_csp =
+      DOMWrapperWorld::EnsureIsolatedWorld(isolate, kIsolatedWorldWithoutCSPId);
+  ScriptState* isolated_world_without_csp_script_state =
+      ToScriptState(frame, *world_without_csp);
+  ASSERT_TRUE(world_without_csp->IsIsolatedWorld());
+  EXPECT_FALSE(world_without_csp->IsolatedWorldHasContentSecurityPolicy());
+
+  constexpr int kIsolatedWorldWithCSPId = 2;
+  scoped_refptr<DOMWrapperWorld> world_with_csp =
+      DOMWrapperWorld::EnsureIsolatedWorld(isolate, kIsolatedWorldWithCSPId);
+  DOMWrapperWorld::SetIsolatedWorldContentSecurityPolicy(
+      kIsolatedWorldWithCSPId, String::FromUTF8("script-src *"));
+  ScriptState* isolated_world_with_csp_script_state =
+      ToScriptState(frame, *world_with_csp);
+  ASSERT_TRUE(world_with_csp->IsIsolatedWorld());
+  EXPECT_TRUE(world_with_csp->IsolatedWorldHasContentSecurityPolicy());
+
+  {
+    // Since the page is sandboxed, main world script execution shouldn't be
+    // allowed.
+    ScriptState::Scope scope(main_world_script_state);
+    EXPECT_FALSE(GetDocument().CanExecuteScripts(kAboutToExecuteScript));
+  }
+  {
+    // Isolated worlds without a dedicated CSP should also not be allowed to
+    // run scripts.
+    ScriptState::Scope scope(isolated_world_without_csp_script_state);
+    EXPECT_FALSE(GetDocument().CanExecuteScripts(kAboutToExecuteScript));
+  }
+  {
+    // An isolated world with a CSP should bypass the main world CSP, and be
+    // able to run scripts.
+    ScriptState::Scope scope(isolated_world_with_csp_script_state);
+    EXPECT_TRUE(GetDocument().CanExecuteScripts(kAboutToExecuteScript));
+  }
 }
 
 typedef bool TestParamRootLayerScrolling;
