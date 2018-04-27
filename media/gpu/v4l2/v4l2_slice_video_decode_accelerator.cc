@@ -1433,6 +1433,13 @@ void V4L2SliceVideoDecodeAccelerator::DecodeBufferTask() {
         VLOGF(1) << "Error decoding stream";
         NOTIFY_ERROR(PLATFORM_FAILURE);
         return;
+
+      case AcceleratedVideoDecoder::kNoKey:
+        NOTREACHED() << "Should not reach here unless this class accepts "
+                        "encrypted streams.";
+        DVLOGF(4) << "No key for decoding stream.";
+        NOTIFY_ERROR(PLATFORM_FAILURE);
+        return;
     }
   }
 }

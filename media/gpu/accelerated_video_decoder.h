@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "media/base/decrypt_config.h"
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -27,6 +28,14 @@ class MEDIA_GPU_EXPORT AcceleratedVideoDecoder {
   // stream data. Pictures produced as a result of this call should be assigned
   // the passed stream |id|.
   virtual void SetStream(int32_t id, const uint8_t* ptr, size_t size) = 0;
+
+  // This is the same as SetStream() but is for setting an encrypted buffer.
+  // |decrypt_config| specifies the decryption configuration of the specified
+  // buffer. If the stream is set with this method, Decode() may return kNoKey.
+  virtual void SetEncryptedStream(int32_t id,
+                                  const uint8_t* ptr,
+                                  size_t size,
+                                  const DecryptConfig& decrypt_config) = 0;
 
   // Have the decoder flush its state and trigger output of all previously
   // decoded surfaces. Return false on failure.
@@ -49,6 +58,8 @@ class MEDIA_GPU_EXPORT AcceleratedVideoDecoder {
     kRanOutOfSurfaces,     // Waiting for the client to free up output surfaces.
     kNeedContextUpdate,    // Waiting for the client to update decoding context
                            // with data acquired from the accelerator.
+    kNoKey,  // The buffer is encrypted and could not be processed because the
+             // key for decryption is missing.
   };
 
   // Try to decode more of the stream, returning decoded frames asynchronously.

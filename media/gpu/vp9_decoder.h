@@ -97,6 +97,10 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
 
   // AcceleratedVideoDecoder implementation.
   void SetStream(int32_t id, const uint8_t* ptr, size_t size) override;
+  void SetEncryptedStream(int32_t id,
+                          const uint8_t* ptr,
+                          size_t size,
+                          const DecryptConfig& decrypt_config) override;
   bool Flush() override WARN_UNUSED_RESULT;
   void Reset() override;
   DecodeResult Decode() override WARN_UNUSED_RESULT;
