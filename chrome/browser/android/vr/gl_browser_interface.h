@@ -9,6 +9,7 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "chrome/browser/vr/assets_load_status.h"
+#include "chrome/browser/vr/ui_test_input.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
@@ -40,6 +41,8 @@ class GlBrowserInterface {
   virtual void ForceExitVr() = 0;
   virtual void OnContentPaused(bool enabled) = 0;
   virtual void ToggleCardboardGamepad(bool enabled) = 0;
+  virtual void ReportUiActivityResultForTesting(
+      const VrUiTestActivityResult& result) = 0;
 };
 
 }  // namespace vr

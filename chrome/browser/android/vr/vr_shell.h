@@ -286,6 +286,13 @@ class VrShell : device::GvrGamepadDataProvider,
       jfloat x,
       jfloat y);
 
+  void SetUiExpectingActivityForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint quiescence_timeout_ms);
+
+  void ReportUiActivityResultForTesting(VrUiTestActivityResult result);
+
  private:
   ~VrShell() override;
   void PostToGlThread(const base::Location& from_here, base::OnceClosure task);

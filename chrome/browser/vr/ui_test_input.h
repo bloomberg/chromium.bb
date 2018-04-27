@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VR_UI_TEST_INPUT_H_
 #define CHROME_BROWSER_VR_UI_TEST_INPUT_H_
 
+#include "base/time/time.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
 #include "ui/gfx/geometry/point_f.h"
 
@@ -35,11 +36,37 @@ enum class VrUiTestAction : int {
   // Scroll actions currently not supported
 };
 
+// These are used to report the current state of the UI after performing an
+// action
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.vr_shell
+enum class VrUiTestActivityResult : int {
+  kUnreported,
+  kQuiescent,
+  kTimeoutNoStart,
+  kTimeoutNoEnd,
+};
+
 // Holds all information necessary to perform a simulated UI action.
 struct UiTestInput {
   UserFriendlyElementName element_name;
   VrUiTestAction action;
   gfx::PointF position;
+};
+
+struct UiTestActivityExpectation {
+  int quiescence_timeout_ms;
+};
+
+// Holds all the information necessary to keep track of and report whether the
+// UI reacted to test input.
+struct UiTestState {
+  // Whether the UI has started updating/reacting since we started tracking
+  bool activity_started = false;
+  // The number of frames to wait for the UI to stop having activity before
+  // timing out.
+  base::TimeDelta quiescence_timeout_ms = base::TimeDelta::Min();
+  // The total number of frames that have been rendered since tracking started.
+  base::TimeTicks start_time = base::TimeTicks::Now();
 };
 
 UiElementName UserFriendlyElementNameToUiElementName(

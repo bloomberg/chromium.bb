@@ -125,6 +125,9 @@ public class VrShellImpl
 
     private VrInputMethodManagerWrapper mInputMethodManagerWrapper;
 
+    private int mUiActivityResult;
+    private Runnable mUiActivityResultCallback;
+
     public VrShellImpl(
             ChromeActivity activity, VrShellDelegate delegate, TabModelSelector tabModelSelector) {
         super(activity);
@@ -1170,6 +1173,25 @@ public class VrShellImpl
                 mNativeVrShell, elementName, actionType, position.x, position.y);
     }
 
+    @Override
+    public void setUiExpectingActivityForTesting(int quiescenceTimeoutMs, Runnable resultCallback) {
+        mUiActivityResult = VrUiTestActivityResult.UNREPORTED;
+        mUiActivityResultCallback = resultCallback;
+        nativeSetUiExpectingActivityForTesting(mNativeVrShell, quiescenceTimeoutMs);
+    }
+
+    @Override
+    public int getLastUiActivityResultForTesting() {
+        return mUiActivityResult;
+    }
+
+    @CalledByNative
+    public void reportUiActivityResultForTesting(int result) {
+        mUiActivityResult = result;
+        mUiActivityResultCallback.run();
+        mUiActivityResultCallback = null;
+    }
+
     private native long nativeInit(VrShellDelegate delegate, boolean forWebVR,
             boolean webVrAutopresentationExpected, boolean inCct, boolean browsingDisabled,
             boolean hasOrCanRequestAudioPermission, long gvrApi, boolean reprojectedRendering,
@@ -1217,6 +1239,8 @@ public class VrShellImpl
     private native void nativeAcceptDoffPromptForTesting(long nativeVrShell);
     private native void nativePerformUiActionForTesting(
             long nativeVrShell, int elementName, int actionType, float x, float y);
+    private native void nativeSetUiExpectingActivityForTesting(
+            long nativeVrShell, int quiescenceTimeoutMs);
     private native void nativeResumeContentRendering(long nativeVrShell);
     private native void nativeOnOverlayTextureEmptyChanged(long nativeVrShell, boolean empty);
 }

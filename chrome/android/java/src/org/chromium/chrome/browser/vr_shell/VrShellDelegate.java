@@ -2216,6 +2216,15 @@ public class VrShellDelegate
         mVrShell.performUiActionForTesting(elementName, actionType, position);
     }
 
+    protected void setUiExpectingActivityForTesting(
+            int quiescenceTimeoutMs, Runnable resultCallback) {
+        mVrShell.setUiExpectingActivityForTesting(quiescenceTimeoutMs, resultCallback);
+    }
+
+    protected int getLastUiActivityResultForTesting() {
+        return mVrShell.getLastUiActivityResultForTesting();
+    }
+
     /**
      * @return Pointer to the native VrShellDelegate object.
      */

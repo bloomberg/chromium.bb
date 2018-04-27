@@ -19,6 +19,7 @@
 #include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/sounds_manager_audio_delegate.h"
 #include "chrome/browser/vr/ui.h"
+#include "chrome/browser/vr/ui_test_input.h"
 #include "chrome/common/chrome_features.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -522,6 +523,14 @@ void VrGLThread::UpdateWebInputIndices(int selection_start,
       base::BindRepeating(&BrowserUiInterface::UpdateWebInputIndices,
                           weak_browser_ui_, selection_start, selection_end,
                           composition_start, composition_end));
+}
+
+void VrGLThread::ReportUiActivityResultForTesting(
+    const VrUiTestActivityResult& result) {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VrShell::ReportUiActivityResultForTesting,
+                                weak_vr_shell_, result));
 }
 
 bool VrGLThread::OnMainThread() const {
