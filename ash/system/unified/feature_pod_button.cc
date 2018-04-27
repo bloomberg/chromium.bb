@@ -94,6 +94,9 @@ FeaturePodLabelButton::FeaturePodLabelButton(views::ButtonListener* listener)
   AddChildView(sub_label_);
 
   TrayPopupUtils::ConfigureTrayPopupButton(this);
+
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
 }
 
 FeaturePodLabelButton::~FeaturePodLabelButton() = default;
@@ -147,6 +150,9 @@ FeaturePodButton::FeaturePodButton(FeaturePodControllerBase* controller)
 
   AddChildView(icon_button_);
   AddChildView(label_button_);
+
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
 }
 
 FeaturePodButton::~FeaturePodButton() = default;
@@ -168,8 +174,9 @@ void FeaturePodButton::SetToggled(bool toggled) {
   icon_button_->SetToggled(toggled);
 }
 
-void FeaturePodButton::SetExpanded(bool expanded) {
-  label_button_->SetVisible(expanded);
+void FeaturePodButton::SetExpandedAmount(double expanded_amount) {
+  label_button_->layer()->SetOpacity(expanded_amount);
+  label_button_->SetVisible(expanded_amount > 0.0);
 }
 
 void FeaturePodButton::SetVisibleByContainer(bool visible) {
