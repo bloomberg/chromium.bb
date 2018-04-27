@@ -28,7 +28,8 @@ bool OverlayStrategyUnderlay::Attempt(
   for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
     cc::OverlayCandidate candidate;
     if (!cc::OverlayCandidate::FromDrawQuad(
-            resource_provider, output_color_matrix, *it, &candidate)) {
+            resource_provider, output_color_matrix, *it, &candidate) ||
+      !candidate.is_opaque) {
       continue;
     }
 
