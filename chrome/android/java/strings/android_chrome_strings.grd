@@ -927,6 +927,12 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_SOUND_BLOCKED_LIST" desc="Summary text explaining that the sound permission is set to mute sound on some sites. To be shown in the list of permission categories.">
         Muted
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_USB_ASK" desc="Summary text explaining that the USB permission is set to ask the user for permission to access individual devices. To be shown in the list of permission categories.">
+        Ask before allowing sites to connect to a device (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_USB_BLOCKED" desc="Summary text explaining that the USB permission is set to block all requests for access to devices. To be shown in the list of permission categories.">
+        Block sites from connecting to devices
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_POPUPS_BLOCKED" desc="Summary text explaining that sites are blocked from showing popups and that it is the recommended setting.">
         Block sites from showing pop-ups (recommended)
       </message>
@@ -1094,9 +1100,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_WEBSITE_SETTINGS_REVOKE_DEVICE_PERMISSION" desc="Content description for revoking a website's permission to access a device.">
         Revoke device permission
-      </message>
-      <message name="IDS_WEBSITE_SETTINGS_USB_NO_DEVICES" desc="Empty list text for a list of USB devices that sites have been granted access to.">
-        No USB devices here
       </message>
 
       <!-- Data Saver -->

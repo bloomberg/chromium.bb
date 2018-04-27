@@ -167,7 +167,12 @@ public class ContentSettingsResources {
                             R.string.website_settings_category_sound_blocked));
             localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA,
                     new ResourceItem(R.drawable.settings_usb, 0, 0, ContentSetting.ASK,
-                                 ContentSetting.BLOCK, 0, 0));
+                            ContentSetting.BLOCK, 0, 0));
+            localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD,
+                    new ResourceItem(R.drawable.settings_usb, R.string.website_settings_usb,
+                            R.string.website_settings_usb, ContentSetting.ASK, ContentSetting.BLOCK,
+                            R.string.website_settings_category_usb_ask,
+                            R.string.website_settings_category_usb_blocked));
             sResourceInfo = localMap;
         }
         return sResourceInfo;

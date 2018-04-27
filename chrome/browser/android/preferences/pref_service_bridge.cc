@@ -166,7 +166,8 @@ static jboolean JNI_PrefServiceBridge_IsContentSettingEnabled(
   DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
          content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS ||
          content_settings_type == CONTENT_SETTINGS_TYPE_ADS ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_CLIPBOARD_READ);
+         content_settings_type == CONTENT_SETTINGS_TYPE_CLIPBOARD_READ ||
+         content_settings_type == CONTENT_SETTINGS_TYPE_USB_GUARD);
   ContentSettingsType type =
       static_cast<ContentSettingsType>(content_settings_type);
   return GetBooleanForContentSetting(type);
@@ -181,13 +182,22 @@ static void JNI_PrefServiceBridge_SetContentSettingEnabled(
   // that the new category supports ALLOW/BLOCK pairs and, if not, handle them.
   DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
          content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_ADS);
+         content_settings_type == CONTENT_SETTINGS_TYPE_ADS ||
+         content_settings_type == CONTENT_SETTINGS_TYPE_USB_GUARD);
+
+  ContentSetting value = CONTENT_SETTING_BLOCK;
+  if (allow) {
+    if (content_settings_type == CONTENT_SETTINGS_TYPE_USB_GUARD) {
+      value = CONTENT_SETTING_ASK;
+    } else {
+      value = CONTENT_SETTING_ALLOW;
+    }
+  }
 
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
-      static_cast<ContentSettingsType>(content_settings_type),
-      allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+      static_cast<ContentSettingsType>(content_settings_type), value);
 }
 
 static void JNI_PrefServiceBridge_SetContentSettingForPattern(

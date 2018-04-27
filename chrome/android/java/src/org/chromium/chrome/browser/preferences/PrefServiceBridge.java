@@ -387,6 +387,13 @@ public class PrefServiceBridge {
     }
 
     /**
+     * @return true if websites are allowed to request permission to access USB devices.
+     */
+    public boolean isUsbEnabled() {
+        return isContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD);
+    }
+
+    /**
      * Sets the preference that controls protected media identifier.
      */
     public void setProtectedMediaIdentifierEnabled(boolean enabled) {
@@ -749,6 +756,10 @@ public class PrefServiceBridge {
 
     public void setSoundEnabled(boolean allow) {
         nativeSetSoundEnabled(allow);
+    }
+
+    public void setUsbEnabled(boolean allow) {
+        setContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD, allow);
     }
 
     /**

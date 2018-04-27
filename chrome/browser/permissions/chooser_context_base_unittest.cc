@@ -27,6 +27,11 @@ class TestChooserContext : public ChooserContextBase {
     return object.size() == 2 && object.HasKey(kRequiredKey1) &&
            object.HasKey(kRequiredKey2);
   }
+
+  std::string GetObjectName(const base::DictionaryValue& object) override {
+    NOTREACHED();
+    return std::string();
+  }
 };
 
 }  // namespace

@@ -86,6 +86,9 @@ class ChooserContextBase : public KeyedService {
   // |host_content_settings_map_|.
   virtual bool IsValidObject(const base::DictionaryValue& object) = 0;
 
+  // Returns the human readable string representing the given object.
+  virtual std::string GetObjectName(const base::DictionaryValue& object) = 0;
+
  private:
   std::unique_ptr<base::DictionaryValue> GetWebsiteSetting(
       const GURL& requesting_origin,

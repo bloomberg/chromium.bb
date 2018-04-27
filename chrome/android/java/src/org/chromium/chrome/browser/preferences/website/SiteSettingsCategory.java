@@ -146,7 +146,7 @@ public class SiteSettingsCategory {
         }
         if (CATEGORY_USB.equals(category)) {
             return new SiteSettingsCategory(
-                    CATEGORY_USB, "", ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
+                    CATEGORY_USB, "", ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD);
         }
 
         return null;
@@ -198,7 +198,7 @@ public class SiteSettingsCategory {
         if (contentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND) {
             return fromString(CATEGORY_SOUND);
         }
-        if (contentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA) {
+        if (contentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD) {
             return fromString(CATEGORY_USB);
         }
 
@@ -324,7 +324,7 @@ public class SiteSettingsCategory {
      * Returns whether this category is the USB category.
      */
     public boolean showUsbDevices() {
-        return mContentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA;
+        return mContentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD;
     }
 
     /**

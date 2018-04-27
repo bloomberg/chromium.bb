@@ -50,7 +50,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     // permissions for that website address and display those.
     public static final String EXTRA_SITE = "org.chromium.chrome.preferences.site";
     public static final String EXTRA_SITE_ADDRESS = "org.chromium.chrome.preferences.site_address";
-    public static final String EXTRA_USB_INFO = "org.chromium.chrome.preferences.usb_info";
+    public static final String EXTRA_OBJECT_INFO = "org.chromium.chrome.preferences.object_info";
 
     // Preference keys, see single_website_preferences.xml
     // Headings:
@@ -108,8 +108,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
     // The website this page is displaying details about.
     private Website mSite;
 
-    // The number of USB device permissions displayed.
-    private int mUsbPermissionCount;
+    // The number of chosen object permissions displayed.
+    private int mObjectPermissionCount;
 
     private class SingleWebsitePermissionsPopulator
             implements WebsitePermissionsFetcher.WebsitePermissionsCallback {
@@ -240,10 +240,11 @@ public class SingleWebsitePreferences extends PreferenceFragment
                     merged.addStorageInfo(storageInfo);
                 }
             }
-            for (UsbInfo usbInfo : other.getUsbInfo()) {
-                if (origin.equals(usbInfo.getOrigin())
-                        && (usbInfo.getEmbedder() == null || usbInfo.getEmbedder().equals("*"))) {
-                    merged.addUsbInfo(usbInfo);
+            for (ChosenObjectInfo objectInfo : other.getChosenObjectInfo()) {
+                if (origin.equals(objectInfo.getOrigin())
+                        && (objectInfo.getEmbedder() == null
+                                   || objectInfo.getEmbedder().equals("*"))) {
+                    merged.addChosenObjectInfo(objectInfo);
                 }
             }
             if (host.equals(other.getAddress().getHost())) {
@@ -301,7 +302,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 maxPermissionOrder = Math.max(maxPermissionOrder, preference.getOrder());
             }
         }
-        setUpUsbPreferences(maxPermissionOrder);
+        setUpChosenObjectPreferences(maxPermissionOrder);
         setUpOsWarningPreferences();
 
         setUpAdsInformationalBanner();
@@ -465,17 +466,17 @@ public class SingleWebsitePreferences extends PreferenceFragment
         }
     }
 
-    private void setUpUsbPreferences(int maxPermissionOrder) {
-        for (UsbInfo info : mSite.getUsbInfo()) {
+    private void setUpChosenObjectPreferences(int maxPermissionOrder) {
+        for (ChosenObjectInfo info : mSite.getChosenObjectInfo()) {
             Preference preference = new Preference(getActivity());
-            preference.getExtras().putSerializable(EXTRA_USB_INFO, info);
-            preference.setIcon(R.drawable.settings_usb);
+            preference.getExtras().putSerializable(EXTRA_OBJECT_INFO, info);
+            preference.setIcon(ContentSettingsResources.getIcon(info.getContentSettingsType()));
             preference.setOnPreferenceClickListener(this);
             preference.setOrder(maxPermissionOrder);
             preference.setTitle(info.getName());
-            preference.setWidgetLayoutResource(R.layout.usb_permission);
+            preference.setWidgetLayoutResource(R.layout.object_permission);
             getPreferenceScreen().addPreference(preference);
-            mUsbPermissionCount++;
+            mObjectPermissionCount++;
         }
     }
 
@@ -570,7 +571,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     }
 
     private boolean hasPermissionsPreferences() {
-        if (mUsbPermissionCount > 0) return true;
+        if (mObjectPermissionCount > 0) return true;
         PreferenceScreen screen = getPreferenceScreen();
         for (String key : PERMISSION_PREFERENCE_KEYS) {
             if (screen.findPreference(key) != null) return true;
@@ -824,13 +825,14 @@ public class SingleWebsitePreferences extends PreferenceFragment
     public boolean onPreferenceClick(Preference preference) {
         Bundle extras = preference.peekExtras();
         if (extras != null) {
-            UsbInfo usbInfo = (UsbInfo) extras.getSerializable(EXTRA_USB_INFO);
-            if (usbInfo != null) {
-                usbInfo.revoke();
+            ChosenObjectInfo objectInfo =
+                    (ChosenObjectInfo) extras.getSerializable(EXTRA_OBJECT_INFO);
+            if (objectInfo != null) {
+                objectInfo.revoke();
 
                 PreferenceScreen preferenceScreen = getPreferenceScreen();
                 preferenceScreen.removePreference(preference);
-                mUsbPermissionCount--;
+                mObjectPermissionCount--;
                 if (!hasPermissionsPreferences()) {
                     Preference heading = preferenceScreen.findPreference(PREF_PERMISSIONS);
                     preferenceScreen.removePreference(heading);
@@ -890,7 +892,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
         mSite.setProtectedMediaIdentifierPermission(ContentSetting.DEFAULT);
         mSite.setSoundPermission(ContentSetting.DEFAULT);
 
-        for (UsbInfo info : mSite.getUsbInfo()) info.revoke();
+        for (ChosenObjectInfo info : mSite.getChosenObjectInfo()) info.revoke();
+        mObjectPermissionCount = 0;
 
         // Clear the storage and finish the activity if necessary.
         if (mSite.getTotalUsage() > 0) {
