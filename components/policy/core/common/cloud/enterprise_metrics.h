@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_ENTERPRISE_METRICS_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_ENTERPRISE_METRICS_H_
 
+#include "build/build_config.h"
 #include "components/policy/policy_export.h"
 
 namespace policy {
@@ -276,6 +277,30 @@ enum PolicyInvalidationType {
   POLICY_INVALIDATION_TYPE_SIZE  // Must be the last.
 };
 
+#if defined(OS_CHROMEOS)
+// Events related to Chrome OS user policy which cause session abort.
+// This enum is used to define the buckets for an enumerated UMA histogram.
+// Hence,
+//   (a) existing enumerated constants should never be deleted or reordered, and
+//   (b) new constants should only be appended at the end of the enumeration.
+enum class MetricUserPolicyChromeOSSessionAbortType {
+  // Abort of asynchronous user policy initialization when the user is managed
+  // with the Google cloud management.
+  kInitWithGoogleCloudManagement = 0,
+  // Abort of asynchronous user policy initialization when the user is managed
+  // with the Active Directory management.
+  kInitWithActiveDirectoryManagement = 1,
+  // Abort of blocking (synchronous) user policy initialization when the user is
+  // managed with the Google cloud management.
+  kBlockingInitWithGoogleCloudManagement = 2,
+  // Abort of blocking (synchronous) user policy initialization when the user is
+  // managed with the Active Directory management.
+  kBlockingInitWithActiveDirectoryManagement = 3,
+
+  kCount,  // Must be the last.
+};
+#endif  // defined(OS_CHROMEOS)
+
 // Names for the UMA counters. They are shared from here since the events
 // from the same enum above can be triggered in different files, and must use
 // the same UMA histogram name.
@@ -283,6 +308,7 @@ POLICY_EXPORT extern const char kMetricToken[];
 POLICY_EXPORT extern const char kMetricPolicy[];
 POLICY_EXPORT extern const char kMetricUserPolicyRefresh[];
 POLICY_EXPORT extern const char kMetricUserPolicyInvalidations[];
+POLICY_EXPORT extern const char kMetricUserPolicyChromeOSSessionAbort[];
 POLICY_EXPORT extern const char kMetricDevicePolicyRefresh[];
 POLICY_EXPORT extern const char kMetricDevicePolicyInvalidations[];
 
