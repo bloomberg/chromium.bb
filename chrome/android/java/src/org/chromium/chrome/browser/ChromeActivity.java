@@ -57,6 +57,7 @@ import org.chromium.chrome.browser.appmenu.AppMenu;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryCoordinator;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -262,6 +263,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private BottomSheet mBottomSheet;
     private ContextualSuggestionsCoordinator mContextualSuggestionsCoordinator;
     private FadingBackgroundView mFadingBackgroundView;
+    private KeyboardAccessoryCoordinator mKeyboardAccessoryCoordinator;
 
     // Time in ms that it took took us to inflate the initial layout
     private long mInflateInitialLayoutDurationMs;
@@ -371,9 +373,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         // SurfaceView's 'hole' clipping during animations that are notified to the window.
         getWindowAndroid().setAnimationPlaceholderView(mCompositorViewHolder.getCompositorView());
 
-        // Inform the WindowAndroid of the keyboard accessory view.
-        getWindowAndroid().setKeyboardAccessoryView(
-                (ViewGroup) findViewById(R.id.keyboard_accessory));
+        mKeyboardAccessoryCoordinator = new KeyboardAccessoryCoordinator(
+                getWindowAndroid(), findViewById(R.id.keyboard_accessory_stub));
+
         initializeToolbar();
         initializeTabModels();
         if (!isFinishing() && getFullscreenManager() != null) {
@@ -649,6 +651,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     public FindToolbarManager getFindToolbarManager() {
         return mFindToolbarManager;
+    }
+
+    /**
+     * @return The {@link KeyboardAccessoryCoordinator} that belongs to this activity.
+     */
+    public KeyboardAccessoryCoordinator getKeyboardAccessory() {
+        return mKeyboardAccessoryCoordinator;
     }
 
     /**
@@ -1183,6 +1192,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (mTabContentManager != null) {
             mTabContentManager.destroy();
             mTabContentManager = null;
+        }
+
+        if (mKeyboardAccessoryCoordinator != null) {
+            mKeyboardAccessoryCoordinator.destroy();
+            mKeyboardAccessoryCoordinator = null;
         }
 
         AccessibilityManager manager = (AccessibilityManager)

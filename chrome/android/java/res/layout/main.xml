@@ -27,17 +27,13 @@
             android:layout_height="wrap_content"
             android:layout_gravity="start|bottom">
 
-            <LinearLayout
-                android:id="@+id/keyboard_accessory"
+            <ViewStub
+                android:id="@+id/keyboard_accessory_stub"
+                android:inflatedId="@+id/keyboard_accessory"
+                android:layout="@layout/keyboard_accessory"
                 android:layout_height="@dimen/keyboard_accessory_height"
                 android:layout_width="match_parent"
-                android:layout_gravity="start|bottom"
-                android:background="@drawable/keyboard_accessory_background"
-                android:contentDescription="@string/autofill_keyboard_accessory_content_description"
-                android:fillViewport="true"
-                android:scrollbars="none"
-                android:visibility="gone"
-                android:orientation="horizontal" />
+                android:layout_gravity="start|bottom"/>
 
         </org.chromium.chrome.browser.snackbar.BottomContainer>
 

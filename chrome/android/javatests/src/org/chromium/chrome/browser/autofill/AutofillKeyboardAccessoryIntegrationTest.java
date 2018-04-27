@@ -4,17 +4,24 @@
 
 package org.chromium.chrome.browser.autofill;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.scrollTo;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
+
 import static org.chromium.ui.base.LocalizationUtils.setRtlForTesting;
 
 import android.os.Build;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.HorizontalScrollView;
+import android.widget.LinearLayout;
 
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
@@ -24,12 +31,16 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -45,20 +56,20 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.
-Add({"enable-features=AutofillKeyboardAccessory", ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class AutofillKeyboardAccessoryTest {
+@EnableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+public class AutofillKeyboardAccessoryIntegrationTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
+    @Rule
+    public TestRule mFeaturesProcessor = new Features.InstrumentationProcessor();
 
-    private final AtomicReference<WebContents> mWebContentsRef = new AtomicReference<WebContents>();
-    private final AtomicReference<ViewGroup> mContainerRef = new AtomicReference<ViewGroup>();
-    private final AtomicReference<ViewGroup> mKeyboardAccessoryRef =
-            new AtomicReference<ViewGroup>();
+    private final AtomicReference<WebContents> mWebContentsRef = new AtomicReference<>();
+    private final AtomicReference<ViewGroup> mContainerRef = new AtomicReference<>();
 
-    private void loadTestPage(boolean isRtl) throws InterruptedException, ExecutionException,
-            TimeoutException {
+    private void loadTestPage(boolean isRtl)
+            throws InterruptedException, ExecutionException, TimeoutException {
         mActivityTestRule.startMainActivityWithURL(UrlUtils.encodeHtmlDataUri("<html"
                 + (isRtl ? " dir=\"rtl\"" : "") + "><head>"
                 + "<meta name=\"viewport\""
@@ -94,9 +105,6 @@ public class AutofillKeyboardAccessoryTest {
             Tab tab = mActivityTestRule.getActivity().getActivityTab();
             mWebContentsRef.set(tab.getWebContents());
             mContainerRef.set(tab.getContentView());
-            mKeyboardAccessoryRef.set(mActivityTestRule.getActivity()
-                    .getWindowAndroid()
-                    .getKeyboardAccessoryView());
         });
         DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), "fn");
     }
@@ -110,11 +118,7 @@ public class AutofillKeyboardAccessoryTest {
     public void testAutofocusedFieldDoesNotShowKeyboardAccessory()
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(false);
-        Assert.assertTrue("Keyboard accessory should be hidden.",
-                ThreadUtils
-                        .runOnUiThreadBlocking(
-                                () -> mKeyboardAccessoryRef.get().getVisibility() == View.GONE)
-                        .booleanValue());
+        Assert.assertTrue("Keyboard accessory should be hidden.", isAccessoryGone());
     }
 
     /**
@@ -127,18 +131,12 @@ public class AutofillKeyboardAccessoryTest {
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(false);
         DOMUtils.clickNode(mWebContentsRef.get(), "fn");
-        CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
-            @Override
-            public boolean isSatisfied() {
-                return UiUtils.isKeyboardShowing(
-                        mActivityTestRule.getActivity(), mContainerRef.get());
-            }
-        });
-        Assert.assertTrue("Keyboard accessory should be showing.",
-                ThreadUtils
-                        .runOnUiThreadBlocking(
-                                () -> mKeyboardAccessoryRef.get().getVisibility() == View.VISIBLE)
-                        .booleanValue());
+
+        CriteriaHelper.pollUiThread(Criteria.equals(true,
+                ()
+                        -> UiUtils.isKeyboardShowing(
+                                mActivityTestRule.getActivity(), mContainerRef.get())));
+        Assert.assertTrue("Keyboard accessory should be showing.", isAccessoryVisible());
     }
 
     /**
@@ -152,38 +150,19 @@ public class AutofillKeyboardAccessoryTest {
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(false);
         DOMUtils.clickNode(mWebContentsRef.get(), "fn");
-        CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
-            @Override
-            public boolean isSatisfied() {
-                return UiUtils.isKeyboardShowing(
-                        mActivityTestRule.getActivity(), mContainerRef.get());
-            }
-        });
+
+        CriteriaHelper.pollUiThread(Criteria.equals(true,
+                ()
+                        -> UiUtils.isKeyboardShowing(
+                                mActivityTestRule.getActivity(), mContainerRef.get())));
+
         ThreadUtils.runOnUiThreadBlocking(() -> getSuggestionsComponent().scrollTo(2000, 0));
-        CriteriaHelper.pollUiThread(
-                new Criteria("First suggestion should be off the screen after manual scroll.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        View suggestion = getSuggestionAt(0);
-                        if (suggestion != null) {
-                            int[] location = new int[2];
-                            suggestion.getLocationOnScreen(location);
-                            return location[0] < 0;
-                        } else {
-                            return false;
-                        }
-                    }
-                });
+        assertSuggestionScrollPosition(
+                false, "First suggestion should be off the screen after manual scroll.");
+
         DOMUtils.clickNode(mWebContentsRef.get(), "ln");
-        CriteriaHelper.pollUiThread(
-                new Criteria("First suggestion should be on the screen after switching fields.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        int[] location = new int[2];
-                        getSuggestionAt(0).getLocationOnScreen(location);
-                        return location[0] > 0;
-                    }
-                });
+        assertSuggestionScrollPosition(
+                true, "First suggestion should be on the screen after switching fields.");
     }
 
     /**
@@ -201,48 +180,20 @@ public class AutofillKeyboardAccessoryTest {
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(true);
         DOMUtils.clickNode(mWebContentsRef.get(), "fn");
-        CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
-            @Override
-            public boolean isSatisfied() {
-                return UiUtils.isKeyboardShowing(
-                        mActivityTestRule.getActivity(), mContainerRef.get());
-            }
-        });
-        ThreadUtils.runOnUiThreadBlocking(() -> getSuggestionsComponent().scrollTo(-1000, 0));
-        CriteriaHelper.pollUiThread(
-                new Criteria("Last suggestion should be on the screen after manual scroll.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        View suggestion = getSuggestionAt(3);
-                        if (suggestion != null) {
-                            int[] location = new int[2];
-                            suggestion.getLocationOnScreen(location);
-                            return location[0] > 0;
-                        } else {
-                            return false;
-                        }
-                    }
-                });
-        // Simulates two clicks. Keyboard delay can often drops the first and doesn't set it again.
-        // TODO(fhorschig): Remove safety net as soon as Accessory is decoupled from suggestions.
+
+        CriteriaHelper.pollUiThread(Criteria.equals(true,
+                ()
+                        -> UiUtils.isKeyboardShowing(
+                                mActivityTestRule.getActivity(), mContainerRef.get())));
+        assertSuggestionScrollPosition(false, "Last suggestion should be off the screen intially.");
+
+        ThreadUtils.runOnUiThreadBlocking(() -> getSuggestionsComponent().scrollTo(-500, 0));
+        assertSuggestionScrollPosition(
+                true, "Last suggestion should be on the screen after manual scroll.");
+
         DOMUtils.clickNode(mWebContentsRef.get(), "ln");
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        DOMUtils.clickNode(mWebContentsRef.get(), "ln");
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        CriteriaHelper.pollUiThread(
-                new Criteria("Last suggestion should be off the screen after switching fields.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        View suggestion = getSuggestionAt(3);
-                        if (suggestion != null) {
-                            int[] location = new int[2];
-                            suggestion.getLocationOnScreen(location);
-                            return location[0] < 0;
-                        } else {
-                            return false;
-                        }
-                    }
-                });
+        assertSuggestionScrollPosition(
+                false, "Last suggestion should be off the screen after switching fields.");
     }
 
     /**
@@ -256,50 +207,66 @@ public class AutofillKeyboardAccessoryTest {
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(false);
         DOMUtils.clickNode(mWebContentsRef.get(), "fn");
-        CriteriaHelper.pollUiThread(new Criteria("Keyboard should be showing.") {
-            @Override
-            public boolean isSatisfied() {
-                return UiUtils.isKeyboardShowing(
-                        mActivityTestRule.getActivity(), mContainerRef.get());
-            }
-        });
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            View suggestion = getSuggestionAt(0);
-            if (suggestion != null) {
-                suggestion.performClick();
-            }
-        });
-        CriteriaHelper.pollUiThread(new Criteria("Keyboard should be hidden.") {
-            @Override
-            public boolean isSatisfied() {
-                return !UiUtils.isKeyboardShowing(
-                        mActivityTestRule.getActivity(), mContainerRef.get());
-            }
-        });
-        Assert.assertTrue("Keyboard accessory should be hidden.",
-                ThreadUtils.runOnUiThreadBlocking(
-                        () -> mKeyboardAccessoryRef.get().getVisibility() == View.GONE));
+
+        CriteriaHelper.pollUiThread(Criteria.equals(true,
+                ()
+                        -> UiUtils.isKeyboardShowing(
+                                mActivityTestRule.getActivity(), mContainerRef.get())));
+        Assert.assertTrue("Keyboard accessory should be visible.", isAccessoryVisible());
+
+        onView(withText("Marcus")).perform(scrollTo(), click());
+
+        CriteriaHelper.pollUiThread(Criteria.equals(false,
+                ()
+                        -> UiUtils.isKeyboardShowing(
+                                mActivityTestRule.getActivity(), mContainerRef.get())));
+        Assert.assertTrue("Keyboard accessory should be hidden.", isAccessoryGone());
     }
 
-    private AutofillKeyboardSuggestions getSuggestionsComponent() {
-        // The view hierarchy:
-        //   Keyboard accessory.
-        //    \--> A list of accessory components.
-        //        \--> A scroll view.
-        //            \--> A list of suggestions.
-        //                \--> A suggestion that can be clicked.
-        ViewGroup keyboardAccessory = mKeyboardAccessoryRef.get();
+    private void assertSuggestionScrollPosition(boolean shouldBeOnScreen, String failureReason) {
+        CriteriaHelper.pollUiThread(new Criteria(failureReason) {
+            @Override
+            public boolean isSatisfied() {
+                View suggestion = getSuggestionAt(0);
+                if (suggestion == null) return false;
+                int[] location = new int[2];
+                suggestion.getLocationOnScreen(location);
+                return shouldBeOnScreen ? location[0] > 0 : location[0] < 0;
+            }
+        });
+    }
+
+    private HorizontalScrollView getSuggestionsComponent() {
+        final ViewGroup keyboardAccessory = ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory));
         if (keyboardAccessory == null) return null; // It might still be loading, so don't assert!
-        ViewGroup componentsList = (ViewGroup) mKeyboardAccessoryRef.get().getChildAt(0);
-        if (componentsList == null) return null; // It might still be loading, so don't assert!
-        ViewGroup scrollview = (ViewGroup) componentsList.getChildAt(0);
+
+        final View scrollview = keyboardAccessory.findViewById(R.id.suggestions_view);
         if (scrollview == null) return null; // It might still be loading, so don't assert!
-        return (AutofillKeyboardSuggestions) scrollview.getChildAt(0);
+
+        return (HorizontalScrollView) scrollview;
     }
 
     private View getSuggestionAt(int index) {
-        ViewGroup suggestionsList = getSuggestionsComponent();
-        if (suggestionsList == null) return null; // It might still be loading, so don't assert!
-        return suggestionsList.getChildAt(index);
+        ViewGroup scrollview = getSuggestionsComponent();
+        if (scrollview == null) return null; // It might still be loading, so don't assert!
+
+        return scrollview.getChildAt(index);
+    }
+
+    private boolean isAccessoryVisible() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(() -> {
+            LinearLayout keyboard =
+                    mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory);
+            return keyboard != null && keyboard.getVisibility() == View.VISIBLE;
+        });
+    }
+
+    private boolean isAccessoryGone() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(() -> {
+            LinearLayout keyboard =
+                    mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory);
+            return keyboard == null || keyboard.getVisibility() == View.GONE;
+        });
     }
 }

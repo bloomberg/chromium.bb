@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import org.chromium.chrome.browser.autofill.AutofillKeyboardSuggestions;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
 
@@ -21,8 +22,16 @@ import java.util.List;
 class KeyboardAccessoryModel extends PropertyObservable<KeyboardAccessoryModel.PropertyKey> {
     /** Keys uniquely identifying model properties. */
     static class PropertyKey {
+        // This list contains all properties and is only necessary because the view needs to
+        // iterate over all properties when it's created to ensure it is in sync with this model.
+        static final List<PropertyKey> ALL_PROPERTIES = new ArrayList<>();
+
         static final PropertyKey VISIBLE = new PropertyKey();
-        private PropertyKey() {}
+        static final PropertyKey SUGGESTIONS = new PropertyKey();
+
+        private PropertyKey() {
+            ALL_PROPERTIES.add(this);
+        }
     }
 
     /** A {@link ListObservable} containing an {@link ArrayList} of Tabs or Actions. */
@@ -76,6 +85,9 @@ class KeyboardAccessoryModel extends PropertyObservable<KeyboardAccessoryModel.P
     private SimpleListObservable<KeyboardAccessoryData.Tab> mTabListObservable;
     private boolean mVisible;
 
+    // TODO(fhorschig): Ideally, make this a ListObservable populating a RecyclerView.
+    private AutofillKeyboardSuggestions mAutofillSuggestions;
+
     KeyboardAccessoryModel() {
         mActionListObservable = new SimpleListObservable<>();
         mTabListObservable = new SimpleListObservable<>();
@@ -110,11 +122,22 @@ class KeyboardAccessoryModel extends PropertyObservable<KeyboardAccessoryModel.P
     }
 
     void setVisible(boolean visible) {
+        if (mVisible == visible) return; // Nothing to do here: same value.
         mVisible = visible;
         notifyPropertyChanged(PropertyKey.VISIBLE);
     }
 
     boolean isVisible() {
         return mVisible;
+    }
+
+    AutofillKeyboardSuggestions getAutofillSuggestions() {
+        return mAutofillSuggestions;
+    }
+
+    void setAutofillSuggestions(AutofillKeyboardSuggestions autofillSuggestions) {
+        if (autofillSuggestions == mAutofillSuggestions) return; // Nothing to do: same object.
+        mAutofillSuggestions = autofillSuggestions;
+        notifyPropertyChanged(PropertyKey.SUGGESTIONS);
     }
 }

@@ -498,7 +498,7 @@ public class SuggestionsSection extends InnerNode {
         if (!hasSuggestions()) return true; // If we don't have any, we always accept updates.
 
         if (CardsVariationParameters.ignoreUpdatesForExistingSuggestions()) {
-            Log.d(TAG, "setSuggestions: replacing existing suggestion disabled");
+            Log.d(TAG, "updateSuggestions: replacing existing suggestion disabled");
             NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_FAIL_DISABLED);
             return false;
         }
@@ -506,7 +506,7 @@ public class SuggestionsSection extends InnerNode {
         if (numberOfSuggestionsExposed >= getSuggestionsCount() || mHasAppended) {
             // In case that suggestions got removed, we assume they already were seen. This might
             // be over-simplifying things, but given the rare occurences it should be good enough.
-            Log.d(TAG, "setSuggestions: replacing existing suggestion not possible, all seen");
+            Log.d(TAG, "updateSuggestions: replacing existing suggestion not possible, all seen");
             NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_FAIL_ALL_SEEN);
             return false;
         }
