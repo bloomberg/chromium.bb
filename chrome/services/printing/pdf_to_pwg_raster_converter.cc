@@ -19,32 +19,30 @@ namespace printing {
 
 namespace {
 
-bool RenderPdfPagesToPwgRaster(base::File pdf_file,
-                               const PdfRenderSettings& settings,
-                               const PwgRasterSettings& bitmap_settings,
-                               base::File bitmap_file) {
-  base::File::Info info;
-  if (!pdf_file.GetInfo(&info) || info.size <= 0 ||
-      info.size > std::numeric_limits<int>::max())
-    return false;
-  int data_size = static_cast<int>(info.size);
+base::ReadOnlySharedMemoryRegion RenderPdfPagesToPwgRaster(
+    base::ReadOnlySharedMemoryRegion pdf_region,
+    const PdfRenderSettings& settings,
+    const PwgRasterSettings& bitmap_settings) {
+  base::ReadOnlySharedMemoryRegion invalid_pwg_region;
+  base::ReadOnlySharedMemoryMapping pdf_mapping = pdf_region.Map();
+  if (!pdf_mapping.IsValid())
+    return invalid_pwg_region;
 
-  std::string data(data_size, 0);
-  if (pdf_file.Read(0, &data[0], data_size) != data_size)
-    return false;
-
+  // Get the page count and reserve 64 KB per page in |pwg_data| below.
+  static constexpr size_t kEstimatedSizePerPage = 64 * 1024;
+  static constexpr size_t kMaxPageCount =
+      std::numeric_limits<size_t>::max() / kEstimatedSizePerPage;
   int total_page_count = 0;
-  if (!chrome_pdf::GetPDFDocInfo(data.data(), data_size, &total_page_count,
-                                 nullptr)) {
-    return false;
+  if (!chrome_pdf::GetPDFDocInfo(pdf_mapping.memory(), pdf_mapping.size(),
+                                 &total_page_count, nullptr) ||
+      total_page_count <= 0 ||
+      static_cast<size_t>(total_page_count) >= kMaxPageCount) {
+    return invalid_pwg_region;
   }
 
-  std::string pwg_header = pwg_encoder::PwgEncoder::GetDocumentHeader();
-  int bytes_written =
-      bitmap_file.WriteAtCurrentPos(pwg_header.data(), pwg_header.size());
-  if (bytes_written != static_cast<int>(pwg_header.size()))
-    return false;
-
+  std::string pwg_data;
+  pwg_data.reserve(total_page_count * kEstimatedSizePerPage);
+  pwg_data = pwg_encoder::PwgEncoder::GetDocumentHeader();
   pwg_encoder::BitmapImage image(settings.area.size(),
                                  pwg_encoder::BitmapImage::BGRA);
   for (int i = 0; i < total_page_count; ++i) {
@@ -54,10 +52,11 @@ bool RenderPdfPagesToPwgRaster(base::File pdf_file,
       page_number = total_page_count - 1 - page_number;
 
     if (!chrome_pdf::RenderPDFPageToBitmap(
-            data.data(), data_size, page_number, image.pixel_data(),
-            image.size().width(), image.size().height(), settings.dpi.width(),
-            settings.dpi.height(), settings.autorotate, settings.use_color)) {
-      return false;
+            pdf_mapping.memory(), pdf_mapping.size(), page_number,
+            image.pixel_data(), image.size().width(), image.size().height(),
+            settings.dpi.width(), settings.dpi.height(), settings.autorotate,
+            settings.use_color)) {
+      return invalid_pwg_region;
     }
 
     pwg_encoder::PwgHeaderInfo header_info;
@@ -93,13 +92,26 @@ bool RenderPdfPagesToPwgRaster(base::File pdf_file,
     std::string pwg_page =
         pwg_encoder::PwgEncoder::EncodePage(image, header_info);
     if (pwg_page.empty())
-      return false;
-    bytes_written =
-        bitmap_file.WriteAtCurrentPos(pwg_page.data(), pwg_page.size());
-    if (bytes_written != static_cast<int>(pwg_page.size()))
-      return false;
+      return invalid_pwg_region;
+    pwg_data += pwg_page;
   }
-  return true;
+
+  mojo::ScopedSharedBufferHandle pwg_handle =
+      mojo::SharedBufferHandle::Create(pwg_data.size());
+  mojo::ScopedSharedBufferHandle readonly_handle;
+  if (pwg_handle.is_valid()) {
+    mojo::ScopedSharedBufferMapping pwg_mapping =
+        pwg_handle->Map(pwg_data.size());
+    if (pwg_mapping) {
+      memcpy(pwg_mapping.get(), pwg_data.data(), pwg_data.size());
+      readonly_handle =
+          pwg_handle->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
+    }
+  }
+  if (!readonly_handle.is_valid())
+    return invalid_pwg_region;
+
+  return mojo::UnwrapReadOnlySharedMemoryRegion(std::move(readonly_handle));
 }
 
 }  // namespace
@@ -111,31 +123,12 @@ PdfToPwgRasterConverter::PdfToPwgRasterConverter(
 PdfToPwgRasterConverter::~PdfToPwgRasterConverter() {}
 
 void PdfToPwgRasterConverter::Convert(
-    mojo::ScopedHandle pdf_file_in,
+    base::ReadOnlySharedMemoryRegion pdf_region,
     const PdfRenderSettings& pdf_settings,
     const PwgRasterSettings& pwg_raster_settings,
-    mojo::ScopedHandle pwg_raster_file_out,
     ConvertCallback callback) {
-  base::PlatformFile pdf_file;
-  if (mojo::UnwrapPlatformFile(std::move(pdf_file_in), &pdf_file) !=
-      MOJO_RESULT_OK) {
-    LOG(ERROR) << "Invalid PDF file passed to PdfToPwgRasterConverter.";
-    std::move(callback).Run(false);
-    return;
-  }
-
-  base::PlatformFile pwg_raster_file;
-  if (mojo::UnwrapPlatformFile(std::move(pwg_raster_file_out),
-                               &pwg_raster_file) != MOJO_RESULT_OK) {
-    LOG(ERROR) << "Invalid PWGRaster file passed to PdfToPwgRasterConverter.";
-    std::move(callback).Run(false);
-    return;
-  }
-
-  bool result = RenderPdfPagesToPwgRaster(base::File(pdf_file), pdf_settings,
-                                          pwg_raster_settings,
-                                          base::File(pwg_raster_file));
-  std::move(callback).Run(result);
+  std::move(callback).Run(RenderPdfPagesToPwgRaster(
+      std::move(pdf_region), pdf_settings, pwg_raster_settings));
 }
 
 }  // namespace printing

@@ -10,16 +10,8 @@
 
 #include "base/bind_helpers.h"
 #include "base/cancelable_callback.h"
-#include "base/files/file.h"
-#include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/sequenced_task_runner.h"
-#include "base/task_scheduler/post_task.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/services/printing/public/mojom/constants.mojom.h"
 #include "chrome/services/printing/public/mojom/pdf_to_pwg_raster_converter.mojom.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
@@ -41,77 +33,9 @@ namespace {
 
 using content::BrowserThread;
 
-class FileHandlers {
- public:
-  FileHandlers() {}
-
-  ~FileHandlers() { base::AssertBlockingAllowed(); }
-
-  void Init(base::RefCountedMemory* data);
-  bool IsValid();
-
-  base::FilePath GetPwgPath() const {
-    return temp_dir_.GetPath().AppendASCII("output.pwg");
-  }
-
-  base::FilePath GetPdfPath() const {
-    return temp_dir_.GetPath().AppendASCII("input.pdf");
-  }
-
-  base::PlatformFile GetPdfForProcess() {
-    DCHECK(pdf_file_.IsValid());
-    return pdf_file_.TakePlatformFile();
-  }
-
-  base::PlatformFile GetPwgForProcess() {
-    DCHECK(pwg_file_.IsValid());
-    return pwg_file_.TakePlatformFile();
-  }
-
- private:
-  base::ScopedTempDir temp_dir_;
-  base::File pdf_file_;
-  base::File pwg_file_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileHandlers);
-};
-
-void FileHandlers::Init(base::RefCountedMemory* data) {
-  base::AssertBlockingAllowed();
-
-  if (!temp_dir_.CreateUniqueTempDir())
-    return;
-
-  if (static_cast<int>(data->size()) !=
-      base::WriteFile(GetPdfPath(), data->front_as<char>(), data->size())) {
-    return;
-  }
-
-  // Reopen in read only mode.
-  pdf_file_.Initialize(GetPdfPath(),
-                       base::File::FLAG_OPEN | base::File::FLAG_READ);
-  pwg_file_.Initialize(GetPwgPath(),
-                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-}
-
-bool FileHandlers::IsValid() {
-  return pdf_file_.IsValid() && pwg_file_.IsValid();
-}
-
-// Converts PDF into PWG raster.
-// Class uses UI thread and |blocking_task_runner_|.
-// Internal workflow is following:
-// 1. Create instance on the UI thread. (files_, settings_,)
-// 2. Create file on |blocking_task_runner_|.
-// 3. Connect to the printing utility service and start the conversion.
-// 4. Run result callback on the UI thread.
-// 5. Instance is destroyed from any thread that has the last reference.
-// 6. FileHandlers destroyed on |blocking_task_runner_|.
-//    This step posts |FileHandlers| to be destroyed on |blocking_task_runner_|.
-// All these steps work sequentially, so no data should be accessed
-// simultaneously by several threads.
+// Converts PDF into PWG raster. Class lives on the UI thread.
 class PwgRasterConverterHelper
-    : public base::RefCountedThreadSafe<PwgRasterConverterHelper> {
+    : public base::RefCounted<PwgRasterConverterHelper> {
  public:
   PwgRasterConverterHelper(const PdfRenderSettings& settings,
                            const PwgRasterSettings& bitmap_settings);
@@ -120,21 +44,17 @@ class PwgRasterConverterHelper
                PwgRasterConverter::ResultCallback callback);
 
  private:
-  friend class base::RefCountedThreadSafe<PwgRasterConverterHelper>;
+  friend class base::RefCounted<PwgRasterConverterHelper>;
 
   ~PwgRasterConverterHelper();
 
-  void RunCallback(bool success);
-
-  void OnFilesReadyOnUIThread();
+  void RunCallback(base::ReadOnlySharedMemoryRegion region);
 
   PdfRenderSettings settings_;
   PwgRasterSettings bitmap_settings_;
   mojo::InterfacePtr<printing::mojom::PdfToPwgRasterConverter>
       pdf_to_pwg_raster_converter_ptr_;
   PwgRasterConverter::ResultCallback callback_;
-  const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  std::unique_ptr<FileHandlers, base::OnTaskRunnerDeleter> files_;
 
   DISALLOW_COPY_AND_ASSIGN(PwgRasterConverterHelper);
 };
@@ -142,14 +62,13 @@ class PwgRasterConverterHelper
 PwgRasterConverterHelper::PwgRasterConverterHelper(
     const PdfRenderSettings& settings,
     const PwgRasterSettings& bitmap_settings)
-    : settings_(settings),
-      bitmap_settings_(bitmap_settings),
-      blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
-      files_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner_)) {}
+    : settings_(settings), bitmap_settings_(bitmap_settings) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
 
-PwgRasterConverterHelper::~PwgRasterConverterHelper() {}
+PwgRasterConverterHelper::~PwgRasterConverterHelper() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
 
 void PwgRasterConverterHelper::Convert(
     base::RefCountedMemory* data,
@@ -157,23 +76,6 @@ void PwgRasterConverterHelper::Convert(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   callback_ = std::move(callback);
-  CHECK(!files_);
-  files_.reset(new FileHandlers());
-
-  blocking_task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(&FileHandlers::Init, base::Unretained(files_.get()),
-                     base::RetainedRef(data)),
-      base::BindOnce(&PwgRasterConverterHelper::OnFilesReadyOnUIThread, this));
-}
-
-void PwgRasterConverterHelper::OnFilesReadyOnUIThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (!files_->IsValid()) {
-    RunCallback(false);
-    return;
-  }
 
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
@@ -181,18 +83,29 @@ void PwgRasterConverterHelper::OnFilesReadyOnUIThread() {
                       &pdf_to_pwg_raster_converter_ptr_);
 
   pdf_to_pwg_raster_converter_ptr_.set_connection_error_handler(
-      base::Bind(&PwgRasterConverterHelper::RunCallback, this, false));
+      base::BindOnce(&PwgRasterConverterHelper::RunCallback, this,
+                     base::ReadOnlySharedMemoryRegion()));
 
+  base::MappedReadOnlyRegion memory =
+      base::ReadOnlySharedMemoryRegion::Create(data->size());
+  if (!memory.region.IsValid() || !memory.mapping.IsValid()) {
+    RunCallback(base::ReadOnlySharedMemoryRegion());
+    return;
+  }
+
+  // TODO(thestig): Write |data| into shared memory in the first place, to avoid
+  // this memcpy().
+  memcpy(memory.mapping.memory(), data->front(), data->size());
   pdf_to_pwg_raster_converter_ptr_->Convert(
-      mojo::WrapPlatformFile(files_->GetPdfForProcess()), settings_,
-      bitmap_settings_, mojo::WrapPlatformFile(files_->GetPwgForProcess()),
+      std::move(memory.region), settings_, bitmap_settings_,
       base::Bind(&PwgRasterConverterHelper::RunCallback, this));
 }
 
-void PwgRasterConverterHelper::RunCallback(bool success) {
+void PwgRasterConverterHelper::RunCallback(
+    base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (callback_)
-    std::move(callback_).Run(success, files_->GetPwgPath());
+    std::move(callback_).Run(std::move(region));
   pdf_to_pwg_raster_converter_ptr_.reset();
 }
 
@@ -210,7 +123,8 @@ class PwgRasterConverterImpl : public PwgRasterConverter {
   scoped_refptr<PwgRasterConverterHelper> utility_client_;
 
   // Cancelable version of ResultCallback.
-  base::CancelableOnceCallback<void(bool, const base::FilePath&)> callback_;
+  base::CancelableOnceCallback<void(base::ReadOnlySharedMemoryRegion)>
+      callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PwgRasterConverterImpl);
 };

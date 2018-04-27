@@ -8,12 +8,9 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted_memory.h"
 #include "printing/pdf_render_settings.h"
-
-namespace base {
-class FilePath;
-}
 
 namespace cloud_devices {
 class CloudDeviceDescription;
@@ -30,12 +27,9 @@ struct PwgRasterSettings;
 class PwgRasterConverter {
  public:
   // Callback for when the PDF is converted to a PWG raster.
-  // |success| denotes whether the conversion succeeded.
-  // |temp_file| is the path to the temp file (owned by the converter) that
-  //     contains the PWG raster data.
+  // |region| contains the PWG raster data.
   using ResultCallback =
-      base::OnceCallback<void(bool /*success*/,
-                              const base::FilePath& /*temp_file*/)>;
+      base::OnceCallback<void(base::ReadOnlySharedMemoryRegion /*region*/)>;
 
   virtual ~PwgRasterConverter() {}
 

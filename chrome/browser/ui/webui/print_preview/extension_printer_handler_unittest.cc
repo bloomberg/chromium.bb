@@ -13,8 +13,6 @@
 
 #include "base/bind.h"
 #include "base/containers/queue.h"
-#include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
@@ -278,47 +276,38 @@ std::string RefCountedMemoryToString(
 // Fake PwgRasterConverter used in the tests.
 class FakePwgRasterConverter : public PwgRasterConverter {
  public:
-  FakePwgRasterConverter() : fail_conversion_(false), initialized_(false) {}
+  FakePwgRasterConverter() {}
   ~FakePwgRasterConverter() override = default;
 
-  // PwgRasterConverter implementation. It writes |data| to a temp file.
+  // PwgRasterConverter implementation. It writes |data| to shared memory.
   // Also, remembers conversion and bitmap settings passed into the method.
   void Start(base::RefCountedMemory* data,
              const printing::PdfRenderSettings& conversion_settings,
              const printing::PwgRasterSettings& bitmap_settings,
              ResultCallback callback) override {
+    base::ReadOnlySharedMemoryRegion invalid_pwg_region;
     if (fail_conversion_) {
-      std::move(callback).Run(false, base::FilePath());
+      std::move(callback).Run(std::move(invalid_pwg_region));
       return;
     }
 
-    if (!initialized_ && !temp_dir_.CreateUniqueTempDir()) {
-      ADD_FAILURE() << "Unable to create target dir for cenverter";
-      std::move(callback).Run(false, base::FilePath());
+    base::MappedReadOnlyRegion memory =
+        base::ReadOnlySharedMemoryRegion::Create(data->size());
+    if (!memory.mapping.IsValid()) {
+      ADD_FAILURE() << "Failed to create pwg raster shared memory.";
+      std::move(callback).Run(std::move(invalid_pwg_region));
       return;
     }
 
-    initialized_ = true;
-
-    path_ = temp_dir_.GetPath().AppendASCII("output.pwg");
-    std::string data_str(data->front_as<char>(), data->size());
-    int written = WriteFile(path_, data_str.c_str(), data_str.size());
-    if (written != static_cast<int>(data_str.size())) {
-      ADD_FAILURE() << "Failed to write pwg raster file.";
-      std::move(callback).Run(false, base::FilePath());
-      return;
-    }
-
+    memcpy(memory.mapping.memory(), data->front(), data->size());
     conversion_settings_ = conversion_settings;
     bitmap_settings_ = bitmap_settings;
-
-    std::move(callback).Run(true, path_);
+    std::move(callback).Run(std::move(memory.region));
   }
 
   // Makes |Start| method always return an error.
   void FailConversion() { fail_conversion_ = true; }
 
-  const base::FilePath& path() { return path_; }
   const printing::PdfRenderSettings& conversion_settings() const {
     return conversion_settings_;
   }
@@ -328,13 +317,9 @@ class FakePwgRasterConverter : public PwgRasterConverter {
   }
 
  private:
-  base::ScopedTempDir temp_dir_;
-
-  base::FilePath path_;
   printing::PdfRenderSettings conversion_settings_;
   printing::PwgRasterSettings bitmap_settings_;
-  bool fail_conversion_;
-  bool initialized_;
+  bool fail_conversion_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakePwgRasterConverter);
 };

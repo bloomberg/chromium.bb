@@ -9,9 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/files/file.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
@@ -59,36 +56,14 @@ const char kInvalidTicketPrintError[] = "INVALID_TICKET";
 const char kProvisionalUsbLabel[] = "provisional-usb";
 
 // Updates |job| with raster data. Returns the updated print job.
-// TODO(thestig): Remove this function once PWG files are no longer written to
-// disk. https://crbug.com/827332
-std::unique_ptr<extensions::PrinterProviderPrintJob>
-UpdateJobFileInfoOnWorkerThread(
-    const base::FilePath& raster_path,
-    std::unique_ptr<extensions::PrinterProviderPrintJob> job) {
-  std::string file_contents;
-  if (base::ReadFileToString(raster_path, &file_contents))
-    job->document_bytes = base::RefCountedString::TakeString(&file_contents);
-  return job;
-}
-
-// Callback to PWG raster conversion.
-// Posts a task to update print job with info about file containing converted
-// PWG raster data.
 void UpdateJobFileInfo(std::unique_ptr<extensions::PrinterProviderPrintJob> job,
                        ExtensionPrinterHandler::PrintJobCallback callback,
-                       bool success,
-                       const base::FilePath& pwg_file_path) {
-  if (!success) {
-    std::move(callback).Run(std::move(job));
-    return;
-  }
-
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&UpdateJobFileInfoOnWorkerThread, pwg_file_path,
-                     std::move(job)),
-      std::move(callback));
+                       base::ReadOnlySharedMemoryRegion pwg_region) {
+  auto data =
+      base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(pwg_region);
+  if (data)
+    job->document_bytes = data;
+  std::move(callback).Run(std::move(job));
 }
 
 bool HasUsbPrinterProviderPermissions(const Extension* extension) {

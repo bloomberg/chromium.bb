@@ -163,16 +163,8 @@ void PrivetURLFetcher::Try() {
     url_fetcher_->SaveResponseToTemporaryFile(GetFileTaskRunner());
 
   // URLFetcher requires us to set upload data for POST requests.
-  if (request_type_ == net::URLFetcher::POST) {
-    if (upload_file_path_.empty()) {
-      url_fetcher_->SetUploadData(upload_content_type_, upload_data_);
-    } else {
-      url_fetcher_->SetUploadFilePath(
-          upload_content_type_, upload_file_path_, 0 /*offset*/,
-          std::numeric_limits<uint64_t>::max() /*length*/, GetFileTaskRunner());
-    }
-  }
-
+  if (request_type_ == net::URLFetcher::POST)
+    url_fetcher_->SetUploadData(upload_content_type_, upload_data_);
   url_fetcher_->Start();
 }
 
@@ -196,17 +188,8 @@ void PrivetURLFetcher::Start() {
 
 void PrivetURLFetcher::SetUploadData(const std::string& upload_content_type,
                                      const std::string& upload_data) {
-  DCHECK(upload_file_path_.empty());
   upload_content_type_ = upload_content_type;
   upload_data_ = upload_data;
-}
-
-void PrivetURLFetcher::SetUploadFilePath(
-    const std::string& upload_content_type,
-    const base::FilePath& upload_file_path) {
-  DCHECK(upload_data_.empty());
-  upload_content_type_ = upload_content_type;
-  upload_file_path_ = upload_file_path;
 }
 
 void PrivetURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {

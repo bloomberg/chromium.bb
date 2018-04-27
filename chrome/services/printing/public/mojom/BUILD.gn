@@ -15,8 +15,11 @@ mojom("mojom") {
     "//ui/gfx/geometry/mojo",
   ]
 
+  public_deps = [
+    "//mojo/public/mojom/base",
+  ]
+
   if (is_win) {
     sources += [ "pdf_to_emf_converter.mojom" ]
-    deps += [ "//mojo/public/mojom/base" ]
   }
 }

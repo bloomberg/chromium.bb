@@ -10,14 +10,18 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/printing/cloud_print/privet_http.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "printing/buildflags/buildflags.h"
 #include "ui/gfx/geometry/size.h"
+
+namespace base {
+class RefCountedMemory;
+}
 
 namespace cloud_print {
 
@@ -189,7 +193,7 @@ class PrivetLocalPrintOperationImpl
                            const base::DictionaryValue* value);
   void OnCreatejobResponse(bool has_error,
                            const base::DictionaryValue* value);
-  void OnPWGRasterConverted(bool success, const base::FilePath& pwg_file_path);
+  void OnPWGRasterConverted(base::ReadOnlySharedMemoryRegion pwg_region);
 
   PrivetHTTPClient* const privet_client_;
   PrivetLocalPrintOperation::Delegate* const delegate_;
@@ -200,7 +204,6 @@ class PrivetLocalPrintOperationImpl
   cloud_devices::CloudDeviceDescription capabilities_;
 
   scoped_refptr<base::RefCountedMemory> data_;
-  base::FilePath pwg_file_path_;
 
   bool use_pdf_ = false;
   bool has_extended_workflow_ = false;

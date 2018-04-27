@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -480,16 +481,10 @@ void PrivetLocalPrintOperationImpl::DoSubmitdoc() {
   url_fetcher_ =
       privet_client_->CreateURLFetcher(url, net::URLFetcher::POST, this);
 
-  if (use_pdf_) {
-    // TODO(noamsml): Move to file-based upload data?
-    std::string data_str(reinterpret_cast<const char*>(data_->front()),
-                         data_->size());
-    url_fetcher_->SetUploadData(kPrivetContentTypePDF, data_str);
-  } else {
-    url_fetcher_->SetUploadFilePath(kPrivetContentTypePWGRaster,
-                                    pwg_file_path_);
-  }
-
+  std::string data_str(reinterpret_cast<const char*>(data_->front()),
+                       data_->size());
+  url_fetcher_->SetUploadData(
+      use_pdf_ ? kPrivetContentTypePDF : kPrivetContentTypePWGRaster, data_str);
   url_fetcher_->Start();
 }
 
@@ -573,15 +568,15 @@ void PrivetLocalPrintOperationImpl::OnCreatejobResponse(
 }
 
 void PrivetLocalPrintOperationImpl::OnPWGRasterConverted(
-    bool success,
-    const base::FilePath& pwg_file_path) {
-  if (!success) {
+    base::ReadOnlySharedMemoryRegion pwg_region) {
+  auto data =
+      base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(pwg_region);
+  if (!data) {
     delegate_->OnPrivetPrintingError(this, -1);
     return;
   }
 
-  DCHECK(!pwg_file_path.empty());
-  pwg_file_path_ = pwg_file_path;
+  data_ = data;
   StartPrinting();
 }
 

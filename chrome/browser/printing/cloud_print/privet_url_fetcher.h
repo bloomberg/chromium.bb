@@ -98,9 +98,6 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   void SetUploadData(const std::string& upload_content_type,
                      const std::string& upload_data);
 
-  void SetUploadFilePath(const std::string& upload_content_type,
-                         const base::FilePath& upload_file_path);
-
   const GURL& url() const {
     return url_fetcher_ ? url_fetcher_->GetOriginalURL() : url_;
   }
@@ -141,7 +138,6 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   int tries_ = 0;
   std::string upload_data_;
   std::string upload_content_type_;
-  base::FilePath upload_file_path_;
   std::unique_ptr<net::URLFetcher> url_fetcher_;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
