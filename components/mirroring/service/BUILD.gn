@@ -81,6 +81,7 @@ source_set("unittests") {
     "//media/cast:test_support",
     "//mojo/public/cpp/bindings",
     "//net",
+    "//services/network:test_support",
     "//services/network/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
