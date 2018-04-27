@@ -4,14 +4,3 @@ include_rules = [
   "+ash/public",
   "+components/captive_portal",
 ]
-
-specific_include_rules = {
-  # TODO(mash): Eliminate these.
-  "auto_connect_notifier\.cc": [
-    "+ash/system/system_notifier.h",
-  ],
-  "network_portal_notification_controller\.cc": [
-    "+ash/system/tray/system_tray_notifier.h",
-    "+ash/shell.h",
-  ],
-}

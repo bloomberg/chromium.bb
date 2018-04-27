@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/net/network_portal_notification_controller.h"
+#include "chrome/browser/ui/ash/network/network_portal_notification_controller.h"
 
 #include <stdint.h>
 
@@ -10,8 +10,6 @@
 #include <vector>
 
 #include "ash/public/cpp/vector_icons/vector_icons.h"
-#include "ash/shell.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -21,11 +19,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/mobile/mobile_activator.h"
 #include "chrome/browser/chromeos/net/network_portal_web_dialog.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
@@ -35,7 +30,6 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -48,7 +42,6 @@
 #include "extensions/browser/api/networking_config/networking_config_service_factory.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
@@ -101,8 +94,8 @@ const extensions::Extension* LookupExtensionForRawSsid(
       networking_config_service->LookupExtensionIdForHexSsid(hex_ssid);
   if (extension_id.empty())
     return nullptr;
-  return extensions::ExtensionRegistry::Get(profile)
-      ->GetExtensionById(extension_id, extensions::ExtensionRegistry::ENABLED);
+  return extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
+      extension_id, extensions::ExtensionRegistry::ENABLED);
 }
 
 class NetworkPortalNotificationControllerDelegate
@@ -188,9 +181,8 @@ void NetworkPortalNotificationControllerDelegate::Click(
   const bool use_incognito_profile =
       disable_bypass_proxy_switch_present
           ? false
-          : (profile &&
-             profile->GetPrefs()->GetBoolean(
-                 prefs::kCaptivePortalAuthenticationIgnoresProxy));
+          : (profile && profile->GetPrefs()->GetBoolean(
+                            prefs::kCaptivePortalAuthenticationIgnoresProxy));
 
   if (use_incognito_profile) {
     if (controller_)
@@ -295,11 +287,6 @@ void NetworkPortalNotificationController::OnPortalDetectionCompleted(
   if (network->guid() == last_network_guid_)
     return;
   last_network_guid_ = network->guid();
-
-  if (ash::Shell::HasInstance()) {
-    ash::Shell::Get()->system_tray_notifier()->NotifyOnCaptivePortalDetected(
-        network->guid());
-  }
 
   SystemNotificationHelper::GetInstance()->Display(
       *GetNotification(network, state));

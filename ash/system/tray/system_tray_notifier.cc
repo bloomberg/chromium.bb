@@ -7,7 +7,6 @@
 #include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/network/network_observer.h"
-#include "ash/system/network/network_portal_detector_observer.h"
 #include "ash/system/screen_security/screen_capture_observer.h"
 #include "ash/system/screen_security/screen_share_observer.h"
 #include "ash/system/system_tray_focus_observer.h"
@@ -67,22 +66,6 @@ void SystemTrayNotifier::RemoveNetworkObserver(NetworkObserver* observer) {
 void SystemTrayNotifier::NotifyRequestToggleWifi() {
   for (auto& observer : network_observers_)
     observer.RequestToggleWifi();
-}
-
-void SystemTrayNotifier::AddNetworkPortalDetectorObserver(
-    NetworkPortalDetectorObserver* observer) {
-  network_portal_detector_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveNetworkPortalDetectorObserver(
-    NetworkPortalDetectorObserver* observer) {
-  network_portal_detector_observers_.RemoveObserver(observer);
-}
-
-void SystemTrayNotifier::NotifyOnCaptivePortalDetected(
-    const std::string& guid) {
-  for (auto& observer : network_portal_detector_observers_)
-    observer.OnCaptivePortalDetected(guid);
 }
 
 void SystemTrayNotifier::AddScreenCaptureObserver(

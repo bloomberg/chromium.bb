@@ -38,14 +38,20 @@ TrayNetworkStateObserver::TrayNetworkStateObserver(Delegate* delegate)
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION) {
     update_frequency_ = 0;  // Send updates immediately for tests.
   }
+  // TODO(mash): Figure out what to do about NetworkHandler and
+  // NetworkPortalDetector.
   if (NetworkHandler::IsInitialized()) {
     NetworkHandler::Get()->network_state_handler()->AddObserver(this,
                                                                 FROM_HERE);
     wifi_enabled_ = IsWifiEnabled();
   }
+  if (chromeos::network_portal_detector::IsInitialized())
+    chromeos::network_portal_detector::GetInstance()->AddObserver(this);
 }
 
 TrayNetworkStateObserver::~TrayNetworkStateObserver() {
+  if (chromeos::network_portal_detector::IsInitialized())
+    chromeos::network_portal_detector::GetInstance()->RemoveObserver(this);
   if (NetworkHandler::IsInitialized()) {
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
                                                                    FROM_HERE);
@@ -87,6 +93,12 @@ void TrayNetworkStateObserver::NetworkPropertiesUpdated(
 void TrayNetworkStateObserver::DevicePropertiesUpdated(
     const chromeos::DeviceState* device) {
   SignalUpdate(false /* notify_a11y */);
+}
+
+void TrayNetworkStateObserver::OnPortalDetectionCompleted(
+    const chromeos::NetworkState* network,
+    const chromeos::NetworkPortalDetector::CaptivePortalState& state) {
+  SignalUpdate(true /* notify_a11y */);
 }
 
 void TrayNetworkStateObserver::SignalUpdate(bool notify_a11y) {

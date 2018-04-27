@@ -6,7 +6,6 @@
 #define ASH_SYSTEM_NETWORK_NETWORK_FEATURE_POD_BUTTON_H_
 
 #include "ash/system/network/network_icon_animation_observer.h"
-#include "ash/system/network/network_portal_detector_observer.h"
 #include "ash/system/network/tray_network_state_observer.h"
 #include "ash/system/unified/feature_pod_button.h"
 
@@ -16,8 +15,7 @@ namespace ash {
 // animation to implement network connecting animation on feature pod button.
 class NetworkFeaturePodButton : public FeaturePodButton,
                                 public network_icon::AnimationObserver,
-                                public TrayNetworkStateObserver::Delegate,
-                                public NetworkPortalDetectorObserver {
+                                public TrayNetworkStateObserver::Delegate {
  public:
   explicit NetworkFeaturePodButton(FeaturePodControllerBase* controller);
   ~NetworkFeaturePodButton() override;
@@ -27,9 +25,6 @@ class NetworkFeaturePodButton : public FeaturePodButton,
 
   // TrayNetworkStateObserver::Delegate:
   void NetworkStateChanged(bool notify_a11y) override;
-
-  // NetworkPortalDetectorObserver:
-  void OnCaptivePortalDetected(const std::string& guid) override;
 
  private:
   void Update();
