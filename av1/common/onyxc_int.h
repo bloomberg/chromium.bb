@@ -833,8 +833,12 @@ static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
   xd->n8_h = bh;
   xd->n8_w = bw;
   xd->is_sec_rect = 0;
-  if (xd->n8_w < xd->n8_h)
-    if (mi_col & (xd->n8_h - 1)) xd->is_sec_rect = 1;
+  if (xd->n8_w < xd->n8_h) {
+    // Only mark is_sec_rect as 1 for the last block.
+    // For PARTITION_VERT_4, it would be (0, 0, 0, 1);
+    // For other partitions, it would be (0, 1).
+    if (!((mi_col + xd->n8_w) & (xd->n8_h - 1))) xd->is_sec_rect = 1;
+  }
 
   if (xd->n8_w > xd->n8_h)
     if (mi_row & (xd->n8_w - 1)) xd->is_sec_rect = 1;
