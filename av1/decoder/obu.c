@@ -324,33 +324,33 @@ static void read_metadata_hdr_mdcv(const uint8_t *data) {
 }
 
 static void scalability_structure(struct aom_read_bit_buffer *rb) {
-  int enhancement_layers_cnt = aom_rb_read_literal(rb, 2);
-  int enhancement_layer_dimensions_present_flag = aom_rb_read_literal(rb, 1);
-  int enhancement_layer_description_present_flag = aom_rb_read_literal(rb, 1);
-  int temporal_group_description_flag = aom_rb_read_literal(rb, 1);
+  int spatial_layers_cnt = aom_rb_read_literal(rb, 2);
+  int spatial_layer_dimensions_present_flag = aom_rb_read_literal(rb, 1);
+  int spatial_layer_description_present_flag = aom_rb_read_literal(rb, 1);
+  int temporal_group_description_present_flag = aom_rb_read_literal(rb, 1);
   aom_rb_read_literal(rb, 3);  // reserved
 
-  if (enhancement_layer_dimensions_present_flag) {
+  if (spatial_layer_dimensions_present_flag) {
     int i;
-    for (i = 0; i < enhancement_layers_cnt + 1; i++) {
+    for (i = 0; i < spatial_layers_cnt + 1; i++) {
       aom_rb_read_literal(rb, 16);
       aom_rb_read_literal(rb, 16);
     }
   }
-  if (enhancement_layer_description_present_flag) {
+  if (spatial_layer_description_present_flag) {
     int i;
-    for (i = 0; i < enhancement_layers_cnt + 1; i++) {
+    for (i = 0; i < spatial_layers_cnt + 1; i++) {
       aom_rb_read_literal(rb, 8);
     }
   }
-  if (temporal_group_description_flag) {
+  if (temporal_group_description_present_flag) {
     int i, j, temporal_group_size;
     temporal_group_size = aom_rb_read_literal(rb, 8);
     for (i = 0; i < temporal_group_size; i++) {
       aom_rb_read_literal(rb, 3);
       aom_rb_read_literal(rb, 1);
-      int temporal_group_ref_cnt = aom_rb_read_literal(rb, 2);
-      aom_rb_read_literal(rb, 2);
+      aom_rb_read_literal(rb, 1);
+      int temporal_group_ref_cnt = aom_rb_read_literal(rb, 3);
       for (j = 0; j < temporal_group_ref_cnt; j++) {
         aom_rb_read_literal(rb, 8);
       }
