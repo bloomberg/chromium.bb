@@ -1097,6 +1097,10 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
 }
 
 void MenuItemView::ApplyMinimumDimensions(MenuItemDimensions* dims) const {
+  // Don't apply minimums to menus without controllers or to comboboxes.
+  if (!GetMenuController() || GetMenuController()->is_combobox())
+    return;
+
   int used =
       dims->standard_width + dims->children_width + dims->minor_text_width;
   const MenuConfig& config = MenuConfig::instance();
