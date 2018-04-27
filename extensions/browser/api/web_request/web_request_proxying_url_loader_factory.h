@@ -25,6 +25,10 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
+namespace content {
+class ResourceContext;
+}  // namespace content
+
 namespace extensions {
 
 class ExtensionNavigationUIData;
@@ -131,7 +135,9 @@ class WebRequestProxyingURLLoaderFactory
     DISALLOW_COPY_AND_ASSIGN(InProgressRequest);
   };
 
-  WebRequestProxyingURLLoaderFactory(void* browser_context, InfoMap* info_map);
+  WebRequestProxyingURLLoaderFactory(void* browser_context,
+                                     content::ResourceContext* resource_context,
+                                     InfoMap* info_map);
 
   void StartProxying(
       int render_process_id,
@@ -164,6 +170,7 @@ class WebRequestProxyingURLLoaderFactory
   void RemoveRequest(uint64_t request_id);
 
   void* const browser_context_;
+  content::ResourceContext* const resource_context_;
   int render_process_id_ = -1;
   int render_frame_id_ = -1;
   std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data_;

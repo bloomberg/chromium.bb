@@ -287,6 +287,7 @@ WebRequestInfo::WebRequestInfo(
     int render_frame_id,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
     int32_t routing_id,
+    content::ResourceContext* resource_context,
     const network::ResourceRequest& request)
     : id(request_id),
       url(request.url),
@@ -299,7 +300,8 @@ WebRequestInfo::WebRequestInfo(
       initiator(request.request_initiator),
       type(static_cast<content::ResourceType>(request.resource_type)),
       extra_request_headers(request.headers),
-      logger(std::make_unique<NetworkServiceLogger>()) {
+      logger(std::make_unique<NetworkServiceLogger>()),
+      resource_context(resource_context) {
   if (url.SchemeIsWSOrWSS())
     web_request_type = WebRequestResourceType::WEB_SOCKET;
   else

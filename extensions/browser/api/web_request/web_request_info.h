@@ -74,6 +74,7 @@ struct WebRequestInfo {
                  int render_frame_id,
                  std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
                  int32_t routing_id,
+                 content::ResourceContext* resource_context,
                  const network::ResourceRequest& request);
 
   ~WebRequestInfo();
