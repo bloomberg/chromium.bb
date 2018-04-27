@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/views/subtle_notification_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/notification_service.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -234,6 +235,8 @@ void ExclusiveAccessBubbleViews::AnimationProgressed(
 
 void ExclusiveAccessBubbleViews::AnimationEnded(
     const gfx::Animation* animation) {
+  if (animation_->IsShowing())
+    GetView()->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
   AnimationProgressed(animation);
 }
 
@@ -288,6 +291,8 @@ void ExclusiveAccessBubbleViews::Hide() {
 }
 
 void ExclusiveAccessBubbleViews::Show() {
+  if (animation_->IsShowing())
+    return;
   animation_->SetSlideDuration(kSlideInDurationMs);
   animation_->Show();
 }

@@ -36,6 +36,8 @@ class SubtleNotificationView : public views::View {
   static views::Widget* CreatePopupWidget(gfx::NativeView parent_view,
                                           SubtleNotificationView* view,
                                           bool accept_events);
+  // views::View
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  private:
   class InstructionView;
