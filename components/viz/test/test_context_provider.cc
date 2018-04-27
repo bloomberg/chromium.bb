@@ -158,6 +158,17 @@ scoped_refptr<TestContextProvider> TestContextProvider::Create(
 }
 
 // static
+scoped_refptr<TestContextProvider> TestContextProvider::Create(
+    std::unique_ptr<TestContextSupport> support) {
+  DCHECK(support);
+  constexpr bool support_locking = false;
+  return new TestContextProvider(
+      std::move(support),
+      std::make_unique<TestGLES2InterfaceForContextProvider>(),
+      TestWebGraphicsContext3D::Create(), support_locking);
+}
+
+// static
 scoped_refptr<TestContextProvider> TestContextProvider::CreateWorker(
     std::unique_ptr<TestWebGraphicsContext3D> context,
     std::unique_ptr<TestContextSupport> support) {

@@ -770,24 +770,26 @@ TEST_F(GLRendererTest, InitializationDoesNotMakeSynchronousCalls) {
                           resource_provider.get());
 }
 
-class LoseContextOnFirstGetContext : public TestWebGraphicsContext3D {
+class LoseContextOnFirstGetGLES2Interface : public TestGLES2Interface {
  public:
-  LoseContextOnFirstGetContext() {}
+  LoseContextOnFirstGetGLES2Interface() {}
 
-  void getProgramiv(GLuint program, GLenum pname, GLint* value) override {
-    context_lost_ = true;
+  void GetProgramiv(GLuint program, GLenum pname, GLint* value) override {
+    LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                        GL_INNOCENT_CONTEXT_RESET_ARB);
     *value = 0;
   }
 
-  void getShaderiv(GLuint shader, GLenum pname, GLint* value) override {
-    context_lost_ = true;
+  void GetShaderiv(GLuint shader, GLenum pname, GLint* value) override {
+    LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                        GL_INNOCENT_CONTEXT_RESET_ARB);
     *value = 0;
   }
 };
 
 TEST_F(GLRendererTest, InitializationWithQuicklyLostContextDoesNotAssert) {
-  auto context = std::make_unique<LoseContextOnFirstGetContext>();
-  auto provider = TestContextProvider::Create(std::move(context));
+  auto gl_owned = std::make_unique<LoseContextOnFirstGetGLES2Interface>();
+  auto provider = TestContextProvider::Create(std::move(gl_owned));
   provider->BindToCurrentThread();
 
   cc::FakeOutputSurfaceClient output_surface_client;
@@ -2741,8 +2743,8 @@ class GLRendererWithMockContextTest : public ::testing::Test {
   void SetUp() override {
     auto context_support = std::make_unique<MockContextSupport>();
     context_support_ptr_ = context_support.get();
-    auto context_provider = TestContextProvider::Create(
-        TestWebGraphicsContext3D::Create(), std::move(context_support));
+    auto context_provider =
+        TestContextProvider::Create(std::move(context_support));
     ASSERT_EQ(context_provider->BindToCurrentThread(),
               gpu::ContextResult::kSuccess);
     output_surface_ = FakeOutputSurface::Create3d(std::move(context_provider));
