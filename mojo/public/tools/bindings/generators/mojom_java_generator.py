@@ -93,6 +93,11 @@ _java_primitive_to_boxed_type = {
   'short':   'Short',
 }
 
+_java_reserved_types = [
+  # These two may clash with commonly used classes on Android.
+  'Manifest',
+  'R'
+]
 
 def NameToComponent(name):
   """ Returns a list of lowercase words corresponding to a given name. """
@@ -125,7 +130,10 @@ def ConstantStyle(name):
 def GetNameForElement(element):
   if (mojom.IsEnumKind(element) or mojom.IsInterfaceKind(element) or
       mojom.IsStructKind(element) or mojom.IsUnionKind(element)):
-    return UpperCamelCase(element.name)
+    name = UpperCamelCase(element.name)
+    if name in _java_reserved_types:
+      return name + '_'
+    return name
   if mojom.IsInterfaceRequestKind(element) or mojom.IsAssociatedKind(element):
     return GetNameForElement(element.kind)
   if isinstance(element, (mojom.Method,
