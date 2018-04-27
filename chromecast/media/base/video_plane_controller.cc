@@ -181,13 +181,15 @@ VideoPlaneController::~VideoPlaneController() {}
 
 void VideoPlaneController::SetGeometryGfx(const gfx::RectF& display_rect,
                                           gfx::OverlayTransform transform) {
-  chromecast::RectF rect(display_rect.x(), display_rect.y(),
-                         display_rect.width(), display_rect.height());
-  SetGeometry(rect, ConvertTransform(transform));
+  SetGeometry(display_rect, transform);
 }
 
-void VideoPlaneController::SetGeometry(const RectF& display_rect,
-                                       VideoPlane::Transform transform) {
+void VideoPlaneController::SetGeometry(const gfx::RectF& gfx_display_rect,
+                                       gfx::OverlayTransform gfx_transform) {
+  const RectF display_rect(gfx_display_rect.x(), gfx_display_rect.y(),
+                           gfx_display_rect.width(), gfx_display_rect.height());
+  VideoPlane::Transform transform = ConvertTransform(gfx_transform);
+
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(DisplayRectFValid(display_rect));
   if (have_video_plane_geometry_ &&

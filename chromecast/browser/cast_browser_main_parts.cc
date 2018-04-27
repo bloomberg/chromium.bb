@@ -520,7 +520,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   video_plane_controller_.reset(new media::VideoPlaneController(
       Size(display_size.width(), display_size.height()), GetMediaTaskRunner()));
   viz::OverlayStrategyUnderlayCast::SetOverlayCompositedCallback(
-      base::BindRepeating(&media::VideoPlaneController::SetGeometryGfx,
+      base::BindRepeating(&media::VideoPlaneController::SetGeometry,
                           base::Unretained(video_plane_controller_.get())));
 #endif
 
