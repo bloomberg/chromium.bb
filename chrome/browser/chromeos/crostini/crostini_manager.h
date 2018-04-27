@@ -48,34 +48,35 @@ struct Icon {
 // Concierge service and should remain as thin as possible.
 class CrostiniManager : public chromeos::ConciergeClient::Observer {
  public:
+  using ConciergeClientCallback =
+      base::OnceCallback<void(ConciergeClientResult result)>;
+
   // The type of the callback for CrostiniManager::StartVmConcierge.
   using StartVmConciergeCallback =
       base::OnceCallback<void(bool is_service_available)>;
+  // The type of the callback for CrostiniManager::StopVmConcierge.
+  using StopVmConciergeCallback = StartVmConciergeCallback;
+
   // The type of the callback for CrostiniManager::StartTerminaVm.
-  using StartTerminaVmCallback =
-      base::OnceCallback<void(ConciergeClientResult result)>;
+  using StartTerminaVmCallback = ConciergeClientCallback;
   // The type of the callback for CrostiniManager::CreateDiskImage.
   using CreateDiskImageCallback =
       base::OnceCallback<void(ConciergeClientResult result,
                               const base::FilePath& disk_path)>;
   // The type of the callback for CrostiniManager::DestroyDiskImage.
-  using DestroyDiskImageCallback =
-      base::OnceCallback<void(ConciergeClientResult result)>;
+  using DestroyDiskImageCallback = ConciergeClientCallback;
   // The type of the callback for CrostiniManager::StopVm.
-  using StopVmCallback = base::OnceCallback<void(ConciergeClientResult result)>;
+  using StopVmCallback = ConciergeClientCallback;
   // The type of the callback for CrostiniManager::StartContainer.
-  using StartContainerCallback =
-      base::OnceCallback<void(ConciergeClientResult result)>;
+  using StartContainerCallback = ConciergeClientCallback;
   // The type of the callback for CrostiniManager::LaunchContainerApplication.
-  using LaunchContainerApplicationCallback =
-      base::OnceCallback<void(ConciergeClientResult result)>;
+  using LaunchContainerApplicationCallback = ConciergeClientCallback;
   // The type of the callback for CrostiniManager::GetContainerAppIcons.
   using GetContainerAppIconsCallback =
       base::OnceCallback<void(ConciergeClientResult result,
                               std::vector<Icon>& icons)>;
   // The type of the callback for CrostiniManager::RestartCrostini.
-  using RestartCrostiniCallback =
-      base::OnceCallback<void(ConciergeClientResult result)>;
+  using RestartCrostiniCallback = ConciergeClientCallback;
 
   // Observer class for the Crostini restart flow.
   class RestartObserver {
@@ -93,6 +94,10 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   // Starts the Concierge service. |callback| is called after the method call
   // finishes.
   void StartVmConcierge(StartVmConciergeCallback callback);
+
+  // Stops the Concierge service. |callback| is called after the method call
+  // finishes.
+  void StopVmConcierge(StopVmConciergeCallback callback);
 
   // Checks the arguments for creating a new Termina VM disk image. Creates a
   // disk image for a Termina VM via ConciergeClient::CreateDiskImage.
@@ -226,6 +231,10 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   // Callback for CrostiniClient::StartVmConcierge. Called after the
   // DebugDaemon service method finishes.
   void OnStartVmConcierge(StartVmConciergeCallback callback, bool success);
+
+  // Callback for CrostiniClient::StopVmConcierge. Called after the
+  // DebugDaemon service method finishes.
+  void OnStopVmConcierge(StopVmConciergeCallback callback, bool success);
 
   // Callback for CrostiniManager::StartContainer. Called after the Concierge
   // service finishes.

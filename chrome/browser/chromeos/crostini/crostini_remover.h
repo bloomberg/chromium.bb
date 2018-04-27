@@ -30,6 +30,7 @@ class CrostiniRemover : public crostini::CrostiniManager::RestartObserver,
   void OnRestartCrostini(crostini::ConciergeClientResult result);
   void StopVmFinished(crostini::ConciergeClientResult result);
   void DestroyDiskImageFinished(crostini::ConciergeClientResult result);
+  void StopConciergeFinished(bool success);
 
   crostini::CrostiniManager::RestartId restart_id_ =
       crostini::CrostiniManager::kUninitializedRestartId;
