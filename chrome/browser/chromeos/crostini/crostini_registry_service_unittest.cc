@@ -49,12 +49,13 @@ class CrostiniRegistryServiceTest : public testing::Test {
         "crostini:" + vm_name + "/" + container_name + "/" + desktop_file_id);
   }
 
-  App BasicApp(const std::string& desktop_file_id) {
+  App BasicApp(const std::string& desktop_file_id,
+               const std::string& name = "") {
     App app;
     app.set_desktop_file_id(desktop_file_id);
     App::LocaleString::Entry* entry = app.mutable_name()->add_values();
     entry->set_locale(std::string());
-    entry->set_value(desktop_file_id);
+    entry->set_value(name.empty() ? desktop_file_id : name);
     return app;
   }
 
@@ -304,6 +305,16 @@ TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdStartupNotify) {
   startup_id = "app2";
   EXPECT_EQ(service()->GetCrostiniShelfAppId("whatever", &startup_id),
             "crostini:whatever");
+}
+
+TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdName) {
+  ApplicationList app_list = BasicAppList("app", "vm", "container");
+  *app_list.add_apps() = BasicApp("app2", "name2");
+  service()->UpdateApplicationList(app_list);
+
+  EXPECT_EQ(
+      service()->GetCrostiniShelfAppId(WindowIdForWMClass("name2"), nullptr),
+      GenerateAppId("app2", "vm", "container"));
 }
 
 }  // namespace crostini
