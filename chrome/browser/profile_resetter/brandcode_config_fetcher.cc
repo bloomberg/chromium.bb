@@ -16,8 +16,9 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace {
 
@@ -139,9 +140,11 @@ bool XmlConfigParser::IsParsingData() const {
 
 }  // namespace
 
-BrandcodeConfigFetcher::BrandcodeConfigFetcher(const FetchCallback& callback,
-                                               const GURL& url,
-                                               const std::string& brandcode)
+BrandcodeConfigFetcher::BrandcodeConfigFetcher(
+    network::mojom::URLLoaderFactory* url_loader_factory,
+    const FetchCallback& callback,
+    const GURL& url,
+    const std::string& brandcode)
     : fetch_callback_(callback) {
   DCHECK(!brandcode.empty());
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -166,17 +169,21 @@ BrandcodeConfigFetcher::BrandcodeConfigFetcher(const FetchCallback& callback,
             "Not implemented, considered not useful as enterprises don't need "
             "to install Chrome in a non-organic fashion."
         })");
-  config_fetcher_ =
-      net::URLFetcher::Create(0 /* ID used for testing */, url,
-                              net::URLFetcher::POST, this, traffic_annotation);
-  config_fetcher_->SetRequestContext(
-      g_browser_process->system_request_context());
-  config_fetcher_->SetUploadData("text/xml", GetUploadData(brandcode));
-  config_fetcher_->AddExtraRequestHeader("Accept: text/xml");
-  config_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                                net::LOAD_DO_NOT_SAVE_COOKIES |
-                                net::LOAD_DISABLE_CACHE);
-  config_fetcher_->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url;
+  resource_request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
+                                 net::LOAD_DO_NOT_SAVE_COOKIES |
+                                 net::LOAD_DISABLE_CACHE;
+  resource_request->method = "POST";
+  resource_request->headers.SetHeader("Accept", "text/xml");
+  simple_url_loader_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
+  simple_url_loader_->AttachStringForUpload(GetUploadData(brandcode),
+                                            "text/xml");
+  simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory,
+      base::BindOnce(&BrandcodeConfigFetcher::OnSimpleLoaderComplete,
+                     base::Unretained(this)));
   // Abort the download attempt if it takes too long.
   download_timer_.Start(FROM_HERE,
                         base::TimeDelta::FromSeconds(kDownloadTimeoutSec),
@@ -190,31 +197,22 @@ void BrandcodeConfigFetcher::SetCallback(const FetchCallback& callback) {
   fetch_callback_ = callback;
 }
 
-void BrandcodeConfigFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
-  if (source != config_fetcher_.get()) {
-    NOTREACHED() << "Callback from foreign URL fetcher";
-    return;
-  }
-  std::string response_string;
-  std::string mime_type;
-  if (config_fetcher_ &&
-      config_fetcher_->GetStatus().is_success() &&
-      config_fetcher_->GetResponseCode() == 200 &&
-      config_fetcher_->GetResponseHeaders()->GetMimeType(&mime_type) &&
-      mime_type == "text/xml" &&
-      config_fetcher_->GetResponseAsString(&response_string)) {
+void BrandcodeConfigFetcher::OnSimpleLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
+  if (response_body && simple_url_loader_->ResponseInfo() &&
+      simple_url_loader_->ResponseInfo()->mime_type == "text/xml") {
     std::string master_prefs;
-    XmlConfigParser::Parse(response_string, &master_prefs);
+    XmlConfigParser::Parse(*response_body, &master_prefs);
     default_settings_.reset(new BrandcodedDefaultSettings(master_prefs));
   }
-  config_fetcher_.reset();
+  simple_url_loader_.reset();
   download_timer_.Stop();
   base::ResetAndReturn(&fetch_callback_).Run();
 }
 
 void BrandcodeConfigFetcher::OnDownloadTimeout() {
-  if (config_fetcher_) {
-    config_fetcher_.reset();
+  if (simple_url_loader_) {
+    simple_url_loader_.reset();
     base::ResetAndReturn(&fetch_callback_).Run();
   }
 }
