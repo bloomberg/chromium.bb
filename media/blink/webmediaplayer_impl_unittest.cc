@@ -632,6 +632,22 @@ class WebMediaPlayerImplTest : public testing::Test {
     EXPECT_FALSE(wmpi_->seeking_);
   }
 
+  void CycleThreads() {
+    // Ensure any tasks waiting to be posted to the media thread are posted.
+    base::RunLoop().RunUntilIdle();
+
+    // Cycle media thread.
+    {
+      base::RunLoop loop;
+      media_thread_.task_runner()->PostTaskAndReply(
+          FROM_HERE, base::DoNothing(), loop.QuitClosure());
+      loop.Run();
+    }
+
+    // Cycle anything that was posted back from the media thread.
+    base::RunLoop().RunUntilIdle();
+  }
+
   // "Media" thread. This is necessary because WMPI destruction waits on a
   // WaitableEvent.
   base::Thread media_thread_;
@@ -700,7 +716,7 @@ TEST_F(WebMediaPlayerImplTest, LoadAndDestroy) {
   EXPECT_FALSE(IsSuspended());
   LoadAndWaitForMetadata(kAudioOnlyTestFile);
   EXPECT_FALSE(IsSuspended());
-  base::RunLoop().RunUntilIdle();
+  CycleThreads();
 
   // The data source contains the entire file, so subtract it from the memory
   // usage to ensure we're getting audio buffer and demuxer usage too.
@@ -719,7 +735,7 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspend) {
   LoadAndWaitForMetadata(kAudioOnlyTestFile);
   testing::Mock::VerifyAndClearExpectations(&client_);
   EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
-  base::RunLoop().RunUntilIdle();
+  CycleThreads();
   EXPECT_TRUE(IsSuspended());
 
   // The data source contains the entire file, so subtract it from the memory
@@ -740,7 +756,7 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoVideoMemoryUsage) {
   LoadAndWaitForMetadata("bear-320x240-video-only.webm");
   testing::Mock::VerifyAndClearExpectations(&client_);
   EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
-  base::RunLoop().RunUntilIdle();
+  CycleThreads();
   EXPECT_TRUE(IsSuspended());
 
   // The data source contains the entire file, so subtract it from the memory
