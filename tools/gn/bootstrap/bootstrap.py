@@ -525,8 +525,11 @@ def write_gn_ninja(path, root_gen_dir, options, windows_x64_toolchain):
       'base/location.cc',
       'base/logging.cc',
       'base/md5.cc',
+      'base/memory/platform_shared_memory_region.cc',
+      'base/memory/read_only_shared_memory_region.cc',
       'base/memory/ref_counted.cc',
       'base/memory/ref_counted_memory.cc',
+      'base/memory/shared_memory_mapping.cc',
       'base/memory/shared_memory_handle.cc',
       'base/memory/shared_memory_tracker.cc',
       'base/memory/weak_ptr.cc',
@@ -662,6 +665,19 @@ def write_gn_ninja(path, root_gen_dir, options, windows_x64_toolchain):
       'base/values.cc',
       'base/vlog.cc',
   ])
+
+  if is_win:
+    static_libraries['base']['sources'].extend([
+        'base/memory/platform_shared_memory_region_win.cc'
+    ])
+  elif is_mac:
+    static_libraries['base']['sources'].extend([
+        'base/memory/platform_shared_memory_region_mac.cc'
+    ])
+  elif is_posix:
+    static_libraries['base']['sources'].extend([
+        'base/memory/platform_shared_memory_region_posix.cc'
+    ])
 
   if is_posix:
     static_libraries['base']['sources'].extend([
