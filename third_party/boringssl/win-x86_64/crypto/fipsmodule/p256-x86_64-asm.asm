@@ -21,6 +21,12 @@ $L$ONE_mont:
 	DQ	0x0000000000000001,0xffffffff00000000,0xffffffffffffffff,0x00000000fffffffe
 
 
+$L$ord:
+	DQ	0xf3b9cac2fc632551,0xbce6faada7179e84,0xffffffffffffffff,0xffffffff00000000
+$L$ordK:
+	DQ	0xccd1c8aaee00bc4f
+
+
 
 global	ecp_nistz256_neg
 
@@ -85,6 +91,641 @@ $L$neg_epilogue:
 	DB	0F3h,0C3h		;repret
 
 $L$SEH_end_ecp_nistz256_neg:
+
+
+
+
+
+
+global	ecp_nistz256_ord_mul_mont
+
+ALIGN	32
+ecp_nistz256_ord_mul_mont:
+	mov	QWORD[8+rsp],rdi	;WIN64 prologue
+	mov	QWORD[16+rsp],rsi
+	mov	rax,rsp
+$L$SEH_begin_ecp_nistz256_ord_mul_mont:
+	mov	rdi,rcx
+	mov	rsi,rdx
+	mov	rdx,r8
+
+
+
+	push	rbp
+
+	push	rbx
+
+	push	r12
+
+	push	r13
+
+	push	r14
+
+	push	r15
+
+$L$ord_mul_body:
+
+	mov	rax,QWORD[rdx]
+	mov	rbx,rdx
+	lea	r14,[$L$ord]
+	mov	r15,QWORD[$L$ordK]
+
+
+	mov	rcx,rax
+	mul	QWORD[rsi]
+	mov	r8,rax
+	mov	rax,rcx
+	mov	r9,rdx
+
+	mul	QWORD[8+rsi]
+	add	r9,rax
+	mov	rax,rcx
+	adc	rdx,0
+	mov	r10,rdx
+
+	mul	QWORD[16+rsi]
+	add	r10,rax
+	mov	rax,rcx
+	adc	rdx,0
+
+	mov	r13,r8
+	imul	r8,r15
+
+	mov	r11,rdx
+	mul	QWORD[24+rsi]
+	add	r11,rax
+	mov	rax,r8
+	adc	rdx,0
+	mov	r12,rdx
+
+
+	mul	QWORD[r14]
+	mov	rbp,r8
+	add	r13,rax
+	mov	rax,r8
+	adc	rdx,0
+	mov	rcx,rdx
+
+	sub	r10,r8
+	sbb	r8,0
+
+	mul	QWORD[8+r14]
+	add	r9,rcx
+	adc	rdx,0
+	add	r9,rax
+	mov	rax,rbp
+	adc	r10,rdx
+	mov	rdx,rbp
+	adc	r8,0
+
+	shl	rax,32
+	shr	rdx,32
+	sub	r11,rax
+	mov	rax,QWORD[8+rbx]
+	sbb	rbp,rdx
+
+	add	r11,r8
+	adc	r12,rbp
+	adc	r13,0
+
+
+	mov	rcx,rax
+	mul	QWORD[rsi]
+	add	r9,rax
+	mov	rax,rcx
+	adc	rdx,0
+	mov	rbp,rdx
+
+	mul	QWORD[8+rsi]
+	add	r10,rbp
+	adc	rdx,0
+	add	r10,rax
+	mov	rax,rcx
+	adc	rdx,0
+	mov	rbp,rdx
+
+	mul	QWORD[16+rsi]
+	add	r11,rbp
+	adc	rdx,0
+	add	r11,rax
+	mov	rax,rcx
+	adc	rdx,0
+
+	mov	rcx,r9
+	imul	r9,r15
+
+	mov	rbp,rdx
+	mul	QWORD[24+rsi]
+	add	r12,rbp
+	adc	rdx,0
+	xor	r8,r8
+	add	r12,rax
+	mov	rax,r9
+	adc	r13,rdx
+	adc	r8,0
+
+
+	mul	QWORD[r14]
+	mov	rbp,r9
+	add	rcx,rax
+	mov	rax,r9
+	adc	rcx,rdx
+
+	sub	r11,r9
+	sbb	r9,0
+
+	mul	QWORD[8+r14]
+	add	r10,rcx
+	adc	rdx,0
+	add	r10,rax
+	mov	rax,rbp
+	adc	r11,rdx
+	mov	rdx,rbp
+	adc	r9,0
+
+	shl	rax,32
+	shr	rdx,32
+	sub	r12,rax
+	mov	rax,QWORD[16+rbx]
+	sbb	rbp,rdx
+
+	add	r12,r9
+	adc	r13,rbp
+	adc	r8,0
+
+
+	mov	rcx,rax
+	mul	QWORD[rsi]
+	add	r10,rax
+	mov	rax,rcx
+	adc	rdx,0
+	mov	rbp,rdx
+
+	mul	QWORD[8+rsi]
+	add	r11,rbp
+	adc	rdx,0
+	add	r11,rax
+	mov	rax,rcx
+	adc	rdx,0
+	mov	rbp,rdx
+
+	mul	QWORD[16+rsi]
+	add	r12,rbp
+	adc	rdx,0
+	add	r12,rax
+	mov	rax,rcx
+	adc	rdx,0
+
+	mov	rcx,r10
+	imul	r10,r15
+
+	mov	rbp,rdx
+	mul	QWORD[24+rsi]
+	add	r13,rbp
+	adc	rdx,0
+	xor	r9,r9
+	add	r13,rax
+	mov	rax,r10
+	adc	r8,rdx
+	adc	r9,0
+
+
+	mul	QWORD[r14]
+	mov	rbp,r10
+	add	rcx,rax
+	mov	rax,r10
+	adc	rcx,rdx
+
+	sub	r12,r10
+	sbb	r10,0
+
+	mul	QWORD[8+r14]
+	add	r11,rcx
+	adc	rdx,0
+	add	r11,rax
+	mov	rax,rbp
+	adc	r12,rdx
+	mov	rdx,rbp
+	adc	r10,0
+
+	shl	rax,32
+	shr	rdx,32
+	sub	r13,rax
+	mov	rax,QWORD[24+rbx]
+	sbb	rbp,rdx
+
+	add	r13,r10
+	adc	r8,rbp
+	adc	r9,0
+
+
+	mov	rcx,rax
+	mul	QWORD[rsi]
+	add	r11,rax
+	mov	rax,rcx
+	adc	rdx,0
+	mov	rbp,rdx
+
+	mul	QWORD[8+rsi]
+	add	r12,rbp
+	adc	rdx,0
+	add	r12,rax
+	mov	rax,rcx
+	adc	rdx,0
+	mov	rbp,rdx
+
+	mul	QWORD[16+rsi]
+	add	r13,rbp
+	adc	rdx,0
+	add	r13,rax
+	mov	rax,rcx
+	adc	rdx,0
+
+	mov	rcx,r11
+	imul	r11,r15
+
+	mov	rbp,rdx
+	mul	QWORD[24+rsi]
+	add	r8,rbp
+	adc	rdx,0
+	xor	r10,r10
+	add	r8,rax
+	mov	rax,r11
+	adc	r9,rdx
+	adc	r10,0
+
+
+	mul	QWORD[r14]
+	mov	rbp,r11
+	add	rcx,rax
+	mov	rax,r11
+	adc	rcx,rdx
+
+	sub	r13,r11
+	sbb	r11,0
+
+	mul	QWORD[8+r14]
+	add	r12,rcx
+	adc	rdx,0
+	add	r12,rax
+	mov	rax,rbp
+	adc	r13,rdx
+	mov	rdx,rbp
+	adc	r11,0
+
+	shl	rax,32
+	shr	rdx,32
+	sub	r8,rax
+	sbb	rbp,rdx
+
+	add	r8,r11
+	adc	r9,rbp
+	adc	r10,0
+
+
+	mov	rsi,r12
+	sub	r12,QWORD[r14]
+	mov	r11,r13
+	sbb	r13,QWORD[8+r14]
+	mov	rcx,r8
+	sbb	r8,QWORD[16+r14]
+	mov	rbp,r9
+	sbb	r9,QWORD[24+r14]
+	sbb	r10,0
+
+	cmovc	r12,rsi
+	cmovc	r13,r11
+	cmovc	r8,rcx
+	cmovc	r9,rbp
+
+	mov	QWORD[rdi],r12
+	mov	QWORD[8+rdi],r13
+	mov	QWORD[16+rdi],r8
+	mov	QWORD[24+rdi],r9
+
+	mov	r15,QWORD[rsp]
+
+	mov	r14,QWORD[8+rsp]
+
+	mov	r13,QWORD[16+rsp]
+
+	mov	r12,QWORD[24+rsp]
+
+	mov	rbx,QWORD[32+rsp]
+
+	mov	rbp,QWORD[40+rsp]
+
+	lea	rsp,[48+rsp]
+
+$L$ord_mul_epilogue:
+	mov	rdi,QWORD[8+rsp]	;WIN64 epilogue
+	mov	rsi,QWORD[16+rsp]
+	DB	0F3h,0C3h		;repret
+
+$L$SEH_end_ecp_nistz256_ord_mul_mont:
+
+
+
+
+
+
+
+global	ecp_nistz256_ord_sqr_mont
+
+ALIGN	32
+ecp_nistz256_ord_sqr_mont:
+	mov	QWORD[8+rsp],rdi	;WIN64 prologue
+	mov	QWORD[16+rsp],rsi
+	mov	rax,rsp
+$L$SEH_begin_ecp_nistz256_ord_sqr_mont:
+	mov	rdi,rcx
+	mov	rsi,rdx
+	mov	rdx,r8
+
+
+
+	push	rbp
+
+	push	rbx
+
+	push	r12
+
+	push	r13
+
+	push	r14
+
+	push	r15
+
+$L$ord_sqr_body:
+
+	mov	r8,QWORD[rsi]
+	mov	rax,QWORD[8+rsi]
+	mov	r14,QWORD[16+rsi]
+	mov	r15,QWORD[24+rsi]
+	lea	rsi,[$L$ord]
+	mov	rbx,rdx
+	jmp	NEAR $L$oop_ord_sqr
+
+ALIGN	32
+$L$oop_ord_sqr:
+
+	mov	rbp,rax
+	mul	r8
+	mov	r9,rax
+DB	102,72,15,110,205
+	mov	rax,r14
+	mov	r10,rdx
+
+	mul	r8
+	add	r10,rax
+	mov	rax,r15
+DB	102,73,15,110,214
+	adc	rdx,0
+	mov	r11,rdx
+
+	mul	r8
+	add	r11,rax
+	mov	rax,r15
+DB	102,73,15,110,223
+	adc	rdx,0
+	mov	r12,rdx
+
+
+	mul	r14
+	mov	r13,rax
+	mov	rax,r14
+	mov	r14,rdx
+
+
+	mul	rbp
+	add	r11,rax
+	mov	rax,r15
+	adc	rdx,0
+	mov	r15,rdx
+
+	mul	rbp
+	add	r12,rax
+	adc	rdx,0
+
+	add	r12,r15
+	adc	r13,rdx
+	adc	r14,0
+
+
+	xor	r15,r15
+	mov	rax,r8
+	add	r9,r9
+	adc	r10,r10
+	adc	r11,r11
+	adc	r12,r12
+	adc	r13,r13
+	adc	r14,r14
+	adc	r15,0
+
+
+	mul	rax
+	mov	r8,rax
+DB	102,72,15,126,200
+	mov	rbp,rdx
+
+	mul	rax
+	add	r9,rbp
+	adc	r10,rax
+DB	102,72,15,126,208
+	adc	rdx,0
+	mov	rbp,rdx
+
+	mul	rax
+	add	r11,rbp
+	adc	r12,rax
+DB	102,72,15,126,216
+	adc	rdx,0
+	mov	rbp,rdx
+
+	mov	rcx,r8
+	imul	r8,QWORD[32+rsi]
+
+	mul	rax
+	add	r13,rbp
+	adc	r14,rax
+	mov	rax,QWORD[rsi]
+	adc	r15,rdx
+
+
+	mul	r8
+	mov	rbp,r8
+	add	rcx,rax
+	mov	rax,QWORD[8+rsi]
+	adc	rcx,rdx
+
+	sub	r10,r8
+	sbb	rbp,0
+
+	mul	r8
+	add	r9,rcx
+	adc	rdx,0
+	add	r9,rax
+	mov	rax,r8
+	adc	r10,rdx
+	mov	rdx,r8
+	adc	rbp,0
+
+	mov	rcx,r9
+	imul	r9,QWORD[32+rsi]
+
+	shl	rax,32
+	shr	rdx,32
+	sub	r11,rax
+	mov	rax,QWORD[rsi]
+	sbb	r8,rdx
+
+	add	r11,rbp
+	adc	r8,0
+
+
+	mul	r9
+	mov	rbp,r9
+	add	rcx,rax
+	mov	rax,QWORD[8+rsi]
+	adc	rcx,rdx
+
+	sub	r11,r9
+	sbb	rbp,0
+
+	mul	r9
+	add	r10,rcx
+	adc	rdx,0
+	add	r10,rax
+	mov	rax,r9
+	adc	r11,rdx
+	mov	rdx,r9
+	adc	rbp,0
+
+	mov	rcx,r10
+	imul	r10,QWORD[32+rsi]
+
+	shl	rax,32
+	shr	rdx,32
+	sub	r8,rax
+	mov	rax,QWORD[rsi]
+	sbb	r9,rdx
+
+	add	r8,rbp
+	adc	r9,0
+
+
+	mul	r10
+	mov	rbp,r10
+	add	rcx,rax
+	mov	rax,QWORD[8+rsi]
+	adc	rcx,rdx
+
+	sub	r8,r10
+	sbb	rbp,0
+
+	mul	r10
+	add	r11,rcx
+	adc	rdx,0
+	add	r11,rax
+	mov	rax,r10
+	adc	r8,rdx
+	mov	rdx,r10
+	adc	rbp,0
+
+	mov	rcx,r11
+	imul	r11,QWORD[32+rsi]
+
+	shl	rax,32
+	shr	rdx,32
+	sub	r9,rax
+	mov	rax,QWORD[rsi]
+	sbb	r10,rdx
+
+	add	r9,rbp
+	adc	r10,0
+
+
+	mul	r11
+	mov	rbp,r11
+	add	rcx,rax
+	mov	rax,QWORD[8+rsi]
+	adc	rcx,rdx
+
+	sub	r9,r11
+	sbb	rbp,0
+
+	mul	r11
+	add	r8,rcx
+	adc	rdx,0
+	add	r8,rax
+	mov	rax,r11
+	adc	r9,rdx
+	mov	rdx,r11
+	adc	rbp,0
+
+	shl	rax,32
+	shr	rdx,32
+	sub	r10,rax
+	sbb	r11,rdx
+
+	add	r10,rbp
+	adc	r11,0
+
+
+	xor	rdx,rdx
+	add	r8,r12
+	adc	r9,r13
+	mov	r12,r8
+	adc	r10,r14
+	adc	r11,r15
+	mov	rax,r9
+	adc	rdx,0
+
+
+	sub	r8,QWORD[rsi]
+	mov	r14,r10
+	sbb	r9,QWORD[8+rsi]
+	sbb	r10,QWORD[16+rsi]
+	mov	r15,r11
+	sbb	r11,QWORD[24+rsi]
+	sbb	rdx,0
+
+	cmovc	r8,r12
+	cmovnc	rax,r9
+	cmovnc	r14,r10
+	cmovnc	r15,r11
+
+	dec	rbx
+	jnz	NEAR $L$oop_ord_sqr
+
+	mov	QWORD[rdi],r8
+	mov	QWORD[8+rdi],rax
+	pxor	xmm1,xmm1
+	mov	QWORD[16+rdi],r14
+	pxor	xmm2,xmm2
+	mov	QWORD[24+rdi],r15
+	pxor	xmm3,xmm3
+
+	mov	r15,QWORD[rsp]
+
+	mov	r14,QWORD[8+rsp]
+
+	mov	r13,QWORD[16+rsp]
+
+	mov	r12,QWORD[24+rsp]
+
+	mov	rbx,QWORD[32+rsp]
+
+	mov	rbp,QWORD[40+rsp]
+
+	lea	rsp,[48+rsp]
+
+$L$ord_sqr_epilogue:
+	mov	rdi,QWORD[8+rsp]	;WIN64 epilogue
+	mov	rsi,QWORD[16+rsp]
+	DB	0F3h,0C3h		;repret
+
+$L$SEH_end_ecp_nistz256_ord_sqr_mont:
 
 
 
@@ -2191,6 +2832,13 @@ ALIGN	4
 	DD	$L$SEH_end_ecp_nistz256_neg wrt ..imagebase
 	DD	$L$SEH_info_ecp_nistz256_neg wrt ..imagebase
 
+	DD	$L$SEH_begin_ecp_nistz256_ord_mul_mont wrt ..imagebase
+	DD	$L$SEH_end_ecp_nistz256_ord_mul_mont wrt ..imagebase
+	DD	$L$SEH_info_ecp_nistz256_ord_mul_mont wrt ..imagebase
+
+	DD	$L$SEH_begin_ecp_nistz256_ord_sqr_mont wrt ..imagebase
+	DD	$L$SEH_end_ecp_nistz256_ord_sqr_mont wrt ..imagebase
+	DD	$L$SEH_info_ecp_nistz256_ord_sqr_mont wrt ..imagebase
 	DD	$L$SEH_begin_ecp_nistz256_mul_mont wrt ..imagebase
 	DD	$L$SEH_end_ecp_nistz256_mul_mont wrt ..imagebase
 	DD	$L$SEH_info_ecp_nistz256_mul_mont wrt ..imagebase
@@ -2231,6 +2879,16 @@ $L$SEH_info_ecp_nistz256_neg:
 DB	9,0,0,0
 	DD	short_handler wrt ..imagebase
 	DD	$L$neg_body wrt ..imagebase,$L$neg_epilogue wrt ..imagebase
+$L$SEH_info_ecp_nistz256_ord_mul_mont:
+DB	9,0,0,0
+	DD	full_handler wrt ..imagebase
+	DD	$L$ord_mul_body wrt ..imagebase,$L$ord_mul_epilogue wrt ..imagebase
+	DD	48,0
+$L$SEH_info_ecp_nistz256_ord_sqr_mont:
+DB	9,0,0,0
+	DD	full_handler wrt ..imagebase
+	DD	$L$ord_sqr_body wrt ..imagebase,$L$ord_sqr_epilogue wrt ..imagebase
+	DD	48,0
 $L$SEH_info_ecp_nistz256_mul_mont:
 DB	9,0,0,0
 	DD	full_handler wrt ..imagebase
