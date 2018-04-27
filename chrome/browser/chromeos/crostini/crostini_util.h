@@ -15,7 +15,7 @@ class Profile;
 bool IsCrostiniAllowed();
 
 // Returns true if crostini UI can be shown. Implies crostini is allowed to run.
-bool IsExperimentalCrostiniUIAvailable();
+bool IsCrostiniUIAllowedForProfile(Profile* profile);
 
 // |app_id| should be a valid Crostini app list id.
 void LaunchCrostiniApp(Profile* profile, const std::string& app_id);
