@@ -17,7 +17,7 @@
 {#--- Union definitions #}
 {%- from "union_definition.tmpl" import union_def %}
 {%- for union in unions %}
-{{union_def(union)|indent(2)}}
+{{union_def(union, generate_fuzzing)|indent(2)}}
 {%- endfor %}
 
 {#--- Interface definitions #}

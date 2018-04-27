@@ -226,6 +226,18 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
 {%- else %}
     validateResponse: null,
 {%- endif %}
+{%- if generate_fuzzing %}
+    mojomId: '{{module.path}}',
+    fuzzMethods: {
+      {%- for method in interface.methods %}
+      {%-   set interface_method_id =
+                interface.mojom_name ~ "_" ~ method.mojom_name %}
+      {{ method.name }}: {
+        params: {{interface_method_id}}_Params,
+      },
+      {%- endfor %}
+    },
+{%- endif %}
   };
 {#--- Interface Constants #}
 {%- for constant in interface.constants %}

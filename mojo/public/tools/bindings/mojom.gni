@@ -13,6 +13,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/nacl/config.gni")
 import("//components/nacl/features.gni")
 import("//third_party/jinja2/jinja2.gni")
+import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
 declare_args() {
   # Indicates whether typemapping should be supported in this build
@@ -1128,7 +1129,7 @@ template("mojom") {
     }
   }
 
-  if (!defined(invoker.cpp_only) || !invoker.cpp_only) {
+  if (enable_ipc_fuzzer || !defined(invoker.cpp_only) || !invoker.cpp_only) {
     if (defined(invoker.sources)) {
       generator_js_target_name = "${target_name}_js__generator"
       generator_js_outputs = [
@@ -1169,6 +1170,10 @@ template("mojom") {
             invoker.scramble_message_ids) {
           inputs += message_scrambling_inputs
           args += message_scrambling_args
+        }
+
+        if (enable_ipc_fuzzer) {
+          args += [ "--generate_fuzzing" ]
         }
       }
     }

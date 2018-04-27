@@ -1,4 +1,4 @@
-{%- macro union_def(union) %}
+{%- macro union_def(union, generate_fuzzing=false) %}
 function {{union.name}}(value) {
   this.initDefault_();
   this.initValue_(value);
@@ -38,6 +38,71 @@ function {{union.name}}(value) {
 
   this[keys[0]] = value[keys[0]];
 }
+
+{%    if generate_fuzzing %}
+{{union.name}}.generate = function(generator_) {
+  var generated = new {{union.name}};
+  var generators = [
+{%-     for field in union.fields %}
+    {
+      field: "{{field.name}}",
+
+{%-       if not field.kind|is_any_handle_or_interface_kind %}
+{%- from "fuzzing.tmpl" import generate_or_mutate %}
+      generator: function() { return {{generate_or_mutate('generator_', 'generate', field.kind)|indent(6)}}; },
+{%-       endif %}
+    },
+{%-     endfor %}
+  ];
+
+  var result = generator_.generateUnionField(generators);
+  generated[result.field] = result.value;
+  return generated;
+}
+
+{{union.name}}.prototype.mutate = function(mutator_) {
+  var mutators = [
+{%-     for field in union.fields %}
+    {
+      field: "{{field.name}}",
+
+{%-       if not field.kind|is_any_handle_or_interface_kind %}
+{%- from "fuzzing.tmpl" import generate_or_mutate %}
+      mutator: function() { return {{generate_or_mutate('mutator_', 'mutate', field.kind, 'this.' ~ field.name)|indent(6)}}; },
+{%-       endif %}
+    },
+{%-     endfor %}
+  ];
+
+  var result = mutator_.mutateUnionField(this, mutators);
+  generated[result.field] = result.value;
+  return this;
+}
+
+{{union.name}}.prototype.getHandleDeps = function() {
+{%-    for field in union.fields %}
+{%-     if field.kind|contains_handles_or_interfaces %}
+  if (this.$tag == {{union.name}}.Tags.{{field.name}}) {
+{%- from "fuzzing.tmpl" import get_handle_deps %}
+    return {{get_handle_deps(field.kind, 'this.' ~ field.name)}};
+  }
+{%-      endif %}
+{%-    endfor %}
+  return [];
+}
+
+{{union.name}}.prototype.setHandles = function() {
+{%-    for field in union.fields %}
+{%-      if field.kind|contains_handles_or_interfaces %}
+  if (this.$tag == {{union.name}}.Tags.{{field.name}}) {
+{%- from "fuzzing.tmpl" import set_handles %}
+    return {{set_handles(field.kind, 'this.' ~ field.name)}};
+  }
+{%-      endif %}
+{%-    endfor %}
+  return [];
+}
+{%-   endif %}
 
 {%-   for field in union.fields %}
 Object.defineProperty({{union.name}}.prototype, "{{field.name}}", {

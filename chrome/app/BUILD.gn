@@ -11,6 +11,7 @@ import("//printing/buildflags/buildflags.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//tools/grit/grit_rule.gni")
+import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
 # This target is for dependency tracking for the command ID header.
 source_set("command_ids") {
@@ -495,7 +496,7 @@ group("chrome_content_manifest_overlays") {
   ]
 }
 
-if (use_aura) {
+if (use_aura || enable_ipc_fuzzer) {
   # NOTE: These rules generate compiled versions of the content service
   # manifests with Chrome's overlays applied. These are only used at run-time,
   # and only when running Chrome inside the Mash environment. In production

@@ -214,7 +214,8 @@ class MojomProcessor(object):
             support_lazy_serialization=args.support_lazy_serialization,
             disallow_native_types=args.disallow_native_types,
             disallow_interfaces=args.disallow_interfaces,
-            generate_message_ids=args.generate_message_ids)
+            generate_message_ids=args.generate_message_ids,
+            generate_fuzzing=args.generate_fuzzing)
         filtered_args = []
         if hasattr(generator_module, 'GENERATOR_PREFIX'):
           prefix = '--' + generator_module.GENERATOR_PREFIX + '_'
@@ -466,6 +467,10 @@ def main():
       help="Generates only the message IDs header for C++ bindings. Note that "
       "this flag only matters if --generate_non_variant_code is also "
       "specified.", action="store_true")
+  generate_parser.add_argument(
+      "--generate_fuzzing",
+      action="store_true",
+      help="Generates additional bindings for fuzzing in JS.")
   generate_parser.set_defaults(func=_Generate)
 
   precompile_parser = subparsers.add_parser("precompile",
