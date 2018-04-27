@@ -18,6 +18,7 @@ namespace chromecast {
 namespace media {
 
 namespace {
+const int64_t kInvalidTimestamp = std::numeric_limits<int64_t>::min();
 
 // Threshold where the audio and video pts are far enough apart such that we
 // want to do a small correction.
@@ -103,7 +104,19 @@ void AvSyncVideo::UpkeepAvSync() {
   // Consider either going back to a NotifyAudioBufferPushed approach that
   // works, or improving GetCurrentPts such as it returns the timestamp this
   // was last updated at.
-  audio_pts_->AddSample(now, backend_->audio_decoder()->GetCurrentPts(), 1.0);
+  // TODO(almasrymina): b/78592779. AudioDecoderForMixer::GetCurrentPts seems
+  // to return invalid values which are not kInvalidTimestamp, for unknown
+  // reasons. As a workaround until that issue is root caused, ignore
+  // GetCurrentPts values that are way off.
+  int64_t audio_pts = backend_->audio_decoder()->GetCurrentPts();
+  if (abs(audio_pts - new_current_vpts) >
+          (1ll * 60ll * 60ll * 1000000ll) /* 1hr in us */
+      || audio_pts == kInvalidTimestamp) {
+    LOG(WARNING) << "Audio decoder returned invalid pts=" << audio_pts
+                 << " new_current_vpts=" << new_current_vpts;
+  } else {
+    audio_pts_->AddSample(now, backend_->audio_decoder()->GetCurrentPts(), 1.0);
+  }
 
   if (video_pts_->num_samples() < 10 || audio_pts_->num_samples() < 20) {
     VLOG(4) << "Linear regression samples too little."
@@ -164,7 +177,7 @@ void AvSyncVideo::SoftCorrection(int64_t now) {
   error_->EstimateY(now, &difference, &error);
 
   if (audio_pts_->num_samples() < 50) {
-    VLOG(4) << "Not enough vpts samples=" << video_pts_->num_samples();
+    VLOG(4) << "Not enough apts samples=" << video_pts_->num_samples();
     return;
   }
 
