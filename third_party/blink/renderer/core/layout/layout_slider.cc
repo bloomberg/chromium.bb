@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/core/html/forms/slider_thumb_element.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
-#include "third_party/blink/renderer/core/layout/layout_slider_thumb.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
