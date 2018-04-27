@@ -907,8 +907,7 @@ bool LayerTreeHostImpl::HasDamage() const {
   // If we have a new LocalSurfaceId, we must always submit a CompositorFrame
   // because the parent is blocking on us.
   bool local_surface_id_changed =
-      settings_.enable_surface_synchronization &&
-      (last_draw_local_surface_id_ != active_tree->local_surface_id());
+      last_draw_local_surface_id_ != active_tree->local_surface_id();
 
   return root_surface_has_visible_damage ||
          active_tree_->property_trees()->effect_tree.HasCopyRequests() ||
@@ -2003,8 +2002,8 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
           active_tree()->local_surface_id().is_valid());
     layer_tree_frame_sink_->SetLocalSurfaceId(
         active_tree()->local_surface_id());
-    last_draw_local_surface_id_ = active_tree()->local_surface_id();
   }
+  last_draw_local_surface_id_ = active_tree()->local_surface_id();
   if (const char* client_name = GetClientNameForMetrics()) {
     size_t total_quad_count = 0;
     for (const auto& pass : compositor_frame.render_pass_list)
