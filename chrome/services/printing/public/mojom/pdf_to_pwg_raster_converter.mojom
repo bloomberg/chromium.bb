@@ -5,6 +5,7 @@
 module printing.mojom;
 
 import "chrome/services/printing/public/mojom/pdf_render_settings.mojom";
+import "mojo/public/mojom/base/shared_memory.mojom";
 
 struct PwgRasterSettings {
   enum TransformType {
@@ -28,8 +29,8 @@ struct PwgRasterSettings {
 };
 
 interface PdfToPwgRasterConverter {
-  Convert(handle pdf_file_in,
+  Convert(mojo_base.mojom.ReadOnlySharedMemoryRegion pdf_region,
           PdfRenderSettings pdf_settings,
-          PwgRasterSettings pwg_raster_settings,
-          handle pwg_raster_file_out) => (bool success);
+          PwgRasterSettings pwg_raster_settings)
+      => (mojo_base.mojom.ReadOnlySharedMemoryRegion? pwg_raster_region);
 };
