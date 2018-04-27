@@ -3460,9 +3460,9 @@ LayoutUnit LayoutBox::ComputePercentageLogicalHeight(
           return LayoutUnit();
         return LayoutUnit(-1);
       }
-      // TODO(rego): Shouldn't we subtract the scrollbar height too?
       available_height = cb->OverrideLogicalHeight() -
-                         cb->CollapsedBorderAndCSSPaddingLogicalHeight();
+                         cb->CollapsedBorderAndCSSPaddingLogicalHeight() -
+                         cb->ScrollbarLogicalHeight();
     }
   } else {
     available_height = cb->AvailableLogicalHeightForPercentageComputation();
