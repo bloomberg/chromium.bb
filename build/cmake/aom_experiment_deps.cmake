@@ -8,7 +8,9 @@
 ## Media Patent License 1.0 was not distributed with this source code in the
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
-if (NOT AOM_BUILD_CMAKE_AOM_EXPERIMENT_DEPS_CMAKE_)
+if (AOM_BUILD_CMAKE_AOM_EXPERIMENT_DEPS_CMAKE_)
+  return()
+endif ()  # AOM_BUILD_CMAKE_AOM_EXPERIMENT_DEPS_CMAKE_
 set(AOM_BUILD_CMAKE_AOM_EXPERIMENT_DEPS_CMAKE_ 1)
 
 # Adjusts CONFIG_* CMake variables to address conflicts between active AV1
@@ -26,5 +28,3 @@ macro (fix_experiment_configs)
   endif()
 
 endmacro ()
-
-endif ()  # AOM_BUILD_CMAKE_AOM_EXPERIMENT_DEPS_CMAKE_

@@ -8,7 +8,9 @@
 ## Media Patent License 1.0 was not distributed with this source code in the
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
-if (NOT AOM_DOCS_CMAKE_)
+if (AOM_DOCS_CMAKE_)
+  return()
+endif ()  # AOM_DOCS_CMAKE_
 set(AOM_DOCS_CMAKE_ 1)
 
 cmake_minimum_required(VERSION 3.5)
@@ -233,5 +235,3 @@ reference. The following utilities are included:
                              ${AOM_DOXYGEN_EXAMPLE_SOURCES}
                              "${AOM_DOXYGEN_CONFIG_TEMPLATE}")
 endfunction ()
-
-endif ()  # AOM_DOCS_CMAKE_

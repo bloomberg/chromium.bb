@@ -8,7 +8,9 @@
 ## Media Patent License 1.0 was not distributed with this source code in the
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
-if (NOT AOM_BUILD_CMAKE_EXPORTS_CMAKE_)
+if (AOM_BUILD_CMAKE_EXPORTS_CMAKE_)
+  return()
+endif ()  # AOM_BUILD_CMAKE_EXPORTS_CMAKE_
 set(AOM_BUILD_CMAKE_EXPORTS_CMAKE_ 1)
 
 include("${AOM_ROOT}/build/cmake/exports_sources.cmake")
@@ -61,5 +63,3 @@ function (setup_exports_target)
                  "-Wl,--version-script,${aom_sym_file}")
   endif ()
 endfunction ()
-
-endif ()  # AOM_BUILD_CMAKE_EXPORTS_CMAKE_

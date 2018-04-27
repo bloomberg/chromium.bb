@@ -8,7 +8,9 @@
 ## Media Patent License 1.0 was not distributed with this source code in the
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
-if (NOT AOM_AOM_PORTS_AOM_PORTS_CMAKE_)
+if (AOM_AOM_PORTS_AOM_PORTS_CMAKE_)
+  return()
+endif ()  # AOM_AOM_PORTS_AOM_PORTS_CMAKE_
 set(AOM_AOM_PORTS_AOM_PORTS_CMAKE_ 1)
 
 set(AOM_PORTS_INCLUDES
@@ -66,5 +68,3 @@ function (setup_aom_ports_targets)
     endif ()
   endif ()
 endfunction ()
-
-endif ()  # AOM_AOM_PORTS_AOM_PORTS_CMAKE_

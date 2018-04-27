@@ -8,7 +8,9 @@
 ## Media Patent License 1.0 was not distributed with this source code in the
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
-if (NOT AOM_BUILD_CMAKE_AOM_OPTIMIZATION_CMAKE_)
+if (AOM_BUILD_CMAKE_AOM_OPTIMIZATION_CMAKE_)
+  return()
+endif ()  # AOM_BUILD_CMAKE_AOM_OPTIMIZATION_CMAKE_
 set(AOM_BUILD_CMAKE_AOM_OPTIMIZATION_CMAKE_ 1)
 
 include("${AOM_ROOT}/build/cmake/util.cmake")
@@ -263,5 +265,3 @@ function (add_rtcd_build_step config output source symbol)
   set_property(SOURCE ${source} PROPERTY OBJECT_DEPENDS ${output})
   set_property(SOURCE ${output} PROPERTY GENERATED)
 endfunction ()
-
-endif ()  # AOM_BUILD_CMAKE_AOM_OPTIMIZATION_CMAKE_

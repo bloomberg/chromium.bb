@@ -8,7 +8,9 @@
 ## Media Patent License 1.0 was not distributed with this source code in the
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
-if (NOT AOM_BUILD_CMAKE_AOM_CONFIGURE_CMAKE_)
+if (AOM_BUILD_CMAKE_AOM_CONFIGURE_CMAKE_)
+  return()
+endif ()  # AOM_BUILD_CMAKE_AOM_CONFIGURE_CMAKE_
 set(AOM_BUILD_CMAKE_AOM_CONFIGURE_CMAKE_ 1)
 
 include(FindGit)
@@ -313,7 +315,7 @@ if (NOT GIT_FOUND)
   message("--- Git missing, version will be read from CHANGELOG.")
 endif ()
 
-configure_file("${AOM_ROOT}/build/cmake/aom_config.c.cmake"
+configure_file("${AOM_ROOT}/build/cmake/aom_config.c.template"
                "${AOM_CONFIG_DIR}/aom_config.c")
 
 # Find Perl and generate the RTCD sources.
@@ -375,5 +377,3 @@ if (NOT MSVC)
     -DHAVE_PTHREAD_H=${HAVE_PTHREAD_H}
     -P "${AOM_ROOT}/build/cmake/pkg_config.cmake")
 endif ()
-
-endif ()  # AOM_BUILD_CMAKE_AOM_CONFIGURE_CMAKE_

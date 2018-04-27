@@ -8,7 +8,9 @@
 ## Media Patent License 1.0 was not distributed with this source code in the
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
-if (NOT AOM_BUILD_CMAKE_TOOLCHAINS_ARM_IOS_COMMON_CMAKE_)
+if (AOM_BUILD_CMAKE_TOOLCHAINS_ARM_IOS_COMMON_CMAKE_)
+  return()
+endif ()  # AOM_BUILD_CMAKE_TOOLCHAINS_ARM_IOS_COMMON_CMAKE_
 set(AOM_BUILD_CMAKE_ARM_IOS_COMMON_CMAKE_ 1)
 
 set(CMAKE_SYSTEM_NAME "Darwin")
@@ -27,5 +29,3 @@ set(AOM_GAS_EXT "S")
 set(CONFIG_RUNTIME_CPU_DETECT 0 CACHE NUMBER "")
 
 # TODO(tomfinegan): Handle bit code embedding.
-
-endif ()  # AOM_BUILD_CMAKE_TOOLCHAINS_ARM_IOS_COMMON_CMAKE_

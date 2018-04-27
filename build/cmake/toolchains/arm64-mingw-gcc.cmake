@@ -8,7 +8,9 @@
 ## Media Patent License 1.0 was not distributed with this source code in the
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
-if (NOT AOM_BUILD_CMAKE_TOOLCHAINS_ARM64_MINGW_GCC_CMAKE_)
+if (AOM_BUILD_CMAKE_TOOLCHAINS_ARM64_MINGW_GCC_CMAKE_)
+  return()
+endif ()  # AOM_BUILD_CMAKE_TOOLCHAINS_ARM64_MINGW_GCC_CMAKE_
 set(AOM_BUILD_CMAKE_TOOLCHAINS_ARM64_MINGW_GCC_CMAKE_ 1)
 
 set(CMAKE_SYSTEM_PROCESSOR "arm64")
@@ -26,5 +28,3 @@ set(CONFIG_RUNTIME_CPU_DETECT 0 CACHE NUMBER "")
 
 # Disable the use of the gtest's CMake support.
 set(AOM_DISABLE_GTEST_CMAKE 1)
-
-endif ()  # AOM_BUILD_CMAKE_TOOLCHAINS_ARM64_MINGW_GCC_CMAKE_

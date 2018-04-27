@@ -8,7 +8,9 @@
 ## Media Patent License 1.0 was not distributed with this source code in the
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
-if (NOT AOM_BUILD_CMAKE_MSVC_RUNTIME_CMAKE_)
+if (AOM_BUILD_CMAKE_MSVC_RUNTIME_CMAKE_)
+  return()
+endif ()  # AOM_BUILD_CMAKE_MSVC_RUNTIME_CMAKE_
 set(AOM_BUILD_CMAKE_MSVC_RUNTIME_CMAKE_ 1)
 
 if (MSVC)
@@ -26,5 +28,3 @@ if (MSVC)
     endforeach (flag_var)
   endif ()
 endif ()
-
-endif ()  # AOM_BUILD_CMAKE_MSVC_RUNTIME_CMAKE_

@@ -9,7 +9,6 @@
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
 
-
 if ("${AOM_TARGET_CPU}" STREQUAL "arm64")
   set(ARCH_ARM 1)
   set(RTCD_ARCH_ARM "yes")

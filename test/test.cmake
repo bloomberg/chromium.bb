@@ -8,7 +8,9 @@
 ## Media Patent License 1.0 was not distributed with this source code in the
 ## PATENTS file, you can obtain it at www.aomedia.org/license/patent.
 ##
-if (NOT AOM_TEST_TEST_CMAKE_)
+if (AOM_TEST_TEST_CMAKE_)
+  return()
+endif ()  # AOM_TEST_TEST_CMAKE_
 set(AOM_TEST_TEST_CMAKE_ 1)
 
 include(FindPythonInterp)
@@ -510,5 +512,3 @@ function (setup_aom_test_targets)
     endforeach ()
   endforeach ()
 endfunction ()
-
-endif ()  # AOM_TEST_TEST_CMAKE_
