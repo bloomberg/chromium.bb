@@ -155,7 +155,7 @@ void TaskQueueImpl::UnregisterTaskQueue() {
         OnNextWakeUpChangedCallback();
     main_thread_only().on_next_wake_up_changed_callback =
         OnNextWakeUpChangedCallback();
-    immediate_incoming_queue.Swap(immediate_incoming_queue_);
+    immediate_incoming_queue.swap(immediate_incoming_queue_);
   }
 
   // It is possible for a task to hold a scoped_refptr to this, which
@@ -342,7 +342,7 @@ void TaskQueueImpl::ReloadImmediateWorkQueueIfEmpty() {
 TaskQueueImpl::TaskDeque TaskQueueImpl::TakeImmediateIncomingQueue() {
   base::AutoLock immediate_incoming_queue_lock(immediate_incoming_queue_lock_);
   TaskQueueImpl::TaskDeque queue;
-  queue.Swap(immediate_incoming_queue());
+  queue.swap(immediate_incoming_queue());
 
   // Activate delayed fence if necessary. This is ideologically similar to
   // ActivateDelayedFenceIfNeeded, but due to immediate tasks being posted

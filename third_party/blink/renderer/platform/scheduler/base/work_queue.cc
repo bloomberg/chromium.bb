@@ -130,7 +130,8 @@ TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
   DCHECK(work_queue_sets_);
   DCHECK(!tasks_.empty());
 
-  TaskQueueImpl::Task pending_task = tasks_.TakeFirst();
+  TaskQueueImpl::Task pending_task = std::move(tasks_.front());
+  tasks_.pop_front();
   // NB immediate tasks have a different pipeline to delayed ones.
   if (queue_type_ == QueueType::kImmediate && tasks_.empty()) {
     // Short-circuit the queue reload so that OnPopQueue does the right thing.

@@ -11,6 +11,7 @@
 #include <set>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -23,7 +24,6 @@
 #include "third_party/blink/renderer/platform/scheduler/base/intrusive_heap.h"
 #include "third_party/blink/renderer/platform/scheduler/base/sequenced_task_source.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
-#include "third_party/blink/renderer/platform/wtf/deque.h"
 
 namespace blink {
 namespace scheduler {
@@ -372,7 +372,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
 
   // We reserve an inline capacity of 8 tasks to try and reduce the load on
   // PartitionAlloc.
-  using TaskDeque = WTF::Deque<Task, 8>;
+  using TaskDeque = base::circular_deque<Task>;
 
   // Extracts all the tasks from the immediate incoming queue and clears it.
   // Can be called from any thread.
