@@ -1525,20 +1525,20 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, ResponseBlocking) {
       break;
   }
   int start_action = static_cast<int>(
-      CrossSiteDocumentResourceHandler::Action::kResponseStarted);
+      network::CrossOriginReadBlocking::Action::kResponseStarted);
   int end_action = -1;
   if (should_be_blocked && expected_to_sniff) {
     end_action = static_cast<int>(
-        CrossSiteDocumentResourceHandler::Action::kBlockedAfterSniffing);
+        network::CrossOriginReadBlocking::Action::kBlockedAfterSniffing);
   } else if (should_be_blocked && !expected_to_sniff) {
     end_action = static_cast<int>(
-        CrossSiteDocumentResourceHandler::Action::kBlockedWithoutSniffing);
+        network::CrossOriginReadBlocking::Action::kBlockedWithoutSniffing);
   } else if (!should_be_blocked && expected_to_sniff) {
     end_action = static_cast<int>(
-        CrossSiteDocumentResourceHandler::Action::kAllowedAfterSniffing);
+        network::CrossOriginReadBlocking::Action::kAllowedAfterSniffing);
   } else if (!should_be_blocked && !expected_to_sniff) {
     end_action = static_cast<int>(
-        CrossSiteDocumentResourceHandler::Action::kAllowedWithoutSniffing);
+        network::CrossOriginReadBlocking::Action::kAllowedWithoutSniffing);
   } else {
     NOTREACHED();
   }

@@ -396,6 +396,11 @@ CrossOriginReadBlocking::GetCorsSafelistedHeadersForTesting() {
       kCorsSafelistedHeaders + arraysize(kCorsSafelistedHeaders));
 }
 
+// static
+void CrossOriginReadBlocking::LogAction(Action action) {
+  UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Action", action);
+}
+
 // An interface to enable incremental content sniffing. These are instantiated
 // for each each request; thus they can be stateful.
 class CrossOriginReadBlocking::ResponseAnalyzer::ConfirmationSniffer {
@@ -496,6 +501,7 @@ class CrossOriginReadBlocking::ResponseAnalyzer::FetchOnlyResourceSniffer
 CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
     const net::URLRequest& request,
     const ResourceResponse& response) {
+  content_length_ = response.head.content_length;
   should_block_based_on_headers_ = ShouldBlockBasedOnHeaders(request, response);
   if (should_block_based_on_headers_ == kNeedToSniffMore)
     CreateSniffers();
@@ -683,11 +689,18 @@ void CrossOriginReadBlocking::ResponseAnalyzer::SniffResponseBody(
     size_t new_data_offset) {
   DCHECK_EQ(kNeedToSniffMore, should_block_based_on_headers_);
   DCHECK(!sniffers_.empty());
+  DCHECK(!found_blockable_content_);
+
+  DCHECK_LE(bytes_read_for_sniffing_, static_cast<int>(data.size()));
+  bytes_read_for_sniffing_ = static_cast<int>(data.size());
+
   DCHECK_LE(data.size(), static_cast<size_t>(net::kMaxBytesToSniff));
-  DCHECK_LT(new_data_offset, data.size());
+  DCHECK_LE(new_data_offset, data.size());
+  bool has_new_data = (new_data_offset < data.size());
 
   for (size_t i = 0; i < sniffers_.size();) {
-    sniffers_[i]->OnDataAvailable(data, new_data_offset);
+    if (has_new_data)
+      sniffers_[i]->OnDataAvailable(data, new_data_offset);
 
     if (sniffers_[i]->WantsMoreData()) {
       i++;
@@ -729,6 +742,56 @@ bool CrossOriginReadBlocking::ResponseAnalyzer::should_block() const {
     case kBlock:
       return true;
   }
+}
+
+void CrossOriginReadBlocking::ResponseAnalyzer::LogBytesReadForSniffing() {
+  if (bytes_read_for_sniffing_ >= 0) {
+    UMA_HISTOGRAM_COUNTS("SiteIsolation.XSD.Browser.BytesReadForSniffing",
+                         bytes_read_for_sniffing_);
+  }
+}
+
+void CrossOriginReadBlocking::ResponseAnalyzer::LogAllowedResponse() {
+  // Note that if a response is allowed because of hitting EOF or
+  // kMaxBytesToSniff, then |sniffers_| are not emptied and consequently
+  // should_allow doesn't start returning true.  This means that we can't
+  // DCHECK(should_allow()) or DCHECK(sniffers_.empty()) here - the decision to
+  // allow the response could have been made in the
+  // CrossSiteDocumentResourceHandler layer without CrossOriginReadBlocking
+  // realizing that it has hit EOF or kMaxBytesToSniff.
+
+  // Note that the response might be allowed even if should_block() returns true
+  // - for example to allow responses to requests initiated by content scripts.
+  // This means that we cannot DCHECK(!should_block()) here.
+
+  CrossOriginReadBlocking::LogAction(
+      needs_sniffing()
+          ? network::CrossOriginReadBlocking::Action::kAllowedAfterSniffing
+          : network::CrossOriginReadBlocking::Action::kAllowedWithoutSniffing);
+
+  LogBytesReadForSniffing();
+}
+
+void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
+  DCHECK(!should_allow());
+  DCHECK(should_block());
+  DCHECK(sniffers_.empty());
+
+  CrossOriginReadBlocking::LogAction(
+      needs_sniffing()
+          ? network::CrossOriginReadBlocking::Action::kBlockedAfterSniffing
+          : network::CrossOriginReadBlocking::Action::kBlockedWithoutSniffing);
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "SiteIsolation.XSD.Browser.Blocked.ContentLength.WasAvailable",
+      content_length() >= 0);
+  if (content_length() >= 0) {
+    UMA_HISTOGRAM_COUNTS_10000(
+        "SiteIsolation.XSD.Browser.Blocked.ContentLength.ValueIfAvailable",
+        content_length());
+  }
+
+  LogBytesReadForSniffing();
 }
 
 }  // namespace network

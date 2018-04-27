@@ -56,28 +56,6 @@ namespace content {
 class CONTENT_EXPORT CrossSiteDocumentResourceHandler
     : public LayeredResourceHandler {
  public:
-  // This enum backs a histogram, so do not change the order of entries or
-  // remove entries. Put new entries before |kCount| and update enums.xml (see
-  // the SiteIsolationResponseAction enum).
-  enum class Action {
-    // Logged at OnResponseStarted.
-    kResponseStarted = 0,
-
-    // Logged when a response is blocked without requiring sniffing.
-    kBlockedWithoutSniffing = 1,
-
-    // Logged when a response is blocked as a result of sniffing the content.
-    kBlockedAfterSniffing = 2,
-
-    // Logged when a response is allowed without requiring sniffing.
-    kAllowedWithoutSniffing = 3,
-
-    // Logged when a response is allowed as a result of sniffing the content.
-    kAllowedAfterSniffing = 4,
-
-    kCount
-  };
-
   CrossSiteDocumentResourceHandler(
       std::unique_ptr<ResourceHandler> next_handler,
       net::URLRequest* request,
@@ -131,13 +109,8 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
       ResourceType resource_type,
       int http_response_code,
       int64_t content_length);
-  static void LogBlockedResponse(
-      ResourceRequestInfoImpl* resource_request_info,
-      bool needed_sniffing,
-      bool found_parser_breaker,
-      network::CrossOriginReadBlocking::MimeType canonical_mime_type,
-      int http_response_code,
-      int64_t content_length);
+  void LogBlockedResponse(ResourceRequestInfoImpl* resource_request_info,
+                          int http_response_code);
 
   // WeakPtrFactory for |next_handler_|.
   base::WeakPtrFactory<ResourceHandler> weak_next_handler_;
@@ -194,9 +167,6 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // The HTTP response code (e.g. 200 or 404) received in response to this
   // resource request.
   int http_response_code_ = 0;
-
-  // Content length if available. -1 if not available.
-  int64_t content_length_ = -1;
 
   base::WeakPtrFactory<CrossSiteDocumentResourceHandler> weak_this_;
 
