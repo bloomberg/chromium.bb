@@ -167,7 +167,7 @@ class RasterBufferProviderTest
         Create3dResourceProvider();
         raster_buffer_provider_ = std::make_unique<OneCopyRasterBufferProvider>(
             base::ThreadTaskRunnerHandle::Get().get(), context_provider_.get(),
-            worker_context_provider_.get(), resource_provider_.get(),
+            worker_context_provider_.get(), &gpu_memory_buffer_manager_,
             kMaxBytesPerCopyOperation, false, false, kMaxStagingBuffers,
             viz::RGBA_8888);
         pool_ = std::make_unique<ResourcePool>(
@@ -301,13 +301,13 @@ class RasterBufferProviderTest
     context3d->set_support_sync_query(true);
     layer_tree_frame_sink_ = FakeLayerTreeFrameSink::Create3d();
     resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
-        context_provider_.get(), &gpu_memory_buffer_manager_);
+        context_provider_.get());
   }
 
   void CreateSoftwareResourceProvider() {
     layer_tree_frame_sink_ = FakeLayerTreeFrameSink::CreateSoftware();
-    resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
-        nullptr, &gpu_memory_buffer_manager_);
+    resource_provider_ =
+        FakeResourceProvider::CreateLayerTreeResourceProvider(nullptr);
   }
 
   void OnTimeout() {

@@ -361,8 +361,6 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
       child_context_provider_->BindToCurrentThread();
       gpu_memory_buffer_manager_ =
           std::make_unique<viz::TestGpuMemoryBufferManager>();
-      child_gpu_memory_buffer_manager_ =
-          gpu_memory_buffer_manager_->CreateClientGpuMemoryBufferManager();
     } else {
       shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
     }
@@ -379,8 +377,8 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
 
   void MakeChildResourceProvider() {
     child_resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
-        child_context_provider_.get(), child_gpu_memory_buffer_manager_.get(),
-        child_needs_sync_token_, CreateResourceSettings());
+        child_context_provider_.get(), child_needs_sync_token_,
+        CreateResourceSettings());
   }
 
   static void CollectResources(
@@ -473,8 +471,6 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
   scoped_refptr<viz::TestContextProvider> child_context_provider_;
   std::unique_ptr<viz::TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
-  std::unique_ptr<viz::TestGpuMemoryBufferManager>
-      child_gpu_memory_buffer_manager_;
   std::unique_ptr<LayerTreeResourceProvider> child_resource_provider_;
   std::unique_ptr<viz::TestSharedBitmapManager> shared_bitmap_manager_;
 };

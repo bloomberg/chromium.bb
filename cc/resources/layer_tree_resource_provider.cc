@@ -14,10 +14,8 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
-#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 using gpu::gles2::GLES2Interface;
@@ -39,7 +37,6 @@ LayerTreeResourceProvider::Settings::Settings(
   }
 
   const auto& caps = compositor_context_provider->ContextCapabilities();
-  use_sync_query = caps.sync_query;
 
   if (caps.disable_one_component_textures) {
     yuv_resource_format = yuv_highbit_resource_format = viz::RGBA_8888;
@@ -91,14 +88,12 @@ struct LayerTreeResourceProvider::ImportedResource {
 
 LayerTreeResourceProvider::LayerTreeResourceProvider(
     viz::ContextProvider* compositor_context_provider,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     bool delegated_sync_points_required,
     const viz::ResourceSettings& resource_settings)
     : settings_(compositor_context_provider,
                 delegated_sync_points_required,
                 resource_settings),
       compositor_context_provider_(compositor_context_provider),
-      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       next_id_(kLayerTreeInitialResourceId) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }

@@ -385,7 +385,7 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
 
   void MakeChildResourceProvider() {
     child_resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
-        child_context_provider_.get(), nullptr, child_needs_sync_token_,
+        child_context_provider_.get(), child_needs_sync_token_,
         CreateResourceSettings());
   }
 
@@ -611,7 +611,7 @@ TEST_P(ResourceProviderTest, TransferGLResources_NoSyncToken) {
 
   bool need_sync_tokens = false;
   auto no_token_resource_provider = std::make_unique<LayerTreeResourceProvider>(
-      child_context_provider_.get(), nullptr, need_sync_tokens,
+      child_context_provider_.get(), need_sync_tokens,
       CreateResourceSettings());
 
   GLuint external_texture_id = child_context_->createExternalTexture();
@@ -1249,8 +1249,7 @@ TEST_P(ResourceProviderTest, ImportedResource_SharedMemory) {
       nullptr, shared_bitmap_manager_.get());
 
   auto child_resource_provider(std::make_unique<LayerTreeResourceProvider>(
-      nullptr, nullptr, kDelegatedSyncPointsRequired,
-      CreateResourceSettings()));
+      nullptr, kDelegatedSyncPointsRequired, CreateResourceSettings()));
 
   gpu::SyncToken release_sync_token;
   bool lost_resource = false;
@@ -1326,7 +1325,7 @@ class ResourceProviderTestImportedResourceGLFilters
     child_context_provider->BindToCurrentThread();
 
     auto child_resource_provider(std::make_unique<LayerTreeResourceProvider>(
-        child_context_provider.get(), nullptr, kDelegatedSyncPointsRequired,
+        child_context_provider.get(), kDelegatedSyncPointsRequired,
         CreateResourceSettings()));
 
     unsigned texture_id = 1;
@@ -1486,7 +1485,7 @@ TEST_P(ResourceProviderTest, ImportedResource_GLTextureExternalOES) {
   child_context_provider->BindToCurrentThread();
 
   auto child_resource_provider(std::make_unique<LayerTreeResourceProvider>(
-      child_context_provider.get(), nullptr, kDelegatedSyncPointsRequired,
+      child_context_provider.get(), kDelegatedSyncPointsRequired,
       CreateResourceSettings()));
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
@@ -1723,7 +1722,7 @@ TEST_P(ResourceProviderTest, ImportedResource_PrepareSendToParent_NoSyncToken) {
   context_provider->BindToCurrentThread();
 
   auto resource_provider(std::make_unique<LayerTreeResourceProvider>(
-      context_provider.get(), nullptr, kDelegatedSyncPointsRequired,
+      context_provider.get(), kDelegatedSyncPointsRequired,
       CreateResourceSettings()));
 
   EXPECT_CALL(*context, bindTexture(_, _)).Times(0);

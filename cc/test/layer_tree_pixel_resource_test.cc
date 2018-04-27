@@ -49,7 +49,6 @@ LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
       layer_tree_frame_sink->context_provider();
   viz::RasterContextProvider* worker_context_provider =
       layer_tree_frame_sink->worker_context_provider();
-  LayerTreeResourceProvider* resource_provider = host_impl->resource_provider();
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
       layer_tree_frame_sink->gpu_memory_buffer_manager();
   int max_bytes_per_copy_operation = 1024 * 1024;
@@ -98,7 +97,7 @@ LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
 
       return std::make_unique<OneCopyRasterBufferProvider>(
           task_runner, compositor_context_provider, worker_context_provider,
-          resource_provider, max_bytes_per_copy_operation, false, false,
+          gpu_memory_buffer_manager, max_bytes_per_copy_operation, false, false,
           max_staging_buffer_usage_in_bytes, sw_raster_format);
   }
   return {};

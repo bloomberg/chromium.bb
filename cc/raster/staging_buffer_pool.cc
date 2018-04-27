@@ -131,12 +131,10 @@ void StagingBuffer::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
 StagingBufferPool::StagingBufferPool(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     viz::RasterContextProvider* worker_context_provider,
-    LayerTreeResourceProvider* resource_provider,
     bool use_partial_raster,
     int max_staging_buffer_usage_in_bytes)
     : task_runner_(std::move(task_runner)),
       worker_context_provider_(worker_context_provider),
-      resource_provider_(resource_provider),
       use_partial_raster_(use_partial_raster),
       max_staging_buffer_usage_in_bytes_(max_staging_buffer_usage_in_bytes),
       staging_buffer_usage_in_bytes_(0),
@@ -262,7 +260,7 @@ std::unique_ptr<StagingBuffer> StagingBufferPool::AcquireStagingBuffer(
   DCHECK(ri);
 
   // Check if any busy buffers have become available.
-  if (resource_provider_->use_sync_query()) {
+  if (worker_context_provider_->ContextCapabilities().sync_query) {
     while (!busy_buffers_.empty()) {
       if (!CheckForQueryResult(ri, busy_buffers_.front()->query_id))
         break;
@@ -280,7 +278,7 @@ std::unique_ptr<StagingBuffer> StagingBufferPool::AcquireStagingBuffer(
     if (busy_buffers_.empty())
       break;
 
-    if (resource_provider_->use_sync_query()) {
+    if (worker_context_provider_->ContextCapabilities().sync_query) {
       WaitForQueryResult(ri, busy_buffers_.front()->query_id);
       MarkStagingBufferAsFree(busy_buffers_.front().get());
       free_buffers_.push_back(PopFront(&busy_buffers_));

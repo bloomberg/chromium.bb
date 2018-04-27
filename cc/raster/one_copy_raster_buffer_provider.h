@@ -13,6 +13,10 @@
 #include "cc/resources/layer_tree_resource_provider.h"
 #include "gpu/command_buffer/common/sync_token.h"
 
+namespace gpu {
+class GpuMemoryBufferManager;
+}
+
 namespace viz {
 class ContextProvider;
 class RasterContextProvider;
@@ -28,7 +32,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       viz::ContextProvider* compositor_context_provider,
       viz::RasterContextProvider* worker_context_provider,
-      LayerTreeResourceProvider* resource_provider,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       int max_copy_texture_chromium_size,
       bool use_partial_raster,
       bool use_gpu_memory_buffer_resources,
@@ -78,7 +82,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
   class RasterBufferImpl : public RasterBuffer {
    public:
     RasterBufferImpl(OneCopyRasterBufferProvider* client,
-                     LayerTreeResourceProvider* resource_provider,
+                     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                      const ResourcePool::InUsePoolResource& in_use_resource,
                      OneCopyGpuBacking* backing,
                      const gpu::SyncToken& before_raster_sync_token,
@@ -143,7 +147,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
 
   viz::ContextProvider* const compositor_context_provider_;
   viz::RasterContextProvider* const worker_context_provider_;
-  LayerTreeResourceProvider* const resource_provider_;
+  gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
   const int max_bytes_per_copy_operation_;
   const bool use_partial_raster_;
   const bool use_gpu_memory_buffer_resources_;

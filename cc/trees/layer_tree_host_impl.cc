@@ -2713,8 +2713,8 @@ LayerTreeHostImpl::CreateRasterBufferProvider() {
       caps.max_copy_texture_chromium_size;
   return std::make_unique<OneCopyRasterBufferProvider>(
       GetTaskRunner(), compositor_context_provider, worker_context_provider,
-      resource_provider_.get(), max_copy_texture_chromium_size,
-      settings_.use_partial_raster,
+      layer_tree_frame_sink_->gpu_memory_buffer_manager(),
+      max_copy_texture_chromium_size, settings_.use_partial_raster,
       settings_.resource_settings.use_gpu_memory_buffer_resources,
       settings_.max_staging_buffer_usage_in_bytes, tile_format);
 }
@@ -2850,7 +2850,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
   has_valid_layer_tree_frame_sink_ = true;
   resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
       layer_tree_frame_sink_->context_provider(),
-      layer_tree_frame_sink_->gpu_memory_buffer_manager(),
       layer_tree_frame_sink_->capabilities().delegated_sync_points_required,
       settings_.resource_settings);
   if (!layer_tree_frame_sink_->context_provider()) {

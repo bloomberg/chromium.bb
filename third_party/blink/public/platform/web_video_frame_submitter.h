@@ -13,10 +13,6 @@ namespace cc {
 class LayerTreeSettings;
 }
 
-namespace gpu {
-class GpuMemoryBufferManager;
-}
-
 namespace viz {
 class ContextProvider;
 class FrameSinkId;
@@ -36,7 +32,6 @@ class BLINK_PLATFORM_EXPORT WebVideoFrameSubmitter
  public:
   static std::unique_ptr<WebVideoFrameSubmitter> Create(
       WebContextProviderCallback,
-      gpu::GpuMemoryBufferManager*,
       const cc::LayerTreeSettings&);
   ~WebVideoFrameSubmitter() override = default;
 

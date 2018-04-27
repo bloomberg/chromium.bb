@@ -22,7 +22,6 @@
 namespace viz {
 class CopyOutputResult;
 class DirectRenderer;
-class TestGpuMemoryBufferManager;
 class TestSharedBitmapManager;
 }
 
@@ -78,7 +77,6 @@ class PixelTest : public testing::Test {
   std::unique_ptr<FakeOutputSurfaceClient> output_surface_client_;
   std::unique_ptr<viz::OutputSurface> output_surface_;
   std::unique_ptr<viz::TestSharedBitmapManager> shared_bitmap_manager_;
-  std::unique_ptr<viz::TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
   scoped_refptr<TestInProcessContextProvider> child_context_provider_;
   std::unique_ptr<LayerTreeResourceProvider> child_resource_provider_;
