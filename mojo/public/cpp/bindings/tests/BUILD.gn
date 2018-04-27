@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/nocompile.gni")
+
 source_set("tests") {
   testonly = true
 
@@ -153,4 +155,19 @@ source_set("mojo_public_bindings_test_utils") {
   deps = [
     "//mojo/public/c/system",
   ]
+}
+
+if (enable_nocompile_tests) {
+  nocompile_test("mojo_public_cpp_bindings_nocompile_tests") {
+    sources = [
+      "struct_unittest.nc",
+    ]
+
+    deps = [
+      "//base/test:run_all_unittests",
+      "//mojo/public/cpp/bindings:bindings",
+      "//mojo/public/interfaces/bindings/tests:test_interfaces",
+      "//testing/gtest",
+    ]
+  }
 }
