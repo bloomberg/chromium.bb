@@ -56,8 +56,6 @@ namespace content {
 class CONTENT_EXPORT CrossSiteDocumentResourceHandler
     : public LayeredResourceHandler {
  public:
-  class ConfirmationSniffer;
-
   // This enum backs a histogram, so do not change the order of entries or
   // remove entries. Put new entries before |kCount| and update enums.xml (see
   // the SiteIsolationResponseAction enum).
@@ -136,6 +134,7 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   static void LogBlockedResponse(
       ResourceRequestInfoImpl* resource_request_info,
       bool needed_sniffing,
+      bool found_parser_breaker,
       network::CrossOriginReadBlocking::MimeType canonical_mime_type,
       int http_response_code,
       int64_t content_length);
@@ -164,8 +163,6 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
 
   // The helper class that encapsulates the logic for deciding whether to block
   // the response or not.
-  // TODO(lukasza): Also move the sniffing logic (e.g. |sniffers_|) into
-  // network::CrossOriginReadBlocking::ResponseAnalyzer.
   std::unique_ptr<network::CrossOriginReadBlocking::ResponseAnalyzer> analyzer_;
 
   // Indicates whether this request was made by a plugin and was not using CORS.
@@ -200,9 +197,6 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
 
   // Content length if available. -1 if not available.
   int64_t content_length_ = -1;
-
-  // The sniffers to be used.
-  std::vector<std::unique_ptr<ConfirmationSniffer>> sniffers_;
 
   base::WeakPtrFactory<CrossSiteDocumentResourceHandler> weak_this_;
 

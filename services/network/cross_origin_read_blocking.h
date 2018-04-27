@@ -5,6 +5,7 @@
 #ifndef SERVICES_NETWORK_CROSS_ORIGIN_READ_BLOCKING_H_
 #define SERVICES_NETWORK_CROSS_ORIGIN_READ_BLOCKING_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -54,17 +55,35 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
 
     ~ResponseAnalyzer();
 
-    bool should_allow_based_on_headers() {
-      return should_block_based_on_headers_ == kAllow;
-    }
+    // true if either 1) ShouldBlockBasedOnHeaders decided to allow the response
+    // based on headers alone or 2) ShouldBlockBasedOnHeaders decided to sniff
+    // the response body and SniffResponseBody decided to allow the response
+    // (e.g. because none of sniffers found blockable content).  false
+    // otherwise.
+    bool should_allow() const;
 
-    bool needs_sniffing() {
+    // true if either 1) ShouldBlockBasedOnHeaders decided to block the response
+    // based on headers alone or 2) ShouldBlockBasedOnHeaders decided to sniff
+    // the response body and SniffResponseBody confirmed that the response
+    // contains blockable content.  false otherwise.
+    bool should_block() const;
+
+    // Whether ShouldBlockBasedOnHeaders asked to sniff the body.
+    bool needs_sniffing() const {
       return should_block_based_on_headers_ == kNeedToSniffMore;
     }
 
-    const CrossOriginReadBlocking::MimeType& canonical_mime_type() {
+    // The MIME type determined by ShouldBlockBasedOnHeaders.
+    const CrossOriginReadBlocking::MimeType& canonical_mime_type() const {
       return canonical_mime_type_;
     }
+
+    // Allows ResponseAnalyzer to sniff the response body.
+    void SniffResponseBody(base::StringPiece data, size_t new_data_offset);
+
+    bool found_parser_breaker() const { return found_parser_breaker_; }
+
+    class ConfirmationSniffer;
 
    private:
     // Three conclusions are possible from looking at the headers:
@@ -81,14 +100,24 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
         const net::URLRequest& request,
         const ResourceResponse& response);
 
-    // Outcome of ShouldBlockBasedOnHeaders recorder inside the Create method.
+    // Populates |sniffers_| container based on |canonical_mime_type_|.  Called
+    // if ShouldBlockBasedOnHeaders returns kNeedToSniffMore
+    void CreateSniffers();
+
+    // Outcome of ShouldBlockBasedOnHeaders recorded inside the Create method.
     BlockingDecision should_block_based_on_headers_;
 
     // Canonical MIME type detected by ShouldBlockBasedOnHeaders.  Used to
     // determine if blocking the response is needed, as well as which type of
     // sniffing to perform.
-    CrossOriginReadBlocking::MimeType canonical_mime_type_ =
-        CrossOriginReadBlocking::MimeType::kInvalidMimeType;
+    MimeType canonical_mime_type_ = MimeType::kInvalidMimeType;
+
+    // The sniffers to be used.
+    std::vector<std::unique_ptr<ConfirmationSniffer>> sniffers_;
+
+    // Sniffing results.
+    bool found_blockable_content_ = false;
+    bool found_parser_breaker_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(ResponseAnalyzer);
   };

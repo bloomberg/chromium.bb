@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "net/base/mime_sniffer.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -395,10 +396,107 @@ CrossOriginReadBlocking::GetCorsSafelistedHeadersForTesting() {
       kCorsSafelistedHeaders + arraysize(kCorsSafelistedHeaders));
 }
 
+// An interface to enable incremental content sniffing. These are instantiated
+// for each each request; thus they can be stateful.
+class CrossOriginReadBlocking::ResponseAnalyzer::ConfirmationSniffer {
+ public:
+  virtual ~ConfirmationSniffer() = default;
+
+  // Called after data is read from the network. |sniffing_buffer| contains the
+  // entire response body delivered thus far. To support streaming,
+  // |new_data_offset| gives the offset into |sniffing_buffer| at which new data
+  // was appended since the last read.
+  virtual void OnDataAvailable(base::StringPiece sniffing_buffer,
+                               size_t new_data_offset) = 0;
+
+  // Returns true if the return value of IsConfirmedContentType() might change
+  // with the addition of more data. Returns false if a final decision is
+  // available.
+  virtual bool WantsMoreData() const = 0;
+
+  // Returns true if the data has been confirmed to be of the CORB-protected
+  // content type that this sniffer is intended to detect.
+  virtual bool IsConfirmedContentType() const = 0;
+
+  // Helper for reporting the right UMA.
+  virtual bool IsParserBreakerSniffer() const = 0;
+};
+
+// A ConfirmationSniffer that wraps one of the sniffing functions from
+// network::CrossOriginReadBlocking.
+class SimpleConfirmationSniffer
+    : public CrossOriginReadBlocking::ResponseAnalyzer::ConfirmationSniffer {
+ public:
+  // The function pointer type corresponding to one of the available sniffing
+  // functions from network::CrossOriginReadBlocking.
+  using SnifferFunction =
+      decltype(&network::CrossOriginReadBlocking::SniffForHTML);
+
+  explicit SimpleConfirmationSniffer(SnifferFunction sniffer_function)
+      : sniffer_function_(sniffer_function) {}
+  ~SimpleConfirmationSniffer() override = default;
+
+  void OnDataAvailable(base::StringPiece sniffing_buffer,
+                       size_t new_data_offset) final {
+    DCHECK_LE(new_data_offset, sniffing_buffer.length());
+    if (new_data_offset == sniffing_buffer.length()) {
+      // No new data -- do nothing. This happens at end-of-stream.
+      return;
+    }
+    // The sniffing functions don't support streaming, so with each new chunk of
+    // data, call the sniffer on the whole buffer.
+    last_sniff_result_ = (*sniffer_function_)(sniffing_buffer);
+  }
+
+  bool WantsMoreData() const final {
+    // kNo and kYes results are final, meaning that sniffing can stop once they
+    // occur. A kMaybe result corresponds to an indeterminate state, that could
+    // change to kYes or kNo with more data.
+    return last_sniff_result_ == SniffingResult::kMaybe;
+  }
+
+  bool IsConfirmedContentType() const final {
+    // Only confirm the mime type if an affirmative pattern (e.g. an HTML tag,
+    // if using the HTML sniffer) was detected.
+    //
+    // Note that if the stream ends (or net::kMaxBytesToSniff has been reached)
+    // and |last_sniff_result_| is kMaybe, the response is allowed to go
+    // through.
+    return last_sniff_result_ == SniffingResult::kYes;
+  }
+
+  bool IsParserBreakerSniffer() const override { return false; }
+
+ private:
+  // The function that actually knows how to sniff for a content type.
+  SnifferFunction sniffer_function_;
+
+  // Result of sniffing the data available thus far.
+  SniffingResult last_sniff_result_ = SniffingResult::kMaybe;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleConfirmationSniffer);
+};
+
+// A ConfirmationSniffer for parser breakers (fetch-only resources). This logs
+// to an UMA histogram whenever it is the reason for a response being blocked.
+class FetchOnlyResourceSniffer : public SimpleConfirmationSniffer {
+ public:
+  FetchOnlyResourceSniffer()
+      : SimpleConfirmationSniffer(
+            &network::CrossOriginReadBlocking::SniffForFetchOnlyResource) {}
+
+  bool IsParserBreakerSniffer() const override { return true; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FetchOnlyResourceSniffer);
+};
+
 CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
     const net::URLRequest& request,
     const ResourceResponse& response) {
   should_block_based_on_headers_ = ShouldBlockBasedOnHeaders(request, response);
+  if (should_block_based_on_headers_ == kNeedToSniffMore)
+    CreateSniffers();
 }
 
 CrossOriginReadBlocking::ResponseAnalyzer::~ResponseAnalyzer() = default;
@@ -538,6 +636,97 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   }
   NOTREACHED();
   return kBlock;
+}
+
+void CrossOriginReadBlocking::ResponseAnalyzer::CreateSniffers() {
+  // Create one or more |sniffers_| to confirm that the body is actually the
+  // MIME type advertised in the Content-Type header.
+  DCHECK_EQ(kNeedToSniffMore, should_block_based_on_headers_);
+  DCHECK(sniffers_.empty());
+
+  // When the MIME type is "text/plain", create sniffers for HTML, XML and
+  // JSON. If any of these sniffers match, the response will be blocked.
+  const bool use_all = canonical_mime_type() == MimeType::kPlain;
+
+  // HTML sniffer.
+  if (use_all || canonical_mime_type() == MimeType::kHtml) {
+    sniffers_.push_back(std::make_unique<SimpleConfirmationSniffer>(
+        &network::CrossOriginReadBlocking::SniffForHTML));
+  }
+
+  // XML sniffer.
+  if (use_all || canonical_mime_type() == MimeType::kXml) {
+    sniffers_.push_back(std::make_unique<SimpleConfirmationSniffer>(
+        &network::CrossOriginReadBlocking::SniffForXML));
+  }
+
+  // JSON sniffer.
+  if (use_all || canonical_mime_type() == MimeType::kJson) {
+    sniffers_.push_back(std::make_unique<SimpleConfirmationSniffer>(
+        &network::CrossOriginReadBlocking::SniffForJSON));
+  }
+
+  // Parser-breaker sniffer.
+  //
+  // Because these prefixes are an XSSI-defeating mechanism, CORB considers
+  // them distinctive enough to be worth blocking no matter the Content-Type
+  // header. So this sniffer is created unconditionally.
+  //
+  // For MimeType::kOthers, this will be the only sniffer that's active.
+  sniffers_.push_back(std::make_unique<FetchOnlyResourceSniffer>());
+}
+
+void CrossOriginReadBlocking::ResponseAnalyzer::SniffResponseBody(
+    base::StringPiece data,
+    size_t new_data_offset) {
+  DCHECK_EQ(kNeedToSniffMore, should_block_based_on_headers_);
+  DCHECK(!sniffers_.empty());
+  DCHECK_LE(data.size(), static_cast<size_t>(net::kMaxBytesToSniff));
+  DCHECK_LT(new_data_offset, data.size());
+
+  for (size_t i = 0; i < sniffers_.size();) {
+    sniffers_[i]->OnDataAvailable(data, new_data_offset);
+
+    if (sniffers_[i]->WantsMoreData()) {
+      i++;
+      continue;
+    }
+
+    if (sniffers_[i]->IsConfirmedContentType()) {
+      if (sniffers_[i]->IsParserBreakerSniffer())
+        found_parser_breaker_ = true;
+
+      found_blockable_content_ = true;
+      sniffers_.clear();
+      break;
+    } else {
+      // This response is CORB-exempt as far as this sniffer is concerned;
+      // remove it from the list.
+      sniffers_.erase(sniffers_.begin() + i);
+    }
+  }
+}
+
+bool CrossOriginReadBlocking::ResponseAnalyzer::should_allow() const {
+  switch (should_block_based_on_headers_) {
+    case kAllow:
+      return true;
+    case kNeedToSniffMore:
+      return sniffers_.empty() && !found_blockable_content_;
+    case kBlock:
+      return false;
+  }
+}
+
+bool CrossOriginReadBlocking::ResponseAnalyzer::should_block() const {
+  switch (should_block_based_on_headers_) {
+    case kAllow:
+      return false;
+    case kNeedToSniffMore:
+      return sniffers_.empty() && found_blockable_content_;
+    case kBlock:
+      return true;
+  }
 }
 
 }  // namespace network
