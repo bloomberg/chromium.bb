@@ -32,7 +32,7 @@ class NetLogWithSource;
 // are registered, and does garbage collection from time to time in order to
 // clean out outdated entries. URL ID consists of lowercased scheme, host, port
 // and path. All URLs converted to the same ID will share the same entry.
-class NET_EXPORT URLRequestThrottlerManager
+class NET_EXPORT_PRIVATE URLRequestThrottlerManager
     : public NetworkChangeNotifier::IPAddressObserver,
       public NetworkChangeNotifier::ConnectionTypeObserver {
  public:
