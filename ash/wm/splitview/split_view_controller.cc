@@ -793,6 +793,7 @@ void SplitViewController::UpdateBlackScrim(
     opacity -= kBlackScrimOpacity *
                (distance - work_area_bounds.width() * ratio) /
                (work_area_bounds.width() * kBlackScrimFadeInRatio);
+    opacity = std::max(opacity, 0.f);
   }
   black_scrim_layer_->SetOpacity(opacity);
 }
