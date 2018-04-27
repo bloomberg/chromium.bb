@@ -413,7 +413,7 @@ class BlinkDeprecatedTestModule : public pp::Module {
   BlinkDeprecatedTestModule() {}
   ~BlinkDeprecatedTestModule() override {}
 
-  virtual pp::Instance* CreateInstance(PP_Instance instance) {
+  pp::Instance* CreateInstance(PP_Instance instance) override {
     return new BlinkDeprecatedTestInstance(instance);
   }
 };
