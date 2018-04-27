@@ -6,7 +6,11 @@
 
 #include <cmath>
 #include <limits>
+#include <sstream>
+#include <string>
 
+#include "ash/display/cursor_window_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
@@ -23,8 +27,14 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/pattern.h"
 #include "components/prefs/pref_service.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/manager/display_change_observer.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/display/manager/fake_display_snapshot.h"
+#include "ui/display/manager/test/action_logger_util.h"
+#include "ui/display/manager/test/test_native_display_delegate.h"
 
 namespace ash {
 
@@ -37,22 +47,36 @@ NightLightController* GetController() {
   return Shell::Get()->night_light_controller();
 }
 
+// Tests that the given display with |display_id| has the expected color matrix
+// on its compositor that corresponds to the given |expected_temperature|.
+void TestDisplayCompositorTemperature(int64_t display_id,
+                                      float expected_temperature) {
+  WindowTreeHostManager* wth_manager = Shell::Get()->window_tree_host_manager();
+  aura::Window* root_window =
+      wth_manager->GetRootWindowForDisplayId(display_id);
+  DCHECK(root_window);
+  aura::WindowTreeHost* host = root_window->GetHost();
+  DCHECK(host);
+  ui::Compositor* compositor = host->compositor();
+  DCHECK(compositor);
+
+  const SkMatrix44& matrix = compositor->display_color_matrix();
+  const float blue_scale = matrix.get(2, 2);
+  const float green_scale = matrix.get(1, 1);
+  EXPECT_FLOAT_EQ(
+      expected_temperature,
+      NightLightController::TemperatureFromBlueColorScale(blue_scale));
+  EXPECT_FLOAT_EQ(
+      expected_temperature,
+      NightLightController::TemperatureFromGreenColorScale(green_scale));
+}
+
 // Tests that the display color matrices of all compositors correctly correspond
 // to the given |expected_temperature|.
 void TestCompositorsTemperature(float expected_temperature) {
-  for (auto* controller : RootWindowController::root_window_controllers()) {
-    ui::Compositor* compositor = controller->GetHost()->compositor();
-    if (compositor) {
-      const SkMatrix44& matrix = compositor->display_color_matrix();
-      const float blue_scale = matrix.get(2, 2);
-      const float green_scale = matrix.get(1, 1);
-      EXPECT_FLOAT_EQ(
-          expected_temperature,
-          NightLightController::TemperatureFromBlueColorScale(blue_scale));
-      EXPECT_FLOAT_EQ(
-          expected_temperature,
-          NightLightController::TemperatureFromGreenColorScale(green_scale));
-    }
+  for (int64_t display_id :
+       Shell::Get()->display_manager()->GetCurrentDisplayIdList()) {
+    TestDisplayCompositorTemperature(display_id, expected_temperature);
   }
 }
 
@@ -256,23 +280,30 @@ TEST_F(NightLightTest, TestNightLightWithDisplayConfigurationChanges) {
   // should still have the same temperature.
   display_manager()->SetMirrorMode(display::MirrorMode::kNormal, base::nullopt);
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
+  base::RunLoop().RunUntilIdle();
   TestCompositorsTemperature(temperature);
 
   // Exit mirror mode, temperature is still applied.
   display_manager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
   EXPECT_FALSE(display_manager()->IsInMirrorMode());
+  base::RunLoop().RunUntilIdle();
   TestCompositorsTemperature(temperature);
 
   // Enter unified mode, temperature is still applied.
   display_manager()->SetUnifiedDesktopEnabled(true);
   EXPECT_TRUE(display_manager()->IsInUnifiedMode());
+  base::RunLoop().RunUntilIdle();
   TestCompositorsTemperature(temperature);
+  // The unified host should never have a temperature on its compositor.
+  TestDisplayCompositorTemperature(display::kUnifiedDisplayId, 0.0f);
 
   // Exit unified mode, and remove the display, temperature should remain the
   // same.
   display_manager()->SetUnifiedDesktopEnabled(false);
   EXPECT_FALSE(display_manager()->IsInUnifiedMode());
+  base::RunLoop().RunUntilIdle();
   TestCompositorsTemperature(temperature);
+
   display_manager()->AddRemoveDisplay();
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1u, RootWindowController::root_window_controllers().size());
@@ -735,6 +766,224 @@ TEST_F(NightLightTest, TestCustomScheduleInvertedStartAndEndTimesCase3) {
   // NightLight should end in 5 hours.
   EXPECT_EQ(base::TimeDelta::FromHours(5),
             controller->timer().GetCurrentDelay());
+}
+
+// Fixture for testing behavior of Night Light when displays support hardware
+// CRTC matrices.
+class NightLightCrtcTest : public NightLightTest {
+ public:
+  NightLightCrtcTest()
+      : logger_(std::make_unique<display::test::ActionLogger>()) {}
+  ~NightLightCrtcTest() override = default;
+
+  static constexpr gfx::Size kDisplaySize{1024, 768};
+  static constexpr int64_t kId1 = 123;
+  static constexpr int64_t kId2 = 456;
+
+  display::DisplayConfigurator* display_configurator() {
+    return Shell::Get()->display_configurator();
+  }
+
+  // NightLightTest:
+  void SetUp() override {
+    NightLightTest::SetUp();
+
+    native_display_delegate_ =
+        new display::test::TestNativeDisplayDelegate(logger_.get());
+    display_configurator()->SetDelegateForTesting(
+        std::unique_ptr<display::NativeDisplayDelegate>(
+            native_display_delegate_));
+    display_change_observer_ = std::make_unique<display::DisplayChangeObserver>(
+        display_configurator(), display_manager());
+    test_api_ = std::make_unique<display::DisplayConfigurator::TestApi>(
+        display_configurator());
+  }
+
+  void TearDown() override {
+    // DisplayChangeObserver access InputDeviceManager in its destructor, so
+    // destroy it first.
+    display_change_observer_ = nullptr;
+    NightLightTest::TearDown();
+  }
+
+  // Builds two displays snapshots into |owned_snapshots_| and return a list of
+  // unowned pointers to them. |color_matrix_support| should contain exactly 2
+  // boolean values that correspond to the color correction matrix support for
+  // both displays.
+  std::vector<display::DisplaySnapshot*> BuildAndGetDisplaySnapshots(
+      const std::vector<bool>& color_matrix_support) {
+    DCHECK_EQ(2u, color_matrix_support.size());
+    owned_snapshots_.clear();
+    owned_snapshots_.emplace_back(
+        display::FakeDisplaySnapshot::Builder()
+            .SetId(kId1)
+            .SetNativeMode(kDisplaySize)
+            .SetCurrentMode(kDisplaySize)
+            .SetHasColorCorrectionMatrix(color_matrix_support[0])
+            .SetType(display::DISPLAY_CONNECTION_TYPE_INTERNAL)
+            .Build());
+    owned_snapshots_.back()->set_origin({0, 0});
+    owned_snapshots_.emplace_back(
+        display::FakeDisplaySnapshot::Builder()
+            .SetId(kId2)
+            .SetNativeMode(kDisplaySize)
+            .SetCurrentMode(kDisplaySize)
+            .SetHasColorCorrectionMatrix(color_matrix_support[1])
+            .Build());
+    owned_snapshots_.back()->set_origin({1030, 0});
+    std::vector<display::DisplaySnapshot*> outputs = {
+        owned_snapshots_[0].get(), owned_snapshots_[1].get()};
+    return outputs;
+  }
+
+  // Updates the display configurator and display manager with the given list of
+  // display snapshots.
+  void UpdateDisplays(const std::vector<display::DisplaySnapshot*>& outputs) {
+    native_display_delegate_->set_outputs(outputs);
+    display_configurator()->OnConfigurationChanged();
+    EXPECT_TRUE(test_api_->TriggerConfigureTimeout());
+    display_change_observer_->GetStateForDisplayIds(outputs);
+    display_change_observer_->OnDisplayModeChanged(outputs);
+  }
+
+  // Returns true if the software cursor is turned on.
+  bool IsCursorCompositingEnabled() const {
+    return Shell::Get()
+        ->window_tree_host_manager()
+        ->cursor_window_controller()
+        ->ShouldEnableCursorCompositing();
+  }
+
+  std::string GetLoggerActionsAndClear() {
+    return logger_->GetActionsAndClear();
+  }
+
+  bool VerifyCrtcMatrix(int64_t display_id,
+                        float temperature,
+                        const std::string& logger_actions_string) const {
+    constexpr float kRedScale = 1.0f;
+    const float blue_scale =
+        NightLightController::BlueColorScaleFromTemperature(temperature);
+    const float green_scale =
+        NightLightController::GreenColorScaleFromTemperature(temperature);
+    std::stringstream pattern_stream;
+    pattern_stream << "*set_color_correction(id=" << display_id
+                   << ",ctm[0]=" << kRedScale << "*ctm[4]=" << green_scale
+                   << "*ctm[8]=" << blue_scale << "*)*";
+    return base::MatchPattern(logger_actions_string, pattern_stream.str());
+  }
+
+ private:
+  std::unique_ptr<display::test::ActionLogger> logger_;
+  // Not owned.
+  display::test::TestNativeDisplayDelegate* native_display_delegate_;
+  std::unique_ptr<display::DisplayChangeObserver> display_change_observer_;
+  std::unique_ptr<display::DisplayConfigurator::TestApi> test_api_;
+
+  std::vector<std::unique_ptr<display::DisplaySnapshot>> owned_snapshots_;
+
+  DISALLOW_COPY_AND_ASSIGN(NightLightCrtcTest);
+};
+
+// static
+constexpr gfx::Size NightLightCrtcTest::kDisplaySize;
+
+// All displays support CRTC matrices.
+TEST_F(NightLightCrtcTest, TestAllDisplaysSupportCrtcMatrix) {
+  // Create two displays with both having support for CRTC matrices.
+  std::vector<display::DisplaySnapshot*> outputs =
+      BuildAndGetDisplaySnapshots({true, true});
+  UpdateDisplays(outputs);
+
+  EXPECT_EQ(2u, display_manager()->GetNumDisplays());
+  ASSERT_EQ(2u, RootWindowController::root_window_controllers().size());
+
+  // Turn on Night Light:
+  NightLightController* controller = GetController();
+  SetNightLightEnabled(true);
+  float temperature = 0.2f;
+  GetLoggerActionsAndClear();
+  controller->SetColorTemperature(temperature);
+  EXPECT_EQ(temperature, controller->GetColorTemperature());
+
+  // Since both displays support CRTC matrices, no compositor matrix should be
+  // set (i.e. compositor matrix is identity which corresponds to the zero
+  // temperature).
+  TestCompositorsTemperature(0.0f);
+  // Hence software cursor should not be used.
+  EXPECT_FALSE(IsCursorCompositingEnabled());
+  // Verify correct matrix has been set on both crtcs.
+  std::string logger_actions = GetLoggerActionsAndClear();
+  EXPECT_TRUE(VerifyCrtcMatrix(kId1, temperature, logger_actions));
+  EXPECT_TRUE(VerifyCrtcMatrix(kId2, temperature, logger_actions));
+
+  // Setting a new temperature is applied.
+  temperature = 0.65f;
+  controller->SetColorTemperature(temperature);
+  EXPECT_EQ(temperature, controller->GetColorTemperature());
+  TestCompositorsTemperature(0.0f);
+  EXPECT_FALSE(IsCursorCompositingEnabled());
+  logger_actions = GetLoggerActionsAndClear();
+  EXPECT_TRUE(VerifyCrtcMatrix(kId1, temperature, logger_actions));
+  EXPECT_TRUE(VerifyCrtcMatrix(kId2, temperature, logger_actions));
+}
+
+// One display supports CRTC matrix and the other doesn't.
+TEST_F(NightLightCrtcTest, TestMixedCrtcMatrixSupport) {
+  std::vector<display::DisplaySnapshot*> outputs =
+      BuildAndGetDisplaySnapshots({true, false});
+  UpdateDisplays(outputs);
+
+  EXPECT_EQ(2u, display_manager()->GetNumDisplays());
+  ASSERT_EQ(2u, RootWindowController::root_window_controllers().size());
+
+  // Turn on Night Light:
+  NightLightController* controller = GetController();
+  SetNightLightEnabled(true);
+  const float temperature = 0.2f;
+  GetLoggerActionsAndClear();
+  controller->SetColorTemperature(temperature);
+  EXPECT_EQ(temperature, controller->GetColorTemperature());
+
+  // The first display supports CRTC matrix, so its compositor has identity
+  // matrix.
+  TestDisplayCompositorTemperature(kId1, 0.0f);
+  // However, the second display doesn't support CRTC matrix, Night Light is
+  // using the compositor matrix on this display.
+  TestDisplayCompositorTemperature(kId2, temperature);
+  // With mixed CTRC support, software cursor must be on.
+  EXPECT_TRUE(IsCursorCompositingEnabled());
+  // Verify correct matrix has been set on both crtcs.
+  const std::string logger_actions = GetLoggerActionsAndClear();
+  EXPECT_TRUE(VerifyCrtcMatrix(kId1, temperature, logger_actions));
+  EXPECT_FALSE(VerifyCrtcMatrix(kId2, temperature, logger_actions));
+}
+
+// All displays don't support CRTC matrices.
+TEST_F(NightLightCrtcTest, TestNoCrtcMatrixSupport) {
+  std::vector<display::DisplaySnapshot*> outputs =
+      BuildAndGetDisplaySnapshots({false, false});
+  UpdateDisplays(outputs);
+
+  EXPECT_EQ(2u, display_manager()->GetNumDisplays());
+  ASSERT_EQ(2u, RootWindowController::root_window_controllers().size());
+
+  // Turn on Night Light:
+  NightLightController* controller = GetController();
+  SetNightLightEnabled(true);
+  const float temperature = 0.2f;
+  GetLoggerActionsAndClear();
+  controller->SetColorTemperature(temperature);
+  EXPECT_EQ(temperature, controller->GetColorTemperature());
+
+  // Compositor matrices are used on both displays.
+  TestCompositorsTemperature(temperature);
+  // With no CTRC support, software cursor must be on.
+  EXPECT_TRUE(IsCursorCompositingEnabled());
+  // No CRTC matrices have been set.
+  const std::string logger_actions = GetLoggerActionsAndClear();
+  EXPECT_FALSE(VerifyCrtcMatrix(kId1, temperature, logger_actions));
+  EXPECT_FALSE(VerifyCrtcMatrix(kId2, temperature, logger_actions));
 }
 
 }  // namespace

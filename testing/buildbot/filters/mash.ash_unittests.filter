@@ -173,6 +173,9 @@
 -NativeCursorManagerAshTest.SetDeviceScaleFactorAndRotation
 -NativeCursorManagerAshTest.UIScaleShouldNotChangeCursor
 
+# TODO: NightLight and mirror mode in mash. https://crbug.com/836368
+-NightLightTest.TestNightLightWithDisplayConfigurationChanges
+
 # TODO: Maybe due to dragging across displays. http://crbug.com/698888
 -NormalPanelPopup/PanelWindowResizerTransientTest.PanelWithTransientChild/0
 

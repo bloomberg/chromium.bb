@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <memory>
 #include <vector>
 
@@ -40,9 +39,27 @@ class ASH_EXPORT DisplayColorManager
     : public display::DisplayConfigurator::Observer,
       public display::DisplayObserver {
  public:
+  // The type of CRTC color transform matrix (CTM) support for the currently
+  // connected displays.
+  // WARNING: These values are persisted to logs. Entries should not be
+  // renumbered and numeric values should never be reused.
+  enum class DisplayCtmSupport {
+    // All connected displays don't support CRTC CTMs.
+    kNone = 0,
+    // Mixed support; some displays support CRTC CTMs while others don't.
+    kMixed = 1,
+    // All connected displays support CRTC CTMs.
+    kAll = 2,
+    kMaxValue = kAll,
+  };
+
   DisplayColorManager(display::DisplayConfigurator* configurator,
                       display::Screen* screen_to_observe);
   ~DisplayColorManager() override;
+
+  DisplayCtmSupport displays_ctm_support() const {
+    return displays_ctm_support_;
+  }
 
   // Sets the given |color_matrix| on the display hardware of |display_id|,
   // combining the given matrix with any available color calibration matrix for
@@ -87,8 +104,21 @@ class ASH_EXPORT DisplayColorManager
  private:
   friend class DisplayColorManagerTest;
 
-  void ApplyDisplayColorCalibration(int64_t display_id, int64_t product_code);
-  void LoadCalibrationForDisplay(const display::DisplaySnapshot* display);
+  void ApplyDisplayColorCalibration(
+      int64_t display_id,
+      const ColorCalibrationData& calibration_data);
+
+  // Attempts to start requesting the ICC profile for |display|. Returns true if
+  // it was successful at initiating the request, false otherwise.
+  bool LoadCalibrationForDisplay(const display::DisplaySnapshot* display);
+
+  // Applies an empty color calibration data, potentially with a color
+  // matrix from |displays_color_matrix_map_| (if any for this display is
+  // available). This is needed in cases we fail to load ICC profiles for
+  // displays and we won't be getting any calibration data for them. We must
+  // reset their configuration because some drivers hold on to it across screen
+  // changes, https://crrev.com/1914343003.
+  void ResetDisplayColorCalibration(int64_t display_id);
 
   display::DisplayConfigurator* configurator_;
 
@@ -103,9 +133,12 @@ class ASH_EXPORT DisplayColorManager
 
   // Maps a display's color calibration data by the display's product code as
   // the key.
-  std::map<int64_t, std::unique_ptr<ColorCalibrationData>> calibration_map_;
+  base::flat_map<int64_t, std::unique_ptr<ColorCalibrationData>>
+      calibration_map_;
   SEQUENCE_CHECKER(sequence_checker_);
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
+
+  DisplayCtmSupport displays_ctm_support_;
 
   // This is null in DisplayColorManagerTest.
   display::Screen* screen_to_observe_;

@@ -949,8 +949,6 @@ void Shell::Init(ui::ContextFactory* context_factory,
 
   // These controllers call Shell::Get() in their constructors, so they cannot
   // be in the member initialization list.
-  if (switches::IsNightLightEnabled())
-    night_light_controller_ = std::make_unique<NightLightController>();
   touch_devices_controller_ = std::make_unique<TouchDevicesController>();
   bluetooth_power_controller_ = std::make_unique<BluetoothPowerController>();
   detachable_base_handler_ = std::make_unique<DetachableBaseHandler>(this);
@@ -1014,6 +1012,11 @@ void Shell::Init(ui::ContextFactory* context_factory,
     aura::Env::GetInstance()->set_context_factory_private(
         context_factory_private);
   }
+
+  // Night Light depends on the display manager, the display color manager, and
+  // aura::Env, so initialize it after all have been initialized.
+  if (switches::IsNightLightEnabled())
+    night_light_controller_ = std::make_unique<NightLightController>();
 
   // The WindowModalityController needs to be at the front of the input event
   // pretarget handler list to ensure that it processes input events when modal

@@ -125,8 +125,8 @@ class ASH_EXPORT WindowTreeHostManager
   // Returns the root window for |display_id|.
   aura::Window* GetRootWindowForDisplayId(int64_t id);
 
-  // Returns AshWTH for given display |id|. Call results in CHECK failure
-  // if the WTH does not exist.
+  // Returns AshWTH for given display |id|. Returns nullptr if the WTH does not
+  // exist.
   AshWindowTreeHost* GetAshWindowTreeHostForDisplayId(int64_t id);
 
   // Sets the primary display by display id. This re-assigns the current primary
