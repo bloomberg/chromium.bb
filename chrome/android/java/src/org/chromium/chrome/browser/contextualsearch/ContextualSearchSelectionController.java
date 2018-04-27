@@ -236,7 +236,8 @@ public class ContextualSearchSelectionController {
             return;
         }
 
-        if (selection == null || selection.isEmpty()) {
+        if (TextUtils.isEmpty(selection) && !TextUtils.isEmpty(mSelectedText)) {
+            mSelectedText = selection;
             mHandler.handleSelectionCleared();
             // When the user taps on the page it will place the caret in that position, which
             // will trigger a onSelectionChanged event with an empty string.
