@@ -59,7 +59,7 @@ class CONTENT_EXPORT WebSocketManager
   void ThrottlingPeriodTimerCallback();
 
   // This is virtual to support testing.
-  virtual std::unique_ptr<network::WebSocket> CreateWebSocket(
+  virtual std::unique_ptr<network::WebSocket> DoCreateWebSocketInternal(
       std::unique_ptr<network::WebSocket::Delegate> delegate,
       network::mojom::WebSocketRequest request,
       network::WebSocketThrottler::PendingConnection pending_connection_tracker,

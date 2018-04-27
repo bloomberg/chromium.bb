@@ -252,7 +252,7 @@ void WebSocketManager::DoCreateWebSocket(
   // Keep all network::WebSockets alive until either the client drops its
   // connection (see OnLostConnectionToClient) or we need to shutdown.
 
-  impls_.insert(CreateWebSocket(
+  impls_.insert(DoCreateWebSocketInternal(
       std::make_unique<Delegate>(this), std::move(request),
       throttler_.IssuePendingConnectionTracker(), process_id_, frame_id,
       std::move(origin), throttler_.CalculateDelay()));
@@ -272,7 +272,7 @@ void WebSocketManager::ThrottlingPeriodTimerCallback() {
     throttling_period_timer_.Stop();
 }
 
-std::unique_ptr<network::WebSocket> WebSocketManager::CreateWebSocket(
+std::unique_ptr<network::WebSocket> WebSocketManager::DoCreateWebSocketInternal(
     std::unique_ptr<network::WebSocket::Delegate> delegate,
     network::mojom::WebSocketRequest request,
     network::WebSocketThrottler::PendingConnection pending_connection_tracker,

@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
-#include "content/browser/dedicated_worker/dedicated_worker_host.h"
 #include "content/browser/locks/lock_manager.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_manager.h"
@@ -130,8 +129,17 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
   parameterized_binder_registry_.AddInterface(
       base::Bind(&ForwardServiceRequest<device::mojom::VibrationManager>,
                  device::mojom::kServiceName));
+
+  // Used for shared workers and service workers to create a websocket.
+  // In other cases, RenderFrameHostImpl for documents or DedicatedWorkerHost
+  // for dedicated workers handles interface requests in order to associate
+  // websockets with a frame. Shared workers and service workers don't have to
+  // do it because they don't have a frame.
+  // TODO(nhiroki): Consider moving this into SharedWorkerHost and
+  // ServiceWorkerProviderHost.
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(CreateWebSocket));
+
   parameterized_binder_registry_.AddInterface(
       base::Bind([](payments::mojom::PaymentManagerRequest request,
                     RenderProcessHost* host, const url::Origin& origin) {
@@ -159,8 +167,6 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
             ->GetLockManager()
             ->CreateService(std::move(request), origin);
       }));
-  parameterized_binder_registry_.AddInterface(
-      base::Bind(&CreateDedicatedWorkerHostFactory));
   parameterized_binder_registry_.AddInterface(
       base::Bind([](blink::mojom::NotificationServiceRequest request,
                     RenderProcessHost* host, const url::Origin& origin) {
