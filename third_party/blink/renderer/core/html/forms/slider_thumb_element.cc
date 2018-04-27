@@ -43,8 +43,8 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_slider_container.h"
-#include "third_party/blink/renderer/core/layout/layout_slider_thumb.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 
 namespace blink {
@@ -79,7 +79,7 @@ void SliderThumbElement::SetPositionFromValue() {
 }
 
 LayoutObject* SliderThumbElement::CreateLayoutObject(const ComputedStyle&) {
-  return new LayoutSliderThumb(this);
+  return new LayoutBlockFlow(this);
 }
 
 bool SliderThumbElement::IsDisabledFormControl() const {

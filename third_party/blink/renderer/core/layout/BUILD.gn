@@ -197,8 +197,6 @@ blink_core_sources("layout") {
     "layout_slider.h",
     "layout_slider_container.cc",
     "layout_slider_container.h",
-    "layout_slider_thumb.cc",
-    "layout_slider_thumb.h",
     "layout_state.cc",
     "layout_state.h",
     "layout_table.cc",
