@@ -1512,7 +1512,7 @@ void Browser::VisibleSecurityStateChanged(WebContents* source) {
 }
 
 void Browser::AddNewContents(WebContents* source,
-                             WebContents* new_contents,
+                             std::unique_ptr<WebContents> new_contents,
                              WindowOpenDisposition disposition,
                              const gfx::Rect& initial_rect,
                              bool user_gesture,
@@ -1520,9 +1520,9 @@ void Browser::AddNewContents(WebContents* source,
   // At this point the |new_contents| is beyond the popup blocker, but we use
   // the same logic for determining if the popup tracker needs to be attached.
   if (source && PopupBlockerTabHelper::ConsiderForPopupBlocking(disposition))
-    PopupTracker::CreateForWebContents(new_contents, source);
-  chrome::AddWebContents(this, source, new_contents, disposition, initial_rect,
-                         user_gesture);
+    PopupTracker::CreateForWebContents(new_contents.get(), source);
+  chrome::AddWebContents(this, source, std::move(new_contents), disposition,
+                         initial_rect, user_gesture);
 }
 
 void Browser::ActivateContents(WebContents* contents) {

@@ -48,11 +48,12 @@ class AppDelegate {
       content::BrowserContext* context,
       content::WebContents* source,
       const content::OpenURLParams& params) = 0;
-  virtual void AddNewContents(content::BrowserContext* context,
-                              content::WebContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_rect,
-                              bool user_gesture) = 0;
+  virtual void AddNewContents(
+      content::BrowserContext* context,
+      std::unique_ptr<content::WebContents> new_contents,
+      WindowOpenDisposition disposition,
+      const gfx::Rect& initial_rect,
+      bool user_gesture) = 0;
 
   // Feature support.
   virtual content::ColorChooser* ShowColorChooser(

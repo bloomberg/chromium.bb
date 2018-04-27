@@ -98,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, ShowInUninitializedTab) {
   create_params.initially_hidden = true;
   std::unique_ptr<content::WebContents> web_contents(
       content::WebContents::Create(create_params));
-  chrome::AddWebContents(browser(), NULL, web_contents.release(),
+  chrome::AddWebContents(browser(), NULL, std::move(web_contents),
                          WindowOpenDisposition::NEW_BACKGROUND_TAB, gfx::Rect(),
                          false);
   content::WebContents* tab2 =

@@ -41,11 +41,12 @@ content::WebContents* ShellAppDelegate::OpenURLFromTab(
   return NULL;
 }
 
-void ShellAppDelegate::AddNewContents(content::BrowserContext* context,
-                                      content::WebContents* new_contents,
-                                      WindowOpenDisposition disposition,
-                                      const gfx::Rect& initial_rect,
-                                      bool user_gesture) {
+void ShellAppDelegate::AddNewContents(
+    content::BrowserContext* context,
+    std::unique_ptr<content::WebContents> new_contents,
+    WindowOpenDisposition disposition,
+    const gfx::Rect& initial_rect,
+    bool user_gesture) {
   NOTIMPLEMENTED();
 }
 

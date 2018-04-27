@@ -18,6 +18,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/invalidate_type.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/window_container_type.mojom.h"
@@ -48,7 +49,6 @@ class RenderProcessHost;
 class RenderWidgetHost;
 class SessionStorageNamespace;
 class SiteInstance;
-class WebContents;
 class WebContentsImpl;
 struct ContextMenuParams;
 struct DropData;
@@ -121,7 +121,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // |*was_blocked| will be set to true if the popup gets blocked, and left
   // unchanged otherwise.
   virtual void AddNewContents(WebContents* source,
-                              WebContents* new_contents,
+                              std::unique_ptr<WebContents> new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_rect,
                               bool user_gesture,

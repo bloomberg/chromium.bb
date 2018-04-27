@@ -48,7 +48,7 @@ content::WebContents* AddSelectedTabWithURL(
 
 void AddWebContents(Browser* browser,
                     content::WebContents* source_contents,
-                    content::WebContents* new_contents,
+                    std::unique_ptr<content::WebContents> new_contents,
                     WindowOpenDisposition disposition,
                     const gfx::Rect& initial_rect,
                     bool user_gesture) {
@@ -57,8 +57,7 @@ void AddWebContents(Browser* browser,
   // Can't create a new contents for the current tab - invalid case.
   DCHECK(disposition != WindowOpenDisposition::CURRENT_TAB);
 
-  // TODO(erikchen): Fix ownership semantics. https://crbug.com/832879.
-  NavigateParams params(browser, base::WrapUnique(new_contents));
+  NavigateParams params(browser, std::move(new_contents));
   params.source_contents = source_contents;
   params.disposition = disposition;
   params.window_bounds = initial_rect;

@@ -45,11 +45,12 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
     // WebContents to a suitable container (e.g. browser) or to show it if it's
     // a popup window. If |was_blocked| is non-NULL, then |*was_blocked| will be
     // set to true if the popup gets blocked, and left unchanged otherwise.
-    virtual void AddWebContents(content::WebContents* new_contents,
-                                WindowOpenDisposition disposition,
-                                const gfx::Rect& initial_rect,
-                                bool user_gesture,
-                                bool* was_blocked) = 0;
+    virtual void AddWebContents(
+        std::unique_ptr<content::WebContents> new_contents,
+        WindowOpenDisposition disposition,
+        const gfx::Rect& initial_rect,
+        bool user_gesture,
+        bool* was_blocked) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -77,7 +78,7 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
   bool ShouldSuppressDialogs(content::WebContents* source) override;
   void DidNavigateMainFramePostCommit(content::WebContents* tab) override;
   void AddNewContents(content::WebContents* source,
-                      content::WebContents* new_contents,
+                      std::unique_ptr<content::WebContents> new_contents,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
                       bool user_gesture,

@@ -89,11 +89,11 @@ TEST_F(WebDialogWebContentsDelegateTest, OpenURLFromTabTest) {
 }
 
 TEST_F(WebDialogWebContentsDelegateTest, AddNewContentsForegroundTabTest) {
-  WebContents* contents =
-      WebContentsTester::CreateTestWebContents(profile(), NULL);
+  std::unique_ptr<WebContents> contents = base::WrapUnique(
+      WebContentsTester::CreateTestWebContents(profile(), NULL));
   test_web_contents_delegate_->AddNewContents(
-      NULL, contents, WindowOpenDisposition::NEW_FOREGROUND_TAB, gfx::Rect(),
-      false, NULL);
+      NULL, std::move(contents), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      gfx::Rect(), false, NULL);
   // This should create a new foreground tab in the existing browser.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(1U, chrome::GetTotalBrowserCount());

@@ -1481,12 +1481,12 @@ class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
   }
 
   void AddNewContents(WebContents* source,
-                      WebContents* new_contents,
+                      std::unique_ptr<WebContents> new_contents,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
                       bool user_gesture,
                       bool* was_blocked) override {
-    popup_.reset(new_contents);
+    popup_ = std::move(new_contents);
 
     if (waiting_for_ == kNewContents)
       run_loop_->Quit();
