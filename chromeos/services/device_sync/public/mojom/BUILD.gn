@@ -27,7 +27,6 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/cryptauth",
-    "//mojo/common",
     "//mojo/public/cpp/test_support:test_utils",
     "//testing/gtest",
   ]

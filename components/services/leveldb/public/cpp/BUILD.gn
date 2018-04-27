@@ -13,7 +13,6 @@ static_library("cpp") {
   deps = [
     "//base",
     "//components/services/leveldb/public/interfaces",
-    "//mojo/common",
     "//services/service_manager/public/cpp",
     "//third_party/leveldatabase",
   ]

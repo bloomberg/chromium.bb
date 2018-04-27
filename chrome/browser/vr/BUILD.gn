@@ -310,7 +310,6 @@ test("vr_common_unittests") {
 
   deps = [
     ":vr_test_support",
-    "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//testing/gmock",
     "//ui/gfx/geometry",

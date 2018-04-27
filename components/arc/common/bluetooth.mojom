@@ -278,8 +278,8 @@ struct BluetoothSdpAttribute {
   // change. This field is introduced between version 7 and 8, though
   // MinVersion is not annotated because of breaking change, too.
   // See details in the bug linked below.
-  // TODO(crbug.com/767313): Use mojo/common/values.mojom, when new libmojo
-  // (440057 or later) is rolled to ARC repository.
+  // TODO(crbug.com/767313): Use mojo/public/mojom/base/values.mojom, when new
+  // libmojo (440057 or later) is rolled to ARC repository.
   string? json_value@3;
 };
 

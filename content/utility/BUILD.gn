@@ -37,7 +37,6 @@ jumbo_source_set("utility") {
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
     "//media:media_buildflags",
-    "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//net:net_with_v8",
     "//sandbox",

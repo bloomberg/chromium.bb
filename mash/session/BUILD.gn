@@ -17,7 +17,6 @@ source_set("lib") {
   deps = [
     "//base",
     "//mash/common",
-    "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
   ]
@@ -42,7 +41,6 @@ service("session") {
   deps = [
     ":lib",
     "//base",
-    "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
   ]

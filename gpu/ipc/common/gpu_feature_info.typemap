@@ -7,7 +7,6 @@ public_headers = [ "//gpu/config/gpu_feature_info.h" ]
 traits_headers = [ "//gpu/ipc/common/gpu_feature_info_struct_traits.h" ]
 public_deps = [
   "//gpu/config",
-  "//mojo/common",
   "//ui/gfx/geometry/mojo",
 ]
 type_mappings = [

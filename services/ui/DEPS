@@ -5,7 +5,6 @@ include_rules = [
   "+components/discardable_memory/public",
   "+components/viz/common",
   "+ipc",
-  "+mojo/common",
   "+mojo/converters",
   "+mojo/public",
   "+services/catalog/public",

@@ -1956,7 +1956,6 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "//cc:test_support",
     "//cc/blink",
     "//device/base/synchronization",
-    "//mojo/common:test_common_custom_types_blink",
     "//mojo/edk",
     "//mojo/public/cpp/bindings/tests:for_blink_tests",
     "//mojo/public/cpp/test_support:test_utils",

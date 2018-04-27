@@ -56,7 +56,6 @@
 #include "content/public/common/url_utils.h"
 #include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/common/webplugininfo.h"
-#include "mojo/common/values_struct_traits.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_content_disposition.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"

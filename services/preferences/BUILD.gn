@@ -23,7 +23,6 @@ source_set("preferences") {
   ]
   deps = [
     "//components/prefs",
-    "//mojo/common:values_struct_traits",
     "//services/preferences/public/cpp",
     "//services/preferences/public/cpp/lib",
     "//services/preferences/public/mojom",

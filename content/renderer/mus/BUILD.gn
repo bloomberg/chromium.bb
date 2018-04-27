@@ -26,7 +26,6 @@ static_library("mus") {
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
     "//media/mojo/interfaces:remoting",
-    "//mojo/common",
     "//services/service_manager/public/cpp",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",

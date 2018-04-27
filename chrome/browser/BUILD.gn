@@ -1761,7 +1761,6 @@ jumbo_split_static_library("browser") {
     "//media/mojo/interfaces:mirror_service_remoting",
     "//media/mojo/interfaces:remoting",
     "//media/mojo/services",
-    "//mojo/common",
     "//mojo/edk",
     "//mojo/public/cpp/bindings",
     "//net:extras",

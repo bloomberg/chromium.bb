@@ -49,7 +49,6 @@ jumbo_component("mus") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//cc",
-    "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//net",
     "//services/catalog/public/cpp",

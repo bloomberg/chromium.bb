@@ -67,7 +67,6 @@ source_set("clients") {
     "//media/gpu",
     "//media/mojo/common",
     "//media/mojo/common:mojo_shared_buffer_video_frame",
-    "//mojo/common",
     "//services/service_manager/public/cpp",
   ]
 
@@ -90,7 +89,6 @@ source_set("jpeg_decode_accelerator") {
   deps = [
     "//base",
     "//media/mojo/interfaces",
-    "//mojo/common",
   ]
 }
 

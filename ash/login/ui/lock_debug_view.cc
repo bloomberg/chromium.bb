@@ -21,7 +21,6 @@
 #include "ash/shell.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
-#include "mojo/common/values_struct_traits.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/box_layout.h"

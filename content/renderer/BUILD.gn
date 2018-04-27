@@ -532,7 +532,6 @@ target(link_target_type, "renderer") {
     "//media/mojo/clients",
     "//media/mojo/interfaces",
     "//media/mojo/interfaces:remoting",
-    "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//net",
     "//ppapi/buildflags",

@@ -1,6 +1,5 @@
 include_rules = [
   "+services/service_manager",
-  "+mojo/common",
   "+mojo/public",
   "+skia",
   "+third_party/skia/include",
