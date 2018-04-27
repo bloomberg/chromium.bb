@@ -68,8 +68,11 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #include "chrome/browser/recovery/recovery_install_global_error_factory.h"
+#endif
+
+#if defined(OS_WIN)
 #include "chrome/browser/ui/views/conflicting_module_view_win.h"
 #include "chrome/browser/ui/views/critical_notification_bubble_view.h"
 #endif
@@ -230,7 +233,7 @@ void ToolbarView::Init() {
   // Start global error services now so we set the icon on the menu correctly.
 #if !defined(OS_CHROMEOS)
   SigninGlobalErrorFactory::GetForProfile(browser_->profile());
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   RecoveryInstallGlobalErrorFactory::GetForProfile(browser_->profile());
 #endif
 #endif  // OS_CHROMEOS
