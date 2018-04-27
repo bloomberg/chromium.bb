@@ -27,9 +27,10 @@ class METRICS_EXPORT UkmEntryBuilderBase {
   void Record(UkmRecorder* recorder);
 
  protected:
-  UkmEntryBuilderBase(ukm::SourceId source_id, uint64_t event_hash);
+  UkmEntryBuilderBase(SourceId source_id, uint64_t event_hash);
+
   // Add metric to the entry. A metric contains a metric hash and value.
-  void AddMetric(uint64_t metric_hash, int64_t value);
+  void SetMetricInternal(uint64_t metric_hash, int64_t value);
 
  private:
   mojom::UkmEntryPtr entry_;

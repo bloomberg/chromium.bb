@@ -56,8 +56,7 @@ bool BasePredictor::IsReady() {
 void BasePredictor::LogFeatureToUkm(const std::string& feature_name,
                                     const Feature& feature,
                                     ukm::UkmEntryBuilder* ukm_builder) {
-  if (!ukm_builder)
-    return;
+  DCHECK(ukm_builder);
 
   if (!base::ContainsKey(*config_.feature_whitelist, feature_name)) {
     DVLOG(1) << "Feature not whitelisted: " << feature_name;
@@ -72,7 +71,7 @@ void BasePredictor::LogFeatureToUkm(const std::string& feature_name,
       int64_t feature_int64_value = -1;
       FeatureToInt64(feature, &feature_int64_value);
       DVLOG(3) << "Logging: " << feature_name << ": " << feature_int64_value;
-      ukm_builder->AddMetric(feature_name.c_str(), feature_int64_value);
+      ukm_builder->SetMetric(feature_name, feature_int64_value);
       break;
     }
     case Feature::kStringList: {
@@ -80,7 +79,7 @@ void BasePredictor::LogFeatureToUkm(const std::string& feature_name,
         int64_t feature_int64_value = -1;
         FeatureToInt64(feature, &feature_int64_value, i);
         DVLOG(3) << "Logging: " << feature_name << ": " << feature_int64_value;
-        ukm_builder->AddMetric(feature_name.c_str(), feature_int64_value);
+        ukm_builder->SetMetric(feature_name, feature_int64_value);
       }
       break;
     }
@@ -105,16 +104,11 @@ void BasePredictor::LogExampleToUkm(const RankerExample& example,
     return;
   }
 
-  // Releasing the builder will trigger logging.
-  std::unique_ptr<ukm::UkmEntryBuilder> builder =
-      ukm::UkmRecorder::Get()->GetEntryBuilder(source_id, config_.logging_name);
-  if (builder) {
-    for (const auto& feature_kv : example.features()) {
-      LogFeatureToUkm(feature_kv.first, feature_kv.second, builder.get());
-    }
-  } else {
-    DVLOG(0) << "Could not get UKM Entry Builder.";
+  ukm::UkmEntryBuilder builder(source_id, config_.logging_name);
+  for (const auto& feature_kv : example.features()) {
+    LogFeatureToUkm(feature_kv.first, feature_kv.second, &builder);
   }
+  builder.Record(ukm::UkmRecorder::Get());
 }
 
 std::string BasePredictor::GetModelName() const {

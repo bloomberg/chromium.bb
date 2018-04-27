@@ -11,8 +11,6 @@
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
-using ukm::UkmEntryBuilder;
-
 namespace contextual_suggestions {
 
 namespace {

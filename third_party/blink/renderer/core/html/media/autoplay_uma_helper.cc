@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/media/autoplay_uma_helper.h"
 
-#include "services/metrics/public/cpp/ukm_entry_builder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -27,21 +27,6 @@ const int32_t kMaxOffscreenDurationUmaMS = 60 * 60 * 1000;
 const int32_t kOffscreenDurationUmaBucketCount = 50;
 const int32_t kMaxWaitTimeUmaMS = 30 * 1000;
 const int32_t kWaitTimeBucketCount = 50;
-
-const char kAutoplayAttemptUkmEvent[] = "Media.Autoplay.Attempt";
-const char kAutoplayAttemptUkmSourceMetric[] = "Source";
-const char kAutoplayAttemptUkmAudioTrackMetric[] = "AudioTrack";
-const char kAutoplayAttemptUkmVideoTrackMetric[] = "VideoTrack";
-const char kAutoplayAttemptUkmUserGestureRequiredMetric[] =
-    "UserGestureRequired";
-const char kAutoplayAttemptUkmMutedMetric[] = "Muted";
-const char kAutoplayAttemptUkmHighMediaEngagementMetric[] =
-    "HighMediaEngagement";
-const char kAutoplayAttemptUkmUserGestureStatusMetric[] = "UserGestureStatus";
-
-const char kAutoplayMutedUnmuteUkmEvent[] = "Media.Autoplay.Muted.UnmuteAction";
-const char kAutoplayMutedUnmuteUkmSourceMetric[] = "Source";
-const char kAutoplayMutedUnmuteUkmResultMetric[] = "Result";
 
 // Returns a int64_t with the following structure:
 // 0b0001 set if there is a user gesture on the stack.
@@ -210,23 +195,19 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
     DCHECK(frame);
     DCHECK(element_->GetDocument().GetPage());
 
-    std::unique_ptr<ukm::UkmEntryBuilder> builder =
-        CreateUkmBuilder(kAutoplayAttemptUkmEvent);
-    builder->AddMetric(kAutoplayAttemptUkmSourceMetric,
-                       source == AutoplaySource::kMethod);
-    builder->AddMetric(kAutoplayAttemptUkmAudioTrackMetric,
-                       element_->HasAudio());
-    builder->AddMetric(kAutoplayAttemptUkmVideoTrackMetric,
-                       element_->HasVideo());
-    builder->AddMetric(
-        kAutoplayAttemptUkmUserGestureRequiredMetric,
-        element_->GetAutoplayPolicy().IsGestureNeededForPlayback());
-    builder->AddMetric(kAutoplayAttemptUkmMutedMetric, element_->muted());
-    builder->AddMetric(kAutoplayAttemptUkmHighMediaEngagementMetric,
-                       AutoplayPolicy::DocumentHasHighMediaEngagement(
-                           element_->GetDocument()));
-    builder->AddMetric(kAutoplayAttemptUkmUserGestureStatusMetric,
-                       GetUserGestureStatusForUkmMetric(frame));
+    ukm::UkmRecorder* ukm_recorder = element_->GetDocument().UkmRecorder();
+    DCHECK(ukm_recorder);
+    ukm::builders::Media_Autoplay_Attempt(element_->GetDocument().UkmSourceID())
+        .SetSource(source == AutoplaySource::kMethod)
+        .SetAudioTrack(element_->HasAudio())
+        .SetVideoTrack(element_->HasVideo())
+        .SetUserGestureRequired(
+            element_->GetAutoplayPolicy().IsGestureNeededForPlayback())
+        .SetMuted(element_->muted())
+        .SetHighMediaEngagement(AutoplayPolicy::DocumentHasHighMediaEngagement(
+            element_->GetDocument()))
+        .SetUserGestureStatus(GetUserGestureStatusForUkmMetric(frame))
+        .Record(ukm_recorder);
   }
 
   element_->addEventListener(EventTypeNames::playing, this, false);
@@ -321,9 +302,6 @@ void AutoplayUmaHelper::RecordAutoplayUnmuteStatus(
 
   // Record UKM event for unmute muted autoplay.
   if (element_->GetDocument().IsInMainFrame()) {
-    std::unique_ptr<ukm::UkmEntryBuilder> builder =
-        CreateUkmBuilder(kAutoplayMutedUnmuteUkmEvent);
-
     int source = static_cast<int>(AutoplaySource::kAttribute);
     if (sources_.size() ==
         static_cast<size_t>(AutoplaySource::kNumberOfSources)) {
@@ -332,9 +310,13 @@ void AutoplayUmaHelper::RecordAutoplayUnmuteStatus(
       source = static_cast<int>(AutoplaySource::kAttribute);
     }
 
-    builder->AddMetric(kAutoplayMutedUnmuteUkmSourceMetric, source);
-    builder->AddMetric(kAutoplayMutedUnmuteUkmResultMetric,
-                       status == AutoplayUnmuteActionStatus::kSuccess);
+    ukm::UkmRecorder* ukm_recorder = element_->GetDocument().UkmRecorder();
+    DCHECK(ukm_recorder);
+    ukm::builders::Media_Autoplay_Muted_UnmuteAction(
+        element_->GetDocument().UkmSourceID())
+        .SetSource(source)
+        .SetResult(status == AutoplayUnmuteActionStatus::kSuccess)
+        .Record(ukm_recorder);
   }
 }
 
@@ -519,15 +501,6 @@ bool AutoplayUmaHelper::ShouldRecordUserPausedAutoplayingCrossOriginVideo()
          !sources_.empty() &&
          !recorded_cross_origin_autoplay_results_.count(
              CrossOriginAutoplayResult::kUserPaused);
-}
-
-std::unique_ptr<ukm::UkmEntryBuilder> AutoplayUmaHelper::CreateUkmBuilder(
-    const char* event) {
-  ukm::UkmRecorder* ukm_recorder = element_->GetDocument().UkmRecorder();
-  DCHECK(ukm_recorder);
-
-  return ukm_recorder->GetEntryBuilder(element_->GetDocument().UkmSourceID(),
-                                       event);
 }
 
 void AutoplayUmaHelper::Trace(blink::Visitor* visitor) {

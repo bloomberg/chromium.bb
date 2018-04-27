@@ -4,29 +4,19 @@
 
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
 
-#include <memory>
-
 #include "base/metrics/metrics_hashes.h"
-#include "services/metrics/public/mojom/ukm_interface.mojom.h"
 
 namespace ukm {
 
-UkmEntryBuilder::UkmEntryBuilder(
-    const UkmEntryBuilder::AddEntryCallback& callback,
-    ukm::SourceId source_id,
-    const char* event_name)
-    : add_entry_callback_(callback), entry_(mojom::UkmEntry::New()) {
-  entry_->source_id = source_id;
-  entry_->event_hash = base::HashMetricName(event_name);
-}
+UkmEntryBuilder::UkmEntryBuilder(ukm::SourceId source_id,
+                                 base::StringPiece event_name)
+    : ukm::internal::UkmEntryBuilderBase(source_id,
+                                         base::HashMetricName(event_name)) {}
 
-UkmEntryBuilder::~UkmEntryBuilder() {
-  add_entry_callback_.Run(std::move(entry_));
-}
+UkmEntryBuilder::~UkmEntryBuilder() {}
 
-void UkmEntryBuilder::AddMetric(const char* metric_name, int64_t value) {
-  entry_->metrics.emplace_back(
-      mojom::UkmMetric::New(base::HashMetricName(metric_name), value));
+void UkmEntryBuilder::SetMetric(base::StringPiece metric_name, int64_t value) {
+  SetMetricInternal(base::HashMetricName(metric_name), value);
 }
 
 }  // namespace ukm

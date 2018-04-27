@@ -9,40 +9,34 @@
 
 #include "base/macros.h"
 #include "services/metrics/public/cpp/metrics_export.h"
+#include "services/metrics/public/cpp/ukm_entry_builder_base.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
 
 namespace ukm {
 
-// The builder that builds UkmEntry and adds it to UkmRecorder.
+// A generic builder object for recording entries in a UkmRecorder, when the
+// recording code does not statically know the names of the events/metrics.
+// Metrics must still be described in ukm.xml, and this will trigger a DCHECK
+// if used to record metrics not described there.
+//
+// Where possible, prefer using generated objects from ukm_builders.h in the
+// ukm::builders namespace instead.
+//
 // The example usage is:
-//
-// {
-//   unique_ptr<UkmEntryBuilder> builder =
-//       ukm_recorder->GetEntryBuilder(source_id, "PageLoad");
-//   builder->AddMetric("NavigationStart", navigation_start_time);
-//   builder->AddMetric("ResponseStart", response_start_time);
-//   builder->AddMetric("FirstPaint", first_paint_time);
-//   builder->AddMetric("FirstContentfulPaint", fcp_time);
-// }
-//
-// When there exists an added metric, the builder will automatically add the
-// UkmEntry to UkmService upon destruction when going out of scope.
-class METRICS_EXPORT UkmEntryBuilder {
+// ukm::UkmEntryBuilder builder(source_id, "PageLoad");
+// builder.SetMetric("NavigationStart", navigation_start_time);
+// builder.SetMetric("FirstPaint", first_paint_time);
+// builder.Record(ukm_recorder);
+class METRICS_EXPORT UkmEntryBuilder final
+    : public ukm::internal::UkmEntryBuilderBase {
  public:
-  using AddEntryCallback = base::Callback<void(mojom::UkmEntryPtr)>;
-  UkmEntryBuilder(const AddEntryCallback& callback,
-                  ukm::SourceId source_id,
-                  const char* event_name);
-  ~UkmEntryBuilder();
+  UkmEntryBuilder(SourceId source_id, base::StringPiece event_name);
+  ~UkmEntryBuilder() override;
 
-  // Add metric to the entry. A metric contains a metric name and value.
-  void AddMetric(const char* metric_name, int64_t value);
+  void SetMetric(base::StringPiece metric_name, int64_t value);
 
  private:
-  AddEntryCallback add_entry_callback_;
-  mojom::UkmEntryPtr entry_;
-
   DISALLOW_COPY_AND_ASSIGN(UkmEntryBuilder);
 };
 
