@@ -40,3 +40,4 @@
 -InstallableManagerBrowserTest.*
 -ContextMenuBrowserTest.*
 -ChromeSitePerProcessTest.*
+-InterstitialUITest.*
