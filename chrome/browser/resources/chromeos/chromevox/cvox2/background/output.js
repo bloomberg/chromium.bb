@@ -1795,6 +1795,14 @@ Output.prototype = {
     if (node.state[StateType.EDITABLE] && cvox.ChromeVox.isStickyPrefOn)
       this.format_(node, '@sticky_mode_enabled', buff);
 
+    if (node.state[StateType.EDITABLE] && node.state[StateType.FOCUSED] &&
+        !this.formatOptions_.braille) {
+      this.format_(node, '@hint_is_editing', buff);
+      if (node.state[StateType.MULTILINE] ||
+          node.state[StateType.RICHLY_EDITABLE])
+        this.format_(node, '@hint_search_within_text_field', buff);
+    }
+
     if (AutomationPredicate.checkable(node))
       this.format_(node, '@hint_checkable', buff);
     if (AutomationPredicate.clickable(node))
