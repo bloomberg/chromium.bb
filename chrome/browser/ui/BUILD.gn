@@ -2063,6 +2063,8 @@ split_static_library("ui") {
       "webui/settings/chromeos/android_apps_handler.h",
       "webui/settings/chromeos/change_picture_handler.cc",
       "webui/settings/chromeos/change_picture_handler.h",
+      "webui/settings/chromeos/crostini_handler.cc",
+      "webui/settings/chromeos/crostini_handler.h",
       "webui/settings/chromeos/cups_printers_handler.cc",
       "webui/settings/chromeos/cups_printers_handler.h",
       "webui/settings/chromeos/date_time_handler.cc",

@@ -9,6 +9,7 @@
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/crostini/crostini_remover.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/component_updater/cros_component_installer.h"
@@ -38,12 +39,6 @@ std::string ContainerUserNameForProfile(Profile* profile) {
   // Get rid of the @domain.name in the profile user name (an email address).
   std::string container_username = profile->GetProfileUserName();
   return container_username.substr(0, container_username.find('@'));
-}
-
-std::string CryptohomeIdForProfile(Profile* profile) {
-  std::string id = chromeos::ProfileHelper::GetUserIdHashFromProfile(profile);
-  // Empty id means we're running in a test.
-  return id.empty() ? "test" : id;
 }
 
 class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
@@ -655,8 +650,16 @@ void CrostiniManager::OnStopVm(
 
   if (!response.success()) {
     LOG(ERROR) << "Failed to stop VM: " << response.failure_reason();
-    std::move(callback).Run(ConciergeClientResult::VM_STOP_FAILED);
-    return;
+    // TODO(rjwright): Change the service so that "Requested VM does not
+    // exist" is not an error. "Requested VM does not exist" means that there
+    // is a disk image for the VM but it is not running, either because it has
+    // not been started or it has already been stopped. There's no need for
+    // this to be an error, and making it a success will save us having to
+    // discriminate on failure_reason here.
+    if (response.failure_reason() != "Requested VM does not exist") {
+      std::move(callback).Run(ConciergeClientResult::VM_STOP_FAILED);
+      return;
+    }
   }
 
   std::move(callback).Run(ConciergeClientResult::SUCCESS);
@@ -747,6 +750,14 @@ void CrostiniManager::OnGetContainerAppIcons(
              .content = std::move(*icon.mutable_icon())});
   }
   std::move(callback).Run(ConciergeClientResult::SUCCESS, icons);
+}
+
+void CrostiniManager::RemoveCrostini(Profile* profile,
+                                     std::string vm_name,
+                                     std::string container_name) {
+  auto crostini_remover = base::MakeRefCounted<CrostiniRemover>(
+      profile, std::move(vm_name), std::move(container_name));
+  crostini_remover->RemoveCrostini();
 }
 
 }  // namespace crostini

@@ -20,6 +20,8 @@ bool IsExperimentalCrostiniUIAvailable();
 // |app_id| should be a valid Crostini app list id.
 void LaunchCrostiniApp(Profile* profile, const std::string& app_id);
 
+std::string CryptohomeIdForProfile(Profile* profile);
+
 constexpr char kCrostiniTerminalAppName[] = "Terminal";
 // We can use any arbitrary well-formed extension id for the Terminal app, this
 // is equal to GenerateId("Terminal").

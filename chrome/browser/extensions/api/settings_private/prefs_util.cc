@@ -37,6 +37,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_pref_names.h"  // nogncheck
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -313,6 +314,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[::prefs::kTextToSpeechVolume] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
+
+  // Crostini
+  (*s_whitelist)[crostini::prefs::kCrostiniEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Android Apps.
   (*s_whitelist)[arc::prefs::kArcEnabled] =

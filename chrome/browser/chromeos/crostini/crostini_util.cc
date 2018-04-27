@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/virtual_machines/virtual_machines_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_installer_view.h"
@@ -107,4 +108,10 @@ void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
       base::BindOnce(&MaybeLaunchContainerAppplication,
                      std::move(registration)));
   registry_service->AppLaunched(app_id);
+}
+
+std::string CryptohomeIdForProfile(Profile* profile) {
+  std::string id = chromeos::ProfileHelper::GetUserIdHashFromProfile(profile);
+  // Empty id means we're running in a test.
+  return id.empty() ? "test" : id;
 }
