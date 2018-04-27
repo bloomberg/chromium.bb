@@ -64,13 +64,13 @@ void TestAutofillManager::UploadFormData(const FormStructure& submitted_form,
     AutofillManager::UploadFormData(submitted_form, observed_submission);
 }
 
-bool TestAutofillManager::StartUploadProcess(
+bool TestAutofillManager::MaybeStartVoteUploadProcess(
     std::unique_ptr<FormStructure> form_structure,
     const base::TimeTicks& timestamp,
     bool observed_submission) {
   run_loop_ = std::make_unique<base::RunLoop>();
-  if (AutofillManager::StartUploadProcess(std::move(form_structure), timestamp,
-                                          observed_submission)) {
+  if (AutofillManager::MaybeStartVoteUploadProcess(
+          std::move(form_structure), timestamp, observed_submission)) {
     run_loop_->Run();
     return true;
   }

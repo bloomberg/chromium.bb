@@ -65,9 +65,8 @@ class AutofillHandler {
 
   // Invoked when |form| has been submitted.
   // Processes the submitted |form|, saving any new Autofill data to the user's
-  // personal profile. Returns whether the upload process was started (used for
-  // testing).
-  bool OnFormSubmitted(const FormData& form,
+  // personal profile.
+  void OnFormSubmitted(const FormData& form,
                        bool known_success,
                        SubmissionSource source,
                        base::TimeTicks timestamp);
@@ -111,7 +110,7 @@ class AutofillHandler {
  protected:
   AutofillHandler(AutofillDriver* driver);
 
-  virtual bool OnFormSubmittedImpl(const FormData& form,
+  virtual void OnFormSubmittedImpl(const FormData& form,
                                    bool known_success,
                                    SubmissionSource source,
                                    base::TimeTicks timestamp) = 0;

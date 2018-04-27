@@ -40,7 +40,7 @@ class MockAutofillProvider : public TestAutofillProvider {
   ~MockAutofillProvider() override {}
 
   MOCK_METHOD5(OnFormSubmitted,
-               bool(AutofillHandlerProxy* handler,
+               void(AutofillHandlerProxy* handler,
                     const FormData& form,
                     bool,
                     SubmissionSource,
@@ -62,13 +62,12 @@ class MockAutofillProvider : public TestAutofillProvider {
     is_queried_ = true;
   }
 
-  bool OnFormSubmittedImpl(AutofillHandlerProxy*,
+  void OnFormSubmittedImpl(AutofillHandlerProxy*,
                            const FormData& form,
                            bool success,
                            SubmissionSource source,
                            base::TimeTicks timestamp) {
     submitted_form_ = form;
-    return false;
   }
 
   const FormData& queried_form() { return queried_form_; }

@@ -348,19 +348,19 @@ void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
   ParseForms(forms);
 }
 
-bool AutofillManager::OnFormSubmittedImpl(const FormData& form,
+void AutofillManager::OnFormSubmittedImpl(const FormData& form,
                                           bool known_success,
                                           SubmissionSource source,
                                           base::TimeTicks timestamp) {
   // TODO(crbug.com/801698): handle PROBABLY_FORM_SUBMITTED.
   if (source == SubmissionSource::PROBABLY_FORM_SUBMITTED)
-    return false;
+    return;
 
   // We will always give Autocomplete a chance to save the data.
   std::unique_ptr<FormStructure> submitted_form = ValidateSubmittedForm(form);
   if (!submitted_form) {
     autocomplete_history_manager_->OnWillSubmitForm(form);
-    return false;
+    return;
   }
 
   // However, if Autofill has recognized a field as CVC, that shouldn't be
@@ -378,14 +378,15 @@ bool AutofillManager::OnFormSubmittedImpl(const FormData& form,
   if (IsCreditCardAutofillEnabled())
     credit_card_form_event_logger_->OnWillSubmitForm();
 
-  bool ret = StartUploadProcess(std::move(submitted_form), timestamp, true);
+  MaybeStartVoteUploadProcess(std::move(submitted_form), timestamp,
+                              /*observed_submission=*/true);
 
   // TODO(crbug.com/803334): Add FormStructure::Clone() method.
   // Create another FormStructure instance.
   submitted_form = ValidateSubmittedForm(form);
   DCHECK(submitted_form);
   if (!submitted_form)
-    return ret;
+    return;
 
   CreditCard credit_card =
       form_data_importer_->ExtractCreditCardFromForm(*submitted_form);
@@ -398,17 +399,16 @@ bool AutofillManager::OnFormSubmittedImpl(const FormData& form,
     credit_card_form_event_logger_->OnFormSubmitted(enable_ablation_logging_,
                                                     card_number_status);
 
+  if (!submitted_form->IsAutofillable())
+    return;
+
   // Update Personal Data with the form's submitted data.
   // Also triggers offering local/upload credit card save, if applicable.
-  if (submitted_form->IsAutofillable()) {
-    form_data_importer_->ImportFormData(*submitted_form,
-                                        IsCreditCardAutofillEnabled());
-  }
-
-  return ret;
+  form_data_importer_->ImportFormData(*submitted_form,
+                                      IsCreditCardAutofillEnabled());
 }
 
-bool AutofillManager::StartUploadProcess(
+bool AutofillManager::MaybeStartVoteUploadProcess(
     std::unique_ptr<FormStructure> form_structure,
     const TimeTicks& timestamp,
     bool observed_submission) {
@@ -478,7 +478,8 @@ void AutofillManager::ProcessPendingFormForUpload() {
   if (!upload_form)
     return;
 
-  StartUploadProcess(std::move(upload_form), TimeTicks::Now(), false);
+  MaybeStartVoteUploadProcess(std::move(upload_form), TimeTicks::Now(),
+                              /*observed_submission=*/false);
 }
 
 void AutofillManager::OnTextFieldDidChangeImpl(const FormData& form,

@@ -5964,8 +5964,8 @@ TEST_F(AutofillManagerTest, SignInFormSubmission_Upload) {
   EXPECT_CALL(*download_manager_,
               StartUploadRequest(_, false, _, std::string(), true))
       .WillOnce(DoAll(SaveArg<2>(&uploaded_available_types), Return(true)));
-  autofill_manager_->StartUploadProcess(std::move(form_structure),
-                                        base::TimeTicks::Now(), true);
+  autofill_manager_->MaybeStartVoteUploadProcess(std::move(form_structure),
+                                                 base::TimeTicks::Now(), true);
 
   EXPECT_EQ(signature, autofill_manager_->GetSubmittedFormSignature());
   EXPECT_NE(uploaded_available_types.end(),

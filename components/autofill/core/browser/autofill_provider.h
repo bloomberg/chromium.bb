@@ -46,7 +46,7 @@ class AutofillProvider {
                                         const FormFieldData& field,
                                         const gfx::RectF& bounding_box) = 0;
 
-  virtual bool OnFormSubmitted(AutofillHandlerProxy* handler,
+  virtual void OnFormSubmitted(AutofillHandlerProxy* handler,
                                const FormData& form,
                                bool known_success,
                                SubmissionSource source,

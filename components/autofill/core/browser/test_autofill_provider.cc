@@ -32,14 +32,6 @@ void TestAutofillProvider::OnSelectControlDidChange(
     const FormFieldData& field,
     const gfx::RectF& bounding_box) {}
 
-bool TestAutofillProvider::OnFormSubmitted(AutofillHandlerProxy* handler,
-                                           const FormData& form,
-                                           bool known_success,
-                                           SubmissionSource source,
-                                           base::TimeTicks timestamp) {
-  return false;
-}
-
 void TestAutofillProvider::OnFocusNoLongerOnForm(
     AutofillHandlerProxy* handler) {}
 
