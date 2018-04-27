@@ -403,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, SavingToDiskError) {
   EXPECT_EQ(GetElementDisabledState("session-choice", "saving"), 1);
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyToolUITest, DefaultSession) {
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest, DISABLED_DefaultSession) {
   // Navigate to the tool to make sure the sessions directory is created.
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
 
