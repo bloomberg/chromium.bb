@@ -8,6 +8,7 @@ cr.define('extensions', function() {
   /**
    * @implements {extensions.ErrorPageDelegate}
    * @implements {extensions.ItemDelegate}
+   * @implements {extensions.KeyboardShortcutDelegate}
    * @implements {extensions.LoadErrorDelegate}
    * @implements {extensions.PackDialogDelegate}
    * @implements {extensions.ToolbarDelegate}
@@ -67,13 +68,8 @@ cr.define('extensions', function() {
       });
     }
 
-    /**
-     * Updates an extension command.
-     * @param {string} extensionId
-     * @param {string} commandName
-     * @param {string} keybinding
-     */
-    updateExtensionCommand(extensionId, commandName, keybinding) {
+    /** @override */
+    updateExtensionCommandKeybinding(extensionId, commandName, keybinding) {
       chrome.developerPrivate.updateExtensionCommand({
         extensionId: extensionId,
         commandName: commandName,
@@ -81,15 +77,17 @@ cr.define('extensions', function() {
       });
     }
 
-    /**
-     * Called when shortcut capturing changes in order to suspend or re-enable
-     * global shortcut handling. This is important so that the shortcuts aren't
-     * processed normally as the user types them.
-     * TODO(devlin): From very brief experimentation, it looks like preventing
-     * the default handling on the event also does this. Investigate more in the
-     * future.
-     * @param {boolean} isCapturing
-     */
+    /** @override */
+    updateExtensionCommandScope(extensionId, commandName, scope) {
+      chrome.developerPrivate.updateExtensionCommand({
+        extensionId: extensionId,
+        commandName: commandName,
+        scope: scope,
+      });
+    }
+
+
+    /** @override */
     setShortcutHandlingSuspended(isCapturing) {
       chrome.developerPrivate.setShortcutHandlingSuspended(isCapturing);
     }

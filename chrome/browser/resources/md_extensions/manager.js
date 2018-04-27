@@ -38,8 +38,7 @@ cr.define('extensions', function() {
         value: false,
       },
 
-      // This is not typed because it implements multiple interfaces, and is
-      // passed to different elements as different types.
+      /** @type {!extensions.Service} */
       delegate: {
         type: Object,
         value: function() {

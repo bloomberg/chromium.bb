@@ -9,6 +9,7 @@ cr.define('extension_shortcut_tests', function() {
     IsValidKeyCode: 'isValidKeyCode',
     KeyStrokeToString: 'keystrokeToString',
     Layout: 'Layout',
+    ScopeChange: 'ScopeChange',
   };
 
   var suiteName = 'ExtensionShortcutTest';
@@ -26,6 +27,7 @@ cr.define('extension_shortcut_tests', function() {
     setup(function() {
       PolymerTest.clearBody();
       keyboardShortcuts = new extensions.KeyboardShortcuts();
+      keyboardShortcuts.delegate = new extensions.TestService();
 
       var createInfo = extension_test_util.createExtensionInfo;
       noCommands = createInfo({id: 'a'.repeat(32)});
@@ -117,6 +119,19 @@ cr.define('extension_shortcut_tests', function() {
       expectEquals('Ctrl+A', extensions.keystrokeToString(e));
       e.shiftKey = true;
       expectEquals('Ctrl+Shift+A', extensions.keystrokeToString(e));
+    });
+
+    test(TestNames.ScopeChange, function() {
+      const selectElement = keyboardShortcuts.$$('select');
+      selectElement.value = 'GLOBAL';
+      selectElement.dispatchEvent(new CustomEvent('change'));
+      return keyboardShortcuts.delegate
+          .whenCalled('updateExtensionCommandScope')
+          .then(params => {
+            assertEquals(oneCommand.id, params[0]);
+            assertEquals(oneCommand.commands[0].name, params[1]);
+            assertEquals(selectElement.value, params[2]);
+          });
     });
   });
 
