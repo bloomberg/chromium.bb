@@ -25,6 +25,7 @@
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
 #include "ios/chrome/browser/unzip/unzip_service_creator.h"
+#import "ios/chrome/browser/web/error_page_util.h"
 #include "ios/chrome/grit/ios_resources.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/voice/audio_session_controller.h"
@@ -206,6 +207,14 @@ void ChromeWebClient::AllowCertificateError(
   // or web_state used to fetch offline content in Reading List.
   IOSSSLErrorHandler::HandleSSLError(web_state, cert_error, info, request_url,
                                      overridable, callback);
+}
+
+void ChromeWebClient::PrepareErrorPage(NSError* error,
+                                       bool is_post,
+                                       bool is_off_the_record,
+                                       NSString** error_html) {
+  DCHECK(error);
+  *error_html = GetErrorPage(error, is_post, is_off_the_record);
 }
 
 void ChromeWebClient::RegisterServices(StaticServiceMap* services) {

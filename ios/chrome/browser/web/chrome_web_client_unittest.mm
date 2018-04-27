@@ -16,6 +16,8 @@
 #include "components/payments/core/features.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/credential_manager_features.h"
+#import "ios/chrome/browser/web/error_page_util.h"
+#import "ios/web/public/test/error_test_util.h"
 #import "ios/web/public/test/js_test_util.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
 #import "ios/web/public/web_view_creation_util.h"
@@ -28,6 +30,14 @@
 #endif
 
 namespace {
+// Error used to test PrepareErrorPage method.
+NSError* CreateTestError() {
+  return web::testing::CreateTestNetError([NSError
+      errorWithDomain:NSURLErrorDomain
+                 code:NSURLErrorNetworkConnectionLost
+             userInfo:nil]);
+}
+}  // namespace
 
 class ChromeWebClientTest : public PlatformTest {
  public:
@@ -173,4 +183,47 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPaymentRequestDisabled) {
                                 web_view, @"typeof window.PaymentRequest"));
 }
 
-}  // namespace
+// Tests PrepareErrorPage wth non-post, not Off The Record error.
+TEST_F(ChromeWebClientTest, PrepareErrorPageNonPostNonOtr) {
+  ChromeWebClient web_client;
+  NSError* error = CreateTestError();
+  NSString* page = nil;
+  web_client.PrepareErrorPage(error, /*is_post=*/false,
+                              /*is_off_the_record=*/false, &page);
+  EXPECT_NSEQ(
+      GetErrorPage(error, /*is_post=*/false, /*is_off_the_record=*/false),
+      page);
+}
+
+// Tests PrepareErrorPage with post, not Off The Record error.
+TEST_F(ChromeWebClientTest, PrepareErrorPagePostNonOtr) {
+  ChromeWebClient web_client;
+  NSError* error = CreateTestError();
+  NSString* page = nil;
+  web_client.PrepareErrorPage(error, /*is_post=*/true,
+                              /*is_off_the_record=*/false, &page);
+  EXPECT_NSEQ(
+      GetErrorPage(error, /*is_post=*/true, /*is_off_the_record=*/false), page);
+}
+
+// Tests PrepareErrorPage with non-post, Off The Record error.
+TEST_F(ChromeWebClientTest, PrepareErrorPageNonPostOtr) {
+  ChromeWebClient web_client;
+  NSError* error = CreateTestError();
+  NSString* page = nil;
+  web_client.PrepareErrorPage(error, /*is_post=*/false,
+                              /*is_off_the_record=*/true, &page);
+  EXPECT_NSEQ(
+      GetErrorPage(error, /*is_post=*/false, /*is_off_the_record=*/true), page);
+}
+
+// Tests PrepareErrorPage with post, Off The Record error.
+TEST_F(ChromeWebClientTest, PrepareErrorPagePostOtr) {
+  ChromeWebClient web_client;
+  NSError* error = CreateTestError();
+  NSString* page = nil;
+  web_client.PrepareErrorPage(error, /*is_post=*/true,
+                              /*is_off_the_record=*/true, &page);
+  EXPECT_NSEQ(GetErrorPage(error, /*is_post=*/true, /*is_off_the_record=*/true),
+              page);
+}
