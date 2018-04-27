@@ -1578,6 +1578,12 @@ bool AutofillTable::RemoveAutofillDataModifiedBetween(
   if (!s_profiles_get.Succeeded())
     return false;
 
+  // Remove the profile pieces.
+  for (const std::string& guid : *profile_guids) {
+    if (!RemoveAutofillProfilePieces(guid, db_))
+      return false;
+  }
+
   // Remove Autofill profiles in the time range.
   sql::Statement s_profiles(db_->GetUniqueStatement(
       "DELETE FROM autofill_profiles "

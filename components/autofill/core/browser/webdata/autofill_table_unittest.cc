@@ -1345,16 +1345,52 @@ TEST_F(AutofillTableTest, RemoveAutofillDataModifiedBetween) {
   ASSERT_TRUE(db_->GetSQLConnection()->Execute(
       "INSERT INTO autofill_profiles (guid, date_modified) "
       "VALUES('00000000-0000-0000-0000-000000000000', 11);"
+      "INSERT INTO autofill_profile_names (guid, full_name) "
+      "VALUES('00000000-0000-0000-0000-000000000000', 'John Jones');"
+      "INSERT INTO autofill_profile_emails (guid, email) "
+      "VALUES('00000000-0000-0000-0000-000000000000', 'john@jones.com');"
+      "INSERT INTO autofill_profile_phones (guid, number) "
+      "VALUES('00000000-0000-0000-0000-000000000000', '111-111-1111');"
       "INSERT INTO autofill_profiles (guid, date_modified) "
       "VALUES('00000000-0000-0000-0000-000000000001', 21);"
+      "INSERT INTO autofill_profile_names (guid, full_name) "
+      "VALUES('00000000-0000-0000-0000-000000000001', 'John Jones2');"
+      "INSERT INTO autofill_profile_emails (guid, email) "
+      "VALUES('00000000-0000-0000-0000-000000000001', 'john@jones2.com');"
+      "INSERT INTO autofill_profile_phones (guid, number) "
+      "VALUES('00000000-0000-0000-0000-000000000001', '222-222-2222');"
       "INSERT INTO autofill_profiles (guid, date_modified) "
       "VALUES('00000000-0000-0000-0000-000000000002', 31);"
+      "INSERT INTO autofill_profile_names (guid, full_name) "
+      "VALUES('00000000-0000-0000-0000-000000000002', 'John Jones3');"
+      "INSERT INTO autofill_profile_emails (guid, email) "
+      "VALUES('00000000-0000-0000-0000-000000000002', 'john@jones3.com');"
+      "INSERT INTO autofill_profile_phones (guid, number) "
+      "VALUES('00000000-0000-0000-0000-000000000002', '333-333-3333');"
       "INSERT INTO autofill_profiles (guid, date_modified) "
       "VALUES('00000000-0000-0000-0000-000000000003', 41);"
+      "INSERT INTO autofill_profile_names (guid, full_name) "
+      "VALUES('00000000-0000-0000-0000-000000000003', 'John Jones4');"
+      "INSERT INTO autofill_profile_emails (guid, email) "
+      "VALUES('00000000-0000-0000-0000-000000000003', 'john@jones4.com');"
+      "INSERT INTO autofill_profile_phones (guid, number) "
+      "VALUES('00000000-0000-0000-0000-000000000003', '444-444-4444');"
       "INSERT INTO autofill_profiles (guid, date_modified) "
       "VALUES('00000000-0000-0000-0000-000000000004', 51);"
+      "INSERT INTO autofill_profile_names (guid, full_name) "
+      "VALUES('00000000-0000-0000-0000-000000000004', 'John Jones5');"
+      "INSERT INTO autofill_profile_emails (guid, email) "
+      "VALUES('00000000-0000-0000-0000-000000000004', 'john@jones5.com');"
+      "INSERT INTO autofill_profile_phones (guid, number) "
+      "VALUES('00000000-0000-0000-0000-000000000004', '555-555-5555');"
       "INSERT INTO autofill_profiles (guid, date_modified) "
       "VALUES('00000000-0000-0000-0000-000000000005', 61);"
+      "INSERT INTO autofill_profile_names (guid, full_name) "
+      "VALUES('00000000-0000-0000-0000-000000000005', 'John Jones6');"
+      "INSERT INTO autofill_profile_emails (guid, email) "
+      "VALUES('00000000-0000-0000-0000-000000000005', 'john@jones6.com');"
+      "INSERT INTO autofill_profile_phones (guid, number) "
+      "VALUES('00000000-0000-0000-0000-000000000005', '666-666-6666');"
       "INSERT INTO credit_cards (guid, date_modified) "
       "VALUES('00000000-0000-0000-0000-000000000006', 17);"
       "INSERT INTO credit_cards (guid, date_modified) "
@@ -1374,9 +1410,13 @@ TEST_F(AutofillTableTest, RemoveAutofillDataModifiedBetween) {
   table_->RemoveAutofillDataModifiedBetween(
       Time::FromTimeT(17), Time::FromTimeT(41),
       &profile_guids, &credit_card_guids);
+
+  // Two profiles should have been removed.
   ASSERT_EQ(2UL, profile_guids.size());
   EXPECT_EQ("00000000-0000-0000-0000-000000000001", profile_guids[0]);
   EXPECT_EQ("00000000-0000-0000-0000-000000000002", profile_guids[1]);
+
+  // Make sure that only the expected profiles are still present.
   sql::Statement s_autofill_profiles_bounded(
       db_->GetSQLConnection()->GetUniqueStatement(
           "SELECT date_modified FROM autofill_profiles"));
@@ -1390,10 +1430,63 @@ TEST_F(AutofillTableTest, RemoveAutofillDataModifiedBetween) {
   ASSERT_TRUE(s_autofill_profiles_bounded.Step());
   EXPECT_EQ(61, s_autofill_profiles_bounded.ColumnInt64(0));
   EXPECT_FALSE(s_autofill_profiles_bounded.Step());
+
+  // Make sure that only the expected profile names are still present.
+  sql::Statement s_autofill_profile_names_bounded(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT full_name FROM autofill_profile_names"));
+  ASSERT_TRUE(s_autofill_profile_names_bounded.is_valid());
+  ASSERT_TRUE(s_autofill_profile_names_bounded.Step());
+  EXPECT_EQ("John Jones", s_autofill_profile_names_bounded.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profile_names_bounded.Step());
+  EXPECT_EQ("John Jones4", s_autofill_profile_names_bounded.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profile_names_bounded.Step());
+  EXPECT_EQ("John Jones5", s_autofill_profile_names_bounded.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profile_names_bounded.Step());
+  EXPECT_EQ("John Jones6", s_autofill_profile_names_bounded.ColumnString(0));
+  EXPECT_FALSE(s_autofill_profile_names_bounded.Step());
+
+  // Make sure that only the expected profile emails are still present.
+  sql::Statement s_autofill_profile_emails_bounded(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT email FROM autofill_profile_emails"));
+  ASSERT_TRUE(s_autofill_profile_emails_bounded.is_valid());
+  ASSERT_TRUE(s_autofill_profile_emails_bounded.Step());
+  EXPECT_EQ("john@jones.com",
+            s_autofill_profile_emails_bounded.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profile_emails_bounded.Step());
+  EXPECT_EQ("john@jones4.com",
+            s_autofill_profile_emails_bounded.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profile_emails_bounded.Step());
+  EXPECT_EQ("john@jones5.com",
+            s_autofill_profile_emails_bounded.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profile_emails_bounded.Step());
+  EXPECT_EQ("john@jones6.com",
+            s_autofill_profile_emails_bounded.ColumnString(0));
+  EXPECT_FALSE(s_autofill_profile_emails_bounded.Step());
+
+  // Make sure the expected profile phone numbers are still present.
+  sql::Statement s_autofill_profile_phones_bounded(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT number FROM autofill_profile_phones"));
+  ASSERT_TRUE(s_autofill_profile_phones_bounded.is_valid());
+  ASSERT_TRUE(s_autofill_profile_phones_bounded.Step());
+  EXPECT_EQ("111-111-1111", s_autofill_profile_phones_bounded.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profile_phones_bounded.Step());
+  EXPECT_EQ("444-444-4444", s_autofill_profile_phones_bounded.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profile_phones_bounded.Step());
+  EXPECT_EQ("555-555-5555", s_autofill_profile_phones_bounded.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profile_phones_bounded.Step());
+  EXPECT_EQ("666-666-6666", s_autofill_profile_phones_bounded.ColumnString(0));
+  EXPECT_FALSE(s_autofill_profile_phones_bounded.Step());
+
+  // Three cards should have been removed.
   ASSERT_EQ(3UL, credit_card_guids.size());
   EXPECT_EQ("00000000-0000-0000-0000-000000000006", credit_card_guids[0]);
   EXPECT_EQ("00000000-0000-0000-0000-000000000007", credit_card_guids[1]);
   EXPECT_EQ("00000000-0000-0000-0000-000000000008", credit_card_guids[2]);
+
+  // Make sure the expected profiles are still present.
   sql::Statement s_credit_cards_bounded(
       db_->GetSQLConnection()->GetUniqueStatement(
           "SELECT date_modified FROM credit_cards"));
@@ -1413,6 +1506,8 @@ TEST_F(AutofillTableTest, RemoveAutofillDataModifiedBetween) {
   ASSERT_EQ(2UL, profile_guids.size());
   EXPECT_EQ("00000000-0000-0000-0000-000000000004", profile_guids[0]);
   EXPECT_EQ("00000000-0000-0000-0000-000000000005", profile_guids[1]);
+
+  // Make sure that only the expected profile names are still present.
   sql::Statement s_autofill_profiles_unbounded(
       db_->GetSQLConnection()->GetUniqueStatement(
           "SELECT date_modified FROM autofill_profiles"));
@@ -1422,9 +1517,50 @@ TEST_F(AutofillTableTest, RemoveAutofillDataModifiedBetween) {
   ASSERT_TRUE(s_autofill_profiles_unbounded.Step());
   EXPECT_EQ(41, s_autofill_profiles_unbounded.ColumnInt64(0));
   EXPECT_FALSE(s_autofill_profiles_unbounded.Step());
+
+  // Make sure that only the expected profile names are still present.
+  sql::Statement s_autofill_profile_names_unbounded(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT full_name FROM autofill_profile_names"));
+  ASSERT_TRUE(s_autofill_profile_names_unbounded.is_valid());
+  ASSERT_TRUE(s_autofill_profile_names_unbounded.Step());
+  EXPECT_EQ("John Jones", s_autofill_profile_names_unbounded.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profile_names_unbounded.Step());
+  EXPECT_EQ("John Jones4", s_autofill_profile_names_unbounded.ColumnString(0));
+  EXPECT_FALSE(s_autofill_profile_names_unbounded.Step());
+
+  // Make sure that only the expected profile emails are still present.
+  sql::Statement s_autofill_profile_emails_unbounded(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT email FROM autofill_profile_emails"));
+  ASSERT_TRUE(s_autofill_profile_emails_unbounded.is_valid());
+  ASSERT_TRUE(s_autofill_profile_emails_unbounded.Step());
+  EXPECT_EQ("john@jones.com",
+            s_autofill_profile_emails_unbounded.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profile_emails_unbounded.Step());
+  EXPECT_EQ("john@jones4.com",
+            s_autofill_profile_emails_unbounded.ColumnString(0));
+  EXPECT_FALSE(s_autofill_profile_emails_unbounded.Step());
+
+  // Make sure the expected profile phone numbers are still present.
+  sql::Statement s_autofill_profile_phones_unbounded(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT number FROM autofill_profile_phones"));
+  ASSERT_TRUE(s_autofill_profile_phones_unbounded.is_valid());
+  ASSERT_TRUE(s_autofill_profile_phones_unbounded.Step());
+  EXPECT_EQ("111-111-1111",
+            s_autofill_profile_phones_unbounded.ColumnString(0));
+  ASSERT_TRUE(s_autofill_profile_phones_unbounded.Step());
+  EXPECT_EQ("444-444-4444",
+            s_autofill_profile_phones_unbounded.ColumnString(0));
+  EXPECT_FALSE(s_autofill_profile_phones_unbounded.Step());
+
+  // Two cards should have been removed.
   ASSERT_EQ(2UL, credit_card_guids.size());
   EXPECT_EQ("00000000-0000-0000-0000-000000000010", credit_card_guids[0]);
   EXPECT_EQ("00000000-0000-0000-0000-000000000011", credit_card_guids[1]);
+
+  // Make sure the remaining card is the expected one.
   sql::Statement s_credit_cards_unbounded(
       db_->GetSQLConnection()->GetUniqueStatement(
           "SELECT date_modified FROM credit_cards"));
@@ -1437,16 +1573,45 @@ TEST_F(AutofillTableTest, RemoveAutofillDataModifiedBetween) {
   table_->RemoveAutofillDataModifiedBetween(
       Time(), Time(),
       &profile_guids, &credit_card_guids);
+
+  // Two profiles should have been removed.
   ASSERT_EQ(2UL, profile_guids.size());
   EXPECT_EQ("00000000-0000-0000-0000-000000000000", profile_guids[0]);
   EXPECT_EQ("00000000-0000-0000-0000-000000000003", profile_guids[1]);
+
+  // Make sure there are no profiles remaining.
   sql::Statement s_autofill_profiles_empty(
       db_->GetSQLConnection()->GetUniqueStatement(
           "SELECT date_modified FROM autofill_profiles"));
   ASSERT_TRUE(s_autofill_profiles_empty.is_valid());
   EXPECT_FALSE(s_autofill_profiles_empty.Step());
+
+  // Make sure there are no profile names remaining.
+  sql::Statement s_autofill_profile_names_empty(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT full_name FROM autofill_profile_names"));
+  ASSERT_TRUE(s_autofill_profile_names_empty.is_valid());
+  EXPECT_FALSE(s_autofill_profile_names_empty.Step());
+
+  // Make sure there are no profile emails remaining.
+  sql::Statement s_autofill_profile_emails_empty(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT email FROM autofill_profile_emails"));
+  ASSERT_TRUE(s_autofill_profile_emails_empty.is_valid());
+  EXPECT_FALSE(s_autofill_profile_emails_empty.Step());
+
+  // Make sure there are no profile phones remaining.
+  sql::Statement s_autofill_profile_phones_empty(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT number FROM autofill_profile_phones"));
+  ASSERT_TRUE(s_autofill_profile_phones_empty.is_valid());
+  EXPECT_FALSE(s_autofill_profile_phones_empty.Step());
+
+  // One credit card should have been deleted.
   ASSERT_EQ(1UL, credit_card_guids.size());
   EXPECT_EQ("00000000-0000-0000-0000-000000000009", credit_card_guids[0]);
+
+  // There should be no cards left.
   sql::Statement s_credit_cards_empty(
       db_->GetSQLConnection()->GetUniqueStatement(
           "SELECT date_modified FROM credit_cards"));
