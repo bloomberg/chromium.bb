@@ -59,11 +59,6 @@ class TestRecordingHelper {
     recorder_->UpdateSourceURL(source_id, url);
   }
 
-  std::unique_ptr<UkmEntryBuilder> GetEntryBuilder(SourceId source_id,
-                                                   const char* event_name) {
-    return recorder_->GetEntryBuilder(source_id, event_name);
-  }
-
  private:
   UkmRecorder* recorder_;
 
@@ -251,79 +246,6 @@ TEST_F(UkmServiceTest, SourceSerialization) {
   EXPECT_EQ(id, proto_source.id());
   EXPECT_EQ(GURL("https://google.com/foobar").spec(), proto_source.url());
   EXPECT_FALSE(proto_source.has_initial_url());
-}
-
-TEST_F(UkmServiceTest, EntryBuilderAndSerialization) {
-  base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
-  ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-                                {{"WhitelistEntries", Entry1And2Whitelist()}});
-
-  UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelisted_entries */);
-  TestRecordingHelper recorder(&service);
-  EXPECT_EQ(0, GetPersistedLogCount());
-  service.Initialize();
-  task_runner_->RunUntilIdle();
-  service.EnableRecording(/*extensions=*/false);
-  service.EnableReporting();
-
-  ukm::SourceId id = GetWhitelistedSourceId(0);
-  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
-  {
-    std::unique_ptr<UkmEntryBuilder> foo_builder =
-        service.GetEntryBuilder(id, TestEvent1::kEntryName);
-    foo_builder->AddMetric(kTestEvent1Metric1, 0);
-    foo_builder->AddMetric(kTestEvent1Metric2, 10);
-
-    std::unique_ptr<UkmEntryBuilder> bar_builder =
-        service.GetEntryBuilder(id, TestEvent2::kEntryName);
-    bar_builder->AddMetric(kTestEvent2Metric1, 5);
-    bar_builder->AddMetric(kTestEvent2Metric2, 15);
-  }
-
-  service.Flush();
-  EXPECT_EQ(1, GetPersistedLogCount());
-
-  Report proto_report = GetPersistedReport();
-
-  ASSERT_EQ(1, proto_report.sources_size());
-  const Source& proto_source = proto_report.sources(0);
-  EXPECT_EQ(GURL("https://google.com/foobar").spec(), proto_source.url());
-  EXPECT_EQ(id, proto_source.id());
-
-  ASSERT_EQ(2, proto_report.entries_size());
-
-  // Bar entry is the 0th entry here because bar_builder is destructed before
-  // foo_builder: the reverse order as they are constructed. To have the same
-  // ordering as the builders are constructed, one can achieve that by putting
-  // builders in separate scopes.
-  const Entry& proto_entry_bar = proto_report.entries(0);
-  EXPECT_EQ(id, proto_entry_bar.source_id());
-  EXPECT_EQ(base::HashMetricName(TestEvent2::kEntryName),
-            proto_entry_bar.event_hash());
-  ASSERT_EQ(2, proto_entry_bar.metrics_size());
-  const Entry::Metric proto_entry_bar_start = proto_entry_bar.metrics(0);
-  EXPECT_EQ(base::HashMetricName(kTestEvent2Metric1),
-            proto_entry_bar_start.metric_hash());
-  EXPECT_EQ(5, proto_entry_bar_start.value());
-  const Entry::Metric proto_entry_bar_end = proto_entry_bar.metrics(1);
-  EXPECT_EQ(base::HashMetricName(kTestEvent2Metric2),
-            proto_entry_bar_end.metric_hash());
-  EXPECT_EQ(15, proto_entry_bar_end.value());
-
-  const Entry& proto_entry_foo = proto_report.entries(1);
-  EXPECT_EQ(id, proto_entry_foo.source_id());
-  EXPECT_EQ(base::HashMetricName(TestEvent1::kEntryName),
-            proto_entry_foo.event_hash());
-  ASSERT_EQ(2, proto_entry_foo.metrics_size());
-  const Entry::Metric proto_entry_foo_start = proto_entry_foo.metrics(0);
-  EXPECT_EQ(base::HashMetricName(kTestEvent1Metric1),
-            proto_entry_foo_start.metric_hash());
-  EXPECT_EQ(0, proto_entry_foo_start.value());
-  const Entry::Metric proto_entry_foo_end = proto_entry_foo.metrics(1);
-  EXPECT_EQ(base::HashMetricName(kTestEvent1Metric2),
-            proto_entry_foo_end.metric_hash());
-  EXPECT_EQ(10, proto_entry_foo_end.value());
 }
 
 TEST_F(UkmServiceTest, AddEntryWithEmptyMetrics) {
