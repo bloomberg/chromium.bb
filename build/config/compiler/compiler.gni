@@ -162,8 +162,9 @@ declare_args() {
   # Linux or Fuchsia.
   # TODO(pcc): Enable lld on more architectures on Linux. E.g. we probably need
   # to fix some of crbug.com/742655 to enable it on ARM.
+  # TODO(hans): Enable lld for Win/ASan when the crbug.com/837090 fix is rolled.
   use_lld = is_clang &&
-            ((is_win && host_os != "win") || is_fuchsia ||
+            ((is_win && !is_asan) || is_fuchsia ||
              (use_thin_lto && target_os != "chromeos") ||
              (is_linux && current_cpu == "x64" && target_os != "chromeos") ||
              (is_android && (current_cpu != "arm" || arm_version >= 7) &&
