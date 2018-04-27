@@ -61,13 +61,12 @@ void ServiceProviderTestHelper::SetUp(
   // to return responses.
   EXPECT_CALL(*mock_object_proxy_.get(),
               CallMethodAndBlock(
-                  AllOf(ResultOf(std::mem_fun(&dbus::MethodCall::GetInterface),
+                  AllOf(ResultOf(std::mem_fn(&dbus::MethodCall::GetInterface),
                                  interface_name),
-                        ResultOf(std::mem_fun(&dbus::MethodCall::GetMember),
+                        ResultOf(std::mem_fn(&dbus::MethodCall::GetMember),
                                  exported_method_name)),
                   _))
-      .WillOnce(
-          Invoke(this, &ServiceProviderTestHelper::CallMethodAndBlock));
+      .WillOnce(Invoke(this, &ServiceProviderTestHelper::CallMethodAndBlock));
 
   service_provider->Start(mock_exported_object_.get());
 }
