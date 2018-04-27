@@ -2140,7 +2140,12 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
         case ui::ET_SCROLL_FLING_CANCEL:
         case ui::ET_SCROLL: {
           ui::ScrollEvent scrollev(xev);
-          SendEventToSink(&scrollev);
+          // We need to filter zero scroll offset here. Because
+          // MouseWheelEventQueue assumes we'll never get a zero scroll offset
+          // event and we need delta to determine which element to scroll on
+          // phaseBegan.
+          if (scrollev.x_offset() != 0.0 || scrollev.y_offset() != 0.0)
+            SendEventToSink(&scrollev);
           break;
         }
         case ui::ET_KEY_PRESSED:

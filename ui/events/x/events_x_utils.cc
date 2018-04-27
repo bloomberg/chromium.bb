@@ -426,8 +426,11 @@ EventType EventTypeFromXEvent(const XEvent& xev) {
             return devices->IsTouchpadXInputEvent(xev) ? ET_SCROLL
                                                        : ET_MOUSEWHEEL;
           }
-          if (devices->GetScrollClassEventDetail(xev) != SCROLL_TYPE_NO_SCROLL)
-            return ET_MOUSEWHEEL;
+          if (devices->GetScrollClassEventDetail(xev) !=
+              SCROLL_TYPE_NO_SCROLL) {
+            return devices->IsTouchpadXInputEvent(xev) ? ET_SCROLL
+                                                       : ET_MOUSEWHEEL;
+          }
           if (devices->IsCMTMetricsEvent(xev))
             return ET_UMA_DATA;
           if (GetButtonMaskForX2Event(xievent))
@@ -753,22 +756,22 @@ bool GetScrollOffsetsFromXEvent(const XEvent& xev,
                                 float* x_offset_ordinal,
                                 float* y_offset_ordinal,
                                 int* finger_count) {
-  if (DeviceDataManagerX11::GetInstance()->IsScrollEvent(xev)) {
-    // Temp values to prevent passing NULLs to DeviceDataManager.
-    float x_offset_, y_offset_;
-    float x_offset_ordinal_, y_offset_ordinal_;
-    int finger_count_;
-    if (!x_offset)
-      x_offset = &x_offset_;
-    if (!y_offset)
-      y_offset = &y_offset_;
-    if (!x_offset_ordinal)
-      x_offset_ordinal = &x_offset_ordinal_;
-    if (!y_offset_ordinal)
-      y_offset_ordinal = &y_offset_ordinal_;
-    if (!finger_count)
-      finger_count = &finger_count_;
+  // Temp values to prevent passing NULLs to DeviceDataManager.
+  float x_scroll_offset, y_scroll_offset;
+  float x_scroll_offset_ordinal, y_scroll_offset_ordinal;
+  int finger;
+  if (!x_offset)
+    x_offset = &x_scroll_offset;
+  if (!y_offset)
+    y_offset = &y_scroll_offset;
+  if (!x_offset_ordinal)
+    x_offset_ordinal = &x_scroll_offset_ordinal;
+  if (!y_offset_ordinal)
+    y_offset_ordinal = &y_scroll_offset_ordinal;
+  if (!finger_count)
+    finger_count = &finger;
 
+  if (DeviceDataManagerX11::GetInstance()->IsScrollEvent(xev)) {
     DeviceDataManagerX11::GetInstance()->GetScrollOffsets(
         xev, x_offset, y_offset, x_offset_ordinal, y_offset_ordinal,
         finger_count);
@@ -782,6 +785,15 @@ bool GetScrollOffsetsFromXEvent(const XEvent& xev,
         xev, &x_scroll_offset, &y_scroll_offset);
     *x_offset = x_scroll_offset * kWheelScrollAmount;
     *y_offset = y_scroll_offset * kWheelScrollAmount;
+
+    if (DeviceDataManagerX11::GetInstance()->IsTouchpadXInputEvent(xev)) {
+      *x_offset_ordinal = *x_offset;
+      *y_offset_ordinal = *y_offset;
+      // In libinput, we can check to validate whether the device supports
+      // 'two_finger', 'edge' scrolling or not. See
+      // https://www.mankier.com/4/libinput.
+      *finger_count = 2;
+    }
     return true;
   }
   return false;
