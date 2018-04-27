@@ -151,10 +151,10 @@ void aom_lpf_horizontal_4_sse2(uint8_t *s, int p /* pitch */,
       _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)_thresh), zero);
   __m128i q1p1, q0p0, p1p0, q1q0, ps1ps0, qs1qs0;
   __m128i mask, hev;
-  q1p1 = _mm_unpacklo_epi64(_mm_loadl_epi64((__m128i *)(s - 2 * p)),
-                            _mm_loadl_epi64((__m128i *)(s + 1 * p)));
-  q0p0 = _mm_unpacklo_epi64(_mm_loadl_epi64((__m128i *)(s - 1 * p)),
-                            _mm_loadl_epi64((__m128i *)(s + 0 * p)));
+  q1p1 = _mm_unpacklo_epi64(_mm_cvtsi32_si128(*(int *)(s - 2 * p)),
+                            _mm_cvtsi32_si128(*(int *)(s + 1 * p)));
+  q0p0 = _mm_unpacklo_epi64(_mm_cvtsi32_si128(*(int *)(s - 1 * p)),
+                            _mm_cvtsi32_si128(*(int *)(s + 0 * p)));
   p1p0 = _mm_unpacklo_epi64(q0p0, q1p1);
   q1q0 = _mm_unpackhi_epi64(q0p0, q1p1);
   FILTER_HEV_MASK4;
@@ -188,14 +188,8 @@ void aom_lpf_vertical_4_sse2(uint8_t *s, int p /* pitch */,
   x1 = _mm_unpacklo_epi8(_mm_loadl_epi64((__m128i *)(s + 2 * p - 4)),
                          _mm_loadl_epi64((__m128i *)(s + 3 * p - 4)));
 
-  // 40 50 41 51 42 52 43 53 44 54 45 55 46 56 47 57
-  x2 = _mm_unpacklo_epi8(_mm_loadl_epi64((__m128i *)(s + 4 * p - 4)),
-                         _mm_loadl_epi64((__m128i *)(s + 5 * p - 4)));
-
-  // 60 70 61 71 62 72 63 73 64 74 65 75 66 76 67 77
-  x3 = _mm_unpacklo_epi8(_mm_loadl_epi64((__m128i *)(s + 6 * p - 4)),
-                         _mm_loadl_epi64((__m128i *)(s + 7 * p - 4)));
-
+  x2 = _mm_setzero_si128();
+  x3 = _mm_setzero_si128();
   // Transpose 8x8
   // 00 10 20 30 01 11 21 31  02 12 22 32 03 13 23 33
   p1p0 = _mm_unpacklo_epi16(q1q0, x1);
@@ -575,23 +569,23 @@ void aom_lpf_horizontal_14_sse2(unsigned char *s, int p,
                                 const unsigned char *_thresh) {
   __m128i q6p6, q5p5, q4p4, q3p3, q2p2, q1p1, q0p0;
 
-  q4p4 = _mm_unpacklo_epi64(_mm_loadl_epi64((__m128i *)(s - 5 * p)),
-                            _mm_loadl_epi64((__m128i *)(s + 4 * p)));
-  q3p3 = _mm_unpacklo_epi64(_mm_loadl_epi64((__m128i *)(s - 4 * p)),
-                            _mm_loadl_epi64((__m128i *)(s + 3 * p)));
-  q2p2 = _mm_unpacklo_epi64(_mm_loadl_epi64((__m128i *)(s - 3 * p)),
-                            _mm_loadl_epi64((__m128i *)(s + 2 * p)));
-  q1p1 = _mm_unpacklo_epi64(_mm_loadl_epi64((__m128i *)(s - 2 * p)),
-                            _mm_loadl_epi64((__m128i *)(s + 1 * p)));
+  q4p4 = _mm_unpacklo_epi64(_mm_cvtsi32_si128(*(int *)(s - 5 * p)),
+                            _mm_cvtsi32_si128(*(int *)(s + 4 * p)));
+  q3p3 = _mm_unpacklo_epi64(_mm_cvtsi32_si128(*(int *)(s - 4 * p)),
+                            _mm_cvtsi32_si128(*(int *)(s + 3 * p)));
+  q2p2 = _mm_unpacklo_epi64(_mm_cvtsi32_si128(*(int *)(s - 3 * p)),
+                            _mm_cvtsi32_si128(*(int *)(s + 2 * p)));
+  q1p1 = _mm_unpacklo_epi64(_mm_cvtsi32_si128(*(int *)(s - 2 * p)),
+                            _mm_cvtsi32_si128(*(int *)(s + 1 * p)));
 
-  q0p0 = _mm_unpacklo_epi64(_mm_loadl_epi64((__m128i *)(s - 1 * p)),
-                            _mm_loadl_epi64((__m128i *)(s - 0 * p)));
+  q0p0 = _mm_unpacklo_epi64(_mm_cvtsi32_si128(*(int *)(s - 1 * p)),
+                            _mm_cvtsi32_si128(*(int *)(s - 0 * p)));
 
-  q5p5 = _mm_unpacklo_epi64(_mm_loadl_epi64((__m128i *)(s - 6 * p)),
-                            _mm_loadl_epi64((__m128i *)(s + 5 * p)));
+  q5p5 = _mm_unpacklo_epi64(_mm_cvtsi32_si128(*(int *)(s - 6 * p)),
+                            _mm_cvtsi32_si128(*(int *)(s + 5 * p)));
 
-  q6p6 = _mm_unpacklo_epi64(_mm_loadl_epi64((__m128i *)(s - 7 * p)),
-                            _mm_loadl_epi64((__m128i *)(s + 6 * p)));
+  q6p6 = _mm_unpacklo_epi64(_mm_cvtsi32_si128(*(int *)(s - 7 * p)),
+                            _mm_cvtsi32_si128(*(int *)(s + 6 * p)));
 
   lpf_internal_14_sse2(&q6p6, &q5p5, &q4p4, &q3p3, &q2p2, &q1p1, &q0p0, _blimit,
                        _limit, _thresh);
@@ -776,12 +770,12 @@ void aom_lpf_horizontal_6_sse2(unsigned char *s, int p,
   __m128i p2, p1, p0, q0, q1, q2;
   __m128i p1p0, q1q0;
 
-  p2 = _mm_loadl_epi64((__m128i *)(s - 3 * p));
-  p1 = _mm_loadl_epi64((__m128i *)(s - 2 * p));
-  p0 = _mm_loadl_epi64((__m128i *)(s - 1 * p));
-  q0 = _mm_loadl_epi64((__m128i *)(s - 0 * p));
-  q1 = _mm_loadl_epi64((__m128i *)(s + 1 * p));
-  q2 = _mm_loadl_epi64((__m128i *)(s + 2 * p));
+  p2 = _mm_cvtsi32_si128(*(int *)(s - 3 * p));
+  p1 = _mm_cvtsi32_si128(*(int *)(s - 2 * p));
+  p0 = _mm_cvtsi32_si128(*(int *)(s - 1 * p));
+  q0 = _mm_cvtsi32_si128(*(int *)(s - 0 * p));
+  q1 = _mm_cvtsi32_si128(*(int *)(s + 1 * p));
+  q2 = _mm_cvtsi32_si128(*(int *)(s + 2 * p));
 
   lpf_internal_6_sse2(&p2, &q2, &p1, &q1, &p0, &q0, &q1q0, &p1p0, _blimit,
                       _limit, _thresh);
@@ -953,14 +947,14 @@ void aom_lpf_horizontal_8_sse2(unsigned char *s, int p,
                                const unsigned char *_thresh) {
   __m128i p2_8, p1_8, p0_8, q0_8, q1_8, q2_8, p3_8, q3_8;
   __m128i q1q0, p1p0, p2, q2;
-  p3_8 = _mm_loadl_epi64((__m128i *)(s - 4 * p));
-  p2_8 = _mm_loadl_epi64((__m128i *)(s - 3 * p));
-  p1_8 = _mm_loadl_epi64((__m128i *)(s - 2 * p));
-  p0_8 = _mm_loadl_epi64((__m128i *)(s - 1 * p));
-  q0_8 = _mm_loadl_epi64((__m128i *)(s - 0 * p));
-  q1_8 = _mm_loadl_epi64((__m128i *)(s + 1 * p));
-  q2_8 = _mm_loadl_epi64((__m128i *)(s + 2 * p));
-  q3_8 = _mm_loadl_epi64((__m128i *)(s + 3 * p));
+  p3_8 = _mm_cvtsi32_si128(*(int *)(s - 4 * p));
+  p2_8 = _mm_cvtsi32_si128(*(int *)(s - 3 * p));
+  p1_8 = _mm_cvtsi32_si128(*(int *)(s - 2 * p));
+  p0_8 = _mm_cvtsi32_si128(*(int *)(s - 1 * p));
+  q0_8 = _mm_cvtsi32_si128(*(int *)(s - 0 * p));
+  q1_8 = _mm_cvtsi32_si128(*(int *)(s + 1 * p));
+  q2_8 = _mm_cvtsi32_si128(*(int *)(s + 2 * p));
+  q3_8 = _mm_cvtsi32_si128(*(int *)(s + 3 * p));
 
   lpf_internal_8_sse2(&p3_8, &q3_8, &p2_8, &q2_8, &p1_8, &q1_8, &p0_8, &q0_8,
                       &q1q0, &p1p0, &p2, &q2, _blimit, _limit, _thresh);
@@ -1645,8 +1639,8 @@ void aom_lpf_vertical_6_sse2(unsigned char *s, int p,
   p1 = _mm_loadl_epi64((__m128i *)((s - 3) + 1 * p));
   p0 = _mm_loadl_epi64((__m128i *)((s - 3) + 2 * p));
   q0 = _mm_loadl_epi64((__m128i *)((s - 3) + 3 * p));
-  q1 = _mm_loadl_epi64((__m128i *)((s - 3) + 4 * p));
-  q2 = _mm_loadl_epi64((__m128i *)((s - 3) + 5 * p));
+  q1 = _mm_setzero_si128();
+  q2 = _mm_setzero_si128();
 
   transpose6x6_sse2(&p2, &p1, &p0, &q0, &q1, &q2, &d0d1, &d2d3, &d4d5);
 
@@ -1684,10 +1678,10 @@ void aom_lpf_vertical_8_sse2(unsigned char *s, int p,
   p2_8 = _mm_loadl_epi64((__m128i *)((s - 4) + 1 * p));
   p1_8 = _mm_loadl_epi64((__m128i *)((s - 4) + 2 * p));
   p0_8 = _mm_loadl_epi64((__m128i *)((s - 4) + 3 * p));
-  q0_8 = _mm_loadl_epi64((__m128i *)((s - 4) + 4 * p));
-  q1_8 = _mm_loadl_epi64((__m128i *)((s - 4) + 5 * p));
-  q2_8 = _mm_loadl_epi64((__m128i *)((s - 4) + 6 * p));
-  q3_8 = _mm_loadl_epi64((__m128i *)((s - 4) + 7 * p));
+  q0_8 = _mm_setzero_si128();
+  q1_8 = _mm_setzero_si128();
+  q2_8 = _mm_setzero_si128();
+  q3_8 = _mm_setzero_si128();
 
   transpose8x8_sse2(&p3_8, &p2_8, &p1_8, &p0_8, &q0_8, &q1_8, &q2_8, &q3_8,
                     &d0d1, &d2d3, &d4d5, &d6d7);
@@ -1747,10 +1741,10 @@ void aom_lpf_vertical_14_sse2(unsigned char *s, int p,
   p5 = _mm_loadl_epi64((__m128i *)((s - 8) + 1 * p));
   p4 = _mm_loadl_epi64((__m128i *)((s - 8) + 2 * p));
   p3 = _mm_loadl_epi64((__m128i *)((s - 8) + 3 * p));
-  p2 = _mm_loadl_epi64((__m128i *)((s - 8) + 4 * p));
-  p1 = _mm_loadl_epi64((__m128i *)((s - 8) + 5 * p));
-  p0 = _mm_loadl_epi64((__m128i *)((s - 8) + 6 * p));
-  q0 = _mm_loadl_epi64((__m128i *)((s - 8) + 7 * p));
+  p2 = _mm_setzero_si128();
+  p1 = _mm_setzero_si128();
+  p0 = _mm_setzero_si128();
+  q0 = _mm_setzero_si128();
 
   transpose8x8_sse2(&p6, &p5, &p4, &p3, &p2, &p1, &p0, &q0, &d0d1, &d2d3, &d4d5,
                     &d6d7);
@@ -1759,10 +1753,10 @@ void aom_lpf_vertical_14_sse2(unsigned char *s, int p,
   p5_2 = _mm_loadl_epi64((__m128i *)(s + 1 * p));
   p4_2 = _mm_loadl_epi64((__m128i *)(s + 2 * p));
   p3_2 = _mm_loadl_epi64((__m128i *)(s + 3 * p));
-  p2_2 = _mm_loadl_epi64((__m128i *)(s + 4 * p));
-  p1_2 = _mm_loadl_epi64((__m128i *)(s + 5 * p));
-  p0_2 = _mm_loadl_epi64((__m128i *)(s + 6 * p));
-  q0_2 = _mm_loadl_epi64((__m128i *)(s + 7 * p));
+  p2_2 = _mm_setzero_si128();
+  p1_2 = _mm_setzero_si128();
+  p0_2 = _mm_setzero_si128();
+  q0_2 = _mm_setzero_si128();
 
   transpose8x8_sse2(&p6_2, &p5_2, &p4_2, &p3_2, &p2_2, &p1_2, &p0_2, &q0_2,
                     &d0d1_2, &d2d3_2, &d4d5_2, &d6d7_2);

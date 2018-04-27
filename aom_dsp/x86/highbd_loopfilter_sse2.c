@@ -454,7 +454,11 @@ void aom_highbd_lpf_horizontal_14_sse2(uint16_t *s, int pitch,
                                        const uint8_t *thr, int bd) {
   __m128i p[7], q[7], pq[7];
   int i;
-  load_highbd_pixel(s, 7, pitch, p, q);
+
+  for (i = 0; i < 7; i++) {
+    p[i] = _mm_loadl_epi64((__m128i *)(s - (i + 1) * pitch));
+    q[i] = _mm_loadl_epi64((__m128i *)(s + i * pitch));
+  }
 
   highbd_lpf_internal_14_sse2(p, q, pq, blt, lt, thr, bd);
 
@@ -1355,10 +1359,10 @@ void aom_highbd_lpf_horizontal_4_sse2(uint16_t *s, int p,
                                       const uint8_t *_blimit,
                                       const uint8_t *_limit,
                                       const uint8_t *_thresh, int bd) {
-  __m128i p1 = _mm_loadu_si128((__m128i *)(s - 2 * p));
-  __m128i p0 = _mm_loadu_si128((__m128i *)(s - 1 * p));
-  __m128i q0 = _mm_loadu_si128((__m128i *)(s - 0 * p));
-  __m128i q1 = _mm_loadu_si128((__m128i *)(s + 1 * p));
+  __m128i p1 = _mm_loadl_epi64((__m128i *)(s - 2 * p));
+  __m128i p0 = _mm_loadl_epi64((__m128i *)(s - 1 * p));
+  __m128i q0 = _mm_loadl_epi64((__m128i *)(s - 0 * p));
+  __m128i q1 = _mm_loadl_epi64((__m128i *)(s + 1 * p));
 
   highbd_lpf_internal_4_sse2(&p1, &p0, &q0, &q1, _blimit, _limit, _thresh, bd);
 
@@ -1395,10 +1399,10 @@ void aom_highbd_lpf_vertical_4_sse2(uint16_t *s, int p, const uint8_t *blimit,
   x1 = _mm_loadu_si128((__m128i *)(s - 4 + 1 * p));
   x2 = _mm_loadu_si128((__m128i *)(s - 4 + 2 * p));
   x3 = _mm_loadu_si128((__m128i *)(s - 4 + 3 * p));
-  x4 = _mm_loadu_si128((__m128i *)(s - 4 + 4 * p));
-  x5 = _mm_loadu_si128((__m128i *)(s - 4 + 5 * p));
-  x6 = _mm_loadu_si128((__m128i *)(s - 4 + 6 * p));
-  x7 = _mm_loadu_si128((__m128i *)(s - 4 + 7 * p));
+  x4 = _mm_setzero_si128();
+  x5 = _mm_setzero_si128();
+  x6 = _mm_setzero_si128();
+  x7 = _mm_setzero_si128();
 
   highbd_transpose8x8_sse2(&x0, &x1, &x2, &x3, &x4, &x5, &x6, &x7, &d0, &d1,
                            &d2, &d3, &d4, &d5, &d6, &d7);
@@ -1461,8 +1465,8 @@ void aom_highbd_lpf_vertical_6_sse2(uint16_t *s, int p, const uint8_t *blimit,
   p1 = _mm_loadu_si128((__m128i *)((s - 3) + 1 * p));
   p0 = _mm_loadu_si128((__m128i *)((s - 3) + 2 * p));
   q0 = _mm_loadu_si128((__m128i *)((s - 3) + 3 * p));
-  q1 = _mm_loadu_si128((__m128i *)((s - 3) + 4 * p));
-  q2 = _mm_loadu_si128((__m128i *)((s - 3) + 5 * p));
+  q1 = _mm_setzero_si128();
+  q2 = _mm_setzero_si128();
 
   highbd_transpose6x6_sse2(&p2, &p1, &p0, &q0, &q1, &q2, &d0, &d1, &d2, &d3,
                            &d4, &d5);
@@ -1497,10 +1501,10 @@ void aom_highbd_lpf_vertical_8_sse2(uint16_t *s, int p, const uint8_t *blimit,
   p2 = _mm_loadu_si128((__m128i *)((s - 4) + 1 * p));
   p1 = _mm_loadu_si128((__m128i *)((s - 4) + 2 * p));
   p0 = _mm_loadu_si128((__m128i *)((s - 4) + 3 * p));
-  q0 = _mm_loadu_si128((__m128i *)((s - 4) + 4 * p));
-  q1 = _mm_loadu_si128((__m128i *)((s - 4) + 5 * p));
-  q2 = _mm_loadu_si128((__m128i *)((s - 4) + 6 * p));
-  q3 = _mm_loadu_si128((__m128i *)((s - 4) + 7 * p));
+  q0 = _mm_setzero_si128();
+  q1 = _mm_setzero_si128();
+  q2 = _mm_setzero_si128();
+  q3 = _mm_setzero_si128();
 
   highbd_transpose8x8_sse2(&p3, &p2, &p1, &p0, &q0, &q1, &q2, &q3, &d0, &d1,
                            &d2, &d3, &d4, &d5, &d6, &d7);
@@ -1571,10 +1575,10 @@ void aom_highbd_lpf_vertical_14_sse2(uint16_t *s, int pitch,
   p5 = _mm_loadu_si128((__m128i *)((s - 8) + 1 * pitch));
   p4 = _mm_loadu_si128((__m128i *)((s - 8) + 2 * pitch));
   p3 = _mm_loadu_si128((__m128i *)((s - 8) + 3 * pitch));
-  p2 = _mm_loadu_si128((__m128i *)((s - 8) + 4 * pitch));
-  p1 = _mm_loadu_si128((__m128i *)((s - 8) + 5 * pitch));
-  p0 = _mm_loadu_si128((__m128i *)((s - 8) + 6 * pitch));
-  q0 = _mm_loadu_si128((__m128i *)((s - 8) + 7 * pitch));
+  p2 = _mm_setzero_si128();
+  p1 = _mm_setzero_si128();
+  p0 = _mm_setzero_si128();
+  q0 = _mm_setzero_si128();
 
   highbd_transpose8x8_sse2(&p6, &p5, &p4, &p3, &p2, &p1, &p0, &q0, &d0, &p[6],
                            &p[5], &p[4], &p[3], &p[2], &p[1], &p[0]);
@@ -1583,10 +1587,10 @@ void aom_highbd_lpf_vertical_14_sse2(uint16_t *s, int pitch,
   p5_2 = _mm_loadu_si128((__m128i *)(s + 1 * pitch));
   p4_2 = _mm_loadu_si128((__m128i *)(s + 2 * pitch));
   p3_2 = _mm_loadu_si128((__m128i *)(s + 3 * pitch));
-  p2_2 = _mm_loadu_si128((__m128i *)(s + 4 * pitch));
-  p1_2 = _mm_loadu_si128((__m128i *)(s + 5 * pitch));
-  p0_2 = _mm_loadu_si128((__m128i *)(s + 6 * pitch));
-  q0_2 = _mm_loadu_si128((__m128i *)(s + 7 * pitch));
+  p2_2 = _mm_setzero_si128();
+  p1_2 = _mm_setzero_si128();
+  p0_2 = _mm_setzero_si128();
+  q0_2 = _mm_setzero_si128();
 
   highbd_transpose8x8_sse2(&p6_2, &p5_2, &p4_2, &p3_2, &p2_2, &p1_2, &p0_2,
                            &q0_2, &q[0], &q[1], &q[2], &q[3], &q[4], &q[5],
