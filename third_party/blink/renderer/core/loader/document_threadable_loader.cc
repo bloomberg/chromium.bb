@@ -153,7 +153,8 @@ class DocumentThreadableLoader::DetachedClient final
     : public GarbageCollectedFinalized<DetachedClient>,
       public ThreadableLoaderClient {
  public:
-  DetachedClient() : self_keep_alive_(this) {}
+  explicit DetachedClient(DocumentThreadableLoader* loader)
+      : self_keep_alive_(this), loader_(loader) {}
   ~DetachedClient() override {}
 
   void DidFinishLoading(unsigned long identifier, double finish_time) override {
@@ -161,10 +162,12 @@ class DocumentThreadableLoader::DetachedClient final
   }
   void DidFail(const ResourceError&) override { self_keep_alive_.Clear(); }
   void DidFailRedirectCheck() override { self_keep_alive_.Clear(); }
-  void Trace(Visitor* visitor) {}
+  void Trace(Visitor* visitor) { visitor->Trace(loader_); }
 
  private:
   SelfKeepAlive<DetachedClient> self_keep_alive_;
+  // Keep it alive.
+  const Member<DocumentThreadableLoader> loader_;
 };
 
 // Max number of CORS redirects handled in DocumentThreadableLoader. Same number
@@ -569,7 +572,7 @@ void DocumentThreadableLoader::Detach() {
   Resource* resource = GetResource();
   if (!resource)
     return;
-  client_ = new DetachedClient();
+  client_ = new DetachedClient(this);
 }
 
 void DocumentThreadableLoader::SetDefersLoading(bool value) {
