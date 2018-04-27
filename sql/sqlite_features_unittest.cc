@@ -173,13 +173,10 @@ TEST_F(SQLiteFeaturesTest, BooleanSupport) {
       "    FROM flags WHERE id=1;"));
   ASSERT_TRUE(s.Step());
 
-  // TODO(pwnall): Enable this check after upgrading to SQLite 3.23.
-  // EXPECT_TRUE(s.ColumnBool(0)) << " default TRUE at table creation time";
+  EXPECT_TRUE(s.ColumnBool(0)) << " default TRUE at table creation time";
   EXPECT_TRUE(!s.ColumnBool(1)) << " default FALSE at table creation time";
 
-  // TODO(pwnall): Enable this check after upgrading to SQLite 3.23.
-  // EXPECT_TRUE(s.ColumnBool(2))
-  //     << " default TRUE added by altering the table";
+  EXPECT_TRUE(s.ColumnBool(2)) << " default TRUE added by altering the table";
   EXPECT_TRUE(!s.ColumnBool(3)) << " default FALSE added by altering the table";
 }
 

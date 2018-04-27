@@ -4,9 +4,10 @@ This repository contains the complete source code for the SQLite database
 engine.  Some test scripts are also included.  However, many other test scripts
 and most of the documentation are managed separately.
 
-If you are reading this on a Git mirror someplace, you are doing it wrong.
-The [official repository](https://www.sqlite.org/src/) is better.  Go there
-now.
+SQLite [does not use Git](https://sqlite.org/whynotgit.html).
+If you are reading this on GitHub, then you are looking at an
+unofficial mirror. See <https://sqlite.org/src> for the official
+repository.
 
 ## Obtaining The Code
 
@@ -14,15 +15,17 @@ SQLite sources are managed using the
 [Fossil](https://www.fossil-scm.org/), a distributed version control system
 that was specifically designed to support SQLite development.
 If you do not want to use Fossil, you can download tarballs or ZIP
-archives as follows:
+archives or [SQLite archives](https://sqlite.org/cli.html#sqlar) as follows:
 
-  *  Lastest trunk check-in:
-     <https://www.sqlite.org/src/tarball/sqlite.tar.gz> or
-     <https://www.sqlite.org/src/zip/sqlite.zip>.
+  *  Lastest trunk check-in as
+     [Tarball](https://www.sqlite.org/src/tarball/sqlite.tar.gz),
+     [ZIP-archive](https://www.sqlite.org/src/zip/sqlite.zip), or
+     [SQLite-archive](https://www.sqlite.org/src/sqlar/sqlite.sqlar).
 
-  *  Latest release:
-     <https://www.sqlite.org/src/tarball/sqlite.tar.gz?r=release> or
-     <https://www.sqlite.org/src/zip/sqlite.zip?r=release>.
+  *  Latest release as
+     [Tarball](https://www.sqlite.org/src/tarball/sqlite.tar.gz?r=release),
+     [ZIP-archive](https://www.sqlite.org/src/zip/sqlite.zip?r=release), or
+     [SQLite-archive](https://www.sqlite.org/src/sqlar/sqlite.sqlar?r=release).
 
   *  For other check-ins, substitute an appropriate branch name or
      tag or hash prefix for "release" in the URLs of the previous

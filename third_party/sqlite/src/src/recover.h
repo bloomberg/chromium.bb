@@ -16,7 +16,7 @@ extern "C" {
 ** selected users to enable it (currently sql/recovery.cc).
 */
 SQLITE_API
-int chrome_sqlite3_recoverVtableInit(sqlite3* db);
+int chrome_sqlite3_recoverVtableInit(sqlite3 *db);
 
 #ifdef __cplusplus
 }  /* End of the 'extern "C"' block */

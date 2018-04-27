@@ -1,4 +1,4 @@
-From 303400994407af076f42448f14d9a9ff32b56c19 Mon Sep 17 00:00:00 2001
+From 2fa4c98f92d2d3896d8ac685e3a54c153d4990fa Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Sat, 20 Jul 2013 11:42:21 -0700
 Subject: [PATCH 04/10] Virtual table supporting recovery of corrupted
@@ -17,12 +17,12 @@ third_party/sqlite/src/src/{recover,recover-alt}.c .
 ---
  third_party/sqlite/src/main.mk              |    5 +
  third_party/sqlite/src/src/main.c           |    8 +
- third_party/sqlite/src/src/recover.c        | 2270 +++++++++++++++++++++++++++
+ third_party/sqlite/src/src/recover.c        | 2270 +++++++++++++++++++
  third_party/sqlite/src/src/recover.h        |   23 +
- third_party/sqlite/src/src/recover_varint.c |  201 +++
+ third_party/sqlite/src/src/recover_varint.c |  201 ++
  third_party/sqlite/src/test/recover.test    |  164 ++
- third_party/sqlite/src/test/recover0.test   |  532 +++++++
- third_party/sqlite/src/test/recover1.test   |  429 +++++
+ third_party/sqlite/src/test/recover0.test   |  532 +++++
+ third_party/sqlite/src/test/recover1.test   |  429 ++++
  third_party/sqlite/src/test/recover2.test   |  157 ++
  9 files changed, 3789 insertions(+)
  create mode 100644 third_party/sqlite/src/src/recover.c
@@ -34,19 +34,19 @@ third_party/sqlite/src/src/{recover,recover-alt}.c .
  create mode 100644 third_party/sqlite/src/test/recover2.test
 
 diff --git a/third_party/sqlite/src/main.mk b/third_party/sqlite/src/main.mk
-index 1ba4cda9a570..e6a6c93507ae 100644
+index 77657f1a9201..4b358c1f7c69 100644
 --- a/third_party/sqlite/src/main.mk
 +++ b/third_party/sqlite/src/main.mk
 @@ -77,6 +77,8 @@ LIBOBJ+= vdbe.o parse.o \
  	 vdbetrace.o wal.o walker.o where.o wherecode.o whereexpr.o \
           utf.o vtab.o
-
+ 
 +LIBOBJ += recover.o recover_varint.o
 +
  LIBOBJ += sqlite3session.o
-
+ 
  # All of the source code files.
-@@ -401,6 +403,8 @@ TESTSRC2 = \
+@@ -403,6 +405,8 @@ TESTSRC2 = \
    $(TOP)/src/prepare.c \
    $(TOP)/src/printf.c \
    $(TOP)/src/random.c \
@@ -55,22 +55,22 @@ index 1ba4cda9a570..e6a6c93507ae 100644
    $(TOP)/src/pcache.c \
    $(TOP)/src/pcache1.c \
    $(TOP)/src/select.c \
-@@ -861,6 +865,7 @@ TESTFIXTURE_FLAGS += -DSQLITE_DEFAULT_PAGE_SIZE=1024
+@@ -867,6 +871,7 @@ TESTFIXTURE_FLAGS += -DSQLITE_DEFAULT_PAGE_SIZE=1024
  TESTFIXTURE_FLAGS += -DSQLITE_ENABLE_STMTVTAB
  TESTFIXTURE_FLAGS += -DSQLITE_ENABLE_DBPAGE_VTAB
  TESTFIXTURE_FLAGS += -DTCLSH_INIT_PROC=sqlite3TestInit
 +TESTFIXTURE_FLAGS += -DDEFAULT_ENABLE_RECOVER=1
-
+ 
  testfixture$(EXE): $(TESTSRC2) libsqlite3.a $(TESTSRC) $(TOP)/src/tclsqlite.c
  	$(TCCX) $(TCL_FLAGS) $(TESTFIXTURE_FLAGS)                            \
 diff --git a/third_party/sqlite/src/src/main.c b/third_party/sqlite/src/src/main.c
-index 40c09348a745..aaf30bba232e 100644
+index 8fc687e5d87d..e1ea7632400e 100644
 --- a/third_party/sqlite/src/src/main.c
 +++ b/third_party/sqlite/src/src/main.c
-@@ -3052,6 +3052,14 @@ static int openDatabase(
+@@ -3103,6 +3103,14 @@ static int openDatabase(
    }
  #endif
-
+ 
 +#ifdef DEFAULT_ENABLE_RECOVER
 +  /* Initialize recover virtual table for testing. */
 +  extern int chrome_sqlite3_recoverVtableInit(sqlite3 *db);
@@ -84,7 +84,7 @@ index 40c09348a745..aaf30bba232e 100644
      rc = sqlite3IcuInit(db);
 diff --git a/third_party/sqlite/src/src/recover.c b/third_party/sqlite/src/src/recover.c
 new file mode 100644
-index 000000000000..c22fd4d43166
+index 000000000000..ba239a507f9c
 --- /dev/null
 +++ b/third_party/sqlite/src/src/recover.c
 @@ -0,0 +1,2270 @@
@@ -2360,7 +2360,7 @@ index 000000000000..c22fd4d43166
 +}
 diff --git a/third_party/sqlite/src/src/recover.h b/third_party/sqlite/src/src/recover.h
 new file mode 100644
-index 000000000000..691f2fdbab22
+index 000000000000..49b0d9e860db
 --- /dev/null
 +++ b/third_party/sqlite/src/src/recover.h
 @@ -0,0 +1,23 @@
@@ -3900,5 +3900,6 @@ index 000000000000..8aa4e049a010
 +} [list 4 1024 1 text [string length $substr] $substr]
 +
 +finish_test
---
-2.14.0
+-- 
+2.16.0
+
