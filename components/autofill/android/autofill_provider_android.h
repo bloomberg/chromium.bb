@@ -44,7 +44,7 @@ class AutofillProviderAndroid : public AutofillProvider {
                                 const FormData& form,
                                 const FormFieldData& field,
                                 const gfx::RectF& bounding_box) override;
-  bool OnFormSubmitted(AutofillHandlerProxy* handler,
+  void OnFormSubmitted(AutofillHandlerProxy* handler,
                        const FormData& form,
                        bool known_success,
                        SubmissionSource source,

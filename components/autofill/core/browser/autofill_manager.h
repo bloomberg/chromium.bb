@@ -163,9 +163,10 @@ class AutofillManager : public AutofillHandler,
   // Autofill profile data. |observed_submission| is specified if the upload
   // follows an observed submission event. Returns false if the upload couldn't
   // start.
-  virtual bool StartUploadProcess(std::unique_ptr<FormStructure> form_structure,
-                                  const base::TimeTicks& timestamp,
-                                  bool observed_submission);
+  virtual bool MaybeStartVoteUploadProcess(
+      std::unique_ptr<FormStructure> form_structure,
+      const base::TimeTicks& timestamp,
+      bool observed_submission);
 
   // Update the pending form with |form|, possibly processing the current
   // pending form for upload.
@@ -240,7 +241,7 @@ class AutofillManager : public AutofillHandler,
                        std::string* profile_backend_id) const;
 
   // AutofillHandler:
-  bool OnFormSubmittedImpl(const FormData& form,
+  void OnFormSubmittedImpl(const FormData& form,
                            bool known_success,
                            SubmissionSource source,
                            base::TimeTicks timestamp) override;

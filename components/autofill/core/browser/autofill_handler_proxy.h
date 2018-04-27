@@ -41,7 +41,7 @@ class AutofillHandlerProxy : public AutofillHandler {
   }
 
  protected:
-  bool OnFormSubmittedImpl(const FormData& form,
+  void OnFormSubmittedImpl(const FormData& form,
                            bool known_success,
                            SubmissionSource source,
                            base::TimeTicks timestamp) override;

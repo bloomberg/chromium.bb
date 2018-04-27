@@ -15,13 +15,12 @@ AutofillHandler::AutofillHandler(AutofillDriver* driver) : driver_(driver) {}
 
 AutofillHandler::~AutofillHandler() {}
 
-bool AutofillHandler::OnFormSubmitted(const FormData& form,
+void AutofillHandler::OnFormSubmitted(const FormData& form,
                                       bool known_success,
                                       SubmissionSource source,
                                       base::TimeTicks timestamp) {
-  if (!IsValidFormData(form))
-    return false;
-  return OnFormSubmittedImpl(form, known_success, source, timestamp);
+  if (IsValidFormData(form))
+    OnFormSubmittedImpl(form, known_success, source, timestamp);
 }
 
 void AutofillHandler::OnTextFieldDidChange(const FormData& form,

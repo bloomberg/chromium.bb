@@ -302,15 +302,16 @@ class MockAutofillManager : public autofill::AutofillManager {
   }
 
   // Workaround for std::unique_ptr<> lacking a copy constructor.
-  bool StartUploadProcess(std::unique_ptr<FormStructure> form_structure,
-                          const base::TimeTicks& timestamp,
-                          bool observed_submission) {
-    StartUploadProcessPtr(form_structure.release(), timestamp,
-                          observed_submission);
+  bool MaybeStartVoteUploadProcess(
+      std::unique_ptr<FormStructure> form_structure,
+      const base::TimeTicks& timestamp,
+      bool observed_submission) {
+    MaybeStartVoteUploadProcessPtr(form_structure.release(), timestamp,
+                                   observed_submission);
     return true;
   }
 
-  MOCK_METHOD3(StartUploadProcessPtr,
+  MOCK_METHOD3(MaybeStartVoteUploadProcessPtr,
                void(FormStructure*, const base::TimeTicks&, bool));
 
  private:
@@ -3607,7 +3608,8 @@ TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
         // for upload.
         auto* mock_autofill_manager =
             client()->mock_driver()->mock_autofill_manager();
-        EXPECT_CALL(*mock_autofill_manager, StartUploadProcessPtr(_, _, true))
+        EXPECT_CALL(*mock_autofill_manager,
+                    MaybeStartVoteUploadProcessPtr(_, _, true))
             .WillOnce(WithArg<0>(SaveToUniquePtr(&signin_vote_form_structure)));
       } else {
         autofill::ServerFieldTypeSet field_types;
@@ -3863,7 +3865,8 @@ TEST_F(PasswordFormManagerTest, UploadSignInForm_WithAutofillTypes) {
   std::unique_ptr<FormStructure> uploaded_form_structure;
   auto* mock_autofill_manager =
       client()->mock_driver()->mock_autofill_manager();
-  EXPECT_CALL(*mock_autofill_manager, StartUploadProcessPtr(_, _, true))
+  EXPECT_CALL(*mock_autofill_manager,
+              MaybeStartVoteUploadProcessPtr(_, _, true))
       .WillOnce(WithArg<0>(SaveToUniquePtr(&uploaded_form_structure)));
   form_manager.ProvisionallySave(
       form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
@@ -3899,7 +3902,8 @@ TEST_F(PasswordFormManagerTest, NoUploadsForSubmittedFormWithOnlyOneField) {
 
   auto* mock_autofill_manager =
       client()->mock_driver()->mock_autofill_manager();
-  EXPECT_CALL(*mock_autofill_manager, StartUploadProcessPtr(_, _, _)).Times(0);
+  EXPECT_CALL(*mock_autofill_manager, MaybeStartVoteUploadProcessPtr(_, _, _))
+      .Times(0);
   form_manager.ProvisionallySave(
       form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   form_manager.Save();

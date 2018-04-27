@@ -157,26 +157,27 @@ void AutofillProviderAndroid::FireSuccessfulSubmission(
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
+
   Java_AutofillProvider_onFormSubmitted(env, obj, (int)source);
   Reset();
 }
 
-bool AutofillProviderAndroid::OnFormSubmitted(AutofillHandlerProxy* handler,
+void AutofillProviderAndroid::OnFormSubmitted(AutofillHandlerProxy* handler,
                                               const FormData& form,
                                               bool known_success,
                                               SubmissionSource source,
                                               base::TimeTicks timestamp) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!IsCurrentlyLinkedHandler(handler) || !IsCurrentlyLinkedForm(form))
-    return false;
+    return;
 
   if (known_success || source == SubmissionSource::FORM_SUBMISSION) {
     FireSuccessfulSubmission(source);
-  } else {
-    check_submission_ = true;
-    pending_submission_source_ = source;
+    return;
   }
-  return true;
+
+  check_submission_ = true;
+  pending_submission_source_ = source;
 }
 
 void AutofillProviderAndroid::OnFocusNoLongerOnForm(

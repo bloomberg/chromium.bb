@@ -1413,8 +1413,9 @@ void PasswordFormManager::SendSignInVote(const FormData& form_data) {
   DCHECK(form_structure->ShouldBeUploaded());
   DCHECK_EQ(2u, form_structure->field_count());
   form_structure->field(1)->set_possible_types({autofill::PASSWORD});
-  autofill_manager->StartUploadProcess(std::move(form_structure),
-                                       base::TimeTicks::Now(), true);
+  autofill_manager->MaybeStartVoteUploadProcess(std::move(form_structure),
+                                                base::TimeTicks::Now(),
+                                                /*observed_submission=*/true);
 }
 
 void PasswordFormManager::SetUserAction(UserAction user_action) {

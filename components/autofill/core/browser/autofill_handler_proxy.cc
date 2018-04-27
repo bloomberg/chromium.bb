@@ -16,12 +16,11 @@ AutofillHandlerProxy::AutofillHandlerProxy(AutofillDriver* driver,
 
 AutofillHandlerProxy::~AutofillHandlerProxy() {}
 
-bool AutofillHandlerProxy::OnFormSubmittedImpl(const FormData& form,
+void AutofillHandlerProxy::OnFormSubmittedImpl(const FormData& form,
                                                bool known_success,
                                                SubmissionSource source,
                                                base::TimeTicks timestamp) {
-  return provider_->OnFormSubmitted(this, form, known_success, source,
-                                    timestamp);
+  provider_->OnFormSubmitted(this, form, known_success, source, timestamp);
 }
 
 void AutofillHandlerProxy::OnTextFieldDidChangeImpl(
