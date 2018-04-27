@@ -90,7 +90,7 @@ class ConsentBumpActivator : public BrowserListObserver,
   // This should only be called after the browser has been set up, otherwise
   // this might crash because the profile has not been fully initialized yet.
   static bool ShouldShowConsentBumpFor(Profile* profile) {
-    if (!profile->IsSyncAllowed() || !IsUnifiedConsentEnabled(profile))
+    if (!profile->IsSyncAllowed() || !IsUnifiedConsentBumpEnabled(profile))
       return false;
 
     // TODO(crbug.com/819909): Check if the consent bump or sync confirmation
