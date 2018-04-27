@@ -937,21 +937,21 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   }
 
   if (src.IsScrollableContainer()) {
-    const gfx::Point& scrollOffset = src.GetScrollOffset();
-    dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollX, scrollOffset.x());
-    dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollY, scrollOffset.y());
+    const gfx::Point& scroll_offset = src.GetScrollOffset();
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollX, scroll_offset.x());
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollY, scroll_offset.y());
 
-    const gfx::Point& minScrollOffset = src.MinimumScrollOffset();
+    const gfx::Point& min_scroll_offset = src.MinimumScrollOffset();
     dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollXMin,
-                         minScrollOffset.x());
+                         min_scroll_offset.x());
     dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollYMin,
-                         minScrollOffset.y());
+                         min_scroll_offset.y());
 
-    const gfx::Point& maxScrollOffset = src.MaximumScrollOffset();
+    const gfx::Point& max_scroll_offset = src.MaximumScrollOffset();
     dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollXMax,
-                         maxScrollOffset.x());
+                         max_scroll_offset.x());
     dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollYMax,
-                         maxScrollOffset.y());
+                         max_scroll_offset.y());
   }
 
   if (dst->id == image_data_node_id_) {
