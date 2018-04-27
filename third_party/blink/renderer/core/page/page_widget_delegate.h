@@ -70,7 +70,7 @@ class CORE_EXPORT PageWidgetEventHandler {
 // Common implementation of WebViewImpl and WebPagePopupImpl.
 class CORE_EXPORT PageWidgetDelegate {
  public:
-  static void Animate(Page&, double monotonic_frame_begin_time);
+  static void Animate(Page&, base::TimeTicks monotonic_frame_begin_time);
 
   // For the following methods, the |root| argument indicates a root localFrame
   // from which to start performing the specified operation.

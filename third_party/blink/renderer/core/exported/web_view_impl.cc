@@ -1817,9 +1817,7 @@ void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time) {
 
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());
-  // TODO(dcheng): This should be a base::TimeTicks.
-  PageWidgetDelegate::Animate(*page_,
-                              last_frame_time.since_origin().InSecondsF());
+  PageWidgetDelegate::Animate(*page_, last_frame_time);
   if (auto* client = GetValidationMessageClient())
     client->LayoutOverlay();
 }

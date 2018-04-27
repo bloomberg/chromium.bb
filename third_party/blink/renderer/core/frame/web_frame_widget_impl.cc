@@ -277,9 +277,7 @@ void WebFrameWidgetImpl::BeginFrame(base::TimeTicks last_frame_time) {
 
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       LocalRootImpl()->GetFrame()->GetDocument()->Lifecycle());
-  // TODO(dcheng): Plumb this through as base::TimeTicks.
-  PageWidgetDelegate::Animate(*GetPage(),
-                              last_frame_time.since_origin().InSecondsF());
+  PageWidgetDelegate::Animate(*GetPage(), last_frame_time);
   // Animate can cause the local frame to detach.
   if (LocalRootImpl())
     GetPage()->GetValidationMessageClient().LayoutOverlay();

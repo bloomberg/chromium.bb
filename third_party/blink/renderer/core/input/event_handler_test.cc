@@ -147,9 +147,8 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll) {
   GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
       mouse_move_event, Vector<WebMouseEvent>());
 
-  GetPage().GetAutoscrollController().Animate(WTF::CurrentTimeTicksInSeconds());
-  GetPage().Animator().ServiceScriptedAnimations(
-      WTF::CurrentTimeTicksInSeconds());
+  GetPage().GetAutoscrollController().Animate();
+  GetPage().Animator().ServiceScriptedAnimations(WTF::CurrentTimeTicks());
 
   WebMouseEvent mouse_up_event(
       WebMouseEvent::kMouseUp, WebFloatPoint(100, 50), WebFloatPoint(200, 250),

@@ -399,7 +399,7 @@ void WebPagePopupImpl::BeginFrame(base::TimeTicks last_frame_time) {
     return;
   // FIXME: This should use lastFrameTimeMonotonic but doing so
   // breaks tests.
-  PageWidgetDelegate::Animate(*page_, CurrentTimeTicksInSeconds());
+  PageWidgetDelegate::Animate(*page_, CurrentTimeTicks());
 }
 
 void WebPagePopupImpl::WillCloseLayerTreeView() {

@@ -94,7 +94,7 @@ class CORE_EXPORT SVGImage final : public Image {
                                           const FloatRect& src_rect);
 
   // Service CSS and SMIL animations.
-  void ServiceAnimations(double monotonic_animation_start_time);
+  void ServiceAnimations(base::TimeTicks monotonic_animation_start_time);
 
   void UpdateUseCounters(const Document&) const;
 

@@ -19,7 +19,8 @@ class CORE_EXPORT PageAnimator final : public GarbageCollected<PageAnimator> {
   static PageAnimator* Create(Page&);
   void Trace(blink::Visitor*);
   void ScheduleVisualUpdate(LocalFrame*);
-  void ServiceScriptedAnimations(double monotonic_animation_start_time);
+  void ServiceScriptedAnimations(
+      base::TimeTicks monotonic_animation_start_time);
 
   bool IsServicingAnimations() const { return servicing_animations_; }
 

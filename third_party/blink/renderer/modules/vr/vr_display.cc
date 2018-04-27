@@ -849,7 +849,8 @@ void VRDisplay::ProcessScheduledWindowAnimations(double timestamp) {
 
   bool had_pending_vrdisplay_raf = pending_vrdisplay_raf_;
   // TODO(klausw): update timestamp based on scheduling delay?
-  page->Animator().ServiceScriptedAnimations(timestamp);
+  page->Animator().ServiceScriptedAnimations(
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(timestamp));
 
   if (had_pending_vrdisplay_raf != pending_vrdisplay_raf_) {
     DVLOG(1) << __FUNCTION__
@@ -893,7 +894,8 @@ void VRDisplay::ProcessScheduledAnimations(double timestamp) {
     AutoReset<bool> animating(&in_animation_frame_, true);
     pending_vrdisplay_raf_ = false;
     did_submit_this_frame_ = false;
-    scripted_animation_controller_->ServiceScriptedAnimations(timestamp);
+    scripted_animation_controller_->ServiceScriptedAnimations(
+        base::TimeTicks() + base::TimeDelta::FromSecondsD(timestamp));
     // If presenting and the script didn't call SubmitFrame, let the device
     // side know so that it can cleanly reuse resources and make appropriate
     // timing decisions. Note that is_presenting_ could become false during

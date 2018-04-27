@@ -63,7 +63,7 @@ TEST_F(ScriptedAnimationControllerTest, EnqueueOneTask) {
   Controller().EnqueueTask(observer.CreateTask(1));
   EXPECT_EQ(0u, observer.Order().size());
 
-  Controller().ServiceScriptedAnimations(0);
+  Controller().ServiceScriptedAnimations(base::TimeTicks());
   EXPECT_EQ(1u, observer.Order().size());
   EXPECT_EQ(1, observer.Order()[0]);
 }
@@ -75,7 +75,7 @@ TEST_F(ScriptedAnimationControllerTest, EnqueueTwoTasks) {
   Controller().EnqueueTask(observer.CreateTask(2));
   EXPECT_EQ(0u, observer.Order().size());
 
-  Controller().ServiceScriptedAnimations(0);
+  Controller().ServiceScriptedAnimations(base::TimeTicks());
   EXPECT_EQ(2u, observer.Order().size());
   EXPECT_EQ(1, observer.Order()[0]);
   EXPECT_EQ(2, observer.Order()[1]);
@@ -103,12 +103,12 @@ TEST_F(ScriptedAnimationControllerTest, EnqueueWithinTask) {
   Controller().EnqueueTask(observer.CreateTask(3));
   EXPECT_EQ(0u, observer.Order().size());
 
-  Controller().ServiceScriptedAnimations(0);
+  Controller().ServiceScriptedAnimations(base::TimeTicks());
   EXPECT_EQ(2u, observer.Order().size());
   EXPECT_EQ(1, observer.Order()[0]);
   EXPECT_EQ(3, observer.Order()[1]);
 
-  Controller().ServiceScriptedAnimations(0);
+  Controller().ServiceScriptedAnimations(base::TimeTicks());
   EXPECT_EQ(3u, observer.Order().size());
   EXPECT_EQ(1, observer.Order()[0]);
   EXPECT_EQ(3, observer.Order()[1]);
@@ -145,7 +145,7 @@ TEST_F(ScriptedAnimationControllerTest, EnqueueTaskAndEvent) {
   Controller().EnqueueEvent(event);
   EXPECT_EQ(0u, observer.Order().size());
 
-  Controller().ServiceScriptedAnimations(0);
+  Controller().ServiceScriptedAnimations(base::TimeTicks());
   EXPECT_EQ(2u, observer.Order().size());
   EXPECT_EQ(2, observer.Order()[0]);
   EXPECT_EQ(1, observer.Order()[1]);
@@ -177,7 +177,7 @@ TEST_F(ScriptedAnimationControllerTest, RegisterCallbackAndEnqueueTask) {
   Controller().EnqueueTask(observer.CreateTask(2));
   EXPECT_EQ(0u, observer.Order().size());
 
-  Controller().ServiceScriptedAnimations(0);
+  Controller().ServiceScriptedAnimations(base::TimeTicks());
   EXPECT_EQ(2u, observer.Order().size());
   EXPECT_EQ(2, observer.Order()[0]);
   EXPECT_EQ(1, observer.Order()[1]);
@@ -201,7 +201,7 @@ TEST_F(ScriptedAnimationControllerTest, TestHasCallback) {
 
   // Servicing the scripted animations should call the remaining callback and
   // clear it.
-  Controller().ServiceScriptedAnimations(0);
+  Controller().ServiceScriptedAnimations(base::TimeTicks());
   EXPECT_FALSE(Controller().HasCallback());
 }
 

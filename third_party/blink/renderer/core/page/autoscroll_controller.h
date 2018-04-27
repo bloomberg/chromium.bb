@@ -70,7 +70,7 @@ class CORE_EXPORT AutoscrollController final
   void Trace(blink::Visitor*);
 
   // Selection and drag-and-drop autoscroll.
-  void Animate(double monotonic_frame_begin_time);
+  void Animate();
   bool SelectionAutoscrollInProgress() const;
   bool AutoscrollInProgressFor(const LayoutBox*) const;
   bool AutoscrollInProgress() const;

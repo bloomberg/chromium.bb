@@ -304,7 +304,7 @@ void AutoscrollController::StartMiddleClickAutoscroll(
       position.ScaledBy(1 / frame->DevicePixelRatio()), frame);
 }
 
-void AutoscrollController::Animate(double) {
+void AutoscrollController::Animate() {
   // Middle-click autoscroll isn't handled on the main thread.
   if (MiddleClickAutoscrollInProgress())
     return;
