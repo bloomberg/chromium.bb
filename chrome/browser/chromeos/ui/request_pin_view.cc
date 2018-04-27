@@ -24,6 +24,16 @@
 
 namespace chromeos {
 
+namespace {
+
+// Default width of the dialog.
+constexpr int kDefaultWidth = 448;
+
+// Default width of the text field.
+constexpr int kDefaultTextWidth = 200;
+
+}  // namespace
+
 RequestPinView::RequestPinView(const std::string& extension_name,
                                RequestPinView::RequestPinCodeType code_type,
                                int attempts_left,
@@ -116,6 +126,12 @@ bool RequestPinView::IsDialogButtonEnabled(ui::DialogButton button) const {
   return true;
 }
 
+gfx::Size RequestPinView::CalculatePreferredSize() const {
+  return gfx::Size(
+      kDefaultWidth,
+      GetLayoutManager()->GetPreferredHeightForWidth(this, kDefaultWidth));
+}
+
 bool RequestPinView::IsLocked() {
   return callback_.is_null();
 }
@@ -197,7 +213,8 @@ void RequestPinView::Init() {
   textfield_->set_controller(this);
   textfield_->SetEnabled(true);
   textfield_->SetAssociatedLabel(header_label_);
-  layout->AddView(textfield_);
+  layout->AddView(textfield_, 1, 1, views::GridLayout::LEADING,
+                  views::GridLayout::FILL, kDefaultTextWidth, 0);
 
   layout->AddPaddingRow(0, related_vertical_spacing);
 
@@ -248,12 +265,15 @@ void RequestPinView::SetErrorMessage(RequestPinErrorType error_type,
     case RequestPinErrorType::NONE:
       if (attempts_left < 0) {
         error_label_->SetVisible(false);
+        textfield_->SetInvalid(false);
         return;
       }
       break;
   }
 
   if (attempts_left >= 0) {
+    if (!error_message.empty())
+      error_message.append(base::ASCIIToUTF16(" "));
     error_message.append(l10n_util::GetStringFUTF16(
         IDS_REQUEST_PIN_DIALOG_ATTEMPTS_LEFT,
         base::ASCIIToUTF16(std::to_string(attempts_left))));
@@ -264,6 +284,7 @@ void RequestPinView::SetErrorMessage(RequestPinErrorType error_type,
   error_label_->SetTooltipText(error_message);
   error_label_->SetEnabledColor(SK_ColorRED);
   error_label_->SizeToPreferredSize();
+  textfield_->SetInvalid(true);
 }
 
 }  // namespace chromeos
