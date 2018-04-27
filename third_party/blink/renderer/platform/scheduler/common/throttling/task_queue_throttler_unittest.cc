@@ -654,8 +654,8 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
                                      base::TimeDelta::FromMilliseconds(1000)));
   run_times.clear();
 
-  LazyNow lazy_now(clock_.get());
-  pool->DisableThrottling(&lazy_now);
+  LazyNow lazy_now_1(clock_.get());
+  pool->DisableThrottling(&lazy_now_1);
   EXPECT_FALSE(pool->IsThrottlingEnabled());
 
   // Pool should not be throttled now.
@@ -669,8 +669,8 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
                                      base::TimeDelta::FromMilliseconds(2000)));
   run_times.clear();
 
-  lazy_now = LazyNow(clock_.get());
-  pool->EnableThrottling(&lazy_now);
+  LazyNow lazy_now_2(clock_.get());
+  pool->EnableThrottling(&lazy_now_2);
   EXPECT_TRUE(pool->IsThrottlingEnabled());
 
   // Because time pool was disabled, time budget level did not replenish
@@ -1014,16 +1014,16 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
       task_queue_throttler_->CreateCPUTimeBudgetPool("test");
   task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
 
-  LazyNow lazy_now(clock_.get());
-  pool->DisableThrottling(&lazy_now);
+  LazyNow lazy_now_1(clock_.get());
+  pool->DisableThrottling(&lazy_now_1);
 
   pool->AddQueue(base::TimeTicks(), timer_queue_.get());
 
   mock_task_runner_->RunUntilTime(base::TimeTicks() +
                                   base::TimeDelta::FromMilliseconds(100));
 
-  lazy_now = LazyNow(clock_.get());
-  pool->EnableThrottling(&lazy_now);
+  LazyNow lazy_now_2(clock_.get());
+  pool->EnableThrottling(&lazy_now_2);
 
   timer_queue_->PostDelayedTask(
       FROM_HERE, base::BindOnce(&TestTask, &run_times, clock_.get()),

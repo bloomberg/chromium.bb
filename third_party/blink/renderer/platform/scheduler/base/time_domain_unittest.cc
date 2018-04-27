@@ -233,7 +233,7 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
 TEST_F(TimeDomainTest, WakeUpReadyDelayedQueues) {
   base::TimeDelta delay = base::TimeDelta::FromMilliseconds(50);
   base::TimeTicks now = time_domain_->Now();
-  LazyNow lazy_now(now);
+  LazyNow lazy_now_1(now);
   base::TimeTicks delayed_runtime = now + delay;
   EXPECT_CALL(*time_domain_.get(), RequestWakeUpAt(_, delayed_runtime));
   task_queue_->SetDelayedWakeUpForTesting(
@@ -243,13 +243,13 @@ TEST_F(TimeDomainTest, WakeUpReadyDelayedQueues) {
   ASSERT_TRUE(time_domain_->NextScheduledRunTime(&next_run_time));
   EXPECT_EQ(delayed_runtime, next_run_time);
 
-  time_domain_->WakeUpReadyDelayedQueues(&lazy_now);
+  time_domain_->WakeUpReadyDelayedQueues(&lazy_now_1);
   ASSERT_TRUE(time_domain_->NextScheduledRunTime(&next_run_time));
   EXPECT_EQ(delayed_runtime, next_run_time);
 
   time_domain_->SetNow(delayed_runtime);
-  lazy_now = time_domain_->CreateLazyNow();
-  time_domain_->WakeUpReadyDelayedQueues(&lazy_now);
+  LazyNow lazy_now_2(time_domain_->CreateLazyNow());
+  time_domain_->WakeUpReadyDelayedQueues(&lazy_now_2);
   ASSERT_FALSE(time_domain_->NextScheduledRunTime(&next_run_time));
 }
 
