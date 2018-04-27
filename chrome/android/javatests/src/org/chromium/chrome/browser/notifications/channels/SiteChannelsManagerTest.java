@@ -24,12 +24,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.notifications.NotificationChannelStatus;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.notifications.NotificationSettingsBridge;
+import org.chromium.chrome.browser.preferences.website.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.NotificationInfo;
 import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 import java.util.ArrayList;
@@ -54,9 +57,7 @@ public class SiteChannelsManagerTest {
 
     @Before
     public void setUp() throws Exception {
-        // Not initializing the browser process is safe because
-        // UrlFormatter.formatUrlForSecurityDisplay() is stand-alone.
-        mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
+        mNativeLibraryTestRule.loadNativeLibraryAndInitBrowserProcess();
 
         Context mContext = InstrumentationRegistry.getTargetContext();
         NotificationManagerProxy notificationManagerProxy = new NotificationManagerProxyImpl(
@@ -184,6 +185,15 @@ public class SiteChannelsManagerTest {
         mSiteChannelsManager.deleteSiteChannel(channel.getId());
         assertThat(mSiteChannelsManager.getChannelStatus(channel.getId()),
                 matchesChannelStatus(NotificationChannelStatus.UNAVAILABLE));
+    }
+
+    @Test
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @SmallTest
+    public void testBlockingPermissionInIncognitoCreatesNoChannels() throws Exception {
+        NotificationInfo info = new NotificationInfo("https://example-incognito.com", null, true);
+        ThreadUtils.runOnUiThreadBlocking(() -> info.setContentSetting(ContentSetting.BLOCK));
+        assertThat(Arrays.asList(mSiteChannelsManager.getSiteChannels()), hasSize(0));
     }
 
     private static Matcher<Integer> matchesChannelStatus(

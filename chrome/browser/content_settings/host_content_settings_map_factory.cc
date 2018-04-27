@@ -103,6 +103,7 @@ scoped_refptr<RefcountedKeyedService>
 #endif // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 #if defined(OS_ANDROID)
+  if (profile->GetProfileType() != Profile::INCOGNITO_PROFILE) {
     auto channels_provider =
         std::make_unique<NotificationChannelsProviderAndroid>();
     if (base::FeatureList::IsEnabled(features::kSiteNotificationChannels)) {
@@ -116,6 +117,7 @@ scoped_refptr<RefcountedKeyedService>
       // flag once we're confident a kill-switch is no longer necessary (M63?).
       channels_provider->UnmigrateChannelsIfNecessary(
           profile->GetPrefs(), settings_map->GetPrefProvider());
+    }
   }
 #endif  // defined (OS_ANDROID)
   return settings_map;
