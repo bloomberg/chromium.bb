@@ -46001,6 +46001,9 @@ Full version information for the fingerprint enum values:
   <int value="4" label="Seed Corrupt Base64 Data"/>
   <int value="5" label="Seed Corrupt Protobuf"/>
   <int value="6" label="Seed Corrupt Gzip Data"/>
+  <int value="7" label="Seed Load Timed Out"/>
+  <int value="8" label="Seed Load Interrupted"/>
+  <int value="9" label="Seed Load Other Failure"/>
 </enum>
 
 <enum name="VariationsSeedStoreResult">
