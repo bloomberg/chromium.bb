@@ -639,7 +639,7 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
   }
 
   if (container_->children().empty()) {
-    DCHECK(state_ == KeyboardControllerState::INITIAL);
+    DCHECK_EQ(state_, KeyboardControllerState::INITIAL);
     aura::Window* contents = ui_->GetContentsWindow();
     contents->Show();
     container_->AddChild(contents);
@@ -671,7 +671,7 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
     // when keyboard container window has been shown from outside.
     // This should not happen in the real code. Fix the test and change this to
     // NOTREACHED.
-    DCHECK(state_ == KeyboardControllerState::HIDDEN);
+    DCHECK_EQ(state_, KeyboardControllerState::HIDDEN);
     ChangeState(KeyboardControllerState::SHOWN);
     return;
   }
@@ -680,7 +680,7 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
 
   switch (state_) {
     case KeyboardControllerState::INITIAL:
-      DCHECK(ui_->GetContentsWindow()->bounds().height() == 0);
+      DCHECK_EQ(ui_->GetContentsWindow()->bounds().height(), 0);
       show_on_content_update_ = show_keyboard;
       ChangeState(KeyboardControllerState::LOADING_EXTENSION);
       return;
@@ -724,7 +724,7 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
 
 bool KeyboardController::WillHideKeyboard() const {
   bool res = weak_factory_will_hide_.HasWeakPtrs();
-  DCHECK(res == (state_ == KeyboardControllerState::WILL_HIDE));
+  DCHECK_EQ(res, state_ == KeyboardControllerState::WILL_HIDE);
   return res;
 }
 
@@ -864,7 +864,7 @@ void KeyboardController::SetContainerType(
     SetContainerBehaviorInternal(type);
     if (target_bounds)
       SetContainerBounds(target_bounds.value(), false /* contents_loaded */);
-    DCHECK(GetActiveContainerType() == type);
+    DCHECK_EQ(GetActiveContainerType(), type);
     std::move(callback).Run(true /* change_successful */);
   }
 }
