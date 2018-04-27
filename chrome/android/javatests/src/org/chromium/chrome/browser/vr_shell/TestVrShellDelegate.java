@@ -90,6 +90,16 @@ public class TestVrShellDelegate extends VrShellDelegate {
     }
 
     @Override
+    public void setUiExpectingActivityForTesting(int quiescenceTimeoutMs, Runnable resultCallback) {
+        super.setUiExpectingActivityForTesting(quiescenceTimeoutMs, resultCallback);
+    }
+
+    @Override
+    public int getLastUiActivityResultForTesting() {
+        return super.getLastUiActivityResultForTesting();
+    }
+
+    @Override
     protected boolean isVrBrowsingEnabled() {
         if (mDisableVrBrowsing) return false;
         return super.isVrBrowsingEnabled();

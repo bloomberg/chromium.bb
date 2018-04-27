@@ -82,7 +82,10 @@ public class VrShellDialogTest {
         }
     }
 
-    private boolean captureScreen(String filename) {
+    private boolean captureScreen(String filename) throws InterruptedException {
+        // Ensure that any UI changes that have been rendered and submitted have actually propogated
+        // to the screen.
+        NativeUiUtils.waitNumFrames(2);
         // TODO(bsheedy): Make this work on Android P by drawing the view hierarchy to a bitmap.
         File screenshotFile = new File(sBaseDirectory, filename + ".png");
         if (screenshotFile.exists() && !screenshotFile.delete()) return false;
@@ -160,7 +163,6 @@ public class VrShellDialogTest {
         // Capture image
         Assert.assertTrue(captureScreen("MicrophonePermissionPrompt_Visible"));
         NativeUiUtils.clickFallbackUiPositiveButton();
-        Thread.sleep(VR_DIALOG_RENDER_SLEEP_MS);
         Assert.assertTrue(captureScreen("MicrophonePermissionPrompt_Granted"));
     }
 
@@ -266,8 +268,6 @@ public class VrShellDialogTest {
                         .runJavaScriptOrFail("c", POLL_TIMEOUT_SHORT_MS,
                                 mVrTestFramework.getFirstTabWebContents())
                         .equals("false"));
-        // Might not be visually dismissed yet
-        Thread.sleep(VR_DIALOG_RENDER_SLEEP_MS);
         Assert.assertTrue(captureScreen("JavaScriptConfirm_Dismissed"));
     }
 
@@ -296,8 +296,6 @@ public class VrShellDialogTest {
                         .runJavaScriptOrFail("p == '" + expectedString + "'", POLL_TIMEOUT_SHORT_MS,
                                 mVrTestFramework.getFirstTabWebContents())
                         .equals("true"));
-        // Might not be visually dismissed yet, so sleep.
-        Thread.sleep(VR_DIALOG_RENDER_SLEEP_MS);
         Assert.assertTrue(captureScreen("JavaScriptPrompt_Dismissed"));
     }
 

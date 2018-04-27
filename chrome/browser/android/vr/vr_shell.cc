@@ -1276,6 +1276,23 @@ void VrShell::PerformUiActionForTesting(
                                 gl_thread_->GetVrShellGl(), test_input));
 }
 
+void VrShell::SetUiExpectingActivityForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint quiescence_timeout_ms) {
+  UiTestActivityExpectation ui_expectation;
+  ui_expectation.quiescence_timeout_ms = quiescence_timeout_ms;
+  PostToGlThread(FROM_HERE,
+                 base::BindOnce(&VrShellGl::SetUiExpectingActivityForTesting,
+                                gl_thread_->GetVrShellGl(), ui_expectation));
+}
+
+void VrShell::ReportUiActivityResultForTesting(VrUiTestActivityResult result) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_VrShellImpl_reportUiActivityResultForTesting(env, j_vr_shell_,
+                                                    static_cast<int>(result));
+}
+
 std::unique_ptr<PageInfo> VrShell::CreatePageInfo() {
   if (!web_contents_)
     return nullptr;

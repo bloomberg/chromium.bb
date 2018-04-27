@@ -85,8 +85,27 @@ public interface VrShell extends VrDialogManager, VrToastManager {
 
     /**
      * Performs a UI action that doesn't require a position argument on a UI element.
+     * @param elementName The UserFriendlyElementName to perform the UI action on.
+     * @param actionType The VrUiTestAction to perform on the specified element.
+     * @param position The position on the element to perform the action.
      */
     void performUiActionForTesting(int elementName, int actionType, PointF position);
+
+    /**
+     * Notifies the native UI that it should start tracking UI activity, reporting a result
+     * when either the UI has activity but reaches a stable state, or the specified timeout is
+     * reached.
+     * @param quiescenceTimeoutMs The maximum amount of time spent waiting for UI quiescence before
+     *        reporting a timeout.
+     * @param resultCallback A Runnable that will be run once the UI reports a result.
+     */
+    void setUiExpectingActivityForTesting(int quiescenceTimeoutMs, Runnable resultCallback);
+
+    /**
+     * Returns the last result set by the native UI about UI quiescence.
+     * @return The VrUiTestActivityResult value last set by the native UI.
+     */
+    int getLastUiActivityResultForTesting();
 
     /**
      * @param topContentOffset The content offset (usually applied by the omnibox).

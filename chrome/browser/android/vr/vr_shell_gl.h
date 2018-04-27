@@ -320,6 +320,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   void AcceptDoffPromptForTesting();
   void PerformUiActionForTesting(UiTestInput test_input);
+  void SetUiExpectingActivityForTesting(
+      UiTestActivityExpectation ui_expectation);
 
  private:
   void GvrInit(gvr_context* gvr_api);
@@ -437,6 +439,10 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void ClosePresentationBindings();
 
   device::mojom::XRInputSourceStatePtr GetGazeInputSourceState();
+
+  void ReportUiStatusForTesting(const base::TimeTicks& current_time,
+                                bool ui_updated);
+  void ReportUiActivityResultForTesting(VrUiTestActivityResult result);
 
   // samplerExternalOES texture data for WebVR content image.
   int webvr_texture_id_ = 0;
@@ -592,6 +598,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   std::unique_ptr<VrDialog> vr_dialog_;
   bool showing_vr_dialog_ = false;
+  std::unique_ptr<UiTestState> ui_test_state_;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
 

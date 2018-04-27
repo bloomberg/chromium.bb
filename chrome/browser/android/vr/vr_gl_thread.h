@@ -20,6 +20,7 @@
 #include "chrome/browser/vr/text_input_delegate.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
+#include "chrome/browser/vr/ui_test_input.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
 namespace base {
@@ -133,6 +134,9 @@ class VrGLThread : public base::android::JavaHandlerThread,
                              int selection_end,
                              int composition_start,
                              int composition_end) override;
+
+  void ReportUiActivityResultForTesting(
+      const VrUiTestActivityResult& result) override;
 
  protected:
   void Init() override;

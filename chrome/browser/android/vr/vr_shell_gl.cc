@@ -19,6 +19,7 @@
 #include "base/optional.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "chrome/browser/android/vr/gl_browser_interface.h"
 #include "chrome/browser/android/vr/gvr_util.h"
@@ -1516,10 +1517,13 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
   // viewport.
   bool controller_dirty = ui_->IsControllerVisible();
 
+  bool ui_updated =
+      scene_changed || textures_changed || content_frame_available_;
+  ReportUiStatusForTesting(scene_start, ui_updated);
+
   // TODO(mthiesse): Refine this notion of when we need to redraw. If only a
   // portion of the screen is dirtied, we can update just redraw that portion.
-  bool redraw_needed = controller_dirty || scene_changed || textures_changed ||
-                       content_frame_available_;
+  bool redraw_needed = controller_dirty || ui_updated;
 
   bool head_moved =
       HeadMoveExceedsThreshold(last_used_head_pose_, render_info_.head_pose,
@@ -2502,6 +2506,45 @@ void VrShellGl::AcceptDoffPromptForTesting() {
 
 void VrShellGl::PerformUiActionForTesting(UiTestInput test_input) {
   ui_->PerformUiActionForTesting(test_input);
+}
+
+void VrShellGl::SetUiExpectingActivityForTesting(
+    UiTestActivityExpectation ui_expectation) {
+  DCHECK(ui_test_state_ == nullptr)
+      << "Attempted to set a UI activity expectation with one in progress";
+  ui_test_state_ = std::make_unique<UiTestState>();
+  ui_test_state_->quiescence_timeout_ms =
+      base::TimeDelta::FromMilliseconds(ui_expectation.quiescence_timeout_ms);
+}
+
+void VrShellGl::ReportUiStatusForTesting(const base::TimeTicks& current_time,
+                                         bool ui_updated) {
+  if (ui_test_state_ == nullptr)
+    return;
+  base::TimeDelta time_since_start = current_time - ui_test_state_->start_time;
+  if (ui_updated) {
+    ui_test_state_->activity_started = true;
+    if (time_since_start > ui_test_state_->quiescence_timeout_ms) {
+      // The UI is being updated, but hasn't reached a stable state in the
+      // given time -> report timeout.
+      ReportUiActivityResultForTesting(VrUiTestActivityResult::kTimeoutNoEnd);
+    }
+  } else {
+    if (ui_test_state_->activity_started) {
+      // The UI has been updated since the test requested notification of
+      // quiescence, but wasn't this frame -> report that the UI is quiescent.
+      ReportUiActivityResultForTesting(VrUiTestActivityResult::kQuiescent);
+    } else if (time_since_start > ui_test_state_->quiescence_timeout_ms) {
+      // The UI has never been updated and we've reached the timeout.
+      ReportUiActivityResultForTesting(VrUiTestActivityResult::kTimeoutNoStart);
+    }
+  }
+}
+
+void VrShellGl::ReportUiActivityResultForTesting(
+    VrUiTestActivityResult result) {
+  ui_test_state_ = nullptr;
+  browser_->ReportUiActivityResultForTesting(result);
 }
 
 }  // namespace vr
