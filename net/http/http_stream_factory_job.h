@@ -36,7 +36,7 @@ namespace net {
 
 namespace test {
 
-class HttpStreamFactoryImplJobPeer;
+class HttpStreamFactoryJobPeer;
 
 }  // namespace test
 
@@ -254,7 +254,7 @@ class HttpStreamFactory::Job {
   NetErrorDetails* net_error_details() { return &net_error_details_; }
 
  private:
-  friend class test::HttpStreamFactoryImplJobPeer;
+  friend class test::HttpStreamFactoryJobPeer;
 
   enum State {
     STATE_START,

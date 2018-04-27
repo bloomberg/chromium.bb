@@ -15,7 +15,7 @@ MockHttpStreamRequestDelegate::MockHttpStreamRequestDelegate() = default;
 
 MockHttpStreamRequestDelegate::~MockHttpStreamRequestDelegate() = default;
 
-MockHttpStreamFactoryImplJob::MockHttpStreamFactoryImplJob(
+MockHttpStreamFactoryJob::MockHttpStreamFactoryJob(
     HttpStreamFactory::Job::Delegate* delegate,
     HttpStreamFactory::JobType job_type,
     HttpNetworkSession* session,
@@ -51,7 +51,7 @@ MockHttpStreamFactoryImplJob::MockHttpStreamFactoryImplJob(
   DCHECK(!is_waiting());
 }
 
-MockHttpStreamFactoryImplJob::~MockHttpStreamFactoryImplJob() = default;
+MockHttpStreamFactoryJob::~MockHttpStreamFactoryJob() = default;
 
 TestJobFactory::TestJobFactory()
     : main_job_(nullptr),
@@ -77,7 +77,7 @@ std::unique_ptr<HttpStreamFactory::Job> TestJobFactory::CreateMainJob(
   if (override_main_job_url_)
     origin_url = main_job_alternative_url_;
 
-  auto main_job = std::make_unique<MockHttpStreamFactoryImplJob>(
+  auto main_job = std::make_unique<MockHttpStreamFactoryJob>(
       delegate, job_type, session, request_info, priority, proxy_info,
       SSLConfig(), SSLConfig(), destination, origin_url, kProtoUnknown,
       QUIC_VERSION_UNSUPPORTED, ProxyServer(), is_websocket,
@@ -105,7 +105,7 @@ std::unique_ptr<HttpStreamFactory::Job> TestJobFactory::CreateAltSvcJob(
     bool is_websocket,
     bool enable_ip_based_pooling,
     NetLog* net_log) {
-  auto alternative_job = std::make_unique<MockHttpStreamFactoryImplJob>(
+  auto alternative_job = std::make_unique<MockHttpStreamFactoryJob>(
       delegate, job_type, session, request_info, priority, proxy_info,
       SSLConfig(), SSLConfig(), destination, origin_url, alternative_protocol,
       quic_version, ProxyServer(), is_websocket, enable_ip_based_pooling,
@@ -132,7 +132,7 @@ std::unique_ptr<HttpStreamFactory::Job> TestJobFactory::CreateAltProxyJob(
     bool is_websocket,
     bool enable_ip_based_pooling,
     NetLog* net_log) {
-  auto alternative_job = std::make_unique<MockHttpStreamFactoryImplJob>(
+  auto alternative_job = std::make_unique<MockHttpStreamFactoryJob>(
       delegate, job_type, session, request_info, priority, proxy_info,
       SSLConfig(), SSLConfig(), destination, origin_url, kProtoUnknown,
       QUIC_VERSION_UNSUPPORTED, alternative_proxy_server, is_websocket,
