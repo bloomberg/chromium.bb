@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
@@ -134,7 +135,7 @@ TEST_F(MessageLoopForIoPosixTest, FileDescriptorWatcherOutlivesMessageLoop) {
   {
     MessageLoopForIO message_loop;
 
-    MessageLoopForIO::current()->WatchFileDescriptor(
+    MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
         write_fd_.get(), true, MessagePumpForIO::WATCH_WRITE, &watcher,
         &handler);
     // Don't run the message loop, just destroy it.
@@ -153,7 +154,7 @@ TEST_F(MessageLoopForIoPosixTest, FileDescriptorWatcherDoubleStop) {
     MessagePumpForIO::FdWatchController watcher(FROM_HERE);
 
     TestHandler handler;
-    MessageLoopForIO::current()->WatchFileDescriptor(
+    MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
         write_fd_.get(), true, MessagePumpForIO::WATCH_WRITE, &watcher,
         &handler);
     ASSERT_TRUE(watcher.StopWatchingFileDescriptor());
@@ -170,7 +171,7 @@ TEST_F(MessageLoopForIoPosixTest, FileDescriptorWatcherDeleteInCallback) {
   handler.watcher_to_delete_ =
       std::make_unique<MessagePumpForIO::FdWatchController>(FROM_HERE);
 
-  MessageLoopForIO::current()->WatchFileDescriptor(
+  MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
       write_fd_.get(), true, MessagePumpForIO::WATCH_WRITE,
       handler.watcher_to_delete_.get(), &handler);
   RunLoop().Run();
@@ -183,7 +184,7 @@ TEST_F(MessageLoopForIoPosixTest, WatchReadable) {
   TestHandler handler;
 
   // Watch the pipe for readability.
-  ASSERT_TRUE(MessageLoopForIO::current()->WatchFileDescriptor(
+  ASSERT_TRUE(MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
       read_fd_.get(), /*persistent=*/false, MessagePumpForIO::WATCH_READ,
       &watcher, &handler));
 
@@ -209,7 +210,7 @@ TEST_F(MessageLoopForIoPosixTest, WatchWritable) {
   TestHandler handler;
 
   // Watch the pipe for writability.
-  ASSERT_TRUE(MessageLoopForIO::current()->WatchFileDescriptor(
+  ASSERT_TRUE(MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
       write_fd_.get(), /*persistent=*/false, MessagePumpForIO::WATCH_WRITE,
       &watcher, &handler));
 
@@ -232,7 +233,7 @@ TEST_F(MessageLoopForIoPosixTest, RunUntilIdle) {
   TestHandler handler;
 
   // Watch the pipe for readability.
-  ASSERT_TRUE(MessageLoopForIO::current()->WatchFileDescriptor(
+  ASSERT_TRUE(MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
       read_fd_.get(), /*persistent=*/false, MessagePumpForIO::WATCH_READ,
       &watcher, &handler));
 
@@ -261,7 +262,7 @@ TEST_F(MessageLoopForIoPosixTest, StopFromHandler) {
                              OnceClosure());
 
   // Create persistent watcher.
-  ASSERT_TRUE(MessageLoopForIO::current()->WatchFileDescriptor(
+  ASSERT_TRUE(MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
       read_fd_.get(), /*persistent=*/true, MessagePumpForIO::WATCH_READ,
       &watcher, &handler));
 
@@ -282,7 +283,7 @@ TEST_F(MessageLoopForIoPosixTest, NonPersistentWatcher) {
   CallClosureHandler handler(run_loop.QuitClosure(), OnceClosure());
 
   // Create a non-persistent watcher.
-  ASSERT_TRUE(MessageLoopForIO::current()->WatchFileDescriptor(
+  ASSERT_TRUE(MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
       read_fd_.get(), /*persistent=*/false, MessagePumpForIO::WATCH_READ,
       &watcher, &handler));
 
@@ -303,7 +304,7 @@ TEST_F(MessageLoopForIoPosixTest, PersistentWatcher) {
   CallClosureHandler handler(run_loop1.QuitClosure(), OnceClosure());
 
   // Create persistent watcher.
-  ASSERT_TRUE(MessageLoopForIO::current()->WatchFileDescriptor(
+  ASSERT_TRUE(MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
       read_fd_.get(), /*persistent=*/true, MessagePumpForIO::WATCH_READ,
       &watcher, &handler));
 
@@ -325,7 +326,7 @@ void StopWatchingAndWatchAgain(MessagePumpForIO::FdWatchController* controller,
                                RunLoop* run_loop) {
   controller->StopWatchingFileDescriptor();
 
-  ASSERT_TRUE(MessageLoopForIO::current()->WatchFileDescriptor(
+  ASSERT_TRUE(MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
       fd, /*persistent=*/true, MessagePumpForIO::WATCH_READ, controller,
       new_handler));
 
@@ -345,7 +346,7 @@ TEST_F(MessageLoopForIoPosixTest, StopAndRestartFromHandler) {
                               OnceClosure());
 
   // Create persistent watcher.
-  ASSERT_TRUE(MessageLoopForIO::current()->WatchFileDescriptor(
+  ASSERT_TRUE(MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
       read_fd_.get(), /*persistent=*/true, MessagePumpForIO::WATCH_READ,
       &watcher, &handler1));
 
@@ -372,7 +373,7 @@ TEST_F(MessageLoopForIoPosixTest, IoEventThenTimer) {
   CallClosureHandler handler(watcher_run_loop.QuitClosure(), OnceClosure());
 
   // Create a non-persistent watcher.
-  ASSERT_TRUE(MessageLoopForIO::current()->WatchFileDescriptor(
+  ASSERT_TRUE(MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
       read_fd_.get(), /*persistent=*/false, MessagePumpForIO::WATCH_READ,
       &watcher, &handler));
 
@@ -403,7 +404,7 @@ TEST_F(MessageLoopForIoPosixTest, TimerThenIoEvent) {
   CallClosureHandler handler(run_loop.QuitClosure(), OnceClosure());
 
   // Create a non-persistent watcher.
-  ASSERT_TRUE(MessageLoopForIO::current()->WatchFileDescriptor(
+  ASSERT_TRUE(MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
       read_fd_.get(), /*persistent=*/false, MessagePumpForIO::WATCH_READ,
       &watcher, &handler));
 
