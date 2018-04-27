@@ -22,6 +22,7 @@
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_delegate.h"
+#include "content/browser/frame_host/webui_navigation_throttle.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
@@ -1276,6 +1277,9 @@ void NavigationHandleImpl::RegisterNavigationThrottles() {
       std::move(throttles_);
 
   throttles_ = GetDelegate()->CreateThrottlesForNavigation(this);
+
+  // Enforce rules for WebUI navigations.
+  AddThrottle(WebUINavigationThrottle::CreateThrottleForNavigation(this));
 
   // Check for renderer-inititated main frame navigations to data URLs. This is
   // done first as it may block the main frame navigation altogether.
