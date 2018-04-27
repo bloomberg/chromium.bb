@@ -259,14 +259,13 @@ class ChromeTracingDelegateBrowserTestOnStartup
   }
 };
 
-#if !defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD)
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
                        PRE_ScenarioSetFromFieldtrial) {
-  // At this point the metrics pref is not set.
-  EXPECT_FALSE(
-      content::BackgroundTracingManager::GetInstance()->HasActiveScenario());
+  // This test exists just to make sure the browser is created at least once and
+  // so a default profile is created. Then, the next time the browser is
+  // created, kMetricsReportingEnabled is explicitly read from the profile and
+  // the startup scenario can be activated.
 }
-#endif // !OS_CHROMEOS && !OFFICIAL_BUILD
 
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
                        ScenarioSetFromFieldtrial) {
@@ -275,14 +274,13 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
       content::BackgroundTracingManager::GetInstance()->HasActiveScenario());
 }
 
-#if !defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD)
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
                        PRE_PRE_StartupTracingThrottle) {
-  // At this point the metrics pref is not set.
-  EXPECT_FALSE(
-      content::BackgroundTracingManager::GetInstance()->HasActiveScenario());
+  // This test exists just to make sure the browser is created at least once and
+  // so a default profile is created. Then, the next time the browser is
+  // created, kMetricsReportingEnabled is explicitly read from the profile and
+  // the startup scenario can be activated.
 }
-#endif // !OS_CHROMEOS && !OFFICIAL_BUILD
 
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
                        PRE_StartupTracingThrottle) {
