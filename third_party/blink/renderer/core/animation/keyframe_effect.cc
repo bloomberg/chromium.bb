@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/animation/effect_input.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
-#include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_options.h"
 #include "third_party/blink/renderer/core/animation/sampled_effect.h"
 #include "third_party/blink/renderer/core/animation/timing_input.h"
@@ -181,10 +180,20 @@ void KeyframeEffect::setKeyframes(ScriptState* script_state,
   if (exception_state.HadException())
     return;
 
-  Model()->SetComposite(EffectInput::ResolveCompositeOperation(
-      Model()->Composite(), new_keyframes));
+  SetKeyframes(new_keyframes);
+}
 
-  ToStringKeyframeEffectModel(Model())->SetFrames(new_keyframes);
+void KeyframeEffect::SetKeyframes(StringKeyframeVector keyframes) {
+  Model()->SetComposite(
+      EffectInput::ResolveCompositeOperation(Model()->Composite(), keyframes));
+
+  ToStringKeyframeEffectModel(Model())->SetFrames(keyframes);
+
+  // Changing the keyframes will invalidate any sampled effect, as well as
+  // potentially affect the effect owner.
+  if (sampled_effect_)
+    ClearEffects();
+  InvalidateAndNotifyOwner();
 }
 
 bool KeyframeEffect::Affects(const PropertyHandle& property) const {

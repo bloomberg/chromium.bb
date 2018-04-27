@@ -48,7 +48,7 @@ class MockAnimationEffectOwner
   MOCK_CONST_METHOD0(Playing, bool());
   MOCK_CONST_METHOD0(IsEventDispatchAllowed, bool());
   MOCK_CONST_METHOD0(EffectSuppressed, bool());
-  MOCK_METHOD0(SpecifiedTimingChanged, void());
+  MOCK_METHOD0(EffectInvalidated, void());
   MOCK_METHOD0(UpdateIfNecessary, void());
   MOCK_METHOD0(GetAnimation, Animation*());
 };
@@ -860,7 +860,7 @@ TEST(AnimationAnimationEffectTest, UpdateTimingInformsOwnerOnChange) {
   MockAnimationEffectOwner* owner = new MockAnimationEffectOwner();
   effect->Attach(owner);
 
-  EXPECT_CALL(*owner, SpecifiedTimingChanged()).Times(1);
+  EXPECT_CALL(*owner, EffectInvalidated()).Times(1);
 
   OptionalEffectTiming effect_timing;
   effect_timing.setDelay(5);
@@ -884,7 +884,7 @@ TEST(AnimationAnimationEffectTest, UpdateTimingNoChange) {
 
   // None of the below calls to updateTime should cause the AnimationEffect to
   // update, as they all match the existing timing information.
-  EXPECT_CALL(*owner, SpecifiedTimingChanged()).Times(0);
+  EXPECT_CALL(*owner, EffectInvalidated()).Times(0);
 
   OptionalEffectTiming effect_timing;
   effect->updateTiming(effect_timing);

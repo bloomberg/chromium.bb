@@ -1047,7 +1047,7 @@ void Animation::UpdateIfNecessary() {
   DCHECK(!Outdated());
 }
 
-void Animation::SpecifiedTimingChanged() {
+void Animation::EffectInvalidated() {
   SetOutdated();
   // FIXME: Needs to consider groups when added.
   SetCompositorPending(true);

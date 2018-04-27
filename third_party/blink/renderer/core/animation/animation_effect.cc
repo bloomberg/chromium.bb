@@ -98,9 +98,7 @@ double AnimationEffect::EndTimeInternal() const {
 void AnimationEffect::UpdateSpecifiedTiming(const Timing& timing) {
   // FIXME: Test whether the timing is actually different?
   timing_ = timing;
-  Invalidate();
-  if (owner_)
-    owner_->SpecifiedTimingChanged();
+  InvalidateAndNotifyOwner();
 }
 
 void AnimationEffect::getTiming(EffectTiming& effect_timing) const {
@@ -179,9 +177,7 @@ void AnimationEffect::updateTiming(OptionalEffectTiming& optional_timing,
   // (and which) to resolve the CSS secure/insecure context against.
   if (!TimingInput::Update(timing_, optional_timing, nullptr, exception_state))
     return;
-  Invalidate();
-  if (owner_)
-    owner_->SpecifiedTimingChanged();
+  InvalidateAndNotifyOwner();
 }
 
 void AnimationEffect::UpdateInheritedTime(double inherited_time,
@@ -303,6 +299,12 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
     calculated_.time_to_reverse_effect_change =
         CalculateTimeToEffectChange(false, local_time, time_to_next_iteration);
   }
+}
+
+void AnimationEffect::InvalidateAndNotifyOwner() const {
+  Invalidate();
+  if (owner_)
+    owner_->EffectInvalidated();
 }
 
 const AnimationEffect::CalculatedTiming& AnimationEffect::EnsureCalculated()

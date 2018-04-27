@@ -146,6 +146,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   // updateChildrenAndEffects.
   void UpdateInheritedTime(double inherited_time, TimingUpdateReason) const;
   void Invalidate() const { needs_update_ = true; }
+  void InvalidateAndNotifyOwner() const;
   bool RequiresIterationEvents() const {
     return event_delegate_ && event_delegate_->RequiresIterationEvents(*this);
   }

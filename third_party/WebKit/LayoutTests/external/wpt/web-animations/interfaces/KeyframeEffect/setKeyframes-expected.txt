@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 75 tests; 68 PASS, 7 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 76 tests; 69 PASS, 7 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Keyframes can be replaced with an empty keyframe
 PASS Keyframes can be replaced with a one property two value property-indexed keyframes specification
 FAIL Keyframes can be replaced with a one shorthand property two value property-indexed keyframes specification assert_equals: properties on ComputedKeyframe #0 should match expected "composite,computedOffset,easing,margin,offset" but got "composite,computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset"
@@ -75,5 +75,6 @@ PASS KeyframeEffect constructor throws with a keyframe sequence with an invalid 
 PASS KeyframeEffect constructor throws with property-indexed keyframes with an invalid composite value
 PASS KeyframeEffect constructor throws with property-indexed keyframes with an invalid composite value as one of the array values
 PASS KeyframeEffect constructor throws with keyframes with an invalid composite value
+PASS Changes made via setKeyframes should be immediately visible in style
 Harness: the test ran to completion.
 

@@ -67,7 +67,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
 
   // TODO(crbug.com/833846): We should update compositor animation when this
   // happens.
-  void SpecifiedTimingChanged() override {}
+  void EffectInvalidated() override {}
   void UpdateIfNecessary() override;
 
   Animation* GetAnimation() override { return nullptr; }
