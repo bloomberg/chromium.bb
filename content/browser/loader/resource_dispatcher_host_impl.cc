@@ -1142,10 +1142,9 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       request_data.resource_type == RESOURCE_TYPE_FAVICON) {
     do_not_prompt_for_login = true;
   }
-  if (request_data.resource_type == RESOURCE_TYPE_IMAGE &&
-      HTTP_AUTH_RELATION_BLOCKED_CROSS ==
-          HttpAuthRelationTypeOf(request_data.url,
-                                 request_data.site_for_cookies)) {
+
+  if (DoNotPromptForLogin(static_cast<ResourceType>(request_data.resource_type),
+                          request_data.url, request_data.site_for_cookies)) {
     // Prevent third-party image content from prompting for login, as this
     // is often a scam to extract credentials for another domain from the
     // user. Only block image loads, as the attack applies largely to the
@@ -2148,6 +2147,18 @@ void ResourceDispatcherHostImpl::CancelRequestFromRenderer(
     return;
 
   loader->CancelRequest(true);
+}
+
+bool ResourceDispatcherHostImpl::DoNotPromptForLogin(
+    ResourceType resource_type,
+    const GURL& url,
+    const GURL& site_for_cookies) {
+  if (resource_type == RESOURCE_TYPE_IMAGE &&
+      HTTP_AUTH_RELATION_BLOCKED_CROSS ==
+          HttpAuthRelationTypeOf(url, site_for_cookies)) {
+    return true;
+  }
+  return false;
 }
 
 void ResourceDispatcherHostImpl::StartLoading(

@@ -6,6 +6,7 @@
 
 #include "base/optional.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
@@ -274,8 +275,10 @@ void NetworkServiceClient::OnAuthRequired(
     uint32_t routing_id,
     uint32_t request_id,
     const GURL& url,
+    const GURL& site_for_cookies,
     bool first_auth_attempt,
     const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+    int32_t resource_type,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder) {
   base::Callback<WebContents*(void)> web_contents_getter =
       process_id ? base::Bind(WebContentsImpl::FromRenderFrameHostID,
@@ -285,6 +288,12 @@ void NetworkServiceClient::OnAuthRequired(
   if (!web_contents_getter.Run()) {
     std::move(auth_challenge_responder)
         ->OnAuthCredentials(net::AuthCredentials());
+    return;
+  }
+
+  if (ResourceDispatcherHostImpl::Get()->DoNotPromptForLogin(
+          static_cast<ResourceType>(resource_type), url, site_for_cookies)) {
+    std::move(auth_challenge_responder)->OnAuthCredentials(base::nullopt);
     return;
   }
 
