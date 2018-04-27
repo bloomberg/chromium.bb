@@ -58,9 +58,6 @@
       如未設定這項政策，預設頻率為 3 小時一次。可用頻率下限
       是 60 秒。</translation>
 <translation id="1204263402976895730">啟用的企業印表機</translation>
-<translation id="1216758672198492382">讓你設定是否允許網站存取已連線的 USB 裝置。你可以禁止所有網站存取 USB 裝置，也可以要求網站一律需要經過使用者同意才能存取這類裝置。
-
-          如果未設定這項政策，系統會使用「3」，而使用者可以自行變更設定。</translation>
 <translation id="1219695476179627719">指定是否要將已搭載較新版本的裝置復原至 <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> 所設定的版本。
 
       預設值為 RollbackDisabled。</translation>

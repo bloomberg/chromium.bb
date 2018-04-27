@@ -58,9 +58,6 @@
       Kung hindi itatakda ang patakarang ito, ang default na dalas ay 3 oras. Ang minimum
       na pinapayagang dalas ay 60 segundo.</translation>
 <translation id="1204263402976895730">Mga naka-enable na printer ng enterprise</translation>
-<translation id="1216758672198492382">Binibigyang-daan kang itakda kung pinapayagan ang mga website na kumuha ng access sa mga nakakonektang USB device. Maaaring ganap na i-block ang access, o maaaring tanungin ang user sa tuwing gusto ng website na kumuha ng access sa mga nakakonektang USB device.
-
-          Kung hahayaang hindi nakatakda ang patakarang ito, gagamitin ang '3,' at magagawa ng user na baguhin ito.</translation>
 <translation id="1219695476179627719">Tinutukoy kung dapat mag-roll back ang device sa bersyong itinakda ng <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> kung nagpapatakbo na ito ng mas bagong bersyon.
 
       Ang default ay RollbackDisabled.</translation>

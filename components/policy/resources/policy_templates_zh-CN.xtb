@@ -57,9 +57,6 @@
 
       如果此政策未设置，默认频率为 3 小时。允许的最低频率为 60 秒。</translation>
 <translation id="1204263402976895730">已启用企业打印机</translation>
-<translation id="1216758672198492382">可让您设置是否允许网站访问所连接的 USB 设备。您可以禁止所有网站访问此类设备，也可以要求所有网站必须征得用户同意才能访问此类设备。
-
-          如果未设置此政策，系统将会使用“3”，并且用户将能够更改此设置。</translation>
 <translation id="1219695476179627719">指定是否要将已在运行较新版本的设备回滚到 <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> 所设定的版本。
 
       默认值为 RollbackDisabled。</translation>

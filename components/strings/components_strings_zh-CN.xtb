@@ -732,6 +732,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 书签</translation>
 <translation id="6264485186158353794">返回安全连接</translation>
 <translation id="6276112860590028508">您的阅读清单中的网页会显示在此处</translation>
+<translation id="627746635834430766">若想在下次购物时更快捷地付款，请将您的卡片信息和帐单邮寄地址保存到您的 Google 帐号中。</translation>
 <translation id="6280223929691119688">无法递送到此地址。请另选一个地址。</translation>
 <translation id="6282194474023008486">邮编</translation>
 <translation id="6290238015253830360">为您推荐的文章会显示在此处</translation>
@@ -746,6 +747,7 @@
 <translation id="6355080345576803305">覆盖公用自助终端</translation>
 <translation id="6358450015545214790">这分别意味着什么？</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 条其他建议}other{# 条其他建议}}</translation>
+<translation id="6387754724289022810">若想在下次购物时更快捷地付款，请将您的卡片信息和帐单邮寄地址保存到您的 Google 帐号和此设备中。</translation>
 <translation id="6397451950548600259">您计算机上的软件导致 Chrome 无法安全地连接到网络</translation>
 <translation id="6404511346730675251">修改书签</translation>
 <translation id="6410264514553301377">请输入“<ph name="CREDIT_CARD" />”的到期日期和银行卡验证码 (CVC)</translation>

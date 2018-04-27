@@ -148,6 +148,7 @@
 <translation id="192020519938775529">{COUNT,plural, =0{ಯಾವುದೂ ಇಲ್ಲ}=1{1 ಸೈಟ್}one{# ಸೈಟ್‌ಗಳು}other{# ಸೈಟ್‌ಗಳು}}</translation>
 <translation id="1927235823738766038">ಸ್ವೀಕೃತ ಕ್ರೆಡಿಟ್ ಮತ್ತು ಡೆಬಿಟ್ ಕಾರ್ಡ್‌ಗಳು</translation>
 <translation id="194030505837763158"><ph name="LINK" /> ಗೆ ಹೋಗಿ</translation>
+<translation id="1945968466830820669">ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಖಾತೆಗೆ ನೀವು ಪ್ರವೇಶವನ್ನು ಕಳೆದುಕೊಳ್ಳಬಹುದು ಅಥವಾ ಗುರುತು ಕಳ್ಳತನಕ್ಕೆ ಒಳಗಾಗಬಹುದು. ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಇದೀಗ ಬದಲಾಯಿಸುವಂತೆ Chromium ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
 <translation id="1948773908305951926">ಸಮ್ಮತಿಸಲಾದ ಪ್ರೀಪೇಯ್ಡ್ ಕಾರ್ಡ್‌ಗಳು</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
 <translation id="1973335181906896915">ಅನುಕ್ರಮಗೊಳಿಸುವಿಕೆಯ ದೋಷ</translation>
@@ -585,6 +586,7 @@
 <translation id="5141240743006678641">ನಿಮ್ಮ Google ರುಜುವಾತುಗಳ ಜೊತೆಗೆ ಸಿಂಕ್ ಮಾಡಿದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಎನ್‌ಕ್ರಿಫ್ಟ್ ಮಾಡಿ</translation>
 <translation id="5145883236150621069">ನೀತಿ ಪ್ರತಿಕ್ರಿಯೆಯಲ್ಲಿ ದೋಷದ ಕೋಡ್ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ</translation>
 <translation id="5159010409087891077">ಪುಟವನ್ನು ಹೊಸ ಅದೃಶ್ಯ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ (⇧⌘N)</translation>
+<translation id="5169827969064885044">ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಖಾತೆಗೆ ನೀವು ಪ್ರವೇಶವನ್ನು ಕಳೆದುಕೊಳ್ಳಬಹುದು ಅಥವಾ ಗುರುತು ಕಳ್ಳತನಕ್ಕೆ ಒಳಗಾಗಬಹುದು. ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಇದೀಗ ಬದಲಾಯಿಸುವಂತೆ Chrome ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
 <translation id="5171045022955879922">ಹುಡುಕಾಟ ನಡೆಸಿ ಅಥವಾ URL ಅನ್ನು ಟೈಪ್‌ ಮಾಡಿ</translation>
 <translation id="5172758083709347301">ಯಂತ್ರ</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> ರಲ್ಲಿ ಇಲ್ಲವೆ? ಈ ದೋಷವನ್ನು ವರದಿ ಮಾಡಿ</translation>
@@ -728,6 +730,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
 <translation id="6264485186158353794">ಸುರಕ್ಷತೆಗೆ ಹಿಂದಿರುಗಿ</translation>
 <translation id="6276112860590028508">ನಿಮ್ಮ ಓದುವ ಪಟ್ಟಿಯ ಪುಟಗಳು ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ</translation>
+<translation id="627746635834430766">ಮುಂದಿನ ಬಾರಿ ವೇಗವಾಗಿ ಪಾವತಿಸಲು, ನಿಮ್ಮ ಕಾರ್ಡ್‌ ಮತ್ತು ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸವನ್ನು ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಉಳಿಸಿ.</translation>
 <translation id="6280223929691119688">ಈ ವಿಳಾಸಕ್ಕೆ ತಲುಪಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಬೇರೊಂದು ವಿಳಾಸವನ್ನು ಆಯ್ಕೆ ಮಾಡಿ.</translation>
 <translation id="6282194474023008486">ಪೋಸ್ಟಲ್ ಕೋಡ್</translation>
 <translation id="6290238015253830360">ನೀವು ಸಲಹೆ ನೀಡಿರುವ ಲೇಖನಗಳು ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ</translation>
@@ -742,6 +745,7 @@
 <translation id="6355080345576803305">ಸಾರ್ವಜನಿಕ ಸೆಷನ್ ಅತಿಕ್ರಮಿಸುವಿಕೆ</translation>
 <translation id="6358450015545214790">ಇವುಗಳ ಅರ್ಥವೇನು?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 ಇತರ ಸಲಹೆ}one{# ಇತರ ಸಲಹೆಗಳು}other{# ಇತರ ಸಲಹೆಗಳು}}</translation>
+<translation id="6387754724289022810">ಮುಂದಿನ ಬಾರಿ ವೇಗವಾಗಿ ಪಾವತಿಸಲು, ನಿಮ್ಮ ಕಾರ್ಡ್‌ ಮತ್ತು ನಿಮ್ಮ ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸವನ್ನು Google ಖಾತೆಯಲ್ಲಿ ಮತ್ತು ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಸಿ.</translation>
 <translation id="6397451950548600259">ಸುರಕ್ಷಿತವಾಗಿ ವೆಬ್‌ಗೆ ಸಂಪರ್ಕಿಸುವ Chromeನ ಕಾರ್ಯವನ್ನು ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿರುವ ಸಾಫ್ಟ್‌ವೇರ್‌ ಸ್ಥಗಿತಗೊಳಿಸಿದೆ</translation>
 <translation id="6404511346730675251">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> ಗೆ ಮುಕ್ತಾಯ ದಿನಾಂಕ ಮತ್ತು ಸಿವಿಸಿ ಅನ್ನು ನಮೂದಿಸಿ</translation>
@@ -850,11 +854,11 @@
 <translation id="7407424307057130981">&lt;p&gt;ನಿಮ್ಮ ವಿಂಡೋಸ್ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಸೂಪರ್‌ಫಿಶ್ ಸಾಫ್ಟ್‌ವೇರ್ ಇದ್ದರೆ, ನಿಮಗೆ ಈ ದೋಷ ಕಾಣಿಸುತ್ತದೆ.&lt;/p&gt;
       &lt;p&gt;ಈ ಹಂತಗಳನ್ನು ಅನುಸರಿಸಿ ತಾತ್ಕಾಲಿಕವಾಗಿ ಸಾಫ್ಟ್‌ವೇರ್ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದರೆ ನೀವು ವೆಬ್‌‍ಗೆ ಪ್ರವೇಶಿಸಬಹುದಾಗಿದೆ. ನಿಮಗೆ ನಿರ್ವಾಹಕರ ಸವಲತ್ತುಗಳ ಅಗತ್ಯವಿದೆ.&lt;/p&gt;
       &lt;ol&gt;
-      &lt;li&gt;ಕ್ಲಿಕ್ ಮಾಡಿ &lt;strong&gt;ಪ್ರಾರಂಭಿಸಿ&lt;/strong&gt;, ಅನ್ನು ಹುಡುಕಿ ಮತ್ತು ಆಯ್ಕೆಮಾಡಿ &lt;strong&gt;"ಸ್ಥಳೀಯ ಸೇವೆಗಳನ್ನು ವೀಕ್ಷಿಸಿ"&lt;/strong&gt;
-      &lt;li&gt;&lt;strong&gt;VisualDiscovery&lt;/strong&gt;ಆಯ್ಕೆಮಾಡಿ
-      &lt;li&gt;&lt;strong&gt;ಪ್ರಾರಂಭಿಸುವಿಕೆ ವಿಧದ&lt;/strong&gt; ಅಡಿಯಲ್ಲಿ, &lt;strong&gt;ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ&lt;/strong&gt;ಆಯ್ಕೆಮಾಡಿ
-      &lt;li&gt;&lt;strong&gt;ಸೇವೆಯ ಸ್ಥಿತಿಯ&lt;/strong&gt; ಅಡಿಯಲ್ಲಿ, &lt;strong&gt;ನಿಲ್ಲಿಸಿ&lt;/strong&gt;ಕ್ಲಿಕ್ ಮಾಡಿ
-      &lt;li&gt; &lt;strong&gt;ಅನ್ವಯಿಸಿ&lt;/strong&gt;ಕ್ಲಿಕ್ ಮಾಡಿ, ನಂತರ&lt;strong&gt;ಸರಿ&lt;/strong&gt;ಕ್ಲಿಕ್ ಮಾಡಿ
+      &lt;li&gt;ಕ್ಲಿಕ್ ಮಾಡಿ &lt;strong&gt;ಪ್ರಾರಂಭಿಸಿ&lt;/strong&gt;, ನಂತರ &lt;strong&gt;"ಸ್ಥಳೀಯ ಸೇವೆಗಳನ್ನು ವೀಕ್ಷಿಸಿ"&lt;/strong&gt; ಅನ್ನು ಹುಡುಕಿ ಮತ್ತು ಆಯ್ಕೆಮಾಡಿ
+      &lt;li&gt;&lt;strong&gt;VisualDiscovery&lt;/strong&gt; ಆಯ್ಕೆಮಾಡಿ
+      &lt;li&gt;&lt;strong&gt;ಪ್ರಾರಂಭಿಸುವಿಕೆ ವಿಧದ&lt;/strong&gt; ಅಡಿಯಲ್ಲಿ, &lt;strong&gt;ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ&lt;/strong&gt; ಆಯ್ಕೆಮಾಡಿ
+      &lt;li&gt;&lt;strong&gt;ಸೇವೆಯ ಸ್ಥಿತಿಯ&lt;/strong&gt; ಅಡಿಯಲ್ಲಿ, &lt;strong&gt;ನಿಲ್ಲಿಸಿ&lt;/strong&gt; ಕ್ಲಿಕ್ ಮಾಡಿ
+      &lt;li&gt; &lt;strong&gt;ಅನ್ವಯಿಸಿ&lt;/strong&gt; ಕ್ಲಿಕ್ ಮಾಡಿ, ನಂತರ&lt;strong&gt;ಸರಿ&lt;/strong&gt; ಕ್ಲಿಕ್ ಮಾಡಿ
       &lt;li&gt;ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಿಂದ ಸಾಫ್ಟ್‌ವೇರ್ ಅನ್ನು ಶಾಶ್ವತವಾಗಿ ತೆಗೆದುಹಾಕುವುದು ಹೇಗೆ ಎಂದು ತಿಳಿದುಕೊಳ್ಳಲು &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome ಸಹಾಯ ಕೇಂದ್ರಕ್ಕೆ&lt;/a&gt; ಭೇಟಿ ನೀಡಿ &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">ಪ್ರೊಫೈಲ್ ಹಾದಿ</translation>
 <translation id="7437289804838430631">ಸಂಪರ್ಕ ಮಾಹಿತಿಯನ್ನು ಸೇರಿಸು</translation>

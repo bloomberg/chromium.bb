@@ -14,6 +14,7 @@
 <translation id="152892567002884378">Volum opp</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> og så <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Gå til begynnelsen av forrige ord</translation>
+<translation id="1671169355475348905">Bytt til inndatametoden for forrige språk</translation>
 <translation id="1679841710523778799">Skru opp lysstyrken</translation>
 <translation id="168356808214100546">Trykk og hold på <ph name="ALT" />, trykk på <ph name="TAB" /> til du kommer til vinduet du vil åpne, og slipp tastene.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -40,6 +41,7 @@
 <translation id="2568632782096378307">Tilbakestill skjermoppløsningen til standard</translation>
 <translation id="2596078834055697711">Ta en skjermdump av vinduet</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> og så <ph name="TAB" /> eller <ph name="RIGHT" /></translation>
+<translation id="2687057317448262550">Bytt til inndatametoden for neste språk</translation>
 <translation id="2699509451653686398">Lagre den aktive nettsiden som et bokmerke</translation>
 <translation id="2750942583782703988">Last inn den aktive siden på nytt</translation>
 <translation id="2764005613199379871">Plassér fokuset i søkeadressefeltet</translation>
@@ -148,6 +150,7 @@
 <translation id="7379254767514753910"><ph name="ALT" /> eller <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="743754632698445141">Løsne en app</translation>
 <translation id="7439718573248533901">Slett neste bokstav (slett fremover)</translation>
+<translation id="7611271430932669992">Flytt fokus til forgrunnsvinduer og dialogbokser</translation>
 <translation id="766326951329901120">Lim inn innholdet fra utklippstavlen som ren tekst</translation>
 <translation id="7724603315864178912">Klipp ut</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> og så <ph name="SPACE" /> eller <ph name="ENTER" /></translation>

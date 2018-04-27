@@ -734,6 +734,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> બુકમાર્ક્સ</translation>
 <translation id="6264485186158353794">સુરક્ષા પર પાછા</translation>
 <translation id="6276112860590028508">તમારી વાચન સૂચિનાં પૃષ્ઠો અહીં દેખાશે</translation>
+<translation id="627746635834430766">આગલી વખતે વધુ ઝડપથી ચુકવણી કરવા માટે, તમારા કાર્ડ અને બિલિંગ સરનામાંને તમારા Google એકાઉન્ટમાં સાચવો.</translation>
 <translation id="6280223929691119688">આ સરનામે વિતરણ કરી શકતા નથી. કોઈ ભિન્ન સરનામું પસંદ કરો.</translation>
 <translation id="6282194474023008486">પોસ્ટલ કોડ</translation>
 <translation id="6290238015253830360">તમારા સૂચવેલા લેખ અહીં દેખાય છે</translation>
@@ -748,6 +749,7 @@
 <translation id="6355080345576803305">સાર્વજનિક સત્ર ઓવરરાઇડ</translation>
 <translation id="6358450015545214790">આનો અર્થ શું છે?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 અન્ય સૂચન}one{# અન્ય સૂચન}other{# અન્ય સૂચન}}</translation>
+<translation id="6387754724289022810">આગલી વખતે વધુ ઝડપથી ચુકવણી કરવા માટે, તમારા કાર્ડ અને બિલિંગ સરનામાંને તમારા Google એકાઉન્ટ અને આ ઉપકરણ પર સાચવો.</translation>
 <translation id="6397451950548600259">તમારા કમ્પ્યુટરમાંનું સૉફ્ટવેર Chromeને સુરક્ષિત રીતે વેબ સાથે કનેક્ટ થવાથી રોકી રહ્યું છે</translation>
 <translation id="6404511346730675251">બુકમાર્ક સંપાદિત કરો</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> માટે સમાપ્તિ તારીખ અને CVC દાખલ કરો</translation>
@@ -853,6 +855,16 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">કાર્ડની પુષ્ટિ કરો</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7407424307057130981">&lt;p&gt;જો તમે તમારા Windows કમ્પ્યુટર પર Superfish સૉફ્ટવેર ધરાવો છો, તો તમને આ ભૂલ દેખાશે.&lt;/p&gt;
+      &lt;p&gt;તે સૉફ્ટવેરને હંગામી ધોરણે બંધ કરવા માટે, આ પગલાં અનુસરો જેથી તમે વેબ પર પહોંચી શકો. તમારી પાસે વ્યવસ્થાપકના વિશેષાધિકારો હોવા જરૂરી છે.&lt;/p&gt;
+      &lt;ol&gt;
+      &lt;li&gt;&lt;strong&gt;શરૂ કરો&lt;/strong&gt; પર ક્લિક કરો, પછી &lt;strong&gt;"સ્થાનિક સેવાઓ જુઓ"&lt;/strong&gt; શોધો અને પસંદ કરો 
+      &lt;li&gt;&lt;strong&gt;VisualDiscovery&lt;/strong&gt; પસંદ કરો
+      &lt;li&gt;&lt;strong&gt;શરૂઆતનો પ્રકાર&lt;/strong&gt; હેઠળ, &lt;strong&gt;બંધ કરેલ&lt;/strong&gt; પસંદ કરો
+      &lt;li&gt;&lt;strong&gt;સેવા સ્ટેટસ&lt;/strong&gt; હેઠળ, &lt;strong&gt;રોકો&lt;/strong&gt; પર ક્લિક કરો
+      &lt;li&gt;&lt;strong&gt;લાગુ કરો&lt;/strong&gt; પર ક્લિક કરો, પછી &lt;strong&gt;ઓકે&lt;/strong&gt; પર ક્લિક કરો
+      &lt;li&gt;તમારા કમ્પ્યુટર પરથી સૉફ્ટવેરને કાયમી ધોરણે કાઢી નાખવાની રીત જાણવા માટે, &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome સહાયતા કેન્દ્ર&lt;/a&gt; પર જાઓ
+      &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">પ્રોફાઇલ પાથ</translation>
 <translation id="7437289804838430631">સંપર્ક માહિતી ઉમેરો</translation>
 <translation id="7441627299479586546">ખોટો નીતિ વિષય</translation>

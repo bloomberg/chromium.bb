@@ -55,9 +55,6 @@
 
       Se questa norma non viene impostata, la frequenza predefinita è pari a tre ore. La frequenza minima consentita è pari a 60 secondi.</translation>
 <translation id="1204263402976895730">Stampanti aziendali attive</translation>
-<translation id="1216758672198492382">Ti permette di stabilire se consentire o meno ai siti web di accedere ai dispositivi USB collegati. L'accesso può essere bloccato completamente oppure l'utente può ricevere una richiesta ogni volta che un sito web vuole accedere ai dispositivi USB collegati.
-
-          Se questa norma non viene impostata, verrà utilizzato il valore "3", che potrà essere modificato dall'utente.</translation>
 <translation id="1219695476179627719">Consente di specificare se il dispositivo deve eseguire il rollback alla versione impostata da <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> nel caso in cui sia già in esecuzione una versione successiva.
 
       L'impostazione predefinita è RollbackDisabled.</translation>

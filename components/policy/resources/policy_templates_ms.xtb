@@ -58,9 +58,6 @@
       Jika dasar ini tidak ditetapkan, kekerapan lalai ialah 3 jam. Kekerapan
       minimum yang dibenarkan ialah 60 saat.</translation>
 <translation id="1204263402976895730">Pencetak perusahaan didayakan</translation>
-<translation id="1216758672198492382">Membenarkan anda menetapkan sama ada tapak web dibenarkan untuk mendapatkan akses kepada peranti USB yang disambungkan. Akses boleh disekat sepenuhnya atau pengguna boleh ditanya setiap kali tapak web ingin mendapatkan akses kepada peranti USB yang disambungkan.
-
-          Jika dasar ini dibiarkan tanpa ditetapkan, '3' akan digunakan dan pengguna akan dapat mengubahnya.</translation>
 <translation id="1219695476179627719">Menentukan sama ada peranti harus diundurkan kepada versi yang ditetapkan oleh <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> jika peranti sudah menjalankan versi yang lebih baharu.
 
       Nilai lalai ialah RollbackDisabled.</translation>

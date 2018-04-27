@@ -25,7 +25,6 @@
 <translation id="1204037785786432551">הורד קישור</translation>
 <translation id="1206892813135768548">העתק טקסט קישור</translation>
 <translation id="1209206284964581585">הסתר בינתיים</translation>
-<translation id="1211530540767271776">‏לא נמצאו מכשירי USB</translation>
 <translation id="123724288017357924">טען מחדש את הדף הנוכחי, תוך התעלמות מתוכן שמאוחסן בקובץ השמור</translation>
 <translation id="124116460088058876">שפות נוספות</translation>
 <translation id="124678866338384709">סגור את הכרטיסייה הנוכחית</translation>
@@ -307,7 +306,7 @@
 <translation id="393697183122708255">חיפוש קולי מופעל לא זמין</translation>
 <translation id="3950820424414687140">כניסה</translation>
 <translation id="395206256282351086">ההצעות למונחי חיפוש ואתרים הושבתו</translation>
-<translation id="3952533382939530115">‏התכונה הזו משתמשת ב<ph name="BEGIN_LINK" />סינכרון<ph name="END_LINK" />. כתובות האתרים של דפים שאליהם נכנסת נשלחים אל Google.</translation>
+<translation id="3952533382939530115">‏התכונה הזו משתמשת ב<ph name="BEGIN_LINK" />סינכרון<ph name="END_LINK" />. כתובות האתרים של דפים שאליהם נכנסת נשלחות אל Google.</translation>
 <translation id="3967822245660637423">ההורדה הושלמה</translation>
 <translation id="397583555483684758">הסנכרון הפסיק לפעול</translation>
 <translation id="3976396876660209797">הסרה ויצירה מחדש של מקש הקיצור הזה</translation>

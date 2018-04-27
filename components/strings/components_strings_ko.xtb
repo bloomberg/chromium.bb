@@ -736,6 +736,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 북마크</translation>
 <translation id="6264485186158353794">안전 페이지로 돌아가기</translation>
 <translation id="6276112860590028508">읽기 목록의 페이지가 여기에 표시됩니다.</translation>
+<translation id="627746635834430766">다음번에 더 빠르게 결제할 수 있도록 Google 계정에 카드와 청구서 수신 주소를 저장하세요.</translation>
 <translation id="6280223929691119688">이 주소로 배달할 수 없습니다. 다른 주소를 선택하세요.</translation>
 <translation id="6282194474023008486">우편번호</translation>
 <translation id="6290238015253830360">추천 기사가 여기에 표시됩니다.</translation>
@@ -750,6 +751,7 @@
 <translation id="6355080345576803305">공개 세션 무시</translation>
 <translation id="6358450015545214790">자세히 알아보기</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{그 외 제안 1건}other{그 외 제안 #건}}</translation>
+<translation id="6387754724289022810">다음번에 더 빠르게 결제할 수 있도록 Google 계정과 기기에 카드와 청구서 수신 주소를 저장하세요.</translation>
 <translation id="6397451950548600259">컴퓨터의 소프트웨어로 인해 Chrome이 안전하게 웹에 접속할 수 없습니다.</translation>
 <translation id="6404511346730675251">북마크 수정</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" />의 만료일과 CVC를 입력하세요.</translation>

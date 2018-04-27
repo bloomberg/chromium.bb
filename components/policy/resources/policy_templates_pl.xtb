@@ -56,9 +56,6 @@
       Jeśli ta zasada nie jest skonfigurowana, domyślna częstotliwość wynosi trzy
       godziny. Minimalna dopuszczalna częstotliwość to 60 sekund.</translation>
 <translation id="1204263402976895730">Włączone drukarki firmowe</translation>
-<translation id="1216758672198492382">Pozwala określić, czy strony mogą uzyskać dostęp do podłączonych urządzeń USB. Dostęp może być całkowicie zablokowany lub użytkownik może być pytany za każdym razem, gdy strona chce użyć takiego urządzenia.
-
-          Jeśli ta zasada nie zostanie ustawiona, będzie stosowane ustawienie „3”, a użytkownik będzie mógł je zmienić.</translation>
 <translation id="1219695476179627719">Określa, czy oprogramowanie urządzenia ma zostać cofnięte do wersji ustawionej w zasadzie <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, jeśli jest już zainstalowana nowsza wersja.
 
       Wartość domyślna to RollbackDisabled.</translation>

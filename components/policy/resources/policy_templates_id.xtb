@@ -58,9 +58,6 @@
       Jika kebijakan ini tidak disetel, frekuensi defaultnya adalah 3 jam. Frekuensi minimum
       yang diizinkan adalah 60 detik.</translation>
 <translation id="1204263402976895730">Mengaktifkan printer perusahaan</translation>
-<translation id="1216758672198492382">Memungkinkan Anda menyetel apakah situs dapat mengakses perangkat USB yang tersambung. Akses dapat diblokir sepenuhnya, atau pengguna dapat dimintai izin setiap kali situs ingin mengakses perangkat USB yang tersambung.
-
-          Jika kebijakan ini belum disetel, '3' akan digunakan, dan pengguna dapat mengubahnya.</translation>
 <translation id="1219695476179627719">Menentukan apakah perangkat harus di-rollback ke versi yang disetel oleh <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> jika telah menjalankan versi lebih baru.
 
       Default adalah RollbackDisabled.</translation>
@@ -248,7 +245,7 @@
       Jika tidak dikonfigurasi, pelaporan metrik dan data diagnostik akan dinonaktifkan di perangkat yang tidak dikelola dan diaktifkan di perangkat yang dikelola.</translation>
 <translation id="1929709556673267855">Memberikan konfigurasi untuk printer perusahaan yang terkait dengan perangkat.
 
-      Kebijakan ini memungkinkan Anda memberikan konfigurasi printer untuk perangkat <ph name="PRODUCT_OS_NAME" />. Formatnya sama dengan kamus NativePrinters, dengan kolom "ID" atau "GUID" tambahan yang dibutuhkan per printer untuk pemberian izin atau pemblokiran izin.
+      Kebijakan ini memungkinkan Anda memberikan konfigurasi printer untuk perangkat <ph name="PRODUCT_OS_NAME" />. Formatnya sama dengan kamus NativePrinters, dengan kolom "id" atau "guid" tambahan yang dibutuhkan per printer untuk pemberian izin atau pemblokiran izin.
 
       Ukuran file tidak boleh melebihi 5 MB dan harus dienkode dalam format JSON. Diperkirakan file yang berisi kira-kira 21.000 printer akan dienkode menjadi file berukuran 5 MB. Hash kriptografi digunakan untuk memverifikasi integritas download.
 
@@ -561,7 +558,7 @@
 <translation id="262740370354162807">Aktifkan penyerahan dokumen ke <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2627554163382448569">Memberikan konfigurasi untuk printer perusahaan.
 
-      Kebijakan ini memungkinkan Anda memberikan konfigurasi printer untuk perangkat <ph name="PRODUCT_OS_NAME" />. Formatnya sama dengan kamus NativePrinters, dengan kolom "ID" atau "GUID" tambahan yang dibutuhkan per printer untuk pemberian izin atau pemblokiran izin.
+      Kebijakan ini memungkinkan Anda memberikan konfigurasi printer untuk perangkat <ph name="PRODUCT_OS_NAME" />. Formatnya sama dengan kamus NativePrinters, dengan kolom "id" atau "guid" tambahan yang dibutuhkan per printer untuk pemberian izin atau pemblokiran izin.
 
       Ukuran file tidak boleh melebihi 5 MB dan harus dienkode dalam format JSON. Diperkirakan file yang berisi kira-kira 21.000 printer akan dienkode menjadi file berukuran 5 MB. Hash kriptografi digunakan untuk memverifikasi integritas download.
 
@@ -635,7 +632,7 @@
 
       Kebijakan ini hanya digunakan jika <ph name="PRINTERS_WHITELIST" /> dipilih untuk <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
 
-      Jika kebijakan ini digunakan, hanya printer dengan ID yang cocok dengan nilai di kebijakan ini yang tersedia bagi pengguna. ID harus sesuai dengan kolom "ID" atau "GUID" dalam file yang ditentukan di <ph name="DEVICE_PRINTERS_POLICY" />.
+      Jika kebijakan ini digunakan, hanya printer dengan id yang cocok dengan nilai di kebijakan ini yang tersedia bagi pengguna. Id harus sesuai dengan kolom "id" atau "guid" dalam file yang ditentukan di <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
 <translation id="2844404652289407061">Mengaktifkan ketersediaan Sentuh untuk Menelusuri di tampilan konten <ph name="PRODUCT_NAME" />.
 
@@ -1082,7 +1079,7 @@
 
       Kebijakan ini hanya digunakan jika <ph name="PRINTERS_WHITELIST" /> dipilih untuk <ph name="BULK_PRINTERS_ACCESS_MODE" />.
 
-      Jika kebijakan ini digunakan, hanya printer dengan ID yang cocok dengan nilai di kebijakan ini yang tersedia bagi pengguna. ID harus sesuai dengan kolom "ID" atau "GUID" dalam file yang ditentukan di <ph name="BULK_PRINTERS_POLICY" />.
+      Jika kebijakan ini digunakan, hanya printer dengan id yang cocok dengan nilai di kebijakan ini yang tersedia bagi pengguna. Id harus sesuai dengan kolom "id" atau "guid" dalam file yang ditentukan di <ph name="BULK_PRINTERS_POLICY" />.
       </translation>
 <translation id="427632463972968153">Menentukan parameter yang digunakan saat melakukan penelusuran gambar dengan POST. Berisi pasangan nama/nilai yang dipisahkan koma. Jika nilai adalah parameter template, seperti {imageGambar kecil} contoh di atas, akan diganti dengan data thumbnail gambar nyata.
 
@@ -2092,7 +2089,7 @@
 
       Kebijakan ini hanya digunakan jika <ph name="PRINTERS_BLACKLIST" /> dipilih untuk <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
 
-      Jika kebijakan ini digunakan, semua printer yang akan tersedia bagi pengguna, kecuali ID yang dicantumkan di kebijakan ini. ID harus sesuai dengan kolom "ID" atau "GUID" dalam file yang ditentukan di <ph name="DEVICE_PRINTERS_POLICY" />.
+      Jika kebijakan ini digunakan, semua printer yang akan tersedia bagi pengguna, kecuali id yang dicantumkan di kebijakan ini. Id harus sesuai dengan kolom "id" atau "guid" dalam file yang ditentukan di <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
 <translation id="7511361072385293666">Jika kebijakan ini disetel ke True atau tidak disetel, penggunaan protokol QUIC di <ph name="PRODUCT_NAME" /> akan diizinkan.
       Jika kebijakan ini disetel ke False, penggunaan protokol QUIC tidak diizinkan.</translation>
@@ -2453,7 +2450,7 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 
       Kebijakan ini hanya digunakan jika <ph name="PRINTERS_BLACKLIST" /> dipilih untuk <ph name="BULK_PRINTERS_ACCESS_MODE" />.
 
-      Jika kebijakan ini digunakan, semua printer yang akan tersedia bagi pengguna, kecuali ID yang dicantumkan di kebijakan ini. ID harus sesuai dengan kolom "ID" atau "GUID" dalam file yang ditentukan di <ph name="BULK_PRINTERS_POLICY" />.
+      Jika kebijakan ini digunakan, semua printer yang akan tersedia bagi pengguna, kecuali id yang dicantumkan di kebijakan ini. Id harus sesuai dengan kolom "id" atau "guid" dalam file yang ditentukan di <ph name="BULK_PRINTERS_POLICY" />.
       </translation>
 <translation id="8587229956764455752">Mengizinkan pembuatan akun pengguna baru</translation>
 <translation id="8598350264853261122">Jika kebijakan disetel ke SALAH, pengguna yang tidak terafiliasi tidak akan diizinkan menggunakan ARC.
