@@ -60,6 +60,9 @@ void RemoveEntryFromEntries(metadata_pb::DownloadEntries& entries,
 
 // Helper functions for file read/write operations.
 std::vector<char> ReadEntriesFromFile(base::FilePath file_path) {
+  if (file_path.empty())
+    return std::vector<char>();
+
   // Check validity of file.
   base::File entries_file(file_path,
                           base::File::FLAG_OPEN | base::File::FLAG_READ);
@@ -113,7 +116,8 @@ std::string EntriesToString(const metadata_pb::DownloadEntries& entries) {
 }
 
 void WriteEntriesToFile(const std::string& entries, base::FilePath file_path) {
-  DCHECK(!file_path.empty());
+  if (file_path.empty())
+    return;
 
   if (!base::ImportantFileWriter::WriteFileAtomically(file_path, entries)) {
     LOG(ERROR) << "Could not write download entries to file: "
