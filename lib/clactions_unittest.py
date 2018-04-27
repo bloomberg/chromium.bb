@@ -107,9 +107,6 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     self.assertEqual(6, clactions.GetCQRunTime(change, action_history))
     self.assertEqual(3, clactions.GetCQAttemptsCount(change, action_history))
 
-    clactions.RecordSubmissionMetrics(
-        clactions.CLActionHistory(action_history), strategies)
-
   def _Act(self, build_id, change, action, reason=None, timestamp=None):
     self.fake_db.InsertCLActions(
         build_id,

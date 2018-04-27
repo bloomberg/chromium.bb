@@ -32,6 +32,7 @@ from chromite.cbuildbot.stages import build_stages
 from chromite.lib import buildbucket_lib
 from chromite.lib import build_requests
 from chromite.lib import clactions
+from chromite.lib import clactions_metrics
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import commandline
@@ -2079,7 +2080,7 @@ class PreCQLauncherStage(SyncStage):
       if db:
         submitted_change_actions = db.GetActionsForChanges(submitted)
         strategies = {m: constants.STRATEGY_PRECQ_SUBMIT for m in submitted}
-        clactions.RecordSubmissionMetrics(
+        clactions_metrics.RecordSubmissionMetrics(
             clactions.CLActionHistory(submitted_change_actions), strategies)
 
     self._LaunchPreCQsIfNeeded(pool, changes)

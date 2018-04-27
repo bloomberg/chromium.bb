@@ -10,6 +10,7 @@ from chromite.cbuildbot import relevant_changes
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import builder_status_lib
 from chromite.lib import clactions
+from chromite.lib import clactions_metrics
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -55,8 +56,8 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
       action_history = clactions.CLActionHistory(submitted_changes_all_actions)
       logging.info('Recording submission metrics about %s CLs to monarch.',
                    len(submitted_change_strategies))
-      clactions.RecordSubmissionMetrics(action_history,
-                                        submitted_change_strategies)
+      clactions_metrics.RecordSubmissionMetrics(action_history,
+                                                submitted_change_strategies)
 
       # Record CQ wall-clock metric.
       submitted_any = len(submitted_change_strategies) > 0
