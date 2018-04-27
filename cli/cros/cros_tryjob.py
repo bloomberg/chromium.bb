@@ -16,7 +16,7 @@ from chromite.lib import config_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
-from chromite.lib import remote_try
+from chromite.lib import request_build
 
 from chromite.cbuildbot import trybot_patch_pool
 
@@ -310,7 +310,7 @@ def RunRemote(site_config, options, patch_pool):
   logging.info('Submitting tryjob...')
   results = []
   for build_config in options.build_configs:
-    tryjob = remote_try.RemoteTryJob(
+    tryjob = request_build.RequestBuild(
         build_config=build_config,
         display_label=DisplayLabel(site_config, options, build_config),
         branch=options.branch,

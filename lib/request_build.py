@@ -44,8 +44,8 @@ def TryJobUrl(buildbucket_id):
   return BUILD_DETAILS_PATTERN % {'buildbucket_id': buildbucket_id}
 
 
-class RemoteTryJob(object):
-  """Remote Tryjob that is submitted through a Git repo."""
+class RequestBuild(object):
+  """Request a builder via buildbucket."""
   # Buildbucket_put response must contain 'buildbucket_bucket:bucket]',
   # '[config:config_name] and '[buildbucket_id:id]'.
   BUILDBUCKET_PUT_RESP_FORMAT = ('Successfully sent PUT request to '

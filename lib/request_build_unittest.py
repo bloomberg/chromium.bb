@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unittests for remote_try.py."""
+"""Unittests for request_build.py."""
 
 from __future__ import print_function
 
@@ -15,13 +15,13 @@ from chromite.lib import buildbucket_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
-from chromite.lib import remote_try
+from chromite.lib import request_build
 
 # Tests need internal access.
 # pylint: disable=protected-access
 
-class RemoteTryHelperTestsBase(cros_test_lib.MockTestCase):
-  """Tests for RemoteTryJob."""
+class RequestBuildHelperTestsBase(cros_test_lib.MockTestCase):
+  """Tests for RequestBuild."""
   BRANCH = 'test-branch'
   PATCHES = ('5555', '6666')
   BUILD_CONFIG_MIN = 'amd64-generic-paladin-tryjob'
@@ -36,10 +36,10 @@ class RemoteTryHelperTestsBase(cros_test_lib.MockTestCase):
     self.maxDiff = None
 
   def _CreateJobMin(self):
-    return remote_try.RemoteTryJob(build_config=self.BUILD_CONFIG_MIN)
+    return request_build.RequestBuild(build_config=self.BUILD_CONFIG_MIN)
 
   def _CreateJobMax(self):
-    return remote_try.RemoteTryJob(
+    return request_build.RequestBuild(
         build_config=self.BUILD_CONFIG_MAX,
         display_label=self.DISPLAY_LABEL,
         branch=self.BRANCH,
@@ -48,7 +48,7 @@ class RemoteTryHelperTestsBase(cros_test_lib.MockTestCase):
         master_buildbucket_id=self.MASTER_BUILDBUCKET_ID)
 
   def _CreateJobUnknown(self):
-    return remote_try.RemoteTryJob(
+    return request_build.RequestBuild(
         build_config=self.UNKNOWN_CONFIG,
         display_label=self.DISPLAY_LABEL,
         branch='master',
@@ -57,7 +57,7 @@ class RemoteTryHelperTestsBase(cros_test_lib.MockTestCase):
         master_buildbucket_id=None)
 
 
-class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
+class RequestBuildHelperTestsMock(RequestBuildHelperTestsBase):
   """Perform real buildbucket requests against a fake instance."""
 
   def setUp(self):
@@ -180,7 +180,7 @@ class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
     job.Submit(testjob=True, dryrun=True)
 
 
-class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
+class RequestBuildHelperTestsNetork(RequestBuildHelperTestsBase):
   """Perform real buildbucket requests against a test instance."""
 
   def verifyBuildbucketRequest(self,
@@ -238,7 +238,7 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
 
     self.assertEqual(
         result,
-        remote_try.ScheduledBuild(
+        request_build.ScheduledBuild(
             buildbucket_id=result.buildbucket_id,
             build_config='amd64-generic-paladin-tryjob',
             url=(u'http://cros-goldeneye/chromeos/healthmonitoring/'
@@ -277,7 +277,7 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
 
     self.assertEqual(
         result,
-        remote_try.ScheduledBuild(
+        request_build.ScheduledBuild(
             buildbucket_id=result.buildbucket_id,
             build_config='amd64-generic-paladin',
             url=(u'http://cros-goldeneye/chromeos/healthmonitoring/'
@@ -289,9 +289,9 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
     """Check syntax for PostConfigsToBuildBucket."""
     self.PatchObject(auth, 'Login')
     self.PatchObject(auth, 'Token')
-    self.PatchObject(remote_try.RemoteTryJob, '_PutConfigToBuildBucket')
+    self.PatchObject(request_build.RequestBuild, '_PutConfigToBuildBucket')
 
-    remote_try_job = remote_try.RemoteTryJob(
+    remote_try_job = request_build.RequestBuild(
         build_config=self.BUILD_CONFIG_MIN,
         display_label=self.DISPLAY_LABEL,
         branch='master',
