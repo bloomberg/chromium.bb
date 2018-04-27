@@ -106,7 +106,7 @@ cr.define('settings_sections_tests', function() {
 
     function toggleMoreSettings() {
       const moreSettingsElement = page.$$('print-preview-more-settings');
-      moreSettingsElement.$$('.label').click();
+      moreSettingsElement.$.label.click();
     }
 
     test(assert(TestNames.Copies), function() {
@@ -346,13 +346,13 @@ cr.define('settings_sections_tests', function() {
       assertFalse(scalingInputWrapper.hidden);
 
       // PDF to non-PDF destination -> checkbox and input shown. Check that if
-      // more settings is collapsed only the checkbox is shown.
+      // more settings is collapsed the section is hidden.
       initDocumentInfo(true, false);
+      toggleMoreSettings();
+      assertTrue(scalingElement.hidden);
       toggleMoreSettings();
       assertFalse(scalingElement.hidden);
       assertFalse(fitToPageContainer.hidden);
-      assertTrue(scalingInputWrapper.hidden);
-      toggleMoreSettings();
       assertFalse(scalingInputWrapper.hidden);
 
       // PDF to PDF destination -> section disappears.
@@ -362,25 +362,20 @@ cr.define('settings_sections_tests', function() {
 
     test(assert(TestNames.Other), function() {
       const optionsElement = page.$$('print-preview-other-options-settings');
-      const headerFooter = optionsElement.$.headerFooterContainer;
-      const duplex = optionsElement.$.duplexContainer;
-      const cssBackground = optionsElement.$.cssBackgroundContainer;
-      const rasterize = optionsElement.$.rasterizeContainer;
-      const selectionOnly = optionsElement.$.selectionOnlyContainer;
+      const headerFooter = optionsElement.$.headerFooter.parentElement;
+      const duplex = optionsElement.$.duplex.parentElement;
+      const cssBackground = optionsElement.$.cssBackground.parentElement;
+      const rasterize = optionsElement.$.rasterize.parentElement;
+      const selectionOnly = optionsElement.$.selectionOnly.parentElement;
 
       // Start with HTML + duplex capability.
       initDocumentInfo(false, false);
       let capabilities =
           print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       page.set('destination_.capabilities', capabilities);
-      assertFalse(optionsElement.hidden);
-      assertTrue(headerFooter.hidden);
-      assertFalse(duplex.hidden);
-      assertTrue(cssBackground.hidden);
-      assertTrue(rasterize.hidden);
-      assertTrue(selectionOnly.hidden);
+      assertTrue(optionsElement.hidden);
 
-      // Expanding more settings will show header/footer.
+      // Expanding more settings will show the section.
       toggleMoreSettings();
       assertFalse(headerFooter.hidden);
       assertFalse(duplex.hidden);
@@ -390,10 +385,7 @@ cr.define('settings_sections_tests', function() {
 
       // Add a selection - should show selection only.
       initDocumentInfo(false, true);
-      toggleMoreSettings();
       assertFalse(optionsElement.hidden);
-      assertTrue(selectionOnly.hidden);
-      toggleMoreSettings();
       assertFalse(selectionOnly.hidden);
 
       // Remove duplex capability.
@@ -402,23 +394,17 @@ cr.define('settings_sections_tests', function() {
       delete capabilities.printer.duplex;
       page.set('destination_.capabilities', capabilities);
       Polymer.dom.flush();
-      toggleMoreSettings();
-      assertTrue(optionsElement.hidden);
-      toggleMoreSettings();
+      assertFalse(optionsElement.hidden);
       assertTrue(duplex.hidden);
 
       // PDF
       initDocumentInfo(true, false);
       Polymer.dom.flush();
-      toggleMoreSettings();
-      assertTrue(optionsElement.hidden);
-
-      toggleMoreSettings();
       if (cr.isWindows || cr.isMac) {
         // No options
         assertTrue(optionsElement.hidden);
       } else {
-        // All setions hidden except rasterize
+        // All sections hidden except rasterize
         assertTrue(headerFooter.hidden);
         assertTrue(duplex.hidden);
         assertTrue(cssBackground.hidden);
@@ -442,16 +428,17 @@ cr.define('settings_sections_tests', function() {
 
     test(assert(TestNames.HeaderFooter), function() {
       const optionsElement = page.$$('print-preview-other-options-settings');
-      const headerFooter = optionsElement.$.headerFooterContainer;
+      const headerFooter = optionsElement.$.headerFooter.parentElement;
 
       // HTML page to show Header/Footer option.
       initDocumentInfo(false, false);
       let capabilities =
           print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       page.set('destination_.capabilities', capabilities);
-      assertFalse(optionsElement.hidden);
-      assertTrue(headerFooter.hidden);
+      assertTrue(optionsElement.hidden);
+
       toggleMoreSettings();
+      assertFalse(optionsElement.hidden);
       assertFalse(headerFooter.hidden);
 
       // Set margins to NONE

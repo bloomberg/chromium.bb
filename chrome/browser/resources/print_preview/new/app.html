@@ -100,6 +100,10 @@
             disabled="[[controlsDisabled_]]"
             available="[[settings.color.available]]">
         </print-preview-color-settings>
+        <print-preview-more-settings settings-expanded="{{settingsExpanded_}}"
+            disabled="[[controlsDisabled_]]"
+            available="[[shouldShowMoreSettings_]]">
+        </print-preview-more-settings>
         <print-preview-media-size-settings settings="{{settings}}"
             capability="[[destination_.capabilities.printer.media_size]]"
             disabled="[[controlsDisabled_]]"
@@ -116,19 +120,16 @@
         </print-preview-dpi-settings>
         <print-preview-scaling-settings settings="{{settings}}"
             document-info="[[documentInfo_]]" disabled="[[controlsDisabled_]]"
-            available="[[settings.scaling.available]]">
+            available="[[settings.scaling.available]]" collapsible>
         </print-preview-scaling-settings>
         <print-preview-other-options-settings settings="{{settings}}"
             disabled="[[controlsDisabled_]]"
-            available="[[settings.otherOptions.available]]">
+            available="[[settings.otherOptions.available]]" collapsible>
         </print-preview-other-options-settings>
         <print-preview-advanced-options-settings settings="{{settings}}"
             destination="[[destination_]]" disabled="[[controlsDisabled_]]"
             available="[[settings.vendorItems.available]]" collapsible>
         </print-preview-advanced-options-settings>
-        <print-preview-more-settings settings-expanded="{{settingsExpanded_}}"
-            hidden$="[[!shouldShowMoreSettings_]]" available>
-        </print-preview-more-settings>
 <if expr="not chromeos">
         <print-preview-link-container destination="[[destination_]]"
             app-kiosk-mode="[[isInAppKioskMode_]]"

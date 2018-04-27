@@ -36,21 +36,6 @@ Polymer({
     'onScalingSettingChanged_(settings.scaling.value)',
   ],
 
-  /**
-   * @param {boolean} showCollapsible Whether collapsible content should be
-   *     shown.
-   */
-  show: function(showCollapsible) {
-    const fitToPageAvailable = this.getSetting('fitToPage').available;
-    if (!fitToPageAvailable && !showCollapsible) {
-      this.hidden = true;
-      return;
-    }
-    this.$.fitToPageContainer.hidden = !fitToPageAvailable;
-    this.hideInput_ = !showCollapsible || !this.getSetting('scaling').available;
-    this.hidden = false;
-  },
-
   /** @private */
   onFitToPageSettingChange_: function() {
     const fitToPage = this.getSetting('fitToPage');

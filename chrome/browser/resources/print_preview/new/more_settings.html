@@ -1,28 +1,28 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="settings_section_behavior.html">
 
 <dom-module id="print-preview-more-settings">
   <template>
-    <style include="action-link">
-      :host {
+    <style include="action-link cr-hidden-style">
+      :host([available]) {
         align-items: center;
-        background-color: #f6f6f6;
-        border-bottom: 1px solid #e1e1e1;
-        border-top: 1px solid #e1e1e1;
         display: flex;
         margin-top: 4px;
-        min-height: 51px;
+        min-height: 38px;
+        padding: 5px 20px;
+      }
+
+      :host #label {
+        margin: 0 10px;
       }
 
       :host #icon {
-        -webkit-margin-end: 15px;
-        -webkit-margin-start: 20px;
         height: 11px;
-        margin-bottom: 20px;
-        margin-top: 20px;
         width: 11px;
       }
 
@@ -39,7 +39,7 @@
       }
     </style>
     <div id="icon" class$="[[getIconClass_(settingsExpanded)]]"></div>
-    <a class="label" is="action-link" on-click="onMoreSettingsClick_">
+    <a id="label" is="action-link" disabled="[[disabled]]">
       [[getLabelText_(settingsExpanded)]]
     </a>
   </template>

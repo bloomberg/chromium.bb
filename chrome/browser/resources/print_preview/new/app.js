@@ -520,7 +520,7 @@ Polymer({
         section.hide();
         return;
       }
-      section.show(this.settingsExpanded_);
+      section.show();
     });
   },
 

@@ -12,6 +12,12 @@ Polymer({
       type: Boolean,
       notify: true,
     },
+
+    disabled: Boolean,
+  },
+
+  listeners: {
+    'click': 'onMoreSettingsClick_',
   },
 
   /**

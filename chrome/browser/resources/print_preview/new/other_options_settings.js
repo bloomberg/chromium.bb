@@ -20,28 +20,6 @@ Polymer({
   ],
 
   /**
-   * @param {boolean} showCollapsible Whether collapsible content should be
-   *     shown.
-   */
-  show: function(showCollapsible) {
-    const duplexAvailable = this.getSetting('duplex').available;
-    if (!showCollapsible && !duplexAvailable) {
-      this.hidden = true;
-      return;
-    }
-    this.$.headerFooterContainer.hidden =
-        !this.getSetting('headerFooter').available || !showCollapsible;
-    this.$.duplexContainer.hidden = !duplexAvailable;
-    this.$.cssBackgroundContainer.hidden =
-        !this.getSetting('cssBackground').available || !showCollapsible;
-    this.$.rasterizeContainer.hidden =
-        !this.getSetting('rasterize').available || !showCollapsible;
-    this.$.selectionOnlyContainer.hidden =
-        !this.getSetting('selectionOnly').available || !showCollapsible;
-    this.hidden = false;
-  },
-
-  /**
    * @param {boolean} value The new value of the header footer setting.
    * @private
    */
