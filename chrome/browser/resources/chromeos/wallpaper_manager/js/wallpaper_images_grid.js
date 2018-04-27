@@ -81,7 +81,7 @@ cr.define('wallpapers', function() {
 
       if (this.thumbnail_) {
         this.appendChild(this.thumbnail_);
-        this.callback_(this.dataModelId_);
+        this.callback_(this.dataModelId_, this.dataItem.wallpaperId);
         return;
       }
 
@@ -488,15 +488,47 @@ cr.define('wallpapers', function() {
     pendingItemComplete: function(dataModelId, opt_wallpaperId, opt_thumbnail) {
       if (dataModelId != this.dataModelId_)
         return;
-      this.pendingItems_--;
-      if (opt_wallpaperId != null)
+      --this.pendingItems_;
+      if (opt_wallpaperId && opt_thumbnail)
         this.thumbnailList_[opt_wallpaperId] = opt_thumbnail;
 
-      if (opt_thumbnail && this.useNewWallpaperPicker_) {
+      if (opt_thumbnail && this.useNewWallpaperPicker_)
         this.cropImageToFitGrid_(opt_thumbnail);
 
-        if (this.isShowingDailyRefresh)
-          this.cacheDailyRefreshThumbnailImages_(opt_thumbnail);
+      if (this.isShowingDailyRefresh) {
+        var dailyRefreshItemReady = this.dailyRefreshItem &&
+            this.dailyRefreshImages.length >= DAILY_REFRESH_IMAGES_NUM;
+        if (!dailyRefreshItemReady) {
+          // The daily refresh item may not be created at this point (e.g. when
+          // user starts with the bottom of the list and scrolls upward). This
+          // list is used to store the wallpaper ids that will be added to the
+          // daily refresh item later.
+          if (!this.pendingImageIds_)
+            this.pendingImageIds_ = [];
+
+          if (opt_wallpaperId && opt_thumbnail) {
+            this.pendingImageIds_.push(opt_wallpaperId);
+            // Cache the image thumbnail so that it can be retrieved when the
+            // daily refresh item is created, or the next time the user clicks
+            // on this collection.
+            var slideShowImage = opt_thumbnail.cloneNode(true /*deep=*/);
+            this.dailyRefreshCacheList_[opt_wallpaperId] = slideShowImage;
+          } else if (
+              opt_wallpaperId &&
+              opt_wallpaperId in this.dailyRefreshCacheList_) {
+            // The thumbnail is expected to exist in the cache when the user
+            // clicks on a collection more than once.
+            this.pendingImageIds_.push(opt_wallpaperId);
+          }
+
+          if (this.dailyRefreshItem) {
+            for (var wallpaperId of this.pendingImageIds_) {
+              this.addImageToDailyRefreshItem_(
+                  this.dailyRefreshCacheList_[wallpaperId]);
+            }
+            this.pendingImageIds_ = [];
+          }
+        }
       }
 
       if (this.pendingItems_ == 0) {
@@ -504,15 +536,10 @@ cr.define('wallpapers', function() {
         window.clearTimeout(this.spinnerTimeout_);
         this.spinnerTimeout_ = 0;
         $('spinner-container').hidden = true;
-        if (this.useNewWallpaperPicker_) {
-          // TODO(crbug.com/812725): Decide what to show in the top header bar
-          // if the current wallpaper in use was not selected from the picker.
-          // For now, show the info of the first wallpaper in this collection.
-          var startingIndex = this.isShowingDailyRefresh ? 1 : 0;
-          wallpaperManager.setWallpaperAttribution(
-              this.dataModel.item(startingIndex));
-          if (this.isShowingDailyRefresh)
-            this.decorateDailyRefreshItem_();
+        // Start the slideshow.
+        if (this.dailyRefreshItem) {
+          window.clearTimeout(this.dailyRefreshTimer_);
+          this.showNextImage_(0);
         }
       }
     },
@@ -603,11 +630,22 @@ cr.define('wallpapers', function() {
       }
 
       // Clears previous checkmark.
-      if (this.checkmark_.parentNode)
-        this.checkmark_.parentNode.removeChild(this.checkmark_);
-
+      var previousSelectedGridItem = this.checkmark_.parentNode;
+      if (previousSelectedGridItem) {
+        previousSelectedGridItem.removeChild(this.checkmark_);
+        var border =
+            previousSelectedGridItem.querySelector('.selected-grid-border');
+        if (border)
+          previousSelectedGridItem.removeChild(border);
+      }
       if (!selectedGridItem)
         return;
+
+      if (this.useNewWallpaperPicker_) {
+        var selectedGridBorder = cr.doc.createElement('div');
+        selectedGridBorder.classList.add('selected-grid-border');
+        selectedGridItem.appendChild(selectedGridBorder);
+      }
       selectedGridItem.appendChild(this.checkmark_);
     },
 
@@ -629,30 +667,12 @@ cr.define('wallpapers', function() {
     },
 
     /**
-     * Initializes the UI of the daily refresh item.
+     * Adds an image to the daily refresh slideshow.
+     * @param {Object} slideShowImage The image to be used in the slideshow.
      * @private
      */
-    decorateDailyRefreshItem_: function() {
-      if (!this.isShowingDailyRefresh || !this.dailyRefreshItem ||
-          this.dailyRefreshImages.length >= DAILY_REFRESH_IMAGES_NUM ||
-          this.dailyRefreshCacheList_.length == 0) {
-        return;
-      }
-
+    addImageToDailyRefreshItem_: function(slideShowImage) {
       this.dailyRefreshItem.classList.add('daily-refresh-item');
-
-      // Randomly select images from the cache list.
-      var startingIndex =
-          Math.floor(this.dailyRefreshCacheList_.length * Math.random());
-      var imageCount = Math.min(
-          DAILY_REFRESH_IMAGES_NUM, this.dailyRefreshCacheList_.length);
-      for (var i = 0; i < imageCount; ++i) {
-        var index = (startingIndex + i) % this.dailyRefreshCacheList_.length;
-        var image = this.dailyRefreshCacheList_[index];
-        image.classList.add('slide-show');
-        image.style.opacity = 0;
-        this.dailyRefreshItem.appendChild(image);
-      }
 
       // Add the daily refresh label and toggle.
       if (!this.dailyRefreshItem.querySelector('.daily-refresh-banner')) {
@@ -667,8 +687,11 @@ cr.define('wallpapers', function() {
         this.dailyRefreshItem.appendChild(dailyRefreshBanner);
       }
 
-      window.clearTimeout(this.dailyRefreshTimer_);
-      this.showNextImage_(0);
+      slideShowImage.style.opacity =
+          this.dailyRefreshImages.length == 0 ? 1 : 0;
+      slideShowImage.classList.add('slide-show');
+      this.dailyRefreshItem.insertBefore(
+          slideShowImage, this.dailyRefreshItem.firstChild);
     },
 
     /**
@@ -702,9 +725,8 @@ cr.define('wallpapers', function() {
       // The active thumbnail maybe deleted in the above redraw(). Sets it again
       // to make sure checkmark shows correctly.
       this.updateActiveThumb_();
-      // Show the info bar only when the scroll bar is at the top.
-      $('current-wallpaper-info-bar')
-          .classList.toggle('show-info-bar', this.scrollTop == 0);
+      if (this.useNewWallpaperPicker_)
+        wallpaperManager.onScrollPositionChanged(this.scrollTop);
     }
   };
 

@@ -387,7 +387,6 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
 /**** New wallpaper picker rules **********************************************/
 
 body.v2 {
-  -webkit-app-region: no-drag;
   background-color: transparent;
 }
 
@@ -437,7 +436,7 @@ body.v2 {
 }
 
 .v2 #categories-list > li > div {
-  color: rgb(128, 134, 139);
+  color: rgb(95, 99, 104);
   font-family: 'Roboto';
   font-size: 13px;
   font-weight: 500;
@@ -478,49 +477,62 @@ body.v2 {
 }
 
 .v2 .image-picker [role=listitem][selected]:not(.daily-refresh-item) {
-  -webkit-margin-end: 24px;
-  -webkit-margin-start: 16px;
-  height: 128px;
-  margin-bottom: 24px;
-  margin-top: 16px;
-  width: 128px;
+  border-radius: none;
+}
+
+.v2 .image-picker:not([disabled]) [role=listitem]:hover {
+  outline: none;
 }
 
 .v2 .image-picker img {
   height: unset;
-  overflow: hidden;
   position: absolute;
   width: unset;
+}
+
+.v2 .image-picker .check {
+  background-image: url(../images/ui/selected_wallpaper_checkmark.svg);
+  background-repeat: no-repeat;
+  left: 128px;
+  top: 8px;
+}
+
+.v2 .image-picker .selected-grid-border {
+  border: solid 16px #fff;
+  box-sizing: border-box;
+  height: 100%;
+  position: absolute;
+  width: 100%;
 }
 
 .v2 #window-close-button {
   display: none;
 }
 
-.v2 #minimize-button {
-  background-image: url(../images/ui/button_minimize.png);
+.v2 #dialog-header > div {
+  -webkit-app-region: no-drag;
   display: block;
   height: 24px;
   position: absolute;
-  right: 38px;
   width: 24px;
+}
+
+.v2 #minimize-button {
+  background-image: url(../images/ui/button_minimize.png);
+  right: 38px;
 }
 
 .v2 #close-button {
   background-image: url(../images/ui/button_close.png);
-  display: block;
-  height: 24px;
-  position: absolute;
   right: 8px;
-  width: 24px;
 }
 
-.v2 .image-picker .check,
 .v2 .bottom-bar {
   display: none;
 }
 
 .v2 #top-header {
+  -webkit-app-region: no-drag;
   background-color: #fff;
   border-radius: 0 0 48px 48px;
   display: flex;
@@ -555,8 +567,8 @@ body.v2 {
   -webkit-padding-start: 32px;
   background-image: url(../images/ui/left_arrow.svg);
   background-repeat: no-repeat;
-  background-size: 16px 16px;
-  margin-top: 14px;
+  background-size: 20px 20px;
+  margin-top: 12px;
 }
 
 .v2 .top-header-contents #image-title {
@@ -724,7 +736,7 @@ body.v2 {
 .v2 #current-wallpaper-info-bar {
   background-color: #fff;
   border-radius: 4px;
-  bottom: 0;
+  bottom: 8px;
   box-shadow: 0 0 60px;
   display: flex;
   flex-direction: row;
@@ -766,6 +778,7 @@ body.v2 {
 .v2 #current-wallpaper-description {
   color: rgb(32, 33, 36);
   font-size: 12px;
+  font-weight: 400;
   padding-top: 14px;
   width: 320px;
 }
@@ -776,6 +789,10 @@ body.v2 {
   display: flex;
   flex-direction: column;
   font-size: 12px;
+}
+
+.v2 #current-wallpaper-more-options.online-wallpaper {
+  -webkit-margin-start: 54px;
 }
 
 .v2 #current-wallpaper-more-options > div {
@@ -826,7 +843,7 @@ body.v2 {
   visibility: visible;
 }
 
-body:not([surprise-me-disabled]).v2 [role=listitem]:not(.daily-refresh-item) {
-  opacity: 0.6;
-  pointer-events: none;
+.v2 .progress-bar {
+  bottom: 0;
+  top: unset;
 }
