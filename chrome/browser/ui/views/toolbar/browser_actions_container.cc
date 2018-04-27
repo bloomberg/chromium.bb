@@ -239,6 +239,8 @@ void BrowserActionsContainer::ResizeAndAnimate(gfx::Tween::Type tween_type,
     animation_target_size_ = target_width;
     resize_animation_->Show();
   } else {
+    if (resize_animation_)
+      resize_animation_->Reset();
     animation_target_size_ = target_width;
     AnimationEnded(resize_animation_.get());
   }
@@ -252,7 +254,13 @@ int BrowserActionsContainer::GetWidth(GetWidthTime get_width_time) const {
           ? animation_target_size_
           : width();
   const int width_without_separator = target_width - GetSeparatorAreaWidth();
-  return std::max(0, width_without_separator);
+  // This needs to be clamped to non-zero as ToolbarActionsBar::ResizeDelegate
+  // uses this value to distinguish between an empty bar without items and a bar
+  // that is showing no items.
+  // TODO(pbos): This is landed to fix to https://crbug.com/836182. Remove the
+  // need for this when ToolbarActionsBar and BrowserActionsContainer merges.
+  return std::max(toolbar_actions_bar_->GetMinimumWidth(),
+                  width_without_separator);
 }
 
 bool BrowserActionsContainer::IsAnimating() const {
