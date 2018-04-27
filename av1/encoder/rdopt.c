@@ -10221,8 +10221,7 @@ PALETTE_EXIT:
   // GLOBALMV. Here, checks are added for those cases, and the mode decisions
   // are corrected.
   if ((search_state.best_mbmode.mode == NEWMV ||
-       search_state.best_mbmode.mode == NEW_NEWMV) &&
-      0) {
+       search_state.best_mbmode.mode == NEW_NEWMV)) {
     const MV_REFERENCE_FRAME refs[2] = {
       search_state.best_mbmode.ref_frame[0],
       search_state.best_mbmode.ref_frame[1]
