@@ -300,6 +300,12 @@ int RunService(MainDelegate* delegate) {
   return exit_code;
 }
 
+bool IsRootProcess() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  return command_line.GetSwitchValueASCII(switches::kProcessType).empty();
+}
+
 }  // namespace
 
 MainParams::MainParams(MainDelegate* delegate) : delegate(delegate) {}
@@ -403,6 +409,14 @@ int Main(const MainParams& params) {
   mojo::edk::Init(mojo_config);
 
   ui::RegisterPathProvider();
+
+  // ServiceManager needs to load service manifests from resources.pak, so load
+  // the file now.
+  if (IsRootProcess()) {
+    ui::DataPack* data_pack = delegate->LoadServiceManifestDataPack();
+    // TODO(ranj): Read manifest from this data pack.
+    ignore_result(data_pack);
+  }
 
   base::debug::GlobalActivityTracker* tracker =
       base::debug::GlobalActivityTracker::Get();

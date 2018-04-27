@@ -34,9 +34,9 @@
 #endif
 
 ChromeBrowserMainPartsLinux::ChromeBrowserMainPartsLinux(
-    const content::MainFunctionParams& parameters)
-    : ChromeBrowserMainPartsPosix(parameters) {
-}
+    const content::MainFunctionParams& parameters,
+    std::unique_ptr<ui::DataPack> data_pack)
+    : ChromeBrowserMainPartsPosix(parameters, std::move(data_pack)) {}
 
 ChromeBrowserMainPartsLinux::~ChromeBrowserMainPartsLinux() {
 }
