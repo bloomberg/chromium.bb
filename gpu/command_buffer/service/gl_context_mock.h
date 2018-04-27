@@ -17,7 +17,7 @@ class GLContextMock : public gl::GLContextStub {
   MOCK_METHOD1(MakeCurrent, bool(gl::GLSurface* surface));
 
  protected:
-  virtual ~GLContextMock();
+  ~GLContextMock() override;
 };
 
 }  // namespace gpu

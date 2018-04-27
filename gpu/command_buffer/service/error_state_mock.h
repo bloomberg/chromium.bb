@@ -19,7 +19,7 @@ namespace gles2 {
 class MockErrorState : public ErrorState {
  public:
   MockErrorState();
-  virtual ~MockErrorState();
+  ~MockErrorState() override;
 
   MOCK_METHOD0(GetGLError, uint32_t());
   MOCK_METHOD5(SetGLError, void(

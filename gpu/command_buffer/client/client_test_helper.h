@@ -87,7 +87,7 @@ class MockClientCommandBuffer : public CommandBuffer,
 class MockClientCommandBufferMockFlush : public MockClientCommandBuffer {
  public:
   MockClientCommandBufferMockFlush();
-  virtual ~MockClientCommandBufferMockFlush();
+  ~MockClientCommandBufferMockFlush() override;
 
   MOCK_METHOD1(Flush, void(int32_t put_offset));
   MOCK_METHOD1(OrderingBarrier, void(int32_t put_offset));
@@ -99,7 +99,7 @@ class MockClientCommandBufferMockFlush : public MockClientCommandBuffer {
 class MockClientGpuControl : public GpuControl {
  public:
   MockClientGpuControl();
-  virtual ~MockClientGpuControl();
+  ~MockClientGpuControl() override;
 
   MOCK_METHOD1(SetGpuControlClient, void(GpuControlClient*));
   MOCK_CONST_METHOD0(GetCapabilities, const Capabilities&());

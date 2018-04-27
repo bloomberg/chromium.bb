@@ -41,7 +41,7 @@ const int32_t kUnusedCommandId = 5;  // we use 0 and 2 currently.
 // interface (calling it directly, not through the RPC mechanism).
 class CommandBufferHelperTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     transfer_buffer_manager_ = std::make_unique<TransferBufferManager>(nullptr);
     command_buffer_.reset(
         new CommandBufferDirectLocked(transfer_buffer_manager_.get()));
@@ -59,7 +59,7 @@ class CommandBufferHelperTest : public testing::Test {
     test_command_next_id_ = kUnusedCommandId;
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // If the CommandExecutor posts any tasks, this forces them to run.
     base::RunLoop().RunUntilIdle();
     test_command_args_.clear();

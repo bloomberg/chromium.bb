@@ -3679,7 +3679,7 @@ class MockGLImage : public gl::GLImage {
                     const std::string&));
 
  protected:
-  virtual ~MockGLImage() = default;
+  ~MockGLImage() override = default;
 };
 
 TEST_P(GLES2DecoderWithShaderTest, CopyTexImage) {

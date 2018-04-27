@@ -46,7 +46,7 @@ class MockMemoryTracker : public gles2::MemoryTracker {
   uint64_t ShareGroupTracingGUID() const override { return 0; }
 
  private:
-  virtual ~MockMemoryTracker() = default;
+  ~MockMemoryTracker() override = default;
 };
 
 }  // namespace

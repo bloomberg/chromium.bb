@@ -32,7 +32,7 @@ class AsyncAPIMock : public AsyncAPIInterface {
  public:
   explicit AsyncAPIMock(bool default_do_commands,
                         CommandBufferServiceBase* command_buffer_service);
-  virtual ~AsyncAPIMock();
+  ~AsyncAPIMock() override;
 
   error::Error FakeDoCommands(unsigned int num_commands,
                               const volatile void* buffer,
@@ -119,7 +119,7 @@ class MockShaderTranslator : public ShaderTranslatorInterface {
 class MockProgramCache : public ProgramCache {
  public:
   MockProgramCache();
-  virtual ~MockProgramCache();
+  ~MockProgramCache() override;
 
   MOCK_METHOD7(LoadLinkedProgram,
                ProgramLoadResult(
@@ -160,7 +160,7 @@ class MockMemoryTracker : public MemoryTracker {
  private:
   friend class ::testing::StrictMock<MockMemoryTracker>;
   friend class base::RefCounted< ::testing::StrictMock<MockMemoryTracker> >;
-  virtual ~MockMemoryTracker();
+  ~MockMemoryTracker() override;
 };
 
 }  // namespace gles2
