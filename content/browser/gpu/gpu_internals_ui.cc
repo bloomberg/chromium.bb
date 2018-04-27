@@ -308,6 +308,8 @@ const char* BufferUsageToString(gfx::BufferUsage usage) {
       return "SCANOUT";
     case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
       return "SCANOUT_CAMERA_READ_WRITE";
+    case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
+      return "CAMERA_AND_CPU_READ_WRITE";
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
       return "SCANOUT_CPU_READ_WRITE";
     case gfx::BufferUsage::SCANOUT_VDA_WRITE:

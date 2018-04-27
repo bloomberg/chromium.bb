@@ -88,6 +88,7 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
              format == gfx::BufferFormat::YUV_420_BIPLANAR;
     case gfx::BufferUsage::SCANOUT_VDA_WRITE:
     case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
+    case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
       return false;
   }
   NOTREACHED();
@@ -106,6 +107,7 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
     case gfx::BufferUsage::SCANOUT_VDA_WRITE:
     case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
+    case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
       return false;
   }
   NOTREACHED();
@@ -125,6 +127,7 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
     case gfx::BufferUsage::SCANOUT_VDA_WRITE:
     case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
+    case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
       return false;
     default:
       NOTREACHED();

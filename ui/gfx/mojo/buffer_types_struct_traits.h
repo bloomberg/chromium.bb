@@ -139,6 +139,8 @@ struct EnumTraits<gfx::mojom::BufferUsage, gfx::BufferUsage> {
         return gfx::mojom::BufferUsage::SCANOUT;
       case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
         return gfx::mojom::BufferUsage::SCANOUT_CAMERA_READ_WRITE;
+      case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
+        return gfx::mojom::BufferUsage::CAMERA_AND_CPU_READ_WRITE;
       case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
         return gfx::mojom::BufferUsage::SCANOUT_CPU_READ_WRITE;
       case gfx::BufferUsage::SCANOUT_VDA_WRITE:
@@ -162,6 +164,9 @@ struct EnumTraits<gfx::mojom::BufferUsage, gfx::BufferUsage> {
         return true;
       case gfx::mojom::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
         *out = gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE;
+        return true;
+      case gfx::mojom::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
+        *out = gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE;
         return true;
       case gfx::mojom::BufferUsage::SCANOUT_CPU_READ_WRITE:
         *out = gfx::BufferUsage::SCANOUT_CPU_READ_WRITE;

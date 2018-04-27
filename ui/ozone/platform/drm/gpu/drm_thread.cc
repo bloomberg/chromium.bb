@@ -129,6 +129,10 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
       flags = GBM_BO_USE_LINEAR | GBM_BO_USE_CAMERA_WRITE | GBM_BO_USE_SCANOUT |
               GBM_BO_USE_TEXTURING;
       break;
+    case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
+      flags =
+          GBM_BO_USE_LINEAR | GBM_BO_USE_CAMERA_WRITE | GBM_BO_USE_TEXTURING;
+      break;
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
       flags = GBM_BO_USE_LINEAR | GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING;
       break;
