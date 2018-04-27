@@ -35,7 +35,8 @@ class ModuleTreeLinkerRegistry;
 class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
  public:
   // https://html.spec.whatwg.org/#fetch-a-module-script-tree
-  static ModuleTreeLinker* Fetch(const ModuleScriptFetchRequest&,
+  static ModuleTreeLinker* Fetch(const KURL&,
+                                 const ScriptFetchOptions&,
                                  Modulator*,
                                  ModuleTreeLinkerRegistry*,
                                  ModuleTreeClient*);
@@ -74,7 +75,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
 #endif
   void AdvanceState(State);
 
-  void FetchRoot(const ModuleScriptFetchRequest&);
+  void FetchRoot(const KURL&, const ScriptFetchOptions&);
   void FetchRootInline(ModuleScript*);
 
   // Steps 1--2 of [IMSGF].

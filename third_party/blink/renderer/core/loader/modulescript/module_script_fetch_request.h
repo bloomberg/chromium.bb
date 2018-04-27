@@ -13,31 +13,13 @@
 namespace blink {
 
 // A ModuleScriptFetchRequest essentially serves as a "parameter object" for
-// Modulator::Fetch{Tree,Single,NewSingle}.
+// Modulator::Fetch{Single,NewSingle}.
 class ModuleScriptFetchRequest final {
   STACK_ALLOCATED();
 
  public:
-  ModuleScriptFetchRequest(const KURL& url,
-                           ReferrerPolicy referrer_policy,
-                           const ScriptFetchOptions& options)
-      : ModuleScriptFetchRequest(url,
-                                 options,
-                                 Referrer::NoReferrer(),
-                                 referrer_policy,
-                                 TextPosition::MinimumPosition()) {}
-  ~ModuleScriptFetchRequest() = default;
-
-  const KURL& Url() const { return url_; }
-  const ScriptFetchOptions& Options() const { return options_; }
-  const AtomicString& GetReferrer() const { return referrer_; }
-  ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
-  const TextPosition& GetReferrerPosition() const { return referrer_position_; }
-
- private:
   // Referrer is set only for internal module script fetch algorithms triggered
   // from ModuleTreeLinker to fetch descendant module scripts.
-  friend class ModuleTreeLinker;
   ModuleScriptFetchRequest(const KURL& url,
                            const ScriptFetchOptions& options,
                            const String& referrer,
@@ -49,6 +31,20 @@ class ModuleScriptFetchRequest final {
         referrer_policy_(referrer_policy),
         referrer_position_(referrer_position) {}
 
+  static ModuleScriptFetchRequest CreateForTest(const KURL& url) {
+    return ModuleScriptFetchRequest(
+        url, ScriptFetchOptions(), Referrer::NoReferrer(),
+        kReferrerPolicyDefault, TextPosition::MinimumPosition());
+  }
+  ~ModuleScriptFetchRequest() = default;
+
+  const KURL& Url() const { return url_; }
+  const ScriptFetchOptions& Options() const { return options_; }
+  const AtomicString& GetReferrer() const { return referrer_; }
+  ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
+  const TextPosition& GetReferrerPosition() const { return referrer_position_; }
+
+ private:
   const KURL url_;
   const ScriptFetchOptions options_;
   const AtomicString referrer_;

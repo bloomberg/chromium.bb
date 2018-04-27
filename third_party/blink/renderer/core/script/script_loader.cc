@@ -732,9 +732,7 @@ void ScriptLoader::FetchModuleScriptTree(const KURL& url,
   // Fetch a module script graph given url, settings object, "script", and
   // options.</spec>
   auto* module_tree_client = ModulePendingScriptTreeClient::Create();
-  modulator->FetchTree(
-      ModuleScriptFetchRequest(url, modulator->GetReferrerPolicy(), options),
-      module_tree_client);
+  modulator->FetchTree(url, options, module_tree_client);
   prepared_pending_script_ = ModulePendingScript::Create(
       element_, module_tree_client, is_external_script_);
 }

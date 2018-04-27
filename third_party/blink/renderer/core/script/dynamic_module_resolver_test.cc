@@ -61,9 +61,10 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
     return module_script;
   }
 
-  void FetchTree(const ModuleScriptFetchRequest& request,
+  void FetchTree(const KURL& url,
+                 const ScriptFetchOptions&,
                  ModuleTreeClient* client) final {
-    EXPECT_EQ(expected_fetch_tree_url_, request.Url());
+    EXPECT_EQ(expected_fetch_tree_url_, url);
 
     pending_client_ = client;
     fetch_tree_was_called_ = true;

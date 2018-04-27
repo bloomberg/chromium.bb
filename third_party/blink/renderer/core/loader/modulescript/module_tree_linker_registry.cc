@@ -21,11 +21,12 @@ void ModuleTreeLinkerRegistry::TraceWrappers(
 }
 
 ModuleTreeLinker* ModuleTreeLinkerRegistry::Fetch(
-    const ModuleScriptFetchRequest& request,
+    const KURL& url,
+    const ScriptFetchOptions& options,
     Modulator* modulator,
     ModuleTreeClient* client) {
   ModuleTreeLinker* fetcher =
-      ModuleTreeLinker::Fetch(request, modulator, this, client);
+      ModuleTreeLinker::Fetch(url, options, modulator, this, client);
   DCHECK(fetcher->IsFetching());
   active_tree_linkers_.insert(fetcher);
   return fetcher;

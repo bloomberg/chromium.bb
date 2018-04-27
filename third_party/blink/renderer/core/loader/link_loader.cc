@@ -523,9 +523,11 @@ static void ModulePreloadIfNeeded(const LinkLoadParameters& params,
   // metadata is "not-parser-inserted", and credentials mode is credentials
   // mode." [spec text]
   ModuleScriptFetchRequest request(
-      params.href, params.referrer_policy,
+      params.href,
       ScriptFetchOptions(params.nonce, integrity_metadata, params.integrity,
-                         kNotParserInserted, credentials_mode));
+                         kNotParserInserted, credentials_mode),
+      Referrer::NoReferrer(), params.referrer_policy,
+      TextPosition::MinimumPosition());
 
   // Step 10. "Fetch a single module script given url, settings object,
   // destination, options, settings object, "client", and with the top-level

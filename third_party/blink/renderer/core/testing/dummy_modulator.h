@@ -37,7 +37,9 @@ class DummyModulator : public Modulator {
   const SecurityOrigin* GetSecurityOriginForFetch() override;
   ScriptState* GetScriptState() override;
 
-  void FetchTree(const ModuleScriptFetchRequest&, ModuleTreeClient*) override;
+  void FetchTree(const KURL&,
+                 const ScriptFetchOptions&,
+                 ModuleTreeClient*) override;
   void FetchSingle(const ModuleScriptFetchRequest&,
                    ModuleGraphLevel,
                    SingleModuleClient*) override;

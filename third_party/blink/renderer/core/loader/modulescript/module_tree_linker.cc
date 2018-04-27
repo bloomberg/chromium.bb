@@ -15,13 +15,13 @@
 
 namespace blink {
 
-ModuleTreeLinker* ModuleTreeLinker::Fetch(
-    const ModuleScriptFetchRequest& request,
-    Modulator* modulator,
-    ModuleTreeLinkerRegistry* registry,
-    ModuleTreeClient* client) {
+ModuleTreeLinker* ModuleTreeLinker::Fetch(const KURL& url,
+                                          const ScriptFetchOptions& options,
+                                          Modulator* modulator,
+                                          ModuleTreeLinkerRegistry* registry,
+                                          ModuleTreeClient* client) {
   ModuleTreeLinker* fetcher = new ModuleTreeLinker(modulator, registry, client);
-  fetcher->FetchRoot(request);
+  fetcher->FetchRoot(url, options);
   return fetcher;
 }
 
@@ -128,20 +128,25 @@ void ModuleTreeLinker::AdvanceState(State new_state) {
   }
 }
 
-void ModuleTreeLinker::FetchRoot(const ModuleScriptFetchRequest& request) {
-  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
+// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
+void ModuleTreeLinker::FetchRoot(const KURL& url,
+                                 const ScriptFetchOptions& options) {
 #if DCHECK_IS_ON()
-  url_ = request.Url();
+  url_ = url;
   root_is_inline_ = false;
 #endif
 
   AdvanceState(State::kFetchingSelf);
 
   // Step 1. Let visited set be << url >>.
-  visited_set_.insert(request.Url());
+  visited_set_.insert(url);
 
   // Step 2. Perform the internal module script graph fetching procedure given
   // ... with the top-level module fetch flag set. ...
+  ModuleScriptFetchRequest request(url, options, Referrer::NoReferrer(),
+                                   modulator_->GetReferrerPolicy(),
+                                   TextPosition::MinimumPosition());
+
   InitiateInternalModuleScriptGraphFetching(
       request, ModuleGraphLevel::kTopLevelModuleFetch);
 }
