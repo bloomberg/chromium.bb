@@ -126,6 +126,8 @@ source_set("filters") {
     sources += [
       "audio_file_reader.cc",
       "audio_file_reader.h",
+      "audio_video_metadata_extractor.cc",
+      "audio_video_metadata_extractor.h",
       "blocking_url_protocol.cc",
       "blocking_url_protocol.h",
       "ffmpeg_audio_decoder.cc",
@@ -137,15 +139,9 @@ source_set("filters") {
       "ffmpeg_glue.h",
       "in_memory_url_protocol.cc",
       "in_memory_url_protocol.h",
+      "media_file_checker.cc",
+      "media_file_checker.h",
     ]
-    if (!is_android) {
-      sources += [
-        "audio_video_metadata_extractor.cc",
-        "audio_video_metadata_extractor.h",
-        "media_file_checker.cc",
-        "media_file_checker.h",
-      ]
-    }
   }
 
   if (media_use_libvpx) {
