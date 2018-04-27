@@ -42,6 +42,23 @@ message ChromeUserPopulation {
   // defined by finch trial name and group name. Trial name and group name are
   // concatenated with separator "|", e.g. "PingOnlyTrial|DefaultGroup".
   repeated string finch_active_groups = 4;
+
+  // Whether and how the current Chrome profile is being managed.
+  enum ProfileManagementStatus {
+    // Value not set.
+    UNKNOWN = 0;
+
+    // Profile management status is unavailable.
+    UNAVAILABLE = 1;
+
+    // The profile is not managed.
+    NOT_MANAGED = 2;
+
+    // Chrome is being managed by enterprise policies.
+    ENTERPRISE_MANAGED = 3;
+  }
+  optional ProfileManagementStatus profile_management_status = 5
+      [default = UNKNOWN];
 }
 
 message ClientPhishingRequest {
