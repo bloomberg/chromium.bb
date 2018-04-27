@@ -247,7 +247,7 @@ const LayoutBehavior = {
   reparentOrphan_: function(orphanId, otherOrphanIds) {
     const layout = this.displayLayoutMap_.get(orphanId);
     assert(layout);
-    if (orphanId == this.dragId_ && layout.parentId != '') {
+    if (orphanId == this.dragId && layout.parentId != '') {
       this.setCalculatedDisplayBounds_(orphanId, this.dragBounds_);
       return;
     }

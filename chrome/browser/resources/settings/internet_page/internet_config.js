@@ -40,25 +40,22 @@ Polymer({
     /**
      * The GUID when an existing network is being configured. This will be
      * empty when configuring a new network.
-     * @private
      */
     guid: String,
 
     /**
      * The type of network to be configured.
-     * @private {!chrome.networkingPrivate.NetworkType}
+     * @type {!chrome.networkingPrivate.NetworkType}
      */
     type: String,
 
     /**
      * The name of network (for display while the network details are fetched).
-     * @private
      */
     name: String,
 
     /**
      * Set to true to show the 'connect' button instead of 'save'.
-     * @private
      */
     showConnect: Boolean,
 

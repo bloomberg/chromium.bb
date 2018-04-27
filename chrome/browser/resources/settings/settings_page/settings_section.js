@@ -63,7 +63,6 @@ let SettingsSectionElement = Polymer({
    * Freezes the section's height so its card can be removed from the flow
    * without affecting the layout of the surrounding sections.
    * @param {boolean} frozen True to freeze, false to unfreeze.
-   * @private
    */
   setFrozen: function(frozen) {
     const card = this.$.card;

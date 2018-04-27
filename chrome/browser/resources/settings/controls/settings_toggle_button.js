@@ -60,7 +60,7 @@ Polymer({
 
   /** @private */
   onDisableOrPrefChange_: function() {
-    if (this.controlDisabled_()) {
+    if (this.controlDisabled()) {
       this.removeAttribute('actionable');
     } else {
       this.setAttribute('actionable', '');
@@ -75,7 +75,7 @@ Polymer({
    */
   onHostTap_: function(e) {
     e.stopPropagation();
-    if (this.controlDisabled_())
+    if (this.controlDisabled())
       return;
 
     // Ignore this |tap| event, if the interaction sequence

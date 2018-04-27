@@ -541,7 +541,7 @@ Polymer({
    * Overrides _createRipple() from PaperInkyFocusBehavior to create the ripple
    * only on a knob if it's focused, or on a dummy hidden element so that it
    * doesn't show.
-   * @private
+   * @protected
    */
   _createRipple: function() {
     if (this.isEitherKnobFocused_()) {

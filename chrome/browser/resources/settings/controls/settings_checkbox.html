@@ -44,7 +44,7 @@
     <div id="outerRow" noSubLabel$="[[!hasSubLabel_(subLabel, subLabelHtml)]]">
       <paper-checkbox id="checkbox" checked="{{checked}}"
           on-change="notifyChangedByUserInteraction"
-          disabled="[[controlDisabled_(disabled, pref.*)]]">
+          disabled="[[controlDisabled(disabled, pref.*)]]">
         <div class="label">[[label]] <slot></slot></div>
         <div class="secondary label">
           <div inner-h-t-m-l="[[subLabelHtml]]"></div>

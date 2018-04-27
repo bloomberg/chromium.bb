@@ -110,7 +110,7 @@ const SiteSettingsBehaviorImpl = {
    * Returns true if the passed content setting is considered 'enabled'.
    * @param {string} setting
    * @return {boolean}
-   * @private
+   * @protected
    */
   computeIsSettingEnabled: function(setting) {
     return setting != settings.ContentSetting.BLOCK;
@@ -120,7 +120,7 @@ const SiteSettingsBehaviorImpl = {
    * Converts a string origin/pattern to a URL.
    * @param {string} originOrPattern The origin/pattern to convert to URL.
    * @return {URL} The URL to return (or null if origin is not a valid URL).
-   * @private
+   * @protected
    */
   toUrl: function(originOrPattern) {
     if (originOrPattern.length == 0)
@@ -140,7 +140,7 @@ const SiteSettingsBehaviorImpl = {
    * SiteException.
    * @param {!RawSiteException} exception The raw site exception from C++.
    * @return {!SiteException} The expanded (full) SiteException.
-   * @private
+   * @protected
    */
   expandSiteException: function(exception) {
     const origin = exception.origin;
