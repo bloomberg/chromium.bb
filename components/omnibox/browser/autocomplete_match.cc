@@ -233,8 +233,7 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
                          : vector_icons::kSearchIcon;
 
     case Type::EXTENSION_APP_DEPRECATED:
-      return is_touch_ui ? omnibox::kExtensionApp20Icon
-                         : omnibox::kExtensionAppIcon;
+      return omnibox::kExtensionAppIcon;
 
     case Type::CALCULATOR:
       return omnibox::kCalculatorIcon;
