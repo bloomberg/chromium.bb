@@ -28,33 +28,24 @@
 #
 # Example .nc file:
 #
-#   #if defined(NCTEST_NEEDS_SEMICOLON)  // [r"expected ',' or ';' at end of input"]
+#   #if defined(TEST_NEEDS_SEMICOLON)  // [r"expected ',' or ';' at end of input"]
 #
 #   int a = 1
 #
-#   #elif defined(NCTEST_NEEDS_CAST)  // [r"invalid conversion from 'void*' to 'char*'"]
+#   #elif defined(TEST_NEEDS_CAST)  // [r"invalid conversion from 'void*' to 'char*'"]
 #
 #   void* a = NULL;
 #   char* b = a;
 #
 #   #endif
 #
-# If we need to disable NCTEST_NEEDS_SEMICOLON, then change the define to:
+# If we needed disable TEST_NEEDS_SEMICOLON, then change the define to:
 #
-#   DISABLED_NCTEST_NEEDS_SEMICOLON
-#   NCTEST_NEEDS_CAST
+#   DISABLE_TEST_NEEDS_SEMICOLON
+#   TEST_NEEDS_CAST
 #
 # The lines above are parsed by a regexp so avoid getting creative with the
 # formatting or ifdef logic; it will likely just not work.
-#
-# To run the tests, try to build the test target.  For example:
-# - Example based on the BUILD.gn example above.
-#   $ ninja -C out ...:my_module_nc_unittests
-# - Example based on actual tests in //base:
-#   $ ninja -C out base:base_nocompile_tests
-# Building the test target will succeed if the expected compile errors happened
-# and will fail if either 1) there were no compile errors, or 2) the compile
-# errors didn't match the pattern expected by the tests.
 #
 # Implementation notes:
 # The .nc files are actually processed by a python script which executes the
@@ -101,7 +92,6 @@ if (enable_nocompile_tests) {
         "-Wfatal-errors",
         "-Wthread-safety",
         "-I" + rebase_path("//", root_build_dir),
-        "-Igen",
       ]
       if (sysroot != "") {
         args += [
