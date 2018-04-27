@@ -93,6 +93,14 @@ void ScheduledAction::Dispose() {
 }
 
 void ScheduledAction::Execute(ExecutionContext* context) {
+  if (!script_state_->ContextIsValid()) {
+    DVLOG(1) << "ScheduledAction::execute " << this << ": context is empty";
+    return;
+  }
+  // ExecutionContext::CanExecuteScripts() relies on the current context to
+  // determine if it is allowed. Enter the scope here.
+  ScriptState::Scope scope(script_state_.Get());
+
   if (context->IsDocument()) {
     LocalFrame* frame = ToDocument(context)->GetFrame();
     if (!frame) {
@@ -132,13 +140,9 @@ ScheduledAction::ScheduledAction(ScriptState* script_state)
     : script_state_(script_state), info_(script_state->GetIsolate()) {}
 
 void ScheduledAction::Execute(LocalFrame* frame) {
-  if (!script_state_->ContextIsValid()) {
-    DVLOG(1) << "ScheduledAction::execute " << this << ": context is empty";
-    return;
-  }
+  DCHECK(script_state_->ContextIsValid());
 
   TRACE_EVENT0("v8", "ScheduledAction::execute");
-  ScriptState::Scope scope(script_state_.Get());
   if (!function_.IsEmpty()) {
     DVLOG(1) << "ScheduledAction::execute " << this << ": have function";
     v8::Local<v8::Function> function =
