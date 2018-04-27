@@ -10216,6 +10216,7 @@ PALETTE_EXIT:
                       yv12_mb);
   }
 
+#if USE_DISCOUNT_NEWMV_TEST
   // The inter modes' rate costs are not calculated precisely in some cases.
   // Therefore, sometimes, NEWMV is chosen instead of NEARESTMV, NEARMV, and
   // GLOBALMV. Here, checks are added for those cases, and the mode decisions
@@ -10327,6 +10328,7 @@ PALETTE_EXIT:
       }
     }
   }
+#endif  // USE_DISCOUNT_NEWMV_TEST
 
   // Make sure that the ref_mv_idx is only nonzero when we're
   // using a mode which can support ref_mv_idx
