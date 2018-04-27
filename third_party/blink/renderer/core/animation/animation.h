@@ -101,7 +101,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
   // AnimationEffectOwner:
   void UpdateIfNecessary() override;
-  void SpecifiedTimingChanged() override;
+  void EffectInvalidated() override;
   bool IsEventDispatchAllowed() const override;
   Animation* GetAnimation() override { return this; }
 

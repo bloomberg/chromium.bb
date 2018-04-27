@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
@@ -82,6 +83,8 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   void setKeyframes(ScriptState*,
                     const ScriptValue& keyframes,
                     ExceptionState&);
+
+  void SetKeyframes(StringKeyframeVector keyframes);
 
   bool Affects(const PropertyHandle&) const;
   const KeyframeEffectModelBase* Model() const { return model_.Get(); }

@@ -34,11 +34,10 @@ class AnimationEffectOwner : public GarbageCollectedMixin {
   // to be updated or not.
   virtual bool EffectSuppressed() const = 0;
 
-  // Notifies the owning animation that the effect's specified timing has
-  // changed. This means that the owning animation may need to update its play
-  // state and current time.
-  // For more info on specified timing see: core/animation/Timing.h
-  virtual void SpecifiedTimingChanged() = 0;
+  // Notifies the owning animation that the effect has been invalidated, and any
+  // cached information regarding it may need to be invalidated. This can
+  // happen e.g. if the timing information changes or the keyframes change.
+  virtual void EffectInvalidated() = 0;
 
   virtual void UpdateIfNecessary() = 0;
 
