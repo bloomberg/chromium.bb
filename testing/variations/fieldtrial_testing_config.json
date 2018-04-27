@@ -4223,6 +4223,24 @@
             ]
         }
     ],
+    "WebApkGooglePlay": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledLaunch",
+                    "params": {
+                        "webapk_extra_installation_space_mb": "100"
+                    },
+                    "enable_features": [
+                        "AdjustWebApkInstallationSpace"
+                    ]
+                }
+            ]
+        }
+    ],
     "WebBluetoothBlocklist": [
         {
             "platforms": [
