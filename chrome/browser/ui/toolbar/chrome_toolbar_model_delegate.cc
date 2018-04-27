@@ -27,7 +27,6 @@
 #if !defined(OS_ANDROID)
 #include "components/omnibox/browser/vector_icons.h" // nogncheck
 #include "components/toolbar/vector_icons.h"  // nogncheck
-#include "ui/base/material_design/material_design_controller.h"
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -132,16 +131,11 @@ const gfx::VectorIcon* ChromeToolbarModelDelegate::GetVectorIconOverride()
   GURL url;
   GetURL(&url);
 
-  const bool is_touch_ui =
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
-  if (url.SchemeIs(content::kChromeUIScheme)) {
-    return is_touch_ui ? &toolbar::kProduct20Icon : &toolbar::kProductIcon;
-  }
+  if (url.SchemeIs(content::kChromeUIScheme))
+    return &toolbar::kProductIcon;
 
-  if (url.SchemeIs(extensions::kExtensionScheme)) {
-    return is_touch_ui ? &omnibox::kExtensionApp20Icon
-                       : &omnibox::kExtensionAppIcon;
-  }
+  if (url.SchemeIs(extensions::kExtensionScheme))
+    return &omnibox::kExtensionAppIcon;
 #endif
 
   return nullptr;
