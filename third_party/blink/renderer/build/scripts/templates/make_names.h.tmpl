@@ -3,8 +3,8 @@
 
 {{source_files_for_generated_file(template_file, input_files)}}
 
-#ifndef {{namespace}}{{suffix}}Names_h
-#define {{namespace}}{{suffix}}Names_h
+#ifndef {{header_guard}}
+#define {{header_guard}}
 
 {% set symbol_export = '%s ' % export if export else '' %}
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -27,7 +27,7 @@ const unsigned {{namespace}}{{suffix}}NamesCount = {{entries|length}};
 
 {{symbol_export}}void init{{suffix}}();
 
-} // {{namespace}}Names
-} // namespace blink
+}  // {{namespace}}Names
+}  // namespace blink
 
-#endif
+#endif  // {{header_guard}}

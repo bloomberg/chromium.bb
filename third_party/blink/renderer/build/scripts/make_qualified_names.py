@@ -57,8 +57,8 @@ class MakeQualifiedNamesWriter(json5_generator.Writer):
         'to_macro_style': name_utilities.to_macro_style,
     }
 
-    def __init__(self, json5_file_paths):
-        super(MakeQualifiedNamesWriter, self).__init__(None)
+    def __init__(self, json5_file_paths, output_dir):
+        super(MakeQualifiedNamesWriter, self).__init__(None, output_dir)
         self._input_files = copy.copy(json5_file_paths)
         assert len(json5_file_paths) <= 2, 'MakeQualifiedNamesWriter requires at most 2 in files, got %d.' % len(json5_file_paths)
 

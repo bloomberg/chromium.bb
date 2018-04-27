@@ -10,8 +10,8 @@ class CSSPropertyNamesWriter(json5_generator.Writer):
     class_name = "CSSPropertyNames"
     file_basename = "css_property_names"
 
-    def __init__(self, json5_file_path):
-        super(CSSPropertyNamesWriter, self).__init__(json5_file_path)
+    def __init__(self, json5_file_path, output_dir):
+        super(CSSPropertyNamesWriter, self).__init__(json5_file_path, output_dir)
         self._outputs = {
             (self.file_basename + ".h"): self.generate_header,
             (self.file_basename + ".cc"): self.generate_implementation,

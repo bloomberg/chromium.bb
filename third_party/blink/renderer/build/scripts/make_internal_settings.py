@@ -42,8 +42,8 @@ class MakeInternalSettingsWriter(json5_generator.Writer):
         'to_idl_type': to_idl_type,
     }
 
-    def __init__(self, json5_file_path):
-        super(MakeInternalSettingsWriter, self).__init__(json5_file_path)
+    def __init__(self, json5_file_path, output_dir):
+        super(MakeInternalSettingsWriter, self).__init__(json5_file_path, output_dir)
 
         self.json5_file.name_dictionaries.sort(key=lambda entry: entry['name'])
 

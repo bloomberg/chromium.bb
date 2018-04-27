@@ -21,8 +21,8 @@ class PropertyClassData(
 
 
 class CSSPropertyBaseWriter(json5_generator.Writer):
-    def __init__(self, json5_file_paths):
-        super(CSSPropertyBaseWriter, self).__init__([])
+    def __init__(self, json5_file_paths, output_dir):
+        super(CSSPropertyBaseWriter, self).__init__([], output_dir)
         self._input_files = json5_file_paths
         self._outputs = {
             'css_unresolved_property.h': self.generate_unresolved_property_header,

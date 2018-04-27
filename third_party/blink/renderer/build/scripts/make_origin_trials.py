@@ -40,8 +40,8 @@ import template_expander
 class OriginTrialsWriter(make_runtime_features.RuntimeFeatureWriter):
     file_basename = 'origin_trials'
 
-    def __init__(self, json5_file_path):
-        super(OriginTrialsWriter, self).__init__(json5_file_path)
+    def __init__(self, json5_file_path, output_dir):
+        super(OriginTrialsWriter, self).__init__(json5_file_path, output_dir)
         self._outputs = {
             (self.file_basename + '.cc'): self.generate_implementation,
             (self.file_basename + '.h'): self.generate_header,

@@ -206,7 +206,7 @@ class Writer(object):
     default_metadata = None
     default_parameters = None
 
-    def __init__(self, json5_files):
+    def __init__(self, json5_files, output_dir):
         self._input_files = copy.copy(json5_files)
         self._outputs = {}  # file_name -> generator
         self.gperf_path = None
@@ -214,6 +214,11 @@ class Writer(object):
             self.json5_file = Json5File.load_from_files(json5_files,
                                                         self.default_metadata,
                                                         self.default_parameters)
+        match = re.search(r'\bgen[\\/]', output_dir)
+        if match:
+            self._relative_output_dir = output_dir[match.end():].replace(os.path.sep, '/') + '/'
+        else:
+            self._relative_output_dir = ''
 
     def _write_file_if_changed(self, output_dir, contents, file_name):
         path = os.path.join(output_dir, file_name)
@@ -243,6 +248,9 @@ class Writer(object):
         # Use NameStyleConverter instead of name_utilities for consistency.
         return NameStyleConverter(name).to_snake_case()
 
+    def make_header_guard(self, path):
+        return re.sub(r'[-/.]', '_', path).upper() + '_'
+
 
 class Maker(object):
     def __init__(self, writer_class):
@@ -261,6 +269,6 @@ class Maker(object):
         if args.developer_dir:
             os.environ["DEVELOPER_DIR"] = args.developer_dir
 
-        writer = self._writer_class(args.files)
+        writer = self._writer_class(args.files, args.output_dir)
         writer.set_gperf_path(args.gperf)
         writer.write_files(args.output_dir)

@@ -19,8 +19,8 @@ class PropertyMethod(namedtuple('PropertyMethod', 'name,return_type,parameters')
 
 
 class CSSPropertiesWriter(CSSPropertyBaseWriter):
-    def __init__(self, json5_file_paths):
-        super(CSSPropertiesWriter, self).__init__(json5_file_paths)
+    def __init__(self, json5_file_paths, output_dir):
+        super(CSSPropertiesWriter, self).__init__(json5_file_paths, output_dir)
         assert len(json5_file_paths) == 3,\
             ('CSSPropertiesWriter requires 3 input json5 files, ' +
              'got {}.'.format(len(json5_file_paths)))

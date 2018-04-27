@@ -40,8 +40,8 @@ class RuntimeFeatureWriter(json5_generator.Writer):
     class_name = 'RuntimeEnabledFeatures'
     file_basename = 'runtime_enabled_features'
 
-    def __init__(self, json5_file_path):
-        super(RuntimeFeatureWriter, self).__init__(json5_file_path)
+    def __init__(self, json5_file_path, output_dir):
+        super(RuntimeFeatureWriter, self).__init__(json5_file_path, output_dir)
         self._outputs = {(self.file_basename + '.h'): self.generate_header,
                          (self.file_basename + '.cc'): self.generate_implementation,
                         }
@@ -90,8 +90,8 @@ class RuntimeFeatureTestHelpersWriter(json5_generator.Writer):
     class_name = 'ScopedRuntimeEnabledFeatureForTest'
     file_basename = 'runtime_enabled_features_test_helpers'
 
-    def __init__(self, json5_file_path):
-        super(RuntimeFeatureTestHelpersWriter, self).__init__(json5_file_path)
+    def __init__(self, json5_file_path, output_dir):
+        super(RuntimeFeatureTestHelpersWriter, self).__init__(json5_file_path, output_dir)
         self._outputs = {('testing/' + self.file_basename + '.h'): self.generate_header}
 
         self._features = self.json5_file.name_dictionaries

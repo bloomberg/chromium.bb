@@ -107,8 +107,8 @@ class EventFactoryWriter(json5_generator.Writer):
         'measure_name': measure_name,
     }
 
-    def __init__(self, json5_file_path):
-        super(EventFactoryWriter, self).__init__(json5_file_path)
+    def __init__(self, json5_file_path, output_dir):
+        super(EventFactoryWriter, self).__init__(json5_file_path, output_dir)
         self.namespace = self.json5_file.metadata['namespace'].strip('"')
         assert self.namespace == 'Event', 'namespace field should be "Event".'
         self.suffix = self.json5_file.metadata['suffix'].strip('"')

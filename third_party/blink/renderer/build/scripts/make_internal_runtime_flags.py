@@ -40,8 +40,8 @@ import template_expander
 # but generate different files.
 class InternalRuntimeFlagsWriter(make_runtime_features.RuntimeFeatureWriter):
 
-    def __init__(self, json5_file_path):
-        super(InternalRuntimeFlagsWriter, self).__init__(json5_file_path)
+    def __init__(self, json5_file_path, output_dir):
+        super(InternalRuntimeFlagsWriter, self).__init__(json5_file_path, output_dir)
         self._outputs = {
             'internal_runtime_flags.idl': self.generate_idl,
             'internal_runtime_flags.h': self.generate_header,
