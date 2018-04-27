@@ -52,6 +52,9 @@ class TestAutofillManager : public AutofillManager {
   bool IsCreditCardAutofillEnabled() override;
   void UploadFormData(const FormStructure& submitted_form,
                       bool observed_submission) override;
+  bool StartUploadProcess(std::unique_ptr<FormStructure> form_structure,
+                          const base::TimeTicks& timestamp,
+                          bool observed_submission) override;
   void UploadFormDataAsyncCallback(const FormStructure* submitted_form,
                                    const base::TimeTicks& load_time,
                                    const base::TimeTicks& interaction_time,
@@ -60,14 +63,6 @@ class TestAutofillManager : public AutofillManager {
 
   // Unique to TestAutofillManager:
 
-  // Resets the run loop so that it can wait for an asynchronous form
-  // submission to complete.
-  void ResetRunLoop();
-  void RunRunLoop();
-
-  // Wait for the asynchronous calls within StartUploadProcess() to complete.
-  void WaitForAsyncUploadProcess();
-
   int GetPackedCreditCardID(int credit_card_id);
 
   void AddSeenForm(const FormData& form,
@@ -75,10 +70,6 @@ class TestAutofillManager : public AutofillManager {
                    const std::vector<ServerFieldType>& server_types);
 
   void AddSeenFormStructure(std::unique_ptr<FormStructure> form_structure);
-
-  // Calls AutofillManager::OnFormSubmitted and waits for it to complete.
-  void SubmitForm(const FormData& form, const TimeTicks& timestamp);
-  void SubmitForm(const FormData& form);
 
   void ClearFormStructures();
 

@@ -161,8 +161,8 @@ class AutofillManager : public AutofillHandler,
 
   // Will send an upload based on the |form_structure| data and the local
   // Autofill profile data. |observed_submission| is specified if the upload
-  // follows an observed submission event.
-  // return false if the upload couldn't start.
+  // follows an observed submission event. Returns false if the upload couldn't
+  // start.
   virtual bool StartUploadProcess(std::unique_ptr<FormStructure> form_structure,
                                   const base::TimeTicks& timestamp,
                                   bool observed_submission);
