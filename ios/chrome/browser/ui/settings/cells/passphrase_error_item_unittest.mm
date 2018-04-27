@@ -14,10 +14,10 @@
 
 namespace {
 
-using PasswordDetailsItemTest = PlatformTest;
+using PassphraseErrorItemTest = PlatformTest;
 
 // Tests that the text label is set properly after a call to |configureCell:|.
-TEST_F(PasswordDetailsItemTest, ConfigureCell) {
+TEST_F(PassphraseErrorItemTest, ConfigureCell) {
   PassphraseErrorItem* item = [[PassphraseErrorItem alloc] initWithType:0];
   PassphraseErrorCell* cell = [[[item cellClass] alloc] init];
   EXPECT_TRUE([cell isMemberOfClass:[PassphraseErrorCell class]]);
