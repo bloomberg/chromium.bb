@@ -292,7 +292,7 @@ void StyleResolver::MatchPseudoPartRules(const Element& element,
     if (!part_map)
       return;
 
-    current_names.ApplyMap(*part_map);
+    current_names.PushMap(*part_map);
   }
 }
 
