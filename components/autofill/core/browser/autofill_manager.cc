@@ -1395,14 +1395,13 @@ void AutofillManager::FillOrPreviewDataModelForm(
     AutofillField* cached_field = form_structure->field(i);
     FieldTypeGroup field_group_type = cached_field->Type().group();
 
-    // Don't fill non-focusable fields, with the exception of <select> fields.
-    if (!cached_field->is_focusable &&
+    // Don't fill hidden fields, with the exception of <select> fields, for
+    // the sake of filling the synthetic fields.
+    if ((!cached_field->is_focusable ||
+         cached_field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION) &&
         result.fields[i].form_control_type != "select-one") {
       continue;
     }
-
-    if (cached_field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION)
-      continue;
 
     // Don't fill previously autofilled fields except the initiating field or
     // when it's a refill.
