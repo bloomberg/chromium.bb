@@ -55,7 +55,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
-#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -550,7 +550,8 @@ void NavigationScheduler::StartTimer() {
   if (!redirect_->ShouldStartTimer(frame_))
     return;
 
-  WebScheduler* scheduler = Platform::Current()->CurrentThread()->Scheduler();
+  ThreadScheduler* scheduler =
+      Platform::Current()->CurrentThread()->Scheduler();
   scheduler->AddPendingNavigation(frame_type_);
 
   // wrapWeakPersistent(this) is safe because a posted task is canceled when the

@@ -18,7 +18,7 @@ include_rules = [
     "+third_party/blink/renderer/platform/platform_chrome_client.h",
     "+third_party/blink/renderer/platform/platform_export.h",
     "+third_party/blink/renderer/platform/runtime_enabled_features.h",
-    "+third_party/blink/renderer/platform/scheduler/child/web_scheduler.h",
+    "+third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h",
     "+third_party/blink/renderer/platform/timer.h",
     "+third_party/blink/renderer/platform/transforms/transformation_matrix.h",
     "+third_party/blink/renderer/platform/testing",

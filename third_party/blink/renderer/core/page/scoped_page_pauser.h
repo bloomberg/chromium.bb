@@ -22,7 +22,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -42,7 +42,7 @@ class CORE_EXPORT ScopedPagePauser final {
   static void SetPaused(bool);
   static bool IsActive();
 
-  std::unique_ptr<WebScheduler::RendererPauseHandle> pause_handle_;
+  std::unique_ptr<ThreadScheduler::RendererPauseHandle> pause_handle_;
   DISALLOW_COPY_AND_ASSIGN(ScopedPagePauser);
 };
 

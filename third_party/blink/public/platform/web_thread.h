@@ -40,7 +40,7 @@ class TaskTimeObserver;
 }
 
 class FrameScheduler;
-class WebScheduler;
+class ThreadScheduler;
 
 // Always an integer value.
 typedef uintptr_t PlatformThreadId;
@@ -107,7 +107,7 @@ class BLINK_PLATFORM_EXPORT WebThread {
   virtual void RemoveTaskTimeObserver(scheduler::TaskTimeObserver*) {}
 
   // Returns the scheduler associated with the thread.
-  virtual WebScheduler* Scheduler() const = 0;
+  virtual ThreadScheduler* Scheduler() const = 0;
 
   virtual ~WebThread() = default;
 };

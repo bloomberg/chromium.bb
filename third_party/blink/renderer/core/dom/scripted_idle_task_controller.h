@@ -101,7 +101,7 @@ class CORE_EXPORT ScriptedIdleTaskController
                    double deadline_seconds,
                    IdleDeadline::CallbackType);
 
-  WebScheduler* scheduler_;  // Not owned.
+  ThreadScheduler* scheduler_;  // Not owned.
   HeapHashMap<CallbackId, TraceWrapperMember<IdleTask>> idle_tasks_;
   Vector<CallbackId> pending_timeouts_;
   CallbackId next_callback_id_;

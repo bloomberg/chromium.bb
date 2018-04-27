@@ -85,7 +85,7 @@ namespace {
 class DummyThread final : public blink::WebThread {
  public:
   bool IsCurrentThread() const override { return true; }
-  blink::WebScheduler* Scheduler() const override { return nullptr; }
+  blink::ThreadScheduler* Scheduler() const override { return nullptr; }
 };
 
 }  // namespace

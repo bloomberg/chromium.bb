@@ -17,7 +17,7 @@ class WaitableEvent;
 }
 
 namespace blink {
-class WebScheduler;
+class ThreadScheduler;
 }
 
 namespace blink {
@@ -37,7 +37,7 @@ class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   ~WebThreadImplForWorkerScheduler() override;
 
   // WebThread implementation.
-  WebScheduler* Scheduler() const override;
+  ThreadScheduler* Scheduler() const override;
   PlatformThreadId ThreadId() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override;
 

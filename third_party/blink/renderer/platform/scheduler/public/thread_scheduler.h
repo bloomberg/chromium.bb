@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_WEB_SCHEDULER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_WEB_SCHEDULER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_THREAD_SCHEDULER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_THREAD_SCHEDULER_H_
 
 #include <memory>
 #include "base/location.h"
@@ -18,12 +18,12 @@ namespace blink {
 // This class is used to submit tasks and pass other information from Blink to
 // the platform's scheduler.
 // TODO(skyostil): Replace this class with WebMainThreadScheduler.
-class PLATFORM_EXPORT WebScheduler {
+class PLATFORM_EXPORT ThreadScheduler {
  public:
   using RendererPauseHandle =
       scheduler::WebMainThreadScheduler::RendererPauseHandle;
 
-  virtual ~WebScheduler() = default;
+  virtual ~ThreadScheduler() = default;
 
   // Called to prevent any more pending tasks from running. Must be called on
   // the associated WebThread.
@@ -102,4 +102,4 @@ class PLATFORM_EXPORT WebScheduler {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_WEB_SCHEDULER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_THREAD_SCHEDULER_H_
