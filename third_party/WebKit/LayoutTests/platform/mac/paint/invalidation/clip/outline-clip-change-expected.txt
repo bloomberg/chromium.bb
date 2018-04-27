@@ -25,7 +25,7 @@
         {
           "object": "InlineTextBox 'Lorem Ipsum'",
           "rect": [48, 102, 87, 18],
-          "reason": "subtree"
+          "reason": "disappeared"
         }
       ]
     }

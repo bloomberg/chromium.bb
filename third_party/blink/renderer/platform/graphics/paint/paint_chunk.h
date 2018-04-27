@@ -126,6 +126,16 @@ inline Vector<PaintChunk>::const_iterator FindChunkInVectorByDisplayItemIndex(
       const_cast<Vector<PaintChunk>&>(chunks), index);
 }
 
+inline bool operator==(const PaintChunk& a, const PaintChunk& b) {
+  return a.begin_index == b.begin_index && a.end_index == b.end_index &&
+         a.id == b.id && a.properties == b.properties &&
+         a.is_cacheable == b.is_cacheable;
+}
+
+inline bool operator!=(const PaintChunk& a, const PaintChunk& b) {
+  return !(a == b);
+}
+
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const PaintChunk&);
 
 }  // namespace blink

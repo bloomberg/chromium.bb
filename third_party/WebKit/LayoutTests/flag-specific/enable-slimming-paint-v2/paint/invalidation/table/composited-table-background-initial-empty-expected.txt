@@ -8,8 +8,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [8, 96, 186, 64],
+          "rect": [8, 8, 523, 152],
           "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [8, 8, 523, 129],
+          "reason": "disappeared"
         }
       ]
     },

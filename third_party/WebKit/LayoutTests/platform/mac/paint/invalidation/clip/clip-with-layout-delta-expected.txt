@@ -38,12 +38,7 @@
           "reason": "disappeared"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV",
-          "rect": [108, 8, 4, 18],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
+          "object": "InlineTextBox '\u00A0'",
           "rect": [8, 8, 4, 18],
           "reason": "appeared"
         }

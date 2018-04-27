@@ -18,7 +18,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutTable (relative positioned) TABLE",
+          "object": "LayoutTableRow TR id='target'",
           "rect": [8, 298, 110, 106],
           "reason": "appeared"
         }

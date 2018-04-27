@@ -20,12 +20,52 @@
         {
           "object": "LayoutInline (relative positioned) SPAN id='child'",
           "rect": [138, 359, 152, 182],
-          "reason": "paint property change"
+          "reason": "appeared"
         },
         {
-          "object": "LayoutInline (relative positioned) SPAN id='child'",
+          "object": "InlineTextBox 'A B C'",
           "rect": [300, 301, 80, 162],
-          "reason": "paint property change"
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'D E F'",
+          "rect": [300, 301, 80, 162],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'G H I'",
+          "rect": [300, 301, 80, 162],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'J K L'",
+          "rect": [300, 301, 80, 162],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'M N O'",
+          "rect": [300, 301, 80, 162],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'P Q R'",
+          "rect": [300, 301, 80, 162],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'S T U'",
+          "rect": [300, 301, 80, 162],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'V W X'",
+          "rect": [300, 301, 80, 162],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'Y Z'",
+          "rect": [300, 301, 80, 162],
+          "reason": "disappeared"
         }
       ]
     }

@@ -28,7 +28,7 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV",
+          "object": "LayoutBlockFlow DIV",
           "rect": [8, 130, 100, 100],
           "reason": "disappeared"
         }

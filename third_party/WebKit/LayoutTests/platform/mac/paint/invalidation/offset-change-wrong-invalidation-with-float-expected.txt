@@ -21,11 +21,6 @@
           "object": "LayoutBlockFlow (positioned) UL id='submenu'",
           "rect": [48, 92, 40, 18],
           "reason": "disappeared"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) UL id='submenu'",
-          "rect": [71, 92, 7, 18],
-          "reason": "disappeared"
         }
       ]
     },

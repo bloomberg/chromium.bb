@@ -38,7 +38,7 @@
           "reason": "disappeared"
         },
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutInline A",
           "rect": [378, 987, 55, 29],
           "reason": "appeared"
         },

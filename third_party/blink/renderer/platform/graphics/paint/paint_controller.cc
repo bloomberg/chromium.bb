@@ -506,7 +506,6 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
 
     properties_before_subsequence =
         new_paint_chunks_.CurrentPaintChunkProperties();
-    new_paint_chunks_.ForceNewChunk();
     UpdateCurrentPaintChunkPropertiesUsingIdWithFragment(
         cached_chunk->id, cached_chunk->properties.GetPropertyTreeState());
   } else {

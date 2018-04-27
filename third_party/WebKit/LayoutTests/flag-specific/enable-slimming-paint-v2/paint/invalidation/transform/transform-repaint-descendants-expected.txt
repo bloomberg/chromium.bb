@@ -7,23 +7,13 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [176, 220, 394, 185],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [176, 220, 388, 203],
+          "object": "LayoutBlockFlow (relative positioned) DIV id='box'",
+          "rect": [76, 120, 518, 373],
           "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='box'",
-          "rect": [76, 120, 266, 266],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='box'",
-          "rect": [79, 123, 260, 260],
+          "rect": [79, 123, 517, 354],
           "reason": "paint property change"
         }
       ]

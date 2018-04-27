@@ -47,11 +47,6 @@
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [8, 250, 392, 350],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [8, 250, 392, 158],
-          "reason": "incremental"
         }
       ]
     }
@@ -79,11 +74,6 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [400, 8, 400, 592],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [400, 8, 8, 400],
           "reason": "incremental"
         }
       ]

@@ -28,14 +28,14 @@
           "reason": "appeared"
         },
         {
-          "object": "LayoutImage IMG",
+          "object": "LayoutBlockFlow HTML",
           "rect": [58, 230, 489, 537],
-          "reason": "geometry"
+          "reason": "appeared"
         },
         {
           "object": "LayoutImage IMG",
           "rect": [58, 136, 489, 537],
-          "reason": "geometry"
+          "reason": "disappeared"
         }
       ]
     }

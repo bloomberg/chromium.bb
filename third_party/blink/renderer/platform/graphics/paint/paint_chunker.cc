@@ -31,56 +31,51 @@ void PaintChunker::UpdateCurrentPaintChunkProperties(
     const base::Optional<PaintChunk::Id>& chunk_id,
     const PropertyTreeState& properties) {
   DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
-
-  if (chunk_id)
-    current_chunk_id_.emplace(*chunk_id);
-  else
-    current_chunk_id_ = base::nullopt;
+  // If properties are the same, continue to use the previously set
+  // |next_chunk_id_| because the id of the outer painting is likely to be
+  // more stable to reduce invalidation because of chunk id changes.
+  if (!next_chunk_id_ || current_properties_ != properties) {
+    if (chunk_id)
+      next_chunk_id_.emplace(*chunk_id);
+    else
+      next_chunk_id_ = base::nullopt;
+  }
   current_properties_ = properties;
+}
+
+void PaintChunker::ForceNewChunk() {
+  force_new_chunk_ = true;
+  // Always use a new chunk id for a force chunk which may be for a subsequence
+  // which needs the chunk id to be independence with previous chunks.
+  next_chunk_id_ = base::nullopt;
 }
 
 bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
   DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
-
-#if DCHECK_IS_ON()
   // Property nodes should never be null because they should either be set to
   // properties created by a LayoutObject/FrameView, or be set to a non-null
   // root node. If these DCHECKs are hit we are missing a call to update the
   // properties. See: ScopedPaintChunkProperties.
-  // TODO(trchen): Enable this check for SPv175 too. Some drawable layers
-  // don't paint with property tree yet, e.g. scrollbar layers.
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    DCHECK(current_properties_.Transform());
-    DCHECK(current_properties_.Clip());
-    DCHECK(current_properties_.Effect());
-  }
-#endif
+  DCHECK(current_properties_.Transform());
+  DCHECK(current_properties_.Clip());
+  DCHECK(current_properties_.Effect());
 
   bool item_forces_new_chunk = item.IsForeignLayer() || item.IsScrollHitTest();
-  if (item_forces_new_chunk) {
+  if (item_forces_new_chunk)
     force_new_chunk_ = true;
-    // Clear current_chunk_id_ so that we will use the current display item's id
-    // as the chunk id, and any display items after the forcing item without a
-    // new chunk id will be treated as having no id to avoid the chunk from
-    // using the same id as the chunk before the forced chunk.
-    current_chunk_id_ = base::nullopt;
-  } else if (force_new_chunk_ && data_.chunks.size() &&
-             data_.chunks.back().id == current_chunk_id_) {
-    // For other forced_new_chunk_ reasons (e.g. subsequences), use the first
-    // display items' id if the client didn't specify an id for the forced new
-    // chunk (i.e. |current_chunk_id_| has been used by the previous chunk).
-    current_chunk_id_ = base::nullopt;
-  }
 
   size_t new_chunk_begin_index;
   if (data_.chunks.IsEmpty()) {
     new_chunk_begin_index = 0;
   } else {
     auto& last_chunk = LastChunk();
-    if (!force_new_chunk_ && current_properties_ == last_chunk.properties &&
-        (!current_chunk_id_ || current_chunk_id_ == last_chunk.id)) {
+    if (!force_new_chunk_ && current_properties_ == last_chunk.properties) {
       // Continue the current chunk.
       last_chunk.end_index++;
+      // We don't create a new chunk when UpdateCurrentPaintChunkProperties()
+      // just changed |next_chunk_id_| but not |current_properties_|. Clear
+      // |next_chunk_id_| which has been ignored.
+      next_chunk_id_ = base::nullopt;
       return false;
     }
     new_chunk_begin_index = last_chunk.end_index;
@@ -89,8 +84,9 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
   auto cacheable =
       item.SkippedCache() ? PaintChunk::kUncacheable : PaintChunk::kCacheable;
   PaintChunk new_chunk(new_chunk_begin_index, new_chunk_begin_index + 1,
-                       current_chunk_id_ ? *current_chunk_id_ : item.GetId(),
+                       next_chunk_id_ ? *next_chunk_id_ : item.GetId(),
                        current_properties_, cacheable);
+  next_chunk_id_ = base::nullopt;
   data_.chunks.push_back(new_chunk);
 
   // When forcing a new chunk, we still need to force new chunk for the next
@@ -112,12 +108,12 @@ void PaintChunker::TrackRasterInvalidation(const PaintChunk& chunk,
 
 void PaintChunker::Clear() {
   data_.Clear();
-  current_chunk_id_ = base::nullopt;
+  next_chunk_id_ = base::nullopt;
   current_properties_ = UninitializedProperties();
 }
 
 PaintChunksAndRasterInvalidations PaintChunker::ReleaseData() {
-  current_chunk_id_ = base::nullopt;
+  next_chunk_id_ = base::nullopt;
   current_properties_ = UninitializedProperties();
   data_.chunks.ShrinkToFit();
   data_.raster_invalidation_rects.ShrinkToFit();

@@ -8,8 +8,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutTable (relative positioned) TABLE",
-          "rect": [8, 298, 110, 106],
+          "rect": [8, 206, 110, 198],
           "reason": "appeared"
+        },
+        {
+          "object": "LayoutTable (relative positioned) TABLE",
+          "rect": [11, 206, 74, 181],
+          "reason": "disappeared"
         }
       ]
     }

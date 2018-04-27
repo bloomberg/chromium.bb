@@ -28,7 +28,7 @@
           "reason": "full"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='blockDiv'",
+          "object": "InlineTextBox 'A'",
           "rect": [90, 30, 11, 19],
           "reason": "disappeared"
         }

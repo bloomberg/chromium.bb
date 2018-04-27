@@ -125,24 +125,9 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='container'",
-          "rect": [0, 250, 6, 350],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
-          "rect": [0, 300, 6, 30],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
           "rect": [0, 300, 6, 30],
           "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
-          "rect": [0, 125, 6, 30],
-          "reason": "incremental"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='child'",

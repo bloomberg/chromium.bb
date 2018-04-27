@@ -33,11 +33,6 @@
           "reason": "scroll control"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [3, 65, 52, 17],
-          "reason": "appeared"
-        },
-        {
           "object": "VerticalScrollbar",
           "rect": [238, 65, 15, 235],
           "reason": "scroll control"

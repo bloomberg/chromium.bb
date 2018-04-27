@@ -26,11 +26,6 @@
         {
           "object": "LayoutTextControl INPUT id='root'",
           "rect": [0, 0, 63, 24],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTextControl INPUT id='root'",
-          "rect": [0, 0, 63, 24],
           "reason": "paint property change"
         },
         {

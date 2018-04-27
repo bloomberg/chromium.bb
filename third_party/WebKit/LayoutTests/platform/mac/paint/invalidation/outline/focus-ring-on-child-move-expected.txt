@@ -23,11 +23,6 @@
           "reason": "outline"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [96, 46, 308, 308],
-          "reason": "outline"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV id='child'",
           "rect": [300, 50, 20, 300],
           "reason": "geometry"

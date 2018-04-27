@@ -28,7 +28,7 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
+          "object": "LayoutImage IMG",
           "rect": [0, 0, 214, 232],
           "reason": "disappeared"
         },

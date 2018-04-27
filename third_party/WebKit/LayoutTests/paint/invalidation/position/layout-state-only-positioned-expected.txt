@@ -20,7 +20,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [0, 50, 106, 106],
-          "reason": "paint property change"
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 50, 106, 106],
+          "reason": "disappeared"
         }
       ]
     }

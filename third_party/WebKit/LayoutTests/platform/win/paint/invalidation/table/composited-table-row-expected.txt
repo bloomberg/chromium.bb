@@ -24,7 +24,7 @@
       "backgroundColor": "#FF0000",
       "paintInvalidations": [
         {
-          "object": "LayoutTableRow TR",
+          "object": "LayoutTableCell TD id='target'",
           "rect": [0, 0, 35, 23],
           "reason": "appeared"
         }

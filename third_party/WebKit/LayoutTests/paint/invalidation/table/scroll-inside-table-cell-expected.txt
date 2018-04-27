@@ -23,11 +23,6 @@
           "reason": "full"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
-          "rect": [314, 114, 435, 450],
-          "reason": "appeared"
-        },
-        {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative red'",
           "rect": [314, 114, 435, 450],
           "reason": "paint property change"

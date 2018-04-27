@@ -4,11 +4,14 @@
 
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+
+using testing::ElementsAre;
 
 namespace blink {
 
@@ -105,26 +108,47 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
       TestDisplayItem(filler2, kBackgroundType));
 
   auto* container1_layer = ToLayoutBoxModelObject(container1).Layer();
-  auto* content1_layer = ToLayoutBoxModelObject(content1).Layer();
   auto* filler1_layer = ToLayoutBoxModelObject(filler1).Layer();
   auto* container2_layer = ToLayoutBoxModelObject(container2).Layer();
-  auto* content2_layer = ToLayoutBoxModelObject(content2).Layer();
   auto* filler2_layer = ToLayoutBoxModelObject(filler2).Layer();
+  auto other_chunk_type = DisplayItem::PaintPhaseToDrawingType(
+      PaintPhase::kSelfBlockBackgroundOnly);
+  auto background_chunk_type = other_chunk_type;
+  auto other_chunk_state = GetLayoutView().FirstFragment().ContentsProperties();
+  auto background_chunk_state = other_chunk_state;
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      background_chunk_state =
+          GetLayoutView().FirstFragment().LocalBorderBoxProperties();
+    } else {
+      background_chunk_type = kDocumentBackgroundType;
+    }
+  }
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+  auto check_chunks = [&]() {
     // Check that new paint chunks were forced for |container1| and
     // |container2|.
-    const auto& paint_chunks =
-        RootPaintController().GetPaintArtifact().PaintChunks();
-    EXPECT_EQ(7u, paint_chunks.size());
-    EXPECT_EQ(background_chunk_client, &paint_chunks[0].id.client);
-    EXPECT_EQ(container1_layer, &paint_chunks[1].id.client);
-    EXPECT_EQ(content1_layer, &paint_chunks[2].id.client);
-    EXPECT_EQ(filler1_layer, &paint_chunks[3].id.client);
-    EXPECT_EQ(container2_layer, &paint_chunks[4].id.client);
-    EXPECT_EQ(content2_layer, &paint_chunks[5].id.client);
-    EXPECT_EQ(filler2_layer, &paint_chunks[6].id.client);
-  }
+    EXPECT_THAT(
+        RootPaintController().GetPaintArtifact().PaintChunks(),
+        ElementsAre(
+            PaintChunk(
+                0, 1,
+                PaintChunk::Id(*background_chunk_client, background_chunk_type),
+                background_chunk_state),
+            PaintChunk(1, 3,
+                       PaintChunk::Id(*container1_layer, other_chunk_type),
+                       other_chunk_state),
+            PaintChunk(3, 4, PaintChunk::Id(*filler1_layer, other_chunk_type),
+                       other_chunk_state),
+            PaintChunk(4, 6,
+                       PaintChunk::Id(*container2_layer, other_chunk_type),
+                       other_chunk_state),
+            PaintChunk(6, 7, PaintChunk::Id(*filler2_layer, other_chunk_type),
+                       other_chunk_state)));
+  };
+
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    check_chunks();
 
   ToHTMLElement(content1.GetNode())
       ->setAttribute(HTMLNames::styleAttr,
@@ -146,19 +170,9 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
       TestDisplayItem(content2, kBackgroundType),
       TestDisplayItem(filler2, kBackgroundType));
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    // We should still have the paint chunks forced by the cached subsequences.
-    Vector<PaintChunk> paint_chunks =
-        RootPaintController().GetPaintArtifact().PaintChunks();
-    EXPECT_EQ(7u, paint_chunks.size());
-    EXPECT_EQ(background_chunk_client, &paint_chunks[0].id.client);
-    EXPECT_EQ(container1_layer, &paint_chunks[1].id.client);
-    EXPECT_EQ(content1_layer, &paint_chunks[2].id.client);
-    EXPECT_EQ(filler1_layer, &paint_chunks[3].id.client);
-    EXPECT_EQ(container2_layer, &paint_chunks[4].id.client);
-    EXPECT_EQ(content2_layer, &paint_chunks[5].id.client);
-    EXPECT_EQ(filler2_layer, &paint_chunks[6].id.client);
-  }
+  // We should still have the paint chunks forced by the cached subsequences.
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    check_chunks();
 }
 
 TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange) {
