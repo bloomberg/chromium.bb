@@ -57,7 +57,7 @@ class CORE_EXPORT WorkerNavigator final
   String userAgent() const override;
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  private:
   explicit WorkerNavigator(const String&);

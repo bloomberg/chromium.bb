@@ -12,17 +12,17 @@ namespace blink {
 
 void ScriptWrappableVisitor::TraceWrappers(
     DOMWrapperMap<ScriptWrappable>* wrapper_map,
-    const ScriptWrappable* key) const {
+    const ScriptWrappable* key) {
   Visit(wrapper_map, key);
 }
 
 void ScriptWrappableVisitor::DispatchTraceWrappers(
-    const TraceWrapperBase* wrapper_base) const {
+    TraceWrapperBase* wrapper_base) {
   wrapper_base->TraceWrappers(this);
 }
 
 void ScriptWrappableVisitor::DispatchTraceWrappersForSupplement(
-    const TraceWrapperBaseForSupplement* wrapper_base) const {
+    TraceWrapperBaseForSupplement* wrapper_base) {
   wrapper_base->TraceWrappers(this);
 }
 }  // namespace blink

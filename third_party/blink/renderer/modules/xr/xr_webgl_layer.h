@@ -77,7 +77,7 @@ class XRWebGLLayer final : public XRLayer,
       std::unique_ptr<viz::SingleReleaseCallback>) override;
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  private:
   XRWebGLLayer(XRSession*,

@@ -118,7 +118,7 @@ void XRCanvasInputProvider::Trace(blink::Visitor* visitor) {
 }
 
 void XRCanvasInputProvider::TraceWrappers(
-    const blink::ScriptWrappableVisitor* visitor) const {
+    blink::ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(input_source_);
 }
 

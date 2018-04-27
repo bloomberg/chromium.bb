@@ -79,7 +79,7 @@ void AnimationWorkletGlobalScope::Trace(blink::Visitor* visitor) {
 }
 
 void AnimationWorkletGlobalScope::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   for (auto animator : animators_)
     visitor->TraceWrappers(animator.value);
 

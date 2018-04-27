@@ -62,7 +62,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
 
   ~ScriptLoader() override;
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override { return "ScriptLoader"; }
 
   enum LegacyTypeSupport {

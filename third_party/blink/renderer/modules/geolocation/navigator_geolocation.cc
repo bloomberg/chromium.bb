@@ -63,7 +63,7 @@ void NavigatorGeolocation::Trace(blink::Visitor* visitor) {
 }
 
 void NavigatorGeolocation::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(geolocation_);
   Supplement<Navigator>::TraceWrappers(visitor);
 }

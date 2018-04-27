@@ -70,7 +70,7 @@ void CSSRule::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-void CSSRule::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+void CSSRule::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   if (parent_is_rule_)
     visitor->TraceWrappersWithManualWriteBarrier(parent_rule_);
   else

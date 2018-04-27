@@ -53,7 +53,7 @@ class SVGAnimatedRect : public ScriptWrappable,
     ScriptWrappable::Trace(visitor);
   }
 
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
     SVGAnimatedProperty<SVGRect>::TraceWrappers(visitor);
     ScriptWrappable::TraceWrappers(visitor);
   }

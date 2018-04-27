@@ -182,7 +182,7 @@ class SVGListPropertyTearOffHelper : public SVGPropertyTearOff<ListProperty> {
     return CreateItemTearOff(value);
   }
 
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
     SVGPropertyTearOff<ListProperty>::TraceWrappers(visitor);
   }
 

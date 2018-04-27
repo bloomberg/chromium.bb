@@ -15,7 +15,7 @@ void ModuleTreeLinkerRegistry::Trace(blink::Visitor* visitor) {
 }
 
 void ModuleTreeLinkerRegistry::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   for (const auto& member : active_tree_linkers_)
     visitor->TraceWrappers(member);
 }

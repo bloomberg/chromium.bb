@@ -68,7 +68,7 @@ void ElementIntersectionObserverData::Trace(blink::Visitor* visitor) {
 }
 
 void ElementIntersectionObserverData::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   for (auto& entry : intersection_observations_) {
     visitor->TraceWrappers(entry.key);
   }

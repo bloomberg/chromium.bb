@@ -926,7 +926,7 @@ void NFC::Trace(blink::Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 
-void NFC::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+void NFC::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   for (const auto& callback : callbacks_.Values())
     visitor->TraceWrappers(callback);
   ScriptWrappable::TraceWrappers(visitor);

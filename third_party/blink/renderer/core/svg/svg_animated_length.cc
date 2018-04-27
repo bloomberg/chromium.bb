@@ -57,8 +57,7 @@ void SVGAnimatedLength::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-void SVGAnimatedLength::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+void SVGAnimatedLength::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   SVGAnimatedProperty<SVGLength>::TraceWrappers(visitor);
   ScriptWrappable::TraceWrappers(visitor);
 }

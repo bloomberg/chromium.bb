@@ -55,7 +55,7 @@ class SVGAnimatedPreserveAspectRatio
     ScriptWrappable::Trace(visitor);
   }
 
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
     SVGAnimatedProperty<SVGPreserveAspectRatio>::TraceWrappers(visitor);
     ScriptWrappable::TraceWrappers(visitor);
   }

@@ -50,8 +50,7 @@ void SVGAnimatedInteger::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-void SVGAnimatedInteger::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+void SVGAnimatedInteger::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   SVGAnimatedProperty<SVGInteger>::TraceWrappers(visitor);
   ScriptWrappable::TraceWrappers(visitor);
 }

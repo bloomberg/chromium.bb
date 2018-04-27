@@ -188,8 +188,7 @@ void LocalFileSystem::Trace(blink::Visitor* visitor) {
   Supplement<WorkerClients>::Trace(visitor);
 }
 
-void LocalFileSystem::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+void LocalFileSystem::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   Supplement<LocalFrame>::TraceWrappers(visitor);
   Supplement<WorkerClients>::TraceWrappers(visitor);
 }

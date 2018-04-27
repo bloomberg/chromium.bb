@@ -14,8 +14,7 @@ void GeolocationWatchers::Trace(blink::Visitor* visitor) {
   visitor->Trace(notifier_to_id_map_);
 }
 
-void GeolocationWatchers::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+void GeolocationWatchers::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   for (const auto& notifier : id_to_notifier_map_.Values())
     visitor->TraceWrappers(notifier);
   // |notifier_to_id_map_| is a HeapHashMap that is the inverse mapping of

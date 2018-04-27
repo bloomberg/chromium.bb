@@ -64,7 +64,7 @@ const AudioParamDescriptor*
 }
 
 void AudioWorkletProcessorDefinition::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(constructor_.Cast<v8::Value>());
   visitor->TraceWrappers(process_.Cast<v8::Value>());
 }

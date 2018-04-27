@@ -33,7 +33,7 @@ class ModulePendingScriptTreeClient final : public ModuleTreeClient {
   ModuleScript* GetModuleScript() const { return module_script_; }
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  private:
   ModulePendingScriptTreeClient();
@@ -65,7 +65,7 @@ class CORE_EXPORT ModulePendingScript : public PendingScript {
   }
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  private:
   ModulePendingScript(ScriptElementBase*,

@@ -233,7 +233,7 @@ void PaintWorkletGlobalScope::Trace(blink::Visitor* visitor) {
 }
 
 void PaintWorkletGlobalScope::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   for (auto definition : paint_definitions_)
     visitor->TraceWrappers(definition.value);
   MainThreadWorkletGlobalScope::TraceWrappers(visitor);

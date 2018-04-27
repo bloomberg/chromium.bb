@@ -59,7 +59,7 @@ class V8NodeFilterCondition final
 
   ~V8NodeFilterCondition();
   virtual void Trace(blink::Visitor* visitor) {}
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "V8NodeFilterCondition";
   }

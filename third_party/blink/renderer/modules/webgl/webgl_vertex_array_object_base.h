@@ -43,7 +43,7 @@ class WebGLVertexArrayObjectBase : public WebGLContextObject {
   void UnbindBuffer(WebGLBuffer*);
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  protected:
   WebGLVertexArrayObjectBase(WebGLRenderingContextBase*, VaoType);

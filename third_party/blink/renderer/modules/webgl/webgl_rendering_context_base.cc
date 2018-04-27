@@ -7859,7 +7859,7 @@ void WebGLRenderingContextBase::Trace(blink::Visitor* visitor) {
 }
 
 void WebGLRenderingContextBase::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(context_group_);
   visitor->TraceWrappers(bound_array_buffer_);
   visitor->TraceWrappers(renderbuffer_binding_);

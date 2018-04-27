@@ -19,7 +19,7 @@ CallbackFunctionBase::CallbackFunctionBase(
 }
 
 void CallbackFunctionBase::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(callback_function_);
 }
 

@@ -36,7 +36,7 @@ class CORE_EXPORT CustomElementDefinition
   virtual ~CustomElementDefinition();
 
   virtual void Trace(blink::Visitor*);
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {}
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {}
   const char* NameInHeapSnapshot() const override {
     return "CustomElementDefinition";
   }

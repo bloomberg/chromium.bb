@@ -80,7 +80,7 @@ class LockManager::LockRequestImpl final
   // Wrapper tracing is needed for callbacks. The reference chain is
   // NavigatorLocksImpl -> LockManager -> LockRequestImpl ->
   // V8LockGrantedCallback.
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappers(callback_);
   }
   const char* NameInHeapSnapshot() const override {
@@ -338,7 +338,7 @@ void LockManager::Trace(blink::Visitor* visitor) {
   visitor->Trace(held_locks_);
 }
 
-void LockManager::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+void LockManager::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   for (auto request : pending_requests_)
     visitor->TraceWrappers(request);
   ScriptWrappable::TraceWrappers(visitor);

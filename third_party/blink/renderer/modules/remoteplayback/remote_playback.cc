@@ -606,8 +606,7 @@ void RemotePlayback::Trace(blink::Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 
-void RemotePlayback::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+void RemotePlayback::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   for (auto callback : availability_callbacks_.Values())
     visitor->TraceWrappers(callback);
   EventTargetWithInlineData::TraceWrappers(visitor);

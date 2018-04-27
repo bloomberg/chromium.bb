@@ -71,7 +71,7 @@ class MODULES_EXPORT IDBDatabase final
                              v8::Isolate*);
   ~IDBDatabase() override;
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
   // Overwrites the database metadata, including object store and index
   // metadata. Used to pass metadata to the database when it is opened.

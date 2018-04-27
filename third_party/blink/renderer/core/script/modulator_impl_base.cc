@@ -255,8 +255,7 @@ void ModulatorImplBase::Trace(blink::Visitor* visitor) {
   visitor->Trace(dynamic_module_resolver_);
 }
 
-void ModulatorImplBase::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+void ModulatorImplBase::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(map_);
   visitor->TraceWrappers(tree_linker_registry_);
   Modulator::TraceWrappers(visitor);

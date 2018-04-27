@@ -80,7 +80,7 @@ class CORE_EXPORT EventTargetData final
   ~EventTargetData();
 
   void Trace(blink::Visitor*);
-  void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(ScriptWrappableVisitor*) const;
 
   EventListenerMap event_listener_map;
   std::unique_ptr<FiringEventIteratorVector> firing_event_iterators;
@@ -232,7 +232,7 @@ class CORE_EXPORT EventTargetWithInlineData : public EventTarget {
     EventTarget::Trace(visitor);
   }
 
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappers(event_target_data_);
     EventTarget::TraceWrappers(visitor);
   }

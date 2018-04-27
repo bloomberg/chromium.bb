@@ -74,7 +74,7 @@ class MutationObserver::V8DelegateImpl final
     ContextClient::Trace(visitor);
   }
 
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappers(callback_);
     MutationObserver::Delegate::TraceWrappers(visitor);
   }
@@ -379,8 +379,7 @@ void MutationObserver::Trace(blink::Visitor* visitor) {
   ContextClient::Trace(visitor);
 }
 
-void MutationObserver::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+void MutationObserver::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(delegate_);
   for (auto record : records_)
     visitor->TraceWrappers(record);

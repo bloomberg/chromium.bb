@@ -30,7 +30,7 @@ class PLATFORM_EXPORT CallbackFunctionBase
   virtual ~CallbackFunctionBase() = default;
 
   virtual void Trace(blink::Visitor* visitor) {}
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "CallbackFunctionBase";
   }

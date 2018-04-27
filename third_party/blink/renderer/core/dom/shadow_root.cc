@@ -294,7 +294,7 @@ void ShadowRoot::Trace(blink::Visitor* visitor) {
   DocumentFragment::Trace(visitor);
 }
 
-void ShadowRoot::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+void ShadowRoot::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(style_sheet_list_);
   DocumentFragment::TraceWrappers(visitor);
 }

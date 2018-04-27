@@ -30,7 +30,7 @@ class ModulatorImplBase : public Modulator {
  public:
   ~ModulatorImplBase() override;
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
   ExecutionContext* GetExecutionContext() const;
 

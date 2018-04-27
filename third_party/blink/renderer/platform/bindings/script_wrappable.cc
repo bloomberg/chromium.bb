@@ -39,8 +39,7 @@ v8::Local<v8::Object> ScriptWrappable::AssociateWithWrapper(
                                                   wrapper_type_info, wrapper);
 }
 
-void ScriptWrappable::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+void ScriptWrappable::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(main_world_wrapper_);
   DOMWrapperWorld::TraceWrappers(this, visitor);
 }

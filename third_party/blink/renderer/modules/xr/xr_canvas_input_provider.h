@@ -39,7 +39,7 @@ class XRCanvasInputProvider
   XRInputSource* GetInputSource();
 
   virtual void Trace(blink::Visitor*);
-  void TraceWrappers(const blink::ScriptWrappableVisitor*) const override;
+  void TraceWrappers(blink::ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "XRCanvasInputProvider";
   }

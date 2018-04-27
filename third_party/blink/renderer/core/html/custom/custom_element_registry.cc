@@ -117,7 +117,7 @@ void CustomElementRegistry::Trace(blink::Visitor* visitor) {
 }
 
 void CustomElementRegistry::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(reaction_stack_);
   for (auto definition : definitions_)
     visitor->TraceWrappers(definition);

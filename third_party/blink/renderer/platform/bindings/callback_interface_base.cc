@@ -22,7 +22,7 @@ CallbackInterfaceBase::CallbackInterfaceBase(
 }
 
 void CallbackInterfaceBase::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(callback_object_);
 }
 

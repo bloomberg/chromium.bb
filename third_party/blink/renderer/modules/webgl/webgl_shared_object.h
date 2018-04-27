@@ -54,7 +54,7 @@ class WebGLSharedObject : public WebGLObject {
 
   void Trace(blink::Visitor*) override;
 
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  protected:
   explicit WebGLSharedObject(WebGLRenderingContextBase*);

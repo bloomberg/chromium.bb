@@ -4861,7 +4861,7 @@ void Element::Trace(blink::Visitor* visitor) {
   ContainerNode::Trace(visitor);
 }
 
-void Element::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+void Element::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   if (HasRareData()) {
     visitor->TraceWrappersWithManualWriteBarrier(GetElementRareData());
   }

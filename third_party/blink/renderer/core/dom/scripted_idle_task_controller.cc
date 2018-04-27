@@ -89,7 +89,7 @@ void ScriptedIdleTaskController::V8IdleTask::Trace(blink::Visitor* visitor) {
 }
 
 void ScriptedIdleTaskController::V8IdleTask::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(callback_);
   ScriptedIdleTaskController::IdleTask::TraceWrappers(visitor);
 }
@@ -115,7 +115,7 @@ void ScriptedIdleTaskController::Trace(blink::Visitor* visitor) {
 }
 
 void ScriptedIdleTaskController::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   for (const auto& idle_task : idle_tasks_.Values()) {
     visitor->TraceWrappers(idle_task);
   }

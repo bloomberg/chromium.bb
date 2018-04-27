@@ -39,8 +39,7 @@ void PerformanceMark::Trace(blink::Visitor* visitor) {
   PerformanceEntry::Trace(visitor);
 }
 
-void PerformanceMark::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+void PerformanceMark::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(detail_);
   PerformanceEntry::TraceWrappers(visitor);
 }

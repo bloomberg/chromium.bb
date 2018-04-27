@@ -847,8 +847,7 @@ class CORE_EXPORT Element : public ContainerNode {
       const AttributeModificationParams&);
 
   void Trace(blink::Visitor*) override;
-
-  void TraceWrappers(const ScriptWrappableVisitor*) const override;
+  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
   SpellcheckAttributeState GetSpellcheckAttributeState() const;
 

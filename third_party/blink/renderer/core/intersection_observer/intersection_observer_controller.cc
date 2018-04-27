@@ -106,7 +106,7 @@ void IntersectionObserverController::Trace(blink::Visitor* visitor) {
 }
 
 void IntersectionObserverController::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
+    ScriptWrappableVisitor* visitor) const {
   for (const auto& observer : pending_intersection_observers_)
     visitor->TraceWrappers(observer);
   for (const auto& observer : intersection_observers_being_invoked_)

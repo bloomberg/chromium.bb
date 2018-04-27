@@ -153,7 +153,7 @@ void WebGLProgram::Trace(blink::Visitor* visitor) {
   WebGLSharedPlatform3DObject::Trace(visitor);
 }
 
-void WebGLProgram::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+void WebGLProgram::TraceWrappers(ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(vertex_shader_);
   visitor->TraceWrappers(fragment_shader_);
   WebGLSharedPlatform3DObject::TraceWrappers(visitor);

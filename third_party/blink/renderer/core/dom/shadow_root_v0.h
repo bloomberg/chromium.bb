@@ -86,7 +86,7 @@ class CORE_EXPORT ShadowRootV0 final
     visitor->Trace(node_to_insertion_points_);
   }
 
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const {
     visitor->TraceWrappers(shadow_root_);
   }
 
