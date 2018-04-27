@@ -15,7 +15,7 @@ namespace jingle_glue {
 class MockStream : public rtc::StreamInterface {
  public:
   MockStream();
-  virtual ~MockStream();
+  ~MockStream() override;
 
   MOCK_CONST_METHOD0(GetState, rtc::StreamState());
 
