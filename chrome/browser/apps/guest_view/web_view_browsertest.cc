@@ -4627,7 +4627,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoResizeMessages) {
       guest->GetRenderWidgetHostView()->GetRenderWidgetHost()));
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewBrowserPluginSpecificTest, AutoResizeMessages) {
+// Flaky under MSan: crbug.com/837757
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_BP_AutoResizeMessages DISABLED_AutoResizeMessages
+#else
+#define MAYBE_BP_AutoResizeMessages AutoResizeMessages
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewBrowserPluginSpecificTest,
+                       MAYBE_BP_AutoResizeMessages) {
   LoadAppWithGuest("web_view/simple");
   content::WebContents* embedder = GetEmbedderWebContents();
   content::WebContents* guest = GetGuestWebContents();
