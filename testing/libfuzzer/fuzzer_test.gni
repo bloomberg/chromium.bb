@@ -93,12 +93,12 @@ template("fuzzer_test") {
       }
 
       # Generate .options file.
-      config_name = target_name + ".options"
-      action(config_name) {
+      config_file_name = target_name + ".options"
+      action(config_file_name) {
         script = "//testing/libfuzzer/gen_fuzzer_config.py"
         args = [
           "--config",
-          rebase_path("$root_build_dir/" + config_name, root_build_dir),
+          rebase_path("$root_build_dir/" + config_file_name, root_build_dir),
         ]
 
         if (defined(invoker.dict)) {
@@ -115,32 +115,36 @@ template("fuzzer_test") {
         }
 
         outputs = [
-          "$root_build_dir/$config_name",
+          "$root_build_dir/$config_file_name",
         ]
       }
-      test_deps += [ ":" + config_name ]
+      test_deps += [ ":" + config_file_name ]
     }
 
     # Generate .owners file (if skip_owners is not true).
-    # FIXME: Add support for sources parsing in deps attribute.
-    if (invoker.sources != [] &&
-        (!defined(invoker.skip_owners) || !invoker.skip_owners)) {
-      owners_name = target_name + ".owners"
-      action(owners_name) {
-        script = "//testing/libfuzzer/gen_fuzzer_owners.py"
-        args = [
-          "--owners",
-          rebase_path("$root_build_dir/" + owners_name, root_build_dir),
-          "--sources",
-        ]
-        args += rebase_path(invoker.sources, root_build_dir)
+    owners_file_name = target_name + ".owners"
+    action(owners_file_name) {
+      script = "//testing/libfuzzer/gen_fuzzer_owners.py"
+      args = [
+        "--owners",
+        rebase_path("$root_build_dir/" + owners_file_name, root_build_dir),
+      ]
 
-        outputs = [
-          "$root_build_dir/$owners_name",
-        ]
+      if (defined(invoker.sources) && invoker.sources != []) {
+        args += [ "--sources" ] + rebase_path(invoker.sources, root_build_dir)
+      } else if (defined(invoker.deps) && invoker.deps != []) {
+        args += [
+                  "--build-dir",
+                  rebase_path("$root_build_dir/", root_build_dir),
+                  "--deps",
+                ] + invoker.deps
       }
-      test_deps += [ ":" + owners_name ]
+
+      outputs = [
+        "$root_build_dir/$owners_file_name",
+      ]
     }
+    test_deps += [ ":" + owners_file_name ]
 
     test(target_name) {
       forward_variables_from(invoker,
