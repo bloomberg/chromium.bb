@@ -10,8 +10,8 @@ enum ModelId {
   UNKNOWN,
   TAB_DISCARDER,
   POWER_MANAGER
-}
+};
 
 struct ModelSpec {
   ModelId id;
-}
+};
