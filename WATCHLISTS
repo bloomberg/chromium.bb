@@ -1646,7 +1646,8 @@
   # Please keep alphabetical
   ##############################################################################
   'WATCHLISTS': {
-    'about_flags': ['asvitkine+watch@chromium.org'],
+    'about_flags': ['asvitkine+watch@chromium.org',
+                    'jmedley+watch@chromium.org'],
     'accelerator_table': ['derat+watch@chromium.org',
                           'yusukes+watch@chromium.org'],
     'accessibility': ['aboxhall+watch@chromium.org',
@@ -2052,7 +2053,7 @@
                   'extensions-reviews@chromium.org'],
     'feature_policy': ['loonybear@chromium.org',
                        'iclelland+watch@chromium.org',
-                       'jmedley@chromium.org'],
+                       'jmedley+watch@chromium.org'],
     'fileapi': ['kinuko+fileapi@chromium.org',
                 'nhiroki@chromium.org',
                 'tzik@chromium.org'],
@@ -2254,7 +2255,7 @@
     'remoting': ['chromoting-reviews@chromium.org'],
     'rlz_id': ['gab+watch@chromium.org',
                'robertshield+watch@chromium.org'],
-    'runtime_enabled_features': ['jmedley@chromium.org'],
+    'runtime_enabled_features': ['jmedley+watch@chromium.org'],
     'safe_browsing': ['timvolodine@chromium.org',
                       'vakh+watch@chromium.org'],
     'safe_browsing_db': ['timvolodine@chromium.org',
@@ -2275,7 +2276,7 @@
                       'creis+watch@chromium.org',
                       'nasko+codewatch@chromium.org'],
     'smb': ['cros-enterprise-lax+smbwatch@chromium.org'],
-    'source_idls': ['jmedley@chromium.org'],
+    'source_idls': ['jmedley+watch@chromium.org'],
     'spellcheck': ['groby+spellwatch@chromium.org',
                    'rlp+watch@chromium.org',
                    'rouslan+spell@chromium.org',
