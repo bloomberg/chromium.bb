@@ -7,6 +7,8 @@
 
 #include "ash/ash_export.h"
 
+#include "third_party/skia/include/core/SkColor.h"
+
 typedef unsigned int SkColor;
 
 namespace ash {
@@ -33,8 +35,8 @@ ASH_EXPORT extern const float kInactiveFrameButtonIconAlphaRatio;
 ASH_EXPORT extern const float kInactiveFrameButtonIconAlphaRatioTouch;
 
 // The border color of keyboard focus for launcher items and system tray.
-extern const SkColor kFocusBorderColor;
-extern const int kFocusBorderThickness;
+constexpr SkColor kFocusBorderColor = SK_ColorTRANSPARENT;
+constexpr int kFocusBorderThickness = 0;
 
 ASH_EXPORT extern const int kDefaultLargeCursorSize;
 
