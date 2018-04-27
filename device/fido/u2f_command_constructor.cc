@@ -112,4 +112,8 @@ base::Optional<std::vector<uint8_t>> ConstructU2fSignCommand(
   return command.GetEncodedCommand();
 }
 
+base::Optional<std::vector<uint8_t>> ConstructBogusU2fRegistrationCommand() {
+  return ConstructU2fRegisterCommand(kBogusAppParam, kBogusChallenge);
+}
+
 }  // namespace device

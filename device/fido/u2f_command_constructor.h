@@ -63,6 +63,9 @@ base::Optional<std::vector<uint8_t>> ConstructU2fSignCommand(
     base::span<const uint8_t> key_handle,
     bool check_only = false);
 
+COMPONENT_EXPORT(DEVICE_FIDO)
+base::Optional<std::vector<uint8_t>> ConstructBogusU2fRegistrationCommand();
+
 }  // namespace device
 
 #endif  // DEVICE_FIDO_U2F_COMMAND_CONSTRUCTOR_H_
