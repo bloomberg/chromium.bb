@@ -1770,6 +1770,26 @@
     "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
+  "WebUsbAskForUrls": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "WebUsbAskForUrls": ["[*.]google.com"] },
+    "pref_mappings": [
+      { "pref": "profile.managed_web_usb_ask_for_urls" }
+    ],
+
+    "note": "TODO(reillyg): Add indicator tests. TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+  },
+
+  "WebUsbBlockedForUrls": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "WebUsbBlockedForUrls": ["[*.]google.com"] },
+    "pref_mappings": [
+      { "pref": "profile.managed_web_usb_blocked_for_urls" }
+    ],
+
+    "note": "TODO(reillyg): Add indicator tests. TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+  },
+
   "Disable3DAPIs": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "Disable3DAPIs": true },
