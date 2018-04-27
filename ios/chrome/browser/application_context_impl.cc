@@ -105,6 +105,11 @@ void ApplicationContextImpl::StartTearDown() {
   if (local_state_) {
     local_state_->CommitPendingWrite();
   }
+
+  if (network_context_) {
+    web::WebThread::DeleteSoon(web::WebThread::IO, FROM_HERE,
+                               network_context_owner_.release());
+  }
 }
 
 void ApplicationContextImpl::PostDestroyThreads() {
@@ -189,6 +194,15 @@ net::URLRequestContextGetter*
 ApplicationContextImpl::GetSystemURLRequestContext() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return ios_chrome_io_thread_->system_url_request_context_getter();
+}
+
+network::mojom::NetworkContext*
+ApplicationContextImpl::GetSystemNetworkContext() {
+  if (!network_context_) {
+    network_context_owner_ = std::make_unique<web::NetworkContextOwner>(
+        GetSystemURLRequestContext(), &network_context_);
+  }
+  return network_context_.get();
 }
 
 const std::string& ApplicationContextImpl::GetApplicationLocale() {

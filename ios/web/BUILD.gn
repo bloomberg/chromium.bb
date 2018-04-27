@@ -62,6 +62,7 @@ source_set("web") {
     "crw_navigation_item_storage.mm",
     "features.mm",
     "load_committed_details.cc",
+    "network_context_owner.cc",
     "service_manager_connection_impl.cc",
     "service_manager_connection_impl.h",
     "service_manager_context.h",
@@ -207,6 +208,7 @@ source_set("ios_web_general_unittests") {
   sources = [
     "browser_state_unittest.cc",
     "history_state_util_unittest.mm",
+    "network_context_owner_unittest.cc",
     "service_manager_connection_impl_unittest.cc",
     "test/web_test_unittest.mm",
     "url_scheme_util_unittest.mm",

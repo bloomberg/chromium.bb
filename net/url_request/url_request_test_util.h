@@ -128,12 +128,16 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override;
 
+  // see NotifyContextShuttingDown() in the base class.
+  void NotifyContextShuttingDown();
+
  protected:
   ~TestURLRequestContextGetter() override;
 
  private:
   const scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
   std::unique_ptr<TestURLRequestContext> context_;
+  bool is_shut_down_ = false;
 };
 
 //-----------------------------------------------------------------------------

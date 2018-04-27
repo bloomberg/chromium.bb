@@ -37,6 +37,12 @@ namespace net_log {
 class ChromeNetLog;
 }
 
+namespace network {
+namespace mojom {
+class NetworkContext;
+}
+}  // namespace network
+
 namespace network_time {
 class NetworkTimeTracker;
 }
@@ -83,6 +89,10 @@ class ApplicationContext {
 
   // Gets the URL request context associated with this application.
   virtual net::URLRequestContextGetter* GetSystemURLRequestContext() = 0;
+
+  // Gets the NetworkContext object associated with the same context as
+  // GetSystemURLRequestContext().
+  virtual network::mojom::NetworkContext* GetSystemNetworkContext() = 0;
 
   // Gets the locale used by the application.
   virtual const std::string& GetApplicationLocale() = 0;

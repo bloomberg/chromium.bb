@@ -165,9 +165,21 @@ TestURLRequestContextGetter::TestURLRequestContextGetter(
 TestURLRequestContextGetter::~TestURLRequestContextGetter() = default;
 
 TestURLRequestContext* TestURLRequestContextGetter::GetURLRequestContext() {
+  if (is_shut_down_)
+    return nullptr;
+
   if (!context_.get())
     context_.reset(new TestURLRequestContext);
   return context_.get();
+}
+
+void TestURLRequestContextGetter::NotifyContextShuttingDown() {
+  // This should happen before call to base NotifyContextShuttingDown() per that
+  // method's doc comments.
+  is_shut_down_ = true;
+
+  URLRequestContextGetter::NotifyContextShuttingDown();
+  context_ = nullptr;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
