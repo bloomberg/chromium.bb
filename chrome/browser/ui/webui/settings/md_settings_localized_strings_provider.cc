@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -1795,19 +1796,6 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
                        Profile* profile) {
   LocalizedString localized_strings[] = {
     {"privacyPageTitle", IDS_SETTINGS_PRIVACY},
-    {"linkDoctorPref", IDS_SETTINGS_LINKDOCTOR_PREF},
-    {"searchSuggestPref", IDS_SETTINGS_SUGGEST_PREF},
-    {"networkPredictionEnabled",
-     IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESCRIPTION},
-    {"safeBrowsingEnableProtection",
-     IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION},
-    {"spellingPref", IDS_SETTINGS_SPELLING_PREF},
-    {"spellingDescription", IDS_SETTINGS_SPELLING_DESCRIPTION},
-#if defined(OS_CHROMEOS)
-    {"enableLogging", IDS_SETTINGS_ENABLE_LOGGING_DIAGNOSTIC_AND_USAGE_DATA},
-#else
-    {"enableLogging", IDS_SETTINGS_ENABLE_LOGGING},
-#endif
     {"doNotTrack", IDS_SETTINGS_ENABLE_DO_NOT_TRACK},
     {"doNotTrackDialogTitle", IDS_SETTINGS_ENABLE_DO_NOT_TRACK_DIALOG_TITLE},
     {"enableContentProtectionAttestation",
@@ -1827,16 +1815,73 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 
+  // Select strings depending on unified-consent enabledness.
+  bool is_unified_consent_enabled = IsUnifiedConsentEnabled(profile);
+  if (is_unified_consent_enabled) {
+    LocalizedString conditional_localized_strings[] = {
+        {"searchSuggestPref", IDS_SETTINGS_SUGGEST_PREF_UNIFIED_CONSENT},
+        {"searchSuggestPrefDesc",
+         IDS_SETTINGS_SUGGEST_PREF_DESC_UNIFIED_CONSENT},
+        {"safeBrowsingEnableExtendedReporting",
+         IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_UNIFIED_CONSENT},
+        {"safeBrowsingEnableExtendedReportingDesc",
+         IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_DESC_UNIFIED_CONSENT},
+        {"networkPredictionEnabled",
+         IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_LABEL_UNIFIED_CONSENT},
+        {"networkPredictionEnabledDesc",
+         IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESC_UNIFIED_CONSENT},
+        {"linkDoctorPref", IDS_SETTINGS_LINKDOCTOR_PREF_UNIFIED_CONSENT},
+        {"linkDoctorPrefDesc",
+         IDS_SETTINGS_LINKDOCTOR_PREF_DESC_UNIFIED_CONSENT},
+        {"safeBrowsingEnableProtection",
+         IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION_UNIFIED_CONSENT},
+        {"safeBrowsingEnableProtectionDesc",
+         IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION_DESC_UNIFIED_CONSENT},
+        {"spellingPref", IDS_SETTINGS_SPELLING_PREF_UNIFIED_CONSENT},
+        {"spellingDescription",
+         IDS_SETTINGS_SPELLING_DESCRIPTION_UNIFIED_CONSENT},
+        {"enableLogging", IDS_SETTINGS_ENABLE_LOGGING_UNIFIED_CONSENT},
+        {"enableLoggingDesc", IDS_SETTINGS_ENABLE_LOGGING_DESC_UNIFIED_CONSENT},
+    };
+    AddLocalizedStringsBulk(html_source, conditional_localized_strings,
+                            arraysize(conditional_localized_strings));
+  } else {
+    LocalizedString conditional_localized_strings[] = {
+      {"searchSuggestPref", IDS_SETTINGS_SUGGEST_PREF},
+      {"searchSuggestPrefDesc", IDS_SETTINGS_EMPTY_STRING},
+      {"safeBrowsingEnableExtendedReportingDesc", IDS_SETTINGS_EMPTY_STRING},
+      {"networkPredictionEnabled",
+       IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_LABEL},
+      {"networkPredictionEnabledDesc", IDS_SETTINGS_EMPTY_STRING},
+      {"linkDoctorPref", IDS_SETTINGS_LINKDOCTOR_PREF},
+      {"linkDoctorPrefDesc", IDS_SETTINGS_EMPTY_STRING},
+      {"safeBrowsingEnableProtection",
+       IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION},
+      {"safeBrowsingEnableProtectionDesc", IDS_SETTINGS_EMPTY_STRING},
+      {"spellingPref", IDS_SETTINGS_SPELLING_PREF},
+      {"spellingDescription", IDS_SETTINGS_SPELLING_DESCRIPTION},
+#if defined(OS_CHROMEOS)
+      {"enableLogging", IDS_SETTINGS_ENABLE_LOGGING_DIAGNOSTIC_AND_USAGE_DATA},
+#else
+      {"enableLogging", IDS_SETTINGS_ENABLE_LOGGING},
+#endif
+      {"enableLoggingDesc", IDS_SETTINGS_EMPTY_STRING},
+    };
+    AddLocalizedStringsBulk(html_source, conditional_localized_strings,
+                            arraysize(conditional_localized_strings));
+
+    html_source->AddLocalizedString(
+        "safeBrowsingEnableExtendedReporting",
+        safe_browsing::ChooseOptInTextResource(
+            *profile->GetPrefs(),
+            IDS_SETTINGS_SAFEBROWSING_ENABLE_EXTENDED_REPORTING,
+            IDS_SETTINGS_SAFEBROWSING_ENABLE_SCOUT_REPORTING));
+  }
+
   html_source->AddBoolean(
       "importantSitesInCbd",
       base::FeatureList::IsEnabled(features::kImportantSitesInCbd));
 
-  html_source->AddLocalizedString(
-      "safeBrowsingEnableExtendedReporting",
-      safe_browsing::ChooseOptInTextResource(
-          *profile->GetPrefs(),
-          IDS_SETTINGS_SAFEBROWSING_ENABLE_EXTENDED_REPORTING,
-          IDS_SETTINGS_SAFEBROWSING_ENABLE_SCOUT_REPORTING));
   html_source->AddString(
       "improveBrowsingExperience",
       l10n_util::GetStringFUTF16(

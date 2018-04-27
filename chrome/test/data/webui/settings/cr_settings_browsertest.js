@@ -805,6 +805,41 @@ GEN('#endif  // defined(USE_NSS_CERTS)');
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
+function CrSettingsPersonalizationOptionsTest() {}
+
+CrSettingsPersonalizationOptionsTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/privacy_page/personalization_options.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    'test_util.js',
+    '../test_browser_proxy.js',
+    'test_privacy_page_browser_proxy.js',
+    'personalization_options_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsPersonalizationOptionsTest', 'NonOfficialBuild', function() {
+  settings_personalization_options.registerTests();
+  mocha.run();
+});
+
+GEN('#if defined(GOOGLE_CHROME_BUILD)');
+TEST_F('CrSettingsPersonalizationOptionsTest', 'OfficialBuild', function() {
+  settings_personalization_options.registerOfficialBuildTests();
+  mocha.run();
+});
+GEN('#endif');
+
+/**
+ * Test fixture for chrome/browser/resources/settings/privacy_page/.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
 function CrSettingsPrivacyPageTest() {}
 
 CrSettingsPrivacyPageTest.prototype = {

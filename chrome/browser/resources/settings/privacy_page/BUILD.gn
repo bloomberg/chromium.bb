@@ -6,9 +6,21 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
+    ":personalization_options",
     ":privacy_page",
     ":privacy_page_browser_proxy",
   ]
+}
+
+js_library("personalization_options") {
+  deps = [
+    ":privacy_page_browser_proxy",
+    "..:page_visibility",
+    "..:route",
+    "../controls:settings_toggle_button",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
+  ]
+  externs_list = [ "$externs_path/settings_private.js" ]
 }
 
 js_library("privacy_page_browser_proxy") {
