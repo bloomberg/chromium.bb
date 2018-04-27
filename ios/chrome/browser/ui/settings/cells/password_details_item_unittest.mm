@@ -24,7 +24,7 @@ TEST_F(PasswordDetailsItemTest, ConfigureCell) {
   EXPECT_TRUE([cell isMemberOfClass:[PasswordDetailsCell class]]);
   EXPECT_NSEQ(nil, cell.textLabel.text);
   NSString* text = @"Test text";
-  NSString* obscuredText = @"●●●●●●●●●";
+  NSString* obscuredText = @"•••••••••";
 
   item.text = text;
   [item configureCell:cell];

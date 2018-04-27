@@ -41,13 +41,13 @@ const CGFloat kVerticalPadding = 16;
   [super configureCell:cell];
   if (self.showingText) {
     cell.textLabel.text = self.text;
-    cell.accessibilityLabel = self.text;
+    cell.textLabel.accessibilityLabel = self.text;
   } else {
     NSString* obscuredText = [@"" stringByPaddingToLength:[self.text length]
-                                                withString:@"●"
-                                           startingAtIndex:0];
+                                               withString:@"•"
+                                          startingAtIndex:0];
     cell.textLabel.text = obscuredText;
-    cell.accessibilityLabel =
+    cell.textLabel.accessibilityLabel =
         l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_HIDDEN_LABEL);
   }
 }
@@ -91,7 +91,7 @@ const CGFloat kVerticalPadding = 16;
 - (void)prepareForReuse {
   [super prepareForReuse];
   self.textLabel.text = nil;
-  self.accessibilityLabel = nil;
+  self.textLabel.accessibilityLabel = nil;
 }
 
 // Implements -layoutSubviews as per instructions in documentation for

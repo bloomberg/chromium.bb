@@ -1016,8 +1016,8 @@ PasswordForm CreateSampleFormWithIndex(int index) {
       performAction:grey_tap()];
 
   // Tap the password cell to display the context menu.
-  [GetInteractionForPasswordDetailItem(
-      grey_accessibilityLabel(@"●●●●●●●●●●●●●●●●●")) performAction:grey_tap()];
+  [GetInteractionForPasswordDetailItem(grey_text(@"•••••••••••••••••"))
+      performAction:grey_tap()];
 
   // Make sure to capture the reauthentication module in a variable until the
   // end of the test, otherwise it might get deleted too soon and break the
@@ -1059,8 +1059,8 @@ PasswordForm CreateSampleFormWithIndex(int index) {
       performAction:grey_tap()];
 
   // Tap the password cell to display the context menu.
-  [GetInteractionForPasswordDetailItem(
-      grey_accessibilityLabel(@"●●●●●●●●●●●●●●●●●")) performAction:grey_tap()];
+  [GetInteractionForPasswordDetailItem(grey_text(@"•••••••••••••••••"))
+      performAction:grey_tap()];
 
   // Make sure to capture the reauthentication module in a variable until the
   // end of the test, otherwise it might get deleted too soon and break the
@@ -1087,8 +1087,8 @@ PasswordForm CreateSampleFormWithIndex(int index) {
       performAction:grey_tap()];
 
   // Check that the password is masked again.
-  [GetInteractionForPasswordDetailItem(grey_accessibilityLabel(
-      @"●●●●●●●●●●●●●●●●●")) assertWithMatcher:grey_notNil()];
+  [GetInteractionForPasswordDetailItem(grey_text(@"•••••••••••••••••"))
+      assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
@@ -1167,7 +1167,8 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 
   [GetInteractionForPasswordDetailItem(PasswordHeader())
       assertWithMatcher:grey_layout(@[ Below() ], CopyUsernameButton())];
-  id<GREYMatcher> passwordCell = grey_accessibilityLabel(@"●●●●●●●●●●●●●●●●●");
+  id<GREYMatcher> passwordCell = grey_accessibilityLabel(
+      l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_HIDDEN_LABEL));
   [GetInteractionForPasswordDetailItem(passwordCell)
       assertWithMatcher:grey_layout(@[ Below() ], PasswordHeader())];
   [GetInteractionForPasswordDetailItem(CopyPasswordButton())
