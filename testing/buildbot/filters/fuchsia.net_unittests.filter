@@ -25,7 +25,7 @@
 -DiskCacheEntryTest.ExternalAsyncIONoBuffer
 
 # Flaky, https://crbug.com/813631.
--URLRequestQuicTest.CancelPushIfCached_AllCached
+-URLRequestQuicTest.CancelPushIfCached_*
 
 # Flaky, https://crbug.com/814811.
 -URLRequestTest.NetworkDelegateProxyError
