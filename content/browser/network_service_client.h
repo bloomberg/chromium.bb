@@ -23,8 +23,10 @@ class NetworkServiceClient : public network::mojom::NetworkServiceClient {
                       uint32_t routing_id,
                       uint32_t request_id,
                       const GURL& url,
+                      const GURL& site_for_cookies,
                       bool first_auth_attempt,
                       const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+                      int32_t resource_type,
                       network::mojom::AuthChallengeResponderPtr
                           auth_challenge_responder) override;
   void OnCertificateRequested(

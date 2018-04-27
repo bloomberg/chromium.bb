@@ -339,6 +339,11 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
     return &keepalive_statistics_recorder_;
   }
 
+  // Checks if needs to prompt for login.
+  bool DoNotPromptForLogin(ResourceType resource_type,
+                           const GURL& url,
+                           const GURL& site_for_cookies);
+
  private:
   class ScheduledResourceRequestAdapter;
   friend class ResourceDispatcherHostTest;

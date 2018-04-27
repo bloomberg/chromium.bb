@@ -481,7 +481,8 @@ void URLLoader::OnAuthRequired(net::URLRequest* unused,
       base::BindOnce(&URLLoader::DeleteSelf, base::Unretained(this)));
   network_service_client_->OnAuthRequired(
       process_id_, render_frame_id_, request_id_, url_request_->url(),
-      first_auth_attempt_, auth_info, std::move(auth_challenge_responder));
+      url_request_->site_for_cookies(), first_auth_attempt_, auth_info,
+      resource_type_, std::move(auth_challenge_responder));
 
   first_auth_attempt_ = false;
 }

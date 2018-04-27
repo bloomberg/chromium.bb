@@ -128,9 +128,6 @@
 # http://crbug.com/783990
 # Add support for http auth.
 -DownloadExtensionTest.DownloadExtensionTest_Download_AuthBasic_Fail
-# BlockCrossdomainPromptForSubresources is flaky, see
-# https://logs.chromium.org/v/?s=chromium%2Fbuildbucket%2Fcr-buildbucket.appspot.com%2F8952857968271661120%2F%2B%2Fsteps%2Fnetwork_service_browser_tests__with_patch_%2F0%2Flogs%2FLoginPromptBrowserTest.BlockCrossdomainPromptForSubresources%2F0
--LoginPromptBrowserTest.BlockCrossdomainPromptForSubresources
 -LoginPromptBrowserTest.NoLoginPromptForFavicon
 -LoginPromptBrowserTest.NoLoginPromptForXHRWithBadCredentials
 
