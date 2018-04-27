@@ -1318,6 +1318,10 @@ bool FrameLoader::ShouldPerformFragmentNavigation(bool is_form_submission,
          !IsReloadLoadType(load_type) &&
          load_type != kFrameLoadTypeBackForward &&
          url.HasFragmentIdentifier() &&
+         // For provisional LocalFrame, there is no real document loaded and
+         // the initial empty document should not be considered, so there is
+         // no way to get a same-document load in this case.
+         !frame_->IsProvisional() &&
          EqualIgnoringFragmentIdentifier(frame_->GetDocument()->Url(), url)
          // We don't want to just scroll if a link from within a frameset is
          // trying to reload the frameset into _top.

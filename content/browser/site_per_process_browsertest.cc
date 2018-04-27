@@ -2359,7 +2359,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // parent frame.
   RenderFrameDeletedObserver deleted_observer2(
       root->child_at(0)->current_frame_host());
-  GURL about_blank_url("about:blank");
+  GURL about_blank_url("about:blank#foo");
   NavigateIframeToURL(shell()->web_contents(), "child-0", about_blank_url);
   EXPECT_TRUE(observer.last_navigation_succeeded());
   EXPECT_EQ(about_blank_url, observer.last_navigation_url());
@@ -2394,7 +2394,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // own context. It should stay in the same SiteInstance as before, not the
   // parent one.
   TestFrameNavigationObserver frame_observer(child);
-  ExecuteScriptAsync(child, "window.location.href = 'about:blank';");
+  ExecuteScriptAsync(child, "window.location.href = 'about:blank#foo';");
   frame_observer.Wait();
   EXPECT_EQ(about_blank_url, child->current_url());
 
