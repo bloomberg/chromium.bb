@@ -91,21 +91,21 @@ bool MockLaunchd::MakeABundle(const base::FilePath& dst,
   return bundle.get();
 }
 
-MockLaunchd::MockLaunchd(const base::FilePath& file,
-                         base::MessageLoop* loop,
-                         bool create_socket,
-                         bool as_service)
+MockLaunchd::MockLaunchd(
+    const base::FilePath& file,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    bool create_socket,
+    bool as_service)
     : file_(file),
       pipe_name_(GetServiceProcessChannel().name),
-      message_loop_(loop),
+      main_task_runner_(std::move(main_task_runner)),
       create_socket_(create_socket),
       as_service_(as_service),
       restart_called_(false),
       remove_called_(false),
       checkin_called_(false),
       write_called_(false),
-      delete_called_(false) {
-}
+      delete_called_(false) {}
 
 MockLaunchd::~MockLaunchd() {
 }
@@ -227,8 +227,8 @@ CFDictionaryRef MockLaunchd::CopyDictionaryByCheckingIn(CFErrorRef* error) {
 
 bool MockLaunchd::RemoveJob(CFStringRef label, CFErrorRef* error) {
   remove_called_ = true;
-  message_loop_->task_runner()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+  main_task_runner_->PostTask(FROM_HERE,
+                              base::MessageLoop::QuitWhenIdleClosure());
   return true;
 }
 
@@ -237,8 +237,8 @@ bool MockLaunchd::RestartJob(Domain domain,
                              CFStringRef name,
                              CFStringRef session_type) {
   restart_called_ = true;
-  message_loop_->task_runner()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+  main_task_runner_->PostTask(FROM_HERE,
+                              base::MessageLoop::QuitWhenIdleClosure());
   return true;
 }
 
