@@ -291,7 +291,7 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
   in_progress_manager_ = std::make_unique<download::InProgressDownloadManager>(
       this, base::BindRepeating(&IsOriginSecure));
   in_progress_manager_->Initialize(
-      browser_context_->GetPath(),
+      IsOffTheRecord() ? base::FilePath() : browser_context_->GetPath(),
       base::BindRepeating(
           &DownloadManagerImpl::PostInitialization, weak_factory_.GetWeakPtr(),
           DOWNLOAD_INITIALIZATION_DEPENDENCY_IN_PROGRESS_CACHE));

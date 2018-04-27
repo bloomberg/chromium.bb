@@ -24,7 +24,7 @@ namespace download {
 // right away.
 class InProgressCacheImpl : public InProgressCache {
  public:
-  explicit InProgressCacheImpl(
+  InProgressCacheImpl(
       const base::FilePath& cache_file_path,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~InProgressCacheImpl() override;
