@@ -293,7 +293,6 @@ jumbo_static_library("test_support") {
     "//base/third_party/dynamic_annotations",
     "//cc:test_support",
     "//cc/blink",
-    "//cc/ipc",
     "//components/services/leveldb/public/interfaces",
     "//components/viz/host",
     "//components/viz/service",
@@ -1673,7 +1672,6 @@ test("content_unittests") {
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//cc:test_support",
-    "//cc/ipc",
     "//components/cbor",
     "//components/network_session_configurator/browser",
     "//components/network_session_configurator/common",
@@ -2106,7 +2104,6 @@ test("content_perftests") {
   deps = [
     "//base/test:test_support",
     "//cc",
-    "//cc/ipc",
     "//content/browser:for_content_tests",
     "//content/public/browser",
     "//content/public/common",

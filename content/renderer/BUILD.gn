@@ -493,7 +493,6 @@ target(link_target_type, "renderer") {
     "//cc",
     "//cc/animation",
     "//cc/blink",
-    "//cc/ipc",
     "//cc/paint",
     "//components/discardable_memory/client",
     "//components/metrics",

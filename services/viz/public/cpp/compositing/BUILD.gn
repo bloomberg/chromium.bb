@@ -25,3 +25,26 @@ source_set("tests") {
     "//ui/gfx/ipc/color:color",
   ]
 }
+
+source_set("perftests") {
+  testonly = true
+
+  sources = [
+    "struct_traits_perftest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//components/viz/common",
+    "//components/viz/test:test_support",
+    "//gpu/ipc/common:struct_traits",
+    "//mojo/public/cpp/bindings",
+    "//services/viz/public/interfaces",
+    "//skia",
+    "//testing/perf",
+    "//ui/gfx",
+    "//ui/gfx:test_support",
+    "//ui/gfx/geometry",
+  ]
+}

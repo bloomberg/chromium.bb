@@ -1,7 +1,6 @@
 # Please consult components/viz/README.md about allowable dependencies.
 
 include_rules = [
-  "+cc/ipc",
   "+components/viz/common/features.h",
   "-components/viz/common/switches.h",
   "+gpu/command_buffer/client",

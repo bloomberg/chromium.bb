@@ -6,7 +6,6 @@ mojom = "//content/common/input/synchronous_compositor.mojom"
 public_headers = [ "//content/common/input/sync_compositor_messages.h" ]
 traits_headers = [ "//content/common/input/sync_compositor_messages.h" ]
 deps = [
-  "//cc/ipc",
   "//ui/gfx/ipc",
 ]
 type_mappings = [

@@ -46,7 +46,6 @@ public_deps = [
   # includes from //content/common and //content/public/common, this isn't a
   # transitive allowance, so those targets' own public_deps aren't included in
   # the set of implied dependencies.
-  "//cc/ipc",
   "//content/common:buildflags",
   "//media",
   "//media/base/ipc",
