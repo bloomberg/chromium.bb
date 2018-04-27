@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -43,7 +44,7 @@ FileDescriptorWatcher::Controller::~Controller() {
 
 class FileDescriptorWatcher::Controller::Watcher
     : public MessagePumpForIO::FdWatcher,
-      public MessageLoop::DestructionObserver {
+      public MessageLoopCurrent::DestructionObserver {
  public:
   Watcher(WeakPtr<Controller> controller, MessagePumpForIO::Mode mode, int fd);
   ~Watcher() override;
@@ -57,7 +58,7 @@ class FileDescriptorWatcher::Controller::Watcher
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
-  // MessageLoop::DestructionObserver:
+  // MessageLoopCurrent::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override;
 
   // Used to instruct the MessageLoopForIO to stop watching the file descriptor.
@@ -103,13 +104,13 @@ FileDescriptorWatcher::Controller::Watcher::Watcher(
 
 FileDescriptorWatcher::Controller::Watcher::~Watcher() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  MessageLoopForIO::current()->RemoveDestructionObserver(this);
+  MessageLoopCurrentForIO::Get()->RemoveDestructionObserver(this);
 }
 
 void FileDescriptorWatcher::Controller::Watcher::StartWatching() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!MessageLoopForIO::current()->WatchFileDescriptor(
+  if (!MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
           fd_, false, mode_, &file_descriptor_watcher_, this)) {
     // TODO(wez): Ideally we would [D]CHECK here, or propagate the failure back
     // to the caller, but there is no guarantee that they haven't already
@@ -118,7 +119,7 @@ void FileDescriptorWatcher::Controller::Watcher::StartWatching() {
   }
 
   if (!registered_as_destruction_observer_) {
-    MessageLoopForIO::current()->AddDestructionObserver(this);
+    MessageLoopCurrentForIO::Get()->AddDestructionObserver(this);
     registered_as_destruction_observer_ = true;
   }
 }

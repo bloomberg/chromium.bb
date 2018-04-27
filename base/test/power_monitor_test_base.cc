@@ -5,6 +5,7 @@
 #include "base/test/power_monitor_test_base.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
@@ -13,7 +14,7 @@ namespace base {
 
 PowerMonitorTestSource::PowerMonitorTestSource()
     : test_on_battery_power_(false) {
-  DCHECK(MessageLoop::current())
+  DCHECK(MessageLoopCurrent::Get())
       << "PowerMonitorTestSource requires a MessageLoop.";
 }
 

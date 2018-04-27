@@ -96,7 +96,7 @@ class BASE_EXPORT MessageLoopCurrent {
 
   // Forwards to MessageLoop::task_runner().
   // DEPRECATED(https://crbug.com/616447): Use ThreadTaskRunnerHandle::Get()
-  // instead of MessageLoop::current()->task_runner().
+  // instead of MessageLoopCurrent::Get()->task_runner().
   const scoped_refptr<SingleThreadTaskRunner>& task_runner() const;
 
   // Forwards to MessageLoop::SetTaskRunner().

@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
@@ -433,7 +434,7 @@ class GLibLoopRunner : public RefCounted<GLibLoopRunner> {
 
 void TestGLibLoopInternal(EventInjector* injector) {
   // Allow tasks to be processed from 'native' event loops.
-  MessageLoop::current()->SetNestableTasksAllowed(true);
+  MessageLoopCurrent::Get()->SetNestableTasksAllowed(true);
   scoped_refptr<GLibLoopRunner> runner = new GLibLoopRunner();
 
   int task_count = 0;
@@ -466,7 +467,7 @@ void TestGLibLoopInternal(EventInjector* injector) {
 
 void TestGtkLoopInternal(EventInjector* injector) {
   // Allow tasks to be processed from 'native' event loops.
-  MessageLoop::current()->SetNestableTasksAllowed(true);
+  MessageLoopCurrent::Get()->SetNestableTasksAllowed(true);
   scoped_refptr<GLibLoopRunner> runner = new GLibLoopRunner();
 
   int task_count = 0;

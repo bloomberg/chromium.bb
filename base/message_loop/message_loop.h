@@ -333,7 +333,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
 // native UI message pumping.
 //
 // MessageLoopCurrentForUI is exposed statically on its thread via
-// MessageLoopForUI::current() to provide additional functionality.
+// MessageLoopCurrentForUI::Get() to provide additional functionality.
 //
 class BASE_EXPORT MessageLoopForUI : public MessageLoop {
  public:
@@ -381,7 +381,7 @@ static_assert(sizeof(MessageLoop) == sizeof(MessageLoopForUI),
 // native async IO message pumping.
 //
 // MessageLoopCurrentForIO is exposed statically on its thread via
-// MessageLoopForIO::current() to provide additional functionality.
+// MessageLoopCurrentForIO::Get() to provide additional functionality.
 //
 class BASE_EXPORT MessageLoopForIO : public MessageLoop {
  public:

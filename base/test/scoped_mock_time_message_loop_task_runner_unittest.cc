@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_pending_task.h"
 #include "base/time/time.h"
@@ -23,7 +24,7 @@ namespace base {
 namespace {
 
 TaskRunner* GetCurrentTaskRunner() {
-  return MessageLoop::current()->task_runner().get();
+  return MessageLoopCurrent::Get()->task_runner().get();
 }
 
 void AssignTrue(bool* out) {
@@ -41,7 +42,7 @@ class ScopedMockTimeMessageLoopTaskRunnerTest : public testing::Test {
  public:
   ScopedMockTimeMessageLoopTaskRunnerTest()
       : original_task_runner_(new TestMockTimeTaskRunner()) {
-    MessageLoop::current()->SetTaskRunner(original_task_runner_);
+    MessageLoopCurrent::Get()->SetTaskRunner(original_task_runner_);
   }
 
  protected:
