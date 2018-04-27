@@ -51,7 +51,9 @@ class ModulatorImplBase : public Modulator {
   ReferrerPolicy GetReferrerPolicy() override;
   const SecurityOrigin* GetSecurityOriginForFetch() override;
 
-  void FetchTree(const ModuleScriptFetchRequest&, ModuleTreeClient*) override;
+  void FetchTree(const KURL&,
+                 const ScriptFetchOptions&,
+                 ModuleTreeClient*) override;
   void FetchDescendantsForInlineScript(ModuleScript*,
                                        ModuleTreeClient*) override;
   void FetchSingle(const ModuleScriptFetchRequest&,

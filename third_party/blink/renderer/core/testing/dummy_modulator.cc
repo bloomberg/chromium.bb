@@ -68,7 +68,8 @@ base::SingleThreadTaskRunner* DummyModulator::TaskRunner() {
   return nullptr;
 };
 
-void DummyModulator::FetchTree(const ModuleScriptFetchRequest&,
+void DummyModulator::FetchTree(const KURL&,
+                               const ScriptFetchOptions&,
                                ModuleTreeClient*) {
   NOTREACHED();
 }

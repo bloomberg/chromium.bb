@@ -175,13 +175,12 @@ TEST_F(ModuleMapTest, sequentialRequests) {
   platform->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
 
   KURL url(NullURL(), "https://example.com/foo.js");
-  ModuleScriptFetchRequest module_request(url, kReferrerPolicyDefault,
-                                          ScriptFetchOptions());
 
   // First request
   TestSingleModuleClient* client = new TestSingleModuleClient;
-  Map()->FetchSingleModuleScript(
-      module_request, ModuleGraphLevel::kTopLevelModuleFetch, client);
+  Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
+                                 ModuleGraphLevel::kTopLevelModuleFetch,
+                                 client);
   Modulator()->ResolveFetches();
   EXPECT_FALSE(client->WasNotifyFinished())
       << "fetchSingleModuleScript shouldn't complete synchronously";
@@ -196,8 +195,9 @@ TEST_F(ModuleMapTest, sequentialRequests) {
 
   // Secondary request
   TestSingleModuleClient* client2 = new TestSingleModuleClient;
-  Map()->FetchSingleModuleScript(
-      module_request, ModuleGraphLevel::kTopLevelModuleFetch, client2);
+  Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
+                                 ModuleGraphLevel::kTopLevelModuleFetch,
+                                 client2);
   Modulator()->ResolveFetches();
   EXPECT_FALSE(client2->WasNotifyFinished())
       << "fetchSingleModuleScript shouldn't complete synchronously";
@@ -218,18 +218,18 @@ TEST_F(ModuleMapTest, concurrentRequestsShouldJoin) {
   platform->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
 
   KURL url(NullURL(), "https://example.com/foo.js");
-  ModuleScriptFetchRequest module_request(url, kReferrerPolicyDefault,
-                                          ScriptFetchOptions());
 
   // First request
   TestSingleModuleClient* client = new TestSingleModuleClient;
-  Map()->FetchSingleModuleScript(
-      module_request, ModuleGraphLevel::kTopLevelModuleFetch, client);
+  Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
+                                 ModuleGraphLevel::kTopLevelModuleFetch,
+                                 client);
 
   // Secondary request (which should join the first request)
   TestSingleModuleClient* client2 = new TestSingleModuleClient;
-  Map()->FetchSingleModuleScript(
-      module_request, ModuleGraphLevel::kTopLevelModuleFetch, client2);
+  Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
+                                 ModuleGraphLevel::kTopLevelModuleFetch,
+                                 client2);
 
   Modulator()->ResolveFetches();
   EXPECT_FALSE(client->WasNotifyFinished())

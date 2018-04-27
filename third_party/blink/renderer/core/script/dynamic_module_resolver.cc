@@ -206,15 +206,13 @@ void DynamicModuleResolver::ResolveDynamically(
   ScriptFetchOptions options(referrer_info.Nonce(), IntegrityMetadataSet(),
                              String(), referrer_info.ParserState(),
                              referrer_info.CredentialsMode());
-  ModuleScriptFetchRequest request(url, modulator_->GetReferrerPolicy(),
-                                   options);
 
   // Step 2.4. "Fetch a module script graph given url, settings object,
   // "script", and options. Wait until the algorithm asynchronously completes
   // with result."
   auto* tree_client =
       DynamicImportTreeClient::Create(url, modulator_.Get(), promise_resolver);
-  modulator_->FetchTree(request, tree_client);
+  modulator_->FetchTree(url, options, tree_client);
 
   // Steps 2.[5-8] are implemented at
   // DynamicImportTreeClient::NotifyModuleLoadFinished.

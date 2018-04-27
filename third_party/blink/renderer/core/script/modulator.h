@@ -101,7 +101,8 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   virtual ScriptState* GetScriptState() = 0;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
-  virtual void FetchTree(const ModuleScriptFetchRequest&,
+  virtual void FetchTree(const KURL&,
+                         const ScriptFetchOptions&,
                          ModuleTreeClient*) = 0;
 
   // Asynchronously retrieve a module script from the module map, or fetch it

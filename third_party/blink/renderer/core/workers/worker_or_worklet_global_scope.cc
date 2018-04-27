@@ -218,9 +218,7 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
 
   Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
   // Step 3. "Perform the internal module script graph fetching procedure ..."
-  ModuleScriptFetchRequest module_request(
-      module_url_record, modulator->GetReferrerPolicy(), options);
-  modulator->FetchTree(module_request, client);
+  modulator->FetchTree(module_url_record, options, client);
 }
 
 void WorkerOrWorkletGlobalScope::Trace(blink::Visitor* visitor) {

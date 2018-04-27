@@ -12,11 +12,12 @@
 
 namespace blink {
 
+class KURL;
 class Modulator;
-class ModuleScriptFetchRequest;
 class ModuleTreeClient;
 class ModuleTreeLinker;
 class ModuleScript;
+class ScriptFetchOptions;
 
 // ModuleTreeLinkerRegistry keeps active ModuleTreeLinkers alive.
 class CORE_EXPORT ModuleTreeLinkerRegistry
@@ -32,7 +33,8 @@ class CORE_EXPORT ModuleTreeLinkerRegistry
     return "ModuleTreeLinkerRegistry";
   }
 
-  ModuleTreeLinker* Fetch(const ModuleScriptFetchRequest&,
+  ModuleTreeLinker* Fetch(const KURL&,
+                          const ScriptFetchOptions&,
                           Modulator*,
                           ModuleTreeClient*);
   ModuleTreeLinker* FetchDescendantsForInlineScript(ModuleScript*,

@@ -51,7 +51,8 @@ const SecurityOrigin* ModulatorImplBase::GetSecurityOriginForFetch() {
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
 // [fetch-a-module-worker-script-tree]
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
-void ModulatorImplBase::FetchTree(const ModuleScriptFetchRequest& request,
+void ModulatorImplBase::FetchTree(const KURL& url,
+                                  const ScriptFetchOptions& options,
                                   ModuleTreeClient* client) {
   // <spec label="fetch-a-module-script-tree" step="2">Perform the internal
   // module script graph fetching procedure given url, settings object,
@@ -66,11 +67,7 @@ void ModulatorImplBase::FetchTree(const ModuleScriptFetchRequest& request,
   // of this algorithm specified custom perform the fetch steps, pass those
   // along as well.</spec>
 
-  // Note: "Fetch a module script graph" algorithm doesn't have "referrer" as
-  // its argument.
-  DCHECK(request.GetReferrer().IsNull());
-
-  tree_linker_registry_->Fetch(request, this, client);
+  tree_linker_registry_->Fetch(url, options, this, client);
 
   // <spec label="fetch-a-module-script-tree" step="3">When the internal module
   // script graph fetching procedure asynchronously completes with result,
