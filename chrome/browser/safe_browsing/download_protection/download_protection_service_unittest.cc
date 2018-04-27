@@ -2026,7 +2026,9 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadItemDestroyed) {
     // notification.
   }
 
-  EXPECT_TRUE(IsResult(DownloadCheckResult::UNKNOWN));
+  // When download is destroyed, no need to check for client download request
+  // result.
+  EXPECT_FALSE(has_result_);
   EXPECT_FALSE(HasClientDownloadRequest());
 }
 
@@ -2054,13 +2056,13 @@ TEST_F(DownloadProtectionServiceTest,
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
       .Times(0);
 
-  RunLoop run_loop;
   download_service_->CheckClientDownload(
-      item.get(), base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                             base::Unretained(this), run_loop.QuitClosure()));
+      item.get(),
+      base::BindRepeating(&DownloadProtectionServiceTest::SyncCheckDoneCallback,
+                          base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
 
-  run_loop.Run();
-  EXPECT_TRUE(IsResult(DownloadCheckResult::UNKNOWN));
+  EXPECT_FALSE(has_result_);
   EXPECT_FALSE(HasClientDownloadRequest());
 }
 

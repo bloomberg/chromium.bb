@@ -39614,6 +39614,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="25" label="REMOTE_FILE"/>
   <int value="26" label="SAMPLED_UNSUPPORTED_FILE"/>
   <int value="27" label="VERDICT_UNKNOWN"/>
+  <int value="28" label="DOWNLOAD_DESTROYED"/>
 </enum>
 
 <enum name="SBClientDownloadCheckResult">

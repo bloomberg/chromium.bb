@@ -57,7 +57,10 @@ class CheckClientDownloadRequest
   bool ShouldSampleUnsupportedFile(const base::FilePath& filename);
   void Start();
   void StartTimeout();
-  void Cancel();
+
+  // |download_destroyed| indicates if cancellation is due to the destruction of
+  // the download item.
+  void Cancel(bool download_destroyed);
   void OnDownloadDestroyed(download::DownloadItem* download) override;
   void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
   static bool IsSupportedDownload(const download::DownloadItem& item,

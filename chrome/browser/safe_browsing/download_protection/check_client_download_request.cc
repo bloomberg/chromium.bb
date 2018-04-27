@@ -155,7 +155,7 @@ void CheckClientDownloadRequest::StartTimeout() {
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&CheckClientDownloadRequest::Cancel,
-                     weakptr_factory_.GetWeakPtr()),
+                     weakptr_factory_.GetWeakPtr(), false),
       base::TimeDelta::FromMilliseconds(
           service_->download_request_timeout_ms()));
 }
@@ -163,7 +163,7 @@ void CheckClientDownloadRequest::StartTimeout() {
 // Canceling a request will cause us to always report the result as
 // DownloadCheckResult::UNKNOWN unless a pending request is about to call
 // FinishRequest.
-void CheckClientDownloadRequest::Cancel() {
+void CheckClientDownloadRequest::Cancel(bool download_destroyed) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   cancelable_task_tracker_.TryCancelAll();
   if (loader_.get()) {
@@ -176,7 +176,9 @@ void CheckClientDownloadRequest::Cancel() {
   // reference to this object.  We'll eventually wind up in some method on
   // the UI thread that will call FinishRequest() again.  If FinishRequest()
   // is called a second time, it will be a no-op.
-  FinishRequest(DownloadCheckResult::UNKNOWN, REASON_REQUEST_CANCELED);
+  FinishRequest(DownloadCheckResult::UNKNOWN, download_destroyed
+                                                  ? REASON_DOWNLOAD_DESTROYED
+                                                  : REASON_REQUEST_CANCELED);
   // Calling FinishRequest might delete this object, we may be deleted by
   // this point.
 }
@@ -184,7 +186,7 @@ void CheckClientDownloadRequest::Cancel() {
 // download::DownloadItem::Observer implementation.
 void CheckClientDownloadRequest::OnDownloadDestroyed(
     download::DownloadItem* download) {
-  Cancel();
+  Cancel(/*download_destroyed=*/true);
   DCHECK(item_ == NULL);
 }
 
@@ -1061,7 +1063,8 @@ void CheckClientDownloadRequest::FinishRequest(
              << " result:" << static_cast<int>(result);
     UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats", reason,
                               REASON_MAX);
-    callback_.Run(result);
+    if (reason != REASON_DOWNLOAD_DESTROYED)
+      callback_.Run(result);
     item_->RemoveObserver(this);
     item_ = NULL;
     DownloadProtectionService* service = service_;
