@@ -52,10 +52,7 @@ namespace blink {
 using namespace HTMLNames;
 
 inline static bool HasVerticalAppearance(HTMLInputElement* input) {
-  DCHECK(input->GetLayoutObject());
-  const ComputedStyle& slider_style = input->GetLayoutObject()->StyleRef();
-
-  return slider_style.Appearance() == kSliderVerticalPart;
+  return input->ComputedStyleRef().Appearance() == kSliderVerticalPart;
 }
 
 inline SliderThumbElement::SliderThumbElement(Document& document)
@@ -346,6 +343,7 @@ inline SliderContainerElement::SliderContainerElement(Document& document)
       touch_started_(false),
       sliding_direction_(kNoMove) {
   UpdateTouchEventHandlerRegistry();
+  SetHasCustomStyleCallbacks();
 }
 
 DEFINE_NODE_FACTORY(SliderContainerElement)
@@ -495,6 +493,16 @@ void SliderContainerElement::DidMoveToNewDocument(Document& old_document) {
 void SliderContainerElement::RemoveAllEventListeners() {
   Node::RemoveAllEventListeners();
   has_touch_event_handler_ = false;
+}
+
+scoped_refptr<ComputedStyle>
+SliderContainerElement::CustomStyleForLayoutObject() {
+  HTMLInputElement* input = HostInput();
+  DCHECK(input);
+  scoped_refptr<ComputedStyle> style = OriginalStyleForLayoutObject();
+  style->SetFlexDirection(HasVerticalAppearance(input) ? EFlexDirection::kColumn
+                                                       : EFlexDirection::kRow);
+  return style;
 }
 
 }  // namespace blink
