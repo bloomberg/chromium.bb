@@ -10,6 +10,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/cancelable_callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/debug/task_annotator.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -175,7 +176,7 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
     internal::TaskQueueImpl* task_queue;
     WorkType work_type;
   };
-  using NonNestableTaskDeque = WTF::Deque<NonNestableTask, 8>;
+  using NonNestableTaskDeque = base::circular_deque<NonNestableTask>;
 
   // We have to track rentrancy because we support nested runloops but the
   // selector interface is unaware of those.  This struct keeps track off all
