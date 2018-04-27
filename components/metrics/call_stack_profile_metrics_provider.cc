@@ -58,6 +58,7 @@ const ProcessPhase
 // with them.
 struct ProfilesState {
   ProfilesState(const CallStackProfileParams& params,
+                base::TimeTicks start_timestamp,
                 StackSamplingProfiler::CallStackProfiles profiles);
   ProfilesState(ProfilesState&&);
   ProfilesState& operator=(ProfilesState&&);
@@ -65,6 +66,9 @@ struct ProfilesState {
   // The metrics-related parameters provided to
   // CallStackProfileMetricsProvider::GetProfilerCallback().
   CallStackProfileParams params;
+
+  // The time at which the profile collection was started.
+  base::TimeTicks start_timestamp;
 
   // The call stack profiles collected by the profiler.
   StackSamplingProfiler::CallStackProfiles profiles;
@@ -74,8 +78,11 @@ struct ProfilesState {
 };
 
 ProfilesState::ProfilesState(const CallStackProfileParams& params,
+                             base::TimeTicks start_timestamp,
                              StackSamplingProfiler::CallStackProfiles profiles)
-    : params(params), profiles(std::move(profiles)) {}
+    : params(params),
+      start_timestamp(start_timestamp),
+      profiles(std::move(profiles)) {}
 
 ProfilesState::ProfilesState(ProfilesState&&) = default;
 
@@ -171,7 +178,7 @@ void PendingProfiles::CollectProfilesIfCollectionEnabled(
   // since the start of collection for this profile.
   if (!collection_enabled_ ||
       (!last_collection_disable_time_.is_null() &&
-       last_collection_disable_time_ >= profiles.params.start_timestamp)) {
+       last_collection_disable_time_ >= profiles.start_timestamp)) {
     return;
   }
 
@@ -199,20 +206,17 @@ PendingProfiles::~PendingProfiles() {}
 
 // Will be invoked on either the main thread or the profiler's thread. Provides
 // the profiles to PendingProfiles to append, if the collecting state allows.
-base::Optional<StackSamplingProfiler::SamplingParams>
-ReceiveCompletedProfilesImpl(
-    CallStackProfileParams* params,
+void ReceiveCompletedProfilesImpl(
+    const CallStackProfileParams& params,
+    base::TimeTicks start_timestamp,
     StackSamplingProfiler::CallStackProfiles profiles) {
   PendingProfiles::GetInstance()->CollectProfilesIfCollectionEnabled(
-      ProfilesState(*params, std::move(profiles)));
-  return base::Optional<StackSamplingProfiler::SamplingParams>();
+      ProfilesState(params, start_timestamp, std::move(profiles)));
 }
 
 // Invoked on an arbitrary thread. Ignores the provided profiles.
-base::Optional<StackSamplingProfiler::SamplingParams> IgnoreCompletedProfiles(
-    StackSamplingProfiler::CallStackProfiles profiles) {
-  return base::Optional<StackSamplingProfiler::SamplingParams>();
-}
+void IgnoreCompletedProfiles(
+    StackSamplingProfiler::CallStackProfiles profiles) {}
 
 // Functions to encode protobufs ----------------------------------------------
 
@@ -407,22 +411,23 @@ CallStackProfileMetricsProvider::~CallStackProfileMetricsProvider() {
 
 StackSamplingProfiler::CompletedCallback
 CallStackProfileMetricsProvider::GetProfilerCallbackForBrowserProcess(
-    CallStackProfileParams* params) {
+    const CallStackProfileParams& params) {
   // Ignore the profiles if the collection is disabled. If the collection state
   // changes while collecting, this will be detected by the callback and
   // profiles will be ignored at that point.
   if (!PendingProfiles::GetInstance()->IsCollectionEnabled())
     return base::Bind(&IgnoreCompletedProfiles);
 
-  params->start_timestamp = base::TimeTicks::Now();
-  return base::Bind(&ReceiveCompletedProfilesImpl, params);
+  return base::Bind(&ReceiveCompletedProfilesImpl, params,
+                    base::TimeTicks::Now());
 }
 
 // static
 void CallStackProfileMetricsProvider::ReceiveCompletedProfiles(
-    CallStackProfileParams* params,
+    const CallStackProfileParams& params,
+    base::TimeTicks profile_start_time,
     base::StackSamplingProfiler::CallStackProfiles profiles) {
-  ReceiveCompletedProfilesImpl(params, std::move(profiles));
+  ReceiveCompletedProfilesImpl(params, profile_start_time, std::move(profiles));
 }
 
 void CallStackProfileMetricsProvider::OnRecordingEnabled() {

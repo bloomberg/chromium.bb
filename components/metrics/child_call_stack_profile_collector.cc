@@ -40,11 +40,11 @@ ChildCallStackProfileCollector::~ChildCallStackProfileCollector() {}
 
 base::StackSamplingProfiler::CompletedCallback
 ChildCallStackProfileCollector::GetProfilerCallback(
-    const CallStackProfileParams& params) {
+    const CallStackProfileParams& params,
+    base::TimeTicks profile_start_time) {
   return base::Bind(&ChildCallStackProfileCollector::Collect,
                     // This class has lazy instance lifetime.
-                    base::Unretained(this), params,
-                    base::TimeTicks::Now());
+                    base::Unretained(this), params, profile_start_time);
 }
 
 void ChildCallStackProfileCollector::SetParentProfileCollector(
@@ -67,16 +67,13 @@ void ChildCallStackProfileCollector::SetParentProfileCollector(
   profiles_.clear();
 }
 
-base::Optional<base::StackSamplingProfiler::SamplingParams>
-ChildCallStackProfileCollector::Collect(
+void ChildCallStackProfileCollector::Collect(
     const CallStackProfileParams& params,
     base::TimeTicks start_timestamp,
     std::vector<CallStackProfile> profiles) {
   // Impl function is used as it needs to PostTask() to itself on a different
   // thread - which only works with a void return value.
   CollectImpl(params, start_timestamp, std::move(profiles));
-  // Empty return value indicates that collection should not be re-started.
-  return base::Optional<base::StackSamplingProfiler::SamplingParams>();
 }
 
 void ChildCallStackProfileCollector::CollectImpl(

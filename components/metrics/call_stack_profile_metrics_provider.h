@@ -42,14 +42,15 @@ class CallStackProfileMetricsProvider : public MetricsProvider {
   // parameters for general browser process sampling. The callback should be
   // immediately passed to the StackSamplingProfiler, and should not be reused.
   static base::StackSamplingProfiler::CompletedCallback
-  GetProfilerCallbackForBrowserProcess(CallStackProfileParams* params);
+  GetProfilerCallbackForBrowserProcess(const CallStackProfileParams& params);
 
   // Provides completed stack profiles to the metrics provider. Intended for use
   // when receiving profiles over IPC. In-process StackSamplingProfiler users
   // should instead use a variant of GetProfilerCallback*(). |profiles| is not
   // const& because it must be passed with std::move.
   static void ReceiveCompletedProfiles(
-      CallStackProfileParams* params,
+      const CallStackProfileParams& params,
+      base::TimeTicks profile_start_time,
       base::StackSamplingProfiler::CallStackProfiles profiles);
 
   // MetricsProvider:
