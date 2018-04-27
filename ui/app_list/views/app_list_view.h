@@ -31,7 +31,6 @@ class Screen;
 
 namespace ui {
 class AnimationMetricsReporter;
-class ImplicitAnimationObserver;
 }
 
 namespace app_list {
@@ -219,9 +218,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   bool drag_started_from_peeking() const { return drag_started_from_peeking_; }
 
-  void SetIsIgnoringScrollEvents(bool is_ignoring);
-  bool is_ignoring_scroll_events() const { return is_ignoring_scroll_events_; }
-
   void set_onscreen_keyboard_shown(bool onscreen_keyboard_shown) {
     onscreen_keyboard_shown_ = onscreen_keyboard_shown;
   }
@@ -323,6 +319,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // histograms.
   void RecordFolderMetrics();
 
+  // Returns true if scroll events should be ignored.
+  bool ShouldIgnoreScrollEvents();
+
   AppListViewDelegate* delegate_;  // Weak. Owned by AppListService.
   AppListModel* const model_;      // Not Owned.
   SearchModel* const search_model_;  // Not Owned.
@@ -398,17 +397,11 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   const std::unique_ptr<ui::AnimationMetricsReporter>
       state_animation_metrics_reporter_;
 
-  // Whether to ignore the scroll events.
-  bool is_ignoring_scroll_events_ = false;
-
   // Whether the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;
 
   // Whether the home launcher feature is enabled.
   const bool is_home_launcher_enabled_;
-
-  // Observes the completion of scroll animation.
-  std::unique_ptr<ui::ImplicitAnimationObserver> scroll_animation_observer_;
 
   // TODO(b/77637813): Remove when pulling Assistant out of the launcher.
   // Reference to AshAssistantController. Owned by Shell.
