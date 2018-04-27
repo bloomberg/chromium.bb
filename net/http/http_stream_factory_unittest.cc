@@ -165,14 +165,14 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
 };
 
 // HttpStreamFactory subclass that can wait until a preconnect is complete.
-class MockHttpStreamFactoryImplForPreconnect : public HttpStreamFactory {
+class MockHttpStreamFactoryForPreconnect : public HttpStreamFactory {
  public:
-  explicit MockHttpStreamFactoryImplForPreconnect(HttpNetworkSession* session)
+  explicit MockHttpStreamFactoryForPreconnect(HttpNetworkSession* session)
       : HttpStreamFactory(session),
         preconnect_done_(false),
         waiting_for_preconnect_(false) {}
 
-  ~MockHttpStreamFactoryImplForPreconnect() override {}
+  ~MockHttpStreamFactoryForPreconnect() override {}
 
   void WaitForPreconnects() {
     while (!preconnect_done_) {
@@ -358,8 +358,8 @@ void PreconnectHelperForURL(int num_streams,
                             const GURL& url,
                             HttpNetworkSession* session) {
   HttpNetworkSessionPeer peer(session);
-  MockHttpStreamFactoryImplForPreconnect* mock_factory =
-      new MockHttpStreamFactoryImplForPreconnect(session);
+  MockHttpStreamFactoryForPreconnect* mock_factory =
+      new MockHttpStreamFactoryForPreconnect(session);
   peer.SetHttpStreamFactory(std::unique_ptr<HttpStreamFactory>(mock_factory));
 
   HttpRequestInfo request;
@@ -2746,7 +2746,7 @@ TEST_F(HttpStreamFactoryTest, RequestBidirectionalStreamImplFailure) {
 }
 
 #if defined(OS_ANDROID)
-// Verify HttpStreamFactoryImplJob passes socket tag along properly and that
+// Verify HttpStreamFactory::Job passes socket tag along properly and that
 // SpdySessions have unique socket tags (e.g. one sessions should not be shared
 // amongst streams with different socket tags).
 TEST_F(HttpStreamFactoryTest, Tag) {
@@ -2884,7 +2884,7 @@ TEST_F(HttpStreamFactoryTest, Tag) {
                    HttpNetworkSession::NORMAL_SOCKET_POOL)));
 }
 
-// Verify HttpStreamFactoryImplJob passes socket tag along properly to QUIC
+// Verify HttpStreamFactory::Job passes socket tag along properly to QUIC
 // sessions and that QuicSessions have unique socket tags (e.g. one sessions
 // should not be shared amongst streams with different socket tags).
 TEST_P(HttpStreamFactoryBidirectionalQuicTest, Tag) {
