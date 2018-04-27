@@ -246,12 +246,9 @@
 -VirtualKeyboardStateTest.*
 -VirtualKeyboardWebContentTest.*
 
-# Also fails with mus. http://crbug.com/755318.
--WebViewScrollBubbling/WebViewGuestScrollTouchTest.*
-
-# Also fails with mus. http://crbug.com/755328
--WebViewFocusBrowserPluginSpecificTest.*
--WebViewSizeTest.*
+# Timeouts in content::WaitForChildFrameSurfaceReady()
+# Crashes in viz::HostFrameSinkManager::RegisterFrameSinkId()
+# http://crbug.com/755328
 -WebViewTest.*
 
 # Sending invalid FrameSinkIds crbug.com/796999
@@ -287,7 +284,9 @@
 -PresentationReceiverWindowViewBrowserTest.ChromeOSHardwareFullscreenButton
 
 # RenderFrameMetadata observation not supported: https://crbug.com/820974
+-WebViewFocusBrowserPluginSpecificTest.*
 -WebViewGuestScrollLatchingTest.ScrollLatchingPreservedInGuests
+-WebViewScrollBubbling/WebViewGuestScrollTouchTest.*
 -WebViewScrollGuestContentBrowserPluginSpecificTest.OverscrollControllerSeesConsumedScrollsInGuest
 -WebViewScrollBubbling/WebViewGuestScrollTest.TestGuestWheelScrollsBubble/*
 
