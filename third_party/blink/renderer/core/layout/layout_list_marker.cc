@@ -114,23 +114,6 @@ bool LayoutListMarker::IsImage() const {
   return image_ && !image_->ErrorOccurred();
 }
 
-LayoutRect LayoutListMarker::LocalSelectionRect() const {
-  InlineBox* box = InlineBoxWrapper();
-  if (!box)
-    return LayoutRect(LayoutPoint(), Size());
-  RootInlineBox& root = InlineBoxWrapper()->Root();
-  const ComputedStyle* block_style = root.Block().Style();
-  LayoutUnit new_logical_top =
-      block_style->IsFlippedBlocksWritingMode()
-          ? InlineBoxWrapper()->LogicalBottom() - root.SelectionBottom()
-          : root.SelectionTop() - InlineBoxWrapper()->LogicalTop();
-  return block_style->IsHorizontalWritingMode()
-             ? LayoutRect(LayoutUnit(), new_logical_top, Size().Width(),
-                          root.SelectionHeight())
-             : LayoutRect(new_logical_top, LayoutUnit(), root.SelectionHeight(),
-                          Size().Height());
-}
-
 void LayoutListMarker::Paint(const PaintInfo& paint_info,
                              const LayoutPoint& paint_offset) const {
   ListMarkerPainter(*this).Paint(paint_info, paint_offset);
