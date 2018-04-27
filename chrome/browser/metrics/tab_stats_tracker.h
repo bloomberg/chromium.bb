@@ -10,13 +10,16 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "chrome/browser/metrics/tab_stats_data_store.h"
+#include "chrome/browser/metrics/tab_stats_tracker_delegate.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/metrics/daily_event.h"
@@ -26,7 +29,6 @@ class PrefRegistrySimple;
 class PrefService;
 
 namespace metrics {
-
 FORWARD_DECLARE_TEST(TabStatsTrackerBrowserTest,
                      TabDeletionGetsHandledProperly);
 
@@ -53,12 +55,19 @@ class TabStatsTracker : public TabStripModelObserver,
   // Registers prefs used to track tab stats.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  void SetDelegateForTesting(
+      std::unique_ptr<TabStatsTrackerDelegate> new_delegate);
+
   // Accessors.
   const TabStatsDataStore::TabsStats& tab_stats() const;
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(TabStatsTrackerBrowserTest,
                            TabDeletionGetsHandledProperly);
+#if defined(OS_WIN)
+  FRIEND_TEST_ALL_PREFIXES(TabStatsTrackerBrowserTest,
+                           TestCalculateAndRecordNativeWindowVisibilities);
+#endif
 
   // The UmaStatsReportingDelegate is responsible for delivering statistics
   // reported by the TabStatsTracker via UMA.
@@ -146,6 +155,12 @@ class TabStatsTracker : public TabStripModelObserver,
   // Functions to call when a WebContents get destroyed.
   void OnWebContentsDestroyed(content::WebContents* web_contents);
 
+#if defined(OS_WIN)
+  // Function to call aura_extra::ComputeNativeWindowOcclusionStatus() and
+  // record the Visibility of all Chrome browser windows on Windows.
+  void CalculateAndRecordNativeWindowVisibilities();
+#endif
+
   // The name of the histogram used to report that the daily event happened.
   static const char kTabStatsDailyEventHistogramName[];
 
@@ -157,6 +172,9 @@ class TabStatsTracker : public TabStripModelObserver,
   // The delegate that reports the events.
   std::unique_ptr<UmaStatsReportingDelegate> reporting_delegate_;
 
+  // Delegate to collect data;
+  std::unique_ptr<TabStatsTrackerDelegate> delegate_;
+
   // The tab stats.
   std::unique_ptr<TabStatsDataStore> tab_stats_data_store_;
 
@@ -166,6 +184,12 @@ class TabStatsTracker : public TabStripModelObserver,
   // The timer used to periodically check if the daily event should be
   // triggered.
   base::RepeatingTimer timer_;
+
+#if defined(OS_WIN)
+  // The timer used to periodically calculate the occlusion status of native
+  // windows on Windows.
+  base::RepeatingTimer native_window_occlusion_timer_;
+#endif
 
   // The timers used to analyze how tabs are used during a given interval of
   // time.
@@ -221,6 +245,12 @@ class TabStatsTracker::UmaStatsReportingDelegate {
   void ReportUsageDuringInterval(
       const TabStatsDataStore::TabsStateDuringIntervalMap& interval_map,
       base::TimeDelta interval);
+
+#if defined(OS_WIN)
+  void RecordNativeWindowVisibilities(size_t num_occluded,
+                                      size_t num_visible,
+                                      size_t num_hidden);
+#endif
 
  protected:
   // Generates the name of the histograms that will track tab usage during a
