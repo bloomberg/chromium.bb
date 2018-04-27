@@ -470,6 +470,24 @@
             ]
         }
     ],
+    "AutofillUpstreamUpdatePromptExplanation": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillUpstreamUpdatePromptExplanation"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillUpstreamUseGooglePayOnAndroidBranding": [
         {
             "platforms": [
