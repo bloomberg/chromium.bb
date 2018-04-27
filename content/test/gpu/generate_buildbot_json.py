@@ -2384,6 +2384,30 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       'shards': 20,
     },
   },
+  'viz_screenshot_sync': {
+    'target_name': 'screenshot_sync',
+    'args': [
+      '--dont-restore-color-profile-after-test',
+    ],
+    'extra_browser_args': [
+      # This test confirms that GPU compositing is working with OOP-D.
+      '--enable-features=VizDisplayCompositor',
+    ],
+    'tester_configs': [
+      {
+        'predicate': Predicates.DEFAULT,
+        'disabled_instrumentation_types': ['tsan'],
+        'os_types': ['win', 'linux'],
+      },
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux FYI Ozone (Intel)',
+        ],
+      },
+    ],
+  },
 }
 
 # These isolated tests don't use telemetry. They need to be placed in the

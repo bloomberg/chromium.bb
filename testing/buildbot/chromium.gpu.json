@@ -636,6 +636,32 @@
       },
       {
         "args": [
+          "screenshot_sync",
+          "--show-stdout",
+          "--browser=debug",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor",
+          "--dont-restore-color-profile-after-test"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "viz_screenshot_sync_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-384.90",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
           "webgl_conformance",
           "--show-stdout",
           "--browser=debug",
@@ -981,6 +1007,32 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-384.90",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "screenshot_sync",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor",
+          "--dont-restore-color-profile-after-test"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "viz_screenshot_sync_tests",
         "override_compile_targets": [
           "telemetry_gpu_integration_test"
         ],
@@ -2786,6 +2838,32 @@
       },
       {
         "args": [
+          "screenshot_sync",
+          "--show-stdout",
+          "--browser=debug",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor",
+          "--dont-restore-color-profile-after-test"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "viz_screenshot_sync_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-23.21.13.8816",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
           "webgl_conformance",
           "--show-stdout",
           "--browser=debug",
@@ -3325,6 +3403,41 @@
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "trace_test",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-23.21.13.8816",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"10de:1cb3-23.21.13.8816\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "args": [
+          "screenshot_sync",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor",
+          "--dont-restore-color-profile-after-test"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "viz_screenshot_sync_tests",
         "override_compile_targets": [
           "telemetry_gpu_integration_test"
         ],
