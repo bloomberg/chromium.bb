@@ -69,13 +69,7 @@ bool IsCrostiniAllowed() {
          virtual_machines::AreVirtualMachinesAllowedByPolicy();
 }
 
-bool IsCrostiniUIAllowedForProfile(Profile* profile) {
-  if (!profile || profile->IsOffTheRecord() ||
-      chromeos::ProfileHelper::IsEphemeralUserProfile(profile) ||
-      chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
-    return false;
-  }
-
+bool IsExperimentalCrostiniUIAvailable() {
   return IsCrostiniAllowed() &&
          base::FeatureList::IsEnabled(features::kExperimentalCrostiniUI);
 }

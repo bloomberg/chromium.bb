@@ -394,7 +394,7 @@ void AppListSyncableService::BuildModel() {
   apps_builder_.reset(new ExtensionAppModelBuilder(controller));
   if (arc::IsArcAllowedForProfile(profile_))
     arc_apps_builder_.reset(new ArcAppModelBuilder(controller));
-  if (IsCrostiniUIAllowedForProfile(profile_))
+  if (IsExperimentalCrostiniUIAvailable())
     crostini_apps_builder_.reset(new CrostiniAppModelBuilder(controller));
   internal_apps_builder_.reset(new InternalAppModelBuilder(controller));
 

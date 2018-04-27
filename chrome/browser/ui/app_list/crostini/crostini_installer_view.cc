@@ -45,7 +45,7 @@ constexpr int kDialogWidth = 448;
 }  // namespace
 
 void CrostiniInstallerView::Show(Profile* profile) {
-  DCHECK(IsCrostiniUIAllowedForProfile(profile));
+  DCHECK(IsExperimentalCrostiniUIAvailable());
   if (!g_crostini_installer_view) {
     g_crostini_installer_view = new CrostiniInstallerView(profile);
     views::DialogDelegate::CreateDialogWidget(g_crostini_installer_view,
