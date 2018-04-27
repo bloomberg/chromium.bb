@@ -2,11 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import os
-import re
-import sys
+import tempfile
 import unittest
-import StringIO
 
 import mock  # pylint: disable=import-error
 
@@ -29,9 +28,9 @@ class FetchBenchmarkDepsUnittest(unittest.TestCase):
   """
 
   def testFetchWPRs(self):
-    old_out = sys.stdout
-    sys.stdout = StringIO.StringIO()
-    args = ['smoothness.top_25_smooth', '--output-deps']
+    test_name = 'smoothness.top_25_smooth'
+    deps_fd, deps_path = tempfile.mkstemp()
+    args = [test_name, '--output-deps=%s' % deps_path]
     with mock.patch.object(archive_info.WprArchiveInfo,
         'DownloadArchivesIfNeeded', autospec=True) as mock_download:
       with mock.patch('py_utils.cloud_storage'
@@ -47,20 +46,20 @@ class FetchBenchmarkDepsUnittest(unittest.TestCase):
         # This benchmark doesn't use any static local files.
         self.assertFalse(mock_get.called)
 
-    # Checks fetch_benchmark_deps.py Output.
+    # Gets json content and remove the temp json file.
+    with open(deps_path) as deps_file:
+      deps = json.loads(deps_file.read())
+    os.close(deps_fd)
+    os.remove(deps_path)
+
+    # Checks fetch_benchmark_deps.py output.
     output_count = 0
-    dep_pattern = re.compile('Dependency: (.+)')
-    for line in sys.stdout.getvalue().splitlines():
-      dep_match = dep_pattern.match(line)
-      if not dep_match:
-        continue
-      filename = dep_match.group(1)
-      fullpath = os.path.join(path_util.GetChromiumSrcDir(), filename)
+    for dep in deps[test_name]:
+      fullpath = os.path.join(path_util.GetChromiumSrcDir(), dep)
       sha1path = fullpath + '.sha1'
       self.assertTrue(os.path.isfile(sha1path))
       output_count += 1
     self.assertTrue(output_count > 0)
-    sys.stdout = old_out
 
   def testFetchServingDirs(self):
     args = ['media.desktop']

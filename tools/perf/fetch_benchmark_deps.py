@@ -6,6 +6,7 @@
 """This module fetches and prints the dependencies given a benchmark."""
 
 import argparse
+import json
 import optparse
 import os
 import sys
@@ -64,14 +65,7 @@ def _EnumerateDependencies(story_set):
   return [dep[prefix_len:] for dep in deps if dep]
 
 
-def _PrintDeps(mesg, output_deps):
-  if output_deps:
-    print mesg
-  else:
-    logging.info(mesg)
-
-
-def FetchDepsForBenchmark(benchmark, output_deps):
+def _FetchDepsForBenchmark(benchmark):
   # Create a dummy options object which hold default values that are expected
   # by Benchmark.CreateStorySet(options) method.
   parser = optparse.OptionParser()
@@ -83,11 +77,11 @@ def FetchDepsForBenchmark(benchmark, output_deps):
   _FetchDependenciesIfNeeded(story_set)
 
   # Log files downloaded.
-  _PrintDeps('Fetch dependencies for benchmark %s' % benchmark.Name(),
-             output_deps)
+  logging.info('Fetch dependencies for benchmark %s' % benchmark.Name())
   deps = _EnumerateDependencies(story_set)
   for dep in deps:
-    _PrintDeps("Dependency: " + dep, output_deps)
+    logging.info("Dependency: " + dep)
+  return deps
 
 
 def main(args):
@@ -98,14 +92,12 @@ def main(args):
                       help=('Force fetching all the benchmarks when '
                             'benchmark_name is not specified'),
                       action='store_true', default=False)
-  # Flag --output-deps: print the dependencies to stdout, CrOS autotest
+  # Flag --output-deps: output the dependencies to a json file, CrOS autotest
   # telemetry_runner parses the output to upload the dependencies to the DUT.
-  # Example output, fetch_benchmark_deps.py --output-deps octane:
-  # Fetch dependencies for benchmark octane
-  # Dependency: tools/perf/page_sets/data/octane_002.wprgo
+  # Example output, fetch_benchmark_deps.py --output-deps=deps octane:
+  # {'octane': ['tools/perf/page_sets/data/octane_002.wprgo']}
   parser.add_argument('--output-deps',
-                      help=('Print dependencies to stdout'),
-                      action='store_true', default=False)
+                      help=('Output dependencies to a json file'))
   parser.add_argument(
         '-v', '--verbose', action='count', dest='verbosity',
         help='Increase verbosity level (repeat as needed)')
@@ -119,6 +111,7 @@ def main(args):
   else:
     logging.getLogger().setLevel(logging.WARNING)
 
+  deps = {}
   if options.benchmark_name:
     perf_dir = path_util.GetPerfDir()
     benchmark_dirs=[os.path.join(perf_dir, 'benchmarks'),
@@ -129,14 +122,18 @@ def main(args):
         options.benchmark_name, config)
     if not benchmark:
       raise ValueError('No such benchmark: %s' % options.benchmark_name)
-    FetchDepsForBenchmark(benchmark, options.output_deps)
+    deps[benchmark.Name()] = _FetchDepsForBenchmark(benchmark)
   else:
     if not options.force:
       raw_input(
           'No benchmark name is specified. Fetching all benchmark deps. '
           'Press enter to continue...')
     for b in benchmark_finders.GetAllPerfBenchmarks():
-      FetchDepsForBenchmark(b, options.output_deps)
+      deps[b.Name()] = _FetchDepsForBenchmark(b)
+
+  if options.output_deps:
+    with open(options.output_deps, 'w') as outfile:
+      json.dump(deps, outfile)
 
 
 if __name__ == '__main__':
