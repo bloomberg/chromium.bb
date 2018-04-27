@@ -257,7 +257,7 @@ TEST_F(TransferBufferTest, Flush) {
 class MockClientCommandBufferCanFail : public MockClientCommandBufferMockFlush {
  public:
   MockClientCommandBufferCanFail() = default;
-  virtual ~MockClientCommandBufferCanFail() = default;
+  ~MockClientCommandBufferCanFail() override = default;
 
   MOCK_METHOD2(CreateTransferBuffer,
                scoped_refptr<Buffer>(size_t size, int32_t* id));

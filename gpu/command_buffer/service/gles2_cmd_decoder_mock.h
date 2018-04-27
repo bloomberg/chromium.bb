@@ -39,7 +39,7 @@ class MockGLES2Decoder : public GLES2Decoder {
  public:
   MockGLES2Decoder(CommandBufferServiceBase* command_buffer_service,
                    Outputter* outputter);
-  virtual ~MockGLES2Decoder();
+  ~MockGLES2Decoder() override;
 
   base::WeakPtr<DecoderContext> AsWeakPtr() override;
 

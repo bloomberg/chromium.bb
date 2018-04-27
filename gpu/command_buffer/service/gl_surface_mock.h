@@ -45,7 +45,7 @@ class GLSurfaceMock : public gl::GLSurface {
   MOCK_METHOD0(GetFormat, gl::GLSurfaceFormat());
 
  protected:
-  virtual ~GLSurfaceMock();
+  ~GLSurfaceMock() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceMock);
