@@ -25,6 +25,20 @@
   // that invoke these as constructors MUST properly handle exceptions.
   var EmbedderCallbacksWithoutSideEffect = new Set(['ReadableStream', 'WritableStream', 'TransformStream']);
 
+  // These constructor callbacks are blacklisted with `[Affects=Everything]`,
+  // and should throwOnSideEffect.
+  var EmbedderConstructorBlacklist = new Set([
+    // The Worker constructor may run a worker in parallel, fetch URLs, and
+    // modify the global worker set. See spec section 10.2.6.3, step 9.
+    // https://html.spec.whatwg.org/#dedicated-workers-and-the-worker-interface
+    'Worker',
+
+    // The SharedWorker constructor may run a worker in parallel, fetch URLs,
+    // and modify the global worker set. See spec section 10.2.6.4, step 11.
+    // https://html.spec.whatwg.org/#shared-workers-and-the-sharedworker-interface
+    'SharedWorker'
+  ]);
+
   testRunner.log(`Checking functions on 'window'`);
   for (var i = 0; i < constructorNames.length; i++) {
     var name = constructorNames[i];
@@ -33,8 +47,9 @@
     var response = await dp.Runtime.evaluate({expression: `new nativeConstructors[${i}]`, throwOnSideEffect: true});
     var exception = response.result.exceptionDetails;
     var failedSideEffectCheck = exception && exception.exception.description.startsWith('EvalError: Possible side-effect in debug-evaluate');
+    var expectedToThrow = EmbedderConstructorBlacklist.has(name);
     if (failedSideEffectCheck && !EmbedderCallbacksWithoutSideEffect.has(name))
-      testRunner.log(`Function "${name}" failed side-effect check`);
+      testRunner.log(`${expectedToThrow ? '' : 'FAIL: '}Function "${name}" failed side-effect check`);
   }
 
   testRunner.completeTest();

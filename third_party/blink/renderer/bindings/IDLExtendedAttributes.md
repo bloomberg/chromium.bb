@@ -1548,17 +1548,24 @@ V8PrivateProperty::getHTMLFooBarCachedAccessor().set(context, object, newValue);
 ```
 
 
-### [Affects] _(m, a)_
+### [Affects] _(i, m, a)_
 
-Summary: `[Affects=Nothing]` indicates that a function must not produce JS-observable side effects. Functions without this attribute are never invoked by V8 with throwOnSideEffect.
+Summary: `[Affects=Nothing]` indicates that a function must not produce JS-observable side effects, and functions without this attribute are never invoked by V8 with throwOnSideEffect. `[Affects=Everything]` indicates that a constructor will throwOnSideEffect.
 
 Marked functions are allowed to be nondeterministic, throw exceptions, force layout, and recalculate style, but must not set values, cache objects, or schedule execution that will be observable after the function completes. If a marked function calls into V8, it must properly handle cases when the V8 call returns an MaybeHandle.
 
-All DOM constructors are assumed to have no JS-observable side effects.
+All DOM constructors are assumed to have no JS-observable side effects, unless blacklisted with `[Affects=Everything]`.
 
 There is not yet support for marking SymbolKeyedMethodConfigurations as side-effect free. This requires additional support in V8 to whitelist Intrinsics.
 
-Usage: `[Affects=Nothing]` can be specified on a method, or on an attribute to indicate that its getter callback is side effect free:
+Usage for interfaces: `[Affects=Everything]` can be specified on an interface to indicate that its constructor callback does have side effects.
+
+```webidl
+[Affects=Everything]
+interface HTMLFoo {};
+```
+
+Usage for attributes and operations: `[Affects=Nothing]` can be specified on an operation, or on an attribute to indicate that its getter callback is side effect free:
 
 ```webidl
 interface HTMLFoo {

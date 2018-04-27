@@ -1,3 +1,5 @@
 Tests that invoking embedder constructors is side-effect-free. Should not crash.
 Checking functions on 'window'
+Function "Worker" failed side-effect check
+Function "SharedWorker" failed side-effect check
 
