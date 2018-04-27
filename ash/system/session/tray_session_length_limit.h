@@ -34,23 +34,12 @@ class ASH_EXPORT TraySessionLengthLimit
  private:
   friend class TraySessionLengthLimitTest;
 
-  static const char kNotificationId[];
-
-  void UpdateNotification();
   void UpdateTrayBubbleView() const;
 
-  // These require that the state has been updated before.
-  base::string16 ComposeNotificationTitle() const;
   base::string16 ComposeTrayBubbleMessage() const;
 
   // Unowned.
   SessionLengthLimitModel* const model_;
-
-  // LimitState of the last time OnSessionLengthLimitUpdate() is called.
-  SessionLengthLimitModel::LimitState last_limit_state_ =
-      SessionLengthLimitModel::LIMIT_NONE;
-
-  bool has_notification_been_shown_ = false;
 
   LabelTrayView* tray_bubble_view_ = nullptr;
 

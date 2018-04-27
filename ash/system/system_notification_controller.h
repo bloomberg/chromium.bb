@@ -14,6 +14,7 @@ namespace ash {
 class CapsLockNotificationController;
 class PowerNotificationController;
 class ScreenSecurityNotificationController;
+class SessionLimitNotificationController;
 class SupervisedNotificationController;
 
 // Class that owns individual notification controllers.
@@ -26,6 +27,7 @@ class SystemNotificationController {
   const std::unique_ptr<CapsLockNotificationController> caps_lock_;
   const std::unique_ptr<PowerNotificationController> power_;
   const std::unique_ptr<ScreenSecurityNotificationController> screen_security_;
+  const std::unique_ptr<SessionLimitNotificationController> session_limit_;
   const std::unique_ptr<SupervisedNotificationController> supervised_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemNotificationController);

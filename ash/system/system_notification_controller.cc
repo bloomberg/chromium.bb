@@ -7,6 +7,7 @@
 #include "ash/system/caps_lock_notification_controller.h"
 #include "ash/system/power/power_notification_controller.h"
 #include "ash/system/screen_security/screen_security_notification_controller.h"
+#include "ash/system/session/session_limit_notification_controller.h"
 #include "ash/system/supervised/supervised_notification_controller.h"
 #include "ui/message_center/message_center.h"
 
@@ -18,6 +19,7 @@ SystemNotificationController::SystemNotificationController()
           message_center::MessageCenter::Get())),
       screen_security_(
           std::make_unique<ScreenSecurityNotificationController>()),
+      session_limit_(std::make_unique<SessionLimitNotificationController>()),
       supervised_(std::make_unique<SupervisedNotificationController>()) {}
 
 SystemNotificationController::~SystemNotificationController() = default;
