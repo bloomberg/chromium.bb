@@ -561,6 +561,7 @@ String Request::destination() const {
     case WebURLRequest::kRequestContextPing:
     case WebURLRequest::kRequestContextXMLHttpRequest:
     case WebURLRequest::kRequestContextSubresource:
+    case WebURLRequest::kRequestContextPrefetch:
       return "";
     case WebURLRequest::kRequestContextCSPReport:
       return "report";
@@ -601,7 +602,6 @@ String Request::destination() const {
     case WebURLRequest::kRequestContextImport:
     case WebURLRequest::kRequestContextInternal:
     case WebURLRequest::kRequestContextPlugin:
-    case WebURLRequest::kRequestContextPrefetch:
     case WebURLRequest::kRequestContextServiceWorker:
       return "unknown";
   }
