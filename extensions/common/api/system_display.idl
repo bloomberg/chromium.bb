@@ -263,7 +263,7 @@ namespace system.display {
     DisplayMode? displayMode;
 
     // If set, updates the zoom associated with the display. This zoom performs
-    // relayout and repaint thus resulting in a better quality zoom than just
+    // re-layout and repaint thus resulting in a better quality zoom than just
     // performing a pixel by pixel stretch enlargement.
     double? displayZoomFactor;
   };
@@ -349,9 +349,9 @@ namespace system.display {
     static void setDisplayLayout(DisplayLayout[] layouts,
                                  optional SetDisplayLayoutCallback callback);
 
-    // Enables/disables the unified desktop feature. Note that this simply
-    // enables the feature, but will not change the actual desktop mode.
-    // (That is, if the desktop is in mirror mode, it will stay in mirror mode)
+    // Enables/disables the unified desktop feature. If enabled while mirroring
+    // is active, the desktop mode will not change until mirroring is turned
+    // off. Otherwise, the desktop mode will switch to unified immediately.
     // NOTE: This is only available to Chrome OS Kiosk apps and Web UI.
     // |enabled|: True if unified desktop should be enabled.
     static void enableUnifiedDesktop(boolean enabled);
@@ -363,7 +363,7 @@ namespace system.display {
     static void overscanCalibrationStart(DOMString id);
 
     // Adjusts the current overscan insets for a display. Typically this should
-    // etiher move the display along an axis (e.g. left+right have the same
+    // either move the display along an axis (e.g. left+right have the same
     // value) or scale it along an axis (e.g. top+bottom have opposite values).
     // Each Adjust call is cumulative with previous calls since Start.
     // |id|: The display's unique identifier.
@@ -383,7 +383,7 @@ namespace system.display {
     // Displays the native touch calibration UX for the display with |id| as
     // display id. This will show an overlay on the screen with required
     // instructions on how to proceed. The callback will be invoked in case of
-    // successful calibraion only. If the calibration fails, this will throw an
+    // successful calibration only. If the calibration fails, this will throw an
     // error.
     // |id|: The display's unique identifier.
     // |callback|: Optional callback to inform the caller that the touch

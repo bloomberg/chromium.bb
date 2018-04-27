@@ -197,6 +197,8 @@ std::string ValidateDisplayPropertiesInput(
   bool is_primary = id == primary.id() || (info.is_primary && *info.is_primary);
 
   if (info.is_unified) {
+    if (!ash::Shell::Get()->display_manager()->unified_desktop_enabled())
+      return "Unified desktop mode is not enabled.";
     if (!is_primary)
       return "Unified desktop mode can only be set for the primary display.";
     if (info.mirroring_source_id)
