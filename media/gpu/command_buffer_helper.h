@@ -53,8 +53,8 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
   // See glTexImage2D() for argument definitions.
   //
   // The texture will be configured as a video frame: linear filtering, clamp to
-  // edge, no mipmaps. If |target| is GL_TEXTURE_2D, storage will be allocated
-  // but not initialized.
+  // edge. If |target| is GL_TEXTURE_2D, storage will be allocated but not
+  // initialized.
   //
   // The context must be current.
   //
