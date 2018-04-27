@@ -132,11 +132,29 @@
   <message name="IDS_MULTIDEVICE_SETUP_DIALOG_TITLE" desc="Title for the MultiDevice setup dialog, which allows users to enable features which involve communication between multiple devices (e.g., a Chromebook and a phone)." translateable="false">
     MultiDevice Setup
   </message>
-  <message name="IDS_MULTIDEVICE_SETUP_ACCEPT_LABEL" desc="Label for button to accept conditions and begin MultiDevice setup workflow.">
+  <message name="IDS_MULTIDEVICE_SETUP_ACCEPT_LABEL" desc="Label for button to accept conditions and begin MultiDevice setup workflow." translateable="false">
     Accept
   </message>
-  <message name="IDS_MULTIDEVICE_SETUP_TRY_AGAIN_LABEL" desc="Label for button to retry setup upon failure.">
+  <message name="IDS_MULTIDEVICE_SETUP_TRY_AGAIN_LABEL" desc="Label for button to retry setup upon failure." translateable="false">
     Try again
+  </message>
+  <message name="IDS_MULTIDEVICE_SETUP_SETUP_FAILED_PAGE_HEADER" desc="Header for failed setup page." translateable="false">
+    Could not connect to phone (PlAcEhOlDeR tExT!!)
+  </message>
+  <message name="IDS_MULTIDEVICE_SETUP_SETUP_FAILED_PAGE_MESSAGE" desc="Message for failed setup page." translateable="false">
+    PlAcEhOlDeR tExT!! This is a paragraph about an error. Blah blah blah. Something went wrong. Whomp whomp whomp.
+  </message>
+  <message name="IDS_MULTIDEVICE_SETUP_SETUP_SUCCEEDED_PAGE_HEADER" desc="Header for successful setup page." translateable="false">
+    You're all set! (PlAcEhOlDeR tExT!!)
+  </message>
+  <message name="IDS_MULTIDEVICE_SETUP_SETUP_SUCCEEDED_PAGE_MESSAGE" desc="Message for successful setup page." translateable="false">
+    PlAcEhOlDeR tExT!! This String includes a link with the text &lt;a id="settings-link"&gt;Settings&lt;/a&gt; that opens the settings page. Blah blah blah.
+  </message>
+  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_HEADER" desc="Header for welcome page." translateable="false">
+    Better together (PlAcEhOlDeR tExT!!)
+  </message>
+  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE" desc="Message for welcome page." translateable="false">
+    PlAcEhOlDeR tExT!! This String includes a link with the text &lt;a id="terms-and-conditions-link" href="chrome://foo-bar"&gt;Terms and Conditions&lt;/a&gt; that opens a browser window to that info. Blah blah blah.
   </message>
 
   <!-- File Manager -->

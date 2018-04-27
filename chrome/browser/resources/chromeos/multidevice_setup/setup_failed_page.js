@@ -6,24 +6,32 @@ Polymer({
   is: 'setup-failed-page',
 
   properties: {
-    /**
-     * Overriden from ButtonNavigationBehavior
-     */
+    /** Overridden from UiPageContainerBehavior. */
     forwardButtonTextId: {
       type: String,
       value: 'tryAgain',
     },
 
-    /**
-     * Overriden from ButtonNavigationBehavior
-     */
+    /** Overridden from UiPageContainerBehavior. */
     backwardButtonTextId: {
       type: String,
       value: 'cancel',
     },
+
+    /** Overridden from UiPageContainerBehavior. */
+    headerId: {
+      type: String,
+      value: 'setupFailedPageHeader',
+    },
+
+    /** Overridden from UiPageContainerBehavior. */
+    messageId: {
+      type: String,
+      value: 'setupFailedPageMessage',
+    },
   },
 
   behaviors: [
-    ButtonNavigationBehavior,
+    UiPageContainerBehavior,
   ],
 });

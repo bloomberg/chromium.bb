@@ -26,12 +26,18 @@ MultiDeviceSetupBrowserTest.prototype = {
   browsePreload: 'chrome://multidevice-setup/',
 
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-    'navigation_test.js',
+    'integration_test.js',
+    'setup_succeeded_page_test.js',
   ]),
 };
 
-TEST_F('MultiDeviceSetupBrowserTest', 'All', function() {
-  multidevice_setup.registerTests();
+TEST_F('MultiDeviceSetupBrowserTest', 'Integration', function() {
+  multidevice_setup.registerIntegrationTests();
+  mocha.run();
+});
+
+TEST_F('MultiDeviceSetupBrowserTest', 'SetupSucceededPage', function() {
+  multidevice_setup.registerSetupSucceededPageTests();
   mocha.run();
 });
 

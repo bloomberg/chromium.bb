@@ -6,24 +6,32 @@ Polymer({
   is: 'start-setup-page',
 
   properties: {
-    /**
-     * Overriden from ButtonNavigationBehavior
-     */
+    /** Overridden from UiPageContainerBehavior. */
     forwardButtonTextId: {
       type: String,
       value: 'accept',
     },
 
-    /**
-     * Overriden from ButtonNavigationBehavior
-     */
+    /** Overridden from UiPageContainerBehavior. */
     backwardButtonTextId: {
       type: String,
       value: 'cancel',
     },
+
+    /** Overridden from UiPageContainerBehavior. */
+    headerId: {
+      type: String,
+      value: 'startSetupPageHeader',
+    },
+
+    /** Overridden from UiPageContainerBehavior. */
+    messageId: {
+      type: String,
+      value: 'startSetupPageMessage',
+    },
   },
 
   behaviors: [
-    ButtonNavigationBehavior,
+    UiPageContainerBehavior,
   ],
 });

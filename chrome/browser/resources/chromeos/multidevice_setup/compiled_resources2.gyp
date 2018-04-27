@@ -11,15 +11,6 @@
     },
 
     {
-      'target_name' : 'button_navigation_behavior',
-      'dependencies' : [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
-      ],
-      'includes' :
-          ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-
-    {
       'target_name' : 'multidevice_setup',
       'dependencies' : [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
@@ -35,7 +26,7 @@
     {
       'target_name' : 'setup_failed_page',
       'dependencies' : [
-        'button_navigation_behavior',
+        'ui_page_container_behavior',
       ],
       'includes' :
           ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -44,7 +35,7 @@
     {
       'target_name' : 'setup_succeeded_page',
       'dependencies' : [
-        'button_navigation_behavior',
+        'ui_page_container_behavior',
       ],
       'includes' :
           ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -53,7 +44,17 @@
     {
       'target_name' : 'start_setup_page',
       'dependencies' : [
-        'button_navigation_behavior',
+        'ui_page_container_behavior',
+      ],
+      'includes' :
+          ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+
+    {
+      'target_name' : 'ui_page_container_behavior',
+      'dependencies' : [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
       ],
       'includes' :
           ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

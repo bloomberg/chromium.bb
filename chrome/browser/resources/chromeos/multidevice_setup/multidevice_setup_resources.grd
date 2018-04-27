@@ -18,12 +18,6 @@
       <structure name="IDR_MULTIDEVICE_SETUP_BUTTON_BAR_JS"
                  file="button_bar.js"
                  type="chrome_html" />
-      <structure name="IDR_MULTIDEVICE_SETUP_BUTTON_NAVIGATION_BEHAVIOR_HTML"
-                 file="button_navigation_behavior.html"
-                 type="chrome_html" />
-      <structure name="IDR_MULTIDEVICE_SETUP_BUTTON_NAVIGATION_BEHAVIOR_JS"
-                 file="button_navigation_behavior.js"
-                 type="chrome_html" />
       <structure name="IDR_MULTIDEVICE_SETUP_I18N_SETUP_HTML"
                  file="i18n_setup.html"
                  type="chrome_html" />
@@ -55,6 +49,18 @@
                  type="chrome_html" />
       <structure name="IDR_MULTIDEVICE_SETUP_START_SETUP_PAGE_JS"
                  file="start_setup_page.js"
+                 type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_UI_PAGE_CONTAINER_BEHAVIOR_HTML"
+                 file="ui_page_container_behavior.html"
+                 type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_UI_PAGE_CONTAINER_BEHAVIOR_JS"
+                 file="ui_page_container_behavior.js"
+                 type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_UI_PAGE_HTML"
+                 file="ui_page.html"
+                 type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_UI_PAGE_JS"
+                 file="ui_page.js"
                  type="chrome_html" />
     </structures>
   </release>
