@@ -98,6 +98,7 @@ HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
       form_was_set_by_parser_(false),
       element_created_by_parser_(created_by_parser),
       is_fallback_image_(false),
+      should_invert_color_(false),
       referrer_policy_(kReferrerPolicyDefault) {
   SetHasCustomStyleCallbacks();
 }
@@ -816,6 +817,14 @@ void HTMLImageElement::AssociateWith(HTMLFormElement* form) {
     form_->Associate(*this);
     form_->DidAssociateByParser();
   }
-};
+}
+
+bool HTMLImageElement::ShouldInvertColor() const {
+  return should_invert_color_;
+}
+
+void HTMLImageElement::UpdateShouldInvertColor(bool value) {
+  should_invert_color_ = value;
+}
 
 }  // namespace blink
