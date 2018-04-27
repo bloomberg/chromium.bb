@@ -53,7 +53,7 @@ enum {
 // Used by PassThroughMethods test.
 class MockClientSocket : public net::StreamSocket {
  public:
-  virtual ~MockClientSocket() {}
+  ~MockClientSocket() override {}
 
   int Read(net::IOBuffer* buffer,
            int bytes,

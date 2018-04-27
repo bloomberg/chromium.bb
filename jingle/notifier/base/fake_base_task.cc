@@ -17,7 +17,7 @@ using ::testing::Return;
 
 class MockAsyncSocket : public buzz::AsyncSocket {
  public:
-  virtual ~MockAsyncSocket() {}
+  ~MockAsyncSocket() override {}
 
   MOCK_METHOD0(state, State());
   MOCK_METHOD0(error, Error());

@@ -20,7 +20,7 @@ namespace {
 
 class MockXmppDelegate : public sigslot::has_slots<> {
  public:
-  virtual ~MockXmppDelegate() {}
+  ~MockXmppDelegate() override {}
 
   MOCK_METHOD1(OnStateChange, void(buzz::XmppEngine::State));
   MOCK_METHOD2(OnInputLog, void(const char*, int));

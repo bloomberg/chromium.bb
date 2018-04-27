@@ -16,7 +16,7 @@ class MockTask : public rtc::Task {
  public:
   MockTask(TaskParent* parent);
 
-  virtual ~MockTask();
+  ~MockTask() override;
 
   MOCK_METHOD0(ProcessStart, int());
 };

@@ -43,7 +43,7 @@ using ::testing::SaveArg;
 
 class MockPreXmppAuth : public buzz::PreXmppAuth {
  public:
-  virtual ~MockPreXmppAuth() {}
+  ~MockPreXmppAuth() override {}
 
   MOCK_METHOD2(ChooseBestSaslMechanism,
                std::string(const std::vector<std::string>&, bool));
@@ -66,7 +66,7 @@ class MockPreXmppAuth : public buzz::PreXmppAuth {
 
 class MockXmppConnectionDelegate : public XmppConnection::Delegate {
  public:
-  virtual ~MockXmppConnectionDelegate() {}
+  ~MockXmppConnectionDelegate() override {}
 
   MOCK_METHOD1(OnConnect, void(base::WeakPtr<buzz::XmppTaskParentInterface>));
   MOCK_METHOD3(OnError,
