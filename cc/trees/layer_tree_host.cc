@@ -1055,8 +1055,7 @@ void LayerTreeHost::SetViewportSizeAndScale(
     const gfx::Size& device_viewport_size,
     float device_scale_factor,
     const viz::LocalSurfaceId& local_surface_id) {
-  if (settings_.enable_surface_synchronization)
-    SetLocalSurfaceId(local_surface_id);
+  SetLocalSurfaceId(local_surface_id);
 
   bool changed = false;
   if (device_viewport_size_ != device_viewport_size) {
