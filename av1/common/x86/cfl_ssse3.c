@@ -32,50 +32,44 @@ static INLINE void cfl_luma_subsampling_420_lbd_ssse3(const uint8_t *input,
                                                       int16_t *pred_buf_q3,
                                                       int width, int height) {
   const __m128i twos = _mm_set1_epi8(2);
-  const int16_t *end = pred_buf_q3 + (height >> 1) * CFL_BUF_LINE;
+  __m128i *pred_buf_m128i = (__m128i *)pred_buf_q3;
+  const __m128i *end = pred_buf_m128i + height * CFL_BUF_LINE_I128;
   const int luma_stride = input_stride << 1;
-
-  __m128i top, bot, next_top, next_bot, top_16x8, bot_16x8, next_top_16x8,
-      next_bot_16x8, sum_16x8, next_sum_16x8;
   do {
     if (width == 4) {
-      top = _mm_cvtsi32_si128(*((int *)input));
-      bot = _mm_cvtsi32_si128(*((int *)(input + input_stride)));
+      __m128i top = _mm_cvtsi32_si128(*((int *)input));
+      top = _mm_maddubs_epi16(top, twos);
+      __m128i bot = _mm_cvtsi32_si128(*((int *)(input + input_stride)));
+      bot = _mm_maddubs_epi16(bot, twos);
+      const __m128i sum = _mm_add_epi16(top, bot);
+      *((int *)pred_buf_m128i) = _mm_cvtsi128_si32(sum);
     } else if (width == 8) {
-      top = _mm_loadl_epi64((__m128i *)input);
-      bot = _mm_loadl_epi64((__m128i *)(input + input_stride));
+      __m128i top = _mm_loadl_epi64((__m128i *)input);
+      top = _mm_maddubs_epi16(top, twos);
+      __m128i bot = _mm_loadl_epi64((__m128i *)(input + input_stride));
+      bot = _mm_maddubs_epi16(bot, twos);
+      const __m128i sum = _mm_add_epi16(top, bot);
+      _mm_storel_epi64(pred_buf_m128i, sum);
     } else {
-      top = _mm_loadu_si128((__m128i *)input);
-      bot = _mm_loadu_si128((__m128i *)(input + input_stride));
+      __m128i top = _mm_loadu_si128((__m128i *)input);
+      top = _mm_maddubs_epi16(top, twos);
+      __m128i bot = _mm_loadu_si128((__m128i *)(input + input_stride));
+      bot = _mm_maddubs_epi16(bot, twos);
+      const __m128i sum = _mm_add_epi16(top, bot);
+      _mm_storeu_si128(pred_buf_m128i, sum);
       if (width == 32) {
-        next_top = _mm_loadu_si128((__m128i *)(input + 16));
-        next_bot = _mm_loadu_si128((__m128i *)(input + 16 + input_stride));
+        __m128i top_1 = _mm_loadu_si128(((__m128i *)input) + 1);
+        __m128i bot_1 =
+            _mm_loadu_si128(((__m128i *)(input + input_stride)) + 1);
+        top_1 = _mm_maddubs_epi16(top_1, twos);
+        bot_1 = _mm_maddubs_epi16(bot_1, twos);
+        __m128i sum_1 = _mm_add_epi16(top_1, bot_1);
+        _mm_storeu_si128(pred_buf_m128i + 1, sum_1);
       }
     }
-
-    top_16x8 = _mm_maddubs_epi16(top, twos);
-    bot_16x8 = _mm_maddubs_epi16(bot, twos);
-    sum_16x8 = _mm_add_epi16(top_16x8, bot_16x8);
-    if (width == 32) {
-      next_top_16x8 = _mm_maddubs_epi16(next_top, twos);
-      next_bot_16x8 = _mm_maddubs_epi16(next_bot, twos);
-      next_sum_16x8 = _mm_add_epi16(next_top_16x8, next_bot_16x8);
-    }
-
-    if (width == 4) {
-      *((int *)pred_buf_q3) = _mm_cvtsi128_si32(sum_16x8);
-    } else if (width == 8) {
-      _mm_storel_epi64((__m128i *)pred_buf_q3, sum_16x8);
-    } else {
-      _mm_storeu_si128((__m128i *)pred_buf_q3, sum_16x8);
-      if (width == 32) {
-        _mm_storeu_si128((__m128i *)(pred_buf_q3 + 8), next_sum_16x8);
-      }
-    }
-
     input += luma_stride;
-    pred_buf_q3 += CFL_BUF_LINE;
-  } while (pred_buf_q3 < end);
+    pred_buf_m128i += CFL_BUF_LINE_I128;
+  } while (pred_buf_m128i < end);
 }
 
 /**
