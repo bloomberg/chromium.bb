@@ -15,7 +15,7 @@ namespace safe_browsing {
 class MockTriggerManager : public TriggerManager {
  public:
   MockTriggerManager();
-  virtual ~MockTriggerManager();
+  ~MockTriggerManager() override;
 
   MOCK_METHOD6(
       StartCollectingThreatDetails,

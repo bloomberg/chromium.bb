@@ -44,7 +44,7 @@ class MockDelegate : public InMemoryDownload::Delegate {
 
   // InMemoryDownload::Delegate implementation.
   MOCK_METHOD1(OnDownloadProgress, void(InMemoryDownload*));
-  void OnDownloadComplete(InMemoryDownload* download) {
+  void OnDownloadComplete(InMemoryDownload* download) override {
     if (run_loop_.running())
       run_loop_.Quit();
   }

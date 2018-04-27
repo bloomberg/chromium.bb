@@ -21,7 +21,7 @@ namespace syncer {
 class ChangeProcessorMock : public ChangeProcessor {
  public:
   ChangeProcessorMock();
-  virtual ~ChangeProcessorMock();
+  ~ChangeProcessorMock() override;
   MOCK_METHOD3(ApplyChangesFromSyncModel,
                void(const BaseTransaction*,
                     int64_t,

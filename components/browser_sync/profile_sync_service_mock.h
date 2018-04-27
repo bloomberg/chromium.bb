@@ -32,7 +32,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   // code.
   explicit ProfileSyncServiceMock(InitParams* init_params);
 
-  virtual ~ProfileSyncServiceMock();
+  ~ProfileSyncServiceMock() override;
 
   MOCK_METHOD5(
       OnEngineInitialized,

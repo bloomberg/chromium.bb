@@ -62,7 +62,7 @@ class TestBaseSearchProvider : public BaseSearchProvider {
   }
 
  protected:
-  virtual ~TestBaseSearchProvider() {}
+  ~TestBaseSearchProvider() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestBaseSearchProvider);

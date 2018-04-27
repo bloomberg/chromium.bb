@@ -44,7 +44,7 @@ class MockDeviceManagementServiceConfiguration
 class MockDeviceManagementService : public DeviceManagementService {
  public:
   MockDeviceManagementService();
-  virtual ~MockDeviceManagementService();
+  ~MockDeviceManagementService() override;
 
   typedef DeviceManagementRequestJob* CreateJobFunction(
       DeviceManagementRequestJob::JobType,

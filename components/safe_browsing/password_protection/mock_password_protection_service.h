@@ -18,7 +18,7 @@ class MockPasswordProtectionService : public PasswordProtectionService {
       const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       scoped_refptr<HostContentSettingsMap> content_setting_map);
-  virtual ~MockPasswordProtectionService();
+  ~MockPasswordProtectionService() override;
 
   // safe_browsing::PasswordProtectionService
   MOCK_CONST_METHOD0(GetSyncAccountType,

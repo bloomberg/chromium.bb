@@ -25,7 +25,7 @@ class MockContentSuggestionsProvider : public ContentSuggestionsProvider {
   MockContentSuggestionsProvider(
       Observer* observer,
       const std::vector<Category>& provided_categories);
-  ~MockContentSuggestionsProvider();
+  ~MockContentSuggestionsProvider() override;
 
   void SetProvidedCategories(const std::vector<Category>& provided_categories);
 

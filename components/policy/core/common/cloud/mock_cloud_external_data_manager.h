@@ -25,7 +25,7 @@ class ExternalDataFetcher;
 class MockCloudExternalDataManager : public CloudExternalDataManager {
  public:
   MockCloudExternalDataManager();
-  virtual ~MockCloudExternalDataManager();
+  ~MockCloudExternalDataManager() override;
 
   MOCK_METHOD0(OnPolicyStoreLoaded, void(void));
   MOCK_METHOD1(Connect, void(scoped_refptr<net::URLRequestContextGetter>));

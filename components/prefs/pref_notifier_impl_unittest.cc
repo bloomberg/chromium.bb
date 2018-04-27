@@ -49,7 +49,7 @@ class MockPrefNotifier : public PrefNotifierImpl {
  public:
   explicit MockPrefNotifier(PrefService* pref_service)
       : PrefNotifierImpl(pref_service) {}
-  virtual ~MockPrefNotifier() {}
+  ~MockPrefNotifier() override {}
 
   MOCK_METHOD1(FireObservers, void(const std::string& path));
 

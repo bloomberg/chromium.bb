@@ -21,7 +21,7 @@ class MockModelAssociationManagerDelegate
     : public ModelAssociationManagerDelegate {
  public:
   MockModelAssociationManagerDelegate() {}
-  ~MockModelAssociationManagerDelegate() {}
+  ~MockModelAssociationManagerDelegate() override {}
   MOCK_METHOD0(OnAllDataTypesReadyForConfigure, void());
   MOCK_METHOD2(OnSingleDataTypeAssociationDone,
                void(ModelType type,

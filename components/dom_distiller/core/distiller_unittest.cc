@@ -268,7 +268,7 @@ class TestDistillerURLFetcherFactory : public DistillerURLFetcherFactory {
 class MockDistillerURLFetcherFactory : public DistillerURLFetcherFactory {
  public:
   MockDistillerURLFetcherFactory() : DistillerURLFetcherFactory(nullptr) {}
-  virtual ~MockDistillerURLFetcherFactory() {}
+  ~MockDistillerURLFetcherFactory() override {}
 
   MOCK_CONST_METHOD0(CreateDistillerURLFetcher, DistillerURLFetcher*());
 };

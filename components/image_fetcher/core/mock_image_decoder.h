@@ -13,7 +13,7 @@ namespace image_fetcher {
 class MockImageDecoder : public image_fetcher::ImageDecoder {
  public:
   MockImageDecoder();
-  ~MockImageDecoder();
+  ~MockImageDecoder() override;
   MOCK_METHOD3(DecodeImage,
                void(const std::string& image_data,
                     const gfx::Size& desired_image_frame_size,

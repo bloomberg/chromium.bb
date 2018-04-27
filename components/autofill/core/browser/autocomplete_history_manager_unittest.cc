@@ -42,7 +42,7 @@ class MockWebDataService : public AutofillWebDataService {
   MOCK_METHOD1(AddFormFields, void(const std::vector<FormFieldData>&));
 
  protected:
-  virtual ~MockWebDataService() {}
+  ~MockWebDataService() override {}
 };
 
 class MockAutofillClient : public TestAutofillClient {
@@ -193,7 +193,7 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
   MockAutofillExternalDelegate(AutofillManager* autofill_manager,
                                AutofillDriver* autofill_driver)
       : AutofillExternalDelegate(autofill_manager, autofill_driver) {}
-  virtual ~MockAutofillExternalDelegate() {}
+  ~MockAutofillExternalDelegate() override {}
 
   MOCK_METHOD3(OnSuggestionsReturned,
                void(int query_id,

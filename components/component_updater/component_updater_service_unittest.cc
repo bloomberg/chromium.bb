@@ -51,7 +51,7 @@ class MockInstaller : public CrxInstaller {
   // move semantics. This function is a shim to work around it.
   void Install(const base::FilePath& unpack_path,
                const std::string& public_key,
-               update_client::CrxInstaller::Callback callback) {
+               update_client::CrxInstaller::Callback callback) override {
     DoInstall(unpack_path, callback);
   }
 
@@ -94,7 +94,7 @@ class MockUpdateClient : public UpdateClient {
   void SendUninstallPing(const std::string& id,
                          const base::Version& version,
                          int reason,
-                         Callback callback) {
+                         Callback callback) override {
     DoSendUninstallPing(id, version, reason);
     std::move(callback).Run(update_client::Error::NONE);
   }

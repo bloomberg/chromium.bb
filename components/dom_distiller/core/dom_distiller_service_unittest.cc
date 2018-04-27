@@ -36,7 +36,7 @@ namespace {
 
 class FakeViewRequestDelegate : public ViewRequestDelegate {
  public:
-  virtual ~FakeViewRequestDelegate() {}
+  ~FakeViewRequestDelegate() override {}
   MOCK_METHOD1(OnArticleReady, void(const DistilledArticleProto* proto));
   MOCK_METHOD1(OnArticleUpdated,
                void(ArticleDistillationUpdate article_update));
@@ -45,7 +45,7 @@ class FakeViewRequestDelegate : public ViewRequestDelegate {
 class MockDistillerObserver : public DomDistillerObserver {
  public:
   MOCK_METHOD1(ArticleEntriesUpdated, void(const std::vector<ArticleUpdate>&));
-  virtual ~MockDistillerObserver() {}
+  ~MockDistillerObserver() override {}
 };
 
 class MockArticleAvailableCallback {

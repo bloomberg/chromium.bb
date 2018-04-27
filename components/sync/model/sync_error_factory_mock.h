@@ -15,7 +15,7 @@ namespace syncer {
 class SyncErrorFactoryMock : public SyncErrorFactory {
  public:
   SyncErrorFactoryMock();
-  virtual ~SyncErrorFactoryMock();
+  ~SyncErrorFactoryMock() override;
 
   MOCK_METHOD2(CreateAndUploadError,
                SyncError(const base::Location& location,

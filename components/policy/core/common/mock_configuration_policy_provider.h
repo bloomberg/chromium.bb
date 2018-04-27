@@ -21,7 +21,7 @@ namespace policy {
 class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
  public:
   MockConfigurationPolicyProvider();
-  virtual ~MockConfigurationPolicyProvider();
+  ~MockConfigurationPolicyProvider() override;
 
   MOCK_CONST_METHOD1(IsInitializationComplete, bool(PolicyDomain domain));
   MOCK_METHOD0(RefreshPolicies, void());
@@ -56,7 +56,7 @@ class MockConfigurationPolicyObserver
     : public ConfigurationPolicyProvider::Observer {
  public:
   MockConfigurationPolicyObserver();
-  virtual ~MockConfigurationPolicyObserver();
+  ~MockConfigurationPolicyObserver() override;
 
   MOCK_METHOD1(OnUpdatePolicy, void(ConfigurationPolicyProvider*));
 };

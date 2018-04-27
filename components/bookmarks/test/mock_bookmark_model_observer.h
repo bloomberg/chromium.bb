@@ -14,7 +14,7 @@ namespace bookmarks {
 class MockBookmarkModelObserver : public BookmarkModelObserver {
  public:
   MockBookmarkModelObserver();
-  virtual ~MockBookmarkModelObserver();
+  ~MockBookmarkModelObserver() override;
 
   MOCK_METHOD2(BookmarkModelLoaded, void(BookmarkModel*, bool));
 

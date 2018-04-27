@@ -45,7 +45,7 @@ const char kTestSchema[] =
 class MockSchemaRegistryObserver : public SchemaRegistry::Observer {
  public:
   MockSchemaRegistryObserver() {}
-  virtual ~MockSchemaRegistryObserver() {}
+  ~MockSchemaRegistryObserver() override {}
 
   MOCK_METHOD1(OnSchemaRegistryUpdated, void(bool));
   MOCK_METHOD0(OnSchemaRegistryReady, void());

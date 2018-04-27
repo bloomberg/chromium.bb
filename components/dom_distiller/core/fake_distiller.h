@@ -20,7 +20,7 @@ namespace test {
 class MockDistillerFactory : public DistillerFactory {
  public:
   MockDistillerFactory();
-  virtual ~MockDistillerFactory();
+  ~MockDistillerFactory() override;
   MOCK_METHOD0(CreateDistillerImpl, Distiller*());
   std::unique_ptr<Distiller> CreateDistillerForUrl(
       const GURL& unused) override {

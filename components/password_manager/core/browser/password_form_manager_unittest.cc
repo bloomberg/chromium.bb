@@ -305,7 +305,7 @@ class MockAutofillManager : public autofill::AutofillManager {
   bool MaybeStartVoteUploadProcess(
       std::unique_ptr<FormStructure> form_structure,
       const base::TimeTicks& timestamp,
-      bool observed_submission) {
+      bool observed_submission) override {
     MaybeStartVoteUploadProcessPtr(form_structure.release(), timestamp,
                                    observed_submission);
     return true;
@@ -335,7 +335,7 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
     mock_autofill_manager_.SetDownloadManager(mock_autofill_download_manager_);
   }
 
-  ~MockPasswordManagerDriver() {}
+  ~MockPasswordManagerDriver() override {}
 
   MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
   MOCK_METHOD0(InformNoSavedCredentials, void());

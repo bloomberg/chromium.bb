@@ -122,7 +122,7 @@ ArticleEntry GetSampleEntry(int id) {
 class MockDistillerObserver : public DomDistillerObserver {
  public:
   MOCK_METHOD1(ArticleEntriesUpdated, void(const std::vector<ArticleUpdate>&));
-  virtual ~MockDistillerObserver() {}
+  ~MockDistillerObserver() override {}
 };
 
 }  // namespace

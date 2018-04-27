@@ -42,7 +42,7 @@ class MockJsBackend : public JsBackend,
                       public base::SupportsWeakPtr<MockJsBackend> {
  public:
   MockJsBackend();
-  virtual ~MockJsBackend();
+  ~MockJsBackend() override;
 
   WeakHandle<JsBackend> AsWeakHandle();
 
@@ -53,7 +53,7 @@ class MockJsController : public JsController,
                          public base::SupportsWeakPtr<MockJsController> {
  public:
   MockJsController();
-  virtual ~MockJsController();
+  ~MockJsController() override;
 
   MOCK_METHOD1(AddJsEventHandler, void(JsEventHandler*));
   MOCK_METHOD1(RemoveJsEventHandler, void(JsEventHandler*));
@@ -63,7 +63,7 @@ class MockJsEventHandler : public JsEventHandler,
                            public base::SupportsWeakPtr<MockJsEventHandler> {
  public:
   MockJsEventHandler();
-  virtual ~MockJsEventHandler();
+  ~MockJsEventHandler() override;
 
   WeakHandle<JsEventHandler> AsWeakHandle();
 

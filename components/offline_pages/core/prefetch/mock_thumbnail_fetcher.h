@@ -18,7 +18,7 @@ class MockThumbnailFetcher : public ThumbnailFetcher {
                void(const ClientId& client_id,
                     ImageDataFetchedCallback* callback));
   void FetchSuggestionImageData(const ClientId& client_id,
-                                ImageDataFetchedCallback callback) {
+                                ImageDataFetchedCallback callback) override {
     FetchSuggestionImageData_(client_id, &callback);
   }
 };

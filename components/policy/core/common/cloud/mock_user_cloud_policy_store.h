@@ -14,7 +14,7 @@ namespace policy {
 class MockUserCloudPolicyStore : public UserCloudPolicyStore {
  public:
   MockUserCloudPolicyStore();
-  virtual ~MockUserCloudPolicyStore();
+  ~MockUserCloudPolicyStore() override;
 
   MOCK_METHOD1(Store, void(const enterprise_management::PolicyFetchResponse&));
   MOCK_METHOD0(Load, void(void));

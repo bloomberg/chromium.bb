@@ -45,7 +45,7 @@ class MockAffiliationFetchThrottler : public AffiliationFetchThrottler {
     EXPECT_CALL(*this, OnInformOfNetworkRequestComplete(testing::_)).Times(0);
   }
 
-  ~MockAffiliationFetchThrottler() {
+  ~MockAffiliationFetchThrottler() override {
     EXPECT_FALSE(signaled_network_request_needed_);
   }
 
