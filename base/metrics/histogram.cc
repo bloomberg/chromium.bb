@@ -543,6 +543,14 @@ void Histogram::WriteAscii(std::string* output) const {
   WriteAsciiImpl(true, "\n", output);
 }
 
+void Histogram::ValidateHistogramContents() const {
+  CHECK(unlogged_samples_);
+  CHECK(unlogged_samples_->bucket_ranges());
+  CHECK(logged_samples_);
+  CHECK(logged_samples_->bucket_ranges());
+  CHECK_NE(0U, logged_samples_->id());
+}
+
 void Histogram::SerializeInfoImpl(Pickle* pickle) const {
   DCHECK(bucket_ranges()->HasValidChecksum());
   pickle->WriteString(histogram_name());
