@@ -72,7 +72,8 @@ constexpr SkColor kImageBackgroundColor = kNotificationBackgroundColor;
 constexpr SkColor kRegularTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
 constexpr SkColor kDimTextColor = SkColorSetRGB(0x7f, 0x7f, 0x7f);
 // The focus border.
-constexpr SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
+constexpr SkColor kFocusBorderColor = SK_ColorTRANSPARENT;
+
 // Foreground of small icon image.
 constexpr SkColor kSmallImageMaskForegroundColor = SK_ColorWHITE;
 // Background of small icon image.

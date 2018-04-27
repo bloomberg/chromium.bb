@@ -20,9 +20,6 @@ const float kInactiveFrameButtonIconAlphaRatio = 0.2f;
 
 const float kInactiveFrameButtonIconAlphaRatioTouch = 0.43f;
 
-const SkColor kFocusBorderColor = SkColorSetA(gfx::kGoogleBlue500, 0x99);
-const int kFocusBorderThickness = 2;
-
 const int kDefaultLargeCursorSize = 64;
 
 }  // namespace ash

@@ -88,8 +88,8 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
       return;
     }
 
-    // TODO(yoshiki): Use a better tigger (eg. focusing EditText on
-    // notification) than clicking (crbug.com/697379).
+    // TODO(sarakato): Use a better tigger (eg. focusing EditText on
+    // notification) than clicking (b/78604162).
     if (event->type() == ui::ET_MOUSE_PRESSED ||
         event->type() == ui::ET_GESTURE_TAP)
       owner_->Activate();
