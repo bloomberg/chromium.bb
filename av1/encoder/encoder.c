@@ -3690,6 +3690,15 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
 
   alloc_frame_mvs(cm, cm->new_fb_idx);
 
+  // Allocate above context buffers
+  if (cm->num_allocated_above_context_mi_col < cm->mi_cols ||
+      cm->num_allocated_above_contexts < cm->tile_rows) {
+    av1_free_above_context_buffers(cm, cm->num_allocated_above_contexts);
+    if (av1_alloc_above_context_buffers(cm, cm->tile_rows))
+      aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                         "Failed to allocate context buffers");
+  }
+
   // Reset the frame pointers to the current frame size.
   if (aom_realloc_frame_buffer(get_frame_new_buffer(cm), cm->width, cm->height,
                                cm->subsampling_x, cm->subsampling_y,

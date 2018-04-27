@@ -772,7 +772,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   mbmi->palette_mode_info.palette_size[1] = 0;
   mbmi->filter_intra_mode_info.use_filter_intra = 0;
 
-  xd->above_txfm_context = cm->above_txfm_context + mi_col;
+  xd->above_txfm_context = cm->above_txfm_context[xd->tile.tile_row] + mi_col;
   xd->left_txfm_context =
       xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
 
@@ -1544,7 +1544,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 
   mbmi->current_q_index = xd->current_qindex;
 
-  xd->above_txfm_context = cm->above_txfm_context + mi_col;
+  xd->above_txfm_context = cm->above_txfm_context[xd->tile.tile_row] + mi_col;
   xd->left_txfm_context =
       xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
 

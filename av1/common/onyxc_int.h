@@ -496,9 +496,9 @@ typedef struct AV1Common {
   // External BufferPool passed from outside.
   BufferPool *buffer_pool;
 
-  PARTITION_CONTEXT *above_seg_context;
-  ENTROPY_CONTEXT *above_context[MAX_MB_PLANE];
-  TXFM_CONTEXT *above_txfm_context;
+  PARTITION_CONTEXT **above_seg_context;
+  ENTROPY_CONTEXT **above_context[MAX_MB_PLANE];
+  TXFM_CONTEXT **above_txfm_context;
   TXFM_CONTEXT *top_txfm_context[MAX_MB_PLANE];
   TXFM_CONTEXT left_txfm_context[MAX_MB_PLANE][2 * MAX_MIB_SIZE];
   int above_context_alloc_cols;
@@ -541,6 +541,8 @@ typedef struct AV1Common {
   int temporal_layer_id;
   int enhancement_layer_id;
   int enhancement_layers_cnt;
+  int num_allocated_above_context_mi_col;
+  int num_allocated_above_contexts;
 
 #if TXCOEFF_TIMER
   int64_t cum_txcoeff_timer;
@@ -703,12 +705,22 @@ static INLINE int av1_num_planes(const AV1_COMMON *cm) {
   return cm->seq_params.monochrome ? 1 : MAX_MB_PLANE;
 }
 
+static INLINE void av1_init_above_context(AV1_COMMON *cm, MACROBLOCKD *xd,
+                                          const int tile_row) {
+  const int num_planes = av1_num_planes(cm);
+  for (int i = 0; i < num_planes; ++i) {
+    xd->above_context[i] = cm->above_context[i][tile_row];
+  }
+  xd->above_seg_context = cm->above_seg_context[tile_row];
+  xd->above_txfm_context = cm->above_txfm_context[tile_row];
+}
+
 static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
                                         tran_low_t *dqcoeff) {
   const int num_planes = av1_num_planes(cm);
   for (int i = 0; i < num_planes; ++i) {
     xd->plane[i].dqcoeff = dqcoeff;
-    xd->above_context[i] = cm->above_context[i];
+
     if (xd->plane[i].plane_type == PLANE_TYPE_Y) {
       memcpy(xd->plane[i].seg_dequant_QTX, cm->y_dequant_QTX,
              sizeof(cm->y_dequant_QTX));
@@ -729,8 +741,6 @@ static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
     }
   }
   xd->fc = cm->fc;
-  xd->above_seg_context = cm->above_seg_context;
-  xd->above_txfm_context = cm->above_txfm_context;
   xd->mi_stride = cm->mi_stride;
   xd->error_info = &cm->error;
   cfl_init(&xd->cfl, cm);
@@ -1066,33 +1076,33 @@ static INLINE int max_intra_block_height(const MACROBLOCKD *xd,
 }
 
 static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
-                                          int mi_col_start, int mi_col_end) {
+  int mi_col_start, int mi_col_end, const int tile_row) {
   const int num_planes = av1_num_planes(cm);
   const int width = mi_col_end - mi_col_start;
   const int aligned_width =
-      ALIGN_POWER_OF_TWO(width, cm->seq_params.mib_size_log2);
+    ALIGN_POWER_OF_TWO(width, cm->seq_params.mib_size_log2);
 
   const int offset_y = mi_col_start;
   const int width_y = aligned_width;
   const int offset_uv = offset_y >> cm->subsampling_x;
   const int width_uv = width_y >> cm->subsampling_x;
 
-  av1_zero_array(cm->above_context[0] + offset_y, width_y);
+  av1_zero_array(cm->above_context[0][tile_row] + offset_y, width_y);
   if (num_planes > 1) {
-    if (cm->above_context[1] && cm->above_context[2]) {
-      av1_zero_array(cm->above_context[1] + offset_uv, width_uv);
-      av1_zero_array(cm->above_context[2] + offset_uv, width_uv);
+    if (cm->above_context[1][tile_row] && cm->above_context[2][tile_row]) {
+      av1_zero_array(cm->above_context[1][tile_row] + offset_uv, width_uv);
+      av1_zero_array(cm->above_context[2][tile_row] + offset_uv, width_uv);
     } else {
       aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                          "Invalid value of planes");
     }
   }
 
-  av1_zero_array(cm->above_seg_context + mi_col_start, aligned_width);
+  av1_zero_array(cm->above_seg_context[tile_row] + mi_col_start, aligned_width);
 
-  memset(cm->above_txfm_context + mi_col_start,
-         tx_size_wide[TX_SIZES_LARGEST],
-         aligned_width * sizeof(TXFM_CONTEXT));
+  memset(cm->above_txfm_context[tile_row] + mi_col_start,
+    tx_size_wide[TX_SIZES_LARGEST],
+    aligned_width * sizeof(TXFM_CONTEXT));
 }
 
 static INLINE void av1_zero_left_context(MACROBLOCKD *const xd) {

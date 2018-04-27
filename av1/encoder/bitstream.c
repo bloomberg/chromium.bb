@@ -1354,7 +1354,7 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
 
   set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
 
-  xd->above_txfm_context = cm->above_txfm_context + mi_col;
+  xd->above_txfm_context = cm->above_txfm_context[tile->tile_row] + mi_col;
   xd->left_txfm_context =
       xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
 
@@ -1693,7 +1693,9 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
   const int mi_col_end = tile->mi_col_end;
   int mi_row, mi_col;
 
-  av1_zero_above_context(cm, mi_col_start, mi_col_end);
+  av1_zero_above_context(cm, mi_col_start, mi_col_end, tile->tile_row);
+  av1_init_above_context(cm, xd, tile->tile_row);
+
   if (cpi->common.delta_q_present_flag) {
     xd->prev_qindex = cpi->common.base_qindex;
     if (cpi->common.delta_lf_present_flag) {

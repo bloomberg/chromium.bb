@@ -1821,7 +1821,8 @@ static void decode_tile(AV1Decoder *pbi, ThreadData *const td, int tile_row,
 
   av1_tile_set_row(&tile_info, cm, tile_row);
   av1_tile_set_col(&tile_info, cm, tile_col);
-  av1_zero_above_context(cm, tile_info.mi_col_start, tile_info.mi_col_end);
+  av1_zero_above_context(cm, tile_info.mi_col_start, tile_info.mi_col_end,
+                         tile_row);
   av1_reset_loop_restoration(&td->xd, num_planes);
 
   for (int mi_row = tile_info.mi_row_start; mi_row < tile_info.mi_row_end;
@@ -1958,6 +1959,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       }
 #endif
       av1_init_macroblockd(cm, &td->xd, td->dqcoeff);
+      av1_init_above_context(cm, &td->xd, row);
 
       // Initialise the tile context from the frame context
       tile_data->tctx = *cm->fc;
@@ -2027,6 +2029,7 @@ static int tile_worker_hook(void *arg1, void *arg2) {
     }
 #endif
     av1_init_macroblockd(cm, &td->xd, td->dqcoeff);
+    av1_init_above_context(cm, &td->xd, tile_row);
 
     // Initialise the tile context from the frame context
     tile_data->tctx = *cm->fc;
@@ -3303,6 +3306,14 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   read_tile_info(pbi, rb);
   setup_quantization(cm, rb);
   xd->bd = (int)cm->bit_depth;
+
+  if (cm->num_allocated_above_context_mi_col < cm->mi_cols ||
+      cm->num_allocated_above_contexts < cm->tile_rows) {
+    av1_free_above_context_buffers(cm, cm->num_allocated_above_contexts);
+    if (av1_alloc_above_context_buffers(cm, cm->tile_rows))
+      aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                         "Failed to allocate context buffers");
+  }
 
   if (cm->primary_ref_frame == PRIMARY_REF_NONE) {
     av1_setup_past_independence(cm);
