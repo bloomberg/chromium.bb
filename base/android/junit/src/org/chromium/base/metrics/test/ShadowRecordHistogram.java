@@ -13,6 +13,7 @@ import org.robolectric.annotation.Resetter;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Implementation of RecordHistogram which does not rely on native and still enables testing of
@@ -31,16 +32,26 @@ public class ShadowRecordHistogram {
     @Implementation
     public static void recordCountHistogram(String name, int sample) {
         Pair<String, Integer> key = Pair.create(name, sample);
-        Integer i = sSamples.get(key);
-        if (i == null) {
-            i = 0;
-        }
-        sSamples.put(key, i + 1);
+        incrementSampleCount(key);
+    }
+
+    @Implementation
+    public static void recordLongTimesHistogram100(String name, long duration, TimeUnit timeUnit) {
+        Pair<String, Integer> key = Pair.create(name, (int) timeUnit.toMillis(duration));
+        incrementSampleCount(key);
     }
 
     @Implementation
     public static int getHistogramValueCountForTesting(String name, int sample) {
         Integer i = sSamples.get(Pair.create(name, sample));
         return (i != null) ? i : 0;
+    }
+
+    private static void incrementSampleCount(Pair<String, Integer> key) {
+        Integer i = sSamples.get(key);
+        if (i == null) {
+            i = 0;
+        }
+        sSamples.put(key, i + 1);
     }
 }
