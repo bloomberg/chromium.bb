@@ -17,7 +17,7 @@ class TestFileChooser : public TestCase {
 
   // TestCase
   bool Init() override;
-  void RunTests(const std::string& filter);
+  void RunTests(const std::string& filter) override;
 
  private:
   // Writes the string "Hello from PPAPI" into the file represented by

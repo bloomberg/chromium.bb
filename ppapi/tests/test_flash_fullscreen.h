@@ -21,9 +21,9 @@ class TestFlashFullscreen : public TestCase {
   explicit TestFlashFullscreen(TestingInstance* instance);
 
   // TestCase implementation.
-  virtual bool Init();
-  virtual void RunTests(const std::string& filter);
-  virtual void DidChangeView(const pp::View& view);
+  bool Init() override;
+  void RunTests(const std::string& filter) override;
+  void DidChangeView(const pp::View& view) override;
   bool HandleInputEvent(const pp::InputEvent& event) override;
 
  private:
