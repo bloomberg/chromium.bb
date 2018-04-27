@@ -6611,21 +6611,31 @@ static INLINE void get_this_mv(int_mv *this_mv, int this_mode, int ref_idx,
                                const MB_MODE_INFO_EXT *mbmi_ext);
 static int discount_newmv_test(const AV1_COMP *const cpi, const MACROBLOCK *x,
                                int this_mode, int_mv this_mv) {
-  if (this_mode == NEWMV) {
+  if (this_mode == NEWMV && this_mv.as_int != 0 &&
+      !cpi->rc.is_src_frame_alt_ref) {
+    // Only discount new_mv when nearst_mv and all near_mv are zero, and the
+    // new_mv is not equal to global_mv
+    const AV1_COMMON *const cm = &cpi->common;
     const MACROBLOCKD *const xd = &x->e_mbd;
     const MB_MODE_INFO *const mbmi = xd->mi[0];
-    int_mv nearest_mv;
-    int_mv near_mv;
-    // TODO(angiebird): Check is this ref_mv_idx is set properly
-    int ref_mv_idx = AOMMAX(mbmi->ref_mv_idx - 1, 0);
     const MV_REFERENCE_FRAME tmp_ref_frames[2] = { mbmi->ref_frame[0],
                                                    NONE_FRAME };
-    get_this_mv(&nearest_mv, NEARESTMV, 0, ref_mv_idx, tmp_ref_frames,
-                x->mbmi_ext);
-    get_this_mv(&near_mv, NEARMV, 0, ref_mv_idx, tmp_ref_frames, x->mbmi_ext);
-    return (!cpi->rc.is_src_frame_alt_ref && (this_mv.as_int != 0) &&
-            ((nearest_mv.as_int == 0) || (nearest_mv.as_int == INVALID_MV)) &&
-            ((near_mv.as_int == 0) || (near_mv.as_int == INVALID_MV)));
+    const uint8_t ref_frame_type = av1_ref_frame_type(tmp_ref_frames);
+    int_mv nearest_mv;
+    get_this_mv(&nearest_mv, NEARESTMV, 0, 0, tmp_ref_frames, x->mbmi_ext);
+    int ret = nearest_mv.as_int == 0;
+    for (int ref_mv_idx = 0;
+         ref_mv_idx < x->mbmi_ext->ref_mv_count[ref_frame_type]; ++ref_mv_idx) {
+      int_mv near_mv;
+      get_this_mv(&near_mv, NEARMV, 0, ref_mv_idx, tmp_ref_frames, x->mbmi_ext);
+      ret &= near_mv.as_int == 0;
+    }
+    if (cm->global_motion[tmp_ref_frames[0]].wmtype <= TRANSLATION) {
+      int_mv global_mv;
+      get_this_mv(&global_mv, GLOBALMV, 0, 0, tmp_ref_frames, x->mbmi_ext);
+      ret &= global_mv.as_int != this_mv.as_int;
+    }
+    return ret;
   }
   return 0;
 }
@@ -10215,52 +10225,6 @@ PALETTE_EXIT:
     rd_pick_skip_mode(rd_cost, &search_state, cpi, x, bsize, mi_row, mi_col,
                       yv12_mb);
   }
-
-#if USE_DISCOUNT_NEWMV_TEST
-  // The inter modes' rate costs are not calculated precisely in some cases.
-  // Therefore, sometimes, NEWMV is chosen instead of NEARESTMV, NEARMV, and
-  // GLOBALMV. Here, checks are added for those cases, and the mode decisions
-  // are corrected.
-  if (search_state.best_mbmode.mode == NEWMV) {
-    const MV_REFERENCE_FRAME refs[2] = {
-      search_state.best_mbmode.ref_frame[0],
-      search_state.best_mbmode.ref_frame[1]
-    };
-    int_mv zeromv;
-    const uint8_t rf_type =
-        av1_ref_frame_type(search_state.best_mbmode.ref_frame);
-    zeromv.as_int =
-        gm_get_motion_vector(&cm->global_motion[refs[0]],
-                             cm->allow_high_precision_mv, bsize, mi_col, mi_row,
-                             cm->cur_frame_force_integer_mv)
-            .as_int;
-
-    // Check if the global motion mode is translational.
-    int is_tran_gm = cm->global_motion[refs[0]].wmtype <= TRANSLATION;
-    if (AOMMIN(block_size_wide[bsize], block_size_high[bsize]) < 8)
-      is_tran_gm = 1;
-    assert(refs[1] <= INTRA_FRAME);
-
-    int ref_set = (mbmi_ext->ref_mv_count[rf_type] >= 2)
-                      ? AOMMIN(2, mbmi_ext->ref_mv_count[rf_type] - 2)
-                      : INT_MAX;
-
-    for (i = 0; i <= ref_set && ref_set != INT_MAX; ++i) {
-      int_mv cur_mv = mbmi_ext->ref_mv_stack[rf_type][i + 1].this_mv;
-      if (cur_mv.as_int == search_state.best_mbmode.mv[0].as_int) {
-        search_state.best_mbmode.mode = NEARMV;
-        search_state.best_mbmode.ref_mv_idx = i;
-      }
-    }
-
-    if (search_state.frame_mv[NEARESTMV][refs[0]].as_int ==
-        search_state.best_mbmode.mv[0].as_int)
-      search_state.best_mbmode.mode = NEARESTMV;
-    else if (search_state.best_mbmode.mv[0].as_int == zeromv.as_int &&
-             is_tran_gm)
-      search_state.best_mbmode.mode = GLOBALMV;
-  }
-#endif  // USE_DISCOUNT_NEWMV_TEST
 
   // Make sure that the ref_mv_idx is only nonzero when we're
   // using a mode which can support ref_mv_idx
