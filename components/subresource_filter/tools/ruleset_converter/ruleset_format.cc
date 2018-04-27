@@ -8,42 +8,14 @@
 
 namespace subresource_filter {
 
-bool ParseFlag(const std::string& text,
-               RulesetFormat* format,
-               std::string* error) {
-  if (text.empty()) {
-    *format = RulesetFormat::kUndefined;
-    return true;
-  }
-  if (text == "filter-list") {
-    *format = RulesetFormat::kFilterList;
-    return true;
-  }
-  if (text == "proto") {
-    *format = RulesetFormat::kProto;
-    return true;
-  }
-  if (text == "unindexed-ruleset") {
-    *format = RulesetFormat::kUnindexedRuleset;
-    return true;
-  }
-  *error = "unknown RulesetFormat";
-  return false;
-}
-
-std::string UnparseFlag(RulesetFormat format) {
-  switch (format) {
-    case RulesetFormat::kUndefined:
-      return "";
-    case RulesetFormat::kFilterList:
-      return "filter-list";
-    case RulesetFormat::kProto:
-      return "proto";
-    case RulesetFormat::kUnindexedRuleset:
-      return "unindexed-ruleset";
-    default:
-      return base::IntToString(static_cast<int>(format));
-  }
+RulesetFormat ParseFlag(const std::string& text) {
+  if (text == "filter-list")
+    return RulesetFormat::kFilterList;
+  if (text == "proto")
+    return RulesetFormat::kProto;
+  if (text == "unindexed-ruleset")
+    return RulesetFormat::kUnindexedRuleset;
+  return RulesetFormat::kUndefined;
 }
 
 }  // namespace subresource_filter
