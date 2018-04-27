@@ -41,6 +41,9 @@ constexpr WTF::TimeDelta kDoubleTapDelay = TimeDelta::FromMilliseconds(300);
 // The number of seconds to jump when double tapping.
 constexpr int kNumberOfSecondsToJump = 10;
 
+// The CSS class to add to hide the element.
+const char kHiddenClassName[] = "hidden";
+
 }  // namespace.
 
 namespace blink {
@@ -166,6 +169,10 @@ void MediaControlOverlayPlayButtonElement::MaybePlayPause() {
 
   MediaElement().TogglePlayState();
 
+  // If we triggered a play event then we should quickly hide the button.
+  if (!MediaElement().paused())
+    SetIsDisplayed(false);
+
   MaybeRecordInteracted();
   UpdateDisplayType();
 }
@@ -282,6 +289,14 @@ WebSize MediaControlOverlayPlayButtonElement::GetSizeOrDefault() const {
   // button.
   return MediaControlElementsHelper::GetSizeOrDefault(
       *internal_button_, WebSize(kInnerButtonSize, kInnerButtonSize));
+}
+
+void MediaControlOverlayPlayButtonElement::SetIsDisplayed(bool displayed) {
+  if (displayed == displayed_)
+    return;
+
+  SetClass(kHiddenClassName, !displayed);
+  displayed_ = displayed;
 }
 
 void MediaControlOverlayPlayButtonElement::TapTimerFired(TimerBase*) {

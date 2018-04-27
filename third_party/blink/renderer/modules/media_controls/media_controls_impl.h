@@ -234,6 +234,9 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void MakeTransparent();
   bool IsVisible() const;
 
+  // If the overlay play button is present then make sure it is displayed.
+  void MaybeShowOverlayPlayButton();
+
   void UpdatePlayState();
 
   enum HideBehaviorFlags {

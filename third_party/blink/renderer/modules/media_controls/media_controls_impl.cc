@@ -902,12 +902,23 @@ bool MediaControlsImpl::IsVisible() const {
   return panel_->IsOpaque();
 }
 
+void MediaControlsImpl::MaybeShowOverlayPlayButton() {
+  if (overlay_play_button_)
+    overlay_play_button_->SetIsDisplayed(true);
+}
+
 void MediaControlsImpl::MakeOpaque() {
   ShowCursor();
   panel_->MakeOpaque();
+  MaybeShowOverlayPlayButton();
 }
 
 void MediaControlsImpl::MakeOpaqueFromPointerEvent() {
+  // If we have quickly hidden the controls we should always show them when we
+  // have a pointer event. If the controls are hidden the play button will
+  // remain hidden.
+  MaybeShowOverlayPlayButton();
+
   if (IsVisible())
     return;
 

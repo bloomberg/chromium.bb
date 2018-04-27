@@ -32,6 +32,8 @@ class MODULES_EXPORT MediaControlOverlayPlayButtonElement final
 
   WebSize GetSizeOrDefault() const final;
 
+  void SetIsDisplayed(bool);
+
   void Trace(blink::Visitor*) override;
 
  protected:
@@ -88,6 +90,8 @@ class MODULES_EXPORT MediaControlOverlayPlayButtonElement final
   Member<HTMLDivElement> internal_button_;
   Member<AnimatedArrow> left_jump_arrow_;
   Member<AnimatedArrow> right_jump_arrow_;
+
+  bool displayed_ = true;
 };
 
 }  // namespace blink
