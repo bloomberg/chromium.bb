@@ -2540,9 +2540,6 @@ jumbo_split_static_library("browser") {
       "metrics/tab_stats_data_store.h",
       "metrics/tab_stats_tracker.cc",
       "metrics/tab_stats_tracker.h",
-      "metrics/tab_stats_tracker_delegate.h",
-      "metrics/tab_stats_tracker_delegate_win.cc",
-      "metrics/tab_stats_tracker_win.cc",
       "metrics/tab_usage_recorder.cc",
       "metrics/tab_usage_recorder.h",
       "notifications/message_center_notification_manager.cc",
@@ -2938,7 +2935,6 @@ jumbo_split_static_library("browser") {
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
       "//third_party/wtl",
-      "//ui/aura_extra",
       "//ui/base:fullscreen_win",
     ]
 
