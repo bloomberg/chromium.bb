@@ -114,13 +114,13 @@ _gcm_ghash_v8:
 						@ loaded value would have
 						@ to be rotated in order to
 						@ make it appear as in
-						@ alorithm specification
+						@ algorithm specification
 	subs	r3,r3,#32		@ see if r3 is 32 or larger
 	mov	r12,#16		@ r12 is used as post-
 						@ increment for input pointer;
 						@ as loop is modulo-scheduled
 						@ r12 is zeroed just in time
-						@ to preclude oversteping
+						@ to preclude overstepping
 						@ inp[len], which means that
 						@ last block[s] are actually
 						@ loaded twice, but last
