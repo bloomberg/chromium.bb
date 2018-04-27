@@ -16,8 +16,10 @@ import subprocess
 import sys
 
 AUTHOR_REGEX = re.compile('author-mail <(.+)>')
-THIRD_PARTY_SEARCH_STRING = 'third_party' + os.sep
+CHROMIUM_SRC_DIR = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OWNERS_FILENAME = 'OWNERS'
+THIRD_PARTY_SEARCH_STRING = 'third_party' + os.sep
 
 
 def GetAuthorFromGitBlame(blame_output):
@@ -53,6 +55,9 @@ def GetOwnersIfThirdParty(source):
 
 def GetOwnersForFuzzer(sources):
   """Return owners given a list of sources as input."""
+  if not sources:
+    return
+
   for source in sources:
     if not os.path.exists(source):
       continue
@@ -60,8 +65,9 @@ def GetOwnersForFuzzer(sources):
     with open(source, 'r') as source_file_handle:
       source_content = source_file_handle.read()
 
-    if ('LLVMFuzzerTestOneInput' in source_content or
-        'PROTO_FUZZER' in source_content):
+    if SubStringExistsIn(
+        ['FuzzOneInput', 'LLVMFuzzerTestOneInput', 'PROTO_FUZZER'],
+        source_content):
       # Found the fuzzer source (and not dependency of fuzzer).
 
       is_git_file = bool(subprocess.check_output(['git', 'ls-files', source]))
@@ -80,18 +86,65 @@ def GetOwnersForFuzzer(sources):
   return None
 
 
+def GetSourcesFromDeps(deps_list, build_dir):
+  """Return list of sources from parsing deps."""
+  if not deps_list:
+    return None
+
+  all_sources = []
+  for deps in deps_list:
+    output = subprocess.check_output(
+        [GNPath(), 'desc', build_dir, deps, 'sources'])
+    for source in output.splitlines():
+      if source.startswith('//'):
+        source = source[2:]
+      actual_source = os.path.join(CHROMIUM_SRC_DIR, source)
+      all_sources.append(actual_source)
+
+  return all_sources
+
+
+def GNPath():
+  if sys.platform.startswith('linux'):
+    subdir, exe = 'linux64', 'gn'
+  elif sys.platform == 'darwin':
+    subdir, exe = 'mac', 'gn'
+  else:
+    subdir, exe = 'win', 'gn.exe'
+
+  return os.path.join(CHROMIUM_SRC_DIR, 'buildtools', subdir, exe)
+
+
+def SubStringExistsIn(substring_list, string):
+  """Return true if one of the substring in the list is found in |string|."""
+  for substring in substring_list:
+    if substring in string:
+      return True
+
+  return False
+
+
 def main():
   parser = argparse.ArgumentParser(description='Generate fuzzer owners file.')
   parser.add_argument('--owners', required=True)
+  parser.add_argument('--build-dir')
+  parser.add_argument('--deps', nargs='+')
   parser.add_argument('--sources', nargs='+')
   args = parser.parse_args()
-
-  owners = GetOwnersForFuzzer(args.sources)
 
   # Generate owners file.
   with open(args.owners, 'w') as owners_file:
     # If we found an owner, then write it to file.
     # Otherwise, leave empty file to keep ninja happy.
+    owners = GetOwnersForFuzzer(args.sources)
+    if owners:
+      owners_file.write(owners)
+      return
+
+    # Could not determine owners from |args.sources|.
+    # So, try parsing sources from |args.deps|.
+    deps_sources = GetSourcesFromDeps(args.deps, args.build_dir)
+    owners = GetOwnersForFuzzer(deps_sources)
     if owners:
       owners_file.write(owners)
 
