@@ -237,9 +237,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     tab_strip_->AddObserver(this);
   }
 
-  ~MockTabStripModelObserver() {
-    tab_strip_->RemoveObserver(this);
-  }
+  ~MockTabStripModelObserver() override { tab_strip_->RemoveObserver(this); }
 
   MOCK_METHOD3(TabClosingAt, void(TabStripModel*, content::WebContents*, int));
 

@@ -309,7 +309,7 @@ class MockPrinterJobHandlerDelegate
   MOCK_METHOD0(OnAuthError, void());
   MOCK_METHOD1(OnPrinterDeleted, void(const std::string& str));
 
-  virtual ~MockPrinterJobHandlerDelegate() {}
+  ~MockPrinterJobHandlerDelegate() override {}
 };
 
 
@@ -330,7 +330,7 @@ class MockPrintServerWatcher
   friend class scoped_refptr<MockPrintServerWatcher>;
 
  protected:
-  virtual ~MockPrintServerWatcher() {}
+  ~MockPrintServerWatcher() override {}
 
  private:
   PrintSystem::PrintServerWatcher::Delegate* delegate_;
@@ -351,7 +351,7 @@ class MockPrinterWatcher : public PrintSystem::PrinterWatcher {
   friend class scoped_refptr<MockPrinterWatcher>;
 
  protected:
-  virtual ~MockPrinterWatcher() {}
+  ~MockPrinterWatcher() override {}
 
  private:
   PrintSystem::PrinterWatcher::Delegate* delegate_;
@@ -378,7 +378,7 @@ class MockJobSpooler : public PrintSystem::JobSpooler {
   friend class scoped_refptr<MockJobSpooler>;
 
  protected:
-  virtual ~MockJobSpooler() {}
+  ~MockJobSpooler() override {}
 
  private:
   PrintSystem::JobSpooler::Delegate* delegate_;
@@ -438,7 +438,7 @@ class MockPrintSystem : public PrintSystem {
   friend class scoped_refptr<MockPrintSystem>;
 
  protected:
-  virtual ~MockPrintSystem() {}
+  ~MockPrintSystem() override {}
 
  private:
   scoped_refptr<MockJobSpooler> job_spooler_;

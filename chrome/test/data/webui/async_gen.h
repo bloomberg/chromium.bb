@@ -23,7 +23,7 @@ class WebUIBrowserAsyncGenTest : public WebUIBrowserTest {
   class AsyncWebUIMessageHandler : public content::WebUIMessageHandler {
    public:
     AsyncWebUIMessageHandler();
-    ~AsyncWebUIMessageHandler();
+    ~AsyncWebUIMessageHandler() override;
 
     MOCK_METHOD1(HandleTearDown, void(const base::ListValue*));
 

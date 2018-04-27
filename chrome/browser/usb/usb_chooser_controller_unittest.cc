@@ -33,7 +33,7 @@ class MockUsbChooserView : public ChooserController::View {
   void OnOptionsInitialized() override {}
   void OnOptionUpdated(size_t index) override {}
   void OnAdapterEnabledChanged(bool enabled) override {}
-  void OnRefreshStateChanged(bool enabled) {}
+  void OnRefreshStateChanged(bool enabled) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockUsbChooserView);

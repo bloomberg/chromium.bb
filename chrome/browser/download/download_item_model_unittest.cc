@@ -65,8 +65,7 @@ class DownloadItemModelTest : public testing::Test {
   DownloadItemModelTest()
       : model_(&item_) {}
 
-  virtual ~DownloadItemModelTest() {
-  }
+  ~DownloadItemModelTest() override {}
 
  protected:
   // Sets up defaults for the download item and sets |model_| to a new

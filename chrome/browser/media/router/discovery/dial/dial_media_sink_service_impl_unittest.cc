@@ -22,7 +22,7 @@ namespace media_router {
 class TestDialRegistry : public DialRegistry {
  public:
   TestDialRegistry() {}
-  ~TestDialRegistry() {}
+  ~TestDialRegistry() override {}
 
   MOCK_METHOD1(RegisterObserver, void(DialRegistry::Observer* observer));
   MOCK_METHOD1(UnregisterObserver, void(DialRegistry::Observer* observer));

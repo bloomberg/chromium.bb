@@ -27,10 +27,10 @@ class MockResourcePrefetchPredictor : public ResourcePrefetchPredictor {
  public:
   MockResourcePrefetchPredictor(const LoadingPredictorConfig& config,
                                 Profile* profile);
-  ~MockResourcePrefetchPredictor();
+  ~MockResourcePrefetchPredictor() override;
 
-  virtual void RecordPageRequestSummary(
-      std::unique_ptr<PageRequestSummary> summary) {
+  void RecordPageRequestSummary(
+      std::unique_ptr<PageRequestSummary> summary) override {
     RecordPageRequestSummaryProxy(summary.get());
   }
 

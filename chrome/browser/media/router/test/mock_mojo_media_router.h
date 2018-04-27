@@ -18,9 +18,10 @@ class MockMojoMediaRouter : public MockMediaRouter, public mojom::MediaRouter {
   ~MockMojoMediaRouter() override;
 
   // mojom::MediaRouter overrides:
-  void RegisterMediaRouteProvider(MediaRouteProviderId provider_id,
-                                  mojom::MediaRouteProviderPtr provider_ptr,
-                                  RegisterMediaRouteProviderCallback callback) {
+  void RegisterMediaRouteProvider(
+      MediaRouteProviderId provider_id,
+      mojom::MediaRouteProviderPtr provider_ptr,
+      RegisterMediaRouteProviderCallback callback) override {
     RegisterMediaRouteProviderInternal(provider_id, provider_ptr, callback);
   }
   MOCK_METHOD3(RegisterMediaRouteProviderInternal,
@@ -56,10 +57,10 @@ class MockMojoMediaRouter : public MockMediaRouter, public mojom::MediaRouter {
                void(const std::string& route_id,
                     const std::vector<content::PresentationConnectionMessage>&
                         messages));
-  void OnMediaRemoterCreated(
-      int32_t tab_id,
-      media::mojom::MirrorServiceRemoterPtr remoter,
-      media::mojom::MirrorServiceRemotingSourceRequest source_request) {
+  void OnMediaRemoterCreated(int32_t tab_id,
+                             media::mojom::MirrorServiceRemoterPtr remoter,
+                             media::mojom::MirrorServiceRemotingSourceRequest
+                                 source_request) override {
     OnMediaRemoterCreatedInternal(tab_id, remoter, source_request);
   }
   MOCK_METHOD3(

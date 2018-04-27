@@ -30,7 +30,7 @@ class MockCloudPolicyClient : public policy::MockCloudPolicyClient {
   void UploadChromeDesktopReport(
       std::unique_ptr<enterprise_management::ChromeDesktopReportRequest>
           request,
-      const StatusCallback& callback) {
+      const StatusCallback& callback) override {
     UploadChromeDesktopReportProxy(request.get(), callback);
   }
   MOCK_METHOD2(UploadChromeDesktopReportProxy,

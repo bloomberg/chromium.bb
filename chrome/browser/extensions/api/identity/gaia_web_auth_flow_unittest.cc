@@ -64,7 +64,7 @@ class IdentityGaiaWebAuthFlowTest : public testing::Test {
   IdentityGaiaWebAuthFlowTest()
       : ubertoken_error_state_(GoogleServiceAuthError::NONE) {}
 
-  virtual void TearDown() {
+  void TearDown() override {
     testing::Test::TearDown();
     base::RunLoop loop;
     loop.RunUntilIdle();  // Run tasks so FakeWebAuthFlows get deleted.

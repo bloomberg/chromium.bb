@@ -38,7 +38,7 @@ class MockPhishingClassifier : public PhishingClassifier {
   explicit MockPhishingClassifier(content::RenderFrame* render_frame)
       : PhishingClassifier(render_frame, NULL /* clock */) {}
 
-  virtual ~MockPhishingClassifier() {}
+  ~MockPhishingClassifier() override {}
 
   MOCK_METHOD2(BeginClassification,
                void(const base::string16*, const DoneCallback&));
@@ -51,7 +51,7 @@ class MockPhishingClassifier : public PhishingClassifier {
 class MockScorer : public Scorer {
  public:
   MockScorer() : Scorer() {}
-  virtual ~MockScorer() {}
+  ~MockScorer() override {}
 
   MOCK_CONST_METHOD1(ComputeScore, double(const FeatureMap&));
 

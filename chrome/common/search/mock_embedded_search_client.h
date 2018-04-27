@@ -11,7 +11,7 @@
 class MockEmbeddedSearchClient : public chrome::mojom::EmbeddedSearchClient {
  public:
   MockEmbeddedSearchClient();
-  ~MockEmbeddedSearchClient();
+  ~MockEmbeddedSearchClient() override;
 
   MOCK_METHOD1(SetPageSequenceNumber, void(int));
   MOCK_METHOD2(ChromeIdentityCheckResult, void(const base::string16&, bool));

@@ -35,8 +35,7 @@ class ServiceProcessControlBrowserTest
  public:
   ServiceProcessControlBrowserTest() {
   }
-  virtual ~ServiceProcessControlBrowserTest() {
-  }
+  ~ServiceProcessControlBrowserTest() override {}
 
   void HistogramsCallback() {
     MockHistogramsCallback();

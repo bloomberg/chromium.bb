@@ -16,7 +16,7 @@ namespace content_settings {
 class MockObserver : public Observer {
  public:
   MockObserver();
-  virtual ~MockObserver();
+  ~MockObserver() override;
 
   MOCK_METHOD4(OnContentSettingChanged,
                void(const ContentSettingsPattern& primary_pattern,

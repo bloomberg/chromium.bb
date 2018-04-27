@@ -33,10 +33,11 @@ class MockBrowserUiInterface : public BrowserUiInterface {
   MOCK_METHOD1(SetSpeechRecognitionEnabled, void(bool enabled));
   MOCK_METHOD1(SetRecognitionResult, void(const base::string16& result));
   MOCK_METHOD1(OnSpeechRecognitionStateChanged, void(int new_state));
-  void SetOmniboxSuggestions(std::unique_ptr<OmniboxSuggestions> suggestions) {}
+  void SetOmniboxSuggestions(
+      std::unique_ptr<OmniboxSuggestions> suggestions) override {}
   void OnAssetsLoaded(AssetsLoadStatus status,
                       std::unique_ptr<Assets> assets,
-                      const base::Version& component_version) {}
+                      const base::Version& component_version) override {}
   MOCK_METHOD0(OnAssetsUnavailable, void());
   MOCK_METHOD1(SetRegularTabsOpen, void(bool));
   MOCK_METHOD1(SetIncognitoTabsOpen, void(bool));

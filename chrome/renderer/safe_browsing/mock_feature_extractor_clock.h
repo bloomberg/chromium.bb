@@ -16,7 +16,7 @@ namespace safe_browsing {
 class MockFeatureExtractorClock : public FeatureExtractorClock {
  public:
   MockFeatureExtractorClock();
-  virtual ~MockFeatureExtractorClock();
+  ~MockFeatureExtractorClock() override;
 
   MOCK_METHOD0(Now, base::TimeTicks());
 

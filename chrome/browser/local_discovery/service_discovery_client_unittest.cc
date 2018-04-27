@@ -414,10 +414,9 @@ class ServiceResolverTest : public ServiceDiscoveryTest {
     EXPECT_TRUE(ip_address_expected_.AssignFromIPLiteral("1.2.3.4"));
   }
 
-  ~ServiceResolverTest() {
-  }
+  ~ServiceResolverTest() override {}
 
-  void SetUp()  {
+  void SetUp() override {
     resolver_ = service_discovery_client_.CreateServiceResolver(
                     "hello._privet._tcp.local",
                      base::Bind(&ServiceResolverTest::OnFinishedResolving,

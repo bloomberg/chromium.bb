@@ -46,7 +46,7 @@ const char kTestFileSystemType[] = "vfat";
 class MockOperationManager : public OperationManager {
  public:
   explicit MockOperationManager(content::BrowserContext* context);
-  virtual ~MockOperationManager();
+  ~MockOperationManager() override;
 
   MOCK_METHOD3(OnProgress, void(const ExtensionId& extension_id,
                                 image_writer_api::Stage stage,

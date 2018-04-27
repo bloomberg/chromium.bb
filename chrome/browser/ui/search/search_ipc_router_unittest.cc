@@ -73,7 +73,7 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
 
 class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
  public:
-  virtual ~MockSearchIPCRouterPolicy() {}
+  ~MockSearchIPCRouterPolicy() override {}
 
   MOCK_METHOD1(ShouldProcessFocusOmnibox, bool(bool));
   MOCK_METHOD0(ShouldProcessDeleteMostVisitedItem, bool());

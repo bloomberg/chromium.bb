@@ -37,7 +37,7 @@ class MockWebRtcEventLogUploaderObserver
   // Combines the mock functionality via a helper (CompletionCallback), as well
   // as calls the completion closure.
   void OnWebRtcEventLogUploadComplete(const base::FilePath& log_file,
-                                      bool upload_successful) {
+                                      bool upload_successful) override {
     CompletionCallback(log_file, upload_successful);
     std::move(completion_closure_).Run();
   }

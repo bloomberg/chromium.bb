@@ -26,7 +26,7 @@ class PasswordsClientUIDelegate;
 class ManagePasswordsTest : public InProcessBrowserTest {
  public:
   ManagePasswordsTest();
-  ~ManagePasswordsTest();
+  ~ManagePasswordsTest() override;
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override;

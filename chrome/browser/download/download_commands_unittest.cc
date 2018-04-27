@@ -31,8 +31,7 @@ class DownloadCommandsTest : public testing::Test {
  public:
   DownloadCommandsTest() : commands_(&item_) {}
 
-  virtual ~DownloadCommandsTest() {
-  }
+  ~DownloadCommandsTest() override {}
 
  protected:
   // Sets up defaults for the download item.

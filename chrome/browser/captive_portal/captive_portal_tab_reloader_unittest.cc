@@ -31,8 +31,7 @@ class TestCaptivePortalTabReloader : public CaptivePortalTabReloader {
                                  base::Callback<void(void)>()) {
   }
 
-  virtual ~TestCaptivePortalTabReloader() {
-  }
+  ~TestCaptivePortalTabReloader() override {}
 
   bool TimerRunning() {
     return slow_ssl_load_timer_.IsRunning();

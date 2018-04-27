@@ -15,7 +15,7 @@ namespace safe_browsing {
 class MockIncidentReceiver : public IncidentReceiver {
  public:
   MockIncidentReceiver();
-  ~MockIncidentReceiver();
+  ~MockIncidentReceiver() override;
 
   MOCK_METHOD2(DoAddIncidentForProfile,
                void(Profile*, std::unique_ptr<Incident>*));

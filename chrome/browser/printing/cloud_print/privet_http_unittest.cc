@@ -455,15 +455,15 @@ class MockRegisterDelegate : public PrivetRegisterOperation::Delegate {
 
 class MockLocalPrintDelegate : public PrivetLocalPrintOperation::Delegate {
  public:
-  virtual void OnPrivetPrintingDone(
-      const PrivetLocalPrintOperation* print_operation) {
+  void OnPrivetPrintingDone(
+      const PrivetLocalPrintOperation* print_operation) override {
     OnPrivetPrintingDoneInternal();
   }
 
   MOCK_METHOD0(OnPrivetPrintingDoneInternal, void());
 
-  virtual void OnPrivetPrintingError(
-      const PrivetLocalPrintOperation* print_operation, int http_code) {
+  void OnPrivetPrintingError(const PrivetLocalPrintOperation* print_operation,
+                             int http_code) override {
     OnPrivetPrintingErrorInternal(http_code);
   }
 

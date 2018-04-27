@@ -141,7 +141,7 @@ class ProfileSyncServiceMockForExtensionTests
  public:
   explicit ProfileSyncServiceMockForExtensionTests(Profile* p)
       : ProfileSyncServiceMock(CreateProfileSyncServiceParamsForTest(p)) {}
-  ~ProfileSyncServiceMockForExtensionTests() {}
+  ~ProfileSyncServiceMockForExtensionTests() override {}
 
   MOCK_METHOD0(Shutdown, void());
   MOCK_CONST_METHOD0(GetDeviceInfoTracker, DeviceInfoTracker*());

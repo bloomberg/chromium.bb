@@ -14,7 +14,7 @@ namespace sync_file_system {
 class MockLocalChangeProcessor : public LocalChangeProcessor {
  public:
   MockLocalChangeProcessor();
-  virtual ~MockLocalChangeProcessor();
+  ~MockLocalChangeProcessor() override;
 
   // LocalChangeProcessor override.
   MOCK_METHOD5(ApplyLocalChange,

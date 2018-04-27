@@ -487,8 +487,8 @@ class MockEventRouter : public EventRouter {
                     const GURL& event_url,
                     EventRouter::UserGestureState state));
 
-  virtual void DispatchEventToExtension(const std::string& extension_id,
-                                        std::unique_ptr<Event> event) {
+  void DispatchEventToExtension(const std::string& extension_id,
+                                std::unique_ptr<Event> event) override {
     DispatchEventToExtensionMock(extension_id,
                                  event->event_name,
                                  event->event_args.release(),

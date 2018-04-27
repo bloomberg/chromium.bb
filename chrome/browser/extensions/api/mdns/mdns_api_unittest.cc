@@ -98,9 +98,9 @@ class MockEventRouter : public EventRouter {
   explicit MockEventRouter(content::BrowserContext* browser_context,
                            ExtensionPrefs* extension_prefs)
       : EventRouter(browser_context, extension_prefs) {}
-  virtual ~MockEventRouter() {}
+  ~MockEventRouter() override {}
 
-  virtual void BroadcastEvent(std::unique_ptr<Event> event) {
+  void BroadcastEvent(std::unique_ptr<Event> event) override {
     BroadcastEventPtr(event.get());
   }
   MOCK_METHOD1(BroadcastEventPtr, void(Event* event));

@@ -21,7 +21,7 @@ class ChromeSendWebUITest : public WebUIBrowserTest {
   class ChromeSendWebUIMessageHandler : public content::WebUIMessageHandler {
    public:
     ChromeSendWebUIMessageHandler();
-    ~ChromeSendWebUIMessageHandler();
+    ~ChromeSendWebUIMessageHandler() override;
 
     MOCK_METHOD1(HandleCheckSend, void(const base::ListValue*));
 

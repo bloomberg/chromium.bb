@@ -38,7 +38,7 @@ class MockWebContentsObserver : public content::WebContentsObserver {
  public:
   explicit MockWebContentsObserver(content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents) {}
-  virtual ~MockWebContentsObserver() {}
+  ~MockWebContentsObserver() override {}
 
   // A hook to verify that the OneClickSigninSyncObserver initiated a redirect
   // to the continue URL. Navigations in unit_tests never complete, but a

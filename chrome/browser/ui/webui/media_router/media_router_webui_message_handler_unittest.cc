@@ -89,7 +89,7 @@ class MockMediaRouterUI : public MediaRouterUI {
  public:
   explicit MockMediaRouterUI(content::WebUI* web_ui)
       : MediaRouterUI(web_ui) {}
-  ~MockMediaRouterUI() {}
+  ~MockMediaRouterUI() override {}
 
   MOCK_METHOD0(UIInitialized, void());
   MOCK_CONST_METHOD0(UserSelectedTabMirroringForCurrentOrigin, bool());

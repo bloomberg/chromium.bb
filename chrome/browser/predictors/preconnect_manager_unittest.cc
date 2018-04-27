@@ -35,7 +35,7 @@ class MockPreconnectManagerDelegate
       public base::SupportsWeakPtr<MockPreconnectManagerDelegate> {
  public:
   // Gmock doesn't support mocking methods with move-only argument types.
-  virtual void PreconnectFinished(std::unique_ptr<PreconnectStats> stats) {
+  void PreconnectFinished(std::unique_ptr<PreconnectStats> stats) override {
     PreconnectFinishedProxy(stats->url);
   }
 
