@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
@@ -41,6 +42,9 @@ const int kKeyNamePaddingPx = 5;
 // really a dialog, but a dialog title is a good fit.
 constexpr int kInstructionTextContext = views::style::CONTEXT_DIALOG_TITLE;
 
+// Delimiter indicating there should be a segment displayed as a keyboard key.
+const char kKeyNameDelimiter[] = "|";
+
 }  // namespace
 
 // Class containing the instruction text. Contains fancy styling on the keyboard
@@ -55,6 +59,7 @@ class SubtleNotificationView::InstructionView : public views::View {
                   SkColor foreground_color,
                   SkColor background_color);
 
+  const base::string16 text() const { return text_; }
   void SetText(const base::string16& text);
 
  private:
@@ -93,8 +98,8 @@ void SubtleNotificationView::InstructionView::SetText(
 
   // Parse |text|, looking for pipe-delimited segment.
   std::vector<base::string16> segments =
-      base::SplitString(text, base::ASCIIToUTF16("|"), base::TRIM_WHITESPACE,
-                        base::SPLIT_WANT_ALL);
+      base::SplitString(text, base::ASCIIToUTF16(kKeyNameDelimiter),
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   // SplitString() returns empty strings for zero-length segments, so given an
   // even number of pipes, there should always be an odd number of segments.
   // The exception is if |text| is entirely empty, in which case the returned
@@ -202,4 +207,12 @@ views::Widget* SubtleNotificationView::CreatePopupWidget(
   popup->GetRootView()->SetLayoutManager(nullptr);
 
   return popup;
+}
+
+void SubtleNotificationView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kAlert;
+  base::string16 accessible_name;
+  base::RemoveChars(instruction_view_->text(),
+                    base::ASCIIToUTF16(kKeyNameDelimiter), &accessible_name);
+  node_data->SetName(accessible_name);
 }
