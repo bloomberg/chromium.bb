@@ -2203,26 +2203,6 @@ int RenderFrameHostImpl::GetEnabledBindings() const {
   return enabled_bindings_;
 }
 
-void RenderFrameHostImpl::BlockRequestsForFrame() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  NotifyForEachFrameFromUI(
-      this,
-      base::BindRepeating(&ResourceDispatcherHostImpl::BlockRequestsForRoute));
-}
-
-void RenderFrameHostImpl::ResumeBlockedRequestsForFrame() {
-  NotifyForEachFrameFromUI(
-      this, base::BindRepeating(
-                &ResourceDispatcherHostImpl::ResumeBlockedRequestsForRoute));
-}
-
-void RenderFrameHostImpl::CancelBlockedRequestsForFrame() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  NotifyForEachFrameFromUI(
-      this, base::BindRepeating(
-                &ResourceDispatcherHostImpl::CancelBlockedRequestsForRoute));
-}
-
 void RenderFrameHostImpl::DisableBeforeUnloadHangMonitorForTesting() {
   beforeunload_timeout_.reset();
 }
@@ -4104,6 +4084,26 @@ bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {
 
   // Give the client a chance to disallow URLs from committing.
   return GetContentClient()->browser()->CanCommitURL(GetProcess(), url);
+}
+
+void RenderFrameHostImpl::BlockRequestsForFrame() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  NotifyForEachFrameFromUI(
+      this,
+      base::BindRepeating(&ResourceDispatcherHostImpl::BlockRequestsForRoute));
+}
+
+void RenderFrameHostImpl::ResumeBlockedRequestsForFrame() {
+  NotifyForEachFrameFromUI(
+      this, base::BindRepeating(
+                &ResourceDispatcherHostImpl::ResumeBlockedRequestsForRoute));
+}
+
+void RenderFrameHostImpl::CancelBlockedRequestsForFrame() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  NotifyForEachFrameFromUI(
+      this, base::BindRepeating(
+                &ResourceDispatcherHostImpl::CancelBlockedRequestsForRoute));
 }
 
 bool RenderFrameHostImpl::IsSameSiteInstance(
