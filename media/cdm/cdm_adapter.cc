@@ -34,7 +34,6 @@
 #include "media/base/video_types.h"
 #include "media/cdm/cdm_auxiliary_helper.h"
 #include "media/cdm/cdm_helpers.h"
-#include "media/cdm/cdm_module.h"
 #include "media/cdm/cdm_wrapper.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/origin.h"
@@ -471,6 +470,7 @@ void CdmAdapter::Create(
     const std::string& key_system,
     const url::Origin& security_origin,
     const CdmConfig& cdm_config,
+    CreateCdmFunc create_cdm_func,
     std::unique_ptr<CdmAuxiliaryHelper> helper,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -484,8 +484,8 @@ void CdmAdapter::Create(
   DCHECK(!session_expiration_update_cb.is_null());
 
   scoped_refptr<CdmAdapter> cdm =
-      new CdmAdapter(key_system, security_origin, cdm_config, std::move(helper),
-                     session_message_cb, session_closed_cb,
+      new CdmAdapter(key_system, security_origin, cdm_config, create_cdm_func,
+                     std::move(helper), session_message_cb, session_closed_cb,
                      session_keys_change_cb, session_expiration_update_cb);
 
   // |cdm| ownership passed to the promise.
@@ -496,6 +496,7 @@ CdmAdapter::CdmAdapter(
     const std::string& key_system,
     const url::Origin& security_origin,
     const CdmConfig& cdm_config,
+    CreateCdmFunc create_cdm_func,
     std::unique_ptr<CdmAuxiliaryHelper> helper,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -504,26 +505,32 @@ CdmAdapter::CdmAdapter(
     : key_system_(key_system),
       origin_string_(security_origin.Serialize()),
       cdm_config_(cdm_config),
+      create_cdm_func_(create_cdm_func),
+      helper_(std::move(helper)),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb),
-      helper_(std::move(helper)),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       pool_(new AudioBufferMemoryPool()),
       weak_factory_(this) {
+  DVLOG(1) << __func__;
+
   DCHECK(!key_system_.empty());
-  DCHECK(!session_message_cb_.is_null());
-  DCHECK(!session_closed_cb_.is_null());
-  DCHECK(!session_keys_change_cb_.is_null());
-  DCHECK(!session_expiration_update_cb_.is_null());
+  DCHECK(create_cdm_func_);
   DCHECK(helper_);
+  DCHECK(session_message_cb_);
+  DCHECK(session_closed_cb_);
+  DCHECK(session_keys_change_cb_);
+  DCHECK(session_expiration_update_cb_);
 
   helper_->SetFileReadCB(
       base::Bind(&CdmAdapter::OnFileRead, weak_factory_.GetWeakPtr()));
 }
 
 CdmAdapter::~CdmAdapter() {
+  DVLOG(1) << __func__;
+
   // Reject any outstanding promises and close all the existing sessions.
   cdm_promise_adapter_.Clear();
 
@@ -536,13 +543,7 @@ CdmAdapter::~CdmAdapter() {
 CdmWrapper* CdmAdapter::CreateCdmInstance(const std::string& key_system) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  CreateCdmFunc create_cdm_func = CdmModule::GetInstance()->GetCreateCdmFunc();
-  if (!create_cdm_func) {
-    LOG(ERROR) << "Failed to get CreateCdmFunc!";
-    return nullptr;
-  }
-
-  CdmWrapper* cdm = CdmWrapper::Create(create_cdm_func, key_system.data(),
+  CdmWrapper* cdm = CdmWrapper::Create(create_cdm_func_, key_system.data(),
                                        key_system.size(), GetCdmHost, this);
   DVLOG(1) << "CDM instance for " + key_system + (cdm ? "" : " could not be") +
                   " created.";
@@ -560,6 +561,8 @@ CdmWrapper* CdmAdapter::CreateCdmInstance(const std::string& key_system) {
 }
 
 void CdmAdapter::Initialize(std::unique_ptr<media::SimpleCdmPromise> promise) {
+  DVLOG(1) << __func__;
+
   cdm_.reset(CreateCdmInstance(key_system_));
   if (!cdm_) {
     promise->reject(CdmPromise::Exception::INVALID_STATE_ERROR, 0,

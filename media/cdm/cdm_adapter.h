@@ -43,6 +43,12 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
                                 public cdm::Host_10,
                                 public cdm::Host_11 {
  public:
+  using CreateCdmFunc = void* (*)(int cdm_interface_version,
+                                  const char* key_system,
+                                  uint32_t key_system_size,
+                                  GetCdmHostFunc get_cdm_host_func,
+                                  void* user_data);
+
   // Creates the CDM and initialize it using |key_system| and |cdm_config|.
   // |allocator| is to be used whenever the CDM needs memory and to create
   // VideoFrames. |file_io_provider| is to be used whenever the CDM needs access
@@ -52,6 +58,7 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
       const std::string& key_system,
       const url::Origin& security_origin,
       const CdmConfig& cdm_config,
+      CreateCdmFunc create_cdm_func,
       std::unique_ptr<CdmAuxiliaryHelper> helper,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
@@ -160,6 +167,7 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   CdmAdapter(const std::string& key_system,
              const url::Origin& security_origin,
              const CdmConfig& cdm_config,
+             CreateCdmFunc create_cdm_func,
              std::unique_ptr<CdmAuxiliaryHelper> helper,
              const SessionMessageCB& session_message_cb,
              const SessionClosedCB& session_closed_cb,
@@ -212,14 +220,16 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   const std::string origin_string_;
   const CdmConfig cdm_config_;
 
+  CreateCdmFunc create_cdm_func_;
+
+  // Helper that provides additional functionality for the CDM.
+  std::unique_ptr<CdmAuxiliaryHelper> helper_;
+
   // Callbacks for firing session events.
   SessionMessageCB session_message_cb_;
   SessionClosedCB session_closed_cb_;
   SessionKeysChangeCB session_keys_change_cb_;
   SessionExpirationUpdateCB session_expiration_update_cb_;
-
-  // Helper that provides additional functionality for the CDM.
-  std::unique_ptr<CdmAuxiliaryHelper> helper_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<AudioBufferMemoryPool> pool_;
