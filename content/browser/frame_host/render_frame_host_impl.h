@@ -61,6 +61,7 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/viz/public/interfaces/hit_test/input_target_client.mojom.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/platform/dedicated_worker_factory.mojom.h"
 #include "third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
 #include "third_party/blink/public/platform/modules/webauth/authenticator.mojom.h"
@@ -1026,6 +1027,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       media::mojom::InterfaceFactoryRequest request);
 
   void CreateWebSocket(network::mojom::WebSocketRequest request);
+
+  void CreateDedicatedWorkerHostFactory(
+      blink::mojom::DedicatedWorkerFactoryRequest request);
 
   // Callback for connection error on the media::mojom::InterfaceFactory client.
   void OnMediaInterfaceFactoryConnectionError();

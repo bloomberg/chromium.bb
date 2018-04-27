@@ -76,7 +76,7 @@ class TestWebSocketManager : public WebSocketManager {
   }
 
  private:
-  std::unique_ptr<network::WebSocket> CreateWebSocket(
+  std::unique_ptr<network::WebSocket> DoCreateWebSocketInternal(
       std::unique_ptr<network::WebSocket::Delegate> delegate,
       network::mojom::WebSocketRequest request,
       network::WebSocketThrottler::PendingConnection pending_connection_tracker,

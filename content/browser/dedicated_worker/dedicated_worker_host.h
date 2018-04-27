@@ -12,12 +12,12 @@ class Origin;
 }
 
 namespace content {
-class RenderProcessHost;
 
 void CreateDedicatedWorkerHostFactory(
-    blink::mojom::DedicatedWorkerFactoryRequest request,
-    RenderProcessHost* host,
-    const url::Origin& origin);
+    int process_id,
+    int parent_render_frame_id,
+    const url::Origin& origin,
+    blink::mojom::DedicatedWorkerFactoryRequest request);
 
 }  // namespace content
 
