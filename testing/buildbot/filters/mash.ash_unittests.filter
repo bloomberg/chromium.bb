@@ -302,6 +302,7 @@
 -WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange
 -WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange_2ndOnLeft
 -WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange_PrimaryDisconnected
+-WindowTreeHostManagerTest.UpdateNonVisibleMouseLocationAfterDisplayChange_PrimaryDisconnected
 -WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange_SwapPrimary
 
 # TODO: Panel focus is broken. http://crbug.com/780936

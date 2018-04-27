@@ -1691,6 +1691,48 @@ TEST_F(WindowTreeHostManagerTest,
   EXPECT_EQ(display::Display::ROTATE_90, test_api.GetCurrentCursorRotation());
 }
 
+TEST_F(WindowTreeHostManagerTest,
+       UpdateNonVisibleMouseLocationAfterDisplayChange_PrimaryDisconnected) {
+  aura::Env* env = aura::Env::GetInstance();
+  Shell* shell = Shell::Get();
+  WindowTreeHostManager* window_tree_host_manager =
+      shell->window_tree_host_manager();
+  CursorManagerTestApi test_api(shell->cursor_manager());
+
+  UpdateDisplay("300x300*2/r,200x200");
+  // Swap the primary display to make it possible to remove the primary display
+  // via UpdateDisplay().
+  SwapPrimaryDisplay();
+  int primary_display_id = window_tree_host_manager->GetPrimaryDisplayId();
+  gfx::Point cursor_location(20, 50);
+
+  window_tree_host_manager->GetPrimaryRootWindow()->MoveCursorTo(
+      cursor_location);
+
+  // Hide cursor before disconnecting the display.
+  shell->cursor_manager()->HideCursor();
+
+  EXPECT_EQ(cursor_location, env->last_mouse_location());
+  EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(display::Display::ROTATE_0, test_api.GetCurrentCursorRotation());
+
+  UpdateDisplay("300x300*2/r");
+  ASSERT_NE(primary_display_id,
+            window_tree_host_manager->GetPrimaryDisplayId());
+
+  // Show the mouse cursor before checking properties which should be as if the
+  // mouse cursor was never hidden.
+  shell->cursor_manager()->ShowCursor();
+
+  // The cursor will not be centered since it was hidden when the display list
+  // was updated.
+  EXPECT_EQ(gfx::Point(20, 50), env->last_mouse_location());
+
+  // The cursor scale and rotation should be updated.
+  EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
+  EXPECT_EQ(display::Display::ROTATE_90, test_api.GetCurrentCursorRotation());
+}
+
 // GetRootWindowForDisplayId() for removed display::Display during
 // OnDisplayRemoved() should not cause crash. See http://crbug.com/415222
 TEST_F(WindowTreeHostManagerTest,

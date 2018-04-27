@@ -467,12 +467,12 @@ void WindowTreeHostManager::UpdateMouseLocationAfterDisplayChange() {
   if (target_location_in_native !=
           cursor_location_in_native_coords_for_restore_ ||
       target_display_id != cursor_display_id_for_restore_) {
-    // TODO(oshima): Moving the cursor was necessary for x11, but We
-    // probably do not have to do this any more on ozone.  Consider
-    // just notifying the cursor location change.
-    if (Shell::Get()->cursor_manager() &&
-        Shell::Get()->cursor_manager()->IsCursorVisible()) {
-      dst_root_window->MoveCursorTo(target_location_in_root);
+    if (Shell::Get()->cursor_manager()) {
+      if (Shell::Get()->cursor_manager()->IsCursorVisible()) {
+        dst_root_window->MoveCursorTo(target_location_in_root);
+      } else if (target_display_id != cursor_display_id_for_restore_) {
+        Shell::Get()->cursor_manager()->SetDisplay(target_display);
+      }
     }
 
   } else if (target_location_in_screen !=
