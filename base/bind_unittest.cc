@@ -323,7 +323,7 @@ class BindTest : public ::testing::Test {
     static_func_mock_ptr = &static_func_mock_;
   }
 
-  virtual ~BindTest() = default;
+  ~BindTest() override = default;
 
   static void VoidFunc0() {
     static_func_mock_ptr->VoidMethod0();
