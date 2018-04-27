@@ -106,7 +106,6 @@ bool WebUIImpl::OnMessageReceived(const IPC::Message& message,
 }
 
 void WebUIImpl::OnWebUISend(RenderFrameHost* sender,
-                            const GURL& source_url,
                             const std::string& message,
                             const base::ListValue& args) {
   // Ignore IPCs from frames that are pending deletion.  See also
@@ -114,6 +113,7 @@ void WebUIImpl::OnWebUISend(RenderFrameHost* sender,
   if (!sender->IsCurrent())
     return;
 
+  const GURL& source_url = sender->GetLastCommittedURL();
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           sender->GetProcess()->GetID()) ||
       !WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(

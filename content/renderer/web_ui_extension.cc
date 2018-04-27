@@ -122,7 +122,6 @@ void WebUIExtension::Send(gin::Arguments* args) {
 
   // Send the message up to the browser.
   render_frame->Send(new FrameHostMsg_WebUISend(render_frame->GetRoutingID(),
-                                                frame->GetDocument().Url(),
                                                 message, *content));
 }
 

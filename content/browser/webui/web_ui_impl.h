@@ -86,7 +86,6 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
 
   // IPC message handling.
   void OnWebUISend(RenderFrameHost* sender,
-                   const GURL& source_url,
                    const std::string& message,
                    const base::ListValue& args);
 
