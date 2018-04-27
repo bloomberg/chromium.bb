@@ -18,7 +18,6 @@ source_set("lib") {
     "//ash/touch_hud",
     "//base",
     "//mash/public/mojom",
-    "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
     "//services/ui/public/cpp",

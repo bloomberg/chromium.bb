@@ -28,7 +28,6 @@ source_set("cpp") {
   ]
 
   deps = [
-    "//mojo/common:values_struct_traits",
     "//mojo/public/cpp/bindings",
     "//services/preferences/public/cpp/lib",
   ]

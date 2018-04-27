@@ -1177,7 +1177,6 @@ component("ash") {
     "//ash/strings",
     "//ash/wayland",
     "//mash/public/mojom",
-    "//mojo/common:values_struct_traits",
     "//mojo/public/cpp/system",
     "//services/ui/common:mus_common",
     "//services/ui/public/cpp",

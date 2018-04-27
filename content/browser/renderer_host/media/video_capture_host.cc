@@ -13,7 +13,6 @@
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "mojo/common/values_struct_traits.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {

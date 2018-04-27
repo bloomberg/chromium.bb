@@ -1,5 +1,4 @@
 include_rules = [
-  "+mojo/common",
   "+mojo/public",
   "+services/ui/public/interfaces",
   "+ui/events",

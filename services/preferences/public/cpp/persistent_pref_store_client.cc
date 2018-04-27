@@ -6,8 +6,6 @@
 
 #include "base/values.h"
 #include "components/prefs/pref_registry.h"
-#include "mojo/common/values.mojom.h"
-#include "mojo/common/values_struct_traits.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/preferences/public/cpp/pref_registry_serializer.h"
 

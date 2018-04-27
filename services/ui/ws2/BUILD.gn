@@ -68,7 +68,6 @@ static_library("test_support") {
     "//base",
     "//base/test:test_config",
     "//components/viz/test:test_support",
-    "//mojo/common",
     "//mojo/public/cpp/bindings:bindings",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",

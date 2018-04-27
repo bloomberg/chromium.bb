@@ -4,7 +4,6 @@
 
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "mojo/common/values_struct_traits.h"
 
 namespace content {
 

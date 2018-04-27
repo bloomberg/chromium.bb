@@ -60,7 +60,6 @@ if (enable_basic_printing) {
       "//cc/paint:paint",
       "//components/crash/core/common:crash_key",
       "//components/printing/service/public/interfaces",
-      "//mojo/common",
       "//services/service_manager/public/cpp:service_test_support",
       "//skia",
       "//testing/gmock",

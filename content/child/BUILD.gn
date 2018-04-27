@@ -106,7 +106,6 @@ target(link_target_type, "child") {
     "//gpu/command_buffer/client",
     "//media",
     "//media/blink",
-    "//mojo/common",
     "//mojo/edk",
     "//net",
     "//services/device/public/cpp:device_features",

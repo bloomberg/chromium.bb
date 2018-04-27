@@ -103,7 +103,6 @@ component("services") {
     "//media/gpu/ipc/service",
     "//media/mojo/common",
     "//media/mojo/common:mojo_shared_buffer_video_frame",
-    "//mojo/common",
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/service_manager/public/mojom",

@@ -22,7 +22,6 @@ include_rules = [
   "+media",
   "+mash/public/mojom",
   "+mash/shelf/public",
-  "+mojo/common",
   "+mojo/public",
   "+services/catalog/public",
   "+services/preferences/public",

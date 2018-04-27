@@ -10,7 +10,6 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "components/prefs/persistent_pref_store.h"
-#include "mojo/common/values_struct_traits.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/preferences/public/cpp/lib/util.h"
 

@@ -10,7 +10,6 @@ sources = [
 ]
 public_deps = [
   "//gpu/config",
-  "//mojo/common",
   "//ui/gfx/geometry/mojo",
 ]
 type_mappings = [

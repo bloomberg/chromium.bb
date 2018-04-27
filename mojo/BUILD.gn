@@ -10,7 +10,6 @@ group("mojo") {
   testonly = true
   deps = [
     ":tests",
-    "//mojo/common",
   ]
 
   if (!(is_linux && current_cpu == "x86")) {

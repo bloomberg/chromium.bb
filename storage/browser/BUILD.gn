@@ -304,7 +304,6 @@ source_set("unittests") {
     ":test_support",
     "//base/test:test_support",
     "//components/services/filesystem/public/interfaces",
-    "//mojo/common",
     "//mojo/edk",
     "//net:test_support",
     "//services/network/public/cpp",
@@ -357,7 +356,6 @@ static_library("test_support") {
   deps = [
     ":browser",
     "//base/test:test_support",
-    "//mojo/common",
     "//net:test_support",
     "//testing/gtest",
     "//third_party/leveldatabase",

@@ -57,7 +57,6 @@ component("cpp") {
     "//base",
     "//components/prefs",
     "//ipc",
-    "//mojo/common",
     "//services/proxy_resolver/public/mojom",
   ]
 

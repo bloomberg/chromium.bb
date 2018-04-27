@@ -389,7 +389,6 @@ test("aura_unittests") {
     ":test_support",
     "//base/test:test_support",
     "//components/viz/client",
-    "//mojo/common",
     "//mojo/edk",
     "//net",
     "//services/ui/common:task_runner_test_base",

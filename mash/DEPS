@@ -2,7 +2,6 @@ include_rules = [
   "+ash/public",
   "+components/prefs",
   "+components/viz/common",
-  "+mojo/common",
   "+mojo/converters",
   "+mojo/public",
   "+services/catalog/public",

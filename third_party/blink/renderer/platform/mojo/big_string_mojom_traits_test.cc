@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/rand_util.h"
-#include "mojo/common/test_common_custom_types.mojom-blink.h"
 #include "mojo/public/cpp/base/big_buffer_mojom_traits.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "mojo/public/mojom/base/big_string.mojom-blink.h"
