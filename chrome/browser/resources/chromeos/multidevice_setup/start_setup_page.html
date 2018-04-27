@@ -1,11 +1,17 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="button_navigation_behavior.html">
+<link rel="import" href="ui_page.html">
+<link rel="import" href="ui_page_container_behavior.html">
 
 <dom-module id="start-setup-page">
   <template>
-    --------------Start Setup Placeholder Text--------------
+    <ui-page header-text="[[headerText]]">
+      <span slot="message" inner-h-t-m-l="[[messageHtml]]"></span>
+      <div slot="additional-content">
+        This is a dropdown or a spinner... (PlAcEhOlDeR tExT!!)
+      </div>
+    </ui-page>
   </template>
   <script src="start_setup_page.js"></script>
 </dom-module>
