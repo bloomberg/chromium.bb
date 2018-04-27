@@ -82,6 +82,9 @@ class RequestPinView : public views::DialogDelegateView,
   views::View* GetInitiallyFocusedView() override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
 
+  // views::View
+  gfx::Size CalculatePreferredSize() const override;
+
   // Returns whether the view is locked while waiting the extension to process
   // the user input data.
   bool IsLocked();
