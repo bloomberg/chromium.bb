@@ -16,7 +16,8 @@ cr.define('extensions', function() {
         'setProfileInDevMode',
         'setShortcutHandlingSuspended',
         'updateAllExtensions',
-        'updateExtensionCommand',
+        'updateExtensionCommandKeybinding',
+        'updateExtensionCommandScope',
       ]);
 
       this.itemStateChangedTarget = new FakeChromeEvent();
@@ -77,9 +78,15 @@ cr.define('extensions', function() {
     }
 
     /** @override */
-    updateExtensionCommand(item, commandName, keybinding) {
+    updateExtensionCommandKeybinding(item, commandName, keybinding) {
       this.methodCalled(
-          'updateExtensionCommand', [item, commandName, keybinding]);
+          'updateExtensionCommandKeybinding', [item, commandName, keybinding]);
+    }
+
+    /** @override */
+    updateExtensionCommandScope(item, commandName, scope) {
+      this.methodCalled(
+          'updateExtensionCommandScope', [item, commandName, scope]);
     }
 
     /** @override */

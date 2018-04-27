@@ -72,7 +72,8 @@ cr.define('extension_shortcut_input_tests', function() {
             // Add 'A'. Once a valid shortcut is typed (like Ctrl + A), it is
             // committed.
             MockInteractions.keyDownOn(field, 65, ['ctrl']);
-            return input.delegate.whenCalled('updateExtensionCommand');
+            return input.delegate.whenCalled(
+                'updateExtensionCommandKeybinding');
           })
           .then((arg) => {
             input.delegate.reset();
@@ -83,7 +84,8 @@ cr.define('extension_shortcut_input_tests', function() {
 
             // Test clearing the shortcut.
             MockInteractions.tap(input.$['clear']);
-            return input.delegate.whenCalled('updateExtensionCommand');
+            return input.delegate.whenCalled(
+                'updateExtensionCommandKeybinding');
           })
           .then((arg) => {
             input.delegate.reset();

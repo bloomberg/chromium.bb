@@ -18,7 +18,7 @@ cr.define('extensions', function() {
     is: 'extensions-shortcut-input',
 
     properties: {
-      /** @type {!Object} */
+      /** @type {!extensions.KeyboardShortcutDelegate} */
       delegate: Object,
 
       item: {
@@ -180,7 +180,7 @@ cr.define('extensions', function() {
     /** @private */
     commitPending_: function() {
       this.shortcut = this.pendingShortcut_;
-      this.delegate.updateExtensionCommand(
+      this.delegate.updateExtensionCommandKeybinding(
           this.item, this.commandName, this.shortcut);
     },
 
