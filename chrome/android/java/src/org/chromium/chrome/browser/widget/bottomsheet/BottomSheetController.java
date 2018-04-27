@@ -111,12 +111,18 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
         };
 
         final TabModelObserver tabSelectionObserver = new EmptyTabModelObserver() {
+            /** The currently active tab. */
+            private Tab mCurrentTab = tabModelSelector.getCurrentTab();
+
             @Override
             public void didSelectTab(Tab tab, TabModel.TabSelectionType type, int lastId) {
+                if (tab == mCurrentTab) return;
+                mCurrentTab = tab;
                 clearRequestsAndHide();
             }
         };
 
+        tabModelSelector.getCurrentModel().addObserver(tabSelectionObserver);
         tabModelSelector.addObserver(new TabModelSelectorObserver() {
             @Override
             public void onChange() {}
@@ -283,12 +289,11 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
         if (content == mBottomSheet.getCurrentSheetContent()) return true;
         if (!canShowInLayout(mLayoutManager.getActiveLayout())) return false;
 
-        boolean shouldSuppressExistingContent = mBottomSheet.getCurrentSheetContent() != null
-                && mBottomSheet.getSheetState() <= BottomSheet.SHEET_STATE_PEEK
-                && content.getPriority() < mBottomSheet.getCurrentSheetContent().getPriority()
+        BottomSheetContent shownContent = mBottomSheet.getCurrentSheetContent();
+        boolean shouldSuppressExistingContent = shownContent != null
+                && content.getPriority() < shownContent.getPriority()
                 && canBottomSheetSwitchContent();
 
-        BottomSheetContent shownContent = mBottomSheet.getCurrentSheetContent();
         if (shouldSuppressExistingContent) {
             mContentQueue.add(mBottomSheet.getCurrentSheetContent());
             shownContent = content;
@@ -386,6 +391,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
         //                objects when all content requests are cleared.
         hideContent(mBottomSheet.getCurrentSheetContent(), true);
         mWasShownForCurrentTab = false;
+        mIsSuppressed = false;
     }
 
     /**
@@ -407,6 +413,6 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
      * @return Whether the sheet currently supports switching its content.
      */
     protected boolean canBottomSheetSwitchContent() {
-        return mBottomSheet.isSheetOpen();
+        return !mBottomSheet.isSheetOpen();
     }
 }
