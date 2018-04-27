@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
@@ -864,6 +865,13 @@ UserSelectionScreen::UpdateAndReturnUserListForMojo() {
                        public_session_recommended_locales,
                        login_user_info.get());
     login_user_info->can_remove = CanRemoveUser(*it);
+
+    // Send a request to get keyboard layouts for default locale.
+    if (is_public_account && LoginScreenClient::HasInstance()) {
+      LoginScreenClient::Get()->RequestPublicSessionKeyboardLayouts(
+          account_id, login_user_info->public_account_info->default_locale);
+    }
+
     user_info_list.push_back(std::move(login_user_info));
   }
 

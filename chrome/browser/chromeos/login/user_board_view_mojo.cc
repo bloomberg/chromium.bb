@@ -83,6 +83,10 @@ void UserBoardViewMojo::SetPublicSessionLocales(
   LoginScreenClient::Get()->login_screen()->SetPublicSessionLocales(
       account_id, std::move(*locales), default_locale,
       multiple_recommended_locales);
+
+  // Send a request to get keyboard layouts for |default_locale|.
+  LoginScreenClient::Get()->RequestPublicSessionKeyboardLayouts(account_id,
+                                                                default_locale);
 }
 
 void UserBoardViewMojo::ShowUserPodCustomIcon(

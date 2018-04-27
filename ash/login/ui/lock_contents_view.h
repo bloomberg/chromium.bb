@@ -133,6 +133,10 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
                                      const base::ListValue& locales,
                                      const std::string& default_locale,
                                      bool show_advanced_view) override;
+  void OnPublicSessionKeyboardLayoutsChanged(
+      const AccountId& account_id,
+      const std::string& locale,
+      const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts) override;
   void OnDetachableBasePairingStatusChanged(
       DetachableBasePairingStatus pairing_status) override;
 

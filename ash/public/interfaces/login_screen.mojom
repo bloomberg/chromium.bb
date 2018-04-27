@@ -106,6 +106,12 @@ interface LoginScreen {
                           mojo_base.mojom.ListValue locales,
                           string default_locale,
                           bool show_advanced_view);
+
+  // Set the public session keyboard layouts for user with |account_id|.
+  // |locale|: The locale that |keyboard_layouts| can be used for.
+  SetPublicSessionKeyboardLayouts(signin.mojom.AccountId account_id,
+                                  string locale,
+                                  array<InputMethodItem> keyboard_layouts);
 };
 
 // Allows ash lock screen to control a client (e.g. Chrome browser). Requests
@@ -187,4 +193,12 @@ interface LoginScreenClient {
   LaunchPublicSession(signin.mojom.AccountId account_id,
                       string locale,
                       string input_method);
+
+  // Request public session keyboard layouts for user with |account_id|.
+  // This function send a request to chrome and the result will be returned by
+  // SetPublicSessionKeyboardLayouts.
+  // |locale|: Request a list of keyboard layouts that can be used by this
+  //           locale.
+  RequestPublicSessionKeyboardLayouts(signin.mojom.AccountId account_id,
+                                      string locale);
 };
