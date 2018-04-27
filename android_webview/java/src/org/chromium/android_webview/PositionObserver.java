@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.android_webview;
 
 /**
  * Used to register listeners that can be notified of changes to the position of a view.

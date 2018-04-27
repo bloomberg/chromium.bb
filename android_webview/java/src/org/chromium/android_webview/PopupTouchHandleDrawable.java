@@ -23,8 +23,6 @@ import android.widget.PopupWindow;
 import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content.browser.PositionObserver;
-import org.chromium.content.browser.ViewPositionObserver;
 import org.chromium.content.browser.selection.HandleViewResources;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;

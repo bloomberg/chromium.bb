@@ -33,10 +33,8 @@ include_rules = [
   "!content/public/android/java/src/org/chromium/content/browser/DeviceUtils.java",
   "!content/public/android/java/src/org/chromium/content/browser/framehost/RenderFrameHostImpl.java",
   "!content/public/android/java/src/org/chromium/content/browser/MotionEventSynthesizer.java",
-  "!content/public/android/java/src/org/chromium/content/browser/PositionObserver.java",
   "!content/public/android/java/src/org/chromium/content/browser/ScreenOrientationProvider.java",
   "!content/public/android/java/src/org/chromium/content/browser/SpeechRecognition.java",
-  "!content/public/android/java/src/org/chromium/content/browser/ViewPositionObserver.java",
   "!content/public/android/java/src/org/chromium/content/common/ContentSwitches.java",
 
   "+device/gamepad/android/java",
