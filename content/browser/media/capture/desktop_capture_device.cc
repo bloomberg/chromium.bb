@@ -181,6 +181,10 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
   // result.
   bool first_capture_returned_;
 
+  // True if the first capture permanent error has been logged. Used to log the
+  // first capture permanent error.
+  bool first_permanent_error_logged;
+
   // The type of the capturer.
   DesktopMediaID::Type capturer_type_;
 
@@ -208,6 +212,7 @@ DesktopCaptureDevice::Core::Core(
       max_cpu_consumption_percentage_(GetMaximumCpuConsumptionPercentage()),
       capture_in_progress_(false),
       first_capture_returned_(false),
+      first_permanent_error_logged(false),
       capturer_type_(type),
       weak_factory_(this) {}
 
@@ -300,12 +305,14 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
 
   if (!success) {
     if (result == webrtc::DesktopCapturer::Result::ERROR_PERMANENT) {
-      if (capturer_type_ == DesktopMediaID::TYPE_SCREEN) {
-        IncrementDesktopCaptureCounter(SCREEN_CAPTURER_PERMANENT_ERROR);
-      } else {
-        IncrementDesktopCaptureCounter(WINDOW_CAPTURER_PERMANENT_ERROR);
+      if (!first_permanent_error_logged) {
+        first_permanent_error_logged = true;
+        if (capturer_type_ == DesktopMediaID::TYPE_SCREEN) {
+          IncrementDesktopCaptureCounter(SCREEN_CAPTURER_PERMANENT_ERROR);
+        } else {
+          IncrementDesktopCaptureCounter(WINDOW_CAPTURER_PERMANENT_ERROR);
+        }
       }
-
       client_->OnError(FROM_HERE, "The desktop capturer has failed.");
     }
     return;
