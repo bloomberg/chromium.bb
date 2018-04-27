@@ -47,16 +47,6 @@ public final class DownloadNotificationFactory {
     // Limit file name to 25 characters. TODO(qinmin): use different limit for different devices?
     public static final int MAX_FILE_NAME_LENGTH = 25;
 
-    // TODO(jming): Eventually move this to DownloadNotificationStore.
-    enum DownloadStatus {
-        IN_PROGRESS,
-        PAUSED,
-        SUCCESSFUL,
-        FAILED,
-        DELETED,
-        SUMMARY // TODO(jming): Remove when summary notification is no longer in-use.
-    }
-
     /**
      * Builds a downloads notification based on the status of the download and its information.
      * @param context of the download.
@@ -64,8 +54,9 @@ public final class DownloadNotificationFactory {
      * @param downloadUpdate information about the download (ie. contentId, fileName, icon, etc).
      * @return Notification that is built based on these parameters.
      */
-    public static Notification buildNotification(
-            Context context, DownloadStatus downloadStatus, DownloadUpdate downloadUpdate) {
+    public static Notification buildNotification(Context context,
+            DownloadNotificationService2.DownloadStatus downloadStatus,
+            DownloadUpdate downloadUpdate) {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(
@@ -193,7 +184,7 @@ public final class DownloadNotificationFactory {
 
                 break;
 
-            case SUCCESSFUL:
+            case COMPLETED:
                 Preconditions.checkArgument(downloadUpdate.getNotificationId() != -1);
 
                 contentText =
@@ -241,18 +232,6 @@ public final class DownloadNotificationFactory {
                 contentText = DownloadUtils.getFailStatusString(downloadUpdate.getFailState());
                 break;
 
-            case SUMMARY:
-                Preconditions.checkArgument(downloadUpdate.getIconId() != -1);
-
-                iconId = downloadUpdate.getIconId();
-                contentText = "";
-                builder.setContentTitle(
-                               context.getString(R.string.download_notification_summary_title))
-                        .setSubText(context.getString(R.string.menu_downloads))
-                        .setSmallIcon(iconId)
-                        .setGroupSummary(true);
-                break;
-
             default:
                 iconId = -1;
                 contentText = "";
@@ -270,8 +249,8 @@ public final class DownloadNotificationFactory {
         }
         if (downloadUpdate.getIcon() != null) builder.setLargeIcon(downloadUpdate.getIcon());
         if (!downloadUpdate.getIsTransient() && downloadUpdate.getNotificationId() != -1
-                && downloadStatus != DownloadStatus.SUCCESSFUL
-                && downloadStatus != DownloadStatus.FAILED) {
+                && downloadStatus != DownloadNotificationService2.DownloadStatus.COMPLETED
+                && downloadStatus != DownloadNotificationService2.DownloadStatus.FAILED) {
             Intent downloadHomeIntent = buildActionIntent(
                     context, ACTION_NOTIFICATION_CLICKED, null, downloadUpdate.getIsOffTheRecord());
             builder.setContentIntent(

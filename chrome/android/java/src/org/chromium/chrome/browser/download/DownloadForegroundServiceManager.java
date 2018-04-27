@@ -33,15 +33,14 @@ import javax.annotation.Nullable;
  * Manager to stop and start the foreground service associated with downloads.
  */
 public class DownloadForegroundServiceManager {
-    public enum DownloadStatus { PAUSE, CANCEL, COMPLETE, IN_PROGRESS, FAIL }
     private static class DownloadUpdate {
         int mNotificationId;
         Notification mNotification;
-        DownloadStatus mDownloadStatus;
+        DownloadNotificationService2.DownloadStatus mDownloadStatus;
         Context mContext;
 
-        DownloadUpdate(int notificationId, Notification notification, DownloadStatus downloadStatus,
-                Context context) {
+        DownloadUpdate(int notificationId, Notification notification,
+                DownloadNotificationService2.DownloadStatus downloadStatus, Context context) {
             mNotificationId = notificationId;
             mNotification = notification;
             mDownloadStatus = downloadStatus;
@@ -80,9 +79,10 @@ public class DownloadForegroundServiceManager {
 
     public DownloadForegroundServiceManager() {}
 
-    public void updateDownloadStatus(Context context, DownloadStatus downloadStatus,
-            int notificationId, Notification notification) {
-        if (downloadStatus != DownloadStatus.IN_PROGRESS) {
+    public void updateDownloadStatus(Context context,
+            DownloadNotificationService2.DownloadStatus downloadStatus, int notificationId,
+            Notification notification) {
+        if (downloadStatus != DownloadNotificationService2.DownloadStatus.IN_PROGRESS) {
             Log.w(TAG,
                     "updateDownloadStatus status: " + downloadStatus + ", id: " + notificationId);
         }
@@ -176,8 +176,8 @@ public class DownloadForegroundServiceManager {
         return null;
     }
 
-    private boolean isActive(DownloadStatus downloadStatus) {
-        return downloadStatus == DownloadStatus.IN_PROGRESS;
+    private boolean isActive(DownloadNotificationService2.DownloadStatus downloadStatus) {
+        return downloadStatus == DownloadNotificationService2.DownloadStatus.IN_PROGRESS;
     }
 
     private void cleanDownloadUpdateQueue() {
@@ -256,16 +256,16 @@ public class DownloadForegroundServiceManager {
     /** Helper code to stop and unbind service. */
 
     @VisibleForTesting
-    void stopAndUnbindService(DownloadStatus downloadStatus) {
+    void stopAndUnbindService(DownloadNotificationService2.DownloadStatus downloadStatus) {
         Log.w(TAG, "stopAndUnbindService status: " + downloadStatus);
         Preconditions.checkNotNull(mBoundService);
         mIsServiceBound = false;
 
         @DownloadForegroundService.StopForegroundNotification
         int stopForegroundNotification;
-        if (downloadStatus == DownloadStatus.CANCEL) {
+        if (downloadStatus == DownloadNotificationService2.DownloadStatus.CANCELLED) {
             stopForegroundNotification = DownloadForegroundService.StopForegroundNotification.KILL;
-        } else if (downloadStatus == DownloadStatus.PAUSE) {
+        } else if (downloadStatus == DownloadNotificationService2.DownloadStatus.PAUSED) {
             stopForegroundNotification =
                     DownloadForegroundService.StopForegroundNotification.DETACH_OR_PERSIST;
         } else {
