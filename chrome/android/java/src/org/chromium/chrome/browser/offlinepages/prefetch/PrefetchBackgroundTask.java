@@ -63,21 +63,20 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
         // specific Android devices.
         final DeviceConditions deviceConditions;
         if (!sSkipConditionCheckingForTesting) {
-            deviceConditions = DeviceConditions.getCurrentConditions(context);
+            deviceConditions = DeviceConditions.getCurrent(context);
         } else {
             deviceConditions = null;
         }
 
         // Note: when |deviceConditions| is null native is always loaded because with the evidence
         // we have so far only specific devices that do not run on batteries actually return null.
-        if (deviceConditions != null
-                && (!areBatteryConditionsMet(deviceConditions)
-                           || !areNetworkConditionsMet(context, deviceConditions)
-                           || deviceConditions.inPowerSaveMode())) {
-            return NativeBackgroundTask.RESCHEDULE;
+        if (deviceConditions == null
+                || (areBatteryConditionsMet(deviceConditions)
+                           && areNetworkConditionsMet(deviceConditions))) {
+            return NativeBackgroundTask.LOAD_NATIVE;
         }
 
-        return NativeBackgroundTask.LOAD_NATIVE;
+        return NativeBackgroundTask.RESCHEDULE;
     }
 
     /**
@@ -148,18 +147,19 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
 
     /** Whether battery conditions (on power or enough battery percentage) are met. */
     private boolean areBatteryConditionsMet(DeviceConditions deviceConditions) {
-        return deviceConditions.isPowerConnected()
-                || (deviceConditions.getBatteryPercentage()
-                           >= MINIMUM_BATTERY_PERCENTAGE_FOR_PREFETCHING)
+        return (!deviceConditions.isInPowerSaveMode()
+                       && (deviceConditions.isPowerConnected()
+                                  || (deviceConditions.getBatteryPercentage()
+                                             >= MINIMUM_BATTERY_PERCENTAGE_FOR_PREFETCHING)))
                 || mLimitlessPrefetchingEnabled;
     }
 
     /** Whether network conditions are met. */
-    private boolean areNetworkConditionsMet(Context context, DeviceConditions deviceConditions) {
+    private boolean areNetworkConditionsMet(DeviceConditions deviceConditions) {
         if (mLimitlessPrefetchingEnabled) {
             return deviceConditions.getNetConnectionType() != ConnectionType.CONNECTION_NONE;
         }
-        return !DeviceConditions.isActiveNetworkMetered(context)
+        return !deviceConditions.isActiveNetworkMetered()
                 && deviceConditions.getNetConnectionType() == ConnectionType.CONNECTION_WIFI;
     }
 

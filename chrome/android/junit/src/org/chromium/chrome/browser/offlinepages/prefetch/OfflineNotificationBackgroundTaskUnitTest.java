@@ -202,8 +202,8 @@ public class OfflineNotificationBackgroundTaskUnitTest {
         DeviceConditions deviceConditions =
                 new DeviceConditions(false /* POWER_CONNECTED */, 75 /* BATTERY_LEVEL */,
                         online ? ConnectionType.CONNECTION_WIFI : ConnectionType.CONNECTION_NONE,
-                        false /* POWER_SAVE */);
-        ShadowDeviceConditions.setCurrentConditions(deviceConditions, false /* metered */);
+                        false /* POWER_SAVE */, false /* metered */);
+        ShadowDeviceConditions.setCurrentConditions(deviceConditions);
     }
 
     public void assertTaskScheduledForOfflineDelay(String message) {

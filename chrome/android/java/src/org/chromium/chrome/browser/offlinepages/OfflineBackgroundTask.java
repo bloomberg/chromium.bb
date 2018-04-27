@@ -101,7 +101,7 @@ public class OfflineBackgroundTask extends NativeBackgroundTask {
         long taskScheduledTimeMillis = TaskExtrasPacker.unpackTimeFromBundle(taskExtras);
         OfflinePageUtils.recordWakeupUMA(context, taskScheduledTimeMillis);
 
-        DeviceConditions deviceConditions = DeviceConditions.getCurrentConditions(context);
+        DeviceConditions deviceConditions = DeviceConditions.getCurrent(context);
         return bridge.startScheduledProcessing(deviceConditions, callback);
     }
 
@@ -111,7 +111,7 @@ public class OfflineBackgroundTask extends NativeBackgroundTask {
         TriggerConditions triggerConditions =
                 TaskExtrasPacker.unpackTriggerConditionsFromBundle(taskExtras);
 
-        DeviceConditions deviceConditions = DeviceConditions.getCurrentConditions(context);
+        DeviceConditions deviceConditions = DeviceConditions.getCurrent(context);
         if (!areBatteryConditionsMet(deviceConditions, triggerConditions)) {
             Log.d(TAG, "Battery percentage is lower than minimum to start processing");
             return false;

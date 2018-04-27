@@ -15,42 +15,38 @@ public class ShadowDeviceConditions {
     /** Device conditions for testing. */
     private static DeviceConditions sDeviceConditions = new DeviceConditions();
 
-    /** Whether to count the network as metered or not */
-    private static boolean sMetered = true;
-
     /** Sets device conditions that will be used in test. */
-    public static void setCurrentConditions(DeviceConditions deviceConditions, boolean metered) {
+    public static void setCurrentConditions(DeviceConditions deviceConditions) {
         sDeviceConditions = deviceConditions;
-        sMetered = metered;
     }
 
     @Implementation
-    public static DeviceConditions getCurrentConditions(Context context) {
+    public static DeviceConditions getCurrent(Context context) {
         return sDeviceConditions;
     }
 
     @Implementation
-    public static boolean isPowerConnected(Context context) {
+    public static boolean isCurrentlyPowerConnected(Context context) {
         return sDeviceConditions.isPowerConnected();
     }
 
     @Implementation
-    public static int getBatteryPercentage(Context context) {
+    public static int getCurrentBatteryPercentage(Context context) {
         return sDeviceConditions.getBatteryPercentage();
     }
 
     @Implementation
-    public static int getNetConnectionType(Context context) {
+    public static boolean isCurrentlyInPowerSaveMode(Context context) {
+        return sDeviceConditions.isInPowerSaveMode();
+    }
+
+    @Implementation
+    public static int getCurrentNetConnectionType(Context context) {
         return sDeviceConditions.getNetConnectionType();
     }
 
     @Implementation
-    public static boolean isActiveNetworkMetered(Context context) {
-        return sMetered;
-    }
-
-    @Implementation
-    public static boolean getInPowerSaveMode(Context context) {
-        return sDeviceConditions.inPowerSaveMode();
+    public static boolean isCurrentActiveNetworkMetered(Context context) {
+        return sDeviceConditions.isActiveNetworkMetered();
     }
 }
