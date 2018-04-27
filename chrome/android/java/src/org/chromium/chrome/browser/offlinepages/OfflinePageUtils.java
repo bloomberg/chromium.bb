@@ -319,7 +319,7 @@ public class OfflinePageUtils {
      * @param context android context
      */
     public static void recordWakeupUMA(Context context, long taskScheduledTimeMillis) {
-        DeviceConditions deviceConditions = DeviceConditions.getCurrentConditions(context);
+        DeviceConditions deviceConditions = DeviceConditions.getCurrent(context);
         if (deviceConditions == null) return;
 
         // Report charging state.

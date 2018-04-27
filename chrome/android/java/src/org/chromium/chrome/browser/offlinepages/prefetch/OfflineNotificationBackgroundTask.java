@@ -127,7 +127,8 @@ public class OfflineNotificationBackgroundTask extends NativeBackgroundTask {
             return NativeBackgroundTask.DONE;
         }
 
-        if (DeviceConditions.getNetConnectionType(context) != ConnectionType.CONNECTION_NONE) {
+        if (DeviceConditions.getCurrentNetConnectionType(context)
+                != ConnectionType.CONNECTION_NONE) {
             scheduleTaskWhenOnline();
 
             // We schedule ourselves and return DONE because we want to reschedule using the normal
