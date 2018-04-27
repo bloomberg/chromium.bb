@@ -103,10 +103,11 @@ void Initialize(Platform* platform, service_manager::BinderRegistry* registry) {
 #endif  // !defined(ARCH_CPU_X86_64) && !defined(ARCH_CPU_ARM64) &&
         // defined(OS_WIN)
 
+  // BlinkInitializer::Initialize() must be called before InitializeMainThread
+  GetBlinkInitializer().Initialize();
+
   V8Initializer::InitializeMainThread(
       V8ContextSnapshotExternalReferences::GetTable());
-
-  GetBlinkInitializer().Initialize();
 
   GetBlinkInitializer().RegisterInterfaces(*registry);
 
