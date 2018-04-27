@@ -2,7 +2,7 @@
 
 namespace rnnoise {
 
-const int8_t kInputDenseWeights[1008] = {
+const int8_t kInputDenseWeights[kInputLayerWeights] = {
     -10,  0,    -3,   1,    -8,   -6,   3,    -13,  1,    0,    -3,   -7,
     -5,   -3,   6,    -1,   -6,   0,    -6,   -4,   -1,   -2,   1,    1,
     -7,   2,    21,   10,   -5,   -20,  24,   23,   37,   8,    -2,   33,
@@ -88,11 +88,11 @@ const int8_t kInputDenseWeights[1008] = {
     23,   -14,  -63,  -26,  -12,  -57,  27,   25,   55,   -76,  -47,  21,
     34,   33,   26,   17,   14,   6,    9,    26,   25,   -25,  -25,  -18};
 
-const int8_t kInputDenseBias[24] = {38,   -6, 127, 127, 127, -43, -127, 78,
-                                    127,  5,  127, 123, 127, 127, -128, -76,
-                                    -126, 28, 127, 125, -30, 127, -89,  -20};
+const int8_t kInputDenseBias[kInputLayerOutputSize] = {
+    38,  -6,  127,  127, 127,  -43, -127, 78,  127, 5,   127, 123,
+    127, 127, -128, -76, -126, 28,  127,  125, -30, 127, -89, -20};
 
-const int8_t kHiddenGruWeights[1728] = {
+const int8_t kHiddenGruWeights[kHiddenLayerWeights] = {
     -124, 23,   -123, -33,  -95,  -4,   8,    -84,  4,    101,  -119, 116,
     -4,   123,  103,  -51,  29,   -124, -114, -49,  31,   9,    75,   -128,
     0,    -49,  37,   -50,  46,   -21,  -63,  -104, 54,   82,   33,   21,
@@ -238,7 +238,7 @@ const int8_t kHiddenGruWeights[1728] = {
     47,   62,   95,   112,  69,   32,   97,   -83,  -8,   -5,   67,   -63,
     -123, 79,   59,   0,    -6,   -17,  4,    -111, -52,  27,   65,   0};
 
-const int8_t kHiddenGruRecurrentWeights[1728] = {
+const int8_t kHiddenGruRecurrentWeights[kHiddenLayerWeights] = {
     65,   83,   35,   56,   24,   -34,  -28,  -2,   125,  19,   42,   -9,
     124,  -53,  24,   -87,  11,   35,   -81,  -35,  -125, -31,  123,  -21,
     33,   -91,  113,  -93,  45,   -6,   53,   38,   -92,  8,    -27,  87,
@@ -384,7 +384,7 @@ const int8_t kHiddenGruRecurrentWeights[1728] = {
     -83,  57,   9,    126,  127,  94,   79,   -37,  -127, -40,  67,   52,
     82,   -66,  122,  -13,  -73,  127,  -8,   -80,  46,   -48,  4,    -54};
 
-const int8_t kHiddenGruBias[72] = {
+const int8_t kHiddenGruBias[kHiddenLayerBiases] = {
     124, 125, -57, -126, 53,  123, 127,  -75, 68,  102, -2, 116,
     124, 127, 124, 125,  126, 123, -16,  48,  125, 126, 78, 85,
     11,  126, -30, -30,  -64, -3,  -105, -29, -17, 69,  63, 2,
@@ -392,10 +392,10 @@ const int8_t kHiddenGruBias[72] = {
     62,  6,   -2,  0,    0,   100, -16,  26,  -24, 56,  26, -10,
     -33, 41,  70,  109,  -29, 127, 34,   -66, 49,  53,  27, 62};
 
-const int8_t kOutputDenseWeights[24] = {
+const int8_t kOutputDenseWeights[kOutputLayerWeights] = {
     127,  127,  127, 127,  127,  20,  127,  -126, -126, -54, 14,  125,
     -126, -126, 127, -125, -126, 127, -127, -127, -57,  -30, 127, 80};
 
-const int8_t kOutputDenseBias[1] = {-50};
+const int8_t kOutputDenseBias[kOutputLayerOutputSize] = {-50};
 
 }  // namespace rnnoise
