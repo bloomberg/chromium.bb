@@ -109,6 +109,7 @@ _NAMED_TYPE_INFO = {
     ],
     'invalid': [
       'gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE',
+      'gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE',
     ],
   },
   'viz::ResourceFormat': {
