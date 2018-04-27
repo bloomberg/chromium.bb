@@ -6,12 +6,21 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_reader.h"
+#include "components/history/core/browser/history_service.h"
 
 namespace resource_coordinator {
 
-LocalSiteCharacteristicsDataStore::LocalSiteCharacteristicsDataStore() =
-    default;
+LocalSiteCharacteristicsDataStore::LocalSiteCharacteristicsDataStore(
+    Profile* profile)
+    : history_observer_(this) {
+  history::HistoryService* history =
+      HistoryServiceFactory::GetForProfileWithoutCreating(profile);
+  if (history)
+    history_observer_.Add(history);
+}
 
 LocalSiteCharacteristicsDataStore::~LocalSiteCharacteristicsDataStore() =
     default;
@@ -53,6 +62,42 @@ void LocalSiteCharacteristicsDataStore::
   // Remove the entry for this origin as this is about to get destroyed.
   auto num_erased = origin_data_map_.erase(impl->origin_str());
   DCHECK_EQ(1U, num_erased);
+}
+
+LocalSiteCharacteristicsDataStore::LocalSiteCharacteristicsMap::iterator
+LocalSiteCharacteristicsDataStore::ResetLocalSiteCharacteristicsEntry(
+    LocalSiteCharacteristicsMap::iterator entry) {
+  if (entry->second->IsLoaded()) {
+    entry->second->ClearObservations();
+    entry++;
+  } else {
+    entry = origin_data_map_.erase(entry);
+  }
+  return entry;
+}
+
+void LocalSiteCharacteristicsDataStore::OnURLsDeleted(
+    history::HistoryService* history_service,
+    const history::DeletionTimeRange& time_range,
+    bool expired,
+    const history::URLRows& deleted_rows,
+    const std::set<GURL>& favicon_urls) {
+  // TODO(sebmarchand): Removes these entry from the on-disk database once it's
+  // implemented.
+  if (time_range.IsAllTime()) {
+    for (auto iter = origin_data_map_.begin();
+         iter != origin_data_map_.end();) {
+      iter = ResetLocalSiteCharacteristicsEntry(iter);
+    }
+  } else {
+    for (auto deleted_row : deleted_rows) {
+      auto map_iter =
+          origin_data_map_.find(deleted_row.url().GetOrigin().GetContent());
+      if (map_iter != origin_data_map_.end()) {
+        ResetLocalSiteCharacteristicsEntry(map_iter);
+      }
+    }
+  }
 }
 
 }  // namespace resource_coordinator

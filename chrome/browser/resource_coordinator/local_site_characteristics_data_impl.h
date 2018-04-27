@@ -70,6 +70,15 @@ class LocalSiteCharacteristicsDataImpl
   // TODO(sebmarchand): Add the methods necessary to record other types of
   // observations (e.g. memory and CPU usage).
 
+  base::TimeDelta last_loaded_time_for_testing() const {
+    return InternalRepresentationToTimeDelta(
+        site_characteristics_.last_loaded());
+  }
+
+  const SiteCharacteristicsProto& site_characteristics_for_testing() const {
+    return site_characteristics_;
+  }
+
  protected:
   friend class base::RefCounted<LocalSiteCharacteristicsDataImpl>;
   friend class LocalSiteCharacteristicsDataImplTest;
@@ -98,21 +107,9 @@ class LocalSiteCharacteristicsDataImpl
   base::TimeDelta FeatureObservationDuration(
       const SiteCharacteristicsFeatureProto& feature_proto) const;
 
-  // Accessors, for testing:
-  base::TimeDelta last_loaded_time_for_testing() const {
-    return InternalRepresentationToTimeDelta(
-        site_characteristics_.last_loaded());
-  }
-
-  const SiteCharacteristicsProto& site_characteristics_for_testing() const {
-    return site_characteristics_;
-  }
-
-  const std::string& origin_str() const { return origin_str_; }
-
+ private:
   static const int64_t kZeroIntervalInternalRepresentation;
 
- private:
   // Add |extra_observation_duration| to the observation window of a given
   // feature if it hasn't been used yet, do nothing otherwise.
   static void IncrementFeatureObservationDuration(
@@ -124,6 +121,14 @@ class LocalSiteCharacteristicsDataImpl
   static void InitSiteCharacteristicsFeatureProtoWithDefaultValues(
       SiteCharacteristicsFeatureProto* proto);
 
+  // Initialize this object with default values.
+  // NOTE: Do not call this directly while the site is loaded as this will not
+  // properly update the last_loaded time, instead call |ClearObservations|.
+  void InitWithDefaultValues();
+
+  // Clear all the past observations about this site.
+  void ClearObservations();
+
   // Returns the usage of |site_feature| for this site.
   SiteFeatureUsage GetFeatureUsage(
       const SiteCharacteristicsFeatureProto& feature_proto,
@@ -132,6 +137,10 @@ class LocalSiteCharacteristicsDataImpl
   // Helper function to update a given |SiteCharacteristicsFeatureProto| when a
   // feature gets used.
   void NotifyFeatureUsage(SiteCharacteristicsFeatureProto* feature_proto);
+
+  const std::string& origin_str() const { return origin_str_; }
+
+  bool IsLoaded() const { return active_webcontents_count_ > 0U; }
 
   // This site's characteristics, contains the features and other values are
   // measured.

@@ -6,9 +6,14 @@
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_LOCAL_SITE_CHARACTERISTICS_DATA_STORE_H_
 
 #include "base/containers/flat_map.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_impl.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_store.h"
+#include "components/history/core/browser/history_service_observer.h"
+
+class Profile;
 
 namespace resource_coordinator {
 
@@ -16,12 +21,13 @@ namespace resource_coordinator {
 // characteristics database as a backend.
 class LocalSiteCharacteristicsDataStore
     : public SiteCharacteristicsDataStore,
-      public internal::LocalSiteCharacteristicsDataImpl::OnDestroyDelegate {
+      public internal::LocalSiteCharacteristicsDataImpl::OnDestroyDelegate,
+      public history::HistoryServiceObserver {
  public:
   using LocalSiteCharacteristicsMap =
       base::flat_map<std::string, internal::LocalSiteCharacteristicsDataImpl*>;
 
-  LocalSiteCharacteristicsDataStore();
+  explicit LocalSiteCharacteristicsDataStore(Profile* profile);
   ~LocalSiteCharacteristicsDataStore() override;
 
   // SiteCharacteristicDataStore:
@@ -33,6 +39,10 @@ class LocalSiteCharacteristicsDataStore
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(LocalSiteCharacteristicsDataStoreTest, EndToEnd);
+  FRIEND_TEST_ALL_PREFIXES(LocalSiteCharacteristicsDataStoreTest,
+                           HistoryServiceObserver);
+
   // Returns a pointer to the LocalSiteCharacteristicsDataImpl object
   // associated with |origin|, create one and add it to |origin_data_map_|
   // if it doesn't exist.
@@ -43,9 +53,25 @@ class LocalSiteCharacteristicsDataStore
   void OnLocalSiteCharacteristicsDataImplDestroyed(
       internal::LocalSiteCharacteristicsDataImpl* impl) override;
 
+  // history::HistoryServiceObserver:
+  void OnURLsDeleted(history::HistoryService* history_service,
+                     const history::DeletionTimeRange& time_range,
+                     bool expired,
+                     const history::URLRows& deleted_rows,
+                     const std::set<GURL>& favicon_urls) override;
+
+  // Reset the observations about a given LocalSiteCharacteristicsMap entry,
+  // removes this entry from the map if it's not loaded by any tab.
+  // Returns an iterator to the next element in the map.
+  LocalSiteCharacteristicsMap::iterator ResetLocalSiteCharacteristicsEntry(
+      LocalSiteCharacteristicsMap::iterator entry);
+
   // Map a serialized origin to a LocalSiteCharacteristicDataInternal
   // pointer.
   LocalSiteCharacteristicsMap origin_data_map_;
+
+  ScopedObserver<history::HistoryService, LocalSiteCharacteristicsDataStore>
+      history_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalSiteCharacteristicsDataStore);
 };

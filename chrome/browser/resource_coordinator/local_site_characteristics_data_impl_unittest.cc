@@ -25,7 +25,6 @@ class TestLocalSiteCharacteristicsDataImpl
     : public LocalSiteCharacteristicsDataImpl {
  public:
   using LocalSiteCharacteristicsDataImpl::FeatureObservationDuration;
-  using LocalSiteCharacteristicsDataImpl::last_loaded_time_for_testing;
   using LocalSiteCharacteristicsDataImpl::OnDestroyDelegate;
   using LocalSiteCharacteristicsDataImpl::site_characteristics_for_testing;
   using LocalSiteCharacteristicsDataImpl::TimeDeltaToInternalRepresentation;
