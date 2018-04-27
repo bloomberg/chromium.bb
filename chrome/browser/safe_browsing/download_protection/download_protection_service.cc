@@ -200,7 +200,7 @@ void DownloadProtectionService::CancelPendingRequests() {
     // We need to advance the iterator before we cancel because canceling
     // the request will invalidate it when RequestFinished is called below.
     scoped_refptr<CheckClientDownloadRequest> tmp = *it++;
-    tmp->Cancel();
+    tmp->Cancel(/*download_destropyed=*/false);
   }
   DCHECK(download_requests_.empty());
 
