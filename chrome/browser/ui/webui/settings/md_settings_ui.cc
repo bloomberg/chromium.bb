@@ -71,11 +71,13 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/stylus_utils.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/android_apps_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/change_picture_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/crostini_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/cups_printers_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/date_time_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
@@ -176,6 +178,10 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
       std::make_unique<chromeos::settings::AndroidAppsHandler>(profile));
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::ChangePictureHandler>());
+  if (IsExperimentalCrostiniUIAvailable()) {
+    AddSettingsPageUIHandler(
+        std::make_unique<chromeos::settings::CrostiniHandler>());
+  }
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::CupsPrintersHandler>(web_ui));
   AddSettingsPageUIHandler(
@@ -270,6 +276,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
                           chromeos::quick_unlock::IsFingerprintEnabled());
   html_source->AddBoolean("hasInternalStylus",
                           ash::stylus_utils::HasInternalStylus());
+
+  html_source->AddBoolean("showCrostini", IsExperimentalCrostiniUIAvailable());
 
   // We have 2 variants of Android apps settings. Default case, when the Play
   // Store app exists we show expandable section that allows as to

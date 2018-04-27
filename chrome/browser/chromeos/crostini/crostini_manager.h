@@ -80,6 +80,7 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   // Observer class for the Crostini restart flow.
   class RestartObserver {
    public:
+    virtual ~RestartObserver() {}
     virtual void OnComponentLoaded(ConciergeClientResult result) = 0;
     virtual void OnConciergeStarted(ConciergeClientResult result) = 0;
     virtual void OnDiskImageCreated(ConciergeClientResult result) = 0;
@@ -185,6 +186,10 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
       const vm_tools::concierge::ContainerStartedSignal& signal) override;
   void OnContainerStartupFailed(
       const vm_tools::concierge::ContainerStartedSignal& signal) override;
+
+  void RemoveCrostini(Profile* profile,
+                      std::string vm_name,
+                      std::string container_name);
 
   // Returns the singleton instance of CrostiniManager.
   static CrostiniManager* GetInstance();
