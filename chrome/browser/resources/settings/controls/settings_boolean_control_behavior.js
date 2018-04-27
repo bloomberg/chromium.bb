@@ -122,9 +122,9 @@ const SettingsBooleanControlBehaviorImpl = {
 
   /**
    * @return {boolean} Whether the control should be disabled.
-   * @private
+   * @protected
    */
-  controlDisabled_: function() {
+  controlDisabled: function() {
     return this.disabled || this.isPrefEnforced();
   },
 };

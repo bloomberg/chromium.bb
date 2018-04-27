@@ -125,7 +125,7 @@ Polymer({
    * @param {number} startAngle The start angle of the arc we want to draw.
    * @param {number} endAngle The end angle of the arc we want to draw.
    */
-  animate: function(startAngle, endAngle) {
+  animateProgress: function(startAngle, endAngle) {
     let currentAngle = startAngle;
     // The value to update the angle by each tick.
     const step =

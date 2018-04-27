@@ -24,9 +24,9 @@ const DragBehavior = {
 
   /**
    * The id of the element being dragged, or empty if not dragging.
-   * @private {string}
+   * @protected {string}
    */
-  dragId_: '',
+  dragId: '',
 
   /** @private {!HTMLDivElement|undefined} */
   container_: undefined,
@@ -191,7 +191,7 @@ const DragBehavior = {
    */
   startDrag_: function(target, eventLocation) {
     assert(this.dragEnabled);
-    this.dragId_ = target.id;
+    this.dragId = target.id;
     this.dragStartLocation_ = eventLocation;
     return false;
   },
@@ -203,9 +203,9 @@ const DragBehavior = {
    */
   endDrag_: function(e) {
     assert(this.dragEnabled);
-    if (this.dragId_ && this.callback_)
-      this.callback_(this.dragId_, null);
-    this.dragId_ = '';
+    if (this.dragId && this.callback_)
+      this.callback_(this.dragId, null);
+    this.dragId = '';
     this.lastTouchLocation_ = null;
     return false;
   },
@@ -218,14 +218,14 @@ const DragBehavior = {
    */
   processDrag_: function(e, eventLocation) {
     assert(this.dragEnabled);
-    if (!this.dragId_)
+    if (!this.dragId)
       return true;
     if (this.callback_) {
       const delta = {
         x: eventLocation.x - this.dragStartLocation_.x,
         y: eventLocation.y - this.dragStartLocation_.y,
       };
-      this.callback_(this.dragId_, delta);
+      this.callback_(this.dragId, delta);
     }
     return false;
   },

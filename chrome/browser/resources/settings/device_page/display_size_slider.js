@@ -155,7 +155,7 @@ Polymer({
    * container as the slider knob before creating the ripple animation. Without
    * this the PaperInkyFocusBehavior does not know where to create the ripple
    * animation.
-   * @private
+   * @protected
    */
   _createRipple: function() {
     this._rippleContainer = this.$.sliderKnob;

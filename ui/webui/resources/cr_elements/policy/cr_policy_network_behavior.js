@@ -74,7 +74,7 @@ var CrPolicyNetworkBehavior = {
   /**
    * @param {string|undefined} source
    * @return {boolean}
-   * @private
+   * @protected
    */
   isPolicySource: function(source) {
     return !!source &&

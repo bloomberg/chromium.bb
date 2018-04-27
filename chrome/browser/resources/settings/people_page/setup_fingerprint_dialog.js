@@ -162,7 +162,8 @@ Polymer({
         if (scan.isComplete) {
           this.problemMessage_ = '';
           this.step_ = settings.FingerprintSetupStep.READY;
-          this.$.arc.animate(this.receivedScanCount_ * slice, 2 * Math.PI);
+          this.$.arc.animateProgress(
+              this.receivedScanCount_ * slice, 2 * Math.PI);
           this.clearSensorMessageTimeout_();
         } else {
           this.setProblem_(scan.result);
@@ -176,7 +177,7 @@ Polymer({
                   opacity: [0.7, 1.0],
                 },
                 FLASH_DURATION_MS);
-            this.$.arc.animate(
+            this.$.arc.animateProgress(
                 this.receivedScanCount_ * slice,
                 (this.receivedScanCount_ + 1) * slice);
             this.receivedScanCount_++;
