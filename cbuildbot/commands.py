@@ -214,7 +214,8 @@ def SetSharedUserPassword(buildroot, password):
     osutils.SafeUnlink(passwd_file, sudo=True)
 
 
-def UpdateChroot(buildroot, usepkg, toolchain_boards=None, extra_env=None):
+def UpdateChroot(buildroot, usepkg, toolchain_boards=None, extra_env=None,
+                 save_install_plan=None):
   """Wrapper around update_chroot.
 
   Args:
@@ -222,6 +223,7 @@ def UpdateChroot(buildroot, usepkg, toolchain_boards=None, extra_env=None):
     usepkg: Whether to use binary packages when setting up the toolchain.
     toolchain_boards: List of boards to always include.
     extra_env: A dictionary of environmental variables to set during generation.
+    save_install_plan: filename to save the install plan for correct rev deps.
   """
   cmd = ['./update_chroot']
 
@@ -239,12 +241,15 @@ def UpdateChroot(buildroot, usepkg, toolchain_boards=None, extra_env=None):
   extra_env_local.setdefault('FEATURES', '')
   extra_env_local['FEATURES'] += ' -separatedebug splitdebug'
 
+  if save_install_plan:
+    cmd.extend(['--save_install_plan=%s' % save_install_plan])
+
   RunBuildScript(buildroot, cmd, extra_env=extra_env_local, enter_chroot=True)
 
 
 def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
                extra_env=None, force=False, profile=None, chroot_upgrade=True,
-               chroot_args=None):
+               chroot_args=None, save_install_plan=None):
   """Wrapper around setup_board.
 
   Args:
@@ -259,6 +264,7 @@ def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
     chroot_upgrade: Whether to update the chroot. If the chroot is already up to
       date, you can specify chroot_upgrade=False.
     chroot_args: The args to the chroot.
+    save_install_plan: filename to save the install plan for correct rev deps.
   """
   cmd = ['./setup_board', '--board=%s' % board,
          '--accept_licenses=@CHROMEOS']
@@ -280,6 +286,9 @@ def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
 
   if force:
     cmd.append('--force')
+
+  if save_install_plan:
+    cmd.append('--save_install_plan=%s' % save_install_plan)
 
   RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True,
                  chroot_args=chroot_args)
@@ -377,7 +386,8 @@ def UpdateBinhostJson(buildroot):
 def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
           packages=(), skip_chroot_upgrade=True,
           extra_env=None, chrome_root=None, noretry=False,
-          chroot_args=None, event_file=None, run_goma=False):
+          chroot_args=None, event_file=None, run_goma=False,
+          save_install_plan=None):
   """Wrapper around build_packages.
 
   Args:
@@ -398,6 +408,7 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
     event_file: File name that events will be logged to.
     run_goma: Set ./build_package --run_goma option, which starts and stops
       goma server in chroot while building packages.
+    save_install_plan: filename to save the install plan for correct rev deps.
   """
   cmd = ['./build_packages', '--board=%s' % board,
          '--accept_licenses=@CHROMEOS', '--withdebugsymbols']
@@ -429,6 +440,9 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
   if event_file:
     cmd.append('--withevents')
     cmd.append('--eventfile=%s' % event_file)
+
+  if save_install_plan:
+    cmd.append('--save_install_plan=%s' % save_install_plan)
 
   cmd.extend(packages)
   RunBuildScript(buildroot, cmd, extra_env=extra_env, chroot_args=chroot_args,
