@@ -85,6 +85,23 @@ base::Optional<network::mojom::CORSError> CheckAccess(
       !privilege->block_local_access_from_local_origin_);
 }
 
+base::Optional<network::mojom::CORSError> CheckPreflightAccess(
+    const KURL& response_url,
+    const int response_status_code,
+    const HTTPHeaderMap& response_header,
+    network::mojom::FetchCredentialsMode actual_credentials_mode,
+    const SecurityOrigin& origin) {
+  std::unique_ptr<SecurityOrigin::PrivilegeData> privilege =
+      origin.CreatePrivilegeData();
+  return network::cors::CheckPreflightAccess(
+      response_url, response_status_code,
+      GetHeaderValue(response_header, HTTPNames::Access_Control_Allow_Origin),
+      GetHeaderValue(response_header,
+                     HTTPNames::Access_Control_Allow_Credentials),
+      actual_credentials_mode, origin.ToUrlOrigin(),
+      !privilege->block_local_access_from_local_origin_);
+}
+
 base::Optional<network::mojom::CORSError> CheckRedirectLocation(
     const KURL& url) {
   static const bool run_blink_side_scheme_check =

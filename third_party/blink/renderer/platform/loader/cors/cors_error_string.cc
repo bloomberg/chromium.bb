@@ -84,7 +84,13 @@ ErrorParameter ErrorParameter::CreateForAccessCheck(
     case network::mojom::CORSError::kMultipleAllowOriginValues:
     case network::mojom::CORSError::kInvalidAllowOriginValue:
     case network::mojom::CORSError::kAllowOriginMismatch:
-    case network::mojom::CORSError::kDisallowCredentialsNotSetToTrue:
+    case network::mojom::CORSError::kInvalidAllowCredentials:
+    case network::mojom::CORSError::kPreflightWildcardOriginNotAllowed:
+    case network::mojom::CORSError::kPreflightMissingAllowOriginHeader:
+    case network::mojom::CORSError::kPreflightMultipleAllowOriginValues:
+    case network::mojom::CORSError::kPreflightInvalidAllowOriginValue:
+    case network::mojom::CORSError::kPreflightAllowOriginMismatch:
+    case network::mojom::CORSError::kPreflightInvalidAllowCredentials:
       return ErrorParameter(error, request_url, redirect_url,
                             response_status_code, response_header_map, origin,
                             context, String(), false);
@@ -182,6 +188,8 @@ String GetErrorString(const ErrorParameter& param) {
       " Have the server send the header with a valid value, or, if an opaque "
       "response serves your needs, set the request's mode to 'no-cors' to "
       "fetch the resource with CORS disabled.";
+  static const char kPreflightInformation[] =
+      "Response to preflight request doesn't pass access control check: ";
 
   if (param.unknown)
     return String::Format("CORS error, code %d", static_cast<int>(param.error));
@@ -205,21 +213,31 @@ String GetErrorString(const ErrorParameter& param) {
           "%sInvalid response. Origin '%s' is therefore not allowed access.",
           redirect_denied.Utf8().data(), param.origin.ToString().Utf8().data());
     case network::mojom::CORSError::kWildcardOriginNotAllowed:
+    case network::mojom::CORSError::kPreflightWildcardOriginNotAllowed:
       return String::Format(
-          "%sThe value of the 'Access-Control-Allow-Origin' header in the "
+          "%s%sThe value of the 'Access-Control-Allow-Origin' header in the "
           "response must not be the wildcard '*' when the request's "
           "credentials mode is 'include'. Origin '%s' is therefore not allowed "
           "access.%s",
+          param.error ==
+                  network::mojom::CORSError::kPreflightWildcardOriginNotAllowed
+              ? kPreflightInformation
+              : "",
           redirect_denied.Utf8().data(), param.origin.ToString().Utf8().data(),
           param.context == WebURLRequest::kRequestContextXMLHttpRequest
               ? " The credentials mode of requests initiated by the "
                 "XMLHttpRequest is controlled by the withCredentials attribute."
               : "");
     case network::mojom::CORSError::kMissingAllowOriginHeader:
+    case network::mojom::CORSError::kPreflightMissingAllowOriginHeader:
       return String::Format(
-          "%sNo 'Access-Control-Allow-Origin' header is present on the "
+          "%s%sNo 'Access-Control-Allow-Origin' header is present on the "
           "requested resource. Origin '%s' is therefore not allowed access."
           "%s%s",
+          param.error ==
+                  network::mojom::CORSError::kPreflightMissingAllowOriginHeader
+              ? kPreflightInformation
+              : "",
           redirect_denied.Utf8().data(), param.origin.ToString().Utf8().data(),
           IsInterestingStatusCode(param.status_code)
               ? String::Format(" The response had HTTP status code %d.",
@@ -232,10 +250,15 @@ String GetErrorString(const ErrorParameter& param) {
                 "mode to 'no-cors' to fetch the resource with CORS disabled."
               : "");
     case network::mojom::CORSError::kMultipleAllowOriginValues:
+    case network::mojom::CORSError::kPreflightMultipleAllowOriginValues:
       return String::Format(
-          "%sThe 'Access-Control-Allow-Origin' header contains multiple values "
-          "'%s', but only one is allowed. Origin '%s' is therefore not allowed "
-          "access.%s",
+          "%s%sThe 'Access-Control-Allow-Origin' header contains multiple "
+          "values '%s', but only one is allowed. Origin '%s' is therefore not "
+          "allowed access.%s",
+          param.error ==
+                  network::mojom::CORSError::kPreflightMultipleAllowOriginValues
+              ? kPreflightInformation
+              : "",
           redirect_denied.Utf8().data(),
           param.header_map.Get(HTTPNames::Access_Control_Allow_Origin)
               .Utf8()
@@ -245,9 +268,14 @@ String GetErrorString(const ErrorParameter& param) {
               ? kNoCorsInformation
               : "");
     case network::mojom::CORSError::kInvalidAllowOriginValue:
+    case network::mojom::CORSError::kPreflightInvalidAllowOriginValue:
       return String::Format(
-          "%sThe 'Access-Control-Allow-Origin' header contains the invalid "
+          "%s%sThe 'Access-Control-Allow-Origin' header contains the invalid "
           "value '%s'. Origin '%s' is therefore not allowed access.%s",
+          param.error ==
+                  network::mojom::CORSError::kPreflightInvalidAllowOriginValue
+              ? kPreflightInformation
+              : "",
           redirect_denied.Utf8().data(),
           param.header_map.Get(HTTPNames::Access_Control_Allow_Origin)
               .Utf8()
@@ -257,10 +285,15 @@ String GetErrorString(const ErrorParameter& param) {
               ? kNoCorsInformation
               : "");
     case network::mojom::CORSError::kAllowOriginMismatch:
+    case network::mojom::CORSError::kPreflightAllowOriginMismatch:
       return String::Format(
-          "%sThe 'Access-Control-Allow-Origin' header has a value '%s' that is "
-          "not equal to the supplied origin. Origin '%s' is therefore not "
+          "%s%sThe 'Access-Control-Allow-Origin' header has a value '%s' that "
+          "is not equal to the supplied origin. Origin '%s' is therefore not "
           "allowed access.%s",
+          param.error ==
+                  network::mojom::CORSError::kPreflightAllowOriginMismatch
+              ? kPreflightInformation
+              : "",
           redirect_denied.Utf8().data(),
           param.header_map.Get(HTTPNames::Access_Control_Allow_Origin)
               .Utf8()
@@ -269,12 +302,17 @@ String GetErrorString(const ErrorParameter& param) {
           param.context == WebURLRequest::kRequestContextFetch
               ? kNoCorsInformation
               : "");
-    case network::mojom::CORSError::kDisallowCredentialsNotSetToTrue:
+    case network::mojom::CORSError::kInvalidAllowCredentials:
+    case network::mojom::CORSError::kPreflightInvalidAllowCredentials:
       return String::Format(
-          "%sThe value of the 'Access-Control-Allow-Credentials' header in "
+          "%s%sThe value of the 'Access-Control-Allow-Credentials' header in "
           "the response is '%s' which must be 'true' when the request's "
           "credentials mode is 'include'. Origin '%s' is therefore not allowed "
           "access.%s",
+          param.error ==
+                  network::mojom::CORSError::kPreflightInvalidAllowCredentials
+              ? kPreflightInformation
+              : "",
           redirect_denied.Utf8().data(),
           param.header_map.Get(HTTPNames::Access_Control_Allow_Credentials)
               .Utf8()
@@ -286,9 +324,7 @@ String GetErrorString(const ErrorParameter& param) {
                  "attribute."
                : ""));
     case network::mojom::CORSError::kPreflightInvalidStatus:
-      return String::Format(
-          "Response for preflight has invalid HTTP status code %d.",
-          param.status_code);
+      return String("Response for preflight does not have HTTP ok status.");
     case network::mojom::CORSError::kPreflightMissingAllowExternal:
       return String(
           "No 'Access-Control-Allow-External' header was present in the "

@@ -45,6 +45,7 @@ extern const char kAccessControlRequestMethod[];
 }  // namespace header_names
 
 // Performs a CORS access check on the response parameters.
+// This implements https://fetch.spec.whatwg.org/#concept-cors-check
 COMPONENT_EXPORT(NETWORK_CPP)
 base::Optional<mojom::CORSError> CheckAccess(
     const GURL& response_url,
@@ -52,6 +53,20 @@ base::Optional<mojom::CORSError> CheckAccess(
     const base::Optional<std::string>& allow_origin_header,
     const base::Optional<std::string>& allow_credentials_header,
     network::mojom::FetchCredentialsMode credentials_mode,
+    const url::Origin& origin,
+    bool allow_file_origin = false);
+
+// Performs a CORS access check on the CORS-preflight response parameters.
+// According to the note at https://fetch.spec.whatwg.org/#cors-preflight-fetch
+// step 6, even for a preflight check, |credentials_mode| should be checked on
+// the actual request rather than preflight one.
+COMPONENT_EXPORT(NETWORK_CPP)
+base::Optional<mojom::CORSError> CheckPreflightAccess(
+    const GURL& response_url,
+    const int response_status_code,
+    const base::Optional<std::string>& allow_origin_header,
+    const base::Optional<std::string>& allow_credentials_header,
+    network::mojom::FetchCredentialsMode actual_credentials_mode,
     const url::Origin& origin,
     bool allow_file_origin = false);
 
@@ -89,6 +104,12 @@ COMPONENT_EXPORT(NETWORK_CPP)
 bool IsCORSSafelistedContentType(const std::string& name);
 COMPONENT_EXPORT(NETWORK_CPP)
 bool IsCORSSafelistedHeader(const std::string& name, const std::string& value);
+
+// Checks forbidden method in the fetch spec.
+// See https://fetch.spec.whatwg.org/#forbidden-method.
+// TODO(toyoshim): Move Blink FetchUtils::IsForbiddenMethod to CORS:: and use
+// this implementation internally.
+COMPONENT_EXPORT(NETWORK_CPP) bool IsForbiddenMethod(const std::string& name);
 
 // Checks forbidden header in the fetch spec.
 // See https://fetch.spec.whatwg.org/#forbidden-header-name.

@@ -5,8 +5,11 @@
 #ifndef SERVICES_NETWORK_CORS_CORS_URL_LOADER_H_
 #define SERVICES_NETWORK_CORS_CORS_URL_LOADER_H_
 
+#include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
@@ -61,6 +64,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
   void OnComplete(const URLLoaderCompletionStatus& status) override;
 
  private:
+  void StartNetworkRequest(
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      base::Optional<CORSErrorStatus> status);
+
   // Called when there is a connection error on the upstream pipe used for the
   // actual request.
   void OnUpstreamConnectionError();
@@ -80,9 +90,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
   // To be a URLLoader for the client.
   mojom::URLLoaderClientPtr forwarding_client_;
 
-  // Request initiator's origin.
-  url::Origin security_origin_;
-
   // The last response URL, that is usually the requested URL, but can be
   // different if redirects happen.
   GURL last_response_url_;
@@ -93,6 +100,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
 
   // Corresponds to the Fetch spec, https://fetch.spec.whatwg.org/.
   bool fetch_cors_flag_;
+
+  // Used to run asynchronous class instance bound callbacks safely.
+  base::WeakPtrFactory<CORSURLLoader> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CORSURLLoader);
 };

@@ -162,7 +162,8 @@ class PreflightControllerTest : public testing::Test {
     preflight_controller_->PerformPreflightCheck(
         base::BindOnce(&PreflightControllerTest::HandleRequestCompletion,
                        base::Unretained(this)),
-        request, TRAFFIC_ANNOTATION_FOR_TESTS, url_loader_factory_ptr_.get());
+        0 /* request_id */, request, TRAFFIC_ANNOTATION_FOR_TESTS,
+        url_loader_factory_ptr_.get());
     run_loop_->Run();
   }
 
