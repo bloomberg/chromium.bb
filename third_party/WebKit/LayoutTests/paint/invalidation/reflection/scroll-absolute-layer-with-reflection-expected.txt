@@ -25,7 +25,7 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative reflected'",
           "rect": [250, 230, 100, 100],
-          "reason": "appeared"
+          "reason": "paint property change"
         }
       ],
       "transform": 1

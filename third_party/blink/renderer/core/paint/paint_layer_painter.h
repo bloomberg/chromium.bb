@@ -65,6 +65,9 @@ class CORE_EXPORT PaintLayerPainter {
 
   enum ClipState { kHasNotClipped, kHasClipped };
 
+  bool ShouldAdjustPaintingRoot(const PaintLayerPaintingInfo& painting_info,
+                                PaintLayerFlags paint_flags);
+
   // "For paged media, boxes with fixed positions are repeated on every page."
   // https://www.w3.org/TR/2011/REC-CSS2-20110607/visuren.html#fixed-positioning
   // Repeats singleFragmentIgnoredPagination of the fixed-position object in
@@ -80,13 +83,18 @@ class CORE_EXPORT PaintLayerPainter {
       const PaintLayerPaintingInfo&,
       PaintLayerFlags,
       const PaintLayerFragment* = nullptr);
-  PaintResult PaintLayerWithTransform(GraphicsContext&,
-                                      const PaintLayerPaintingInfo&,
-                                      PaintLayerFlags);
+  PaintResult PaintLayerWithAdjustedRoot(GraphicsContext&,
+                                         const PaintLayerPaintingInfo&,
+                                         PaintLayerFlags);
   PaintResult PaintFragmentByApplyingTransform(GraphicsContext&,
                                                const PaintLayerPaintingInfo&,
                                                PaintLayerFlags,
                                                const PaintLayerFragment&);
+  PaintResult PaintSingleFragment(GraphicsContext&,
+                                  const PaintLayerPaintingInfo&,
+                                  PaintLayerFlags,
+                                  const PaintLayerFragment&,
+                                  const LayoutSize& subpixel_accumulation);
 
   PaintResult PaintChildren(unsigned children_to_visit,
                             GraphicsContext&,
