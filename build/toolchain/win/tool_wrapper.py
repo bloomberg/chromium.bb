@@ -99,10 +99,6 @@ class WinTool(object):
     kvs = [item.split('=', 1) for item in pairs]
     return dict(kvs)
 
-  def ExecStamp(self, path):
-    """Simple stamp command."""
-    open(path, 'w').close()
-
   def ExecDeleteFile(self, path):
     """Simple file delete command."""
     if os.path.exists(path):
