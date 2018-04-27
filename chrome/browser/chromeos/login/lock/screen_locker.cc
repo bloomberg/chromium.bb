@@ -378,7 +378,7 @@ void ScreenLocker::Authenticate(const UserContext& user_context,
     Key::KeyType key_type = user_context.GetKey()->GetKeyType();
 
     if (unlock_attempt_type_ == AUTH_PIN) {
-      quick_unlock::PinBackend::TryAuthenticate(
+      quick_unlock::PinBackend::GetInstance()->TryAuthenticate(
           user_context.GetAccountId(), pin, key_type,
           base::BindOnce(&ScreenLocker::OnPinAttemptDone,
                          weak_factory_.GetWeakPtr(), user_context));

@@ -23,9 +23,7 @@ class FingerprintStorageUnitTest : public testing::Test {
   ~FingerprintStorageUnitTest() override {}
 
   // testing::Test:
-  void SetUp() override {
-    quick_unlock::EnableForTesting(quick_unlock::PinStorageType::kPrefs);
-  }
+  void SetUp() override { quick_unlock::EnableForTesting(); }
 
   void SetRecords(int records_number) {
     profile_->GetPrefs()->SetInteger(prefs::kQuickUnlockFingerprintRecord,

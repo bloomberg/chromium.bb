@@ -80,7 +80,7 @@ constexpr const char* kMostCommonPins[] = {"1212", "1004", "2000", "6969",
 void ComputeActiveModes(Profile* profile, ActiveModeCallback result) {
   user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-  chromeos::quick_unlock::PinBackend::IsSet(
+  chromeos::quick_unlock::PinBackend::GetInstance()->IsSet(
       user->GetAccountId(),
       base::BindOnce(
           [](ActiveModeCallback result, bool is_set) {
@@ -521,13 +521,13 @@ void QuickUnlockPrivateSetModesFunction::OnGetActiveModes(
     user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     if (pin_credential.empty()) {
-      chromeos::quick_unlock::PinBackend::Remove(
+      chromeos::quick_unlock::PinBackend::GetInstance()->Remove(
           user->GetAccountId(), params_->token,
           base::BindOnce(
               &QuickUnlockPrivateSetModesFunction::PinBackendCallComplete,
               this));
     } else {
-      chromeos::quick_unlock::PinBackend::Set(
+      chromeos::quick_unlock::PinBackend::GetInstance()->Set(
           user->GetAccountId(), params_->token, pin_credential,
           base::BindOnce(
               &QuickUnlockPrivateSetModesFunction::PinBackendCallComplete,

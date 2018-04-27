@@ -904,7 +904,7 @@ void SigninScreenHandler::Initialize() {
   if (user_manager::UserManager::IsInitialized()) {
     for (user_manager::User* user :
          user_manager::UserManager::Get()->GetUnlockUsers()) {
-      quick_unlock::PinBackend::CanAuthenticate(
+      quick_unlock::PinBackend::GetInstance()->CanAuthenticate(
           user->GetAccountId(),
           base::BindOnce(&SigninScreenHandler::PreloadPinKeyboard,
                          weak_factory_.GetWeakPtr()));
@@ -977,7 +977,7 @@ void SigninScreenHandler::RefocusCurrentPod() {
 }
 
 void SigninScreenHandler::UpdatePinKeyboardState(const AccountId& account_id) {
-  quick_unlock::PinBackend::CanAuthenticate(
+  quick_unlock::PinBackend::GetInstance()->CanAuthenticate(
       account_id, base::BindOnce(&SigninScreenHandler::SetPinEnabledForUser,
                                  weak_factory_.GetWeakPtr(), account_id));
 }

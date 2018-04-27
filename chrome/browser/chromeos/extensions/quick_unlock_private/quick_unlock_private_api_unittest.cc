@@ -113,7 +113,7 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
   void SetUp() override {
     ExtensionApiUnittest::SetUp();
 
-    quick_unlock::EnableForTesting(quick_unlock::PinStorageType::kPrefs);
+    quick_unlock::EnableForTesting();
 
     run_loop_ = std::make_unique<base::RunLoop>();
 
@@ -390,7 +390,7 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
 
     bool called = false;
     bool is_set = false;
-    quick_unlock::PinBackend::IsSet(
+    quick_unlock::PinBackend::GetInstance()->IsSet(
         account_id, base::BindOnce(
                         [](bool* out_called, bool* out_is_set, bool is_set) {
                           *out_called = true;
@@ -407,7 +407,7 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
     const AccountId account_id = AccountId::FromUserEmail(kTestUserEmail);
     bool called = false;
     bool success = false;
-    quick_unlock::PinBackend::TryAuthenticate(
+    quick_unlock::PinBackend::GetInstance()->TryAuthenticate(
         account_id, password, Key::KEY_TYPE_PASSWORD_PLAIN,
         base::BindOnce(
             [](bool* out_called, bool* out_success, bool success) {
