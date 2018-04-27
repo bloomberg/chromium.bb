@@ -418,7 +418,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   LayerListReverseIterator<Layer> rbegin();
   LayerListReverseIterator<Layer> rend();
 
-  // LayerTreeHostInProcess interface to Proxy.
+  // LayerTreeHost interface to Proxy.
   void WillBeginMainFrame();
   void DidBeginMainFrame();
   void BeginMainFrame(const viz::BeginFrameArgs& args);

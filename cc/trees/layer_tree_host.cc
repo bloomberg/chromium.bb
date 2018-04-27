@@ -159,7 +159,7 @@ void LayerTreeHost::SetUIResourceManagerForTesting(
 }
 
 void LayerTreeHost::InitializeProxy(std::unique_ptr<Proxy> proxy) {
-  TRACE_EVENT0("cc", "LayerTreeHostInProcess::InitializeForReal");
+  TRACE_EVENT0("cc", "LayerTreeHost::InitializeForReal");
   DCHECK(task_runner_provider_);
 
   proxy_ = std::move(proxy);
@@ -174,7 +174,7 @@ LayerTreeHost::~LayerTreeHost() {
   // Track when we're inside a main frame to see if compositor is being
   // destroyed midway which causes a crash. crbug.com/654672
   DCHECK(!inside_main_frame_);
-  TRACE_EVENT0("cc", "LayerTreeHostInProcess::~LayerTreeHostInProcess");
+  TRACE_EVENT0("cc", "LayerTreeHost::~LayerTreeHost");
 
   // Clear any references into the LayerTreeHost.
   mutator_host_->SetMutatorHostClient(nullptr);
@@ -280,8 +280,8 @@ void LayerTreeHost::RequestMainFrameUpdate(VisualStateUpdate requested_update) {
 // This function commits the LayerTreeHost to an impl tree. When modifying
 // this function, keep in mind that the function *runs* on the impl thread! Any
 // code that is logically a main thread operation, e.g. deletion of a Layer,
-// should be delayed until the LayerTreeHostInProcess::CommitComplete, which
-// will run after the commit, but on the main thread.
+// should be delayed until the LayerTreeHost::CommitComplete, which will run
+// after the commit, but on the main thread.
 void LayerTreeHost::FinishCommitOnImplThread(
     LayerTreeHostImpl* host_impl) {
   DCHECK(task_runner_provider_->IsImplThread());
@@ -341,7 +341,7 @@ void LayerTreeHost::FinishCommitOnImplThread(
   }
 
   {
-    TRACE_EVENT0("cc", "LayerTreeHostInProcess::PushProperties");
+    TRACE_EVENT0("cc", "LayerTreeHost::PushProperties");
 
     PushPropertyTreesTo(sync_tree);
     sync_tree->lifecycle().AdvanceTo(LayerTreeLifecycle::kSyncedPropertyTrees);
@@ -377,7 +377,7 @@ void LayerTreeHost::FinishCommitOnImplThread(
     // TODO(pdr): Enforce this comment with DCHECKS and a lifecycle state.
     sync_tree->UpdatePropertyTreeAnimationFromMainThread();
 
-    TRACE_EVENT0("cc", "LayerTreeHostInProcess::AnimationHost::PushProperties");
+    TRACE_EVENT0("cc", "LayerTreeHost::AnimationHost::PushProperties");
     DCHECK(host_impl->mutator_host());
     mutator_host_->PushPropertiesTo(host_impl->mutator_host());
 
@@ -451,7 +451,7 @@ void LayerTreeHost::CommitComplete() {
 
 void LayerTreeHost::SetLayerTreeFrameSink(
     std::unique_ptr<LayerTreeFrameSink> surface) {
-  TRACE_EVENT0("cc", "LayerTreeHostInProcess::SetLayerTreeFrameSink");
+  TRACE_EVENT0("cc", "LayerTreeHost::SetLayerTreeFrameSink");
   DCHECK(surface);
 
   DCHECK(!new_layer_tree_frame_sink_);
@@ -514,7 +514,7 @@ LayerTreeHost::CreateLayerTreeHostImpl(
 }
 
 void LayerTreeHost::DidLoseLayerTreeFrameSink() {
-  TRACE_EVENT0("cc", "LayerTreeHostInProcess::DidLoseLayerTreeFrameSink");
+  TRACE_EVENT0("cc", "LayerTreeHost::DidLoseLayerTreeFrameSink");
   DCHECK(task_runner_provider_->IsMainThread());
   SetNeedsCommit();
 }
@@ -598,9 +598,9 @@ void LayerTreeHost::SetHasGpuRasterizationTrigger(bool has_trigger) {
     return;
 
   has_gpu_rasterization_trigger_ = has_trigger;
-  TRACE_EVENT_INSTANT1(
-      "cc", "LayerTreeHostInProcess::SetHasGpuRasterizationTrigger",
-      TRACE_EVENT_SCOPE_THREAD, "has_trigger", has_gpu_rasterization_trigger_);
+  TRACE_EVENT_INSTANT1("cc", "LayerTreeHost::SetHasGpuRasterizationTrigger",
+                       TRACE_EVENT_SCOPE_THREAD, "has_trigger",
+                       has_gpu_rasterization_trigger_);
 }
 
 void LayerTreeHost::ApplyPageScaleDeltaFromImplSide(
@@ -745,8 +745,8 @@ void LayerTreeHost::RecordGpuRasterizationHistogram(
 }
 
 bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
-  TRACE_EVENT1("cc", "LayerTreeHostInProcess::DoUpdateLayers",
-               "source_frame_number", SourceFrameNumber());
+  TRACE_EVENT1("cc", "LayerTreeHost::DoUpdateLayers", "source_frame_number",
+               SourceFrameNumber());
 
   UpdateHudLayer(debug_state_.ShowHudInfo());
 
@@ -777,11 +777,9 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   {
     base::AutoReset<bool> update_property_trees(&in_update_property_trees_,
                                                 true);
-    TRACE_EVENT0("cc",
-                 "LayerTreeHostInProcess::UpdateLayers::BuildPropertyTrees");
-    TRACE_EVENT0(
-        TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
-        "LayerTreeHostInProcessCommon::ComputeVisibleRectsWithPropertyTrees");
+    TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::BuildPropertyTrees");
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
+                 "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
     PropertyTrees* property_trees = &property_trees_;
     if (!IsUsingLayerLists()) {
       // In SPv2 the property trees should have been built by the
@@ -791,15 +789,15 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
           outer_viewport_scroll_layer(), overscroll_elasticity_layer(),
           elastic_overscroll_, page_scale_factor_, device_scale_factor_,
           gfx::Rect(device_viewport_size_), identity_transform, property_trees);
-      TRACE_EVENT_INSTANT1(
-          "cc", "LayerTreeHostInProcess::UpdateLayers_BuiltPropertyTrees",
-          TRACE_EVENT_SCOPE_THREAD, "property_trees",
-          property_trees->AsTracedValue());
+      TRACE_EVENT_INSTANT1("cc",
+                           "LayerTreeHost::UpdateLayers_BuiltPropertyTrees",
+                           TRACE_EVENT_SCOPE_THREAD, "property_trees",
+                           property_trees->AsTracedValue());
     } else {
-      TRACE_EVENT_INSTANT1(
-          "cc", "LayerTreeHostInProcess::UpdateLayers_ReceivedPropertyTrees",
-          TRACE_EVENT_SCOPE_THREAD, "property_trees",
-          property_trees->AsTracedValue());
+      TRACE_EVENT_INSTANT1("cc",
+                           "LayerTreeHost::UpdateLayers_ReceivedPropertyTrees",
+                           TRACE_EVENT_SCOPE_THREAD, "property_trees",
+                           property_trees->AsTracedValue());
     }
 
     draw_property_utils::UpdatePropertyTrees(this, property_trees);
