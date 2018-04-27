@@ -16,7 +16,7 @@ static int ComputeEdgeWidth(const BorderImageLength& border_slice,
                             int image_side,
                             int box_extent) {
   if (border_slice.IsNumber())
-    return roundf(border_slice.Number() * border_side);
+    return LayoutUnit(border_slice.Number() * border_side).Round();
   if (border_slice.length().IsAuto())
     return image_side;
   return ValueForLength(border_slice.length(), LayoutUnit(box_extent)).Round();
