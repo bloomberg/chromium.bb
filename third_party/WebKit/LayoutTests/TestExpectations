@@ -145,6 +145,10 @@ crbug.com/736052 virtual/disable-spv175/compositing/overflow/composited-scroll-w
 crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 
 crbug.com/798638 virtual/disable-spv175/fragmentation/repeating-thead-tfoot-different-fragment-height.html [ Failure ]
+
+# Not relevant, because SPv175 is launching imminently.
+crbug.com/804670 virtual/disable-spv175/paint/filters/drop-shadow-clipped.html [ Skip ]
+
 # ====== Paint team owned tests to here ======
 
 # ====== Layout team owned tests from here ======

@@ -103,6 +103,25 @@ bool PaintLayerPainter::PaintedOutputInvisible(
   return false;
 }
 
+bool PaintLayerPainter::ShouldAdjustPaintingRoot(
+    const PaintLayerPaintingInfo& painting_info,
+    PaintLayerFlags paint_flags) {
+  // Cull rects and clips can't be propagated into a different 2D transform
+  // space.
+  if (paint_layer_.PaintsWithTransform(painting_info.GetGlobalPaintFlags()) &&
+      !(paint_flags & kPaintLayerAppliedTransform))
+    return true;
+
+  // Cull rects and clips can't be propagated across a filter which moves
+  // pixels, since the input of the filter may be outside the cull rect/clips
+  // yet still result in painted output.
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+      paint_layer_.HasFilterThatMovesPixels())
+    return true;
+
+  return false;
+}
+
 PaintResult PaintLayerPainter::Paint(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& painting_info,
@@ -146,9 +165,13 @@ PaintResult PaintLayerPainter::Paint(
   if (paint_layer_.PaintsWithTransparency(painting_info.GetGlobalPaintFlags()))
     paint_flags |= kPaintLayerHaveTransparency;
 
-  if (paint_layer_.PaintsWithTransform(painting_info.GetGlobalPaintFlags()) &&
-      !(paint_flags & kPaintLayerAppliedTransform))
-    return PaintLayerWithTransform(context, painting_info, paint_flags);
+  // The painting root should be adjusted if clips or cull rects for the
+  // current root don't make sense for content underneath |paint_layer_|.
+  // See ShouldAdjustPaintingRoot for examples when this is the case.
+  // In these cases, we reset the cull rect to infinite, collect fragments,
+  // and paint each fragment's subtree separately.
+  if (ShouldAdjustPaintingRoot(painting_info, paint_flags))
+    return PaintLayerWithAdjustedRoot(context, painting_info, paint_flags);
 
   return PaintLayerContentsCompositingAllPhases(context, painting_info,
                                                 paint_flags);
@@ -810,7 +833,7 @@ static void ForAllFragments(GraphicsContext& context,
   }
 }
 
-PaintResult PaintLayerPainter::PaintLayerWithTransform(
+PaintResult PaintLayerPainter::PaintLayerWithAdjustedRoot(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& painting_info,
     PaintLayerFlags paint_flags) {
@@ -889,10 +912,18 @@ PaintResult PaintLayerPainter::PaintLayerWithTransform(
                 paint_layer_.GetLayoutObject());
           }
         }
-        if (PaintFragmentByApplyingTransform(context, painting_info,
-                                             paint_flags, fragment) ==
-            kMayBeClippedByPaintDirtyRect)
-          result = kMayBeClippedByPaintDirtyRect;
+        if (paint_layer_.PaintsWithTransform(
+                painting_info.GetGlobalPaintFlags())) {
+          if (PaintFragmentByApplyingTransform(context, painting_info,
+                                               paint_flags, fragment) ==
+              kMayBeClippedByPaintDirtyRect)
+            result = kMayBeClippedByPaintDirtyRect;
+        } else {
+          if (PaintSingleFragment(context, painting_info, paint_flags, fragment,
+                                  painting_info.sub_pixel_accumulation) ==
+              kMayBeClippedByPaintDirtyRect)
+            result = kMayBeClippedByPaintDirtyRect;
+        }
       });
   return result;
 }
@@ -928,10 +959,20 @@ PaintResult PaintLayerPainter::PaintFragmentByApplyingTransform(
       context, paint_layer_.GetLayoutObject(),
       DisplayItem::kTransform3DElementTransform, transform, transform_origin);
 
+  return PaintSingleFragment(context, painting_info, paint_flags, fragment,
+                             new_sub_pixel_accumulation);
+}
+
+PaintResult PaintLayerPainter::PaintSingleFragment(
+    GraphicsContext& context,
+    const PaintLayerPaintingInfo& painting_info,
+    PaintLayerFlags paint_flags,
+    const PaintLayerFragment& fragment,
+    const LayoutSize& subpixel_accumulation) {
   // Now do a paint with the root layer shifted to be us.
-  PaintLayerPaintingInfo transformed_painting_info(
+  PaintLayerPaintingInfo new_paint_info(
       &paint_layer_, LayoutRect(LayoutRect::InfiniteIntRect()),
-      painting_info.GetGlobalPaintFlags(), new_sub_pixel_accumulation);
+      painting_info.GetGlobalPaintFlags(), subpixel_accumulation);
 
   if (&paint_layer_ != painting_info.root_layer) {
     // Remove skip root background flag when we're painting with a new root.
@@ -941,8 +982,8 @@ PaintResult PaintLayerPainter::PaintFragmentByApplyingTransform(
     paint_flags &= ~kPaintLayerPaintingCompositingScrollingPhase;
   }
 
-  return PaintLayerContentsCompositingAllPhases(
-      context, transformed_painting_info, paint_flags, &fragment);
+  return PaintLayerContentsCompositingAllPhases(context, new_paint_info,
+                                                paint_flags, &fragment);
 }
 
 PaintResult PaintLayerPainter::PaintChildren(
