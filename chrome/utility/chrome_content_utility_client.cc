@@ -45,14 +45,17 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/services/media_gallery_util/media_gallery_util_service.h"
-#include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
 #include "chrome/services/removable_storage_writer/public/mojom/constants.mojom.h"
 #include "chrome/services/removable_storage_writer/removable_storage_writer_service.h"
 #if defined(OS_WIN)
 #include "chrome/services/wifi_util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/wifi_util_win/wifi_util_win_service.h"
 #endif
+#endif
+
+#if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
+#include "chrome/services/media_gallery_util/media_gallery_util_service.h"
+#include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -235,18 +238,19 @@ void ChromeContentUtilityClient::RegisterServices(
     services->emplace(unzip::mojom::kServiceName, service_info);
   }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS) && !defined(OS_WIN)
+  // On Windows the service is running elevated.
+  RegisterRemovableStorageWriterService(services);
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS) && !defined(OS_WIN)
+
+#if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
   {
     service_manager::EmbeddedServiceInfo service_info;
     service_info.factory = base::Bind(&MediaGalleryUtilService::CreateService);
     services->emplace(chrome::mojom::kMediaGalleryUtilServiceName,
                       service_info);
   }
-#if !defined(OS_WIN)
-  // On Windows the service is running elevated.
-  RegisterRemovableStorageWriterService(services);
-#endif
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
   // TODO(jamescook): Figure out why we have to do this when not using mash.

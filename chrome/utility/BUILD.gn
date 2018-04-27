@@ -112,7 +112,6 @@ static_library("utility") {
     ]
     deps += [
       "//chrome/common/extensions/api",
-      "//chrome/services/media_gallery_util:lib",
       "//chrome/services/removable_storage_writer:lib",
     ]
 
@@ -192,6 +191,10 @@ static_library("utility") {
     if (is_mac) {
       deps += [ "//chrome/utility/safe_browsing/mac" ]
     }
+  }
+
+  if (is_android || enable_extensions) {
+    deps += [ "//chrome/services/media_gallery_util:lib" ]
   }
 }
 

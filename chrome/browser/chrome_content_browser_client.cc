@@ -316,6 +316,7 @@
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/chrome_browser_main_android.h"
 #include "chrome/common/descriptors_android.h"
+#include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
 #include "components/crash/content/browser/crash_dump_observer_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/java_interfaces.h"
@@ -3370,9 +3371,12 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
   (*services)[heap_profiling::mojom::kServiceName] =
       base::ASCIIToUTF16("Profiling Service");
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
   (*services)[chrome::mojom::kMediaGalleryUtilServiceName] =
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_MEDIA_GALLERY_UTILITY_NAME);
+#endif
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   (*services)[chrome::mojom::kRemovableStorageWriterServiceName] =
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_IMAGE_WRITER_NAME);
 #endif
