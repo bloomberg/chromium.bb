@@ -3635,6 +3635,8 @@ split_static_library("ui") {
         "app_list/internal_app/internal_app_model_builder.h",
         "app_list/search/arc_app_result.cc",
         "app_list/search/arc_app_result.h",
+        "app_list/search/crostini_app_result.cc",
+        "app_list/search/crostini_app_result.h",
         "app_list/search/internal_app_result.cc",
         "app_list/search/internal_app_result.h",
         "ash/launcher/app_window_base.cc",

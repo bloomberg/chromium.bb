@@ -17,6 +17,10 @@ bool IsCrostiniAllowed();
 // Returns true if crostini UI can be shown. Implies crostini is allowed to run.
 bool IsCrostiniUIAllowedForProfile(Profile* profile);
 
+// Returns whether if Crostini has been enabled, i.e. the user has launched it
+// at least once and not deleted it.
+bool IsCrostiniEnabled(Profile* profile);
+
 // |app_id| should be a valid Crostini app list id.
 void LaunchCrostiniApp(Profile* profile, const std::string& app_id);
 
