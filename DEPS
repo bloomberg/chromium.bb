@@ -624,6 +624,11 @@ deps = {
       'condition': 'checkout_android',
   },
 
+  'src/third_party/arcore-android-sdk/src': {
+      'url': Var('chromium_git') + '/external/github.com/google-ar/arcore-android-sdk.git' + '@' + '772bed8e2e1bc525a0d10441fa71168a9a87eb69',
+      'condition': 'checkout_android',
+  },
+
   'src/third_party/hamcrest': {
       'packages': [
           {
