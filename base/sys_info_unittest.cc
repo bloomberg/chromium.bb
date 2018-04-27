@@ -34,7 +34,13 @@ TEST_F(SysInfoTest, AmountOfMem) {
 }
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-TEST_F(SysInfoTest, AmountOfAvailablePhysicalMemory) {
+#if defined(OS_LINUX)
+#define MAYBE_AmountOfAvailablePhysicalMemory \
+  DISABLED_AmountOfAvailablePhysicalMemory
+#else
+#define MAYBE_AmountOfAvailablePhysicalMemory AmountOfAvailablePhysicalMemory
+#endif  // defined(OS_LINUX)
+TEST_F(SysInfoTest, MAYBE_AmountOfAvailablePhysicalMemory) {
   // Note: info is in _K_bytes.
   SystemMemoryInfoKB info;
   ASSERT_TRUE(GetSystemMemoryInfo(&info));
