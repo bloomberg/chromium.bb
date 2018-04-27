@@ -1782,8 +1782,9 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(void* browser_context,
   } else if (blocked_request.event == kOnBeforeSendHeaders) {
     CHECK(!blocked_request.callback.is_null());
     helpers::MergeOnBeforeSendHeadersResponses(
-        blocked_request.response_deltas, blocked_request.request_headers,
-        &warnings, request->logger.get(), &request_headers_modified);
+        request->url, blocked_request.response_deltas,
+        blocked_request.request_headers, &warnings, request->logger.get(),
+        &request_headers_modified);
   } else if (blocked_request.event == kOnHeadersReceived) {
     CHECK(!blocked_request.callback.is_null());
     helpers::MergeOnHeadersReceivedResponses(

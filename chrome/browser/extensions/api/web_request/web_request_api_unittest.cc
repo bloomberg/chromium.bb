@@ -1930,8 +1930,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   bool request_headers_modified0;
   net::HttpRequestHeaders headers0;
   headers0.MergeFrom(base_headers);
-  MergeOnBeforeSendHeadersResponses(deltas, &headers0, &warning_set, &logger,
-                                    &request_headers_modified0);
+  MergeOnBeforeSendHeadersResponses(GURL(), deltas, &headers0, &warning_set,
+                                    &logger, &request_headers_modified0);
   ASSERT_TRUE(headers0.GetHeader("key1", &header_value));
   EXPECT_EQ("value 1", header_value);
   ASSERT_TRUE(headers0.GetHeader("key2", &header_value));
@@ -1953,8 +1953,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   bool request_headers_modified1;
   net::HttpRequestHeaders headers1;
   headers1.MergeFrom(base_headers);
-  MergeOnBeforeSendHeadersResponses(deltas, &headers1, &warning_set, &logger,
-                                    &request_headers_modified1);
+  MergeOnBeforeSendHeadersResponses(GURL(), deltas, &headers1, &warning_set,
+                                    &logger, &request_headers_modified1);
   EXPECT_FALSE(headers1.HasHeader("key1"));
   ASSERT_TRUE(headers1.GetHeader("key2", &header_value));
   EXPECT_EQ("value 3", header_value);
@@ -1978,8 +1978,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   bool request_headers_modified2;
   net::HttpRequestHeaders headers2;
   headers2.MergeFrom(base_headers);
-  MergeOnBeforeSendHeadersResponses(deltas, &headers2, &warning_set, &logger,
-                                    &request_headers_modified2);
+  MergeOnBeforeSendHeadersResponses(GURL(), deltas, &headers2, &warning_set,
+                                    &logger, &request_headers_modified2);
   EXPECT_FALSE(headers2.HasHeader("key1"));
   ASSERT_TRUE(headers2.GetHeader("key2", &header_value));
   EXPECT_EQ("value 3", header_value);
@@ -2005,8 +2005,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   bool request_headers_modified3;
   net::HttpRequestHeaders headers3;
   headers3.MergeFrom(base_headers);
-  MergeOnBeforeSendHeadersResponses(deltas, &headers3, &warning_set, &logger,
-                                    &request_headers_modified3);
+  MergeOnBeforeSendHeadersResponses(GURL(), deltas, &headers3, &warning_set,
+                                    &logger, &request_headers_modified3);
   EXPECT_FALSE(headers3.HasHeader("key1"));
   ASSERT_TRUE(headers3.GetHeader("key2", &header_value));
   EXPECT_EQ("value 3", header_value);
@@ -2073,8 +2073,8 @@ TEST(ExtensionWebRequestHelpersTest,
   net::HttpRequestHeaders headers1;
   headers1.MergeFrom(base_headers);
   warning_set.clear();
-  MergeOnBeforeSendHeadersResponses(deltas, &headers1, &warning_set, &logger,
-                                    &request_headers_modified1);
+  MergeOnBeforeSendHeadersResponses(GURL(), deltas, &headers1, &warning_set,
+                                    &logger, &request_headers_modified1);
   EXPECT_TRUE(headers1.HasHeader("Cookie"));
   ASSERT_TRUE(headers1.GetHeader("Cookie", &header_value));
   EXPECT_EQ("name=new value; name2=new value; name4=\"value 4\"", header_value);
@@ -2147,7 +2147,7 @@ TEST(ExtensionWebRequestHelpersTest,
   deltas.push_back(d0);
   scoped_refptr<net::HttpResponseHeaders> new_headers0;
   MergeCookiesInOnHeadersReceivedResponses(
-      deltas, base_headers.get(), &new_headers0, &warning_set, &logger);
+      GURL(), deltas, base_headers.get(), &new_headers0, &warning_set, &logger);
   EXPECT_FALSE(new_headers0.get());
   EXPECT_EQ(0u, warning_set.size());
   EXPECT_EQ(0u, logger.log_size());
@@ -2316,7 +2316,7 @@ TEST(ExtensionWebRequestHelpersTest,
   scoped_refptr<net::HttpResponseHeaders> new_headers1;
   warning_set.clear();
   MergeCookiesInOnHeadersReceivedResponses(
-      deltas, headers1.get(), &new_headers1, &warning_set, &logger);
+      GURL(), deltas, headers1.get(), &new_headers1, &warning_set, &logger);
 
   EXPECT_TRUE(new_headers1->HasHeader("Foo"));
   size_t iter = 0;
