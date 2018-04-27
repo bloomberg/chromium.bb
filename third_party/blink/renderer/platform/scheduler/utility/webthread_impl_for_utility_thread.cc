@@ -15,7 +15,7 @@ WebThreadImplForUtilityThread::WebThreadImplForUtilityThread()
 
 WebThreadImplForUtilityThread::~WebThreadImplForUtilityThread() = default;
 
-blink::WebScheduler* WebThreadImplForUtilityThread::Scheduler() const {
+blink::ThreadScheduler* WebThreadImplForUtilityThread::Scheduler() const {
   NOTIMPLEMENTED();
   return nullptr;
 }

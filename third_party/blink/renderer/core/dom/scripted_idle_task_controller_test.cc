@@ -10,20 +10,20 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_idle_request_callback.h"
 #include "third_party/blink/renderer/core/dom/idle_request_options.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
-#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 namespace {
 
-class MockScriptedIdleTaskControllerScheduler final : public WebScheduler {
+class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
  public:
   MockScriptedIdleTaskControllerScheduler(bool should_yield)
       : should_yield_(should_yield) {}
   ~MockScriptedIdleTaskControllerScheduler() override = default;
 
-  // WebScheduler implementation:
+  // ThreadScheduler implementation:
   base::SingleThreadTaskRunner* CompositorTaskRunner() override {
     return nullptr;
   }
@@ -69,7 +69,7 @@ class MockScriptedIdleTaskControllerThread final : public WebThread {
       : scheduler_(should_yield) {}
   ~MockScriptedIdleTaskControllerThread() override = default;
   bool IsCurrentThread() const override { return true; }
-  WebScheduler* Scheduler() const override { return &scheduler_; }
+  ThreadScheduler* Scheduler() const override { return &scheduler_; }
 
   void RunIdleTask() { scheduler_.RunIdleTask(); }
   bool HasIdleTask() const { return scheduler_.HasIdleTask(); }

@@ -35,7 +35,7 @@
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 
 namespace blink {
 
@@ -44,7 +44,8 @@ class V8IdleTaskRunner : public gin::V8IdleTaskRunner {
   WTF_MAKE_NONCOPYABLE(V8IdleTaskRunner);
 
  public:
-  V8IdleTaskRunner(WebScheduler* scheduler) : scheduler_(scheduler) {}
+  explicit V8IdleTaskRunner(ThreadScheduler* scheduler)
+      : scheduler_(scheduler) {}
   ~V8IdleTaskRunner() override = default;
   void PostIdleTask(v8::IdleTask* task) override {
     DCHECK(RuntimeEnabledFeatures::V8IdleTasksEnabled());
@@ -53,7 +54,7 @@ class V8IdleTaskRunner : public gin::V8IdleTaskRunner {
   }
 
  private:
-  WebScheduler* scheduler_;
+  ThreadScheduler* scheduler_;
 };
 
 }  // namespace blink

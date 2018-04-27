@@ -64,7 +64,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 #include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
@@ -592,7 +592,8 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
                                  reference_table);
 
   // NOTE: Some threads (namely utility threads) don't have a scheduler.
-  WebScheduler* scheduler = Platform::Current()->CurrentThread()->Scheduler();
+  ThreadScheduler* scheduler =
+      Platform::Current()->CurrentThread()->Scheduler();
 
 #if defined(USE_V8_CONTEXT_SNAPSHOT)
   V8PerIsolateData::V8ContextSnapshotMode v8_context_snapshot_mode =

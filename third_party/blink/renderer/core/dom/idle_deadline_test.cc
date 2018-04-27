@@ -7,19 +7,19 @@
 #include "base/single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 namespace {
 
-class MockIdleDeadlineScheduler final : public WebScheduler {
+class MockIdleDeadlineScheduler final : public ThreadScheduler {
  public:
   MockIdleDeadlineScheduler() = default;
   ~MockIdleDeadlineScheduler() override = default;
 
-  // WebScheduler implementation:
+  // ThreadScheduler implementation:
   base::SingleThreadTaskRunner* V8TaskRunner() override { return nullptr; }
   void Shutdown() override {}
   bool ShouldYieldForHighPriorityWork() override { return true; }
@@ -55,7 +55,7 @@ class MockIdleDeadlineThread final : public WebThread {
   MockIdleDeadlineThread() = default;
   ~MockIdleDeadlineThread() override = default;
   bool IsCurrentThread() const override { return true; }
-  WebScheduler* Scheduler() const override { return &scheduler_; }
+  ThreadScheduler* Scheduler() const override { return &scheduler_; }
 
  private:
   mutable MockIdleDeadlineScheduler scheduler_;

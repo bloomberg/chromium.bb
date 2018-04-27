@@ -100,7 +100,7 @@ blink::PlatformThreadId WebThreadImplForWorkerScheduler::ThreadId() const {
   return thread_->GetThreadId();
 }
 
-blink::WebScheduler* WebThreadImplForWorkerScheduler::Scheduler() const {
+blink::ThreadScheduler* WebThreadImplForWorkerScheduler::Scheduler() const {
   return web_scheduler_.get();
 }
 

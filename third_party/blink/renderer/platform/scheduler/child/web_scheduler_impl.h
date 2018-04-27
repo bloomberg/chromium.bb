@@ -13,7 +13,7 @@
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
-#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 
 namespace blink {
 namespace scheduler {
@@ -22,14 +22,14 @@ class SingleThreadIdleTaskRunner;
 class TaskRunnerImpl;
 class WebThreadScheduler;
 
-class PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
+class PLATFORM_EXPORT WebSchedulerImpl : public ThreadScheduler {
  public:
   WebSchedulerImpl(WebThreadScheduler* thread_scheduler,
                    scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner,
                    scoped_refptr<TaskQueue> v8_task_runner);
   ~WebSchedulerImpl() override;
 
-  // WebScheduler implementation:
+  // ThreadScheduler implementation:
   void Shutdown() override;
   bool ShouldYieldForHighPriorityWork() override;
   bool CanExceedIdleDeadlineIfRequired() override;
