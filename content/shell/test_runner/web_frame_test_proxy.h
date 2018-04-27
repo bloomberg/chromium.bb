@@ -84,9 +84,10 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
     return mime_type.Utf8().find(suffix) != std::string::npos;
   }
 
-  void DownloadURL(const blink::WebURLRequest& request) override {
-    test_client()->DownloadURL(request);
-    Base::DownloadURL(request);
+  void DownloadURL(const blink::WebURLRequest& request,
+                   mojo::ScopedMessagePipeHandle blob_url_token) override {
+    test_client()->DownloadURL(request, mojo::ScopedMessagePipeHandle());
+    Base::DownloadURL(request, std::move(blob_url_token));
   }
 
 

@@ -367,7 +367,9 @@ void WebFrameTestClient::ShowContextMenu(
       ->SetContextMenuData(context_menu_data);
 }
 
-void WebFrameTestClient::DownloadURL(const blink::WebURLRequest& request) {
+void WebFrameTestClient::DownloadURL(
+    const blink::WebURLRequest& request,
+    mojo::ScopedMessagePipeHandle blob_url_token) {
   if (test_runner()->shouldWaitUntilExternalURLLoad()) {
     delegate_->PrintMessage(std::string("Download started\n"));
     delegate_->TestFinished();

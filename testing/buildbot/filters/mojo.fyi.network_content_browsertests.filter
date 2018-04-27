@@ -69,7 +69,4 @@
 # http://crbug.com/819663.
 -WebContentsImplBrowserTest.UpdateLoadState
 
-# https://crbug.com/808759
--DownloadContentTest.DownloadAttributeBlobURL
-
 # NOTE: before adding new exclusions, please reach out to network-service-dev@.

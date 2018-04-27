@@ -18,6 +18,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "url/origin.h"
 
@@ -76,13 +77,15 @@ class CONTENT_EXPORT RenderFrameMessageFilter
   friend class TestSaveImageFromDataURL;
 
   // This method will be overridden by TestSaveImageFromDataURL class for test.
-  virtual void DownloadUrl(int render_view_id,
-                           int render_frame_id,
-                           const GURL& url,
-                           const Referrer& referrer,
-                           const url::Origin& initiator,
-                           const base::string16& suggested_name,
-                           const bool use_prompt) const;
+  virtual void DownloadUrl(
+      int render_view_id,
+      int render_frame_id,
+      const GURL& url,
+      const Referrer& referrer,
+      const url::Origin& initiator,
+      const base::string16& suggested_name,
+      const bool use_prompt,
+      blink::mojom::BlobURLTokenPtrInfo blob_url_token) const;
 
  private:
   friend class BrowserThread;

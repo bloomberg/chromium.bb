@@ -171,7 +171,9 @@ void DownloadDriverImpl::Start(
       download::DownloadSource::INTERNAL_API);
   download_url_params->set_post_body(post_body);
 
-  download_manager_->DownloadUrl(std::move(download_url_params), nullptr);
+  download_manager_->DownloadUrl(std::move(download_url_params),
+                                 nullptr /* blob_data_handle */,
+                                 nullptr /* blob_url_loader_factory */);
 }
 
 void DownloadDriverImpl::Remove(const std::string& guid) {

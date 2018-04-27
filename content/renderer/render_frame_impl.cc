@@ -3768,7 +3768,9 @@ void RenderFrameImpl::DidAddMessageToConsole(
       static_cast<int32_t>(source_line), source_name.Utf16()));
 }
 
-void RenderFrameImpl::DownloadURL(const blink::WebURLRequest& request) {
+void RenderFrameImpl::DownloadURL(
+    const blink::WebURLRequest& request,
+    mojo::ScopedMessagePipeHandle blob_url_token) {
   FrameHostMsg_DownloadUrl_Params params;
   params.render_view_id = render_view_->GetRoutingID();
   params.render_frame_id = GetRoutingID();
@@ -3777,6 +3779,7 @@ void RenderFrameImpl::DownloadURL(const blink::WebURLRequest& request) {
   params.initiator_origin = request.RequestorOrigin();
   if (request.GetSuggestedFilename().has_value())
     params.suggested_name = request.GetSuggestedFilename()->Utf16();
+  params.blob_url_token = blob_url_token.release();
 
   Send(new FrameHostMsg_DownloadUrl(params));
 }
@@ -6010,7 +6013,16 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   }
 
   if (info.default_policy == blink::kWebNavigationPolicyDownload) {
-    DownloadURL(info.url_request);
+    blink::mojom::BlobURLTokenPtrInfo blob_url_token;
+    if (info.blob_url_token.is_valid()) {
+      blink::mojom::BlobURLTokenPtr token(blink::mojom::BlobURLTokenPtrInfo(
+          mojo::ScopedMessagePipeHandle(info.blob_url_token.get()),
+          blink::mojom::BlobURLToken::Version_));
+      token->Clone(MakeRequest(&blob_url_token));
+      ignore_result(token.PassInterface().PassHandle().release());
+    }
+
+    DownloadURL(info.url_request, blob_url_token.PassHandle());
   } else {
     OpenURL(info, /*send_referrer=*/true,
             /*is_history_navigation_in_new_child=*/false);
