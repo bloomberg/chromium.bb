@@ -19,7 +19,6 @@
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "cc/ipc/cc_param_traits.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/shared_bitmap.h"

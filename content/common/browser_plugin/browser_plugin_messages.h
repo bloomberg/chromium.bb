@@ -9,7 +9,6 @@
 
 #include "base/process/process.h"
 #include "base/unguessable_token.h"
-#include "cc/ipc/cc_param_traits.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"

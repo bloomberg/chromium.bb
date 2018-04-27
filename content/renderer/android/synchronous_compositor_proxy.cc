@@ -7,7 +7,6 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/memory/shared_memory.h"
-#include "cc/ipc/cc_param_traits.h"
 #include "content/common/android/sync_compositor_statics.h"
 #include "content/common/input/sync_compositor_messages.h"
 #include "content/public/common/content_switches.h"

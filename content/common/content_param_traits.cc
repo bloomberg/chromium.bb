@@ -7,6 +7,11 @@
 #include <stddef.h>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/unguessable_token.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/common/surfaces/surface_info.h"
 #include "content/common/frame_message_structs.h"
 #include "ipc/ipc_mojo_message_helper.h"
 #include "ipc/ipc_mojo_param_traits.h"
@@ -17,6 +22,7 @@
 #include "ui/accessibility/ax_modes.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/blink/web_input_event_traits.h"
+// #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 
 namespace IPC {
 
@@ -238,6 +244,139 @@ void ParamTraits<scoped_refptr<
     base::RefCountedData<blink::TransferableMessage>>>::Log(const param_type& p,
                                                             std::string* l) {
   l->append("<blink::TransferableMessage>");
+}
+
+void ParamTraits<viz::FrameSinkId>::Write(base::Pickle* m,
+                                          const param_type& p) {
+  DCHECK(p.is_valid());
+  WriteParam(m, p.client_id());
+  WriteParam(m, p.sink_id());
+}
+
+bool ParamTraits<viz::FrameSinkId>::Read(const base::Pickle* m,
+                                         base::PickleIterator* iter,
+                                         param_type* p) {
+  uint32_t client_id;
+  if (!ReadParam(m, iter, &client_id))
+    return false;
+
+  uint32_t sink_id;
+  if (!ReadParam(m, iter, &sink_id))
+    return false;
+
+  *p = viz::FrameSinkId(client_id, sink_id);
+  return p->is_valid();
+}
+
+void ParamTraits<viz::FrameSinkId>::Log(const param_type& p, std::string* l) {
+  l->append("viz::FrameSinkId(");
+  LogParam(p.client_id(), l);
+  l->append(", ");
+  LogParam(p.sink_id(), l);
+  l->append(")");
+}
+
+void ParamTraits<viz::LocalSurfaceId>::Write(base::Pickle* m,
+                                             const param_type& p) {
+  DCHECK(p.is_valid());
+  WriteParam(m, p.parent_sequence_number());
+  WriteParam(m, p.child_sequence_number());
+  WriteParam(m, p.embed_token());
+}
+
+bool ParamTraits<viz::LocalSurfaceId>::Read(const base::Pickle* m,
+                                            base::PickleIterator* iter,
+                                            param_type* p) {
+  uint32_t parent_sequence_number;
+  if (!ReadParam(m, iter, &parent_sequence_number))
+    return false;
+
+  uint32_t child_sequence_number;
+  if (!ReadParam(m, iter, &child_sequence_number))
+    return false;
+
+  base::UnguessableToken embed_token;
+  if (!ReadParam(m, iter, &embed_token))
+    return false;
+
+  *p = viz::LocalSurfaceId(parent_sequence_number, child_sequence_number,
+                           embed_token);
+  return p->is_valid();
+}
+
+void ParamTraits<viz::LocalSurfaceId>::Log(const param_type& p,
+                                           std::string* l) {
+  l->append("viz::LocalSurfaceId(");
+  LogParam(p.parent_sequence_number(), l);
+  l->append(", ");
+  LogParam(p.child_sequence_number(), l);
+  l->append(", ");
+  LogParam(p.embed_token(), l);
+  l->append(")");
+}
+
+void ParamTraits<viz::SurfaceId>::Write(base::Pickle* m, const param_type& p) {
+  WriteParam(m, p.frame_sink_id());
+  WriteParam(m, p.local_surface_id());
+}
+
+bool ParamTraits<viz::SurfaceId>::Read(const base::Pickle* m,
+                                       base::PickleIterator* iter,
+                                       param_type* p) {
+  viz::FrameSinkId frame_sink_id;
+  if (!ReadParam(m, iter, &frame_sink_id))
+    return false;
+
+  viz::LocalSurfaceId local_surface_id;
+  if (!ReadParam(m, iter, &local_surface_id))
+    return false;
+
+  *p = viz::SurfaceId(frame_sink_id, local_surface_id);
+  return true;
+}
+
+void ParamTraits<viz::SurfaceId>::Log(const param_type& p, std::string* l) {
+  l->append("viz::SurfaceId(");
+  LogParam(p.frame_sink_id(), l);
+  l->append(", ");
+  LogParam(p.local_surface_id(), l);
+  l->append(")");
+}
+
+void ParamTraits<viz::SurfaceInfo>::Write(base::Pickle* m,
+                                          const param_type& p) {
+  WriteParam(m, p.id());
+  WriteParam(m, p.device_scale_factor());
+  WriteParam(m, p.size_in_pixels());
+}
+
+bool ParamTraits<viz::SurfaceInfo>::Read(const base::Pickle* m,
+                                         base::PickleIterator* iter,
+                                         param_type* p) {
+  viz::SurfaceId surface_id;
+  if (!ReadParam(m, iter, &surface_id))
+    return false;
+
+  float device_scale_factor;
+  if (!ReadParam(m, iter, &device_scale_factor))
+    return false;
+
+  gfx::Size size_in_pixels;
+  if (!ReadParam(m, iter, &size_in_pixels))
+    return false;
+
+  *p = viz::SurfaceInfo(surface_id, device_scale_factor, size_in_pixels);
+  return p->is_valid();
+}
+
+void ParamTraits<viz::SurfaceInfo>::Log(const param_type& p, std::string* l) {
+  l->append("viz::SurfaceInfo(");
+  LogParam(p.id(), l);
+  l->append(", ");
+  LogParam(p.device_scale_factor(), l);
+  l->append(", ");
+  LogParam(p.size_in_pixels(), l);
+  l->append(")");
 }
 
 }  // namespace IPC

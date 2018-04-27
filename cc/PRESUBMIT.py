@@ -275,25 +275,6 @@ def CheckForUseOfWrongClock(input_api,
   else:
     return []
 
-def CheckIpcUpdatedWithMojo(input_api, output_api):
-  """Make sure IPC is updated whenever Mojo serialization is updated"""
-  def match_ipc(affected_file):
-    match = re.match(r'.*_param_traits.*', affected_file.LocalPath())
-    return match is not None
-
-  def match_mojo(affected_file):
-    mojo_patterns = (r'.*_struct_traits.*', r'.*\.mojom$', r'.*\.typemap$')
-    matches = (re.match(pattern, affected_file.LocalPath())
-            for pattern in mojo_patterns)
-    return any(matches)
-
-  ipc_files = input_api.AffectedFiles(file_filter=match_ipc)
-  mojo_files = input_api.AffectedFiles(file_filter=match_mojo)
-  if mojo_files and not ipc_files:
-    return [output_api.PresubmitPromptOrNotify(
-        'Make sure to update IPC ParamTraits along with mojo types.\n\n'),]
-  return []
-
 def CheckChangeOnUpload(input_api, output_api):
   results = []
   results += CheckAsserts(input_api, output_api)
@@ -305,7 +286,6 @@ def CheckChangeOnUpload(input_api, output_api):
   results += CheckNamespace(input_api, output_api)
   results += CheckForUseOfWrongClock(input_api, output_api)
   results += FindUselessIfdefs(input_api, output_api)
-  results += CheckIpcUpdatedWithMojo(input_api, output_api)
   return results
 
 def PostUploadHook(cl, change, output_api):

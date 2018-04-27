@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/values.h"
+#include "components/viz/common/surfaces/surface_info.h"
 #include "content/common/resource_messages.h"
 #include "content/public/common/content_constants.h"
 #include "ipc/ipc_message.h"
@@ -284,4 +285,25 @@ TEST(IPCMessageTest, RenderWidgetSurfaceProperties) {
   EXPECT_EQ(input.has_transparent_background,
             output.has_transparent_background);
 #endif
+}
+
+static constexpr viz::FrameSinkId kArbitraryFrameSinkId(1, 1);
+
+TEST(IPCMessageTest, SurfaceInfo) {
+  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
+  const viz::SurfaceId kArbitrarySurfaceId(
+      kArbitraryFrameSinkId,
+      viz::LocalSurfaceId(3, base::UnguessableToken::Create()));
+  constexpr float kArbitraryDeviceScaleFactor = 0.9f;
+  const gfx::Size kArbitrarySize(65, 321);
+  const viz::SurfaceInfo surface_info_in(
+      kArbitrarySurfaceId, kArbitraryDeviceScaleFactor, kArbitrarySize);
+  IPC::ParamTraits<viz::SurfaceInfo>::Write(&msg, surface_info_in);
+
+  viz::SurfaceInfo surface_info_out;
+  base::PickleIterator iter(msg);
+  EXPECT_TRUE(
+      IPC::ParamTraits<viz::SurfaceInfo>::Read(&msg, &iter, &surface_info_out));
+
+  ASSERT_EQ(surface_info_in, surface_info_out);
 }

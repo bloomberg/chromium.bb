@@ -323,7 +323,6 @@ source_set("common") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//build/util:webkit_version",
-    "//cc/ipc",
     "//components/discardable_memory/common",
     "//components/services/filesystem/public/interfaces",
     "//components/tracing",
