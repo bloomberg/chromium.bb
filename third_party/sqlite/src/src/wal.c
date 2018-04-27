@@ -554,7 +554,11 @@ struct WalIterator {
 ** page and SQLITE_OK is returned. If an error (an OOM or VFS error) occurs,
 ** then an SQLite error code is returned and *ppPage is set to 0.
 */
-static int walIndexPage(Wal *pWal, int iPage, volatile u32 **ppPage){
+static SQLITE_NOINLINE int walIndexPageRealloc(
+  Wal *pWal,               /* The WAL context */
+  int iPage,               /* The page we seek */
+  volatile u32 **ppPage    /* Write the page pointer here */
+){
   int rc = SQLITE_OK;
 
   /* Enlarge the pWal->apWiData[] array if required */
@@ -573,21 +577,20 @@ static int walIndexPage(Wal *pWal, int iPage, volatile u32 **ppPage){
   }
 
   /* Request a pointer to the required page from the VFS */
-  if( pWal->apWiData[iPage]==0 ){
-    if( pWal->exclusiveMode==WAL_HEAPMEMORY_MODE ){
-      pWal->apWiData[iPage] = (u32 volatile *)sqlite3MallocZero(WALINDEX_PGSZ);
-      if( !pWal->apWiData[iPage] ) rc = SQLITE_NOMEM_BKPT;
-    }else{
-      rc = sqlite3OsShmMap(pWal->pDbFd, iPage, WALINDEX_PGSZ,
-          pWal->writeLock, (void volatile **)&pWal->apWiData[iPage]
-      );
-      assert( pWal->apWiData[iPage]!=0 || rc!=SQLITE_OK || pWal->writeLock==0 );
-      testcase( pWal->apWiData[iPage]==0 && rc==SQLITE_OK );
-      if( (rc&0xff)==SQLITE_READONLY ){
-        pWal->readOnly |= WAL_SHM_RDONLY;
-        if( rc==SQLITE_READONLY ){
-          rc = SQLITE_OK;
-        }
+  assert( pWal->apWiData[iPage]==0 );
+  if( pWal->exclusiveMode==WAL_HEAPMEMORY_MODE ){
+    pWal->apWiData[iPage] = (u32 volatile *)sqlite3MallocZero(WALINDEX_PGSZ);
+    if( !pWal->apWiData[iPage] ) rc = SQLITE_NOMEM_BKPT;
+  }else{
+    rc = sqlite3OsShmMap(pWal->pDbFd, iPage, WALINDEX_PGSZ,
+        pWal->writeLock, (void volatile **)&pWal->apWiData[iPage]
+    );
+    assert( pWal->apWiData[iPage]!=0 || rc!=SQLITE_OK || pWal->writeLock==0 );
+    testcase( pWal->apWiData[iPage]==0 && rc==SQLITE_OK );
+    if( (rc&0xff)==SQLITE_READONLY ){
+      pWal->readOnly |= WAL_SHM_RDONLY;
+      if( rc==SQLITE_READONLY ){
+        rc = SQLITE_OK;
       }
     }
   }
@@ -595,6 +598,16 @@ static int walIndexPage(Wal *pWal, int iPage, volatile u32 **ppPage){
   *ppPage = pWal->apWiData[iPage];
   assert( iPage==0 || *ppPage || rc!=SQLITE_OK );
   return rc;
+}
+static int walIndexPage(
+  Wal *pWal,               /* The WAL context */
+  int iPage,               /* The page we seek */
+  volatile u32 **ppPage    /* Write the page pointer here */
+){
+  if( pWal->nWiData<=iPage || (*ppPage = pWal->apWiData[iPage])==0 ){
+    return walIndexPageRealloc(pWal, iPage, ppPage);
+  }
+  return SQLITE_OK;
 }
 
 /*
@@ -1572,8 +1585,9 @@ static void walIteratorFree(WalIterator *p){
 
 /*
 ** Construct a WalInterator object that can be used to loop over all
-** pages in the WAL in ascending order. The caller must hold the checkpoint
-** lock.
+** pages in the WAL following frame nBackfill in ascending order. Frames
+** nBackfill or earlier may be included - excluding them is an optimization
+** only. The caller must hold the checkpoint lock.
 **
 ** On success, make *pp point to the newly allocated WalInterator object
 ** return SQLITE_OK. Otherwise, return an error code. If this routine
@@ -1582,7 +1596,7 @@ static void walIteratorFree(WalIterator *p){
 ** The calling routine should invoke walIteratorFree() to destroy the
 ** WalIterator object when it has finished with it.
 */
-static int walIteratorInit(Wal *pWal, WalIterator **pp){
+static int walIteratorInit(Wal *pWal, u32 nBackfill, WalIterator **pp){
   WalIterator *p;                 /* Return value */
   int nSegment;                   /* Number of segments to merge */
   u32 iLast;                      /* Last frame in log */
@@ -1619,7 +1633,7 @@ static int walIteratorInit(Wal *pWal, WalIterator **pp){
     rc = SQLITE_NOMEM_BKPT;
   }
 
-  for(i=0; rc==SQLITE_OK && i<nSegment; i++){
+  for(i=walFramePage(nBackfill+1); rc==SQLITE_OK && i<nSegment; i++){
     volatile ht_slot *aHash;
     u32 iZero;
     volatile u32 *aPgno;
@@ -1653,6 +1667,7 @@ static int walIteratorInit(Wal *pWal, WalIterator **pp){
 
   if( rc!=SQLITE_OK ){
     walIteratorFree(p);
+    p = 0;
   }
   *pp = p;
   return rc;
@@ -1775,13 +1790,6 @@ static int walCheckpoint(
   pInfo = walCkptInfo(pWal);
   if( pInfo->nBackfill<pWal->hdr.mxFrame ){
 
-    /* Allocate the iterator */
-    rc = walIteratorInit(pWal, &pIter);
-    if( rc!=SQLITE_OK ){
-      return rc;
-    }
-    assert( pIter );
-
     /* EVIDENCE-OF: R-62920-47450 The busy-handler callback is never invoked
     ** in the SQLITE_CHECKPOINT_PASSIVE mode. */
     assert( eMode!=SQLITE_CHECKPOINT_PASSIVE || xBusy==0 );
@@ -1818,7 +1826,13 @@ static int walCheckpoint(
       }
     }
 
-    if( pInfo->nBackfill<mxSafeFrame
+    /* Allocate the iterator */
+    if( pInfo->nBackfill<mxSafeFrame ){
+      rc = walIteratorInit(pWal, pInfo->nBackfill, &pIter);
+      assert( rc==SQLITE_OK || pIter==0 );
+    }
+
+    if( pIter
      && (rc = walBusyLock(pWal, xBusy, pBusyArg, WAL_READ_LOCK(0),1))==SQLITE_OK
     ){
       i64 nSize;                    /* Current size of database file */
@@ -2868,7 +2882,7 @@ int sqlite3WalFindFrame(
   **     table after the current read-transaction had started.
   */
   iMinHash = walFramePage(pWal->minFrame);
-  for(iHash=walFramePage(iLast); iHash>=iMinHash && iRead==0; iHash--){
+  for(iHash=walFramePage(iLast); iHash>=iMinHash; iHash--){
     volatile ht_slot *aHash;      /* Pointer to hash table */
     volatile u32 *aPgno;          /* Pointer to array of page numbers */
     u32 iZero;                    /* Frame number corresponding to aPgno[0] */
@@ -2891,6 +2905,7 @@ int sqlite3WalFindFrame(
         return SQLITE_CORRUPT_BKPT;
       }
     }
+    if( iRead ) break;
   }
 
 #ifdef SQLITE_ENABLE_EXPENSIVE_ASSERT

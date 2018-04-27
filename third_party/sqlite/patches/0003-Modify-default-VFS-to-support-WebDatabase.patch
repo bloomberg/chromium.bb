@@ -1,4 +1,4 @@
-From e38ca21928e6b43aeee582d7c78036bb21a54d5c Mon Sep 17 00:00:00 2001
+From 41ae21b1b4cabce421e0d0454acee2d880183d65 Mon Sep 17 00:00:00 2001
 From: dumi <dumi@chromium.org>
 Date: Mon, 20 Jul 2009 23:40:51 +0000
 Subject: [PATCH 03/10] Modify default VFS to support WebDatabase.
@@ -17,16 +17,16 @@ https://codereview.chromium.org/384075
 https://codereview.chromium.org/377039
 [Possibly not a complete list.]
 ---
- third_party/sqlite/src/src/os_unix.c   | 50 ++++++++++++++++++++++++++++++++++
- third_party/sqlite/src/src/os_win.c    |  8 ++++++
- third_party/sqlite/src/src/sqlite.h.in | 23 ++++++++++++++++
- 3 files changed, 81 insertions(+)
+ third_party/sqlite/src/src/os_unix.c   | 51 ++++++++++++++++++++++++++
+ third_party/sqlite/src/src/os_win.c    |  8 ++++
+ third_party/sqlite/src/src/sqlite.h.in | 23 ++++++++++++
+ 3 files changed, 82 insertions(+)
 
 diff --git a/third_party/sqlite/src/src/os_unix.c b/third_party/sqlite/src/src/os_unix.c
-index a55aa28d7104..74c2e08cd1ba 100644
+index 629c77b58b44..f19df3f0ba21 100644
 --- a/third_party/sqlite/src/src/os_unix.c
 +++ b/third_party/sqlite/src/src/os_unix.c
-@@ -1370,6 +1370,12 @@ static int fileHasMoved(unixFile *pFile){
+@@ -1378,6 +1378,12 @@ static int fileHasMoved(unixFile *pFile){
    return pFile->pInode!=0 && pFile->pId!=pFile->pInode->fileId.pId;
  #else
    struct stat buf;
@@ -39,10 +39,10 @@ index a55aa28d7104..74c2e08cd1ba 100644
    return pFile->pInode!=0 &&
        (osStat(pFile->zPath, &buf)!=0
           || (u64)buf.st_ino!=pFile->pInode->fileId.ino);
-@@ -5746,6 +5752,45 @@ static int findCreateFileMode(
+@@ -5795,6 +5801,45 @@ static int findCreateFileMode(
    return rc;
  }
-
+ 
 +/*
 +** Initialize |unixFile| internals of |file| on behalf of chromiumOpen() in
 +** WebDatabase SQLiteFileSystemPosix.cpp.  Function is a subset of unixOpen(),
@@ -85,15 +85,16 @@ index a55aa28d7104..74c2e08cd1ba 100644
  /*
  ** Open the file zPath.
  **
-@@ -5847,6 +5892,7 @@ static int unixOpen(
+@@ -5895,6 +5940,8 @@ static int unixOpen(
+     randomnessPid = osGetpid(0);
      sqlite3_randomness(0,0);
    }
-
++
 +  /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
    memset(p, 0, sizeof(unixFile));
-
+ 
    if( eType==SQLITE_OPEN_MAIN_DB ){
-@@ -5855,6 +5901,7 @@ static int unixOpen(
+@@ -5903,6 +5950,7 @@ static int unixOpen(
      if( pUnused ){
        fd = pUnused->fd;
      }else{
@@ -101,21 +102,21 @@ index a55aa28d7104..74c2e08cd1ba 100644
        pUnused = sqlite3_malloc64(sizeof(*pUnused));
        if( !pUnused ){
          return SQLITE_NOMEM_BKPT;
-@@ -5939,6 +5986,7 @@ static int unixOpen(
+@@ -5987,6 +6035,7 @@ static int unixOpen(
    }
-
+ 
    if( p->pPreallocatedUnused ){
 +    /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
      p->pPreallocatedUnused->fd = fd;
      p->pPreallocatedUnused->flags = flags;
    }
-@@ -6020,10 +6068,12 @@ static int unixOpen(
+@@ -6068,10 +6117,12 @@ static int unixOpen(
    assert( zPath==0 || zPath[0]=='/'
        || eType==SQLITE_OPEN_MASTER_JOURNAL || eType==SQLITE_OPEN_MAIN_JOURNAL
    );
 +  /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
    rc = fillInUnixFile(pVfs, fd, pFile, zPath, ctrlFlags);
-
+ 
  open_finished:
    if( rc!=SQLITE_OK ){
 +    /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
@@ -123,13 +124,13 @@ index a55aa28d7104..74c2e08cd1ba 100644
    }
    return rc;
 diff --git a/third_party/sqlite/src/src/os_win.c b/third_party/sqlite/src/src/os_win.c
-index 2b2b8ebd564e..3b82da0bc39b 100644
+index 534426977f81..a69ca7be4d2d 100644
 --- a/third_party/sqlite/src/src/os_win.c
 +++ b/third_party/sqlite/src/src/os_win.c
-@@ -6075,4 +6075,12 @@ int sqlite3_os_end(void){
+@@ -6085,4 +6085,12 @@ int sqlite3_os_end(void){
    return SQLITE_OK;
  }
-
+ 
 +CHROMIUM_SQLITE_API
 +void chromium_sqlite3_initialize_win_sqlite3_file(sqlite3_file* file, HANDLE handle) {
 +  winFile* winSQLite3File = (winFile*)file;
@@ -140,13 +141,13 @@ index 2b2b8ebd564e..3b82da0bc39b 100644
 +
  #endif /* SQLITE_OS_WIN */
 diff --git a/third_party/sqlite/src/src/sqlite.h.in b/third_party/sqlite/src/src/sqlite.h.in
-index 9306d1c974ad..4f1b4a65d9d8 100644
+index 81e46024552b..d35b7d55f5a6 100644
 --- a/third_party/sqlite/src/src/sqlite.h.in
 +++ b/third_party/sqlite/src/src/sqlite.h.in
-@@ -7991,6 +7991,29 @@ int sqlite3_strnicmp(const char *, const char *, int);
+@@ -7953,6 +7953,29 @@ int sqlite3_strnicmp(const char *, const char *, int);
  */
  int sqlite3_strglob(const char *zGlob, const char *zStr);
-
+ 
 +/* Begin WebDatabase patch for Chromium */
 +/* Expose some SQLite internals for the WebDatabase vfs.
 +** DO NOT EXTEND THE USE OF THIS.
@@ -173,5 +174,6 @@ index 9306d1c974ad..4f1b4a65d9d8 100644
  /*
  ** CAPI3REF: String LIKE Matching
  *
---
-2.14.0
+-- 
+2.16.0
+

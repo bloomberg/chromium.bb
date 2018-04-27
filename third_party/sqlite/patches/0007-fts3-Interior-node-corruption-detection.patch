@@ -1,4 +1,4 @@
-From 56eba46a886c1e966d54ea5c8610829350e8c3bf Mon Sep 17 00:00:00 2001
+From e23d8b238929d133f5962351345c62133d9b54eb Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Thu, 26 May 2011 18:44:46 +0000
 Subject: [PATCH 07/10] [fts3] Interior node corruption detection.
@@ -27,7 +27,7 @@ index 215278a823bb..4fbbf4f1580e 100644
 @@ -1859,8 +1859,13 @@ static int fts3ScanInteriorNode(
      isFirstTerm = 0;
      zCsr += fts3GetVarint32(zCsr, &nSuffix);
-
+ 
 -    assert( nPrefix>=0 && nSuffix>=0 );
 -    if( &zCsr[nSuffix]>zEnd ){
 +    /* NOTE(shess): Previous code checked for negative nPrefix and
@@ -40,5 +40,6 @@ index 215278a823bb..4fbbf4f1580e 100644
        rc = FTS_CORRUPT_VTAB;
        goto finish_scan;
      }
---
-2.14.0
+-- 
+2.16.0
+
