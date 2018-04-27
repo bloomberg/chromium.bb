@@ -828,9 +828,6 @@ void DCLayerTree::SwapChainPresenter::ReallocateSwapChain(bool yuy2) {
   HANDLE handle;
   HRESULT hr = create_surface_handle_function_(COMPOSITIONOBJECT_ALL_ACCESS,
                                                nullptr, &handle);
-  // TODO(crbug/792806): Remove Alias and CHECK after issue is fixed.
-  base::debug::Alias(&hr);
-  CHECK(SUCCEEDED(hr));
   swap_chain_handle_.Set(handle);
 
   if (is_yuy2_swapchain_ != yuy2) {
