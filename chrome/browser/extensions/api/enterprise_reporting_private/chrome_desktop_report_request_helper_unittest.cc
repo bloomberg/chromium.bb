@@ -69,6 +69,22 @@ TEST_F(ChromeDesktopReportRequestGeneratorTest, MachineName) {
   EXPECT_EQ(expected_machine_name, request->machine_name());
 }
 
+TEST_F(ChromeDesktopReportRequestGeneratorTest, ProfileName) {
+  // Set the profile name to a known value to compare against.
+  const std::string test_name("TEST");
+  profile_.set_profile_name(test_name);
+
+  // An empty report suffices for this test. The information of interest is
+  // sourced from the profile
+  std::unique_ptr<em::ChromeDesktopReportRequest> request =
+      GenerateChromeDesktopReportRequest(base::DictionaryValue(), &profile_);
+  ASSERT_TRUE(request);
+
+  // Make sure the user name was set in the proto.
+  EXPECT_EQ(test_name,
+            request->browser_report().chrome_user_profile_reports(0).name());
+}
+
 TEST_F(ChromeDesktopReportRequestGeneratorTest, ExtensionList) {
   std::unique_ptr<em::ChromeDesktopReportRequest> request;
   std::unique_ptr<base::DictionaryValue> report;

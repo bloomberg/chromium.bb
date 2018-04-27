@@ -872,6 +872,8 @@ message ChromeUserProfileReport {
   // The number of safe browsing warning pages the user has clicked through
   // since the last report was successfully uploaded.
   optional uint64 safe_browsing_warnings_click_through = 8;
+  // The name of the loaded profile. Empty when in incognito mode
+  optional string name = 9;
 }
 
 // Report browser level status.
