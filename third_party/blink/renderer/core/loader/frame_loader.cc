@@ -250,6 +250,7 @@ FrameLoader::FrameLoader(LocalFrame* frame)
     : frame_(frame),
       progress_tracker_(ProgressTracker::Create(frame)),
       in_stop_all_loaders_(false),
+      in_restore_scroll_(false),
       forced_sandbox_flags_(kSandboxNone),
       dispatching_did_clear_window_object_in_main_world_(false),
       protect_provisional_loader_(false),
@@ -1166,8 +1167,10 @@ bool FrameLoader::IsLoadingMainFrame() const {
 
 void FrameLoader::RestoreScrollPositionAndViewState() {
   if (!frame_->GetPage() || !GetDocumentLoader() ||
-      !GetDocumentLoader()->GetHistoryItem())
+      !GetDocumentLoader()->GetHistoryItem() || in_restore_scroll_) {
     return;
+  }
+  AutoReset<bool> in_restore_scroll(&in_restore_scroll_, true);
   RestoreScrollPositionAndViewState(
       GetDocumentLoader()->LoadType(), kHistoryDifferentDocumentLoad,
       GetDocumentLoader()->GetHistoryItem()->GetViewState(),
