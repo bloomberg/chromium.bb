@@ -31,10 +31,8 @@ namespace gfx {
 class Image;
 }
 
-class OmniboxImageView;
-class OmniboxSuggestionView;
+class OmniboxMatchCellView;
 class OmniboxTabSwitchButton;
-class OmniboxTextView;
 
 class OmniboxResultView : public views::View,
                           private gfx::AnimationDelegate,
@@ -85,10 +83,6 @@ class OmniboxResultView : public views::View,
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
  private:
-  // Create instance and add it as a child.
-  OmniboxImageView* AddOmniboxImageView();
-  OmniboxTextView* AddOmniboxTextView(const gfx::FontList& font_list);
-
   // Returns the height of the text portion of the result view.
   int GetTextHeight() const;
 
@@ -128,8 +122,8 @@ class OmniboxResultView : public views::View,
   std::unique_ptr<gfx::SlideAnimation> animation_;
 
   // Weak pointers for easy reference.
-  OmniboxSuggestionView* suggestion_view_;  // The leading (or left) view.
-  OmniboxSuggestionView* keyword_view_;     // The trailing (or right) view.
+  OmniboxMatchCellView* suggestion_view_;  // The leading (or left) view.
+  OmniboxMatchCellView* keyword_view_;     // The trailing (or right) view.
   std::unique_ptr<OmniboxTabSwitchButton> suggestion_tab_switch_button_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxResultView);
