@@ -13259,6 +13259,25 @@ Called by update_net_error_codes.py.-->
   <int value="11" label="Request interrupted"/>
 </enum>
 
+<enum name="EnterpriseUserPolicyChromeOSSessionAbortType">
+  <int value="0" label="Initialization, Google cloud management">
+    Abort of asynchronous user policy initialization when the user is managed
+    with the Google cloud management.
+  </int>
+  <int value="1" label="Initialization, Active Directory management">
+    Abort of asynchronous user policy initialization when the user is managed
+    with the Active Directory management.
+  </int>
+  <int value="2" label="Blocking initialization, Google cloud management">
+    Abort of blocking (synchronous) user policy initialization when the user is
+    managed with the Google cloud management.
+  </int>
+  <int value="3" label="Blocking initialization, Active Directory management">
+    Abort of blocking (synchronous) user policy initialization when the user is
+    managed with the Active Directory management.
+  </int>
+</enum>
+
 <enum name="EnterpriseUserSessionLogins">
   <summary>
     Types of sign-in events as defined in
