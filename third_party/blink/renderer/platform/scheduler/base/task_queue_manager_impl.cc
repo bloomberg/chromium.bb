@@ -99,10 +99,16 @@ TaskQueueManagerImpl::~TaskQueueManagerImpl() {
   controller_->RemoveNestingObserver(this);
 }
 
+TaskQueueManagerImpl::AnyThread::AnyThread() = default;
+
+TaskQueueManagerImpl::AnyThread::~AnyThread() = default;
+
 TaskQueueManagerImpl::MainThreadOnly::MainThreadOnly()
     : random_generator(base::RandUint64()),
       uniform_distribution(0.0, 1.0),
       real_time_domain(new RealTimeDomain()) {}
+
+TaskQueueManagerImpl::MainThreadOnly::~MainThreadOnly() = default;
 
 std::unique_ptr<TaskQueueManagerImpl>
 TaskQueueManagerImpl::TakeOverCurrentThread() {

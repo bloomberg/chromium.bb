@@ -144,11 +144,14 @@ class PLATFORM_EXPORT TaskQueueImpl {
   struct PostTaskResult {
     PostTaskResult();
     PostTaskResult(bool success, TaskQueue::PostedTask task);
+    PostTaskResult(PostTaskResult&& move_from);
+    PostTaskResult(const PostTaskResult& copy_from) = delete;
+    ~PostTaskResult();
 
     static PostTaskResult Success();
     static PostTaskResult Fail(TaskQueue::PostedTask task);
 
-    bool success = false;
+    bool success;
     TaskQueue::PostedTask task;
   };
 

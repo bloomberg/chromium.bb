@@ -36,6 +36,14 @@ ThreadControllerImpl::ThreadControllerImpl(
 
 ThreadControllerImpl::~ThreadControllerImpl() = default;
 
+ThreadControllerImpl::AnySequence::AnySequence() = default;
+
+ThreadControllerImpl::AnySequence::~AnySequence() = default;
+
+ThreadControllerImpl::MainSequenceOnly::MainSequenceOnly() = default;
+
+ThreadControllerImpl::MainSequenceOnly::~MainSequenceOnly() = default;
+
 std::unique_ptr<ThreadControllerImpl> ThreadControllerImpl::Create(
     base::MessageLoop* message_loop,
     const base::TickClock* time_source) {
