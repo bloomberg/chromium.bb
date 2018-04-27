@@ -107,6 +107,11 @@ void AppendAdditionalBrowserInformation(em::ChromeDesktopReportRequest* request,
         ->mutable_chrome_user_profile_reports(0)
         ->set_policy_fetched_timestamp(timestamp);
   }
+
+  // Set the profile name
+  request->mutable_browser_report()
+      ->mutable_chrome_user_profile_reports(0)
+      ->set_name(profile->GetProfileUserName());
 }
 
 bool UpdateJSONEncodedStringEntry(const base::Value& dict_value,
