@@ -77,7 +77,7 @@ class CallbackHolder : public CallbackHolderBase {
   InvokerOptions invoker_options;
 
  private:
-  virtual ~CallbackHolder() {}
+  ~CallbackHolder() override {}
 
   DISALLOW_COPY_AND_ASSIGN(CallbackHolder);
 };
