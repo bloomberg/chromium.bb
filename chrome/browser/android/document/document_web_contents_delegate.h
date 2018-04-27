@@ -30,7 +30,7 @@ class DocumentWebContentsDelegate
 
   // Overridden from WebContentsDelegate.
   void AddNewContents(content::WebContents* source,
-                      content::WebContents* new_contents,
+                      std::unique_ptr<content::WebContents> new_contents,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_pos,
                       bool user_gesture,

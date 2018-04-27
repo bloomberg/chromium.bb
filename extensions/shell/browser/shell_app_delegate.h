@@ -28,7 +28,7 @@ class ShellAppDelegate : public AppDelegate {
       content::WebContents* source,
       const content::OpenURLParams& params) override;
   void AddNewContents(content::BrowserContext* context,
-                      content::WebContents* new_contents,
+                      std::unique_ptr<content::WebContents> new_contents,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
                       bool user_gesture) override;

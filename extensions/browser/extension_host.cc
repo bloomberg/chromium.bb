@@ -389,7 +389,7 @@ content::JavaScriptDialogManager* ExtensionHost::GetJavaScriptDialogManager(
 }
 
 void ExtensionHost::AddNewContents(WebContents* source,
-                                   WebContents* new_contents,
+                                   std::unique_ptr<WebContents> new_contents,
                                    WindowOpenDisposition disposition,
                                    const gfx::Rect& initial_rect,
                                    bool user_gesture,
@@ -409,18 +409,16 @@ void ExtensionHost::AddNewContents(WebContents* source,
             new_contents->GetBrowserContext()) {
       WebContentsDelegate* delegate = associated_contents->GetDelegate();
       if (delegate) {
-        delegate->AddNewContents(
-            associated_contents, new_contents, disposition, initial_rect,
-            user_gesture, was_blocked);
+        delegate->AddNewContents(associated_contents, std::move(new_contents),
+                                 disposition, initial_rect, user_gesture,
+                                 was_blocked);
         return;
       }
     }
   }
 
-  // TODO(erikchen): Refactor AddNewContents to take strong ownership semantics.
-  // https://crbug.com/832879.
-  delegate_->CreateTab(base::WrapUnique(new_contents), extension_id_,
-                       disposition, initial_rect, user_gesture);
+  delegate_->CreateTab(std::move(new_contents), extension_id_, disposition,
+                       initial_rect, user_gesture);
 }
 
 void ExtensionHost::RenderViewReady() {

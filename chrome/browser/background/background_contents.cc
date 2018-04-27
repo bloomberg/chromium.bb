@@ -150,14 +150,15 @@ void BackgroundContents::DidNavigateMainFramePostCommit(WebContents* tab) {
 }
 
 // Forward requests to add a new WebContents to our delegate.
-void BackgroundContents::AddNewContents(WebContents* source,
-                                        WebContents* new_contents,
-                                        WindowOpenDisposition disposition,
-                                        const gfx::Rect& initial_rect,
-                                        bool user_gesture,
-                                        bool* was_blocked) {
-  delegate_->AddWebContents(
-      new_contents, disposition, initial_rect, user_gesture, was_blocked);
+void BackgroundContents::AddNewContents(
+    WebContents* source,
+    std::unique_ptr<WebContents> new_contents,
+    WindowOpenDisposition disposition,
+    const gfx::Rect& initial_rect,
+    bool user_gesture,
+    bool* was_blocked) {
+  delegate_->AddWebContents(std::move(new_contents), disposition, initial_rect,
+                            user_gesture, was_blocked);
 }
 
 bool BackgroundContents::IsNeverVisible(content::WebContents* web_contents) {

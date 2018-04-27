@@ -77,7 +77,7 @@ class TabWebContentsDelegateAndroid
       const content::OpenURLParams& params) override;
   bool ShouldResumeRequestsForCreatedWindow() override;
   void AddNewContents(content::WebContents* source,
-                      content::WebContents* new_contents,
+                      std::unique_ptr<content::WebContents> new_contents,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
                       bool user_gesture,

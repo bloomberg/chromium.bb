@@ -5,6 +5,7 @@
 #include "components/offline_pages/content/background_loader/background_loader_contents.h"
 
 #include "base/synchronization/waitable_event.h"
+#include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -139,7 +140,8 @@ TEST_F(BackgroundLoaderContentsTest, ShouldNotCreateWebContents) {
 TEST_F(BackgroundLoaderContentsTest, ShouldNotAddNewContents) {
   bool blocked;
   contents()->AddNewContents(
-      nullptr /* source */, nullptr /* new_contents */,
+      nullptr /* source */,
+      std::unique_ptr<content::WebContents>() /* new_contents */,
       WindowOpenDisposition::CURRENT_TAB /* disposition */,
       gfx::Rect() /* initial_rect */, false /* user_gesture */,
       &blocked /* was_blocked */);

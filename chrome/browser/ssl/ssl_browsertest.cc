@@ -5472,19 +5472,21 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, RestoreHasSSLState) {
   restored_entry->SetPageState(entry->GetPageState());
 
   WebContents::CreateParams params(tab->GetBrowserContext());
-  WebContents* tab2 = WebContents::Create(params);
-  tab->GetDelegate()->AddNewContents(nullptr, tab2,
+  std::unique_ptr<WebContents> tab2 =
+      base::WrapUnique(WebContents::Create(params));
+  WebContents* raw_tab2 = tab2.get();
+  tab->GetDelegate()->AddNewContents(nullptr, std::move(tab2),
                                      WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                      gfx::Rect(), false, nullptr);
   std::vector<std::unique_ptr<NavigationEntry>> entries;
   entries.push_back(std::move(restored_entry));
-  content::TestNavigationObserver observer(tab2);
-  tab2->GetController().Restore(
+  content::TestNavigationObserver observer(raw_tab2);
+  raw_tab2->GetController().Restore(
       entries.size() - 1, content::RestoreType::LAST_SESSION_EXITED_CLEANLY,
       &entries);
-  tab2->GetController().LoadIfNecessary();
+  raw_tab2->GetController().LoadIfNecessary();
   observer.Wait();
-  CheckAuthenticatedState(tab2, AuthState::NONE);
+  CheckAuthenticatedState(raw_tab2, AuthState::NONE);
 }
 
 void SetupRestoredTabWithNavigation(

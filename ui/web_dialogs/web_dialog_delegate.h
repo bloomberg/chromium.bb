@@ -26,7 +26,6 @@ struct OpenURLParams;
 }
 
 namespace gfx {
-class Rect;
 class Size;
 }
 
@@ -122,17 +121,6 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   virtual bool HandleOpenURLFromTab(content::WebContents* source,
                                     const content::OpenURLParams& params,
                                     content::WebContents** out_new_contents);
-
-  // A callback to create a new tab with |new_contents|. |source| is the
-  // WebContent where the operation originated. |disposition| controls how the
-  // new tab should be opened. |initial_rect| is the position and size of the
-  // window if a new window is created. |user_gesture| is true if the operation
-  // was started by a user gesture. Return false to use the default handler.
-  virtual bool HandleAddNewContents(content::WebContents* source,
-                                    content::WebContents* new_contents,
-                                    WindowOpenDisposition disposition,
-                                    const gfx::Rect& initial_rect,
-                                    bool user_gesture);
 
   // A callback to control whether a WebContents will be created. Returns
   // false to disallow the creation. Return true to use the default handler.

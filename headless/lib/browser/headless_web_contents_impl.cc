@@ -118,7 +118,7 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
   }
 
   void AddNewContents(content::WebContents* source,
-                      content::WebContents* new_contents,
+                      std::unique_ptr<content::WebContents> new_contents,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
                       bool user_gesture,
@@ -126,8 +126,10 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
     const gfx::Rect default_rect(
         headless_web_contents_->browser()->options()->window_size);
     const gfx::Rect rect = initial_rect.IsEmpty() ? default_rect : initial_rect;
+    // TODO(erikchen): Refactor this class to use strong ownership semantics.
+    // https://crbug.com/832879.
     auto* const headless_contents =
-        HeadlessWebContentsImpl::From(browser(), new_contents);
+        HeadlessWebContentsImpl::From(browser(), new_contents.release());
     DCHECK(headless_contents);
     headless_contents->SetBounds(rect);
   }

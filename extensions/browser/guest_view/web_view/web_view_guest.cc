@@ -1245,17 +1245,17 @@ bool WebViewGuest::LoadDataWithBaseURL(const std::string& data_url,
 }
 
 void WebViewGuest::AddNewContents(WebContents* source,
-                                  WebContents* new_contents,
+                                  std::unique_ptr<WebContents> new_contents,
                                   WindowOpenDisposition disposition,
                                   const gfx::Rect& initial_rect,
                                   bool user_gesture,
                                   bool* was_blocked) {
+  // TODO(erikchen): Fix ownership semantics for WebContents inside this class.
+  // https://crbug.com/832879.
   if (was_blocked)
     *was_blocked = false;
-  RequestNewWindowPermission(disposition,
-                             initial_rect,
-                             user_gesture,
-                             new_contents);
+  RequestNewWindowPermission(disposition, initial_rect, user_gesture,
+                             new_contents.release());
 }
 
 WebContents* WebViewGuest::OpenURLFromTab(

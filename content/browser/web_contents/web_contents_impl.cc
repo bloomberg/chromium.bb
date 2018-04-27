@@ -1870,8 +1870,12 @@ void WebContentsImpl::OnWebContentsDestroyed(WebContentsImpl* web_contents) {
   // Clear a pending contents that has been closed before being shown.
   for (auto iter = pending_contents_.begin(); iter != pending_contents_.end();
        ++iter) {
-    if (iter->second != web_contents)
+    if (iter->second.get() != web_contents)
       continue;
+
+    // Someone else has deleted the WebContents. That should never happen!
+    // TODO(erikchen): Fix semantics here. https://crbug.com/832879.
+    iter->second.release();
     pending_contents_.erase(iter);
     return;
   }
@@ -2409,31 +2413,33 @@ void WebContentsImpl::CreateNewWindow(
   create_params.renderer_initiated_creation =
       main_frame_route_id != MSG_ROUTING_NONE;
 
-  WebContentsImpl* new_contents = nullptr;
+  std::unique_ptr<WebContents> new_contents;
   if (!is_guest) {
     create_params.context = view_->GetNativeView();
     create_params.initial_size = GetContainerBounds().size();
-    new_contents = static_cast<WebContentsImpl*>(
-        WebContents::Create(create_params));
+    new_contents.reset(
+        static_cast<WebContentsImpl*>(WebContents::Create(create_params)));
   }  else {
-    new_contents = GetBrowserPluginGuest()->CreateNewGuestWindow(create_params);
+    new_contents = base::WrapUnique(
+        GetBrowserPluginGuest()->CreateNewGuestWindow(create_params));
   }
-  new_contents->GetController().SetSessionStorageNamespace(
-      partition_id,
-      session_storage_namespace);
+  WebContentsImpl* raw_new_contents =
+      static_cast<WebContentsImpl*>(new_contents.get());
+  raw_new_contents->GetController().SetSessionStorageNamespace(
+      partition_id, session_storage_namespace);
 
   // If the new frame has a name, make sure any SiteInstances that can find
   // this named frame have proxies for it.  Must be called after
   // SetSessionStorageNamespace, since this calls CreateRenderView, which uses
   // GetSessionStorageNamespace.
   if (!params.frame_name.empty())
-    new_contents->GetRenderManager()->CreateProxiesForNewNamedFrame();
+    raw_new_contents->GetRenderManager()->CreateProxiesForNewNamedFrame();
 
   // Save the window for later if we're not suppressing the opener (since it
   // will be shown immediately).
   if (!params.opener_suppressed) {
     if (!is_guest) {
-      WebContentsView* new_view = new_contents->view_.get();
+      WebContentsView* new_view = raw_new_contents->view_.get();
 
       // TODO(brettw): It seems bogus that we have to call this function on the
       // newly created object and give it one of its own member variables.
@@ -2443,20 +2449,21 @@ void WebContentsImpl::CreateNewWindow(
     // Save the created window associated with the route so we can show it
     // later.
     DCHECK_NE(MSG_ROUTING_NONE, main_frame_widget_route_id);
-    pending_contents_[std::make_pair(
-        render_process_id, main_frame_widget_route_id)] = new_contents;
-    AddDestructionObserver(new_contents);
+    pending_contents_[std::make_pair(render_process_id,
+                                     main_frame_widget_route_id)] =
+        std::move(new_contents);
+    AddDestructionObserver(raw_new_contents);
   }
 
   if (delegate_) {
     delegate_->WebContentsCreated(this, render_process_id,
                                   opener->GetRoutingID(), params.frame_name,
-                                  params.target_url, new_contents);
+                                  params.target_url, raw_new_contents);
   }
 
   if (opener) {
     for (auto& observer : observers_) {
-      observer.DidOpenRequestedURL(new_contents, opener, params.target_url,
+      observer.DidOpenRequestedURL(raw_new_contents, opener, params.target_url,
                                    params.referrer, params.disposition,
                                    ui::PAGE_TRANSITION_LINK,
                                    false,  // started_from_context_menu
@@ -2473,18 +2480,19 @@ void WebContentsImpl::CreateNewWindow(
     // When the opener is suppressed, the original renderer cannot access the
     // new window.  As a result, we need to show and navigate the window here.
     bool was_blocked = false;
+
+    base::WeakPtr<WebContentsImpl> weak_new_contents =
+        raw_new_contents->weak_factory_.GetWeakPtr();
     if (delegate_) {
       gfx::Rect initial_rect;
-      base::WeakPtr<WebContentsImpl> weak_new_contents =
-          new_contents->weak_factory_.GetWeakPtr();
 
-      delegate_->AddNewContents(
-          this, new_contents, params.disposition, initial_rect,
-          params.user_gesture, &was_blocked);
-
+      delegate_->AddNewContents(this, std::move(new_contents),
+                                params.disposition, initial_rect,
+                                params.user_gesture, &was_blocked);
       if (!weak_new_contents)
         return;  // The delegate deleted |new_contents| during AddNewContents().
     }
+
     if (!was_blocked) {
       OpenURLParams open_params(params.target_url, params.referrer,
                                 WindowOpenDisposition::CURRENT_TAB,
@@ -2494,11 +2502,12 @@ void WebContentsImpl::CreateNewWindow(
 
       if (delegate_ && !is_guest &&
           !delegate_->ShouldResumeRequestsForCreatedWindow()) {
+        DCHECK(weak_new_contents);
         // We are in asynchronous add new contents path, delay opening url
-        new_contents->delayed_open_url_params_.reset(
+        weak_new_contents->delayed_open_url_params_.reset(
             new OpenURLParams(open_params));
       } else {
-        new_contents->OpenURL(open_params);
+        weak_new_contents->OpenURL(open_params);
       }
     }
   }
@@ -2555,24 +2564,26 @@ void WebContentsImpl::ShowCreatedWindow(int process_id,
                                         WindowOpenDisposition disposition,
                                         const gfx::Rect& initial_rect,
                                         bool user_gesture) {
-  WebContentsImpl* popup =
+  std::unique_ptr<WebContents> popup =
       GetCreatedWindow(process_id, main_frame_widget_route_id);
   if (popup) {
+    WebContentsImpl* raw_popup = static_cast<WebContentsImpl*>(popup.get());
     WebContentsDelegate* delegate = GetDelegate();
-    popup->is_resume_pending_ = true;
+    raw_popup->is_resume_pending_ = true;
     if (!delegate || delegate->ShouldResumeRequestsForCreatedWindow())
-      popup->ResumeLoadingCreatedWebContents();
+      raw_popup->ResumeLoadingCreatedWebContents();
 
+    base::WeakPtr<WebContentsImpl> weak_popup =
+        raw_popup->weak_factory_.GetWeakPtr();
     if (delegate) {
-      base::WeakPtr<WebContentsImpl> weak_popup =
-          popup->weak_factory_.GetWeakPtr();
-      delegate->AddNewContents(this, popup, disposition, initial_rect,
-                               user_gesture, nullptr);
+      delegate->AddNewContents(this, std::move(popup), disposition,
+                               initial_rect, user_gesture, nullptr);
       if (!weak_popup)
         return;  // The delegate deleted |popup| during AddNewContents().
     }
 
-    RenderWidgetHostImpl* rwh = popup->GetMainFrame()->GetRenderWidgetHost();
+    RenderWidgetHostImpl* rwh =
+        weak_popup->GetMainFrame()->GetRenderWidgetHost();
     DCHECK_EQ(main_frame_widget_route_id, rwh->GetRoutingID());
     rwh->Send(new ViewMsg_Move_ACK(rwh->GetRoutingID()));
   }
@@ -2633,7 +2644,7 @@ void WebContentsImpl::ShowCreatedWidget(int process_id,
   render_widget_host_impl->set_allow_privileged_mouse_lock(is_fullscreen);
 }
 
-WebContentsImpl* WebContentsImpl::GetCreatedWindow(
+std::unique_ptr<WebContents> WebContentsImpl::GetCreatedWindow(
     int process_id,
     int main_frame_widget_route_id) {
   auto key = std::make_pair(process_id, main_frame_widget_route_id);
@@ -2644,17 +2655,18 @@ WebContentsImpl* WebContentsImpl::GetCreatedWindow(
   if (iter == pending_contents_.end())
     return nullptr;
 
-  WebContentsImpl* new_contents = iter->second;
+  std::unique_ptr<WebContents> new_contents = std::move(iter->second);
   pending_contents_.erase(key);
-  RemoveDestructionObserver(new_contents);
+  WebContentsImpl* raw_new_contents =
+      static_cast<WebContentsImpl*>(new_contents.get());
+  RemoveDestructionObserver(raw_new_contents);
 
   // Don't initialize the guest WebContents immediately.
-  if (BrowserPluginGuest::IsGuest(new_contents))
+  if (BrowserPluginGuest::IsGuest(raw_new_contents))
     return new_contents;
 
   if (!new_contents->GetMainFrame()->GetProcess()->HasConnection() ||
       !new_contents->GetMainFrame()->GetView()) {
-    // TODO(nick): http://crbug.com/674318 -- Who deletes |new_contents|?
     return nullptr;
   }
 
@@ -4120,8 +4132,8 @@ void WebContentsImpl::ViewSource(RenderFrameHostImpl* frame) {
   new_frame_entry->SetPageState(new_page_state);
 
   // Create a new WebContents, which is used to display the source code.
-  WebContentsImpl* view_source_contents =
-      static_cast<WebContentsImpl*>(Create(CreateParams(GetBrowserContext())));
+  std::unique_ptr<WebContents> view_source_contents =
+      base::WrapUnique(Create(CreateParams(GetBrowserContext())));
 
   // Restore the previously created NavigationEntry.
   std::vector<std::unique_ptr<NavigationEntry>> navigation_entries;
@@ -4133,7 +4145,7 @@ void WebContentsImpl::ViewSource(RenderFrameHostImpl* frame) {
   gfx::Rect initial_rect;
   constexpr bool kUserGesture = true;
   bool ignored_was_blocked;
-  delegate_->AddNewContents(this, view_source_contents,
+  delegate_->AddNewContents(this, std::move(view_source_contents),
                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
                             initial_rect, kUserGesture, &ignored_was_blocked);
   // Note that the |delegate_| could have deleted |view_source_contents| during

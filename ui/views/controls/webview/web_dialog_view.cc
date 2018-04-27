@@ -307,19 +307,16 @@ content::WebContents* WebDialogView::OpenURLFromTab(
   return WebDialogWebContentsDelegate::OpenURLFromTab(source, params);
 }
 
-void WebDialogView::AddNewContents(content::WebContents* source,
-                                   content::WebContents* new_contents,
-                                   WindowOpenDisposition disposition,
-                                   const gfx::Rect& initial_rect,
-                                   bool user_gesture,
-                                   bool* was_blocked) {
-  if (delegate_ && delegate_->HandleAddNewContents(
-          source, new_contents, disposition, initial_rect, user_gesture)) {
-    return;
-  }
-  WebDialogWebContentsDelegate::AddNewContents(
-      source, new_contents, disposition, initial_rect, user_gesture,
-      was_blocked);
+void WebDialogView::AddNewContents(
+    content::WebContents* source,
+    std::unique_ptr<content::WebContents> new_contents,
+    WindowOpenDisposition disposition,
+    const gfx::Rect& initial_rect,
+    bool user_gesture,
+    bool* was_blocked) {
+  WebDialogWebContentsDelegate::AddNewContents(source, std::move(new_contents),
+                                               disposition, initial_rect,
+                                               user_gesture, was_blocked);
 }
 
 void WebDialogView::LoadingStateChanged(content::WebContents* source,

@@ -398,7 +398,7 @@ bool TabWebContentsDelegateAndroid::ShouldResumeRequestsForCreatedWindow() {
 
 void TabWebContentsDelegateAndroid::AddNewContents(
     WebContents* source,
-    WebContents* new_contents,
+    std::unique_ptr<WebContents> new_contents,
     WindowOpenDisposition disposition,
     const gfx::Rect& initial_rect,
     bool user_gesture,
@@ -411,9 +411,9 @@ void TabWebContentsDelegateAndroid::AddNewContents(
   // At this point the |new_contents| is beyond the popup blocker, but we use
   // the same logic for determining if the popup tracker needs to be attached.
   if (source && PopupBlockerTabHelper::ConsiderForPopupBlocking(disposition))
-    PopupTracker::CreateForWebContents(new_contents, source);
+    PopupTracker::CreateForWebContents(new_contents.get(), source);
 
-  TabHelpers::AttachTabHelpers(new_contents);
+  TabHelpers::AttachTabHelpers(new_contents.get());
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
@@ -433,8 +433,11 @@ void TabWebContentsDelegateAndroid::AddNewContents(
 
   if (was_blocked)
     *was_blocked = !handled;
-  if (!handled)
-    delete new_contents;
+
+  // When handled is |true|, ownership has been passed to java, which in turn
+  // creates a new TabAndroid instance to own the WebContents.
+  if (handled)
+    new_contents.release();
 }
 
 blink::WebSecurityStyle TabWebContentsDelegateAndroid::GetSecurityStyle(

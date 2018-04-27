@@ -41,15 +41,16 @@ WebContents* WebDialogWebContentsDelegate::OpenURLFromTab(
 }
 
 void WebDialogWebContentsDelegate::AddNewContents(
-    WebContents* source, WebContents* new_contents,
-    WindowOpenDisposition disposition, const gfx::Rect& initial_rect,
+    WebContents* source,
+    std::unique_ptr<WebContents> new_contents,
+    WindowOpenDisposition disposition,
+    const gfx::Rect& initial_rect,
     bool user_gesture,
     bool* was_blocked) {
   // TODO(erikchen): Refactor AddNewContents to take strong ownership semantics.
   // https://crbug.com/832879.
-  handler_->AddNewContents(browser_context_, source,
-                           base::WrapUnique(new_contents), disposition,
-                           initial_rect, user_gesture);
+  handler_->AddNewContents(browser_context_, source, std::move(new_contents),
+                           disposition, initial_rect, user_gesture);
 }
 
 bool WebDialogWebContentsDelegate::IsPopupOrPanel(
