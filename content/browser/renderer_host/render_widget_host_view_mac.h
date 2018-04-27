@@ -419,6 +419,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // collide with FrameSinkIds used by RenderWidgetHostImpls.
   static viz::FrameSinkId AllocateFrameSinkIdForGuestViewHack();
 
+  MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;
+
   // Shuts down the render_widget_host_.  This is a separate function so we can
   // invoke it from the message loop.
   void ShutdownHost();

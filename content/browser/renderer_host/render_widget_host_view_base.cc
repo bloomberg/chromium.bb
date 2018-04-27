@@ -15,6 +15,7 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/display_util.h"
+#include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -91,6 +92,10 @@ void RenderWidgetHostViewBase::NotifyObserversAboutShutdown() {
     observer.OnRenderWidgetHostViewBaseDestroyed(this);
   // All observers are required to disconnect after they are notified.
   DCHECK(!observers_.might_have_observers());
+}
+
+MouseWheelPhaseHandler* RenderWidgetHostViewBase::GetMouseWheelPhaseHandler() {
+  return nullptr;
 }
 
 bool RenderWidgetHostViewBase::OnMessageReceived(const IPC::Message& msg){
@@ -383,6 +388,14 @@ void RenderWidgetHostViewBase::ShowDisambiguationPopup(
     const gfx::Rect& rect_pixels,
     const SkBitmap& zoomed_bitmap) {
   NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void RenderWidgetHostViewBase::OnAutoscrollStart() {
+  if (!GetMouseWheelPhaseHandler())
+    return;
+
+  // End the current scrolling seqeunce when autoscrolling starts.
+  GetMouseWheelPhaseHandler()->DispatchPendingWheelEndEvent();
 }
 
 gfx::Size RenderWidgetHostViewBase::GetVisibleViewportSize() const {

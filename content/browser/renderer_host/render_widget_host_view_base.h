@@ -78,6 +78,7 @@ namespace content {
 class BrowserAccessibilityDelegate;
 class BrowserAccessibilityManager;
 class CursorManager;
+class MouseWheelPhaseHandler;
 class RenderWidgetHostImpl;
 class RenderWidgetHostViewBaseObserver;
 class SyntheticGestureTarget;
@@ -475,6 +476,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // changes.
   virtual void SetShowingContextMenu(bool showing) {}
 
+  virtual void OnAutoscrollStart();
+
   // Returns the associated RenderWidgetHostImpl.
   RenderWidgetHostImpl* host() const { return host_; }
 
@@ -540,6 +543,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   explicit RenderWidgetHostViewBase(RenderWidgetHost* host);
 
   void NotifyObserversAboutShutdown();
+
+  virtual MouseWheelPhaseHandler* GetMouseWheelPhaseHandler();
 
 #if defined(USE_AURA)
   virtual void ScheduleEmbed(
