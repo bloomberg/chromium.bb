@@ -178,7 +178,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
       std::make_unique<chromeos::settings::AndroidAppsHandler>(profile));
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::ChangePictureHandler>());
-  if (IsExperimentalCrostiniUIAvailable()) {
+  if (IsCrostiniUIAllowedForProfile(profile)) {
     AddSettingsPageUIHandler(
         std::make_unique<chromeos::settings::CrostiniHandler>());
   }
@@ -277,7 +277,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("hasInternalStylus",
                           ash::stylus_utils::HasInternalStylus());
 
-  html_source->AddBoolean("showCrostini", IsExperimentalCrostiniUIAvailable());
+  html_source->AddBoolean("showCrostini",
+                          IsCrostiniUIAllowedForProfile(profile));
 
   // We have 2 variants of Android apps settings. Default case, when the Play
   // Store app exists we show expandable section that allows as to
