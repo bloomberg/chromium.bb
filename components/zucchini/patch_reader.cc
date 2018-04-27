@@ -13,6 +13,19 @@
 
 namespace zucchini {
 
+namespace {
+
+bool RangeIsInRegion(offset_t begin, uint32_t size, BufferRegion region) {
+  // Return false if |begin + size > kOffsetBound|, without overflowing.
+  if (begin >= kOffsetBound || kOffsetBound - begin < size)
+    return false;
+  offset_t end = begin + size;
+  // Return false if |[begin, end]| leaks outside |region|.
+  return begin >= region.lo() && end <= region.hi();
+}
+
+}  // namespace
+
 namespace patch {
 
 bool ParseElementMatch(BufferSource* source, ElementMatch* element_match) {
@@ -217,7 +230,7 @@ PatchElementReader::~PatchElementReader() = default;
 
 bool PatchElementReader::Initialize(BufferSource* source) {
   bool ok = patch::ParseElementMatch(source, &element_match_) &&
-            equivalences_.Initialize(source) &&
+            equivalences_.Initialize(source) && ValidateEquivalences() &&
             extra_data_.Initialize(source) && raw_delta_.Initialize(source) &&
             reference_delta_.Initialize(source);
   if (!ok)
@@ -240,11 +253,38 @@ bool PatchElementReader::Initialize(BufferSource* source) {
     }
     auto insert_result = extra_targets_.insert({pool_tag, {}});
     if (!insert_result.second) {  // Element already present.
-      LOG(ERROR) << "Multiple ExtraTargetList found for the same pool_tag";
+      LOG(ERROR) << "Multiple ExtraTargetList found for the same pool_tag.";
       return false;
     }
     if (!insert_result.first->second.Initialize(source))
       return false;
+  }
+  return true;
+}
+
+bool PatchElementReader::ValidateEquivalences() {
+  EquivalenceSource equivalences_copy = equivalences_;
+
+  BufferRegion old_region = element_match_.old_element.region();
+  BufferRegion new_region = element_match_.new_element.region();
+
+  // Validate that each |equivalence| falls within the bounds of the
+  // |element_match_| and are in order.
+  offset_t prev_dst_end = 0;
+  for (auto equivalence = equivalences_copy.GetNext(); equivalence.has_value();
+       equivalence = equivalences_copy.GetNext()) {
+    if (!RangeIsInRegion(equivalence->src_offset, equivalence->length,
+                         old_region) ||
+        !RangeIsInRegion(equivalence->dst_offset, equivalence->length,
+                         new_region)) {
+      LOG(ERROR) << "Out of bounds equivalence detected.";
+      return false;
+    }
+    if (prev_dst_end > equivalence->dst_end()) {
+      LOG(ERROR) << "Out of order equivalence detected.";
+      return false;
+    }
+    prev_dst_end = equivalence->dst_end();
   }
   return true;
 }
