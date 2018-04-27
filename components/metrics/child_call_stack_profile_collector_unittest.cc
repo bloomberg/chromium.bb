@@ -60,7 +60,8 @@ class ChildCallStackProfileCollectorTest : public testing::Test {
     base::StackSamplingProfiler::CallStackProfiles profiles;
     for (size_t i = 0; i < profile_count; ++i)
       profiles.push_back(base::StackSamplingProfiler::CallStackProfile());
-    child_collector_.GetProfilerCallback(params).Run(std::move(profiles));
+    child_collector_.GetProfilerCallback(params, base::TimeTicks::Now())
+        .Run(std::move(profiles));
   }
 
   const std::vector<ChildCallStackProfileCollector::ProfilesState>&

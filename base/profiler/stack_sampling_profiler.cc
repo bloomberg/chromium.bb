@@ -235,14 +235,11 @@ class StackSamplingProfiler::SamplingThread : public Thread {
   // Get task runner that is usable from the sampling thread itself.
   scoped_refptr<SingleThreadTaskRunner> GetTaskRunnerOnSamplingThread();
 
-  // Finishes a collection and reports collected data via callback. Returns
-  // the new collection params, if a new collection should be started. The
-  // collection's |finished| waitable event will be signalled if no new params
-  // are available or |allow_collection_restart| is false. The |collection|
+  // Finishes a collection and reports collected data via callback. The
+  // collection's |finished| waitable event will be signalled. The |collection|
   // should already have been removed from |active_collections_| by the caller,
   // as this is needed to avoid flakyness in unit tests.
-  Optional<SamplingParams> FinishCollection(CollectionContext* collection,
-                                            bool allow_collection_restart);
+  void FinishCollection(CollectionContext* collection);
 
   // Records a single sample of a collection.
   void RecordSample(CollectionContext* collection);
@@ -496,10 +493,8 @@ StackSamplingProfiler::SamplingThread::GetTaskRunnerOnSamplingThread() {
   return Thread::task_runner();
 }
 
-Optional<StackSamplingProfiler::SamplingParams>
-StackSamplingProfiler::SamplingThread::FinishCollection(
-    CollectionContext* collection,
-    bool allow_collection_restart) {
+void StackSamplingProfiler::SamplingThread::FinishCollection(
+    CollectionContext* collection) {
   DCHECK_EQ(GetThreadId(), PlatformThread::CurrentId());
   DCHECK_EQ(0u, active_collections_.count(collection->profiler_id));
 
@@ -521,15 +516,10 @@ StackSamplingProfiler::SamplingThread::FinishCollection(
   WaitableEvent* finished = collection->finished;
 
   // Run the associated callback, passing the collected profiles.
-  Optional<SamplingParams> new_params = callback.Run(std::move(profiles));
-  if (!allow_collection_restart)
-    new_params.reset();
+  callback.Run(std::move(profiles));
 
-  // Signal that this collection is finished if it shouldn't be rescheduled.
-  if (!new_params.has_value())
-    finished->Signal();
-
-  return new_params;
+  // Signal that this collection is finished.
+  finished->Signal();
 }
 
 void StackSamplingProfiler::SamplingThread::RecordSample(
@@ -620,7 +610,7 @@ void StackSamplingProfiler::SamplingThread::RemoveCollectionTask(int id) {
   size_t count = active_collections_.erase(id);
   DCHECK_EQ(1U, count);
 
-  FinishCollection(collection.get(), false);
+  FinishCollection(collection.get());
   ScheduleShutdownIfIdle();
 }
 
@@ -660,22 +650,9 @@ void StackSamplingProfiler::SamplingThread::PerformCollectionTask(int id) {
   size_t count = active_collections_.erase(id);
   DCHECK_EQ(1U, count);
 
-  // All capturing has completed so finish the collection. If no new params
-  // are returned, a new collection should not be started.
-  Optional<SamplingParams> new_params = FinishCollection(collection, true);
-  if (!new_params.has_value()) {
-    // By not adding it to the task queue, the collection will "expire" (i.e.
-    // no further work will be done).
-    ScheduleShutdownIfIdle();
-    return;
-  }
-
-  // Restart the collection with the new params. Keep the same id so the
-  // Stop() operation continues to work.
-  auto new_collection = std::make_unique<SamplingThread::CollectionContext>(
-      id, collection->target, new_params.value(), collection->callback,
-      collection->finished, std::move(collection->native_sampler));
-  AddCollectionTask(std::move(new_collection));
+  // All capturing has completed so finish the collection.
+  FinishCollection(collection);
+  ScheduleShutdownIfIdle();
 }
 
 void StackSamplingProfiler::SamplingThread::ShutdownTask(int add_events) {

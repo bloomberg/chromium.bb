@@ -38,9 +38,8 @@ void CallStackProfileCollector::Collect(
     return;
 
   CallStackProfileParams params_copy = params;
-  params_copy.start_timestamp = start_timestamp;
   CallStackProfileMetricsProvider::ReceiveCompletedProfiles(
-      &params_copy, std::move(profiles));
+      params_copy, start_timestamp, std::move(profiles));
 }
 
 }  // namespace metrics

@@ -55,7 +55,8 @@ class ChildCallStackProfileCollector {
   // StackSamplingProfiler, and should not be reused between
   // StackSamplingProfilers. This function may be called on any thread.
   base::StackSamplingProfiler::CompletedCallback GetProfilerCallback(
-      const CallStackProfileParams& params);
+      const CallStackProfileParams& params,
+      base::TimeTicks profile_start_time);
 
   // Sets the CallStackProfileCollector interface from |parent_collector|. This
   // function MUST be invoked exactly once, regardless of whether
@@ -92,10 +93,9 @@ class ChildCallStackProfileCollector {
 
   using CallStackProfile = base::StackSamplingProfiler::CallStackProfile;
 
-  base::Optional<base::StackSamplingProfiler::SamplingParams> Collect(
-      const CallStackProfileParams& params,
-      base::TimeTicks start_timestamp,
-      std::vector<CallStackProfile> profiles);
+  void Collect(const CallStackProfileParams& params,
+               base::TimeTicks start_timestamp,
+               std::vector<CallStackProfile> profiles);
 
   void CollectImpl(const CallStackProfileParams& params,
                    base::TimeTicks start_timestamp,

@@ -85,12 +85,6 @@ struct CallStackProfileParams {
 
   // Whether to preserve sample ordering.
   SampleOrderingSpec ordering_spec;
-
-  // The time at which the CallStackProfileMetricsProvider became aware of the
-  // request for profiling. In particular, this is when callback was requested
-  // via CallStackProfileMetricsProvider::GetProfilerCallback(). Used to
-  // determine if collection was disabled during the collection of the profile.
-  base::TimeTicks start_timestamp;
 };
 
 }  // namespace metrics

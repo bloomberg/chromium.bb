@@ -93,19 +93,17 @@ class ThreadProfiler {
 
   // Gets the completed callback for the ultimate receiver of the profiles.
   base::StackSamplingProfiler::CompletedCallback GetReceiverCallback(
-      metrics::CallStackProfileParams* profile_params);
+      const metrics::CallStackProfileParams& profile_params);
 
   // Receives |profiles| from the StackSamplingProfiler and forwards them on to
   // the original |receiver_callback|.  Note that we must obtain and bind the
   // original receiver callback prior to the start of collection because the
   // collection start time is currently recorded when obtaining the callback in
   // some collection scenarios. The implementation contains a TODO to fix this.
-  static base::Optional<base::StackSamplingProfiler::SamplingParams>
-  ReceiveStartupProfiles(
+  static void ReceiveStartupProfiles(
       const base::StackSamplingProfiler::CompletedCallback& receiver_callback,
       base::StackSamplingProfiler::CallStackProfiles profiles);
-  static base::Optional<base::StackSamplingProfiler::SamplingParams>
-  ReceivePeriodicProfiles(
+  static void ReceivePeriodicProfiles(
       const base::StackSamplingProfiler::CompletedCallback& receiver_callback,
       scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner,
       base::WeakPtr<ThreadProfiler> thread_profiler,
@@ -121,7 +119,6 @@ class ThreadProfiler {
 
   // TODO(wittman): Make const after cleaning up the existing continuous
   // collection support.
-  metrics::CallStackProfileParams startup_profile_params_;
   metrics::CallStackProfileParams periodic_profile_params_;
 
   std::unique_ptr<base::StackSamplingProfiler> startup_profiler_;
