@@ -571,8 +571,8 @@ DesktopCaptureDevice::DesktopCaptureDevice(
     std::unique_ptr<webrtc::DesktopCapturer> capturer,
     DesktopMediaID::Type type)
     : thread_("desktopCaptureThread") {
-#if defined(OS_WIN)
-  // On Windows the thread must be a UI thread.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  // On Windows/OSX the thread must be a UI thread.
   base::MessageLoop::Type thread_type = base::MessageLoop::TYPE_UI;
 #else
   base::MessageLoop::Type thread_type = base::MessageLoop::TYPE_DEFAULT;
