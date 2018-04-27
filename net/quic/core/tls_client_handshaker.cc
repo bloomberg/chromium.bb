@@ -237,7 +237,7 @@ enum ssl_verify_result_t TlsClientHandshaker::VerifyCert(uint8_t* out_alert) {
     verify_result_ = ssl_verify_retry;
     return result;
   }
-  STACK_OF(CRYPTO_BUFFER)* cert_chain = SSL_get0_peer_certificates(ssl());
+  const STACK_OF(CRYPTO_BUFFER)* cert_chain = SSL_get0_peer_certificates(ssl());
   if (cert_chain == nullptr) {
     *out_alert = SSL_AD_INTERNAL_ERROR;
     return ssl_verify_invalid;

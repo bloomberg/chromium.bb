@@ -256,7 +256,7 @@ int main(int argc, char* argv[]) {
   net::EpollServer epoll_server;
   net::QuicServerId server_id(url.host(), url.port(),
                               net::PRIVACY_MODE_DISABLED);
-  net::ParsedQuicVersionVector versions = net::AllSupportedVersions();
+  net::ParsedQuicVersionVector versions = net::CurrentSupportedVersions();
   if (FLAGS_quic_version != -1) {
     versions.clear();
     versions.push_back(net::ParsedQuicVersion(

@@ -140,6 +140,25 @@ class TestDispatcher : public QuicDispatcher {
   MOCK_METHOD1(ShouldCreateOrBufferPacketForConnection,
                bool(QuicConnectionId connection_id));
 
+  struct TestQuicPerPacketContext : public PerPacketContext {
+    string custom_packet_context;
+  };
+
+  std::unique_ptr<PerPacketContext> GetPerPacketContext() const override {
+    auto test_context = QuicMakeUnique<TestQuicPerPacketContext>();
+    test_context->custom_packet_context = custom_packet_context_;
+    return std::move(test_context);
+  }
+
+  void RestorePerPacketContext(
+      std::unique_ptr<PerPacketContext> context) override {
+    TestQuicPerPacketContext* test_context =
+        static_cast<TestQuicPerPacketContext*>(context.get());
+    custom_packet_context_ = test_context->custom_packet_context;
+  }
+
+  string custom_packet_context_;
+
   using QuicDispatcher::current_client_address;
   using QuicDispatcher::current_peer_address;
   using QuicDispatcher::current_self_address;
@@ -196,7 +215,9 @@ class QuicDispatcherTest : public QuicTest {
         time_wait_list_manager_(nullptr),
         session1_(nullptr),
         session2_(nullptr),
-        store_(nullptr) {}
+        store_(nullptr) {
+    SetQuicReloadableFlag(quic_respect_ietf_header, true);
+  }
 
   void SetUp() override {
     dispatcher_->InitializeWithWriter(new QuicDefaultPacketWriter(1));
@@ -1988,10 +2009,12 @@ TEST_F(AsyncGetProofTest, RestorePacketContext) {
   }
 
   // Send a CHLO that the StatelessRejector will accept.
+  dispatcher_->custom_packet_context_ = "connection 1";
   ProcessPacket(client_addr_, conn_id_1, true, SerializeFullCHLO());
   ASSERT_EQ(GetFakeProofSource()->NumPendingCallbacks(), 1);
 
   // Send another CHLO that the StatelessRejector will accept.
+  dispatcher_->custom_packet_context_ = "connection 2";
   ProcessPacket(client_addr_2_, conn_id_2, true, SerializeFullCHLOForClient2());
   ASSERT_EQ(GetFakeProofSource()->NumPendingCallbacks(), 2);
 
@@ -2001,12 +2024,14 @@ TEST_F(AsyncGetProofTest, RestorePacketContext) {
 
   EXPECT_EQ(client_addr_2_, dispatcher_->current_client_address());
   EXPECT_EQ(client_addr_2_, dispatcher_->current_peer_address());
+  EXPECT_EQ("connection 2", dispatcher_->custom_packet_context_);
 
   // Runs the async proof callback for conn_id_1 from client_addr_.
   GetFakeProofSource()->InvokePendingCallback(0);
 
   EXPECT_EQ(client_addr_, dispatcher_->current_client_address());
   EXPECT_EQ(client_addr_, dispatcher_->current_peer_address());
+  EXPECT_EQ("connection 1", dispatcher_->custom_packet_context_);
 
   ASSERT_EQ(GetFakeProofSource()->NumPendingCallbacks(), 1);
 
@@ -2016,12 +2041,14 @@ TEST_F(AsyncGetProofTest, RestorePacketContext) {
 
   EXPECT_EQ(client_addr_, dispatcher_->current_client_address());
   EXPECT_EQ(client_addr_, dispatcher_->current_peer_address());
+  EXPECT_EQ("connection 1", dispatcher_->custom_packet_context_);
 
   // Runs the async proof callback for conn_id_2 from client_addr_2_.
   GetFakeProofSource()->InvokePendingCallback(0);
 
   EXPECT_EQ(client_addr_2_, dispatcher_->current_client_address());
   EXPECT_EQ(client_addr_2_, dispatcher_->current_peer_address());
+  EXPECT_EQ("connection 2", dispatcher_->custom_packet_context_);
 
   ASSERT_EQ(GetFakeProofSource()->NumPendingCallbacks(), 0);
 }

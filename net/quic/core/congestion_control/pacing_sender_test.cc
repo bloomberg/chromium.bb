@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/platform/api/quic_flag_utils.h"
+#include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_test.h"
@@ -63,7 +65,8 @@ class PacingSenderTest : public QuicTest {
   void CheckPacketIsSentImmediately(HasRetransmittableData retransmittable_data,
                                     QuicByteCount bytes_in_flight,
                                     bool in_recovery,
-                                    bool cwnd_limited) {
+                                    bool cwnd_limited,
+                                    QuicPacketCount cwnd) {
     // In order for the packet to be sendable, the underlying sender must
     // permit it to be sent immediately.
     for (int i = 0; i < 2; ++i) {
@@ -82,6 +85,9 @@ class PacingSenderTest : public QuicTest {
                 OnPacketSent(clock_.Now(), bytes_in_flight, packet_number_,
                              kMaxPacketSize, retransmittable_data));
     if (pacing_sender_->is_simplified_pacing()) {
+      EXPECT_CALL(*mock_sender_, GetCongestionWindow())
+          .Times(AtMost(1))
+          .WillRepeatedly(Return(cwnd * kDefaultTCPMSS));
       EXPECT_CALL(*mock_sender_, CanSend(bytes_in_flight + kMaxPacketSize))
           .Times(AtMost(1))
           .WillRepeatedly(Return(!cwnd_limited));
@@ -93,7 +99,7 @@ class PacingSenderTest : public QuicTest {
 
   void CheckPacketIsSentImmediately() {
     CheckPacketIsSentImmediately(HAS_RETRANSMITTABLE_DATA, kBytesInFlight,
-                                 false, false);
+                                 false, false, 10);
   }
 
   void CheckPacketIsDelayed(QuicTime::Delta delay) {
@@ -221,8 +227,10 @@ TEST_F(PacingSenderTest, InitialBurst) {
   InitPacingRate(10, QuicBandwidth::FromBytesAndTimeDelta(
                          kMaxPacketSize, QuicTime::Delta::FromMilliseconds(1)));
 
-  EXPECT_CALL(*mock_sender_, GetCongestionWindow())
-      .WillOnce(Return(10 * kDefaultTCPMSS));
+  if (!pacing_sender_->is_simplified_pacing()) {
+    EXPECT_CALL(*mock_sender_, GetCongestionWindow())
+        .WillOnce(Return(10 * kDefaultTCPMSS));
+  }
   // Update the RTT and verify that the first 10 packets aren't paced.
   UpdateRtt();
 
@@ -242,7 +250,7 @@ TEST_F(PacingSenderTest, InitialBurst) {
 
   // Next time TimeUntilSend is called with no bytes in flight, pacing should
   // allow a packet to be sent, and when it's sent, the tokens are refilled.
-  CheckPacketIsSentImmediately(HAS_RETRANSMITTABLE_DATA, 0, false, false);
+  CheckPacketIsSentImmediately(HAS_RETRANSMITTABLE_DATA, 0, false, false, 10);
   for (int i = 0; i < kInitialBurstPackets - 1; ++i) {
     CheckPacketIsSentImmediately();
   }
@@ -259,8 +267,10 @@ TEST_F(PacingSenderTest, InitialBurstNoRttMeasurement) {
   InitPacingRate(10, QuicBandwidth::FromBytesAndTimeDelta(
                          kMaxPacketSize, QuicTime::Delta::FromMilliseconds(1)));
 
-  EXPECT_CALL(*mock_sender_, GetCongestionWindow())
-      .WillOnce(Return(10 * kDefaultTCPMSS));
+  if (!pacing_sender_->is_simplified_pacing()) {
+    EXPECT_CALL(*mock_sender_, GetCongestionWindow())
+        .WillOnce(Return(10 * kDefaultTCPMSS));
+  }
   // Send 10 packets, and verify that they are not paced.
   for (int i = 0; i < kInitialBurstPackets; ++i) {
     CheckPacketIsSentImmediately();
@@ -277,7 +287,7 @@ TEST_F(PacingSenderTest, InitialBurstNoRttMeasurement) {
 
   // Next time TimeUntilSend is called with no bytes in flight, the tokens
   // should be refilled and there should be no delay.
-  CheckPacketIsSentImmediately(HAS_RETRANSMITTABLE_DATA, 0, false, false);
+  CheckPacketIsSentImmediately(HAS_RETRANSMITTABLE_DATA, 0, false, false, 10);
   // Send 10 packets, and verify that they are not paced.
   for (int i = 0; i < kInitialBurstPackets - 1; ++i) {
     CheckPacketIsSentImmediately();
@@ -296,9 +306,10 @@ TEST_F(PacingSenderTest, FastSending) {
   InitPacingRate(10,
                  QuicBandwidth::FromBytesAndTimeDelta(
                      2 * kMaxPacketSize, QuicTime::Delta::FromMilliseconds(1)));
-
-  EXPECT_CALL(*mock_sender_, GetCongestionWindow())
-      .WillOnce(Return(10 * kDefaultTCPMSS));
+  if (!pacing_sender_->is_simplified_pacing()) {
+    EXPECT_CALL(*mock_sender_, GetCongestionWindow())
+        .WillOnce(Return(10 * kDefaultTCPMSS));
+  }
   // Update the RTT and verify that the first 10 packets aren't paced.
   UpdateRtt();
 
@@ -319,7 +330,7 @@ TEST_F(PacingSenderTest, FastSending) {
 
   // Next time TimeUntilSend is called with no bytes in flight, the tokens
   // should be refilled and there should be no delay.
-  CheckPacketIsSentImmediately(HAS_RETRANSMITTABLE_DATA, 0, false, false);
+  CheckPacketIsSentImmediately(HAS_RETRANSMITTABLE_DATA, 0, false, false, 10);
   for (int i = 0; i < kInitialBurstPackets - 1; ++i) {
     CheckPacketIsSentImmediately();
   }
@@ -365,7 +376,7 @@ TEST_F(PacingSenderTest, NoBurstInRecovery) {
   UpdateRtt();
 
   // Ensure only one packet is sent immediately and the rest are paced.
-  CheckPacketIsSentImmediately(HAS_RETRANSMITTABLE_DATA, 0, true, false);
+  CheckPacketIsSentImmediately(HAS_RETRANSMITTABLE_DATA, 0, true, false, 10);
   CheckPacketIsSentImmediately();
   CheckPacketIsDelayed(QuicTime::Delta::FromMilliseconds(2));
 }
@@ -386,13 +397,67 @@ TEST_F(PacingSenderTest, CwndLimited) {
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(2));
   // After sending packet 3, cwnd is limited.
   CheckPacketIsSentImmediately(HAS_RETRANSMITTABLE_DATA, kBytesInFlight, false,
-                               true);
+                               true, 10);
 
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(100));
   // Verify pacing sender stops making up for lost time after sending packet 3.
   // Packet 6 will be delayed 2ms.
   CheckPacketIsSentImmediately();
   CheckPacketIsSentImmediately();
+  CheckPacketIsDelayed(QuicTime::Delta::FromMilliseconds(2));
+}
+
+TEST_F(PacingSenderTest, LumpyPacingWithInitialBurstToken) {
+  SetQuicReloadableFlag(quic_simplify_pacing_sender, true);
+  // Set lumpy size to be 3, and cwnd faction to 0.5
+  SetQuicFlag(&FLAGS_quic_lumpy_pacing_size, 3);
+  SetQuicFlag(&FLAGS_quic_lumpy_pacing_cwnd_fraction, 0.5f);
+  // Configure pacing rate of 1 packet per 1 ms.
+  InitPacingRate(10, QuicBandwidth::FromBytesAndTimeDelta(
+                         kMaxPacketSize, QuicTime::Delta::FromMilliseconds(1)));
+  UpdateRtt();
+
+  // Send 10 packets, and verify that they are not paced.
+  for (int i = 0; i < kInitialBurstPackets; ++i) {
+    CheckPacketIsSentImmediately();
+  }
+
+  CheckPacketIsSentImmediately();
+  CheckPacketIsSentImmediately();
+  CheckPacketIsSentImmediately();
+  // Packet 14 will be delayed 3ms.
+  CheckPacketIsDelayed(QuicTime::Delta::FromMilliseconds(3));
+
+  // Wake up on time.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(3));
+  CheckPacketIsSentImmediately();
+  CheckPacketIsSentImmediately();
+  CheckPacketIsSentImmediately();
+  // Packet 17 will be delayed 3ms.
+  CheckPacketIsDelayed(QuicTime::Delta::FromMilliseconds(3));
+
+  // Application throttles sending.
+  OnApplicationLimited();
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(100));
+  CheckPacketIsSentImmediately();
+  CheckPacketIsSentImmediately();
+  CheckPacketIsSentImmediately();
+  // Packet 20 will be delayed 3ms.
+  CheckPacketIsDelayed(QuicTime::Delta::FromMilliseconds(3));
+
+  // Wake up on time.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(3));
+  CheckPacketIsSentImmediately();
+  // After sending packet 21, cwnd is limited.
+  CheckPacketIsSentImmediately(HAS_RETRANSMITTABLE_DATA, kBytesInFlight, false,
+                               true, 10);
+
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(100));
+  // Suppose cwnd size is 5, so that lumpy size becomes 2.
+  CheckPacketIsSentImmediately(HAS_RETRANSMITTABLE_DATA, kBytesInFlight, false,
+                               false, 5);
+  CheckPacketIsSentImmediately();
+  // Packet 24 will be delayed 2ms.
   CheckPacketIsDelayed(QuicTime::Delta::FromMilliseconds(2));
 }
 

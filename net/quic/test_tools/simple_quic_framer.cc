@@ -127,7 +127,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 
   void OnPacketComplete() override {}
 
-  bool IsValidStatelessResetToken(uint128 token) const override {
+  bool IsValidStatelessResetToken(QuicUint128 token) const override {
     return false;
   }
 

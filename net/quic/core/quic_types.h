@@ -39,6 +39,10 @@ typedef std::array<uint8_t, kQuicPathFrameBufferSize> QuicPathFrameBuffer;
 // Application error code used in the QUIC Stop Sending frame.
 typedef uint16_t QuicApplicationErrorCode;
 
+// The connection id sequence number specifies the order that connection
+// ids must be used in.
+typedef uint64_t QuicConnectionIdSequenceNumber;
+
 // A struct for functions which consume data payloads and fins.
 struct QUIC_EXPORT_PRIVATE QuicConsumedData {
   QuicConsumedData(size_t bytes_consumed, bool fin_consumed);
@@ -148,6 +152,16 @@ enum QuicFrameType : int8_t {
   ACK_FRAME,
   // The path MTU discovery frame is encoded as a PING frame on the wire.
   MTU_DISCOVERY_FRAME,
+
+  // These are for IETF-specific frames for which there is no mapping
+  // from Google QUIC frames. These are valid/allowed if and only if IETF-
+  // QUIC has been negotiated. Values are not important, they are not
+  // the values that are in the packets (see QuicIetfFrameType, below).
+  APPLICATION_CLOSE_FRAME,
+  NEW_CONNECTION_ID_FRAME,
+  MAX_STREAM_ID_FRAME,
+  STREAM_ID_BLOCKED_FRAME,
+
   NUM_FRAME_TYPES
 };
 

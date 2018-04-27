@@ -38,12 +38,18 @@ class QuicPacketWriterWrapper : public QuicPacketWriter {
   // Takes ownership of |writer|.
   void set_writer(QuicPacketWriter* writer);
 
+  // Does not take ownership of |writer|.
+  void set_non_owning_writer(QuicPacketWriter* writer);
+
   virtual void set_peer_address(const QuicSocketAddress& peer_address) {}
 
-  QuicPacketWriter* writer() { return writer_.get(); }
+  QuicPacketWriter* writer() { return writer_; }
 
  private:
-  std::unique_ptr<QuicPacketWriter> writer_;
+  void unset_writer();
+
+  QuicPacketWriter* writer_ = nullptr;
+  bool owns_writer_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(QuicPacketWriterWrapper);
 };

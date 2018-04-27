@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CORE_FRAMES_QUIC_IETF_MAX_STREAM_ID_FRAME_H_
-#define NET_QUIC_CORE_FRAMES_QUIC_IETF_MAX_STREAM_ID_FRAME_H_
+#ifndef NET_QUIC_CORE_FRAMES_QUIC_MAX_STREAM_ID_FRAME_H_
+#define NET_QUIC_CORE_FRAMES_QUIC_MAX_STREAM_ID_FRAME_H_
 
 #include <ostream>
 
@@ -11,17 +11,17 @@
 
 namespace net {
 
-// IETF format max-stream id frame.
+// IETF format MAX_STREAM_ID frame.
 // This frame is used by the sender to inform the peer of the largest
 // stream id that the peer may open and that the sender will accept.
-struct QUIC_EXPORT_PRIVATE QuicIetfMaxStreamIdFrame : public QuicControlFrame {
-  QuicIetfMaxStreamIdFrame();
-  QuicIetfMaxStreamIdFrame(QuicControlFrameId control_frame_id,
-                           QuicStreamId max_stream_id);
+struct QUIC_EXPORT_PRIVATE QuicMaxStreamIdFrame : public QuicControlFrame {
+  QuicMaxStreamIdFrame();
+  QuicMaxStreamIdFrame(QuicControlFrameId control_frame_id,
+                       QuicStreamId max_stream_id);
 
   friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(
       std::ostream& os,
-      const QuicIetfMaxStreamIdFrame& frame);
+      const QuicMaxStreamIdFrame& frame);
 
   // The maximum stream id to support.
   QuicStreamId max_stream_id;
@@ -29,4 +29,4 @@ struct QUIC_EXPORT_PRIVATE QuicIetfMaxStreamIdFrame : public QuicControlFrame {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CORE_FRAMES_QUIC_IETF_MAX_STREAM_ID_FRAME_H_
+#endif  // NET_QUIC_CORE_FRAMES_QUIC_MAX_STREAM_ID_FRAME_H_

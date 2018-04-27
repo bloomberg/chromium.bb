@@ -1501,7 +1501,7 @@ TEST_P(QuicSentPacketManagerTest, NewRetransmissionTimeout) {
   EXPECT_CALL(*send_algorithm_, PacingRate(_))
       .WillRepeatedly(Return(QuicBandwidth::Zero()));
   EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-      .WillOnce(Return(10 * kDefaultTCPMSS));
+      .WillRepeatedly(Return(10 * kDefaultTCPMSS));
   manager_.SetFromConfig(client_config);
   EXPECT_TRUE(QuicSentPacketManagerPeer::GetUseNewRto(&manager_));
   EXPECT_CALL(*send_algorithm_, CanSend(_)).WillRepeatedly(Return(true));

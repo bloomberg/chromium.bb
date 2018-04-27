@@ -54,6 +54,13 @@ class QuicDispatcherPeer {
                               const QuicSocketAddress& client_address,
                               QuicConnectionId connection_id);
 
+  static std::unique_ptr<QuicDispatcher::PerPacketContext> GetPerPacketContext(
+      QuicDispatcher* dispatcher);
+
+  static void RestorePerPacketContext(
+      QuicDispatcher* dispatcher,
+      std::unique_ptr<QuicDispatcher::PerPacketContext>);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicDispatcherPeer);
 };

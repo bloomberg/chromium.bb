@@ -28,7 +28,7 @@ namespace {
 
 // Stateless reset token used in IETF public reset packet.
 // TODO(fayang): use a real stateless reset token instead of a hard code one.
-const uint128 kStatelessResetToken = 1010101;
+const QuicUint128 kStatelessResetToken = 1010101;
 
 }  // namespace
 
@@ -349,7 +349,7 @@ QuicTimeWaitListManager::ConnectionIdData::ConnectionIdData(
 
 QuicTimeWaitListManager::ConnectionIdData::~ConnectionIdData() = default;
 
-uint128 QuicTimeWaitListManager::GetStatelessResetToken(
+QuicUint128 QuicTimeWaitListManager::GetStatelessResetToken(
     QuicConnectionId connection_id) const {
   return kStatelessResetToken;
 }

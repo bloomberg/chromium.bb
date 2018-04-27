@@ -408,6 +408,7 @@ class QuartcSessionTest : public ::testing::Test,
   ~QuartcSessionTest() override {}
 
   void Init() {
+    SetQuicReloadableFlag(quic_respect_ietf_header, true);
     // Quic crashes if packets are sent at time 0, and the clock defaults to 0.
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1000));
     client_channel_ =
@@ -490,7 +491,7 @@ class QuartcSessionTest : public ::testing::Test,
     return std::unique_ptr<QuicConnection>(new QuicConnection(
         0, QuicSocketAddress(ip, 0), this /*QuicConnectionHelperInterface*/,
         alarm_factory_.get(), writer, owns_writer, perspective,
-        AllSupportedVersions()));
+        CurrentSupportedVersions()));
   }
 
   // Runs all tasks scheduled in the next 200 ms.

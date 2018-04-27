@@ -234,7 +234,7 @@ bool NoOpFramerVisitor::OnBlockedFrame(const QuicBlockedFrame& frame) {
   return true;
 }
 
-bool NoOpFramerVisitor::IsValidStatelessResetToken(uint128 token) const {
+bool NoOpFramerVisitor::IsValidStatelessResetToken(QuicUint128 token) const {
   return false;
 }
 

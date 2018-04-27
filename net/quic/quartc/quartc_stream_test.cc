@@ -172,7 +172,7 @@ class QuartcStreamTest : public ::testing::Test,
     connection_ = QuicMakeUnique<QuicConnection>(
         0, QuicSocketAddress(ip, 0), this /*QuicConnectionHelperInterface*/,
         alarm_factory_.get(), new DummyPacketWriter(), owns_writer, perspective,
-        AllSupportedVersions());
+        CurrentSupportedVersions());
 
     session_ = QuicMakeUnique<MockQuicSession>(connection_.get(), QuicConfig(),
                                                &write_buffer_);

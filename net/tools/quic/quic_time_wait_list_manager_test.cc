@@ -41,7 +41,7 @@ namespace net {
 namespace test {
 namespace {
 
-const uint128 kTestStatelessResetToken = 1010101;
+const QuicUint128 kTestStatelessResetToken = 1010101;
 
 class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
  public:
@@ -56,7 +56,7 @@ class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
     return public_reset_packet_;
   }
 
-  bool IsValidStatelessResetToken(uint128 token) const override {
+  bool IsValidStatelessResetToken(QuicUint128 token) const override {
     return token == kTestStatelessResetToken;
   }
 

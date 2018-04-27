@@ -10,7 +10,9 @@ namespace net {
 
 QuicPacketWriterWrapper::QuicPacketWriterWrapper() = default;
 
-QuicPacketWriterWrapper::~QuicPacketWriterWrapper() = default;
+QuicPacketWriterWrapper::~QuicPacketWriterWrapper() {
+  unset_writer();
+}
 
 WriteResult QuicPacketWriterWrapper::WritePacket(
     const char* buffer,
@@ -40,7 +42,24 @@ QuicByteCount QuicPacketWriterWrapper::GetMaxPacketSize(
 }
 
 void QuicPacketWriterWrapper::set_writer(QuicPacketWriter* writer) {
-  writer_.reset(writer);
+  unset_writer();
+  writer_ = writer;
+  owns_writer_ = true;
+}
+
+void QuicPacketWriterWrapper::set_non_owning_writer(QuicPacketWriter* writer) {
+  unset_writer();
+  writer_ = writer;
+  owns_writer_ = false;
+}
+
+void QuicPacketWriterWrapper::unset_writer() {
+  if (owns_writer_) {
+    delete writer_;
+  }
+
+  owns_writer_ = false;
+  writer_ = nullptr;
 }
 
 }  // namespace net

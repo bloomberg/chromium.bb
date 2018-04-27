@@ -474,7 +474,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
   void OnPacketComplete() override;
-  bool IsValidStatelessResetToken(uint128 token) const override;
+  bool IsValidStatelessResetToken(QuicUint128 token) const override;
   void OnAuthenticatedIetfStatelessResetPacket(
       const QuicIetfStatelessResetPacket& packet) override;
 
@@ -1009,7 +1009,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Caches the current peer migration type if a peer migration might be
   // initiated. As soon as the current packet is confirmed not a connectivity
   // probe, peer migration will start.
-  // TODO(wub): Remove once quic_reloadable_flag_quic_enable_server_proxy is
+  // TODO(wub): Remove once quic_reloadable_flag_quic_enable_server_proxy2 is
   // deprecated.
   AddressChangeType current_peer_migration_type_;
   // Caches the current effective peer migration type if a effective peer
@@ -1044,12 +1044,12 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Records change type when the peer initiates migration to a new peer
   // address. Reset to NO_CHANGE after peer migration is validated.
-  // TODO(wub): Remove once quic_reloadable_flag_quic_enable_server_proxy is
+  // TODO(wub): Remove once quic_reloadable_flag_quic_enable_server_proxy2 is
   // deprecated.
   AddressChangeType active_peer_migration_type_;
 
   // Records highest sent packet number when peer migration is started.
-  // TODO(wub): Remove once quic_reloadable_flag_quic_enable_server_proxy is
+  // TODO(wub): Remove once quic_reloadable_flag_quic_enable_server_proxy2 is
   // deprecated.
   QuicPacketNumber highest_packet_sent_before_peer_migration_;
 
@@ -1301,7 +1301,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool stateless_reset_token_received_;
   // Stores received stateless reset token from peer. Used to verify whether a
   // packet is a stateless reset packet.
-  uint128 received_stateless_reset_token_;
+  QuicUint128 received_stateless_reset_token_;
 
   // Id of latest sent control frame. 0 if no control frame has been sent.
   QuicControlFrameId last_control_frame_id_;
@@ -1324,7 +1324,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // quic_reloadable_flag_quic_path_degrading_alarm2.
   const bool use_path_degrading_alarm_;
 
-  // Latched value of quic_reloadable_flag_quic_enable_server_proxy.
+  // Latched value of quic_reloadable_flag_quic_enable_server_proxy2.
   const bool enable_server_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);

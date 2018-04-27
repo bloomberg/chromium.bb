@@ -74,7 +74,7 @@ const bool kHasStopWaiting = true;
 
 const int kDefaultRetransmissionTimeMs = 500;
 
-const uint128 kTestStatelessResetToken = 1010101;  // 0x0F69B5
+const QuicUint128 kTestStatelessResetToken = 1010101;  // 0x0F69B5
 
 const QuicSocketAddress kPeerAddress =
     QuicSocketAddress(QuicIpAddress::Loopback6(),
@@ -686,6 +686,7 @@ class TestConnection : public QuicConnection {
     next_effective_peer_addr_ = QuicMakeUnique<QuicSocketAddress>(addr);
   }
 
+  using QuicConnection::active_effective_peer_migration_type;
   using QuicConnection::IsCurrentPacketConnectivityProbing;
   using QuicConnection::SelectMutualVersion;
   using QuicConnection::SendProbingRetransmissions;
@@ -791,6 +792,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
         use_path_degrading_alarm_(
             GetQuicReloadableFlag(quic_path_degrading_alarm2)) {
     SetQuicFlag(&FLAGS_quic_supports_tls_handshake, true);
+    SetQuicReloadableFlag(quic_respect_ietf_header, true);
     connection_.set_defer_send_in_response_to_packets(GetParam().ack_response ==
                                                       AckResponse::kDefer);
     QuicConnectionPeer::SetNoStopWaitingFrames(&connection_,
@@ -1298,7 +1300,7 @@ TEST_P(QuicConnectionTest, ClientAddressChangeAndPacketReordered) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   set_perspective(Perspective::IS_SERVER);
   QuicPacketCreatorPeer::SetSendVersionInPacket(creator_, false);
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     // Clear direct_peer_address.
     QuicConnectionPeer::SetDirectPeerAddress(&connection_, QuicSocketAddress());
     // Clear effective_peer_address, it is the same as direct_peer_address for
@@ -1319,7 +1321,7 @@ TEST_P(QuicConnectionTest, ClientAddressChangeAndPacketReordered) {
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kNewPeerAddress);
   EXPECT_EQ(kNewPeerAddress, connection_.peer_address());
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     EXPECT_EQ(kNewPeerAddress, connection_.effective_peer_address());
   }
 
@@ -1330,7 +1332,7 @@ TEST_P(QuicConnectionTest, ClientAddressChangeAndPacketReordered) {
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kPeerAddress);
   EXPECT_EQ(kNewPeerAddress, connection_.peer_address());
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     EXPECT_EQ(kNewPeerAddress, connection_.effective_peer_address());
   }
 }
@@ -1341,7 +1343,7 @@ TEST_P(QuicConnectionTest, PeerAddressChangeAtServer) {
   QuicPacketCreatorPeer::SetSendVersionInPacket(creator_, false);
   EXPECT_EQ(Perspective::IS_SERVER, connection_.perspective());
 
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     // Clear direct_peer_address.
     QuicConnectionPeer::SetDirectPeerAddress(&connection_, QuicSocketAddress());
     // Clear effective_peer_address, it is the same as direct_peer_address for
@@ -1360,7 +1362,7 @@ TEST_P(QuicConnectionTest, PeerAddressChangeAtServer) {
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kPeerAddress);
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
   }
 
@@ -1372,13 +1374,13 @@ TEST_P(QuicConnectionTest, PeerAddressChangeAtServer) {
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kNewPeerAddress);
   EXPECT_EQ(kNewPeerAddress, connection_.peer_address());
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     EXPECT_EQ(kNewPeerAddress, connection_.effective_peer_address());
   }
 }
 
 TEST_P(QuicConnectionTest, EffectivePeerAddressChangeAtServer) {
-  if (!GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (!GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     return;
   }
 
@@ -1421,9 +1423,9 @@ TEST_P(QuicConnectionTest, EffectivePeerAddressChangeAtServer) {
       QuicSocketAddress(QuicIpAddress::Loopback6(), /*port=*/23456);
   connection_.ReturnEffectivePeerAddressForNextPacket(kNewEffectivePeerAddress);
   EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(0);
-  // ack_frame is used to complete the migration started by the last packet, it
-  // is required to complete the last migration such that the next migration can
-  // start.
+  // ack_frame is used to complete the migration started by the last packet, we
+  // need to make sure a new migration does not start after the previous one is
+  // completed.
   QuicAckFrame ack_frame = InitAckFrame(1);
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(_, _, _, _, _));
   ProcessFramePacketWithAddresses(QuicFrame(&ack_frame), kSelfAddress,
@@ -1433,17 +1435,34 @@ TEST_P(QuicConnectionTest, EffectivePeerAddressChangeAtServer) {
 
   // Process another packet with different direct peer address and different
   // effective peer address on server side will start connection migration.
-  const QuicSocketAddress kFinalEffectivePeerAddress =
+  const QuicSocketAddress kNewerEffectivePeerAddress =
       QuicSocketAddress(QuicIpAddress::Loopback6(), /*port=*/65432);
   const QuicSocketAddress kFinalPeerAddress =
       QuicSocketAddress(QuicIpAddress::Loopback6(), /*port=*/34567);
   connection_.ReturnEffectivePeerAddressForNextPacket(
-      kFinalEffectivePeerAddress);
+      kNewerEffectivePeerAddress);
   EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(1);
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kFinalPeerAddress);
   EXPECT_EQ(kFinalPeerAddress, connection_.peer_address());
-  EXPECT_EQ(kFinalEffectivePeerAddress, connection_.effective_peer_address());
+  EXPECT_EQ(kNewerEffectivePeerAddress, connection_.effective_peer_address());
+  EXPECT_EQ(PORT_CHANGE, connection_.active_effective_peer_migration_type());
+
+  // While the previous migration is ongoing, process another packet with the
+  // same direct peer address and different effective peer address on server
+  // side will start a new connection migration.
+  const QuicSocketAddress kNewestEffectivePeerAddress =
+      QuicSocketAddress(QuicIpAddress::Loopback4(), /*port=*/65430);
+  connection_.ReturnEffectivePeerAddressForNextPacket(
+      kNewestEffectivePeerAddress);
+  EXPECT_CALL(visitor_, OnConnectionMigration(IPV6_TO_IPV4_CHANGE)).Times(1);
+  EXPECT_CALL(*send_algorithm_, OnConnectionMigration()).Times(1);
+  ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
+                                  kFinalPeerAddress);
+  EXPECT_EQ(kFinalPeerAddress, connection_.peer_address());
+  EXPECT_EQ(kNewestEffectivePeerAddress, connection_.effective_peer_address());
+  EXPECT_EQ(IPV6_TO_IPV4_CHANGE,
+            connection_.active_effective_peer_migration_type());
 }
 
 TEST_P(QuicConnectionTest, ReceivePaddedPingAtServer) {
@@ -1452,7 +1471,7 @@ TEST_P(QuicConnectionTest, ReceivePaddedPingAtServer) {
   QuicPacketCreatorPeer::SetSendVersionInPacket(creator_, false);
   EXPECT_EQ(Perspective::IS_SERVER, connection_.perspective());
 
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     // Clear direct_peer_address.
     QuicConnectionPeer::SetDirectPeerAddress(&connection_, QuicSocketAddress());
     // Clear effective_peer_address, it is the same as direct_peer_address for
@@ -1471,7 +1490,7 @@ TEST_P(QuicConnectionTest, ReceivePaddedPingAtServer) {
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kPeerAddress);
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
   }
 
@@ -1492,15 +1511,12 @@ TEST_P(QuicConnectionTest, ReceivePaddedPingAtServer) {
 
   EXPECT_FALSE(connection_.IsCurrentPacketConnectivityProbing());
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
   }
 }
 
 TEST_P(QuicConnectionTest, WriteOutOfOrderQueuedPackets) {
-  // When the flag is false, this test will trigger a use-after-free, which
-  // often means crashes, but not always, i.e. it can't be reliably tested.
-  SetQuicReloadableFlag(quic_fix_write_out_of_order_queued_packet_crash, true);
   set_perspective(Perspective::IS_CLIENT);
 
   BlockOnNextWrite();
@@ -1531,9 +1547,6 @@ TEST_P(QuicConnectionTest, WriteOutOfOrderQueuedPackets) {
 
 TEST_P(QuicConnectionTest, DiscardQueuedPacketsAfterConnectionClose) {
   // Regression test for b/74073386.
-  // When the flag is false, this test will trigger a use-after-free, which
-  // often means crashes, but not always, i.e. it can't be reliably tested.
-  SetQuicReloadableFlag(quic_fix_write_out_of_order_queued_packet_crash, true);
   {
     InSequence seq;
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
@@ -1568,7 +1581,7 @@ TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtServer) {
   QuicPacketCreatorPeer::SetSendVersionInPacket(creator_, false);
   EXPECT_EQ(Perspective::IS_SERVER, connection_.perspective());
 
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     // Clear direct_peer_address.
     QuicConnectionPeer::SetDirectPeerAddress(&connection_, QuicSocketAddress());
     // Clear effective_peer_address, it is the same as direct_peer_address for
@@ -1587,7 +1600,7 @@ TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtServer) {
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kPeerAddress);
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
   }
 
@@ -1611,7 +1624,7 @@ TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtServer) {
 
   EXPECT_TRUE(connection_.IsCurrentPacketConnectivityProbing());
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
   }
 
@@ -1621,7 +1634,7 @@ TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtServer) {
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kPeerAddress);
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
   }
 }
@@ -1632,7 +1645,7 @@ TEST_P(QuicConnectionTest, MigrateAfterProbingAtServer) {
   QuicPacketCreatorPeer::SetSendVersionInPacket(creator_, false);
   EXPECT_EQ(Perspective::IS_SERVER, connection_.perspective());
 
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     // Clear direct_peer_address.
     QuicConnectionPeer::SetDirectPeerAddress(&connection_, QuicSocketAddress());
     // Clear effective_peer_address, it is the same as direct_peer_address for
@@ -1651,7 +1664,7 @@ TEST_P(QuicConnectionTest, MigrateAfterProbingAtServer) {
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kPeerAddress);
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
   }
 
@@ -1672,7 +1685,7 @@ TEST_P(QuicConnectionTest, MigrateAfterProbingAtServer) {
       clock_.Now()));
   ProcessReceivedPacket(kSelfAddress, kNewPeerAddress, *received);
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
   }
 
@@ -1683,7 +1696,7 @@ TEST_P(QuicConnectionTest, MigrateAfterProbingAtServer) {
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kNewPeerAddress);
   EXPECT_EQ(kNewPeerAddress, connection_.peer_address());
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     EXPECT_EQ(kNewPeerAddress, connection_.effective_peer_address());
   }
 }
@@ -1693,7 +1706,7 @@ TEST_P(QuicConnectionTest, ReceivePaddedPingAtClient) {
   set_perspective(Perspective::IS_CLIENT);
   EXPECT_EQ(Perspective::IS_CLIENT, connection_.perspective());
 
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     // Clear direct_peer_address.
     QuicConnectionPeer::SetDirectPeerAddress(&connection_, QuicSocketAddress());
     // Clear effective_peer_address, it is the same as direct_peer_address for
@@ -1712,7 +1725,7 @@ TEST_P(QuicConnectionTest, ReceivePaddedPingAtClient) {
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kPeerAddress);
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
   }
 
@@ -1732,7 +1745,7 @@ TEST_P(QuicConnectionTest, ReceivePaddedPingAtClient) {
 
   EXPECT_FALSE(connection_.IsCurrentPacketConnectivityProbing());
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
   }
 }
@@ -1742,7 +1755,7 @@ TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtClient) {
   set_perspective(Perspective::IS_CLIENT);
   EXPECT_EQ(Perspective::IS_CLIENT, connection_.perspective());
 
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     // Clear direct_peer_address.
     QuicConnectionPeer::SetDirectPeerAddress(&connection_, QuicSocketAddress());
     // Clear effective_peer_address, it is the same as direct_peer_address for
@@ -1761,7 +1774,7 @@ TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtClient) {
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kPeerAddress);
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
   }
 
@@ -1784,7 +1797,7 @@ TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtClient) {
 
   EXPECT_TRUE(connection_.IsCurrentPacketConnectivityProbing());
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
   }
 }
@@ -1794,7 +1807,7 @@ TEST_P(QuicConnectionTest, PeerAddressChangeAtClient) {
   set_perspective(Perspective::IS_CLIENT);
   EXPECT_EQ(Perspective::IS_CLIENT, connection_.perspective());
 
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     // Clear direct_peer_address.
     QuicConnectionPeer::SetDirectPeerAddress(&connection_, QuicSocketAddress());
     // Clear effective_peer_address, it is the same as direct_peer_address for
@@ -1813,7 +1826,7 @@ TEST_P(QuicConnectionTest, PeerAddressChangeAtClient) {
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kPeerAddress);
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     EXPECT_EQ(kPeerAddress, connection_.effective_peer_address());
   }
 
@@ -1825,7 +1838,7 @@ TEST_P(QuicConnectionTest, PeerAddressChangeAtClient) {
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kNewPeerAddress);
   EXPECT_EQ(kNewPeerAddress, connection_.peer_address());
-  if (GetQuicReloadableFlag(quic_enable_server_proxy)) {
+  if (GetQuicReloadableFlag(quic_enable_server_proxy2)) {
     EXPECT_EQ(kNewPeerAddress, connection_.effective_peer_address());
   }
 }
@@ -4770,6 +4783,9 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationEighthRtt) {
 }
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReordering) {
+  if (GetQuicReloadableFlag(quic_enable_ack_decimation)) {
+    return;
+  }
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
   QuicConnectionPeer::SetAckMode(
       &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
@@ -4837,6 +4853,9 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReordering) {
 }
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithLargeReordering) {
+  if (GetQuicReloadableFlag(quic_enable_ack_decimation)) {
+    return;
+  }
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
   QuicConnectionPeer::SetAckMode(
       &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
@@ -4921,6 +4940,9 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithLargeReordering) {
 }
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReorderingEighthRtt) {
+  if (GetQuicReloadableFlag(quic_enable_ack_decimation)) {
+    return;
+  }
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
   QuicConnectionPeer::SetAckMode(
       &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
@@ -4990,6 +5012,9 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReorderingEighthRtt) {
 
 TEST_P(QuicConnectionTest,
        SendDelayedAckDecimationWithLargeReorderingEighthRtt) {
+  if (GetQuicReloadableFlag(quic_enable_ack_decimation)) {
+    return;
+  }
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
   QuicConnectionPeer::SetAckMode(
       &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
@@ -6726,8 +6751,8 @@ TEST_P(QuicConnectionTest, OnForwardProgressConfirmed) {
 }
 
 TEST_P(QuicConnectionTest, ValidStatelessResetToken) {
-  const uint128 kTestToken = 1010101;
-  const uint128 kWrongTestToken = 1010100;
+  const QuicUint128 kTestToken = 1010101;
+  const QuicUint128 kWrongTestToken = 1010100;
   QuicConfig config;
   // No token has been received.
   EXPECT_FALSE(connection_.IsValidStatelessResetToken(kTestToken));

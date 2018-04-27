@@ -32,7 +32,8 @@ GeneralLossAlgorithm::GeneralLossAlgorithm()
       largest_sent_on_spurious_retransmit_(0),
       loss_type_(kNack),
       reordering_shift_(kDefaultLossDelayShift),
-      largest_previously_acked_(0) {}
+      largest_previously_acked_(0),
+      largest_lost_(0) {}
 
 GeneralLossAlgorithm::GeneralLossAlgorithm(LossDetectionType loss_type)
     : loss_detection_timeout_(QuicTime::Zero()),
@@ -41,7 +42,8 @@ GeneralLossAlgorithm::GeneralLossAlgorithm(LossDetectionType loss_type)
       reordering_shift_(loss_type == kAdaptiveTime
                             ? kDefaultAdaptiveLossDelayShift
                             : kDefaultLossDelayShift),
-      largest_previously_acked_(0) {}
+      largest_previously_acked_(0),
+      largest_lost_(0) {}
 
 LossDetectionType GeneralLossAlgorithm::GetLossDetectionType() const {
   return loss_type_;
@@ -71,8 +73,20 @@ void GeneralLossAlgorithm::DetectLosses(
       std::max(QuicTime::Delta::FromMilliseconds(kMinLossDelayMs),
                max_rtt + (max_rtt >> reordering_shift_));
   QuicPacketNumber packet_number = unacked_packets.GetLeastUnacked();
-  for (QuicUnackedPacketMap::const_iterator it = unacked_packets.begin();
-       it != unacked_packets.end() && packet_number <= largest_newly_acked;
+  QuicUnackedPacketMap::const_iterator it = unacked_packets.begin();
+  if (GetQuicReloadableFlag(quic_incremental_loss_detection) &&
+      largest_lost_ >= packet_number) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_incremental_loss_detection);
+    if (largest_lost_ > unacked_packets.largest_sent_packet()) {
+      QUIC_BUG << "largest_lost: " << largest_lost_
+               << " is greater than largest_sent_packet: "
+               << unacked_packets.largest_sent_packet();
+    } else {
+      it += (largest_lost_ - packet_number + 1);
+      packet_number = largest_lost_ + 1;
+    }
+  }
+  for (; it != unacked_packets.end() && packet_number <= largest_newly_acked;
        ++it, ++packet_number) {
     if (!it->in_flight) {
       continue;
@@ -121,6 +135,10 @@ void GeneralLossAlgorithm::DetectLosses(
     }
   }
   largest_previously_acked_ = largest_newly_acked;
+  if (!packets_lost->empty()) {
+    DCHECK_LT(largest_lost_, packets_lost->back().packet_number);
+    largest_lost_ = packets_lost->back().packet_number;
+  }
 }
 
 QuicTime GeneralLossAlgorithm::GetLossTimeout() const {

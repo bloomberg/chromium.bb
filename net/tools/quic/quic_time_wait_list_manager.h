@@ -129,7 +129,8 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
 
   // Returns a stateless reset token which will be included in the public reset
   // packet.
-  virtual uint128 GetStatelessResetToken(QuicConnectionId connection_id) const;
+  virtual QuicUint128 GetStatelessResetToken(
+      QuicConnectionId connection_id) const;
 
  private:
   friend class test::QuicDispatcherPeer;

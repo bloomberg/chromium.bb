@@ -281,7 +281,6 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
         stream_factory_(nullptr),
         support_server_push_(false) {
     FLAGS_quic_supports_tls_handshake = true;
-    FLAGS_quic_reloadable_flag_quic_store_version_before_signalling = true;
     client_supported_versions_ = GetParam().client_supported_versions;
     server_supported_versions_ = GetParam().server_supported_versions;
     negotiated_version_ = GetParam().negotiated_version;
@@ -434,6 +433,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
   void StartServer() {
     SetQuicReloadableFlag(quic_use_cheap_stateless_rejects,
                           GetParam().use_cheap_stateless_reject);
+    SetQuicReloadableFlag(quic_respect_ietf_header, true);
 
     auto* test_server = new QuicTestServer(
         crypto_test_utils::ProofSourceForTesting(), server_config_,
@@ -610,7 +610,6 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
 class EndToEndTestWithTls : public EndToEndTest {
  protected:
   EndToEndTestWithTls() : EndToEndTest() {
-    FLAGS_quic_reloadable_flag_delay_quic_server_handshaker_construction = true;
     SetQuicReloadableFlag(quic_server_early_version_negotiation, true);
   }
 };

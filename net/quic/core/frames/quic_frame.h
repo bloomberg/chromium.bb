@@ -9,13 +9,13 @@
 #include <vector>
 
 #include "net/quic/core/frames/quic_ack_frame.h"
+#include "net/quic/core/frames/quic_application_close_frame.h"
 #include "net/quic/core/frames/quic_blocked_frame.h"
 #include "net/quic/core/frames/quic_connection_close_frame.h"
 #include "net/quic/core/frames/quic_goaway_frame.h"
-#include "net/quic/core/frames/quic_ietf_blocked_frame.h"
-#include "net/quic/core/frames/quic_ietf_max_stream_id_frame.h"
-#include "net/quic/core/frames/quic_ietf_stream_id_blocked_frame.h"
+#include "net/quic/core/frames/quic_max_stream_id_frame.h"
 #include "net/quic/core/frames/quic_mtu_discovery_frame.h"
+#include "net/quic/core/frames/quic_new_connection_id_frame.h"
 #include "net/quic/core/frames/quic_padding_frame.h"
 #include "net/quic/core/frames/quic_path_challenge_frame.h"
 #include "net/quic/core/frames/quic_path_response_frame.h"
@@ -24,6 +24,7 @@
 #include "net/quic/core/frames/quic_stop_sending_frame.h"
 #include "net/quic/core/frames/quic_stop_waiting_frame.h"
 #include "net/quic/core/frames/quic_stream_frame.h"
+#include "net/quic/core/frames/quic_stream_id_blocked_frame.h"
 #include "net/quic/core/frames/quic_window_update_frame.h"
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
@@ -44,6 +45,10 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
   explicit QuicFrame(QuicGoAwayFrame* frame);
   explicit QuicFrame(QuicWindowUpdateFrame* frame);
   explicit QuicFrame(QuicBlockedFrame* frame);
+  explicit QuicFrame(QuicApplicationCloseFrame* frame);
+  explicit QuicFrame(QuicNewConnectionIdFrame* frame);
+  explicit QuicFrame(QuicMaxStreamIdFrame frame);
+  explicit QuicFrame(QuicStreamIdBlockedFrame frame);
 
   QUIC_EXPORT_PRIVATE friend std::ostream& operator<<(std::ostream& os,
                                                       const QuicFrame& frame);
@@ -54,6 +59,8 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
     QuicPaddingFrame padding_frame;
     QuicMtuDiscoveryFrame mtu_discovery_frame;
     QuicPingFrame ping_frame;
+    QuicMaxStreamIdFrame max_stream_id_frame;
+    QuicStreamIdBlockedFrame stream_id_blocked_frame;
 
     // Frames larger than a pointer.
     QuicStreamFrame* stream_frame;
@@ -64,6 +71,8 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
     QuicGoAwayFrame* goaway_frame;
     QuicWindowUpdateFrame* window_update_frame;
     QuicBlockedFrame* blocked_frame;
+    QuicApplicationCloseFrame* application_close_frame;
+    QuicNewConnectionIdFrame* new_connection_id_frame;
   };
 };
 // QuicFrameType consumes 8 bytes with padding.

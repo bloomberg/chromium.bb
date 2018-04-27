@@ -86,7 +86,7 @@ struct QUIC_EXPORT_PRIVATE QuicPacketHeader {
   QuicLongHeaderType long_packet_type;
   // Stores last 16 bytes of a this packet, used to check whether this packet is
   // a stateless reset packet on decryption failure.
-  uint128 possible_stateless_reset_token;
+  QuicUint128 possible_stateless_reset_token;
 };
 
 struct QUIC_EXPORT_PRIVATE QuicPublicResetPacket {

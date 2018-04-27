@@ -38,7 +38,8 @@ class QuicConfigPeer {
   static void SetConnectionOptionsToSend(QuicConfig* config,
                                          const QuicTagVector& options);
 
-  static void SetReceivedStatelessResetToken(QuicConfig* config, uint128 token);
+  static void SetReceivedStatelessResetToken(QuicConfig* config,
+                                             QuicUint128 token);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConfigPeer);
