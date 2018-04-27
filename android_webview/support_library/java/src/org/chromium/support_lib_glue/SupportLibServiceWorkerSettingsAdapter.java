@@ -17,6 +17,10 @@ class SupportLibServiceWorkerSettingsAdapter implements ServiceWorkerWebSettings
         mAwServiceWorkerSettings = settings;
     }
 
+    /* package */ AwServiceWorkerSettings getAwServiceWorkerSettings() {
+        return mAwServiceWorkerSettings;
+    }
+
     @Override
     public void setCacheMode(int mode) {
         mAwServiceWorkerSettings.setCacheMode(mode);
