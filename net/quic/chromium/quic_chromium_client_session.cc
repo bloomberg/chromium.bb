@@ -762,6 +762,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
           crypto_config));
   connection->set_debug_visitor(logger_.get());
   connection->set_creator_debug_delegate(logger_.get());
+  migrate_back_to_default_timer_.SetTaskRunner(task_runner_);
   net_log_.BeginEvent(
       NetLogEventType::QUIC_SESSION,
       base::Bind(NetLogQuicClientSessionCallback, &session_key.server_id(),

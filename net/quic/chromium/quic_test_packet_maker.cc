@@ -53,6 +53,35 @@ void QuicTestPacketMaker::set_hostname(const std::string& host) {
   host_.assign(host);
 }
 
+std::unique_ptr<QuicReceivedPacket>
+QuicTestPacketMaker::MakeConnectivityProbingPacket(
+    QuicPacketNumber num,
+    bool include_version,
+    QuicByteCount packet_length) {
+  QuicPacketHeader header;
+  header.connection_id = connection_id_;
+  header.reset_flag = false;
+  header.version_flag = ShouldIncludeVersion(include_version);
+  header.long_packet_type = long_header_type_;
+  header.packet_number_length = GetPacketNumberLength();
+  header.packet_number = num;
+
+  QuicFramer framer(
+      SupportedVersions(ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, version_)),
+      clock_->Now(), perspective_);
+
+  char buffer[kMaxPacketSize];
+  size_t length =
+      framer.BuildConnectivityProbingPacket(header, buffer, packet_length);
+  size_t encrypted_size = framer.EncryptInPlace(
+      ENCRYPTION_NONE, header.packet_number,
+      GetStartOfEncryptedData(framer.transport_version(), header), length,
+      kMaxPacketSize, buffer);
+  EXPECT_NE(0u, encrypted_size);
+  QuicReceivedPacket encrypted(buffer, encrypted_size, clock_->Now(), false);
+  return std::unique_ptr<QuicReceivedPacket>(encrypted.Clone());
+}
+
 std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakePingPacket(
     QuicPacketNumber num,
     bool include_version) {
