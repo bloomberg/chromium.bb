@@ -201,7 +201,6 @@ android_library("chrome_java") {
     "$google_play_services_package:google_play_services_cast_java",
     "$google_play_services_package:google_play_services_gcm_java",
     "$google_play_services_package:google_play_services_iid_java",
-    "$google_play_services_package:google_play_services_nearby_java",
     "$google_play_services_package:google_play_services_tasks_java",
     "//base:base_java",
     "//chrome/android/third_party/compositor_animator:compositor_animator_java",

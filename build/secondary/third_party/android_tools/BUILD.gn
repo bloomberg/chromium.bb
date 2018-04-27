@@ -217,18 +217,6 @@ if (enable_java_templates) {
         [ "${target_gen_dir}/google_play_services_basement_java/proguard.txt" ]
   }
 
-  android_aar_prebuilt("google_play_services_nearby_java") {
-    deps = [
-      ":google_play_services_base_java",
-      ":google_play_services_basement_java",
-    ]
-    _lib_name = "play-services-nearby"
-    aar_path = "$gms_path/$_lib_name/$gms_version/$_lib_name-$gms_version.aar"
-    info_path = "//build/secondary/third_party/android_tools/$target_name.info"
-    proguard_configs =
-        [ "${target_gen_dir}/google_play_services_basement_java/proguard.txt" ]
-  }
-
   android_aar_prebuilt("google_play_services_vision_java") {
     deps = [
       ":google_play_services_base_java",

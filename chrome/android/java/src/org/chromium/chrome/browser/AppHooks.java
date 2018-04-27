@@ -37,7 +37,6 @@ import org.chromium.chrome.browser.omaha.RequestGenerator;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmark;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksProviderIterator;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
-import org.chromium.chrome.browser.physicalweb.PhysicalWebBleClient;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.rlz.RevenueStats;
@@ -223,13 +222,6 @@ public abstract class AppHooks {
      */
     public RequestGenerator createOmahaRequestGenerator() {
         return null;
-    }
-
-    /**
-     * @return A new {@link PhysicalWebBleClient} instance.
-     */
-    public PhysicalWebBleClient createPhysicalWebBleClient() {
-        return new PhysicalWebBleClient();
     }
 
     /**
