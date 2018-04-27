@@ -372,7 +372,7 @@ enforce that the input data is valid. Common ones to watch out for:
 *   Files: use `mojo_base.mojom.File`, not raw descriptor types like `HANDLE`
     and `int`.
 *   File paths: use `mojo_base.mojom.FilePath`, not `string`.
-*   JSON: use `mojo.common.mojom.Value`, not `string`.
+*   JSON: use `mojo_base.mojom.Value`, not `string`.
 *   Mojo interfaces: use `Interface` or `Interface&`, not `handle` or
     `handle<message_pipe>`.
 *   Nonces: use `mojo_base.mojom.UnguessableToken`, not `string`.
@@ -398,7 +398,7 @@ interface ReportingService {
 ```c++
 interface ReportingService {
   // Bad: unclear what units |time| is or what |data| contains.
-  ReportDeprecation(double time, mojo.common.mojom.Value data);
+  ReportDeprecation(double time, mojo_base.mojom.Value data);
 };
 ```
 
