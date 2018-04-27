@@ -394,10 +394,9 @@ int obudec_read_temporal_unit(struct ObuDecInputContext *obu_ctx,
   if (!obu_ctx->is_annexb) {
     memcpy(*buffer, obu_ctx->buffer, (size_t)tu_size);
 
-    // At this point, (obu_ctx->buffer + obu_ctx->bytes_buffered) points to the
-    // end of the buffer.
-    memmove(obu_ctx->buffer,
-            obu_ctx->buffer + obu_ctx->bytes_buffered - obu_size,
+    // At this point, (obu_ctx->buffer + obu_ctx->bytes_buffered + obu_size)
+    // points to the end of the buffer.
+    memmove(obu_ctx->buffer, obu_ctx->buffer + obu_ctx->bytes_buffered,
             (size_t)obu_size);
     obu_ctx->bytes_buffered = (size_t)obu_size;
   } else {
