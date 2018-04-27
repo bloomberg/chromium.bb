@@ -505,3 +505,14 @@ static void JNI_ServiceWorkerPaymentAppBridge_AbortPaymentApp(
                      ScopedJavaGlobalRef<jobject>(env, jweb_contents),
                      ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
+
+static void JNI_ServiceWorkerPaymentAppBridge_OnClosingPaymentAppWindow(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jobject>& jweb_contents) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+
+  content::PaymentAppProvider::GetInstance()->OnClosingOpenedWindow(
+      web_contents->GetBrowserContext());
+}

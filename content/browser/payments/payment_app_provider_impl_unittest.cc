@@ -110,6 +110,12 @@ class PaymentAppProviderTest : public PaymentAppContentUnitTestBase {
         browser_context(), registration_id, std::move(callback));
   }
 
+  void OnClosingOpenedWindow() {
+    PaymentAppProviderImpl::GetInstance()->OnClosingOpenedWindow(
+        browser_context());
+    base::RunLoop().RunUntilIdle();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentAppProviderTest);
 };
@@ -264,6 +270,53 @@ TEST_F(PaymentAppProviderTest, GetAllPaymentAppsFromTheSameOriginTest) {
   ASSERT_EQ(2U, apps.size());
   ASSERT_EQ(1U, apps[bobpay_a_registration_id]->enabled_methods.size());
   ASSERT_EQ(2U, apps[bobpay_b_registration_id]->enabled_methods.size());
+}
+
+TEST_F(PaymentAppProviderTest, AbortPaymentWhenClosingOpenedWindow) {
+  PaymentManager* manager1 = CreatePaymentManager(
+      GURL("https://hellopay.com/a"), GURL("https://hellopay.com/a/script.js"));
+  PaymentManager* manager2 = CreatePaymentManager(
+      GURL("https://bobpay.com/b"), GURL("https://bobpay.com/b/script.js"));
+
+  PaymentHandlerStatus status;
+  SetPaymentInstrument(manager1, "test_key1",
+                       payments::mojom::PaymentInstrument::New(),
+                       base::BindOnce(&SetPaymentInstrumentCallback, &status));
+  SetPaymentInstrument(manager2, "test_key2",
+                       payments::mojom::PaymentInstrument::New(),
+                       base::BindOnce(&SetPaymentInstrumentCallback, &status));
+  SetPaymentInstrument(manager2, "test_key3",
+                       payments::mojom::PaymentInstrument::New(),
+                       base::BindOnce(&SetPaymentInstrumentCallback, &status));
+
+  PaymentAppProvider::PaymentApps apps;
+  GetAllPaymentApps(base::BindOnce(&GetAllPaymentAppsCallback, &apps));
+  ASSERT_EQ(2U, apps.size());
+
+  int64_t bobpay_registration_id = last_sw_registration_id();
+  EXPECT_EQ(apps[bobpay_registration_id]->scope.spec(), "https://bobpay.com/b");
+
+  payments::mojom::PaymentRequestEventDataPtr event_data =
+      payments::mojom::PaymentRequestEventData::New();
+  event_data->method_data.push_back(payments::mojom::PaymentMethodData::New());
+  event_data->total = payments::mojom::PaymentCurrencyAmount::New();
+
+  SetNoPaymentRequestResponseImmediately();
+
+  bool called = false;
+  InvokePaymentApp(bobpay_registration_id, std::move(event_data),
+                   base::BindOnce(&InvokePaymentAppCallback, &called));
+  ASSERT_FALSE(called);
+
+  // Abort payment request as closing opened window.
+  OnClosingOpenedWindow();
+  ASSERT_TRUE(called);
+
+  // Response after abort should not crash and take effect.
+  called = false;
+  RespondPendingPaymentRequest();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(called);
 }
 
 }  // namespace content

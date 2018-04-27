@@ -88,9 +88,15 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
       mojom::ServiceWorkerEventDispatcher::DispatchPaymentRequestEventCallback
           callback) override {
-    EmbeddedWorkerTestHelper::OnPaymentRequestEvent(
-        std::move(event_data), std::move(response_callback),
-        std::move(callback));
+    if (respond_payment_request_immediately) {
+      EmbeddedWorkerTestHelper::OnPaymentRequestEvent(
+          std::move(event_data), std::move(response_callback),
+          std::move(callback));
+    } else {
+      pending_response_callback_ = std::move(response_callback);
+      std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
+                              base::Time::Now());
+    }
   }
 
   void OnCanMakePaymentEvent(
@@ -113,6 +119,10 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
 
   int64_t last_sw_registration_id_;
   GURL last_sw_scope_;
+
+  // Variables to delay payment request response.
+  bool respond_payment_request_immediately = true;
+  payments::mojom::PaymentHandlerResponseCallbackPtr pending_response_callback_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentAppForWorkerTestHelper);
@@ -208,6 +218,16 @@ void PaymentAppContentUnitTestBase::UnregisterServiceWorker(
       scope_url, base::BindOnce(&UnregisterServiceWorkerCallback, &called));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
+}
+
+void PaymentAppContentUnitTestBase::SetNoPaymentRequestResponseImmediately() {
+  worker_helper_->respond_payment_request_immediately = false;
+}
+
+void PaymentAppContentUnitTestBase::RespondPendingPaymentRequest() {
+  std::move(worker_helper_->pending_response_callback_)
+      ->OnResponseForPaymentRequest(
+          payments::mojom::PaymentHandlerResponse::New(), base::Time::Now());
 }
 
 int64_t PaymentAppContentUnitTestBase::last_sw_registration_id() const {

@@ -37,6 +37,9 @@ class PaymentAppContentUnitTestBase : public testing::Test {
   int64_t last_sw_registration_id() const;
   const GURL& last_sw_scope_url() const;
 
+  void SetNoPaymentRequestResponseImmediately();
+  void RespondPendingPaymentRequest();
+
  private:
   class PaymentAppForWorkerTestHelper;
 

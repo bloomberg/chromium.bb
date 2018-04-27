@@ -75,6 +75,10 @@ class CONTENT_EXPORT PaymentAppProvider {
   virtual void SetOpenedWindow(WebContents* web_contents) = 0;
   virtual void CloseOpenedWindow(BrowserContext* browser_context) = 0;
 
+  // Notify the opened payment handler window is closing or closed by user so as
+  // to abort payment request.
+  virtual void OnClosingOpenedWindow(BrowserContext* browser_context) = 0;
+
  protected:
   virtual ~PaymentAppProvider() {}
 };
