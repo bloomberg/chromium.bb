@@ -293,6 +293,8 @@ extern const base::Feature kShowAllDialogsWithViewsToolkit;
 extern const base::Feature kShowTrustedPublisherURL;
 #endif
 
+extern const base::Feature kSiteSettings;
+
 extern const base::Feature kSimplifiedFullscreenUI;
 
 #if defined(OS_ANDROID)

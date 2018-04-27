@@ -10,6 +10,7 @@ const ROOT_PATH = '../../../../../';
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN('#include "chrome/common/chrome_features.h"');
 
 /**
  * Test fixture for Polymer Settings elements.
@@ -838,10 +839,7 @@ CrSettingsSiteDataDetailsTest.prototype = {
   /** @override */
   browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
 
-  /** @override */
-  commandLineSwitches: [{
-    switchName: 'enable-site-settings',
-  }],
+  featureList: ['features::kSiteSettings', ''],
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -917,10 +915,7 @@ CrSettingsAllSitesTest.prototype = {
   /** @override */
   browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
 
-  /** @override */
-  commandLineSwitches: [{
-    switchName: 'enable-site-settings',
-  }],
+  featureList: ['features::kSiteSettings', ''],
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -1005,10 +1000,7 @@ CrSettingsSiteListTest.prototype = {
   /** @override */
   browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
 
-  /** @override */
-  commandLineSwitches: [{
-    switchName: 'enable-site-settings',
-  }],
+  featureList: ['features::kSiteSettings', ''],
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([

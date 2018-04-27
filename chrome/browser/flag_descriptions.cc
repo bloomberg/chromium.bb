@@ -1489,9 +1489,9 @@ extern const char kSiteIsolationTrialOptOutChoiceDefault[] = "Default";
 extern const char kSiteIsolationTrialOptOutChoiceOptOut[] =
     "Opt-out (not recommended)";
 
-const char kSiteSettings[] = "Site settings with All sites and Site details";
+const char kSiteSettings[] = "Site settings";
 const char kSiteSettingsDescription[] =
-    "Adds new ways of viewing Site settings.";
+    "Add the All Sites list to Site Settings.";
 
 const char kSmoothScrollingName[] = "Smooth Scrolling";
 const char kSmoothScrollingDescription[] =
