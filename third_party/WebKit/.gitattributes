@@ -1,3 +1,0 @@
-# For best performance, place rules for deep paths in the parent directory.
-# For example: instead of "Source/WebCore/inspector/Inspector.json -crlf" here,
-# place "Inspector.json -crlf" in Source/WebCore/inspector/.gitattributes
