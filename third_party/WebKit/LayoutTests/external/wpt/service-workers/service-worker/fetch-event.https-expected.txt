@@ -21,5 +21,9 @@ PASS FetchEvent#body is a string and is passed to network fallback
 PASS FetchEvent#body is a blob
 PASS FetchEvent#body is a blob and is passed to network fallback
 PASS Service Worker responds to fetch event with the correct keepalive value
+FAIL FetchEvent#request.isReloadNavigation is true (location.reload()) assert_equals: expected "method = GET, isReloadNavigation = false" but got "method = GET, isReloadNavigation = undefined"
+FAIL FetchEvent#request.isReloadNavigation is true (history.go(0)) assert_equals: expected "method = GET, isReloadNavigation = false" but got "method = GET, isReloadNavigation = undefined"
+FAIL FetchEvent#request.isReloadNavigation is true (POST + location.reload()) assert_equals: expected "method = GET, isReloadNavigation = false" but got "method = GET, isReloadNavigation = undefined"
+FAIL FetchEvent#request.isReloadNavigation is true (with history traversal) assert_equals: expected "method = GET, isReloadNavigation = false" but got "method = GET, isReloadNavigation = undefined"
 Harness: the test ran to completion.
 
