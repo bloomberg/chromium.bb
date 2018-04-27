@@ -6,31 +6,57 @@
 
 #include <memory>
 #include "base/feature_list.h"
+#include "base/no_destructor.h"
 #include "base/time/time.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
-#include "third_party/blink/public/common/origin_trials/trial_policy.h"
+#include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
 #include "third_party/blink/public/common/origin_trials/trial_token.h"
+
+namespace {
+
+static base::RepeatingCallback<blink::OriginTrialPolicy*()>& PolicyGetter() {
+  static base::NoDestructor<
+      base::RepeatingCallback<blink::OriginTrialPolicy*()>>
+      policy(base::BindRepeating(
+          []() -> blink::OriginTrialPolicy* { return nullptr; }));
+  return *policy;
+}
+}
 
 namespace blink {
 
-TrialTokenValidator::TrialTokenValidator(std::unique_ptr<TrialPolicy> policy)
-    : policy_(std::move(policy)) {
-  DCHECK(policy_.get());
-}
+TrialTokenValidator::TrialTokenValidator() {}
+
 TrialTokenValidator::~TrialTokenValidator() = default;
 
+void TrialTokenValidator::SetOriginTrialPolicyGetter(
+    base::RepeatingCallback<OriginTrialPolicy*()> policy_getter) {
+  PolicyGetter() = policy_getter;
+}
+
+void TrialTokenValidator::ResetOriginTrialPolicyGetter() {
+  SetOriginTrialPolicyGetter(base::BindRepeating(
+      []() -> blink::OriginTrialPolicy* { return nullptr; }));
+}
+
+OriginTrialPolicy* TrialTokenValidator::Policy() {
+  return PolicyGetter().Run();
+}
+
 OriginTrialTokenStatus TrialTokenValidator::ValidateToken(
-    const std::string& token,
+    base::StringPiece token,
     const url::Origin& origin,
     std::string* feature_name,
     base::Time current_time) const {
-  if (!policy_->IsOriginTrialsSupported())
+  OriginTrialPolicy* policy = Policy();
+
+  if (!policy->IsOriginTrialsSupported())
     return OriginTrialTokenStatus::kNotSupported;
 
   // TODO(iclelland): Allow for multiple signing keys, and iterate over all
   // active keys here. https://crbug.com/543220
-  base::StringPiece public_key = policy_->GetPublicKey();
+  base::StringPiece public_key = policy->GetPublicKey();
 
   OriginTrialTokenStatus status;
   std::unique_ptr<TrialToken> trial_token =
@@ -42,10 +68,10 @@ OriginTrialTokenStatus TrialTokenValidator::ValidateToken(
   if (status != OriginTrialTokenStatus::kSuccess)
     return status;
 
-  if (policy_->IsFeatureDisabled(trial_token->feature_name()))
+  if (policy->IsFeatureDisabled(trial_token->feature_name()))
     return OriginTrialTokenStatus::kFeatureDisabled;
 
-  if (policy_->IsTokenDisabled(trial_token->signature()))
+  if (policy->IsTokenDisabled(trial_token->signature()))
     return OriginTrialTokenStatus::kTokenDisabled;
 
   *feature_name = trial_token->feature_name();
@@ -130,7 +156,9 @@ TrialTokenValidator::GetValidTokens(const url::Origin& origin,
 }
 
 bool TrialTokenValidator::IsTrialPossibleOnOrigin(const GURL& url) const {
-  return policy_->IsOriginTrialsSupported() && policy_->IsOriginSecure(url);
+  OriginTrialPolicy* policy = Policy();
+  return policy && policy->IsOriginTrialsSupported() &&
+         policy->IsOriginSecure(url);
 }
 
 bool TrialTokenValidator::IsTrialPossibleOnOrigin(

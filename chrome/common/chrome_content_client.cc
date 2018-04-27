@@ -692,7 +692,7 @@ bool ChromeContentClient::AllowScriptExtensionForServiceWorker(
 #endif
 }
 
-content::OriginTrialPolicy* ChromeContentClient::GetOriginTrialPolicy() {
+blink::OriginTrialPolicy* ChromeContentClient::GetOriginTrialPolicy() {
   // Prevent initialization race (see crbug.com/721144). There may be a
   // race when the policy is needed for worker startup (which happens on a
   // separate worker thread).

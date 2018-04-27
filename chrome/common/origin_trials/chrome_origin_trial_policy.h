@@ -10,19 +10,21 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "content/public/common/origin_trial_policy.h"
+#include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
 
 // This class is instantiated on the main/ui thread, but its methods can be
 // accessed from any thread.
-class ChromeOriginTrialPolicy : public content::OriginTrialPolicy {
+class ChromeOriginTrialPolicy : public blink::OriginTrialPolicy {
  public:
   ChromeOriginTrialPolicy();
   ~ChromeOriginTrialPolicy() override;
 
-  // OriginTrialPolicy interface
+  // blink::OriginTrialPolicy interface
+  bool IsOriginTrialsSupported() const override;
   base::StringPiece GetPublicKey() const override;
   bool IsFeatureDisabled(base::StringPiece feature) const override;
   bool IsTokenDisabled(base::StringPiece token_signature) const override;
+  bool IsOriginSecure(const GURL& url) const override;
 
   bool SetPublicKeyFromASCIIString(const std::string& ascii_public_key);
   bool SetDisabledFeatures(const std::string& disabled_feature_list);

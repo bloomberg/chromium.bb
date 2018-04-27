@@ -4,6 +4,10 @@
 
 #include "content/shell/common/shell_origin_trial_policy.h"
 
+#include "base/feature_list.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/origin_util.h"
+
 namespace content {
 
 namespace {
@@ -17,6 +21,7 @@ static const uint8_t kOriginTrialPublicKey[] = {
     0x9a, 0xd0, 0x0b, 0x59, 0xe1, 0xac, 0x2b, 0xb7, 0xd5, 0xca, 0x1f,
     0x64, 0x90, 0x08, 0x8e, 0xa8, 0xe0, 0x56, 0x3a, 0x04, 0xd0,
 };
+
 }  // namespace
 
 ShellOriginTrialPolicy::ShellOriginTrialPolicy()
@@ -26,8 +31,16 @@ ShellOriginTrialPolicy::ShellOriginTrialPolicy()
 
 ShellOriginTrialPolicy::~ShellOriginTrialPolicy() {}
 
+bool ShellOriginTrialPolicy::IsOriginTrialsSupported() const {
+  return base::FeatureList::IsEnabled(features::kOriginTrials);
+}
+
 base::StringPiece ShellOriginTrialPolicy::GetPublicKey() const {
   return public_key_;
+}
+
+bool ShellOriginTrialPolicy::IsOriginSecure(const GURL& url) const {
+  return content::IsOriginSecure(url);
 }
 
 }  // namespace content

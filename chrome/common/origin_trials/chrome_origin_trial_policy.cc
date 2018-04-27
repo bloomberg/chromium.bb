@@ -10,8 +10,11 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/strings/string_split.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/origin_util.h"
 
 // This is the default public key used for validating signatures.
 // TODO(iclelland): Provide a mechanism to allow for multiple signing keys.
@@ -48,6 +51,10 @@ ChromeOriginTrialPolicy::ChromeOriginTrialPolicy()
 
 ChromeOriginTrialPolicy::~ChromeOriginTrialPolicy() {}
 
+bool ChromeOriginTrialPolicy::IsOriginTrialsSupported() const {
+  return base::FeatureList::IsEnabled(features::kOriginTrials);
+}
+
 base::StringPiece ChromeOriginTrialPolicy::GetPublicKey() const {
   return base::StringPiece(public_key_);
 }
@@ -60,6 +67,10 @@ bool ChromeOriginTrialPolicy::IsFeatureDisabled(
 bool ChromeOriginTrialPolicy::IsTokenDisabled(
     base::StringPiece token_signature) const {
   return disabled_tokens_.count(token_signature.as_string()) > 0;
+}
+
+bool ChromeOriginTrialPolicy::IsOriginSecure(const GURL& url) const {
+  return content::IsOriginSecure(url);
 }
 
 bool ChromeOriginTrialPolicy::SetPublicKeyFromASCIIString(

@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
@@ -15,7 +16,7 @@
 #include "base/time/time.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/origin_trials/trial_policy.h"
+#include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
 #include "third_party/blink/public/common/origin_trials/trial_token.h"
 #include "url/gurl.h"
 
@@ -115,13 +116,12 @@ const char kInsecureOriginToken[] =
 // but before the expiry timestamp of kValidToken.
 double kNowTimestamp = 1500000000;
 
-class TestOriginTrialPolicy : public TrialPolicy {
+class TestOriginTrialPolicy : public OriginTrialPolicy {
  public:
   bool IsOriginTrialsSupported() const override { return true; }
   bool IsOriginSecure(const GURL& url) const override {
     return url.SchemeIs("https");
   }
-
   base::StringPiece GetPublicKey() const override {
     return base::StringPiece(reinterpret_cast<const char*>(key_),
                              arraysize(kTestPublicKey));
@@ -163,12 +163,16 @@ class TrialTokenValidatorTest : public testing::Test {
             std::string(reinterpret_cast<const char*>(kExpiredTokenSignature),
                         arraysize(kExpiredTokenSignature))),
         response_headers_(new net::HttpResponseHeaders("")),
-        policy_(new TestOriginTrialPolicy),
-        validator_(base::WrapUnique(policy_)) {
+        policy_(new TestOriginTrialPolicy) {
+    TrialTokenValidator::SetOriginTrialPolicyGetter(
+        base::BindRepeating([](OriginTrialPolicy* policy) { return policy; },
+                            base::Unretained(policy_)));
     SetPublicKey(kTestPublicKey);
   }
 
-  ~TrialTokenValidatorTest() override = default;
+  ~TrialTokenValidatorTest() override {
+    TrialTokenValidator::ResetOriginTrialPolicyGetter();
+  }
 
   void SetPublicKey(const uint8_t* key) { policy_->SetPublicKey(key); }
 

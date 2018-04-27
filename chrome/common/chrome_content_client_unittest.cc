@@ -194,23 +194,22 @@ class OriginTrialInitializationTestThread
   // Static helper which can also be called from the main thread.
   static void AccessPolicy(
       ChromeContentClient* content_client,
-      std::vector<content::OriginTrialPolicy*>* policy_objects) {
+      std::vector<blink::OriginTrialPolicy*>* policy_objects) {
     // Repeatedly access the lazily-created origin trial policy
     for (int i = 0; i < 20; i++) {
-      content::OriginTrialPolicy* policy =
-          content_client->GetOriginTrialPolicy();
+      blink::OriginTrialPolicy* policy = content_client->GetOriginTrialPolicy();
       policy_objects->push_back(policy);
       base::PlatformThread::YieldCurrentThread();
     }
   }
 
-  const std::vector<content::OriginTrialPolicy*>* policy_objects() const {
+  const std::vector<blink::OriginTrialPolicy*>* policy_objects() const {
     return &policy_objects_;
   }
 
  private:
   ChromeContentClient* chrome_client_;
-  std::vector<content::OriginTrialPolicy*> policy_objects_;
+  std::vector<blink::OriginTrialPolicy*> policy_objects_;
 
   DISALLOW_COPY_AND_ASSIGN(OriginTrialInitializationTestThread);
 };
@@ -220,7 +219,7 @@ class OriginTrialInitializationTestThread
 // race prevention is no longer sufficient.
 TEST(ChromeContentClientTest, OriginTrialPolicyConcurrentInitialization) {
   ChromeContentClient content_client;
-  std::vector<content::OriginTrialPolicy*> policy_objects;
+  std::vector<blink::OriginTrialPolicy*> policy_objects;
   OriginTrialInitializationTestThread thread(&content_client);
   base::PlatformThreadHandle handle;
 
@@ -234,16 +233,16 @@ TEST(ChromeContentClientTest, OriginTrialPolicyConcurrentInitialization) {
 
   ASSERT_EQ(20UL, policy_objects.size());
 
-  content::OriginTrialPolicy* first_policy = policy_objects[0];
+  blink::OriginTrialPolicy* first_policy = policy_objects[0];
 
-  const std::vector<content::OriginTrialPolicy*>* all_policy_objects[] = {
+  const std::vector<blink::OriginTrialPolicy*>* all_policy_objects[] = {
       &policy_objects, thread.policy_objects(),
   };
 
-  for (const std::vector<content::OriginTrialPolicy*>* thread_policy_objects :
+  for (const std::vector<blink::OriginTrialPolicy*>* thread_policy_objects :
        all_policy_objects) {
     EXPECT_GE(20UL, thread_policy_objects->size());
-    for (content::OriginTrialPolicy* policy : *(thread_policy_objects)) {
+    for (blink::OriginTrialPolicy* policy : *(thread_policy_objects)) {
       EXPECT_EQ(first_policy, policy);
     }
   }

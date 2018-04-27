@@ -60,6 +60,7 @@
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
@@ -835,6 +836,13 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #endif  // OS_ANDROID && (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
 
     InitializeV8IfNeeded(command_line, process_type);
+
+    blink::TrialTokenValidator::SetOriginTrialPolicyGetter(
+        base::BindRepeating([]() -> blink::OriginTrialPolicy* {
+          if (auto* client = GetContentClient())
+            return client->GetOriginTrialPolicy();
+          return nullptr;
+        }));
 
 #if !defined(OFFICIAL_BUILD)
 #if defined(OS_WIN)

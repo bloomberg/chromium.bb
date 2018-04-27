@@ -135,7 +135,6 @@ struct WebFloatPoint;
 class WebThemeEngine;
 class WebThread;
 struct WebThreadCreationParams;
-class WebTrialTokenValidator;
 class WebURLLoaderMockFactory;
 class WebURLResponse;
 class WebURLResponse;
@@ -715,12 +714,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Background Sync API-------------------------------------------------
 
   virtual WebSyncProvider* BackgroundSyncProvider() { return nullptr; }
-
-  // Origin Trials ------------------------------------------------------
-
-  // TODO(crbug.com/738505): Remove the Web layer and return a
-  // blink::TrialTokenValidator directly.
-  virtual std::unique_ptr<WebTrialTokenValidator> CreateTrialTokenValidator();
 
   // Media Capabilities --------------------------------------------------
 

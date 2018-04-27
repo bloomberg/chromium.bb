@@ -102,7 +102,7 @@ std::string ContentClient::GetProcessTypeNameInEnglish(int type) {
   return std::string();
 }
 
-OriginTrialPolicy* ContentClient::GetOriginTrialPolicy() {
+blink::OriginTrialPolicy* ContentClient::GetOriginTrialPolicy() {
   return nullptr;
 }
 

@@ -23,7 +23,7 @@ class WebRunnerContentClient : public content::ContentClient {
       ui::ScaleFactor scale_factor) const override;
   base::RefCountedMemory* GetDataResourceBytes(int resource_id) const override;
   gfx::Image& GetNativeImageNamed(int resource_id) const override;
-  content::OriginTrialPolicy* GetOriginTrialPolicy() override;
+  blink::OriginTrialPolicy* GetOriginTrialPolicy() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebRunnerContentClient);

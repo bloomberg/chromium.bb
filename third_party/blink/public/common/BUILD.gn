@@ -44,6 +44,7 @@ source_set("headers") {
     "message_port/transferable_message.h",
     "mime_util/mime_util.h",
     "origin_manifest/origin_manifest.h",
+    "origin_trials/origin_trial_policy.h",
     "origin_trials/trial_token.h",
     "origin_trials/trial_token_validator.h",
     "page/launching_process_state.h",

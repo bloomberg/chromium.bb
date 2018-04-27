@@ -26,7 +26,7 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/origin_trial_policy.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "ipc/ipc_message.h"
@@ -39,6 +39,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
@@ -1798,10 +1799,12 @@ class ServiceWorkerStorageOriginTrialsDiskTest
     : public ServiceWorkerStorageTest {
  public:
   ServiceWorkerStorageOriginTrialsDiskTest() {
-    SetContentClient(&test_content_client_);
+    blink::TrialTokenValidator::SetOriginTrialPolicyGetter(base::BindRepeating(
+        [](blink::OriginTrialPolicy* policy) { return policy; },
+        base::Unretained(&origin_trial_policy_)));
   }
   ~ServiceWorkerStorageOriginTrialsDiskTest() override {
-    SetContentClient(nullptr);
+    blink::TrialTokenValidator::ResetOriginTrialPolicyGetter();
   }
   void SetUp() override {
     ASSERT_TRUE(InitUserDataDirectory());
@@ -1809,24 +1812,18 @@ class ServiceWorkerStorageOriginTrialsDiskTest
   }
 
  private:
-  class TestOriginTrialPolicy : public OriginTrialPolicy {
+  class TestOriginTrialPolicy : public blink::OriginTrialPolicy {
    public:
+    bool IsOriginTrialsSupported() const override { return true; }
     base::StringPiece GetPublicKey() const override {
       return base::StringPiece(reinterpret_cast<const char*>(kTestPublicKey),
                                arraysize(kTestPublicKey));
     }
-  };
-  class TestContentClient : public ContentClient {
-   public:
-    // ContentRendererClient methods
-    OriginTrialPolicy* GetOriginTrialPolicy() override {
-      return &origin_trial_policy_;
+    bool IsOriginSecure(const GURL& url) const override {
+      return content::IsOriginSecure(url);
     }
-
-   private:
-    TestOriginTrialPolicy origin_trial_policy_;
   };
-  TestContentClient test_content_client_;
+  TestOriginTrialPolicy origin_trial_policy_;
 };
 
 TEST_F(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {

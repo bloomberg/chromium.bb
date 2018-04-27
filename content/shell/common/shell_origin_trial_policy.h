@@ -7,17 +7,19 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "content/public/common/origin_trial_policy.h"
+#include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
 
 namespace content {
 
-class ShellOriginTrialPolicy : public OriginTrialPolicy {
+class ShellOriginTrialPolicy : public blink::OriginTrialPolicy {
  public:
   ShellOriginTrialPolicy();
   ~ShellOriginTrialPolicy() override;
 
-  // OriginTrialPolicy interface
+  // blink::OriginTrialPolicy interface
+  bool IsOriginTrialsSupported() const override;
   base::StringPiece GetPublicKey() const override;
+  bool IsOriginSecure(const GURL& url) const override;
 
  private:
   base::StringPiece public_key_;

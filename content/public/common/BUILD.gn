@@ -176,8 +176,6 @@ jumbo_source_set("common_sources") {
     "network_connection_tracker.h",
     "notification_resources.cc",
     "notification_resources.h",
-    "origin_trial_policy.cc",
-    "origin_trial_policy.h",
     "origin_util.h",
     "page_importance_signals.h",
     "page_state.cc",
