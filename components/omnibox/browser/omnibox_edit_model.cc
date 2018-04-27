@@ -783,7 +783,7 @@ bool OmniboxEditModel::AcceptKeyword(
   // with a temporary one.  This is important because rerunning autocomplete
   // after the user pressed space, which will have happened just before reaching
   // here, may have generated a new match, which the user won't actually see and
-  // which we don't want to switch back to when existing keyword mode; see
+  // which we don't want to switch back to when exiting keyword mode; see
   // comments in ClearKeyword().
   if (entry_method == KeywordModeEntryMethod::TAB) {
     // Ensure the current selection is saved before showing keyword mode

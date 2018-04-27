@@ -7,17 +7,24 @@
 
 #include "ui/views/controls/button/md_text_button.h"
 
+class OmniboxPopupContentsView;
 class OmniboxResultView;
 
 class OmniboxTabSwitchButton : public views::MdTextButton {
  public:
-  OmniboxTabSwitchButton(OmniboxResultView* result_view, int text_height);
+  OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
+                         OmniboxResultView* result_view,
+                         int text_height);
 
   // views::View
   gfx::Size CalculatePreferredSize() const override;
 
   // views::Button
   void StateChanged(ButtonState old_state) override;
+
+  // Called by parent views to change background on external (not mouse related)
+  // event (tab key).
+  void UpdateBackground();
 
  private:
   // Encapsulates the color look-up, which uses the button state (hovered,
@@ -30,6 +37,7 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
 
   static constexpr int kVerticalPadding = 2;
   const int text_height_;
+  OmniboxPopupContentsView* model_;
   OmniboxResultView* result_view_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxTabSwitchButton);

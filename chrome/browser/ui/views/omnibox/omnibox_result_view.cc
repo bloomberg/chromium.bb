@@ -174,7 +174,7 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   // Set up 'switch to tab' button.
   if (match.has_tab_match && !keyword_view_->icon()->visible()) {
     suggestion_tab_switch_button_ =
-        std::make_unique<OmniboxTabSwitchButton>(this, GetTextHeight());
+        std::make_unique<OmniboxTabSwitchButton>(model_, this, GetTextHeight());
     suggestion_tab_switch_button_->set_owned_by_client();
     AddChildView(suggestion_tab_switch_button_.get());
   } else {
@@ -206,6 +206,8 @@ void OmniboxResultView::Invalidate() {
   // Reapply the dim color to account for the highlight state.
   suggestion_view_->separator()->Dim();
   keyword_view_->separator()->Dim();
+  if (suggestion_tab_switch_button_)
+    suggestion_tab_switch_button_->UpdateBackground();
 
   // Recreate the icons in case the color needs to change.
   // Note: if this is an extension icon or favicon then this can be done in
@@ -396,7 +398,7 @@ bool OmniboxResultView::IsSelected() const {
 }
 
 void OmniboxResultView::OpenMatch(WindowOpenDisposition disposition) {
-  model_->OpenMatch(model_index_, disposition);
+  model_->OpenMatch(disposition);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

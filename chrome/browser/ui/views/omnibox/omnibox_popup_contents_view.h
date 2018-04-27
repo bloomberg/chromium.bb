@@ -34,6 +34,7 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
 
   // Opens a match from the list specified by |index| with the type of tab or
   // window specified by |disposition|.
+  void OpenMatch(WindowOpenDisposition disposition);
   void OpenMatch(size_t index, WindowOpenDisposition disposition);
 
   // Returns the icon that should be displayed next to |match|. If the icon is
@@ -49,6 +50,14 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
 
   // Returns true if the line specified by |index| is selected.
   virtual bool IsSelectedIndex(size_t index) const;
+
+  // If the selected index has a tab switch button, whether it's "focused" via
+  // the tab key. Invalid if the selected index does not have a tab switch
+  // button.
+  bool IsButtonSelected() const;
+
+  // Called by the active result view to inform model (due to mouse event).
+  void UnselectButton();
 
   // OmniboxPopupView:
   bool IsOpen() const override;
