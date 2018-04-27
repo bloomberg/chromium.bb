@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/feature_engagement/buildflags.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkMaskFilter.h"
@@ -46,6 +47,8 @@ namespace {
 
 constexpr int kDistanceBetweenIcons = 6;
 
+constexpr int kStrokeThickness = 1;
+
 sk_sp<SkDrawLooper> CreateShadowDrawLooper(SkColor color) {
   SkLayerDrawLooper::Builder looper_builder;
   looper_builder.addLayer();
@@ -60,6 +63,22 @@ sk_sp<SkDrawLooper> CreateShadowDrawLooper(SkColor color) {
   layer_paint->setColorFilter(
       SkColorFilter::MakeModeFilter(color, SkBlendMode::kSrcIn));
   return looper_builder.detach();
+}
+
+// Returns the ID of the resource that should be used for the button fill if
+// any. |has_custom_image| will be set to true if the images of either the
+// tab, the frame background, (or the toolbar if |is_touch_ui| is true) have
+// been customized.
+int GetButtonFillResourceIdIfAny(const TabStrip* tab_strip,
+                                 const ui::ThemeProvider* theme_provider,
+                                 bool is_touch_ui,
+                                 bool* has_custom_image) {
+  if (!is_touch_ui)
+    return tab_strip->GetBackgroundResourceId(has_custom_image);
+
+  constexpr int kTouchBackgroundId = IDR_THEME_TOOLBAR;
+  *has_custom_image = theme_provider->HasCustomImage(kTouchBackgroundId);
+  return kTouchBackgroundId;
 }
 
 }  // namespace
@@ -401,12 +420,18 @@ void NewTabButton::PaintFill(bool pressed,
     // need to draw a custom background image.
     const ui::ThemeProvider* tp = GetThemeProvider();
     bool custom_image;
-    const int bg_id = tab_strip_->GetBackgroundResourceId(&custom_image);
+    const int bg_id = GetButtonFillResourceIdIfAny(tab_strip_, tp, is_touch_ui,
+                                                   &custom_image);
     if (custom_image && !new_tab_promo_observer_.IsObservingSources()) {
-      // For custom tab backgrounds the background starts at the top of the tab
-      // strip. Otherwise the background starts at the top of the frame.
-      const int offset_y =
+      // For non-touch, the background starts at |background_offset_| unless
+      // there's a custom tab background image, which starts at the top of
+      // the tabstrip (which is also the top of this button, i.e. y = 0).
+      const int non_touch_offset_y =
           tp->HasCustomImage(bg_id) ? 0 : background_offset_.y();
+      // For touch, the background matches the active tab background
+      // positioning in Tab::PaintTab().
+      const int offset_y =
+          is_touch_ui ? -GetLayoutInsets(TAB).top() : non_touch_offset_y;
       // The new tab background is mirrored in RTL mode, but the theme
       // background should never be mirrored. Mirror it here to compensate.
       float x_scale = 1.0f;
@@ -468,7 +493,10 @@ SkColor NewTabButton::GetButtonFillColor() const {
 
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
   DCHECK(theme_provider);
-  return theme_provider->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB);
+  return theme_provider->GetColor(
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
+          ? ThemeProperties::COLOR_TOOLBAR
+          : ThemeProperties::COLOR_BACKGROUND_TAB);
 }
 
 void NewTabButton::InitButtonIcons() {
@@ -503,7 +531,7 @@ SkPath NewTabButton::GetTouchOptimizedButtonPath(float button_y,
   // Inset by 1px for a fill path to give room for the stroke to show up. The
   // stroke width is 1px regardless of the device scale factor.
   if (for_fill)
-    rrect.inset(1, 1);
+    rrect.inset(kStrokeThickness, kStrokeThickness);
 
   SkPath path;
   path.addRRect(rrect, SkPath::kCW_Direction);
@@ -530,7 +558,7 @@ SkPath NewTabButton::GetNonTouchOptimizedButtonPath(int button_y,
   const float diag_height = bottom - 3.5 * scale;
   const float diag_width = diag_height * inverse_slope;
   const float right = diag_width + 4 * scale;
-  const int stroke_thickness = for_fill ? 0 : 1;
+  const int stroke_thickness = for_fill ? 0 : kStrokeThickness;
   bottom += button_y + stroke_thickness;
 
   SkPath path;
