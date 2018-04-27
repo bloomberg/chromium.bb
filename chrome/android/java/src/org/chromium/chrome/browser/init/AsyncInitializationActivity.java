@@ -553,11 +553,12 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     @CallSuper
     @Override
     public boolean onActivityResultWithNative(int requestCode, int resultCode, Intent intent) {
-        if (mWindowAndroid != null) {
-            return mWindowAndroid.onActivityResult(requestCode, resultCode, intent);
-        } else {
-            return false;
+        if (mWindowAndroid != null
+                && mWindowAndroid.onActivityResult(requestCode, resultCode, intent)) {
+            return true;
         }
+        super.onActivityResult(requestCode, resultCode, intent);
+        return false;
     }
 
     @CallSuper
