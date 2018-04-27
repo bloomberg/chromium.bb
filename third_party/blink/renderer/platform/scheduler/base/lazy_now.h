@@ -17,21 +17,23 @@ namespace blink {
 namespace scheduler {
 
 // Now() is somewhat expensive so it makes sense not to call Now() unless we
-// really need to.
+// really need to and to avoid subsequent calls if already called once.
+// LazyNow objects are expected to be short-living to represent accurate time.
 class PLATFORM_EXPORT LazyNow {
  public:
-  explicit LazyNow(base::TimeTicks now) : tick_clock_(nullptr), now_(now) {
-  }
+  explicit LazyNow(base::TimeTicks now);
+  explicit LazyNow(const base::TickClock* tick_clock);
 
-  explicit LazyNow(const base::TickClock* tick_clock)
-      : tick_clock_(tick_clock) {}
+  LazyNow(LazyNow&& move_from);
 
   // Result will not be updated on any subsesequent calls.
   base::TimeTicks Now();
 
  private:
-  const base::TickClock* tick_clock_;  // NOT OWNED
-  base::Optional<base::TimeTicks> now_;
+  const base::TickClock* tick_clock_;  // Not owned.
+  base::TimeTicks now_;
+
+  DISALLOW_COPY_AND_ASSIGN(LazyNow);
 };
 
 }  // namespace scheduler

@@ -103,8 +103,8 @@ class TaskQueueSelectorTest : public testing::Test {
 
  protected:
   void SetUp() final {
-    virtual_time_domain_ = base::WrapUnique<VirtualTimeDomain>(
-        new VirtualTimeDomain(base::TimeTicks()));
+    virtual_time_domain_ = std::make_unique<VirtualTimeDomain>(
+        base::TimeTicks() + base::TimeDelta::FromSeconds(1));
     for (size_t i = 0; i < kTaskQueueCount; i++) {
       std::unique_ptr<TaskQueueImpl> task_queue =
           std::make_unique<TaskQueueImpl>(nullptr, virtual_time_domain_.get(),
