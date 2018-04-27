@@ -1424,7 +1424,7 @@ TEST_F(CookieManagerTest, DeleteByAll) {
           net::COOKIE_PRIORITY_MEDIUM),
       true, true));
 
-  // Not in including_domains.
+  // Not in domains_and_ips_to_delete.
   EXPECT_TRUE(SetCanonicalCookie(
       net::CanonicalCookie(
           "A4", "val3", "other.com", "/path",
@@ -1434,7 +1434,7 @@ TEST_F(CookieManagerTest, DeleteByAll) {
           net::COOKIE_PRIORITY_MEDIUM),
       true, true));
 
-  // In excluding_domains.
+  // In domains_and_ips_to_ignore.
   EXPECT_TRUE(SetCanonicalCookie(
       net::CanonicalCookie(
           "A5", "val4", "no.com", "/path", now - base::TimeDelta::FromDays(3),

@@ -146,7 +146,7 @@ class NET_EXPORT CookieStore {
     CookieOptions cookie_options;
 
     // If this is not empty then any cookie with a domain/ip contained in this
-    // set will be deleted (assuming other fields match).
+    // will be deleted (assuming other fields match).
     // Domains must not have a leading period. e.g "example.com" and not
     // ".example.com".
     //
@@ -156,7 +156,7 @@ class NET_EXPORT CookieStore {
     std::set<std::string> domains_and_ips_to_delete;
 
     // If this is not empty then any cookie with a domain/ip contained in this
-    // set will be ignored (and not deleted).
+    // will be ignored (and not deleted).
     // Domains must not have a leading period. e.g "example.com" and not
     // ".example.com".
     //
