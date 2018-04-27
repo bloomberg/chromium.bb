@@ -2247,7 +2247,7 @@ TYPED_TEST(RendererPixelTest, EnlargedRenderPassTextureWithAntiAliasing) {
 
 // This tests the case where we have a RenderPass with a mask, but the quad
 // for the masked surface does not include the full surface texture.
-TYPED_TEST(NonSkiaRendererPixelTest, RenderPassAndMaskWithPartialQuad) {
+TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -2342,7 +2342,7 @@ TYPED_TEST(NonSkiaRendererPixelTest, RenderPassAndMaskWithPartialQuad) {
 
 // This tests the case where we have a RenderPass with a mask, but the quad
 // for the masked surface does not include the full surface texture.
-TYPED_TEST(NonSkiaRendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
+TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;

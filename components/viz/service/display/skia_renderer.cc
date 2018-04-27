@@ -36,6 +36,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkOverdrawColorFilter.h"
+#include "third_party/skia/include/effects/SkShaderMaskFilter.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -766,12 +767,27 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
                             SkMatrix::kFill_ScaleToFit);
 
   sk_sp<SkShader> shader;
-  shader = content->makeShader(SkShader::kClamp_TileMode,
-                               SkShader::kClamp_TileMode, &content_mat);
+  shader = content->makeShader(&content_mat);
 
-  // TODO(weiliangc): Implement mask. (https://crbug.com/644851)
   if (quad->mask_resource_id()) {
-    NOTIMPLEMENTED();
+    cc::DisplayResourceProvider::ScopedReadLockSkImage mask_lock(
+        resource_provider_, quad->mask_resource_id());
+    const SkImage* image = mask_lock.sk_image();
+    if (!mask_lock.valid())
+      return;
+
+    // Scale normalized uv rect into absolute texel coordinates.
+    SkRect mask_rect = gfx::RectFToSkRect(
+        gfx::ScaleRect(quad->mask_uv_rect, quad->mask_texture_size.width(),
+                       quad->mask_texture_size.height()));
+
+    SkMatrix mask_mat;
+    mask_mat.setRectToRect(mask_rect, dest_rect, SkMatrix::kFill_ScaleToFit);
+    current_paint_.setMaskFilter(
+        SkShaderMaskFilter::Make((image->makeShader(&mask_mat))));
+    current_paint_.setShader(std::move(shader));
+    current_canvas_->drawRect(dest_visible_rect, current_paint_);
+    return;
   }
 
   // If we have a background filter shader, render its results first.
@@ -784,10 +800,10 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
     current_canvas_->drawRect(dest_visible_rect, paint);
     current_paint_.setShader(std::move(shader));
     current_canvas_->drawRect(dest_visible_rect, current_paint_);
-  } else {
-    current_canvas_->drawImageRect(content, content_rect, dest_visible_rect,
-                                   &current_paint_);
+    return;
   }
+  current_canvas_->drawImageRect(content, content_rect, dest_visible_rect,
+                                 &current_paint_);
 }
 
 void SkiaRenderer::DrawUnsupportedQuad(const DrawQuad* quad) {
