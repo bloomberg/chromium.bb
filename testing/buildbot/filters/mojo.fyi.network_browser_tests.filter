@@ -141,10 +141,6 @@
 -IOThreadBrowserTestWithHangingPacRequest.Shutdown
 -ProxySettingsApiTest.ProxyEventsParseError
 
-# http://crbug.com/783996
-# Add support for TLS client auth.
--SSLUITestWithClientCert.TestWSSClientCert
-
 # https://bugs.chromium.org/p/chromium/issues/detail?id=755309
 -SSLUITest.SHA1PrefsCanEnable/0
 -SSLUITest.SHA1PrefsCanEnable/1
