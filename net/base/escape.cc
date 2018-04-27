@@ -179,19 +179,8 @@ bool ShouldUnescapeCodePoint(UnescapeRule::Type rules, uint32_t code_point) {
            ((code_point == '/' || code_point == '\\') &&
             (rules & UnescapeRule::PATH_SEPARATORS)) ||
            (code_point > ' ' && code_point != '/' && code_point != '\\' &&
-            (rules & UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS)) ||
-           // Additionally allow non-display characters if requested.
-           (code_point < ' ' &&
-            (rules & UnescapeRule::SPOOFING_AND_CONTROL_CHARS));
+            (rules & UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS));
   }
-
-  // Some schemes such as data: and file: need to parse the exact binary data
-  // when loading the URL. For that reason, SPOOFING_AND_CONTROL_CHARS allows
-  // unescaping UTF-8 byte sequences that are not safe to display. DO NOT use
-  // SPOOFING_AND_CONTROL_CHARS if the parsed URL is going to be displayed in
-  // the UI.
-  if (rules & UnescapeRule::SPOOFING_AND_CONTROL_CHARS)
-    return true;
 
   // Compare the codepoint against a list of characters that can be used
   // to spoof other URLs.
@@ -284,9 +273,8 @@ std::string UnescapeURLWithAdjustmentsImpl(
       // character. In that case, just unescaped and write the non-sense
       // character.
       //
-      // TODO(https://crbug.com/829868): Do not unescape illegal UTF-8 sequences
-      // unless SPOOFING_AND_CONTROL_CHARS is given. Should also split that
-      // behaviour off into a separate function.
+      // TODO(https://crbug.com/829868): Do not unescape illegal UTF-8
+      // sequences.
       unsigned char non_utf8_byte;
       if (UnescapeUnsignedByteAtIndex(escaped_text, i, &non_utf8_byte)) {
         result.push_back(non_utf8_byte);
@@ -480,6 +468,43 @@ base::string16 UnescapeAndDecodeUTF8URLComponentWithAdjustments(
   }
   // Character set is not valid.  Return the escaped version.
   return base::UTF8ToUTF16WithAdjustments(text, adjustments);
+}
+
+std::string UnescapeBinaryURLComponent(base::StringPiece escaped_text,
+                                       UnescapeRule::Type rules) {
+  // Only NORMAL and REPLACE_PLUS_WITH_SPACE are supported.
+  DCHECK(rules != UnescapeRule::NONE);
+  DCHECK(!(rules &
+           ~(UnescapeRule::NORMAL | UnescapeRule::REPLACE_PLUS_WITH_SPACE)));
+
+  // The output of the unescaping is always smaller than the input, so we can
+  // reserve the input size to make sure we have enough buffer and don't have
+  // to allocate in the loop below.
+  std::string result;
+  result.reserve(escaped_text.length());
+
+  for (size_t i = 0, max = escaped_text.size(); i < max;) {
+    unsigned char byte;
+    // UnescapeUnsignedByteAtIndex does bounds checking, so this is always safe
+    // to call.
+    if (UnescapeUnsignedByteAtIndex(escaped_text, i, &byte)) {
+      result.push_back(byte);
+      i += 3;
+      continue;
+    }
+
+    if ((rules & UnescapeRule::REPLACE_PLUS_WITH_SPACE) &&
+        escaped_text[i] == '+') {
+      result.push_back(' ');
+      ++i;
+      continue;
+    }
+
+    result.push_back(escaped_text[i]);
+    ++i;
+  }
+
+  return result;
 }
 
 base::string16 UnescapeForHTML(base::StringPiece16 input) {

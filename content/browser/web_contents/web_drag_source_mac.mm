@@ -145,12 +145,8 @@ void PromiseWriterHelper(const DropData& drop_data,
     // If NSURL creation failed, check for a badly-escaped JavaScript URL.
     // Strip out any existing escapes and then re-escape uniformly.
     if (!url && dropData_->url.SchemeIs(url::kJavaScriptScheme)) {
-      net::UnescapeRule::Type unescapeRules =
-          net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
-          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
-          net::UnescapeRule::SPOOFING_AND_CONTROL_CHARS;
       std::string unescapedUrlString =
-          net::UnescapeURLComponent(dropData_->url.spec(), unescapeRules);
+          net::UnescapeBinaryURLComponent(dropData_->url.spec());
       std::string escapedUrlString =
           net::EscapeUrlEncodedData(unescapedUrlString, false);
       url = [NSURL URLWithString:SysUTF8ToNSString(escapedUrlString)];

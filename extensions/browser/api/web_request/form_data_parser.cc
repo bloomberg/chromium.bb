@@ -100,7 +100,6 @@ class FormDataParserUrlEncoded : public FormDataParser {
   // Auxiliary constant for using RE2. Number of arguments for parsing
   // name-value pairs (one for name, one for value).
   static const size_t args_size_ = 2u;
-  static const net::UnescapeRule::Type unescape_rules_;
 
   re2::StringPiece source_;
   bool source_set_;
@@ -369,12 +368,6 @@ std::unique_ptr<FormDataParser> FormDataParser::CreateFromContentTypeHeader(
 
 FormDataParser::FormDataParser() {}
 
-const net::UnescapeRule::Type FormDataParserUrlEncoded::unescape_rules_ =
-    net::UnescapeRule::PATH_SEPARATORS |
-    net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
-    net::UnescapeRule::SPOOFING_AND_CONTROL_CHARS | net::UnescapeRule::SPACES |
-    net::UnescapeRule::REPLACE_PLUS_WITH_SPACE;
-
 FormDataParserUrlEncoded::FormDataParserUrlEncoded()
     : source_(NULL),
       source_set_(false),
@@ -399,9 +392,12 @@ bool FormDataParserUrlEncoded::GetNextNameValue(Result* result) {
 
   bool success = RE2::ConsumeN(&source_, pattern(), args_, args_size_);
   if (success) {
-    result->set_name(net::UnescapeURLComponent(name_, unescape_rules_));
+    const net::UnescapeRule::Type kUnescapeRules =
+        net::UnescapeRule::REPLACE_PLUS_WITH_SPACE;
+
+    result->set_name(net::UnescapeBinaryURLComponent(name_, kUnescapeRules));
     const std::string unescaped_value =
-        net::UnescapeURLComponent(value_, unescape_rules_);
+        net::UnescapeBinaryURLComponent(value_, kUnescapeRules);
     const base::StringPiece unescaped_data(unescaped_value.data(),
                                            unescaped_value.length());
     if (base::IsStringUTF8(unescaped_data)) {
@@ -550,11 +546,7 @@ bool FormDataParserMultipart::GetNextNameValue(Result* result) {
     return_value = FinishReadingPart(value_assigned ? nullptr : &value);
   }
 
-  std::string unescaped_name = net::UnescapeURLComponent(
-      name.as_string(),
-      net::UnescapeRule::PATH_SEPARATORS |
-          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
-          net::UnescapeRule::SPOOFING_AND_CONTROL_CHARS);
+  std::string unescaped_name = net::UnescapeBinaryURLComponent(name);
   result->set_name(unescaped_name);
   if (value_assigned) {
     // Hold filename as value.

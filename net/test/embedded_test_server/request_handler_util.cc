@@ -27,12 +27,6 @@ namespace net {
 namespace test_server {
 namespace {
 
-const UnescapeRule::Type kUnescapeAll =
-    UnescapeRule::SPACES | UnescapeRule::PATH_SEPARATORS |
-    UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
-    UnescapeRule::SPOOFING_AND_CONTROL_CHARS |
-    UnescapeRule::REPLACE_PLUS_WITH_SPACE;
-
 std::string GetContentType(const base::FilePath& path) {
   if (path.MatchesExtension(FILE_PATH_LITERAL(".crx")))
     return "application/x-chrome-extension";
@@ -92,8 +86,9 @@ std::unique_ptr<HttpResponse> HandlePrefixedRequest(
 RequestQuery ParseQuery(const GURL& url) {
   RequestQuery queries;
   for (QueryIterator it(url); !it.IsAtEnd(); it.Advance()) {
-    queries[net::UnescapeURLComponent(it.GetKey(), kUnescapeAll)].push_back(
-        it.GetUnescapedValue());
+    queries[UnescapeBinaryURLComponent(it.GetKey(),
+                                       UnescapeRule::REPLACE_PLUS_WITH_SPACE)]
+        .push_back(it.GetUnescapedValue());
   }
   return queries;
 }
