@@ -78,11 +78,6 @@ gfx::BufferFormat VulkanBrowserCompositorOutputSurface::GetOverlayBufferFormat()
   return gfx::BufferFormat::RGBX_8888;
 }
 
-bool VulkanBrowserCompositorOutputSurface::SurfaceIsSuspendForRecycle() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void VulkanBrowserCompositorOutputSurface::Reshape(
     const gfx::Size& size,
     float device_scale_factor,

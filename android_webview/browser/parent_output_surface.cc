@@ -92,8 +92,4 @@ gfx::BufferFormat ParentOutputSurface::GetOverlayBufferFormat() const {
   return gfx::BufferFormat::RGBX_8888;
 }
 
-bool ParentOutputSurface::SurfaceIsSuspendForRecycle() const {
-  return false;
-}
-
 }  // namespace android_webview

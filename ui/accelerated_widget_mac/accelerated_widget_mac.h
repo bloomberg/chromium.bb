@@ -56,6 +56,10 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac
   // Return true if the last frame swapped has a size in DIP of |dip_size|.
   bool HasFrameOfSize(const gfx::Size& dip_size) const;
 
+  // If |suspended| is true, then ignore all new frames that come in until
+  // a call is made with |suspended| as false.
+  void SetSuspended(bool suspended);
+
   // Translate from a gfx::AcceleratedWidget to the NSView in which it will
   // appear. This may return nil if |widget| is invalid or is not currently
   // attached to an NSView.
@@ -78,7 +82,6 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac
                          float scale_factor);
 
   // gfx::CALayerFrameSink implementation:
-  void SetSuspended(bool suspended) override;
   void UpdateCALayerTree(const gfx::CALayerParams& ca_layer_params) override;
 
   // The AcceleratedWidgetMacNSView that is using this as its internals.

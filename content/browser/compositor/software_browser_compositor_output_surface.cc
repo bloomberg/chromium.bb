@@ -126,23 +126,12 @@ SoftwareBrowserCompositorOutputSurface::GetOverlayBufferFormat() const {
   return gfx::BufferFormat::RGBX_8888;
 }
 
-bool SoftwareBrowserCompositorOutputSurface::SurfaceIsSuspendForRecycle()
-    const {
-  return false;
-}
-
 uint32_t
 SoftwareBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
   // Not used for software surfaces.
   NOTREACHED();
   return 0;
 }
-
-#if defined(OS_MACOSX)
-void SoftwareBrowserCompositorOutputSurface::SetSurfaceSuspendedForRecycle(
-    bool suspended) {
-}
-#endif
 
 #if BUILDFLAG(ENABLE_VULKAN)
 gpu::VulkanSurface* SoftwareBrowserCompositorOutputSurface::GetVulkanSurface() {

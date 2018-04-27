@@ -514,8 +514,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         bool disable_overlay_ca_layers = gpu_feature_info.IsWorkaroundEnabled(
             gpu::DISABLE_OVERLAY_CA_LAYERS);
         display_output_surface = std::make_unique<GpuOutputSurfaceMac>(
-            compositor->widget(), context_provider, data->surface_handle,
-            vsync_callback,
+            context_provider, data->surface_handle, vsync_callback,
             CreateOverlayCandidateValidator(compositor->widget(),
                                             disable_overlay_ca_layers),
             GetGpuMemoryBufferManager());
@@ -932,20 +931,6 @@ viz::GLHelper* GpuProcessTransportFactory::GetGLHelper() {
   }
   return gl_helper_.get();
 }
-
-#if defined(OS_MACOSX)
-void GpuProcessTransportFactory::SetCompositorSuspendedForRecycle(
-    ui::Compositor* compositor,
-    bool suspended) {
-  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
-  if (it == per_compositor_data_.end())
-    return;
-  PerCompositorData* data = it->second.get();
-  DCHECK(data);
-  if (data->display_output_surface)
-    data->display_output_surface->SetSurfaceSuspendedForRecycle(suspended);
-}
-#endif
 
 scoped_refptr<ContextProvider>
 GpuProcessTransportFactory::SharedMainThreadContextProvider() {

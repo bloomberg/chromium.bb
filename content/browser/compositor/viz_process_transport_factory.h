@@ -106,10 +106,6 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   ui::ContextFactory* GetContextFactory() override;
   ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
   viz::GLHelper* GetGLHelper() override;
-#if defined(OS_MACOSX)
-  void SetCompositorSuspendedForRecycle(ui::Compositor* compositor,
-                                        bool suspended) override;
-#endif
 
   // viz::mojom::CompositingModeWatcher implementation.
   void CompositingModeFallbackToSoftware() override;

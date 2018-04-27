@@ -70,7 +70,6 @@ class FakeOutputSurface : public OutputSurface {
   uint32_t GetFramebufferCopyTextureFormat() override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override {}
-  bool SurfaceIsSuspendForRecycle() const override;
   OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
@@ -92,10 +91,6 @@ class FakeOutputSurface : public OutputSurface {
     has_external_stencil_test_ = has_test;
   }
 
-  void set_suspended_for_recycle(bool suspended) {
-    suspended_for_recycle_ = suspended;
-  }
-
   const gfx::ColorSpace& last_reshape_color_space() {
     return last_reshape_color_space_;
   }
@@ -113,7 +108,6 @@ class FakeOutputSurface : public OutputSurface {
   std::unique_ptr<OutputSurfaceFrame> last_sent_frame_;
   size_t num_sent_frames_ = 0;
   bool has_external_stencil_test_ = false;
-  bool suspended_for_recycle_ = false;
   GLint framebuffer_ = 0;
   GLenum framebuffer_format_ = 0;
   OverlayCandidateValidator* overlay_candidate_validator_ = nullptr;

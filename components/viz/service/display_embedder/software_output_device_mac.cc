@@ -187,10 +187,8 @@ void SoftwareOutputDeviceMac::EndPaint() {
         IOSurfaceCreateMachPort(current_paint_buffer_->io_surface));
     ui::CALayerFrameSink* ca_layer_frame_sink =
         ui::CALayerFrameSink::FromAcceleratedWidget(widget_);
-    if (ca_layer_frame_sink) {
-      ca_layer_frame_sink->SetSuspended(false);
+    if (ca_layer_frame_sink)
       ca_layer_frame_sink->UpdateCALayerTree(ca_layer_params);
-    }
   }
 
   current_paint_buffer_ = nullptr;

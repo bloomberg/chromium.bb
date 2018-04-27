@@ -134,6 +134,9 @@ void AcceleratedWidgetMac::SetSuspended(bool is_suspended) {
 
 void AcceleratedWidgetMac::UpdateCALayerTree(
     const gfx::CALayerParams& ca_layer_params) {
+  if (is_suspended_)
+    return;
+
   if (ca_layer_params.ca_context_id) {
     if ([remote_layer_ contextId] != ca_layer_params.ca_context_id) {
       remote_layer_.reset([[CALayerHost alloc] init]);
@@ -144,9 +147,6 @@ void AcceleratedWidgetMac::UpdateCALayerTree(
   } else {
     remote_layer_.reset();
   }
-
-  if (is_suspended_)
-    return;
 
   if (remote_layer_) {
     GotCALayerFrame(base::scoped_nsobject<CALayer>(remote_layer_.get(),

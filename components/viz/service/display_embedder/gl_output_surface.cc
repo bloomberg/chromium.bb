@@ -121,10 +121,6 @@ gfx::BufferFormat GLOutputSurface::GetOverlayBufferFormat() const {
   return gfx::BufferFormat::RGBX_8888;
 }
 
-bool GLOutputSurface::SurfaceIsSuspendForRecycle() const {
-  return false;
-}
-
 bool GLOutputSurface::HasExternalStencilTest() const {
   return false;
 }
