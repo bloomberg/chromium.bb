@@ -50,6 +50,9 @@
 // This template function declaration is used in defining arraysize.
 // Note that the function doesn't need an implementation, as we only
 // use its type.
+//
+// DEPRECATED, please use base::size(array) instead.
+// TODO(https://crbug.com/837308): Replace existing arraysize usages.
 template <typename T, size_t N> char (&ArraySizeHelper(T (&array)[N]))[N];
 #define arraysize(array) (sizeof(ArraySizeHelper(array)))
 
