@@ -684,6 +684,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   void TimerBasedLatchingBreaksWithMouseMove();
   void TimerBasedLatchingBreaksWithModifiersChange();
   void TimerBasedLatchingBreaksWithDirectionChange();
+  void TimerBasedLatchingBreaksWithAutoscrollStart();
   void TouchpadFlingStartResetsWheelPhaseState();
   void GSBWithTouchSourceStopsWheelScrollSequence();
 
@@ -2368,6 +2369,63 @@ TEST_F(RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest,
 TEST_F(RenderWidgetHostViewAuraAsyncWheelEventsEnabledTest,
        TimerBasedLatchingBreaksWithDirectionChange) {
   TimerBasedLatchingBreaksWithDirectionChange();
+}
+
+void RenderWidgetHostViewAuraTest::
+    TimerBasedLatchingBreaksWithAutoscrollStart() {
+  // The test is valid only when wheel scroll latching is enabled.
+  if (wheel_scrolling_mode_ == kWheelScrollingModeNone)
+    return;
+
+  // Set the mouse_wheel_phase_handler_ timer timeout to a large value to make
+  // sure that the timer is still running when the Autoscroll starts.
+  view_->event_handler()->set_mouse_wheel_wheel_phase_handler_timeout(
+      TestTimeouts::action_max_timeout());
+
+  view_->InitAsChild(nullptr);
+  view_->Show();
+  sink_->ClearMessages();
+
+  ui::MouseWheelEvent event(gfx::Vector2d(0, 5), gfx::Point(2, 2),
+                            gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0);
+  view_->OnMouseEvent(&event);
+  base::RunLoop().RunUntilIdle();
+  MockWidgetInputHandler::MessageVector events =
+      GetAndResetDispatchedMessages();
+  EXPECT_EQ("MouseWheel", GetMessageNames(events));
+  EXPECT_TRUE(events[0]->ToEvent());
+  const WebMouseWheelEvent* wheel_event =
+      static_cast<const WebMouseWheelEvent*>(
+          events[0]->ToEvent()->Event()->web_event.get());
+  EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
+  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_TRUE(view_->GetMouseWheelPhaseHandler()->HasPendingWheelEndEvent());
+  events = GetAndResetDispatchedMessages();
+
+  // Autoscroll start breaks wheel scroll latching sequence by sending the
+  // pending wheel end event, the non-blocking wheel end event will be acked
+  // immediately and a GSE will be sent. The next wheel event will start a new
+  // scrolling sequence.
+  view_->OnAutoscrollStart();
+  EXPECT_FALSE(view_->GetMouseWheelPhaseHandler()->HasPendingWheelEndEvent());
+  ui::MouseWheelEvent event2(gfx::Vector2d(0, 5), gfx::Point(2, 2),
+                             gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0);
+  view_->OnMouseEvent(&event2);
+  base::RunLoop().RunUntilIdle();
+  events = GetAndResetDispatchedMessages();
+  EXPECT_EQ("MouseWheel GestureScrollEnd MouseWheel", GetMessageNames(events));
+  EXPECT_TRUE(events[0]->ToEvent());
+  wheel_event = static_cast<const WebMouseWheelEvent*>(
+      events[0]->ToEvent()->Event()->web_event.get());
+  EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_event->phase);
+  EXPECT_TRUE(events[2]->ToEvent());
+  wheel_event = static_cast<const WebMouseWheelEvent*>(
+      events[2]->ToEvent()->Event()->web_event.get());
+  EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
+}
+TEST_F(RenderWidgetHostViewAuraAsyncWheelEventsEnabledTest,
+       TimerBasedLatchingBreaksWithAutoscrollStart) {
+  TimerBasedLatchingBreaksWithAutoscrollStart();
 }
 
 // Tests that a gesture fling start with touchpad source resets wheel phase

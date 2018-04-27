@@ -2466,6 +2466,10 @@ RenderWidgetHostViewAura::AllocateFrameSinkIdForGuestViewHack() {
       ->AllocateFrameSinkId();
 }
 
+MouseWheelPhaseHandler* RenderWidgetHostViewAura::GetMouseWheelPhaseHandler() {
+  return &event_handler_->mouse_wheel_phase_handler();
+}
+
 void RenderWidgetHostViewAura::TakeFallbackContentFrom(
     RenderWidgetHostView* view) {
   DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)

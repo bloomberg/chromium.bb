@@ -2228,6 +2228,7 @@ void RenderWidgetHostImpl::OnSetCursor(const WebCursor& cursor) {
 }
 
 void RenderWidgetHostImpl::OnAutoscrollStart(const gfx::PointF& position) {
+  GetView()->OnAutoscrollStart();
   WebGestureEvent scroll_begin = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::kGestureScrollBegin,
       blink::kWebGestureDeviceSyntheticAutoscroll);

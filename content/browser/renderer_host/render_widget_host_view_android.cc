@@ -1915,6 +1915,11 @@ void RenderWidgetHostViewAndroid::UpdateNativeViewTree(
   CreateOverscrollControllerIfPossible();
 }
 
+MouseWheelPhaseHandler*
+RenderWidgetHostViewAndroid::GetMouseWheelPhaseHandler() {
+  return &mouse_wheel_phase_handler_;
+}
+
 void RenderWidgetHostViewAndroid::RunAckCallbacks() {
   while (!ack_callbacks_.empty()) {
     ack_callbacks_.front().Run();

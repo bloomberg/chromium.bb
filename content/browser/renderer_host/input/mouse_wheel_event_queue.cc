@@ -266,12 +266,13 @@ void MouseWheelEventQueue::OnGestureScrollEvent(
       blink::WebInputEvent::kGestureScrollBegin) {
     scrolling_device_ = gesture_event.event.SourceDevice();
   } else if (scrolling_device_ == gesture_event.event.SourceDevice() &&
-             (gesture_event.event.GetType() ==
-                  blink::WebInputEvent::kGestureScrollEnd ||
-              (gesture_event.event.GetType() ==
-                   blink::WebInputEvent::kGestureFlingStart &&
-               scrolling_device_ != blink::kWebGestureDeviceTouchpad))) {
+             gesture_event.event.GetType() ==
+                 blink::WebInputEvent::kGestureScrollEnd) {
     scrolling_device_ = blink::kWebGestureDeviceUninitialized;
+  } else if (gesture_event.event.GetType() ==
+             blink::WebInputEvent::kGestureFlingStart) {
+    // With browser side fling we shouldn't reset scrolling_device_ on GFS since
+    // the fling_controller processes the GFS to generate and send GSU events.
   }
 }
 

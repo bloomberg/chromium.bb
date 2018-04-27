@@ -335,6 +335,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void LostFocus();
 
  private:
+  MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;
+
   void RunAckCallbacks();
 
   bool ShouldRouteEvents() const;

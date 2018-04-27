@@ -1198,6 +1198,10 @@ RenderWidgetHostViewMac::AllocateFrameSinkIdForGuestViewHack() {
       ->AllocateFrameSinkId();
 }
 
+MouseWheelPhaseHandler* RenderWidgetHostViewMac::GetMouseWheelPhaseHandler() {
+  return &mouse_wheel_phase_handler_;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostNSViewClient implementation:
 
