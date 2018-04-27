@@ -232,23 +232,31 @@ TEST_P(TaskSchedulerWorkerPoolTest, PostAfterDestroy) {
 // Verify that a Task runs shortly after its delay expires.
 TEST_P(TaskSchedulerWorkerPoolTest, PostDelayedTask) {
   StartWorkerPool();
-  TimeTicks start_time = TimeTicks::Now();
+
+  WaitableEvent task_ran(WaitableEvent::ResetPolicy::AUTOMATIC,
+                         WaitableEvent::InitialState::NOT_SIGNALED);
+
+  auto task_runner = test::CreateTaskRunnerWithExecutionMode(
+      worker_pool_.get(), GetParam().execution_mode);
+
+  // Wait until the task runner is up and running to make sure the test below is
+  // solely timing the delayed task, not bringing up a physical thread.
+  task_runner->PostTask(
+      FROM_HERE, BindOnce(&WaitableEvent::Signal, Unretained(&task_ran)));
+  task_ran.Wait();
+  ASSERT_TRUE(!task_ran.IsSignaled());
 
   // Post a task with a short delay.
-  WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
-                         WaitableEvent::InitialState::NOT_SIGNALED);
-  EXPECT_TRUE(test::CreateTaskRunnerWithExecutionMode(worker_pool_.get(),
-                                                      GetParam().execution_mode)
-                  ->PostDelayedTask(
-                      FROM_HERE,
-                      BindOnce(&WaitableEvent::Signal, Unretained(&task_ran)),
-                      TestTimeouts::tiny_timeout()));
+  TimeTicks start_time = TimeTicks::Now();
+  EXPECT_TRUE(task_runner->PostDelayedTask(
+      FROM_HERE, BindOnce(&WaitableEvent::Signal, Unretained(&task_ran)),
+      TestTimeouts::tiny_timeout()));
 
   // Wait until the task runs.
   task_ran.Wait();
 
-  // Expect the task to run after its delay expires, but not more than 250 ms
-  // after that.
+  // Expect the task to run after its delay expires, but no more than 250
+  // ms after that.
   const TimeDelta actual_delay = TimeTicks::Now() - start_time;
   EXPECT_GE(actual_delay, TestTimeouts::tiny_timeout());
   EXPECT_LT(actual_delay,
