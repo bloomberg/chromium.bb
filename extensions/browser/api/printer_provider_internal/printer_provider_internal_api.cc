@@ -194,25 +194,17 @@ PrinterProviderInternalGetPrintDataFunction::Run() {
   if (!job)
     return RespondNow(Error("Print request not found."));
 
-  if (job->document_bytes.get()) {
-    // |job->document_bytes| are passed to the callback to make sure the ref
-    // counted memory does not go away before the memory backed blob is created.
-    content::BrowserContext::CreateMemoryBackedBlob(
-        browser_context(), job->document_bytes->front_as<char>(),
-        job->document_bytes->size(), "",
-        base::Bind(&PrinterProviderInternalGetPrintDataFunction::OnBlob, this,
-                   job->content_type, job->document_bytes->size(),
-                   job->document_bytes));
-  } else if (!job->document_path.empty()) {
-    content::BrowserContext::CreateFileBackedBlob(
-        browser_context(), job->document_path, 0 /* offset */,
-        job->file_info.size, job->file_info.last_modified,
-        base::Bind(&PrinterProviderInternalGetPrintDataFunction::OnBlob, this,
-                   job->content_type, job->file_info.size,
-                   scoped_refptr<base::RefCountedMemory>()));
-  } else {
+  if (!job->document_bytes)
     return RespondNow(Error("Job data not set"));
-  }
+
+  // |job->document_bytes| are passed to the callback to make sure the ref
+  // counted memory does not go away before the memory backed blob is created.
+  content::BrowserContext::CreateMemoryBackedBlob(
+      browser_context(), job->document_bytes->front_as<char>(),
+      job->document_bytes->size(), "",
+      base::BindOnce(&PrinterProviderInternalGetPrintDataFunction::OnBlob, this,
+                     job->content_type, job->document_bytes->size(),
+                     job->document_bytes));
   return RespondLater();
 }
 

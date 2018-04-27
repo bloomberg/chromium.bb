@@ -696,7 +696,6 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf) {
   EXPECT_EQ(title, print_job->job_title);
   EXPECT_EQ(kEmptyPrintTicket, print_job->ticket_json);
   EXPECT_EQ(kContentTypePDF, print_job->content_type);
-  EXPECT_TRUE(print_job->document_path.empty());
   ASSERT_TRUE(print_job->document_bytes);
   EXPECT_EQ(RefCountedMemoryToString(print_data),
             RefCountedMemoryToString(print_job->document_bytes));
@@ -761,7 +760,6 @@ TEST_F(ExtensionPrinterHandlerTest, Print_All) {
   EXPECT_EQ(title, print_job->job_title);
   EXPECT_EQ(kEmptyPrintTicket, print_job->ticket_json);
   EXPECT_EQ(kContentTypePDF, print_job->content_type);
-  EXPECT_TRUE(print_job->document_path.empty());
   ASSERT_TRUE(print_job->document_bytes);
   EXPECT_EQ(RefCountedMemoryToString(print_data),
             RefCountedMemoryToString(print_job->document_bytes));
@@ -816,11 +814,9 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg) {
   EXPECT_EQ(title, print_job->job_title);
   EXPECT_EQ(kEmptyPrintTicket, print_job->ticket_json);
   EXPECT_EQ(kContentTypePWG, print_job->content_type);
-  EXPECT_FALSE(print_job->document_bytes);
-  EXPECT_FALSE(print_job->document_path.empty());
-  EXPECT_EQ(pwg_raster_converter_->path(), print_job->document_path);
-  EXPECT_EQ(static_cast<int64_t>(print_data->size()),
-            print_job->file_info.size);
+  ASSERT_TRUE(print_job->document_bytes);
+  EXPECT_EQ(RefCountedMemoryToString(print_data),
+            RefCountedMemoryToString(print_job->document_bytes));
 
   fake_api->TriggerNextPrintCallback(kPrintRequestSuccess);
 
@@ -872,11 +868,9 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_NonDefaultSettings) {
   EXPECT_EQ(title, print_job->job_title);
   EXPECT_EQ(kPrintTicketWithDuplex, print_job->ticket_json);
   EXPECT_EQ(kContentTypePWG, print_job->content_type);
-  EXPECT_FALSE(print_job->document_bytes);
-  EXPECT_FALSE(print_job->document_path.empty());
-  EXPECT_EQ(pwg_raster_converter_->path(), print_job->document_path);
-  EXPECT_EQ(static_cast<int64_t>(print_data->size()),
-            print_job->file_info.size);
+  ASSERT_TRUE(print_job->document_bytes);
+  EXPECT_EQ(RefCountedMemoryToString(print_data),
+            RefCountedMemoryToString(print_job->document_bytes));
 
   fake_api->TriggerNextPrintCallback(kPrintRequestSuccess);
 

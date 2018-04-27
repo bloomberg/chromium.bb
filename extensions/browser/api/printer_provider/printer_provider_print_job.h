@@ -7,8 +7,6 @@
 
 #include <string>
 
-#include "base/files/file.h"
-#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string16.h"
@@ -17,9 +15,7 @@ namespace extensions {
 
 // Struct describing print job that should be forwarded to an extension via
 // chrome.printerProvider.onPrintRequested event.
-// TODO(tbarzic): This should probably be a class and have some methods, e.g.
-// whether the job is initialized and whether the data is described using a file
-// or bytes.
+// TODO(tbarzic): This should probably be a class and have some methods.
 struct PrinterProviderPrintJob {
   PrinterProviderPrintJob();
   PrinterProviderPrintJob(const PrinterProviderPrintJob& other);
@@ -41,17 +37,8 @@ struct PrinterProviderPrintJob {
   // Content type of the document that should be printed.
   std::string content_type;
 
-  // The document data that should be printed. Should be NULL if document data
-  // is kept in a file.
+  // The document data that should be printed.
   scoped_refptr<base::RefCountedMemory> document_bytes;
-
-  // Path of the file which contains data to be printed. Should be set only if
-  // |document_bytes| are NULL.
-  base::FilePath document_path;
-
-  // Information about the file which contains data to be printed. Should be
-  // set only if |document_path| is set.
-  base::File::Info file_info;
 };
 
 }  // namespace extensions

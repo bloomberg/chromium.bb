@@ -174,27 +174,6 @@ std::unique_ptr<BlobHandle> ChromeBlobStorageContext::CreateMemoryBackedBlob(
   return blob_handle;
 }
 
-std::unique_ptr<BlobHandle> ChromeBlobStorageContext::CreateFileBackedBlob(
-    const FilePath& path,
-    int64_t offset,
-    int64_t size,
-    const base::Time& expected_modification_time) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  std::string uuid(base::GenerateGUID());
-  auto blob_data_builder = std::make_unique<storage::BlobDataBuilder>(uuid);
-  blob_data_builder->AppendFile(path, offset, size, expected_modification_time);
-
-  std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
-      context_->AddFinishedBlob(std::move(blob_data_builder));
-  if (!blob_data_handle)
-    return std::unique_ptr<BlobHandle>();
-
-  std::unique_ptr<BlobHandle> blob_handle(
-      new BlobHandleImpl(std::move(blob_data_handle)));
-  return blob_handle;
-}
-
 // static
 scoped_refptr<network::SharedURLLoaderFactory>
 ChromeBlobStorageContext::URLLoaderFactoryForToken(

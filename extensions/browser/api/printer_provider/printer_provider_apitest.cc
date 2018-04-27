@@ -8,10 +8,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/files/file.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
@@ -95,16 +91,11 @@ class PrinterProviderApiTest : public ShellApiTest {
  public:
   enum PrintRequestDataType {
     PRINT_REQUEST_DATA_TYPE_NOT_SET,
-    PRINT_REQUEST_DATA_TYPE_FILE,
-    PRINT_REQUEST_DATA_TYPE_FILE_DELETED,
     PRINT_REQUEST_DATA_TYPE_BYTES
   };
 
   PrinterProviderApiTest() {}
-  ~PrinterProviderApiTest() override {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    ignore_result(data_dir_.Delete());
-  }
+  ~PrinterProviderApiTest() override = default;
 
   void StartGetPrintersRequest(
       const PrinterProviderAPI::GetPrintersCallback& callback) {
@@ -150,29 +141,6 @@ class PrinterProviderApiTest : public ShellApiTest {
     PrinterProviderAPIFactory::GetInstance()
         ->GetForBrowserContext(browser_context())
         ->DispatchPrintRequested(job, std::move(callback));
-  }
-
-  bool StartPrintRequestUsingFileInfo(
-      const std::string& extension_id,
-      PrinterProviderAPI::PrintCallback callback) {
-    PrinterProviderPrintJob job;
-
-    const char kBytes[] = {'b', 'y', 't', 'e', 's'};
-    if (!CreateTempFileWithContents(kBytes, static_cast<int>(arraysize(kBytes)),
-                                    &job.document_path, &job.file_info)) {
-      ADD_FAILURE() << "Failed to create test file.";
-      return false;
-    }
-
-    job.printer_id = extension_id + ":printer_id";
-    job.job_title = base::ASCIIToUTF16("Print job");
-    job.ticket_json = "{}";
-    job.content_type = "image/pwg-raster";
-
-    PrinterProviderAPIFactory::GetInstance()
-        ->GetForBrowserContext(browser_context())
-        ->DispatchPrintRequested(job, std::move(callback));
-    return true;
   }
 
   void StartCapabilityRequest(
@@ -240,17 +208,6 @@ class PrinterProviderApiTest : public ShellApiTest {
       case PRINT_REQUEST_DATA_TYPE_NOT_SET:
         StartPrintRequestWithNoData(extension_id, std::move(callback));
         break;
-      case PRINT_REQUEST_DATA_TYPE_FILE:
-        ASSERT_TRUE(
-            StartPrintRequestUsingFileInfo(extension_id, std::move(callback)));
-        break;
-      case PRINT_REQUEST_DATA_TYPE_FILE_DELETED: {
-        ASSERT_TRUE(
-            StartPrintRequestUsingFileInfo(extension_id, std::move(callback)));
-        base::ScopedAllowBlockingForTesting allow_blocking;
-        ASSERT_TRUE(data_dir_.Delete());
-        break;
-      }
       case PRINT_REQUEST_DATA_TYPE_BYTES:
         StartPrintRequestUsingDocumentBytes(extension_id, std::move(callback));
         break;
@@ -352,27 +309,6 @@ class PrinterProviderApiTest : public ShellApiTest {
   device::MockUsbService usb_service_;
 
  private:
-  // Initializes |data_dir_| if needed and creates a file in it containing
-  // provided data.
-  bool CreateTempFileWithContents(const char* data,
-                                  int size,
-                                  base::FilePath* path,
-                                  base::File::Info* file_info) {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    if (!data_dir_.IsValid() && !data_dir_.CreateUniqueTempDir())
-      return false;
-
-    *path = data_dir_.GetPath().AppendASCII("data.pwg");
-    int written = base::WriteFile(*path, data, size);
-    if (written != size)
-      return false;
-    if (!base::GetFileInfo(*path, file_info))
-      return false;
-    return true;
-  }
-
-  base::ScopedTempDir data_dir_;
-
   DISALLOW_COPY_AND_ASSIGN(PrinterProviderApiTest);
 };
 
@@ -384,16 +320,6 @@ class PrinterProviderApiTest : public ShellApiTest {
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, MAYBE_PrintJobSuccess) {
   RunPrintRequestTestApp("OK", PRINT_REQUEST_DATA_TYPE_BYTES, "OK");
-}
-
-IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, PrintJobWithFileSuccess) {
-  RunPrintRequestTestApp("OK", PRINT_REQUEST_DATA_TYPE_FILE, "OK");
-}
-
-IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
-                       PrintJobWithFile_FileDeletedBeforeDispatch) {
-  RunPrintRequestTestApp("OK", PRINT_REQUEST_DATA_TYPE_FILE_DELETED,
-                         "INVALID_DATA");
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, PrintJobAsyncSuccess) {
