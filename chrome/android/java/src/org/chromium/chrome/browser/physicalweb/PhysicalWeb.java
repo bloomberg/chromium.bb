@@ -66,9 +66,6 @@ public class PhysicalWeb {
         // In the case that the user has disabled our flag and restarted, this is a minimal code
         // path to disable our subscription to Nearby.
         if (!featureIsEnabled()) {
-            if (!SysUtils.isLowEndDevice()) {
-                new NearbyBackgroundSubscription(NearbySubscription.UNSUBSCRIBE).run();
-            }
             return;
         }
 
@@ -138,17 +135,5 @@ public class PhysicalWeb {
     /**
      * Examines the environment in order to decide whether we should begin or end a scan.
      */
-    public static void updateScans() {
-        if (SysUtils.isLowEndDevice()) return;
-
-        LocationUtils locationUtils = LocationUtils.getInstance();
-        if (!locationUtils.hasAndroidLocationPermission()
-                || !locationUtils.isSystemLocationSettingEnabled()
-                || !isPhysicalWebPreferenceEnabled()) {
-            new NearbyBackgroundSubscription(NearbySubscription.UNSUBSCRIBE).run();
-            return;
-        }
-
-        new NearbyBackgroundSubscription(NearbySubscription.SUBSCRIBE).run();
-    }
+    public static void updateScans() {}
 }

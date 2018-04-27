@@ -753,10 +753,6 @@ by a child template that "extends" this file.
             {{ self.supports_vr() }}
         </activity>
 
-        <!-- Service for handling Nearby Messages -->
-        <service android:name="org.chromium.chrome.browser.physicalweb.NearbyMessageIntentService"
-            android:exported="false" />
-
         <!-- Activities for Browser Actions -->
         <activity android:name="org.chromium.chrome.browser.browseractions.BrowserActionActivity"
             android:theme="@style/FullscreenTransparentActivityTheme"
