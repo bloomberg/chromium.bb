@@ -41,12 +41,6 @@ namespace net {
 namespace test_server {
 namespace {
 
-const UnescapeRule::Type kUnescapeAll =
-    UnescapeRule::SPACES | UnescapeRule::PATH_SEPARATORS |
-    UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
-    UnescapeRule::SPOOFING_AND_CONTROL_CHARS |
-    UnescapeRule::REPLACE_PLUS_WITH_SPACE;
-
 const char kDefaultRealm[] = "testrealm";
 const char kDefaultPassword[] = "secret";
 const char kEtag[] = "abc";
@@ -254,7 +248,8 @@ std::unique_ptr<HttpResponse> HandleExpectAndSetCookie(
   if (got_all_expected) {
     for (const auto& cookie : query_list.at("set")) {
       http_response->AddCustomHeader(
-          "Set-Cookie", net::UnescapeURLComponent(cookie, kUnescapeAll));
+          "Set-Cookie", UnescapeBinaryURLComponent(
+                            cookie, UnescapeRule::REPLACE_PLUS_WITH_SPACE));
     }
   }
 
@@ -503,8 +498,7 @@ std::unique_ptr<HttpResponse> HandleAuthDigest(const HttpRequest& request) {
 std::unique_ptr<HttpResponse> HandleServerRedirect(HttpStatusCode redirect_code,
                                                    const HttpRequest& request) {
   GURL request_url = request.GetURL();
-  std::string dest =
-      net::UnescapeURLComponent(request_url.query(), kUnescapeAll);
+  std::string dest = UnescapeBinaryURLComponent(request_url.query());
 
   std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
   http_response->set_code(redirect_code);
@@ -524,9 +518,8 @@ std::unique_ptr<HttpResponse> HandleCrossSiteRedirect(
   if (!ShouldHandle(request, "/cross-site"))
     return nullptr;
 
-  std::string dest_all = net::UnescapeURLComponent(
-      request.relative_url.substr(std::string("/cross-site").size() + 1),
-      kUnescapeAll);
+  std::string dest_all = UnescapeBinaryURLComponent(
+      request.relative_url.substr(std::string("/cross-site").size() + 1));
 
   std::string dest;
   size_t delimiter = dest_all.find("/");
@@ -550,8 +543,7 @@ std::unique_ptr<HttpResponse> HandleCrossSiteRedirect(
 // Returns a meta redirect to URL.
 std::unique_ptr<HttpResponse> HandleClientRedirect(const HttpRequest& request) {
   GURL request_url = request.GetURL();
-  std::string dest =
-      net::UnescapeURLComponent(request_url.query(), kUnescapeAll);
+  std::string dest = UnescapeBinaryURLComponent(request_url.query());
 
   std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
   http_response->set_content_type("text/html");

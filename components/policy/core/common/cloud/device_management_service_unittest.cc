@@ -439,24 +439,14 @@ class QueryParams {
   bool Check(const std::string& name, const std::string& expected_value) {
     bool found = false;
     for (ParamMap::const_iterator i(params_.begin()); i != params_.end(); ++i) {
-      std::string unescaped_name(net::UnescapeURLComponent(
-          i->first,
-          net::UnescapeRule::NORMAL | net::UnescapeRule::SPACES |
-              net::UnescapeRule::PATH_SEPARATORS |
-              net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
-              net::UnescapeRule::SPOOFING_AND_CONTROL_CHARS |
-              net::UnescapeRule::REPLACE_PLUS_WITH_SPACE));
+      std::string unescaped_name(net::UnescapeBinaryURLComponent(
+          i->first, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE));
       if (unescaped_name == name) {
         if (found)
           return false;
         found = true;
-        std::string unescaped_value(net::UnescapeURLComponent(
-            i->second,
-            net::UnescapeRule::NORMAL | net::UnescapeRule::SPACES |
-                net::UnescapeRule::PATH_SEPARATORS |
-                net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
-                net::UnescapeRule::SPOOFING_AND_CONTROL_CHARS |
-                net::UnescapeRule::REPLACE_PLUS_WITH_SPACE));
+        std::string unescaped_value(net::UnescapeBinaryURLComponent(
+            i->second, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE));
         if (unescaped_value != expected_value)
           return false;
       }
