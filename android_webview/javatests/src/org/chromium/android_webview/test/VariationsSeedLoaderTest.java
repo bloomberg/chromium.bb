@@ -21,6 +21,7 @@ import org.chromium.android_webview.VariationsUtils;
 import org.chromium.android_webview.services.ServiceInit;
 import org.chromium.android_webview.test.services.MockVariationsSeedServer;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
@@ -129,11 +130,13 @@ public class VariationsSeedLoaderTest {
                 InstrumentationRegistry.getInstrumentation()
                         .getTargetContext().getApplicationContext());
         ServiceInit.setPrivateDataDirectorySuffix();
+        RecordHistogram.setDisabledForTests(true);
         deleteSeeds();
     }
 
     @After
     public void tearDown() throws IOException {
+        RecordHistogram.setDisabledForTests(false);
         deleteSeeds();
     }
 

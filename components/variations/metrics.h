@@ -24,6 +24,7 @@ enum class FirstRunSeedImportResult {
 
 // The result of attempting to load a variations seed on startup.
 // Note: UMA histogram enum - don't re-order or remove entries.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.variations
 enum class LoadSeedResult {
   SUCCESS,
   EMPTY,
@@ -32,6 +33,9 @@ enum class LoadSeedResult {
   CORRUPT_BASE64,
   CORRUPT_PROTOBUF,
   CORRUPT_GZIP,
+  LOAD_TIMED_OUT,
+  LOAD_INTERRUPTED,
+  LOAD_OTHER_FAILURE,
   ENUM_SIZE
 };
 

@@ -12,6 +12,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import android.os.SystemClock;
 
 import org.chromium.android_webview.services.IVariationsSeedServer;
 import org.chromium.android_webview.services.VariationsSeedServer;
@@ -19,6 +20,9 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
+import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
+import org.chromium.components.variations.LoadSeedResult;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
 
 import java.io.File;
@@ -72,9 +76,15 @@ public class VariationsSeedLoader {
     // is exceeded, proceed with variations disabled.
     private static final long SEED_LOAD_TIMEOUT_MILLIS = 20;
 
+    private static void recordLoadSeedResult(int result) {
+        EnumeratedHistogramSample histogram = new EnumeratedHistogramSample(
+                "Variations.SeedLoadResult", LoadSeedResult.ENUM_SIZE);
+        histogram.record(result);
+    }
+
     // AGSA will notify us to enable variations by touching this file.
     // TODO(paulmiller): Remove this after completing the experiment.
-    private static boolean isEnabledByExperiment() {
+    private static boolean checkEnabledByExperiment() {
         File filesDir = ContextUtils.getApplicationContext().getFilesDir();
         File experimentFile = new File(new File(filesDir, "webview"), "finch-exp");
         return experimentFile.exists();
@@ -97,12 +107,19 @@ public class VariationsSeedLoader {
         // - mNeedNewSeed: Should we request a new seed from the service?
         // - mCurrentSeedDate: The "date" field of our local seed, converted to milliseconds since
         //   epoch, or Long.MIN_VALUE if we have no seed.
+        // - mEnabledByExperiment: Whether variations enabled by the AGSA experiment. If so, and
+        //   variations is not already enabled by CommandLine, then it should be made enabled by
+        //   CommandLine. This is volatile because it's set inside mLoadTask on a background thread,
+        //   but read in isVariationsEnabled() on the main thread. TODO(paulmiller): Remove this
+        //   after completing the experiment.
         private boolean mFoundNewSeed;
         private boolean mNeedNewSeed;
         private long mCurrentSeedDate = Long.MIN_VALUE;
+        private volatile boolean mEnabledByExperiment;
 
         private FutureTask<SeedInfo> mLoadTask = new FutureTask<>(() -> {
-            if (!(mEnabledByCmd || isEnabledByExperiment())) return null;
+            mEnabledByExperiment = checkEnabledByExperiment();
+            if (!(mEnabledByCmd || mEnabledByExperiment)) return null;
 
             File newSeedFile = VariationsUtils.getNewSeedFile();
             File oldSeedFile = VariationsUtils.getSeedFile();
@@ -187,6 +204,12 @@ public class VariationsSeedLoader {
                 throws InterruptedException, ExecutionException, TimeoutException {
             return mLoadTask.get(timeout, unit);
         }
+
+        // mEnabledByExperiment is set in mLoadTask, so isVariationsEnabled() should only be called
+        // after run() returns.
+        public boolean isVariationsEnabled() {
+            return mEnabledByCmd || mEnabledByExperiment;
+        }
     }
 
     // Connects to VariationsSeedServer service. Sends a file descriptor for our local copy of the
@@ -228,6 +251,36 @@ public class VariationsSeedLoader {
     }
 
     private SeedLoadAndUpdateRunnable mRunnable;
+
+    private SeedInfo getSeedBlockingAndLog() {
+        long start = SystemClock.elapsedRealtime();
+        try {
+            try {
+                return mRunnable.get(SEED_LOAD_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+            } finally {
+                if (mRunnable.isVariationsEnabled()) {
+                    long end = SystemClock.elapsedRealtime();
+                    TimesHistogramSample histogram = new TimesHistogramSample(
+                            "Variations.SeedLoadBlockingTime", TimeUnit.MILLISECONDS);
+                    histogram.record(end - start);
+                }
+            }
+        } catch (TimeoutException e) {
+            if (mRunnable.isVariationsEnabled()) {
+                recordLoadSeedResult(LoadSeedResult.LOAD_TIMED_OUT);
+            }
+        } catch (InterruptedException e) {
+            if (mRunnable.isVariationsEnabled()) {
+                recordLoadSeedResult(LoadSeedResult.LOAD_INTERRUPTED);
+            }
+        } catch (ExecutionException e) {
+            if (mRunnable.isVariationsEnabled()) {
+                recordLoadSeedResult(LoadSeedResult.LOAD_OTHER_FAILURE);
+            }
+        }
+        Log.e(TAG, "Failed loading variations seed. Variations disabled.");
+        return null;
+    }
 
     @VisibleForTesting // Overridden by tests to wait until all work is done.
     protected void onBackgroundWorkFinished() {}
@@ -276,24 +329,16 @@ public class VariationsSeedLoader {
     // Block on loading the seed with a timeout. Then if a seed was successfully loaded, initialize
     // variations.
     public void finishVariationsInit() {
-        try {
-            SeedInfo seed = mRunnable.get(SEED_LOAD_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
-            if (seed != null) {
-                // If variations was not enabled by CommandLine, but we got a seed anyway, that
-                // means variations is enabled by the AGSA experiment. So enable it by CommandLine
-                // as well.
-                if (!isEnabledByCmd()) {
-                    CommandLine.getInstance().appendSwitch(AwSwitches.ENABLE_WEBVIEW_VARIATIONS);
-                }
+        SeedInfo seed = getSeedBlockingAndLog();
 
-                // TODO(paulmiller): Once we have actual seeds, this would be the place to do
-                // VariationsSeedBridge.setVariationsFirstRunSeed() with the loaded seed.
-            }
-        } catch (TimeoutException e) {
-            // TODO(paulmiller): Log seed load time and success rate in UMA.
-            Log.w(TAG, "Timeout out waiting for variations seed - variations disabled");
-        } catch (InterruptedException | ExecutionException e) {
-            Log.e(TAG, "Failed loading variations seed - variations disabled", e);
+        // If enabled by experiment but not cmd, then also enable by cmd.
+        // isVariationsEnabled() must not be called before getSeedBlockingAndLog() returns.
+        // TODO(paulmiller): Remove this after completing the experiment.
+        if (mRunnable.isVariationsEnabled() && !isEnabledByCmd()) {
+            CommandLine.getInstance().appendSwitch(AwSwitches.ENABLE_WEBVIEW_VARIATIONS);
         }
+
+        // TODO(paulmiller): Once we have actual seeds, this would be the place to do:
+        // if (seed != null) { VariationsSeedBridge.setVariationsFirstRunSeed(seed); }
     }
 }
