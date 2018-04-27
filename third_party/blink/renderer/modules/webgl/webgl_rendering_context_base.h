@@ -889,12 +889,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       return extension_;
     }
 
-    virtual void Trace(blink::Visitor* visitor) {
+    void Trace(blink::Visitor* visitor) override {
       visitor->Trace(extension_);
       ExtensionTracker::Trace(visitor);
     }
 
-    virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+    void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
       visitor->TraceWrappers(extension_);
       ExtensionTracker::TraceWrappers(visitor);
     }

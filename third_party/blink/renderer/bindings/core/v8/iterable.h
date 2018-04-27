@@ -164,7 +164,7 @@ class Iterable {
       return next(script_state, exception_state);
     }
 
-    virtual void Trace(blink::Visitor* visitor) {
+    void Trace(blink::Visitor* visitor) override {
       visitor->Trace(source_);
       Iterator::Trace(visitor);
     }

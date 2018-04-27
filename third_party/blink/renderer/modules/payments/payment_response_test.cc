@@ -36,7 +36,7 @@ class MockPaymentCompleter
 
   MOCK_METHOD2(Complete, ScriptPromise(ScriptState*, PaymentComplete result));
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(blink::Visitor* visitor) override {}
 
  private:
   ScriptPromise dummy_promise_;

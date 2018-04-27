@@ -32,7 +32,7 @@ class MockPaymentUpdater : public GarbageCollectedFinalized<MockPaymentUpdater>,
                void(const ScriptValue& detailsScriptValue));
   MOCK_METHOD1(OnUpdatePaymentDetailsFailure, void(const String& error));
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(blink::Visitor* visitor) override {}
 };
 
 TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsCalled) {

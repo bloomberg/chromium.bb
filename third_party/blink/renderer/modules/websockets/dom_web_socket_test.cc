@@ -51,13 +51,15 @@ class MockWebSocketChannel : public WebSocketChannel {
   MOCK_METHOD1(Send, void(const CString&));
   MOCK_METHOD3(Send, void(const DOMArrayBuffer&, unsigned, unsigned));
   MOCK_METHOD1(SendMock, void(BlobDataHandle*));
-  void Send(scoped_refptr<BlobDataHandle> handle) { SendMock(handle.get()); }
+  void Send(scoped_refptr<BlobDataHandle> handle) override {
+    SendMock(handle.get());
+  }
   MOCK_METHOD1(SendTextAsCharVectorMock, void(Vector<char>*));
-  void SendTextAsCharVector(std::unique_ptr<Vector<char>> vector) {
+  void SendTextAsCharVector(std::unique_ptr<Vector<char>> vector) override {
     SendTextAsCharVectorMock(vector.get());
   }
   MOCK_METHOD1(SendBinaryAsCharVectorMock, void(Vector<char>*));
-  void SendBinaryAsCharVector(std::unique_ptr<Vector<char>> vector) {
+  void SendBinaryAsCharVector(std::unique_ptr<Vector<char>> vector) override {
     SendBinaryAsCharVectorMock(vector.get());
   }
   MOCK_CONST_METHOD0(BufferedAmount, unsigned());
@@ -65,7 +67,7 @@ class MockWebSocketChannel : public WebSocketChannel {
   MOCK_METHOD3(FailMock, void(const String&, MessageLevel, SourceLocation*));
   void Fail(const String& reason,
             MessageLevel level,
-            std::unique_ptr<SourceLocation> location) {
+            std::unique_ptr<SourceLocation> location) override {
     FailMock(reason, level, location.get());
   }
   MOCK_METHOD0(Disconnect, void());
