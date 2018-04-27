@@ -49,7 +49,7 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
     ASSERT_TRUE(MockLaunchd::MakeABundle(GetTempDirPath(), "Test",
                                          &bundle_path_, &executable_path_));
     mock_launchd_.reset(
-        new MockLaunchd(executable_path_, &loop_, false, false));
+        new MockLaunchd(executable_path_, loop_.task_runner(), false, false));
     scoped_launchd_instance_.reset(
         new Launchd::ScopedInstance(mock_launchd_.get()));
     ASSERT_TRUE(service_process_state_.Initialize());

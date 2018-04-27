@@ -199,7 +199,8 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   base::FilePath executable_path =
       command_line->GetSwitchValuePath(kTestExecutablePath);
   EXPECT_FALSE(executable_path.empty());
-  MockLaunchd mock_launchd(executable_path, &main_message_loop, true, true);
+  MockLaunchd mock_launchd(executable_path, main_message_loop.task_runner(),
+                           true, true);
   Launchd::ScopedInstance use_mock(&mock_launchd);
 #endif
 
@@ -393,9 +394,8 @@ void CloudPrintProxyPolicyStartupTest::SetUp() {
   EXPECT_TRUE(MockLaunchd::MakeABundle(temp_dir_.GetPath(),
                                        "CloudPrintProxyTest", &bundle_path_,
                                        &executable_path_));
-  mock_launchd_.reset(new MockLaunchd(executable_path_,
-                                      base::MessageLoopForUI::current(),
-                                      true, false));
+  mock_launchd_.reset(new MockLaunchd(
+      executable_path_, base::ThreadTaskRunnerHandle::Get(), true, false));
   scoped_launchd_instance_.reset(
       new Launchd::ScopedInstance(mock_launchd_.get()));
 #endif
