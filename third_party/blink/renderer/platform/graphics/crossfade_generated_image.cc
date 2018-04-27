@@ -61,8 +61,7 @@ void CrossfadeGeneratedImage::DrawCrossfade(PaintCanvas* canvas,
 
   PaintFlags image_flags(flags);
   image_flags.setBlendMode(SkBlendMode::kSrcOver);
-  int image_alpha = ClampedAlphaForBlending(1 - percentage_);
-  image_flags.setAlpha(image_alpha > 255 ? 255 : image_alpha);
+  image_flags.setColor(ScaleAlpha(flags.getColor(), 1 - percentage_));
   image_flags.setAntiAlias(flags.isAntiAlias());
   // TODO(junov): This code should probably be propagating the
   // RespectImageOrientationEnum from CrossfadeGeneratedImage::draw(). Code was
@@ -71,8 +70,7 @@ void CrossfadeGeneratedImage::DrawCrossfade(PaintCanvas* canvas,
   from_image_->Draw(canvas, image_flags, dest_rect, from_image_rect,
                     kDoNotRespectImageOrientation, clamp_mode, decode_mode);
   image_flags.setBlendMode(SkBlendMode::kPlus);
-  image_alpha = ClampedAlphaForBlending(percentage_);
-  image_flags.setAlpha(image_alpha > 255 ? 255 : image_alpha);
+  image_flags.setColor(ScaleAlpha(flags.getColor(), percentage_));
   to_image_->Draw(canvas, image_flags, dest_rect, to_image_rect,
                   kDoNotRespectImageOrientation, clamp_mode, decode_mode);
 }

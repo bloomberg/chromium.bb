@@ -66,16 +66,9 @@ SkBlendMode PLATFORM_EXPORT
 CompositeOperator PLATFORM_EXPORT CompositeOperatorFromSkia(SkBlendMode);
 WebBlendMode PLATFORM_EXPORT BlendModeFromSkia(SkBlendMode);
 
-// Map alpha values from [0, 1] to [0, 256] for alpha blending.
-int PLATFORM_EXPORT ClampedAlphaForBlending(float);
-
 // Multiply a color's alpha channel by an additional alpha factor where
 // alpha is in the range [0, 1].
 SkColor PLATFORM_EXPORT ScaleAlpha(SkColor, float);
-
-// Multiply a color's alpha channel by an additional alpha factor where
-// alpha is in the range [0, 256].
-SkColor PLATFORM_EXPORT ScaleAlpha(SkColor, int);
 
 // Skia has problems when passed infinite, etc floats, filter them to 0.
 inline SkScalar WebCoreFloatToSkScalar(float f) {
