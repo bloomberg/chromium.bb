@@ -29,7 +29,7 @@ namespace syncer {
 class MockDelegate : public SyncCycle::Delegate {
  public:
   MockDelegate() {}
-  ~MockDelegate() {}
+  ~MockDelegate() override {}
 
   MOCK_METHOD1(OnReceivedShortPollIntervalUpdate, void(const base::TimeDelta&));
   MOCK_METHOD1(OnReceivedLongPollIntervalUpdate, void(const base::TimeDelta&));

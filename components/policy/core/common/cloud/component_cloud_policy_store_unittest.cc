@@ -66,7 +66,7 @@ bool True(const std::string& ignored) {
 class MockComponentCloudPolicyStoreDelegate
     : public ComponentCloudPolicyStore::Delegate {
  public:
-  virtual ~MockComponentCloudPolicyStoreDelegate() {}
+  ~MockComponentCloudPolicyStoreDelegate() override {}
 
   MOCK_METHOD0(OnComponentCloudPolicyStoreUpdated, void());
 };

@@ -87,7 +87,7 @@ class MockDataReductionProxyRequestOptions
   MockDataReductionProxyRequestOptions(Client client,
                                        DataReductionProxyConfig* config);
 
-  ~MockDataReductionProxyRequestOptions();
+  ~MockDataReductionProxyRequestOptions() override;
 
   MOCK_CONST_METHOD1(PopulateConfigResponse, void(ClientConfig* config));
 };

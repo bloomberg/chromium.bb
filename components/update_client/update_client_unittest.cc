@@ -1391,7 +1391,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
     void Install(const base::FilePath& unpack_path,
                  const std::string& public_key,
-                 Callback callback) {
+                 Callback callback) override {
       DoInstall(unpack_path, std::move(callback));
 
       unpack_path_ = unpack_path;

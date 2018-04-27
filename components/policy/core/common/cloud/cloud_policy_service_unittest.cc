@@ -24,7 +24,7 @@ namespace policy {
 class MockCloudPolicyServiceObserver : public CloudPolicyService::Observer {
  public:
   MockCloudPolicyServiceObserver() {}
-  virtual ~MockCloudPolicyServiceObserver() {}
+  ~MockCloudPolicyServiceObserver() override {}
 
   MOCK_METHOD1(OnInitializationCompleted, void(CloudPolicyService* service));
  private:

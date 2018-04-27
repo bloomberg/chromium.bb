@@ -240,7 +240,7 @@ class MockAutofillManager : public AutofillManager {
  public:
   MockAutofillManager(AutofillDriver* driver, AutofillClient* client)
       : AutofillManager(driver, client, kAppLocale, kDownloadState) {}
-  virtual ~MockAutofillManager() {}
+  ~MockAutofillManager() override {}
 
   MOCK_METHOD0(Reset, void());
 };

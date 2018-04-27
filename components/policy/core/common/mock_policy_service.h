@@ -13,7 +13,7 @@ namespace policy {
 class MockPolicyServiceObserver : public PolicyService::Observer {
  public:
   MockPolicyServiceObserver();
-  virtual ~MockPolicyServiceObserver();
+  ~MockPolicyServiceObserver() override;
 
   MOCK_METHOD3(OnPolicyUpdated, void(const PolicyNamespace&,
                                      const PolicyMap& previous,
@@ -24,7 +24,7 @@ class MockPolicyServiceObserver : public PolicyService::Observer {
 class MockPolicyService : public PolicyService {
  public:
   MockPolicyService();
-  virtual ~MockPolicyService();
+  ~MockPolicyService() override;
 
   MOCK_METHOD2(AddObserver, void(PolicyDomain, Observer*));
   MOCK_METHOD2(RemoveObserver, void(PolicyDomain, Observer*));

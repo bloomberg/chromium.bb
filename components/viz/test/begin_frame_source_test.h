@@ -92,7 +92,7 @@ class MockBeginFrameObserver : public BeginFrameObserver {
   static const BeginFrameArgs kDefaultBeginFrameArgs;
 
   MockBeginFrameObserver();
-  virtual ~MockBeginFrameObserver();
+  ~MockBeginFrameObserver() override;
 
   BeginFrameArgs last_begin_frame_args;
   ::testing::Sequence sequence;

@@ -28,7 +28,7 @@ const char kApplicationLocale[] = "intl.app_locale";
 class MockPrefService : public TestingPrefServiceSimple {
  public:
   MockPrefService() {}
-  virtual ~MockPrefService() {}
+  ~MockPrefService() override {}
 
   MOCK_METHOD2(AddPrefObserver, void(const std::string&, PrefObserver*));
   MOCK_METHOD2(RemovePrefObserver, void(const std::string&, PrefObserver*));
@@ -126,7 +126,7 @@ TEST_F(PrefChangeRegistrarTest, RemoveAll) {
 
 class ObserveSetOfPreferencesTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     pref_service_.reset(new TestingPrefServiceSimple);
     PrefRegistrySimple* registry = pref_service_->registry();
     registry->RegisterStringPref(kHomePage, "http://google.com");

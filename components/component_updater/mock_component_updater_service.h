@@ -28,7 +28,8 @@ class MockComponentUpdateService : public ComponentUpdateService {
   MockComponentUpdateService();
   ~MockComponentUpdateService() override;
 
-  void MaybeThrottle(const std::string& id, base::OnceClosure callback) {
+  void MaybeThrottle(const std::string& id,
+                     base::OnceClosure callback) override {
     DoMaybeThrottle(id, std::move(callback));
   }
 

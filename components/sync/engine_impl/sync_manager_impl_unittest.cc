@@ -921,7 +921,7 @@ class SyncManagerTest : public testing::Test,
     switches_.encryption_method = EngineComponentsFactory::ENCRYPTION_KEYSTORE;
   }
 
-  virtual ~SyncManagerTest() {}
+  ~SyncManagerTest() override {}
 
   virtual void DoSetUp(bool enable_local_sync_backend) {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -990,9 +990,9 @@ class SyncManagerTest : public testing::Test,
   }
 
   // Test implementation.
-  void SetUp() { DoSetUp(false); }
+  void SetUp() override { DoSetUp(false); }
 
-  void TearDown() {
+  void TearDown() override {
     sync_manager_.RemoveObserver(&manager_observer_);
     sync_manager_.ShutdownOnSyncThread(STOP_SYNC);
     PumpLoop();
@@ -2642,7 +2642,7 @@ TEST_F(SyncManagerWithLocalBackendTest, StartSyncInLocalMode) {
 class MockSyncScheduler : public FakeSyncScheduler {
  public:
   MockSyncScheduler() : FakeSyncScheduler() {}
-  virtual ~MockSyncScheduler() {}
+  ~MockSyncScheduler() override {}
 
   MOCK_METHOD2(Start, void(SyncScheduler::Mode, base::Time));
   MOCK_METHOD1(ScheduleConfiguration, void(const ConfigurationParams&));

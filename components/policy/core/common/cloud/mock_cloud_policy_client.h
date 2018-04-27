@@ -18,7 +18,7 @@ namespace policy {
 class MockCloudPolicyClient : public CloudPolicyClient {
  public:
   MockCloudPolicyClient();
-  virtual ~MockCloudPolicyClient();
+  ~MockCloudPolicyClient() override;
 
   MOCK_METHOD3(SetupRegistration,
                void(const std::string&,
@@ -87,7 +87,7 @@ class MockCloudPolicyClient : public CloudPolicyClient {
 class MockCloudPolicyClientObserver : public CloudPolicyClient::Observer {
  public:
   MockCloudPolicyClientObserver();
-  virtual ~MockCloudPolicyClientObserver();
+  ~MockCloudPolicyClientObserver() override;
 
   MOCK_METHOD1(OnPolicyFetched, void(CloudPolicyClient*));
   MOCK_METHOD1(OnRegistrationStateChanged, void(CloudPolicyClient*));

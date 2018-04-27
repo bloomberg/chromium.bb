@@ -93,7 +93,7 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
 class MockSyncService : public syncer::FakeSyncService {
  public:
   MockSyncService() {}
-  virtual ~MockSyncService() {}
+  ~MockSyncService() override {}
   MOCK_CONST_METHOD0(IsFirstSetupComplete, bool());
   MOCK_CONST_METHOD0(IsSyncActive, bool());
   MOCK_CONST_METHOD0(IsUsingSecondaryPassphrase, bool());

@@ -48,7 +48,7 @@ const char kEmail[] = "test_user@gmail.com";
 class SyncServiceObserverMock : public syncer::SyncServiceObserver {
  public:
   SyncServiceObserverMock();
-  virtual ~SyncServiceObserverMock();
+  ~SyncServiceObserverMock() override;
 
   MOCK_METHOD1(OnStateChanged, void(syncer::SyncService*));
 };

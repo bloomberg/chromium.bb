@@ -65,7 +65,7 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
       GenericChangeProcessorFactory*,
       UserShare*,
       std::unique_ptr<DataTypeErrorHandler>,
-      const base::WeakPtr<SyncMergeResult>&) {
+      const base::WeakPtr<SyncMergeResult>&) override {
     return std::move(connect_return_);
   }
   MOCK_METHOD0(Disconnect, bool());
@@ -84,7 +84,7 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
   }
 
  protected:
-  virtual ~SharedChangeProcessorMock() { DCHECK(!connect_return_); }
+  ~SharedChangeProcessorMock() override { DCHECK(!connect_return_); }
   MOCK_METHOD2(OnUnrecoverableError,
                void(const base::Location&, const std::string&));
 

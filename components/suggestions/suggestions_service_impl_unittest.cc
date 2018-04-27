@@ -84,7 +84,7 @@ SuggestionsProfile CreateSuggestionsProfile() {
 class MockSyncService : public syncer::FakeSyncService {
  public:
   MockSyncService() {}
-  virtual ~MockSyncService() {}
+  ~MockSyncService() override {}
   MOCK_CONST_METHOD0(CanSyncStart, bool());
   MOCK_CONST_METHOD0(IsSyncActive, bool());
   MOCK_CONST_METHOD0(ConfigurationDone, bool());
@@ -116,7 +116,7 @@ class TestSuggestionsStore : public suggestions::SuggestionsStore {
 class MockImageManager : public suggestions::ImageManager {
  public:
   MockImageManager() {}
-  virtual ~MockImageManager() {}
+  ~MockImageManager() override {}
   MOCK_METHOD1(Initialize, void(const SuggestionsProfile&));
   MOCK_METHOD2(GetImageForURL,
                void(const GURL&,

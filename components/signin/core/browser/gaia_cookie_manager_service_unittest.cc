@@ -39,7 +39,7 @@ class MockObserver : public GaiaCookieManagerService::Observer {
     helper_->AddObserver(this);
   }
 
-  ~MockObserver() { helper_->RemoveObserver(this); }
+  ~MockObserver() override { helper_->RemoveObserver(this); }
 
   MOCK_METHOD2(OnAddAccountToCookieCompleted,
                void(const std::string&, const GoogleServiceAuthError&));
@@ -94,7 +94,7 @@ class InstrumentedGaiaCookieManagerService : public GaiaCookieManagerService {
     total++;
   }
 
-  virtual ~InstrumentedGaiaCookieManagerService() { total--; }
+  ~InstrumentedGaiaCookieManagerService() override { total--; }
 
   MOCK_METHOD0(StartFetchingUbertoken, void());
   MOCK_METHOD0(StartFetchingListAccounts, void());

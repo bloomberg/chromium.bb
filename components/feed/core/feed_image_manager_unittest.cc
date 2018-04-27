@@ -63,7 +63,7 @@ class FeedImageManagerTest : public testing::Test {
     RunUntilIdle();
   }
 
-  void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
 
     std::unique_ptr<FeedImageDatabase> image_database =

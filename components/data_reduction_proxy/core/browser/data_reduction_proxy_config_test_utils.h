@@ -164,7 +164,7 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
       net::NetLog* net_log,
       DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventCreator* event_creator);
-  ~MockDataReductionProxyConfig();
+  ~MockDataReductionProxyConfig() override;
 
   MOCK_CONST_METHOD2(WasDataReductionProxyUsed,
                      bool(const net::URLRequest*,

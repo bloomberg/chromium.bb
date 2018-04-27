@@ -47,7 +47,7 @@ class MockAutofillProfileSyncableService
     : public AutofillProfileSyncableService {
  public:
   MockAutofillProfileSyncableService() {}
-  virtual ~MockAutofillProfileSyncableService() {}
+  ~MockAutofillProfileSyncableService() override {}
 
   using AutofillProfileSyncableService::DataBundle;
   using AutofillProfileSyncableService::set_sync_processor;

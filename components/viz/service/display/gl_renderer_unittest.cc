@@ -947,7 +947,7 @@ class TextureStateTrackingContext : public TestWebGraphicsContext3D {
   MOCK_METHOD4(drawElements,
                void(GLenum mode, GLsizei count, GLenum type, GLintptr offset));
 
-  virtual void activeTexture(GLenum texture) {
+  void activeTexture(GLenum texture) override {
     EXPECT_NE(texture, active_texture_);
     active_texture_ = texture;
   }
@@ -1889,7 +1889,7 @@ class MockOutputSurface : public OutputSurface {
  public:
   explicit MockOutputSurface(scoped_refptr<ContextProvider> provider)
       : OutputSurface(std::move(provider)) {}
-  virtual ~MockOutputSurface() {}
+  ~MockOutputSurface() override {}
 
   void BindToClient(OutputSurfaceClient*) override {}
 
@@ -2021,7 +2021,7 @@ class TestOverlayProcessor : public OverlayProcessor {
     // to be traditionally composited. Candidates with |overlay_handled| set to
     // true must also have their |display_rect| converted to integer
     // coordinates if necessary.
-    void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) {}
+    void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override {}
   };
 
   explicit TestOverlayProcessor(OutputSurface* surface)

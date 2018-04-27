@@ -141,7 +141,7 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
                     base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     WebDataServiceTest::SetUp();
     name1_ = ASCIIToUTF16("name1");
     name2_ = ASCIIToUTF16("name2");
@@ -156,7 +156,7 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
     base::TaskScheduler::GetInstance()->FlushForTesting();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     void (AutofillWebDataService::*remove_observer_func)(
         AutofillWebDataServiceObserverOnDBSequence*) =
         &AutofillWebDataService::RemoveObserver;

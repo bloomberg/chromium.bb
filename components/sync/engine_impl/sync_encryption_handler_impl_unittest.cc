@@ -75,15 +75,15 @@ BuildEncryptionKeyProto(const std::string& encryption_key) {
 class SyncEncryptionHandlerImplTest : public ::testing::Test {
  public:
   SyncEncryptionHandlerImplTest() {}
-  virtual ~SyncEncryptionHandlerImplTest() {}
+  ~SyncEncryptionHandlerImplTest() override {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     test_user_share_.SetUp();
     SetUpEncryption();
     CreateRootForType(NIGORI);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     PumpLoop();
     test_user_share_.TearDown();
   }

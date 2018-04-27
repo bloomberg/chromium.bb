@@ -19,7 +19,7 @@ ACTION_P(SetSyncError, type) {
 class ModelAssociatorMock : public AssociatorInterface {
  public:
   ModelAssociatorMock();
-  virtual ~ModelAssociatorMock();
+  ~ModelAssociatorMock() override;
 
   MOCK_METHOD2(AssociateModels, SyncError(SyncMergeResult*, SyncMergeResult*));
   MOCK_METHOD0(DisassociateModels, SyncError());

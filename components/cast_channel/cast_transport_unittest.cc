@@ -148,12 +148,12 @@ class MockSocket : public net::Socket {
                    const net::CompletionCallback& callback,
                    const net::NetworkTrafficAnnotationTag&));
 
-  virtual int SetReceiveBufferSize(int32_t size) {
+  int SetReceiveBufferSize(int32_t size) override {
     NOTREACHED();
     return 0;
   }
 
-  virtual int SetSendBufferSize(int32_t size) {
+  int SetSendBufferSize(int32_t size) override {
     NOTREACHED();
     return 0;
   }

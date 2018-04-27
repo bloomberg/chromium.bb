@@ -17,7 +17,7 @@ namespace syncer {
 class MockModelTypeChangeProcessor : public ModelTypeChangeProcessor {
  public:
   MockModelTypeChangeProcessor();
-  virtual ~MockModelTypeChangeProcessor();
+  ~MockModelTypeChangeProcessor() override;
 
   // TODO(crbug.com/729950): Use unique_ptr here direclty once move-only
   // arguments are supported in gMock.

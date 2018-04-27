@@ -16,7 +16,7 @@ namespace syncer {
 class FrontendDataTypeControllerMock : public FrontendDataTypeController {
  public:
   FrontendDataTypeControllerMock();
-  virtual ~FrontendDataTypeControllerMock();
+  ~FrontendDataTypeControllerMock() override;
 
   // DataTypeController mocks.
   MOCK_METHOD1(StartAssociating, void(const StartCallback& start_callback));

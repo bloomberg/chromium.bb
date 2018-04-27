@@ -23,7 +23,7 @@ namespace download {
 class MockDownloadFile : public DownloadFile {
  public:
   MockDownloadFile();
-  virtual ~MockDownloadFile();
+  ~MockDownloadFile() override;
 
   // DownloadFile functions.
   // Using the legacy workaround for move-only types in mock methods.

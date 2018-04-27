@@ -14,7 +14,7 @@ namespace syncer {
 class DataTypeManagerMock : public DataTypeManager {
  public:
   DataTypeManagerMock();
-  virtual ~DataTypeManagerMock();
+  ~DataTypeManagerMock() override;
 
   MOCK_METHOD2(Configure, void(ModelTypeSet, ConfigureReason));
   MOCK_METHOD1(ReenableType, void(ModelType));

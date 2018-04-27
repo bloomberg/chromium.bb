@@ -63,7 +63,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
     InitializeService();
   }
 
-  ~DeviceManagementServiceTestBase() {
+  ~DeviceManagementServiceTestBase() override {
     service_.reset();
     base::RunLoop().RunUntilIdle();
   }

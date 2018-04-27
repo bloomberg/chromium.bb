@@ -16,7 +16,7 @@ namespace syncer {
 class AsyncDirectoryTypeControllerMock : public AsyncDirectoryTypeController {
  public:
   AsyncDirectoryTypeControllerMock();
-  virtual ~AsyncDirectoryTypeControllerMock();
+  ~AsyncDirectoryTypeControllerMock() override;
 
   // DataTypeController mocks.
   MOCK_METHOD1(StartAssociating, void(const StartCallback& start_callback));
