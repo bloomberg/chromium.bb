@@ -119,7 +119,7 @@ static scoped_refptr<cc::Layer> ForeignLayerForPaintChunk(
   layer_offset = gfx::Vector2dF(foreign_layer_display_item.Location().X(),
                                 foreign_layer_display_item.Location().Y());
   scoped_refptr<cc::Layer> layer = foreign_layer_display_item.GetLayer();
-  layer->SetBounds(foreign_layer_display_item.Bounds());
+  layer->SetBounds(static_cast<gfx::Size>(foreign_layer_display_item.Bounds()));
   layer->SetIsDrawable(true);
   return layer;
 }
@@ -193,10 +193,10 @@ PaintArtifactCompositor::ScrollHitTestLayerForPendingLayer(
   auto bounds = scroll_node.ContainerRect().Size();
   // Mark the layer as scrollable.
   // TODO(pdr): When SPV2 launches this parameter for bounds will not be needed.
-  scroll_layer->SetScrollable(bounds);
+  scroll_layer->SetScrollable(static_cast<gfx::Size>(bounds));
   // Set the layer's bounds equal to the container because the scroll layer
   // does not scroll.
-  scroll_layer->SetBounds(bounds);
+  scroll_layer->SetBounds(static_cast<gfx::Size>(bounds));
   scroll_layer->set_did_scroll_callback(
       base::BindRepeating(&blink::WebLayerScrollClient::DidScroll,
                           base::Unretained(&scroll_client_)));

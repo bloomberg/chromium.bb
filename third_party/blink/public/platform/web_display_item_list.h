@@ -6,10 +6,6 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DISPLAY_ITEM_LIST_H_
 
 #include "third_party/blink/public/platform/web_blend_mode.h"
-#include "third_party/blink/public/platform/web_float_point.h"
-#include "third_party/blink/public/platform/web_float_rect.h"
-#include "third_party/blink/public/platform/web_rect.h"
-#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
 #include "cc/paint/paint_record.h"
@@ -27,6 +23,12 @@ class DisplayItemList;
 class FilterOperations;
 }
 
+namespace gfx {
+class Rect;
+class RectF;
+class Vector2d;
+}  // namespace gfx
+
 namespace blink {
 
 // An ordered list of items representing content to be rendered (stored in
@@ -37,15 +39,15 @@ class WebDisplayItemList {
  public:
   virtual ~WebDisplayItemList() = default;
 
-  virtual void AppendDrawingItem(const WebRect& visual_rect,
+  virtual void AppendDrawingItem(const gfx::Rect& visual_rect,
                                  sk_sp<const cc::PaintRecord>) {}
 
-  virtual void AppendClipItem(const WebRect& clip_rect,
+  virtual void AppendClipItem(const gfx::Rect& clip_rect,
                               const WebVector<SkRRect>& rounded_clip_rects) {}
   virtual void AppendEndClipItem() {}
   virtual void AppendClipPathItem(const SkPath&, bool antialias) {}
   virtual void AppendEndClipPathItem() {}
-  virtual void AppendFloatClipItem(const WebFloatRect& clip_rect) {}
+  virtual void AppendFloatClipItem(const gfx::RectF& clip_rect) {}
   virtual void AppendEndFloatClipItem() {}
   virtual void AppendTransformItem(const SkMatrix44&) {}
   virtual void AppendEndTransformItem() {}
@@ -59,13 +61,13 @@ class WebDisplayItemList {
 
   // TODO(loyso): This should use CompositorFilterOperation. crbug.com/584551
   virtual void AppendFilterItem(const cc::FilterOperations&,
-                                const WebFloatRect& filter_bounds,
-                                const WebFloatPoint& origin) {}
+                                const gfx::RectF& filter_bounds,
+                                const gfx::PointF& origin) {}
   virtual void AppendEndFilterItem() {}
 
   // Scroll containers are identified by an opaque pointer.
   using ScrollContainerId = const void*;
-  virtual void AppendScrollItem(const WebSize& scroll_offset,
+  virtual void AppendScrollItem(const gfx::Vector2d& scroll_offset,
                                 ScrollContainerId) {}
   virtual void AppendEndScrollItem() {}
 
