@@ -117,11 +117,6 @@
         },
       },
       # chromium.fyi
-      'Fuchsia': {
-        'args': [
-          '--use-new-test-runner',
-        ],
-      },
       'Out of Process Profiling Mac': {
         'swarming': {
           'shards': 5,
@@ -1291,14 +1286,6 @@
       # Audio Linux" at all, since they're supposed to be compiled out for
       # Chromecast.
     ],
-    'modifications': {
-      # chromium.fyi
-      'Fuchsia': {
-        'args': [
-          '--use-new-test-runner',
-        ],
-      },
-    },
   },
   'dbus_unittests': {
     'remove_from': [
@@ -1829,12 +1816,6 @@
           '600',
         ],
       },
-      # chromium.fyi
-      'Fuchsia': {
-        'args': [
-          '--use-new-test-runner',
-        ],
-      },
     },
   },
   'jingle_unittests': {
@@ -2109,16 +2090,6 @@
         'swarming': {
           'hard_timeout': 0,
         },
-      },
-    },
-  },
-  'mojo_unittests': {
-    'modifications': {
-      # chromium.fyi
-      'Fuchsia': {
-        'args': [
-          '--use-new-test-runner',
-        ],
       },
     },
   },
@@ -2483,14 +2454,6 @@
       'Win7 Tests (dbg)(1)',
       'Win10 Tests x64',
     ],
-    'modifications': {
-      # chromium.fyi
-      'Fuchsia': {
-        'args': [
-          '--use-new-test-runner',
-        ],
-      },
-    }
   },
   'services_unittests': {
     'remove_from': [
@@ -2681,15 +2644,6 @@
       'Cast Audio Linux',
       'Cast Linux',
     ],
-    'modifications': {
-      # chromium.fyi
-      'Fuchsia': {
-        'args': [
-          '--use-new-test-runner',
-          '-v',  # Useful for getting debug info and SCP throughput stats.
-        ],
-      },
-    },
   },
   'snapshot_unittests': {
     'remove_from': [
@@ -2731,14 +2685,6 @@
         'swarming': {
           'hard_timeout': 120,
         },
-      },
-
-      # chromium.fyi
-      'Fuchsia': {
-        'args': [
-          '--use-new-test-runner',
-          '-v',  # Useful for getting debug info and SCP throughput stats.
-        ],
       },
     },
   },

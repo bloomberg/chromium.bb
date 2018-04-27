@@ -67,7 +67,8 @@ class _SymbolizerFilter(object):
     # Compute remote/local path mappings using the manifest data.
     for next_line in open(manifest_path):
       target, source = next_line.strip().split('=')
-      stripped_binary_path = _GetUnstrippedPath(os.path.join(output_dir, source))
+      stripped_binary_path = _GetUnstrippedPath(os.path.join(output_dir,
+                                                             source))
       if not stripped_binary_path:
         continue
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -10,82 +10,25 @@ to run, or starts the bootserver to allow running on a hardware device."""
 
 import argparse
 import json
+import logging
 import os
 import socket
+import subprocess
 import sys
 import tempfile
 import time
 
-from runner_common import AddRunnerCommandLineArguments, BuildBootfs, \
-    ImageCreationData, ReadRuntimeDeps, RunFuchsia, HOST_IP_ADDRESS
+from common_args import AddCommonArgs, ConfigureLogging, GetDeploymentTargetForArgs
+from net_test_server import SetupTestServer
+from run_package import RunPackage
 
-DIR_SOURCE_ROOT = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
-sys.path.append(os.path.join(DIR_SOURCE_ROOT, 'build', 'util', 'lib', 'common'))
-import chrome_test_server_spawner
-
-
-def IsLocalPortAvailable(port):
-  s = socket.socket()
-  try:
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind(('127.0.0.1', port))
-    return True
-  except socket.error:
-    return False
-  finally:
-    s.close()
-
-
-def WaitUntil(predicate, timeout_seconds=1):
-  """Blocks until the provided predicate (function) is true.
-
-  Returns:
-    Whether the provided predicate was satisfied once (before the timeout).
-  """
-  start_time = time.clock()
-  sleep_time_sec = 0.025
-  while True:
-    if predicate():
-      return True
-
-    if time.clock() - start_time > timeout_seconds:
-      return False
-
-    time.sleep(sleep_time_sec)
-    sleep_time_sec = min(1, sleep_time_sec * 2)  # Don't wait more than 1 sec.
-
-
-# Implementation of chrome_test_server_spawner.PortForwarder that doesn't
-# forward ports. Instead the tests are expected to connect to the host IP
-# address inside the virtual network provided by qemu. qemu will forward
-# these connections to the corresponding localhost ports.
-class PortForwarderNoop(chrome_test_server_spawner.PortForwarder):
-  def Map(self, port_pairs):
-    pass
-
-  def GetDevicePortForHostPort(self, host_port):
-    return host_port
-
-  def WaitHostPortAvailable(self, port):
-    return WaitUntil(lambda: IsLocalPortAvailable(port))
-
-  def WaitPortNotAvailable(self, port):
-    return WaitUntil(lambda: not IsLocalPortAvailable(port))
-
-  def WaitDevicePortReady(self, port):
-    return self.WaitPortNotAvailable(port)
-
-  def Unmap(self, device_port):
-    pass
-
+DEFAULT_TEST_CONCURRENCY = 4
+TEST_RESULT_PATH = '/data/test_summary.json'
+TEST_FILTER_PATH = '/data/test_filter.txt'
 
 def main():
   parser = argparse.ArgumentParser()
-  AddRunnerCommandLineArguments(parser)
-  parser.add_argument('--enable-test-server', action='store_true',
-                      default=False,
-                      help='Enable testserver spawner.')
+  AddCommonArgs(parser)
   parser.add_argument('--gtest_filter',
                       help='GTest filter to use in place of any default.')
   parser.add_argument('--gtest_repeat',
@@ -98,7 +41,7 @@ def main():
   parser.add_argument('--single-process-tests', action='store_true',
                       default=False,
                       help='Runs the tests and the launcher in the same '
-                      'process. Useful for debugging.')
+                           'process. Useful for debugging.')
   parser.add_argument('--test-launcher-batch-limit',
                       type=int,
                       help='Sets the limit of test batch to run in a single '
@@ -113,26 +56,24 @@ def main():
                       type=int,
                       help='Sets the number of parallel test jobs.')
   parser.add_argument('--test-launcher-summary-output',
-                      '--test_launcher_summary_output',
                       help='Where the test launcher will output its json.')
+  parser.add_argument('--enable-test-server', action='store_true',
+                      default=False,
+                      help='Enable Chrome test server spawner.')
   parser.add_argument('child_args', nargs='*',
                       help='Arguments for the test process.')
   args = parser.parse_args()
+  ConfigureLogging(args)
 
   child_args = ['--test-launcher-retry-limit=0']
-
   if args.single_process_tests:
     child_args.append('--single-process-tests')
-
   if args.test_launcher_batch_limit:
     child_args.append('--test-launcher-batch-limit=%d' %
                        args.test_launcher_batch_limit)
 
-  # By default run the same number of test jobs as there are CPU cores.
-  # If running tests on a device then the caller should provide the
-  # test-launcher-jobs limit explicitly, since we can't count the CPU cores.
   test_concurrency = args.test_launcher_jobs \
-      if args.test_launcher_jobs else args.vm_cpu_cores
+      if args.test_launcher_jobs else DEFAULT_TEST_CONCURRENCY
   child_args.append('--test-launcher-jobs=%d' % test_concurrency)
 
   if args.gtest_filter:
@@ -145,77 +86,32 @@ def main():
   if args.child_args:
     child_args.extend(args.child_args)
 
-  runtime_deps = ReadRuntimeDeps(args.runtime_deps_path, args.output_directory)
+  if args.test_launcher_summary_output:
+    child_args.append('--test-launcher-summary-output=' + TEST_RESULT_PATH)
 
-  spawning_server = None
+  with GetDeploymentTargetForArgs(args) as target:
+    target.Start()
 
-  # Start test server spawner for tests that need it.
-  if args.enable_test_server:
-    spawning_server = chrome_test_server_spawner.SpawningServer(
-        0, PortForwarderNoop(), test_concurrency)
-    spawning_server.Start()
+    if args.test_launcher_filter_file:
+      target.PutFile(args.test_launcher_filter_file, TEST_FILTER_PATH)
+      child_args.append('--test-launcher-filter-file=' + TEST_FILTER_PATH)
 
-    # Generate test server config.
-    config_file = tempfile.NamedTemporaryFile()
-    config_file.write(json.dumps({
-      'name': 'testserver',
-      'address': HOST_IP_ADDRESS,
-      'spawner_url_base': 'http://%s:%d' %
-          (HOST_IP_ADDRESS, spawning_server.server_port)
-    }))
-    config_file.flush()
-    runtime_deps.append(('net-test-server-config', config_file.name))
+    forwarder = None
+    if args.enable_test_server:
+      test_server = SetupTestServer(target, test_concurrency)
 
-  # If no --test-launcher-filter-file is specified, use the default filter path.
-  if args.test_launcher_filter_file == None:
-    exe_base_name = os.path.basename(args.exe_name)
-    test_launcher_filter_file = os.path.normpath(os.path.join(
-        args.output_directory,
-        '../../testing/buildbot/filters/fuchsia.%s.filter' % exe_base_name))
-    if os.path.exists(test_launcher_filter_file):
-      args.test_launcher_filter_file = test_launcher_filter_file
+    returncode = RunPackage(args.output_directory, target, args.package,
+                            args.package_name, child_args,
+                            args.package_manifest)
 
-  # Copy the test-launcher-filter-file to the bootfs, if set.
-  if args.test_launcher_filter_file:
-    # Bundle the filter file in the runtime deps and compose the command-line
-    # flag which references it.
-    test_launcher_filter_file = os.path.normpath(
-        os.path.join(args.output_directory, args.test_launcher_filter_file))
-    runtime_deps.append(('test_filter_file', test_launcher_filter_file))
-    child_args.append('--test-launcher-filter-file=/system/test_filter_file')
+    if forwarder:
+      forwarder.terminate()
+      forwarder.wait()
 
-  if args.dry_run:
-    print 'Filter file is %s' % (args.test_launcher_filter_file if
-                                 args.test_launcher_filter_file else
-                                 'not applied.')
+    if args.test_launcher_summary_output:
+      target.GetFile(TEST_RESULT_PATH, args.test_launcher_summary_output)
 
-  try:
-    image_creation_data = ImageCreationData(
-        output_directory=args.output_directory,
-        exe_name=args.exe_name,
-        runtime_deps=runtime_deps,
-        target_cpu=args.target_cpu,
-        dry_run=args.dry_run,
-        child_args=child_args,
-        use_device=args.device,
-        bootdata=args.bootdata,
-        summary_output=args.test_launcher_summary_output,
-        shutdown_machine=True,
-        wait_for_network=args.wait_for_network,
-        use_autorun=True)
-    bootfs = BuildBootfs(image_creation_data)
-    if not bootfs:
-      return 2
-
-    return RunFuchsia(bootfs, args.device, args.kernel, args.dry_run,
-                      test_launcher_summary_output=
-                          args.test_launcher_summary_output,
-                      vm_cpu_cores = args.vm_cpu_cores)
-  finally:
-    # Stop the spawner to make sure it doesn't leave testserver running, in
-    # case some tests failed.
-    if spawning_server:
-      spawning_server.Stop()
+    return returncode
 
 
 if __name__ == '__main__':

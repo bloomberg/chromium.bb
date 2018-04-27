@@ -268,12 +268,7 @@ template("test") {
     # Makes the script which invokes the executable.
     test_runner_script(_gen_runner_target) {
       forward_variables_from(invoker, [ "use_test_server" ])
-      deps = [
-        ":$_exec_target",
-      ]
       test_name = _output_name
-      exe_path =
-          "$root_out_dir/exe.unstripped/" + get_label_info(_exec_target, "name")
       package_name = _output_name
     }
 

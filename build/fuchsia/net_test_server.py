@@ -14,7 +14,7 @@ import tempfile
 import time
 
 DIR_SOURCE_ROOT = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir))
+    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 sys.path.append(os.path.join(DIR_SOURCE_ROOT, 'build', 'util', 'lib', 'common'))
 import chrome_test_server_spawner
 
