@@ -3211,13 +3211,11 @@ void LayoutBox::ComputeLogicalHeight(
     // The parent box is flexing us, so it has increased or decreased our
     // height. We have to grab our cached flexible height.
     if (HasOverrideLogicalHeight()) {
-      // TODO(rego): Other branches set the logical height, why are we
-      // using OverrideContentAndScrollbarLogicalHeight() here?
-      // TODO(rego): Shouldn't we use OverrideContentLogicalHeight() directly,
-      // so scrollbar size gets subtracted?
-      h = Length(OverrideContentAndScrollbarLogicalHeight(), kFixed);
+      h = Length(OverrideLogicalHeight(), kFixed);
     } else if (treat_as_replaced) {
-      h = Length(ComputeReplacedLogicalHeight(), kFixed);
+      h = Length(
+          ComputeReplacedLogicalHeight() + BorderAndPaddingLogicalHeight(),
+          kFixed);
     } else {
       h = Style()->LogicalHeight();
       check_min_max_height = true;
@@ -3228,9 +3226,9 @@ void LayoutBox::ComputeLogicalHeight(
     // https://bugs.webkit.org/show_bug.cgi?id=46418
     if (h.IsAuto() && in_horizontal_box &&
         ToLayoutDeprecatedFlexibleBox(Parent())->IsStretchingChildren()) {
-      h = Length(ParentBox()->ContentLogicalHeight() - MarginBefore() -
-                     MarginAfter() - BorderAndPaddingLogicalHeight(),
-                 kFixed);
+      h = Length(
+          ParentBox()->ContentLogicalHeight() - MarginBefore() - MarginAfter(),
+          kFixed);
       check_min_max_height = false;
     }
 
@@ -3245,11 +3243,8 @@ void LayoutBox::ComputeLogicalHeight(
           height_result,
           computed_values.extent_ - BorderAndPaddingLogicalHeight());
     } else {
-      // The only times we don't check min/max height are when a fixed length
-      // has been given as an override.  Just use that.  The value has already
-      // been adjusted for box-sizing.
       DCHECK(h.IsFixed());
-      height_result = LayoutUnit(h.Value()) + BorderAndPaddingLogicalHeight();
+      height_result = LayoutUnit(h.Value());
     }
 
     computed_values.extent_ = height_result;
