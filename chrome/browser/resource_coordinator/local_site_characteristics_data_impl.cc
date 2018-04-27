@@ -128,12 +128,7 @@ LocalSiteCharacteristicsDataImpl::LocalSiteCharacteristicsDataImpl(
       active_webcontents_count_(0U),
       delegate_(delegate) {
   DCHECK_NE(nullptr, delegate_);
-  // Initialize the feature elements with the default value, this is required
-  // because some fields might otherwise never be initialized.
-  for (auto* iter : GetAllFeaturesFromProto(&site_characteristics_))
-    InitSiteCharacteristicsFeatureProtoWithDefaultValues(iter);
-
-  site_characteristics_.set_last_loaded(kZeroIntervalInternalRepresentation);
+  InitWithDefaultValues();
 }
 
 base::TimeDelta LocalSiteCharacteristicsDataImpl::FeatureObservationDuration(
@@ -146,7 +141,7 @@ base::TimeDelta LocalSiteCharacteristicsDataImpl::FeatureObservationDuration(
 
   // If this site is still loaded and the feature isn't in use then the
   // observation time since load needs to be added.
-  if (active_webcontents_count_ > 0U &&
+  if (IsLoaded() &&
       InternalRepresentationToTimeDelta(feature_proto.use_timestamp())
           .is_zero()) {
     base::TimeDelta observation_time_since_load =
@@ -163,7 +158,7 @@ LocalSiteCharacteristicsDataImpl::~LocalSiteCharacteristicsDataImpl() {
   // It's currently required that the site gets unloaded before destroying this
   // object.
   // TODO(sebmarchand): Check if this is a valid assumption.
-  DCHECK_EQ(0U, active_webcontents_count_);
+  DCHECK(!IsLoaded());
 
   DCHECK_NE(nullptr, delegate_);
   delegate_->OnLocalSiteCharacteristicsDataImplDestroyed(this);
@@ -191,6 +186,29 @@ void LocalSiteCharacteristicsDataImpl::
   proto->set_use_timestamp(kZeroIntervalInternalRepresentation);
 }
 
+void LocalSiteCharacteristicsDataImpl::InitWithDefaultValues() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Initialize the feature elements with the default value, this is required
+  // because some fields might otherwise never be initialized.
+  for (auto* iter : GetAllFeaturesFromProto(&site_characteristics_))
+    InitSiteCharacteristicsFeatureProtoWithDefaultValues(iter);
+
+  site_characteristics_.set_last_loaded(kZeroIntervalInternalRepresentation);
+}
+
+void LocalSiteCharacteristicsDataImpl::ClearObservations() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Reset all the observations.
+  InitWithDefaultValues();
+
+  // Set the last loaded time to the current time if there's some loaded
+  // instances of this site.
+  if (IsLoaded()) {
+    site_characteristics_.set_last_loaded(
+        TimeDeltaToInternalRepresentation(GetTickDeltaSinceEpoch()));
+  }
+}
+
 SiteFeatureUsage LocalSiteCharacteristicsDataImpl::GetFeatureUsage(
     const SiteCharacteristicsFeatureProto& feature_proto,
     const base::TimeDelta min_obs_time) const {
@@ -213,7 +231,7 @@ SiteFeatureUsage LocalSiteCharacteristicsDataImpl::GetFeatureUsage(
 void LocalSiteCharacteristicsDataImpl::NotifyFeatureUsage(
     SiteCharacteristicsFeatureProto* feature_proto) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_GT(active_webcontents_count_, 0U);
+  DCHECK(IsLoaded());
 
   feature_proto->set_use_timestamp(
       TimeDeltaToInternalRepresentation(GetTickDeltaSinceEpoch()));
