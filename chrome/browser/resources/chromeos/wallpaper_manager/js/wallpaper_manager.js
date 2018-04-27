@@ -439,6 +439,16 @@ WallpaperManager.prototype.preDownloadDomInit_ = function() {
     $('close-button').addEventListener('click', function() {
       window.close();
     });
+    this.document_.querySelector('.dialog-topbar')
+        .addEventListener('mouseover', () => {
+          this.isHoveringOverCollection_ = true;
+          this.updateInfoBarVisibility_();
+        });
+    this.document_.querySelector('.dialog-topbar')
+        .addEventListener('mouseleave', () => {
+          this.isHoveringOverCollection_ = false;
+          this.updateInfoBarVisibility_();
+        });
   } else {
     $('window-close-button').addEventListener('click', function() {
       window.close();
@@ -565,8 +575,7 @@ WallpaperManager.prototype.postDownloadDomInit_ = function() {
     });
   }
 
-  if (this.useNewWallpaperPicker_)
-    this.decorateCurrentWallpaperInfoBar_();
+  this.decorateCurrentWallpaperInfoBar_();
   this.onResize_();
   this.initContextMenuAndCommand_();
   WallpaperUtil.testSendMessage('launched');
@@ -702,6 +711,9 @@ WallpaperManager.prototype.presetCategory_ = function() {
  * @private
  */
 WallpaperManager.prototype.decorateCurrentWallpaperInfoBar_ = function() {
+  // The info bar only exists in new wallpaper picker.
+  if (!this.useNewWallpaperPicker_)
+    return;
   var image = $('current-wallpaper-image');
   var currentWallpaperInfo;
   Object.values(this.imagesInfoMap_).forEach(imagesInfo => {
@@ -768,7 +780,7 @@ WallpaperManager.prototype.decorateCurrentWallpaperInfoBar_ = function() {
   }
 
   $('current-wallpaper-more-options')
-      .classList.toggle('custom-wallpaper', !foundImageInList);
+      .classList.toggle('online-wallpaper', foundImageInList);
   if (foundImageInList) {
     // Initialize the image title and description.
     $('current-wallpaper-title').textContent =
@@ -800,6 +812,8 @@ WallpaperManager.prototype.decorateCurrentWallpaperInfoBar_ = function() {
               onError);
         }, onError);
   }
+
+  this.updateInfoBarVisibility_();
 };
 
 /**
@@ -856,6 +870,7 @@ WallpaperManager.prototype.onWallpaperChanged_ = function(
     activeItem, currentWallpaperURL) {
   this.wallpaperGrid_.activeItem = activeItem;
   this.currentWallpaper_ = currentWallpaperURL;
+  this.decorateCurrentWallpaperInfoBar_();
   // Hides the wallpaper set by message.
   $('wallpaper-set-by-message').textContent = '';
   $('wallpaper-grid').classList.remove('small');
@@ -1519,14 +1534,12 @@ WallpaperManager.prototype.onSurpriseMeStateChanged_ = function(enabled) {
   else
     this.document_.body.setAttribute('surprise-me-disabled', '');
 
-  if (this.useNewWallpaperPicker_) {
-    // The surprise me state affects the UI of the current wallpaper info bar.
-    this.decorateCurrentWallpaperInfoBar_();
-  } else {
-    // On the old wallpaper picker, the wallpaper grid should be disabled when
-    // surprise me is enabled.
+  // The surprise me state affects the UI of the current wallpaper info bar.
+  this.decorateCurrentWallpaperInfoBar_();
+  // On the old wallpaper picker, the wallpaper grid should be disabled when
+  // surprise me is enabled.
+  if (!this.useNewWallpaperPicker_)
     $('wallpaper-grid').disabled = enabled;
-  }
 };
 
 /**
@@ -1721,6 +1734,31 @@ WallpaperManager.prototype.shouldPreviewWallpaper_ = function() {
   return this.useNewWallpaperPicker_ &&
       (chrome.app.window.current().isFullscreen() ||
        chrome.app.window.current().isMaximized());
+};
+
+/**
+ * Notifies the wallpaper manager that the scroll bar position changes.
+ * @param {number} scrollTop The distance between the scroll bar and the top.
+ */
+WallpaperManager.prototype.onScrollPositionChanged = function(scrollTop) {
+  var isScrollAtTop = scrollTop == 0;
+  if (this.isScrollAtTop_ !== isScrollAtTop) {
+    this.isScrollAtTop_ = isScrollAtTop;
+    this.updateInfoBarVisibility_();
+  }
+};
+
+/**
+ * Updates the visibility of the current wallpaper info bar.
+ * @private
+ */
+WallpaperManager.prototype.updateInfoBarVisibility_ = function() {
+  var isWindowMaximized = chrome.app.window.current().isMaximized() ||
+      chrome.app.window.current().isFullscreen();
+  var shouldShowInfoBar = this.useNewWallpaperPicker_ && this.isScrollAtTop_ &&
+      (!this.isHoveringOverCollection_ || isWindowMaximized);
+  $('current-wallpaper-info-bar')
+      .classList.toggle('show-info-bar', shouldShowInfoBar);
 };
 
 })();
