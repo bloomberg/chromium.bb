@@ -116,8 +116,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE,
                       "audioRepeatOneModeMultipleFileDrive")));
 
+// Fails on the MSAN bots, https://crbug.com/837551
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_OpenImageFiles DISABLED_OpenImageFiles
+#else
+#define MAYBE_OpenImageFiles OpenImageFiles
+#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    OpenImageFiles,
+    MAYBE_OpenImageFiles,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "imageOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "imageOpenDownloads"),
