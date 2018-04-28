@@ -64,8 +64,10 @@ Version MajorMinorBuildToVersion(int major, int minor, int build) {
       return VERSION_WIN10_RS1;
     } else if (build < 16299) {
       return VERSION_WIN10_RS2;
-    } else {
+    } else if (build < 17134) {
       return VERSION_WIN10_RS3;
+    } else {
+      return VERSION_WIN10_RS4;
     }
   } else if (major > 6) {
     NOTREACHED();

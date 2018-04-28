@@ -78,7 +78,6 @@ int GetGpuBlacklistHistogramValueWin(gpu::GpuFeatureStatus status) {
   //   Unknown VERSION_PRE_XP = 4,
   //   Enabled VERSION_XP = 5,
   //   ...
-  //   Unknown Windows Version = VERSION_WIN_LAST * gpu::kGpuFeatureStatusMax.
   static const base::win::Version version = base::win::GetVersion();
   if (version == base::win::VERSION_WIN_LAST)
     return -1;
