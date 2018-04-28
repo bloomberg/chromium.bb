@@ -4,8 +4,12 @@
 
 package org.chromium.chrome.browser.page_info;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,16 +22,33 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content.common.ContentSwitches;
+import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.base.PageTransition;
 
 /**
  * Tests for PageInfoPopup.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1"})
 public class PageInfoPopupTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
+
+    private EmbeddedTestServer mTestServer;
+
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.startMainActivityOnBlankPage();
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+    }
 
     /**
      * Tests that PageInfoPopup can be instantiated and shown.
@@ -37,14 +58,33 @@ public class PageInfoPopupTest {
     @Feature({"PageInfoPopup"})
     @RetryOnFailure
     public void testShow() throws InterruptedException {
-        mActivityTestRule.startMainActivityOnBlankPage();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                PageInfoPopup.show(mActivityTestRule.getActivity(),
-                        mActivityTestRule.getActivity().getActivityTab(), null,
-                        PageInfoPopup.OPENED_FROM_MENU);
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            PageInfoPopup.show(mActivityTestRule.getActivity(),
+                    mActivityTestRule.getActivity().getActivityTab(), null,
+                    PageInfoPopup.OPENED_FROM_MENU);
+        });
+    }
+
+    /**
+     * Tests that PageInfoPopup converts safe URLs to Unicode.
+     */
+    @Test
+    @MediumTest
+    @Feature({"PageInfoPopup"})
+    @RetryOnFailure
+    public void testPageInfoUrl() throws InterruptedException {
+        String testUrl = mTestServer.getURLWithHostName("xn--allestrungen-9ib.ch", "/");
+        mActivityTestRule.loadUrlInTab(
+                testUrl, PageTransition.TYPED, mActivityTestRule.getActivity().getActivityTab());
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            PageInfoPopup pageInfo = new PageInfoPopup(mActivityTestRule.getActivity(),
+                    mActivityTestRule.getActivity().getActivityTab(), null, null,
+                    PageInfoPopup.NOT_OFFLINE_PAGE, null);
+            PageInfoView pageInfoView = pageInfo.getPageInfoViewForTesting();
+            // Test that the title contains the Unicode hostname rather than strict equality, as
+            // the test server will be bound to a random port.
+            Assert.assertTrue(
+                    pageInfoView.getUrlTitleForTesting().contains("http://allestörungen.ch"));
         });
     }
 }

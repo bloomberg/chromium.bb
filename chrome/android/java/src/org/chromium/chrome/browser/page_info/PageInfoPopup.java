@@ -25,6 +25,7 @@ import android.text.style.TextAppearanceSpan;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -54,6 +55,7 @@ import org.chromium.chrome.browser.vr_shell.UiUnsupportedMode;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -169,7 +171,7 @@ public class PageInfoPopup implements ModalDialogView.Controller {
      * @param offlinePageState         State of the tab showing offline page.
      * @param publisher                The name of the content publisher, if any.
      */
-    private PageInfoPopup(Activity activity, Tab tab, String offlinePageUrl,
+    protected PageInfoPopup(Activity activity, Tab tab, String offlinePageUrl,
             String offlinePageCreationDate, @OfflinePageState int offlinePageState,
             String publisher) {
         mContext = activity;
@@ -213,7 +215,7 @@ public class PageInfoPopup implements ModalDialogView.Controller {
         }
         mSecurityLevel = SecurityStateModel.getSecurityLevelForWebContents(mTab.getWebContents());
 
-        String displayUrl = mFullUrl;
+        String displayUrl = UrlFormatter.formatUrlForCopy(mFullUrl);
         if (isShowingOfflinePage()) {
             displayUrl = OfflinePageUtils.stripSchemeFromOnlineUrl(mFullUrl);
         }
@@ -616,6 +618,11 @@ public class PageInfoPopup implements ModalDialogView.Controller {
             recordAction(PageInfoAction.PAGE_INFO_SECURITY_DETAILS_OPENED);
             ConnectionInfoPopup.show(mContext, mTab.getWebContents());
         }
+    }
+
+    @VisibleForTesting
+    public PageInfoView getPageInfoViewForTesting() {
+        return mView;
     }
 
     /**
