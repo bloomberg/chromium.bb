@@ -118,22 +118,14 @@ def write_results(
 def execute_benchmark(benchmark, isolated_out_dir,
                       args, rest_args, is_reference):
   # While we are between chartjson and histogram set we need
-  # to determine which output format to look for.
-  # We need to append this both to the args and the per benchmark
-  # args so the run_benchmark call knows what format it is
-  # as well as triggers the benchmark correctly.
-  output_format = None
-  is_histograms = False
-  if benchmark in BENCHMARKS_TO_OUTPUT_HISTOGRAMS:
-    output_format = '--output-format=histograms'
-    is_histograms = True
-  else:
-    output_format = '--output-format=chartjson'
-  # Need to run the benchmark twice on browser and reference build
+  # to determine which output format to look for or see if it was
+  # already passed in in which case that format applies to all benchmarks
+  # in this run.
+  is_histograms = append_output_format(benchmark, args, rest_args)
   # Insert benchmark name as first argument to run_benchmark call
-  # Need to append output format.
-  per_benchmark_args = (rest_args[:1] + [benchmark]
-                        + rest_args[1:] + [output_format])
+  # which is the first argument in the rest_args.  Also need to append
+  # output format.
+  per_benchmark_args = (rest_args[:1] + [benchmark] + rest_args[1:])
   benchmark_name = benchmark
   if is_reference:
     # Need to parse out the browser to replace browser flag with
@@ -161,6 +153,30 @@ def execute_benchmark(benchmark, isolated_out_dir,
   return rc
 
 
+def append_output_format(benchmark, args, rest_args):
+  # We need to determine if the output format is already passed in
+  # or if we need to define it for this benchmark
+  perf_output_specified = False
+  is_histograms = False
+  if args.output_format:
+    for output_format in args.output_format:
+      if 'histograms' in output_format:
+        perf_output_specified = True
+        is_histograms = True
+      if 'chartjson' in output_format:
+        perf_output_specified = True
+      rest_args.append('--output-format=' + output_format)
+  # When crbug.com/744736 is resolved we no longer have to check
+  # the type of format per benchmark and can rely on it being passed
+  # in as an arg as all benchmarks will output the same format.
+  if not perf_output_specified:
+    if benchmark in BENCHMARKS_TO_OUTPUT_HISTOGRAMS:
+      rest_args.append('--output-format=histograms')
+      is_histograms = True
+    else:
+      rest_args.append('--output-format=chartjson')
+  return is_histograms
+
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument(
@@ -177,15 +193,19 @@ def main():
   parser.add_argument(
       '--isolated-script-test-filter', type=str, required=False)
   parser.add_argument('--xvfb', help='Start xvfb.', action='store_true')
-  # TODO(eyaich) We could potentially assume this based on shards == 1 since
-  # benchmarks will always have multiple shards.
   parser.add_argument('--non-telemetry',
                       help='Type of perf test', type=bool, default=False)
-  parser.add_argument('--testing', help='Testing instance',
+  parser.add_argument('--testing', help='Test run, execute subset of tests',
                       type=bool, default=False)
+  parser.add_argument('--benchmarks',
+                      help='Comma separated list of benchmark names'
+                      ' to run in lieu of indexing into our benchmark bot maps',
+                      required=False)
+  parser.add_argument('--output-format', action='append')
 
   args, rest_args = parser.parse_known_args()
   isolated_out_dir = os.path.dirname(args.isolated_script_test_output)
+  return_code = 0
 
   if args.non_telemetry:
     # For non telemetry tests the benchmark name is the name of the executable.
@@ -195,34 +215,42 @@ def main():
 
     write_results(benchmark_name, charts, output_json, isolated_out_dir, True)
   else:
-    # First determine what shard we are running on to know how to
-    # index into the bot map to get list of benchmarks to run.
-    total_shards = None
-    shard_index = None
+    # If the user has supplied a list of benchmark names, execute those instead
+    # of the entire suite of benchmarks.
+    if args.benchmarks:
+      benchmarks = args.benchmark_names.split(',')
+      for benchmark in benchmarks:
+        return_code = (execute_benchmark(
+            benchmark, isolated_out_dir, args, rest_args, False) or return_code)
+    else:
+      # First determine what shard we are running on to know how to
+      # index into the bot map to get list of benchmarks to run.
+      total_shards = None
+      shard_index = None
 
-    env = os.environ.copy()
-    if 'GTEST_TOTAL_SHARDS' in env:
-      total_shards = env['GTEST_TOTAL_SHARDS']
-    if 'GTEST_SHARD_INDEX' in env:
-      shard_index = env['GTEST_SHARD_INDEX']
+      env = os.environ.copy()
+      if 'GTEST_TOTAL_SHARDS' in env:
+        total_shards = env['GTEST_TOTAL_SHARDS']
+      if 'GTEST_SHARD_INDEX' in env:
+        shard_index = env['GTEST_SHARD_INDEX']
 
-    if not (total_shards or shard_index):
-      raise Exception('Shard indicators must be present for perf tests')
+      if not (total_shards or shard_index):
+        raise Exception('Shard indicators must be present for perf tests')
 
-    sharding_map_path = get_sharding_map_path(
-        total_shards, args.testing or False)
-    with open(sharding_map_path) as f:
-      sharding_map = json.load(f)
-    sharding = None
-    sharding = sharding_map[shard_index]['benchmarks']
-    return_code = 0
+      sharding_map_path = get_sharding_map_path(
+          total_shards, args.testing or False)
+      with open(sharding_map_path) as f:
+        sharding_map = json.load(f)
+      sharding = None
+      sharding = sharding_map[shard_index]['benchmarks']
 
-    for benchmark in sharding:
-      return_code = (execute_benchmark(
-          benchmark, isolated_out_dir, args, rest_args, False) or return_code)
-      # We ignore the return code of the reference build since we do not
-      # monitor it.
-      execute_benchmark(benchmark, isolated_out_dir, args, rest_args, True)
+      for benchmark in sharding:
+        # Need to run the benchmark twice on browser and reference build
+        return_code = (execute_benchmark(
+            benchmark, isolated_out_dir, args, rest_args, False) or return_code)
+        # We ignore the return code of the reference build since we do not
+        # monitor it.
+        execute_benchmark(benchmark, isolated_out_dir, args, rest_args, True)
 
   return return_code
 
