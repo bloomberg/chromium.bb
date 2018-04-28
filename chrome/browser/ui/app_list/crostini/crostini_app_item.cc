@@ -47,8 +47,14 @@ const char* CrostiniAppItem::GetItemType() const {
 
 void CrostiniAppItem::Activate(int event_flags) {
   LaunchCrostiniApp(profile(), id());
-  // TODO(timloh): Detect and do something if launching failed, as otherwise
-  // the app launcher remains open and there's no feedback.
+
+  // TODO(timloh): Launching Crostini apps can take a few seconds if the
+  // container is not currently running. Hiding the launcher at least provides
+  // the user some feedback that they actually clicked an icon. We should make
+  // this better, e.g. by showing some sort of spinner. We also need to handle
+  // failures to start the container or app, as those are currently ignored.
+  if (!GetController()->IsHomeLauncherEnabledInTabletMode())
+    GetController()->DismissView();
 }
 
 void CrostiniAppItem::GetContextMenuModel(GetMenuModelCallback callback) {
