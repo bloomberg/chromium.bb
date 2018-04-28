@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CLIP_PAINT_PROPERTY_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CLIP_PAINT_PROPERTY_NODE_H_
 
-#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper_clip_cache.h"
@@ -30,7 +29,7 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   // To make it less verbose and more readable to construct and update a node,
   // a struct with default values is used to represent the state.
   struct State {
-    const TransformPaintPropertyNode* local_transform_space = nullptr;
+    scoped_refptr<const TransformPaintPropertyNode> local_transform_space;
     FloatRoundedRect clip_rect;
     base::Optional<FloatRoundedRect> clip_rect_excluding_overlay_scrollbars;
     scoped_refptr<const RefCountedPath> clip_path;
@@ -54,17 +53,18 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   };
 
   // This node is really a sentinel, and does not represent a real clip space.
-  static const ClipPaintPropertyNode& Root();
+  static ClipPaintPropertyNode* Root();
 
-  static std::unique_ptr<ClipPaintPropertyNode> Create(
-      const ClipPaintPropertyNode& parent,
+  static scoped_refptr<ClipPaintPropertyNode> Create(
+      scoped_refptr<const ClipPaintPropertyNode> parent,
       State&& state) {
-    return base::WrapUnique(
-        new ClipPaintPropertyNode(&parent, std::move(state)));
+    return base::AdoptRef(
+        new ClipPaintPropertyNode(std::move(parent), std::move(state)));
   }
 
-  bool Update(const ClipPaintPropertyNode& parent, State&& state) {
-    bool parent_changed = SetParent(&parent);
+  bool Update(scoped_refptr<const ClipPaintPropertyNode> parent,
+              State&& state) {
+    bool parent_changed = SetParent(parent);
     if (state == state_)
       return parent_changed;
 
@@ -73,13 +73,14 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
     return true;
   }
 
-  bool EqualIgnoringHitTestRects(const ClipPaintPropertyNode* parent,
-                                 const State& state) const {
+  bool EqualIgnoringHitTestRects(
+      scoped_refptr<const ClipPaintPropertyNode> parent,
+      const State& state) const {
     return parent == Parent() && state_.EqualIgnoringHitTestRects(state);
   }
 
   const TransformPaintPropertyNode* LocalTransformSpace() const {
-    return state_.local_transform_space;
+    return state_.local_transform_space.get();
   }
   const FloatRoundedRect& ClipRect() const { return state_.clip_rect; }
   const FloatRoundedRect& ClipRectExcludingOverlayScrollbars() const {
@@ -97,8 +98,8 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
 #if DCHECK_IS_ON()
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // a clip node before it has been updated, to later detect changes.
-  std::unique_ptr<ClipPaintPropertyNode> Clone() const {
-    return base::WrapUnique(new ClipPaintPropertyNode(Parent(), State(state_)));
+  scoped_refptr<ClipPaintPropertyNode> Clone() const {
+    return base::AdoptRef(new ClipPaintPropertyNode(Parent(), State(state_)));
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
@@ -111,8 +112,9 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   std::unique_ptr<JSONObject> ToJSON() const;
 
  private:
-  ClipPaintPropertyNode(const ClipPaintPropertyNode* parent, State&& state)
-      : PaintPropertyNode(parent), state_(std::move(state)) {}
+  ClipPaintPropertyNode(scoped_refptr<const ClipPaintPropertyNode> parent,
+                        State&& state)
+      : PaintPropertyNode(std::move(parent)), state_(std::move(state)) {}
 
   // For access to GetClipCache();
   friend class GeometryMapper;

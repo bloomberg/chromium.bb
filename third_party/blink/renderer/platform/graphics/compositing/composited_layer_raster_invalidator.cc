@@ -47,7 +47,7 @@ size_t CompositedLayerRasterInvalidator::MatchNewChunkToOldChunk(
 
 PaintInvalidationReason
 CompositedLayerRasterInvalidator::ChunkPropertiesChanged(
-    const PropertyTreeState& new_chunk_state,
+    const RefCountedPropertyTreeState& new_chunk_state,
     const PaintChunkInfo& new_chunk,
     const PaintChunkInfo& old_chunk,
     const PropertyTreeState& layer_state) const {

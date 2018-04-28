@@ -102,7 +102,7 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
       state.SetClip(
           clipping_container
               ? clipping_container->FirstFragment().ContentsProperties().Clip()
-              : &ClipPaintPropertyNode::Root());
+              : ClipPaintPropertyNode::Root());
     } else {
       state.SetClip(
           clipping_container

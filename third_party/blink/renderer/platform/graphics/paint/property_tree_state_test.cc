@@ -10,7 +10,7 @@ namespace blink {
 
 class PropertyTreeStateTest : public testing::Test {};
 
-static std::unique_ptr<TransformPaintPropertyNode>
+static scoped_refptr<TransformPaintPropertyNode>
 CreateTransformWithCompositorElementId(
     const CompositorElementId& compositor_element_id) {
   TransformPaintPropertyNode::State state;
@@ -19,7 +19,7 @@ CreateTransformWithCompositorElementId(
                                             std::move(state));
 }
 
-static std::unique_ptr<EffectPaintPropertyNode>
+static scoped_refptr<EffectPaintPropertyNode>
 CreateEffectWithCompositorElementId(
     const CompositorElementId& compositor_element_id) {
   EffectPaintPropertyNode::State state;
@@ -29,38 +29,40 @@ CreateEffectWithCompositorElementId(
 }
 
 TEST_F(PropertyTreeStateTest, CompositorElementIdNoElementIdOnAnyNode) {
+  PropertyTreeState state(TransformPaintPropertyNode::Root(),
+                          ClipPaintPropertyNode::Root(),
+                          EffectPaintPropertyNode::Root());
   EXPECT_EQ(CompositorElementId(),
-            PropertyTreeState::Root().GetCompositorElementId(
-                CompositorElementIdSet()));
+            state.GetCompositorElementId(CompositorElementIdSet()));
 }
 
 TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnTransformNode) {
   CompositorElementId expected_compositor_element_id = CompositorElementId(2);
-  auto transform =
+  scoped_refptr<TransformPaintPropertyNode> transform =
       CreateTransformWithCompositorElementId(expected_compositor_element_id);
-  PropertyTreeState state(transform.get(), &ClipPaintPropertyNode::Root(),
-                          &EffectPaintPropertyNode::Root());
+  PropertyTreeState state(transform.get(), ClipPaintPropertyNode::Root(),
+                          EffectPaintPropertyNode::Root());
   EXPECT_EQ(expected_compositor_element_id,
             state.GetCompositorElementId(CompositorElementIdSet()));
 }
 
 TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnEffectNode) {
   CompositorElementId expected_compositor_element_id = CompositorElementId(2);
-  auto effect =
+  scoped_refptr<EffectPaintPropertyNode> effect =
       CreateEffectWithCompositorElementId(expected_compositor_element_id);
-  PropertyTreeState state(&TransformPaintPropertyNode::Root(),
-                          &ClipPaintPropertyNode::Root(), effect.get());
+  PropertyTreeState state(TransformPaintPropertyNode::Root(),
+                          ClipPaintPropertyNode::Root(), effect.get());
   EXPECT_EQ(expected_compositor_element_id,
             state.GetCompositorElementId(CompositorElementIdSet()));
 }
 
 TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnMultipleNodes) {
   CompositorElementId expected_compositor_element_id = CompositorElementId(2);
-  auto transform =
+  scoped_refptr<TransformPaintPropertyNode> transform =
       CreateTransformWithCompositorElementId(expected_compositor_element_id);
-  auto effect =
+  scoped_refptr<EffectPaintPropertyNode> effect =
       CreateEffectWithCompositorElementId(expected_compositor_element_id);
-  PropertyTreeState state(transform.get(), &ClipPaintPropertyNode::Root(),
+  PropertyTreeState state(transform.get(), ClipPaintPropertyNode::Root(),
                           effect.get());
   EXPECT_EQ(expected_compositor_element_id,
             state.GetCompositorElementId(CompositorElementIdSet()));
@@ -69,11 +71,11 @@ TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnMultipleNodes) {
 TEST_F(PropertyTreeStateTest, CompositorElementIdWithDifferingElementIds) {
   CompositorElementId first_compositor_element_id = CompositorElementId(2);
   CompositorElementId second_compositor_element_id = CompositorElementId(3);
-  auto transform =
+  scoped_refptr<TransformPaintPropertyNode> transform =
       CreateTransformWithCompositorElementId(first_compositor_element_id);
-  auto effect =
+  scoped_refptr<EffectPaintPropertyNode> effect =
       CreateEffectWithCompositorElementId(second_compositor_element_id);
-  PropertyTreeState state(transform.get(), &ClipPaintPropertyNode::Root(),
+  PropertyTreeState state(transform.get(), ClipPaintPropertyNode::Root(),
                           effect.get());
 
   CompositorElementIdSet composited_element_ids;

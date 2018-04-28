@@ -102,11 +102,10 @@ class FindFrameViewPropertiesNeedingUpdateScope {
   Persistent<LocalFrameView> frame_view_;
   bool needed_paint_property_update_;
   bool needed_forced_subtree_update_;
-  std::unique_ptr<const TransformPaintPropertyNode> original_pre_translation_;
-  std::unique_ptr<const ClipPaintPropertyNode> original_content_clip_;
-  std::unique_ptr<const ScrollPaintPropertyNode> original_scroll_node_;
-  std::unique_ptr<const TransformPaintPropertyNode>
-      original_scroll_translation_;
+  scoped_refptr<const TransformPaintPropertyNode> original_pre_translation_;
+  scoped_refptr<const ClipPaintPropertyNode> original_content_clip_;
+  scoped_refptr<const ScrollPaintPropertyNode> original_scroll_node_;
+  scoped_refptr<const TransformPaintPropertyNode> original_scroll_translation_;
 };
 
 #define DCHECK_OBJECT_PROPERTY_EQ(object, original, updated)            \
