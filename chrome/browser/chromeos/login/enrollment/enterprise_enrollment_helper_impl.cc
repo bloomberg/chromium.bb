@@ -38,7 +38,8 @@ class TokenRevoker : public GaiaAuthConsumer {
   void Start(const std::string& token);
 
   // GaiaAuthConsumer:
-  void OnOAuth2RevokeTokenCompleted() override;
+  void OnOAuth2RevokeTokenCompleted(
+      GaiaAuthConsumer::TokenRevocationStatus status) override;
 
  private:
   GaiaAuthFetcher gaia_fetcher_;
@@ -57,7 +58,8 @@ void TokenRevoker::Start(const std::string& token) {
   gaia_fetcher_.StartRevokeOAuth2Token(token);
 }
 
-void TokenRevoker::OnOAuth2RevokeTokenCompleted() {
+void TokenRevoker::OnOAuth2RevokeTokenCompleted(
+    GaiaAuthConsumer::TokenRevocationStatus status) {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
