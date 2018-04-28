@@ -5,7 +5,10 @@
 # Logic separated out from config.gni so that it can be used by compiler.gni
 # without introducing a circular dependency.
 
-assert(is_android)
+# NOTE: Because Chrome OS builds may depend on targets built with the Android
+# toolchain, this GNI file may be read and processed from within Chrome OS
+# toolchains. Checking |is_android| here would therefore be too restrictive.
+assert(is_android || is_chromeos)
 
 declare_args() {
   # Adds intrumentation to each function. Writes a file with the order that
