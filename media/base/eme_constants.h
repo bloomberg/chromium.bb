@@ -22,6 +22,8 @@ enum class EmeInitDataType { UNKNOWN, WEBM, CENC, KEYIDS, MAX = KEYIDS };
 //
 // TODO(yucliu): Remove container name from the enum. See crbug.com/724362 for
 // more details.
+// TODO(xhwang): Use constexpr to construct this list. The current code is too
+// hard to read and maintain.
 enum EmeCodec {
   // *_ALL values should only be used for masking, do not use them to specify
   // codec support because they may be extended to include more codecs.
@@ -46,22 +48,17 @@ enum EmeCodec {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   EME_CODEC_MP4_AUDIO_ALL = (EME_CODEC_MP4_AAC
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
-                             |
-                             EME_CODEC_MP4_AC3 |
-                             EME_CODEC_MP4_EAC3
+                             | EME_CODEC_MP4_AC3 | EME_CODEC_MP4_EAC3
 #endif  // BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
                              ),
   EME_CODEC_MP4_VIDEO_ALL = (EME_CODEC_MP4_AVC1 | EME_CODEC_COMMON_VP9
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-                             |
-                             EME_CODEC_MP4_HEVC
+                             | EME_CODEC_MP4_HEVC
 #endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
 #if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
-                             |
-                             EME_CODEC_MP4_DV_AVC
+                             | EME_CODEC_MP4_DV_AVC
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-                             |
-                             EME_CODEC_MP4_DV_HEVC
+                             | EME_CODEC_MP4_DV_HEVC
 #endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
 #endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
                              ),
@@ -79,9 +76,12 @@ enum EmeCodec {
   EME_CODEC_ALL = (EME_CODEC_WEBM_ALL | EME_CODEC_MP4_ALL),
 #endif  // BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 #else
-  EME_CODEC_AUDIO_ALL = EME_CODEC_WEBM_AUDIO_ALL,
-  EME_CODEC_VIDEO_ALL = EME_CODEC_WEBM_VIDEO_ALL,
-  EME_CODEC_ALL = EME_CODEC_WEBM_ALL,
+  EME_CODEC_MP4_AUDIO_ALL = EME_CODEC_NONE,
+  EME_CODEC_MP4_VIDEO_ALL = EME_CODEC_COMMON_VP9,
+  EME_CODEC_MP4_ALL = (EME_CODEC_MP4_AUDIO_ALL | EME_CODEC_MP4_VIDEO_ALL),
+  EME_CODEC_AUDIO_ALL = EME_CODEC_WEBM_AUDIO_ALL | EME_CODEC_MP4_AUDIO_ALL,
+  EME_CODEC_VIDEO_ALL = EME_CODEC_WEBM_VIDEO_ALL | EME_CODEC_MP4_VIDEO_ALL,
+  EME_CODEC_ALL = EME_CODEC_WEBM_ALL | EME_CODEC_MP4_ALL,
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 };
 

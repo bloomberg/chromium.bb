@@ -51,6 +51,8 @@ const char kWebMVp8VideoOnly[] = "video/webm; codecs=\"vp8\"";
 const char kWebMVp9VideoOnly[] = "video/webm; codecs=\"vp9\"";
 const char kWebMOpusAudioVp9Video[] = "video/webm; codecs=\"opus, vp9\"";
 const char kWebMVorbisAudioVp8Video[] = "video/webm; codecs=\"vorbis, vp8\"";
+const char kMp4Vp9VideoOnly[] =
+    "video/mp4; codecs=\"vp09.00.10.08.01.02.02.02.00\"";
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const char kMp4Avc1VideoOnly[] = "video/mp4; codecs=\"avc1.64001E\"";
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -254,6 +256,15 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM_Opus) {
     return;
 #endif
   TestSimplePlayback("bear-320x240-opus-av_enc-v.webm", kWebMOpusAudioVp9Video);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9) {
+  // MP4 without MSE is not support yet, http://crbug.com/170793.
+  if (CurrentSourceType() != SrcType::MSE) {
+    DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
+    return;
+  }
+  TestSimplePlayback("bear-320x240-v_frag-vp9-cenc.mp4", kMp4Vp9VideoOnly);
 }
 
 // Strictly speaking this is not an "encrypted" media test. Keep it here for

@@ -42,9 +42,9 @@ struct NamedCodec {
 static const NamedCodec kMimeTypeToCodecMasks[] = {
     {"audio/webm", EME_CODEC_WEBM_AUDIO_ALL},
     {"video/webm", EME_CODEC_WEBM_VIDEO_ALL},
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
     {"audio/mp4", EME_CODEC_MP4_AUDIO_ALL},
     {"video/mp4", EME_CODEC_MP4_VIDEO_ALL},
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
     {"video/mp2t", EME_CODEC_MP2T_VIDEO_ALL},
 #endif  // BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
@@ -88,11 +88,8 @@ class ClearKeyProperties : public KeySystemProperties {
   std::string GetKeySystemName() const override { return kClearKeyKeySystem; }
 
   bool IsSupportedInitDataType(EmeInitDataType init_data_type) const override {
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-    if (init_data_type == EmeInitDataType::CENC)
-      return true;
-#endif
-    return init_data_type == EmeInitDataType::WEBM ||
+    return init_data_type == EmeInitDataType::CENC ||
+           init_data_type == EmeInitDataType::WEBM ||
            init_data_type == EmeInitDataType::KEYIDS;
   }
 
@@ -100,13 +97,7 @@ class ClearKeyProperties : public KeySystemProperties {
     // On Android, Vorbis, VP8, AAC and AVC1 are supported in MediaCodec:
     // http://developer.android.com/guide/appendix/media-formats.html
     // VP9 support is device dependent.
-    SupportedCodecs codecs = EME_CODEC_WEBM_ALL;
-
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-    codecs |= EME_CODEC_MP4_ALL;
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
-
-    return codecs;
+    return EME_CODEC_WEBM_ALL | EME_CODEC_MP4_ALL;
   }
 
   EmeConfigRule GetRobustnessConfigRule(
@@ -445,7 +436,8 @@ void KeySystemsImpl::RegisterMimeType(const std::string& mime_type,
                                       EmeCodec codecs_mask) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!mime_type_to_codec_mask_map_.count(mime_type));
-  DCHECK(IsValidMimeTypeCodecsCombination(mime_type, codecs_mask));
+  DCHECK(IsValidMimeTypeCodecsCombination(mime_type, codecs_mask))
+      << ": mime_type = " << mime_type << ", codecs_mask = " << codecs_mask;
 
   mime_type_to_codec_mask_map_[mime_type] = static_cast<EmeCodec>(codecs_mask);
 }
@@ -457,8 +449,9 @@ bool KeySystemsImpl::IsValidMimeTypeCodecsCombination(
     const std::string& mime_type,
     SupportedCodecs codecs_mask) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!codecs_mask)
-    return false;
+  if (codecs_mask == EME_CODEC_NONE)
+    return true;
+
   if (base::StartsWith(mime_type, "audio/", base::CompareCase::SENSITIVE))
     return !(codecs_mask & ~audio_codec_mask_);
   if (base::StartsWith(mime_type, "video/", base::CompareCase::SENSITIVE))
