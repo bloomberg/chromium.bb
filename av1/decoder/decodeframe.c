@@ -2026,8 +2026,8 @@ static int tile_worker_hook(void *arg1, void *arg2) {
     td->xd.plane[1].color_index_map = td->color_index_map[1];
 #if CONFIG_ACCOUNTING
     if (pbi->acct_enabled) {
-      tile_data->bit_reader->accounting->last_tell_frac =
-          aom_reader_tell_frac(tile_data->bit_reader);
+      tile_data->bit_reader.accounting->last_tell_frac =
+          aom_reader_tell_frac(&tile_data->bit_reader);
     }
 #endif
     // decode tile
