@@ -295,7 +295,7 @@ public class TrustedCdnPublisherUrlTest {
                 () -> { Assert.assertNull(tab.getTrustedCdnPublisherUrl()); });
 
         String testUrl = mWebServer.getResponseUrl("/test.html");
-        String expectedUrl = UrlFormatter.formatUrlForDisplay(testUrl);
+        String expectedUrl = UrlFormatter.formatUrlForDisplayOmitScheme(testUrl);
 
         CriteriaHelper.pollUiThread(Criteria.equals(expectedUrl, () -> {
             UrlBar urlBar = newActivity.findViewById(R.id.url_bar);

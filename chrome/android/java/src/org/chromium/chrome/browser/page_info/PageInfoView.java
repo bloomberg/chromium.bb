@@ -25,6 +25,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 
@@ -384,5 +385,10 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         }
 
         return animation;
+    }
+
+    @VisibleForTesting
+    public String getUrlTitleForTesting() {
+        return mUrlTitle.getText().toString();
     }
 }

@@ -47,4 +47,7 @@ specific_include_rules = {
   "AuthenticatorTest\.java": [
     "+content/public/android/java/src/org/chromium/content/common/ContentSwitches.java",
   ],
+  "PageInfoPopupTest\.java": [
+    "+content/public/android/java/src/org/chromium/content/common/ContentSwitches.java",
+  ],
 }

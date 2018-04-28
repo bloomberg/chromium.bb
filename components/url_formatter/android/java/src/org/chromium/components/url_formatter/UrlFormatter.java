@@ -30,40 +30,34 @@ public final class UrlFormatter {
 
     /**
      * Builds a String representation of <code>uri</code> suitable for display to the user, omitting
-     * the scheme if it is "http://", the username and password, and trailing slash on a bare
-     * hostname.
+     * the scheme, the username and password, and trailing slash on a bare hostname.
+     *
+     * The IDN hostname is turned to Unicode if the Unicode representation is deemed safe.
+     * For more information, see <code>url_formatter::FormatUrl(const GURL&)</code>.
      *
      * Some examples:
      *  - "http://user:password@example.com/" -> "example.com"
-     *  - "https://example.com/path" -> "https://example.com/path"
+     *  - "https://example.com/path" -> "example.com/path"
      *  - "http://www.xn--frgbolaget-q5a.se" -> "www.färgbolaget.se"
      *
-     * The IDN hostname is turned to Unicode if the Unicode representation is deemed safe.
+     * @param uri URI to format.
+     * @return Formatted URL.
+     */
+    public static String formatUrlForDisplayOmitScheme(String uri) {
+        return nativeFormatUrlForDisplayOmitScheme(uri);
+    }
+
+    /**
+     * Builds a String representation of <code>uri</code> suitable for copying to the clipboard.
+     * It does not omit any components, and it performs normal escape decoding. Spaces are left
+     * escaped. The IDN hostname is turned to Unicode if the Unicode representation is deemed safe.
      * For more information, see <code>url_formatter::FormatUrl(const GURL&)</code>.
      *
      * @param uri URI to format.
      * @return Formatted URL.
      */
-    public static String formatUrlForDisplay(URI uri) {
-        return formatUrlForDisplay(uri.toString());
-    }
-
-    /**
-     * @see #formatUrlForDisplay(URI)
-     */
-    public static String formatUrlForDisplay(String uri) {
-        return nativeFormatUrlForDisplay(uri);
-    }
-
-    /**
-     * Builds a String representation of <code>uri</code> suitable for display to the user, omitting
-     * the scheme, the username and password, and trailing slash on a bare hostname.
-     * @param uri URI to format.
-     * @return Formatted URL.
-     * @see #formatUrlForDisplay(URI)
-     */
-    public static String formatUrlForDisplayOmitScheme(String uri) {
-        return nativeFormatUrlForDisplayOmitScheme(uri);
+    public static String formatUrlForCopy(String uri) {
+        return nativeFormatUrlForCopy(uri);
     }
 
     /**
@@ -95,8 +89,8 @@ public final class UrlFormatter {
     }
 
     private static native String nativeFixupUrl(String url);
-    private static native String nativeFormatUrlForDisplay(String url);
     private static native String nativeFormatUrlForDisplayOmitScheme(String url);
+    private static native String nativeFormatUrlForCopy(String url);
     private static native String nativeFormatUrlForSecurityDisplay(String url);
     private static native String nativeFormatUrlForSecurityDisplayOmitScheme(String url);
 }
