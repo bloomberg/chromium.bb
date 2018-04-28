@@ -29,16 +29,16 @@ public class FindToolbarPhone extends FindToolbar {
     }
 
     @Override
-    public void activate() {
-        if (!isViewAvailable()) return;
+    protected void handleActivate() {
+        assert isWebContentAvailable();
         setVisibility(View.VISIBLE);
-        super.activate();
+        super.handleActivate();
     }
 
     @Override
-    public void deactivate(boolean clearSelection) {
-        super.deactivate(clearSelection);
+    protected void handleDeactivation(boolean clearSelection) {
         setVisibility(View.GONE);
+        super.handleDeactivation(clearSelection);
     }
 
     @Override
