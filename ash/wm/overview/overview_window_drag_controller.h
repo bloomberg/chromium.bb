@@ -10,7 +10,6 @@
 #include "ash/ash_export.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace ash {
@@ -25,6 +24,16 @@ class WindowSelectorItem;
 // window about to be snapped.
 class ASH_EXPORT OverviewWindowDragController {
  public:
+  enum class DragBehavior {
+    kNoDrag,       // No drag has started.
+    kUndefined,    // Drag has started, but it is undecided whether we want to
+                   // drag to snap or drag to close yet.
+    kDragToSnap,   // On drag complete, the window will be snapped, if it meets
+                   // requirements.
+    kDragToClose,  // On drag complete, the window will be closed, if it meets
+                   // requirements.
+  };
+
   // The minimum offset that will be considered as a drag event.
   static constexpr int kMinimumDragOffset = 5;
   // The minimum offset that an item must be moved before it is considered a
@@ -39,6 +48,9 @@ class ASH_EXPORT OverviewWindowDragController {
   void Drag(const gfx::Point& location_in_screen);
   void CompleteDrag(const gfx::Point& location_in_screen);
   void StartSplitViewDragMode(const gfx::Point& location_in_screen);
+  void Fling(const gfx::Point& location_in_screen,
+             float velocity_x,
+             float velocity_y);
   void ActivateDraggedWindow();
   void ResetGesture();
 
@@ -49,6 +61,8 @@ class ASH_EXPORT OverviewWindowDragController {
   void ResetWindowSelector();
 
   WindowSelectorItem* item() { return item_; }
+
+  DragBehavior current_drag_behavior() { return current_drag_behavior_; }
 
  private:
   // Updates visuals for the user while dragging items around.
@@ -74,13 +88,22 @@ class ASH_EXPORT OverviewWindowDragController {
   // The drag target window in the overview mode.
   WindowSelectorItem* item_ = nullptr;
 
+  DragBehavior current_drag_behavior_ = DragBehavior::kNoDrag;
+
   // The location of the previous mouse/touch/gesture event in screen.
   gfx::Point previous_event_location_;
 
-  // The location of the initial mouse/touch/gesture event in screen. It is
-  // nullopt if the initial drag location was not a snap region, or if the it
+  // The location of the initial mouse/touch/gesture event in screen.
+  gfx::Point initial_event_location_;
+
+  // False if the initial drag location was not a snap region, or if the it
   // was a snap region but the drag has since moved out.
-  base::Optional<gfx::Point> initial_event_location_;
+  bool started_in_snap_region_ = false;
+
+  // The opacity of |item_| changes if we are in drag to close mode. Store the
+  // orginal opacity of |item_| and restore it to the item when we leave drag
+  // to close mode.
+  float original_opacity_ = 1.f;
 
   // Set to true once the bounds of |item_| change.
   bool did_move_ = false;

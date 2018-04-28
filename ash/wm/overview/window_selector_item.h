@@ -183,6 +183,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   void HandleReleaseEvent(const gfx::Point& location_in_screen);
   void HandleDragEvent(const gfx::Point& location_in_screen);
   void HandleLongPressEvent(const gfx::Point& location_in_screen);
+  void HandleFlingStartEvent(const gfx::Point& location_in_screen,
+                             float velocity_x,
+                             float velocity_y);
   void ActivateDraggedWindow();
   void ResetDraggedWindowGesture();
 
@@ -198,6 +201,10 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Sets the bounds of the window shadow. If |bounds_in_screen| is nullopt,
   // the shadow is hidden.
   void SetShadowBounds(base::Optional<gfx::Rect> bounds_in_screen);
+
+  // Changes the opacity of all the windows the item owns.
+  void SetOpacity(float opacity);
+  float GetOpacity();
 
   void set_should_animate_when_entering(bool should_animate) {
     should_animate_when_entering_ = should_animate;
@@ -256,9 +263,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // by |animation_type|.
   void SetItemBounds(const gfx::Rect& target_bounds,
                      OverviewAnimationType animation_type);
-
-  // Changes the opacity of all the windows the item owns.
-  void SetOpacity(float opacity);
 
   // Creates the window label.
   void CreateWindowLabel(const base::string16& title);
