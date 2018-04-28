@@ -802,11 +802,8 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(
       if (item->IsFunctionValue()) {
         const CSSFunctionValue* function_value = ToCSSFunctionValue(item.Get());
         DCHECK_EQ(function_value->FunctionType(), CSSValueAttr);
-        // FIXME: Can a namespace be specified for an attr(foo)?
-        if (state.Style()->StyleType() == kPseudoIdNone)
-          state.Style()->SetUnique();
-        else
-          state.ParentStyle()->SetUnique();
+        state.Style()->SetUnique();
+        // TODO: Can a namespace be specified for an attr(foo)?
         QualifiedName attr(
             g_null_atom, ToCSSCustomIdentValue(function_value->Item(0)).Value(),
             g_null_atom);
