@@ -8,7 +8,7 @@ namespace security_state {
 namespace features {
 
 const base::Feature kMarkHttpAsFeature{"MarkHttpAs",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 const char kMarkHttpAsFeatureParameterName[] = "treatment";
 const char kMarkHttpAsParameterWarning[] = "warning";
 const char kMarkHttpAsParameterDangerous[] = "dangerous";
