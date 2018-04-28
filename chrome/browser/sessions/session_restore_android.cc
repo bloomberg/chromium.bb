@@ -34,8 +34,7 @@ content::WebContents* SessionRestore::RestoreForeignSessionTab(
       sessions::ContentSerializedNavigationBuilder::ToNavigationEntries(
           session_tab.navigations, profile);
   std::unique_ptr<content::WebContents> new_web_contents =
-      base::WrapUnique(content::WebContents::Create(
-          content::WebContents::CreateParams(context)));
+      content::WebContents::Create(content::WebContents::CreateParams(context));
   content::WebContents* raw_new_web_contents = new_web_contents.get();
   int selected_index = session_tab.normalized_navigation_index();
   new_web_contents->GetController().Restore(

@@ -7,6 +7,7 @@
 
 #include "ash/test/ash_test_environment.h"
 #include "base/macros.h"
+#include "ui/views/controls/webview/webview.h"
 
 namespace content {
 class TestBrowserThreadBundle;
@@ -37,6 +38,8 @@ class AshTestEnvironmentContent : public AshTestEnvironment {
 
  private:
   std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<views::WebView::ScopedWebContentsCreatorForTesting>
+      scoped_web_contents_creator_;
 
   // An implementation of ShellContentState supplied by the user prior to
   // SetUp().

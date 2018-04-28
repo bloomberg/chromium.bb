@@ -148,7 +148,7 @@ void DistillCurrentPageAndView(content::WebContents* old_web_contents) {
   content::WebContents::CreateParams create_params(
       old_web_contents->GetBrowserContext());
   std::unique_ptr<content::WebContents> new_web_contents =
-      base::WrapUnique(content::WebContents::Create(create_params));
+      content::WebContents::Create(create_params);
   DCHECK(new_web_contents);
 
   // Copy all navigation state from the old WebContents to the new one.

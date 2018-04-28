@@ -431,8 +431,8 @@ void PasswordManagerBrowserTestBase::SetUpOnMainThread() {
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   std::unique_ptr<content::WebContents> owned_web_contents =
-      base::WrapUnique(content::WebContents::Create(
-          content::WebContents::CreateParams(tab->GetBrowserContext())));
+      content::WebContents::Create(
+          content::WebContents::CreateParams(tab->GetBrowserContext()));
   web_contents_ = owned_web_contents.get();
   ASSERT_TRUE(web_contents_);
 

@@ -671,8 +671,8 @@ class ResourceDispatcherHostTest : public testing::Test {
     HandleScheme("test");
     scoped_refptr<SiteInstance> site_instance =
         SiteInstance::Create(browser_context_.get());
-    web_contents_.reset(
-        WebContents::Create(WebContents::CreateParams(browser_context_.get())));
+    web_contents_ =
+        WebContents::Create(WebContents::CreateParams(browser_context_.get()));
     web_contents_filter_ = new TestFilterSpecifyingChild(
         browser_context_->GetResourceContext(),
         web_contents_->GetMainFrame()->GetProcess()->GetID());

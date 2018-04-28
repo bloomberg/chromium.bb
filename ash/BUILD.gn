@@ -1933,6 +1933,7 @@ static_library("test_support_with_content") {
     "//content/public/browser",
     "//content/test:test_support",
     "//skia",
+    "//ui/views/controls/webview",
   ]
 }
 

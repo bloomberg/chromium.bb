@@ -15,9 +15,9 @@ namespace {
 
 class TestChromeKeyboardUI : public ChromeKeyboardUI {
  public:
-  TestChromeKeyboardUI(content::BrowserContext* context,
-                       content::WebContents* contents)
-      : ChromeKeyboardUI(context), contents_(contents) {}
+  explicit TestChromeKeyboardUI(std::unique_ptr<content::WebContents> contents)
+      : ChromeKeyboardUI(contents->GetBrowserContext()),
+        contents_(std::move(contents)) {}
   ~TestChromeKeyboardUI() override {}
 
   ui::InputMethod* GetInputMethod() override { return nullptr; }
@@ -25,10 +25,12 @@ class TestChromeKeyboardUI : public ChromeKeyboardUI {
                          const content::MediaStreamRequest& request,
                          const content::MediaResponseCallback& callback) {}
 
-  content::WebContents* CreateWebContents() override { return contents_; }
+  std::unique_ptr<content::WebContents> CreateWebContents() override {
+    return std::move(contents_);
+  }
 
  private:
-  content::WebContents* contents_;
+  std::unique_ptr<content::WebContents> contents_;
 
   DISALLOW_COPY_AND_ASSIGN(TestChromeKeyboardUI);
 };
@@ -39,8 +41,9 @@ using ChromeKeyboardUITest = ChromeRenderViewHostTestHarness;
 
 // A test for crbug.com/734534
 TEST_F(ChromeKeyboardUITest, DoesNotCrashWhenParentDoesNotExist) {
-  content::WebContents* contents = CreateTestWebContents();
-  TestChromeKeyboardUI keyboard_ui(contents->GetBrowserContext(), contents);
+  std::unique_ptr<content::WebContents> contents =
+      base::WrapUnique(CreateTestWebContents());
+  TestChromeKeyboardUI keyboard_ui(std::move(contents));
 
   EXPECT_FALSE(keyboard_ui.HasContentsWindow());
   aura::Window* view = keyboard_ui.GetContentsWindow();

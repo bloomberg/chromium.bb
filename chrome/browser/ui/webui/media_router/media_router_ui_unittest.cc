@@ -172,8 +172,7 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
 
   void CreateMediaRouterUI(Profile* profile) {
     SessionTabHelper::CreateForWebContents(web_contents());
-    web_ui_contents_.reset(
-        WebContents::Create(WebContents::CreateParams(profile)));
+    web_ui_contents_ = WebContents::Create(WebContents::CreateParams(profile));
     web_ui_.set_web_contents(web_ui_contents_.get());
     media_router_ui_ =
         std::make_unique<TestMediaRouterUI>(&web_ui_, &mock_router_);
@@ -797,8 +796,7 @@ TEST_F(MediaRouterUITest, SetsForcedCastModeWithPresentationURLs) {
                  base::Unretained(&request_callbacks)));
 
   SessionTabHelper::CreateForWebContents(web_contents());
-  web_ui_contents_.reset(
-      WebContents::Create(WebContents::CreateParams(profile())));
+  web_ui_contents_ = WebContents::Create(WebContents::CreateParams(profile()));
   web_ui_.set_web_contents(web_ui_contents_.get());
   media_router_ui_ =
       std::make_unique<TestMediaRouterUI>(&web_ui_, &mock_router_);

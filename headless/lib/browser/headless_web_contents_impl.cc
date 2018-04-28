@@ -257,9 +257,11 @@ std::unique_ptr<HeadlessWebContentsImpl> HeadlessWebContentsImpl::Create(
                                                    nullptr);
   create_params.initial_size = builder->window_size_;
 
+  // TODO(erikchen): Refactor this class to use strong ownership semantics.
+  // https://crbug.com/832879.
   std::unique_ptr<HeadlessWebContentsImpl> headless_web_contents =
       base::WrapUnique(new HeadlessWebContentsImpl(
-          content::WebContents::Create(create_params),
+          content::WebContents::Create(create_params).release(),
           builder->browser_context_));
 
   if (builder->tab_sockets_allowed_) {

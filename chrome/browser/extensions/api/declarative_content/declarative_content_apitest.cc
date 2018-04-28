@@ -841,9 +841,8 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
                        WebContentsWithoutTabAddedNotificationAtOnLoaded) {
   // Add a web contents to the tab strip in a way that doesn't trigger
   // NOTIFICATION_TAB_ADDED.
-  std::unique_ptr<content::WebContents> contents =
-      base::WrapUnique(content::WebContents::Create(
-          content::WebContents::CreateParams(profile())));
+  std::unique_ptr<content::WebContents> contents = content::WebContents::Create(
+      content::WebContents::CreateParams(profile()));
   browser()->tab_strip_model()->AppendWebContents(std::move(contents), false);
 
   // The actual extension contents don't matter here -- we're just looking to

@@ -1349,9 +1349,9 @@ class SitePerProcessCustomTextInputManagerFilteringTest
 // Test is flaky: http://crbug.com/710842
 IN_PROC_BROWSER_TEST_F(SitePerProcessCustomTextInputManagerFilteringTest,
                        DISABLED_LookUpStringForRangeRoutesToFocusedWidget) {
-  std::unique_ptr<content::WebContents> new_contents = base::WrapUnique(
+  std::unique_ptr<content::WebContents> new_contents =
       content::WebContents::Create(content::WebContents::CreateParams(
-          active_contents()->GetBrowserContext(), nullptr)));
+          active_contents()->GetBrowserContext(), nullptr));
   content::WebContents* raw_new_contents = new_contents.get();
   browser()->tab_strip_model()->InsertWebContentsAt(1, std::move(new_contents),
                                                     TabStripModel::ADD_ACTIVE);
@@ -1430,9 +1430,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessCustomTextInputManagerFilteringTest,
 IN_PROC_BROWSER_TEST_F(
     SitePerProcessCustomTextInputManagerFilteringTest,
     DoNotCrashBrowserInWordLookUpForDestroyedWidget_ChildFrame) {
-  std::unique_ptr<content::WebContents> new_contents = base::WrapUnique(
+  std::unique_ptr<content::WebContents> new_contents =
       content::WebContents::Create(content::WebContents::CreateParams(
-          active_contents()->GetBrowserContext(), nullptr)));
+          active_contents()->GetBrowserContext(), nullptr));
   content::WebContents* raw_new_contents = new_contents.get();
   browser()->tab_strip_model()->InsertWebContentsAt(1, std::move(new_contents),
                                                     TabStripModel::ADD_ACTIVE);
@@ -1501,9 +1501,9 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     SitePerProcessCustomTextInputManagerFilteringTest,
     DoNotCrashBrowserInWordLookUpForDestroyedWidget_MainFrame) {
-  std::unique_ptr<content::WebContents> new_contents = base::WrapUnique(
+  std::unique_ptr<content::WebContents> new_contents =
       content::WebContents::Create(content::WebContents::CreateParams(
-          active_contents()->GetBrowserContext(), nullptr)));
+          active_contents()->GetBrowserContext(), nullptr));
   content::WebContents* raw_new_contents = new_contents.get();
   browser()->tab_strip_model()->InsertWebContentsAt(1, std::move(new_contents),
                                                     TabStripModel::ADD_ACTIVE);

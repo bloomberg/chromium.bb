@@ -1596,9 +1596,9 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, ConsoleMessage) {
       Browser::CreateParams(browser()->profile(), true));
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  std::unique_ptr<content::WebContents> contents = base::WrapUnique(
+  std::unique_ptr<content::WebContents> contents =
       content::WebContents::Create(content::WebContents::CreateParams(
-          original_contents->GetBrowserContext())));
+          original_contents->GetBrowserContext()));
   content::WebContents* raw_contents = contents.get();
   ASSERT_TRUE(raw_contents);
   raw_contents->SetDelegate(delegate);
@@ -1674,9 +1674,9 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
       Browser::CreateParams(browser()->profile(), true));
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  std::unique_ptr<content::WebContents> contents = base::WrapUnique(
+  std::unique_ptr<content::WebContents> contents =
       content::WebContents::Create(content::WebContents::CreateParams(
-          original_contents->GetBrowserContext())));
+          original_contents->GetBrowserContext()));
   content::WebContents* raw_contents = contents.get();
   ASSERT_TRUE(raw_contents);
   raw_contents->SetDelegate(delegate);
@@ -1768,9 +1768,9 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
       Browser::CreateParams(browser()->profile(), true));
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  std::unique_ptr<content::WebContents> contents = base::WrapUnique(
+  std::unique_ptr<content::WebContents> contents =
       content::WebContents::Create(content::WebContents::CreateParams(
-          original_contents->GetBrowserContext())));
+          original_contents->GetBrowserContext()));
   content::WebContents* raw_contents = contents.get();
   ASSERT_TRUE(raw_contents);
   raw_contents->SetDelegate(delegate);
@@ -1849,8 +1849,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, AddedTab) {
   ASSERT_TRUE(tab);
 
   std::unique_ptr<content::WebContents> new_contents =
-      base::WrapUnique(content::WebContents::Create(
-          content::WebContents::CreateParams(tab->GetBrowserContext())));
+      content::WebContents::Create(
+          content::WebContents::CreateParams(tab->GetBrowserContext()));
   content::NavigationController& controller = new_contents->GetController();
   SecurityStateTabHelper::CreateForWebContents(new_contents.get());
   CheckSecurityInfoForNonSecure(new_contents.get());
@@ -2031,9 +2031,9 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperIncognitoTest,
       Browser::CreateParams(browser()->profile(), true));
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  std::unique_ptr<content::WebContents> contents = base::WrapUnique(
+  std::unique_ptr<content::WebContents> contents =
       content::WebContents::Create(content::WebContents::CreateParams(
-          original_contents->GetBrowserContext())));
+          original_contents->GetBrowserContext()));
   content::WebContents* raw_contents = contents.get();
   ASSERT_TRUE(raw_contents);
   ASSERT_TRUE(raw_contents->GetBrowserContext()->IsOffTheRecord());
@@ -2094,9 +2094,9 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperIncognitoTest,
       Browser::CreateParams(browser()->profile(), true));
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  std::unique_ptr<content::WebContents> contents = base::WrapUnique(
+  std::unique_ptr<content::WebContents> contents =
       content::WebContents::Create(content::WebContents::CreateParams(
-          original_contents->GetBrowserContext())));
+          original_contents->GetBrowserContext()));
   content::WebContents* raw_contents = contents.get();
   ASSERT_TRUE(raw_contents);
   ASSERT_TRUE(raw_contents->GetBrowserContext()->IsOffTheRecord());
@@ -2178,9 +2178,9 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
       Browser::CreateParams(guest_browser->profile(), true));
   content::WebContents* original_contents =
       guest_browser->tab_strip_model()->GetActiveWebContents();
-  std::unique_ptr<content::WebContents> contents = base::WrapUnique(
+  std::unique_ptr<content::WebContents> contents =
       content::WebContents::Create(content::WebContents::CreateParams(
-          original_contents->GetBrowserContext())));
+          original_contents->GetBrowserContext()));
   content::WebContents* raw_contents = contents.get();
   ASSERT_TRUE(raw_contents);
   ASSERT_TRUE(raw_contents->GetBrowserContext()->IsOffTheRecord());

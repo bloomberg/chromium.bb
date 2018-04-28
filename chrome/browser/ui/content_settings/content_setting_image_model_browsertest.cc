@@ -103,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingImageModelBrowserTest,
   Profile* profile = browser()->profile();
   WebContents::CreateParams create_params(profile);
   std::unique_ptr<WebContents> other_web_contents =
-      base::WrapUnique(WebContents::Create(create_params));
+      WebContents::Create(create_params);
   content::WebContents* raw_other_web_contents = other_web_contents.get();
   browser()->tab_strip_model()->AppendWebContents(std::move(other_web_contents),
                                                   true);

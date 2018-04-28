@@ -193,8 +193,8 @@ class UserManagerProfileDialogDelegate
   if ((self = [super initWithWindow:window])) {
     webContents_ = webContents;
 
-    dialogWebContents_.reset(content::WebContents::Create(
-        content::WebContents::CreateParams(profile)));
+    dialogWebContents_ = content::WebContents::Create(
+        content::WebContents::CreateParams(profile));
     window.get().contentView = dialogWebContents_->GetNativeView();
     webContentsDelegate_.reset(new UserManagerProfileDialogDelegate());
     dialogWebContents_->SetDelegate(webContentsDelegate_.get());
@@ -300,8 +300,8 @@ class UserManagerProfileDialogDelegate
     userManagerObserver_ = userManagerObserver;
 
     // Initialize the web view.
-    webContents_.reset(content::WebContents::Create(
-        content::WebContents::CreateParams(profile)));
+    webContents_ = content::WebContents::Create(
+        content::WebContents::CreateParams(profile));
     window.contentView = webContents_->GetNativeView();
 
     // When a window has layer-backed subviews, its contentView must be

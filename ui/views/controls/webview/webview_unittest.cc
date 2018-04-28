@@ -33,24 +33,6 @@ namespace views {
 
 namespace {
 
-// Provides functionality to create a test WebContents.
-class WebViewTestViewsDelegate : public views::TestViewsDelegate {
- public:
-  WebViewTestViewsDelegate() {}
-  ~WebViewTestViewsDelegate() override {}
-
-  // Overriden from TestViewsDelegate.
-  content::WebContents* CreateWebContents(
-      content::BrowserContext* browser_context,
-      content::SiteInstance* site_instance) override {
-    return content::WebContentsTester::CreateTestWebContents(browser_context,
-                                                             site_instance);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebViewTestViewsDelegate);
-};
-
 // Provides functionality to observe events on a WebContents like
 // OnVisibilityChanged/WebContentsDestroyed.
 class WebViewTestWebContentsObserver : public content::WebContentsObserver {
@@ -146,8 +128,19 @@ class WebViewUnitTest : public views::test::WidgetTest {
 
   ~WebViewUnitTest() override {}
 
+  std::unique_ptr<content::WebContents> CreateWebContentsForWebView(
+      content::BrowserContext* browser_context) {
+    return base::WrapUnique(content::WebContentsTester::CreateTestWebContents(
+        browser_context, nullptr));
+  }
+
   void SetUp() override {
-    set_views_delegate(base::WrapUnique(new WebViewTestViewsDelegate));
+    views::WebView::WebContentsCreator creator = base::BindRepeating(
+        &WebViewUnitTest::CreateWebContentsForWebView, base::Unretained(this));
+    scoped_web_contents_creator_ =
+        std::make_unique<views::WebView::ScopedWebContentsCreatorForTesting>(
+            creator);
+    set_views_delegate(base::WrapUnique(new views::TestViewsDelegate));
     browser_context_.reset(new content::TestBrowserContext);
     WidgetTest::SetUp();
     // Set the test content browser client to avoid pulling in needless
@@ -171,6 +164,7 @@ class WebViewUnitTest : public views::test::WidgetTest {
   }
 
   void TearDown() override {
+    scoped_web_contents_creator_.reset();
     top_level_widget_->Close();  // Deletes all children and itself.
     RunPendingMessages();
 
@@ -187,14 +181,16 @@ class WebViewUnitTest : public views::test::WidgetTest {
   NativeViewHost* holder() const { return web_view_->holder_; }
 
   std::unique_ptr<content::WebContents> CreateWebContents() const {
-    return base::WrapUnique(content::WebContents::Create(
-        content::WebContents::CreateParams(browser_context_.get())));
+    return content::WebContents::Create(
+        content::WebContents::CreateParams(browser_context_.get()));
   }
 
  private:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::unique_ptr<content::TestBrowserContext> browser_context_;
   content::TestContentBrowserClient test_browser_client_;
+  std::unique_ptr<views::WebView::ScopedWebContentsCreatorForTesting>
+      scoped_web_contents_creator_;
 
   Widget* top_level_widget_ = nullptr;
   WebView* web_view_ = nullptr;

@@ -52,10 +52,7 @@ std::unique_ptr<content::WebContents> CreateWebContents(
   create_params.routing_id = MSG_ROUTING_NONE;
   create_params.initial_size = display_size;
   create_params.site_instance = site_instance;
-  content::WebContents* web_contents =
-      content::WebContents::Create(create_params);
-
-  return base::WrapUnique(web_contents);
+  return content::WebContents::Create(create_params);
 }
 
 }  // namespace

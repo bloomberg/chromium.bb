@@ -63,7 +63,7 @@ BackgroundContents::BackgroundContents(
     web_contents_.reset(WebContents::CreateWithSessionStorage(
         create_params, session_storage_namespace_map));
   } else {
-    web_contents_.reset(WebContents::Create(create_params));
+    web_contents_ = WebContents::Create(create_params);
   }
   extensions::SetViewType(
       web_contents_.get(), extensions::VIEW_TYPE_BACKGROUND_CONTENTS);

@@ -312,7 +312,7 @@ void ChromeKeyboardUI::UpdateInsetsForWindow(aura::Window* window) {
 
 aura::Window* ChromeKeyboardUI::GetContentsWindow() {
   if (!keyboard_contents_) {
-    keyboard_contents_.reset(CreateWebContents());
+    keyboard_contents_ = CreateWebContents();
     keyboard_contents_->SetDelegate(new ChromeKeyboardContentsDelegate(this));
     SetupWebContents(keyboard_contents_.get());
     LoadContents(GetVirtualKeyboardUrl());
@@ -438,7 +438,7 @@ const aura::Window* ChromeKeyboardUI::GetKeyboardRootWindow() const {
   return keyboard_contents_->GetNativeView()->GetRootWindow();
 }
 
-content::WebContents* ChromeKeyboardUI::CreateWebContents() {
+std::unique_ptr<content::WebContents> ChromeKeyboardUI::CreateWebContents() {
   content::BrowserContext* context = browser_context();
   return content::WebContents::Create(content::WebContents::CreateParams(
       context,

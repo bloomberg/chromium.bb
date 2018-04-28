@@ -1083,8 +1083,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TabClosingWhenRemovingExtension) {
 
   ui_test_utils::NavigateToURL(browser(), url);
 
-  std::unique_ptr<WebContents> app_contents = base::WrapUnique(
-      WebContents::Create(WebContents::CreateParams(browser()->profile())));
+  std::unique_ptr<WebContents> app_contents =
+      WebContents::Create(WebContents::CreateParams(browser()->profile()));
   extensions::TabHelper::CreateForWebContents(app_contents.get());
   extensions::TabHelper* extensions_tab_helper =
       extensions::TabHelper::FromWebContents(app_contents.get());

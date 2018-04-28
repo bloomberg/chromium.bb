@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
@@ -22,6 +23,27 @@
 #include "ui/views/views_delegate.h"
 
 namespace views {
+
+namespace {
+
+// A testing stub that creates web contents.
+WebView::WebContentsCreator* GetCreatorForTesting() {
+  static base::NoDestructor<WebView::WebContentsCreator> creator;
+  return creator.get();
+}
+
+}  // namespace
+
+WebView::ScopedWebContentsCreatorForTesting::ScopedWebContentsCreatorForTesting(
+    WebContentsCreator creator) {
+  DCHECK(!*GetCreatorForTesting());
+  *GetCreatorForTesting() = creator;
+}
+
+WebView::ScopedWebContentsCreatorForTesting::
+    ~ScopedWebContentsCreatorForTesting() {
+  *GetCreatorForTesting() = WebView::WebContentsCreator();
+}
 
 // static
 const char WebView::kViewClassName[] = "WebView";
@@ -44,7 +66,7 @@ WebView::~WebView() {
 
 content::WebContents* WebView::GetWebContents() {
   if (!web_contents()) {
-    wc_owner_.reset(CreateWebContents(browser_context_));
+    wc_owner_ = CreateWebContents(browser_context_);
     wc_owner_->SetDelegate(this);
     SetWebContents(wc_owner_.get());
   }
@@ -380,12 +402,11 @@ void WebView::NotifyAccessibilityWebContentsChanged() {
     NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);
 }
 
-content::WebContents* WebView::CreateWebContents(
-      content::BrowserContext* browser_context) {
-  content::WebContents* contents = NULL;
-  if (ViewsDelegate::GetInstance()) {
-    contents =
-        ViewsDelegate::GetInstance()->CreateWebContents(browser_context, NULL);
+std::unique_ptr<content::WebContents> WebView::CreateWebContents(
+    content::BrowserContext* browser_context) {
+  std::unique_ptr<content::WebContents> contents;
+  if (*GetCreatorForTesting()) {
+    contents = GetCreatorForTesting()->Run(browser_context);
   }
 
   if (!contents) {

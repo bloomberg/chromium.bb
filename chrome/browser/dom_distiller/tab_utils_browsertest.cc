@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
   content::WebContents::CreateParams create_params(
       source_web_contents->GetBrowserContext());
   std::unique_ptr<content::WebContents> destination_web_contents =
-      base::WrapUnique(content::WebContents::Create(create_params));
+      content::WebContents::Create(create_params);
   content::WebContents* raw_destination_web_contents =
       destination_web_contents.get();
   DCHECK(raw_destination_web_contents);

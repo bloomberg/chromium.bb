@@ -75,9 +75,9 @@ class AssistantCard : public content::WebContentsDelegate,
  private:
   void InitWebContents(Profile* profile,
                        ash::mojom::AssistantCardParamsPtr params) {
-    web_contents_.reset(
+    web_contents_ =
         content::WebContents::Create(content::WebContents::CreateParams(
-            profile, content::SiteInstance::Create(profile))));
+            profile, content::SiteInstance::Create(profile)));
 
     // Use a transparent background.
     views::WebContentsSetBackgroundColor::CreateForWebContentsWithColor(

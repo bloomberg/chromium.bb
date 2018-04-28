@@ -80,7 +80,7 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
 
   const aura::Window* GetKeyboardRootWindow() const;
 
-  virtual content::WebContents* CreateWebContents();
+  virtual std::unique_ptr<content::WebContents> CreateWebContents();
 
  private:
   friend class TestApi;

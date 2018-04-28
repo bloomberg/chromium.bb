@@ -413,7 +413,7 @@ std::unique_ptr<content::WebContents> CreateTargetContents(
 #endif
 
   std::unique_ptr<WebContents> target_contents =
-      base::WrapUnique(WebContents::Create(create_params));
+      WebContents::Create(create_params);
 
   // New tabs can have WebUI URLs that will make calls back to arbitrary
   // tab helpers, so the entire set of tab helpers needs to be set up

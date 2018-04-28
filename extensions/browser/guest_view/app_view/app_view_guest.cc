@@ -247,7 +247,9 @@ void AppViewGuest::CompleteCreateWebContents(
       content::SiteInstance::CreateForURL(browser_context(),
                                           guest_extension->url()));
   params.guest_delegate = this;
-  callback.Run(WebContents::Create(params));
+  // TODO(erikchen): Fix ownership semantics for guest views.
+  // https://crbug.com/832879.
+  callback.Run(WebContents::Create(params).release());
 }
 
 void AppViewGuest::LaunchAppAndFireEvent(

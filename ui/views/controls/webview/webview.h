@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -94,6 +95,20 @@ class WEBVIEW_EXPORT WebView : public View,
   const char* GetClassName() const override;
 
   NativeViewHost* holder() { return holder_; }
+  using WebContentsCreator =
+      base::RepeatingCallback<std::unique_ptr<content::WebContents>(
+          content::BrowserContext*)>;
+
+  // An instance of this class registers a WebContentsCreator on construction
+  // and deregisters the WebContentsCreator on destruction.
+  class WEBVIEW_EXPORT ScopedWebContentsCreatorForTesting {
+   public:
+    explicit ScopedWebContentsCreatorForTesting(WebContentsCreator creator);
+    ~ScopedWebContentsCreatorForTesting();
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ScopedWebContentsCreatorForTesting);
+  };
 
  protected:
   // Swaps the owned WebContents |wc_owner_| with |new_web_contents|. Returns
@@ -154,7 +169,7 @@ class WEBVIEW_EXPORT WebView : public View,
 
   // Create a regular or test web contents (based on whether we're running
   // in a unit test or not).
-  content::WebContents* CreateWebContents(
+  std::unique_ptr<content::WebContents> CreateWebContents(
       content::BrowserContext* browser_context);
 
   NativeViewHost* const holder_;

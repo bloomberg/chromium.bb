@@ -192,9 +192,13 @@ content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
     return nullptr;
   content::WebContents::CreateParams guest_create_params(create_params);
   guest_create_params.guest_delegate = guest;
-  auto* guest_web_contents = WebContents::Create(guest_create_params);
-  guest->InitWithWebContents(base::DictionaryValue(), guest_web_contents);
-  return guest_web_contents;
+
+  // TODO(erikchen): Fix ownership semantics for this class.
+  // https://crbug.com/832879.
+  std::unique_ptr<content::WebContents> guest_web_contents =
+      WebContents::Create(guest_create_params);
+  guest->InitWithWebContents(base::DictionaryValue(), guest_web_contents.get());
+  return guest_web_contents.release();
 }
 
 content::WebContents* GuestViewManager::GetGuestByInstanceID(

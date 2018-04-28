@@ -193,7 +193,9 @@ void MimeHandlerViewGuest::CreateWebContents(
   WebContents::CreateParams params(browser_context(),
                                    guest_site_instance.get());
   params.guest_delegate = this;
-  auto* web_contents = WebContents::Create(params);
+  // TODO(erikchen): Fix ownership semantics for guest views.
+  // https://crbug.com/832879.
+  auto* web_contents = WebContents::Create(params).release();
   SetViewType(web_contents, VIEW_TYPE_EXTENSION_GUEST);
   callback.Run(web_contents);
 
