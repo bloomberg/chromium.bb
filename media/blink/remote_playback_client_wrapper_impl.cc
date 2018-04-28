@@ -17,6 +17,9 @@ RemotePlaybackClientWrapperImpl::RemotePlaybackClientWrapperImpl(
 RemotePlaybackClientWrapperImpl::~RemotePlaybackClientWrapperImpl() = default;
 
 std::string RemotePlaybackClientWrapperImpl::GetActivePresentationId() {
+  if (!remote_playback_client_)
+    return std::string();
+
   // The presentation ID is essentially a GUID preceeded by the "mr_" prefix,
   // which makes it ASCII compatible.
   // If MediaRouterBase::CreatePresentationId() were changed, this line might
