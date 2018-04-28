@@ -181,3 +181,14 @@ template("fuchsia_sdk_pkg") {
     }
   }
 }
+
+template("fuchsia_sdk_lib_pkg") {
+  fuchsia_sdk_pkg(target_name) {
+    forward_variables_from(invoker, "*")
+    if (defined(invoker.name)) {
+      libs = [ invoker.name ]
+    } else {
+      libs = [ target_name ]
+    }
+  }
+}

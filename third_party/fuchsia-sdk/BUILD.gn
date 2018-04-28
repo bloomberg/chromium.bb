@@ -23,9 +23,8 @@ fuchsia_sdk_pkg("async") {
 }
 
 # async-default keep a per-thread dispatcher for async.
-fuchsia_sdk_pkg("async_default") {
+fuchsia_sdk_lib_pkg("async_default") {
   name = "async-default"
-  libs = [ "async-default" ]
   sources = [
     "include/lib/async/default.h",
   ]
@@ -75,6 +74,13 @@ fuchsia_sdk_pkg("zx") {
   ]
 }
 
+fuchsia_sdk_lib_pkg("launchpad") {
+  sources = [
+    "include/launchpad/launchpad.h",
+    "include/launchpad/vmo.h",
+  ]
+}
+
 fuchsia_sdk_pkg("fidl") {
   # FIDL headers include async headers. These dependencies needs to be public
   # to ensure that dependent targets get correct include paths.
@@ -82,13 +88,13 @@ fuchsia_sdk_pkg("fidl") {
     ":async",
     ":async_default",
   ]
+
   sources = [
     "builder.cpp",
     "decoding.cpp",
     "encoding.cpp",
     "formatting.cpp",
     "include/lib/fidl/coding.h",
-    "include/lib/fidl/cpp",
     "include/lib/fidl/cpp/builder.h",
     "include/lib/fidl/cpp/message.h",
     "include/lib/fidl/cpp/message_buffer.h",
