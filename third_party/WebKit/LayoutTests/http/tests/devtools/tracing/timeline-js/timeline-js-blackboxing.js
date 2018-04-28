@@ -215,7 +215,7 @@
   }
 
   Runtime.experiments.enableForTest('blackboxJSFramesOnTimeline');
-  const dataProvider = new Timeline.TimelineFlameChartDataProvider(UI.panels.timeline._filters);
+  const dataProvider = new Timeline.TimelineFlameChartDataProvider();
   dataProvider.setModel(PerformanceTestRunner.createPerformanceModelWithEvents(rawTraceEvents));
 
   TestRunner.addResult('\nBlackboxed url: lib_script.js');
