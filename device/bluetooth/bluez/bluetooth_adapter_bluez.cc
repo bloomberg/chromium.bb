@@ -1446,7 +1446,9 @@ void BluetoothAdapterBlueZ::RemoveDiscoverySession(
   BLUETOOTH_LOG(EVENT) << __func__;
   // There are active sessions other than the one currently being removed.
   if (num_discovery_sessions_ > 1) {
-    DCHECK(IsDiscovering());
+    // DCHECK(IsDiscovering()) is removed due to BlueZ bug
+    // (https://crbug.com/822104).
+    // TODO(sonnysasaka): Put it back here when BlueZ bug is fixed.
     DCHECK(!discovery_request_pending_);
     num_discovery_sessions_--;
 
