@@ -69,8 +69,7 @@ class UserActivityController;
 class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
  public:
   explicit ChromeBrowserMainPartsChromeos(
-      const content::MainFunctionParams& parameters,
-      std::unique_ptr<ui::DataPack> data_pack);
+      const content::MainFunctionParams& parameters);
   ~ChromeBrowserMainPartsChromeos() override;
 
   // ChromeBrowserMainParts overrides.

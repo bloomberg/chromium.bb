@@ -27,8 +27,7 @@ int DoUninstallTasks(bool chrome_still_running);
 class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
  public:
   explicit ChromeBrowserMainPartsWin(
-      const content::MainFunctionParams& parameters,
-      std::unique_ptr<ui::DataPack> data_pack);
+      const content::MainFunctionParams& parameters);
 
   ~ChromeBrowserMainPartsWin() override;
 
