@@ -159,9 +159,13 @@ void HTMLFrameOwnerElement::ClearContentFrame() {
   if (!content_frame_)
     return;
 
-  // There should not be a lazy load in progress right now since any pending
-  // lazy load should have already been cancelled in DisconnectContentFrame.
-  DCHECK(!lazy_load_intersection_observer_);
+  // It's possible for there to be a lazy load in progress right now if
+  // Frame::Detach() was called without
+  // HTMLFrameOwnerElement::DisconnectContentFrame() being called first, so
+  // cancel any pending lazy load here.
+  // TODO(dcheng): Change this back to a DCHECK asserting that no lazy load is
+  // in progress once https://crbug.com/773683 is fixed.
+  CancelPendingLazyLoad();
 
   DCHECK_EQ(content_frame_->Owner(), this);
   content_frame_ = nullptr;
