@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/bind.h"
+#include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
@@ -257,6 +258,11 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
     if (!allowed_hosts_.empty() &&
         (!request.url.has_host() ||
          allowed_hosts_.find(request.url.host()) == allowed_hosts_.end())) {
+      // Temporary reporting the bad WebUI host for for http://crbug.com/837328.
+      static auto* crash_key = base::debug::AllocateCrashKeyString(
+          "webui_url", base::debug::CrashKeySize::Size64);
+      base::debug::SetCrashKeyString(crash_key, request.url.spec());
+
       DVLOG(1) << "Bad host: \"" << request.url.host() << '"';
       ReceivedBadMessage(render_frame_host_->GetProcess(),
                          bad_message::WEBUI_BAD_HOST_ACCESS);
