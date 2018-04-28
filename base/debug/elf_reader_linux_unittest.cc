@@ -4,7 +4,11 @@
 
 #include "base/debug/elf_reader_linux.h"
 
+#include <dlfcn.h>
+
+#include "base/files/memory_mapped_file.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 extern char __executable_start;
@@ -27,6 +31,38 @@ TEST(ElfReaderTest, ReadElfBuildId) {
   }
 }
 #endif
+
+TEST(ElfReaderTest, ReadElfLibraryName) {
+#if defined(OS_ANDROID)
+  // On Android the library loader memory maps the full so file.
+  const char kLibraryName[] = "lib_base_unittests__library.so";
+  const void* addr = &__executable_start;
+#else
+  // On Linux the executable does not contain soname and is not mapped till
+  // dynamic segment. So, use malloc wrapper so file on which the test already
+  // depends on.
+  const char kLibraryName[] = MALLOC_WRAPPER_LIB;
+  // Find any symbol in the loaded file.
+  void* handle = dlopen(kLibraryName, RTLD_NOW | RTLD_LOCAL);
+  const void* init_addr = dlsym(handle, "_init");
+  // Use this symbol to get full path to the loaded library.
+  Dl_info info;
+  int res = dladdr(init_addr, &info);
+  ASSERT_NE(0, res);
+  std::string filename(info.dli_fname);
+  EXPECT_FALSE(filename.empty());
+  EXPECT_NE(std::string::npos, filename.find(kLibraryName));
+
+  // Memory map the so file and use it to test reading so name.
+  MemoryMappedFile file;
+  file.Initialize(FilePath(filename));
+  const void* addr = file.data();
+#endif
+
+  auto name = ReadElfLibraryName(addr);
+  ASSERT_TRUE(name);
+  EXPECT_EQ(kLibraryName, *name);
+}
 
 }  // namespace debug
 }  // namespace base
