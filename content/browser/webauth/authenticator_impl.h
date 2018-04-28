@@ -81,6 +81,12 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator,
  private:
   friend class AuthenticatorImplTest;
 
+  // Enumerates whether or not to check that the WebContents has focus.
+  enum class Focus {
+    kDoCheck,
+    kDontCheck,
+  };
+
   // Builds the CollectedClientData[1] dictionary with the given values,
   // serializes it to JSON, and returns the resulting string.
   // [1] https://w3c.github.io/webauthn/#dictdef-collectedclientdata
@@ -125,7 +131,8 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator,
   void InvokeCallbackAndCleanup(
       MakeCredentialCallback callback,
       webauth::mojom::AuthenticatorStatus status,
-      webauth::mojom::MakeCredentialAuthenticatorResponsePtr response);
+      webauth::mojom::MakeCredentialAuthenticatorResponsePtr response,
+      Focus focus_check);
   void InvokeCallbackAndCleanup(
       GetAssertionCallback callback,
       webauth::mojom::AuthenticatorStatus status,

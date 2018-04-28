@@ -902,7 +902,7 @@ class AuthenticatorTestContentBrowserClient : public ContentBrowserClient {
   bool ShouldPermitIndividualAttestationForWebauthnRPID(
       content::BrowserContext* browser_context,
       const std::string& rp_id) override {
-    return individual_attestation == IndividualAttestation::REQUESTED;
+    return individual_attestation_ == IndividualAttestation::REQUESTED;
   }
 
   void ShouldReturnAttestationForWebauthnRPID(
@@ -910,12 +910,29 @@ class AuthenticatorTestContentBrowserClient : public ContentBrowserClient {
       const std::string& rp_id,
       const url::Origin& origin,
       base::OnceCallback<void(bool)> callback) override {
-    std::move(callback).Run(attestation_consent == AttestationConsent::GRANTED);
+    std::move(callback).Run(attestation_consent_ ==
+                            AttestationConsent::GRANTED);
   }
 
-  IndividualAttestation individual_attestation =
+  bool IsFocused(content::WebContents* web_contents) override {
+    return focused_;
+  }
+
+  void set_individual_attestation(IndividualAttestation value) {
+    individual_attestation_ = value;
+  }
+
+  void set_attestation_consent(AttestationConsent value) {
+    attestation_consent_ = value;
+  }
+
+  void set_focused(bool is_focused) { focused_ = is_focused; }
+
+ private:
+  IndividualAttestation individual_attestation_ =
       IndividualAttestation::NOT_REQUESTED;
-  AttestationConsent attestation_consent = AttestationConsent::DENIED;
+  AttestationConsent attestation_consent_ = AttestationConsent::DENIED;
+  bool focused_ = true;
 };
 
 // A test class that installs and removes an
@@ -961,8 +978,8 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
           AttestationConveyancePreferenceToString(test.attestation_requested));
       SCOPED_TRACE(i);
 
-      test_client_.individual_attestation = test.individual_attestation;
-      test_client_.attestation_consent = test.attestation_consent;
+      test_client_.set_individual_attestation(test.individual_attestation);
+      test_client_.set_attestation_consent(test.attestation_consent);
 
       PublicKeyCredentialCreationOptionsPtr options =
           GetTestPublicKeyCredentialCreationOptions();
@@ -1156,6 +1173,47 @@ TEST_F(AuthenticatorContentBrowserClientTest,
   NavigateAndCommit(GURL("https://example.com"));
 
   RunTestCases(kTests);
+}
+
+TEST_F(AuthenticatorContentBrowserClientTest, Unfocused) {
+  // When the |ContentBrowserClient| considers the tab to be unfocused,
+  // registration requests should fail with a |NOT_FOCUSED| error, but getting
+  // assertions should still work.
+  test_client_.set_focused(false);
+
+  NavigateAndCommit(GURL(kTestOrigin1));
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+  {
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->public_key_parameters = GetTestPublicKeyCredentialParameters(123);
+
+    TestMakeCredentialCallback cb;
+    authenticator->MakeCredential(std::move(options), cb.callback());
+    cb.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::NOT_FOCUSED, cb.status());
+  }
+
+  {
+    TestServiceManagerContext service_manager_context;
+
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+
+    auto credential = PublicKeyCredentialDescriptor::New();
+    credential->type = PublicKeyCredentialType::PUBLIC_KEY;
+    credential->id.resize(16);
+    ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
+        credential->id, kTestRelyingPartyId));
+    options->allow_credentials.emplace_back(std::move(credential));
+
+    TestGetAssertionCallback cb;
+    authenticator->GetAssertion(std::move(options), cb.callback());
+    cb.WaitForCallback();
+
+    EXPECT_EQ(AuthenticatorStatus::SUCCESS, cb.status());
+  }
 }
 
 }  // namespace content
