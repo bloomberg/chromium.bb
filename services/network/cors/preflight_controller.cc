@@ -301,11 +301,12 @@ class PreflightController::PreflightLoader final {
   }
 
   void HandleResponseBody(std::unique_ptr<std::string> response_body) {
-    // Reached only when the request fails without receiving headers.
+    // Reached only when the request fails without receiving headers, e.g.
+    // unknown hosts, unreachable remote, reset by peer, and so on.
+    // See https://crbug.com/826868 for related discussion.
     DCHECK(!response_body);
-
-    // TODO(toyoshim): FinalizeLoader() and RemoveFromController() need to be
-    // called in this case. Try in the follow-up change.
+    FinalizeLoader();
+    RemoveFromController();
   }
 
   void FinalizeLoader() {
