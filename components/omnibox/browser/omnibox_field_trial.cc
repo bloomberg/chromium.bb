@@ -49,8 +49,6 @@ const base::Feature kOmniboxTailSuggestions{
 const char kOmniboxTabSwitchSuggestionsFlag[] =
     "omnibox-tab-switch-suggestions";
 
-const char kOmniboxTabSwitchWithButton[] = "with-button";
-
 // Feature used to enable clipboard provider, which provides the user with
 // suggestions of the URL in the user's clipboard (if any) upon omnibox focus.
 const base::Feature kEnableClipboardProvider {
