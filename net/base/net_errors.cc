@@ -8,8 +8,6 @@
 
 namespace net {
 
-const char kErrorDomain[] = "net";
-
 std::string ErrorToString(int error) {
   return "net::" + ErrorToShortString(error);
 }

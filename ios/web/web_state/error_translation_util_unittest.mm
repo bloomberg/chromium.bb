@@ -7,7 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/mac/foundation_util.h"
-#include "base/strings/sys_string_conversions.h"
+#import "ios/net/protocol_handler_util.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -21,13 +21,6 @@ namespace web {
 
 // Test fixture for error translation testing.
 typedef PlatformTest ErrorTranslationUtilTest;
-
-namespace {
-// Returns net error domain.
-NSString* GetNetErrorDomain() {
-  return base::SysUTF8ToNSString(net::kErrorDomain);
-}
-}  // namespcae
 
 // Tests translation of CFNetwork error code to net error code.
 TEST_F(ErrorTranslationUtilTest, ErrorCodeTranslation) {
@@ -52,7 +45,7 @@ TEST_F(ErrorTranslationUtilTest, MalformedError) {
   // Underlying error should have net error doamin and code.
   NSError* net_underlying_error = [net_error userInfo][NSUnderlyingErrorKey];
   EXPECT_TRUE(net_underlying_error);
-  EXPECT_NSEQ(GetNetErrorDomain(), [net_underlying_error domain]);
+  EXPECT_NSEQ(net::kNSErrorDomain, [net_underlying_error domain]);
   EXPECT_EQ(net::ERR_FAILED, [net_underlying_error code]);
 }
 
@@ -73,7 +66,7 @@ TEST_F(ErrorTranslationUtilTest, UnknownCFNetworkError) {
   // Underlying error should have net error domain and code.
   NSError* net_underlying_error = [net_error userInfo][NSUnderlyingErrorKey];
   EXPECT_TRUE(net_underlying_error);
-  EXPECT_NSEQ(GetNetErrorDomain(), [net_underlying_error domain]);
+  EXPECT_NSEQ(net::kNSErrorDomain, [net_underlying_error domain]);
   EXPECT_EQ(net::ERR_FAILED, [net_underlying_error code]);
 }
 
@@ -108,7 +101,7 @@ TEST_F(ErrorTranslationUtilTest, CanNotFindHostError) {
   NSError* final_net_underlying_error =
       [net_underlying_error userInfo][NSUnderlyingErrorKey];
   EXPECT_TRUE(final_net_underlying_error);
-  EXPECT_NSEQ(GetNetErrorDomain(), [final_net_underlying_error domain]);
+  EXPECT_NSEQ(net::kNSErrorDomain, [final_net_underlying_error domain]);
   EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, [final_net_underlying_error code]);
 }
 
@@ -143,7 +136,7 @@ TEST_F(ErrorTranslationUtilTest, CertError) {
   NSError* final_net_underlying_error =
       [net_underlying_error userInfo][NSUnderlyingErrorKey];
   EXPECT_TRUE(final_net_underlying_error);
-  EXPECT_NSEQ(GetNetErrorDomain(), [final_net_underlying_error domain]);
+  EXPECT_NSEQ(net::kNSErrorDomain, [final_net_underlying_error domain]);
   EXPECT_EQ(net::ERR_CONNECTION_RESET, [final_net_underlying_error code]);
 }
 

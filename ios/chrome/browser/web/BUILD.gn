@@ -46,6 +46,7 @@ source_set("web") {
     "//ios/chrome/browser/ui/commands:commands",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/util:util",
+    "//ios/net",
     "//ios/web",
     "//ui/base",
     "//url",

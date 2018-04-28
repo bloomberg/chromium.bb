@@ -15,13 +15,14 @@ namespace error_page {
 // This class is a copiable value class.
 class Error {
  public:
-  // Use net::kErroDomain for network errors.
+  // For network errors
+  static const char kNetErrorDomain[];
   // For http errors.
   static const char kHttpErrorDomain[];
   // For DNS probe errors.
   static const char kDnsProbeErrorDomain[];
 
-  // Returns a net::kErrorDomain error.
+  // Returns a kNetErrorDomain error.
   static Error NetError(const GURL& url, int reason, bool stale_copy_in_cache);
   // Returns a kHttpErrorDomain error.
   static Error HttpError(const GURL& url, int status);

@@ -101,6 +101,7 @@ source_set("session_certificate_policy_cache") {
 source_set("error_translation_util") {
   deps = [
     "//base",
+    "//ios/net",
     "//net",
   ]
 

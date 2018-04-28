@@ -7,6 +7,7 @@
 #include <CFNetwork/CFNetwork.h>
 
 #import "base/ios/ns_error_util.h"
+#import "ios/net/protocol_handler_util.h"
 #include "net/base/net_errors.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -161,10 +162,8 @@ NSError* NetErrorFromError(NSError* error) {
 
 NSError* NetErrorFromError(NSError* error, int net_error_code) {
   DCHECK(error);
-  NSString* net_error_domain =
-      [NSString stringWithUTF8String:net::kErrorDomain];
   NSError* net_error =
-      [NSError errorWithDomain:net_error_domain
+      [NSError errorWithDomain:net::kNSErrorDomain
                           code:static_cast<NSInteger>(net_error_code)
                       userInfo:nil];
   return base::ios::ErrorWithAppendedUnderlyingError(error, net_error);

@@ -10,10 +10,13 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
+#include "components/error_page/common/error.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/grit/components_resources.h"
 #include "ios/chrome/browser/application_context.h"
+#import "ios/net/protocol_handler_util.h"
+#include "net/base/net_errors.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/scale_factor.h"
 #include "ui/base/webui/jstemplate_builder.h"
@@ -28,11 +31,19 @@ NSString* GetErrorPage(NSError* error, bool is_post, bool is_off_the_record) {
   NSError* final_error = base::ios::GetFinalUnderlyingErrorFromError(error);
   if (!final_error)
     final_error = error;
-  DCHECK_NE(final_error.code, 0);
+  int net_error = net::ERR_FAILED;
+  if ([final_error.domain isEqualToString:net::kNSErrorDomain]) {
+    net_error = final_error.code;
+    DCHECK_NE(0, net_error);
+  } else {
+    // This function may only be called with an NSError created with
+    // web::NetErrorFromError.
+    NOTREACHED();
+  }
 
   base::DictionaryValue error_strings;
   error_page::LocalizedError::GetStrings(
-      final_error.code, base::SysNSStringToUTF8(final_error.domain),
+      net_error, error_page::Error::kNetErrorDomain,
       GURL(base::SysNSStringToUTF16(url_spec)), is_post,
       /*stale_copy_in_cache=*/false,
       /*can_show_network_diagnostics_dialog=*/false, is_off_the_record,
