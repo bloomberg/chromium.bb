@@ -23,7 +23,8 @@ ForeignLayerDisplayItem::ForeignLayerDisplayItem(
       layer_(std::move(layer)),
       location_(location),
       bounds_(bounds) {
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+         RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
   DCHECK(IsForeignLayerType(type));
   DCHECK(layer_);
 }

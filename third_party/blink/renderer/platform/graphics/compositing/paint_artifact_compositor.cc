@@ -42,7 +42,8 @@ static int g_s_property_tree_sequence_number = 1;
 
 PaintArtifactCompositor::PaintArtifactCompositor(WebLayerScrollClient& client)
     : scroll_client_(client), tracks_raster_invalidations_(false) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
     return;
   root_layer_ = cc::Layer::Create();
   web_layer_ = Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(

@@ -116,7 +116,8 @@ class PLATFORM_EXPORT DisplayItem {
     kForeignLayerCanvas = kForeignLayerFirst,
     kForeignLayerPlugin,
     kForeignLayerVideo,
-    kForeignLayerLast = kForeignLayerVideo,
+    kForeignLayerWrapper,
+    kForeignLayerLast = kForeignLayerWrapper,
 
     kClipFirst,
     kClipBoxPaintPhaseFirst = kClipFirst,

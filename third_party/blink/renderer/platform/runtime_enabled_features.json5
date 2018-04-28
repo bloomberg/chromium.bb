@@ -125,6 +125,9 @@
       status: "stable",
     },
     {
+      name: "BlinkGenPropertyTrees",
+    },
+    {
       name: "BlinkRuntimeCallStats",
     },
     {
@@ -1152,7 +1155,7 @@
     {
       name: "SlimmingPaintV175",
       status: "stable",
-      implied_by: ["SlimmingPaintV2", "LayoutNG"],
+      implied_by: ["BlinkGenPropertyTrees", "SlimmingPaintV2", "LayoutNG"],
     },
     {
       name: "SlimmingPaintV2",

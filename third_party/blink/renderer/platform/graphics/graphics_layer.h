@@ -291,6 +291,10 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetIsContainerForFixedPositionLayers(bool);
 
   void SetLayerState(const PropertyTreeState&, const IntPoint& layer_offset);
+  const PropertyTreeState& GetPropertyTreeState() const {
+    return layer_state_->state;
+  }
+  IntPoint GetOffsetFromTransformNode() const { return layer_state_->offset; }
 
   // Capture the last painted result into a PaintRecord. This GraphicsLayer
   // must DrawsContent. The result is never nullptr.
