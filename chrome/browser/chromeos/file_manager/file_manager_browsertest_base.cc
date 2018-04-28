@@ -30,6 +30,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/service/fake_drive_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/test/test_api.h"
@@ -180,8 +181,8 @@ void AddEntriesMessage::RegisterJSONConverter(
       "entries", &AddEntriesMessage::entries);
 }
 
-// Listener to obtain the test relative messages synchronously.
-class FileManagerTestListener : public content::NotificationObserver {
+// Listens for chrome.test messages: PASS, FAIL, and SendMessage.
+class FileManagerTestMessageListener : public content::NotificationObserver {
  public:
   struct Message {
     int type;
@@ -189,7 +190,7 @@ class FileManagerTestListener : public content::NotificationObserver {
     scoped_refptr<extensions::TestSendMessageFunction> function;
   };
 
-  FileManagerTestListener() {
+  FileManagerTestMessageListener() {
     registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_TEST_PASSED,
                    content::NotificationService::AllSources());
     registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_TEST_FAILED,
@@ -199,32 +200,49 @@ class FileManagerTestListener : public content::NotificationObserver {
   }
 
   Message GetNextMessage() {
-    if (messages_.empty())
-      content::RunMessageLoop();
-    const Message entry = messages_.front();
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    if (messages_.empty()) {
+      base::RunLoop run_loop;
+      quit_closure_ = run_loop.QuitClosure();
+      run_loop.Run();
+    }
+
+    DCHECK(!messages_.empty());
+    const Message next = messages_.front();
     messages_.pop_front();
-    return entry;
+    return next;
   }
 
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
-    Message entry;
-    entry.type = type;
-    entry.message = type != extensions::NOTIFICATION_EXTENSION_TEST_PASSED
-                        ? *content::Details<std::string>(details).ptr()
-                        : std::string();
-    if (type == extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE) {
-      entry.function =
-          content::Source<extensions::TestSendMessageFunction>(source).ptr();
-      *content::Details<std::pair<std::string, bool*>>(details).ptr()->second =
-          true;
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    Message message{type, std::string(), nullptr};
+    if (type == extensions::NOTIFICATION_EXTENSION_TEST_PASSED) {
+      test_complete_ = true;
+    } else if (type == extensions::NOTIFICATION_EXTENSION_TEST_FAILED) {
+      message.message = *content::Details<std::string>(details).ptr();
+      test_complete_ = true;
+    } else if (type == extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE) {
+      message.message = *content::Details<std::string>(details).ptr();
+      using SendMessage = content::Source<extensions::TestSendMessageFunction>;
+      message.function = SendMessage(source).ptr();
+      using WillReply = content::Details<std::pair<std::string, bool*>>;
+      *WillReply(details).ptr()->second = true;  // http:/crbug.com/668680
+      CHECK(!test_complete_) << "LATE MESSAGE: " << message.message;
     }
-    messages_.push_back(entry);
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+
+    messages_.push_back(message);
+    if (quit_closure_) {
+      std::move(quit_closure_).Run();
+    }
   }
 
  private:
+  bool test_complete_ = false;
+  base::OnceClosure quit_closure_;
   base::circular_deque<Message> messages_;
   content::NotificationRegistrar registrar_;
 };
@@ -528,6 +546,7 @@ void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
   ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
   local_volume_.reset(new DownloadsTestVolume);
+
   if (GetGuestModeParam() != IN_GUEST_MODE) {
     create_drive_integration_service_ =
         base::Bind(&FileManagerBrowserTestBase::CreateDriveIntegrationService,
@@ -600,9 +619,9 @@ void FileManagerBrowserTestBase::InstallExtension(const base::FilePath& path,
 void FileManagerBrowserTestBase::RunTestMessageLoop() {
   // Handle the messages from JavaScript.
   // The while loop is break when the test is passed or failed.
-  FileManagerTestListener listener;
+  FileManagerTestMessageListener listener;
   while (true) {
-    FileManagerTestListener::Message entry = listener.GetNextMessage();
+    FileManagerTestMessageListener::Message entry = listener.GetNextMessage();
     if (entry.type == extensions::NOTIFICATION_EXTENSION_TEST_PASSED) {
       // Test succeed.
       break;
