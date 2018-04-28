@@ -62,6 +62,12 @@ Polymer({
     syncStatus: Object,
 
     /**
+     * Dictionary defining page visibility.
+     * @type {!GuestModePageVisibility}
+     */
+    pageVisibility: Object,
+
+    /**
      * The currently selected profile icon URL. May be a data URL.
      * @private
      */

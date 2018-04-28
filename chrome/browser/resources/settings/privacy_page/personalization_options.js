@@ -33,6 +33,10 @@ Polymer({
       notify: true,
     },
 
+    /**
+     * Dictionary defining page visibility.
+     * @type {!PrivacyPageVisibility}
+     */
     pageVisibility: Object,
 
     /** @private {chrome.settingsPrivate.PrefObject} */
@@ -54,19 +58,7 @@ Polymer({
       value: NetworkPredictionOptions,
     },
 
-    /**
-     * This flag is used to conditionally show a set of sync UIs to the
-     * profiles that have been migrated to have a unified consent flow.
-     * TODO(scottchen): In the future when all profiles are completely migrated,
-     * this should be removed, and UIs hidden behind it should become default.
-     * @private
-     */
-    unifiedConsentEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('unifiedConsentEnabled');
-      },
-    },
+    unifiedConsentEnabled: Boolean,
 
     // <if expr="_google_chrome and not chromeos">
     // TODO(dbeam): make a virtual.* pref namespace and set/get this normally

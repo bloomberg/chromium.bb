@@ -111,6 +111,20 @@ Polymer({
         return map;
       },
     },
+
+    /**
+     * This flag is used to conditionally show a set of sync UIs to the
+     * profiles that have been migrated to have a unified consent flow.
+     * TODO(scottchen): In the future when all profiles are completely migrated,
+     * this should be removed, and UIs hidden behind it should become default.
+     * @private
+     */
+    unifiedConsentEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('unifiedConsentEnabled');
+      },
+    },
   },
 
   listeners: {
@@ -205,6 +219,17 @@ Polymer({
     // <if expr="is_win or is_macosx">
     this.browserProxy_.showManageSSLCertificates();
     // </if>
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onMoreSettingsBoxClicked_: function(e) {
+    if (e.target.tagName === 'A') {
+      e.preventDefault();
+      settings.navigateTo(settings.routes.SYNC);
+    }
   },
 
   /**

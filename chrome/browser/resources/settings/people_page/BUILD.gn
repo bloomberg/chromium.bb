@@ -172,6 +172,7 @@ js_library("people_page") {
     ":lock_state_behavior",
     ":profile_info_browser_proxy",
     ":sync_browser_proxy",
+    "..:page_visibility",
     "..:route",
     "../settings_page:settings_animated_pages",
     "//ui/webui/resources/cr_elements/chromeos/cr_picture:cr_png_behavior",
@@ -212,6 +213,7 @@ js_library("setup_pin_dialog") {
 js_library("sync_page") {
   deps = [
     ":sync_browser_proxy",
+    "..:page_visibility",
     "..:route",
     "../settings_page:settings_animated_pages",
     "//third_party/polymer/v1_0/components-chromium/paper-input:paper-input-extracted",

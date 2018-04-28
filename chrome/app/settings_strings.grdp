@@ -2418,6 +2418,9 @@
   <message name="IDS_SETTINGS_TITLE_AND_COUNT" desc="The title of a section in the settings page with a count of the total number of items in the section">
     <ph name="TITLE">$1<ex>Block</ex></ph> - <ph name="COUNT">$2<ex>42</ex></ph>
   </message>
+  <message name="IDS_SETTINGS_PRIVACY_MORE_SETTINGS" desc="The text with a link to point users to more sync and personalization settings">
+    For more settings that relate to privacy, security, and data collection, see <ph name="BEGIN_LINK">&lt;a href=&quot;chrome://settings/syncSetup&quot;&gt;<ex>&lt;a href=&quot;chrome://settings/syncSetup&quot;&gt;</ex></ph>Sync and personalization<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
 
   <!-- Reset Settings Page -->
   <message name="IDS_SETTINGS_RESET" desc="Title for an item in the 'Reset and clean up' section of Chrome Settings. If the user clicks this option, browser settings will be returned to their default values, after a confirmation by the user." meaning="Chrome Cleanup feature. Try to use the same translation for 'Reset' in 'Reset and cleanup' string.">
@@ -3361,6 +3364,15 @@
   </message>
   <message name="IDS_SETTINGS_SYNC_SECTION_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the sync settings. Only visible by screen reader software.">
     Show sync settings
+  </message>
+  <message name="IDS_SETTINGS_PERSONALIZATION_SECTION_LABEL" desc="Title for a section that shows options for various Google services">
+    Other Google services
+  </message>
+  <message name="IDS_SETTINGS_PERSONALIZATION_SECTION_DESC" desc="Brief explanation of the capability of Google services.">
+    Communicate with Google to improve browsing and Chrome
+  </message>
+  <message name="IDS_SETTINGS_PERSONALIZATION_SECTION_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the google services settings. Only visible by screen reader software.">
+    Show Google services settings
   </message>
   <message name="IDS_SETTINGS_SYNC_SYNC_AND_PERSONALIZATION" desc="The label of button that takes the user to manage their sync and personalization settings.">
     Sync and personalization

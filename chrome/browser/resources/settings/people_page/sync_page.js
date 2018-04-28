@@ -27,6 +27,14 @@ Polymer({
   ],
 
   properties: {
+    /**
+     * Preferences state.
+     */
+    prefs: {
+      type: Object,
+      notify: true,
+    },
+
     /** @private */
     pages_: {
       type: Object,
@@ -44,6 +52,12 @@ Polymer({
       type: String,
       value: settings.PageStatus.CONFIGURE,
     },
+
+    /**
+     * Dictionary defining page visibility.
+     * @type {!PrivacyPageVisibility}
+     */
+    pageVisibility: Object,
 
     /**
      * The current sync preferences, supplied by SyncBrowserProxy.
@@ -103,6 +117,12 @@ Polymer({
       value: false,
       computed: 'computeSyncSectionDisabled_(' +
           'unifiedConsentEnabled, syncStatus.signedIn)',
+    },
+
+    /** @private */
+    personalizeSectionOpened_: {
+      type: Boolean,
+      value: true,
     },
 
     /** @private */
