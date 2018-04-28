@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/optional.h"
 
+class GURL;
 struct OneGoogleBarData;
 
 // Interface for fetching OneGoogleBarData over the network.
@@ -32,6 +33,9 @@ class OneGoogleBarFetcher {
   // Initiates a fetch from the network. On completion (successful or not), the
   // callback will be called with the result, which will be nullopt on failure.
   virtual void Fetch(OneGoogleCallback callback) = 0;
+
+  // Retrieves the URL from which OneGoogleBarData will be fetched.
+  virtual GURL GetFetchURLForTesting() const = 0;
 };
 
 #endif  // CHROME_BROWSER_SEARCH_ONE_GOOGLE_BAR_ONE_GOOGLE_BAR_FETCHER_H_

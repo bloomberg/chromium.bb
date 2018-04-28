@@ -36,6 +36,8 @@ class FakeOneGoogleBarFetcher : public OneGoogleBarFetcher {
     std::move(callback).Run(Status::OK, one_google_bar_data_);
   }
 
+  GURL GetFetchURLForTesting() const override { return GURL(); }
+
   void set_one_google_bar_data(
       const base::Optional<OneGoogleBarData>& one_google_bar_data) {
     one_google_bar_data_ = one_google_bar_data;

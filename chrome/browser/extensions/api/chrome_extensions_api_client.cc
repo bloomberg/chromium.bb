@@ -35,6 +35,7 @@
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/browser_context.h"
@@ -110,16 +111,25 @@ bool ChromeExtensionsAPIClient::ShouldHideBrowserNetworkRequest(
     const WebRequestInfo& request) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  bool is_protected_devtools_request =
-      request.render_process_id == -1 &&
-      request.type != content::RESOURCE_TYPE_MAIN_FRAME &&
-      DevToolsUI::IsFrontendResourceURL(request.url);
+  // Exclude main frame navigation requests.
+  bool is_browser_request = request.render_process_id == -1 &&
+                            request.type != content::RESOURCE_TYPE_MAIN_FRAME;
 
-  // Hide requests made by Devtools frontend and the NTP Instant renderer from
-  // extensions.
-  return is_protected_devtools_request ||
-         InstantIOContext::IsInstantProcess(request.resource_context,
-                                            request.render_process_id);
+  // Hide requests made by the Devtools frontend.
+  bool is_sensitive_request =
+      is_browser_request && DevToolsUI::IsFrontendResourceURL(request.url);
+
+  // Hide requests made by the browser on behalf of the NTP.
+  is_sensitive_request |=
+      (is_browser_request &&
+       request.initiator ==
+           url::Origin::Create(GURL(chrome::kChromeUINewTabURL)));
+
+  // Hide requests made by the NTP Instant renderer.
+  is_sensitive_request |= InstantIOContext::IsInstantProcess(
+      request.resource_context, request.render_process_id);
+
+  return is_sensitive_request;
 }
 
 AppViewGuestDelegate* ChromeExtensionsAPIClient::CreateAppViewGuestDelegate()

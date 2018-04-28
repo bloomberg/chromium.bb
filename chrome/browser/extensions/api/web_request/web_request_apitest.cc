@@ -3,13 +3,16 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/synchronization/lock.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -25,6 +28,9 @@
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_fetcher.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -32,11 +38,13 @@
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/login/scoped_test_public_session_login_state.h"
+#include "components/google/core/browser/google_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
@@ -1357,11 +1365,14 @@ IN_PROC_BROWSER_TEST_F(NTPInterceptionWebRequestAPITest,
                        NTPRendererRequestsHidden) {
   // Loads an extension which tries to intercept requests to
   // "fake_ntp_script.js", which will be loaded as part of the NTP renderer.
-  ExtensionTestMessageListener listener("ready", false /*will_reply*/);
+  ExtensionTestMessageListener listener("ready", true /*will_reply*/);
   const Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("extension"));
   ASSERT_TRUE(extension);
   EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  // Have the extension listen for requests to |fake_ntp_script.js|.
+  listener.Reply(https_test_server()->GetURL("/fake_ntp_script.js").spec());
 
   // Returns true if the given extension was able to intercept the request to
   // "fake_ntp_script.js".
@@ -1402,6 +1413,139 @@ IN_PROC_BROWSER_TEST_F(NTPInterceptionWebRequestAPITest,
   EXPECT_TRUE(was_ntp_script_loaded(web_contents));
   ASSERT_FALSE(search::IsInstantNTP(web_contents));
   EXPECT_TRUE(was_script_request_intercepted(extension->id()));
+}
+
+// Test fixture testing that requests made for the OneGoogleBar on behalf of
+// the local NTP can't be intercepted by extensions.
+class LocalNTPInterceptionWebRequestAPITest
+    : public ExtensionApiTest,
+      public OneGoogleBarServiceObserver {
+ public:
+  LocalNTPInterceptionWebRequestAPITest()
+      : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+
+  // ExtensionApiTest override:
+  void SetUp() override {
+    https_test_server_.RegisterRequestMonitor(base::BindRepeating(
+        &LocalNTPInterceptionWebRequestAPITest::MonitorRequest,
+        base::Unretained(this)));
+    ASSERT_TRUE(https_test_server_.InitializeAndListen());
+    ExtensionApiTest::SetUp();
+    feature_list_.InitWithFeatures(
+        {::features::kUseGoogleLocalNtp, ::features::kOneGoogleBarOnLocalNtp},
+        {});
+  }
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kGoogleBaseURL,
+                                    https_test_server_.base_url().spec());
+  }
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+
+    https_test_server_.StartAcceptingConnections();
+
+    one_google_bar_url_ = one_google_bar_service()
+                              ->fetcher_for_testing()
+                              ->GetFetchURLForTesting();
+
+    // Can't declare |runloop_| as a data member on the stack since it needs to
+    // be be constructed from a single-threaded context.
+    runloop_ = std::make_unique<base::RunLoop>();
+    one_google_bar_service()->AddObserver(this);
+  }
+
+  // OneGoogleBarServiceObserver overrides:
+  void OnOneGoogleBarDataUpdated() override { runloop_->Quit(); }
+  void OnOneGoogleBarServiceShuttingDown() override {
+    one_google_bar_service()->RemoveObserver(this);
+  }
+
+  GURL one_google_bar_url() const { return one_google_bar_url_; }
+
+  // Waits for OneGoogleBar data to be updated. Should only be used once.
+  void WaitForOneGoogleBarDataUpdate() { runloop_->Run(); }
+
+  bool GetAndResetOneGoogleBarRequestSeen() {
+    base::AutoLock lock(lock_);
+    bool result = one_google_bar_request_seen_;
+    one_google_bar_request_seen_ = false;
+    return result;
+  }
+
+ private:
+  OneGoogleBarService* one_google_bar_service() {
+    return OneGoogleBarServiceFactory::GetForProfile(profile());
+  }
+
+  void MonitorRequest(const net::test_server::HttpRequest& request) {
+    if (request.GetURL() == one_google_bar_url_) {
+      base::AutoLock lock(lock_);
+      one_google_bar_request_seen_ = true;
+    }
+  }
+
+  net::EmbeddedTestServer https_test_server_;
+  base::test::ScopedFeatureList feature_list_;
+  std::unique_ptr<base::RunLoop> runloop_;
+
+  // Initialized on the UI thread in SetUpOnMainThread. Read on UI and Embedded
+  // Test Server IO thread thereafter.
+  GURL one_google_bar_url_;
+
+  // Accessed on multiple threads- UI and Embedded Test Server IO thread. Access
+  // requires acquiring |lock_|.
+  bool one_google_bar_request_seen_ = false;
+
+  base::Lock lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalNTPInterceptionWebRequestAPITest);
+};
+
+IN_PROC_BROWSER_TEST_F(LocalNTPInterceptionWebRequestAPITest,
+                       OneGoogleBarRequestsHidden) {
+  // Loads an extension which tries to intercept requests to the OneGoogleBar.
+  ExtensionTestMessageListener listener("ready", true /*will_reply*/);
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("webrequest")
+                        .AppendASCII("ntp_request_interception")
+                        .AppendASCII("extension"));
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  // Have the extension listen for requests to |one_google_bar_url()|.
+  listener.Reply(one_google_bar_url().spec());
+
+  // Returns true if the given extension was able to intercept the request to
+  // |one_google_bar_url()|.
+  auto was_script_request_intercepted =
+      [this](const std::string& extension_id) {
+        const std::string result = ExecuteScriptInBackgroundPage(
+            extension_id, "getAndResetRequestIntercepted();");
+        EXPECT_TRUE(result == "true" || result == "false")
+            << "Unexpected result " << result;
+        return result == "true";
+      };
+
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  ASSERT_FALSE(GetAndResetOneGoogleBarRequestSeen());
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(search::IsInstantNTP(web_contents));
+  ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
+            web_contents->GetController().GetVisibleEntry()->GetURL());
+  WaitForOneGoogleBarDataUpdate();
+  ASSERT_TRUE(GetAndResetOneGoogleBarRequestSeen());
+
+  // Ensure that the extension wasn't able to intercept the request.
+  EXPECT_FALSE(was_script_request_intercepted(extension->id()));
+
+  // A normal request to |one_google_bar_url()| (i.e. not made by
+  // OneGoogleBarFetcher) should be intercepted by extensions.
+  ui_test_utils::NavigateToURL(browser(), one_google_bar_url());
+  EXPECT_TRUE(was_script_request_intercepted(extension->id()));
+  ASSERT_TRUE(GetAndResetOneGoogleBarRequestSeen());
 }
 
 // Ensure that devtools frontend requests are hidden from the webRequest API.
