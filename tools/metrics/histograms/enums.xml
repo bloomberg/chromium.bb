@@ -21531,7 +21531,11 @@ Called by update_net_error_codes.py.-->
   <int value="57" label="User Disabled WIN10_RS3"/>
   <int value="58" label="Fallback to Software WIN10_RS3"/>
   <int value="59" label="Status Unknown WIN10_RS3"/>
-  <int value="60" label="Unknown Windows Version"/>
+  <int value="60" label="Enabled WIN10_RS4"/>
+  <int value="61" label="Blacklisted WIN10_RS4"/>
+  <int value="62" label="User Disabled WIN10_RS4"/>
+  <int value="63" label="Fallback to Software WIN10_RS4"/>
+  <int value="64" label="Status Unknown WIN10_RS4"/>
 </enum>
 
 <enum name="GPUBlacklistTestResultPerEntry">
@@ -47973,6 +47977,7 @@ Full version information for the fingerprint enum values:
   <int value="9" label="Windows 10 RS1"/>
   <int value="10" label="Windows 10 RS2"/>
   <int value="11" label="Windows 10 RS3"/>
+  <int value="12" label="Windows 10 RS4"/>
 </enum>
 
 <enum name="WindowType">
