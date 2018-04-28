@@ -160,16 +160,19 @@ void TestLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
 
   gfx::Size frame_size = frame.size_in_pixels();
   float device_scale_factor = frame.device_scale_factor();
-  if (!local_surface_id_.is_valid() || frame_size != display_size_ ||
+  LocalSurfaceId local_surface_id =
+      parent_local_surface_id_allocator_->GetCurrentLocalSurfaceId();
+
+  if (!local_surface_id.is_valid() || frame_size != display_size_ ||
       device_scale_factor != device_scale_factor_) {
-    local_surface_id_ = parent_local_surface_id_allocator_->GenerateId();
-    display_->SetLocalSurfaceId(local_surface_id_, device_scale_factor);
+    local_surface_id = parent_local_surface_id_allocator_->GenerateId();
+    display_->SetLocalSurfaceId(local_surface_id, device_scale_factor);
     display_->Resize(frame_size);
     display_size_ = frame_size;
     device_scale_factor_ = device_scale_factor;
   }
 
-  support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
+  support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
 
   // TODO(vmpstr): In layout tests, we request this call. However, with site
   // isolation we don't get an activation yet. Previously the call to the
@@ -183,7 +186,7 @@ void TestLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   // https://crbug.com/667551 tracks the progress of fixing this.
   if (support_->last_activated_surface_id().is_valid()) {
     for (auto& copy_request : copy_requests_)
-      support_->RequestCopyOfOutput(local_surface_id_, std::move(copy_request));
+      support_->RequestCopyOfOutput(local_surface_id, std::move(copy_request));
   }
   copy_requests_.clear();
 
