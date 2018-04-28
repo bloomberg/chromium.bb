@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_ASSISTANT_INTERACTION_MODEL_OBSERVER_H_
-#define UI_APP_LIST_ASSISTANT_INTERACTION_MODEL_OBSERVER_H_
+#ifndef ASH_ASSISTANT_MODEL_ASSISTANT_INTERACTION_MODEL_OBSERVER_H_
+#define ASH_ASSISTANT_MODEL_ASSISTANT_INTERACTION_MODEL_OBSERVER_H_
 
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 
-// TODO(b/77637813): Move to /ash/assistant/model when pulling Assistant out
-// of the launcher.
-namespace app_list {
+namespace ash {
 
 class AssistantUiElement;
 struct Query;
@@ -48,6 +46,6 @@ class AssistantInteractionModelObserver {
   DISALLOW_COPY_AND_ASSIGN(AssistantInteractionModelObserver);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
-#endif  // UI_APP_LIST_ASSISTANT_INTERACTION_MODEL_OBSERVER_H_
+#endif  // ASH_ASSISTANT_MODEL_ASSISTANT_INTERACTION_MODEL_OBSERVER_H_
