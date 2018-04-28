@@ -888,6 +888,26 @@
       {
         "args": [
           "--test-launcher-batch-limit=1",
+          "--test-launcher-print-test-stdio=always",
+          "--use-gpu-in-tests",
+          "--no-xvfb"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "gl_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=1",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -1426,6 +1446,24 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gin_unittests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--no-xvfb"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "gl_tests",
+        "use_xvfb": false
       },
       {
         "args": [
@@ -3118,6 +3156,24 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gin_unittests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--no-xvfb"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "gl_tests",
+        "use_xvfb": false
       },
       {
         "swarming": {
