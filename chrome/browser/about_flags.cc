@@ -602,9 +602,7 @@ const FeatureEntry::Choice kForceTextDirectionChoices[] = {
 const flags_ui::FeatureEntry::Choice kOmniboxTabSwitchSuggestions[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {"Enabled", omnibox::kOmniboxTabSwitchSuggestionsFlag, "enabled"},
-    {"Disabled", omnibox::kOmniboxTabSwitchSuggestionsFlag, "disabled"},
-    {"Button", omnibox::kOmniboxTabSwitchSuggestionsFlag,
-     omnibox::kOmniboxTabSwitchWithButton}};
+    {"Disabled", omnibox::kOmniboxTabSwitchSuggestionsFlag, "disabled"}};
 #endif
 
 #if defined(OS_CHROMEOS)
