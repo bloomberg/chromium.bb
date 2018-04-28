@@ -11,7 +11,17 @@
 
 <dom-module id="settings-personalization-options">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      :host(.list-frame) settings-toggle-button,
+      :host(.list-frame) .settings-box {
+        -webkit-padding-end: 0;
+        -webkit-padding-start: 0;
+      }
+
+      :host(.list-frame) settings-toggle-button:first-of-type {
+        border-top: none;
+      }
+    </style>
     <settings-toggle-button pref="{{prefs.alternate_error_pages.enabled}}"
         label="$i18n{linkDoctorPref}"
         sub-label="$i18n{linkDoctorPrefDesc}">
@@ -39,14 +49,14 @@
         sub-label="$i18n{safeBrowsingEnableProtectionDesc}">
     </settings-toggle-button>
 <if expr="_google_chrome">
-    <template is="dom-if" if="[[!unifiedConsentEnabled_]]">
+    <template is="dom-if" if="[[!unifiedConsentEnabled]]">
       <settings-toggle-button id="spellCheckControl"
           pref="{{prefs.spellcheck.use_spelling_service}}"
           label="$i18n{spellingPref}"
           sub-label="$i18n{spellingDescription}">
       </settings-toggle-button>
     </template>
-    <template is="dom-if" if="[[unifiedConsentEnabled_]]">
+    <template is="dom-if" if="[[unifiedConsentEnabled]]">
       <div class="settings-box two-line" id="spellCheckLinkBox">
         <div class="start">
           $i18n{spellingPref}

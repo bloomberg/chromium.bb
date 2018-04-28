@@ -13,6 +13,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="sync_browser_proxy.html">
+<link rel="import" href="../privacy_page/personalization_options.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
 
@@ -422,6 +423,25 @@
         </div>
       </div>
     </iron-collapse>
+    <template is="dom-if" if="[[unifiedConsentEnabled]]">
+      <div class="settings-box two-line" id="personalize-section-toggle"
+          actionable on-click="toggleExpandButton_">
+        <div class="start">
+          <div>$i18n{personalizationSectionLabel}</div>
+          <div class="secondary">$i18n{personalizationSectionDesc}</div>
+        </div>
+        <cr-expand-button expanded="{{personalizeSectionOpened_}}"
+            alt="$i18n{syncExpandA11yLabel}">
+        </cr-expand-button>
+      </div>
+      <iron-collapse id="personalize-section"
+          opened="[[personalizeSectionOpened_]]">
+        <settings-personalization-options class="list-frame" prefs="{{prefs}}"
+            page-visibility="[[pageVisibility]]"
+            unified-consent-enabled="[[unifiedConsentEnabled]]">
+        </settings-personalization-options>
+      </iron-collapse>
+    </template>
 
 <if expr="not chromeos">
     <cr-toast id="toast" open="[[syncStatus.setupInProgress]]">
