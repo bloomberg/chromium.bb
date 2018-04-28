@@ -120,7 +120,6 @@
       default_value: "false",
       custom_copy: true,
       custom_compare: true,
-      mutable: true,
     },
     // Whether this style is affected by these pseudo-classes.
     {
