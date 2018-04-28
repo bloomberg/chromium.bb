@@ -119,7 +119,8 @@ class IdentityInternalsTokenRevoker : public GaiaAuthConsumer {
   const std::string& extension_id() const { return extension_id_; }
 
   // GaiaAuthConsumer implementation.
-  void OnOAuth2RevokeTokenCompleted() override;
+  void OnOAuth2RevokeTokenCompleted(
+      GaiaAuthConsumer::TokenRevocationStatus status) override;
 
  private:
   // An object used to start a token revoke request.
@@ -286,7 +287,8 @@ IdentityInternalsTokenRevoker::IdentityInternalsTokenRevoker(
 
 IdentityInternalsTokenRevoker::~IdentityInternalsTokenRevoker() {}
 
-void IdentityInternalsTokenRevoker::OnOAuth2RevokeTokenCompleted() {
+void IdentityInternalsTokenRevoker::OnOAuth2RevokeTokenCompleted(
+    GaiaAuthConsumer::TokenRevocationStatus status) {
   consumer_->OnTokenRevokerDone(this);
 }
 

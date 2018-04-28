@@ -25,7 +25,8 @@ class RefreshTokenRevoker : public GaiaAuthConsumer {
   void Revoke(const std::string& token);
 
   // Called when token is revoked.
-  void OnOAuth2RevokeTokenCompleted() override;
+  void OnOAuth2RevokeTokenCompleted(
+      GaiaAuthConsumer::TokenRevocationStatus status) override;
 
  private:
   GaiaAuthFetcher gaia_fetcher_;

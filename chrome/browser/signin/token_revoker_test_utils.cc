@@ -26,7 +26,8 @@ void RefreshTokenRevoker::Revoke(const std::string& token) {
   message_loop_runner_->Run();
 }
 
-void RefreshTokenRevoker::OnOAuth2RevokeTokenCompleted() {
+void RefreshTokenRevoker::OnOAuth2RevokeTokenCompleted(
+    GaiaAuthConsumer::TokenRevocationStatus status) {
   DVLOG(1) << "TokenRevoker OnOAuth2RevokeTokenCompleted";
   message_loop_runner_->Quit();
 }

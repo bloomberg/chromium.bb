@@ -33,6 +33,7 @@
 #include "net/url_request/url_request_status.h"
 
 namespace {
+
 const int kLoadFlagsIgnoreCookies = net::LOAD_DO_NOT_SEND_COOKIES |
                                     net::LOAD_DO_NOT_SAVE_COOKIES;
 
@@ -87,6 +88,34 @@ void GetCookiesFromResponse(const net::HttpResponseHeaders* headers,
     if (!value.empty())
       cookies->push_back(value);
   }
+}
+
+// Parses server responses for token revocation.
+GaiaAuthConsumer::TokenRevocationStatus
+GetTokenRevocationStatusFromResponseData(const std::string& data,
+                                         int response_code) {
+  if (response_code == net::HTTP_OK)
+    return GaiaAuthConsumer::TokenRevocationStatus::kSuccess;
+
+  if (response_code == net::HTTP_INTERNAL_SERVER_ERROR)
+    return GaiaAuthConsumer::TokenRevocationStatus::kServerError;
+
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(data);
+  if (!value.get() || value->type() != base::Value::Type::DICTIONARY)
+    return GaiaAuthConsumer::TokenRevocationStatus::kUnknownError;
+
+  base::DictionaryValue* dict =
+      static_cast<base::DictionaryValue*>(value.get());
+  std::string error;
+  if (!dict->GetStringWithoutPathExpansion("error", &error))
+    return GaiaAuthConsumer::TokenRevocationStatus::kUnknownError;
+
+  if (error == "invalid_token")
+    return GaiaAuthConsumer::TokenRevocationStatus::kInvalidToken;
+  if (error == "invalid_request")
+    return GaiaAuthConsumer::TokenRevocationStatus::kInvalidRequest;
+
+  return GaiaAuthConsumer::TokenRevocationStatus::kUnknownError;
 }
 
 }  // namespace
@@ -971,7 +1000,30 @@ void GaiaAuthFetcher::OnOAuth2RevokeTokenFetched(
     const std::string& data,
     const net::URLRequestStatus& status,
     int response_code) {
-  consumer_->OnOAuth2RevokeTokenCompleted();
+  GaiaAuthConsumer::TokenRevocationStatus revocation_status =
+      GaiaAuthConsumer::TokenRevocationStatus::kUnknownError;
+
+  switch (status.status()) {
+    case net::URLRequestStatus::SUCCESS:
+      revocation_status =
+          GetTokenRevocationStatusFromResponseData(data, response_code);
+      break;
+    case net::URLRequestStatus::IO_PENDING:
+      NOTREACHED();
+      break;
+    case net::URLRequestStatus::FAILED:
+      revocation_status =
+          (status.ToNetError() == net::ERR_TIMED_OUT)
+              ? GaiaAuthConsumer::TokenRevocationStatus::kConnectionTimeout
+              : GaiaAuthConsumer::TokenRevocationStatus::kConnectionFailed;
+      break;
+    case net::URLRequestStatus::CANCELED:
+      revocation_status =
+          GaiaAuthConsumer::TokenRevocationStatus::kConnectionCanceled;
+      break;
+  }
+
+  consumer_->OnOAuth2RevokeTokenCompleted(revocation_status);
 }
 
 void GaiaAuthFetcher::OnListAccountsFetched(const std::string& data,

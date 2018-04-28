@@ -32,7 +32,7 @@ namespace {
 const char kAccountIdPrefix[] = "AccountId-";
 const size_t kAccountIdPrefixLength = 10;
 
-// Used to records token state transitions in histograms.
+// Used to record token state transitions in histograms.
 // Do not change existing values, new values can only be added at the end.
 enum class TokenStateTransition {
   // Update events.
@@ -68,12 +68,36 @@ enum class LoadTokenFromDBStatus {
   NUM_LOAD_TOKEN_FROM_DB_STATUS
 };
 
+// Used to record events related to token revocation requests in histograms.
+// Do not change existing values, new values can only be added at the end.
+enum class TokenRevocationRequestProgress {
+  // The request was created.
+  kRequestCreated = 0,
+  // The request was sent over the network.
+  kRequestStarted = 1,
+  // The network request completed with a failure.
+  kRequestFailed = 2,
+  // The network request completed with a success.
+  kRequestSucceeded = 3,
+
+  kMaxValue = kRequestSucceeded
+};
+
 // Adds a sample to the TokenStateTransition histogram. Encapsuled in a function
 // to reduce executable size, because histogram macros may generate a lot of
 // code.
 void RecordTokenStateTransition(TokenStateTransition transition) {
   UMA_HISTOGRAM_ENUMERATION("Signin.TokenStateTransition", transition,
                             TokenStateTransition::kCount);
+}
+
+// Adds a sample to the TokenRevocationRequestProgress histogram. Encapsuled in
+// a function to reduce executable size, because histogram macros may generate a
+// lot of code.
+void RecordRefreshTokenRevocationRequestEvent(
+    TokenRevocationRequestProgress event) {
+  UMA_HISTOGRAM_ENUMERATION("Signin.RefreshTokenRevocationRequestProgress",
+                            event);
 }
 
 // Record metrics when a token was updated.
@@ -212,7 +236,8 @@ class MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken
 
  private:
   // GaiaAuthConsumer overrides:
-  void OnOAuth2RevokeTokenCompleted() override;
+  void OnOAuth2RevokeTokenCompleted(
+      GaiaAuthConsumer::TokenRevocationStatus status) override;
 
   MutableProfileOAuth2TokenServiceDelegate* token_service_delegate_;
   GaiaAuthFetcher fetcher_;
@@ -231,6 +256,8 @@ MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
                GaiaConstants::kChromeSource,
                token_service_delegate_->GetRequestContext()),
       weak_ptr_factory_(this) {
+  RecordRefreshTokenRevocationRequestEvent(
+      TokenRevocationRequestProgress::kRequestCreated);
   client->DelayNetworkCall(
       base::Bind(&MutableProfileOAuth2TokenServiceDelegate::
                      RevokeServerRefreshToken::Start,
@@ -243,6 +270,8 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::Start(
     const std::string& refresh_token) {
   if (!rsrt)
     return;
+  RecordRefreshTokenRevocationRequestEvent(
+      TokenRevocationRequestProgress::kRequestStarted);
   rsrt->fetcher_.StartRevokeOAuth2Token(refresh_token);
 }
 
@@ -251,7 +280,13 @@ MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
-    OnOAuth2RevokeTokenCompleted() {
+    OnOAuth2RevokeTokenCompleted(
+        GaiaAuthConsumer::TokenRevocationStatus status) {
+  RecordRefreshTokenRevocationRequestEvent(
+      (status == GaiaAuthConsumer::TokenRevocationStatus::kSuccess)
+          ? TokenRevocationRequestProgress::kRequestSucceeded
+          : TokenRevocationRequestProgress::kRequestFailed);
+  UMA_HISTOGRAM_ENUMERATION("Signin.RefreshTokenRevocationStatus", status);
   // |this| pointer will be deleted when removed from the vector, so don't
   // access any members after call to erase().
   token_service_delegate_->server_revokes_.erase(std::find_if(
