@@ -1,0 +1,9 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.chromium.net</groupId>
+  <artifactId>cronet-api</artifactId>
+  <version>@MAJOR@.@MINOR@.@BUILD@.@PATCH@</version>
+  <packaging>aar</packaging>
+  <name>Cronet</name>
+  <description>Cronet API. Does not contain implementation.</description>
+</project>
