@@ -485,8 +485,9 @@ void HitTestResult::ResolveRectBasedTest(
   // point-based hit-test.
   // Note that we don't know the local point after a rect-based hit-test, but we
   // never use it so shouldn't bother with the cost of computing it.
-  resolved_inner_node->GetLayoutObject()->UpdateHitTestResult(*this,
-                                                              LayoutPoint());
+  DCHECK(resolved_inner_node);
+  if (auto* layout_object = resolved_inner_node->GetLayoutObject())
+    layout_object->UpdateHitTestResult(*this, LayoutPoint());
   DCHECK(!IsRectBasedTest());
 }
 
