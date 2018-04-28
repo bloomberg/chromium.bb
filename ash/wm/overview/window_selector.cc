@@ -637,6 +637,18 @@ void WindowSelector::StartSplitViewDragMode(
   window_drag_controller_->StartSplitViewDragMode(location_in_screen);
 }
 
+void WindowSelector::Fling(WindowSelectorItem* item,
+                           const gfx::Point& location_in_screen,
+                           float velocity_x,
+                           float velocity_y) {
+  // Its possible a fling event is not paired with a tap down event. Ignore
+  // these flings.
+  if (!window_drag_controller_ || item != window_drag_controller_->item())
+    return;
+
+  window_drag_controller_->Fling(location_in_screen, velocity_x, velocity_y);
+}
+
 void WindowSelector::ActivateDraggedWindow() {
   window_drag_controller_->ActivateDraggedWindow();
 }

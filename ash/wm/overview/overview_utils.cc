@@ -106,6 +106,11 @@ bool IsNewOverviewUi() {
   return base::FeatureList::IsEnabled(features::kNewOverviewUi);
 }
 
+bool IsOverviewSwipeToCloseEnabled() {
+  return base::FeatureList::IsEnabled(features::kNewOverviewUi) &&
+         base::FeatureList::IsEnabled(features::kOverviewSwipeToClose);
+}
+
 std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,
                                                       ui::LayerType layer_type,
                                                       SkColor background_color,
