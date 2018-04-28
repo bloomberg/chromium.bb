@@ -116,7 +116,9 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_debug_info.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
@@ -3304,7 +3306,8 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
           RuntimeEnabledFeatures::PrintBrowserEnabled())
         PaintTree();
 
-      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+          RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
         base::Optional<CompositorElementIdSet> composited_element_ids =
             CompositorElementIdSet();
         PushPaintArtifactToCompositor(composited_element_ids.value());
@@ -3394,6 +3397,38 @@ void LocalFrameView::PrePaint() {
   });
 }
 
+static void CollectDrawableLayersForLayerListRecursively(
+    GraphicsContext& context,
+    const GraphicsLayer* layer) {
+  DCHECK(RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
+
+  if (!layer)
+    return;
+
+  if (layer->DrawsContent()) {
+    // TODO(trchen): Currently the GraphicsLayer hierarchy is still built
+    // during CompositingUpdate, and we have to clear them here to ensure no
+    // extraneous layers are still attached. In future we will disable all
+    // those layer hierarchy code so we won't need this line.
+    layer->PlatformLayer()->RemoveAllChildren();
+
+    ScopedPaintChunkProperties scope(context.GetPaintController(),
+                                     layer->GetPropertyTreeState(), *layer,
+                                     DisplayItem::kForeignLayerWrapper);
+    RecordForeignLayer(context, *layer, DisplayItem::kForeignLayerWrapper,
+                       layer->PlatformLayer(),
+                       layer->GetOffsetFromTransformNode(),
+                       RoundedIntSize(layer->Size()));
+  }
+
+  // TODO(trchen): layer->ContentLayer() should be collected too,
+  // but how do we derive their state?
+
+  for (const auto* child : layer->Children())
+    CollectDrawableLayersForLayerListRecursively(context, child);
+  CollectDrawableLayersForLayerListRecursively(context, layer->MaskLayer());
+}
+
 void LocalFrameView::PaintTree() {
   TRACE_EVENT0("blink", "LocalFrameView::paintTree");
   SCOPED_UMA_AND_UKM_TIMER("Blink.Paint.UpdateTime", UkmMetricNames::kPaint);
@@ -3452,6 +3487,21 @@ void LocalFrameView::PaintTree() {
     }
   }
 
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    GraphicsContext context(*paint_controller_);
+    CollectDrawableLayersForLayerListRecursively(
+        context, layout_view->Compositor()->PaintRootGraphicsLayer());
+    if (viewport_scrollable_area_) {
+      CollectDrawableLayersForLayerListRecursively(
+          context, viewport_scrollable_area_->LayerForHorizontalScrollbar());
+      CollectDrawableLayersForLayerListRecursively(
+          context, viewport_scrollable_area_->LayerForVerticalScrollbar());
+      CollectDrawableLayersForLayerListRecursively(
+          context, viewport_scrollable_area_->LayerForScrollCorner());
+    }
+    paint_controller_->CommitNewDisplayItems();
+  }
+
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kPaintClean);
     if (auto* layout_view = frame_view.GetLayoutView())
@@ -3463,7 +3513,8 @@ void LocalFrameView::PushPaintArtifactToCompositor(
     CompositorElementIdSet& composited_element_ids) {
   TRACE_EVENT0("blink", "LocalFrameView::pushPaintArtifactToCompositor");
 
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+         RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
 
   if (!frame_->GetSettings()->GetAcceleratedCompositingEnabled())
     return;

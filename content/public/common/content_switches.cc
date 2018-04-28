@@ -343,6 +343,10 @@ const char kEnableBackgroundFetchPersistence[] =
 // features.
 const char kEnableBlinkFeatures[]           = "enable-blink-features";
 
+// A shorthand for adding both "--enable-blink-features=BlinkGenPropertyTrees"
+// and "--enable-layer-lists".
+const char kEnableBlinkGenPropertyTrees[] = "enable-blink-gen-property-trees";
+
 // Enables Web Platform features that are in development.
 const char kEnableExperimentalWebPlatformFeatures[] =
     "enable-experimental-web-platform-features";

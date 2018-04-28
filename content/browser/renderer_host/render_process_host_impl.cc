@@ -2584,7 +2584,9 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
 
   // Slimming Paint v2 implies layer lists in the renderer.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSlimmingPaintV2)) {
+          switches::kEnableSlimmingPaintV2) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBlinkGenPropertyTrees)) {
     command_line->AppendSwitch(cc::switches::kEnableLayerLists);
   }
 }
@@ -2692,6 +2694,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableWebGLImageChromium,
     switches::kDomAutomationController,
     switches::kEnableAutomation,
+    switches::kEnableBlinkGenPropertyTrees,
     switches::kEnableExperimentalWebPlatformFeatures,
     switches::kEnableGPUClientLogging,
     switches::kEnableGpuClientTracing,

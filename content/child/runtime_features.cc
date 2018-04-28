@@ -235,6 +235,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
           command_line.HasSwitch(switches::kEnableSlimmingPaintV175) ||
           enableExperimentalWebPlatformFeatures);
 
+  WebRuntimeFeatures::EnableFeatureFromString(
+      "BlinkGenPropertyTrees",
+      command_line.HasSwitch(switches::kEnableBlinkGenPropertyTrees));
+
   if (command_line.HasSwitch(switches::kEnableSlimmingPaintV2))
     WebRuntimeFeatures::EnableSlimmingPaintV2(true);
 
