@@ -140,7 +140,6 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   std::unique_ptr<FrameSinkManagerImpl> frame_sink_manager_;
   std::unique_ptr<ParentLocalSurfaceIdAllocator>
       parent_local_surface_id_allocator_;
-  LocalSurfaceId local_surface_id_;
   gfx::Size display_size_;
   float device_scale_factor_ = 0;
   gfx::ColorSpace blending_color_space_ = gfx::ColorSpace::CreateSRGB();
