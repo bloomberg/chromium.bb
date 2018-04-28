@@ -8,6 +8,7 @@
 
 goog.provide('BrailleCommandHandler');
 
+goog.require('EventSourceState');
 goog.require('BackgroundKeyboardHandler');
 goog.require('DesktopAutomationHandler');
 
@@ -32,6 +33,8 @@ BrailleCommandHandler.setEnabled = function(state) {
 BrailleCommandHandler.onBrailleKeyEvent = function(evt, content) {
   if (!BrailleCommandHandler.enabled_)
     return true;
+
+  EventSourceState.set(EventSourceType.BRAILLE_KEYBOARD);
 
   // Note: panning within content occurs earlier in event dispatch.
   Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);

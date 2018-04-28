@@ -9,6 +9,7 @@
 goog.provide('GestureCommandHandler');
 
 goog.require('CommandHandler');
+goog.require('EventSourceState');
 goog.require('GestureCommandData');
 
 /**
@@ -36,6 +37,8 @@ GestureCommandHandler.getEnabled = function() {
 GestureCommandHandler.onAccessibilityGesture_ = function(gesture) {
   if (!GestureCommandHandler.enabled_ || !ChromeVoxState.instance.currentRange)
     return;
+
+  EventSourceState.set(EventSourceType.TOUCH_GESTURE);
 
   var commandData = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
   if (!commandData)

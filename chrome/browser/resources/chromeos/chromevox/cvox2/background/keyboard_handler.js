@@ -9,6 +9,7 @@
 goog.provide('BackgroundKeyboardHandler');
 
 goog.require('ChromeVoxState');
+goog.require('EventSourceState');
 goog.require('Output');
 goog.require('cvox.ChromeVoxKbHandler');
 goog.require('cvox.ChromeVoxPrefs');
@@ -36,6 +37,7 @@ BackgroundKeyboardHandler.prototype = {
    * @return {boolean} True if the default action should be performed.
    */
   onKeyDown: function(evt) {
+    EventSourceState.set(EventSourceType.STANDARD_KEYBOARD);
     evt.stickyMode = cvox.ChromeVox.isStickyModeOn() && cvox.ChromeVox.isActive;
     if (cvox.ChromeVox.passThroughMode)
       return false;
