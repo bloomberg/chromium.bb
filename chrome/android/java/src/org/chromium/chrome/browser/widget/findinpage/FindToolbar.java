@@ -13,6 +13,7 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.provider.Settings;
+import android.support.annotation.IntDef;
 import android.support.v4.view.accessibility.AccessibilityEventCompat;
 import android.text.Editable;
 import android.text.InputType;
@@ -23,12 +24,10 @@ import android.view.ActionMode;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.View.OnKeyListener;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -51,6 +50,9 @@ import org.chromium.chrome.browser.widget.VerticallyFixedEditText;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /** A toolbar providing find in page functionality. */
 public class FindToolbar extends LinearLayout
         implements TabWebContentsDelegateAndroid.FindResultListener,
@@ -58,6 +60,14 @@ public class FindToolbar extends LinearLayout
     private static final String TAG = "FindInPage";
 
     private static final long ACCESSIBLE_ANNOUNCEMENT_DELAY_MILLIS = 500;
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({STATE_SHOWN, STATE_SHOWING, STATE_HIDDEN, STATE_HIDING})
+    private @interface FindToolbarState {}
+    private static final int STATE_SHOWN = 0;
+    private static final int STATE_SHOWING = 1;
+    private static final int STATE_HIDDEN = 2;
+    private static final int STATE_HIDING = 3;
 
     // Toolbar UI
     private TextView mFindStatus;
@@ -86,14 +96,14 @@ public class FindToolbar extends LinearLayout
     /** Whether the search key should trigger a new search. */
     private boolean mSearchKeyShouldTriggerSearch;
 
-    private boolean mActive;
+    @FindToolbarState
+    private int mCurrentState = STATE_HIDDEN;
+    @FindToolbarState
+    private int mDesiredState = STATE_HIDDEN;
 
     private Handler mHandler = new Handler();
     private Runnable mAccessibleAnnouncementRunnable;
     private boolean mAccessibilityDidActivateResult;
-
-    // TODO(tedchoc): Should be removed after debugging https://crbug.com/624332
-    private Throwable mDeactivateCallStack;
 
     /** Subclasses EditText in order to intercept BACK key presses. */
     @SuppressLint("Instantiatable")
@@ -535,7 +545,7 @@ public class FindToolbar extends LinearLayout
     /**
      * Checks to see if a ContentViewCore is available to hook into.
      */
-    protected boolean isViewAvailable() {
+    protected boolean isWebContentAvailable() {
         Tab currentTab = mTabModelSelector.getCurrentTab();
         return currentTab != null && currentTab.getContentViewCore() != null;
     }
@@ -544,14 +554,25 @@ public class FindToolbar extends LinearLayout
      * Initializes the find toolbar. Should be called just after the find toolbar is shown.
      * If the toolbar is already showing, this just focuses the toolbar.
      */
-    public void activate() {
+    public final void activate() {
         ThreadUtils.checkUiThread();
-        if (!isViewAvailable()) return;
-        if (mActive) {
+        if (!isWebContentAvailable()) return;
+
+        if (mCurrentState == STATE_SHOWN) {
             requestQueryFocus();
             return;
         }
 
+        mDesiredState = STATE_SHOWN;
+        if (mCurrentState != STATE_HIDDEN) return;
+        setCurrentState(STATE_SHOWING);
+        handleActivate();
+    }
+
+    /**
+     * Logic for handling the activation of the find toolbar.
+     */
+    protected void handleActivate() {
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
         for (TabModel model : mTabModelSelector.getModels()) {
             model.addObserver(mTabModelObserver);
@@ -567,17 +588,15 @@ public class FindToolbar extends LinearLayout
         showKeyboard();
         // Always show the bar to make the FindToolbar more distinct from the Omnibox.
         setResultsBarVisibility(true);
-        mActive = true;
         updateVisualsForTabModel(mTabModelSelector.isIncognitoSelected());
 
-        // Let everyone know that we've just updated.
-        if (mObserver != null) mObserver.onFindToolbarShown();
+        setCurrentState(STATE_SHOWN);
     }
 
     /**
      * Call this just before closing the find toolbar. The selection on the page will be cleared.
      */
-    public void deactivate() {
+    public final void deactivate() {
         deactivate(true);
     }
 
@@ -585,17 +604,19 @@ public class FindToolbar extends LinearLayout
      * Call this just before closing the find toolbar.
      * @param clearSelection Whether the selection on the page should be cleared.
      */
-    public void deactivate(boolean clearSelection) {
+    public final void deactivate(boolean clearSelection) {
         ThreadUtils.checkUiThread();
-        if (!mActive) return;
-        if (mDeactivateCallStack != null) {
-            Log.e(TAG, "Re-entrant call to deactive, previous stack", mDeactivateCallStack);
-            throw new IllegalStateException("Re-entrant call to deactivate", mDeactivateCallStack);
-        }
-        mDeactivateCallStack = new Throwable();
 
-        if (mObserver != null) mObserver.onFindToolbarHidden();
+        mDesiredState = STATE_HIDDEN;
+        if (mCurrentState != STATE_SHOWN) return;
+        setCurrentState(STATE_HIDING);
+        handleDeactivation(clearSelection);
+    }
 
+    /**
+     * Logic for handling deactivating the find toolbar.
+     */
+    protected void handleDeactivation(boolean clearSelection) {
         setResultsBarVisibility(false);
 
         mTabModelSelector.removeObserver(mTabModelSelectorObserver);
@@ -620,8 +641,30 @@ public class FindToolbar extends LinearLayout
         mFindInPageBridge.destroy();
         mFindInPageBridge = null;
         mCurrentTab = null;
-        mActive = false;
-        mDeactivateCallStack = null;
+
+        setCurrentState(STATE_HIDDEN);
+    }
+
+    private void setCurrentState(@FindToolbarState int state) {
+        mCurrentState = state;
+
+        // Notify the observers if we hit the transition states.
+        if (mObserver != null) {
+            if (mCurrentState == STATE_HIDDEN) {
+                mObserver.onFindToolbarHidden();
+            } else if (mCurrentState == STATE_SHOWN) {
+                mObserver.onFindToolbarShown();
+            }
+        }
+
+        // Ensure the current state reflects the desired state if the state change happened while
+        // processing the previous state change.
+        assert mDesiredState == STATE_HIDDEN || mDesiredState == STATE_SHOWN;
+        if (mCurrentState == STATE_HIDDEN && mDesiredState == STATE_SHOWN) {
+            activate();
+        } else if (mCurrentState == STATE_SHOWN && mDesiredState == STATE_HIDDEN) {
+            deactivate();
+        }
     }
 
     /**
