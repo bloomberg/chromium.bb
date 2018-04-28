@@ -21,7 +21,7 @@ Polymer({
     this.hidden = true;
     const dragTarget = document.documentElement;
     this.dragWrapperHandler_ =
-        new extensions.DragAndDropHandler(true, true, dragTarget);
+        new extensions.DragAndDropHandler(true, dragTarget);
     // TODO(devlin): All these dragTarget listeners leak (they aren't removed
     // when the element is). This only matters in tests at the moment, but would
     // be good to fix.
