@@ -6,8 +6,9 @@
 
 namespace blink {
 
-const ScrollPaintPropertyNode& ScrollPaintPropertyNode::Root() {
-  DEFINE_STATIC_LOCAL(ScrollPaintPropertyNode, root, (nullptr, State{}));
+ScrollPaintPropertyNode* ScrollPaintPropertyNode::Root() {
+  DEFINE_STATIC_REF(ScrollPaintPropertyNode, root,
+                    (ScrollPaintPropertyNode::Create(nullptr, State{})));
   return root;
 }
 

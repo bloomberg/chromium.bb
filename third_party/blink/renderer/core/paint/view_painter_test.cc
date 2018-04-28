@@ -126,7 +126,7 @@ TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
   EXPECT_EQ(background_chunk_client, &chunk.id.client);
 
   const auto& tree_state = chunk.properties;
-  EXPECT_EQ(&EffectPaintPropertyNode::Root(), tree_state.Effect());
+  EXPECT_EQ(EffectPaintPropertyNode::Root(), tree_state.Effect());
   const auto* properties = GetLayoutView().FirstFragment().PaintProperties();
   if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     EXPECT_EQ(properties->ScrollTranslation(), tree_state.Transform());

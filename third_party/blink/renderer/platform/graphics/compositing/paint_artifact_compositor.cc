@@ -273,7 +273,7 @@ PaintArtifactCompositor::PendingLayer::PendingLayer(
     : bounds(first_paint_chunk.bounds),
       rect_known_to_be_opaque(
           first_paint_chunk.known_to_be_opaque ? bounds : FloatRect()),
-      property_tree_state(first_paint_chunk.properties),
+      property_tree_state(first_paint_chunk.properties.GetPropertyTreeState()),
       requires_own_layer(chunk_requires_own_layer) {
   paint_chunk_indices.push_back(chunk_index);
 }
@@ -385,12 +385,16 @@ static const EffectPaintPropertyNode* StrictChildOfAlongPath(
 
 bool PaintArtifactCompositor::MightOverlap(const PendingLayer& layer_a,
                                            const PendingLayer& layer_b) {
+  PropertyTreeState root_property_tree_state(TransformPaintPropertyNode::Root(),
+                                             ClipPaintPropertyNode::Root(),
+                                             EffectPaintPropertyNode::Root());
+
   FloatClipRect bounds_a(layer_a.bounds);
-  GeometryMapper::LocalToAncestorVisualRect(
-      layer_a.property_tree_state, PropertyTreeState::Root(), bounds_a);
+  GeometryMapper::LocalToAncestorVisualRect(layer_a.property_tree_state,
+                                            root_property_tree_state, bounds_a);
   FloatClipRect bounds_b(layer_b.bounds);
-  GeometryMapper::LocalToAncestorVisualRect(
-      layer_b.property_tree_state, PropertyTreeState::Root(), bounds_b);
+  GeometryMapper::LocalToAncestorVisualRect(layer_b.property_tree_state,
+                                            root_property_tree_state, bounds_b);
 
   return bounds_a.Rect().Intersects(bounds_b.Rect());
 }
@@ -559,8 +563,8 @@ void PaintArtifactCompositor::CollectPendingLayers(
     Vector<PendingLayer>& pending_layers) {
   Vector<PaintChunk>::const_iterator cursor =
       paint_artifact.PaintChunks().begin();
-  LayerizeGroup(paint_artifact, pending_layers, EffectPaintPropertyNode::Root(),
-                cursor);
+  LayerizeGroup(paint_artifact, pending_layers,
+                *EffectPaintPropertyNode::Root(), cursor);
   DCHECK_EQ(paint_artifact.PaintChunks().end(), cursor);
 }
 

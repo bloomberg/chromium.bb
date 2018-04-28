@@ -56,17 +56,18 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   };
 
   // This node is really a sentinel, and does not represent a real scroll.
-  static const ScrollPaintPropertyNode& Root();
+  static ScrollPaintPropertyNode* Root();
 
-  static std::unique_ptr<ScrollPaintPropertyNode> Create(
-      const ScrollPaintPropertyNode& parent,
+  static scoped_refptr<ScrollPaintPropertyNode> Create(
+      scoped_refptr<const ScrollPaintPropertyNode> parent,
       State&& state) {
-    return base::WrapUnique(
-        new ScrollPaintPropertyNode(&parent, std::move(state)));
+    return base::AdoptRef(
+        new ScrollPaintPropertyNode(std::move(parent), std::move(state)));
   }
 
-  bool Update(const ScrollPaintPropertyNode& parent, State&& state) {
-    bool parent_changed = SetParent(&parent);
+  bool Update(scoped_refptr<const ScrollPaintPropertyNode> parent,
+              State&& state) {
+    bool parent_changed = SetParent(parent);
     if (state == state_)
       return parent_changed;
 
@@ -117,9 +118,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
 #if DCHECK_IS_ON()
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // a scroll node before it has been updated, to later detect changes.
-  std::unique_ptr<ScrollPaintPropertyNode> Clone() const {
-    return base::WrapUnique(
-        new ScrollPaintPropertyNode(Parent(), State(state_)));
+  scoped_refptr<ScrollPaintPropertyNode> Clone() const {
+    return base::AdoptRef(new ScrollPaintPropertyNode(Parent(), State(state_)));
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
@@ -132,8 +132,9 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   std::unique_ptr<JSONObject> ToJSON() const;
 
  private:
-  ScrollPaintPropertyNode(const ScrollPaintPropertyNode* parent, State&& state)
-      : PaintPropertyNode(parent), state_(std::move(state)) {
+  ScrollPaintPropertyNode(scoped_refptr<const ScrollPaintPropertyNode> parent,
+                          State&& state)
+      : PaintPropertyNode(std::move(parent)), state_(std::move(state)) {
     Validate();
   }
 
