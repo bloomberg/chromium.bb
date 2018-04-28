@@ -248,11 +248,11 @@ class PrintPreviewHandlerTest : public testing::Test {
   PrintPreviewHandlerTest() {
     TestingProfile::Builder builder;
     profile_ = builder.Build();
-    initiator_web_contents_.reset(content::WebContents::Create(
-        content::WebContents::CreateParams(profile_.get())));
+    initiator_web_contents_ = content::WebContents::Create(
+        content::WebContents::CreateParams(profile_.get()));
     content::WebContents* initiator = initiator_web_contents_.get();
-    preview_web_contents_.reset(content::WebContents::Create(
-        content::WebContents::CreateParams(profile_.get())));
+    preview_web_contents_ = content::WebContents::Create(
+        content::WebContents::CreateParams(profile_.get()));
     printing::PrintViewManager::CreateForWebContents(initiator);
     printing::PrintViewManager::FromWebContents(initiator)->PrintPreviewNow(
         initiator->GetMainFrame(), false);

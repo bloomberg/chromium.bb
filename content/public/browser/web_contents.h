@@ -178,7 +178,8 @@ class WebContents : public PageNavigator,
   };
 
   // Creates a new WebContents.
-  CONTENT_EXPORT static WebContents* Create(const CreateParams& params);
+  CONTENT_EXPORT static std::unique_ptr<WebContents> Create(
+      const CreateParams& params);
 
   // Similar to Create() above but should be used when you need to prepopulate
   // the SessionStorageNamespaceMap of the WebContents. This can happen if

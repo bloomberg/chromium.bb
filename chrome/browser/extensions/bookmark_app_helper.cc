@@ -251,8 +251,8 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
     // contents for all pending synced bookmark apps. This will avoid
     // pathological cases where n renderers for n bookmark apps are spun up on
     // first sign-in to a new machine.
-    web_contents_.reset(content::WebContents::Create(
-        content::WebContents::CreateParams(service_->profile())));
+    web_contents_ = content::WebContents::Create(
+        content::WebContents::CreateParams(service_->profile()));
     Observe(web_contents_.get());
 
     // Load about:blank so that the process actually starts.

@@ -210,7 +210,7 @@ Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
   }
   create_params.initial_size = AdjustWindowSize(initial_size);
   std::unique_ptr<WebContents> web_contents =
-      base::WrapUnique(WebContents::Create(create_params));
+      WebContents::Create(create_params);
   Shell* shell =
       CreateShell(std::move(web_contents), create_params.initial_size);
   if (!url.is_empty())

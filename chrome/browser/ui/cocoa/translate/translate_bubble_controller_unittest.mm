@@ -59,9 +59,9 @@ class TranslateBubbleControllerTest : public CocoaProfileTest {
   }
 
   content::WebContents* AppendToTabStrip() {
-    std::unique_ptr<content::WebContents> web_contents = base::WrapUnique(
+    std::unique_ptr<content::WebContents> web_contents =
         content::WebContents::Create(content::WebContents::CreateParams(
-            profile(), site_instance_.get())));
+            profile(), site_instance_.get()));
     content::WebContents* raw_web_contents = web_contents.get();
     browser()->tab_strip_model()->AppendWebContents(std::move(web_contents),
                                                     /*foreground=*/true);

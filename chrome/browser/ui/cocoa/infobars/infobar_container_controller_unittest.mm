@@ -25,8 +25,8 @@ namespace {
 class InfoBarContainerControllerTest : public CocoaProfileTest {
   void SetUp() override {
     CocoaProfileTest::SetUp();
-    web_contents_.reset(content::WebContents::Create(
-        content::WebContents::CreateParams(profile())));
+    web_contents_ = content::WebContents::Create(
+        content::WebContents::CreateParams(profile()));
     InfoBarService::CreateForWebContents(web_contents_.get());
 
     resizeDelegate_.reset([[ViewResizerPong alloc] init]);

@@ -31,9 +31,9 @@ ConstrainedWebDialogDelegateBase::ConstrainedWebDialogDelegateBase(
       web_dialog_delegate_(delegate),
       closed_via_webui_(false) {
   CHECK(delegate);
-  web_contents_ =
+  web_contents_holder_ =
       WebContents::Create(WebContents::CreateParams(browser_context));
-  web_contents_holder_.reset(web_contents_);
+  web_contents_ = web_contents_holder_.get();
   WebContentsObserver::Observe(web_contents_);
   zoom::ZoomController::CreateForWebContents(web_contents_);
   if (tab_delegate) {

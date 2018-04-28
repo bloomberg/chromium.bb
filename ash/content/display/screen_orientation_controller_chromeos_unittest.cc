@@ -27,6 +27,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/web_contents_tester.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -118,11 +119,11 @@ class ScreenOrientationControllerTest : public AshTestBase {
 
   // Creates and initializes and empty content::WebContents that is backed by a
   // content::BrowserContext and that has an aura::Window.
-  content::WebContents* CreateWebContents();
+  std::unique_ptr<content::WebContents> CreateWebContents();
 
   // Creates a secondary content::WebContents, with a separate
   // content::BrowserContext.
-  content::WebContents* CreateSecondaryWebContents();
+  std::unique_ptr<content::WebContents> CreateSecondaryWebContents();
 
   // AshTestBase:
   void SetUp() override;
@@ -171,16 +172,17 @@ ScreenOrientationControllerTest::ScreenOrientationControllerTest() {
 
 ScreenOrientationControllerTest::~ScreenOrientationControllerTest() = default;
 
-content::WebContents* ScreenOrientationControllerTest::CreateWebContents() {
-  return views::ViewsDelegate::GetInstance()->CreateWebContents(
-      ShellContentState::GetInstance()->GetActiveBrowserContext(), nullptr);
+std::unique_ptr<content::WebContents>
+ScreenOrientationControllerTest::CreateWebContents() {
+  return base::WrapUnique(content::WebContentsTester::CreateTestWebContents(
+      ShellContentState::GetInstance()->GetActiveBrowserContext(), nullptr));
 }
 
-content::WebContents*
+std::unique_ptr<content::WebContents>
 ScreenOrientationControllerTest::CreateSecondaryWebContents() {
   secondary_browser_context_.reset(new content::TestBrowserContext());
-  return views::ViewsDelegate::GetInstance()->CreateWebContents(
-      secondary_browser_context_.get(), nullptr);
+  return base::WrapUnique(content::WebContentsTester::CreateTestWebContents(
+      secondary_browser_context_.get(), nullptr));
 }
 
 void ScreenOrientationControllerTest::SetUp() {

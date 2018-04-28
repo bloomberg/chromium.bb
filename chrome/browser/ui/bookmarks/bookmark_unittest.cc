@@ -28,8 +28,8 @@ TEST_F(BookmarkTest, DetachedBookmarkBarOnNTP) {
 TEST_F(BookmarkTest, DetachedBookmarkBarOnCustomNTP) {
   // Create a empty commited web contents.
   std::unique_ptr<content::WebContents> web_contents =
-      base::WrapUnique(content::WebContents::Create(
-          content::WebContents::CreateParams(browser()->profile())));
+      content::WebContents::Create(
+          content::WebContents::CreateParams(browser()->profile()));
   web_contents->GetController().LoadURL(GURL(url::kAboutBlankURL),
                                         content::Referrer(),
                                         ui::PAGE_TRANSITION_LINK,

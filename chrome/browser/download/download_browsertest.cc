@@ -1759,9 +1759,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab4) {
   // Open a new tab for the download
   content::WebContents* tab =
         browser()->tab_strip_model()->GetActiveWebContents();
-  std::unique_ptr<content::WebContents> new_tab =
-      base::WrapUnique(content::WebContents::Create(
-          content::WebContents::CreateParams(tab->GetBrowserContext())));
+  std::unique_ptr<content::WebContents> new_tab = content::WebContents::Create(
+      content::WebContents::CreateParams(tab->GetBrowserContext()));
   content::WebContents* raw_new_tab = new_tab.get();
   ASSERT_TRUE(raw_new_tab);
   ASSERT_TRUE(raw_new_tab->GetController().IsInitialNavigation());

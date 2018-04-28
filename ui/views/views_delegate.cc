@@ -100,12 +100,6 @@ void ViewsDelegate::AddRef() {
 void ViewsDelegate::ReleaseRef() {
 }
 
-content::WebContents* ViewsDelegate::CreateWebContents(
-    content::BrowserContext* browser_context,
-    content::SiteInstance* site_instance) {
-  return nullptr;
-}
-
 base::TimeDelta ViewsDelegate::GetTextfieldPasswordRevealDuration() {
   return base::TimeDelta();
 }

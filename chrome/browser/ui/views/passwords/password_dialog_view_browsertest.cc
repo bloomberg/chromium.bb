@@ -162,9 +162,8 @@ content::WebContents* PasswordDialogViewTest::SetupTabWithTestController(
   // Open a new tab with modified ManagePasswordsUIController.
   content::WebContents* tab =
       browser->tab_strip_model()->GetActiveWebContents();
-  std::unique_ptr<content::WebContents> new_tab =
-      base::WrapUnique(content::WebContents::Create(
-          content::WebContents::CreateParams(tab->GetBrowserContext())));
+  std::unique_ptr<content::WebContents> new_tab = content::WebContents::Create(
+      content::WebContents::CreateParams(tab->GetBrowserContext()));
   content::WebContents* raw_new_tab = new_tab.get();
   EXPECT_TRUE(raw_new_tab);
 

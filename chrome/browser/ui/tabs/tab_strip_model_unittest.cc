@@ -176,16 +176,14 @@ class TabBlockedStateTestBrowser
 class TabStripModelTest : public ChromeRenderViewHostTestHarness {
  public:
   std::unique_ptr<WebContents> CreateWebContents() {
-    return base::WrapUnique(
-        WebContents::Create(WebContents::CreateParams(profile())));
+    return WebContents::Create(WebContents::CreateParams(profile()));
   }
 
   std::unique_ptr<WebContents> CreateWebContentsWithSharedRPH(
       WebContents* web_contents) {
     WebContents::CreateParams create_params(
         profile(), web_contents->GetRenderViewHost()->GetSiteInstance());
-    std::unique_ptr<WebContents> retval =
-        base::WrapUnique(WebContents::Create(create_params));
+    std::unique_ptr<WebContents> retval = WebContents::Create(create_params);
     EXPECT_EQ(retval->GetMainFrame()->GetProcess(),
               web_contents->GetMainFrame()->GetProcess());
     return retval;

@@ -461,8 +461,8 @@ TEST_F(FullscreenControllerStateUnitTest, ExitTabFullscreenViaReplacingTab) {
   ASSERT_TRUE(browser()->window()->IsFullscreen());
 
   std::unique_ptr<content::WebContents> new_web_contents =
-      base::WrapUnique(content::WebContents::Create(
-          content::WebContents::CreateParams(profile())));
+      content::WebContents::Create(
+          content::WebContents::CreateParams(profile()));
   std::unique_ptr<content::WebContents> old_web_contents =
       browser()->tab_strip_model()->ReplaceWebContentsAt(
           0, std::move(new_web_contents));

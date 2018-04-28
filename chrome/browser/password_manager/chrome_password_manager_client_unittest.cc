@@ -606,9 +606,9 @@ TEST_F(ChromePasswordManagerClientTest, AnnotateNavigationEntryTrueToFalse) {
 // gracefully.
 TEST_F(ChromePasswordManagerClientTest, BindCredentialManager_MissingInstance) {
   // Create a WebContent without tab helpers.
-  std::unique_ptr<content::WebContents> web_contents(
+  std::unique_ptr<content::WebContents> web_contents =
       content::WebContents::Create(
-          content::WebContents::CreateParams(profile())));
+          content::WebContents::CreateParams(profile()));
   // In particular, this WebContent should not have the
   // ChromePasswordManagerClient.
   ASSERT_FALSE(

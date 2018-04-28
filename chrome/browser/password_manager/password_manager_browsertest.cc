@@ -3363,8 +3363,8 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
 
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
                        ReattachWebContents) {
-  auto detached_web_contents = base::WrapUnique(content::WebContents::Create(
-      content::WebContents::CreateParams(WebContents()->GetBrowserContext())));
+  auto detached_web_contents = content::WebContents::Create(
+      content::WebContents::CreateParams(WebContents()->GetBrowserContext()));
   NavigationObserver observer(detached_web_contents.get());
   detached_web_contents->GetController().LoadURL(
       embedded_test_server()->GetURL("/password/multi_frames.html"),

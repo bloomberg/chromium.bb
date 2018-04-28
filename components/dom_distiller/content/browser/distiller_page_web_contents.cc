@@ -121,19 +121,20 @@ void DistillerPageWebContents::CreateNewWebContents(const GURL& url) {
   // Create new WebContents to use for distilling the content.
   content::WebContents::CreateParams create_params(browser_context_);
   create_params.initially_hidden = true;
-  content::WebContents* web_contents =
+  std::unique_ptr<content::WebContents> web_contents =
       content::WebContents::Create(create_params);
   DCHECK(web_contents);
 
   web_contents->SetDelegate(this);
 
   // Start observing WebContents and load the requested URL.
-  content::WebContentsObserver::Observe(web_contents);
+  content::WebContentsObserver::Observe(web_contents.get());
   content::NavigationController::LoadURLParams params(url);
   web_contents->GetController().LoadURLWithParams(params);
 
+  // SourcePageHandleWebContents takes ownership of |web_contents|.
   source_page_handle_.reset(
-      new SourcePageHandleWebContents(web_contents, true));
+      new SourcePageHandleWebContents(web_contents.release(), true));
 }
 
 gfx::Size DistillerPageWebContents::GetSizeForNewRenderView(

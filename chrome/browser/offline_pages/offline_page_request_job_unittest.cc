@@ -545,8 +545,8 @@ void OfflinePageRequestJobTest::SetUp() {
   profile_ = profile_manager_.CreateTestingProfile("Profile 1");
 
   // Create a test web contents.
-  web_contents_.reset(content::WebContents::Create(
-      content::WebContents::CreateParams(profile_)));
+  web_contents_ = content::WebContents::Create(
+      content::WebContents::CreateParams(profile_));
   OfflinePageTabHelper::CreateForWebContents(web_contents_.get());
   offline_page_tab_helper_ =
       OfflinePageTabHelper::FromWebContents(web_contents_.get());

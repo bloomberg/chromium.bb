@@ -109,8 +109,8 @@ class SyncInternalsMessageHandlerTest : public ::testing::Test {
  protected:
   SyncInternalsMessageHandlerTest() {
     site_instance_ = content::SiteInstance::Create(&profile_);
-    web_contents_.reset(content::WebContents::Create(
-        content::WebContents::CreateParams(&profile_, site_instance_.get())));
+    web_contents_ = content::WebContents::Create(
+        content::WebContents::CreateParams(&profile_, site_instance_.get()));
     web_ui_.set_web_contents(web_contents_.get());
     test_sync_service_ = static_cast<TestSyncService*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(

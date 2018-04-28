@@ -2929,9 +2929,11 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   const base::Time timestamp = base::Time::Now();
   entry->SetTimestamp(timestamp);
   entries.push_back(std::move(entry));
-  std::unique_ptr<WebContentsImpl> our_contents(static_cast<WebContentsImpl*>(
-      WebContents::Create(WebContents::CreateParams(browser_context()))));
-  NavigationControllerImpl& our_controller = our_contents->GetController();
+  std::unique_ptr<WebContents> our_contents =
+      WebContents::Create(WebContents::CreateParams(browser_context()));
+  WebContentsImpl* raw_our_contents =
+      static_cast<WebContentsImpl*>(our_contents.get());
+  NavigationControllerImpl& our_controller = raw_our_contents->GetController();
   our_controller.Restore(0, RestoreType::LAST_SESSION_EXITED_CLEANLY, &entries);
   ASSERT_EQ(0u, entries.size());
 
@@ -2963,7 +2965,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   params.method = "GET";
   params.page_state = PageState::CreateFromURL(url);
   TestRenderFrameHost* main_rfh =
-      static_cast<TestRenderFrameHost*>(our_contents->GetMainFrame());
+      static_cast<TestRenderFrameHost*>(raw_our_contents->GetMainFrame());
   main_rfh->PrepareForCommit();
   main_rfh->SendNavigateWithParams(&params, false);
 
@@ -2996,9 +2998,11 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   new_entry->SetTitle(base::ASCIIToUTF16("Title"));
   new_entry->SetPageState(PageState::CreateFromEncodedData("state"));
   entries.push_back(std::move(new_entry));
-  std::unique_ptr<WebContentsImpl> our_contents(static_cast<WebContentsImpl*>(
-      WebContents::Create(WebContents::CreateParams(browser_context()))));
-  NavigationControllerImpl& our_controller = our_contents->GetController();
+  std::unique_ptr<WebContents> our_contents =
+      WebContents::Create(WebContents::CreateParams(browser_context()));
+  WebContentsImpl* raw_our_contents =
+      static_cast<WebContentsImpl*>(our_contents.get());
+  NavigationControllerImpl& our_controller = raw_our_contents->GetController();
   our_controller.Restore(0, RestoreType::LAST_SESSION_EXITED_CLEANLY, &entries);
   ASSERT_EQ(0u, entries.size());
 
@@ -3043,7 +3047,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   params.method = "GET";
   params.page_state = PageState::CreateFromURL(url);
   TestRenderFrameHost* main_rfh =
-      static_cast<TestRenderFrameHost*>(our_contents->GetMainFrame());
+      static_cast<TestRenderFrameHost*>(raw_our_contents->GetMainFrame());
   main_rfh->PrepareForCommit();
   main_rfh->SendNavigateWithParams(&params, false);
 

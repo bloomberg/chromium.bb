@@ -14,22 +14,11 @@
 namespace ash {
 namespace {
 
-class AshTestViewsDelegateContent : public AshTestViewsDelegate {
- public:
-  AshTestViewsDelegateContent() = default;
-  ~AshTestViewsDelegateContent() override = default;
-
-  // AshTestViewsDelegate:
-  content::WebContents* CreateWebContents(
-      content::BrowserContext* browser_context,
-      content::SiteInstance* site_instance) override {
-    return content::WebContentsTester::CreateTestWebContents(browser_context,
-                                                             site_instance);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AshTestViewsDelegateContent);
-};
+std::unique_ptr<content::WebContents> CreateWebContents(
+    content::BrowserContext* browser_context) {
+  return base::WrapUnique(content::WebContentsTester::CreateTestWebContents(
+      browser_context, nullptr));
+}
 
 }  // namespace
 
@@ -54,16 +43,20 @@ void AshTestEnvironmentContent::SetUp() {
     test_shell_content_state_ = new TestShellContentState;
     content_state = test_shell_content_state_;
   }
+  scoped_web_contents_creator_ =
+      std::make_unique<views::WebView::ScopedWebContentsCreatorForTesting>(
+          base::BindRepeating(&CreateWebContents));
   ShellContentState::SetInstance(content_state);
 }
 
 void AshTestEnvironmentContent::TearDown() {
+  scoped_web_contents_creator_.reset();
   ShellContentState::DestroyInstance();
 }
 
 std::unique_ptr<AshTestViewsDelegate>
 AshTestEnvironmentContent::CreateViewsDelegate() {
-  return std::make_unique<AshTestViewsDelegateContent>();
+  return std::make_unique<AshTestViewsDelegate>();
 }
 
 }  // namespace ash

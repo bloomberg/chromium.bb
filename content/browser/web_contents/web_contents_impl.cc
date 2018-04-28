@@ -264,8 +264,10 @@ class CloseDialogCallbackWrapper
 
 }  // namespace
 
-WebContents* WebContents::Create(const WebContents::CreateParams& params) {
-  return WebContentsImpl::CreateWithOpener(params, FindOpenerRFH(params));
+std::unique_ptr<WebContents> WebContents::Create(
+    const WebContents::CreateParams& params) {
+  return base::WrapUnique(
+      WebContentsImpl::CreateWithOpener(params, FindOpenerRFH(params)));
 }
 
 WebContents* WebContents::CreateWithSessionStorage(
@@ -2417,8 +2419,7 @@ void WebContentsImpl::CreateNewWindow(
   if (!is_guest) {
     create_params.context = view_->GetNativeView();
     create_params.initial_size = GetContainerBounds().size();
-    new_contents.reset(
-        static_cast<WebContentsImpl*>(WebContents::Create(create_params)));
+    new_contents = WebContents::Create(create_params);
   }  else {
     new_contents = base::WrapUnique(
         GetBrowserPluginGuest()->CreateNewGuestWindow(create_params));
@@ -4133,7 +4134,7 @@ void WebContentsImpl::ViewSource(RenderFrameHostImpl* frame) {
 
   // Create a new WebContents, which is used to display the source code.
   std::unique_ptr<WebContents> view_source_contents =
-      base::WrapUnique(Create(CreateParams(GetBrowserContext())));
+      Create(CreateParams(GetBrowserContext()));
 
   // Restore the previously created NavigationEntry.
   std::vector<std::unique_ptr<NavigationEntry>> navigation_entries;

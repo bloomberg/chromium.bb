@@ -70,7 +70,7 @@ ImeWindow::ImeWindow(Profile* profile,
     create_params.opener_render_frame_id =
         opener_render_frame_host->GetRoutingID();
   }
-  web_contents_.reset(content::WebContents::Create(create_params));
+  web_contents_ = content::WebContents::Create(create_params);
   web_contents_->SetDelegate(this);
   content::OpenURLParams params(gurl, content::Referrer(),
                                 WindowOpenDisposition::SINGLETON_TAB,

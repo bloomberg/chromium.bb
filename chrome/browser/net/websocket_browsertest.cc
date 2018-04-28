@@ -186,8 +186,8 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest,
     content::WebContents* tab =
         browser()->tab_strip_model()->GetActiveWebContents();
     std::unique_ptr<content::WebContents> new_tab =
-        base::WrapUnique(content::WebContents::Create(
-            content::WebContents::CreateParams(tab->GetBrowserContext())));
+        content::WebContents::Create(
+            content::WebContents::CreateParams(tab->GetBrowserContext()));
     content::WebContents* raw_new_tab = new_tab.get();
     browser()->tab_strip_model()->AppendWebContents(std::move(new_tab), true);
     ASSERT_EQ(raw_new_tab, browser()->tab_strip_model()->GetWebContentsAt(1));

@@ -268,7 +268,10 @@ WebContents* CreateAndAttachInnerContents(RenderFrameHost* rfh) {
 
   WebContents::CreateParams inner_params(outer_contents->GetBrowserContext());
   inner_params.guest_delegate = guest_delegate.get();
-  WebContents* inner_contents = WebContents::Create(inner_params);
+
+  // TODO(erikchen): Fix ownership semantics for guest views.
+  // https://crbug.com/832879.
+  WebContents* inner_contents = WebContents::Create(inner_params).release();
 
   // Attach. |inner_contents| becomes owned by |outer_contents|.
   inner_contents->AttachToOuterWebContentsFrame(outer_contents, rfh);

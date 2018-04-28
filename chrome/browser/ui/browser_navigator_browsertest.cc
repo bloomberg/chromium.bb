@@ -159,7 +159,7 @@ std::unique_ptr<WebContents> BrowserNavigatorTest::CreateWebContents(
     create_params.initial_size =
         base_web_contents->GetContainerBounds().size();
   }
-  return base::WrapUnique(WebContents::Create(create_params));
+  return WebContents::Create(create_params);
 }
 
 void BrowserNavigatorTest::RunSuppressTest(WindowOpenDisposition disposition) {

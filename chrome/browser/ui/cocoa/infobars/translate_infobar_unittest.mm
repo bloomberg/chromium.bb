@@ -80,8 +80,7 @@ class TranslationInfoBarTest : public CocoaProfileTest {
   void SetUp() override {
     translate::TranslateLanguageList::DisableUpdate();
     CocoaProfileTest::SetUp();
-    web_contents_.reset(
-        WebContents::Create(WebContents::CreateParams(profile())));
+    web_contents_ = WebContents::Create(WebContents::CreateParams(profile()));
     InfoBarService::CreateForWebContents(web_contents_.get());
     ChromeTranslateClient::CreateForWebContents(web_contents_.get());
   }

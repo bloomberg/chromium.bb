@@ -1213,11 +1213,11 @@ class SitePerProcessAutofillTest : public SitePerProcessInteractiveBrowserTest {
     // Add a fresh new WebContents for which we add our own version of the
     // ChromePasswordManagerClient that uses a custom TestAutofillClient.
     std::unique_ptr<content::WebContents> new_contents =
-        base::WrapUnique(content::WebContents::Create(
+        content::WebContents::Create(
             content::WebContents::CreateParams(browser()
                                                    ->tab_strip_model()
                                                    ->GetActiveWebContents()
-                                                   ->GetBrowserContext())));
+                                                   ->GetBrowserContext()));
     ASSERT_TRUE(new_contents);
     ASSERT_FALSE(
         ChromePasswordManagerClient::FromWebContents(new_contents.get()));

@@ -5472,8 +5472,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, RestoreHasSSLState) {
   restored_entry->SetPageState(entry->GetPageState());
 
   WebContents::CreateParams params(tab->GetBrowserContext());
-  std::unique_ptr<WebContents> tab2 =
-      base::WrapUnique(WebContents::Create(params));
+  std::unique_ptr<WebContents> tab2 = WebContents::Create(params);
   WebContents* raw_tab2 = tab2.get();
   tab->GetDelegate()->AddNewContents(nullptr, std::move(tab2),
                                      WindowOpenDisposition::NEW_FOREGROUND_TAB,

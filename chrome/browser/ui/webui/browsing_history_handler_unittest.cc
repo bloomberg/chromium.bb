@@ -115,8 +115,8 @@ class BrowsingHistoryHandlerTest : public ::testing::Test {
     web_history_service_ = static_cast<history::FakeWebHistoryService*>(
         WebHistoryServiceFactory::GetForProfile(profile_.get()));
 
-    web_contents_.reset(content::WebContents::Create(
-        content::WebContents::CreateParams(profile_.get())));
+    web_contents_ = content::WebContents::Create(
+        content::WebContents::CreateParams(profile_.get()));
     web_ui_.reset(new content::TestWebUI);
     web_ui_->set_web_contents(web_contents_.get());
   }

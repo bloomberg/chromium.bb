@@ -161,7 +161,7 @@ class PinnedTabsResetTest : public BrowserWithTestWindowTest,
  protected:
   void SetUp() override;
 
-  content::WebContents* CreateWebContents();
+  std::unique_ptr<content::WebContents> CreateWebContents();
 };
 
 void PinnedTabsResetTest::SetUp() {
@@ -169,7 +169,7 @@ void PinnedTabsResetTest::SetUp() {
   resetter_.reset(new ProfileResetter(profile()));
 }
 
-content::WebContents* PinnedTabsResetTest::CreateWebContents() {
+std::unique_ptr<content::WebContents> PinnedTabsResetTest::CreateWebContents() {
   return content::WebContents::Create(
       content::WebContents::CreateParams(profile()));
 }

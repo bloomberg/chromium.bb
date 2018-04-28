@@ -34,7 +34,7 @@ void AppWindowContentsImpl::Initialize(content::BrowserContext* context,
       context, creator_frame->GetSiteInstance());
   create_params.opener_render_process_id = creator_frame->GetProcess()->GetID();
   create_params.opener_render_frame_id = creator_frame->GetRoutingID();
-  web_contents_.reset(content::WebContents::Create(create_params));
+  web_contents_ = content::WebContents::Create(create_params);
 
   Observe(web_contents_.get());
   web_contents_->GetMutableRendererPrefs()->

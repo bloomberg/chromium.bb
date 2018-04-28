@@ -178,7 +178,7 @@ void DriveWebContentsManager::StartLoad() {
   content::WebContents::CreateParams create_params(
         profile_, content::SiteInstance::CreateForURL(profile_, url));
 
-  web_contents_.reset(content::WebContents::Create(create_params));
+  web_contents_ = content::WebContents::Create(create_params);
   web_contents_->SetDelegate(this);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents_.get());

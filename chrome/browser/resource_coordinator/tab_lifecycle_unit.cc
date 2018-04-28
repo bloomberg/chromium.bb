@@ -228,7 +228,7 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
   create_params.initially_hidden =
       old_contents->GetVisibility() == content::Visibility::HIDDEN;
   std::unique_ptr<content::WebContents> null_contents =
-      base::WrapUnique(content::WebContents::Create(create_params));
+      content::WebContents::Create(create_params);
   content::WebContents* raw_null_contents = null_contents.get();
   // Copy over the state from the navigation controller to preserve the
   // back/forward history and to continue to display the correct title/favicon.

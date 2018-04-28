@@ -57,13 +57,12 @@ class ConfirmInfoBarControllerTest : public CocoaProfileTest,
  public:
   void SetUp() override {
     CocoaProfileTest::SetUp();
-    web_contents_.reset(
-        WebContents::Create(WebContents::CreateParams(profile())));
-   InfoBarService::CreateForWebContents(web_contents_.get());
+    web_contents_ = WebContents::Create(WebContents::CreateParams(profile()));
+    InfoBarService::CreateForWebContents(web_contents_.get());
 
-   std::unique_ptr<infobars::InfoBarDelegate> delegate(
-       new MockConfirmInfoBarDelegate(this));
-   infobar_ = new InfoBarCocoa(std::move(delegate));
+    std::unique_ptr<infobars::InfoBarDelegate> delegate(
+        new MockConfirmInfoBarDelegate(this));
+    infobar_ = new InfoBarCocoa(std::move(delegate));
     infobar_->SetOwner(InfoBarService::FromWebContents(web_contents_.get()));
 
     controller_.reset([[TestConfirmInfoBarController alloc]
