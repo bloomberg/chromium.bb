@@ -19,11 +19,7 @@ class ChildProcessCrashObserver : public breakpad::CrashDumpObserver::Client {
   // breakpad::CrashDumpObserver::Client implementation:
   void OnChildStart(int process_host_id,
                     content::PosixFileDescriptorInfo* mappings) override;
-  void OnChildExit(int process_host_id,
-                   base::ProcessHandle pid,
-                   content::ProcessType process_type,
-                   base::TerminationStatus termination_status,
-                   base::android::ApplicationState app_state) override;
+  void OnChildExit(const CrashDumpObserver::TerminationInfo& info) override;
 
  private:
   base::FilePath crash_dump_dir_;

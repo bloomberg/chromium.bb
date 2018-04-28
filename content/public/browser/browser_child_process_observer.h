@@ -42,6 +42,11 @@ class CONTENT_EXPORT BrowserChildProcessObserver {
       const ChildProcessData& data,
       const ChildProcessTerminationInfo& info) {}
 
+  // Note for Android. There is no way to reliably distinguish between Crash
+  // and Kill. Arbitrarily choose all abnormal terminations on Android to call
+  // BrowserChildProcessKilled, which means BrowserChildProcessCrashed will
+  // never be called on Android.
+
  protected:
   // The observer can be destroyed on any thread.
   virtual ~BrowserChildProcessObserver() {}

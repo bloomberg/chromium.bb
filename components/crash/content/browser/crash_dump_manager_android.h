@@ -13,8 +13,8 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list_threadsafe.h"
-#include "base/process/kill.h"
 #include "base/synchronization/lock.h"
+#include "components/crash/content/browser/crash_dump_observer_android.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/process_type.h"
 
@@ -58,7 +58,7 @@ class CrashDumpManager {
   struct CrashDumpDetails {
     CrashDumpDetails(int process_host_id,
                      content::ProcessType process_type,
-                     base::TerminationStatus termination_status,
+                     bool was_oom_protected_status,
                      base::android::ApplicationState app_state);
     CrashDumpDetails();
     ~CrashDumpDetails();
@@ -67,7 +67,7 @@ class CrashDumpManager {
     int process_host_id = content::ChildProcessHost::kInvalidUniqueID;
 
     content::ProcessType process_type = content::PROCESS_TYPE_UNKNOWN;
-    base::TerminationStatus termination_status;
+    bool was_oom_protected_status = false;
     base::android::ApplicationState app_state;
     int64_t file_size = 0;
     CrashDumpStatus status = CrashDumpStatus::kNoDump;
@@ -91,11 +91,9 @@ class CrashDumpManager {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  void ProcessMinidumpFileFromChild(base::FilePath crash_dump_dir,
-                                    int process_host_id,
-                                    content::ProcessType process_type,
-                                    base::TerminationStatus termination_status,
-                                    base::android::ApplicationState app_state);
+  void ProcessMinidumpFileFromChild(
+      base::FilePath crash_dump_dir,
+      const CrashDumpObserver::TerminationInfo& info);
 
   base::ScopedFD CreateMinidumpFileForChild(int process_host_id);
 

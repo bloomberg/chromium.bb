@@ -33,20 +33,14 @@ class AwBrowserTerminator : public breakpad::CrashDumpObserver::Client {
   // breakpad::CrashDumpObserver::Client implementation.
   void OnChildStart(int process_host_id,
                     content::PosixFileDescriptorInfo* mappings) override;
-  void OnChildExit(int process_host_id,
-                   base::ProcessHandle pid,
-                   content::ProcessType process_type,
-                   base::TerminationStatus termination_status,
-                   base::android::ApplicationState app_state) override;
+  void OnChildExit(
+      const breakpad::CrashDumpObserver::TerminationInfo& info) override;
 
  private:
-  static void OnChildExitAsync(int process_host_id,
-                               base::ProcessHandle pid,
-                               content::ProcessType process_type,
-                               base::TerminationStatus termination_status,
-                               base::android::ApplicationState app_state,
-                               base::FilePath crash_dump_dir,
-                               std::unique_ptr<base::SyncSocket> pipe);
+  static void OnChildExitAsync(
+      const breakpad::CrashDumpObserver::TerminationInfo& info,
+      base::FilePath crash_dump_dir,
+      std::unique_ptr<base::SyncSocket> pipe);
 
   base::FilePath crash_dump_dir_;
 

@@ -249,9 +249,10 @@ void CompositorView::SetNeedsComposite(JNIEnv* env,
   compositor_->SetNeedsComposite();
 }
 
-void CompositorView::BrowserChildProcessHostDisconnected(
-    const content::ChildProcessData& data) {
-  LOG(WARNING) << "Child process disconnected (type=" << data.process_type
+void CompositorView::BrowserChildProcessKilled(
+    const content::ChildProcessData& data,
+    const content::ChildProcessTerminationInfo& info) {
+  LOG(WARNING) << "Child process died (type=" << data.process_type
                << ") pid=" << data.handle << ")";
   if (base::android::BuildInfo::GetInstance()->sdk_int() <=
           base::android::SDK_VERSION_JELLY_BEAN_MR2 &&

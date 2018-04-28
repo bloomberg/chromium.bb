@@ -39,18 +39,15 @@ class CrashDumpManagerTest : public testing::Test {
   // TODO(csharrison): This test harness is not robust enough. Namely, it does
   // not support actually processing a non-empty crash dump, due to JNI calls.
   static void CreateAndProcessEmptyMinidump(
-      int process_host_id,
-      content::ProcessType process_type,
-      base::TerminationStatus status,
-      base::android::ApplicationState app_state) {
+      const CrashDumpObserver::TerminationInfo& info) {
     base::ScopedFD fd =
         CrashDumpManager::GetInstance()->CreateMinidumpFileForChild(
-            process_host_id);
+            info.process_host_id);
     EXPECT_TRUE(fd.is_valid());
     base::ScopedTempDir dump_dir;
     EXPECT_TRUE(dump_dir.CreateUniqueTempDir());
     CrashDumpManager::GetInstance()->ProcessMinidumpFileFromChild(
-        dump_dir.GetPath(), process_host_id, process_type, status, app_state);
+        dump_dir.GetPath(), info);
   }
 
  private:
@@ -96,19 +93,27 @@ TEST_F(CrashDumpManagerTest, SimpleOOM) {
   manager->AddObserver(&crash_dump_observer);
 
   int process_host_id = 1;
+  CrashDumpObserver::TerminationInfo termination_info{
+      process_host_id,
+      base::kNullProcessHandle,
+      content::PROCESS_TYPE_RENDERER,
+      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES,
+      false /* normal_termination */,
+      true /* has_oom_protection_bindings */,
+      false /* was_killed_intentionally_by_browser */,
+      true /* was_oom_protected_status */
+  };
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&CrashDumpManagerTest::CreateAndProcessEmptyMinidump,
-                 process_host_id, content::PROCESS_TYPE_RENDERER,
-                 base::TERMINATION_STATUS_OOM_PROTECTED,
-                 base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES));
+                 termination_info));
   crash_dump_observer.WaitForProcessed();
 
   const CrashDumpManager::CrashDumpDetails& details =
       crash_dump_observer.last_details();
   EXPECT_EQ(process_host_id, details.process_host_id);
   EXPECT_EQ(content::PROCESS_TYPE_RENDERER, details.process_type);
-  EXPECT_EQ(base::TERMINATION_STATUS_OOM_PROTECTED, details.termination_status);
+  EXPECT_TRUE(details.was_oom_protected_status);
   EXPECT_EQ(base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES,
             details.app_state);
   EXPECT_EQ(0, details.file_size);
@@ -127,20 +132,28 @@ TEST_F(CrashDumpManagerTest, NoDumpCreated) {
   manager->AddObserver(&crash_dump_observer);
 
   int process_host_id = 1;
+  CrashDumpObserver::TerminationInfo termination_info{
+      process_host_id,
+      base::kNullProcessHandle,
+      content::PROCESS_TYPE_RENDERER,
+      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES,
+      false /* normal_termination */,
+      true /* has_oom_protection_bindings */,
+      false /* was_killed_intentionally_by_browser */,
+      true /* was_oom_protected_status */
+  };
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&CrashDumpManager::ProcessMinidumpFileFromChild,
-                 base::Unretained(manager), base::FilePath(), process_host_id,
-                 content::PROCESS_TYPE_RENDERER,
-                 base::TERMINATION_STATUS_OOM_PROTECTED,
-                 base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES));
+                 base::Unretained(manager), base::FilePath(),
+                 termination_info));
   crash_dump_observer.WaitForProcessed();
 
   const CrashDumpManager::CrashDumpDetails& details =
       crash_dump_observer.last_details();
   EXPECT_EQ(process_host_id, details.process_host_id);
   EXPECT_EQ(content::PROCESS_TYPE_RENDERER, details.process_type);
-  EXPECT_EQ(base::TERMINATION_STATUS_OOM_PROTECTED, details.termination_status);
+  EXPECT_TRUE(details.was_oom_protected_status);
   EXPECT_EQ(base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES,
             details.app_state);
   EXPECT_EQ(0, details.file_size);

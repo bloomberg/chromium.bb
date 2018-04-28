@@ -147,7 +147,7 @@ void ChromeStabilityMetricsProvider::OnCrashDumpProcessed(
   if (details.status ==
           breakpad::CrashDumpManager::CrashDumpStatus::kValidDump &&
       details.process_type == content::PROCESS_TYPE_RENDERER &&
-      details.termination_status == base::TERMINATION_STATUS_OOM_PROTECTED &&
+      details.was_oom_protected_status &&
       (details.app_state ==
            base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES ||
        details.app_state ==

@@ -11,13 +11,17 @@
 #include "base/android/application_status_listener.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
-#include "base/process/kill.h"
 #include "base/process/process.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/posix_file_descriptor_info.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/process_type.h"
+
+namespace content {
+struct ChildProcessTerminationInfo;
+}
 
 namespace breakpad {
 
@@ -27,6 +31,31 @@ namespace breakpad {
 class CrashDumpObserver : public content::BrowserChildProcessObserver,
                           public content::NotificationObserver {
  public:
+  struct TerminationInfo {
+    int process_host_id = content::ChildProcessHost::kInvalidUniqueID;
+    base::ProcessHandle pid = base::kNullProcessHandle;
+    content::ProcessType process_type = content::PROCESS_TYPE_UNKNOWN;
+    base::android::ApplicationState app_state =
+        base::android::APPLICATION_STATE_UNKNOWN;
+
+    // True if this is intentional shutdown of the child process, e.g. when a
+    // tab is closed. Some fields below may not be populated if this is true.
+    bool normal_termination = false;
+
+    // Values from ChildProcessTerminationInfo.
+    // Note base::TerminationStatus and exit_code are missing intentionally
+    // because those fields hold no useful information on Android.
+    bool has_oom_protection_bindings = false;
+    bool was_killed_intentionally_by_browser = false;
+
+    // Note this is slightly different |has_oom_protection_bindings|.
+    // This is equivalent to status == TERMINATION_STATUS_NORMAL_TERMINATION,
+    // which historically also checked whether app is in foreground, using
+    // a slightly different implementation than
+    // ApplicationStatusListener::GetState.
+    bool was_oom_protected_status = false;
+  };
+
   // CrashDumpObserver client interface.
   // Client methods will be called synchronously in the order in which
   // clients were registered. It is the implementer's responsibility
@@ -44,13 +73,8 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
     virtual void OnChildStart(int process_host_id,
                               content::PosixFileDescriptorInfo* mappings) = 0;
     // OnChildExit is called on the UI thread.
-    // OnChildExit may be called twice (once for the child process
-    // termination, and once for the IPC channel disconnection).
-    virtual void OnChildExit(int process_host_id,
-                             base::ProcessHandle pid,
-                             content::ProcessType process_type,
-                             base::TerminationStatus termination_status,
-                             base::android::ApplicationState app_state) = 0;
+    // OnChildExit may be called twice for the same process.
+    virtual void OnChildExit(const TerminationInfo& info) = 0;
 
     virtual ~Client() {}
   };
@@ -84,12 +108,9 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
   // content::BrowserChildProcessObserver implementation:
   void BrowserChildProcessHostDisconnected(
       const content::ChildProcessData& data) override;
-  void BrowserChildProcessCrashed(
+  void BrowserChildProcessKilled(
       const content::ChildProcessData& data,
       const content::ChildProcessTerminationInfo& info) override;
-  // On Android we will never observe BrowserChildProcessCrashed
-  // because we do not receive exit codes from zygote spawned
-  // processes.
 
   // NotificationObserver implementation:
   void Observe(int type,
@@ -97,11 +118,7 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
                const content::NotificationDetails& details) override;
 
   // Called on child process exit (including crash).
-  void OnChildExit(int process_host_id,
-                   base::ProcessHandle pid,
-                   content::ProcessType process_type,
-                   base::TerminationStatus termination_status,
-                   base::android::ApplicationState app_state);
+  void OnChildExit(const TerminationInfo& info);
 
   content::NotificationRegistrar notification_registrar_;
 
@@ -110,6 +127,9 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
 
   // process_host_id to process id.
   std::map<int, base::ProcessHandle> process_host_id_to_pid_;
+
+  // Key is process_host_id. Only used for BrowserChildProcessHost.
+  std::map<int, TerminationInfo> browser_child_process_info_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashDumpObserver);
 };
