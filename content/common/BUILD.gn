@@ -506,6 +506,8 @@ source_set("common") {
       "sandbox_policy_fuchsia.cc",
       "sandbox_policy_fuchsia.h",
     ]
+
+    deps += [ "//third_party/fuchsia-sdk:launchpad" ]
   }
 }
 
