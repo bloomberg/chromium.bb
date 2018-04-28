@@ -6,6 +6,8 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/component_updater/cros_component_installer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -53,6 +55,9 @@ void CrostiniRemover::OnRestartCrostini(
 void CrostiniRemover::StopVmFinished(crostini::ConciergeClientResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (result == crostini::ConciergeClientResult::SUCCESS) {
+    crostini::CrostiniRegistryServiceFactory::GetForProfile(profile_)
+        ->ClearApplicationList(kCrostiniDefaultVmName,
+                               kCrostiniDefaultContainerName);
     crostini::CrostiniManager::GetInstance()->DestroyDiskImage(
         CryptohomeIdForProfile(profile_),
         base::FilePath(kCrostiniDefaultVmName),
