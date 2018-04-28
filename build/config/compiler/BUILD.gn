@@ -416,14 +416,7 @@ config("compiler") {
     ldflags += [ "--gcc-toolchain=$_rebased_android_toolchain_root" ]
   }
 
-  if (((is_posix || is_fuchsia) && use_lld && !is_nacl) ||
-      (target_os == "chromeos" && is_android)) {
-    # NOTE: Some Chrome OS builds globally disable LLD, but they also build some
-    # targets against Android toolchains which should use LLD. Therefore we
-    # explicitly select LLD in these cases.
-    #
-    # TODO(https://crbug.com/837095): This should be cleaned up if/when LLD can
-    # work properly for Chrome OS builds.
+  if ((is_posix || is_fuchsia) && use_lld && !is_nacl) {
     ldflags += [ "-fuse-ld=lld" ]
     if (current_cpu == "arm64") {
       # Reduce the page size from 65536 in order to reduce binary size slightly
@@ -2123,13 +2116,7 @@ config("symbols") {
       }
       cflags += [ "-g2" ]
     }
-    if (use_debug_fission && !is_nacl && !is_android) {
-      # NOTE: Some Chrome OS builds globally set |use_debug_fission| to true,
-      # but they also build some targets against Android toolchains which aren't
-      # compatible with it.
-      #
-      # TODO(https://crbug.com/837032): See if we can clean this up by e.g. not
-      # setting use_debug_fission globally.
+    if (use_debug_fission && !is_nacl) {
       cflags += [ "-gsplit-dwarf" ]
     }
     asmflags = cflags
