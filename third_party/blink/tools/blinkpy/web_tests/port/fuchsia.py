@@ -59,9 +59,9 @@ def _import_fuchsia_runner():
     # pylint: disable=invalid-name
     # pylint: disable=redefined-outer-name
     global fuchsia_target
-    import runner_v2.target as fuchsia_target
+    import target as fuchsia_target
     global qemu_target
-    import runner_v2.qemu_target as qemu_target
+    import qemu_target as qemu_target
     # pylint: enable=import-error
     # pylint: enable=invalid-name
     # pylint: disable=redefined-outer-name
