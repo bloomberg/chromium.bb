@@ -33,6 +33,8 @@ class FakeOneGoogleBarFetcher : public OneGoogleBarFetcher {
     callbacks_.push_back(std::move(callback));
   }
 
+  GURL GetFetchURLForTesting() const override { return GURL(); }
+
   size_t GetCallbackCount() const { return callbacks_.size(); }
 
   void RespondToAllCallbacks(Status status,

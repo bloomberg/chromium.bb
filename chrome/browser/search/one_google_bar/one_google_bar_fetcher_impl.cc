@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "chrome/common/chrome_content_client.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/signin/core/browser/chrome_connected_header_helper.h"
@@ -133,9 +134,7 @@ class OneGoogleBarFetcherImpl::AuthenticatedURLFetcher
   using FetchDoneCallback = base::OnceCallback<void(const net::URLFetcher*)>;
 
   AuthenticatedURLFetcher(net::URLRequestContextGetter* request_context,
-                          const GURL& google_base_url,
-                          const std::string& application_locale,
-                          const base::Optional<std::string>& api_url_override,
+                          GURL api_url,
                           bool account_consistency_mirror_required,
                           FetchDoneCallback callback);
   ~AuthenticatedURLFetcher() override = default;
@@ -143,16 +142,13 @@ class OneGoogleBarFetcherImpl::AuthenticatedURLFetcher
   void Start();
 
  private:
-  GURL GetApiUrl() const;
-  std::string GetExtraRequestHeaders(const GURL& url) const;
+  std::string GetExtraRequestHeaders() const;
 
   // URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   net::URLRequestContextGetter* const request_context_;
-  const GURL google_base_url_;
-  const std::string application_locale_;
-  const base::Optional<std::string> api_url_override_;
+  const GURL api_url_;
 #if defined(OS_CHROMEOS)
   const bool account_consistency_mirror_required_;
 #endif
@@ -165,43 +161,23 @@ class OneGoogleBarFetcherImpl::AuthenticatedURLFetcher
 
 OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::AuthenticatedURLFetcher(
     net::URLRequestContextGetter* request_context,
-    const GURL& google_base_url,
-    const std::string& application_locale,
-    const base::Optional<std::string>& api_url_override,
+    GURL api_url,
     bool account_consistency_mirror_required,
     FetchDoneCallback callback)
     : request_context_(request_context),
-      google_base_url_(google_base_url),
-      application_locale_(application_locale),
-      api_url_override_(api_url_override),
+      api_url_(std::move(api_url)),
 #if defined(OS_CHROMEOS)
       account_consistency_mirror_required_(account_consistency_mirror_required),
 #endif
       callback_(std::move(callback)) {}
 
-GURL OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::GetApiUrl() const {
-  GURL api_url =
-      google_base_url_.Resolve(api_url_override_.value_or(kNewTabOgbApiPath));
-
-  // Add the "hl=" parameter.
-  api_url = net::AppendQueryParameter(api_url, "hl", application_locale_);
-
-  // Add the "async=" parameter. We can't use net::AppendQueryParameter for
-  // this because we need the ":" to remain unescaped.
-  GURL::Replacements replacements;
-  std::string query = api_url.query();
-  query += "&async=fixed:0";
-  replacements.SetQueryStr(query);
-  return api_url.ReplaceComponents(replacements);
-}
-
 std::string
-OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::GetExtraRequestHeaders(
-    const GURL& url) const {
+OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::GetExtraRequestHeaders()
+    const {
   net::HttpRequestHeaders headers;
   // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
   // transmission of experiments coming from the variations server.
-  variations::AppendVariationHeaders(url, variations::InIncognito::kNo,
+  variations::AppendVariationHeaders(api_url_, variations::InIncognito::kNo,
                                      variations::SignedIn::kNo, &headers);
 #if defined(OS_CHROMEOS)
   signin::ChromeConnectedHeaderHelper chrome_connected_header_helper(
@@ -218,7 +194,7 @@ OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::GetExtraRequestHeaders(
   }
   std::string chrome_connected_header_value =
       chrome_connected_header_helper.BuildRequestHeader(
-          /*is_header_request=*/true, url,
+          /*is_header_request=*/true, api_url_,
           // Account ID is only needed for (drive|docs).google.com.
           /*account_id=*/std::string(), profile_mode);
   if (!chrome_connected_header_value.empty()) {
@@ -230,7 +206,6 @@ OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::GetExtraRequestHeaders(
 }
 
 void OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::Start() {
-  GURL url = GetApiUrl();
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("one_google_bar_service", R"(
         semantics {
@@ -255,12 +230,15 @@ void OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::Start() {
             }
           }
         })");
-  url_fetcher_ = net::URLFetcher::Create(0, url, net::URLFetcher::GET, this,
-                                         traffic_annotation);
+  url_fetcher_ = net::URLFetcher::Create(0, api_url_, net::URLFetcher::GET,
+                                         this, traffic_annotation);
   url_fetcher_->SetRequestContext(request_context_);
 
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_AUTH_DATA);
-  url_fetcher_->SetExtraRequestHeaders(GetExtraRequestHeaders(url));
+  url_fetcher_->SetExtraRequestHeaders(GetExtraRequestHeaders());
+
+  url_fetcher_->SetInitiator(
+      url::Origin::Create(GURL(chrome::kChromeUINewTabURL)));
 
   url_fetcher_->Start();
 }
@@ -288,20 +266,39 @@ OneGoogleBarFetcherImpl::~OneGoogleBarFetcherImpl() = default;
 void OneGoogleBarFetcherImpl::Fetch(OneGoogleCallback callback) {
   callbacks_.push_back(std::move(callback));
 
+  // Note: If there is an ongoing request, abandon it. It's possible that
+  // something has changed in the meantime (e.g. signin state) that would make
+  // the result obsolete.
+  pending_request_ = std::make_unique<AuthenticatedURLFetcher>(
+      request_context_, GetApiUrl(), account_consistency_mirror_required_,
+      base::BindOnce(&OneGoogleBarFetcherImpl::FetchDone,
+                     base::Unretained(this)));
+  pending_request_->Start();
+}
+
+GURL OneGoogleBarFetcherImpl::GetFetchURLForTesting() const {
+  return GetApiUrl();
+}
+
+GURL OneGoogleBarFetcherImpl::GetApiUrl() const {
   GURL google_base_url = google_util::CommandLineGoogleBaseURL();
   if (!google_base_url.is_valid()) {
     google_base_url = google_url_tracker_->google_url();
   }
 
-  // Note: If there is an ongoing request, abandon it. It's possible that
-  // something has changed in the meantime (e.g. signin state) that would make
-  // the result obsolete.
-  pending_request_ = std::make_unique<AuthenticatedURLFetcher>(
-      request_context_, google_base_url, application_locale_, api_url_override_,
-      account_consistency_mirror_required_,
-      base::BindOnce(&OneGoogleBarFetcherImpl::FetchDone,
-                     base::Unretained(this)));
-  pending_request_->Start();
+  GURL api_url =
+      google_base_url.Resolve(api_url_override_.value_or(kNewTabOgbApiPath));
+
+  // Add the "hl=" parameter.
+  api_url = net::AppendQueryParameter(api_url, "hl", application_locale_);
+
+  // Add the "async=" parameter. We can't use net::AppendQueryParameter for
+  // this because we need the ":" to remain unescaped.
+  GURL::Replacements replacements;
+  std::string query = api_url.query();
+  query += "&async=fixed:0";
+  replacements.SetQueryStr(query);
+  return api_url.ReplaceComponents(replacements);
 }
 
 void OneGoogleBarFetcherImpl::FetchDone(const net::URLFetcher* source) {
