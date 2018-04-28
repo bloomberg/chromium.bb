@@ -48,11 +48,7 @@ class AndroidPlatformKeySystemProperties : public KeySystemProperties {
       case EmeInitDataType::WEBM:
         return (supported_codecs_ & media::EME_CODEC_WEBM_ALL) != 0;
       case EmeInitDataType::CENC:
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
         return (supported_codecs_ & media::EME_CODEC_MP4_ALL) != 0;
-#else
-        return false;
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
       case EmeInitDataType::KEYIDS:
       case EmeInitDataType::UNKNOWN:
         return false;
@@ -112,8 +108,8 @@ SupportedKeySystemResponse QueryKeySystemSupport(
 
 void AddAndroidWidevine(
     std::vector<std::unique_ptr<KeySystemProperties>>* concrete_key_systems) {
-  SupportedKeySystemResponse response = QueryKeySystemSupport(
-      kWidevineKeySystem);
+  SupportedKeySystemResponse response =
+      QueryKeySystemSupport(kWidevineKeySystem);
 
   // Since we do not control the implementation of the MediaDrm API on Android,
   // we assume that it can and will make use of persistence no matter whether

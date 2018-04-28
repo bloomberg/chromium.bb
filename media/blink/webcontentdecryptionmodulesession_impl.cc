@@ -23,17 +23,13 @@
 #include "media/blink/cdm_result_promise_helper.h"
 #include "media/blink/cdm_session_adapter.h"
 #include "media/blink/webmediaplayer_util.h"
+#include "media/cdm/cenc_utils.h"
 #include "media/cdm/json_web_key.h"
-#include "media/media_buildflags.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_encrypted_media_key_information.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_vector.h"
-
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-#include "media/cdm/cenc_utils.h"
-#endif
 
 namespace media {
 
@@ -107,17 +103,12 @@ bool SanitizeInitData(EmeInitDataType init_data_type,
       return true;
 
     case EmeInitDataType::CENC:
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
       sanitized_init_data->assign(init_data, init_data + init_data_length);
       if (!ValidatePsshInput(*sanitized_init_data)) {
         error_message->assign("Initialization data for CENC is incorrect.");
         return false;
       }
       return true;
-#else
-      error_message->assign("Initialization data type CENC is not supported.");
-      return false;
-#endif
 
     case EmeInitDataType::KEYIDS: {
       // Extract the keys and then rebuild the message. This ensures that any

@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "media/base/eme_constants.h"
-#include "media/media_buildflags.h"
 
 namespace cdm {
 
@@ -23,16 +22,10 @@ std::string ExternalClearKeyProperties::GetKeySystemName() const {
 bool ExternalClearKeyProperties::IsSupportedInitDataType(
     media::EmeInitDataType init_data_type) const {
   switch (init_data_type) {
+    case media::EmeInitDataType::CENC:
     case media::EmeInitDataType::WEBM:
     case media::EmeInitDataType::KEYIDS:
       return true;
-
-    case media::EmeInitDataType::CENC:
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-      return true;
-#else
-      return false;
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
     case media::EmeInitDataType::UNKNOWN:
       return false;
@@ -42,11 +35,7 @@ bool ExternalClearKeyProperties::IsSupportedInitDataType(
 }
 
 media::SupportedCodecs ExternalClearKeyProperties::GetSupportedCodecs() const {
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   return media::EME_CODEC_MP4_ALL | media::EME_CODEC_WEBM_ALL;
-#else
-  return media::EME_CODEC_WEBM_ALL;
-#endif
 }
 
 media::EmeConfigRule ExternalClearKeyProperties::GetRobustnessConfigRule(

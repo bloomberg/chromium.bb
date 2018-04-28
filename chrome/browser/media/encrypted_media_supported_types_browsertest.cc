@@ -324,8 +324,7 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
 
 // For ClearKey, nothing additional is required.
 class EncryptedMediaSupportedTypesClearKeyTest
-    : public EncryptedMediaSupportedTypesTest {
-};
+    : public EncryptedMediaSupportedTypesTest {};
 
 // For ExternalClearKey tests, ensure that the ClearKey adapter is loaded.
 class EncryptedMediaSupportedTypesExternalClearKeyTest
@@ -506,13 +505,13 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesClearKeyTest, Video_MP4) {
   // Valid video types.
   EXPECT_PROPRIETARY(
       IsSupportedByKeySystem(kClearKey, kVideoMP4MimeType, video_mp4_codecs()));
-  EXPECT_PROPRIETARY(IsSupportedByKeySystem(kClearKey, kVideoMP4MimeType,
-                                            video_common_codecs()));
-  EXPECT_PROPRIETARY(IsSupportedByKeySystem(
+  EXPECT_SUCCESS(IsSupportedByKeySystem(kClearKey, kVideoMP4MimeType,
+                                        video_common_codecs()));
+  EXPECT_SUCCESS(IsSupportedByKeySystem(
       kClearKey, kVideoMP4MimeType, clear_key_exclusive_video_common_codecs()));
 
-  // High 10-bit Profile is supported when using ClearKey if
-  // it is supported for clear content on this platform.
+// High 10-bit Profile is supported when using ClearKey if it is supported for
+// clear content on this platform.
 #if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
   EXPECT_PROPRIETARY(IsSupportedByKeySystem(kClearKey, kVideoMP4MimeType,
                                             video_mp4_hi10p_codecs()));
@@ -684,10 +683,8 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesExternalClearKeyTest,
   // Valid video types.
   EXPECT_ECK_PROPRIETARY(IsSupportedByKeySystem(
       kExternalClearKey, kVideoMP4MimeType, video_mp4_codecs()));
-  EXPECT_ECK_PROPRIETARY(IsSupportedByKeySystem(
-      kExternalClearKey, kVideoMP4MimeType, video_common_codecs()));
-  EXPECT_ECK_PROPRIETARY(IsSupportedByKeySystem(
-      kClearKey, kVideoMP4MimeType, clear_key_exclusive_video_common_codecs()));
+  EXPECT_ECK(IsSupportedByKeySystem(kExternalClearKey, kVideoMP4MimeType,
+                                    video_common_codecs()));
 
   // High 10-bit Profile is not supported when using ExternalClearKey.
   EXPECT_UNSUPPORTED(IsSupportedByKeySystem(
@@ -698,6 +695,9 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesExternalClearKeyTest,
       kExternalClearKey, kVideoMP4MimeType, audio_mp4_codecs()));
 
   // Invalid or non-MP4 codecs.
+  EXPECT_UNSUPPORTED(
+      IsSupportedByKeySystem(kExternalClearKey, kVideoMP4MimeType,
+                             clear_key_exclusive_video_common_codecs()));
   EXPECT_UNSUPPORTED(IsSupportedByKeySystem(
       kExternalClearKey, kVideoMP4MimeType, invalid_codecs()));
   EXPECT_UNSUPPORTED(IsSupportedByKeySystem(
@@ -868,8 +868,8 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, Video_MP4) {
   // Valid video types.
   EXPECT_WV_PROPRIETARY(
       IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType, video_mp4_codecs()));
-  EXPECT_WV_PROPRIETARY(IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType,
-                                               video_common_codecs()));
+  EXPECT_WV_SUCCESS(IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType,
+                                           video_common_codecs()));
 
   // High 10-bit Profile is not supported when using Widevine.
   EXPECT_UNSUPPORTED(IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType,
