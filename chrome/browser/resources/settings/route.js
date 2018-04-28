@@ -11,6 +11,8 @@
  *   ACCESSIBILITY: (undefined|!settings.Route),
  *   ACCOUNTS: (undefined|!settings.Route),
  *   ADVANCED: (undefined|!settings.Route),
+ *   CROSTINI: (undefined|!settings.Route),
+ *   CROSTINI_DETAILS: (undefined|!settings.Route),
  *   ANDROID_APPS: (undefined|!settings.Route),
  *   ANDROID_APPS_DETAILS: (undefined|!settings.Route),
  *   APPEARANCE: (undefined|!settings.Route),
@@ -243,9 +245,13 @@ cr.define('settings', function() {
     r.SEARCH_ENGINES = r.SEARCH.createChild('/searchEngines');
     // <if expr="chromeos">
     r.GOOGLE_ASSISTANT = r.SEARCH.createChild('/googleAssistant');
-    // </if>
 
-    // <if expr="chromeos">
+    if (loadTimeData.valueExists('showCrostini') &&
+        loadTimeData.getBoolean('showCrostini')) {
+      r.CROSTINI = r.BASIC.createSection('/crostini', 'crostini');
+      r.CROSTINI_DETAILS = r.CROSTINI.createChild('/crostini/details');
+    }
+
     r.ANDROID_APPS = r.BASIC.createSection('/androidApps', 'androidApps');
     r.ANDROID_APPS_DETAILS = r.ANDROID_APPS.createChild('/androidApps/details');
     // </if>

@@ -373,13 +373,34 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
 }
 
 #if defined(OS_CHROMEOS)
+void AddCrostiniStrings(content::WebUIDataSource* html_source) {
+  LocalizedString localized_strings[] = {
+      {"crostiniPageTitle", IDS_SETTINGS_CROSTINI_TITLE},
+      {"crostiniSubtext", IDS_SETTINGS_CROSTINI_SUBTEXT},
+      {"crostiniPageLabel", IDS_SETTINGS_CROSTINI_LABEL},
+      {"crostiniEnable", IDS_SETTINGS_TURN_ON},
+      {"crostiniRemove", IDS_SETTINGS_CROSTINI_REMOVE},
+      {"crostiniRemoveDialogTitle", IDS_SETTINGS_CROSTINI_REMOVE_DIALOG_TITLE},
+      {"crostiniRemoveDialogMessageDeleteApps",
+       IDS_SETTINGS_CROSTINI_REMOVE_DIALOG_MESSAGE_DELETE_APPS},
+      {"crostiniRemoveDialogMessageDeleteSharedFiles",
+       IDS_SETTINGS_CROSTINI_REMOVE_DIALOG_MESSAGE_DELETE_SHARED_FILES},
+      {"crostiniRemoveDialogMessageOtherDevicesUnaffected",
+       IDS_SETTINGS_CROSTINI_REMOVE_DIALOG_MESSAGE_OTHER_DEVICES_UNAFFECTED},
+      {"crostiniRemoveDialogAccept",
+       IDS_SETTINGS_CROSTINI_REMOVE_DIALOG_ACCEPT},
+  };
+  AddLocalizedStringsBulk(html_source, localized_strings,
+                          arraysize(localized_strings));
+}
+
 void AddAndroidAppStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"androidAppsPageTitle", arc::IsPlayStoreAvailable()
                                    ? IDS_SETTINGS_ANDROID_APPS_TITLE
                                    : IDS_SETTINGS_ANDROID_SETTINGS_TITLE},
       {"androidAppsPageLabel", IDS_SETTINGS_ANDROID_APPS_LABEL},
-      {"androidAppsEnable", IDS_SETTINGS_ANDROID_APPS_ENABLE},
+      {"androidAppsEnable", IDS_SETTINGS_TURN_ON},
       {"androidAppsManageApps", IDS_SETTINGS_ANDROID_APPS_MANAGE_APPS},
       {"androidAppsRemove", IDS_SETTINGS_ANDROID_APPS_REMOVE},
       {"androidAppsDisableDialogTitle",
@@ -2453,6 +2474,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddWebContentStrings(html_source);
 
 #if defined(OS_CHROMEOS)
+  AddCrostiniStrings(html_source);
   AddAndroidAppStrings(html_source);
   AddBluetoothStrings(html_source);
   AddChromeOSUserStrings(html_source, profile);
