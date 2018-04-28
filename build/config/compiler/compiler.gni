@@ -225,7 +225,9 @@ if (symbol_level == -1) {
 }
 
 # Assert that the configuration isn't going to hit https://crbug.com/648948.
-assert(ignore_elf32_limitations || !is_android ||
+# An exception is made when target_os == "chromeos" as we only use the Android
+# toolchain there to build relatively small binaries.
+assert(ignore_elf32_limitations || !is_android || target_os == "chromeos" ||
            (android_64bit_target_cpu && !build_apk_secondary_abi) ||
            is_component_build || symbol_level < 2,
        "Android 32-bit non-component builds cannot have symbol_level=2 " +

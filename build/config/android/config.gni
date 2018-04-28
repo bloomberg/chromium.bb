@@ -4,7 +4,10 @@
 
 # This file contains common system config stuff for the Android build.
 
-if (is_android) {
+# NOTE: Because Chrome OS builds may depend on targets built with the Android
+# toolchain, this GNI file may be read and processed from within Chrome OS
+# toolchains. Checking |is_android| here would therefore be too restrictive.
+if (is_android || is_chromeos) {
   import("//build_overrides/build.gni")
   import("abi.gni")
 
@@ -13,9 +16,11 @@ if (is_android) {
     # heavily but don't write gclient args files.
 
     import("//build/config/gclient_args.gni")
-    if (defined(checkout_android)) {
-      assert(checkout_android,
-             "target_os in your .gclient configuration must include android.")
+    if (defined(checkout_android_native_support)) {
+      assert(checkout_android_native_support,
+             "Missing native Android toolchain support. |target_os| in your " +
+                 ".gclient configuration must include \"android\" and/or " +
+                 "\"chromeos\".")
     }
   }
 
