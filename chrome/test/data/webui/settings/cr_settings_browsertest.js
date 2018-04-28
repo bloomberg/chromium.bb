@@ -1753,6 +1753,34 @@ GEN('#endif  // defined(OS_CHROMEOS)');
 GEN('#if defined(OS_CHROMEOS)');
 
 /**
+ * Test fixture for the Linux for Chromebook (Crostini) page.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsCrostiniPageTest() {}
+
+CrSettingsCrostiniPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/crostini_page/crostini_page.html',
+
+  /** @override */
+  featureList: ['features::kExperimentalCrostiniUI', ''],
+
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    '../test_browser_proxy.js',
+    'test_crostini_browser_proxy.js',
+    'crostini_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsCrostiniPageTest', 'All', function() {
+  mocha.run();
+});
+
+/**
  * Test fixture for the Google Play Store (ARC) page.
  * @constructor
  * @extends {CrSettingsBrowserTest}
