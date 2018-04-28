@@ -2298,6 +2298,7 @@ crbug.com/836627 external/wpt/content-security-policy/inside-worker/dedicated-in
 crbug.com/836627 external/wpt/content-security-policy/inside-worker/shared-inheritance.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/cssom-view/scroll-behavior-smooth.html [ Timeout ]
 crbug.com/626703 external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ Skip ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-break-word-003.html [ Failure ]
