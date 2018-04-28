@@ -52,14 +52,6 @@ if (is_android) {
     }
   }
 
-  # This is the result of profiling Chromium. Blindly applying it to arbitrary
-  # downstream projects and hoping it'll grant a speedup seems fragile. (Not
-  # to mention that it resides in a Chromium-specific directory.)
-  if (build_with_chromium) {
-    clang_default_afdo_profile =
-        rebase_path("//chrome/android/profiles/afdo.prof")
-  }
-
   if (!defined(extra_chrome_shared_library_configs)) {
     extra_chrome_shared_library_configs = []
   }
