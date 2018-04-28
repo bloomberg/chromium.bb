@@ -175,6 +175,11 @@ public class DownloadController {
             return;
         }
 
+        if (delegate.hasPermission(permission.WRITE_EXTERNAL_STORAGE)) {
+            callback.onResult(Pair.create(true, null));
+            return;
+        }
+
         if (!delegate.canRequestPermission(permission.WRITE_EXTERNAL_STORAGE)) {
             callback.onResult(Pair.create(false,
                     delegate.isPermissionRevokedByPolicy(permission.WRITE_EXTERNAL_STORAGE)
