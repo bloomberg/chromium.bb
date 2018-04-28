@@ -29,6 +29,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "components/url_formatter/url_formatter.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
@@ -394,16 +395,17 @@ void ExtensionContextMenuModel::CreatePageAccessSubmenu(
   page_access_submenu_->AddRadioItemWithStringId(
       PAGE_ACCESS_RUN_ON_CLICK,
       IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_CLICK, kRadioGroup);
+  page_access_submenu_->AddRadioItemWithStringId(
+      PAGE_ACCESS_RUN_ON_ALL_SITES,
+      IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_ALL_SITES, kRadioGroup);
   page_access_submenu_->AddRadioItem(
       PAGE_ACCESS_RUN_ON_SITE,
       l10n_util::GetStringFUTF16(
           IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_SITE,
-          base::UTF8ToUTF16(
-              web_contents->GetLastCommittedURL().GetOrigin().spec())),
+          url_formatter::StripWWW(base::UTF8ToUTF16(
+              url::Origin::Create(web_contents->GetLastCommittedURL())
+                  .host()))),
       kRadioGroup);
-  page_access_submenu_->AddRadioItemWithStringId(
-      PAGE_ACCESS_RUN_ON_ALL_SITES,
-      IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_ALL_SITES, kRadioGroup);
 
   AddSubMenuWithStringId(PAGE_ACCESS_SUBMENU,
                          IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS,
