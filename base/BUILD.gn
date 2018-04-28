@@ -2545,6 +2545,10 @@ test("base_unittests") {
     }
 
     deps += [ "//base/test:malloc_wrapper" ]
+    defines += [
+      # This library is used by ElfReaderTest to test reading elf files.
+      "MALLOC_WRAPPER_LIB=\"${shlib_prefix}malloc_wrapper${shlib_extension}\"",
+    ]
 
     if (!is_component_build) {
       # Set rpath to find libmalloc_wrapper.so even in a non-component build.

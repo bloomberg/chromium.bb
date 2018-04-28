@@ -21,14 +21,18 @@ namespace {
 
 #if __SIZEOF_POINTER__ == 4
 using Ehdr = Elf32_Ehdr;
+using Dyn = Elf32_Dyn;
 using Half = Elf32_Half;
 using Nhdr = Elf32_Nhdr;
 using Phdr = Elf32_Phdr;
+using Word = Elf32_Word;
 #else
 using Ehdr = Elf64_Ehdr;
+using Dyn = Elf64_Dyn;
 using Half = Elf64_Half;
 using Nhdr = Elf64_Nhdr;
 using Phdr = Elf64_Phdr;
+using Word = Elf64_Word;
 #endif
 
 using ElfSegment = span<const char>;
@@ -84,7 +88,7 @@ std::vector<ElfSegment> FindElfSegments(const void* elf_mapped_base,
 
 Optional<std::string> ReadElfBuildId(const void* elf_base) {
   // Elf program headers can have multiple PT_NOTE arrays.
-  std::vector<ElfSegment> segs = FindElfSegments(&elf_base, PT_NOTE);
+  std::vector<ElfSegment> segs = FindElfSegments(elf_base, PT_NOTE);
   if (segs.empty())
     return nullopt;
   Optional<std::string> id;
@@ -94,6 +98,33 @@ Optional<std::string> ReadElfBuildId(const void* elf_base) {
       return id;
   }
 
+  return nullopt;
+}
+
+Optional<std::string> ReadElfLibraryName(const void* elf_base) {
+  std::vector<ElfSegment> segs = FindElfSegments(elf_base, PT_DYNAMIC);
+  if (segs.empty())
+    return nullopt;
+  DCHECK_EQ(1u, segs.size());
+
+  const ElfSegment& dynamic_seg = segs.front();
+  const Dyn* dynamic_start = reinterpret_cast<const Dyn*>(dynamic_seg.data());
+  const Dyn* dynamic_end = reinterpret_cast<const Dyn*>(
+      dynamic_seg.data() + dynamic_seg.size_bytes());
+  Optional<std::string> soname;
+  Word soname_strtab_offset = 0;
+  const char* strtab_addr = 0;
+  for (const Dyn* dynamic_iter = dynamic_start; dynamic_iter < dynamic_end;
+       ++dynamic_iter) {
+    if (dynamic_iter->d_tag == DT_STRTAB) {
+      strtab_addr =
+          dynamic_iter->d_un.d_ptr + reinterpret_cast<const char*>(elf_base);
+    } else if (dynamic_iter->d_tag == DT_SONAME) {
+      soname_strtab_offset = dynamic_iter->d_un.d_val;
+    }
+  }
+  if (soname_strtab_offset && strtab_addr)
+    return std::string(strtab_addr + soname_strtab_offset);
   return nullopt;
 }
 

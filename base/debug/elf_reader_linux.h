@@ -18,6 +18,10 @@ namespace debug {
 // in memory.
 Optional<std::string> BASE_EXPORT ReadElfBuildId(const void* elf_base);
 
+// Returns the library name from the ELF file mapped at |elf_base|, if present.
+// The caller must ensure that the file is fully mapped in memory.
+Optional<std::string> BASE_EXPORT ReadElfLibraryName(const void* elf_base);
+
 }  // namespace debug
 }  // namespace base
 
