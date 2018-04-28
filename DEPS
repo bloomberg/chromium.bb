@@ -29,7 +29,6 @@
 gclient_gn_args_file = 'src/build/config/gclient_args.gni'
 gclient_gn_args = [
   'checkout_android',
-  'checkout_android_native_support',
   'checkout_libaom',
   'checkout_nacl',
   'checkout_oculus_sdk',
@@ -42,10 +41,6 @@ vars = {
   # to skip things are not strictly needed to build chromium for development
   # purposes.
   'checkout_configuration': 'default',
-
-  # Pull in Android native toolchain dependencies for Chrome OS too, so we can
-  # build ARC++ support libraries.
-  'checkout_android_native_support': 'checkout_android or checkout_chromeos',
 
   # By default, do not check out android sdk sources. This can be overridden
   # e.g. with custom_vars.
@@ -343,7 +338,7 @@ deps = {
 
   'src/third_party/android_ndk': {
       'url': Var('chromium_git') + '/android_ndk.git' + '@' + '635bc380968a76f6948fee65f80a0b28db53ae81',
-      'condition': 'checkout_android_native_support',
+      'condition': 'checkout_android',
   },
 
   'src/third_party/android_support_test_runner': {
@@ -370,7 +365,7 @@ deps = {
 
   'src/third_party/android_tools': {
       'url': Var('chromium_git') + '/android_tools.git' + '@' + 'c22a664c39af72dd8f89200220713dcad811300a',
-      'condition': 'checkout_android_native_support',
+      'condition': 'checkout_android',
   },
 
   'src/third_party/android_sdk/public': {
@@ -529,7 +524,7 @@ deps = {
 
   'src/third_party/elfutils/src': {
       'url': Var('chromium_git') + '/external/elfutils.git' + '@' + '249673729a7e5dbd5de4f3760bdcaa3d23d154d7',
-      'condition': 'checkout_android_native_support',
+      'condition': 'checkout_android',
   },
 
   'src/third_party/errorprone/lib': {

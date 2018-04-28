@@ -206,7 +206,7 @@ core_impl_source_set("impl_for_edk") {
   for_mojo_core = false
 }
 
-if (is_chromeos || is_linux || is_android) {
+if (is_chromeos || is_linux) {
   core_impl_source_set("impl_for_mojo_core") {
     for_mojo_core = true
   }
@@ -223,69 +223,26 @@ if (is_chromeos || is_linux || is_android) {
     configs += [ ":export_only_thunks_api" ]
   }
 
-  if (is_chromeos) {
-    if (target_cpu == "arm" || target_cpu == "arm64") {
-      android32_toolchain = "android_clang_arm"
-      android64_toolchain = "android_clang_arm64"
-    } else {
-      android32_toolchain = "android_clang_x86"
-      android64_toolchain = "android_clang_x64"
-    }
-
-    group("mojo_core_for_arc") {
-      deps = [
-        ":mojo_core_arc32",
-        ":mojo_core_arc64",
-      ]
-    }
-
-    copy("mojo_core_arc32") {
-      sources = [
-        "${root_out_dir}/${android32_toolchain}/libmojo_core.so",
-      ]
-      outputs = [
-        "${root_out_dir}/libmojo_core_arc32.so",
-      ]
-      deps = [
-        ":mojo_core(//build/toolchain/android:${android32_toolchain})",
-      ]
-    }
-
-    copy("mojo_core_arc64") {
-      sources = [
-        "${root_out_dir}/${android64_toolchain}/libmojo_core.so",
-      ]
-      outputs = [
-        "${root_out_dir}/libmojo_core_arc64.so",
-      ]
-      deps = [
-        ":mojo_core(//build/toolchain/android:${android64_toolchain})",
-      ]
-    }
-  }
-
   config("export_only_thunks_api") {
     ldflags = [ "-Wl,--version-script=" +
                 rebase_path("//mojo/edk/export_only_thunks_api.lst") ]
   }
 
-  if (is_chromeos || is_linux) {
-    test("mojo_core_unittests") {
-      sources = [
-        "mojo_core_unittest.cc",
-        "run_all_core_unittests.cc",
-      ]
+  test("mojo_core_unittests") {
+    sources = [
+      "mojo_core_unittest.cc",
+      "run_all_core_unittests.cc",
+    ]
 
-      deps = [
-        "//base",
-        "//base/test:test_support",
-        "//mojo/public/c/system",
-        "//testing/gtest",
-      ]
+    deps = [
+      "//base",
+      "//base/test:test_support",
+      "//mojo/public/c/system",
+      "//testing/gtest",
+    ]
 
-      data_deps = [
-        ":mojo_core",
-      ]
-    }
+    data_deps = [
+      ":mojo_core",
+    ]
   }
 }
