@@ -44,19 +44,18 @@ TestPaintArtifact::TestPaintArtifact() : display_item_list_(0), built_(false) {}
 TestPaintArtifact::~TestPaintArtifact() = default;
 
 TestPaintArtifact& TestPaintArtifact::Chunk(
-    scoped_refptr<const TransformPaintPropertyNode> transform,
-    scoped_refptr<const ClipPaintPropertyNode> clip,
-    scoped_refptr<const EffectPaintPropertyNode> effect) {
+    const TransformPaintPropertyNode& transform,
+    const ClipPaintPropertyNode& clip,
+    const EffectPaintPropertyNode& effect) {
   return Chunk(NewClient(), transform, clip, effect);
 }
 
 TestPaintArtifact& TestPaintArtifact::Chunk(
     DisplayItemClient& client,
-    scoped_refptr<const TransformPaintPropertyNode> transform,
-    scoped_refptr<const ClipPaintPropertyNode> clip,
-    scoped_refptr<const EffectPaintPropertyNode> effect) {
-  return Chunk(client,
-               PropertyTreeState(transform.get(), clip.get(), effect.get()));
+    const TransformPaintPropertyNode& transform,
+    const ClipPaintPropertyNode& clip,
+    const EffectPaintPropertyNode& effect) {
+  return Chunk(client, PropertyTreeState(&transform, &clip, &effect));
 }
 
 TestPaintArtifact& TestPaintArtifact::Chunk(
@@ -112,15 +111,15 @@ TestPaintArtifact& TestPaintArtifact::ForeignLayer(
 }
 
 TestPaintArtifact& TestPaintArtifact::ScrollHitTest(
-    scoped_refptr<const TransformPaintPropertyNode> scroll_offset) {
+    const TransformPaintPropertyNode& scroll_offset) {
   return ScrollHitTest(NewClient(), scroll_offset);
 }
 
 TestPaintArtifact& TestPaintArtifact::ScrollHitTest(
     DisplayItemClient& client,
-    scoped_refptr<const TransformPaintPropertyNode> scroll_offset) {
+    const TransformPaintPropertyNode& scroll_offset) {
   display_item_list_.AllocateAndConstruct<ScrollHitTestDisplayItem>(
-      client, DisplayItem::kScrollHitTest, std::move(scroll_offset));
+      client, DisplayItem::kScrollHitTest, scroll_offset);
   return *this;
 }
 

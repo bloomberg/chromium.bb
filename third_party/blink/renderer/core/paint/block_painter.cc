@@ -200,7 +200,7 @@ void BlockPainter::PaintScrollHitTestDisplayItem(const PaintInfo& paint_info) {
           DisplayItem::kScrollHitTest);
       ScrollHitTestDisplayItem::Record(paint_info.context, layout_block_,
                                        DisplayItem::kScrollHitTest,
-                                       view->ScrollTranslation());
+                                       *view->ScrollTranslation());
     }
     // The LayoutView should not create a scroll translation or scroll node,
     // instead relying on the LocalFrameView's scroll translation and scroll.
@@ -220,7 +220,7 @@ void BlockPainter::PaintScrollHitTestDisplayItem(const PaintInfo& paint_info) {
         DisplayItem::kScrollHitTest);
     ScrollHitTestDisplayItem::Record(paint_info.context, layout_block_,
                                      DisplayItem::kScrollHitTest,
-                                     properties->ScrollTranslation());
+                                     *properties->ScrollTranslation());
   }
 }
 

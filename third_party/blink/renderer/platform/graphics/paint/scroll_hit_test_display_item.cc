@@ -13,13 +13,13 @@ namespace blink {
 ScrollHitTestDisplayItem::ScrollHitTestDisplayItem(
     const DisplayItemClient& client,
     Type type,
-    scoped_refptr<const TransformPaintPropertyNode> scroll_offset_node)
+    const TransformPaintPropertyNode& scroll_offset_node)
     : DisplayItem(client, type, sizeof(*this)),
-      scroll_offset_node_(std::move(scroll_offset_node)) {
+      scroll_offset_node_(scroll_offset_node) {
   DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
   DCHECK(IsScrollHitTestType(type));
   // The scroll offset transform node should have an associated scroll node.
-  DCHECK(scroll_offset_node_->ScrollNode());
+  DCHECK(scroll_offset_node_.ScrollNode());
 }
 
 ScrollHitTestDisplayItem::~ScrollHitTestDisplayItem() = default;
@@ -44,7 +44,7 @@ bool ScrollHitTestDisplayItem::Equals(const DisplayItem& other) const {
 void ScrollHitTestDisplayItem::PropertiesAsJSON(JSONObject& json) const {
   DisplayItem::PropertiesAsJSON(json);
   json.SetString("scrollOffsetNode",
-                 String::Format("%p", scroll_offset_node_.get()));
+                 String::Format("%p", &scroll_offset_node_));
 }
 #endif
 
@@ -52,19 +52,19 @@ void ScrollHitTestDisplayItem::Record(
     GraphicsContext& context,
     const DisplayItemClient& client,
     DisplayItem::Type type,
-    scoped_refptr<const TransformPaintPropertyNode> scroll_offset_node) {
+    const TransformPaintPropertyNode& scroll_offset_node) {
   PaintController& paint_controller = context.GetPaintController();
 
   // The scroll hit test should be in the non-scrolled transform space and
   // therefore should not be scrolled by the associated scroll offset.
   DCHECK_NE(paint_controller.CurrentPaintChunkProperties().Transform(),
-            scroll_offset_node.get());
+            &scroll_offset_node);
 
   if (paint_controller.DisplayItemConstructionIsDisabled())
     return;
 
   paint_controller.CreateAndAppend<ScrollHitTestDisplayItem>(
-      client, type, std::move(scroll_offset_node));
+      client, type, scroll_offset_node);
 }
 
 }  // namespace blink
