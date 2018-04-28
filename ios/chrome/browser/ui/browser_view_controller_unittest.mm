@@ -48,6 +48,7 @@
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #include "ios/chrome/test/testing_application_context.h"
+#import "ios/net/protocol_handler_util.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -290,11 +291,9 @@ TEST_F(BrowserViewControllerTest, TestErrorController) {
   NSDictionary* userInfoDic = [NSDictionary
       dictionaryWithObjectsAndKeys:badURLString,
                                    NSURLErrorFailingURLStringErrorKey,
-                                   [NSError
-                                       errorWithDomain:base::SysUTF8ToNSString(
-                                                           net::kErrorDomain)
-                                                  code:-104
-                                              userInfo:nil],
+                                   [NSError errorWithDomain:net::kNSErrorDomain
+                                                       code:-104
+                                                   userInfo:nil],
                                    NSUnderlyingErrorKey, nil];
   NSError* testError =
       [NSError errorWithDomain:@"testdomain" code:-1 userInfo:userInfoDic];

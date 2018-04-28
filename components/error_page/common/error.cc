@@ -8,11 +8,12 @@
 
 namespace error_page {
 
+const char Error::kNetErrorDomain[] = "net";
 const char Error::kHttpErrorDomain[] = "http";
 const char Error::kDnsProbeErrorDomain[] = "dnsprobe";
 
 Error Error::NetError(const GURL& url, int reason, bool stale_copy_in_cache) {
-  return Error(url, net::kErrorDomain, reason, stale_copy_in_cache);
+  return Error(url, kNetErrorDomain, reason, stale_copy_in_cache);
 }
 
 Error Error::HttpError(const GURL& url, int http_status_code) {

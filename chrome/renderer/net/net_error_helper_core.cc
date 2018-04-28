@@ -125,7 +125,8 @@ base::TimeDelta GetAutoReloadTime(size_t reload_count) {
 // Returns whether |error| is a DNS-related error (and therefore whether
 // the tab helper should start a DNS probe after receiving it).
 bool IsNetDnsError(const error_page::Error& error) {
-  return error.domain() == net::kErrorDomain && net::IsDnsError(error.reason());
+  return error.domain() == error_page::Error::kNetErrorDomain &&
+         net::IsDnsError(error.reason());
 }
 
 GURL SanitizeURL(const GURL& url) {
@@ -171,7 +172,7 @@ bool ShouldUseFixUrlServiceForError(const error_page::Error& error,
     *error_param = "dnserror";
     return true;
   }
-  if (domain == net::kErrorDomain &&
+  if (domain == error_page::Error::kNetErrorDomain &&
       (error.reason() == net::ERR_CONNECTION_FAILED ||
        error.reason() == net::ERR_CONNECTION_REFUSED ||
        error.reason() == net::ERR_ADDRESS_UNREACHABLE ||
@@ -364,7 +365,7 @@ std::unique_ptr<error_page::ErrorPageParams> CreateErrorPageParams(
 }
 
 void ReportAutoReloadSuccess(const error_page::Error& error, size_t count) {
-  if (error.domain() != net::kErrorDomain)
+  if (error.domain() != error_page::Error::kNetErrorDomain)
     return;
   base::UmaHistogramSparse("Net.AutoReload.ErrorAtSuccess", -error.reason());
   UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtSuccess",
@@ -376,7 +377,7 @@ void ReportAutoReloadSuccess(const error_page::Error& error, size_t count) {
 }
 
 void ReportAutoReloadFailure(const error_page::Error& error, size_t count) {
-  if (error.domain() != net::kErrorDomain)
+  if (error.domain() != error_page::Error::kNetErrorDomain)
     return;
   base::UmaHistogramSparse("Net.AutoReload.ErrorAtStop", -error.reason());
   UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtStop",
@@ -477,7 +478,7 @@ NetErrorHelperCore::NavigationCorrectionParams::~NavigationCorrectionParams() {}
 bool NetErrorHelperCore::IsReloadableError(
     const NetErrorHelperCore::ErrorPageInfo& info) {
   GURL url = info.error.url();
-  return info.error.domain() == net::kErrorDomain &&
+  return info.error.domain() == error_page::Error::kNetErrorDomain &&
          info.error.reason() != net::ERR_ABORTED &&
          // For now, net::ERR_UNKNOWN_URL_SCHEME is only being displayed on
          // Chrome for Android.

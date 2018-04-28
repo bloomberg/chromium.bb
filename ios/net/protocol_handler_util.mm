@@ -39,6 +39,8 @@ NSString* const kContentType = @"Content-Type";
 
 namespace net {
 
+NSString* const kNSErrorDomain = @"org.chromium.net.ErrorDomain";
+
 NSError* GetIOSError(NSInteger ns_error_code,
                      int net_error_code,
                      NSString* url,
@@ -48,16 +50,14 @@ NSError* GetIOSError(NSInteger ns_error_code,
   // about the error from our network stack. This dictionary contains the
   // failing URL, and a nested error in which we deposit the original error code
   // passed in from the Chrome network stack.
-  // The nested error has domain:kErrorDomain, code:|original_error_code|, and
-  // userInfo:nil; this NSError is keyed in the dictionary with
+  // The nested error has domain:kNSErrorDomain, code:|original_error_code|,
+  // and userInfo:nil; this NSError is keyed in the dictionary with
   // NSUnderlyingErrorKey.
   NSDate* creation_date = [NSDate
       dateWithTimeIntervalSinceReferenceDate:creation_time.ToCFAbsoluteTime()];
   DCHECK(creation_date);
   NSError* underlying_error =
-      [NSError errorWithDomain:base::SysUTF8ToNSString(kErrorDomain)
-                          code:net_error_code
-                      userInfo:nil];
+      [NSError errorWithDomain:kNSErrorDomain code:net_error_code userInfo:nil];
   DCHECK(url);
   NSDictionary* dictionary = @{
       NSURLErrorFailingURLStringErrorKey : url,

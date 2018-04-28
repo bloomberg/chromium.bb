@@ -17,6 +17,9 @@ class URLRequest;
 
 namespace net {
 
+// The error domain for network NSErrors.
+extern NSString* const kNSErrorDomain;
+
 // Creates a network NSError. |ns_error_code| is the iOS error code,
 // |net_error_code| is the network error from net/base/net_error_list.h.
 // |creation_time| is the time when the failing request was started and must be

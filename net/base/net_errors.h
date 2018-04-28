@@ -14,9 +14,6 @@
 
 namespace net {
 
-// Error domain of the net module's error codes.
-NET_EXPORT extern const char kErrorDomain[];
-
 // Error values are negative.
 enum Error {
   // No error.
