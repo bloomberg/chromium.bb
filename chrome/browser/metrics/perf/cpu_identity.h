@@ -31,10 +31,10 @@ struct CPUIdentity {
 // Get the CPUIdentity based on the actual system.
 CPUIdentity GetCPUIdentity();
 
-// Return the Intel microarchitecture based on the family and model derived
-// from |cpuid|, and kIntelUarchTable, or the empty string for non-Intel or
+// Return the CPU microarchitecture based on the family and model derived
+// from |cpuid|, and kCpuUarchTable, or the empty string for non-Intel or
 // unknown microarchitectures.
-std::string GetIntelUarch(const CPUIdentity& cpuid);
+std::string GetCpuUarch(const CPUIdentity& cpuid);
 
 // Simplify a CPU model name. The rules are:
 // - Replace spaces with hyphens.
@@ -46,16 +46,15 @@ namespace internal {
 
 // Exposed for unit testing.
 
-struct IntelUarchTableEntry {
+struct CpuUarchTableEntry {
   const char *family_model;
   const char *uarch;
 };
 
-bool IntelUarchTableCmp(const IntelUarchTableEntry& a,
-                        const IntelUarchTableEntry& b);
+bool CpuUarchTableCmp(const CpuUarchTableEntry& a, const CpuUarchTableEntry& b);
 
-extern const IntelUarchTableEntry kIntelUarchTable[];
-extern const IntelUarchTableEntry* kIntelUarchTableEnd;
+extern const CpuUarchTableEntry kCpuUarchTable[];
+extern const CpuUarchTableEntry* kCpuUarchTableEnd;
 
 }  // namespace internal
 
