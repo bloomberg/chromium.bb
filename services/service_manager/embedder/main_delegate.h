@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "build/build_config.h"
 #include "mojo/edk/embedder/configuration.h"
 #include "services/service_manager/background/background_service_manager.h"
 #include "services/service_manager/embedder/process_type.h"
@@ -22,10 +21,6 @@ class Value;
 namespace mac {
 class ScopedNSAutoreleasePool;
 }
-}
-
-namespace ui {
-class DataPack;
 }
 
 namespace service_manager {
@@ -46,10 +41,6 @@ class SERVICE_MANAGER_EMBEDDER_EXPORT MainDelegate {
 
   MainDelegate();
   virtual ~MainDelegate();
-
-  // Load the "resources.pak" data pack and return the pointer to it. The return
-  // pointer is not owned by the caller.
-  virtual ui::DataPack* LoadServiceManifestDataPack() = 0;
 
   // Perform early process initialization. Returns -1 if successful, or the exit
   // code with which the process should be terminated due to initialization

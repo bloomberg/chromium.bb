@@ -26,7 +26,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "ui/base/resource/data_pack.h"
 
 class ChromeContentBrowserClientParts;
 class PrefRegistrySimple;
@@ -65,8 +64,7 @@ class Origin;
 
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
-  explicit ChromeContentBrowserClient(
-      std::unique_ptr<ui::DataPack> data_pack = nullptr);
+  ChromeContentBrowserClient();
   ~ChromeContentBrowserClient() override;
 
   // TODO(https://crbug.com/787567): This file is about calls from content/ out
@@ -516,8 +514,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       service_manager::BinderRegistryWithArgs<content::RenderProcessHost*,
                                               const url::Origin&>>
       worker_interfaces_parameterized_;
-
-  std::unique_ptr<ui::DataPack> service_manifest_data_pack_;
 
   base::WeakPtrFactory<ChromeContentBrowserClient> weak_factory_;
 
