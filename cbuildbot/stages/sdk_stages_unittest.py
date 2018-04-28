@@ -11,7 +11,9 @@ import json
 import os
 import unittest
 
+from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
+from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import sdk_stages
 from chromite.lib import constants
@@ -24,21 +26,30 @@ from chromite.scripts import upload_prebuilts
 
 
 class SDKBuildToolchainsStageTest(
-    generic_stages_unittest.AbstractStageTestCase):
+    generic_stages_unittest.AbstractStageTestCase,
+    cbuildbot_unittest.SimpleBuilderTestCase):
   """Tests SDK toolchain building."""
+
+  RELEASE_TAG = 'ToT.0.0'
 
   def setUp(self):
     # This code has its own unit tests, so no need to go testing it here.
     self.run_mock = self.PatchObject(commands, 'RunBuildScript')
+    self.uploadartifact_mock = self.PatchObject(
+        generic_stages.ArchivingStageMixin, 'UploadArtifact')
 
   def ConstructStage(self):
+    self._run.GetArchive().SetupArchivePath()
     return sdk_stages.SDKBuildToolchainsStage(self._run)
 
   def testNormal(self):
     """Basic run through the main code."""
     self._Prepare('chromiumos-sdk')
+    self.PatchObject(
+        os, 'listdir', return_value=['i686-pc.tar.xz', 'x86_64-cros.tar.xz', ])
     self.RunStage()
     self.assertEqual(self.run_mock.call_count, 2)
+    self.assertEqual(self.uploadartifact_mock.call_count, 2)
 
     # Sanity check args passed to RunBuildScript.
     for call in self.run_mock.call_args_list:
@@ -49,9 +60,11 @@ class SDKBuildToolchainsStageTest(
         self.assertTrue(isinstance(ele, basestring))
 
 
-class SDKPackageStageTest(generic_stages_unittest.AbstractStageTestCase):
+class SDKPackageStageTest(generic_stages_unittest.AbstractStageTestCase,
+                          cbuildbot_unittest.SimpleBuilderTestCase):
   """Tests SDK package and Manifest creation."""
 
+  RELEASE_TAG = 'ToT.0.0'
   fake_packages = (('cat1/package', '1'), ('cat1/package', '2'),
                    ('cat2/package', '3'), ('cat2/package', '4'))
 
@@ -59,7 +72,8 @@ class SDKPackageStageTest(generic_stages_unittest.AbstractStageTestCase):
     # Replace SudoRunCommand, since we don't care about sudo.
     self.PatchObject(cros_build_lib, 'SudoRunCommand',
                      wraps=cros_build_lib.RunCommand)
-
+    self.uploadartifact_mock = self.PatchObject(
+        generic_stages.ArchivingStageMixin, 'UploadArtifact')
     # Prepare a fake chroot.
     self.fake_chroot = os.path.join(self.build_root, 'chroot/build/amd64-host')
     self.fake_json_data = {}
@@ -71,6 +85,7 @@ class SDKPackageStageTest(generic_stages_unittest.AbstractStageTestCase):
       self.fake_json_data.setdefault(key, []).append([v, {}])
 
   def ConstructStage(self):
+    self._run.GetArchive().SetupArchivePath()
     return sdk_stages.SDKPackageStage(self._run)
 
   def testTarballCreation(self):
@@ -102,6 +117,8 @@ class SDKPackageStageTest(generic_stages_unittest.AbstractStageTestCase):
     real_json_data = json.loads(osutils.ReadFile(fake_manifest))
     self.assertEqual(real_json_data['packages'],
                      self.fake_json_data)
+    self.uploadartifact_mock.assert_called_once_with(
+        fake_tarball, strict=True, archive=True)
 
   def testPerf(self):
     """Check perf data points are generated/uploaded."""
