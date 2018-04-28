@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_ASSISTANT_UI_ELEMENT_H_
-#define UI_APP_LIST_ASSISTANT_UI_ELEMENT_H_
+#ifndef ASH_ASSISTANT_MODEL_ASSISTANT_UI_ELEMENT_H_
+#define ASH_ASSISTANT_MODEL_ASSISTANT_UI_ELEMENT_H_
 
 #include <string>
 
 #include "base/macros.h"
 
-namespace app_list {
+namespace ash {
 
 // AssistantUiElementType ------------------------------------------------------
 
@@ -73,6 +73,6 @@ class AssistantTextElement : public AssistantUiElement {
   DISALLOW_COPY_AND_ASSIGN(AssistantTextElement);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
-#endif  // UI_APP_LIST_ASSISTANT_UI_ELEMENT_H_
+#endif  // ASH_ASSISTANT_MODEL_ASSISTANT_UI_ELEMENT_H_

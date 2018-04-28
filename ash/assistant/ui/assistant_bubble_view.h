@@ -10,19 +10,17 @@
 #include <string>
 #include <vector>
 
+#include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "base/macros.h"
-#include "ui/app_list/assistant_interaction_model_observer.h"
 #include "ui/app_list/views/suggestion_chip_view.h"
 #include "ui/views/view.h"
 
-namespace app_list {
+namespace ash {
+
+class AshAssistantController;
 class AssistantCardElement;
-class AssistantController;
 class AssistantTextElement;
 class AssistantUiElement;
-}  // namespace app_list
-
-namespace ash {
 
 namespace {
 class InteractionContainer;
@@ -31,11 +29,10 @@ class UiElementContainer;
 }  // namespace
 
 class AssistantBubbleView : public views::View,
-                            public app_list::AssistantInteractionModelObserver,
+                            public AssistantInteractionModelObserver,
                             public app_list::SuggestionChipListener {
  public:
-  explicit AssistantBubbleView(
-      app_list::AssistantController* assistant_controller);
+  explicit AssistantBubbleView(AshAssistantController* assistant_controller);
   ~AssistantBubbleView() override;
 
   // views::View:
@@ -43,11 +40,10 @@ class AssistantBubbleView : public views::View,
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
 
-  // app_list::AssistantInteractionModelObserver:
-  void OnUiElementAdded(
-      const app_list::AssistantUiElement* ui_element) override;
+  // AssistantInteractionModelObserver:
+  void OnUiElementAdded(const AssistantUiElement* ui_element) override;
   void OnUiElementsCleared() override;
-  void OnQueryChanged(const app_list::Query& query) override;
+  void OnQueryChanged(const Query& query) override;
   void OnQueryCleared() override;
   void OnSuggestionsAdded(const std::vector<std::string>& suggestions) override;
   void OnSuggestionsCleared() override;
@@ -67,12 +63,12 @@ class AssistantBubbleView : public views::View,
   void SetProcessingUiElement(bool is_processing);
   void ProcessPendingUiElements();
 
-  void OnCardAdded(const app_list::AssistantCardElement* card_element);
+  void OnCardAdded(const AssistantCardElement* card_element);
   void OnCardReady(const base::UnguessableToken& embed_token);
   void OnReleaseCards();
-  void OnTextAdded(const app_list::AssistantTextElement* text_element);
+  void OnTextAdded(const AssistantTextElement* text_element);
 
-  app_list::AssistantController* assistant_controller_;  // Owned by Shell.
+  AshAssistantController* assistant_controller_;  // Owned by Shell.
   InteractionContainer* interaction_container_;  // Owned by view hierarchy.
   UiElementContainer* ui_element_container_;     // Owned by view hierarchy.
   SuggestionsContainer* suggestions_container_;  // Owned by view hierarchy.
@@ -81,7 +77,7 @@ class AssistantBubbleView : public views::View,
   std::vector<base::UnguessableToken> id_token_list_;
 
   // Owned by AssistantInteractionModel.
-  std::deque<const app_list::AssistantUiElement*> pending_ui_element_list_;
+  std::deque<const AssistantUiElement*> pending_ui_element_list_;
 
   // Whether a UI element is currently being processed. If true, new UI elements
   // are added to |pending_ui_element_list_| and processed later.

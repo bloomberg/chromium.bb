@@ -9,18 +9,13 @@
 #include <string>
 #include <vector>
 
-#include "ash/assistant/model/assistant_interaction_model_impl.h"
+#include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/public/interfaces/ash_assistant_controller.mojom.h"
 #include "ash/public/interfaces/assistant_card_renderer.mojom.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "ui/app_list/assistant_controller.h"
-
-namespace app_list {
-class AssistantInteractionModelObserver;
-}  // namespace app_list
 
 namespace base {
 class UnguessableToken;
@@ -29,10 +24,10 @@ class UnguessableToken;
 namespace ash {
 
 class AssistantBubble;
+class AssistantInteractionModelObserver;
 
 class AshAssistantController
-    : public app_list::AssistantController,
-      public mojom::AshAssistantController,
+    : public mojom::AshAssistantController,
       public chromeos::assistant::mojom::AssistantEventSubscriber {
  public:
   AshAssistantController();
@@ -40,19 +35,30 @@ class AshAssistantController
 
   void BindRequest(mojom::AshAssistantControllerRequest request);
 
-  // app_list::AssistantController:
-  void AddInteractionModelObserver(
-      app_list::AssistantInteractionModelObserver* observer) override;
+  // Registers the specified |observer| with the interaction model observer
+  // pool.
+  void AddInteractionModelObserver(AssistantInteractionModelObserver* observer);
+
+  // Unregisters the specified |observer| from the interaction model observer
+  // pool.
   void RemoveInteractionModelObserver(
-      app_list::AssistantInteractionModelObserver* observer) override;
-  void RenderCard(
-      const base::UnguessableToken& id_token,
-      mojom::AssistantCardParamsPtr params,
-      mojom::AssistantCardRenderer::RenderCallback callback) override;
-  void ReleaseCard(const base::UnguessableToken& id_token) override;
-  void ReleaseCards(
-      const std::vector<base::UnguessableToken>& id_tokens) override;
-  void OnSuggestionChipPressed(const std::string& text) override;
+      AssistantInteractionModelObserver* observer);
+
+  // Renders a card, uniquely identified by |id_token|, according to the
+  // specified |params|. When the card is ready for embedding, the supplied
+  // |callback| is run with a token for embedding.
+  void RenderCard(const base::UnguessableToken& id_token,
+                  mojom::AssistantCardParamsPtr params,
+                  mojom::AssistantCardRenderer::RenderCallback callback);
+
+  // Releases resources for the card uniquely identified by |id_token|.
+  void ReleaseCard(const base::UnguessableToken& id_token);
+
+  // Releases resources for any card uniquely identified in |id_token_list|.
+  void ReleaseCards(const std::vector<base::UnguessableToken>& id_tokens);
+
+  // Invoked on suggestion chip pressed event.
+  void OnSuggestionChipPressed(const std::string& text);
 
   // chromeos::assistant::mojom::AssistantEventSubscriber:
   void OnInteractionStarted() override;
@@ -83,7 +89,7 @@ class AshAssistantController
   mojo::Binding<mojom::AshAssistantController> assistant_controller_binding_;
   mojo::Binding<chromeos::assistant::mojom::AssistantEventSubscriber>
       assistant_event_subscriber_binding_;
-  AssistantInteractionModelImpl assistant_interaction_model_;
+  AssistantInteractionModel assistant_interaction_model_;
 
   chromeos::assistant::mojom::AssistantPtr assistant_;
   mojom::AssistantCardRendererPtr assistant_card_renderer_;

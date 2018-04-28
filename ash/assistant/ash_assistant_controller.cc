@@ -4,13 +4,13 @@
 
 #include "ash/assistant/ash_assistant_controller.h"
 
+#include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_bubble.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "base/unguessable_token.h"
-#include "ui/app_list/assistant_interaction_model_observer.h"
-#include "ui/app_list/assistant_ui_element.h"
 
 namespace ash {
 
@@ -84,12 +84,12 @@ void AshAssistantController::ReleaseCards(
 }
 
 void AshAssistantController::AddInteractionModelObserver(
-    app_list::AssistantInteractionModelObserver* observer) {
+    AssistantInteractionModelObserver* observer) {
   assistant_interaction_model_.AddObserver(observer);
 }
 
 void AshAssistantController::RemoveInteractionModelObserver(
-    app_list::AssistantInteractionModelObserver* observer) {
+    AssistantInteractionModelObserver* observer) {
   assistant_interaction_model_.RemoveObserver(observer);
 }
 
@@ -113,11 +113,11 @@ void AshAssistantController::OnInteractionDismissed() {
 
 void AshAssistantController::OnHtmlResponse(const std::string& response) {
   assistant_interaction_model_.AddUiElement(
-      std::make_unique<app_list::AssistantCardElement>(response));
+      std::make_unique<AssistantCardElement>(response));
 }
 
 void AshAssistantController::OnSuggestionChipPressed(const std::string& text) {
-  app_list::Query query;
+  Query query;
   query.high_confidence_text = text;
 
   assistant_interaction_model_.ClearInteraction();
@@ -134,7 +134,7 @@ void AshAssistantController::OnSuggestionsResponse(
 
 void AshAssistantController::OnTextResponse(const std::string& response) {
   assistant_interaction_model_.AddUiElement(
-      std::make_unique<app_list::AssistantTextElement>(response));
+      std::make_unique<AssistantTextElement>(response));
 }
 
 void AshAssistantController::OnSpeechRecognitionStarted() {
@@ -155,7 +155,7 @@ void AshAssistantController::OnSpeechRecognitionEndOfUtterance() {
 
 void AshAssistantController::OnSpeechRecognitionFinalResult(
     const std::string& final_result) {
-  app_list::Query query;
+  Query query;
   query.high_confidence_text = final_result;
   assistant_interaction_model_.SetQuery(query);
 }

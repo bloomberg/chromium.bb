@@ -4,13 +4,13 @@
 
 #include "ash/assistant/ui/assistant_bubble_view.h"
 
+#include "ash/assistant/ash_assistant_controller.h"
+#include "ash/assistant/model/assistant_interaction_model.h"
+#include "ash/assistant/model/assistant_ui_element.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "ui/app_list/answer_card_contents_registry.h"
-#include "ui/app_list/assistant_controller.h"
-#include "ui/app_list/assistant_interaction_model.h"
-#include "ui/app_list/assistant_ui_element.h"
 #include "ui/app_list/views/suggestion_chip_view.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
@@ -77,7 +77,7 @@ class InteractionContainer : public views::View {
 
   ~InteractionContainer() override = default;
 
-  void SetQuery(const app_list::Query& query) {
+  void SetQuery(const Query& query) {
     // TODO(dmblack): Represent high confidence and low confidence portions of
     // the query with different colors.
     interaction_label_->SetText(base::UTF8ToUTF16(query.high_confidence_text) +
@@ -274,7 +274,7 @@ class SuggestionsContainer : public views::View {
 // AssistantBubbleView ---------------------------------------------------------
 
 AssistantBubbleView::AssistantBubbleView(
-    app_list::AssistantController* assistant_controller)
+    AshAssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
       interaction_container_(new InteractionContainer()),
       ui_element_container_(new UiElementContainer()),
@@ -338,15 +338,14 @@ void AssistantBubbleView::SetProcessingUiElement(bool is_processing) {
 
 void AssistantBubbleView::ProcessPendingUiElements() {
   while (!is_processing_ui_element_ && !pending_ui_element_list_.empty()) {
-    const app_list::AssistantUiElement* ui_element =
-        pending_ui_element_list_.front();
+    const AssistantUiElement* ui_element = pending_ui_element_list_.front();
     pending_ui_element_list_.pop_front();
     OnUiElementAdded(ui_element);
   }
 }
 
 void AssistantBubbleView::OnUiElementAdded(
-    const app_list::AssistantUiElement* ui_element) {
+    const AssistantUiElement* ui_element) {
   // If we are processing a UI element we need to pend the incoming element
   // instead of handling it immediately.
   if (is_processing_ui_element_) {
@@ -355,13 +354,11 @@ void AssistantBubbleView::OnUiElementAdded(
   }
 
   switch (ui_element->GetType()) {
-    case app_list::AssistantUiElementType::kCard:
-      OnCardAdded(
-          static_cast<const app_list::AssistantCardElement*>(ui_element));
+    case AssistantUiElementType::kCard:
+      OnCardAdded(static_cast<const AssistantCardElement*>(ui_element));
       break;
-    case app_list::AssistantUiElementType::kText:
-      OnTextAdded(
-          static_cast<const app_list::AssistantTextElement*>(ui_element));
+    case AssistantUiElementType::kText:
+      OnTextAdded(static_cast<const AssistantTextElement*>(ui_element));
       break;
   }
 }
@@ -381,7 +378,7 @@ void AssistantBubbleView::OnUiElementsCleared() {
 }
 
 void AssistantBubbleView::OnCardAdded(
-    const app_list::AssistantCardElement* card_element) {
+    const AssistantCardElement* card_element) {
   DCHECK(!is_processing_ui_element_);
 
   // We need to pend any further UI elements until the card has been rendered.
@@ -431,7 +428,7 @@ void AssistantBubbleView::OnReleaseCards() {
   }
 }
 
-void AssistantBubbleView::OnQueryChanged(const app_list::Query& query) {
+void AssistantBubbleView::OnQueryChanged(const Query& query) {
   interaction_container_->SetQuery(query);
 }
 
@@ -457,7 +454,7 @@ void AssistantBubbleView::OnSuggestionChipPressed(
 }
 
 void AssistantBubbleView::OnTextAdded(
-    const app_list::AssistantTextElement* text_element) {
+    const AssistantTextElement* text_element) {
   DCHECK(!is_processing_ui_element_);
 
   ui_element_container_->AddText(text_element->GetText());

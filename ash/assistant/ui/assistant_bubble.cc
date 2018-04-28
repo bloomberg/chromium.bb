@@ -89,7 +89,7 @@ class AssistantContainerView : public views::BubbleDialogDelegateView {
     SetAnchorRect(anchor);
   }
 
-  app_list::AssistantController* assistant_controller_;  // Owned by Shell.
+  AshAssistantController* assistant_controller_;  // Owned by Shell.
 
   DISALLOW_COPY_AND_ASSIGN(AssistantContainerView);
 };
