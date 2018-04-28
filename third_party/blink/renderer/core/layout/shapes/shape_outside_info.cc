@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 
 #include <memory>
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/floating_objects.h"
@@ -49,10 +50,12 @@ CSSBoxType ReferenceBox(const ShapeValue& shape_value) {
 
 void ShapeOutsideInfo::SetReferenceBoxLogicalSize(
     LayoutSize new_reference_box_logical_size) {
+  const Document& document = layout_box_.GetDocument();
   bool is_horizontal_writing_mode =
       layout_box_.ContainingBlock()->Style()->IsHorizontalWritingMode();
   switch (ReferenceBox(*layout_box_.Style()->ShapeOutside())) {
     case CSSBoxType::kMargin:
+      UseCounter::Count(document, WebFeature::kShapeOutsideMarginBox);
       if (is_horizontal_writing_mode)
         new_reference_box_logical_size.Expand(layout_box_.MarginWidth(),
                                               layout_box_.MarginHeight());
@@ -61,8 +64,10 @@ void ShapeOutsideInfo::SetReferenceBoxLogicalSize(
                                               layout_box_.MarginWidth());
       break;
     case CSSBoxType::kBorder:
+      UseCounter::Count(document, WebFeature::kShapeOutsideBorderBox);
       break;
     case CSSBoxType::kPadding:
+      UseCounter::Count(document, WebFeature::kShapeOutsidePaddingBox);
       if (is_horizontal_writing_mode)
         new_reference_box_logical_size.Shrink(layout_box_.BorderWidth(),
                                               layout_box_.BorderHeight());
@@ -71,6 +76,7 @@ void ShapeOutsideInfo::SetReferenceBoxLogicalSize(
                                               layout_box_.BorderWidth());
       break;
     case CSSBoxType::kContent:
+      UseCounter::Count(document, WebFeature::kShapeOutsideContentBox);
       if (is_horizontal_writing_mode)
         new_reference_box_logical_size.Shrink(
             layout_box_.BorderAndPaddingWidth(),

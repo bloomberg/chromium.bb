@@ -1908,6 +1908,10 @@ enum WebFeature {
   kCredentialManagerGetPublicKeyCredential = 2422,
   kCredentialManagerMakePublicKeyCredentialSuccess = 2423,
   kCredentialManagerGetPublicKeyCredentialSuccess = 2424,
+  kShapeOutsideContentBox = 2425,
+  kShapeOutsidePaddingBox = 2426,
+  kShapeOutsideBorderBox = 2427,
+  kShapeOutsideMarginBox = 2428,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

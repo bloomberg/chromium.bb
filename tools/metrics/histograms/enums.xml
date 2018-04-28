@@ -18476,6 +18476,10 @@ Called by update_net_error_codes.py.-->
   <int value="2422" label="CredentialManagerGetPublicKeyCredential"/>
   <int value="2423" label="CredentialManagerMakePublicKeyCredentialSuccess"/>
   <int value="2424" label="CredentialManagerGetPublicKeyCredentialSuccess"/>
+  <int value="2425" label="ShapeOutsideContentBox"/>
+  <int value="2426" label="ShapeOutsidePaddingBox"/>
+  <int value="2427" label="ShapeOutsideBorderBox"/>
+  <int value="2428" label="ShapeOutsideMarginBox"/>
 </enum>
 
 <enum name="FeedbackSource">
