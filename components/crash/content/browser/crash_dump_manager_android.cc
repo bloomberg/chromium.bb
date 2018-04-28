@@ -34,11 +34,11 @@ base::LazyInstance<CrashDumpManager>::Leaky g_instance =
 CrashDumpManager::CrashDumpDetails::CrashDumpDetails(
     int process_host_id,
     content::ProcessType process_type,
-    base::TerminationStatus termination_status,
+    bool was_oom_protected_status,
     base::android::ApplicationState app_state)
     : process_host_id(process_host_id),
       process_type(process_type),
-      termination_status(termination_status),
+      was_oom_protected_status(was_oom_protected_status),
       app_state(app_state) {}
 
 CrashDumpManager::CrashDumpDetails::CrashDumpDetails() {}
@@ -48,7 +48,7 @@ CrashDumpManager::CrashDumpDetails::CrashDumpDetails(
     const CrashDumpManager::CrashDumpDetails& other)
     : CrashDumpDetails(other.process_host_id,
                        other.process_type,
-                       other.termination_status,
+                       other.was_oom_protected_status,
                        other.app_state) {
   file_size = other.file_size;
   status = other.status;
@@ -63,8 +63,7 @@ CrashDumpManager* CrashDumpManager::GetInstance() {
 bool CrashDumpManager::IsForegroundOom(const CrashDumpDetails& details) {
   // If the crash is size 0, it is an OOM.
   return details.process_type == content::PROCESS_TYPE_RENDERER &&
-         details.termination_status == base::TERMINATION_STATUS_OOM_PROTECTED &&
-         details.file_size == 0 &&
+         details.was_oom_protected_status && details.file_size == 0 &&
          details.app_state ==
              base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
 }
@@ -109,17 +108,14 @@ base::ScopedFD CrashDumpManager::CreateMinidumpFileForChild(
 
 void CrashDumpManager::ProcessMinidumpFileFromChild(
     base::FilePath crash_dump_dir,
-    int process_host_id,
-    content::ProcessType process_type,
-    base::TerminationStatus termination_status,
-    base::android::ApplicationState app_state) {
+    const CrashDumpObserver::TerminationInfo& info) {
   base::AssertBlockingAllowed();
-  CrashDumpDetails details(process_host_id, process_type, termination_status,
-                           app_state);
+  CrashDumpDetails details(info.process_host_id, info.process_type,
+                           info.was_oom_protected_status, info.app_state);
   base::FilePath minidump_path;
   // If the minidump for a given child process has already been
   // processed, then there is no more work to do.
-  if (!GetMinidumpPath(process_host_id, &minidump_path)) {
+  if (!GetMinidumpPath(info.process_host_id, &minidump_path)) {
     NotifyObservers(details);
     return;
   }
@@ -132,20 +128,19 @@ void CrashDumpManager::ProcessMinidumpFileFromChild(
   }
 
   int r = base::GetFileSize(minidump_path, &file_size);
-  DCHECK(r) << "Failed to retrieve size for minidump "
-            << minidump_path.value();
+  DCHECK(r) << "Failed to retrieve size for minidump " << minidump_path.value();
 
   // TODO(wnwen): If these numbers match up to TabWebContentsObserver's
   //     TabRendererCrashStatus histogram, then remove that one as this is more
   //     accurate with more detail.
-  if ((process_type == content::PROCESS_TYPE_RENDERER ||
-       process_type == content::PROCESS_TYPE_GPU) &&
-      app_state != base::android::APPLICATION_STATE_UNKNOWN) {
+  if ((info.process_type == content::PROCESS_TYPE_RENDERER ||
+       info.process_type == content::PROCESS_TYPE_GPU) &&
+      info.app_state != base::android::APPLICATION_STATE_UNKNOWN) {
     ExitStatus exit_status;
-    bool is_running =
-        (app_state == base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
-    bool is_paused =
-        (app_state == base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES);
+    bool is_running = (info.app_state ==
+                       base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
+    bool is_paused = (info.app_state ==
+                      base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES);
     if (file_size == 0) {
       if (is_running) {
         exit_status = EMPTY_MINIDUMP_WHILE_RUNNING;
@@ -163,17 +158,16 @@ void CrashDumpManager::ProcessMinidumpFileFromChild(
         exit_status = VALID_MINIDUMP_WHILE_BACKGROUND;
       }
     }
-    if (process_type == content::PROCESS_TYPE_RENDERER) {
-      if (termination_status == base::TERMINATION_STATUS_OOM_PROTECTED) {
-        UMA_HISTOGRAM_ENUMERATION("Tab.RendererDetailedExitStatus",
-                                  exit_status,
+    if (info.process_type == content::PROCESS_TYPE_RENDERER) {
+      if (info.was_oom_protected_status) {
+        UMA_HISTOGRAM_ENUMERATION("Tab.RendererDetailedExitStatus", exit_status,
                                   ExitStatus::MINIDUMP_STATUS_COUNT);
       } else {
         UMA_HISTOGRAM_ENUMERATION("Tab.RendererDetailedExitStatusUnbound",
                                   exit_status,
                                   ExitStatus::MINIDUMP_STATUS_COUNT);
       }
-    } else if (process_type == content::PROCESS_TYPE_GPU) {
+    } else if (info.process_type == content::PROCESS_TYPE_GPU) {
       UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessDetailedExitStatus", exit_status,
                                 ExitStatus::MINIDUMP_STATUS_COUNT);
     }
@@ -196,8 +190,9 @@ void CrashDumpManager::ProcessMinidumpFileFromChild(
     return;
   }
   const uint64_t rand = base::RandUint64();
-  const std::string filename = base::StringPrintf(
-      "chromium-renderer-minidump-%016" PRIx64 ".dmp%d", rand, process_host_id);
+  const std::string filename =
+      base::StringPrintf("chromium-renderer-minidump-%016" PRIx64 ".dmp%d",
+                         rand, info.process_host_id);
   base::FilePath dest_path = crash_dump_dir.Append(filename);
   r = base::Move(minidump_path, dest_path);
   if (!r) {

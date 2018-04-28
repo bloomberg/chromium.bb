@@ -96,8 +96,9 @@ class CompositorView : public content::CompositorClient,
   ~CompositorView() override;
 
   // content::BrowserChildProcessObserver implementation:
-  void BrowserChildProcessHostDisconnected(
-      const content::ChildProcessData& data) override;
+  void BrowserChildProcessKilled(
+      const content::ChildProcessData& data,
+      const content::ChildProcessTerminationInfo& info) override;
 
   void SetBackground(bool visible, SkColor color);
 

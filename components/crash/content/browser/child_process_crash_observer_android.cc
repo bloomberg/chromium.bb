@@ -35,11 +35,7 @@ void ChildProcessCrashObserver::OnChildStart(
 }
 
 void ChildProcessCrashObserver::OnChildExit(
-    int process_host_id,
-    base::ProcessHandle pid,
-    content::ProcessType process_type,
-    base::TerminationStatus termination_status,
-    base::android::ApplicationState app_state) {
+    const CrashDumpObserver::TerminationInfo& info) {
   // This might be called twice for a given child process, with a
   // NOTIFICATION_RENDERER_PROCESS_TERMINATED and then with
   // NOTIFICATION_RENDERER_PROCESS_CLOSED.
@@ -48,8 +44,7 @@ void ChildProcessCrashObserver::OnChildExit(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&CrashDumpManager::ProcessMinidumpFileFromChild,
                  base::Unretained(CrashDumpManager::GetInstance()),
-                 crash_dump_dir_, process_host_id, process_type,
-                 termination_status, app_state));
+                 crash_dump_dir_, info));
 }
 
 }  // namespace breakpad

@@ -82,11 +82,13 @@ void NotifyProcessHostDisconnected(const ChildProcessData& data) {
     observer.BrowserChildProcessHostDisconnected(data);
 }
 
+#if !defined(OS_ANDROID)
 void NotifyProcessCrashed(const ChildProcessData& data,
                           const ChildProcessTerminationInfo& info) {
   for (auto& observer : g_browser_child_process_observers.Get())
     observer.BrowserChildProcessCrashed(data, info);
 }
+#endif
 
 void NotifyProcessKilled(const ChildProcessData& data,
                          const ChildProcessTerminationInfo& info) {
@@ -431,6 +433,11 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
   if (child_process_.get() || data_.handle) {
     ChildProcessTerminationInfo info =
         GetTerminationInfo(true /* known_dead */);
+#if defined(OS_ANDROID)
+    delegate_->OnProcessCrashed(info.exit_code);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(&NotifyProcessKilled, data_, info));
+#else  // OS_ANDROID
     switch (info.status) {
       case base::TERMINATION_STATUS_PROCESS_CRASHED:
       case base::TERMINATION_STATUS_ABNORMAL_TERMINATION: {
@@ -443,9 +450,6 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
                                   PROCESS_TYPE_MAX);
         break;
       }
-#if defined(OS_ANDROID)
-      case base::TERMINATION_STATUS_OOM_PROTECTED:
-#endif
 #if defined(OS_CHROMEOS)
       case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
 #endif
@@ -469,6 +473,7 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
       default:
         break;
     }
+#endif  // OS_ANDROID
     UMA_HISTOGRAM_ENUMERATION("ChildProcess.Disconnected2",
                               static_cast<ProcessType>(data_.process_type),
                               PROCESS_TYPE_MAX);

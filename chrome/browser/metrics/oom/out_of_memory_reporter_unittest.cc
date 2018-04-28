@@ -144,9 +144,9 @@ class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
         crash_waiter.Wait();
     EXPECT_EQ(expect_oom, breakpad::CrashDumpManager::IsForegroundOom(details))
         << "process_type: " << details.process_type
-        << " termination_status: " << details.termination_status
         << " file_size: " << details.file_size
-        << " app_state: " << details.app_state;
+        << " app_state: " << details.app_state
+        << " was_oom_protected_status: " << details.was_oom_protected_status;
 
     // Since the observer list is not ordered, it isn't guaranteed that the
     // OutOfMemoryReporter will be notified at this point. Flush the current
