@@ -801,11 +801,15 @@ def FixClangXXWrapper(root, path):
   -) The difference this time is that inside the elf file execution, $0 is
      set as .../usr/bin/clang++-3.9.elf, which contains 'clang++' in the name.
 
+  Update: Starting since clang 7, the clang and clang++ are symlinks to
+  clang-7 binary, not clang-7.0. The pattern match is extended to handle
+  both clang-7 and clang-7.0 cases for now. (https://crbug.com/837889)
+
   Args:
     root: The root tree to generate scripts / symlinks inside of
     path: The target elf for which LdsoWrapper was created
   """
-  if re.match(r'/usr/bin/clang-\d+\.\d+$', path):
+  if re.match(r'/usr/bin/clang-\d+(\.\d+)*$', path):
     logging.info('fixing clang++ invocation for %s', path)
     clangdir = os.path.dirname(root + path)
     clang = os.path.basename(path)
