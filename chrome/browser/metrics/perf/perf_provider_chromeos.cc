@@ -203,21 +203,20 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
   using WeightAndValue = RandomSelector::WeightAndValue;
   std::vector<WeightAndValue> cmds;
   DCHECK_EQ(cpuid.arch, "x86_64");
-  const std::string intel_uarch = GetIntelUarch(cpuid);
+  const std::string cpu_uarch = GetCpuUarch(cpuid);
   // Haswell and newer big Intel cores support LBR callstack profiling. This
   // requires kernel support, which was added in kernel 4.4, and it was
   // backported to kernel 3.18. Prefer LBR callstack profiling where supported
   // instead of FP callchains, because the former works with binaries compiled
   // with frame pointers disabled, such as the ARC runtime.
   const char *callgraph_cmd = kPerfRecordFPCallgraphCmd;
-  if (MicroarchitectureHasLBRCallgraph(intel_uarch) &&
+  if (MicroarchitectureHasLBRCallgraph(cpu_uarch) &&
       KernelReleaseHasLBRCallgraph(cpuid.release)) {
     callgraph_cmd = kPerfRecordLBRCallgraphCmd;
   }
 
-  if (intel_uarch == "IvyBridge" ||
-      intel_uarch == "Haswell" ||
-      intel_uarch == "Broadwell") {
+  if (cpu_uarch == "IvyBridge" || cpu_uarch == "Haswell" ||
+      cpu_uarch == "Broadwell") {
     cmds.push_back(WeightAndValue(45.0, kPerfRecordCyclesCmd));
     cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
     cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmd));
@@ -227,8 +226,8 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
     cmds.push_back(WeightAndValue(5.0, kPerfRecordCacheMissesCmd));
     return cmds;
   }
-  if (intel_uarch == "SandyBridge" || intel_uarch == "Skylake" ||
-      intel_uarch == "Kabylake") {
+  if (cpu_uarch == "SandyBridge" || cpu_uarch == "Skylake" ||
+      cpu_uarch == "Kabylake") {
     cmds.push_back(WeightAndValue(50.0, kPerfRecordCyclesCmd));
     cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
     cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmd));
@@ -237,8 +236,8 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
     cmds.push_back(WeightAndValue(5.0, kPerfRecordCacheMissesCmd));
     return cmds;
   }
-  if (intel_uarch == "Silvermont" || intel_uarch == "Airmont" ||
-      intel_uarch == "Goldmont") {
+  if (cpu_uarch == "Silvermont" || cpu_uarch == "Airmont" ||
+      cpu_uarch == "Goldmont") {
     cmds.push_back(WeightAndValue(50.0, kPerfRecordCyclesCmd));
     cmds.push_back(WeightAndValue(20.0, callgraph_cmd));
     cmds.push_back(WeightAndValue(15.0, kPerfRecordLBRCmdAtom));
@@ -401,7 +400,7 @@ std::string FindBestCpuSpecifierFromParams(
   };
   MatchSpecificity match_level = NO_MATCH;
 
-  const std::string intel_uarch = GetIntelUarch(cpuid);
+  const std::string cpu_uarch = GetCpuUarch(cpuid);
   const std::string simplified_cpu_model =
       SimplifyCPUModelName(cpuid.model_name);
 
@@ -420,8 +419,8 @@ std::string FindBestCpuSpecifierFromParams(
       match_level = SYSTEM_ARCH;
       ret = cpu_specifier;
     }
-    if (match_level < CPU_UARCH &&
-        !intel_uarch.empty() && cpu_specifier == intel_uarch) {
+    if (match_level < CPU_UARCH && !cpu_uarch.empty() &&
+        cpu_specifier == cpu_uarch) {
       match_level = CPU_UARCH;
       ret = cpu_specifier;
     }

@@ -15,7 +15,7 @@
 
 namespace internal {
 
-const IntelUarchTableEntry kIntelUarchTable[] = {
+const CpuUarchTableEntry kCpuUarchTable[] = {
     // These were found on various sources on the Internet. Main ones are:
     // http://instlatx64.atw.hu/ for CPUID to model name and
     // http://www.cpu-world.com for model name to microarchitecture
@@ -61,11 +61,11 @@ const IntelUarchTableEntry kIntelUarchTable[] = {
     {"0F_06", "Presler"},
 };
 
-const IntelUarchTableEntry* kIntelUarchTableEnd =
-    kIntelUarchTable + arraysize(kIntelUarchTable);
+const CpuUarchTableEntry* kCpuUarchTableEnd =
+    kCpuUarchTable + arraysize(kCpuUarchTable);
 
-bool IntelUarchTableCmp(const IntelUarchTableEntry& a,
-                        const IntelUarchTableEntry& b) {
+bool CpuUarchTableCmp(const CpuUarchTableEntry& a,
+                      const CpuUarchTableEntry& b) {
   return strcmp(a.family_model, b.family_model) < 0;
 }
 
@@ -77,16 +77,16 @@ CPUIdentity::CPUIdentity(const CPUIdentity& other) = default;
 
 CPUIdentity::~CPUIdentity() {}
 
-std::string GetIntelUarch(const CPUIdentity& cpuid) {
+std::string GetCpuUarch(const CPUIdentity& cpuid) {
   if (cpuid.vendor != "GenuineIntel")
     return std::string();  // Non-Intel
 
   std::string family_model =
       base::StringPrintf("%02X_%02X", cpuid.family, cpuid.model);
-  const internal::IntelUarchTableEntry search_elem = {family_model.c_str(), ""};
-  auto* bound = std::lower_bound(internal::kIntelUarchTable,
-                                 internal::kIntelUarchTableEnd, search_elem,
-                                 internal::IntelUarchTableCmp);
+  const internal::CpuUarchTableEntry search_elem = {family_model.c_str(), ""};
+  auto* bound = std::lower_bound(internal::kCpuUarchTable,
+                                 internal::kCpuUarchTableEnd, search_elem,
+                                 internal::CpuUarchTableCmp);
   if (bound->family_model != family_model)
     return std::string();  // Unknown uarch
   return bound->uarch;
