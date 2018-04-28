@@ -75,3 +75,28 @@ class BuildSummaryTests(cros_test_lib.TestCase):
     # pylint: disable=protected-access
     self.assertSetEqual(set(vars(summary).keys()),
                         set(summary._PERSIST_ATTRIBUTES))
+
+  def testBuildSummary(self):
+    summary = build_summary.BuildSummary()
+    description = summary.build_description()
+    self.assertEqual(description, 'local build')
+
+    # buildbucket_id string
+    summary = build_summary.BuildSummary(buildbucket_id='bb_id')
+    description = summary.build_description()
+    self.assertEqual(description, 'buildbucket_id=bb_id')
+
+    # buildbucket_id int (can this really happen)
+    summary = build_summary.BuildSummary(buildbucket_id=1234)
+    description = summary.build_description()
+    self.assertEqual(description, 'buildbucket_id=1234')
+
+    # build_number int.
+    summary = build_summary.BuildSummary(build_number=12)
+    description = summary.build_description()
+    self.assertEqual(description, 'build_number=12')
+
+    # build_number str.
+    summary = build_summary.BuildSummary(build_number='12')
+    description = summary.build_description()
+    self.assertEqual(description, 'build_number=12')

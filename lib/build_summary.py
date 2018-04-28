@@ -117,7 +117,7 @@ class BuildSummary(object):
       String describing which build id is set, or "local build" if none are set.
     """
     if self.buildbucket_id:
-      return 'buildbucket_id=' + self.buildbucket_id
+      return 'buildbucket_id=%s' % self.buildbucket_id
     if self.build_number:
-      return 'build_number=' + self.build_number
+      return 'build_number=%s' % self.build_number
     return 'local build'
