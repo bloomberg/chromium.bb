@@ -11,6 +11,7 @@ goog.provide('Output.EventType');
 
 goog.require('AutomationTreeWalker');
 goog.require('EarconEngine');
+goog.require('EventSourceState');
 goog.require('Spannable');
 goog.require('constants');
 goog.require('cursors.Cursor');
@@ -1010,7 +1011,7 @@ Output.prototype = {
     else
       this.range_(range, prevRange, type, buff);
 
-    this.hint_(range, uniqueAncestors, buff);
+    this.hint_(range, uniqueAncestors, type, buff);
   },
 
   /**
@@ -1776,7 +1777,16 @@ Output.prototype = {
       this.locations_.push(loc);
   },
 
-  hint_: function(range, uniqueAncestors, buff) {
+  /**
+   * Renders the given range using optional context previous range and event
+   * type.
+   * @param {!cursors.Range} range
+   * @param {!Array<AutomationNode>} uniqueAncestors
+   * @param {EventType|Output.EventType} type
+   * @param {!Array<Spannable>} buff Buffer to receive rendered output.
+   * @private
+   */
+  hint_: function(range, uniqueAncestors, type, buff) {
     if (!this.enableHints_ || localStorage['useVerboseMode'] != 'true')
       return;
 
@@ -1789,6 +1799,13 @@ Output.prototype = {
     // Add hints by priority.
     if (node.restriction == chrome.automation.Restriction.DISABLED) {
       // No hints here without further context such as form validation.
+      return;
+    }
+
+    if (type == EventType.HOVER ||
+        EventSourceState.get() == EventSourceType.TOUCH_GESTURE) {
+      if (node.defaultActionVerb != 'none')
+        this.format_(node, '@hint_double_tap', buff);
       return;
     }
 

@@ -2834,6 +2834,9 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="A hint to the user about the special behavior of the Search key with arrows within a text field. This text will be spoken using text to speech along with a description of the text field's name and value. The text is intentionally in fragments to reduce the time needed to convey this information via text to speech. Keys are capitalized and do not contain plus separators because it adds to the spoken announcement's duration. As a general guide, try to read the string aloud." name="IDS_CHROMEVOX_HINT_SEARCH_WITHIN_TEXT_FIELD">
         Use Search Left or Right for Home or End, Search Control Left or Right for Control Home or End, Search Up or Down for Page Up or Down.
       </message>
+      <message desc="A hint to the user controls that can be double tapped." name="IDS_CHROMEVOX_HINT_DOUBLE_TAP">
+        Double tap to activate
+      </message>
     </messages>
   </release>
 </grit>
