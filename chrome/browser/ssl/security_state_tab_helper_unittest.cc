@@ -145,7 +145,7 @@ TEST_P(SecurityStateTabHelperHistogramTest, FormSubmissionHistogram) {
   base::HistogramTester histograms;
   StartFormSubmissionNavigation();
   histograms.ExpectUniqueSample(kFormSubmissionSecurityLevelHistogram,
-                                security_state::NONE, 1);
+                                security_state::HTTP_SHOW_WARNING, 1);
 }
 
 // Tests that UMA logs the omnibox warning when security level is

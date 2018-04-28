@@ -38,11 +38,6 @@ void SetSecurityLevelAndRelatedFieldsForNonSecureFieldTrial(
       return;
     }
 
-    if (parameter == features::kMarkHttpAsParameterWarning) {
-      security_info->security_level = HTTP_SHOW_WARNING;
-      return;
-    }
-
     if (parameter ==
         features::kMarkHttpAsParameterWarningAndDangerousOnFormEdits) {
       security_info->security_level =
@@ -63,6 +58,11 @@ void SetSecurityLevelAndRelatedFieldsForNonSecureFieldTrial(
                                           : HTTP_SHOW_WARNING;
       return;
     }
+
+    // By default, if the feature is enabled, show a warning on all http://
+    // pages.
+    security_info->security_level = HTTP_SHOW_WARNING;
+    return;
   }
 
   // No warning treatment is configured via field trial. Default to warning on

@@ -55,7 +55,7 @@ TEST_F(IOSSecurityStateTabHelperIncognitoTest, SecurityInfoDowngradedForHTTP) {
   LoadHtml(@"<html><body></body></html>", GURL("http://chromium.test"));
   security_state::SecurityInfo security_info;
   GetSecurityInfo(&security_info);
-  EXPECT_TRUE(security_info.incognito_downgraded_security_level);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
 }
 
 // This test fixture creates an IOSSecurityStateTabHelper and an
