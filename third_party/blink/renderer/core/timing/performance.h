@@ -52,6 +52,8 @@ namespace blink {
 
 class DoubleOrPerformanceMarkOptions;
 class ExceptionState;
+class MemoryInfo;
+class PerformanceNavigation;
 class PerformanceObserver;
 class PerformanceTiming;
 class ResourceResponse;
@@ -66,12 +68,17 @@ class V8ObjectBuilder;
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 
 class CORE_EXPORT Performance : public EventTargetWithInlineData {
+  DEFINE_WRAPPERTYPEINFO();
+
  public:
   ~Performance() override;
 
   const AtomicString& InterfaceName() const override;
 
+  // Overriden by WindowPerformance but not by WorkerPerformance.
   virtual PerformanceTiming* timing() const;
+  virtual PerformanceNavigation* navigation() const;
+  virtual MemoryInfo* memory() const;
 
   virtual void UpdateLongTaskInstrumentation() {}
 
@@ -228,7 +235,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   Performance(TimeTicks time_origin,
               scoped_refptr<base::SingleThreadTaskRunner>);
 
-  // Expect Performance to override this method,
+  // Expect WindowPerformance to override this method,
   // WorkerPerformance doesn't have to override this.
   virtual PerformanceNavigationTiming* CreateNavigationTimingInstance() {
     return nullptr;

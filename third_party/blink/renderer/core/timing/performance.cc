@@ -111,6 +111,14 @@ PerformanceTiming* Performance::timing() const {
   return nullptr;
 }
 
+PerformanceNavigation* Performance::navigation() const {
+  return nullptr;
+}
+
+MemoryInfo* Performance::memory() const {
+  return nullptr;
+}
+
 DOMHighResTimeStamp Performance::timeOrigin() const {
   DCHECK(!time_origin_.is_null());
   return GetUnixAtZeroMonotonic() +

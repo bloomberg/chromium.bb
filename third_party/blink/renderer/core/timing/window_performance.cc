@@ -120,8 +120,11 @@ ExecutionContext* WindowPerformance::GetExecutionContext() const {
   return GetFrame()->GetDocument();
 }
 
-MemoryInfo* WindowPerformance::memory() {
-  return MemoryInfo::Create();
+PerformanceTiming* WindowPerformance::timing() const {
+  if (!timing_)
+    timing_ = PerformanceTiming::Create(GetFrame());
+
+  return timing_.Get();
 }
 
 PerformanceNavigation* WindowPerformance::navigation() const {
@@ -131,11 +134,8 @@ PerformanceNavigation* WindowPerformance::navigation() const {
   return navigation_.Get();
 }
 
-PerformanceTiming* WindowPerformance::timing() const {
-  if (!timing_)
-    timing_ = PerformanceTiming::Create(GetFrame());
-
-  return timing_.Get();
+MemoryInfo* WindowPerformance::memory() const {
+  return MemoryInfo::Create();
 }
 
 PerformanceNavigationTiming*

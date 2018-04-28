@@ -45,7 +45,6 @@ namespace blink {
 class CORE_EXPORT WindowPerformance final : public Performance,
                                             public PerformanceMonitor::Client,
                                             public DOMWindowClient {
-  DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(WindowPerformance);
   friend class WindowPerformanceTest;
 
@@ -57,9 +56,10 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   ExecutionContext* GetExecutionContext() const override;
 
-  MemoryInfo* memory();
-  PerformanceNavigation* navigation() const;
   PerformanceTiming* timing() const override;
+  PerformanceNavigation* navigation() const override;
+
+  MemoryInfo* memory() const override;
 
   void UpdateLongTaskInstrumentation() override;
 

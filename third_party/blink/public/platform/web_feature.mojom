@@ -59,8 +59,6 @@ enum WebFeature {
   kDeprecatedFlexboxWebContent = 61,
   kDeprecatedFlexboxChrome = 62,
   kDeprecatedFlexboxChromeExtension = 63,
-  kUnprefixedPerformanceTimeline = 65,
-  kUnprefixedUserTiming = 67,
   kWindowEvent = 69,
   kContentSecurityPolicyWithBaseElement = 70,
   kDocumentClear = 74,
@@ -1912,6 +1910,8 @@ enum WebFeature {
   kShapeOutsidePaddingBox = 2426,
   kShapeOutsideBorderBox = 2427,
   kShapeOutsideMarginBox = 2428,
+  kPerformanceTimeline = 2429,
+  kUserTiming = 2430,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

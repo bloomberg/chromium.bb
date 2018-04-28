@@ -979,6 +979,23 @@ interface PaymentRequestEvent : ExtendableEvent
     method constructor
     method openWindow
     method respondWith
+interface Performance : EventTarget
+    attribute @@toStringTag
+    getter onresourcetimingbufferfull
+    getter timeOrigin
+    method clearMarks
+    method clearMeasures
+    method clearResourceTimings
+    method constructor
+    method getEntries
+    method getEntriesByName
+    method getEntriesByType
+    method mark
+    method measure
+    method now
+    method setResourceTimingBufferSize
+    method toJSON
+    setter onresourcetimingbufferfull
 interface PerformanceEntry
     attribute @@toStringTag
     getter duration

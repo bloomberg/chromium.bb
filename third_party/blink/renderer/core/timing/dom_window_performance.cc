@@ -6,7 +6,6 @@
 
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/timing/window_performance.h"
 
 namespace blink {
 
