@@ -427,8 +427,8 @@ void AuthenticatorImpl::MakeCredential(
     return;
   }
 
-  if (GetContentClient()->browser()->ShouldEnforceFocusChecksForWebauthn() &&
-      !render_frame_host_->GetView()->HasFocus()) {
+  if (!GetContentClient()->browser()->IsFocused(
+          WebContents::FromRenderFrameHost(render_frame_host_))) {
     std::move(callback).Run(webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
                             nullptr);
     return;
@@ -442,7 +442,8 @@ void AuthenticatorImpl::MakeCredential(
                                     bad_message::AUTH_INVALID_EFFECTIVE_DOMAIN);
     InvokeCallbackAndCleanup(
         std::move(callback),
-        webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN, nullptr);
+        webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN, nullptr,
+        Focus::kDontCheck);
     return;
   }
 
@@ -451,7 +452,8 @@ void AuthenticatorImpl::MakeCredential(
                                     bad_message::AUTH_INVALID_RELYING_PARTY);
     InvokeCallbackAndCleanup(
         std::move(callback),
-        webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN, nullptr);
+        webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN, nullptr,
+        Focus::kDontCheck);
     return;
   }
 
@@ -463,7 +465,7 @@ void AuthenticatorImpl::MakeCredential(
     InvokeCallbackAndCleanup(
         std::move(callback),
         webauth::mojom::AuthenticatorStatus::AUTHENTICATOR_CRITERIA_UNSUPPORTED,
-        nullptr);
+        nullptr, Focus::kDontCheck);
     return;
   }
 
@@ -472,7 +474,8 @@ void AuthenticatorImpl::MakeCredential(
           options->public_key_parameters)) {
     InvokeCallbackAndCleanup(
         std::move(callback),
-        webauth::mojom::AuthenticatorStatus::ALGORITHM_UNSUPPORTED, nullptr);
+        webauth::mojom::AuthenticatorStatus::ALGORITHM_UNSUPPORTED, nullptr,
+        Focus::kDontCheck);
     return;
   }
 
@@ -544,13 +547,6 @@ void AuthenticatorImpl::GetAssertion(
   if (u2f_request_ || ctap_request_) {
     std::move(callback).Run(
         webauth::mojom::AuthenticatorStatus::PENDING_REQUEST, nullptr);
-    return;
-  }
-
-  if (GetContentClient()->browser()->ShouldEnforceFocusChecksForWebauthn() &&
-      !render_frame_host_->GetView()->HasFocus()) {
-    std::move(callback).Run(webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
-                            nullptr);
     return;
   }
 
@@ -702,13 +698,15 @@ void AuthenticatorImpl::OnRegisterResponse(
       // |exclude_credentials|.
       InvokeCallbackAndCleanup(
           std::move(make_credential_response_callback_),
-          webauth::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED, nullptr);
+          webauth::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED, nullptr,
+          Focus::kDoCheck);
       return;
     case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
       InvokeCallbackAndCleanup(
           std::move(make_credential_response_callback_),
-          webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
+          webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
+          Focus::kDoCheck);
       return;
     case device::FidoReturnCode::kUserConsentButCredentialNotRecognized:
       NOTREACHED();
@@ -718,8 +716,17 @@ void AuthenticatorImpl::OnRegisterResponse(
 
       if (attestation_preference_ !=
           webauth::mojom::AttestationConveyancePreference::NONE) {
-        // Potentially show a permission prompt before returning the
-        // attestation data.
+        // Check for focus before (potentially) showing a permissions bubble
+        // that might take focus.
+        if (!GetContentClient()->browser()->IsFocused(
+                WebContents::FromRenderFrameHost(render_frame_host_))) {
+          InvokeCallbackAndCleanup(
+              std::move(make_credential_response_callback_),
+              webauth::mojom::AuthenticatorStatus::NOT_FOCUSED, nullptr,
+              Focus::kDontCheck);
+          return;
+        }
+
         GetContentClient()->browser()->ShouldReturnAttestationForWebauthnRPID(
             render_frame_host_, relying_party_id_,
             render_frame_host_->GetLastCommittedOrigin(),
@@ -734,7 +741,8 @@ void AuthenticatorImpl::OnRegisterResponse(
           std::move(make_credential_response_callback_),
           webauth::mojom::AuthenticatorStatus::SUCCESS,
           CreateMakeCredentialResponse(std::move(client_data_json_),
-                                       std::move(*response_data)));
+                                       std::move(*response_data)),
+          Focus::kDoCheck);
       return;
   }
   NOTREACHED();
@@ -752,10 +760,15 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
     return;
   }
 
+  // At this point, the final focus check has already been done because it's
+  // possible that a permissions bubble might have focus and thus, if we did a
+  // focus check, it would (incorrectly) fail.
+
   if (!attestation_permitted) {
     InvokeCallbackAndCleanup(
         std::move(make_credential_response_callback_),
-        webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
+        webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
+        Focus::kDontCheck);
     return;
   }
 
@@ -786,7 +799,8 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
       std::move(make_credential_response_callback_),
       webauth::mojom::AuthenticatorStatus::SUCCESS,
       CreateMakeCredentialResponse(std::move(client_data_json_),
-                                   std::move(response_data)));
+                                   std::move(response_data)),
+      Focus::kDontCheck);
 }
 
 void AuthenticatorImpl::OnSignResponse(
@@ -811,7 +825,7 @@ void AuthenticatorImpl::OnSignResponse(
     case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
       InvokeCallbackAndCleanup(
-          std::move(make_credential_response_callback_),
+          std::move(get_assertion_response_callback_),
           webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
       return;
     case device::FidoReturnCode::kUserConsentButCredentialExcluded:
@@ -838,7 +852,8 @@ void AuthenticatorImpl::OnTimeout() {
   if (make_credential_response_callback_) {
     InvokeCallbackAndCleanup(
         std::move(make_credential_response_callback_),
-        webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
+        webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
+        Focus::kDontCheck);
   } else if (get_assertion_response_callback_) {
     InvokeCallbackAndCleanup(
         std::move(get_assertion_response_callback_),
@@ -849,9 +864,11 @@ void AuthenticatorImpl::OnTimeout() {
 void AuthenticatorImpl::InvokeCallbackAndCleanup(
     MakeCredentialCallback callback,
     webauth::mojom::AuthenticatorStatus status,
-    webauth::mojom::MakeCredentialAuthenticatorResponsePtr response) {
-  if (GetContentClient()->browser()->ShouldEnforceFocusChecksForWebauthn() &&
-      !render_frame_host_->GetView()->HasFocus()) {
+    webauth::mojom::MakeCredentialAuthenticatorResponsePtr response,
+    Focus check_focus) {
+  if (check_focus != Focus::kDontCheck &&
+      !GetContentClient()->browser()->IsFocused(
+          WebContents::FromRenderFrameHost(render_frame_host_))) {
     std::move(callback).Run(webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
                             nullptr);
   } else {
@@ -865,14 +882,7 @@ void AuthenticatorImpl::InvokeCallbackAndCleanup(
     GetAssertionCallback callback,
     webauth::mojom::AuthenticatorStatus status,
     webauth::mojom::GetAssertionAuthenticatorResponsePtr response) {
-  if (GetContentClient()->browser()->ShouldEnforceFocusChecksForWebauthn() &&
-      !render_frame_host_->GetView()->HasFocus()) {
-    std::move(callback).Run(webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
-                            nullptr);
-  } else {
-    std::move(callback).Run(status, std::move(response));
-  }
-
+  std::move(callback).Run(status, std::move(response));
   Cleanup();
 }
 
