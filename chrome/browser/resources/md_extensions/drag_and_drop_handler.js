@@ -7,26 +7,18 @@ cr.define('extensions', function() {
 
   /**
    * @param {boolean} dragEnabled
-   * @param {boolean} isMdExtensions
    * @param {!EventTarget} target
    * @constructor
    * @implements cr.ui.DragWrapperDelegate
    */
-  function DragAndDropHandler(dragEnabled, isMdExtensions, target) {
+  function DragAndDropHandler(dragEnabled, target) {
     this.dragEnabled = dragEnabled;
-
-    // Behavior is different for dropped directories between MD and non-MD
-    // extensions pages.
-    // TODO(devlin): Delete the non-MD codepath and remove this variable when
-    // MD extensions launches.
-    /** @private {boolean} */
-    this.isMdExtensions_ = isMdExtensions;
 
     /** @private {!EventTarget} */
     this.eventTarget_ = target;
   }
 
-  // TODO(devlin): Finish un-chrome.send-ifying this implementation.
+  // TODO(devlin): Convert this to an ES6 class.
   DragAndDropHandler.prototype = {
     /** @override */
     shouldAcceptDrag: function(e) {
@@ -45,10 +37,7 @@ cr.define('extensions', function() {
 
     /** @override */
     doDragEnter: function() {
-      chrome.send('startDrag');
-      if (this.isMdExtensions_)
-        chrome.developerPrivate.notifyDragInstallInProgress();
-
+      chrome.developerPrivate.notifyDragInstallInProgress();
       this.eventTarget_.dispatchEvent(
           new CustomEvent('extension-drag-started'));
     },
@@ -56,7 +45,6 @@ cr.define('extensions', function() {
     /** @override */
     doDragLeave: function() {
       this.fireDragEnded_();
-      chrome.send('stopDrag');
     },
 
     /** @override */
@@ -94,8 +82,7 @@ cr.define('extensions', function() {
      * @private
      */
     handleFileDrop_: function() {
-      // Packaged files always go through chrome.send (for now).
-      chrome.send('installDroppedFile');
+      chrome.developerPrivate.installDroppedFile();
     },
 
     /**
@@ -103,13 +90,6 @@ cr.define('extensions', function() {
      * @private
      */
     handleDirectoryDrop_: function() {
-      // Dropped directories either go through developerPrivate or chrome.send
-      // depending on if this is the MD page.
-      if (!this.isMdExtensions_) {
-        chrome.send('installDroppedDirectory');
-        return;
-      }
-
       // TODO(devlin): Update this to use extensions.Service when it's not
       // shared between the MD and non-MD pages.
       chrome.developerPrivate.loadUnpacked(
