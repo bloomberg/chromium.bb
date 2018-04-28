@@ -18,15 +18,10 @@ enum class EmeInitDataType { UNKNOWN, WEBM, CENC, KEYIDS, MAX = KEYIDS };
 
 // Defines bitmask values that specify codecs used in Encrypted Media Extension
 // (EME). Each value represents a codec within a specific container.
-// The mask values are stored in a SupportedCodecs.
 //
 // TODO(yucliu): Remove container name from the enum. See crbug.com/724362 for
 // more details.
-// TODO(xhwang): Use constexpr to construct this list. The current code is too
-// hard to read and maintain.
-enum EmeCodec {
-  // *_ALL values should only be used for masking, do not use them to specify
-  // codec support because they may be extended to include more codecs.
+enum EmeCodec : uint32_t {
   EME_CODEC_NONE = 0,
   EME_CODEC_WEBM_OPUS = 1 << 0,
   EME_CODEC_WEBM_VORBIS = 1 << 1,
@@ -41,51 +36,74 @@ enum EmeCodec {
   EME_CODEC_MP4_DV_HEVC = 1 << 9,
   EME_CODEC_MP4_AC3 = 1 << 10,
   EME_CODEC_MP4_EAC3 = 1 << 11,
-  EME_CODEC_WEBM_AUDIO_ALL = EME_CODEC_WEBM_OPUS | EME_CODEC_WEBM_VORBIS,
-  EME_CODEC_WEBM_VIDEO_ALL =
-      (EME_CODEC_WEBM_VP8 | EME_CODEC_WEBM_VP9 | EME_CODEC_COMMON_VP9),
-  EME_CODEC_WEBM_ALL = (EME_CODEC_WEBM_AUDIO_ALL | EME_CODEC_WEBM_VIDEO_ALL),
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  EME_CODEC_MP4_AUDIO_ALL = (EME_CODEC_MP4_AAC
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
-                             | EME_CODEC_MP4_AC3 | EME_CODEC_MP4_EAC3
-#endif  // BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
-                             ),
-  EME_CODEC_MP4_VIDEO_ALL = (EME_CODEC_MP4_AVC1 | EME_CODEC_COMMON_VP9
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-                             | EME_CODEC_MP4_HEVC
-#endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
-#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
-                             | EME_CODEC_MP4_DV_AVC
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-                             | EME_CODEC_MP4_DV_HEVC
-#endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
-#endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
-                             ),
-  EME_CODEC_MP4_ALL = (EME_CODEC_MP4_AUDIO_ALL | EME_CODEC_MP4_VIDEO_ALL),
-#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
-  EME_CODEC_MP2T_VIDEO_ALL = EME_CODEC_MP4_AVC1,
-  EME_CODEC_MP2T_ALL = EME_CODEC_MP2T_VIDEO_ALL,
-  EME_CODEC_AUDIO_ALL = (EME_CODEC_WEBM_AUDIO_ALL | EME_CODEC_MP4_AUDIO_ALL),
-  EME_CODEC_VIDEO_ALL = (EME_CODEC_WEBM_VIDEO_ALL | EME_CODEC_MP4_VIDEO_ALL |
-                         EME_CODEC_MP2T_VIDEO_ALL),
-  EME_CODEC_ALL = (EME_CODEC_WEBM_ALL | EME_CODEC_MP4_ALL | EME_CODEC_MP2T_ALL),
-#else
-  EME_CODEC_AUDIO_ALL = (EME_CODEC_WEBM_AUDIO_ALL | EME_CODEC_MP4_AUDIO_ALL),
-  EME_CODEC_VIDEO_ALL = (EME_CODEC_WEBM_VIDEO_ALL | EME_CODEC_MP4_VIDEO_ALL),
-  EME_CODEC_ALL = (EME_CODEC_WEBM_ALL | EME_CODEC_MP4_ALL),
-#endif  // BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
-#else
-  EME_CODEC_MP4_AUDIO_ALL = EME_CODEC_NONE,
-  EME_CODEC_MP4_VIDEO_ALL = EME_CODEC_COMMON_VP9,
-  EME_CODEC_MP4_ALL = (EME_CODEC_MP4_AUDIO_ALL | EME_CODEC_MP4_VIDEO_ALL),
-  EME_CODEC_AUDIO_ALL = EME_CODEC_WEBM_AUDIO_ALL | EME_CODEC_MP4_AUDIO_ALL,
-  EME_CODEC_VIDEO_ALL = EME_CODEC_WEBM_VIDEO_ALL | EME_CODEC_MP4_VIDEO_ALL,
-  EME_CODEC_ALL = EME_CODEC_WEBM_ALL | EME_CODEC_MP4_ALL,
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 };
 
-typedef uint32_t SupportedCodecs;
+// *_ALL values should only be used for masking, do not use them to specify
+// codec support because they may be extended to include more codecs.
+
+using SupportedCodecs = uint32_t;
+
+constexpr SupportedCodecs GetMp4AudioCodecs() {
+  SupportedCodecs codecs = EME_CODEC_NONE;
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+  codecs |= EME_CODEC_MP4_AAC;
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+  codecs |= EME_CODEC_MP4_AC3 | EME_CODEC_MP4_EAC3;
+#endif  // BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+  return codecs;
+}
+
+constexpr SupportedCodecs GetMp4VideoCodecs() {
+  SupportedCodecs codecs = EME_CODEC_COMMON_VP9;
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+  codecs |= EME_CODEC_MP4_AVC1;
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  codecs |= EME_CODEC_MP4_HEVC;
+#endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+  codecs |= EME_CODEC_MP4_DV_AVC;
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  codecs |= EME_CODEC_MP4_DV_HEVC;
+#endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+  return codecs;
+}
+
+constexpr SupportedCodecs EME_CODEC_WEBM_AUDIO_ALL =
+    EME_CODEC_WEBM_OPUS | EME_CODEC_WEBM_VORBIS;
+
+constexpr SupportedCodecs EME_CODEC_WEBM_VIDEO_ALL =
+    EME_CODEC_WEBM_VP8 | EME_CODEC_WEBM_VP9 | EME_CODEC_COMMON_VP9;
+
+constexpr SupportedCodecs EME_CODEC_WEBM_ALL =
+    EME_CODEC_WEBM_AUDIO_ALL | EME_CODEC_WEBM_VIDEO_ALL;
+
+constexpr SupportedCodecs EME_CODEC_MP4_AUDIO_ALL = GetMp4AudioCodecs();
+constexpr SupportedCodecs EME_CODEC_MP4_VIDEO_ALL = GetMp4VideoCodecs();
+
+constexpr SupportedCodecs EME_CODEC_MP4_ALL =
+    EME_CODEC_MP4_AUDIO_ALL | EME_CODEC_MP4_VIDEO_ALL;
+
+constexpr SupportedCodecs EME_CODEC_AUDIO_ALL =
+    EME_CODEC_WEBM_AUDIO_ALL | EME_CODEC_MP4_AUDIO_ALL;
+
+constexpr SupportedCodecs EME_CODEC_VIDEO_ALL =
+    EME_CODEC_WEBM_VIDEO_ALL | EME_CODEC_MP4_VIDEO_ALL;
+
+constexpr SupportedCodecs EME_CODEC_ALL =
+    EME_CODEC_WEBM_ALL | EME_CODEC_MP4_ALL;
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
+constexpr SupportedCodecs EME_CODEC_MP2T_VIDEO_ALL = EME_CODEC_MP4_AVC1;
+static_assert(
+    (EME_CODEC_MP2T_VIDEO_ALL & EME_CODEC_VIDEO_ALL) ==
+        EME_CODEC_MP2T_VIDEO_ALL,
+    "EME_CODEC_MP2T_VIDEO_ALL should be a subset of EME_CODEC_MP4_ALL");
+#endif  // BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 enum class EmeSessionTypeSupport {
   // Invalid default value.
