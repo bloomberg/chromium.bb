@@ -307,6 +307,16 @@ WindowSelectorItem::OverviewCloseButton::OverviewCloseButton(
 
 WindowSelectorItem::OverviewCloseButton::~OverviewCloseButton() = default;
 
+std::unique_ptr<views::InkDrop>
+WindowSelectorItem::OverviewCloseButton::CreateInkDrop() {
+  std::unique_ptr<views::InkDropImpl> ink_drop =
+      std::make_unique<views::InkDropImpl>(this, size());
+  ink_drop->SetAutoHighlightMode(
+      views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
+  ink_drop->SetShowHighlightOnHover(true);
+  return ink_drop;
+}
+
 std::unique_ptr<views::InkDropRipple>
 WindowSelectorItem::OverviewCloseButton::CreateInkDropRipple() const {
   return std::make_unique<views::FloodFillInkDropRipple>(

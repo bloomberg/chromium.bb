@@ -49,7 +49,8 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
     void ResetListener() { listener_ = nullptr; }
 
    protected:
-    // views::ImageButton:
+    // views::Button:
+    std::unique_ptr<views::InkDrop> CreateInkDrop() override;
     std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
     std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
         const override;
