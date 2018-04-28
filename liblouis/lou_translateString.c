@@ -50,7 +50,7 @@
 #define LAST_WORD_AFTER 0x01000000
 
 typedef struct {
-	const int size;
+	int size;
 	widechar **buffers;
 	int *inUse;
 	widechar *(*alloc)(int index, int length);
@@ -62,18 +62,28 @@ allocStringBuffer(int index, int length) {
 	return _lou_allocMem(alloc_passbuf, index, 0, length);
 }
 
-static widechar *stringBuffers[MAXPASSBUF] = { NULL };
-static int stringBuffersInUse[MAXPASSBUF] = { 0 };
-static StringBufferPool stringBufferPool = (StringBufferPool){ MAXPASSBUF, stringBuffers,
-	stringBuffersInUse, &allocStringBuffer, NULL };
+static const StringBufferPool *stringBufferPool = NULL;
+
+static void
+initStringBufferPool() {
+	static widechar *stringBuffers[MAXPASSBUF] = { NULL };
+	static int stringBuffersInUse[MAXPASSBUF] = { 0 };
+	StringBufferPool *pool = malloc(sizeof(StringBufferPool));
+	pool->size = MAXPASSBUF;
+	pool->buffers = stringBuffers;
+	pool->inUse = stringBuffersInUse;
+	pool->alloc = &allocStringBuffer;
+	pool->free = NULL;
+	stringBufferPool = pool;
+}
 
 static int
 getStringBuffer(int length) {
 	int i;
-	for (i = 0; i < stringBufferPool.size; i++) {
-		if (!stringBufferPool.inUse[i]) {
-			stringBufferPool.buffers[i] = stringBufferPool.alloc(i, length);
-			stringBufferPool.inUse[i] = 1;
+	for (i = 0; i < stringBufferPool->size; i++) {
+		if (!stringBufferPool->inUse[i]) {
+			stringBufferPool->buffers[i] = stringBufferPool->alloc(i, length);
+			stringBufferPool->inUse[i] = 1;
 			return i;
 		}
 	}
@@ -83,11 +93,11 @@ getStringBuffer(int length) {
 
 static int
 releaseStringBuffer(int idx) {
-	if (idx >= 0 && idx < stringBufferPool.size) {
-		int inUse = stringBufferPool.inUse[idx];
-		if (inUse && stringBufferPool.free)
-			stringBufferPool.free(stringBufferPool.buffers[idx]);
-		stringBufferPool.inUse[idx] = 0;
+	if (idx >= 0 && idx < stringBufferPool->size) {
+		int inUse = stringBufferPool->inUse[idx];
+		if (inUse && stringBufferPool->free)
+			stringBufferPool->free(stringBufferPool->buffers[idx]);
+		stringBufferPool->inUse[idx] = 0;
 		return inUse;
 	}
 	return 0;
@@ -480,7 +490,7 @@ replaceGrouping(const TranslationTableHeader *table, const InString **input,
 			// efficient, but makes the code more readable. Grouping is not a much used
 			// feature anyway.
 			int idx = getStringBuffer((*input)->length);
-			widechar *chars = stringBufferPool.buffers[idx];
+			widechar *chars = stringBufferPool->buffers[idx];
 			memcpy(chars, (*input)->chars, (*input)->length * sizeof(widechar));
 			chars[startReplace] = replaceStart;
 			chars[p] = replaceEnd;
@@ -528,7 +538,7 @@ removeGrouping(const InString **input, OutString *output, int passCharDots,
 			// efficient, but makes the code more readable. Grouping is not a much used
 			// feature anyway.
 			int idx = getStringBuffer((*input)->length);
-			widechar *chars = stringBufferPool.buffers[idx];
+			widechar *chars = stringBufferPool->buffers[idx];
 			int len = 0;
 			int k;
 			for (k = 0; k < (*input)->length; k++) {
@@ -1195,9 +1205,10 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 	}
 	{
 		int idx;
-		for (idx = 0; idx < stringBufferPool.size; idx++) releaseStringBuffer(idx);
+		if (!stringBufferPool) initStringBufferPool();
+		for (idx = 0; idx < stringBufferPool->size; idx++) releaseStringBuffer(idx);
 		idx = getStringBuffer(*outlen);
-		output = (OutString){.chars = stringBufferPool.buffers[idx],
+		output = (OutString){.chars = stringBufferPool->buffers[idx],
 			.maxlength = *outlen,
 			.length = 0,
 			.bufferIndex = idx };
@@ -1247,7 +1258,7 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 				.length = output.length,
 				.bufferIndex = output.bufferIndex };
 			idx = getStringBuffer(*outlen);
-			output = (OutString){.chars = stringBufferPool.buffers[idx],
+			output = (OutString){.chars = stringBufferPool->buffers[idx],
 				.maxlength = *outlen,
 				.length = 0,
 				.bufferIndex = idx };
