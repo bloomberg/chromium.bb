@@ -1228,18 +1228,6 @@ crbug.com/826878 [ Mac ] virtual/color_space/fast/canvas/color-space/toDataURL-c
 # Total  2098
 # Counts skip: 2 crash: 14 text: 67 image: 1 pass: 2005 timeout: 9
 
-# Release build only wpt test crashes on CORS-preflight. Should be fixed soon.
-crbug.com/836741 [ Release ] virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-cookies-redirect.any.html [ Crash ]
-crbug.com/836741 [ Release ] virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-cookies-redirect.any.worker.html [ Crash ]
-crbug.com/836741 [ Release ] virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-preflight-star.any.html [ Crash ]
-crbug.com/836741 [ Release ] virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-preflight-star.any.worker.html [ Crash ]
-crbug.com/836741 [ Release ] virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-preflight.any.html [ Crash ]
-crbug.com/836741 [ Release ] virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-preflight.any.worker.html [ Crash ]
-crbug.com/836741 [ Release ] virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-redirect-preflight.any.html [ Crash ]
-crbug.com/836741 [ Release ] virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-redirect-preflight.any.worker.html [ Crash ]
-crbug.com/836741 [ Release ] virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Crash ]
-crbug.com/836741 [ Release ] virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Crash ]
-
 # Skipped tests in dictionary order.
 crbug.com/757165 [ Win ] virtual/outofblink-cors/external/wpt/service-workers/service-worker/navigation-redirect.https.html [ Skip ]
 crbug.com/691944 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
@@ -1285,20 +1273,17 @@ crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/simple-cross-
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.html [ Timeout ]
 
 # Failing tests in dictionary order.
-crbug.com/736308 [ Debug ] virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-redirect-preflight.any.html [ Failure ]
-crbug.com/736308 [ Debug ] virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-redirect-preflight.any.worker.html [ Failure ]
+crbug.com/736308 virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-redirect-preflight.any.html [ Failure ]
+crbug.com/736308 virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-redirect-preflight.any.worker.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-redirect.any.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/fetch/api/cors/cors-redirect.any.worker.html [ Failure ]
 crbug.com/802835 virtual/outofblink-cors/external/wpt/fetch/corb/img-mime-types-coverage.tentative.sub.html [ Failure ]
-crbug.com/802835 virtual/outofblink-cors/external/wpt/fetch/corb/img-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
-crbug.com/802835 virtual/outofblink-cors/external/wpt/fetch/corb/preload-image-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
-crbug.com/802835 virtual/outofblink-cors/external/wpt/fetch/corb/script-html-correctly-labeled.tentative.sub.html [ Failure ]
 crbug.com/745327 virtual/outofblink-cors/external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html [ Failure Pass ]
 crbug.com/834183 virtual/outofblink-cors/external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/update.https.html [ Failure Pass ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-image-cache.https.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-image.https.html [ Failure ]
-crbug.com/736308 [ Debug ] virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Failure ]
-crbug.com/736308 [ Debug ] virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Failure ]
+crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Failure ]
+crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-referrer-policy.https.html [ Failure ]
 crbug.com/595993 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-request-html-imports.https.html [ Failure ]
