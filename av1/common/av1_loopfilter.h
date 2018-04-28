@@ -36,9 +36,7 @@ enum lf_path {
 #if LOOP_FILTER_BITMASK
 typedef struct {
   uint64_t bits[4];
-} FilterMaskY;
-
-typedef uint64_t FilterMaskUV;
+} FilterMask;
 
 // This structure holds bit masks for all 4x4 blocks in a 64x64 region.
 // Each 1 bit represents a position in which we want to apply the loop filter.
@@ -51,29 +49,24 @@ typedef uint64_t FilterMaskUV;
 // Since each transform is accompanied by a potentially different type of
 // loop filter there is a different entry in the array for each transform size.
 typedef struct {
-  FilterMaskY left_y[TX_SIZES];
-  FilterMaskY above_y[TX_SIZES];
-  FilterMaskUV left_u[TX_SIZES];
-  FilterMaskUV above_u[TX_SIZES];
-  FilterMaskUV left_v[TX_SIZES];
-  FilterMaskUV above_v[TX_SIZES];
+  FilterMask left_y[TX_SIZES];
+  FilterMask above_y[TX_SIZES];
+  FilterMask left_u[TX_SIZES];
+  FilterMask above_u[TX_SIZES];
+  FilterMask left_v[TX_SIZES];
+  FilterMask above_v[TX_SIZES];
 
   // Y plane vertical edge and horizontal edge filter level
   uint8_t lfl_y_hor[MI_SIZE_64X64][MI_SIZE_64X64];
   uint8_t lfl_y_ver[MI_SIZE_64X64][MI_SIZE_64X64];
 
-  // UV plane vertical edge and horizontal edge shares the same level
-  uint8_t lfl_u[MI_SIZE_64X64 / 2][MI_SIZE_64X64 / 2];
-  uint8_t lfl_v[MI_SIZE_64X64 / 2][MI_SIZE_64X64 / 2];
-} LoopFilterMaskInfo;
-// TODO(chengchen): remove old version of bitmask construction code once
-// new bitmask is complete.
+  // U plane vertical edge and horizontal edge filter level
+  uint8_t lfl_u_hor[MI_SIZE_64X64][MI_SIZE_64X64];
+  uint8_t lfl_u_ver[MI_SIZE_64X64][MI_SIZE_64X64];
 
-// Loopfilter bit mask per super block
-#define LOOP_FILTER_MASK_NUM 4
-typedef struct {
-  LoopFilterMaskInfo lfm_info[LOOP_FILTER_MASK_NUM];
-  int is_setup;
+  // V plane vertical edge and horizontal edge filter level
+  uint8_t lfl_v_hor[MI_SIZE_64X64][MI_SIZE_64X64];
+  uint8_t lfl_v_ver[MI_SIZE_64X64][MI_SIZE_64X64];
 } LoopFilterMask;
 
 // To determine whether to apply loop filtering at one transform block edge,
@@ -188,25 +181,17 @@ typedef struct LoopFilterWorkerData {
 } LFWorkerData;
 
 #if LOOP_FILTER_BITMASK
-INLINE enum lf_path av1_get_loop_filter_path(
-    int plane, struct macroblockd_plane pd[MAX_MB_PLANE]);
-
-LoopFilterMask *av1_get_loop_filter_mask(struct AV1Common *const cm, int mi_row,
-                                         int mi_col);
-
 void av1_setup_bitmask(struct AV1Common *const cm, int mi_row, int mi_col,
                        int plane, int subsampling_x, int subsampling_y,
-                       LoopFilterMask *lfm);
+                       int row_end, int col_end);
 
-void av1_loop_filter_block_plane_vert(struct AV1Common *const cm,
-                                      struct macroblockd_plane *pd, int pl,
-                                      int mi_row, int mi_col, enum lf_path path,
-                                      LoopFilterMask *lf_mask);
+void av1_filter_block_plane_ver(struct AV1Common *const cm,
+                                struct macroblockd_plane *const plane_ptr,
+                                int pl, int mi_row, int mi_col);
 
-void av1_loop_filter_block_plane_horz(struct AV1Common *const cm,
-                                      struct macroblockd_plane *pd, int pl,
-                                      int mi_row, int mi_col, enum lf_path path,
-                                      LoopFilterMask *lf_mask);
+void av1_filter_block_plane_hor(struct AV1Common *const cm,
+                                struct macroblockd_plane *const plane, int pl,
+                                int mi_row, int mi_col);
 #endif
 
 #ifdef __cplusplus

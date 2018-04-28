@@ -1164,7 +1164,8 @@ int av1_skip_u4x4_pred_in_obmc(BLOCK_SIZE bsize,
                                const struct macroblockd_plane *pd, int dir) {
   assert(is_motion_variation_allowed_bsize(bsize));
 
-  const BLOCK_SIZE bsize_plane = get_plane_block_size(bsize, pd);
+  const BLOCK_SIZE bsize_plane =
+      get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
   switch (bsize_plane) {
 #if DISABLE_CHROMA_U8X8_OBMC
     case BLOCK_4X4:
@@ -1630,7 +1631,9 @@ void av1_build_intra_predictors_for_interintra(const AV1_COMMON *cm,
                                                BUFFER_SET *ctx, uint8_t *dst,
                                                int dst_stride) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
-  BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, &xd->plane[plane]);
+  const int ssx = xd->plane[plane].subsampling_x;
+  const int ssy = xd->plane[plane].subsampling_y;
+  BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, ssx, ssy);
   PREDICTION_MODE mode = interintra_to_intra_mode[xd->mi[0]->interintra_mode];
   xd->mi[0]->angle_delta[PLANE_TYPE_Y] = 0;
   xd->mi[0]->angle_delta[PLANE_TYPE_UV] = 0;
@@ -1646,7 +1649,9 @@ void av1_build_intra_predictors_for_interintra(const AV1_COMMON *cm,
 void av1_combine_interintra(MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane,
                             const uint8_t *inter_pred, int inter_stride,
                             const uint8_t *intra_pred, int intra_stride) {
-  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, &xd->plane[plane]);
+  const int ssx = xd->plane[plane].subsampling_x;
+  const int ssy = xd->plane[plane].subsampling_y;
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, ssx, ssy);
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     combine_interintra_highbd(
         xd->mi[0]->interintra_mode, xd->mi[0]->use_wedge_interintra,
@@ -1765,8 +1770,8 @@ void av1_build_inter_predictors_for_planes_single_buf(
   const int mi_x = mi_col * MI_SIZE;
   const int mi_y = mi_row * MI_SIZE;
   for (plane = plane_from; plane <= plane_to; ++plane) {
-    const BLOCK_SIZE plane_bsize =
-        get_plane_block_size(bsize, &xd->plane[plane]);
+    const BLOCK_SIZE plane_bsize = get_plane_block_size(
+        bsize, xd->plane[plane].subsampling_x, xd->plane[plane].subsampling_y);
     const int bw = block_size_wide[plane_bsize];
     const int bh = block_size_high[plane_bsize];
     build_inter_predictors_single_buf(xd, plane, bw, bh, 0, 0, bw, bh, mi_x,
@@ -1829,8 +1834,8 @@ void av1_build_wedge_inter_predictor_from_buf(MACROBLOCKD *xd, BLOCK_SIZE bsize,
                                               int ext_dst_stride1[3]) {
   int plane;
   for (plane = plane_from; plane <= plane_to; ++plane) {
-    const BLOCK_SIZE plane_bsize =
-        get_plane_block_size(bsize, &xd->plane[plane]);
+    const BLOCK_SIZE plane_bsize = get_plane_block_size(
+        bsize, xd->plane[plane].subsampling_x, xd->plane[plane].subsampling_y);
     const int bw = block_size_wide[plane_bsize];
     const int bh = block_size_high[plane_bsize];
     build_wedge_inter_predictor_from_buf(

@@ -150,8 +150,8 @@ static int alloc_loop_filter(AV1_COMMON *cm) {
   // 64x64 (128x128 for ext_partitions) region.  The stride
   // and rows are rounded up / truncated to a multiple of 16
   // (32 for ext_partition).
-  cm->lf.lfm_stride = (cm->mi_cols + (MAX_MIB_SIZE - 1)) >> MAX_MIB_SIZE_LOG2;
-  cm->lf.lfm_num = ((cm->mi_rows + (MAX_MIB_SIZE - 1)) >> MAX_MIB_SIZE_LOG2) *
+  cm->lf.lfm_stride = (cm->mi_cols + (MI_SIZE_64X64 - 1)) >> MIN_MIB_SIZE_LOG2;
+  cm->lf.lfm_num = ((cm->mi_rows + (MI_SIZE_64X64 - 1)) >> MIN_MIB_SIZE_LOG2) *
                    cm->lf.lfm_stride;
   cm->lf.lfm =
       (LoopFilterMask *)aom_calloc(cm->lf.lfm_num, sizeof(*cm->lf.lfm));

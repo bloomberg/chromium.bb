@@ -759,10 +759,11 @@ static INLINE TX_TYPE get_default_tx_type(PLANE_TYPE plane_type,
   return intra_mode_to_tx_type(mbmi, plane_type);
 }
 
-static INLINE BLOCK_SIZE
-get_plane_block_size(BLOCK_SIZE bsize, const struct macroblockd_plane *pd) {
+static INLINE BLOCK_SIZE get_plane_block_size(BLOCK_SIZE bsize,
+                                              int subsampling_x,
+                                              int subsampling_y) {
   if (bsize == BLOCK_INVALID) return BLOCK_INVALID;
-  return ss_size_lookup[bsize][pd->subsampling_x][pd->subsampling_y];
+  return ss_size_lookup[bsize][subsampling_x][subsampling_y];
 }
 
 static INLINE int av1_get_txb_size_index(BLOCK_SIZE bsize, int blk_row,
@@ -904,9 +905,10 @@ static INLINE TX_SIZE av1_get_adjusted_tx_size(TX_SIZE tx_size) {
   }
 }
 
-static INLINE TX_SIZE
-av1_get_max_uv_txsize(BLOCK_SIZE bsize, const struct macroblockd_plane *pd) {
-  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+static INLINE TX_SIZE av1_get_max_uv_txsize(BLOCK_SIZE bsize, int subsampling_x,
+                                            int subsampling_y) {
+  const BLOCK_SIZE plane_bsize =
+      get_plane_block_size(bsize, subsampling_x, subsampling_y);
   assert(plane_bsize < BLOCK_SIZES_ALL);
   const TX_SIZE uv_tx = max_txsize_rect_lookup[plane_bsize];
   return av1_get_adjusted_tx_size(uv_tx);
@@ -917,7 +919,8 @@ static INLINE TX_SIZE av1_get_tx_size(int plane, const MACROBLOCKD *xd) {
   if (xd->lossless[mbmi->segment_id]) return TX_4X4;
   if (plane == 0) return mbmi->tx_size;
   const MACROBLOCKD_PLANE *pd = &xd->plane[plane];
-  return av1_get_max_uv_txsize(mbmi->sb_type, pd);
+  return av1_get_max_uv_txsize(mbmi->sb_type, pd->subsampling_x,
+                               pd->subsampling_y);
 }
 
 void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,

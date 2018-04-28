@@ -86,7 +86,8 @@ void av1_subtract_txb(MACROBLOCK *x, int plane, BLOCK_SIZE plane_bsize,
 void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane) {
   struct macroblock_plane *const p = &x->plane[plane];
   const struct macroblockd_plane *const pd = &x->e_mbd.plane[plane];
-  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+  const BLOCK_SIZE plane_bsize =
+      get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
   const int bw = block_size_wide[plane_bsize];
   const int bh = block_size_high[plane_bsize];
   const MACROBLOCKD *xd = &x->e_mbd;
@@ -316,7 +317,8 @@ static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
 
   const TX_SIZE plane_tx_size =
-      plane ? av1_get_max_uv_txsize(mbmi->sb_type, pd)
+      plane ? av1_get_max_uv_txsize(mbmi->sb_type, pd->subsampling_x,
+                                    pd->subsampling_y)
             : mbmi->inter_tx_size[av1_get_txb_size_index(plane_bsize, blk_row,
                                                          blk_col)];
   if (!plane) {
@@ -434,7 +436,8 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
 
     // TODO(jingning): Clean this up.
     const struct macroblockd_plane *const pd = &xd->plane[plane];
-    const BLOCK_SIZE plane_bsize = get_plane_block_size(bsizec, pd);
+    const BLOCK_SIZE plane_bsize =
+        get_plane_block_size(bsizec, pd->subsampling_x, pd->subsampling_y);
     const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
     const int mi_height = block_size_high[plane_bsize] >> tx_size_high_log2[0];
     const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, plane_bsize, plane);
@@ -452,7 +455,8 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     arg.ta = ctx.ta[plane];
     arg.tl = ctx.tl[plane];
 
-    const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, pd);
+    const BLOCK_SIZE max_unit_bsize =
+        get_plane_block_size(BLOCK_64X64, pd->subsampling_x, pd->subsampling_y);
     int mu_blocks_wide =
         block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
     int mu_blocks_high =

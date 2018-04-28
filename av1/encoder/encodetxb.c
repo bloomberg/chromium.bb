@@ -611,7 +611,8 @@ void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x, int mi_row,
   const int num_planes = av1_num_planes(cm);
   int block[MAX_MB_PLANE] = { 0 };
   int row, col;
-  assert(bsize == get_plane_block_size(bsize, &xd->plane[0]));
+  assert(bsize == get_plane_block_size(bsize, xd->plane[0].subsampling_x,
+                                       xd->plane[0].subsampling_y));
   const int max_blocks_wide = max_block_wide(xd, bsize, 0);
   const int max_blocks_high = max_block_high(xd, bsize, 0);
   const BLOCK_SIZE max_unit_bsize = BLOCK_64X64;

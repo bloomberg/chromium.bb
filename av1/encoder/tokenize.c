@@ -138,12 +138,14 @@ void tokenize_vartx(ThreadData *td, TOKENEXTRA **t, RUN_TYPE dry_run,
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
 
   const TX_SIZE plane_tx_size =
-      plane ? av1_get_max_uv_txsize(mbmi->sb_type, pd)
+      plane ? av1_get_max_uv_txsize(mbmi->sb_type, pd->subsampling_x,
+                                    pd->subsampling_y)
             : mbmi->inter_tx_size[av1_get_txb_size_index(plane_bsize, blk_row,
                                                          blk_col)];
 
   if (tx_size == plane_tx_size || plane) {
-    plane_bsize = get_plane_block_size(mbmi->sb_type, pd);
+    plane_bsize = get_plane_block_size(mbmi->sb_type, pd->subsampling_x,
+                                       pd->subsampling_y);
     if (!dry_run) {
       av1_update_and_record_txb_context(plane, block, blk_row, blk_col,
                                         plane_bsize, tx_size, arg);
@@ -205,7 +207,8 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
     const struct macroblockd_plane *const pd = &xd->plane[plane];
     const BLOCK_SIZE bsizec =
         scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
-    const BLOCK_SIZE plane_bsize = get_plane_block_size(bsizec, pd);
+    const BLOCK_SIZE plane_bsize =
+        get_plane_block_size(bsizec, pd->subsampling_x, pd->subsampling_y);
     const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
     const int mi_height = block_size_high[plane_bsize] >> tx_size_high_log2[0];
     const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, plane_bsize, plane);
@@ -216,7 +219,8 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
     int block = 0;
     int step = tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
 
-    const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, pd);
+    const BLOCK_SIZE max_unit_bsize =
+        get_plane_block_size(BLOCK_64X64, pd->subsampling_x, pd->subsampling_y);
     int mu_blocks_wide =
         block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
     int mu_blocks_high =

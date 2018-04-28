@@ -1733,7 +1733,8 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
   for (plane = plane_from; plane <= plane_to; ++plane) {
     struct macroblock_plane *const p = &x->plane[plane];
     struct macroblockd_plane *const pd = &xd->plane[plane];
-    const BLOCK_SIZE bs = get_plane_block_size(bsize, pd);
+    const BLOCK_SIZE bs =
+        get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
     unsigned int sse;
     int rate;
     int64_t dist;
@@ -1771,7 +1772,8 @@ static void check_block_skip(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
   for (int plane = plane_from; plane <= plane_to; ++plane) {
     struct macroblock_plane *const p = &x->plane[plane];
     struct macroblockd_plane *const pd = &xd->plane[plane];
-    const BLOCK_SIZE bs = get_plane_block_size(bsize, pd);
+    const BLOCK_SIZE bs =
+        get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
     unsigned int sse;
 
     if (x->skip_chroma_rd && plane) continue;
@@ -4484,7 +4486,8 @@ static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
 
   if (is_cost_valid) {
     const struct macroblockd_plane *const pd = &xd->plane[0];
-    const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+    const BLOCK_SIZE plane_bsize =
+        get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
     const int mi_width = mi_size_wide[plane_bsize];
     const int mi_height = mi_size_high[plane_bsize];
     const TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
@@ -4696,7 +4699,8 @@ static int inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
 
   if (is_cost_valid) {
     const struct macroblockd_plane *const pd = &xd->plane[0];
-    const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+    const BLOCK_SIZE plane_bsize =
+        get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
     const int mi_width = mi_size_wide[plane_bsize];
     const int mi_height = mi_size_high[plane_bsize];
     const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, plane_bsize, 0);
@@ -5206,7 +5210,8 @@ static int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x,
   if (is_cost_valid) {
     for (plane = 1; plane < MAX_MB_PLANE; ++plane) {
       const struct macroblockd_plane *const pd = &xd->plane[plane];
-      const BLOCK_SIZE plane_bsize = get_plane_block_size(bsizec, pd);
+      const BLOCK_SIZE plane_bsize =
+          get_plane_block_size(bsizec, pd->subsampling_x, pd->subsampling_y);
       const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
       const int mi_height =
           block_size_high[plane_bsize] >> tx_size_high_log2[0];
@@ -5500,8 +5505,9 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
   const BLOCK_SIZE bsize = mbmi->sb_type;
 #if CONFIG_DEBUG
   assert(is_cfl_allowed(xd));
-  const BLOCK_SIZE plane_bsize =
-      get_plane_block_size(mbmi->sb_type, &xd->plane[AOM_PLANE_U]);
+  const int ssx = xd->plane[AOM_PLANE_U].subsampling_x;
+  const int ssy = xd->plane[AOM_PLANE_U].subsampling_y;
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(mbmi->sb_type, ssx, ssy);
   (void)plane_bsize;
   assert(plane_bsize < BLOCK_SIZES_ALL);
   if (!xd->lossless[mbmi->segment_id]) {
@@ -7971,7 +7977,8 @@ static int64_t skip_mode_rd(RD_STATS *rd_stats, const AV1_COMP *const cpi,
   for (int plane = 0; plane < num_planes; ++plane) {
     const struct macroblock_plane *const p = &x->plane[plane];
     const struct macroblockd_plane *const pd = &xd->plane[plane];
-    const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+    const BLOCK_SIZE plane_bsize =
+        get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
     const int bw = block_size_wide[plane_bsize];
     const int bh = block_size_high[plane_bsize];
 

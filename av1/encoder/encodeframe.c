@@ -2374,8 +2374,9 @@ static int64_t dist_8x8_yuv(const AV1_COMP *const cpi, MACROBLOCK *const x,
       unsigned sse;
       const int src_stride_uv = x->plane[plane].src.stride;
       const int dst_stride_uv = xd->plane[plane].dst.stride;
-      const BLOCK_SIZE plane_bsize =
-          get_plane_block_size(BLOCK_8X8, &xd->plane[plane]);
+      const int ssx = xd->plane[plane].subsampling_x;
+      const int ssy = xd->plane[plane].subsampling_y;
+      const BLOCK_SIZE plane_bsize = get_plane_block_size(BLOCK_8X8, ssx, ssy);
 
       cpi->fn_ptr[plane_bsize].vf(src_plane_8x8[plane], src_stride_uv,
                                   dst_plane_8x8[plane], dst_stride_uv, &sse);

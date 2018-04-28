@@ -248,10 +248,6 @@ static INLINE void thread_loop_filter_rows(
       dir = cur_job_info->dir;
       r = mi_row >> MAX_MIB_SIZE_LOG2;
 
-#if LOOP_FILTER_BITMASK
-      enum lf_path path = av1_get_loop_filter_path(plane, planes);
-#endif
-
       if (dir == 0) {
         for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
           c = mi_col >> MAX_MIB_SIZE_LOG2;
@@ -259,18 +255,8 @@ static INLINE void thread_loop_filter_rows(
           av1_setup_dst_planes(planes, cm->seq_params.sb_size, frame_buffer,
                                mi_row, mi_col, plane, plane + 1);
 
-#if LOOP_FILTER_BITMASK
-          LoopFilterMask *lf_mask =
-              av1_get_loop_filter_mask(cm, mi_row, mi_col);
-          av1_setup_bitmask(cm, mi_row, mi_col, plane,
-                            planes[plane].subsampling_x,
-                            planes[plane].subsampling_y, lf_mask);
-          av1_loop_filter_block_plane_vert(cm, planes, plane, mi_row, mi_col,
-                                           path, lf_mask);
-#else
           av1_filter_block_plane_vert(cm, xd, plane, &planes[plane], mi_row,
                                       mi_col);
-#endif
           sync_write(lf_sync, r, c, sb_cols, plane);
         }
       } else if (dir == 1) {
@@ -287,15 +273,8 @@ static INLINE void thread_loop_filter_rows(
 
           av1_setup_dst_planes(planes, cm->seq_params.sb_size, frame_buffer,
                                mi_row, mi_col, plane, plane + 1);
-#if LOOP_FILTER_BITMASK
-          LoopFilterMask *lf_mask =
-              av1_get_loop_filter_mask(cm, mi_row, mi_col);
-          av1_loop_filter_block_plane_horz(cm, planes, plane, mi_row, mi_col,
-                                           path, lf_mask);
-#else
           av1_filter_block_plane_horz(cm, xd, plane, &planes[plane], mi_row,
                                       mi_col);
-#endif
         }
       }
     } else {

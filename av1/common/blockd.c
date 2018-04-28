@@ -36,7 +36,8 @@ void av1_foreach_transformed_block_in_plane(
   // 4x4=0, 8x8=2, 16x16=4, 32x32=6, 64x64=8
   // transform size varies per plane, look it up in a common way.
   const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
-  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+  const BLOCK_SIZE plane_bsize =
+      get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
   const uint8_t txw_unit = tx_size_wide_unit[tx_size];
   const uint8_t txh_unit = tx_size_high_unit[tx_size];
   const int step = txw_unit * txh_unit;
@@ -50,7 +51,8 @@ void av1_foreach_transformed_block_in_plane(
 
   int blk_row, blk_col;
 
-  const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, pd);
+  const BLOCK_SIZE max_unit_bsize =
+      get_plane_block_size(BLOCK_64X64, pd->subsampling_x, pd->subsampling_y);
   int mu_blocks_wide = block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
   int mu_blocks_high = block_size_high[max_unit_bsize] >> tx_size_high_log2[0];
   mu_blocks_wide = AOMMIN(max_blocks_wide, mu_blocks_wide);
@@ -125,7 +127,8 @@ void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
   nplanes = 1 + (num_planes - 1) * chroma_ref;
   for (i = 0; i < nplanes; i++) {
     struct macroblockd_plane *const pd = &xd->plane[i];
-    const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+    const BLOCK_SIZE plane_bsize =
+        get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
     const int txs_wide = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
     const int txs_high = block_size_high[plane_bsize] >> tx_size_high_log2[0];
     memset(pd->above_context, 0, sizeof(ENTROPY_CONTEXT) * txs_wide);
