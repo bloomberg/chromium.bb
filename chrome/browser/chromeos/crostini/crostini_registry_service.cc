@@ -457,6 +457,38 @@ void CrostiniRegistryService::MaybeRequestIcon(const std::string& app_id,
   RequestIcon(app_id, scale_factor);
 }
 
+void CrostiniRegistryService::ClearApplicationList(
+    const std::string& vm_name,
+    const std::string& container_name) {
+  std::vector<std::string> removed_apps;
+  // The DictionaryPrefUpdate should be destructed before calling the observer.
+  {
+    DictionaryPrefUpdate update(prefs_, kCrostiniRegistryPref);
+    base::DictionaryValue* apps = update.Get();
+
+    for (const auto& item : apps->DictItems()) {
+      if (item.first == kCrostiniTerminalId)
+        continue;
+      if (item.second.FindKey(kAppVmNameKey)->GetString() == vm_name &&
+          item.second.FindKey(kAppContainerNameKey)->GetString() ==
+              container_name) {
+        removed_apps.push_back(item.first);
+      }
+    }
+    for (const std::string& removed_app : removed_apps) {
+      RemoveAppData(removed_app);
+      apps->RemoveKey(removed_app);
+    }
+  }
+
+  if (removed_apps.empty())
+    return;
+  std::vector<std::string> updated_apps;
+  std::vector<std::string> inserted_apps;
+  for (Observer& obs : observers_)
+    obs.OnRegistryUpdated(this, updated_apps, removed_apps, inserted_apps);
+}
+
 void CrostiniRegistryService::UpdateApplicationList(
     const vm_tools::apps::ApplicationList& app_list) {
   if (app_list.vm_name().empty()) {

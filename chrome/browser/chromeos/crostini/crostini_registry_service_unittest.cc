@@ -238,6 +238,30 @@ TEST_F(CrostiniRegistryServiceTest, MultipleContainers) {
                                             kCrostiniTerminalId));
 }
 
+// Test that ClearApplicationList works, and only removes apps from the
+// specified container.
+TEST_F(CrostiniRegistryServiceTest, ClearApplicationList) {
+  service()->UpdateApplicationList(BasicAppList("app", "vm 1", "container 1"));
+  service()->UpdateApplicationList(BasicAppList("app", "vm 1", "container 2"));
+  ApplicationList app_list = BasicAppList("app", "vm 2", "container 1");
+  *app_list.add_apps() = BasicApp("app 2");
+  service()->UpdateApplicationList(app_list);
+  std::string app_id_1 = GenerateAppId("app", "vm 1", "container 1");
+  std::string app_id_2 = GenerateAppId("app", "vm 1", "container 2");
+  std::string app_id_3 = GenerateAppId("app", "vm 2", "container 1");
+  std::string app_id_4 = GenerateAppId("app 2", "vm 2", "container 1");
+
+  EXPECT_THAT(service()->GetRegisteredAppIds(),
+              testing::UnorderedElementsAre(app_id_1, app_id_2, app_id_3,
+                                            app_id_4, kCrostiniTerminalId));
+
+  service()->ClearApplicationList("vm 2", "container 1");
+
+  EXPECT_THAT(
+      service()->GetRegisteredAppIds(),
+      testing::UnorderedElementsAre(app_id_1, app_id_2, kCrostiniTerminalId));
+}
+
 TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdNoStartupID) {
   ApplicationList app_list = BasicAppList("app", "vm", "container");
   *app_list.add_apps() = BasicApp("cool.app");
