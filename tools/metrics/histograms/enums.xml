@@ -18480,6 +18480,8 @@ Called by update_net_error_codes.py.-->
   <int value="2426" label="ShapeOutsidePaddingBox"/>
   <int value="2427" label="ShapeOutsideBorderBox"/>
   <int value="2428" label="ShapeOutsideMarginBox"/>
+  <int value="2429" label="PerformanceTimeline"/>
+  <int value="2430" label="UserTiming"/>
 </enum>
 
 <enum name="FeedbackSource">

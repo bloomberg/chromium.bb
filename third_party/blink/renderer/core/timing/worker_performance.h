@@ -42,8 +42,6 @@ class ExecutionContext;
 class WorkerGlobalScope;
 
 class WorkerPerformance final : public Performance {
-  DEFINE_WRAPPERTYPEINFO();
-
  public:
   static WorkerPerformance* Create(WorkerGlobalScope* context) {
     return new WorkerPerformance(context);

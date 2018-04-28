@@ -620,6 +620,23 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     setter onclose
 [Worker]     setter onerror
 [Worker]     setter onshow
+[Worker] interface Performance : EventTarget
+[Worker]     attribute @@toStringTag
+[Worker]     getter onresourcetimingbufferfull
+[Worker]     getter timeOrigin
+[Worker]     method clearMarks
+[Worker]     method clearMeasures
+[Worker]     method clearResourceTimings
+[Worker]     method constructor
+[Worker]     method getEntries
+[Worker]     method getEntriesByName
+[Worker]     method getEntriesByType
+[Worker]     method mark
+[Worker]     method measure
+[Worker]     method now
+[Worker]     method setResourceTimingBufferSize
+[Worker]     method toJSON
+[Worker]     setter onresourcetimingbufferfull
 [Worker] interface PerformanceEntry
 [Worker]     attribute @@toStringTag
 [Worker]     getter duration

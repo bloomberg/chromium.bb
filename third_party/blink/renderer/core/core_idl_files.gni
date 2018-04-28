@@ -421,7 +421,6 @@ core_idl_files =
                     "timing/performance_server_timing.idl",
                     "timing/performance_timing.idl",
                     "timing/task_attribution_timing.idl",
-                    "timing/worker_performance.idl",
                     "typed_arrays/array_buffer.idl",
                     "typed_arrays/array_buffer_view.idl",
                     "typed_arrays/big_int_64_array.idl",
