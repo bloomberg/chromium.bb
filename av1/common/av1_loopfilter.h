@@ -154,37 +154,10 @@ typedef struct {
   uint8_t lvl[MAX_MB_PLANE][MAX_SEGMENTS][2][REF_FRAMES][MAX_MODE_LF_DELTAS];
 } loop_filter_info_n;
 
-// This structure holds bit masks for all 8x8 blocks in a 64x64 region.
-// Each 1 bit represents a position in which we want to apply the loop filter.
-// Left_ entries refer to whether we apply a filter on the border to the
-// left of the block.   Above_ entries refer to whether or not to apply a
-// filter on the above border.   Int_ entries refer to whether or not to
-// apply borders on the 4x4 edges within the 8x8 block that each bit
-// represents.
-// Since each transform is accompanied by a potentially different type of
-// loop filter there is a different entry in the array for each transform size.
-typedef struct {
-  uint64_t left_y[TX_SIZES];
-  uint64_t above_y[TX_SIZES];
-  uint64_t int_4x4_y;
-  uint16_t left_uv[TX_SIZES];
-  uint16_t above_uv[TX_SIZES];
-  uint16_t left_int_4x4_uv;
-  uint16_t above_int_4x4_uv;
-  uint8_t lfl_y[MAX_MIB_SIZE][MAX_MIB_SIZE];
-  uint8_t lfl_uv[MAX_MIB_SIZE / 2][MAX_MIB_SIZE / 2];
-} LOOP_FILTER_MASK;
-
 /* assorted loopfilter functions which get used elsewhere */
 struct AV1Common;
 struct macroblockd;
 struct AV1LfSyncData;
-
-// This function sets up the bit masks for the entire 64x64 region represented
-// by mi_row, mi_col.
-void av1_setup_mask(struct AV1Common *const cm, int mi_row, int mi_col,
-                    MB_MODE_INFO **mi_8x8, int mode_info_stride,
-                    LOOP_FILTER_MASK *lfm);
 
 void av1_loop_filter_init(struct AV1Common *cm);
 
