@@ -12,7 +12,7 @@ namespace blink {
 void ChunkToLayerMapper::SwitchToChunk(const PaintChunk& chunk) {
   outset_for_raster_effects_ = chunk.outset_for_raster_effects;
 
-  const auto& new_chunk_state = chunk.properties.GetPropertyTreeState();
+  const auto& new_chunk_state = chunk.properties;
   if (new_chunk_state == chunk_state_)
     return;
 

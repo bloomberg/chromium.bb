@@ -781,24 +781,24 @@ class CORE_EXPORT LocalFrameView final
   void BeginLifecycleUpdates();
 
   void SetPreTranslation(
-      scoped_refptr<TransformPaintPropertyNode> pre_translation) {
+      std::unique_ptr<TransformPaintPropertyNode> pre_translation) {
     pre_translation_ = std::move(pre_translation);
   }
   TransformPaintPropertyNode* PreTranslation() const {
     return pre_translation_.get();
   }
-  void SetScrollNode(scoped_refptr<ScrollPaintPropertyNode> scroll_node) {
+  void SetScrollNode(std::unique_ptr<ScrollPaintPropertyNode> scroll_node) {
     scroll_node_ = std::move(scroll_node);
   }
   ScrollPaintPropertyNode* ScrollNode() const { return scroll_node_.get(); }
   void SetScrollTranslation(
-      scoped_refptr<TransformPaintPropertyNode> scroll_translation) {
+      std::unique_ptr<TransformPaintPropertyNode> scroll_translation) {
     scroll_translation_ = std::move(scroll_translation);
   }
   TransformPaintPropertyNode* ScrollTranslation() const {
     return scroll_translation_.get();
   }
-  void SetContentClip(scoped_refptr<ClipPaintPropertyNode> content_clip) {
+  void SetContentClip(std::unique_ptr<ClipPaintPropertyNode> content_clip) {
     content_clip_ = std::move(content_clip);
   }
   ClipPaintPropertyNode* ContentClip() const { return content_clip_.get(); }
@@ -1284,13 +1284,13 @@ class CORE_EXPORT LocalFrameView final
   //     +---[ scrollTranslation ]    Frame scrolling.
   // TODO(trchen): These will not be needed once settings->rootLayerScrolls() is
   // enabled.
-  scoped_refptr<TransformPaintPropertyNode> pre_translation_;
-  scoped_refptr<TransformPaintPropertyNode> scroll_translation_;
-  scoped_refptr<ScrollPaintPropertyNode> scroll_node_;
+  std::unique_ptr<TransformPaintPropertyNode> pre_translation_;
+  std::unique_ptr<TransformPaintPropertyNode> scroll_translation_;
+  std::unique_ptr<ScrollPaintPropertyNode> scroll_node_;
   // The content clip clips the document (= LayoutView) but not the scrollbars.
   // TODO(trchen): This will not be needed once settings->rootLayerScrolls() is
   // enabled.
-  scoped_refptr<ClipPaintPropertyNode> content_clip_;
+  std::unique_ptr<ClipPaintPropertyNode> content_clip_;
   // The property tree state that should be used for painting contents. These
   // properties are either created by this LocalFrameView or are inherited from
   // an ancestor.

@@ -114,7 +114,7 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
                                            PaintInvalidationReason,
                                            const String* debug_name = nullptr);
   PaintInvalidationReason ChunkPropertiesChanged(
-      const RefCountedPropertyTreeState& new_chunk_state,
+      const PropertyTreeState& new_chunk_state,
       const PaintChunkInfo& new_chunk,
       const PaintChunkInfo& old_chunk,
       const PropertyTreeState& layer_state) const;

@@ -46,24 +46,24 @@ class TestPaintArtifact {
   ~TestPaintArtifact();
 
   // Add to the artifact.
-  TestPaintArtifact& Chunk(scoped_refptr<const TransformPaintPropertyNode>,
-                           scoped_refptr<const ClipPaintPropertyNode>,
-                           scoped_refptr<const EffectPaintPropertyNode>);
+  TestPaintArtifact& Chunk(const TransformPaintPropertyNode&,
+                           const ClipPaintPropertyNode&,
+                           const EffectPaintPropertyNode&);
   TestPaintArtifact& Chunk(const PropertyTreeState&);
   TestPaintArtifact& RectDrawing(const FloatRect& bounds, Color);
   TestPaintArtifact& ForeignLayer(const FloatPoint&,
                                   const IntSize&,
                                   scoped_refptr<cc::Layer>);
   TestPaintArtifact& ScrollHitTest(
-      scoped_refptr<const TransformPaintPropertyNode> scroll_offset);
+      const TransformPaintPropertyNode& scroll_offset);
   TestPaintArtifact& KnownToBeOpaque();
 
   // Add to the artifact, with specified display item client. These are used
   // to test incremental paint artifact updates.
   TestPaintArtifact& Chunk(DisplayItemClient&,
-                           scoped_refptr<const TransformPaintPropertyNode>,
-                           scoped_refptr<const ClipPaintPropertyNode>,
-                           scoped_refptr<const EffectPaintPropertyNode>);
+                           const TransformPaintPropertyNode&,
+                           const ClipPaintPropertyNode&,
+                           const EffectPaintPropertyNode&);
   TestPaintArtifact& Chunk(DisplayItemClient&, const PropertyTreeState&);
   TestPaintArtifact& RectDrawing(DisplayItemClient&,
                                  const FloatRect& bounds,
@@ -74,7 +74,7 @@ class TestPaintArtifact {
                                   scoped_refptr<cc::Layer>);
   TestPaintArtifact& ScrollHitTest(
       DisplayItemClient&,
-      scoped_refptr<const TransformPaintPropertyNode> scroll_offset);
+      const TransformPaintPropertyNode& scroll_offset);
 
   // Can't add more things once this is called.
   const PaintArtifact& Build();
