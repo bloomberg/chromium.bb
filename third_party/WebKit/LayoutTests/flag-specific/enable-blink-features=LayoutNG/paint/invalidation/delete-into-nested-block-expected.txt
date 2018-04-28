@@ -24,12 +24,12 @@
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 69, 369, 20],
+          "rect": [8, 69, 370, 20],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [8, 69, 369, 20],
+          "rect": [8, 69, 370, 20],
           "reason": "disappeared"
         },
         {

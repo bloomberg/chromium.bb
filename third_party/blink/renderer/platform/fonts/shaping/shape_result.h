@@ -216,8 +216,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   void ComputeGlyphPositions(ShapeResult::RunInfo*,
                              unsigned start_glyph,
                              unsigned num_glyphs,
-                             hb_buffer_t*,
-                             FloatRect* glyph_bounding_box);
+                             hb_buffer_t*);
   void InsertRun(std::unique_ptr<ShapeResult::RunInfo>,
                  unsigned start_glyph,
                  unsigned num_glyphs,
@@ -225,6 +224,9 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   void InsertRun(std::unique_ptr<ShapeResult::RunInfo>);
   void InsertRunForIndex(unsigned start_character_index);
   void ReorderRtlRuns(unsigned run_size_before);
+
+  float LineLeftBounds() const;
+  float LineRightBounds() const;
 
   float width_;
   FloatRect glyph_bounding_box_;

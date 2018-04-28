@@ -907,7 +907,8 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeIntoArabicThaiHanLatin) {
 
   EXPECT_EQ(result->NumCharacters(), composite_result->NumCharacters());
   EXPECT_EQ(result->SnappedWidth(), composite_result->SnappedWidth());
-  EXPECT_EQ(result->Bounds(), composite_result->Bounds());
+  EXPECT_TRUE(composite_result->Bounds().Contains(result->Bounds()))
+      << composite_result->Bounds() << "/" << result->Bounds();
   EXPECT_EQ(result->SnappedStartPositionForOffset(0),
             composite_result->SnappedStartPositionForOffset(0));
   EXPECT_EQ(result->SnappedStartPositionForOffset(1),
@@ -966,6 +967,30 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeSegmentGlyphBoundingBox) {
 
   // Check width and bounds are not too much different. ".1" is heuristic.
   EXPECT_NEAR(result->Width(), result->Bounds().Width(), result->Width() * .1);
+}
+
+TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeBoundsLtr) {
+  String string(u". ");
+  TextDirection direction = TextDirection::kLtr;
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
+
+  // Because a space character does not have ink, the bounds of "." should be
+  // the same as the bounds of ". ".
+  scoped_refptr<ShapeResult> sub_range = result->SubRange(0, 1);
+  EXPECT_EQ(sub_range->Bounds().Width(), result->Bounds().Width());
+}
+
+TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeBoundsRtl) {
+  String string(u". ");
+  TextDirection direction = TextDirection::kRtl;
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
+
+  // Because a space character does not have ink, the bounds of "." should be
+  // the same as the bounds of ". ".
+  scoped_refptr<ShapeResult> sub_range = result->SubRange(0, 1);
+  EXPECT_EQ(sub_range->Bounds().Width(), result->Bounds().Width());
 }
 
 TEST_F(HarfBuzzShaperTest, SubRange) {

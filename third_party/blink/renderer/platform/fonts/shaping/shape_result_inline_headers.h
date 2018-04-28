@@ -48,6 +48,11 @@ struct HarfBuzzRunGlyphData {
   uint16_t character_index;
   float advance;
   FloatSize offset;
+
+  void SetGlyphAndPositions(uint16_t glyph_id,
+                            uint16_t character_index,
+                            float advance,
+                            const FloatSize& offset);
 };
 
 struct ShapeResult::RunInfo {
@@ -88,11 +93,6 @@ struct ShapeResult::RunInfo {
   float XPositionForVisualOffset(unsigned, AdjustMidCluster) const;
   float XPositionForOffset(unsigned, AdjustMidCluster) const;
   void CharacterIndexForXPosition(float, GlyphIndexResult*) const;
-  void SetGlyphAndPositions(unsigned index,
-                            uint16_t glyph_id,
-                            float advance,
-                            float offset_x,
-                            float offset_y);
 
   size_t GlyphToCharacterIndex(size_t i) const {
     return start_index_ + glyph_data_[i].character_index;
