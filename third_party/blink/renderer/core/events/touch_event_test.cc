@@ -74,49 +74,6 @@ class TouchEventTest : public PageTestBase {
   std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
-TEST_F(TouchEventTest, PreventDefaultUncancelable) {
-  TouchEvent* event = EventWithDispatchType(WebInputEvent::kEventNonBlocking);
-  event->SetHandlingPassive(Event::PassiveMode::kNotPassiveDefault);
-
-  EXPECT_THAT(Messages(), ElementsAre());
-  event->preventDefault();
-  EXPECT_THAT(Messages(),
-              ElementsAre("Ignored attempt to cancel a touchstart event with "
-                          "cancelable=false, for example because scrolling is "
-                          "in progress and cannot be interrupted."));
-  EXPECT_THAT(MessageSources(), ElementsAre(kInterventionMessageSource));
-
-  EXPECT_TRUE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kUncancelableTouchEventPreventDefaulted));
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(),
-      WebFeature::
-          kUncancelableTouchEventDueToMainThreadResponsivenessPreventDefaulted));
-}
-
-TEST_F(TouchEventTest,
-       PreventDefaultUncancelableDueToMainThreadResponsiveness) {
-  TouchEvent* event = EventWithDispatchType(
-      WebInputEvent::kListenersForcedNonBlockingDueToMainThreadResponsiveness);
-  event->SetHandlingPassive(Event::PassiveMode::kNotPassiveDefault);
-
-  EXPECT_THAT(Messages(), ElementsAre());
-  event->preventDefault();
-  EXPECT_THAT(Messages(),
-              ElementsAre("Ignored attempt to cancel a touchstart event with "
-                          "cancelable=false. This event was forced to be "
-                          "non-cancellable because the page was too busy to "
-                          "handle the event promptly."));
-  EXPECT_THAT(MessageSources(), ElementsAre(kInterventionMessageSource));
-
-  EXPECT_TRUE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kUncancelableTouchEventPreventDefaulted));
-  EXPECT_TRUE(UseCounter::IsCounted(
-      GetDocument(),
-      WebFeature::
-          kUncancelableTouchEventDueToMainThreadResponsivenessPreventDefaulted));
-}
-
 TEST_F(TouchEventTest,
        PreventDefaultPassiveDueToDocumentLevelScrollerIntervention) {
   TouchEvent* event =

@@ -10,7 +10,6 @@
 
 #include "base/auto_reset.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -233,7 +232,6 @@ class MainThreadEventQueueTest : public testing::Test,
   }
 
  protected:
-  base::test::ScopedFeatureList feature_list_;
   scoped_refptr<base::TestSimpleTaskRunner> main_task_runner_;
   blink::scheduler::MockRendererScheduler renderer_scheduler_;
   scoped_refptr<MainThreadEventQueue> queue_;
@@ -1077,16 +1075,7 @@ class MainThreadEventQueueInitializationTest
     : public testing::Test,
       public MainThreadEventQueueClient {
  public:
-  MainThreadEventQueueInitializationTest()
-      : field_trial_list_(new base::FieldTrialList(nullptr)) {}
-
-  base::TimeDelta main_thread_responsiveness_threshold() {
-    return queue_->main_thread_responsiveness_threshold_;
-  }
-
-  bool enable_non_blocking_due_to_main_thread_responsiveness_flag() {
-    return queue_->enable_non_blocking_due_to_main_thread_responsiveness_flag_;
-  }
+  MainThreadEventQueueInitializationTest() {}
 
   void HandleInputEvent(const blink::WebCoalescedInputEvent& event,
                         const ui::LatencyInfo& latency,
@@ -1099,36 +1088,9 @@ class MainThreadEventQueueInitializationTest
 
  protected:
   scoped_refptr<MainThreadEventQueue> queue_;
-  base::test::ScopedFeatureList feature_list_;
   blink::scheduler::MockRendererScheduler renderer_scheduler_;
   scoped_refptr<base::TestSimpleTaskRunner> main_task_runner_;
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 };
-
-TEST_F(MainThreadEventQueueInitializationTest,
-       MainThreadResponsivenessThresholdEnabled) {
-  feature_list_.InitFromCommandLine(
-      features::kMainThreadBusyScrollIntervention.name, "");
-
-  base::FieldTrialList::CreateFieldTrial(
-      "MainThreadResponsivenessScrollIntervention", "Enabled123");
-  queue_ = new MainThreadEventQueue(this, main_task_runner_,
-                                    &renderer_scheduler_, true);
-  EXPECT_TRUE(enable_non_blocking_due_to_main_thread_responsiveness_flag());
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(123),
-            main_thread_responsiveness_threshold());
-}
-
-TEST_F(MainThreadEventQueueInitializationTest,
-       MainThreadResponsivenessThresholdDisabled) {
-  base::FieldTrialList::CreateFieldTrial(
-      "MainThreadResponsivenessScrollIntervention", "Control");
-  queue_ = new MainThreadEventQueue(this, main_task_runner_,
-                                    &renderer_scheduler_, true);
-  EXPECT_FALSE(enable_non_blocking_due_to_main_thread_responsiveness_flag());
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(0),
-            main_thread_responsiveness_threshold());
-}
 
 TEST_F(MainThreadEventQueueTest, QueuingTwoClosures) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());

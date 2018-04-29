@@ -101,8 +101,6 @@ struct StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo> {
   static bool terminated(const ui::LatencyInfo& info);
   static ui::mojom::SourceEventType source_event_type(
       const ui::LatencyInfo& info);
-  static base::TimeDelta expected_queueing_time_on_dispatch(
-      const ui::LatencyInfo& info);
   static bool Read(ui::mojom::LatencyInfoDataView data, ui::LatencyInfo* out);
 };
 

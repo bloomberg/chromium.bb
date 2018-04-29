@@ -223,15 +223,6 @@ class LatencyInfo {
     source_event_type_ = type;
   }
 
-  void set_expected_queueing_time_on_dispatch(
-      base::TimeDelta expected_queueing_time) {
-    expected_queueing_time_on_dispatch_ = expected_queueing_time;
-  }
-
-  base::TimeDelta expected_queueing_time_on_dispatch() const {
-    return expected_queueing_time_on_dispatch_;
-  }
-
   bool began() const { return began_; }
   bool terminated() const { return terminated_; }
   void set_coalesced() { coalesced_ = true; }
@@ -273,9 +264,6 @@ class LatencyInfo {
   bool terminated_;
   // Stores the type of the first source event.
   SourceEventType source_event_type_;
-  // The expected queueing time on the main thread when this event was
-  // dispatched.
-  base::TimeDelta expected_queueing_time_on_dispatch_;
 
 #if !defined(OS_IOS)
   friend struct IPC::ParamTraits<ui::LatencyInfo>;

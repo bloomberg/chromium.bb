@@ -247,8 +247,7 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
           base::BindRepeating(&MainThreadSchedulerImpl::UpdatePolicy,
                               base::Unretained(this)),
           helper_.ControlMainThreadTaskQueue()),
-      seqlock_queueing_time_estimator_(
-          QueueingTimeEstimator(this, kQueueingTimeWindowDuration, 20)),
+      queueing_time_estimator_(this, kQueueingTimeWindowDuration, 20),
       main_thread_only_(this,
                         compositor_task_queue_,
                         helper_.GetClock(),
@@ -595,8 +594,7 @@ MainThreadSchedulerImpl::AnyThread::AnyThread(
 MainThreadSchedulerImpl::AnyThread::~AnyThread() = default;
 
 MainThreadSchedulerImpl::CompositorThreadOnly::CompositorThreadOnly()
-    : last_input_type(blink::WebInputEvent::kUndefined),
-      main_thread_seems_unresponsive(false) {}
+    : last_input_type(blink::WebInputEvent::kUndefined) {}
 
 MainThreadSchedulerImpl::CompositorThreadOnly::~CompositorThreadOnly() =
     default;
@@ -949,10 +947,8 @@ void MainThreadSchedulerImpl::SetRendererBackgrounded(bool backgrounded) {
   internal::ProcessState::Get()->is_process_backgrounded = backgrounded;
 
   main_thread_only().background_status_changed_at = tick_clock()->NowTicks();
-  seqlock_queueing_time_estimator_.seqlock.WriteBegin();
-  seqlock_queueing_time_estimator_.data.OnRendererStateChanged(
+  queueing_time_estimator_.OnRendererStateChanged(
       backgrounded, main_thread_only().background_status_changed_at);
-  seqlock_queueing_time_estimator_.seqlock.WriteEnd();
 
   UpdatePolicy();
 
@@ -1227,10 +1223,6 @@ void MainThreadSchedulerImpl::DidHandleInputEventOnMainThread(
       UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
     }
   }
-}
-
-base::TimeDelta MainThreadSchedulerImpl::MostRecentExpectedQueueingTime() {
-  return main_thread_only().most_recent_expected_queueing_time;
 }
 
 bool MainThreadSchedulerImpl::IsHighPriorityWorkAnticipated() {
@@ -2409,42 +2401,6 @@ void MainThreadSchedulerImpl::SetRAILModeObserver(RAILModeObserver* observer) {
   main_thread_only().rail_mode_observer = observer;
 }
 
-bool MainThreadSchedulerImpl::MainThreadSeemsUnresponsive(
-    base::TimeDelta main_thread_responsiveness_threshold) {
-  base::TimeTicks now = tick_clock()->NowTicks();
-  base::TimeDelta estimated_queueing_time;
-
-  bool can_read = false;
-
-  base::subtle::Atomic32 version;
-  seqlock_queueing_time_estimator_.seqlock.TryRead(&can_read, &version);
-
-  // If we fail to determine if the main thread is busy, assume whether or not
-  // it's busy hasn't change since the last time we asked.
-  if (!can_read)
-    return GetCompositorThreadOnly().main_thread_seems_unresponsive;
-
-  QueueingTimeEstimator::State queueing_time_estimator_state =
-      seqlock_queueing_time_estimator_.data.GetState();
-
-  // If we fail to determine if the main thread is busy, assume whether or not
-  // it's busy hasn't change since the last time we asked.
-  if (seqlock_queueing_time_estimator_.seqlock.ReadRetry(version))
-    return GetCompositorThreadOnly().main_thread_seems_unresponsive;
-
-  QueueingTimeEstimator queueing_time_estimator(queueing_time_estimator_state);
-
-  estimated_queueing_time =
-      queueing_time_estimator.EstimateQueueingTimeIncludingCurrentTask(now);
-
-  bool main_thread_seems_unresponsive =
-      estimated_queueing_time > main_thread_responsiveness_threshold;
-  GetCompositorThreadOnly().main_thread_seems_unresponsive =
-      main_thread_seems_unresponsive;
-
-  return main_thread_seems_unresponsive;
-}
-
 void MainThreadSchedulerImpl::SetRendererProcessType(RendererProcessType type) {
   main_thread_only().process_type = type;
 }
@@ -2492,9 +2448,7 @@ void MainThreadSchedulerImpl::OnTaskStarted(MainThreadTaskQueue* queue,
                                             const TaskQueue::Task& task,
                                             base::TimeTicks start) {
   main_thread_only().current_task_start_time = start;
-  seqlock_queueing_time_estimator_.seqlock.WriteBegin();
-  seqlock_queueing_time_estimator_.data.OnTopLevelTaskStarted(start, queue);
-  seqlock_queueing_time_estimator_.seqlock.WriteEnd();
+  queueing_time_estimator_.OnTopLevelTaskStarted(start, queue);
   main_thread_only().task_description_for_tracing = TaskDescriptionForTracing{
       static_cast<TaskType>(task.task_type()),
       queue
@@ -2509,9 +2463,7 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
     base::TimeTicks end,
     base::Optional<base::TimeDelta> thread_time) {
   DCHECK_LE(start, end);
-  seqlock_queueing_time_estimator_.seqlock.WriteBegin();
-  seqlock_queueing_time_estimator_.data.OnTopLevelTaskCompleted(end);
-  seqlock_queueing_time_estimator_.seqlock.WriteEnd();
+  queueing_time_estimator_.OnTopLevelTaskCompleted(end);
 
   if (queue)
     task_queue_throttler()->OnTaskRunTimeReported(queue, start, end);
@@ -2588,9 +2540,7 @@ void MainThreadSchedulerImpl::RecordTaskUkmImpl(
 }
 
 void MainThreadSchedulerImpl::OnBeginNestedRunLoop() {
-  seqlock_queueing_time_estimator_.seqlock.WriteBegin();
-  seqlock_queueing_time_estimator_.data.OnBeginNestedRunLoop();
-  seqlock_queueing_time_estimator_.seqlock.WriteEnd();
+  queueing_time_estimator_.OnBeginNestedRunLoop();
 
   main_thread_only().nested_runloop = true;
   ApplyVirtualTimePolicy();
@@ -2622,8 +2572,6 @@ bool MainThreadSchedulerImpl::ContainsLocalMainFrame() {
 void MainThreadSchedulerImpl::OnQueueingTimeForWindowEstimated(
     base::TimeDelta queueing_time,
     bool is_disjoint_window) {
-  main_thread_only().most_recent_expected_queueing_time = queueing_time;
-
   if (main_thread_only().has_navigated) {
     if (main_thread_only().max_queueing_time < queueing_time) {
       if (!main_thread_only().max_queueing_time_metric) {

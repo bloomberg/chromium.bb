@@ -596,14 +596,6 @@ class MainThreadSchedulerImplTest : public testing::Test {
                                 base::nullopt);
   }
 
-  void GetQueueingTimeEstimatorLock() {
-    scheduler_->seqlock_queueing_time_estimator_.seqlock.WriteBegin();
-  }
-
-  void DropQueueingTimeEstimatorLock() {
-    scheduler_->seqlock_queueing_time_estimator_.seqlock.WriteEnd();
-  }
-
   void RunSlowCompositorTask() {
     // Run a long compositor task so that compositor tasks appear to be running
     // slow and thus compositor tasks will not be prioritized.
@@ -708,10 +700,6 @@ class MainThreadSchedulerImplTest : public testing::Test {
   static base::TimeDelta rails_response_time() {
     return base::TimeDelta::FromMilliseconds(
         MainThreadSchedulerImpl::kRailsResponseTimeMillis);
-  }
-
-  static base::TimeDelta responsiveness_threshold() {
-    return base::TimeDelta::FromMilliseconds(200);
   }
 
   template <typename E>
@@ -3843,80 +3831,6 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_THAT(run_times,
               testing::ElementsAre(base::TimeTicks() +
                                    base::TimeDelta::FromMilliseconds(1300)));
-}
-
-TEST_F(MainThreadSchedulerImplTest, UnresponsiveMainThread) {
-  EXPECT_FALSE(
-      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
-
-  // Add one second long task.
-  AdvanceTimeWithTask(1);
-  EXPECT_TRUE(
-      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
-
-  // Wait a second.
-  clock_.Advance(base::TimeDelta::FromSecondsD(2));
-
-  AdvanceTimeWithTask(0.5);
-  EXPECT_FALSE(
-      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
-}
-
-// As |responsiveness_threshold| == expected queueing time threshold == 0.2s,
-// for a task shorter than the length of the window (1s), the critical value of
-// the length of task x can be calculated by (x/2) * (x/1) = 0.2, in which x =
-// 0.6324.
-TEST_F(MainThreadSchedulerImplTest, UnresponsiveMainThreadAboveThreshold) {
-  EXPECT_FALSE(
-      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
-
-  AdvanceTimeWithTask(0.64);
-  EXPECT_TRUE(
-      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
-}
-
-// As |responsiveness_threshold| == expected queueing time threshold == 0.2s,
-// for a task shorter than the length of the window (1s), the critical value of
-// the length of task x can be calculated by (x/2) * (x/1) = 0.2, in which x =
-// 0.6324.
-TEST_F(MainThreadSchedulerImplTest, ResponsiveMainThreadBelowThreshold) {
-  EXPECT_FALSE(
-      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
-
-  AdvanceTimeWithTask(0.63);
-  EXPECT_FALSE(
-      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
-}
-
-TEST_F(MainThreadSchedulerImplTest, ResponsiveMainThreadDuringTask) {
-  EXPECT_FALSE(
-      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
-  clock_.Advance(base::TimeDelta::FromSecondsD(2));
-  scheduler_->OnTaskStarted(fake_queue_.get(), fake_task_, clock_.NowTicks());
-  EXPECT_FALSE(
-      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
-}
-
-TEST_F(MainThreadSchedulerImplTest, UnresponsiveMainThreadWithContention) {
-  // Process a long task, lock the queueing time estimator, and check that we
-  // still report the main thread is unresponsive.
-  AdvanceTimeWithTask(1);
-  EXPECT_TRUE(
-      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
-  GetQueueingTimeEstimatorLock();
-  EXPECT_TRUE(
-      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
-
-  // Advance the clock, so that in the last second, we were responsive.
-  clock_.Advance(base::TimeDelta::FromSecondsD(2));
-  // While the queueing time estimator is locked, we believe the thread to still
-  // be unresponsive.
-  EXPECT_TRUE(
-      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
-  // Once we've dropped the lock, we realize the main thread is responsive.
-  DropQueueingTimeEstimatorLock();
-  EXPECT_FALSE(
-      scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
 }
 
 //                  Nav Start     Nav Start            assert

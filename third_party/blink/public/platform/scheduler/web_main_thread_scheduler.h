@@ -114,10 +114,6 @@ class BLINK_PLATFORM_EXPORT WebMainThreadScheduler : public WebThreadScheduler {
       const WebInputEvent& web_input_event,
       WebInputEventResult result) = 0;
 
-  // Returns the most recently reported expected queueing time, computed over
-  // the past 1 second window.
-  virtual base::TimeDelta MostRecentExpectedQueueingTime() = 0;
-
   // Tells the scheduler that the system is displaying an input animation (e.g.
   // a fling). Called by the compositor (impl) thread.
   virtual void DidAnimateForInputOnCompositorThread() = 0;
@@ -205,12 +201,6 @@ class BLINK_PLATFORM_EXPORT WebMainThreadScheduler : public WebThreadScheduler {
   // [1]
   // https://developers.google.com/web/tools/chrome-devtools/profile/evaluate-performance/rail
   virtual void SetRAILModeObserver(RAILModeObserver* observer) = 0;
-
-  // Returns whether or not the main thread appears unresponsive, based on the
-  // length and frequency of recent main thread tasks. To be called from the
-  // compositor thread.
-  virtual bool MainThreadSeemsUnresponsive(
-      base::TimeDelta main_thread_responsiveness_threshold) = 0;
 
   // Sets the kind of renderer process. Should be called on the main thread
   // once.
