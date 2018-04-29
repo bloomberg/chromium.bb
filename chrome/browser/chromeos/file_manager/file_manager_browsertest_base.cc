@@ -272,16 +272,13 @@ class TestVolume {
 
 }  // anonymous namespace
 
-// The local volume class for test.
-// This class provides the operations for a test volume that simulates local
-// drive.
+// LocalTestVolume: test volume for a local drive.
 class LocalTestVolume : public TestVolume {
  public:
   explicit LocalTestVolume(const std::string& name) : TestVolume(name) {}
   ~LocalTestVolume() override {}
 
-  // Adds this volume to the file system as a local volume. Returns true on
-  // success.
+  // Adds this local volume. Returns true on success.
   virtual bool Mount(Profile* profile) = 0;
 
   void CreateEntry(const TestEntryInfo& entry) {
@@ -330,19 +327,21 @@ class LocalTestVolume : public TestVolume {
   std::map<base::FilePath, const TestEntryInfo> entries_;
 };
 
+// DownloadsTestVolume: local test volume for the "Downloads" directory.
 class DownloadsTestVolume : public LocalTestVolume {
  public:
   DownloadsTestVolume() : LocalTestVolume("Downloads") {}
   ~DownloadsTestVolume() override {}
 
   bool Mount(Profile* profile) override {
-    return CreateRootDirectory(profile) &&
-           VolumeManager::Get(profile)
-               ->RegisterDownloadsDirectoryForTesting(root_path());
+    if (!CreateRootDirectory(profile))
+      return false;
+    auto* volume = VolumeManager::Get(profile);
+    return volume->RegisterDownloadsDirectoryForTesting(root_path());
   }
 };
 
-// Test volume for mimicing a specified type of volumes by a local folder.
+// FakeTestVolume: local test volume with a specified volume and device type.
 class FakeTestVolume : public LocalTestVolume {
  public:
   FakeTestVolume(const std::string& name,
@@ -389,9 +388,7 @@ class FakeTestVolume : public LocalTestVolume {
   const chromeos::DeviceType device_type_;
 };
 
-// The drive volume class for test.
-// This class provides the operations for a test volume that simulates Google
-// drive.
+// DriveTestVolume: test volume for Google Drive.
 class DriveTestVolume : public TestVolume {
  public:
   DriveTestVolume() : TestVolume("drive"), integration_service_(NULL) {}
