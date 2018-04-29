@@ -61,20 +61,6 @@ enum SharedOption {
   SHARED,
 };
 
-// Obtains file manager test data directory.
-base::FilePath GetTestFilePath(const std::string& relative_path) {
-  base::FilePath path;
-  if (!PathService::Get(base::DIR_SOURCE_ROOT, &path))
-    return base::FilePath();
-  path = path.AppendASCII("chrome")
-             .AppendASCII("test")
-             .AppendASCII("data")
-             .AppendASCII("chromeos")
-             .AppendASCII("file_manager")
-             .Append(base::FilePath::FromUTF8Unsafe(relative_path));
-  return path;
-}
-
 // Maps the given string to EntryType. Returns true on success.
 bool MapStringToEntryType(base::StringPiece value, EntryType* output) {
   if (value == "file")
@@ -256,13 +242,25 @@ class TestVolume {
   bool CreateRootDirectory(const Profile* profile) {
     if (root_initialized_)
       return true;
-
     root_initialized_ = root_.Set(profile->GetPath().Append(name_));
     return root_initialized_;
   }
 
   const std::string& name() const { return name_; }
   const base::FilePath& root_path() const { return root_.GetPath(); }
+
+  static base::FilePath GetTestDataFilePath(const std::string& file_name) {
+    // Get the path to file manager's test data directory.
+    base::FilePath source;
+    CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &source));
+    auto test_data_path = source.AppendASCII("chrome")
+                              .AppendASCII("test")
+                              .AppendASCII("data")
+                              .AppendASCII("chromeos")
+                              .AppendASCII("file_manager");
+    // Return full test data path to the given |file_name|.
+    return test_data_path.Append(base::FilePath::FromUTF8Unsafe(file_name));
+  }
 
  private:
   std::string name_;
@@ -289,7 +287,7 @@ class LocalTestVolume : public TestVolume {
     switch (entry.type) {
       case FILE: {
         const base::FilePath source_path =
-            GetTestFilePath(entry.source_file_name);
+            TestVolume::GetTestDataFilePath(entry.source_file_name);
         ASSERT_TRUE(base::CopyFile(source_path, target_path))
             << "Copy from " << source_path.value() << " to "
             << target_path.value() << " failed.";
@@ -458,8 +456,9 @@ class DriveTestVolume : public TestVolume {
 
     std::string content_data;
     if (!source_file_name.empty()) {
-      base::FilePath source_file_path = GetTestFilePath(source_file_name);
-      ASSERT_TRUE(base::ReadFileToString(source_file_path, &content_data));
+      base::FilePath source_path =
+          TestVolume::GetTestDataFilePath(source_file_name);
+      ASSERT_TRUE(base::ReadFileToString(source_path, &content_data));
     }
 
     std::unique_ptr<google_apis::FileResource> entry;
