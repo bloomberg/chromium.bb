@@ -44,24 +44,36 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
   void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
 
-  // Loads our testing extension and sends it a string identifying the current
-  // test.
-  virtual void StartTest();
+  // Load the test extension from GetTestManifestName(), and use it drive the
+  // testing of the actual FileManager component extension under test.
+  void StartTest();
 
-  // Overriding point for test configurations.
-  virtual const char* GetTestManifestName() const = 0;
+  // Overrides for each FileManagerBrowserTest test extension type.
   virtual GuestMode GetGuestModeParam() const = 0;
   virtual const char* GetTestCaseNameParam() const = 0;
+  virtual const char* GetTestManifestName() const = 0;
 
  private:
-  // Installs an extension at the specified |path| by |manifest_name|.
+  // Called during setup if needed, to create a drive integration service for
+  // the given Profile |profile|.
+  drive::DriveIntegrationService* CreateDriveIntegrationService(
+      Profile* profile);
+
+  // Installs the test extension with manifest |manifest_name|. The extension
+  // manifest_name file should reside in the specified |path| relative to the
+  // Chromium src directory.
   void InstallExtension(const base::FilePath& path, const char* manifest_name);
-  // TODO(noel): describe this function.
+
+  // Runs the test: awaits chrome.test messsage commands and chrome.test PASS
+  // or FAIL messsages to process. |OnMessage| is used to handle the commands
+  // sent from the test extension. Returns on test PASS or FAIL.
   void RunTestMessageLoop();
-  // TODO(noel): describe this function.
-  virtual void OnMessage(const std::string& name,
-                         const base::DictionaryValue& value,
-                         std::string* output);
+
+  // Process test extension command |name|, with arguments |value|. Write the
+  // results to |output|.
+  void OnMessage(const std::string& name,
+                 const base::DictionaryValue& value,
+                 std::string* output);
 
   std::unique_ptr<LocalTestVolume> local_volume_;
   linked_ptr<DriveTestVolume> drive_volume_;
@@ -69,8 +81,6 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
   std::unique_ptr<FakeTestVolume> usb_volume_;
   std::unique_ptr<FakeTestVolume> mtp_volume_;
 
-  drive::DriveIntegrationService* CreateDriveIntegrationService(
-      Profile* profile);
   drive::DriveIntegrationServiceFactory::FactoryCallback
       create_drive_integration_service_;
   std::unique_ptr<drive::DriveIntegrationServiceFactory::ScopedFactoryForTest>
