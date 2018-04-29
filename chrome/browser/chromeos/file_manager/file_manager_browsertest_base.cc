@@ -101,7 +101,7 @@ bool MapStringToTime(base::StringPiece value, base::Time* time) {
   return base::Time::FromString(value.as_string().c_str(), time);
 }
 
-// Test data of file or directory.
+// Test data file or directory entry info.
 struct TestEntryInfo {
   TestEntryInfo() : type(FILE), shared_option(NONE) {}
 
@@ -112,60 +112,54 @@ struct TestEntryInfo {
                 SharedOption shared_option,
                 const base::Time& last_modified_time)
       : type(type),
+        shared_option(shared_option),
         source_file_name(source_file_name),
         target_path(target_path),
         mime_type(mime_type),
-        shared_option(shared_option),
         last_modified_time(last_modified_time) {}
 
-  EntryType type;
-  std::string source_file_name;  // Source file name to be used as a prototype.
-  std::string target_path;       // Target file or directory path.
-  std::string mime_type;
-  SharedOption shared_option;
-  base::Time last_modified_time;
+  EntryType type;                 // Entry type: file or directory.
+  SharedOption shared_option;     // File entry sharing option.
+  std::string source_file_name;   // Source file name prototype.
+  std::string target_path;        // Target file or directory path.
+  std::string mime_type;          // File entry content mime type.
+  base::Time last_modified_time;  // Entry last modified time.
 
   // Registers the member information to the given converter.
   static void RegisterJSONConverter(
-      base::JSONValueConverter<TestEntryInfo>* converter);
+      base::JSONValueConverter<TestEntryInfo>* converter) {
+    converter->RegisterCustomField("type", &TestEntryInfo::type,
+                                   &MapStringToEntryType);
+    converter->RegisterStringField("sourceFileName",
+                                   &TestEntryInfo::source_file_name);
+    converter->RegisterStringField("targetPath", &TestEntryInfo::target_path);
+    converter->RegisterStringField("mimeType", &TestEntryInfo::mime_type);
+    converter->RegisterCustomField("sharedOption",
+                                   &TestEntryInfo::shared_option,
+                                   &MapStringToSharedOption);
+    converter->RegisterCustomField("lastModifiedTime",
+                                   &TestEntryInfo::last_modified_time,
+                                   &MapStringToTime);
+  }
 };
-
-// static
-void TestEntryInfo::RegisterJSONConverter(
-    base::JSONValueConverter<TestEntryInfo>* converter) {
-  converter->RegisterCustomField("type", &TestEntryInfo::type,
-                                 &MapStringToEntryType);
-  converter->RegisterStringField("sourceFileName",
-                                 &TestEntryInfo::source_file_name);
-  converter->RegisterStringField("targetPath", &TestEntryInfo::target_path);
-  converter->RegisterStringField("mimeType", &TestEntryInfo::mime_type);
-  converter->RegisterCustomField("sharedOption", &TestEntryInfo::shared_option,
-                                 &MapStringToSharedOption);
-  converter->RegisterCustomField(
-      "lastModifiedTime", &TestEntryInfo::last_modified_time, &MapStringToTime);
-}
 
 // Message from JavaScript to add entries.
 struct AddEntriesMessage {
-  // Target volume to be added the |entries|.
-  TargetVolume volume;
-
   // Entries to be added.
   std::vector<std::unique_ptr<TestEntryInfo>> entries;
 
+  // Target volume to add |entries| to.
+  TargetVolume volume;
+
   // Registers the member information to the given converter.
   static void RegisterJSONConverter(
-      base::JSONValueConverter<AddEntriesMessage>* converter);
+      base::JSONValueConverter<AddEntriesMessage>* converter) {
+    converter->RegisterCustomField("volume", &AddEntriesMessage::volume,
+                                   &MapStringToTargetVolume);
+    converter->RegisterRepeatedMessage<TestEntryInfo>(
+        "entries", &AddEntriesMessage::entries);
+  }
 };
-
-// static
-void AddEntriesMessage::RegisterJSONConverter(
-    base::JSONValueConverter<AddEntriesMessage>* converter) {
-  converter->RegisterCustomField("volume", &AddEntriesMessage::volume,
-                                 &MapStringToTargetVolume);
-  converter->RegisterRepeatedMessage<TestEntryInfo>(
-      "entries", &AddEntriesMessage::entries);
-}
 
 // Listens for chrome.test messages: PASS, FAIL, and SendMessage.
 class FileManagerTestMessageListener : public content::NotificationObserver {
