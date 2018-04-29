@@ -9,22 +9,10 @@
 #include <utility>
 
 #include "base/numerics/safe_conversions.h"
+#include "components/zucchini/algorithm.h"
 #include "components/zucchini/crc32.h"
 
 namespace zucchini {
-
-namespace {
-
-bool RangeIsInRegion(offset_t begin, uint32_t size, BufferRegion region) {
-  // Return false if |begin + size > kOffsetBound|, without overflowing.
-  if (begin >= kOffsetBound || kOffsetBound - begin < size)
-    return false;
-  offset_t end = begin + size;
-  // Return false if |[begin, end]| leaks outside |region|.
-  return begin >= region.lo() && end <= region.hi();
-}
-
-}  // namespace
 
 namespace patch {
 
@@ -265,18 +253,18 @@ bool PatchElementReader::Initialize(BufferSource* source) {
 bool PatchElementReader::ValidateEquivalences() {
   EquivalenceSource equivalences_copy = equivalences_;
 
-  BufferRegion old_region = element_match_.old_element.region();
-  BufferRegion new_region = element_match_.new_element.region();
+  const size_t old_region_size = element_match_.old_element.size;
+  const size_t new_region_size = element_match_.new_element.size;
 
   // Validate that each |equivalence| falls within the bounds of the
   // |element_match_| and are in order.
   offset_t prev_dst_end = 0;
   for (auto equivalence = equivalences_copy.GetNext(); equivalence.has_value();
        equivalence = equivalences_copy.GetNext()) {
-    if (!RangeIsInRegion(equivalence->src_offset, equivalence->length,
-                         old_region) ||
-        !RangeIsInRegion(equivalence->dst_offset, equivalence->length,
-                         new_region)) {
+    if (!RangeIsBounded(equivalence->src_offset, equivalence->length,
+                        old_region_size) ||
+        !RangeIsBounded(equivalence->dst_offset, equivalence->length,
+                        new_region_size)) {
       LOG(ERROR) << "Out of bounds equivalence detected.";
       return false;
     }
