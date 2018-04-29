@@ -158,14 +158,15 @@ GROUP_BASELINE = dict((e.group, e) for e in (
 GROUP_BASELINE_FREON = dict((e.group, e) for e in (
     GroupEntry(group='tty', gid=5, users={'power', 'brltty'}),
     GroupEntry(group='video', gid=27, users={'root', 'chronos', 'arc-camera',
-                                             'dlm', 'rtanalytics'}),
+                                             'dlm', 'rtanalytics', 'crosvm'}),
     GroupEntry(group='input', gid=222, users={'cras', 'power', 'chronos'}),
 ))
 
 GROUP_BASELINE_XORG = dict((e.group, e) for e in (
     GroupEntry(group='tty', gid=5, users={'xorg', 'power', 'brltty'}),
     GroupEntry(group='video', gid=27, users={'root', 'chronos', 'arc-camera',
-                                             'xorg', 'dlm', 'rtanalytics'}),
+                                             'xorg', 'dlm', 'rtanalytics',
+                                             'crosvm'}),
     GroupEntry(group='input', gid=222, users={'cras', 'xorg', 'power'}),
 ))
 
