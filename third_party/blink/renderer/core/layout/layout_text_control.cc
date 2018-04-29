@@ -70,13 +70,6 @@ void LayoutTextControl::StyleDidChange(StyleDifference diff,
   GetTextControlElement()->UpdatePlaceholderVisibility();
 }
 
-static inline void UpdateUserModifyProperty(TextControlElement& node,
-                                            ComputedStyle& style) {
-  style.SetUserModify(node.IsDisabledOrReadOnly()
-                          ? EUserModify::kReadOnly
-                          : EUserModify::kReadWritePlaintextOnly);
-}
-
 int LayoutTextControl::TextBlockLogicalHeight() const {
   return (LogicalHeight() - BorderAndPaddingLogicalHeight()).ToInt();
 }
@@ -91,14 +84,6 @@ int LayoutTextControl::TextBlockLogicalWidth() const {
                   inner_editor->GetLayoutBox()->PaddingEnd();
 
   return unit_width.ToInt();
-}
-
-void LayoutTextControl::UpdateFromElement() {
-  Element* inner_editor = InnerEditorElement();
-  if (inner_editor && inner_editor->GetLayoutObject())
-    UpdateUserModifyProperty(
-        *GetTextControlElement(),
-        inner_editor->GetLayoutObject()->MutableStyleRef());
 }
 
 int LayoutTextControl::ScrollbarThickness() const {

@@ -67,7 +67,6 @@ class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
       LayoutUnit line_height,
       LayoutUnit non_content_height) const = 0;
 
-  void UpdateFromElement() override;
   void ComputeLogicalHeight(LayoutUnit logical_height,
                             LayoutUnit logical_top,
                             LogicalExtentComputedValues&) const override;
