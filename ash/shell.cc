@@ -1450,12 +1450,12 @@ void Shell::OnSessionStateChanged(session_manager::SessionState state) {
         break;
       case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
       case session_manager::SessionState::ACTIVE:
-        // Recreate the keyboard on user profile change, to refresh keyboard
+        // Reload the keyboard on user profile change to refresh keyboard
         // extensions with the new profile and ensure the extensions call the
         // proper IME. |LOGGED_IN_NOT_ACTIVE| is needed so that the virtual
         // keyboard works on supervised user creation, http://crbug.com/712873.
         // |ACTIVE| is also needed for guest user workflow.
-        CreateKeyboard();
+        ReloadKeyboard();
         break;
       default:
         break;
