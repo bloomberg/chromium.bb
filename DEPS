@@ -772,7 +772,7 @@ deps = {
   },
 
   'src/third_party/mesa/src':
-    Var('chromium_git') + '/chromium/deps/mesa.git' + '@' + '803b1132096707417736df8d167176a33813aa9f',
+    Var('chromium_git') + '/chromium/deps/mesa.git' + '@' + '9d9b0710470f581cb5485b02b6acd8415cc093e8',
 
   # GNU binutils assembler for x86-64.
   'src/third_party/mingw-w64/mingw/bin': {

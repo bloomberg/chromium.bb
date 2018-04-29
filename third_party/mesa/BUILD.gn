@@ -137,9 +137,6 @@ config("mesa_internal_warnings") {
 
       # mesa's STATIC_ASSERT() macro expands to an ununused typedef.
       "-Wno-unused-local-typedef",
-
-      # mesa's flex scanner code uses "register" a lot.
-      "-Wno-deprecated-register",
     ]
   }
   if (is_win) {
