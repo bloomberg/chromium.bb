@@ -47738,6 +47738,18 @@ Full version information for the fingerprint enum values:
   <int value="3" label="Not connected (Wake On WiFi disabled)"/>
 </enum>
 
+<enum name="WiFiPCIStatus">
+  <int value="0" label="(Bad status) NIC not detected in lspci"/>
+  <int value="1"
+      label="(Bad status) NIC shows in lspci but wlan0 doesnt exist"/>
+  <int value="2"
+      label="(Bad status) NIC shows in lspci, wlan0 present, shill doesn't
+             know"/>
+  <int value="3"
+      label="(Good status) NIC present, wlan0 present, shill knows about
+             wlan0"/>
+</enum>
+
 <enum name="WiFiReasonCode">
   <int value="0" label="kReasonReserved0"/>
   <int value="1" label="kReasonCodeUnspecified"/>
