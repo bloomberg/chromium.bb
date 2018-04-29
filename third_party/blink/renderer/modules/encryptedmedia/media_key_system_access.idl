@@ -4,7 +4,9 @@
 
 // https://w3c.github.io/encrypted-media/#mediakeysystemaccess-interface
 
-interface MediaKeySystemAccess {
+[
+    SecureContext
+] interface MediaKeySystemAccess {
     readonly attribute DOMString keySystem;
     MediaKeySystemConfiguration getConfiguration();
     [CallWith=ScriptState] Promise<MediaKeys> createMediaKeys();

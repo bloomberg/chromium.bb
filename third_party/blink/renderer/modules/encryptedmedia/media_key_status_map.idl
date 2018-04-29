@@ -14,7 +14,9 @@ enum MediaKeyStatus {
     "internal-error"
 };
 
-interface MediaKeyStatusMap {
+[
+    SecureContext
+] interface MediaKeyStatusMap {
     iterable <BufferSource, MediaKeyStatus>;
     readonly attribute unsigned long size;
     boolean has(BufferSource keyId);
