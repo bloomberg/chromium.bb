@@ -84,8 +84,9 @@ struct FormFieldData {
 
   // Returns true for all of textfield-looking types such as text, password,
   // search, email, url, and number. It must work the same way as Blink function
-  // WebInputElement::IsTextField().
-  bool IsTextField() const;
+  // WebInputElement::IsTextField(), and it returns false if |*this| represents
+  // a textarea.
+  bool IsTextInputElement() const;
 
   // Note: operator==() performs a full-field-comparison(byte by byte), this is
   // different from SameFieldAs(), which ignores comparison for those "values"

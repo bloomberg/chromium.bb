@@ -186,7 +186,7 @@ bool FormFieldData::SimilarFieldAs(const FormFieldData& field) const {
          IsCheckable(check_status) == IsCheckable(field.check_status);
 }
 
-bool FormFieldData::IsTextField() const {
+bool FormFieldData::IsTextInputElement() const {
   return form_control_type == "text" || form_control_type == "password" ||
          form_control_type == "search" || form_control_type == "tel" ||
          form_control_type == "url" || form_control_type == "email";
