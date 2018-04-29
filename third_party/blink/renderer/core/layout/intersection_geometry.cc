@@ -117,17 +117,17 @@ void IntersectionGeometry::InitializeRootRect() {
       !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     root_rect_ = LayoutRect(root_->GetFrameView()->VisibleContentRect());
     root_->MapToVisualRectInAncestorSpace(nullptr, root_rect_);
-  } else if (root_->IsLayoutView() && root_->GetDocument().IsInMainFrame() &&
-             root_->GetDocument()
-                 .GetPage()
-                 ->GetSettings()
-                 .GetForceZeroLayoutHeight()) {
-    // The ForceZeroLayoutHeight quirk setting is used in Android WebView for
+  } else if (root_->IsLayoutView() && root_->GetDocument().IsInMainFrame()) {
+    // The main frame is a bit special (even after RLS) as the scrolling
+    // viewport can differ in size from the LayoutView itself. There's two
+    // situations this occurs in:
+    // 1) The ForceZeroLayoutHeight quirk setting is used in Android WebView for
     // compatibility and sets the initial-containing-block's (a.k.a.
     // LayoutView) height to 0. Thus, we can't use its size for intersection
     // testing. Use the FrameView geometry instead.
-    root_rect_ = LayoutRect(
-        LayoutPoint(), LayoutSize(root_->GetFrameView()->VisibleContentSize()));
+    // 2) An element wider than the ICB can cause us to resize the FrameView so
+    // we can zoom out to fit the entire element width.
+    root_rect_ = ToLayoutView(root_)->OverflowClipRect(LayoutPoint());
   } else if (root_->IsBox() && root_->HasOverflowClip()) {
     root_rect_ = LayoutRect(ToLayoutBox(root_)->ContentBoxRect());
   } else {
