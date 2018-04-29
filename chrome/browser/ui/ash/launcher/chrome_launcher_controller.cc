@@ -555,7 +555,7 @@ void ChromeLauncherController::ActiveUserChanged(
   if (!ash_util::IsRunningInMash()) {
     // Force on-screen keyboard to reset.
     if (keyboard::IsKeyboardEnabled())
-      ash::Shell::Get()->CreateKeyboard();
+      ash::Shell::Get()->ReloadKeyboard();
   }
 }
 
