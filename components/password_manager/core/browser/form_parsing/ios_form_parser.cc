@@ -70,8 +70,9 @@ bool HasAutocompleteAttributeValue(const FormFieldData& field,
 // Returns text fields from |fields|.
 FieldPointersVector GetTextFields(const std::vector<FormFieldData>& fields) {
   FieldPointersVector result;
+  result.reserve(fields.size());
   for (const auto& field : fields) {
-    if (field.IsTextField())
+    if (field.IsTextInputElement())
       result.push_back(&field);
   }
   return result;
@@ -80,6 +81,7 @@ FieldPointersVector GetTextFields(const std::vector<FormFieldData>& fields) {
 // Returns fields that do not have credit card related autocomplete attributes.
 FieldPointersVector GetNonCreditCardFields(const FieldPointersVector& fields) {
   FieldPointersVector result;
+  result.reserve(fields.size());
   for (const auto* field : fields) {
     if (!HasCreditCardAutocompleteAttributes(*field))
       result.push_back(field);
