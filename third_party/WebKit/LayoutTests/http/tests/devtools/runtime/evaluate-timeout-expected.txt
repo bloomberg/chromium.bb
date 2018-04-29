@@ -3,11 +3,45 @@ Test frontend's timeout support.
 
 Testing expression 1 + 1 with timeout: 0
 error: Execution was terminated
-Error occurred.
+{
+    error : "Execution was terminated"
+}
 
 Testing expression while (1){} with timeout: 0
 error: Execution was terminated
-Error occurred.
+{
+    error : "Execution was terminated"
+}
 
-Does the runtime support side effect checks? true
+Testing expression 1 + 1 with timeout: 0
+error: Execution was terminated
+{
+    error : "Execution was terminated"
+}
+
+Does the runtime also support side effect checks? true
+
+Clearing cached side effect support
+Set timer for test function.
+Script execution paused.
+
+Testing expression 1 + 1 with timeout: 0
+error: Execution was terminated
+{
+    error : "Execution was terminated"
+}
+
+Testing expression while (1){} with timeout: 0
+error: Execution was terminated
+{
+    error : "Execution was terminated"
+}
+
+Testing expression 1 + 1 with timeout: 0
+error: Execution was terminated
+{
+    error : "Execution was terminated"
+}
+Does the runtime also support side effect checks? true
+Script execution resumed.
 

@@ -3,35 +3,58 @@
 // found in the LICENSE file.
 
 (async function() {
-    await TestRunner.loadModule('sources_test_runner');
-    TestRunner.addResult("Test frontend's timeout support.\n");
+  await TestRunner.loadModule('sources_test_runner');
+  TestRunner.addResult("Test frontend's timeout support.\n");
 
-    const executionContext = UI.context.flavor(SDK.ExecutionContext);
-    const regularExpression = '1 + 1';
-    const infiniteExpression = 'while (1){}';
+  const executionContext = UI.context.flavor(SDK.ExecutionContext);
+  const regularExpression = '1 + 1';
+  const infiniteExpression = 'while (1){}';
 
-    await runtimeTestCase(regularExpression);
-    await runtimeTestCase(infiniteExpression);
+  await runtimeTestCase(regularExpression);
+  await runtimeTestCase(infiniteExpression);
+  await runtimeTestCase(regularExpression);
 
-    let supports = executionContext.runtimeModel.hasSideEffectSupport();
-    TestRunner.addResult(`\nDoes the runtime support side effect checks? ${supports}`);
-    TestRunner.completeTest();
+  let supports = executionContext.runtimeModel.hasSideEffectSupport();
+  TestRunner.addResult(`\nDoes the runtime also support side effect checks? ${supports}`);
+  TestRunner.addResult(`\nClearing cached side effect support`);
+  executionContext.runtimeModel._hasSideEffectSupport = null;
 
-    async function runtimeTestCase(expression) {
-      TestRunner.addResult(`\nTesting expression ${expression} with timeout: 0`);
-      const result = await executionContext.evaluate({expression, timeout: 0});
-      printDetails(result);
+  // Debugger evaluateOnCallFrame test.
+  await TestRunner.evaluateInPagePromise(`
+    function testFunction()
+    {
+        debugger;
     }
+  `);
 
-    function printDetails(result) {
-      if (result.error) {
-        TestRunner.addResult(`Error occurred.`);
-      } else if (result.exceptionDetails) {
-        let exceptionDescription = result.exceptionDetails.exception.description;
-        TestRunner.addResult(`Exception: ${exceptionDescription.split("\n")[0]}`);
-      } else if (result.object) {
-        let objectDescription = result.object.description;
-        TestRunner.addResult(`Result: ${objectDescription}`);
-      }
-    }
-  })();
+  await SourcesTestRunner.startDebuggerTestPromise();
+  await SourcesTestRunner.runTestFunctionAndWaitUntilPausedPromise();
+
+  await debuggerTestCase(regularExpression);
+  await debuggerTestCase(infiniteExpression);
+  await debuggerTestCase(regularExpression);
+
+  supports = executionContext.runtimeModel.hasSideEffectSupport();
+  TestRunner.addResult(`Does the runtime also support side effect checks? ${supports}`);
+
+  SourcesTestRunner.completeDebuggerTest();
+
+  async function runtimeTestCase(expression) {
+    TestRunner.addResult(`\nTesting expression ${expression} with timeout: 0`);
+    const result = await executionContext.evaluate({expression, timeout: 0});
+    printDetails(result);
+  }
+
+  async function debuggerTestCase(expression) {
+    TestRunner.addResult(`\nTesting expression ${expression} with timeout: 0`);
+    const result = await executionContext.debuggerModel.selectedCallFrame().evaluate({expression, timeout: 0});
+    printDetails(result);
+  }
+
+  function printDetails(result) {
+    const customFormatters = {};
+    for (let name of ['_runtimeModel', '_runtimeAgent'])
+      customFormatters[name] = 'formatAsTypeNameOrNull';
+    TestRunner.dump(result, customFormatters);
+  }
+})();
