@@ -33,7 +33,8 @@ enum MediaKeyMessageType {
 };
 
 [
-    Constructor(DOMString type, MediaKeyMessageEventInit eventInitDict)
+    Constructor(DOMString type, MediaKeyMessageEventInit eventInitDict),
+    SecureContext
 ] interface MediaKeyMessageEvent : Event {
     readonly attribute MediaKeyMessageType messageType;
     readonly attribute ArrayBuffer message;

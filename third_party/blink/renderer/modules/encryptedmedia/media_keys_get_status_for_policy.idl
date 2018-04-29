@@ -6,7 +6,8 @@
 
 [
     ImplementedAs=MediaKeysGetStatusForPolicy,
-    RuntimeEnabled=EncryptedMediaHdcpPolicyCheck
+    RuntimeEnabled=EncryptedMediaHdcpPolicyCheck,
+    SecureContext
 ] partial interface MediaKeys {
     [Measure, CallWith=ScriptState] Promise<MediaKeyStatus> getStatusForPolicy(MediaKeysPolicy policy);
 };
