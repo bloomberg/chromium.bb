@@ -180,11 +180,6 @@ const base::Feature kLazyParseCSS{"LazyParseCSS",
 const base::Feature kLowPriorityIframes{"LowPriorityIframes",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// An experiment forcing events to be non-blocking when the main thread is
-// deemed unresponsive.  See https://crbug.com/599609.
-const base::Feature kMainThreadBusyScrollIntervention{
-    "MainThreadBusyScrollIntervention", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // If this feature is enabled, media-device enumerations use a cache that is
 // invalidated upon notifications sent by base::SystemMonitor. If disabled, the
 // cache is considered invalid on every enumeration request.

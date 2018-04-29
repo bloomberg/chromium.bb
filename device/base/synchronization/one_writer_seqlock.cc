@@ -24,17 +24,6 @@ base::subtle::Atomic32 OneWriterSeqLock::ReadBegin() const {
   return version;
 }
 
-void OneWriterSeqLock::TryRead(bool* can_read,
-                               base::subtle::Atomic32* version) const {
-  DCHECK(can_read);
-  DCHECK(version);
-
-  *version = base::subtle::NoBarrier_Load(&sequence_);
-  // If the counter is even, then the associated data might be in a
-  // consistent state, so we can try to read.
-  *can_read = (*version & 1) == 0;
-}
-
 bool OneWriterSeqLock::ReadRetry(base::subtle::Atomic32 version) const {
   // If the sequence number was updated then a read should be re-attempted.
   // -- Load fence, read membarrier

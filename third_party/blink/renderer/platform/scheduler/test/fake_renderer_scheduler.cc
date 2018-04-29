@@ -68,10 +68,6 @@ void FakeRendererScheduler::DidHandleInputEventOnMainThread(
     const blink::WebInputEvent& web_input_event,
     WebInputEventResult result) {}
 
-base::TimeDelta FakeRendererScheduler::MostRecentExpectedQueueingTime() {
-  return base::TimeDelta();
-}
-
 void FakeRendererScheduler::DidAnimateForInputOnCompositorThread() {}
 
 bool FakeRendererScheduler::IsHighPriorityWorkAnticipated() {
@@ -121,11 +117,6 @@ void FakeRendererScheduler::SetTopLevelBlameContext(
     base::trace_event::BlameContext* blame_context) {}
 
 void FakeRendererScheduler::SetRAILModeObserver(RAILModeObserver* observer) {}
-
-bool FakeRendererScheduler::MainThreadSeemsUnresponsive(
-    base::TimeDelta main_thread_responsiveness_threshold) {
-  return false;
-}
 
 void FakeRendererScheduler::SetRendererProcessType(RendererProcessType type) {}
 

@@ -33,67 +33,6 @@ ukm::SourceId GenerateUkmSourceId() {
   return ukm_recorder ? ukm_recorder->GetNewSourceID() : ukm::kInvalidSourceId;
 }
 
-void RecordEQTAccuracy(base::TimeDelta queueing_time,
-                       base::TimeDelta expected_queueing_time) {
-  float queueing_time_ms = queueing_time.InMillisecondsF();
-
-  if (queueing_time_ms < 10) {
-    UMA_HISTOGRAM_TIMES(
-        "RendererScheduler."
-        "ExpectedQueueingTimeWhenQueueingTime_LessThan.10ms",
-        expected_queueing_time);
-  }
-
-  if (queueing_time_ms < 150) {
-    UMA_HISTOGRAM_TIMES(
-        "RendererScheduler."
-        "ExpectedQueueingTimeWhenQueueingTime_LessThan.150ms",
-        expected_queueing_time);
-  }
-
-  if (queueing_time_ms < 300) {
-    UMA_HISTOGRAM_TIMES(
-        "RendererScheduler."
-        "ExpectedQueueingTimeWhenQueueingTime_LessThan.300ms",
-        expected_queueing_time);
-  }
-
-  if (queueing_time_ms < 450) {
-    UMA_HISTOGRAM_TIMES(
-        "RendererScheduler."
-        "ExpectedQueueingTimeWhenQueueingTime_LessThan.450ms",
-        expected_queueing_time);
-  }
-
-  if (queueing_time_ms > 10) {
-    UMA_HISTOGRAM_TIMES(
-        "RendererScheduler."
-        "ExpectedQueueingTimeWhenQueueingTime_GreaterThan.10ms",
-        expected_queueing_time);
-  }
-
-  if (queueing_time_ms > 150) {
-    UMA_HISTOGRAM_TIMES(
-        "RendererScheduler."
-        "ExpectedQueueingTimeWhenQueueingTime_GreaterThan.150ms",
-        expected_queueing_time);
-  }
-
-  if (queueing_time_ms > 300) {
-    UMA_HISTOGRAM_TIMES(
-        "RendererScheduler."
-        "ExpectedQueueingTimeWhenQueueingTime_GreaterThan.300ms",
-        expected_queueing_time);
-  }
-
-  if (queueing_time_ms > 450) {
-    UMA_HISTOGRAM_TIMES(
-        "RendererScheduler."
-        "ExpectedQueueingTimeWhenQueueingTime_GreaterThan.450ms",
-        expected_queueing_time);
-  }
-}
-
 }  // namespace
 
 RenderWidgetHostLatencyTracker::RenderWidgetHostLatencyTracker(
@@ -167,10 +106,6 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
       UMA_HISTOGRAM_INPUT_LATENCY_MILLISECONDS(
           "Event.Latency.QueueingTime." + event_name + default_action_status,
           rwh_component, main_component);
-
-      RecordEQTAccuracy(
-          main_component.last_event_time - rwh_component.first_event_time,
-          latency.expected_queueing_time_on_dispatch());
     }
   }
 

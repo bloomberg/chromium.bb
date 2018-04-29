@@ -268,35 +268,10 @@ void TouchEvent::preventDefault() {
     case PassiveMode::kNotPassive:
     case PassiveMode::kNotPassiveDefault:
       if (!cancelable()) {
-        if (view() && view()->IsLocalDOMWindow() && view()->GetFrame()) {
-          UseCounter::Count(
-              ToLocalFrame(view()->GetFrame()),
-              WebFeature::kUncancelableTouchEventPreventDefaulted);
-        }
-
-        if (native_event_ &&
-            GetWebTouchEvent(*native_event_)->dispatch_type ==
-                WebInputEvent::
-                    kListenersForcedNonBlockingDueToMainThreadResponsiveness) {
-          // Non blocking due to main thread responsiveness.
-          if (view() && view()->IsLocalDOMWindow() && view()->GetFrame()) {
-            UseCounter::Count(
-                ToLocalFrame(view()->GetFrame()),
-                WebFeature::
-                    kUncancelableTouchEventDueToMainThreadResponsivenessPreventDefaulted);
-          }
-          message =
-              "Ignored attempt to cancel a " + type() +
-              " event with cancelable=false. This event was forced to be "
-              "non-cancellable because the page was too busy to handle the "
-              "event promptly.";
-        } else {
-          // Non blocking for any other reason.
-          message = "Ignored attempt to cancel a " + type() +
-                    " event with cancelable=false, for example "
-                    "because scrolling is in progress and "
-                    "cannot be interrupted.";
-        }
+        message = "Ignored attempt to cancel a " + type() +
+                  " event with cancelable=false, for example "
+                  "because scrolling is in progress and "
+                  "cannot be interrupted.";
       }
       break;
     case PassiveMode::kPassiveForcedDocumentLevel:

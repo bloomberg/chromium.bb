@@ -17,7 +17,6 @@
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
-#include "device/base/synchronization/shared_memory_seqlock_buffer.h"
 #include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_time_observer.h"
@@ -110,7 +109,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       InputEventState event_state) override;
   void DidHandleInputEventOnMainThread(const WebInputEvent& web_input_event,
                                        WebInputEventResult result) override;
-  base::TimeDelta MostRecentExpectedQueueingTime() override;
   void DidAnimateForInputOnCompositorThread() override;
   void SetRendererHidden(bool hidden) override;
   void SetRendererBackgrounded(bool backgrounded) override;
@@ -135,8 +133,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;
   void SetRAILModeObserver(RAILModeObserver* observer) override;
-  bool MainThreadSeemsUnresponsive(
-      base::TimeDelta main_thread_responsiveness_threshold) override;
   void SetRendererProcessType(RendererProcessType type) override;
   WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
       const char* name,
@@ -641,10 +637,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   DeadlineTaskRunner delayed_update_policy_runner_;
   CancelableClosureHolder end_renderer_hidden_idle_period_closure_;
 
-  using SeqLockQueueingTimeEstimator =
-      device::SharedMemorySeqLockBuffer<QueueingTimeEstimator>;
-
-  SeqLockQueueingTimeEstimator seqlock_queueing_time_estimator_;
+  QueueingTimeEstimator queueing_time_estimator_;
 
   base::TimeDelta delay_for_background_tab_freezing_;
 
@@ -667,7 +660,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     base::TimeTicks current_policy_expiration_time;
     base::TimeTicks estimated_next_frame_begin;
     base::TimeTicks current_task_start_time;
-    base::TimeDelta most_recent_expected_queueing_time;
     base::TimeDelta compositor_frame_interval;
     TraceableCounter<base::TimeDelta, kTracingCategoryNameDebug>
         longest_jank_free_task_duration;
@@ -775,7 +767,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     ~CompositorThreadOnly();
 
     WebInputEvent::Type last_input_type;
-    bool main_thread_seems_unresponsive;
     std::unique_ptr<base::ThreadChecker> compositor_thread_checker;
 
     void CheckOnValidThread() {

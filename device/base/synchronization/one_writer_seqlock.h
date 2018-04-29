@@ -32,7 +32,6 @@ class OneWriterSeqLock {
  public:
   OneWriterSeqLock();
   base::subtle::Atomic32 ReadBegin() const;
-  void TryRead(bool* can_read, base::subtle::Atomic32* version) const;
   bool ReadRetry(base::subtle::Atomic32 version) const;
   void WriteBegin();
   void WriteEnd();

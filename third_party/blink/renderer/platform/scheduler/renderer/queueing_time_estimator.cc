@@ -367,45 +367,5 @@ class RecordQueueingTimeClient : public QueueingTimeEstimator::Client {
   DISALLOW_COPY_AND_ASSIGN(RecordQueueingTimeClient);
 };
 
-base::TimeDelta QueueingTimeEstimator::EstimateQueueingTimeIncludingCurrentTask(
-    base::TimeTicks now) const {
-  RecordQueueingTimeClient record_queueing_time_client;
-
-  // Make a copy of this QueueingTimeEstimator. We'll use it to evaluate the
-  // estimated input latency, assuming that any active task ends now.
-  QueueingTimeEstimator::State temporary_queueing_time_estimator_state(state_);
-
-  // If there's a task in progress, pretend it ends now, and include it in the
-  // computation. If there's no task in progress, add an empty task to flush any
-  // stale windows.
-  if (temporary_queueing_time_estimator_state.current_task_start_time
-          .is_null()) {
-    temporary_queueing_time_estimator_state.OnTopLevelTaskStarted(
-        &record_queueing_time_client, now, nullptr);
-  }
-  temporary_queueing_time_estimator_state.OnTopLevelTaskCompleted(
-      &record_queueing_time_client, now);
-
-  // Report the max of the queueing time for the last window, or the on-going
-  // window (tmp window in chart) which includes the current task.
-  //
-  //                                Estimate
-  //                                  |
-  //                                  v
-  // Actual Task     |-------------------------...
-  // Assumed Task    |----------------|
-  // Time       |---o---o---o---o---o---o-------->
-  //            0   1   2   3   4   5   6
-  //            | s | s | s | s | s | s |
-  //            |----last window----|
-  //                |----tmp window-----|
-  base::TimeDelta last_window_queueing_time =
-      record_queueing_time_client.queueing_time();
-  temporary_queueing_time_estimator_state.calculator_.EndStep(
-      &record_queueing_time_client);
-  return std::max(last_window_queueing_time,
-                  record_queueing_time_client.queueing_time());
-}
-
 }  // namespace scheduler
 }  // namespace blink

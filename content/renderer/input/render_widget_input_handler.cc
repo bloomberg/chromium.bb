@@ -79,6 +79,7 @@ void LogPassiveEventListenersUma(WebInputEventResult result,
                                  WebInputEvent::DispatchType dispatch_type,
                                  base::TimeTicks event_timestamp,
                                  const ui::LatencyInfo& latency_info) {
+  // This enum is backing a histogram. Do not remove or reorder members.
   enum ListenerEnum {
     PASSIVE_LISTENER_UMA_ENUM_PASSIVE,
     PASSIVE_LISTENER_UMA_ENUM_UNCANCELABLE,
@@ -86,7 +87,7 @@ void LogPassiveEventListenersUma(WebInputEventResult result,
     PASSIVE_LISTENER_UMA_ENUM_CANCELABLE,
     PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED,
     PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_FLING,
-    PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_MAIN_THREAD_RESPONSIVENESS,
+    PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_MAIN_THREAD_RESPONSIVENESS_DEPRECATED,
     PASSIVE_LISTENER_UMA_ENUM_COUNT
   };
 
@@ -94,11 +95,6 @@ void LogPassiveEventListenersUma(WebInputEventResult result,
   switch (dispatch_type) {
     case WebInputEvent::kListenersForcedNonBlockingDueToFling:
       enum_value = PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_FLING;
-      break;
-    case WebInputEvent::
-        kListenersForcedNonBlockingDueToMainThreadResponsiveness:
-      enum_value =
-          PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_MAIN_THREAD_RESPONSIVENESS;
       break;
     case WebInputEvent::kListenersNonBlockingPassive:
       enum_value = PASSIVE_LISTENER_UMA_ENUM_PASSIVE;
@@ -134,14 +130,6 @@ void LogPassiveEventListenersUma(WebInputEventResult result,
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Event.PassiveListeners.ForcedNonBlockingLatencyDueToFling",
           GetEventLatencyMicros(event_timestamp, now), 1, 10000000, 100);
-    } else if (
-        enum_value ==
-        PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_MAIN_THREAD_RESPONSIVENESS) {
-      base::TimeTicks now = base::TimeTicks::Now();
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Event.PassiveListeners."
-          "ForcedNonBlockingLatencyDueToUnresponsiveMainThread",
-          GetEventLatencyMicros(event_timestamp, now), 1, 10000000, 50);
     }
   }
 }
@@ -316,13 +304,6 @@ void RenderWidgetInputHandler::HandleInputEvent(
 
   std::unique_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
   ui::LatencyInfo swap_latency_info(latency_info);
-
-  if (RenderThreadImpl::current()) {
-    swap_latency_info.set_expected_queueing_time_on_dispatch(
-        RenderThreadImpl::current()
-            ->GetWebMainThreadScheduler()
-            ->MostRecentExpectedQueueingTime());
-  }
 
   swap_latency_info.AddLatencyNumber(
       ui::LatencyComponentType::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT, 0,

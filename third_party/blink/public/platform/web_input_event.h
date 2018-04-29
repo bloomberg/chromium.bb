@@ -280,12 +280,7 @@ class WebInputEvent {
     // This value represents a state which would have normally blocking
     // but was forced to be non-blocking during fling; not cancelable.
     kListenersForcedNonBlockingDueToFling,
-    // This value represents a state which would have normally blocking but
-    // was forced to be non-blocking due to the main thread being
-    // unresponsive.
-    kListenersForcedNonBlockingDueToMainThreadResponsiveness,
-    kLastDispatchType =
-        kListenersForcedNonBlockingDueToMainThreadResponsiveness,
+    kLastDispatchType = kListenersForcedNonBlockingDueToFling,
   };
 
   // The rail mode for a wheel event specifies the axis on which scrolling is

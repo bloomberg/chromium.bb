@@ -5,9 +5,7 @@
 #include "content/renderer/input/main_thread_event_queue.h"
 
 #include "base/containers/circular_deque.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_number_conversions.h"
 #include "content/common/input/event_with_latency_info.h"
 #include "content/common/input_messages.h"
 #include "content/renderer/render_widget.h"
@@ -213,32 +211,11 @@ MainThreadEventQueue::MainThreadEventQueue(
       last_touch_start_forced_nonblocking_due_to_fling_(false),
       enable_fling_passive_listener_flag_(base::FeatureList::IsEnabled(
           features::kPassiveEventListenersDueToFling)),
-      enable_non_blocking_due_to_main_thread_responsiveness_flag_(
-          base::FeatureList::IsEnabled(
-              features::kMainThreadBusyScrollIntervention)),
       needs_low_latency_(false),
       allow_raf_aligned_input_(allow_raf_aligned_input),
       main_task_runner_(main_task_runner),
       main_thread_scheduler_(main_thread_scheduler),
       use_raf_fallback_timer_(true) {
-  if (enable_non_blocking_due_to_main_thread_responsiveness_flag_) {
-    std::string group = base::FieldTrialList::FindFullName(
-        "MainThreadResponsivenessScrollIntervention");
-
-    // The group name will be of the form Enabled$THRESHOLD_MS. Trim the prefix
-    // "Enabled", and parse the threshold.
-    int threshold_ms = 0;
-    std::string prefix = "Enabled";
-    group.erase(0, prefix.length());
-    base::StringToInt(group, &threshold_ms);
-
-    if (threshold_ms <= 0) {
-      enable_non_blocking_due_to_main_thread_responsiveness_flag_ = false;
-    } else {
-      main_thread_responsiveness_threshold_ =
-          base::TimeDelta::FromMilliseconds(threshold_ms);
-    }
-  }
   raf_fallback_timer_.SetTaskRunner(main_task_runner);
 
   event_predictor_ =
@@ -297,17 +274,6 @@ void MainThreadEventQueue::HandleEvent(
       }
     }
 
-    if (enable_non_blocking_due_to_main_thread_responsiveness_flag_ &&
-        touch_event->dispatch_type == blink::WebInputEvent::kBlocking) {
-      bool passive_due_to_unresponsive_main =
-          main_thread_scheduler_->MainThreadSeemsUnresponsive(
-              main_thread_responsiveness_threshold_);
-      if (passive_due_to_unresponsive_main) {
-        touch_event->dispatch_type = blink::WebInputEvent::
-            kListenersForcedNonBlockingDueToMainThreadResponsiveness;
-        non_blocking = true;
-      }
-    }
     // If the event is non-cancelable ACK it right away.
     if (!non_blocking &&
         touch_event->dispatch_type != blink::WebInputEvent::kBlocking)

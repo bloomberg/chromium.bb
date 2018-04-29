@@ -206,9 +206,6 @@ void LatencyInfo::CopyLatencyFrom(const LatencyInfo& other,
     }
   }
 
-  expected_queueing_time_on_dispatch_ =
-      other.expected_queueing_time_on_dispatch_;
-
   coalesced_ = other.coalesced();
   // TODO(tdresser): Ideally we'd copy |began_| here as well, but |began_|
   // isn't very intuitive, and we can actually begin multiple times across
@@ -235,9 +232,6 @@ void LatencyInfo::AddNewLatencyFrom(const LatencyInfo& other) {
                                     lc.second.event_count);
     }
   }
-
-  expected_queueing_time_on_dispatch_ =
-      other.expected_queueing_time_on_dispatch_;
 
   coalesced_ = other.coalesced();
   // TODO(tdresser): Ideally we'd copy |began_| here as well, but |began_| isn't

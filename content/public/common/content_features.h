@@ -50,7 +50,6 @@ CONTENT_EXPORT extern const base::Feature kLazyFrameLoading;
 CONTENT_EXPORT extern const base::Feature kLazyInitializeMediaControls;
 CONTENT_EXPORT extern const base::Feature kLazyParseCSS;
 CONTENT_EXPORT extern const base::Feature kLowPriorityIframes;
-CONTENT_EXPORT extern const base::Feature kMainThreadBusyScrollIntervention;
 CONTENT_EXPORT extern const base::Feature kMediaDevicesSystemMonitorCache;
 CONTENT_EXPORT extern const base::Feature kMemoryCoordinator;
 CONTENT_EXPORT extern const base::Feature kModuleScriptsDynamicImport;
