@@ -506,11 +506,9 @@ class DriveTestVolume : public TestVolume {
   drive::DriveIntegrationService* integration_service_;
 };
 
-FileManagerBrowserTestBase::FileManagerBrowserTestBase() {
-}
+FileManagerBrowserTestBase::FileManagerBrowserTestBase() = default;
 
-FileManagerBrowserTestBase::~FileManagerBrowserTestBase() {
-}
+FileManagerBrowserTestBase::~FileManagerBrowserTestBase() = default;
 
 void FileManagerBrowserTestBase::SetUp() {
   net::NetworkChangeNotifier::SetTestNotificationsOnly(true);
