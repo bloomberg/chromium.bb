@@ -889,7 +889,6 @@ class ChromeSDKCommand(command.CliCommand):
     gn_args['cros_target_ld'] = env['LD']
     gn_args['cros_target_extra_cflags'] = env.get('CFLAGS', '')
     gn_args['cros_target_extra_cxxflags'] = env.get('CXXFLAGS', '')
-    gn_args['cros_target_extra_ldflags'] = env.get('LDFLAGS', '')
     gn_args['cros_host_cc'] = env['CC_host']
     gn_args['cros_host_cxx'] = env['CXX_host']
     gn_args['cros_host_ld'] = env['LD_host']
@@ -929,10 +928,6 @@ class ChromeSDKCommand(command.CliCommand):
     if extra_thinlto_flag in extra_ldflags:
       gn_args['cros_target_extra_ldflags'] = extra_ldflags.replace(
           extra_thinlto_flag, '')
-
-    # Add -lc++ and -lm to unbreak SimpleChrome workflow.
-    # https://crbug.com/837794
-    gn_args['cros_target_extra_ldflags'] += ' -lc++ -lm'
 
     # We removed webcore debug symbols on release builds on arm.
     # See crbug.com/792999. However, we want to keep the symbols
