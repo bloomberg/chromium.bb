@@ -594,11 +594,9 @@ TEST_F(AutocompleteProviderTest, ExtraQueryParams) {
       switches::kExtraSearchQueryParams, "a=b");
   RunExactKeymatchTest(true);
   CopyResults();
-  ASSERT_EQ(2U, result_.size());
+  ASSERT_EQ(1U, result_.size());
   EXPECT_EQ("http://keyword/test",
             result_.match_at(0)->destination_url.possibly_invalid_spec());
-  EXPECT_EQ("http://defaultturl/k%20test?a=b",
-            result_.match_at(1)->destination_url.possibly_invalid_spec());
 }
 
 // Test that redundant associated keywords are removed.
