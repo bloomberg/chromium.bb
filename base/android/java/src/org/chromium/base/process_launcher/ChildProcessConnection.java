@@ -199,14 +199,12 @@ public class ChildProcessConnection {
     // Process ID of the corresponding child process.
     private int mPid;
 
-    // Inital moderate binding.
-    private final ChildServiceConnection mInitialBinding;
-
     // Strong binding will make the service priority equal to the priority of the activity.
     private final ChildServiceConnection mStrongBinding;
 
     // Moderate binding will make the service priority equal to the priority of a visible process
     // while the app is in the foreground.
+    // This is also used as the initial binding before any priorities are set.
     private final ChildServiceConnection mModerateBinding;
 
     // Low priority binding maintained in the entire lifetime of the connection, i.e. between calls
@@ -287,7 +285,6 @@ public class ChildProcessConnection {
         int defaultFlags = Context.BIND_AUTO_CREATE
                 | (bindAsExternalService ? Context.BIND_EXTERNAL_SERVICE : 0);
 
-        mInitialBinding = connectionFactory.createConnection(intent, defaultFlags, delegate);
         mModerateBinding = connectionFactory.createConnection(intent, defaultFlags, delegate);
         mStrongBinding = connectionFactory.createConnection(
                 intent, defaultFlags | Context.BIND_IMPORTANT, delegate);
@@ -520,7 +517,13 @@ public class ChildProcessConnection {
         assert isRunningOnLauncherThread();
         assert !mUnbound;
 
-        boolean success = useStrongBinding ? mStrongBinding.bind() : mInitialBinding.bind();
+        boolean success;
+        if (useStrongBinding) {
+            success = mStrongBinding.bind();
+        } else {
+            mModerateBindingCount++;
+            success = mModerateBinding.bind();
+        }
         if (!success) return false;
 
         updateWaivedBoundOnlyState();
@@ -537,7 +540,6 @@ public class ChildProcessConnection {
         mStrongBinding.unbind();
         mWaivedBinding.unbind();
         mModerateBinding.unbind();
-        mInitialBinding.unbind();
         // Note that we don't update the waived bound only state here as to preserve the state when
         // disconnected.
 
@@ -548,26 +550,9 @@ public class ChildProcessConnection {
         }
     }
 
-    public boolean isInitialBindingBound() {
-        assert isRunningOnLauncherThread();
-        return mInitialBinding.isBound();
-    }
-
-    public void addInitialBinding() {
-        assert isRunningOnLauncherThread();
-        mInitialBinding.bind();
-        updateWaivedBoundOnlyState();
-    }
-
     public boolean isStrongBindingBound() {
         assert isRunningOnLauncherThread();
         return mStrongBinding.isBound();
-    }
-
-    public void removeInitialBinding() {
-        assert isRunningOnLauncherThread();
-        mInitialBinding.unbind();
-        updateWaivedBoundOnlyState();
     }
 
     public void addStrongBinding() {
@@ -650,11 +635,10 @@ public class ChildProcessConnection {
         return mKilledByUs;
     }
 
-    // Should be called every time the mInitialBinding or mStrongBinding are bound/unbound.
+    // Should be called every time the mModerateBinding or mStrongBinding are bound/unbound.
     private void updateWaivedBoundOnlyState() {
         if (!mUnbound) {
-            mWaivedBoundOnly = !mInitialBinding.isBound() && !mStrongBinding.isBound()
-                    && !mModerateBinding.isBound();
+            mWaivedBoundOnly = !mStrongBinding.isBound() && !mModerateBinding.isBound();
         }
     }
 

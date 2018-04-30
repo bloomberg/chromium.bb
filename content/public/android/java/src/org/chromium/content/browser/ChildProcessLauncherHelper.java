@@ -484,7 +484,7 @@ public class ChildProcessLauncherHelper {
                 manager.increaseRecency(connection);
             }
         }
-        if (!mBoostPriorityForPendingViews && boostForPendingViews) connection.addInitialBinding();
+        if (!mBoostPriorityForPendingViews && boostForPendingViews) connection.addModerateBinding();
         if (mImportance != importance) {
             switch (importance) {
                 case ChildProcessImportance.NORMAL:
@@ -506,7 +506,7 @@ public class ChildProcessLauncherHelper {
 
         if (mForeground && !foreground) connection.removeStrongBinding();
         if (mBoostPriorityForPendingViews && !boostForPendingViews) {
-            connection.removeInitialBinding();
+            connection.removeModerateBinding();
         }
 
         if (mRanking != null) {
