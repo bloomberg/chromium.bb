@@ -14,6 +14,7 @@ namespace blink {
 
 class DeviceOrientationController;
 class InspectedFrames;
+class SensorInspectorAgent;
 
 class MODULES_EXPORT DeviceOrientationInspectorAgent final
     : public InspectorBaseAgent<protocol::DeviceOrientation::Metainfo> {
@@ -36,6 +37,7 @@ class MODULES_EXPORT DeviceOrientationInspectorAgent final
   DeviceOrientationController* Controller();
 
   Member<InspectedFrames> inspected_frames_;
+  Member<SensorInspectorAgent> sensor_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOrientationInspectorAgent);
 };

@@ -11,7 +11,7 @@
       var mockGamma = 3.3;
       var absolute = true;
 
-      function setup()
+      function setUpDeviceOrientation()
       {
           testRunner.setMockDeviceOrientation(true, mockAlpha, true, mockBeta, true, mockGamma, absolute);
           window.addEventListener("deviceorientation", handler, false);
@@ -21,16 +21,33 @@
       {
           console.log("alpha: " + evt.alpha + " beta: " + evt.beta + " gamma: " + evt.gamma);
       }
+
+      function setUpOrientationSensor()
+      {
+          let orientationSensor = new RelativeOrientationSensor();
+          orientationSensor.onreading = () =>
+            console.log("quaternion: " + orientationSensor.quaternion);
+          orientationSensor.start();
+      }
   `);
 
   TestRunner.runTestSuite([
-    function setUp(next) {
-      TestRunner.evaluateInPage('setup()', next);
+    function setUpDeviceOrientation(next) {
+      TestRunner.evaluateInPage('setUpDeviceOrientation()', next);
     },
 
-    function setOverride(next) {
+    function firstOrientationOverride(next) {
       ConsoleTestRunner.addConsoleSniffer(next);
       TestRunner.DeviceOrientationAgent.setDeviceOrientationOverride(20, 30, 40);
+    },
+
+    function setUpOrientationSensor(next) {
+      TestRunner.evaluateInPage('setUpOrientationSensor()', next);
+    },
+
+    function secondOrientationOverride(next) {
+      ConsoleTestRunner.addConsoleSniffer(next);
+      TestRunner.DeviceOrientationAgent.setDeviceOrientationOverride(90, 0, 0);
     },
 
     async function clearOverride(next) {
