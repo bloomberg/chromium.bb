@@ -2051,6 +2051,11 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   ServiceManagerConnection* service_manager_connection =
       BrowserContext::GetServiceManagerConnectionFor(browser_context_);
+  if (connection_filter_id_ !=
+      ServiceManagerConnection::kInvalidConnectionFilterId) {
+    connection_filter_controller_->DisableFilter();
+    service_manager_connection->RemoveConnectionFilter(connection_filter_id_);
+  }
   std::unique_ptr<ConnectionFilterImpl> connection_filter(
       new ConnectionFilterImpl(child_connection_->child_identity(),
                                std::move(registry)));

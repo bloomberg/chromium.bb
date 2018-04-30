@@ -769,13 +769,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
-#if defined(ADDRESS_SANITIZER)
-  // TODO(lukasza): https://crbug.com/835578: Flaky UaF when running with
-  // site-per-process.
-  if (content::AreAllSitesIsolatedForTesting())
-    return;
-#endif
-
   Profile* profile = browser()->profile();
 
   GURL url1("http://google.com");

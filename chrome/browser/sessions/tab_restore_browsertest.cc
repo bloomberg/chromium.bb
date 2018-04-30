@@ -794,13 +794,6 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreOnStartup) {
 // same thing.
 IN_PROC_BROWSER_TEST_F(TabRestoreTest,
                        RestoreFirstBrowserWhenSessionServiceEnabled) {
-#if defined(ADDRESS_SANITIZER)
-  // TODO(lukasza): https://crbug.com/835577: Flaky UaF when running with
-  // site-per-process.
-  if (content::AreAllSitesIsolatedForTesting())
-    return;
-#endif
-
   // Do not exit from test when last browser is closed.
   ScopedKeepAlive keep_alive(KeepAliveOrigin::SESSION_RESTORE,
                              KeepAliveRestartOption::DISABLED);
