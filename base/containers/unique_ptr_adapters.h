@@ -56,19 +56,21 @@ struct UniquePtrComparator {
 // Example of erasing from container:
 //   EraseIf(v, MatchesUniquePtr(element));
 //
-template <class T>
+template <class T, class Deleter = std::default_delete<T>>
 struct UniquePtrMatcher {
   explicit UniquePtrMatcher(T* t) : t_(t) {}
 
-  bool operator()(const std::unique_ptr<T>& o) { return o.get() == t_; }
+  bool operator()(const std::unique_ptr<T, Deleter>& o) {
+    return o.get() == t_;
+  }
 
  private:
   T* const t_;
 };
 
-template <class T>
-UniquePtrMatcher<T> MatchesUniquePtr(T* t) {
-  return UniquePtrMatcher<T>(t);
+template <class T, class Deleter = std::default_delete<T>>
+UniquePtrMatcher<T, Deleter> MatchesUniquePtr(T* t) {
+  return UniquePtrMatcher<T, Deleter>(t);
 }
 
 }  // namespace base

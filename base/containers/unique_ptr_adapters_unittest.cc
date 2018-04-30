@@ -93,5 +93,42 @@ TEST(UniquePtrMatcherTest, Basic) {
   }
 }
 
+class TestDeleter {
+ public:
+  void operator()(Foo* foo) { delete foo; }
+};
+
+TEST(UniquePtrMatcherTest, Deleter) {
+  using UniqueFoo = std::unique_ptr<Foo, TestDeleter>;
+  std::vector<UniqueFoo> v;
+  UniqueFoo foo_ptr1(new Foo);
+  Foo* foo1 = foo_ptr1.get();
+  v.push_back(std::move(foo_ptr1));
+  UniqueFoo foo_ptr2(new Foo);
+  Foo* foo2 = foo_ptr2.get();
+  v.push_back(std::move(foo_ptr2));
+
+  {
+    auto iter = std::find_if(v.begin(), v.end(),
+                             UniquePtrMatcher<Foo, TestDeleter>(foo1));
+    ASSERT_TRUE(iter != v.end());
+    EXPECT_EQ(foo1, iter->get());
+  }
+
+  {
+    auto iter = std::find_if(v.begin(), v.end(),
+                             UniquePtrMatcher<Foo, TestDeleter>(foo2));
+    ASSERT_TRUE(iter != v.end());
+    EXPECT_EQ(foo2, iter->get());
+  }
+
+  {
+    auto iter = std::find_if(v.begin(), v.end(),
+                             MatchesUniquePtr<Foo, TestDeleter>(foo2));
+    ASSERT_TRUE(iter != v.end());
+    EXPECT_EQ(foo2, iter->get());
+  }
+}
+
 }  // namespace
 }  // namespace base
