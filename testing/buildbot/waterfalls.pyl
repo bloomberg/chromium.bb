@@ -576,7 +576,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'linux_chromeos_rel_gtests',
-          'isolated_scripts': 'linux_chromeos_rel_isolated_scripts',
         },
       },
     },
