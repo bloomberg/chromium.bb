@@ -17,7 +17,7 @@
 #ifdef LLVM_ON_UNIX
 #include <sys/param.h>
 #endif
-#if defined(LLVM_ON_WIN32)
+#if defined(_WIN32)
 #include <windows.h>
 #endif
 
@@ -154,7 +154,11 @@ bool ChromeClassTester::InImplementationFile(SourceLocation record_location) {
       break;
     }
     record_location =
+#if defined(LLVM_FORCE_HEAD_REVISION)
+        source_manager.getImmediateExpansionRange(record_location).getBegin();
+#else
         source_manager.getImmediateExpansionRange(record_location).first;
+#endif
   }
 
   return false;

@@ -711,7 +711,7 @@ bool BlinkGCPluginConsumer::InIgnoredDirectory(RecordInfo* info) {
   std::string filename;
   if (!GetFilename(info->record()->getLocStart(), &filename))
     return false;  // TODO: should we ignore non-existing file locations?
-#if defined(LLVM_ON_WIN32)
+#if defined(_WIN32)
   std::replace(filename.begin(), filename.end(), '\\', '/');
 #endif
   for (const auto& dir : options_.ignored_directories)
