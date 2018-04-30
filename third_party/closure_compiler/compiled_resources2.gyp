@@ -14,7 +14,6 @@
       'target_name': 'compiled_resources2',
       'type': 'none',
       'dependencies': [
-        '<(DEPTH)/chrome/browser/resources/bookmark_manager/js/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/braille_ime/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/login/compiled_resources2.gyp:*',

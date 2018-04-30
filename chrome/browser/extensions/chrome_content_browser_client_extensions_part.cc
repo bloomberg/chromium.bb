@@ -582,14 +582,6 @@ void ChromeContentBrowserClientExtensionsPart::OverrideNavigationParams(
   if (!extension)
     return;
 
-  if (extension->id() == extension_misc::kBookmarkManagerId &&
-      ui::PageTransitionCoreTypeIs(*transition, ui::PAGE_TRANSITION_LINK)) {
-    // Link clicks in the bookmark manager count as bookmarks and as browser-
-    // initiated navigations.
-    *transition = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-    *is_renderer_initiated = false;
-  }
-
   // Hide the referrer for extension pages. We don't want sites to see a
   // referrer of chrome-extension://<...>.
   if (extension->is_extension())

@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/history_ui.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_ui.h"
-#include "chrome/browser/ui/webui/bookmarks_ui.h"
 #include "chrome/browser/ui/webui/components_ui.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
@@ -420,10 +419,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<PageNotAvailableForGuestUI>;
   }
   // Bookmarks are part of NTP on Android.
-  if (url.host_piece() == chrome::kChromeUIBookmarksHost) {
-    return MdBookmarksUI::IsEnabled() ? &NewWebUI<MdBookmarksUI>
-                                      : &NewWebUI<BookmarksUI>;
-  }
+  if (url.host_piece() == chrome::kChromeUIBookmarksHost)
+    return &NewWebUI<MdBookmarksUI>;
   // Downloads list on Android uses the built-in download manager.
   if (url.host_piece() == chrome::kChromeUIDownloadsHost)
     return &NewWebUI<MdDownloadsUI>;
@@ -711,10 +708,8 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ExtensionWebUI::HandleChromeURLOverride(&url, profile);
 
-  // All extensions but the bookmark manager get their favicon from the icons
-  // part of the manifest.
-  if (url.SchemeIs(extensions::kExtensionScheme) &&
-      url.host_piece() != extension_misc::kBookmarkManagerId) {
+  // All extensions get their favicon from the icons part of the manifest.
+  if (url.SchemeIs(extensions::kExtensionScheme)) {
     ExtensionWebUI::GetFaviconForURL(profile, url, callback);
     return;
   }
@@ -775,14 +770,7 @@ ChromeWebUIControllerFactory::~ChromeWebUIControllerFactory() {
 
 base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
     const GURL& page_url, ui::ScaleFactor scale_factor) const {
-#if !defined(OS_ANDROID)  // Bookmarks are part of NTP on Android.
-  // The bookmark manager is a chrome extension, so we have to check for it
-  // before we check for extension scheme.
-  if (page_url.host_piece() == extension_misc::kBookmarkManagerId ||
-      page_url.host_piece() == chrome::kChromeUIBookmarksHost) {
-    return BookmarksUI::GetFaviconResourceBytes(scale_factor);
-  }
-
+#if !defined(OS_ANDROID)
   // The extension scheme is handled in GetFaviconForURL.
   if (page_url.SchemeIs(extensions::kExtensionScheme)) {
     NOTREACHED();
@@ -817,6 +805,10 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   if (page_url.host_piece() == chrome::kChromeUIAppLauncherPageHost)
     return AppLauncherPageUI::GetFaviconResourceBytes(scale_factor);
 #endif  // !defined(OS_CHROMEOS)
+
+  // Bookmarks are part of NTP on Android.
+  if (page_url.host_piece() == chrome::kChromeUIBookmarksHost)
+    return MdBookmarksUI::GetFaviconResourceBytes(scale_factor);
 
   // Flash is not available on android.
   if (page_url.host_piece() == chrome::kChromeUIFlashHost)

@@ -102,32 +102,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, NewTabPageURLOverride) {
       extensions::kExtensionScheme));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, BookmarksURL) {
-  if (MdBookmarksUI::IsEnabled())
-    return;
-
-  // Navigate to chrome://bookmarks and check that the location bar URL is
-  // what was entered and the internal URL uses the chrome-extension:// scheme.
-  const GURL bookmarks_url(chrome::kChromeUIBookmarksURL);
-  ui_test_utils::NavigateToURL(browser(), bookmarks_url);
-  // The default chrome://bookmarks implementation will append /#1 to the URL
-  // once loaded. Use |GetWithEmptyPath()| to avoid flakyness.
-  EXPECT_EQ(bookmarks_url, GetLocationBarTextAsURL().GetWithEmptyPath());
-  NavigationEntry* navigation = GetNavigationEntry();
-  EXPECT_EQ(bookmarks_url, navigation->GetVirtualURL().GetWithEmptyPath());
-  EXPECT_TRUE(navigation->GetURL().SchemeIs(extensions::kExtensionScheme));
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, BookmarksURLWithRef) {
-  if (MdBookmarksUI::IsEnabled())
-    return;
-
-  // Navigate to chrome://bookmarks/#1 and check that the location bar URL is
-  // what was entered and the internal URL uses the chrome-extension:// scheme.
-  GURL url_with_ref(chrome::kChromeUIBookmarksURL + std::string("#1"));
-  TestExtensionURLOverride(url_with_ref);
-}
-
 IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, BookmarksURLOverride) {
   // Load an extension that overrides chrome://bookmarks.
   ASSERT_TRUE(LoadExtension(GetTestExtensionPath("bookmarks")));

@@ -27,9 +27,6 @@ extern const char kLaunchSourceAppListInfoDialog[];
 
 namespace extension_misc {
 
-// The extension id of the bookmark manager.
-extern const char kBookmarkManagerId[];
-
 // The extension id of the Camera application.
 extern const char kCameraAppId[];
 

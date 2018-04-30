@@ -26,11 +26,6 @@ bool LogWebUIUrl(const GURL& web_ui_url) {
   bool should_log = web_ui_url.SchemeIs(content::kChromeUIScheme) ||
                     web_ui_url.SchemeIs(content::kChromeDevToolsScheme);
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (web_ui_url.SchemeIs(extensions::kExtensionScheme))
-    should_log = web_ui_url.host() == extension_misc::kBookmarkManagerId;
-#endif
-
   if (should_log) {
     uint32_t hash = base::Hash(web_ui_url.GetOrigin().spec());
     base::UmaHistogramSparse(kWebUICreatedForUrl,
