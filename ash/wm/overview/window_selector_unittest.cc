@@ -13,7 +13,6 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/drag_drop/drag_drop_controller.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/window_properties.h"
@@ -46,7 +45,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/user_action_tester.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/aura/client/aura_constants.h"
@@ -3318,122 +3316,6 @@ TEST_F(SplitViewWindowSelectorTest, Dragging) {
   EXPECT_FALSE(IsPreviewAreaShowing());
   generator.MoveMouseBy(1, 0);
   EXPECT_TRUE(IsPreviewAreaShowing());
-}
-
-// Verify the correct behavior when dragging windows in overview mode.
-TEST_F(SplitViewWindowSelectorTest, OverviewDragControllerBehavior) {
-  aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kOverviewSwipeToClose);
-
-  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
-  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
-
-  ToggleOverview();
-  ASSERT_TRUE(window_selector_controller()->IsSelecting());
-
-  WindowSelectorItem* window_item1 = GetWindowItemForWindow(0, window1.get());
-  WindowSelectorItem* window_item2 = GetWindowItemForWindow(0, window2.get());
-
-  // Verify that if a drag is orginally horizontal, the drag behavior is drag to
-  // snap.
-  using DragBehavior = OverviewWindowDragController::DragBehavior;
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.set_current_location(window_item1->target_bounds().CenterPoint());
-  generator.PressTouch();
-  OverviewWindowDragController* drag_controller =
-      window_selector()->window_drag_controller();
-  EXPECT_EQ(DragBehavior::kUndefined, drag_controller->current_drag_behavior());
-  generator.MoveTouchBy(20, 0);
-  EXPECT_EQ(DragBehavior::kDragToSnap,
-            drag_controller->current_drag_behavior());
-  generator.ReleaseTouch();
-  EXPECT_EQ(DragBehavior::kNoDrag, drag_controller->current_drag_behavior());
-
-  // Verify that if a drag is orginally vertical, the drag behavior is drag to
-  // close.
-  generator.set_current_location(window_item2->target_bounds().CenterPoint());
-  generator.PressTouch();
-  drag_controller = window_selector()->window_drag_controller();
-  EXPECT_EQ(DragBehavior::kUndefined, drag_controller->current_drag_behavior());
-
-  // Use small increments otherwise a fling event will be fired.
-  for (int j = 0; j < 20; ++j)
-    generator.MoveTouchBy(0, 1);
-  EXPECT_EQ(DragBehavior::kDragToClose,
-            drag_controller->current_drag_behavior());
-
-  // Verify that if the drag has a large enough horizontal displacement we will
-  // enter drag to snap state.
-  generator.MoveTouchBy(200, 0);
-  EXPECT_EQ(DragBehavior::kDragToSnap,
-            drag_controller->current_drag_behavior());
-  generator.ReleaseTouch();
-  EXPECT_EQ(DragBehavior::kNoDrag, drag_controller->current_drag_behavior());
-}
-
-// Verify that if the window item has been dragged enough vertically, the window
-// will be closed.
-TEST_F(SplitViewWindowSelectorTest, DragToClose) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kOverviewSwipeToClose);
-
-  // This test requires a widget.
-  const gfx::Rect bounds(400, 400);
-  std::unique_ptr<views::Widget> widget1(CreateWindowWidget(bounds));
-
-  ToggleOverview();
-  ASSERT_TRUE(window_selector_controller()->IsSelecting());
-
-  WindowSelectorItem* window_item1 =
-      GetWindowItemForWindow(0, widget1->GetNativeWindow());
-  ASSERT_TRUE(window_item1);
-
-  // This drag has not covered enough distance, so the widget is not closed and
-  // we remain in overview mode. Use scroll sequences with large time and steps
-  // to avoid triggering a fling event.
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  const gfx::Point start = window_item1->target_bounds().CenterPoint();
-  generator.GestureScrollSequence(start, start + gfx::Vector2d(0, 100),
-                                  base::TimeDelta::FromMilliseconds(100), 100);
-  RunAllPendingInMessageLoop();
-  ASSERT_TRUE(window_selector());
-
-  // Verify that the second drag has enough vertical distance, so the widget
-  // will be closed and overview mode will be exited.
-  generator.GestureScrollSequence(start, start + gfx::Vector2d(0, 300),
-                                  base::TimeDelta::FromMilliseconds(100), 100);
-  RunAllPendingInMessageLoop();
-  EXPECT_FALSE(window_selector());
-}
-
-// Verify that if the window item has been flung enough vertically, the window
-// will be closed.
-TEST_F(SplitViewWindowSelectorTest, FlingToClose) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kOverviewSwipeToClose);
-
-  // This test requires a widget.
-  const gfx::Rect bounds(400, 400);
-  std::unique_ptr<views::Widget> widget1(CreateWindowWidget(bounds));
-
-  ToggleOverview();
-  ASSERT_TRUE(window_selector_controller()->IsSelecting());
-  EXPECT_EQ(1u, window_selector()->grid_list_for_testing()[0]->size());
-
-  WindowSelectorItem* window_item1 =
-      GetWindowItemForWindow(0, widget1->GetNativeWindow());
-  ASSERT_TRUE(window_item1);
-
-  // Verify that flinging the item closes it, and since it is the last item in
-  // overview mode, overview mode is exited.
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  const gfx::Point start = window_item1->target_bounds().CenterPoint();
-  generator.GestureScrollSequence(start, start + gfx::Vector2d(0, 200),
-                                  base::TimeDelta::FromMilliseconds(10), 5);
-  RunAllPendingInMessageLoop();
-  EXPECT_FALSE(window_selector());
 }
 
 // Verify the window grid size changes as expected when dragging items around in
