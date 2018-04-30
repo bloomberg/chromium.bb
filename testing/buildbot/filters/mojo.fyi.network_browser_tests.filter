@@ -188,13 +188,9 @@
 -ExtensionRequestLimitingThrottleBrowserTest.ThrottleRequest_RedirectCached
 -ExtensionRequestLimitingThrottleCommandLineBrowserTest.ThrottleRequestDisabled
 
-# This requires that InterceptNetworkTransactions works
--ErrorPageNavigationCorrectionsFailTest.StaleCacheStatusFailedCorrections
-
 # Switch test from using a custom net::URLRequestFileJob to using a test
 # URLLoaderFactory via SetNetworkFactoryForTesting.
 -ErrorPageSniffTest.SniffSmallHttpErrorResponseAsDownload
--DNSErrorPageTest.StaleCacheStatus
 
 # http://crbug.com/809583
 # Switch Predictor from using ResourceThrottle and ResourceDispatcherHost to
