@@ -64,7 +64,7 @@ class MockUrlFetcherFactory : public ScopedURLFetcherFactory,
                               public URLFetcherFactory {
  public:
   MockUrlFetcherFactory() : ScopedURLFetcherFactory(this) {}
-  virtual ~MockUrlFetcherFactory() {}
+  ~MockUrlFetcherFactory() override {}
 
   MOCK_METHOD5(
       CreateURLFetcherMock,
@@ -88,7 +88,7 @@ class MockUrlFetcherFactory : public ScopedURLFetcherFactory,
 class MockOAuth2AccessTokenConsumer : public OAuth2AccessTokenConsumer {
  public:
   MockOAuth2AccessTokenConsumer() {}
-  ~MockOAuth2AccessTokenConsumer() {}
+  ~MockOAuth2AccessTokenConsumer() override {}
 
   MOCK_METHOD2(OnGetTokenSuccess,
                void(const std::string& access_token,

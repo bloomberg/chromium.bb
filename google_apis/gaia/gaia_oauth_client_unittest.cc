@@ -205,7 +205,7 @@ class GaiaOAuthClientTest : public testing::Test {
 class MockGaiaOAuthClientDelegate : public gaia::GaiaOAuthClient::Delegate {
  public:
   MockGaiaOAuthClientDelegate() {}
-  ~MockGaiaOAuthClientDelegate() {}
+  ~MockGaiaOAuthClientDelegate() override {}
 
   MOCK_METHOD3(OnGetTokensResponse, void(const std::string& refresh_token,
                                          const std::string& access_token,

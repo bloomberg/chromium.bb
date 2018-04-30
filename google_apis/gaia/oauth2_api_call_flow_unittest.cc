@@ -63,7 +63,7 @@ class MockUrlFetcherFactory : public ScopedURLFetcherFactory,
   MockUrlFetcherFactory()
       : ScopedURLFetcherFactory(this) {
   }
-  virtual ~MockUrlFetcherFactory() {}
+  ~MockUrlFetcherFactory() override {}
 
   MOCK_METHOD5(CreateURLFetcherMock,
                std::unique_ptr<URLFetcher>(
@@ -86,7 +86,7 @@ class MockUrlFetcherFactory : public ScopedURLFetcherFactory,
 class MockApiCallFlow : public OAuth2ApiCallFlow {
  public:
   MockApiCallFlow() {}
-  ~MockApiCallFlow() {}
+  ~MockApiCallFlow() override {}
 
   MOCK_METHOD0(CreateApiCallUrl, GURL());
   MOCK_METHOD0(CreateApiCallBody, std::string());
@@ -96,7 +96,8 @@ class MockApiCallFlow : public OAuth2ApiCallFlow {
   MOCK_METHOD1(ProcessMintAccessTokenFailure,
                void(const GoogleServiceAuthError& error));
 
-  net::PartialNetworkTrafficAnnotationTag GetNetworkTrafficAnnotationTag() {
+  net::PartialNetworkTrafficAnnotationTag GetNetworkTrafficAnnotationTag()
+      override {
     return PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS;
   }
 };
