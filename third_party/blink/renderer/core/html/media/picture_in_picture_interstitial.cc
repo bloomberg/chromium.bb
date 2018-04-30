@@ -78,8 +78,8 @@ void PictureInPictureInterstitial::Hide() {
   interstitial_timer_.StartOneShot(kPictureInPictureHiddenAnimationSeconds,
                                    FROM_HERE);
 
-  DCHECK(GetVideoElement().PlatformLayer());
-  GetVideoElement().PlatformLayer()->SetDrawsContent(true);
+  if (GetVideoElement().PlatformLayer())
+    GetVideoElement().PlatformLayer()->SetDrawsContent(true);
 }
 
 void PictureInPictureInterstitial::ToggleInterstitialTimerFired(TimerBase*) {
