@@ -76,6 +76,24 @@
 
 namespace {
 
+const char kCreateFilesystemUrlJavascript[] =
+    "window.webkitRequestFileSystem(window.TEMPORARY, 4096, function(fs) {"
+    "  fs.root.getFile('test.html', {create: true}, function(fileEntry) {"
+    "    fileEntry.createWriter(function(writer) {"
+    "      writer.onwriteend = function(e) {"
+    "        window.domAutomationController.send(fileEntry.toURL());"
+    "      };"
+    "      var blob = new Blob(['<html>hello</html>'], {type: 'text/html'});"
+    "      writer.write(blob);"
+    "    });"
+    "  });"
+    "});";
+
+const char kCreateBlobUrlJavascript[] =
+    "var blob = new Blob(['<html>hello</html>'],"
+    "                    {type: 'text/html'});"
+    "window.domAutomationController.send(URL.createObjectURL(blob));";
+
 enum CertificateStatus { VALID_CERTIFICATE, INVALID_CERTIFICATE };
 
 const base::FilePath::CharType kDocRoot[] =
@@ -443,9 +461,11 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest {
   }
 
   // Navigates to an empty page and runs |javascript| to create a URL with with
-  // a scheme of |scheme|. Expects a security level of HTTP_SHOW_WARNING.
+  // a scheme of |scheme|. Expects a security level of NONE if
+  // |use_secure_inner_origin| is true and HTTP_SHOW_WARNING otherwise.
   void TestBlobOrFilesystemURL(const std::string& scheme,
-                               const std::string& javascript) {
+                               const std::string& javascript,
+                               bool use_secure_inner_origin) {
     content::WebContents* contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(contents);
@@ -456,7 +476,9 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest {
 
     ui_test_utils::NavigateToURL(
         browser(),
-        GetURLWithNonLocalHostname(embedded_test_server(), "/empty.html"));
+        GetURLWithNonLocalHostname(
+            use_secure_inner_origin ? &https_server_ : embedded_test_server(),
+            "/empty.html"));
 
     // Create a URL and navigate to it.
     std::string blob_or_filesystem_url;
@@ -473,7 +495,9 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest {
         contents->GetController().GetVisibleEntry();
     ASSERT_TRUE(entry);
 
-    EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+    EXPECT_EQ(use_secure_inner_origin ? security_state::NONE
+                                      : security_state::HTTP_SHOW_WARNING,
+              security_info.security_level);
   }
 
   net::EmbeddedTestServer https_server_;
@@ -1267,42 +1291,33 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
 // Tests the default security level on blob URLs.
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
                        DefaultSecurityLevelOnBlobUrl) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      security_state::features::kMarkHttpAsFeature,
-      {{security_state::features::kMarkHttpAsFeatureParameterName,
-        security_state::features::kMarkHttpAsParameterWarning}});
-  TestBlobOrFilesystemURL(
-      "blob",
-      "var blob = new Blob(['<html>hello</html>'],"
-      "                    {type: 'text/html'});"
-      "window.domAutomationController.send(URL.createObjectURL(blob));");
+  TestBlobOrFilesystemURL("blob", kCreateBlobUrlJavascript,
+                          false /* use_secure_inner_origin */);
 }
 
 // Same as DefaultSecurityLevelOnBlobUrl, but instead of a blob URL,
 // this creates a filesystem URL.
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
                        DefaultSecurityLevelOnFilesystemUrl) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      security_state::features::kMarkHttpAsFeature,
-      {{security_state::features::kMarkHttpAsFeatureParameterName,
-        security_state::features::kMarkHttpAsParameterWarning}});
-  TestBlobOrFilesystemURL(
-      "filesystem",
-      "window.webkitRequestFileSystem(window.TEMPORARY, 4096, function(fs) {"
-      "  fs.root.getFile('test.html', {create: true}, function(fileEntry) {"
-      "    fileEntry.createWriter(function(writer) {"
-      "      writer.onwriteend = function(e) {"
-      "        window.domAutomationController.send(fileEntry.toURL());"
-      "      };"
-      "      var blob ="
-      "          new Blob(['<html>hello</html>'],"
-      "                   {type: 'text/html'});"
-      "      writer.write(blob);"
-      "    });"
-      "  });"
-      "});");
+  TestBlobOrFilesystemURL("filesystem", kCreateFilesystemUrlJavascript,
+                          false /* use_secure_inner_origin */);
+}
+
+// Tests the default security level on blob URLs with a secure inner origin.
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
+                       DefaultSecurityLevelOnSecureBlobUrl) {
+  SetUpMockCertVerifierForHttpsServer(0, net::OK);
+  TestBlobOrFilesystemURL("blob", kCreateBlobUrlJavascript,
+                          true /* use_secure_inner_origin */);
+}
+
+// Same as DefaultSecurityLevelOnBlobUrl, but instead of a blob URL,
+// this creates a filesystem URL with a secure inner origin.
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
+                       DefaultSecurityLevelOnSecureFilesystemUrl) {
+  SetUpMockCertVerifierForHttpsServer(0, net::OK);
+  TestBlobOrFilesystemURL("filesystem", kCreateFilesystemUrlJavascript,
+                          true /* use_secure_inner_origin */);
 }
 
 // Tests that when an invisible password field is present on an HTTP page load,

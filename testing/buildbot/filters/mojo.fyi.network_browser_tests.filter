@@ -252,6 +252,7 @@
 # Fails because of missing support to navigate to filesystem: URLs.
 # https://crbug.com/797292
 -ProcessManagerBrowserTest.NestedURLNavigationsToExtensionBlocked
+-SecurityStateTabHelperTest.DefaultSecurityLevelOnSecureFilesystemUrl
 
 # Flaky in linux tests.
 # https://crbug.com/820995
