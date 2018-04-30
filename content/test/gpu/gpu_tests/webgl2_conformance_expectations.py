@@ -65,9 +65,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
     self.Fail('conformance2/glsl3/array-length-side-effects.html',
         bug=2142) # angle bug ID
+
+    # All non-ANGLE platforms.
     self.Fail('conformance2/attribs/' +
         'gl-bindAttribLocation-aliasing-inactive.html',
-        bug=829541)
+        ['no_angle'], bug=829541)
 
     # OffscreenCanvas.commit
     # TODO(fserb): Tests are not up to date with proposed API
