@@ -26,18 +26,6 @@ using sync_pb::SyncEntity;
 
 namespace syncer {
 
-class MockDelegate : public SyncCycle::Delegate {
- public:
-  MockDelegate() {}
-  ~MockDelegate() override {}
-
-  MOCK_METHOD1(OnReceivedShortPollIntervalUpdate, void(const base::TimeDelta&));
-  MOCK_METHOD1(OnReceivedLongPollIntervalUpdate, void(const base::TimeDelta&));
-  MOCK_METHOD1(OnReceivedSessionsCommitDelay, void(const base::TimeDelta&));
-  MOCK_METHOD1(OnReceivedClientInvalidationHintBufferSize, void(int));
-  MOCK_METHOD1(OnSyncProtocolError, void(const SyncProtocolError&));
-};
-
 // Builds a ClientToServerResponse with some data type ids, including
 // invalid ones.  GetTypesToMigrate() should return only the valid
 // model types.
