@@ -109,8 +109,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
-                       VerifyCanvasCaptureOffscreenCanvasCommitFrames) {
-  MakeTypicalCall("testCanvasCapture(drawOffscreenCanvasCommit);",
+                       VerifyCanvasCaptureOffscreenCanvasFrames) {
+  MakeTypicalCall("testCanvasCapture(drawOffscreenCanvas);",
                   kCanvasCaptureTestHtmlFile);
 }
 

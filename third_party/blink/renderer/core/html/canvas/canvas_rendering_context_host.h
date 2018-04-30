@@ -28,11 +28,14 @@ class CORE_EXPORT CanvasRenderingContextHost : public GarbageCollectedMixin {
 
   virtual void DetachContext() = 0;
 
-  virtual void DidDraw(const FloatRect& rect) {}
-  virtual void DidDraw() {}
+  virtual void DidDraw(const FloatRect& rect) = 0;
+  virtual void DidDraw() = 0;
 
   virtual void FinalizeFrame() = 0;
-
+  virtual void PushFrame(scoped_refptr<StaticBitmapImage> image,
+                         const SkIRect& damage_rect) {
+    NOTIMPLEMENTED();
+  }
   virtual bool OriginClean() const = 0;
   virtual void SetOriginTainted() = 0;
   virtual const IntSize& Size() const = 0;
@@ -41,11 +44,6 @@ class CORE_EXPORT CanvasRenderingContextHost : public GarbageCollectedMixin {
   virtual ExecutionContext* GetTopExecutionContext() const = 0;
   virtual DispatchEventResult HostDispatchEvent(Event*) = 0;
   virtual const KURL& GetExecutionContextUrl() const = 0;
-
-  virtual ScriptPromise Commit(scoped_refptr<StaticBitmapImage>,
-                               const SkIRect& damage_rect,
-                               ScriptState*,
-                               ExceptionState&);
 
   virtual void DiscardResourceProvider() = 0;
 
@@ -64,6 +62,10 @@ class CORE_EXPORT CanvasRenderingContextHost : public GarbageCollectedMixin {
   virtual bool IsOffscreenCanvas() const { return false; }
 
   bool IsPaintable() const;
+
+  virtual void RegisterContextToDispatch(CanvasRenderingContext*) {
+    NOTIMPLEMENTED();
+  }
 
  protected:
   virtual ~CanvasRenderingContextHost() {}

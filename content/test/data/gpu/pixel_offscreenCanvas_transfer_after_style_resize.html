@@ -8,7 +8,7 @@ that the baseline images are regenerated on the next run.
 
 <html>
 <head>
-<title>OffscreenCanvas commit with style resize: green rectangle with yellow borderon white background.</title>
+<title>OffscreenCanvas with style resize: green rectangle with yellow borderon white background.</title>
 <style type="text/css">
 .nomargin {
   margin: 0px auto;
@@ -73,8 +73,6 @@ function drawTriangle(canvas)
   gl.vertexAttribPointer(attr, 2, gl.FLOAT, false, 0, 0);
 
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
-
-  gl.commit();
 }
 
 function waitForFinish()

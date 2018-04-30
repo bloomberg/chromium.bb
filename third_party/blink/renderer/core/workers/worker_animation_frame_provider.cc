@@ -29,6 +29,24 @@ void WorkerAnimationFrameProvider::CancelCallback(int id) {
 
 void WorkerAnimationFrameProvider::BeginFrame() {
   callback_collection_.ExecuteCallbacks(0, 0);
+
+  for (auto& ctx : rendering_contexts_) {
+    ctx->PushFrame();
+  }
+}
+
+void WorkerAnimationFrameProvider::AddContextToDispatch(
+    CanvasRenderingContext* context) {
+  DCHECK(rendering_contexts_.Find(context) == kNotFound);
+  rendering_contexts_.push_back(context);
+}
+
+void WorkerAnimationFrameProvider::RemoveContextToDispatch(
+    CanvasRenderingContext* context) {
+  size_t pos = rendering_contexts_.Find(context);
+  if (pos != kNotFound) {
+    rendering_contexts_.EraseAt(pos);
+  }
 }
 
 }  // namespace blink

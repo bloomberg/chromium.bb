@@ -84,34 +84,4 @@ TEST_F(OffscreenCanvasTest, AnimationNotInitiallySuspended) {
   EXPECT_FALSE(Dispatcher()->IsAnimationSuspended());
 }
 
-TEST_F(OffscreenCanvasTest, AnimationActiveAfterCommit) {
-  ScriptState::Scope scope(GetScriptState());
-  DummyExceptionStateForTesting exception_state;
-  EXPECT_FALSE(Dispatcher()->NeedsBeginFrame());
-  Context().commit(GetScriptState(), exception_state);
-  platform()->RunUntilIdle();
-  EXPECT_TRUE(Dispatcher()->NeedsBeginFrame());
-}
-
-TEST_F(OffscreenCanvasTest, AnimationSuspendedWhilePlaceholderHidden) {
-  ScriptState::Scope scope(GetScriptState());
-  DummyExceptionStateForTesting exception_state;
-
-  // Do a commit and run it to completion so that the frame dispatcher
-  // instance becomes known to OffscreenCanvas (async).
-  Context().commit(GetScriptState(), exception_state);  // necessary
-  platform()->RunUntilIdle();
-  EXPECT_FALSE(Dispatcher()->IsAnimationSuspended());
-
-  // Change visibility to hidden -> animation should be suspended
-  GetPage().SetVisibilityState(mojom::PageVisibilityState::kHidden, false);
-  platform()->RunUntilIdle();
-  EXPECT_TRUE(Dispatcher()->IsAnimationSuspended());
-
-  // Change visibility to visible -> animation should resume
-  GetPage().SetVisibilityState(mojom::PageVisibilityState::kVisible, false);
-  platform()->RunUntilIdle();
-  EXPECT_FALSE(Dispatcher()->IsAnimationSuspended());
-}
-
 }  // namespace blink

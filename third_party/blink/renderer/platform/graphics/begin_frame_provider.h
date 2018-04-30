@@ -51,7 +51,7 @@ class PLATFORM_EXPORT BeginFrameProvider
     NOTIMPLEMENTED();
   }
   void OnBeginFrame(const viz::BeginFrameArgs&) final;
-  void OnBeginFramePausedChanged(bool paused) final { NOTIMPLEMENTED(); }
+  void OnBeginFramePausedChanged(bool paused) final {}
   void ReclaimResources(
       const WTF::Vector<viz::ReturnedResource>& resources) final {
     NOTIMPLEMENTED();
@@ -65,7 +65,7 @@ class PLATFORM_EXPORT BeginFrameProvider
   ~BeginFrameProvider() override = default;
 
  private:
-  bool needs_begin_frame_ = false;
+  bool needs_begin_frame_;
 
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> cfs_binding_;
   mojo::Binding<mojom::blink::OffscreenCanvasSurfaceClient> ocs_binding_;

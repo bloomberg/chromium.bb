@@ -600,8 +600,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   void getHTMLOrOffscreenCanvas(HTMLCanvasElementOrOffscreenCanvas&) const;
 
-  ScriptPromise commit(ScriptState*, ExceptionState&);
-
   // For use by WebVR which doesn't use the normal compositing path.
   // This clears the backbuffer if preserveDrawingBuffer is false.
   void MarkCompositedAndClearBackbufferIfNeeded();
@@ -656,6 +654,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   WebLayer* PlatformLayer() const override;
   void Stop() override;
   void FinalizeFrame() override;
+  void PushFrame() override;
 
   // DrawingBuffer::Client implementation.
   bool DrawingBufferClientIsBoundForDraw() override;

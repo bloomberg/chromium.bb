@@ -8,7 +8,7 @@ that the baseline images are regenerated on the next run.
 
 <html>
 <head>
-<title>OffscreenCanvas webgl.commit with resizing: red triangle with softened edge.</title>
+<title>OffscreenCanvas webgl with resizing: red triangle with softened edge.</title>
 <style type="text/css">
 .nomargin {
   margin: 0px auto;
@@ -55,8 +55,6 @@ function drawTriangle(gl)
   gl.vertexAttribPointer(attr, 2, gl.FLOAT, false, 0, 0);
 
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
-
-
 }
 
 self.onmessage = function(e) {
@@ -68,7 +66,6 @@ self.onmessage = function(e) {
 
   var gl = transferred.getContext('webgl');
   drawTriangle(gl);
-  gl.commit();
 
   self.postMessage("");
 };

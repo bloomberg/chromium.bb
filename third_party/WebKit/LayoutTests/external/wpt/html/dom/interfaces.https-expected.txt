@@ -5312,9 +5312,7 @@ PASS OffscreenCanvasRenderingContext2D interface object name
 PASS OffscreenCanvasRenderingContext2D interface: existence and properties of interface prototype object
 PASS OffscreenCanvasRenderingContext2D interface: existence and properties of interface prototype object's "constructor" property
 PASS OffscreenCanvasRenderingContext2D interface: existence and properties of interface prototype object's @@unscopables property
-FAIL OffscreenCanvasRenderingContext2D interface: operation commit() assert_throws: calling operation with this = null didn't throw TypeError function "function() {
-            fn.apply(obj, args);
-        }" did not throw
+FAIL OffscreenCanvasRenderingContext2D interface: operation commit() assert_own_property: interface prototype object missing non-static operation expected property "commit" missing
 PASS Unscopable handled correctly for commit() on OffscreenCanvasRenderingContext2D
 PASS OffscreenCanvasRenderingContext2D interface: attribute canvas
 PASS Unscopable handled correctly for canvas property on OffscreenCanvasRenderingContext2D

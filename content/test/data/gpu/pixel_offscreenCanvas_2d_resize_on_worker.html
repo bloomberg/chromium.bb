@@ -8,7 +8,7 @@ that the baseline images are regenerated on the next run.
 
 <html>
 <head>
-<title>OffscreenCanvas2d.commit with resizing: red rectangle in the middle.</title>
+<title>OffscreenCanvas2d with resizing: red rectangle in the middle.</title>
 <style type="text/css">
 .nomargin {
   margin: 0px auto;
@@ -20,11 +20,9 @@ self.onmessage = function(e) {
   var ctx2d = transferred.getContext('2d');
   ctx2d.fillStyle = "purple";
   ctx2d.fillRect(0, 0, transferred.width, transferred.height);
-  // The placeholder canvas should initially display a 200X200 purple image in
-  // the first commit() and then display a 40X50 green image containing a red
-  // rectangle in the middle.
-  ctx2d.commit().then(
-    function() {
+  // The placeholder canvas should initially display a 200X200 purple image and
+  // then display a 40X50 green image containing a red rectangle in the middle.
+  requestAnimationFrame(() => {
       // Resize offscreenCanvas from 200X200 to 40X50.
       transferred.width = 40;
       transferred.height = 50;
@@ -33,7 +31,7 @@ self.onmessage = function(e) {
       ctx2d.fillRect(0, 0, transferred.width, transferred.height);
       ctx2d.fillStyle = "red";
       ctx2d.fillRect(10, 10, 20, 20);
-      ctx2d.commit().then(function() {
+      requestAnimationFrame(() => {
         self.postMessage("");
       });
    });

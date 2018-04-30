@@ -33,12 +33,11 @@ function drawWebGL(canvas, drawCounter) {
   checkForRedraw(canvas, drawCounter, drawWebGL);
 };
 
-function drawOffscreenCanvasCommit(canvas, drawCounter) {
+function drawOffscreenCanvas(canvas, drawCounter) {
   var ctx = canvas.getContext('2d');
   ctx.fillStyle = 'green';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.commit();
-  checkForRedraw(canvas, drawCounter, drawOffscreenCanvasCommit);
+  checkForRedraw(canvas, drawCounter, drawOffscreenCanvas);
 };
 
 function drawBitmapRenderer(canvas, drawCounter) {
@@ -72,7 +71,7 @@ function testCanvasCapture(drawFunction) {
   };
 
   recorder.start(0);
-  if (drawFunction.toString() == drawOffscreenCanvasCommit.toString()) {
+  if (drawFunction.toString() == drawOffscreenCanvas.toString()) {
     var offscreen = canvas.transferControlToOffscreen();
     drawFunction(offscreen, 0);
   } else {

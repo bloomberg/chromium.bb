@@ -177,6 +177,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   }
 
   // OffscreenCanvas-specific methods
+  virtual void PushFrame() {}
   virtual ImageBitmap* TransferToImageBitmap(ScriptState*) { return nullptr; }
 
   bool WouldTaintOrigin(CanvasImageSource*, const SecurityOrigin*);

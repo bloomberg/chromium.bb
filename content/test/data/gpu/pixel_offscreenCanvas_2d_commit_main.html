@@ -8,7 +8,7 @@ that the baseline images are regenerated on the next run.
 
 <html>
 <head>
-<title>OffscreenCanvas 2d commit flow on main thread: Two Canvases</title>
+<title>OffscreenCanvas 2d flow on main thread: Two Canvases</title>
 <style type="text/css">
 .nomargin {
   margin: 0px auto;
@@ -25,10 +25,9 @@ that the baseline images are regenerated on the next run.
 <script>
 /* This pixel test checks the following:
     1. Whether submission of frames for multiple canvases happen about the same
-       time for OffscreenCanvas.commit() that are invoked in the same JS task.
+       time for OffscreenCanvas that are invoked in the same JS task.
     2. Whether overdraw frame in one animation loop is handled well.
-    3. Whether the drawn 2d image is position upright in commit().
-    4. Drawing to OffscreenCanvas without commit() has no rendering results.
+    3. Whether the drawn 2d image is position upright.
 
     Correct end result of this test: The left canvas shows a seven-spike skyblue
     star on the top-left corner of a green background and the right canvas shows
@@ -48,13 +47,10 @@ function startTest() {
 
   ctx1.fillStyle = "green";
   ctx1.fillRect(0, 0, 180, 200);
-  // The promise returned by this ctx1.commit() must be resolved at
-  // about the same time as the other ctx2.commit() below as they are in the
-  // same JS task.
-  ctx1.commit().then(function() {
+
+  requestAnimationFrame(() => {
     ctx2.fillRect(0, 0, 180, 200);
-    // This ctx2.commit() must happen after the other ctx2.commit() below.
-    ctx2.commit();
+    // This ctx2 must happen after the other ctx2 below.
     if (--g_asyncCallbackNumber == 0) waitForFinish();
   });
 
@@ -90,16 +86,12 @@ function startTest() {
   ctx2.fillStyle = "blue";
   ctx2.fillRect(0, 0, 180, 200);
   drawStar(ctx2, 90, 100, 25, 60, 40);
-  // This ctx2.commit() must be resolved at about the same time as the first
-  // ctx1.commit() above because they are in the same JS task, no matter how
+  // This ctx2 must be resolved at about the same time as the first
+  // ctx1 above because they are in the same JS task, no matter how
   // complex the drawing operation is.
-  ctx2.commit().then(function() {
+  requestAnimationFrame(() => {
     drawStar(ctx1, 70, 80, 7, 60, 30);
-    ctx1.commit();
 
-    // The following fill is never committed
-    ctx1.fillStyle = "red";
-    ctx1.fillRect(0, 0, 180, 200);
     if (--g_asyncCallbackNumber == 0) waitForFinish();
   });
 

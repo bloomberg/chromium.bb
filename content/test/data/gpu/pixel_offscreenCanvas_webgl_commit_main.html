@@ -8,7 +8,7 @@ that the baseline images are regenerated on the next run.
 
 <html>
 <head>
-<title>OffscreenCanvas webgl commit flow on main thread: Two Canvases</title>
+<title>OffscreenCanvas webgl flow on main thread: Two Canvases</title>
 <style type="text/css">
 .nomargin {
   margin: 0px auto;
@@ -17,10 +17,9 @@ that the baseline images are regenerated on the next run.
 <script>
 /* This pixel test checks the following:
     1. Whether submission of frames for multiple canvases happen about the same
-       time for OffscreenCanvas.commit() that are invoked in the same JS task.
+       time for OffscreenCanvas that are invoked in the same JS task.
     2. Whether overdraw frame in one animation loop is handled well.
-    3. Whether the drawn webgl image is position upright in commit().
-    4. Drawing to OffscreenCanvas without commit() has no rendering results.
+    3. Whether the drawn webgl image is position upright.
 
     Correct end result of this test: The left canvas shows a upright white
     triangle on a green background and the right canvas shows dark-blue fill.
@@ -39,14 +38,10 @@ function startTest() {
 
   ctx1.clearColor(0, 1, 0, 1);
   ctx1.clear(ctx1.COLOR_BUFFER_BIT);
-  // The promise returned by this ctx1.commit() must be resolved at
-  // about the same time as the other ctx2.commit() below as they are in the
-  // same JS task.
-  ctx1.commit().then(function() {
+
+  requestAnimationFrame(() => {
     ctx2.clearColor(0, 0, 1, 1);
     ctx2.clear(ctx2.COLOR_BUFFER_BIT);
-    // This ctx2.commit() must happen after the other ctx2.commit() below.
-    ctx2.commit();
     if (--g_asyncCallbackNumber == 0) waitForFinish();
   });
 
@@ -94,16 +89,12 @@ function startTest() {
 
   // Do something complex to ctx2.
   drawTriangle(ctx2);
-  // This ctx2.commit() must be resolved at about the same time as the first
-  // ctx1.commit() above because they are in the same JS task, no matter how
+  // This ctx2 must be resolved at about the same time as the first
+  // ctx1 above because they are in the same JS task, no matter how
   // complex the drawing operation is.
-  ctx2.commit().then(function() {
+  requestAnimationFrame(() => {
     drawTriangle(ctx1);
-    ctx1.commit();
 
-    // The following clear is never committed
-    ctx1.clearColor(1, 0, 0, 1);
-    ctx1.clear(ctx1.COLOR_BUFFER_BIT);
     if (--g_asyncCallbackNumber == 0) waitForFinish();
   });
 

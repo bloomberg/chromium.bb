@@ -7,7 +7,7 @@
 // Since the document is invisible, the resultant image should be
 // not visible too. But users must be able to draw to the OffscreenCanvas
 // and do canvas-operations on the frameless placeholder canvas.
-// TODO(crbug.com/683172): Modify this test after handling for 
+// TODO(crbug.com/683172): Modify this test after handling for
 // frameless canvas is done.
 function createFramelessCanvas() {
   var framelessDoc = document.implementation.createHTMLDocument("frameless");
@@ -22,7 +22,6 @@ function transferControlAndCommit(canvas) {
   var ctx = offscreenCanvas.getContext("2d");
   ctx.fillStyle = "blue";
   ctx.fillRect(0, 0, 50, 50);
-  ctx.commit();
   return offscreenCanvas;
 }
 
@@ -41,17 +40,15 @@ async_test(function(t) {
   c.width = 50;
   c.height = 50;
   var ctx2 = c.getContext("2d");
-  // TODO(junov): Use the Promise returned by commit to schedule after the
-  // commit. (crbug.com/709484)
-  setTimeout(function() {
-    setTimeout(function() {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
       ctx2.drawImage(canvas, 0, 0);
       var pixels = ctx2.getImageData(0, 0, 1, 1).data;
-      t.step(function() {
+      t.step(() => {
         assert_array_equals(pixels, [0, 0, 255, 255]);
       });
       t.done();
     }, 0);
-  }, 0);
+  });
 }, "Verify that the placeholder canvas can be used as an image source");
 </script>

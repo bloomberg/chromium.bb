@@ -731,29 +731,6 @@ ImageBitmap* WebGLRenderingContextBase::TransferToImageBitmapBase(
   return ImageBitmap::Create(image);
 }
 
-ScriptPromise WebGLRenderingContextBase::commit(
-    ScriptState* script_state,
-    ExceptionState& exception_state) {
-  WebFeature feature = WebFeature::kOffscreenCanvasCommitWebGL;
-  UseCounter::Count(ExecutionContext::From(script_state), feature);
-  int width = GetDrawingBuffer()->Size().Width();
-  int height = GetDrawingBuffer()->Size().Height();
-  if (!GetDrawingBuffer()) {
-    return Host()->Commit(nullptr, SkIRect::MakeWH(width, height), script_state,
-                          exception_state);
-  }
-
-  std::unique_ptr<viz::SingleReleaseCallback> image_release_callback;
-  scoped_refptr<StaticBitmapImage> image =
-      GetStaticBitmapImage(&image_release_callback);
-  GetDrawingBuffer()->SwapPreviousFrameCallback(
-      std::move(image_release_callback));
-
-  return Host()->Commit(
-      std::move(image), SkIRect::MakeWH(width, height),
-      script_state, exception_state);
-}
-
 scoped_refptr<StaticBitmapImage>
 WebGLRenderingContextBase::GetStaticBitmapImage(
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
@@ -1011,6 +988,8 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
       is_ext_color_buffer_float_formats_added_(false),
       version_(version) {
   DCHECK(context_provider);
+
+  Host()->RegisterContextToDispatch(this);
 
   // TODO(offenwanger) Make sure this is being created on a compatible adapter.
   compatible_xr_device_ =
@@ -1333,6 +1312,12 @@ void WebGLRenderingContextBase::MarkContextChanged(
     return;
   }
 
+  if (Host()->IsOffscreenCanvas()) {
+    marked_canvas_dirty_ = true;
+    DidDraw();
+    return;
+  }
+
   if (!canvas())
     return;
 
@@ -1347,6 +1332,25 @@ void WebGLRenderingContextBase::MarkContextChanged(
     IntSize canvas_size = ClampedCanvasSize();
     DidDraw(SkIRect::MakeXYWH(0, 0, canvas_size.Width(), canvas_size.Height()));
   }
+}
+
+void WebGLRenderingContextBase::PushFrame() {
+  if (!marked_canvas_dirty_)
+    return;
+
+  marked_canvas_dirty_ = false;
+  int width = GetDrawingBuffer()->Size().Width();
+  int height = GetDrawingBuffer()->Size().Height();
+  if (!GetDrawingBuffer()) {
+    return Host()->PushFrame(nullptr, SkIRect::MakeWH(width, height));
+  }
+
+  std::unique_ptr<viz::SingleReleaseCallback> image_release_callback;
+  scoped_refptr<StaticBitmapImage> image =
+      GetStaticBitmapImage(&image_release_callback);
+  GetDrawingBuffer()->SwapPreviousFrameCallback(
+      std::move(image_release_callback));
+  return Host()->PushFrame(std::move(image), SkIRect::MakeWH(width, height));
 }
 
 void WebGLRenderingContextBase::FinalizeFrame() {

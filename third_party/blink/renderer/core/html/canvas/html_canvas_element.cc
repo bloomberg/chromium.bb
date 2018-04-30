@@ -79,7 +79,7 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
-#include "third_party/blink/renderer/platform/graphics/offscreen_canvas_frame_dispatcher_impl.h"
+#include "third_party/blink/renderer/platform/graphics/offscreen_canvas_frame_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
@@ -315,11 +315,11 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
       OriginTrials::lowLatencyCanvasEnabled(&GetDocument())) {
     CreateLayer();
     SetNeedsUnbufferedInputEvents(true);
-    // TODO: rename to CanvasFrameDispatcherImpl
-    frame_dispatcher_ = std::make_unique<OffscreenCanvasFrameDispatcherImpl>(
+    // TODO(fserb): rename to CanvasFrameDispatcher
+    frame_dispatcher_ = std::make_unique<OffscreenCanvasFrameDispatcher>(
         nullptr, surface_layer_bridge_->GetFrameSinkId().client_id(),
         surface_layer_bridge_->GetFrameSinkId().sink_id(),
-        OffscreenCanvasFrameDispatcherImpl::kInvalidPlaceholderCanvasId,
+        OffscreenCanvasFrameDispatcher::kInvalidPlaceholderCanvasId,
         size_.Width(), size_.Height());
   }
 

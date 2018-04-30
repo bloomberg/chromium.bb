@@ -10,7 +10,7 @@ var t = async_test("CopyImageOnTransferredCanvas");
 
 function main() {
   assert_true(!!window.testRunner, "This test requires window.testRunner.");
- 
+
   if (window.testRunner) {
     initTest();
   } else {
@@ -32,8 +32,7 @@ function initTest() {
   ctx.fillStyle = "#ff0";
   ctx.fillRect(128, 128, 128, 128);
 
-
-  ctx.commit().then(runTest);
+  requestAnimationFrame(runTest);
 }
 
 function copyImage() {
