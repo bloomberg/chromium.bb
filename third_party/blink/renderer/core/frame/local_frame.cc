@@ -1155,8 +1155,7 @@ bool LocalFrame::ComputeIsAdSubFrame() const {
   // it's remote, then blink relies on the embedder to call SetIsAdFrame.
   bool parent_is_ad =
       parent->IsLocalFrame() && ToLocalFrame(parent)->IsAdSubframe();
-  return parent_is_ad ||
-         ad_tracker_->AnyExecutingScriptsTaggedAsAdResource(GetDocument());
+  return parent_is_ad || ad_tracker_->IsAdScriptInStack(GetDocument());
 }
 
 service_manager::InterfaceProvider& LocalFrame::GetInterfaceProvider() {

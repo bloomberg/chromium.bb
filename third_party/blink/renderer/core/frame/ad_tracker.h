@@ -53,7 +53,7 @@ class CORE_EXPORT AdTracker : public GarbageCollectedFinalized<AdTracker> {
 
   // Returns true if any script in the pseudo call stack have previously been
   // identified as an ad resource.
-  bool AnyExecutingScriptsTaggedAsAdResource(ExecutionContext*);
+  bool IsAdScriptInStack(ExecutionContext*);
 
   virtual void Trace(blink::Visitor*);
 
