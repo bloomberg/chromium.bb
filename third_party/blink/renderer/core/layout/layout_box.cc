@@ -3732,9 +3732,9 @@ LayoutUnit LayoutBox::AvailableLogicalHeightUsing(
   // below.
   if (IsTableCell() && (h.IsAuto() || h.IsPercentOrCalc())) {
     if (HasOverrideLogicalHeight()) {
-      // TODO(rego): Shouldn't we subtract the scrollbar height too?
       return OverrideLogicalHeight() -
-             CollapsedBorderAndCSSPaddingLogicalHeight();
+             CollapsedBorderAndCSSPaddingLogicalHeight() -
+             ScrollbarLogicalHeight();
     }
     return LogicalHeight() - BorderAndPaddingLogicalHeight();
   }
