@@ -128,6 +128,12 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
     FrameLifecycle::set_phase(kUpdatedBindings);
   }
 
+  // Per-frame callbacks run every frame, always, as opposed to bindings, which
+  // run selectively based on element visibility.
+  for (auto callback : per_frame_callback_) {
+    callback.Run();
+  }
+
   {
     TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateAnimationsAndOpacity");
 
@@ -165,12 +171,6 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
 
   FrameLifecycle::set_phase(kUpdatedWorldSpaceTransform);
   return scene_dirty;
-}
-
-void UiScene::CallPerFrameCallbacks() {
-  for (auto callback : per_frame_callback_) {
-    callback.Run();
-  }
 }
 
 bool UiScene::UpdateTextures() {

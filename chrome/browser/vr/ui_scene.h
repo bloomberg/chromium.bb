@@ -47,8 +47,6 @@ class UiScene {
   bool OnBeginFrame(const base::TimeTicks& current_time,
                     const gfx::Transform& head_pose);
 
-  void CallPerFrameCallbacks();
-
   // Returns true if any textures were redrawn.
   bool UpdateTextures();
 
