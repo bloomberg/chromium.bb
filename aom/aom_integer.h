@@ -78,7 +78,7 @@ typedef size_t uintptr_t;
 extern "C" {
 #endif  // __cplusplus
 
-// Returns size of uint32_t when encoded using LEB128.
+// Returns size of uint64_t when encoded using LEB128.
 size_t aom_uleb_size_in_bytes(uint64_t value);
 
 // Returns 0 on success, -1 on decode failure.
