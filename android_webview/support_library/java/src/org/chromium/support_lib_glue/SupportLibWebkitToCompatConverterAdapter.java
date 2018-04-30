@@ -4,17 +4,20 @@
 
 package org.chromium.support_lib_glue;
 
+import android.webkit.SafeBrowsingResponse;
 import android.webkit.ServiceWorkerWebSettings;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 
+import com.android.webview.chromium.SafeBrowsingResponseAdapter;
 import com.android.webview.chromium.ServiceWorkerSettingsAdapter;
 import com.android.webview.chromium.WebResourceErrorAdapter;
 import com.android.webview.chromium.WebkitToSharedGlueConverter;
 
 import org.chromium.support_lib_boundary.WebkitToCompatConverterBoundaryInterface;
 import org.chromium.support_lib_boundary.util.BoundaryInterfaceReflectionUtil;
+import org.chromium.support_lib_callback_glue.SupportLibSafeBrowsingResponse;
 import org.chromium.support_lib_callback_glue.SupportLibWebResourceError;
 
 import java.lang.reflect.InvocationHandler;
@@ -76,5 +79,24 @@ class SupportLibWebkitToCompatConverterAdapter implements WebkitToCompatConverte
                 (SupportLibWebResourceError) BoundaryInterfaceReflectionUtil
                         .getDelegateFromInvocationHandler(webResourceError);
         return new WebResourceErrorAdapter(supportLibError.getAwWebResourceError());
+    }
+
+    @Override
+    public /* SupportLibSafeBrowsingResponse */ InvocationHandler convertSafeBrowsingResponse(
+            /* SafeBrowsingResponse */ Object safeBrowsingResponse) {
+        return BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
+                new SupportLibSafeBrowsingResponse(
+                        WebkitToSharedGlueConverter.getAwSafeBrowsingResponseCallback(
+                                (SafeBrowsingResponse) safeBrowsingResponse)));
+    }
+
+    @Override
+    public /* SafeBrowsingResponse */ Object convertSafeBrowsingResponse(
+            /* SupportLibSafeBrowsingResponse */ InvocationHandler safeBrowsingResponse) {
+        SupportLibSafeBrowsingResponse supportLibResponse =
+                (SupportLibSafeBrowsingResponse) BoundaryInterfaceReflectionUtil
+                        .getDelegateFromInvocationHandler(safeBrowsingResponse);
+        return new SafeBrowsingResponseAdapter(
+                supportLibResponse.getAwSafeBrowsingResponseCallback());
     }
 }

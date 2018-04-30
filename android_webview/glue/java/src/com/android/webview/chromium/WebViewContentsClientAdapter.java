@@ -30,7 +30,6 @@ import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.PermissionRequest;
 import android.webkit.RenderProcessGoneDetail;
-import android.webkit.SafeBrowsingResponse;
 import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -606,9 +605,6 @@ class WebViewContentsClientAdapter extends AwContentsClient {
         }
     }
 
-    // TODO(ntfschr): remove @SuppressLint once lint uses 27 for targetSdk (this is needed to
-    // subclass SafeBrowsingResponse)
-    @SuppressLint({"Override"})
     @Override
     @TargetApi(Build.VERSION_CODES.O_MR1)
     public void onSafeBrowsingHit(AwWebResourceRequest request, int threatType,
@@ -620,25 +616,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
                         mWebView, new WebResourceRequestAdapter(request), threatType, callback);
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
                 mWebViewClient.onSafeBrowsingHit(mWebView, new WebResourceRequestAdapter(request),
-                        threatType, new SafeBrowsingResponse() {
-                            @Override
-                            public void showInterstitial(boolean allowReporting) {
-                                callback.onResult(new AwSafeBrowsingResponse(
-                                        SafeBrowsingAction.SHOW_INTERSTITIAL, allowReporting));
-                            }
-
-                            @Override
-                            public void proceed(boolean report) {
-                                callback.onResult(new AwSafeBrowsingResponse(
-                                        SafeBrowsingAction.PROCEED, report));
-                            }
-
-                            @Override
-                            public void backToSafety(boolean report) {
-                                callback.onResult(new AwSafeBrowsingResponse(
-                                        SafeBrowsingAction.BACK_TO_SAFETY, report));
-                            }
-                        });
+                        threatType, new SafeBrowsingResponseAdapter(callback));
             } else {
                 callback.onResult(new AwSafeBrowsingResponse(SafeBrowsingAction.SHOW_INTERSTITIAL,
                         /* reporting */ true));

@@ -51,4 +51,10 @@ public interface WebkitToCompatConverterBoundaryInterface {
             /* WebResourceError */ Object webResourceError);
     /* WebResourceError */ Object convertWebResourceError(
             /* SupportLibWebResourceError */ InvocationHandler webResourceError);
+
+    // SafeBrowsingResponse
+    /* SupportLibSafeBrowsingResponse */ InvocationHandler convertSafeBrowsingResponse(
+            /* SafeBrowsingResponse */ Object safeBrowsingResponse);
+    /* SafeBrowsingResponse */ Object convertSafeBrowsingResponse(
+            /* SupportLibSafeBrowsingResponse */ InvocationHandler safeBrowsingResponse);
 }

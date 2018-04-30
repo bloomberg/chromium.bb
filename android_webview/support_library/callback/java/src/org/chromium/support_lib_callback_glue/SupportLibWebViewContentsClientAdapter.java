@@ -12,7 +12,6 @@ import android.webkit.WebViewClient;
 
 import org.chromium.android_webview.AwContentsClient.AwWebResourceError;
 import org.chromium.android_webview.AwSafeBrowsingResponse;
-import org.chromium.android_webview.SafeBrowsingAction;
 import org.chromium.base.Callback;
 import org.chromium.support_lib_boundary.SafeBrowsingResponseBoundaryInterface;
 import org.chromium.support_lib_boundary.WebResourceErrorBoundaryInterface;
@@ -35,32 +34,6 @@ public class SupportLibWebViewContentsClientAdapter {
     @Nullable
     private WebViewClientBoundaryInterface mWebViewClient;
     private String[] mWebViewClientSupportedFeatures;
-
-    private static class SafeBrowsingResponseDelegate
-            implements SafeBrowsingResponseBoundaryInterface {
-        private Callback<AwSafeBrowsingResponse> mCallback;
-
-        SafeBrowsingResponseDelegate(Callback<AwSafeBrowsingResponse> callback) {
-            mCallback = callback;
-        }
-
-        @Override
-        public void showInterstitial(boolean allowReporting) {
-            mCallback.onResult(new AwSafeBrowsingResponse(
-                    SafeBrowsingAction.SHOW_INTERSTITIAL, allowReporting));
-        }
-
-        @Override
-        public void proceed(boolean report) {
-            mCallback.onResult(new AwSafeBrowsingResponse(SafeBrowsingAction.PROCEED, report));
-        }
-
-        @Override
-        public void backToSafety(boolean report) {
-            mCallback.onResult(
-                    new AwSafeBrowsingResponse(SafeBrowsingAction.BACK_TO_SAFETY, report));
-        }
-    };
 
     public SupportLibWebViewContentsClientAdapter() {
         mWebViewClientSupportedFeatures = EMPTY_FEATURE_LIST;
@@ -132,10 +105,10 @@ public class SupportLibWebViewContentsClientAdapter {
     public void onSafeBrowsingHit(WebView webView, WebResourceRequest request, int threatType,
             Callback<AwSafeBrowsingResponse> callback) {
         assert isFeatureAvailable(Features.SAFE_BROWSING_HIT);
-        SafeBrowsingResponseBoundaryInterface responseDelegate =
-                new SafeBrowsingResponseDelegate(callback);
+        SafeBrowsingResponseBoundaryInterface supportLibResponse =
+                new SupportLibSafeBrowsingResponse(callback);
         InvocationHandler responseHandler =
-                BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(responseDelegate);
+                BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(supportLibResponse);
         mWebViewClient.onSafeBrowsingHit(webView, request, threatType, responseHandler);
     }
 
