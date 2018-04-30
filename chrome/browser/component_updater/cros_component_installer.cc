@@ -125,6 +125,10 @@ CrOSComponentInstallerPolicy::OnCustomInstall(
   // TODO(xiaochu): remove after M66 ships to stable. https://crbug.com/792203
   CleanUpOldInstalls(name_);
 
+  g_browser_process->platform_part()
+      ->cros_component_manager()
+      ->EmitInstalledSignal(GetName());
+
   return update_client::CrxInstaller::Result(update_client::InstallError::NONE);
 }
 
@@ -198,6 +202,10 @@ CrOSComponentManager::CrOSComponentManager() {}
 
 CrOSComponentManager::~CrOSComponentManager() {}
 
+void CrOSComponentManager::SetDelegate(Delegate* delegate) {
+  delegate_ = delegate;
+}
+
 void CrOSComponentManager::Load(const std::string& name,
                                 MountPolicy mount_policy,
                                 LoadCallback load_callback) {
@@ -242,14 +250,15 @@ void CrOSComponentManager::UnregisterCompatiblePath(const std::string& name) {
   compatible_components_.erase(name);
 }
 
-bool CrOSComponentManager::IsCompatible(const std::string& name) const {
-  return compatible_components_.count(name) > 0;
-}
-
 base::FilePath CrOSComponentManager::GetCompatiblePath(
     const std::string& name) const {
   const auto it = compatible_components_.find(name);
   return it == compatible_components_.end() ? base::FilePath() : it->second;
+}
+
+void CrOSComponentManager::EmitInstalledSignal(const std::string& component) {
+  if (delegate_)
+    delegate_->EmitInstalledSignal(component);
 }
 
 void CrOSComponentManager::Register(ComponentUpdateService* cus,
@@ -352,6 +361,10 @@ void CrOSComponentManager::RegisterN(
   for (const auto& config : configs) {
     Register(updater, config, base::OnceClosure());
   }
+}
+
+bool CrOSComponentManager::IsCompatible(const std::string& name) const {
+  return compatible_components_.count(name) > 0;
 }
 
 }  // namespace component_updater

@@ -46,11 +46,11 @@
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
-#include "chrome/browser/chromeos/dbus/chrome_component_updater_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_console_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_display_power_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_proxy_resolution_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_virtual_file_request_service_provider_delegate.h"
+#include "chrome/browser/chromeos/dbus/component_updater_service_provider.h"
 #include "chrome/browser/chromeos/dbus/finch_features_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
@@ -125,7 +125,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/services/chrome_features_service_provider.h"
-#include "chromeos/dbus/services/component_updater_service_provider.h"
 #include "chromeos/dbus/services/console_service_provider.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "chromeos/dbus/services/display_power_service_provider.h"
@@ -406,8 +405,7 @@ class DBusServices {
         dbus::ObjectPath(kComponentUpdaterServicePath),
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<ComponentUpdaterServiceProvider>(
-                std::make_unique<
-                    ChromeComponentUpdaterServiceProviderDelegate>())));
+                g_browser_process->platform_part()->cros_component_manager())));
 
     finch_features_service_ = CrosDBusService::Create(
         kChromeFeaturesServiceName,
@@ -671,6 +669,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   // device_event_log must be initialized after the message loop.
   device_event_log::Initialize(0 /* default max entries */);
 
+  // This has to be initialized before DBusServices
+  // (ComponentUpdaterServiceProvider).
+  g_browser_process->platform_part()->InitializeCrosComponentManager();
+
   dbus_services_.reset(new internal::DBusServices(parameters()));
 
   // Need to be done after LoginState has been initialized in DBusServices().
@@ -881,8 +883,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     VLOG(1) << "Relaunching browser for user: " << account_id.Serialize()
             << " with hash: " << user_id_hash;
   }
-
-  g_browser_process->platform_part()->InitializeCrosComponentManager();
 }
 
 class GuestLanguageSetCallbackData {
@@ -1221,13 +1221,15 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   g_browser_process->platform_part()->ShutdownSessionManager();
   // Ash needs to be closed before UserManager is destroyed.
   g_browser_process->platform_part()->DestroyChromeUserManager();
-
-  g_browser_process->platform_part()->ShutdownCrosComponentManager();
 }
 
 void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {
   // Destroy DBus services immediately after threads are stopped.
   dbus_services_.reset();
+
+  // This has to be destroyed after DBusServices
+  // (ComponentUpdaterServiceProvider).
+  g_browser_process->platform_part()->ShutdownCrosComponentManager();
 
   dbus_pre_early_init_.reset();
 
