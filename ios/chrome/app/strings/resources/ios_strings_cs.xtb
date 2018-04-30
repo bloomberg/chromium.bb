@@ -363,6 +363,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7605594153474022051">Synchronizace nefunguje</translation>
 <translation id="7638584964844754484">Nesprávná heslová fráze</translation>
 <translation id="7649070708921625228">Nápověda</translation>
+<translation id="7657481849127058215">Přidat kartu</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7671141431838911305">INSTALOVAT</translation>
 <translation id="7765158879357617694">Přesunout</translation>
@@ -385,6 +386,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="8073670137947914548">Stahování bylo dokončeno</translation>
 <translation id="8076014560081431679">Uložená nastavení webů nebudou smazána a mohou vypovídat o vašich zvycích při prohlížení. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Zavřít všechny karty</translation>
+<translation id="8114753159095730575">Je k dispozici soubor ke stažení. Možnosti jsou k dispozici ve spodní části obrazovky.</translation>
 <translation id="8205564605687841303">Zrušit</translation>
 <translation id="8225985093977202398">Obrázky a soubory v mezipaměti</translation>
 <translation id="8261506727792406068">Smazat</translation>

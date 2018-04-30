@@ -183,6 +183,7 @@
 <translation id="2650751991977523696">Fazer o download do arquivo novamente?</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2677748264148917807">Sair</translation>
+<translation id="2693813674743028984">Ocultar armazenamento</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2707726405694321444">Atualizar página</translation>
 <translation id="2709516037105925701">Preenchimento automático</translation>
@@ -208,6 +209,7 @@
 <translation id="2956410042958133412">Esta conta é gerenciada por <ph name="PARENT_NAME_1" /> e <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Todos os direitos reservados.</translation>
 <translation id="2962095958535813455">Alternada para guias anônimas</translation>
+<translation id="2965945119655563012">Mostrar armazenamento</translation>
 <translation id="2968755619301702150">Leitor de certificados</translation>
 <translation id="2979025552038692506">Guia anônima selecionada</translation>
 <translation id="2989523299700148168">Visitados recentemente</translation>
@@ -334,6 +336,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4170011742729630528">O serviço não está disponível. Tente novamente mais tarde.</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4195643157523330669">Abrir em uma nova guia</translation>
+<translation id="4198423547019359126">Não há locais de download disponíveis</translation>
 <translation id="4226663524361240545">É possível que as notificações façam o dispositivo vibrar</translation>
 <translation id="4242533952199664413">Abrir configurações.</translation>
 <translation id="424864128008805179">Sair do Google Chrome?</translation>
@@ -699,6 +702,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7455923816558154057">Toque para ver</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7475192538862203634">Se estiver vendo isso com frequência, tente estas <ph name="BEGIN_LINK" />sugestões<ph name="END_LINK" />.</translation>
+<translation id="7475688122056506577">Cartão SD não encontrado. Alguns arquivos podem estar faltando.</translation>
 <translation id="748127970106343339">Confirmar exclusão da credencial do dispositivo</translation>
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atualizada <ph name="TIME_SINCE_UPDATE" />)</translation>
@@ -762,6 +766,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
 <translation id="8035133914807600019">Nova pasta...</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dias restantes</translation>
+<translation id="804335162455518893">Cartão SD não encontrado</translation>
 <translation id="805047784848435650">Com base no seu histórico de navegação</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponíveis</translation>
 <translation id="8058746566562539958">Abrir em nova guia do Chrome</translation>

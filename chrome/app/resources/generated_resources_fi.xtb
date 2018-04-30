@@ -912,7 +912,6 @@
 <translation id="2413749388954403953">Muokata kirjanmerkkien käyttöliittymää</translation>
 <translation id="2422426094670600218">&lt;nimetön&gt;</translation>
 <translation id="2423578206845792524">T&amp;allenna kuva nimellä...</translation>
-<translation id="2424091190911472304">Suorita aina sivustolla <ph name="ORIGIN" /></translation>
 <translation id="2425665904502185219">Tiedostokoko yhteensä</translation>
 <translation id="2428510569851653187">Kerro, mitä olit tekemässä juuri ennen kaatumista.</translation>
 <translation id="2431027948063157455">Google Assistantin lataaminen epäonnistui. Tarkista verkkoyhteys ja yritä uudelleen.</translation>
@@ -1201,7 +1200,6 @@ Tämän sivuston ei pitäisi olla estetty.</translation>
 <translation id="2838379631617906747">Asennetaan</translation>
 <translation id="2841837950101800123">Tarjoaja</translation>
 <translation id="2843806747483486897">Muuta oletuksia...</translation>
-<translation id="2844111009524261443">Suorita klikattaessa</translation>
 <translation id="2845382757467349449">Näytä kirjanmerkkipalkki aina</translation>
 <translation id="2847759467426165163">Lähetä laitteelle</translation>
 <translation id="284805635805850872">Poistetaanko haittaohjelmia?</translation>
@@ -1513,7 +1511,6 @@ Lisätietoja saat <ph name="BEGIN_LINK" />ohjekeskuksestamme<ph name="END_LINK" 
 <translation id="3308116878371095290">Tämä sivu ei saa asettaa evästeitä.</translation>
 <translation id="3308134619352333507">Piilota painike</translation>
 <translation id="3308852433423051161">Ladataan Google Assistantia…</translation>
-<translation id="3309747692199697901">Suorita aina kaikilla sivustoilla</translation>
 <translation id="3312424061798279731">Käytössä olevat kielet</translation>
 <translation id="3313590242757056087">Jos haluat määrittää, mitä verkkosivustoja valvottu käyttäjä voi katsella, voit määrittää rajoitukset
     ja asetukset osoitteessa <ph name="MANAGEMENT_URL" />.
@@ -1811,7 +1808,6 @@ Lisätietoja saat <ph name="BEGIN_LINK" />ohjekeskuksestamme<ph name="END_LINK" 
 <translation id="3759933321830434300">Estä joitain verkkosivujen osia</translation>
 <translation id="3760460896538743390">Tarkista &amp;taustasivu</translation>
 <translation id="37613671848467444">Avaa incognito-ikkunassa</translation>
-<translation id="3763401818161139108">Suorita aina sivustolla <ph name="ORIGIN" /></translation>
 <translation id="3764314093345384080">Koontiversion yksityiskohtaiset tiedot</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Käyttää USB-laitetta}other{Käyttää # USB-laitetta}}</translation>
 <translation id="3764986667044728669">Ilmoittautuminen ei onnistu</translation>
@@ -2269,7 +2265,6 @@ Lisätietoja saat <ph name="BEGIN_LINK" />ohjekeskuksestamme<ph name="END_LINK" 
 <translation id="4547992677060857254">Valitsemasi kansio sisältää arkaluonteisia tiedostoja. Haluatko varmasti myöntää käyttäjälle "$1" pysyvän kirjoitusoikeuden tähän kansioon?</translation>
 <translation id="4552031286893852992">Chrome esti mainokset tällä sivustolla, koska se näyttää häiritseviä mainoksia.</translation>
 <translation id="4552089082226364758">Flash</translation>
-<translation id="4552495056028768700">Sivun käyttöoikeus</translation>
 <translation id="4552678318981539154">Osta lisää tallennustilaa</translation>
 <translation id="4554591392113183336">Ulkoinen laajennus on sama tai aiempi versio kuin nykyinen.</translation>
 <translation id="4555769855065597957">Varjo</translation>
@@ -3265,7 +3260,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6080515710685820702">Onko tietokoneellasi muitakin käyttäjiä? Selaa verkkoa incognito-ikkunassa.</translation>
 <translation id="6080689532560039067">Tarkista järjestelmän aika</translation>
 <translation id="6082651258230788217">Näytä yläpalkissa</translation>
-<translation id="6086814797483779854">Suorita klikattaessa</translation>
 <translation id="6086846494333236931">Järjestelmänvalvojasi asentama</translation>
 <translation id="6087960857463881712">Eeppinen hymiö</translation>
 <translation id="6089481419520884864">Koontisivu</translation>
@@ -4405,7 +4399,6 @@ Sovelluksen <ph name="APP_NAME" /> asennusta varten täytyy ladata <ph name="DOW
 <translation id="786957569166715433">Laitepari muodostettu laitteen <ph name="DEVICE_NAME" /> kanssa</translation>
 <translation id="7870730066603611552">Tarkista synkronointiasetukset määrityksen jälkeen</translation>
 <translation id="7870790288828963061">Ei löytynyt kioskisovelluksia, joiden versio on uudempi. Ei päivitettävää. Irrota USB-tikku.</translation>
-<translation id="7874357055309047713">Suorita aina kaikilla sivustoilla</translation>
 <translation id="7877451762676714207">Tuntematon palvelinvirhe. Yritä uudelleen tai ota yhteyttä palvelimen järjestelmänvalvojaan.</translation>
 <translation id="7877680364634660272">Esittely</translation>
 <translation id="7878562273885520351">Salasanasi on saattanut vaarantua.</translation>
@@ -4754,7 +4747,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8428634594422941299">Selvä</translation>
 <translation id="8431909052837336408">Vaihda SIM-kortin PIN-koodi</translation>
 <translation id="8434480141477525001">NaCl-vianetsintäportti</translation>
-<translation id="8437331208797669910">Sivun käyttöoikeus</translation>
 <translation id="843760761634048214">Tallenna luottokortti.</translation>
 <translation id="8438328416656800239">Siirry käyttämään älykästä selainta.</translation>
 <translation id="8439506636278576865">Tarjoudu kääntämään sivuja tälle kielelle</translation>

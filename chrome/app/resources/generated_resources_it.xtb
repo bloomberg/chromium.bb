@@ -912,7 +912,6 @@
 <translation id="2413749388954403953">Modifica dell'interfaccia utente dei Preferiti</translation>
 <translation id="2422426094670600218">&lt;senza nome&gt;</translation>
 <translation id="2423578206845792524">Sa&amp;lva immagine con nome...</translation>
-<translation id="2424091190911472304">Esegui sempre su <ph name="ORIGIN" /></translation>
 <translation id="2425665904502185219">Dimensioni totali file</translation>
 <translation id="2428510569851653187">Descrivi cosa stavi facendo quando la scheda si è arrestata in modo anomalo</translation>
 <translation id="2431027948063157455">Impossibile caricare l'Assistente Google, controlla la connessione di rete e riprova.</translation>
@@ -1199,7 +1198,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2838379631617906747">Installazione</translation>
 <translation id="2841837950101800123">Provider</translation>
 <translation id="2843806747483486897">Cambia predefinita...</translation>
-<translation id="2844111009524261443">Esegui al clic</translation>
 <translation id="2845382757467349449">Mostra sempre barra dei Preferiti</translation>
 <translation id="2847759467426165163">Trasmetti a</translation>
 <translation id="284805635805850872">Rimuovere il software dannoso?</translation>
@@ -1511,7 +1509,6 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="3308116878371095290">Impostazione dei cookie vietata per questa pagina.</translation>
 <translation id="3308134619352333507">Nascondi pulsante</translation>
 <translation id="3308852433423051161">Caricamento dell'Assistente Google...</translation>
-<translation id="3309747692199697901">Esegui sempre su tutti i siti</translation>
 <translation id="3312424061798279731">Lingue attive</translation>
 <translation id="3313590242757056087">Per impostare i siti web che l'utente supervisionato può visualizzare, puoi configurare limitazioni e impostazioni visitando il sito all'indirizzo <ph name="MANAGEMENT_URL" />.
 Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> può visitare tutti i siti sul Web.</translation>
@@ -1807,7 +1804,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3759933321830434300">Blocco di parti delle pagine web</translation>
 <translation id="3760460896538743390">Ispeziona pagina in &amp;background</translation>
 <translation id="37613671848467444">Apri in finestra di navigazione in &amp;incognito</translation>
-<translation id="3763401818161139108">Esegui sempre su <ph name="ORIGIN" /></translation>
 <translation id="3764314093345384080">Informazioni build dettagliate</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Comunicazione con un dispositivo USB}other{Comunicazione con # dispositivi USB}}</translation>
 <translation id="3764986667044728669">Impossibile registrare</translation>
@@ -2268,7 +2264,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4547992677060857254">La cartella che hai selezionato contiene file delicati. Vuoi concedere a "$1" accesso di scrittura permanente a questa cartella?</translation>
 <translation id="4552031286893852992">Chrome ha bloccato gli annunci su questo sito perché il sito tende a mostrare annunci invasivi.</translation>
 <translation id="4552089082226364758">Flash</translation>
-<translation id="4552495056028768700">Accesso alla pagina</translation>
 <translation id="4552678318981539154">Acquista più spazio di archiviazione</translation>
 <translation id="4554591392113183336">La versione dell'estensione esterna è pari o precedente a quella dell'estensione esistente.</translation>
 <translation id="4555769855065597957">Ombra</translation>
@@ -3263,7 +3258,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6080515710685820702">Condividi il computer con altre persone? Prova ad aprire una finestra di navigazione in incognito.</translation>
 <translation id="6080689532560039067">Controlla l'ora del sistema</translation>
 <translation id="6082651258230788217">Mostra in barra degli strumenti</translation>
-<translation id="6086814797483779854">Esegui al clic</translation>
 <translation id="6086846494333236931">Installata dall'amministratore</translation>
 <translation id="6087960857463881712">Faccina splendente</translation>
 <translation id="6089481419520884864">Pagina Distill</translation>
@@ -4394,7 +4388,6 @@ L'installazione dell'app <ph name="APP_NAME" /> scaricherà <ph name="DOWNLOAD_S
 <translation id="786957569166715433"><ph name="DEVICE_NAME" />, accoppiato</translation>
 <translation id="7870730066603611552">Controlla le opzioni di sincronizzazione dopo la configurazione</translation>
 <translation id="7870790288828963061">Nessuna app kiosk con versione più recente trovata. Non c'è nulla da aggiornare. Rimuovi la chiavetta USB.</translation>
-<translation id="7874357055309047713">Esegui sempre su tutti i siti</translation>
 <translation id="7877451762676714207">Errore del server sconosciuto. Riprova o contatta l'amministratore del server.</translation>
 <translation id="7877680364634660272">Tour</translation>
 <translation id="7878562273885520351">La tua password potrebbe essere stata compromessa</translation>
@@ -4743,7 +4736,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8428634594422941299">OK</translation>
 <translation id="8431909052837336408">Cambia il PIN della SIM</translation>
 <translation id="8434480141477525001">Porta di debug NaCl</translation>
-<translation id="8437331208797669910">Accesso alla pagina</translation>
 <translation id="843760761634048214">Salva la carta di credito</translation>
 <translation id="8438328416656800239">Passa a un browser intelligente</translation>
 <translation id="8439506636278576865">Proponi di tradurre pagine in questa lingua</translation>

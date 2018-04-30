@@ -912,7 +912,6 @@
 <translation id="2413749388954403953">Yer işaretleri kullanıcı arayüzünü değiştirme</translation>
 <translation id="2422426094670600218">&lt;adsız&gt;</translation>
 <translation id="2423578206845792524">Res&amp;mi farklı kaydet...</translation>
-<translation id="2424091190911472304"><ph name="ORIGIN" /> sitesinde her zaman çalıştır</translation>
 <translation id="2425665904502185219">Toplam dosya boyutu</translation>
 <translation id="2428510569851653187">Sekme kilitlendiği sırada ne yaptığınızı açıklayın</translation>
 <translation id="2431027948063157455">Google Asistan yüklenemedi, lütfen ağ bağlantınızı kontrol edin ve tekrar deneyin.</translation>
@@ -1200,7 +1199,6 @@ Bu sitenin engellenmesi gerektiğini düşünmüyorum!</translation>
 <translation id="2838379631617906747">Yükleme</translation>
 <translation id="2841837950101800123">Sağlayıcı</translation>
 <translation id="2843806747483486897">Varsayılanı değiştir...</translation>
-<translation id="2844111009524261443">Tıklamada çalıştır</translation>
 <translation id="2845382757467349449">Yer İşareti Çubuğunu Her Zaman Göster</translation>
 <translation id="2847759467426165163">Şuraya yayınla</translation>
 <translation id="284805635805850872">Zararlı yazılım kaldırılsın mı?</translation>
@@ -1512,7 +1510,6 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="3308116878371095290">Bu sayfanın çerezleri ayarlaması engellenmiştir.</translation>
 <translation id="3308134619352333507">Düğmeyi Gizle</translation>
 <translation id="3308852433423051161">Google Asistan yükleniyor...</translation>
-<translation id="3309747692199697901">Tüm sitelerde her zaman çalıştır</translation>
 <translation id="3312424061798279731">Etkin diller</translation>
 <translation id="3313590242757056087">Denetlenen kullanıcının hangi web sitelerini görebileceğini belirlemek için kısıtlamaları
     ve ayarları yapılandırmak üzere <ph name="MANAGEMENT_URL" /> adresini ziyaret edebilirsiniz.
@@ -1810,7 +1807,6 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="3759933321830434300">Web sayfalarının parçalarını engelleme</translation>
 <translation id="3760460896538743390">&amp;Arka Plan Sayfasını İncele</translation>
 <translation id="37613671848467444">&amp;Gizli Pencerede Aç</translation>
-<translation id="3763401818161139108"><ph name="ORIGIN" /> sitesinde her zaman çalıştır</translation>
 <translation id="3764314093345384080">Ayrıntılı derleme bilgileri</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Bir USB cihazla iletişim kurma}other{# USB cihazla iletişim kurma}}</translation>
 <translation id="3764986667044728669">Kayıt yapılamıyor</translation>
@@ -2271,7 +2267,6 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="4547992677060857254">Seçtiğiniz klasör hassas dosyalar içeriyor. "$1" için bu klasöre kalıcı yazma erişimi vermek istediğinizden emin misiniz?</translation>
 <translation id="4552031286893852992">Bu site, araya giren reklamlar gösterme eğiliminde olduğu için Chrome bu sitede reklamları engelledi.</translation>
 <translation id="4552089082226364758">Flash</translation>
-<translation id="4552495056028768700">Sayfa Erişimi</translation>
 <translation id="4552678318981539154">Daha fazla depolama alanı satın alın</translation>
 <translation id="4554591392113183336">Harici uzantı, mevcut bir uzantıyla aynı veya daha eski sürümde.</translation>
 <translation id="4555769855065597957">Gölge</translation>
@@ -3268,7 +3263,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6080515710685820702">Paylaşılan bir bilgisayar mı kullanıyorsunuz? Gizli pencere açmayı deneyin.</translation>
 <translation id="6080689532560039067">Sistem saatinizi kontrol edin</translation>
 <translation id="6082651258230788217">Araç çubuğunda göster</translation>
-<translation id="6086814797483779854">Tıklandığında çalıştır</translation>
 <translation id="6086846494333236931">Yöneticiniz tarafından yüklendi</translation>
 <translation id="6087960857463881712">Çok beğenen</translation>
 <translation id="6089481419520884864">Sayfayı ayrıştır</translation>
@@ -4408,7 +4402,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - Eşlendi</translation>
 <translation id="7870730066603611552">Kurulumdan sonra senkronizasyon seçeneklerini inceleyin</translation>
 <translation id="7870790288828963061">Daha yeni bir sürüme sahip herhangi bir Kiosk uygulaması bulunamadı. Güncellenecek hiçbir şey yok. Lütfen USB çubuğunu çıkarın.</translation>
-<translation id="7874357055309047713">Tüm sitelerde her zaman çalıştır</translation>
 <translation id="7877451762676714207">Bilinmeyen sunucu hatası. Lütfen tekrar deneyin veya sunucu yöneticinize başvurun.</translation>
 <translation id="7877680364634660272">Tur</translation>
 <translation id="7878562273885520351">Şifrenizin güvenliği ihlal edilmiş olabilir</translation>
@@ -4757,7 +4750,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8428634594422941299">Anladım!</translation>
 <translation id="8431909052837336408">SIM PIN Kodunu Değiştir</translation>
 <translation id="8434480141477525001">NaCl Hata Ayıklama Bağlantı Noktası</translation>
-<translation id="8437331208797669910">Sayfa erişimi</translation>
 <translation id="843760761634048214">Kredi kartını kaydedin</translation>
 <translation id="8438328416656800239">Akıllı bir tarayıcıya geç</translation>
 <translation id="8439506636278576865">Bu dildeki sayfaları çevirmeyi öner</translation>

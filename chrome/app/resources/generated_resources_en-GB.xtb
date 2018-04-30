@@ -916,7 +916,6 @@
 <translation id="2413749388954403953">Change the bookmarks user interface</translation>
 <translation id="2422426094670600218">&lt;unnamed&gt;</translation>
 <translation id="2423578206845792524">Sa&amp;ve image as...</translation>
-<translation id="2424091190911472304">Always Run on <ph name="ORIGIN" /></translation>
 <translation id="2425665904502185219">Total file size</translation>
 <translation id="2428510569851653187">Describe what you were doing when the tab crashed</translation>
 <translation id="2431027948063157455">Google Assistant was unable to load. Please check your network connection and retry.</translation>
@@ -1205,7 +1204,6 @@ I don't think this site should be blocked!</translation>
 <translation id="2838379631617906747">Installing</translation>
 <translation id="2841837950101800123">Provider</translation>
 <translation id="2843806747483486897">Change default...</translation>
-<translation id="2844111009524261443">Run on click</translation>
 <translation id="2845382757467349449">Always Show Bookmarks Bar</translation>
 <translation id="2847759467426165163">Cast to</translation>
 <translation id="284805635805850872">Remove harmful software?</translation>
@@ -1518,7 +1516,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="3308116878371095290">This page was prevented from setting cookies.</translation>
 <translation id="3308134619352333507">Hide Button</translation>
 <translation id="3308852433423051161">Loading Google Assistant...</translation>
-<translation id="3309747692199697901">Always Run on All Sites</translation>
 <translation id="3312424061798279731">Enabled languages</translation>
 <translation id="3313590242757056087">To set which websites the supervised user can view, you can configure restrictions
     and settings by visiting <ph name="MANAGEMENT_URL" />.
@@ -1817,7 +1814,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="3759933321830434300">Block parts of web pages</translation>
 <translation id="3760460896538743390">Inspect &amp;Background Page</translation>
 <translation id="37613671848467444">Open in &amp;Incognito Window</translation>
-<translation id="3763401818161139108">Always run on <ph name="ORIGIN" /></translation>
 <translation id="3764314093345384080">Detailed build information</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Communicate with a USB device}other{Communicate with # USB devices}}</translation>
 <translation id="3764986667044728669">Unable to enroll</translation>
@@ -2281,7 +2277,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="4547992677060857254">The folder that you selected contains sensitive files. Are you sure that you want to grant "$1" permanent write access to this folder?</translation>
 <translation id="4552031286893852992">Chrome blocked ads on this site because this site tends to show intrusive ads.</translation>
 <translation id="4552089082226364758">Flash</translation>
-<translation id="4552495056028768700">Page Access</translation>
 <translation id="4552678318981539154">Buy more storage</translation>
 <translation id="4554591392113183336">External extension is at the same or lower version compared to the existing one.</translation>
 <translation id="4555769855065597957">Shadow</translation>
@@ -3282,7 +3277,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="6080515710685820702">Using a shared computer? Try opening an incognito window.</translation>
 <translation id="6080689532560039067">Check your system time</translation>
 <translation id="6082651258230788217">Show in toolbar</translation>
-<translation id="6086814797483779854">Run on Click</translation>
 <translation id="6086846494333236931">Installed by your administrator</translation>
 <translation id="6087960857463881712">Awesome face</translation>
 <translation id="6089481419520884864">Distill page</translation>
@@ -4430,7 +4424,6 @@ Installing the <ph name="APP_NAME" /> will download <ph name="DOWNLOAD_SIZE" /> 
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> – Paired</translation>
 <translation id="7870730066603611552">Review sync options following setup</translation>
 <translation id="7870790288828963061">No Kiosk apps with newer version found. Nothing to update. Please remove the USB stick.</translation>
-<translation id="7874357055309047713">Always run on all sites</translation>
 <translation id="7877451762676714207">Unknown server error. Please try again, or contact the server administrator.</translation>
 <translation id="7877680364634660272">Tour</translation>
 <translation id="7878562273885520351">Your password may be compromised</translation>
@@ -4780,7 +4773,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8428634594422941299">Got it</translation>
 <translation id="8431909052837336408">Change SIM PIN</translation>
 <translation id="8434480141477525001">NaCl Debug Port</translation>
-<translation id="8437331208797669910">Page access</translation>
 <translation id="843760761634048214">Save credit card</translation>
 <translation id="8438328416656800239">Switch to a smart browser</translation>
 <translation id="8439506636278576865">Offer to translate pages in this language</translation>

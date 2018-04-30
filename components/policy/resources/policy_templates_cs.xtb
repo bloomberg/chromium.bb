@@ -398,6 +398,20 @@ Tato zásada se netýká terminálových aplikací – ty jsou migrovány automa
           Pokud zásada není nastavena, okno s upozorněním se nezobrazí.
 
           Hodnota zásady by měla být stanovena v milisekundách. Hodnoty musí být menší nebo stejné jako prodleva nečinnosti.</translation>
+<translation id="2289578386193672044">Určuje seznam aplikací a rozšíření, které se instalují na pozadí bez zásahu uživatele a které uživatel nemůže odinstalovat ani deaktivovat. Všechna oprávnění požadovaná aplikacemi nebo rozšířeními jsou udělována implicitně bez zásahu uživatele, a to včetně všech dodatečných oprávnění požadovaných budoucími verzemi aplikace nebo rozšíření. Kromě toho jsou udělována také oprávnění k používání těchto rozhraní API pro rozšíření: enterprise.deviceAttributes a enterprise.platformKeys. (Tato rozhraní API jsou k dispozici pouze u aplikací/rozšíření, jejichž instalace je vynucena.)
+
+Tato zásada má přednost před potenciálně konfliktní zásadou <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Bude-li aplikace nebo rozšíření, které bylo dříve vynuceně nainstalováno, z tohoto seznamu odebráno, <ph name="PRODUCT_NAME" /> je automaticky odinstaluje.
+
+U instancí systému Windows, které nejsou propojeny s doménou <ph name="MS_AD_NAME" />, je vynucená instalace omezena pouze na aplikace a rozšíření z Internetového obchodu Chrome.
+
+Zdrojový kód libovolného rozšíření mohou uživatelé pomocí Nástrojů pro vývojáře upravit (což může způsobit, že rozšíření nebude fungovat). Pokud je to problém, nastavte zásadu <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+Každá položka v seznamu zásady představuje řetězec, který obsahuje ID rozšíření a volitelně také adresu URL pro aktualizaci oddělené středníkem (<ph name="SEMICOLON" />). ID rozšíření je řetězec s 32 písmeny a naleznete jej například zde: <ph name="CHROME_EXTENSIONS_LINK" /> (v režimu pro vývojáře). Pokud je zadána adresa URL pro aktualizaci, měla by odkazovat na dokument XML manifestu aktualizace (viz <ph name="LINK_TO_EXTENSION_DOC1" />). Ve výchozím nastavení se použije adresa URL pro aktualizaci Internetového obchodu Chrome (v současné době https://clients2.google.com/service/update2/crx). Adresa URL pro aktualizaci nastavená v této zásadě slouží pouze k počáteční instalaci. Další aktualizace rozšíření budou používat adresu URL pro aktualizaci uvedenou v manifestu rozšíření.
+ Upozorňujeme, že až do verze 67 prohlížeče <ph name="PRODUCT_NAME" /> bylo explicitní zadání adresy URL pro aktualizaci povinné.
+
+Například <ph name="EXTENSION_POLICY_EXAMPLE" /> nainstaluje aplikaci <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> ze standardní adresy URL pro aktualizaci z Internetového obchodu Chrome. Další informace o hostování rozšíření viz <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+Je-li tato zásada ponechána nenastavená, žádné aplikace ani rozšíření se automaticky neinstalují a uživatel v prohlížeči <ph name="PRODUCT_NAME" /> může kteroukoliv aplikaci nebo rozšíření odinstalovat.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> může k opravení pravopisných chyb použít webovou službu společnosti Google. Je-li toto nastavení zapnuto, služba je používána neustále. Je-li nastavení vypnuto, služba není používána nikdy.
 
       Kontrolu pravopisu lze nicméně provést pomocí staženého slovníku. Tato zásada se vztahuje pouze na používání internetových služeb.
@@ -702,6 +716,13 @@ Pokud zásadu nenastavíte, bude se považovat za aktivované (viz popis výše)
           Tato zásada je volitelná. Pokud není nastavena, nebudou prováděna žádná nahrazení vyhledávacích dotazů.
 
           Tato zásada je zohledňována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
+<translation id="3056439054015239107">
+      Tato zásada platí pro přihlašovací obrazovku. Prostudujte si také zásadu <ph name="SITE_PER_PROCESS_POLICY_NAME" />, která platí pro uživatelskou relaci. Obě zásady doporučujeme nastavit na stejnou hodnotu. Pokud se hodnoty neshodují, může při zahajování uživatelské relace dojít ke zpoždění způsobenému používáním hodnoty zadané v zásadě pro uživatele.
+      Chcete-li využívat izolaci, ale omezit její dopad na uživatele, použijte zásadu IsolateOrigins se seznamem webů, které chcete izolovat. Toto nastavení SitePerProcess izoluje všechny weby.
+      Pokud tuto zásadu povolíte, bude se každý web spouštět ve vlastním procesu.
+      Pokud je tato zásada zakázána, žádná explicitní izolace webů se provádět nebude a zkušební verze zásad IsolateOrigins a SitePerProcess budou zakázány. Uživatelé budou zásadu SitePerProcess moci povolit ručně.
+      Pokud tuto zásadu nenakonfigurujete, uživatel toto nastavení bude moci změnit.
+      </translation>
 <translation id="306887062252197004">Tato zásada povoluje uživatelům funkce WebDriver přepsat zásady, které by mohly narušovat operace této funkce.
 
 V současné době tato zásada deaktivuje zásady SitePerProcess a IsolateOrigins.
@@ -862,6 +883,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 <translation id="3660562134618097814">Přenos souborů cookie od poskytovatele identity SAML při přihlášení</translation>
 <translation id="3709266154059827597">Konfigurace seznamu zakázaných položek instalace rozšíření</translation>
 <translation id="3711895659073496551">Pozastavit</translation>
+<translation id="3715569262675717862">Ověřování založené na certifikátech klientů</translation>
 <translation id="3736879847913515635">Povolit přidání osoby ve správci uživatelů</translation>
 <translation id="3737544779868348650">Název hostitele používaný pro zařízení v síti</translation>
 <translation id="3740754010292550733">Nastavit dobu oznámení o restartu z důvodu aktualizace</translation>
@@ -1896,6 +1918,15 @@ Není-li tato zásada nastavena na konkrétní hodnotu, bude předvídání sít
       Pokud nechcete povolovat přihlášení k jinému účtu pomocí anonymního režimu, zvažte zablokování tohoto režimu pomocí zásady IncognitoModeAvailability.
 
       Upozorňujeme, že uživatelé budou moci získat přístup ke službám Google v neověřeném stavu tím, že zablokují soubory cookie.</translation>
+<translation id="6738326937072482736">Konfiguruje dostupnost a chování funkce aktualizace firmwaru <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+Jednotlivá nastavení lze zadat ve vlastnostech objektu JSON:
+
+<ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Pokud je nastavena na hodnotu <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, uživatelé budou moci spustit proces Powerwash a nainstalovat aktualizaci firmwaru <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+<ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Pokud je nastavena na hodnotu <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, uživatelé budou moci spustit proces aktualizace firmwaru <ph name="TPM_FIRMWARE_UPDATE_TPM" />, při kterém zůstane zachován stav celého zařízení (včetně registrace do podnikové sítě), ale budou ztracena data uživatele. Tento aktualizovaný postup je k dispozici od verze 68.
+
+Pokud tato zásada není nastavena, funkce aktualizace firmwaru <ph name="TPM_FIRMWARE_UPDATE_TPM" /> nebude k dispozici.</translation>
 <translation id="6757438632136860443">Umožňuje nastavit seznam vzorů adres URL webů, které mají povoleno spouštět plugin <ph name="FLASH_PLUGIN_NAME" />.
 
           Pokud tuto zásadu nenastavíte, použije se pro všechny weby globální výchozí hodnota buď ze zásady DefaultPluginsSetting (pokud je nastavena), nebo z osobní konfigurace uživatele.</translation>
@@ -1914,6 +1945,12 @@ Není-li tato zásada nastavena na konkrétní hodnotu, bude předvídání sít
 <translation id="687046793986382807">V prohlížečích <ph name="PRODUCT_NAME" /> verze 35 a novějších byla tato zásada zrušena.
 
       Informace o paměti jsou stránce hlášeny bez ohledu na nastavení této možnosti. Velikosti jsou však hlášeny jen po určitých přírůstcích a frekvence aktualizací je z bezpečnostních důvodů omezena. Chcete-li získat přesná data v reálném čase, použijte prosím nástroje, jako je Telemetry.</translation>
+<translation id="6870914592443697993">
+      Tato zásada platí pro přihlašovací obrazovku. Prostudujte si také zásadu <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, která platí pro uživatelskou relaci. Obě zásady doporučujeme nastavit na stejnou hodnotu. Pokud se hodnoty neshodují, může při zahajování uživatelské relace dojít ke zpoždění způsobenému používáním hodnoty zadané v zásadě pro uživatele.
+      Pokud tuto zásadu povolíte, každý z uvedených zdrojů v seznamu odděleném čárkami bude spouštěn ve vlastním procesu. Budou izolovány i zdroje uvedené v subdoménách – např. pokud zadáte web https://example.com/, bude izolována také subdoména https://foo.example.com/, která je jeho součástí.
+      Pokud je tato zásada zakázána, žádná explicitní izolace webů se provádět nebude a zkušební verze zásad IsolateOrigins a SitePerProcess budou zakázány. Uživatelé budou zásadu IsolateOrigins moci povolit ručně.
+      Pokud tuto zásadu ponecháte nenakonfigurovanou, použije se pro přihlašovací obrazovku výchozí nastavení platformy týkající se izolace webů.
+      </translation>
 <translation id="6894178810167845842">Adresa URL stránky Nová karta</translation>
 <translation id="6899705656741990703">Zjistit nastavení proxy serveru automaticky</translation>
 <translation id="6903814433019432303">Tato zásada je aktivní pouze v režimu pro obchody.
@@ -2169,6 +2206,7 @@ Pokud je tato zásada nastavena na hodnotu false, použití protokolu QUIC je za
       Pokud je nastavena na hodnotu False, jsou aktualizace komponent zakázány. Na některé komponenty se však tato zásada nevztahuje – nebudou zakázány aktualizace komponent, které neobsahují spustitelný kód, nemění významně chování prohlížeče nebo jsou nezbytně nutné k zajištění bezpečnosti.
       Mezi takové komponenty patří například seznamy zneplatněných certifikátů a údaje Bezpečného prohlížení.
       Další informace o Bezpečném prohlížení najdete na stránce https://developers.google.com/safe-browsing.</translation>
+<translation id="7566878661979235378">Typ ověření při přihlášení pomocí technologie SAML</translation>
 <translation id="757395965347379751">Když je toto nastavení aktivováno, povoluje <ph name="PRODUCT_NAME" /> certifikáty podepsané algoritmem SHA-1, pokud je možné je úspěšně ověřit a propojit s místně nainstalovanými certifikáty CA.
 
       Upozorňujeme, že tato zásada závisí na tom, zda podpisy SHA-1 povoluje ověřovací mechanismus operačních systému. Pokud při aktualizaci operačního systému dojde ke změně zpracování certifikátů SHA-1, tato zásada již nemusí fungovat. Tato zásada je určena jako dočasné řešení, které podnikům poskytne více času k přechodu na jiné podpisy než SHA-1. Tato zásada bude odstraněna kolem 1. ledna 2019.
@@ -2342,6 +2380,17 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 
           Pokud je toto nastavení vypnuto a odchozí připojení UDP jsou filtrována bránou firewall, může se tento počítač připojit pouze k hostitelským počítačům v místní síti.</translation>
 <translation id="7976157349247117979">Název cíle <ph name="PRODUCT_NAME" /></translation>
+<translation id="7978060394348264922">
+      Chcete-li využívat izolaci, ale omezit její dopad na uživatele, použijte zásadu IsolateOrigins se seznamem webů, které chcete izolovat. Toto nastavení SitePerProcess izoluje všechny weby.
+
+      Pokud tuto zásadu povolíte, bude se každý web spouštět ve vlastním procesu.
+
+      Pokud je tato zásada zakázána, žádná explicitní izolace webů se provádět nebude a zkušební verze zásad IsolateOrigins a SitePerProcess budou zakázány. Uživatelé budou zásadu SitePerProcess moci povolit ručně.
+
+      Pokud tuto zásadu nenakonfigurujete, uživatel toto nastavení bude moci změnit.
+
+V systému <ph name="PRODUCT_OS_NAME" /> je doporučeno nastavit na stejnou hodnotu také zásadu zařízení <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Pokud se hodnoty neshodují, může při zahajování uživatelské relace dojít ke zpoždění způsobenému používáním hodnoty zadané v zásadě pro uživatele.
+      </translation>
 <translation id="7980227303582973781">Bez zvláštních omezení</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Otočit obrazovku o 0 stupňů</translation>
@@ -2531,6 +2580,13 @@ Je-li tato zásada použita, bude mít uživatel k dispozici všechny tiskárny
 Chcete-li zadat několik názvů serverů, oddělte je čárkami. Zástupné znaky (*) jsou povoleny.
 
 Pokud zásada zůstane nenastavena, pokusí se <ph name="PRODUCT_NAME" /> zjistit, zda se server nachází v intranetu, a teprve poté bude reagovat na požadavky IWA. Pokud bude server zjištěn jako internet, bude <ph name="PRODUCT_NAME" /> požadavky IWA ignorovat.</translation>
+<translation id="8667812577403206506">Umožňuje určit, zda má být v systému Chrome OS povoleno spouštění virtuálních počítačů.
+
+      Pokud je tato zásada nastavena na hodnotu True, spouštění virtuálních počítačů je v zařízení povoleno.
+      Pokud je tato zásada nastavena na hodnotu False, spouštění virtuálních počítačů v zařízení povoleno není.
+      Při změně na hodnotu False se na spouštění nových virtuálních počítačů použije nové nastavení, ale již spuštěné virtuální počítače nebudou ukončeny.
+      Pokud na spravovaném zařízení není nastavena tato zásada, je v něm spouštění virtuálních počítačů zakázáno.
+      Na zařízeních, která nejsou spravována, je spouštění virtuálních počítačů povoleno.</translation>
 <translation id="8672321184841719703">Cílová verze automatické aktualizace</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">Ochrana hesla – upozornění je spouštěno opětovným použitím hesla</translation>
@@ -2651,6 +2707,7 @@ Pokud tato zásada není nakonfigurována nebo je hodnota nižší než 1 MB, <p
 
       Tuto zásadu byste neměli aktivovat v případě, že je zásada <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> zapnuta na Povoleno. Obě se totiž týkají stejné funkce na straně klienta. V tomto případě je synchronizace hostovaná na Googlu zcela vypnuta.</translation>
 <translation id="8955719471735800169">Zpět na začátek</translation>
+<translation id="8959992920425111821">Výchozí konfigurace</translation>
 <translation id="8960850473856121830">Vzory v tomto seznamu budou porovnány s bezpečnostními údaji o původu požadované adresy URL. Pokud bude nalezena shoda, přístup k zařízením pro záznam zvuku bude udělen bez vyzvání.
 
 POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veřejného terminálu.</translation>
@@ -2659,6 +2716,12 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
 <translation id="8976248126101463034">Povolit ověřování gnubby pro hostitele vzdáleného přístupu</translation>
 <translation id="8976531594979650914">Jako výchozí tiskárnu použít výchozí tiskárnu systému</translation>
 <translation id="8992176907758534924">Nepovolit zobrazení obrázků žádným webovým stránkám</translation>
+<translation id="9034729899149506577">
+      Pokud tuto zásadu povolíte, každý z uvedených zdrojů v seznamu odděleném čárkami bude spouštěn ve vlastním procesu. Budou izolovány i zdroje uvedené v subdoménách – např. pokud zadáte web https://example.com/, bude izolována také subdoména https://foo.example.com/, která je jeho součástí.
+      Pokud je tato zásada zakázána, žádná explicitní izolace webů se provádět nebude a zkušební verze zásad IsolateOrigins a SitePerProcess budou zakázány. Uživatelé budou zásadu IsolateOrigins moci povolit ručně.
+      Pokud tuto zásadu nenakonfigurujete, uživatel toto nastavení bude moci změnit.
+      V systému <ph name="PRODUCT_OS_NAME" /> je doporučeno nastavit na stejnou hodnotu také zásadu zařízení <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Pokud se hodnoty obou zásad nebudou shodovat, při zahájení uživatelské relace může dojít k prodlevě, zatímco se bude přecházet na hodnotu nastavenou zásadou pro uživatele.
+      </translation>
 <translation id="9035964157729712237">ID rozšíření, která mají být vyňata ze seznamu zakázaných</translation>
 <translation id="9042911395677044526">Umožňuje přenést nastavení sítě, která se uplatní pro jednotlivé uživatele v zařízení se systémem <ph name="PRODUCT_OS_NAME" />. Konfigurace sítě je řetězec ve formátu JSON, který se řídí definicí formátu Open Network Configuration popsanou na stránce <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="9084985621503260744">Určuje, zda aktivita videa ovlivňuje správu napájení</translation>
@@ -2708,6 +2771,13 @@ Pokud je tato zásada nastavena na hodnotu true a uživatel vypne zařízení, s
 <translation id="9187743794267626640">Zakázat připojení externího úložiště</translation>
 <translation id="9197740283131855199">Procento, o které bude prodloužena prodleva ztmavení obrazovky, pokud uživatel po ztmavení provedete nějakou činnost</translation>
 <translation id="9200828125069750521">Parametry pro adresu URL obrázku používající metodu POST</translation>
+<translation id="9210953373038593554">Konfiguruje typ ověření pro přihlášení pomocí technologie SAML.
+
+      Když tato zásada není nastavena nebo je nastavena na možnost Default (hodnota 0), určuje chování při přihlašování pomocí technologie SAML prohlížeč na základě jiných faktorů. V nejzákladnějším případě se k ověření uživatele a ochraně dat uživatele uložených v mezipaměti používají hesla, která ručně zadávají uživatelé.
+
+      Když je tato zásada nastavena na možnost ClientCertificate (hodnota 1), pro nově přidané uživatele, kteří se přihlašují pomocí technologie SAML, se používá ověření pomocí certifikátu klienta. Pro takové uživatele se nepoužívají žádná hesla a jejich místní data uložená v mezipaměti jsou chráněna pomocí odpovídajících kryptografických klíčů. Pomocí tohoto nastavení lze nakonfigurovat například ověřování uživatelů pomocí čipových karet. (Aplikace middleware pro čipové karty je potřeba nainstalovat pomocí zásady DeviceLoginScreenAppInstallList.)
+
+      Tato zásada má vliv pouze na uživatele, kteří používají ověření pomocí technologie SAML.</translation>
 <translation id="9213347477683611358">Slouží ke konfiguraci obrázku tapety na úrovni zařízení, který se bude zobrazovat na přihlašovací obrazovce, pokud se do zařízení dosud nepřihlásil žádný uživatel. Zásadu nastavíte zadáním adresy URL, ze které může zařízení se systémem Chrome OS obrázek tapety stáhnout, a kryptografické hodnoty hash k ověření integrity staženého obsahu. Obrázek musí být ve formátu JPEG a jeho velikost nesmí překročit 16 MB. Adresa URL musí být přístupná bez ověření. Obrázek tapety se stáhne a uloží do mezipaměti. Při každé změně adresy URL nebo hodnoty hash se obrázek stáhne znovu.
 
       Tuto zásadu je třeba zadat jako řetězec, který udává adresu URL a hodnotu hash ve formátu JSON. Příklad:

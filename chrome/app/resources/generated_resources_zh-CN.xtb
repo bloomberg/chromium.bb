@@ -909,7 +909,6 @@
 <translation id="2413749388954403953">更改书签界面</translation>
 <translation id="2422426094670600218">&lt;未命名&gt;</translation>
 <translation id="2423578206845792524">图片另存为(&amp;V)...</translation>
-<translation id="2424091190911472304">在 <ph name="ORIGIN" /> 上始终运行</translation>
 <translation id="2425665904502185219">文件总大小</translation>
 <translation id="2428510569851653187">请说明此标签页崩溃时您在做什么</translation>
 <translation id="2431027948063157455">无法加载 Google 智能助理。请检查您的网络连接，然后重试。</translation>
@@ -1196,7 +1195,6 @@
 <translation id="2838379631617906747">正在安装</translation>
 <translation id="2841837950101800123">提供方</translation>
 <translation id="2843806747483486897">更改默认设置...</translation>
-<translation id="2844111009524261443">点击即可运行</translation>
 <translation id="2845382757467349449">总是显示书签栏</translation>
 <translation id="2847759467426165163">投射到</translation>
 <translation id="284805635805850872">要移除有害软件吗？</translation>
@@ -1508,7 +1506,6 @@
 <translation id="3308116878371095290">系统已禁止设置此网页的 Cookie。</translation>
 <translation id="3308134619352333507">隐藏按钮</translation>
 <translation id="3308852433423051161">正在加载 Google 智能助理…</translation>
-<translation id="3309747692199697901">在所有网站上始终运行</translation>
 <translation id="3312424061798279731">已启用的语言</translation>
 <translation id="3313590242757056087">要设置受监管用户可以浏览哪些网站，您可以转到 <ph name="MANAGEMENT_URL" /> 配置限制和设置。
 如果您不更改默认设置，<ph name="USER_DISPLAY_NAME" />将可以浏览网络上的所有网站。</translation>
@@ -1804,7 +1801,6 @@
 <translation id="3759933321830434300">屏蔽部分网页</translation>
 <translation id="3760460896538743390">检查背景页(&amp;B)</translation>
 <translation id="37613671848467444">在隐身窗口中打开(&amp;I)</translation>
-<translation id="3763401818161139108">在 <ph name="ORIGIN" /> 上始终运行</translation>
 <translation id="3764314093345384080">详细版本信息</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{可与 1 部 USB 设备通信}other{可与 # 部 USB 设备通信}}</translation>
 <translation id="3764986667044728669">无法注册</translation>
@@ -2264,7 +2260,6 @@
 <translation id="4547992677060857254">您选择的文件夹中包含敏感文件。确定要授予“$1”对此文件夹的永久写入权限吗？</translation>
 <translation id="4552031286893852992">Chrome 已拦截此网站上的广告，因为此网站常常会展示侵扰性广告。</translation>
 <translation id="4552089082226364758">Flash</translation>
-<translation id="4552495056028768700">可在当前网页上运行</translation>
 <translation id="4552678318981539154">购买更多存储空间</translation>
 <translation id="4554591392113183336">外部扩展程序的版本与现有版本相同或更低。</translation>
 <translation id="4555769855065597957">阴影</translation>
@@ -3254,7 +3249,6 @@
 <translation id="6080515710685820702">使用的是共用计算机？请尝试打开一个无痕式窗口。</translation>
 <translation id="6080689532560039067">检查系统时间</translation>
 <translation id="6082651258230788217">在工具栏中显示</translation>
-<translation id="6086814797483779854">点击即可运行</translation>
 <translation id="6086846494333236931">这是您的管理员安装的</translation>
 <translation id="6087960857463881712">酷炫表情</translation>
 <translation id="6089481419520884864">提取页面</translation>
@@ -4384,7 +4378,6 @@
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - 已配对</translation>
 <translation id="7870730066603611552">完成设置后查看同步选项</translation>
 <translation id="7870790288828963061">找不到自助服务终端应用的更高版本，因此没有要更新的内容。请拔下 U 盘。</translation>
-<translation id="7874357055309047713">在所有网站上始终运行</translation>
 <translation id="7877451762676714207">未知服务器错误。请重试或与服务器管理员联系。</translation>
 <translation id="7877680364634660272">导览</translation>
 <translation id="7878562273885520351">您的密码可能会被盗用</translation>
@@ -4733,7 +4726,6 @@
 <translation id="8428634594422941299">知道了</translation>
 <translation id="8431909052837336408">更改 SIM 卡 PIN 码</translation>
 <translation id="8434480141477525001">NaCl调试端口</translation>
-<translation id="8437331208797669910">可在当前网页上运行</translation>
 <translation id="843760761634048214">保存信用卡</translation>
 <translation id="8438328416656800239">改用智能浏览器</translation>
 <translation id="8439506636278576865">询问是否翻译此语言的网页</translation>

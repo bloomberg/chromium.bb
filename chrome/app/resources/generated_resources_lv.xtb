@@ -912,7 +912,6 @@
 <translation id="2413749388954403953">Mainīt grāmatzīmju lietotāja saskarni</translation>
 <translation id="2422426094670600218">&lt;bez nosaukuma&gt;</translation>
 <translation id="2423578206845792524">Saglabāt attēlu kā ...</translation>
-<translation id="2424091190911472304">Vienmēr palaist vietnē <ph name="ORIGIN" /></translation>
 <translation id="2425665904502185219">Failu kopējais lielums</translation>
 <translation id="2428510569851653187">Norādiet, ko darījāt, kad cilne avarēja</translation>
 <translation id="2431027948063157455">Nevarēja ielādēt Google asistentu, lūdzu, pārbaudiet tīkla savienojumu un pēc tam mēģiniet vēlreiz.</translation>
@@ -1200,7 +1199,6 @@ Es uzskatu, ka šai vietnei nav jābūt bloķētai.</translation>
 <translation id="2838379631617906747">Notiek instalēšana</translation>
 <translation id="2841837950101800123">Nodrošinātājs</translation>
 <translation id="2843806747483486897">Mainīt noklusējumu...</translation>
-<translation id="2844111009524261443">Palaist pēc noklikšķināšanas</translation>
 <translation id="2845382757467349449">Vienmēr rādīt grāmatzīmju joslu</translation>
 <translation id="2847759467426165163">Cast ierīces izvēle</translation>
 <translation id="284805635805850872">Vai noņemt kaitīgo programmatūru?</translation>
@@ -1512,7 +1510,6 @@ Plašāku informāciju skatiet mūsu <ph name="BEGIN_LINK" />palīdzības centr�
 <translation id="3308116878371095290">Šai lapai netika atļauts saglabāt sīkfailus.</translation>
 <translation id="3308134619352333507">Slēpt pogu</translation>
 <translation id="3308852433423051161">Notiek Google asistenta ielāde…</translation>
-<translation id="3309747692199697901">Vienmēr palaist visās vietnēs</translation>
 <translation id="3312424061798279731">Iespējotās valodas</translation>
 <translation id="3313590242757056087">Lai iestatītu, kuras vietnes var skatīt uzraudzītais lietotājs, konfigurējiet ierobežojumus
     un iestatījumus, apmeklējot vietni <ph name="MANAGEMENT_URL" />.
@@ -1810,7 +1807,6 @@ Plašāku informāciju skatiet mūsu <ph name="BEGIN_LINK" />palīdzības centr�
 <translation id="3759933321830434300">Bloķēt tīmekļa lapu daļas</translation>
 <translation id="3760460896538743390">Pārbaudīt &amp;fona lapu</translation>
 <translation id="37613671848467444">Atvērt &amp;inkognito režīma logā</translation>
-<translation id="3763401818161139108">Vienmēr palaist vietnē <ph name="ORIGIN" /></translation>
 <translation id="3764314093345384080">Detalizēta informācija par versiju</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Saziņa ar USB ierīci}zero{Saziņa ar # USB ierīcēm}one{Saziņa ar # USB ierīci}other{Saziņa ar # USB ierīcēm}}</translation>
 <translation id="3764986667044728669">Nevar reģistrēt</translation>
@@ -2271,7 +2267,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4547992677060857254">Atlasītajā mapē ir iekļauti sensitīvi faili. Vai tiešām vēlaties piešķirt lietotnei $1 patstāvīgu rakstīšanas piekļuvi šai mapei?</translation>
 <translation id="4552031286893852992">Pārlūks Chrome šajā vietnē ir bloķējis reklāmu rādīšanu, jo šajā vietnē tiek rādītas traucējošas reklāmas.</translation>
 <translation id="4552089082226364758">Flash</translation>
-<translation id="4552495056028768700">Piekļuve lapai</translation>
 <translation id="4552678318981539154">Iegādāties papildu vietu krātuvē</translation>
 <translation id="4554591392113183336">Ārējā paplašinājuma versija ir tāda pati vai vecāka nekā pašreizējā paplašinājuma versija.</translation>
 <translation id="4555769855065597957">Ēna</translation>
@@ -3267,7 +3262,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6080515710685820702">Vai izmantojat koplietotu datoru? Atveriet inkognito režīma logu.</translation>
 <translation id="6080689532560039067">Sistēmas laika pārbaude</translation>
 <translation id="6082651258230788217">Rādīt rīkjoslā</translation>
-<translation id="6086814797483779854">Palaist pēc noklikšķināšanas</translation>
 <translation id="6086846494333236931">Instalēja administrators.</translation>
 <translation id="6087960857463881712">Satriecoša seja</translation>
 <translation id="6089481419520884864">Attīrīt lapu</translation>
@@ -4406,7 +4400,6 @@ Lietotnes <ph name="APP_NAME" /> instalēšana patērēs <ph name="DOWNLOAD_SIZE
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> — izveidots savienojums pārī</translation>
 <translation id="7870730066603611552">Sinhronizācijas opciju pārskatīšana pēc iestatīšanas</translation>
 <translation id="7870790288828963061">Netika atrasta neviena Kioska lietotne ar jaunāku versiju. Nav jāatjaunina neviena lietotne. Lūdzu, izņemiet USB atmiņas karti.</translation>
-<translation id="7874357055309047713">Vienmēr palaist visās vietnēs</translation>
 <translation id="7877451762676714207">Nezināma servera kļūda. Mēģiniet vēlreiz vai sazinieties ar servera administratoru.</translation>
 <translation id="7877680364634660272">Ceļvedis</translation>
 <translation id="7878562273885520351">Iespējams, jūsu parole ir apdraudēta</translation>
@@ -4756,7 +4749,6 @@ Citas personas ar lēnu savienojumu, iespējams, neredzēs jūsu saturu.</transl
 <translation id="8428634594422941299">Labi</translation>
 <translation id="8431909052837336408">SIM kartes PIN mainīšana</translation>
 <translation id="8434480141477525001">Native Client atkļūdošanas ports</translation>
-<translation id="8437331208797669910">Piekļuve lapai</translation>
 <translation id="843760761634048214">Saglabāt kredītkarti</translation>
 <translation id="8438328416656800239">Pāreja uz viedu pārlūku</translation>
 <translation id="8439506636278576865">Piedāvāt tulkot lapas šajā valodā</translation>

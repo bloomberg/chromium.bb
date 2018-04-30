@@ -183,6 +183,7 @@
 <translation id="2650751991977523696">파일을 다시 다운로드하시겠습니까?</translation>
 <translation id="2653659639078652383">제출</translation>
 <translation id="2677748264148917807">나가기</translation>
+<translation id="2693813674743028984">저장용량 숨기기</translation>
 <translation id="2704606927547763573">복사됨</translation>
 <translation id="2707726405694321444">페이지 새로고침</translation>
 <translation id="2709516037105925701">자동 완성</translation>
@@ -208,6 +209,7 @@
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" />님과 <ph name="PARENT_NAME_2" />님이 관리하는 계정입니다.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2962095958535813455">시크릿 탭으로 전환됨</translation>
+<translation id="2965945119655563012">저장용량 표시</translation>
 <translation id="2968755619301702150">인증서 뷰어</translation>
 <translation id="2979025552038692506">선택된 시크릿 탭</translation>
 <translation id="2989523299700148168">최근 방문</translation>
@@ -335,6 +337,7 @@
 <translation id="4170011742729630528">서비스를 사용할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="4181841719683918333">언어</translation>
 <translation id="4195643157523330669">새 탭에서 열기</translation>
+<translation id="4198423547019359126">사용할 수 있는 다운로드 위치가 없음</translation>
 <translation id="4226663524361240545">알림이 있으면 진동이 울릴 수도 있습니다.</translation>
 <translation id="4242533952199664413">설정 열기</translation>
 <translation id="424864128008805179">Chrome에서 로그아웃하시겠습니까?</translation>
@@ -700,6 +703,7 @@
 <translation id="7455923816558154057">탭하여 보기</translation>
 <translation id="7473891865547856676">건너뛰기</translation>
 <translation id="7475192538862203634">이 메시지가 자주 표시된다면 다음 <ph name="BEGIN_LINK" />권장사항<ph name="END_LINK" />을 시도해 보세요.</translation>
+<translation id="7475688122056506577">SD 카드가 없습니다. 일부 파일이 누락되었을 수 있습니다.</translation>
 <translation id="748127970106343339">기기 사용자 인증 정보 삭제 확인</translation>
 <translation id="7481312909269577407">앞으로</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />(<ph name="TIME_SINCE_UPDATE" />에 업데이트됨)</translation>
@@ -763,6 +767,7 @@
 <translation id="8026334261755873520">인터넷 사용 기록 삭제</translation>
 <translation id="8035133914807600019">새 폴더…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" />일 남음</translation>
+<translation id="804335162455518893">SD 카드가 없음</translation>
 <translation id="805047784848435650">인터넷 사용 기록에 기반해 추천됨</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" />MB 사용 가능</translation>
 <translation id="8058746566562539958">새 Chrome 탭에서 열기</translation>

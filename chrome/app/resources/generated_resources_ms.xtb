@@ -912,7 +912,6 @@
 <translation id="2413749388954403953">Ubah antara muka pengguna penanda halaman</translation>
 <translation id="2422426094670600218">&lt;tiada nama&gt;</translation>
 <translation id="2423578206845792524">Si&amp;mpan imej sebagai...</translation>
-<translation id="2424091190911472304">Sentiasa Jalankan pada <ph name="ORIGIN" /></translation>
 <translation id="2425665904502185219">Jumlah saiz fail</translation>
 <translation id="2428510569851653187">Terangkan perkara yang sedang anda lakukan semasa ranap tab berlaku</translation>
 <translation id="2431027948063157455">Google Assistant tidak dapat dimuatkan, sila periksa sambungan rangkaian anda, kemudian cuba semula.</translation>
@@ -1201,7 +1200,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="2838379631617906747">Memasang</translation>
 <translation id="2841837950101800123">Penyedia</translation>
 <translation id="2843806747483486897">Tukar lalai...</translation>
-<translation id="2844111009524261443">Jalankan apabila diklik</translation>
 <translation id="2845382757467349449">Sentiasa Paparkan Bar Penanda Halaman</translation>
 <translation id="2847759467426165163">Hantar ke</translation>
 <translation id="284805635805850872">Alih keluar perisian berbahaya?</translation>
@@ -1513,7 +1511,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="3308116878371095290">Halaman ini dihalang daripada menetapkan kuki.</translation>
 <translation id="3308134619352333507">Sembunyikan Butang</translation>
 <translation id="3308852433423051161">Memuatkan Google Assistant...</translation>
-<translation id="3309747692199697901">Sentiasa Jalankan pada Semua Tapak</translation>
 <translation id="3312424061798279731">Bahasa yang didayakan</translation>
 <translation id="3313590242757056087">Untuk menetapkan tapak web yang boleh dilihat oleh pengguna diselia,
     anda boleh mengkonfigurasi sekatan dan tetapan dengan melawati <ph name="MANAGEMENT_URL" />.
@@ -1811,7 +1808,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="3759933321830434300">Sekat sebahagian halaman web</translation>
 <translation id="3760460896538743390">Halaman Periksa &amp;Latar Belakang</translation>
 <translation id="37613671848467444">Buka dalam Tetingkap &amp;Inkognito</translation>
-<translation id="3763401818161139108">Sentiasa jalankan pada <ph name="ORIGIN" /></translation>
 <translation id="3764314093345384080">Maklumat binaan terperinci</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Berkomunikasi dengan peranti USB}other{Berkomunikasi dengan # peranti USB}}</translation>
 <translation id="3764986667044728669">Tidak dapat mendaftar</translation>
@@ -2272,7 +2268,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="4547992677060857254">Folder yang anda pilih mengandungi fail sensitif. Adakah anda pasti mahu memberikan "$1" akses menulis tetap kepada folder ini?</translation>
 <translation id="4552031286893852992">Chrome menyekat iklan di tapak ini kerana tapak ini cenderung menyiarkan iklan yang mengganggu.</translation>
 <translation id="4552089082226364758">Flash</translation>
-<translation id="4552495056028768700">Akses Halaman</translation>
 <translation id="4552678318981539154">Beli lagi storan</translation>
 <translation id="4554591392113183336">Sambungan luar ialah versi yang sama atau lebih rendah berbanding yang sedia ada.</translation>
 <translation id="4555769855065597957">Bayang</translation>
@@ -3268,7 +3263,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="6080515710685820702">Menggunakan komputer yang dikongsi? Cuba buka tetingkap inkognito.</translation>
 <translation id="6080689532560039067">Semak masa sistem anda</translation>
 <translation id="6082651258230788217">Tunjukkan dalam bar alat</translation>
-<translation id="6086814797483779854">Jalankan apabila Diklik</translation>
 <translation id="6086846494333236931">Dipasang oleh pentadbir anda</translation>
 <translation id="6087960857463881712">Wajah hebat</translation>
 <translation id="6089481419520884864">Menyuling halaman</translation>
@@ -4407,7 +4401,6 @@ Langkah memasang <ph name="APP_NAME" /> akan memuat turun <ph name="DOWNLOAD_SIZ
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - Digandingkan</translation>
 <translation id="7870730066603611552">Semak pilihan penyegerakan selepas persediaan</translation>
 <translation id="7870790288828963061">Tiada apl Kiosk dengan versi lebih baharu dijumpai. Tiada apa-apa untuk dikemas kini. Sila alih keluar batang USB.</translation>
-<translation id="7874357055309047713">Sentiasa jalankan pada semua tapak</translation>
 <translation id="7877451762676714207">Ralat pelayan tidak diketahui. Sila cuba lagi atau hubungi pentadbir pelayan.</translation>
 <translation id="7877680364634660272">Lawatan</translation>
 <translation id="7878562273885520351">Kata laluan anda mungkin terjejas</translation>
@@ -4757,7 +4750,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8428634594422941299">OK</translation>
 <translation id="8431909052837336408">Tukar PIN SIM</translation>
 <translation id="8434480141477525001">Port Nyahpepijat NaCl</translation>
-<translation id="8437331208797669910">Akses halaman</translation>
 <translation id="843760761634048214">Simpan kad kredit</translation>
 <translation id="8438328416656800239">Tukar kepada penyemak imbas pintar</translation>
 <translation id="8439506636278576865">Tawaran untuk menterjemahkan halaman dalam bahasa ini</translation>

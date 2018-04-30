@@ -912,7 +912,6 @@
 <translation id="2413749388954403953">A Könyvjelzők kezelőfelület módosítása</translation>
 <translation id="2422426094670600218">&lt;névtelen&gt;</translation>
 <translation id="2423578206845792524">Ké&amp;p mentése másként...</translation>
-<translation id="2424091190911472304">Mindig fut itt: <ph name="ORIGIN" /></translation>
 <translation id="2425665904502185219">Teljes fájlméret</translation>
 <translation id="2428510569851653187">Írja le, hogy mit csinált a lap összeomlásakor</translation>
 <translation id="2431027948063157455">A Google Segéd betöltése sikertelen volt. Ellenőrizze a hálózati kapcsolatot, majd próbálja újra.</translation>
@@ -1201,7 +1200,6 @@
 <translation id="2838379631617906747">Telepítés</translation>
 <translation id="2841837950101800123">Szolgáltató</translation>
 <translation id="2843806747483486897">Alapértelmezés módosítása...</translation>
-<translation id="2844111009524261443">Futtatás kattintáskor</translation>
 <translation id="2845382757467349449">A könyvjelzők eszköztára mindig látható</translation>
 <translation id="2847759467426165163">Átküldés a következőre</translation>
 <translation id="284805635805850872">Eltávolítja a kártékony szoftvert?</translation>
@@ -1513,7 +1511,6 @@ Ha további információt szeretne, látogasson el a <ph name="BEGIN_LINK" />Sú
 <translation id="3308116878371095290">Ezen az oldalon le van tiltva a cookie-k mentése.</translation>
 <translation id="3308134619352333507">Elrejtés gomb</translation>
 <translation id="3308852433423051161">A Google Segéd betöltése…</translation>
-<translation id="3309747692199697901">Mindig fut minden webhelyen</translation>
 <translation id="3312424061798279731">Engedélyezett nyelvek</translation>
 <translation id="3313590242757056087">Annak megadásához, hogy a felügyelt felhasználó mely webhelyeket nézheti meg,
     korlátozásokat és beállításokat adhat meg itt: <ph name="MANAGEMENT_URL" />.
@@ -1811,7 +1808,6 @@ Ha további információt szeretne, látogasson el a <ph name="BEGIN_LINK" />Sú
 <translation id="3759933321830434300">Weboldalak adott részeinek letiltása</translation>
 <translation id="3760460896538743390">&amp;Háttéroldal vizsgálata</translation>
 <translation id="37613671848467444">Megnyitás &amp;inkognitóablakban</translation>
-<translation id="3763401818161139108">Mindig fut itt: <ph name="ORIGIN" /></translation>
 <translation id="3764314093345384080">Részletes buildinformáció</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Kommunikáció egy USB-eszközzel}other{Kommunikáció # USB-eszközzel}}</translation>
 <translation id="3764986667044728669">Nem sikerült a csatlakozás</translation>
@@ -2271,7 +2267,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4547992677060857254">A kiválasztott mappa érzékeny fájlokat tartalmaz. Biztosan állandó írási hozzáférést szeretne adni a következőnek a mappához: „$1”?</translation>
 <translation id="4552031286893852992">A Chrome hirdetéseket tiltott le ezen a webhelyen, mert a webhely jellemzően tolakodó hirdetéseket jelenít meg.</translation>
 <translation id="4552089082226364758">Flash</translation>
-<translation id="4552495056028768700">Hozzáférés az oldalhoz</translation>
 <translation id="4552678318981539154">További tárhely vásárlása</translation>
 <translation id="4554591392113183336">A külső bővítmény a meglévő bővítmény verziószintjén vagy az alatt van.</translation>
 <translation id="4555769855065597957">Árnyék</translation>
@@ -3269,7 +3264,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6080515710685820702">Közös használatú számítógépet használ? Nyisson inkognitóablakot.</translation>
 <translation id="6080689532560039067">Ellenőrizze a rendszeridőt</translation>
 <translation id="6082651258230788217">Megjelenítés az eszköztáron</translation>
-<translation id="6086814797483779854">Futtatás kattintáskor</translation>
 <translation id="6086846494333236931">A rendszergazda telepítette</translation>
 <translation id="6087960857463881712">Menő arc</translation>
 <translation id="6089481419520884864">Oldal előállítása</translation>
@@ -4409,7 +4403,6 @@ A(z) <ph name="APP_NAME" /> telepítésével <ph name="DOWNLOAD_SIZE" /> adatot 
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> – párosítva</translation>
 <translation id="7870730066603611552">Szinkronizálási beállítások ellenőrzése a beállítást követően</translation>
 <translation id="7870790288828963061">Nem található újabb verziójú kioszkalkalmazás, ezért nincs mit frissíteni. Kérjük, távolítsa el az USB-meghajtót.</translation>
-<translation id="7874357055309047713">Mindig fut minden webhelyen</translation>
 <translation id="7877451762676714207">Ismeretlen szerverhiba. Kérjük, próbálja újra, vagy lépjen kapcsolatba a szerver rendszergazdájával.</translation>
 <translation id="7877680364634660272">Bemutató</translation>
 <translation id="7878562273885520351">Előfordultat, hogy jelszava már nem biztonságos</translation>
@@ -4758,7 +4751,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8428634594422941299">Értem</translation>
 <translation id="8431909052837336408">SIM-kártya PIN-kódjának módosítása</translation>
 <translation id="8434480141477525001">NaCl hibakeresési port</translation>
-<translation id="8437331208797669910">Hozzáférés az oldalhoz</translation>
 <translation id="843760761634048214">Hitelkártya mentése</translation>
 <translation id="8438328416656800239">Váltás intelligens böngészőre</translation>
 <translation id="8439506636278576865">Kínálja fel az ezen a nyelven írt oldalak fordítását</translation>

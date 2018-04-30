@@ -913,7 +913,6 @@
 <translation id="2413749388954403953">Thay đổi giao diện người dùng của dấu trang</translation>
 <translation id="2422426094670600218">&lt;không có tên&gt;</translation>
 <translation id="2423578206845792524">Lưu &amp;hình ảnh thành...</translation>
-<translation id="2424091190911472304">Luôn chạy trên <ph name="ORIGIN" /></translation>
 <translation id="2425665904502185219">Tổng kích thước tệp</translation>
 <translation id="2428510569851653187">Mô tả những việc bạn đang làm khi tab gặp lỗi</translation>
 <translation id="2431027948063157455">Không thể tải Trợ lý Google, vui lòng kiểm tra kết nối mạng của bạn rồi thử lại.</translation>
@@ -1201,7 +1200,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2838379631617906747">Đang cài đặt</translation>
 <translation id="2841837950101800123">Nhà cung cấp</translation>
 <translation id="2843806747483486897">Thay đổi mặc định...</translation>
-<translation id="2844111009524261443">Chạy khi nhấp chuột</translation>
 <translation id="2845382757467349449">Luôn Hiển thị Thanh Dấu trang</translation>
 <translation id="2847759467426165163">Truyền tới</translation>
 <translation id="284805635805850872">Xóa phần mềm độc hại?</translation>
@@ -1513,7 +1511,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="3308116878371095290">Trang này đã bị chặn cài đặt cookie.</translation>
 <translation id="3308134619352333507">Nút ẩn</translation>
 <translation id="3308852433423051161">Đang tải Trợ lý Google...</translation>
-<translation id="3309747692199697901">Luôn chạy trên tất cả các trang web</translation>
 <translation id="3312424061798279731">Ngôn ngữ đã bật</translation>
 <translation id="3313590242757056087">Để đặt các trang web mà người dùng bị giám sát có thể xem, bạn có thể định cấu hình
     các giới hạn và cài đặt bằng cách truy cập <ph name="MANAGEMENT_URL" />.
@@ -1811,7 +1808,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="3759933321830434300">Chặn các phần của trang web</translation>
 <translation id="3760460896538743390">Kiểm tra trang &amp;nền</translation>
 <translation id="37613671848467444">Mở trong &amp;Cửa sổ ẩn danh</translation>
-<translation id="3763401818161139108">Luôn chạy trên <ph name="ORIGIN" /></translation>
 <translation id="3764314093345384080">Thông tin bản dựng chi tiết</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Kết nối với một thiết bị USB}other{Kết nối với # thiết bị USB}}</translation>
 <translation id="3764986667044728669">Không thể đăng ký</translation>
@@ -2272,7 +2268,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="4547992677060857254">Thư mục bạn đã chọn chứa các tệp nhạy cảm. Bạn có chắc chắn muốn cấp quyền truy cập ghi vĩnh viễn "$1" cho thư mục này không?</translation>
 <translation id="4552031286893852992">Chrome đã chặn quảng cáo trên trang web này do trang web thường hiển thị quảng cáo xâm nhập.</translation>
 <translation id="4552089082226364758">Flash</translation>
-<translation id="4552495056028768700">Quyền truy cập trang</translation>
 <translation id="4552678318981539154">Mua thêm dung lượng lưu trữ</translation>
 <translation id="4554591392113183336">Tiện ích bên ngoài có cùng phiên bản hoặc phiên bản thấp hơn so với tiện ích hiện có.</translation>
 <translation id="4555769855065597957">Bóng</translation>
@@ -3268,7 +3263,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="6080515710685820702">Bạn đang sử dụng máy tính dùng chung? Hãy thử mở cửa sổ ẩn danh.</translation>
 <translation id="6080689532560039067">Kiểm tra giờ hệ thống của bạn</translation>
 <translation id="6082651258230788217">Hiển thị trên thanh công cụ</translation>
-<translation id="6086814797483779854">Chạy khi nhấp chuột</translation>
 <translation id="6086846494333236931">Do quản trị viên của bạn cài đặt</translation>
 <translation id="6087960857463881712">Khuôn mặt vui nhộn</translation>
 <translation id="6089481419520884864">Lọc trang</translation>
@@ -4408,7 +4402,6 @@ Việc cài đặt <ph name="APP_NAME" /> sẽ tải xuống <ph name="DOWNLOAD_
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - Đã ghép nối</translation>
 <translation id="7870730066603611552">Xem lại các tùy chọn đồng bộ hóa sau khi thiết lập</translation>
 <translation id="7870790288828963061">Không tìm thấy ứng dụng Kiosk nào có phiên bản mới hơn. Không có gì để cập nhật. Vui lòng rút thẻ USB.</translation>
-<translation id="7874357055309047713">Luôn chạy trên tất cả các trang web</translation>
 <translation id="7877451762676714207">Lỗi máy chủ không xác định. Vui lòng thử lại hoặc liên hệ với quản trị viên máy chủ.</translation>
 <translation id="7877680364634660272">Tham quan</translation>
 <translation id="7878562273885520351">Mật khẩu của bạn có thể bị xâm phạm</translation>
@@ -4757,7 +4750,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8428634594422941299">OK</translation>
 <translation id="8431909052837336408">Thay đổi mã PIN của SIM</translation>
 <translation id="8434480141477525001">Cổng gỡ lỗi NaCl</translation>
-<translation id="8437331208797669910">Quyền truy cập trang</translation>
 <translation id="843760761634048214">Lưu thẻ tín dụng</translation>
 <translation id="8438328416656800239">Chuyển sang một trình duyệt thông minh</translation>
 <translation id="8439506636278576865">Đề xuất dịch trang bằng ngôn ngữ này</translation>

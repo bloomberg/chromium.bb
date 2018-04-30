@@ -912,7 +912,6 @@
 <translation id="2413749388954403953">De gebruikersinterface voor bladwijzers wijzigen</translation>
 <translation id="2422426094670600218">&lt;naamloos&gt;</translation>
 <translation id="2423578206845792524">Af&amp;beelding opslaan als...</translation>
-<translation id="2424091190911472304">Altijd uitvoeren voor <ph name="ORIGIN" /></translation>
 <translation id="2425665904502185219">Totale bestandsgrootte</translation>
 <translation id="2428510569851653187">Beschrijf wat je aan het doen was toen het tabblad crashte</translation>
 <translation id="2431027948063157455">De Google Assistent kan niet worden geladen. Controleer de netwerkverbinding en probeer het opnieuw.</translation>
@@ -1200,7 +1199,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2838379631617906747">Installeren</translation>
 <translation id="2841837950101800123">Provider</translation>
 <translation id="2843806747483486897">Standaardactie wijzigen...</translation>
-<translation id="2844111009524261443">Uitvoeren voor klik</translation>
 <translation id="2845382757467349449">Bladwijzerbalk altijd weergeven</translation>
 <translation id="2847759467426165163">Casten naar</translation>
 <translation id="284805635805850872">Schadelijke software verwijderen?</translation>
@@ -1512,7 +1510,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="3308116878371095290">Het instellen van cookies door deze pagina is geblokkeerd.</translation>
 <translation id="3308134619352333507">Knop verbergen</translation>
 <translation id="3308852433423051161">Google Assistent laden...</translation>
-<translation id="3309747692199697901">Altijd uitvoeren voor alle sites</translation>
 <translation id="3312424061798279731">Ingeschakelde talen</translation>
 <translation id="3313590242757056087">Als je wilt instellen welke websites de gebruiker met beperkte rechten kan weergeven, kun je beperkingen en instellingen
     configureren op <ph name="MANAGEMENT_URL" />.
@@ -1810,7 +1807,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="3759933321830434300">Delen van webpagina's blokkeren</translation>
 <translation id="3760460896538743390">&amp;Achtergrondpagina controleren</translation>
 <translation id="37613671848467444">Openen in &amp;incognitovenster</translation>
-<translation id="3763401818161139108">Altijd uitvoeren voor <ph name="ORIGIN" /></translation>
 <translation id="3764314093345384080">Gedetailleerde build-gegevens</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Communiceren met een USB-apparaat}other{Communiceren met # USB-apparaten}}</translation>
 <translation id="3764986667044728669">Kan niet inschrijven</translation>
@@ -2271,7 +2267,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="4547992677060857254">De map die je hebt geselecteerd, bevat gevoelige bestanden. Weet je zeker dat je '$1' permanente schrijftoegang wilt geven tot deze map?</translation>
 <translation id="4552031286893852992">Chrome heeft advertenties op deze site geblokkeerd omdat deze site opdringerige advertenties weergeeft.</translation>
 <translation id="4552089082226364758">Flash</translation>
-<translation id="4552495056028768700">Paginatoegang</translation>
 <translation id="4552678318981539154">Meer opslagruimte kopen</translation>
 <translation id="4554591392113183336">Externe uitbreiding heeft dezelfde of een lagere versie dan de bestaande.</translation>
 <translation id="4555769855065597957">Schaduw</translation>
@@ -3268,7 +3263,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="6080515710685820702">Gebruik je een gedeelde computer? Open een incognitovenster.</translation>
 <translation id="6080689532560039067">De systeemtijd controleren</translation>
 <translation id="6082651258230788217">In werkbalk weergeven</translation>
-<translation id="6086814797483779854">Uitvoeren voor klik</translation>
 <translation id="6086846494333236931">Geïnstalleerd door je beheerder</translation>
 <translation id="6087960857463881712">Geweldig gezicht</translation>
 <translation id="6089481419520884864">Pagina omzetten</translation>
@@ -4407,7 +4401,6 @@ Als je <ph name="APP_NAME" /> installeert, wordt er <ph name="DOWNLOAD_SIZE" /> 
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - gekoppeld</translation>
 <translation id="7870730066603611552">Synchronisatieopties bekijken na de installatie</translation>
 <translation id="7870790288828963061">Er zijn geen Kiosk-apps met een nieuwere versie gevonden. Er is niets om te updaten. Verwijder de USB-stick.</translation>
-<translation id="7874357055309047713">Altijd uitvoeren voor alle sites</translation>
 <translation id="7877451762676714207">Onbekende serverfout. Probeer het opnieuw of neem contact op met de serverbeheerder.</translation>
 <translation id="7877680364634660272">Rondleiding</translation>
 <translation id="7878562273885520351">Je wachtwoord is mogelijk gehackt</translation>
@@ -4756,7 +4749,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8428634594422941299">OK</translation>
 <translation id="8431909052837336408">Pincode van simkaart wijzigen</translation>
 <translation id="8434480141477525001">Foutopsporingspoort voor systeemeigen client</translation>
-<translation id="8437331208797669910">Paginatoegang</translation>
 <translation id="843760761634048214">Creditcard opslaan</translation>
 <translation id="8438328416656800239">Overschakelen naar een slimme browser</translation>
 <translation id="8439506636278576865">Aanbieden pagina's te vertalen in deze taal</translation>

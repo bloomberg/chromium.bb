@@ -62,7 +62,7 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 
       RollbackDisabled anvendes som standard.</translation>
 <translation id="1221359380862872747">Indlæs de angivne webadresser ved demologin</translation>
-<translation id="1223789468190631420">Aktiveringstilstand for Beskyttet browsing i forbindelse med godkendte kilder</translation>
+<translation id="1223789468190631420">Aktivér Beskyttet browsing i forbindelse med godkendte kilder</translation>
 <translation id="123081309365616809">Aktivér casting af indhold til enheden</translation>
 <translation id="1257550411839719984">Angiv standardmappe til downloads</translation>
 <translation id="1265053460044691532">Begræns den tid, hvor en bruger, der er godkendt via SAML, kan logge på offline</translation>

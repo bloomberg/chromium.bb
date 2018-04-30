@@ -911,7 +911,6 @@
 <translation id="2413749388954403953">Ändra användargränssnittet för bokmärken</translation>
 <translation id="2422426094670600218">&lt;namnlös&gt;</translation>
 <translation id="2423578206845792524">S&amp;para bild som...</translation>
-<translation id="2424091190911472304">Kör alltid på <ph name="ORIGIN" /></translation>
 <translation id="2425665904502185219">Total filstorlek</translation>
 <translation id="2428510569851653187">Beskriv vad du höll på med när fliken kraschade</translation>
 <translation id="2431027948063157455">Det gick inte att läsa in Google Assistent. Kontrollera nätverksanslutningen och försök igen.</translation>
@@ -1199,7 +1198,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="2838379631617906747">Installerar</translation>
 <translation id="2841837950101800123">Leverantör</translation>
 <translation id="2843806747483486897">Ändra standard ...</translation>
-<translation id="2844111009524261443">Kör vid klickning</translation>
 <translation id="2845382757467349449">Visa alltid bokmärkesfältet</translation>
 <translation id="2847759467426165163">Casta till</translation>
 <translation id="284805635805850872">Vill du ta bort den skadliga programvaran?</translation>
@@ -1511,7 +1509,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="3308116878371095290">Den här sidan har förhindrats att ange cookies.</translation>
 <translation id="3308134619352333507">Dölj knapp</translation>
 <translation id="3308852433423051161">Google Assistent läses in …</translation>
-<translation id="3309747692199697901">Kör alltid på alla webbplatser</translation>
 <translation id="3312424061798279731">Aktiverade språk</translation>
 <translation id="3313590242757056087">Om du vill ange vilka webbplatser som den kontrollerade användaren får besöka, kan du ange begränsningar
     och inställningar genom att besöka <ph name="MANAGEMENT_URL" />.
@@ -1809,7 +1806,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="3759933321830434300">Blockera delar av webbsidor</translation>
 <translation id="3760460896538743390">Kontrollera &amp;bakgrundssida</translation>
 <translation id="37613671848467444">Öppna i &amp;inkognitofönster</translation>
-<translation id="3763401818161139108">Kör alltid på <ph name="ORIGIN" /></translation>
 <translation id="3764314093345384080">Detaljerad versionsinformation</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Kommunicera med en USB-enhet}other{Kommunicera med # USB-enheter}}</translation>
 <translation id="3764986667044728669">Det går inte att registrera</translation>
@@ -2270,7 +2266,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="4547992677060857254">Mappen som du valde innehåller känsliga filer. Vill du bevilja $1 permanent skrivåtkomst till den här mappen?</translation>
 <translation id="4552031286893852992">Chrome blockerar annonser på den här webbplatsen eftersom den brukar visa påträngande annonser.</translation>
 <translation id="4552089082226364758">Flash</translation>
-<translation id="4552495056028768700">Sidåtkomst</translation>
 <translation id="4552678318981539154">Köp mer lagringsutrymme</translation>
 <translation id="4554591392113183336">Det externa tillägget har samma eller lägre version än det som redan finns.</translation>
 <translation id="4555769855065597957">Skugga</translation>
@@ -3266,7 +3261,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="6080515710685820702">Delar du datorn med andra? Testa att öppna ett inkognitofönster.</translation>
 <translation id="6080689532560039067">Kontrollera systemtiden</translation>
 <translation id="6082651258230788217">Visa i verktygsfältet</translation>
-<translation id="6086814797483779854">Kör vid klickning</translation>
 <translation id="6086846494333236931">Har installerats av administratören</translation>
 <translation id="6087960857463881712">Entusiastiskt ansikte</translation>
 <translation id="6089481419520884864">Skapa Distiller-sida</translation>
@@ -4405,7 +4399,6 @@ När du installerar <ph name="APP_NAME" /> laddas <ph name="DOWNLOAD_SIZE" /> da
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> – kopplad</translation>
 <translation id="7870730066603611552">Granska synkroniseringsalternativen efter konfigureringen</translation>
 <translation id="7870790288828963061">Inga kioskappar med nyare version hittades. Det finns inget att uppdatera. Ta bort USB-minnet.</translation>
-<translation id="7874357055309047713">Kör alltid på alla webbplatser</translation>
 <translation id="7877451762676714207">Okänt serverfel. Försök igen eller kontakta serveradministratören.</translation>
 <translation id="7877680364634660272">Rundtur</translation>
 <translation id="7878562273885520351">Lösenordet kan vara utsatt för risk</translation>
@@ -4754,7 +4747,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8428634594422941299">Jag förstår</translation>
 <translation id="8431909052837336408">Ändra SIM-kortets pinkod</translation>
 <translation id="8434480141477525001">Felsökningsport för Native Client</translation>
-<translation id="8437331208797669910">Sidåtkomst</translation>
 <translation id="843760761634048214">Spara kreditkort</translation>
 <translation id="8438328416656800239">Byt till en smart webbläsare</translation>
 <translation id="8439506636278576865">Erbjud att översätta sidor på detta språk</translation>

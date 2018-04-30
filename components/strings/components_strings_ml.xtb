@@ -856,6 +856,14 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">കാർഡ് സ്ഥിരീകരിക്കുക</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7407424307057130981">&lt;p&gt;നിങ്ങളുടെ Windows കമ്പ്യൂട്ടറിൽ Superfish സോഫ്റ്റ്‌വെയർ ഉണ്ടെങ്കിൽ, നിങ്ങൾ ഈ പിശക് കാണും.&lt;/p&gt;
+      &lt;p&gt;നിങ്ങൾക്ക് വെബിലേക്ക് കണക്‌റ്റ് ചെയ്യാൻ, സോഫ്‌റ്റ്‌വെയർ താൽക്കാലികമായി പ്രവർത്തനരഹിതമാക്കാൻ ഈ ഘട്ടങ്ങൾ പിന്തുടരുക. നിങ്ങൾക്ക് അഡ്‌മിനിസ്ട്രേറ്ററുടെ സവിശേഷാധികാരങ്ങൾ ആവശ്യമായിവരും.&lt;/p&gt;
+      &lt;ol&gt;
+      &lt;li&gt; &lt;strong&gt;ആരംഭിക്കാൻ&lt;/strong&gt; ക്ലിക്ക് ചെയ്യുക, തുടർന്ന് &lt;strong&gt;"പ്രാദേശിക സേവനങ്ങൾ"&lt;/strong&gt; കാണുക എന്നത് തിരയുകയും തെരഞ്ഞെടുക്കുകയും ചെയ്യുക"
+      
+&lt;strong&gt;സ്റ്റാർട്ടപ്പ് തരം/strong&gt; എന്നതിന് താഴെ, &lt;strong&gt;പ്രവർത്തനരഹിതമാക്കി&lt;/strong&gt; തിരഞ്ഞെടുക്കുക &lt;li&gt;&lt;strong&gt;സേവന നില&lt;/strong&gt; എന്നതിന് താഴെ, &lt;strong&gt;നിർത്തുക&lt;/strong&gt; ക്ലിക്ക് ചെയ്യുക &lt;li&gt;&lt;strong&gt;പ്രയോഗിക്കുക&lt;/strong&gt; ക്ലിക്ക് ചെയ്യുക, തുടർന്ന് &lt;strong&gt;ശരി&lt;/strong&gt; ക്ലിക്ക് ചെയ്യുക &lt;li&gt;
+      
+നിങ്ങളുടെ കമ്പ്യൂട്ടറിൽ നിന്ന് എങ്ങനെയാണ് സോഫ്റ്റ്‌വെയർ ശാശ്വതമായി നീക്കംചെയ്യുന്നത് എന്നറിയാൻ &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome സഹായ കേന്ദ്രം&lt;/a&gt; സന്ദർശിക്കുക &lt;/ol&gt;</translation>
 <translation id="7419106976560586862">പ്രൊഫൈൽ പാത</translation>
 <translation id="7437289804838430631">ബന്ധപ്പെടാനുള്ള വിവരങ്ങൾ ചേർക്കുക</translation>
 <translation id="7441627299479586546">തെറ്റായ നയ വിഷയം</translation>

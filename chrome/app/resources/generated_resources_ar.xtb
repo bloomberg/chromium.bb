@@ -90,7 +90,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">تعديل محرّك البحث</translation>
 <translation id="1134009406053225289">فتح في نافذة للتصفح المتخفي</translation>
-<translation id="1136155683023653803">تتم مزامنة كلمات المرور والإشارات المرجعية والسجل والمزيد من الخيارات مع حسابك</translation>
+<translation id="1136155683023653803">تتم مزامنة كلمات المرور والإشارات المرجعية والسجل والمزيد من الخيارات مع حسابك.</translation>
 <translation id="1137673463384776352">فتح الرابط في <ph name="APP" /></translation>
 <translation id="1140351953533677694">الوصول إلى بلوتوث والأجهزة التسلسلية</translation>
 <translation id="1140610710803014750">للحصول على الإشارات المرجعية على جميع أجهزتك، يُرجى تسجيل الدخول وتفعيل المزامنة.</translation>
@@ -913,7 +913,6 @@
 <translation id="2413749388954403953">تغيير واجهة المستخدم للإشارات المرجعية</translation>
 <translation id="2422426094670600218">&lt;unnamed&gt;</translation>
 <translation id="2423578206845792524">حف&amp;ظ الصورة باسم...</translation>
-<translation id="2424091190911472304">تشغيل على <ph name="ORIGIN" /> دائمًا</translation>
 <translation id="2425665904502185219">إجمالي حجم الملف</translation>
 <translation id="2428510569851653187">وصف ما كنت تفعله عندما تعطّلت علامة التبويب</translation>
 <translation id="2431027948063157455">‏تعذّر تحميل مساعد Google، يُرجى التحقُّق من اتصال الشبكة وإعادة المحاولة.</translation>
@@ -1200,7 +1199,6 @@
 <translation id="2838379631617906747">يتم الآن التثبيت</translation>
 <translation id="2841837950101800123">المزود</translation>
 <translation id="2843806747483486897">تغيير الإجراء التلقائي...</translation>
-<translation id="2844111009524261443">تشغيل عند النقر</translation>
 <translation id="2845382757467349449">عرض شريط الإشارات المرجعية دائمًا</translation>
 <translation id="2847759467426165163">إرسال إلى</translation>
 <translation id="284805635805850872">هل تريد إزالة البرامج الضارة؟</translation>
@@ -1512,7 +1510,6 @@
 <translation id="3308116878371095290">تم منع هذه الصفحة من تخزين ملفات تعريف الارتباط.</translation>
 <translation id="3308134619352333507">الزر "إخفاء"</translation>
 <translation id="3308852433423051161">‏جارٍ تحميل مساعد Google...</translation>
-<translation id="3309747692199697901">تشغيل على جميع المواقع دائمًا</translation>
 <translation id="3312424061798279731">اللغات التي تم تمكينها</translation>
 <translation id="3313590242757056087">لتعيين مواقع الويب التي يُمكن للمستخدم الذي يخضع للإشراف عرضها، يُمكنك تهيئة القيود والإعدادات عن طريق الانتقال إلى<ph name="MANAGEMENT_URL" />.
     وفي حالة عدم تغيير الإعدادات التلقائية، <ph name="USER_DISPLAY_NAME" />
@@ -1809,7 +1806,6 @@
 <translation id="3759933321830434300">الأجزاء المقيدة من صفحات الويب</translation>
 <translation id="3760460896538743390">فحص &amp;صفحة الخلفية</translation>
 <translation id="37613671848467444">فتح في &amp;نافذة التصفح المتخفي</translation>
-<translation id="3763401818161139108">تشغيل على <ph name="ORIGIN" /> دائمًا</translation>
 <translation id="3764314093345384080">معلومات الإصدار التفصيلية</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{‏الاتصال بجهاز USB}zero{‏الاتصال بـ # من أجهزة USB}two{‏الاتصال بجهازي USB (#)}few{‏الاتصال بـ # أجهزة USB}many{‏ الاتصال بـ # جهاز USB}other{‏ الاتصال بـ # من أجهزة USB}}</translation>
 <translation id="3764986667044728669">تعذّر التسجيل</translation>
@@ -1891,7 +1887,7 @@
 <translation id="3867944738977021751">حقول الشهادة</translation>
 <translation id="3869917919960562512">فهرس خاطئ.</translation>
 <translation id="3871092408932389764">الأقل</translation>
-<translation id="3872220884670338524">المزيد من الإجراءات، وتم حفظ الحساب الذي يحمل اسم المستخدم <ph name="USERNAME" /> على النطاق <ph name="DOMAIN" /></translation>
+<translation id="3872220884670338524">المزيد من الإجراءات؛ تم حفظ الحساب الذي يحمل اسم المستخدم <ph name="USERNAME" /> على النطاق <ph name="DOMAIN" /></translation>
 <translation id="3872991219937722530">احرص على تفريغ مساحة على القرص أو سيصبح الجهاز غير مستجيب.</translation>
 <translation id="3878840326289104869">إنشاء مستخدم يخضع للإدارة</translation>
 <translation id="3879748587602334249">تطبيق إدارة التنزيل</translation>
@@ -2267,7 +2263,6 @@
 <translation id="4547992677060857254">يشتمل المجلد المحدد على ملفات حساسة. فهل تريد بالتأكيد منح "$1" حق الدخول الدائم للكتابة في هذا المجلد؟س</translation>
 <translation id="4552031286893852992">‏حظَر Chrome الإعلانات على هذا الموقع لأن هذا الموقع يميل إلى عرض إعلانات متداخلة.</translation>
 <translation id="4552089082226364758">الفلاش</translation>
-<translation id="4552495056028768700">الوصول إلى الصفحة</translation>
 <translation id="4552678318981539154">شراء المزيد من السعة التخزينية</translation>
 <translation id="4554591392113183336">الإضافة الخارجية في نفس الإصدار أو إصدار أقل مقارنة بالموجودة حاليًا.</translation>
 <translation id="4555769855065597957">ظل</translation>
@@ -2828,7 +2823,7 @@
 <translation id="5425042808445046667">متابعة التنزيل</translation>
 <translation id="5425722269016440406">‏يجب أن تكون متصلاً بالإنترنت لإيقاف تشغيل Smart Lock لأن هذا الإعداد متزامن مع هاتفك وأجهزة أخرى. يُرجى الاتصال بإحدى الشبكات أولاً.</translation>
 <translation id="5425863515030416387">تسجيل الدخول بسهولة على جميع الأجهزة</translation>
-<translation id="5426179911063097041">يريد <ph name="SITE" /> إرسال إشعارات إليك</translation>
+<translation id="5426179911063097041">يريد موقع <ph name="SITE" /> إرسال إشعارات إليك.</translation>
 <translation id="5427278936122846523">الترجمة دومًا</translation>
 <translation id="5427459444770871191">تدوير &amp;في اتجاه عقارب الساعة</translation>
 <translation id="542872847390508405">أنت تتصفح كضيف</translation>
@@ -2906,7 +2901,7 @@
 <translation id="5525677322972469346">إنشاء مستخدم جديد تحت الإشراف</translation>
 <translation id="5525695896049981561">نعم، أرى ذلك</translation>
 <translation id="5526701598901867718">الكل (غير آمن)</translation>
-<translation id="5526745900034778153">إعادة تسجيل الدخول لاستئناف المزامنة</translation>
+<translation id="5526745900034778153">تسجيل الدخول مرة أخرى لاستئناف المزامنة</translation>
 <translation id="5527463195266282916">محاولة تثبيت إضافة ذات إصدار سابق.</translation>
 <translation id="5527474464531963247">يمكنك أيضا تحديد شبكة أخرى.</translation>
 <translation id="5528368756083817449">مدير الإشارات</translation>
@@ -3262,7 +3257,6 @@
 <translation id="6080515710685820702">هل تستخدم جهاز كمبيوتر مشتركًا؟ جرِّب فتح نافذة للتصفُّح المتخفي.</translation>
 <translation id="6080689532560039067">تحقق من وقت النظام</translation>
 <translation id="6082651258230788217">العرض في شريط الأدوات</translation>
-<translation id="6086814797483779854">تشغيل عند النقر</translation>
 <translation id="6086846494333236931">تم التثبيت من قبل مشرفك</translation>
 <translation id="6087960857463881712">وجه رائع</translation>
 <translation id="6089481419520884864">صفحة التنقية</translation>
@@ -3362,7 +3356,7 @@
 <translation id="6238923052227198598">إبقاء آخر ملاحظة على شاشة التأمين</translation>
 <translation id="6239558157302047471">إعادة تحميل الإطار</translation>
 <translation id="6241530762627360640">الوصول إلى معلومات حول أجهزة البلوتوث المقترنة بنظامك واكتشاف أجهزة البلوتوث القريبة.</translation>
-<translation id="6243280677745499710">المعيَّنة حاليًا</translation>
+<translation id="6243280677745499710">المحدّدة حاليًا</translation>
 <translation id="6243774244933267674">الخادم غير متاح</translation>
 <translation id="6246413617632217567">تعذّر استيراد المستخدم تحت الإشراف. يُرجى التحقق من مساحة محرك الأقراص الثابتة والأذونات، وإعادة المحاولة.</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE" /></translation>
@@ -3400,7 +3394,7 @@
 <translation id="6286708577777130801">تفاصيل كلمة المرور المحفوظة</translation>
 <translation id="6287852322318138013">حدد تطبيقًا لفتح هذا الملف من خلاله</translation>
 <translation id="6290556621549272952">‏يمكنك استخدام هذه الميزة لعرض المحتوى من Chromium على التلفزيون أو غيره من الأجهزة.</translation>
-<translation id="6291949900244949761">‏طلب الإذن عند محاولة أحد المواقع الوصول إلى أجهزة USB (مُوصى به)</translation>
+<translation id="6291949900244949761">‏طلب الإذن في حال محاولة أحد المواقع الوصول إلى أجهزة USB (مُوصى به)</translation>
 <translation id="6291953229176937411">إ&amp;ظهار في الباحث</translation>
 <translation id="6295158916970320988">جميع المواقع</translation>
 <translation id="6295855836753816081">جارٍ الحفظ...</translation>
@@ -4404,7 +4398,6 @@
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - تم الإقران</translation>
 <translation id="7870730066603611552">مراجعة خيارات المزامنة بعد الإعداد</translation>
 <translation id="7870790288828963061">‏لا توجد إصدارات أحدث لتطبيق Kiosk. لا يوجد شيء لتحديثه. يُرجى إزالة جهاز USB.</translation>
-<translation id="7874357055309047713">تشغيل على جميع المواقع دائمًا</translation>
 <translation id="7877451762676714207">خطأ غير معروف في الخادم. يُرجى إعادة المحاولة أو الاتصال بمشرف الخادم.</translation>
 <translation id="7877680364634660272">جولة</translation>
 <translation id="7878562273885520351">من المحتمل أنه تم اختراق كلمة مرورك</translation>
@@ -4447,7 +4440,7 @@
 <translation id="7928710562641958568">إخراج الجهاز</translation>
 <translation id="79312157130859720">يشارك <ph name="APP_NAME" /> الشاشة والصوت.</translation>
 <translation id="7931318309563332511">غير معروف</translation>
-<translation id="7934414805353235750">‏يريد <ph name="URL" /> تشغيل محتوى محمي. ستتحقَّق Google من هوية جهازك.</translation>
+<translation id="7934414805353235750">‏يريد عنوان <ph name="URL" /> تشغيل محتوى محمٍ، لذلك ستتحقَّق Google من هوية جهازك.</translation>
 <translation id="7938594894617528435">بلا إنترنت حاليًا</translation>
 <translation id="7939062555109487992">خيارات متقدمة</translation>
 <translation id="7939412583708276221">المتابعة على أيّ حال</translation>
@@ -4703,7 +4696,7 @@
 <translation id="8336153091935557858">الأمس <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8338952601723052325">موقع الويب لمطوّر البرامج</translation>
 <translation id="8339059274628563283">بيانات <ph name="SITE" /> المخزنة محليًا</translation>
-<translation id="833986336429795709">لفتح هذا الرابط، اختر أحد التطبيقات</translation>
+<translation id="833986336429795709">لفتح هذا الرابط، اختر أحد التطبيقات.</translation>
 <translation id="8342318071240498787">هناك ملف أو دليل موجود بهذا الاسم فعلاً.</translation>
 <translation id="8343956361364550006">استخدام معدل نقل بيانات عالٍ للحصول على أفضل فيديو أو صورة متحركة. قد لا يتمكن الأشخاص الذين لديهم اتصال بطيء من الاطّلاع على المحتوى.</translation>
 <translation id="8349826889576450703">launcher</translation>
@@ -4753,7 +4746,6 @@
 <translation id="8428634594422941299">حسنًا</translation>
 <translation id="8431909052837336408">‏تغيير رمز PIN لشريحة SIM</translation>
 <translation id="8434480141477525001">‏منفذ تصحيح أخطاء NaCl</translation>
-<translation id="8437331208797669910">الوصول إلى الصفحة</translation>
 <translation id="843760761634048214">حفظ بطاقة الائتمان</translation>
 <translation id="8438328416656800239">التبديل إلى متصفح ذكي</translation>
 <translation id="8439506636278576865">عرض ترجمة الصفحات المكتوبة بهذه اللغة</translation>
@@ -4900,7 +4892,7 @@
 <translation id="8663099077749055505">حظر التنزيلات المتعددة تلقائيًا بشكل دائم على <ph name="HOST" /></translation>
 <translation id="8664389313780386848">عرض م&amp;صدر الصفحة</translation>
 <translation id="866611985033792019">الوثوق بهذه الشهادة لتحديد هوية مستخدمي البريد الإلكتروني</translation>
-<translation id="8666584013686199826">‏طلب الإذن عند محاولة أحد المواقع الوصول إلى أجهزة USB (مُوصى به)</translation>
+<translation id="8666584013686199826">‏طلب الإذن في حال محاولة أحد المواقع الوصول إلى أجهزة USB (مُوصى به)</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> في وضع ملء الشاشة الآن وتم إيقاف مؤشر الماوس.</translation>
 <translation id="8669284339312441707">أكثر دفئًا</translation>
 <translation id="8669949407341943408">جارٍ النقل...</translation>
@@ -5015,7 +5007,7 @@
 <translation id="882204272221080310">يمكنك تحديث البرامج الثابتة لمزيد من الأمان.</translation>
 <translation id="8823514049557262177">نسخ &amp;نص الرابط</translation>
 <translation id="8824701697284169214">إضافة &amp;صفحة...</translation>
-<translation id="8827752199525959199">المزيد من الإجراءات، وكلمة مرور اسم المستخدم <ph name="USERNAME" /> على النطاق <ph name="DOMAIN" /></translation>
+<translation id="8827752199525959199">المزيد من الإجراءات؛ تم حفظ كلمة مرور <ph name="USERNAME" /> على النطاق <ph name="DOMAIN" /></translation>
 <translation id="8828933418460119530">‏اسم نظام أسماء النطاقات (DNS)</translation>
 <translation id="8830796635868321089">تعذّر البحث عن التحديثات باستخدام إعدادات الخادم الوكيل الحالية. يُرجى ضبط <ph name="PROXY_SETTINGS_LINK_START" />إعدادات الخادم الوكيل<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="8834039744648160717">يتم التحكم في تهيئة الشبكة بواسطة <ph name="USER_EMAIL" />.</translation>

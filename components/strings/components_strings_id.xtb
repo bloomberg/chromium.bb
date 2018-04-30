@@ -49,6 +49,7 @@
     &lt;li&gt;Pastikan sambungan internet berfungsi normal.&lt;/li&gt;
     &lt;li&gt;Hubungi pemilik situs.&lt;/li&gt;
     &lt;/ol&gt;</translation>
+<translation id="1257286744552378071">Anda memasukkan sandi di situs yang tidak dikelola oleh organisasi. Untuk melindungi akun, jangan gunakan sandi yang sama di aplikasi dan situs lain.</translation>
 <translation id="1263231323834454256">Daftar bacaan</translation>
 <translation id="1264126396475825575">Laporan kerusakan diambil pada pukul <ph name="CRASH_TIME" /> (belum diupload atau diabaikan)</translation>
 <translation id="1270502636509132238">Metode Pengambilan</translation>
@@ -188,6 +189,7 @@
 <translation id="2212735316055980242">Kebijakan tidak ditemukan</translation>
 <translation id="2213606439339815911">Mengambil entri...</translation>
 <translation id="2218879909401188352">Saat ini, penyerang di <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> dapat menginstal aplikasi berbahaya yang dapat merusak perangkat, menambahkan biaya tersembunyi ke tagihan seluler, atau mencuri informasi pribadi Anda. <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2224337661447660594">Tidak ada internet</translation>
 <translation id="2230458221926704099">Perbaiki sambungan menggunakan <ph name="BEGIN_LINK" />aplikasi diagnosis<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Kirim sekarang</translation>
 <translation id="225207911366869382">Nilai ini sudah usang untuk kebijakan ini.</translation>
@@ -361,6 +363,7 @@
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> saat ini tidak dapat dijangkau.</translation>
 <translation id="3427092606871434483">Izinkan (default)</translation>
 <translation id="3427342743765426898">&amp;Ulangi Pengeditan</translation>
+<translation id="342781501876943858">Chromium menyarankan untuk menyetel ulang sandi jika Anda juga menggunakannya di situs lain.</translation>
 <translation id="3431636764301398940">Simpan kartu ini ke perangkat ini</translation>
 <translation id="3447661539832366887">Pemilik perangkat ini menonaktifkan game dinosaurus.</translation>
 <translation id="3447884698081792621">Tampilkan sertifikat (diterbitkan oleh <ph name="ISSUER" />)</translation>
@@ -500,6 +503,7 @@
 <translation id="4340982228985273705">Komputer ini tidak terdeteksi sebagai dikelola perusahaan sehingga kebijakan hanya dapat secara otomatis menginstal ekstensi yang dihosting di Chrome Webstore. URL update Chrome Webstore-nya adalah "<ph name="CWS_UPDATE_URL" />".</translation>
 <translation id="4346197816712207223">Kartu Kredit yang Diterima</translation>
 <translation id="4356973930735388585">Penyerang di situs ini mungkin berusaha memasang program berbahaya di komputer Anda yang dapat mencuri atau menghapus informasi (misalnya, foto, sandi, pesan, dan kartu kredit).</translation>
+<translation id="4358461427845829800">Kelola metode pembayaran...</translation>
 <translation id="4372948949327679948">Nilai <ph name="VALUE_TYPE" /> yang diharapkan.</translation>
 <translation id="4377125064752653719">Anda berusaha menjangkau <ph name="DOMAIN" />, tetapi sertifikat yang disajikan oleh server telah dibatalkan oleh penerbitnya. Artinya informasi rahasia keamanan yang disajikan tidak dapat dipercaya. Anda mungkin sedang berkomunikasi dengan penyerang.</translation>
 <translation id="4406896451731180161">hasil penelusuran</translation>
@@ -587,6 +591,7 @@
 <translation id="5115563688576182185">(64 bit)</translation>
 <translation id="5121084798328133320">Setelah mengonfirmasi, detail kartu dari akun Pembayaran Google Anda akan dibagikan dengan situs ini.</translation>
 <translation id="5128122789703661928">Sesi dengan nama ini tidak valid untuk dihapus.</translation>
+<translation id="5135404736266831032">Kelola alamat...</translation>
 <translation id="5141240743006678641">Enkripsikan sandi yang disinkronkan dengan kredensial Google Anda</translation>
 <translation id="5145883236150621069">Ada kode kesalahan dalam tanggapan kebijakan</translation>
 <translation id="5159010409087891077">Buka halaman dalam Jendela samaran baru (⇧⌘N)</translation>
@@ -672,9 +677,11 @@
 <translation id="5685654322157854305">Tambahkan Alamat Pengiriman</translation>
 <translation id="5689199277474810259">Ekspor ke JSON</translation>
 <translation id="5689516760719285838">Lokasi</translation>
+<translation id="570530837424789914">Kelola...</translation>
 <translation id="5710435578057952990">Identitas situs Web ini belum diverifikasi.</translation>
 <translation id="5719499550583120431">Kartu prabayar diterima.</translation>
 <translation id="5720705177508910913">Pengguna saat ini</translation>
+<translation id="5730040223043577876">Chrome menyarankan untuk menyetel ulang sandi jika Anda juga menggunakannya di situs lain.</translation>
 <translation id="5732392974455271431">Orang tua dapat membuka blokirnya untukmu</translation>
 <translation id="5763042198335101085">Masukkan alamat email yang valid</translation>
 <translation id="5765072501007116331">Untuk melihat persyaratan dan metode pengiriman, pilih alamat</translation>
@@ -762,6 +769,7 @@
 <translation id="6446608382365791566">Tambahkan informasi lainnya</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6451458296329894277">Konfirmasikan Pengiriman Ulang Formulir</translation>
+<translation id="6465306955648956876">Kelola sandi...</translation>
 <translation id="647261751007945333">Kebijakan perangkat</translation>
 <translation id="6477321094435799029">Chrome mendeteksi kode yang tidak biasa pada halaman ini dan memblokirnya untuk melindungi informasi pribadi Anda (misalnya, sandi, nomor telepon, dan kartu kredit).</translation>
 <translation id="6489534406876378309">Mulai mengupload kerusakan</translation>
@@ -781,6 +789,7 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> Penelusuran</translation>
 <translation id="6630809736994426279">Saat ini, penyerang di <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mungkin berusaha menginstal program berbahaya di Mac Anda yang dapat mencuri atau menghapus informasi Anda (misalnya, foto, sandi, pesan, dan kartu kredit). <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6644283850729428850">Kebijakan ini telah usang.</translation>
+<translation id="6646269444027925224">{COUNT,plural, =0{Tidak ada}=1{Dari 1 situs (Anda tidak akan logout dari Akun Google)}other{Dari # situs (Anda tidak akan logout dari Akun Google)}}</translation>
 <translation id="6657585470893396449">Sandi</translation>
 <translation id="6671697161687535275">Hapus saran formulir dari Chromium?</translation>
 <translation id="6685834062052613830">Keluar dan selesaikan penyiapan</translation>
@@ -807,6 +816,7 @@
 <translation id="6915804003454593391">Pengguna:</translation>
 <translation id="6945221475159498467">Pilih</translation>
 <translation id="6948701128805548767">Untuk melihat persyaratan dan metode pengambilan, pilih alamat</translation>
+<translation id="6949872517221025916">Setel Ulang Sandi</translation>
 <translation id="6957887021205513506">Sertifikat server tampaknya palsu.</translation>
 <translation id="6965382102122355670">Oke</translation>
 <translation id="6965978654500191972">Perangkat</translation>
@@ -829,6 +839,7 @@
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> lainnya}other{<ph name="PAYMENT_METHOD_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> lainnya}}</translation>
 <translation id="7155487117670177674">Pembayaran tidak aman</translation>
+<translation id="717330890047184534">ID GAIA:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lainnya}other{<ph name="SHIPPING_OPTION_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lainnya}}</translation>
 <translation id="7180611975245234373">Segarkan</translation>
 <translation id="7182878459783632708">Tidak ada kebijakan yang disetel</translation>
@@ -1030,6 +1041,7 @@
 <translation id="8553075262323480129">Terjemahan gagal karena bahasa halaman tidak dapat ditentukan.</translation>
 <translation id="8557066899867184262">CVC terletak di bagian belakang kartu Anda.</translation>
 <translation id="8559762987265718583">Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) perangkat tidak benar.</translation>
+<translation id="8564985650692024650">Chromium menyarankan untuk menyetel ulang sandi <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> jika Anda juga menggunakannya di situs lain.</translation>
 <translation id="8571890674111243710">Menerjemahkan halaman ke <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">+ nomor telepon</translation>
 <translation id="859285277496340001">Sertifikat tidak menetapkan mekanisme untuk memeriksa apakah sertifikat telah ditarik.</translation>
@@ -1056,6 +1068,7 @@
 <translation id="884264119367021077">Alamat pengiriman</translation>
 <translation id="884923133447025588">Tidak ditemukan mekanisme pembatalan.</translation>
 <translation id="885730110891505394">Berbagi dengan Google</translation>
+<translation id="8858065207712248076">Chrome menyarankan untuk menyetel ulang sandi <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> jika Anda juga menggunakannya di situs lain.</translation>
 <translation id="8866481888320382733">Kesalahan saat menguraikan setelan kebijakan</translation>
 <translation id="8870413625673593573">Barusan Ditutup</translation>
 <translation id="8874824191258364635">Masukkan nomor kartu yang valid</translation>

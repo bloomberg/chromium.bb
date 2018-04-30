@@ -911,7 +911,6 @@
 <translation id="2413749388954403953">बुकमार्क वापरकर्ता इंटरफेस बदला</translation>
 <translation id="2422426094670600218">&lt;अनामित&gt;</translation>
 <translation id="2423578206845792524">म्हणून प्रतिमा ज&amp;तन करा...</translation>
-<translation id="2424091190911472304">नेहमी <ph name="ORIGIN" /> वर चालवा</translation>
 <translation id="2425665904502185219">एकूण फाइल आकार</translation>
 <translation id="2428510569851653187">टॅब क्रॅश झाला तेव्हा तुम्ही नेमके काय करत होता ते सांगा</translation>
 <translation id="2431027948063157455">Google Assistant लोड होऊ शकले नाही, कृपया तुमचे नेटवर्क कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</translation>
@@ -1199,7 +1198,6 @@
 <translation id="2838379631617906747">इंस्टॉल करीत आहे</translation>
 <translation id="2841837950101800123">प्रदाता</translation>
 <translation id="2843806747483486897">डीफॉल्ट बदला...</translation>
-<translation id="2844111009524261443">क्लिक केल्यावर चालवा</translation>
 <translation id="2845382757467349449">नेहमी बुकमार्क बार दर्शवा</translation>
 <translation id="2847759467426165163">यावर कास्ट करा</translation>
 <translation id="284805635805850872">धोकादायक सॉफ्टवेअर काढायचे का?</translation>
@@ -1507,7 +1505,6 @@
 <translation id="3308116878371095290">हे पृष्ठ कुकीज सेट करण्यापासून प्रतिबंधित केलेले होते.</translation>
 <translation id="3308134619352333507">बटण लपवा</translation>
 <translation id="3308852433423051161">Google साहाय्यक लोड करत आहे...</translation>
-<translation id="3309747692199697901">नेहमी सर्व साइटवर चालवा</translation>
 <translation id="3312424061798279731">सक्षम केलेल्या भाषा</translation>
 <translation id="3313590242757056087">पर्यवेक्षी वापरकर्ता कोणत्या वेबसाइट पाहू शकतो हे सेट करण्यासाठी, आपण
     <ph name="MANAGEMENT_URL" /> ला भेट देऊन प्रतिबंध आणि सेटिंग्ज कॉन्फिगर करू शकता.
@@ -1806,7 +1803,6 @@
 <translation id="3759933321830434300">वेब पृष्ठांचे भाग अवरोधित करा</translation>
 <translation id="3760460896538743390">&amp;पार्श्वभूमी पृष्ठाचे निरीक्षण करा</translation>
 <translation id="37613671848467444">&amp;गुप्त विंडोमध्ये उघडा</translation>
-<translation id="3763401818161139108">नेहमी <ph name="ORIGIN" /> वर चालवा</translation>
 <translation id="3764314093345384080">तपशीलवार बिल्ड माहिती</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{एका USB डिव्हाइससह संवाद प्रस्थापित करा}one{# USB डिव्हाइससह संवाद प्रस्थापित करा}other{# USB डिव्हाइसेससह संवाद प्रस्थापित करा}}</translation>
 <translation id="3764986667044728669">नोंदणी करण्यात अक्षम</translation>
@@ -2266,7 +2262,6 @@
 <translation id="4547992677060857254">आपण निवडलेल्या फोल्डरमध्ये संवेदनशील फायली आहेत. आपल्याला खात्री आहे की या फोल्डरवर आपण "$1" ला कायम लिहिण्याचा प्रवेश मंजूर करू इच्छिता?</translation>
 <translation id="4552031286893852992">अनाहूत जाहिराती दाखवत असल्यामुळे Chrome ने या साइटवर जाहिराती ब्लॉक केल्या आहेत.</translation>
 <translation id="4552089082226364758">फ्लॅश</translation>
-<translation id="4552495056028768700">पृष्ठ प्रवेश</translation>
 <translation id="4552678318981539154">अधिक संचयन खरेदी करा</translation>
 <translation id="4554591392113183336">बाह्य विस्‍तार अस्‍तित्वात असलेल्‍याच्या तुलनेत समान किंवा कमी आवृत्तीवर आहे.</translation>
 <translation id="4555769855065597957">शॅडो</translation>
@@ -3263,7 +3258,6 @@
 <translation id="6080515710685820702">शेअर केलेला काँप्युटर वापरत आहात का? गुप्त विंडो उघडण्याचा प्रयत्न करा.</translation>
 <translation id="6080689532560039067">आपली प्रणाली वेळ तपासा</translation>
 <translation id="6082651258230788217">टूलबारमध्ये दर्शवा</translation>
-<translation id="6086814797483779854">क्लिक केल्यावर चालवा</translation>
 <translation id="6086846494333236931">आपल्‍या प्रशासकाद्वारे इंस्टॉल केले</translation>
 <translation id="6087960857463881712">छान चेहरा</translation>
 <translation id="6089481419520884864">Distill पृष्ठ</translation>
@@ -4401,7 +4395,6 @@
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - जोडणी केली</translation>
 <translation id="7870730066603611552">सेटअपनंतर सिंक पर्यायांचे परीक्षण करा</translation>
 <translation id="7870790288828963061">नवीन आवृत्तीसह कोणतेही कियोस्क अॅप्स आढळले नाहीत. काहीही अपडेट करू नका. कृपया USB स्टिक काढा.</translation>
-<translation id="7874357055309047713">नेहमी सर्व साइटवर चालवा</translation>
 <translation id="7877451762676714207">अज्ञात सर्व्हर एरर. कृपया पुन्हा प्रयत्न करा किंवा सर्व्हर प्रशासकाशी संपर्क साधा.</translation>
 <translation id="7877680364634660272">टूर</translation>
 <translation id="7878562273885520351">तुमच्या पासवर्डशी तडजोड होत असल्याची शक्यता आहे</translation>
@@ -4750,7 +4743,6 @@
 <translation id="8428634594422941299">समजले</translation>
 <translation id="8431909052837336408">सिम पिन बदला</translation>
 <translation id="8434480141477525001">NaCl  डीबग पोर्ट</translation>
-<translation id="8437331208797669910">पृष्ठ प्रवेश</translation>
 <translation id="843760761634048214">क्रेडिट कार्ड सेव्ह करा</translation>
 <translation id="8438328416656800239">स्मार्ट ब्राउझरवर बदला</translation>
 <translation id="8439506636278576865">या भाषेमध्ये पृष्ठे भाषांतरीत करण्यासाठी ऑफर</translation>
