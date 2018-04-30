@@ -66,6 +66,18 @@ void OffscreenCanvasProviderImpl::CreateCompositorFrameSink(
                                           std::move(request));
 }
 
+void OffscreenCanvasProviderImpl::CreateSimpleCompositorFrameSink(
+    const viz::FrameSinkId& parent_frame_sink_id,
+    const viz::FrameSinkId& frame_sink_id,
+    blink::mojom::OffscreenCanvasSurfaceClientPtr surface_client,
+    viz::mojom::CompositorFrameSinkClientPtr client,
+    viz::mojom::CompositorFrameSinkRequest request) {
+  CreateOffscreenCanvasSurface(parent_frame_sink_id, frame_sink_id,
+                               std::move(surface_client));
+  CreateCompositorFrameSink(frame_sink_id, std::move(client),
+                            std::move(request));
+}
+
 void OffscreenCanvasProviderImpl::DestroyOffscreenCanvasSurface(
     viz::FrameSinkId frame_sink_id) {
   canvas_map_.erase(frame_sink_id);

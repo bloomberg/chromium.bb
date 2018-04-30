@@ -37,15 +37,12 @@ void BeginFrameProvider::CreateCompositorFrameSink() {
   mojom::blink::OffscreenCanvasSurfaceClientPtr ocs_client;
   ocs_binding_.Bind(mojo::MakeRequest(&ocs_client), task_runner);
 
-  canvas_provider->CreateOffscreenCanvasSurface(
-      parent_frame_sink_id_, frame_sink_id_, std::move(ocs_client));
-
   viz::mojom::blink::CompositorFrameSinkClientPtr client;
   cfs_binding_.Bind(mojo::MakeRequest(&client), task_runner);
 
-  canvas_provider->CreateCompositorFrameSink(
-      frame_sink_id_, std::move(client),
-      mojo::MakeRequest(&compositor_frame_sink_));
+  canvas_provider->CreateSimpleCompositorFrameSink(
+      parent_frame_sink_id_, frame_sink_id_, std::move(ocs_client),
+      std::move(client), mojo::MakeRequest(&compositor_frame_sink_));
 }
 
 void BeginFrameProvider::RequestBeginFrame() {
