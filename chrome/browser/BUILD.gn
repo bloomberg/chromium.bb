@@ -2628,6 +2628,8 @@ jumbo_split_static_library("browser") {
       "resource_coordinator/site_characteristics_data_store.h",
       "resource_coordinator/tab_activity_watcher.cc",
       "resource_coordinator/tab_activity_watcher.h",
+      "resource_coordinator/tab_features.cc",
+      "resource_coordinator/tab_features.h",
       "resource_coordinator/tab_lifecycle_observer.h",
       "resource_coordinator/tab_lifecycle_unit.cc",
       "resource_coordinator/tab_lifecycle_unit.h",

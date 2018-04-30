@@ -15,6 +15,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/tab_features.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -89,8 +90,8 @@ void PopulateProtocolHandlers(content::WebContents* web_contents,
 }
 
 // Populates navigation-related metrics.
-void PopulatePageTransitionMetrics(ukm::builders::TabManager_TabMetrics* entry,
-                                   ui::PageTransition page_transition) {
+void PopulatePageTransitionFeatures(resource_coordinator::TabFeatures* tab,
+                                    ui::PageTransition page_transition) {
   // We only report the following core types.
   // Note: Redirects unrelated to clicking a link still get the "link" type.
   if (ui::PageTransitionCoreTypeIs(page_transition, ui::PAGE_TRANSITION_LINK) ||
@@ -100,14 +101,14 @@ void PopulatePageTransitionMetrics(ukm::builders::TabManager_TabMetrics* entry,
                                    ui::PAGE_TRANSITION_FORM_SUBMIT) ||
       ui::PageTransitionCoreTypeIs(page_transition,
                                    ui::PAGE_TRANSITION_RELOAD)) {
-    entry->SetPageTransitionCoreType(
-        ui::PageTransitionStripQualifier(page_transition));
+    tab->page_transition_core_type =
+        ui::PageTransitionStripQualifier(page_transition);
   }
 
-  entry->SetPageTransitionFromAddressBar(
-      (page_transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) != 0);
-  entry->SetPageTransitionIsRedirect(
-      ui::PageTransitionIsRedirect(page_transition));
+  tab->page_transition_from_address_bar =
+      (page_transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) != 0;
+  tab->page_transition_is_redirect =
+      ui::PageTransitionIsRedirect(page_transition);
 }
 
 // Logs the TabManager.Background.ForegroundedOrClosed event.
@@ -184,6 +185,51 @@ int TabMetricsLogger::GetSiteEngagementScore(
   return rounded_score;
 }
 
+// static
+resource_coordinator::TabFeatures TabMetricsLogger::GetTabFeatures(
+    const Browser* browser,
+    const TabMetricsLogger::TabMetrics& tab_metrics) {
+  DCHECK(browser);
+  const TabStripModel* tab_strip_model = browser->tab_strip_model();
+  content::WebContents* web_contents = tab_metrics.web_contents;
+
+  resource_coordinator::TabFeatures tab;
+
+  TabMetricsEvent::ContentType content_type =
+      GetContentTypeFromMimeType(web_contents->GetContentsMimeType());
+  tab.content_type = content_type;
+  tab.has_before_unload_handler =
+      web_contents->GetMainFrame()->GetSuddenTerminationDisablerState(
+          blink::kBeforeUnloadHandler);
+  tab.has_form_entry =
+      web_contents->GetPageImportanceSignals().had_form_interaction;
+  tab.is_extension_protected =
+      !resource_coordinator::TabLifecycleUnitExternal::FromWebContents(
+           web_contents)
+           ->IsAutoDiscardable();
+
+  int index = tab_strip_model->GetIndexOfWebContents(web_contents);
+  DCHECK_NE(index, TabStripModel::kNoTab);
+  tab.is_pinned = tab_strip_model->IsTabPinned(index);
+
+  tab.key_event_count = tab_metrics.page_metrics.key_event_count;
+  tab.mouse_event_count = tab_metrics.page_metrics.mouse_event_count;
+  tab.navigation_entry_count = web_contents->GetController().GetEntryCount();
+
+  PopulatePageTransitionFeatures(&tab, tab_metrics.page_transition);
+
+  if (SiteEngagementService::IsEnabled()) {
+    tab.site_engagement_score = GetSiteEngagementScore(web_contents);
+  }
+
+  tab.touch_event_count = tab_metrics.page_metrics.touch_event_count;
+
+  // This checks if the tab was audible within the past two seconds, same as the
+  // audio indicator in the tab strip.
+  tab.was_recently_audible = web_contents->WasRecentlyAudible();
+  return tab;
+}
+
 void TabMetricsLogger::LogBackgroundTab(ukm::SourceId ukm_source_id,
                                         const TabMetrics& tab_metrics) {
   if (!ukm_source_id)
@@ -211,46 +257,36 @@ void TabMetricsLogger::LogBackgroundTab(ukm::SourceId ukm_source_id,
   DCHECK_NE(index, TabStripModel::kNoTab);
 
   ukm::builders::TabManager_TabMetrics entry(ukm_source_id);
+  resource_coordinator::TabFeatures tab = GetTabFeatures(browser, tab_metrics);
+
+  PopulateProtocolHandlers(web_contents, &entry);
+
+  // Keep these Set functions in alphabetical order so they're easy to check
+  // against the list of metrics in the UKM event.
+  // TODO(michaelpg): Add PluginType field if mime type matches "application/*"
+  // using PluginUMAReporter.
+  entry.SetContentType(tab.content_type);
+  entry.SetHasBeforeUnloadHandler(tab.has_before_unload_handler);
+  entry.SetHasFormEntry(tab.has_form_entry);
+  entry.SetIsExtensionProtected(tab.is_extension_protected);
+  entry.SetIsPinned(tab.is_pinned);
+  entry.SetKeyEventCount(tab.key_event_count);
+  entry.SetMouseEventCount(tab.mouse_event_count);
+  entry.SetNavigationEntryCount(tab.navigation_entry_count);
+  if (tab.page_transition_core_type.has_value())
+    entry.SetPageTransitionCoreType(tab.page_transition_core_type.value());
+  entry.SetPageTransitionFromAddressBar(tab.page_transition_from_address_bar);
+  entry.SetPageTransitionIsRedirect(tab.page_transition_is_redirect);
+  entry.SetSequenceId(++sequence_id_);
+  if (tab.site_engagement_score.has_value())
+    entry.SetSiteEngagementScore(tab.site_engagement_score.value());
+  entry.SetTouchEventCount(tab.touch_event_count);
+  entry.SetWasRecentlyAudible(tab.was_recently_audible);
 
   // The browser window logs its own usage UKMs with its session ID.
   entry.SetWindowId(browser->session_id().id());
 
-  entry.SetKeyEventCount(tab_metrics.page_metrics.key_event_count)
-      .SetMouseEventCount(tab_metrics.page_metrics.mouse_event_count)
-      .SetTouchEventCount(tab_metrics.page_metrics.touch_event_count);
-
-  PopulateProtocolHandlers(web_contents, &entry);
-
-  const int engagement_score = GetSiteEngagementScore(web_contents);
-  if (engagement_score >= 0) {
-    entry.SetSiteEngagementScore(engagement_score);
-  }
-
-  TabMetricsEvent::ContentType content_type =
-      GetContentTypeFromMimeType(web_contents->GetContentsMimeType());
-  entry.SetContentType(static_cast<int>(content_type));
-  // TODO(michaelpg): Add PluginType field if mime type matches "application/*"
-  // using PluginUMAReporter.
-
-  // This checks if the tab was audible within the past two seconds, same as the
-  // audio indicator in the tab strip.
-  entry.SetWasRecentlyAudible(web_contents->WasRecentlyAudible());
-
-  PopulatePageTransitionMetrics(&entry, tab_metrics.page_transition);
-  entry
-      .SetHasBeforeUnloadHandler(
-          web_contents->GetMainFrame()->GetSuddenTerminationDisablerState(
-              blink::kBeforeUnloadHandler))
-      .SetHasFormEntry(
-          web_contents->GetPageImportanceSignals().had_form_interaction)
-      .SetIsExtensionProtected(
-          !resource_coordinator::TabLifecycleUnitExternal::FromWebContents(
-               web_contents)
-               ->IsAutoDiscardable())
-      .SetIsPinned(tab_strip_model->IsTabPinned(index))
-      .SetNavigationEntryCount(web_contents->GetController().GetEntryCount())
-      .SetSequenceId(++sequence_id_)
-      .Record(ukm::UkmRecorder::Get());
+  entry.Record(ukm::UkmRecorder::Get());
 }
 
 void TabMetricsLogger::LogBackgroundTabShown(ukm::SourceId ukm_source_id,
