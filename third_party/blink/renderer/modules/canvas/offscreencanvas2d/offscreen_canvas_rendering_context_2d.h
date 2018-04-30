@@ -46,7 +46,6 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
     DCHECK(!Host() || Host()->IsOffscreenCanvas());
     return static_cast<OffscreenCanvas*>(Host());
   }
-  ScriptPromise commit(ScriptState*, ExceptionState&);
 
   // CanvasRenderingContext implementation
   ~OffscreenCanvasRenderingContext2D() override;
@@ -96,9 +95,8 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   PaintCanvas* ExistingDrawingCanvas() const final;
   void DisableDeferral(DisableDeferralReason) final;
 
-  void DidDraw(const SkIRect& dirty_rect) final;  // overrides
-                                                  // BaseRenderingContext2D and
-                                                  // CanvasRenderingContext
+  void DidDraw() final;
+  void DidDraw(const SkIRect& dirty_rect) final;
 
   bool StateHasFilter() final;
   sk_sp<PaintFilter> StateGetFilter() final;
@@ -112,6 +110,8 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   ImageBitmap* TransferToImageBitmap(ScriptState*) final;
 
   void Trace(blink::Visitor*) override;
+
+  void PushFrame() override;
 
  protected:
   OffscreenCanvasRenderingContext2D(

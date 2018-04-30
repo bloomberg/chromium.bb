@@ -26,7 +26,7 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
-#include "third_party/blink/renderer/platform/graphics/offscreen_canvas_frame_dispatcher_impl.h"
+#include "third_party/blink/renderer/platform/graphics/offscreen_canvas_frame_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
@@ -49,12 +49,6 @@ void OffscreenCanvas::Dispose() {
   if (context_) {
     context_->DetachHost();
     context_ = nullptr;
-  }
-  if (commit_promise_resolver_) {
-    // keepAliveWhilePending() guarantees the promise resolver is never
-    // GC-ed before the OffscreenCanvas
-    commit_promise_resolver_->Reject();
-    commit_promise_resolver_.Clear();
   }
 }
 
@@ -227,7 +221,7 @@ OffscreenCanvasFrameDispatcher* OffscreenCanvas::GetOrCreateFrameDispatcher() {
     // The frame dispatcher connects the current thread of OffscreenCanvas
     // (either main or worker) to the browser process and remains unchanged
     // throughout the lifetime of this OffscreenCanvas.
-    frame_dispatcher_ = std::make_unique<OffscreenCanvasFrameDispatcherImpl>(
+    frame_dispatcher_ = std::make_unique<OffscreenCanvasFrameDispatcher>(
         this, client_id_, sink_id_, placeholder_canvas_id_, size_.Width(),
         size_.Height());
   }
@@ -287,82 +281,29 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
   return resource_provider_.get();
 }
 
-ScriptPromise OffscreenCanvas::Commit(scoped_refptr<StaticBitmapImage> image,
-                                      const SkIRect& damage_rect,
-                                      ScriptState* script_state,
-                                      ExceptionState& exception_state) {
-  TRACE_EVENT0("blink", "OffscreenCanvas::Commit");
+void OffscreenCanvas::DidDraw() {
+  DidDraw(FloatRect(0, 0, Size().Width(), Size().Height()));
+}
 
-  if (!HasPlaceholderCanvas()) {
-    exception_state.ThrowDOMException(
-        kInvalidStateError,
-        "Commit() was called on a context whose "
-        "OffscreenCanvas is not associated with a "
-        "canvas element.");
-    return exception_state.Reject(script_state);
-  }
+void OffscreenCanvas::DidDraw(const FloatRect& rect) {
+  if (rect.IsEmpty())
+    return;
 
   GetOrCreateFrameDispatcher()->SetNeedsBeginFrame(true);
-
-  if (!commit_promise_resolver_) {
-    commit_promise_resolver_ = ScriptPromiseResolver::Create(script_state);
-    commit_promise_resolver_->KeepAliveWhilePending();
-
-    if (image) {
-      // We defer the submission of commit frames at the end of JS task
-      current_frame_ = std::move(image);
-      // union of rects is necessary in case some frames are skipped.
-      current_frame_damage_rect_.join(damage_rect);
-      context_->NeedsFinalizeFrame();
-    }
-  } else if (image) {
-    // Two possible scenarios:
-    // 1. An override of m_currentFrame can happen when there are multiple
-    // frames committed before JS task finishes. (m_currentFrame!=nullptr)
-    // 2. The current frame has been dispatched but the promise is not
-    // resolved yet. (m_currentFrame==nullptr)
-    current_frame_ = std::move(image);
-    current_frame_damage_rect_.join(damage_rect);
-  }
-
-  return commit_promise_resolver_->Promise();
-}
-
-void OffscreenCanvas::FinalizeFrame() {
-  if (current_frame_) {
-    // TODO(eseckler): OffscreenCanvas shouldn't dispatch CompositorFrames
-    // without a prior BeginFrame.
-    DoCommit();
-  }
-}
-
-void OffscreenCanvas::DoCommit() {
-  TRACE_EVENT0("blink", "OffscreenCanvas::DoCommit");
-  double commit_start_time = WTF::CurrentTimeTicksInSeconds();
-  DCHECK(current_frame_);
-  GetOrCreateFrameDispatcher()->DispatchFrame(
-      std::move(current_frame_), commit_start_time, current_frame_damage_rect_);
-  current_frame_damage_rect_ = SkIRect::MakeEmpty();
 }
 
 void OffscreenCanvas::BeginFrame() {
-  TRACE_EVENT0("blink", "OffscreenCanvas::BeginFrame");
-  if (current_frame_) {
-    // TODO(eseckler): beginFrame() shouldn't be used as confirmation of
-    // CompositorFrame activation.
-    // If we have an overdraw backlog, push the frame from the backlog
-    // first and save the promise resolution for later.
-    // Then we need to wait for one more frame time to resolve the existing
-    // promise.
-    DoCommit();
-  } else if (commit_promise_resolver_) {
-    commit_promise_resolver_->Resolve();
-    commit_promise_resolver_.Clear();
+  context_->PushFrame();
+  GetOrCreateFrameDispatcher()->SetNeedsBeginFrame(false);
+}
 
-    // We need to tell parent frame to stop sending signals on begin frame to
-    // avoid overhead once we resolve the promise.
-    GetOrCreateFrameDispatcher()->SetNeedsBeginFrame(false);
-  }
+void OffscreenCanvas::PushFrame(scoped_refptr<StaticBitmapImage> image,
+                                const SkIRect& damage_rect) {
+  double commit_start_time = WTF::CurrentTimeTicksInSeconds();
+  current_frame_damage_rect_.join(damage_rect);
+  GetOrCreateFrameDispatcher()->DispatchFrame(
+      std::move(image), commit_start_time, current_frame_damage_rect_);
+  current_frame_damage_rect_ = SkIRect::MakeEmpty();
 }
 
 ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* script_state,
@@ -412,6 +353,18 @@ ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* script_state,
   }
 }
 
+void OffscreenCanvas::RegisterContextToDispatch(
+    CanvasRenderingContext* context) {
+  if (!HasPlaceholderCanvas())
+    return;
+
+  if (GetExecutionContext()->IsWorkerGlobalScope()) {
+    ToWorkerGlobalScope(GetExecutionContext())
+        ->GetAnimationFrameProvider()
+        ->AddContextToDispatch(context);
+  }
+}
+
 FontSelector* OffscreenCanvas::GetFontSelector() {
   if (GetExecutionContext()->IsDocument()) {
     return ToDocument(execution_context_)->GetStyleEngine().GetFontSelector();
@@ -422,7 +375,6 @@ FontSelector* OffscreenCanvas::GetFontSelector() {
 void OffscreenCanvas::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);
   visitor->Trace(execution_context_);
-  visitor->Trace(commit_promise_resolver_);
   EventTargetWithInlineData::Trace(visitor);
 }
 

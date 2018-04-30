@@ -11,21 +11,20 @@ async_test(t => {
     var ctx = message.data.getContext('2d');
     ctx.fillStyle = '#0f0';
     ctx.fillRect(0, 0, 10, 10);
-    ctx.commit();
-    // TODO(junov): Use the Promise returned by commit to schedule after the
-    // commit. (crbug.com/709484)
-    setTimeout(function() {
-      setTimeout(function() {
-        var canvas2 = document.createElement('canvas');
-        canvas2.width = canvas2.height = 10;
-        var ctx2 = canvas2.getContext('2d');
-        ctx2.drawImage(canvas, 0, 0);
-        var pixel = ctx2.getImageData(0, 0, 1, 1).data;
-        t.step(function() {
-          assert_array_equals(pixel, [0, 255, 0, 255]);
+    setTimeout(() => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          var canvas2 = document.createElement('canvas');
+          canvas2.width = canvas2.height = 10;
+          var ctx2 = canvas2.getContext('2d');
+          ctx2.drawImage(canvas, 0, 0);
+          var pixel = ctx2.getImageData(0, 0, 1, 1).data;
+          t.step(function() {
+            assert_array_equals(pixel, [0, 255, 0, 255]);
+          });
+          t.done();
         });
-        t.done();
-      }, 0);
+      });
     }, 0);
   }
   channel.port1.postMessage(offscreen, [offscreen]);
@@ -37,7 +36,7 @@ test(function() {
   canvas.width = canvas.height = 10;
   var offscreen = canvas.transferControlToOffscreen();
   channel.port2.onmessage = function() {};
-  assert_throws("DataCloneError", function() {channel.port1.postMessage(offscreen)}); 
+  assert_throws("DataCloneError", function() {channel.port1.postMessage(offscreen)});
 }, "Verify that cloning an OffscreenCanvas through a MessageChannel throws an exception")
 
 </script>

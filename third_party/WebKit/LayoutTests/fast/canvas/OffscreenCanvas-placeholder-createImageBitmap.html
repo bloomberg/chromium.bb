@@ -12,7 +12,6 @@ async_test(function(t) {
   var ctx = offscreen.getContext('2d');
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.commit();
 
   var testCanvas = document.createElement('canvas');
   var testCtx = testCanvas.getContext('2d');

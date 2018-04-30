@@ -15,7 +15,8 @@ namespace blink {
 BeginFrameProvider::BeginFrameProvider(
     const BeginFrameProviderParams& begin_frame_provider_params,
     BeginFrameProviderClient* client)
-    : cfs_binding_(this),
+    : needs_begin_frame_(false),
+      cfs_binding_(this),
       ocs_binding_(this),
       frame_sink_id_(begin_frame_provider_params.frame_sink_id),
       parent_frame_sink_id_(begin_frame_provider_params.parent_frame_sink_id),
@@ -63,14 +64,16 @@ void BeginFrameProvider::RequestBeginFrame() {
 }
 
 void BeginFrameProvider::OnBeginFrame(const viz::BeginFrameArgs& args) {
-  DCHECK(needs_begin_frame_);
   // TODO(fserb): we could potentially be nicer here.
   DCHECK(compositor_frame_sink_.is_bound());
 
-  needs_begin_frame_ = false;
-  compositor_frame_sink_->SetNeedsBeginFrame(false);
+  // OnBeginFrame sometimes happens without a request. So we just skip it.
+  if (needs_begin_frame_) {
+    needs_begin_frame_ = false;
+    compositor_frame_sink_->SetNeedsBeginFrame(false);
 
-  begin_frame_client_->BeginFrame();
+    begin_frame_client_->BeginFrame();
+  }
 
   viz::BeginFrameAck ack;
   ack.source_id = args.source_id;

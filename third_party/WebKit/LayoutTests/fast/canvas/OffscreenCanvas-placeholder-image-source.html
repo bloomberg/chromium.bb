@@ -13,7 +13,6 @@ var offscreen = canvas.transferControlToOffscreen();
 var ctx = offscreen.getContext('2d');
 ctx.fillStyle = '#0f0';
 ctx.fillRect(0, 0, 100, 100);
-ctx.commit();
 verifyImage(canvas, [0, 0, 0, 0], "Verify that OffscreenCanvas.commit() does not propagate the image synchronously to the placeholder canvas.");
 
 // TODO(junov): Use the Promise returned by commit to schedule after the
@@ -39,7 +38,7 @@ setTimeout(function() {
 function verifyImage(image, expectedColor, description) {
   var testCanvas = document.createElement('canvas');
   var testCtx = testCanvas.getContext('2d');
-  testCtx.drawImage(image, 0, 0); 
+  testCtx.drawImage(image, 0, 0);
 
   t.step(function() {
     var pixel = testCtx.getImageData(50, 50, 1, 1).data;

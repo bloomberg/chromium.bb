@@ -31,6 +31,7 @@ OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
     OffscreenCanvas* canvas,
     const CanvasContextCreationAttributesCore& attrs)
     : CanvasRenderingContext(canvas, attrs) {
+  Host()->RegisterContextToDispatch(this);
   ExecutionContext* execution_context = canvas->GetTopExecutionContext();
   if (execution_context->IsDocument()) {
     Settings* settings = ToDocument(execution_context)->GetSettings();
@@ -48,17 +49,6 @@ OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
 void OffscreenCanvasRenderingContext2D::Trace(blink::Visitor* visitor) {
   CanvasRenderingContext::Trace(visitor);
   BaseRenderingContext2D::Trace(visitor);
-}
-
-ScriptPromise OffscreenCanvasRenderingContext2D::commit(
-    ScriptState* script_state,
-    ExceptionState& exception_state) {
-  WebFeature feature = WebFeature::kOffscreenCanvasCommit2D;
-  UseCounter::Count(ExecutionContext::From(script_state), feature);
-  SkIRect damage_rect(dirty_rect_for_commit_);
-  dirty_rect_for_commit_.setEmpty();
-  return Host()->Commit(TransferToStaticBitmapImage(), damage_rect,
-                        script_state, exception_state);
 }
 
 // BaseRenderingContext2D implementation
@@ -119,6 +109,15 @@ OffscreenCanvasRenderingContext2D::TransferToStaticBitmapImage() {
   return image;
 }
 
+void OffscreenCanvasRenderingContext2D::PushFrame() {
+  if (dirty_rect_for_commit_.isEmpty())
+    return;
+
+  SkIRect damage_rect(dirty_rect_for_commit_);
+  Host()->PushFrame(TransferToStaticBitmapImage(), damage_rect);
+  dirty_rect_for_commit_.setEmpty();
+}
+
 ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
     ScriptState* script_state) {
   WebFeature feature = WebFeature::kOffscreenCanvasTransferToImageBitmap2D;
@@ -172,8 +171,14 @@ PaintCanvas* OffscreenCanvasRenderingContext2D::ExistingDrawingCanvas() const {
 void OffscreenCanvasRenderingContext2D::DisableDeferral(DisableDeferralReason) {
 }
 
+void OffscreenCanvasRenderingContext2D::DidDraw() {
+  Host()->DidDraw();
+  dirty_rect_for_commit_.set(0, 0, Width(), Height());
+}
+
 void OffscreenCanvasRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {
   dirty_rect_for_commit_.join(dirty_rect);
+  Host()->DidDraw(SkRect::Make(dirty_rect_for_commit_));
 }
 
 bool OffscreenCanvasRenderingContext2D::StateHasFilter() {

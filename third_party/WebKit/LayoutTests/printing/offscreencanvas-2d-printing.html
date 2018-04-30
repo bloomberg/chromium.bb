@@ -6,7 +6,6 @@ can.width = can.height = 100;
 var ctx = can.transferControlToOffscreen().getContext("2d");
 ctx.fillStyle = 'green';
 ctx.fillRect(0, 0, 100, 100);
-ctx.commit();
 if (window.testRunner) {
   testRunner.setPrinting();
   testRunner.waitUntilDone();

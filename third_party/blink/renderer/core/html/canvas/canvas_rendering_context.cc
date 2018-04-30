@@ -29,6 +29,8 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
+#include "third_party/blink/renderer/core/workers/worker_animation_frame_provider.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
@@ -96,6 +98,16 @@ WTF::String CanvasRenderingContext::PixelFormatAsString() const {
 void CanvasRenderingContext::Dispose() {
   if (finalize_frame_scheduled_) {
     Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
+  }
+
+  if (Host() && Host()->GetTopExecutionContext() &&
+      Host()->GetTopExecutionContext()->IsWorkerGlobalScope()) {
+    WorkerAnimationFrameProvider* provider =
+        ToWorkerGlobalScope(Host()->GetTopExecutionContext())
+            ->GetAnimationFrameProvider();
+    if (provider) {
+      provider->RemoveContextToDispatch(this);
+    }
   }
 
   // HTMLCanvasElement and CanvasRenderingContext have a circular reference.

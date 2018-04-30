@@ -146,6 +146,13 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
         ['passthrough', 'opengl'], bug=1932) # angle bug ID
 
+    # OffscreenCanvas.commit
+    # TODO(fserb): disabled due to tests not being up to date with proposed API
+    self.Fail('conformance/offscreencanvas/' +
+      'context-attribute-preserve-drawing-buffer.html', bug=838133)
+    self.Fail('conformance/offscreencanvas/methods.html', bug=838133)
+    self.Fail('conformance/offscreencanvas/methods-worker.html', bug=838133)
+
     # Passthrough command decoder / OpenGL / Intel
     self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
         ['passthrough', 'opengl', 'intel'], bug=665521)
@@ -691,9 +698,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/uniforms/uniform-samplers-test.html',
         ['android', ('qualcomm', 'Adreno (TM) 430'), 'no_passthrough'],
         bug=663071)
-    self.Fail('conformance/offscreencanvas/' +
-        'context-attribute-preserve-drawing-buffer.html',
-        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=693135)
+    # TODO(fserb): uncomment this once the overall self.Fail is removed above.
+    # self.Fail('conformance/offscreencanvas/' +
+    #     'context-attribute-preserve-drawing-buffer.html',
+    #     ['android', ('qualcomm', 'Adreno (TM) 420')], bug=693135)
     self.Fail('WebglExtension_EXT_sRGB',
         ['android',
          ('qualcomm', 'Adreno (TM) 420'), ('qualcomm', 'Adreno (TM) 430')])

@@ -5,7 +5,6 @@
 self.onmessage = function(e) {
     var offscreenCanvas = e.data;
     var offscreen2d = offscreenCanvas.getContext("2d");
-    offscreen2d.commit();
     self.postMessage("worker done");
 };
 </script>
@@ -35,6 +34,6 @@ async_test(function(t) {
     };
     worker1.postMessage(offscreenCanvas1, [offscreenCanvas1]);
     worker2.postMessage(offscreenCanvas2, [offscreenCanvas2]);
-}, "Calling OffscreenCanvas.commit() from two workers should not crash.");
+}, "Having two canvas from two workers should not crash.");
 
 </script>

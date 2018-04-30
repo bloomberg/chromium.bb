@@ -69,6 +69,15 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'gl-bindAttribLocation-aliasing-inactive.html',
         bug=829541)
 
+    # OffscreenCanvas.commit
+    # TODO(fserb): Tests are not up to date with proposed API
+    self.Fail('conformance2/offscreencanvas/methods-2.html', bug=838133)
+    self.Fail('conformance2/offscreencanvas/methods-2-worker.html', bug=838133)
+    self.Fail('conformance/offscreencanvas/' +
+      'context-attribute-preserve-drawing-buffer.html', bug=838133)
+    self.Fail('conformance/offscreencanvas/methods.html', bug=838133)
+    self.Fail('conformance/offscreencanvas/methods-worker.html', bug=838133)
+
     # This test needs to be rewritten to measure its expected
     # performance; it's currently too flaky even on release bots.
     self.Skip('conformance/rendering/texture-switch-performance.html',
@@ -1264,6 +1273,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', ('amd', 0x6613), 'no_angle'], bug=832864)
     self.Fail('conformance2/transform_feedback/switching-objects.html',
         ['linux', ('amd', 0x6613), 'no_angle'], bug=696345)
+
     # Conflicting expectations to test that the
     # "Expectations have no collisions" unittest works.
     # page_name = 'conformance/glsl/constructors/glsl-construct-ivec4.html'

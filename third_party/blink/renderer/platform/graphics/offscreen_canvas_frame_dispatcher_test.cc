@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/graphics/offscreen_canvas_frame_dispatcher_impl.h"
+#include "third_party/blink/renderer/platform/graphics/offscreen_canvas_frame_dispatcher.h"
 
 #include <memory>
 
@@ -15,17 +15,17 @@ using testing::Mock;
 
 namespace blink {
 
-class MockOffscreenCanvasFrameDispatcherImpl
-    : public OffscreenCanvasFrameDispatcherImpl {
+class MockOffscreenCanvasFrameDispatcher
+    : public OffscreenCanvasFrameDispatcher {
  public:
-  MockOffscreenCanvasFrameDispatcherImpl()
-      : OffscreenCanvasFrameDispatcherImpl(nullptr, 0, 0, 0, 10, 10) {}
+  MockOffscreenCanvasFrameDispatcher()
+      : OffscreenCanvasFrameDispatcher(nullptr, 0, 0, 0, 10, 10) {}
 
   MOCK_METHOD2(PostImageToPlaceholder,
                void(scoped_refptr<StaticBitmapImage>, unsigned resource_id));
 };
 
-class OffscreenCanvasFrameDispatcherImplTest : public testing::Test {
+class OffscreenCanvasFrameDispatcherTest : public testing::Test {
  public:
   void DispatchOneFrame();
   OffscreenCanvasResourceProvider* GetResourceProvider() {
@@ -45,27 +45,25 @@ class OffscreenCanvasFrameDispatcherImplTest : public testing::Test {
   }
 
  protected:
-  OffscreenCanvasFrameDispatcherImplTest() {
-    dispatcher_ = std::make_unique<MockOffscreenCanvasFrameDispatcherImpl>();
+  OffscreenCanvasFrameDispatcherTest() {
+    dispatcher_ = std::make_unique<MockOffscreenCanvasFrameDispatcher>();
   }
 
-  MockOffscreenCanvasFrameDispatcherImpl* Dispatcher() {
-    return dispatcher_.get();
-  }
+  MockOffscreenCanvasFrameDispatcher* Dispatcher() { return dispatcher_.get(); }
 
  private:
   scoped_refptr<StaticBitmapImage> PrepareStaticBitmapImage();
-  std::unique_ptr<MockOffscreenCanvasFrameDispatcherImpl> dispatcher_;
+  std::unique_ptr<MockOffscreenCanvasFrameDispatcher> dispatcher_;
 };
 
-void OffscreenCanvasFrameDispatcherImplTest::DispatchOneFrame() {
+void OffscreenCanvasFrameDispatcherTest::DispatchOneFrame() {
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(10, 10);
   dispatcher_->DispatchFrame(
       StaticBitmapImage::Create(surface->makeImageSnapshot()), 0.0,
       SkIRect::MakeEmpty());
 }
 
-TEST_F(OffscreenCanvasFrameDispatcherImplTest, PlaceholderRunsNormally) {
+TEST_F(OffscreenCanvasFrameDispatcherTest, PlaceholderRunsNormally) {
   /* We allow OffscreenCanvas to post up to 3 frames without hearing a response
    * from placeholder. */
   // Post first frame
@@ -111,7 +109,7 @@ TEST_F(OffscreenCanvasFrameDispatcherImplTest, PlaceholderRunsNormally) {
   EXPECT_EQ(0u, GetNumUnreclaimedFramesPosted());
 }
 
-TEST_F(OffscreenCanvasFrameDispatcherImplTest, PlaceholderBeingBlocked) {
+TEST_F(OffscreenCanvasFrameDispatcherTest, PlaceholderBeingBlocked) {
   /* When main thread is blocked, attempting to post more than 3 frames will
    * result in only 3 PostImageToPlaceholder. The latest unposted image will
    * be saved. */

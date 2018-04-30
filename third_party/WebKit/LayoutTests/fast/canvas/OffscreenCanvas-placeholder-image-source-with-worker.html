@@ -9,9 +9,7 @@ self.onmessage = function(msg) {
   ctx = msg.data.getContext('2d');
   ctx.fillStyle = '#0f0';
   ctx.fillRect(0, 0, 100, 100);
-  var p = ctx.commit();
-
-  p.then(function() {
+  requestAnimationFrame(() => {
     self.postMessage("done");
   });
 };
@@ -47,7 +45,7 @@ worker.addEventListener('message', msg => {
 function verifyImage(image, description) {
   var testCanvas = document.createElement('canvas');
   var testCtx = testCanvas.getContext('2d');
-  testCtx.drawImage(image, 0, 0); 
+  testCtx.drawImage(image, 0, 0);
 
   t.step(function() {
     var pixel = testCtx.getImageData(50, 50, 1, 1).data;

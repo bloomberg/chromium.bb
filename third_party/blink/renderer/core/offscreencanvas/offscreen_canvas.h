@@ -52,6 +52,9 @@ class CORE_EXPORT OffscreenCanvas final
   void setWidth(unsigned);
   void setHeight(unsigned);
 
+  // OffscreenCanvasFrameDispatcherClient
+  void BeginFrame() override;
+
   // API Methods
   ImageBitmap* transferToImageBitmap(ScriptState*, ExceptionState&);
   ScriptPromise convertToBlob(ScriptState*,
@@ -99,16 +102,13 @@ class CORE_EXPORT OffscreenCanvas final
   uint32_t SinkId() const { return sink_id_; }
 
   // CanvasRenderingContextHost implementation.
-  ScriptPromise Commit(scoped_refptr<StaticBitmapImage>,
-                       const SkIRect& damage_rect,
-                       ScriptState*,
-                       ExceptionState&) override;
-  void FinalizeFrame() override;
+  void FinalizeFrame() override{};
   void DetachContext() override { context_ = nullptr; }
   CanvasRenderingContext* RenderingContext() const override { return context_; }
-
-  // OffscreenCanvasFrameDispatcherClient implementation
-  void BeginFrame() final;
+  void PushFrame(scoped_refptr<StaticBitmapImage> image,
+                 const SkIRect& damage_rect) override;
+  void DidDraw(const FloatRect&) override;
+  void DidDraw() override;
 
   // EventTarget implementation
   const AtomicString& InterfaceName() const final {
@@ -154,6 +154,8 @@ class CORE_EXPORT OffscreenCanvas final
   bool IsWebGL2Enabled() const override { return true; }
   bool IsWebGLBlocked() const override { return false; }
 
+  void RegisterContextToDispatch(CanvasRenderingContext*) override;
+
   FontSelector* GetFontSelector() override;
 
   void Trace(blink::Visitor*) override;
@@ -162,7 +164,6 @@ class CORE_EXPORT OffscreenCanvas final
   friend class OffscreenCanvasTest;
   explicit OffscreenCanvas(const IntSize&);
   OffscreenCanvasFrameDispatcher* GetOrCreateFrameDispatcher();
-  void DoCommit();
   using ContextFactoryVector =
       Vector<std::unique_ptr<CanvasRenderingContextFactory>>;
   static ContextFactoryVector& RenderingContextFactories();
@@ -181,8 +182,6 @@ class CORE_EXPORT OffscreenCanvas final
 
   std::unique_ptr<OffscreenCanvasFrameDispatcher> frame_dispatcher_;
 
-  Member<ScriptPromiseResolver> commit_promise_resolver_;
-  scoped_refptr<StaticBitmapImage> current_frame_;
   SkIRect current_frame_damage_rect_;
 
   std::unique_ptr<CanvasResourceProvider> resource_provider_;

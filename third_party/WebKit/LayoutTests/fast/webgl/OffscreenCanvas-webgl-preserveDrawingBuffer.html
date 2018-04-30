@@ -2,7 +2,7 @@
 <script src="../../resources/testharnessreport.js"></script>
 <script>
 
-function getPixelsFromOffscreenWebgl(preserveFlag) {
+function getPixelsFromOffscreenWebgl(preserveFlag, asserts) {
   var canvas = document.createElement("canvas");
   var offscreenCanvas = canvas.transferControlToOffscreen();
   var gl = offscreenCanvas.getContext("webgl", {preserveDrawingBuffer: preserveFlag});
@@ -10,26 +10,33 @@ function getPixelsFromOffscreenWebgl(preserveFlag) {
   // Draw some color on gl and commit
   gl.clearColor(1, 0, 1, 1);
   gl.clear(gl.COLOR_BUFFER_BIT);
-  gl.commit();
 
-  var pixels = new Uint8Array(50 * 50 * 4);
-  gl.readPixels(0, 0, 50, 50, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-  return pixels;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      var pixels = new Uint8Array(50 * 50 * 4);
+      gl.readPixels(0, 0, 50, 50, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      asserts(pixels);
+    }, 0);
+  });
 }
 
-test(function() {
-  var pixelsPreserve = getPixelsFromOffscreenWebgl(true);
-  assert_equals(pixelsPreserve[0], 255);
-  assert_equals(pixelsPreserve[1], 0);
-  assert_equals(pixelsPreserve[2], 255);
-  assert_equals(pixelsPreserve[3], 255);
+async_test(function(t) {
+  getPixelsFromOffscreenWebgl(true, (pixels) => {
+    assert_equals(pixels[0], 255);
+    assert_equals(pixels[1], 0);
+    assert_equals(pixels[2], 255);
+    assert_equals(pixels[3], 255);
+    t.done();
+  });
 }, "test if OffscreenCanvas.webgl retains context if preserveDrawingBuffer is true.");
 
-test(function() {
-  var pixelsNoPreserve = getPixelsFromOffscreenWebgl(false);
-  assert_equals(pixelsNoPreserve[0], 0);
-  assert_equals(pixelsNoPreserve[1], 0);
-  assert_equals(pixelsNoPreserve[2], 0);
-  assert_equals(pixelsNoPreserve[3], 0);
+async_test(function(t) {
+  getPixelsFromOffscreenWebgl(false, (pixels) => {
+    assert_equals(pixels[0], 0);
+    assert_equals(pixels[1], 0);
+    assert_equals(pixels[2], 0);
+    assert_equals(pixels[3], 0);
+    t.done();
+  });
 }, "test if OffscreenCanvas.webgl loses context if presereDrawingbuffer is false.");
 </script>
