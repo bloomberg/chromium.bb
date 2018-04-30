@@ -391,7 +391,7 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
 
   cm->error.setjmp = 1;
 
-  av1_decode_frame_from_obus(pbi, source, source + size, psource);
+  aom_decode_frame_from_obus(pbi, source, source + size, psource);
 
   if (cm->error.error_code != AOM_CODEC_OK) return 1;
 

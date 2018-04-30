@@ -471,7 +471,7 @@ aom_codec_err_t aom_read_obu_header_and_size(const uint8_t *data,
   return AOM_CODEC_OK;
 }
 
-void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
+void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
                                 const uint8_t *data_end,
                                 const uint8_t **p_data_end) {
   AV1_COMMON *const cm = &pbi->common;

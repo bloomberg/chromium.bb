@@ -24,9 +24,6 @@ typedef struct {
   int enhancement_layer_id;
 } ObuHeader;
 
-// TODO(tomfinegan): Functions exposed here should be prefixed w/aom_ for
-// conformance w/naming elsewhere in the library, and to avoid potential
-// collisions with other software using the library.
 aom_codec_err_t aom_read_obu_header(uint8_t *buffer, size_t buffer_length,
                                     size_t *consumed, ObuHeader *header,
                                     int is_annexb);
@@ -38,7 +35,7 @@ aom_codec_err_t aom_read_obu_header_and_size(const uint8_t *data,
                                              size_t *const payload_size,
                                              size_t *const bytes_read);
 
-void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
+void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
                                 const uint8_t *data_end,
                                 const uint8_t **p_data_end);
 
