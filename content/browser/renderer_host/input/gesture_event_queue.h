@@ -72,7 +72,6 @@ class CONTENT_EXPORT GestureEventQueue {
 
   // Both |client| and |touchpad_client| must outlive the GestureEventQueue.
   GestureEventQueue(GestureEventQueueClient* client,
-                    TouchpadTapSuppressionControllerClient* touchpad_client,
                     FlingControllerClient* fling_client,
                     const Config& config);
   ~GestureEventQueue();

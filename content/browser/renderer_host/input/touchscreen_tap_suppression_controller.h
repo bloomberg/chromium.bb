@@ -10,53 +10,22 @@
 #include "base/macros.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller.h"
-#include "content/browser/renderer_host/input/tap_suppression_controller_client.h"
 
 namespace content {
 
-class GestureEventQueue;
-
 // Controls the suppression of touchscreen taps immediately following the
 // dispatch of a GestureFlingCancel event.
-class TouchscreenTapSuppressionController
-    : public TapSuppressionControllerClient {
+class TouchscreenTapSuppressionController : public TapSuppressionController {
  public:
   TouchscreenTapSuppressionController(
-      GestureEventQueue* geq,
       const TapSuppressionController::Config& config);
   ~TouchscreenTapSuppressionController() override;
-
-  // Should be called on arrival of GestureFlingCancel events.
-  void GestureFlingCancel();
-
-  // Should be called on arrival of ACK for a GestureFlingCancel event.
-  // |processed| is true if the GestureFlingCancel successfully stopped a fling.
-  void GestureFlingCancelAck(bool processed);
 
   // Should be called on arrival of any tap-related events. Returns true if the
   // caller should stop normal handling of the gesture.
   bool FilterTapEvent(const GestureEventWithLatencyInfo& event);
 
  private:
-  // TapSuppressionControllerClient implementation.
-  void DropStashedTapDown() override;
-  void ForwardStashedGestureEvents() override;
-  void ForwardStashedTapDown() override;
-
-  GestureEventQueue* gesture_event_queue_;
-
-  typedef std::unique_ptr<GestureEventWithLatencyInfo> ScopedGestureEvent;
-  ScopedGestureEvent stashed_tap_down_;
-  ScopedGestureEvent stashed_show_press_;
-  ScopedGestureEvent stashed_long_press_;
-
-  // This is true when the stashed GestureTapDown event gets forwarded. The
-  // controller should forward the next GestureTapCancel as well to maintain a
-  // valid input stream.
-  bool forward_next_tap_cancel_;
-
-  // The core controller of tap suppression.
-  TapSuppressionController controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchscreenTapSuppressionController);
 };

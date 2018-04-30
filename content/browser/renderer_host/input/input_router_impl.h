@@ -21,7 +21,6 @@
 #include "content/browser/renderer_host/input/mouse_wheel_event_queue.h"
 #include "content/browser/renderer_host/input/passthrough_touch_event_queue.h"
 #include "content/browser/renderer_host/input/touch_action_filter.h"
-#include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/common/input/input_event_stream_validator.h"
 #include "content/common/input/input_handler.mojom.h"
 #include "content/common/widget.mojom.h"
@@ -56,7 +55,6 @@ class CONTENT_EXPORT InputRouterImpl
       public FlingControllerClient,
       public MouseWheelEventQueueClient,
       public PassthroughTouchEventQueueClient,
-      public TouchpadTapSuppressionControllerClient,
       public mojom::WidgetInputHandlerHost {
  public:
   InputRouterImpl(InputRouterImplClient* client,
@@ -109,9 +107,7 @@ class CONTENT_EXPORT InputRouterImpl
   // Keeps track of last position of touch points and sets MovementXY for them.
   void SetMovementXYForTouchPoints(blink::WebTouchEvent* event);
 
-  // TouchpadTapSuppressionControllerClient
-  void SendMouseEventImmediately(
-      const MouseEventWithLatencyInfo& mouse_event) override;
+  void SendMouseEventImmediately(const MouseEventWithLatencyInfo& mouse_event);
 
   // PassthroughTouchEventQueueClient
   void SendTouchEventImmediately(

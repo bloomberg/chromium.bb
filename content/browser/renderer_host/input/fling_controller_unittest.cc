@@ -22,11 +22,9 @@ namespace content {
 class FakeFlingController : public FlingController {
  public:
   FakeFlingController(GestureEventQueue* gesture_event_queue,
-                      TouchpadTapSuppressionControllerClient* touchpad_client,
                       FlingControllerClient* fling_client,
                       const Config& config)
       : FlingController(gesture_event_queue,
-                        touchpad_client,
                         fling_client,
                         config) {}
 
@@ -34,7 +32,6 @@ class FakeFlingController : public FlingController {
 };
 
 class FlingControllerTest : public testing::Test,
-                            public TouchpadTapSuppressionControllerClient,
                             public GestureEventQueueClient,
                             public FlingControllerClient {
  public:
@@ -46,17 +43,13 @@ class FlingControllerTest : public testing::Test,
   ~FlingControllerTest() override {}
 
   void SetUp() override {
-    queue_ = std::make_unique<GestureEventQueue>(this, this, this,
+    queue_ = std::make_unique<GestureEventQueue>(this, this,
                                                  GestureEventQueue::Config());
     fling_controller_ = std::make_unique<FakeFlingController>(
-        queue_.get(), this, this, FlingController::Config());
+        queue_.get(), this, FlingController::Config());
     feature_list_.InitFromCommandLine(
         features::kTouchpadAndWheelScrollLatching.name, "");
   }
-
-  // TouchpadTapSuppressionControllerClient
-  void SendMouseEventImmediately(
-      const MouseEventWithLatencyInfo& event) override {}
 
   // GestureEventQueueClient
   void SendGestureEventImmediately(

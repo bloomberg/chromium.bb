@@ -15,7 +15,6 @@
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/input_disposition_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
-#include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/edit_command.h"
 #include "content/common/input/input_handler.mojom.h"
@@ -81,7 +80,7 @@ InputRouterImpl::InputRouterImpl(InputRouterImplClient* client,
           features::kTouchpadAndWheelScrollLatching)),
       wheel_event_queue_(this, wheel_scroll_latching_enabled_),
       touch_event_queue_(this, config.touch_config),
-      gesture_event_queue_(this, this, this, config.gesture_config),
+      gesture_event_queue_(this, this, config.gesture_config),
       device_scale_factor_(1.f),
       host_binding_(this),
       frame_host_binding_(this),
@@ -99,7 +98,7 @@ void InputRouterImpl::SendMouseEvent(
     const MouseEventWithLatencyInfo& mouse_event) {
   if (mouse_event.event.GetType() == WebInputEvent::kMouseDown &&
       gesture_event_queue_.GetTouchpadTapSuppressionController()
-          ->ShouldDeferMouseDown(mouse_event))
+          ->ShouldSuppressMouseDown(mouse_event))
     return;
   if (mouse_event.event.GetType() == WebInputEvent::kMouseUp &&
       gesture_event_queue_.GetTouchpadTapSuppressionController()

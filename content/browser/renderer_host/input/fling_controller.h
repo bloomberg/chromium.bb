@@ -62,7 +62,6 @@ class CONTENT_EXPORT FlingController {
   };
 
   FlingController(GestureEventQueue* gesture_event_queue,
-                  TouchpadTapSuppressionControllerClient* touchpad_client,
                   FlingControllerClient* fling_client,
                   const Config& config);
 
