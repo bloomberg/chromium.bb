@@ -7820,6 +7820,76 @@ TEST_F(LayerTreeHostImplTest, NoOverscrollWhenNotAtEdge) {
   }
 }
 
+TEST_F(LayerTreeHostImplTest, NoOverscrollOnNonViewportLayers) {
+  const gfx::Size content_size(200, 200);
+  const gfx::Size viewport_size(100, 100);
+
+  LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
+
+  LayerImpl* content_layer =
+      CreateBasicVirtualViewportLayers(viewport_size, content_size);
+  LayerImpl* outer_scroll_layer = host_impl_->OuterViewportScrollLayer();
+  LayerImpl* scroll_layer = nullptr;
+
+  // Initialization: Add a nested scrolling layer, simulating a scrolling div.
+  {
+    std::unique_ptr<LayerImpl> scroll = LayerImpl::Create(layer_tree_impl, 11);
+    scroll->SetBounds(gfx::Size(400, 400));
+    scroll->SetScrollable(content_size);
+    scroll->SetElementId(LayerIdToElementIdForTesting(scroll->id()));
+    scroll->SetDrawsContent(true);
+
+    scroll_layer = scroll.get();
+
+    content_layer->test_properties()->AddChild(std::move(scroll));
+    layer_tree_impl->BuildPropertyTreesForTesting();
+  }
+
+  InputHandlerScrollResult scroll_result;
+  DrawFrame();
+
+  // Start a scroll gesture, ensure it's scrolling the subscroller.
+  {
+    host_impl_->ScrollBegin(BeginState(gfx::Point(0, 0)).get(),
+                            InputHandler::TOUCHSCREEN);
+    host_impl_->ScrollBy(
+        UpdateState(gfx::Point(0, 0), gfx::Vector2dF(100.f, 100.f)).get());
+
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(100.f, 100.f),
+                     scroll_layer->CurrentScrollOffset());
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(0.f, 0.f),
+                     outer_scroll_layer->CurrentScrollOffset());
+  }
+
+  // Continue the scroll. Ensure that scrolling beyond the child's extent
+  // doesn't consume the delta but it isn't counted as overscroll.
+  {
+    InputHandlerScrollResult result = host_impl_->ScrollBy(
+        UpdateState(gfx::Point(0, 0), gfx::Vector2dF(120.f, 140.f)).get());
+
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(200.f, 200.f),
+                     scroll_layer->CurrentScrollOffset());
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(0.f, 0.f),
+                     outer_scroll_layer->CurrentScrollOffset());
+    EXPECT_FALSE(result.did_overscroll_root);
+  }
+
+  // Continue the scroll. Ensure that scrolling beyond the child's extent
+  // doesn't consume the delta but it isn't counted as overscroll.
+  {
+    InputHandlerScrollResult result = host_impl_->ScrollBy(
+        UpdateState(gfx::Point(0, 0), gfx::Vector2dF(20.f, 40.f)).get());
+
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(200.f, 200.f),
+                     scroll_layer->CurrentScrollOffset());
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(0.f, 0.f),
+                     outer_scroll_layer->CurrentScrollOffset());
+    EXPECT_FALSE(result.did_overscroll_root);
+  }
+
+  host_impl_->ScrollEnd(EndState().get());
+}
+
 TEST_F(LayerTreeHostImplTest, OverscrollOnMainThread) {
   InputHandlerScrollResult scroll_result;
   LayerTreeSettings settings = DefaultSettings();

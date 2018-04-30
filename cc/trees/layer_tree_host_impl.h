@@ -667,7 +667,13 @@ class CC_EXPORT LayerTreeHostImpl
 
   void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator);
 
+  // The viewport has two scroll nodes, corresponding to the visual and layout
+  // viewports. However, when we compute the scroll chain we include only one
+  // of these -- we call that the "main" scroll node. When scrolling it, we
+  // scroll using the Viewport class which knows how to distribute scroll
+  // between the two.
   LayerImpl* ViewportMainScrollLayer();
+  ScrollNode* ViewportMainScrollNode();
 
   void QueueImageDecode(int request_id, const PaintImage& image);
   std::vector<std::pair<int, bool>> TakeCompletedImageDecodeRequests();

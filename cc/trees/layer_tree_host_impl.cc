@@ -2728,6 +2728,14 @@ LayerImpl* LayerTreeHostImpl::ViewportMainScrollLayer() {
   return viewport()->MainScrollLayer();
 }
 
+ScrollNode* LayerTreeHostImpl::ViewportMainScrollNode() {
+  if (!ViewportMainScrollLayer())
+    return nullptr;
+
+  return active_tree_->property_trees()->scroll_tree.Node(
+      ViewportMainScrollLayer()->scroll_tree_index());
+}
+
 void LayerTreeHostImpl::QueueImageDecode(int request_id,
                                          const PaintImage& image) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
@@ -3183,12 +3191,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   // If the viewport is scrolling and it cannot consume any delta hints, the
   // scroll event will need to get bubbled if the viewport is for a guest or
   // oopif.
-  ScrollNode* viewport_scroll_node =
-      viewport()->MainScrollLayer()
-          ? active_tree_->property_trees()->scroll_tree.Node(
-                viewport()->MainScrollLayer()->scroll_tree_index())
-          : nullptr;
-  if (active_tree_->CurrentlyScrollingNode() == viewport_scroll_node &&
+  if (active_tree_->CurrentlyScrollingNode() == ViewportMainScrollNode() &&
       !viewport()->CanScroll(*scroll_state)) {
     scroll_status.bubble = true;
   }
@@ -3733,10 +3736,7 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
   std::list<ScrollNode*> current_scroll_chain;
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
   ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
-  ScrollNode* viewport_scroll_node =
-      viewport()->MainScrollLayer()
-          ? scroll_tree.Node(viewport()->MainScrollLayer()->scroll_tree_index())
-          : nullptr;
+  ScrollNode* viewport_scroll_node = ViewportMainScrollNode();
   if (scroll_node) {
     // TODO(bokan): The loop checks for a null parent but don't we still want to
     // distribute to the root scroll node?
@@ -3904,8 +3904,13 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
     accumulated_root_overscroll_.set_x(0);
   if (did_scroll_y)
     accumulated_root_overscroll_.set_y(0);
-  gfx::Vector2dF unused_root_delta(scroll_state->delta_x(),
-                                   scroll_state->delta_y());
+
+  gfx::Vector2dF unused_root_delta;
+  if (current_scrolling_node &&
+      current_scrolling_node == ViewportMainScrollNode()) {
+    unused_root_delta =
+        gfx::Vector2dF(scroll_state->delta_x(), scroll_state->delta_y());
+  }
 
   // When inner viewport is unscrollable, disable overscrolls.
   if (const auto* inner_viewport_scroll_node = InnerViewportScrollNode()) {
