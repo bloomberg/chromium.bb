@@ -1562,6 +1562,12 @@ void WebFormControlElementToFormField(
 
   field->value = value;
 
+  // If the field was autofilled or the user typed into it, check the value
+  // stored in |field_value_and_properties_map| against the value property of
+  // the DOM element. If they differ, then the scripts on the website modified
+  // the value afterwards. Store the original value as the |typed_value|, unless
+  // this is one of recognised situations when the site-modified value is more
+  // useful for filling.
   if (field_value_and_properties_map &&
       field->properties_mask & (FieldPropertiesFlags::USER_TYPED |
                                 FieldPropertiesFlags::AUTOFILLED)) {
