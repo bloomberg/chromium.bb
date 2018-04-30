@@ -161,7 +161,8 @@ bool ScrollAnimator::WillAnimateToOffset(const ScrollOffset& target_offset) {
     DCHECK(run_state_ == RunState::kRunningOnMainThread ||
            run_state_ == RunState::kRunningOnCompositor ||
            run_state_ == RunState::kRunningOnCompositorButNeedsUpdate ||
-           run_state_ == RunState::kRunningOnCompositorButNeedsTakeover);
+           run_state_ == RunState::kRunningOnCompositorButNeedsTakeover ||
+           run_state_ == RunState::kRunningOnCompositorButNeedsAdjustment);
 
     // Running on the main thread, simply update the target offset instead
     // of sending to the compositor.
