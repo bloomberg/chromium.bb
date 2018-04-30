@@ -68,7 +68,7 @@ import org.chromium.chrome.browser.omnibox.AutocompleteController.OnSuggestionsR
 import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxResultItem;
 import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxSuggestionDelegate;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
-import org.chromium.chrome.browser.page_info.PageInfoPopup;
+import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -1909,8 +1909,8 @@ public class LocationBarLayout
                     && mWindowAndroid != null) {
                 Activity activity = mWindowAndroid.getActivity().get();
                 if (activity != null) {
-                    PageInfoPopup.show(
-                            activity, getCurrentTab(), null, PageInfoPopup.OPENED_FROM_TOOLBAR);
+                    PageInfoController.show(activity, getCurrentTab(), null,
+                            PageInfoController.OPENED_FROM_TOOLBAR);
                 }
             }
         } else if (v == mMicButton && mVoiceRecognitionHandler != null) {

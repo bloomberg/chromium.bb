@@ -75,7 +75,7 @@ import java.util.List;
 /**
  * Java side of Android implementation of the page info UI.
  */
-public class PageInfoPopup implements ModalDialogView.Controller {
+public class PageInfoController implements ModalDialogView.Controller {
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({OPENED_FROM_MENU, OPENED_FROM_TOOLBAR, OPENED_FROM_VR})
     private @interface OpenedFromSource {}
@@ -118,7 +118,7 @@ public class PageInfoPopup implements ModalDialogView.Controller {
     private final Tab mTab;
 
     // A pointer to the C++ object for this UI.
-    private long mNativePageInfoPopup;
+    private long mNativePageInfoController;
 
     // The view inside the popup.
     private PageInfoView mView;
@@ -162,7 +162,7 @@ public class PageInfoPopup implements ModalDialogView.Controller {
     private Runnable mPendingRunAfterDismissTask;
 
     /**
-     * Creates the PageInfoPopup, but does not display it. Also initializes the corresponding
+     * Creates the PageInfoController, but does not display it. Also initializes the corresponding
      * C++ object and saves a pointer to it.
      * @param activity                 Activity which is used for showing a popup.
      * @param tab                      Tab for which the pop up is shown.
@@ -171,7 +171,7 @@ public class PageInfoPopup implements ModalDialogView.Controller {
      * @param offlinePageState         State of the tab showing offline page.
      * @param publisher                The name of the content publisher, if any.
      */
-    protected PageInfoPopup(Activity activity, Tab tab, String offlinePageUrl,
+    protected PageInfoController(Activity activity, Tab tab, String offlinePageUrl,
             String offlinePageCreationDate, @OfflinePageState int offlinePageState,
             String publisher) {
         mContext = activity;
@@ -242,7 +242,7 @@ public class PageInfoPopup implements ModalDialogView.Controller {
             viewParams.siteSettingsButtonShown = false;
         } else {
             viewParams.siteSettingsButtonClickCallback = () -> {
-                // Delay while the PageInfoPopup closes.
+                // Delay while the dialog closes.
                 runAfterDismiss(() -> {
                     recordAction(PageInfoAction.PAGE_INFO_SITE_SETTINGS_OPENED);
                     Bundle fragmentArguments =
@@ -303,7 +303,7 @@ public class PageInfoPopup implements ModalDialogView.Controller {
         mView = new PageInfoView(mContext, viewParams);
 
         // This needs to come after other member initialization.
-        mNativePageInfoPopup = nativeInit(this, mTab.getWebContents());
+        mNativePageInfoController = nativeInit(this, mTab.getWebContents());
         mWebContentsObserver = new WebContentsObserver(mTab.getWebContents()) {
             @Override
             public void navigationEntryCommitted() {
@@ -353,7 +353,7 @@ public class PageInfoPopup implements ModalDialogView.Controller {
     private boolean isConnectionDetailsLinkVisible() {
         return mContentPublisher == null && !isShowingOfflinePage() && mParsedUrl != null
                 && mParsedUrl.getScheme() != null
-                        && mParsedUrl.getScheme().equals(UrlConstants.HTTPS_SCHEME);
+                && mParsedUrl.getScheme().equals(UrlConstants.HTTPS_SCHEME);
     }
 
     private boolean hasAndroidPermission(int contentSettingType) {
@@ -377,8 +377,8 @@ public class PageInfoPopup implements ModalDialogView.Controller {
      */
     @CalledByNative
     private void addPermissionSection(String name, int type, int currentSettingValue) {
-        mDisplayedPermissions.add(new PageInfoPermissionEntry(name, type, ContentSetting
-                .fromInt(currentSettingValue)));
+        mDisplayedPermissions.add(new PageInfoPermissionEntry(
+                name, type, ContentSetting.fromInt(currentSettingValue)));
     }
 
     /**
@@ -558,7 +558,7 @@ public class PageInfoPopup implements ModalDialogView.Controller {
                     // TODO(crbug.com/819883): Port the connection info popup to VR.
                     if (VrShellDelegate.isInVr()) {
                         VrShellDelegate.requestToExitVrAndRunOnSuccess(
-                                PageInfoPopup.this ::showConnectionInfoPopup,
+                                PageInfoController.this ::showConnectionInfoPopup,
                                 UiUnsupportedMode.UNHANDLED_CONNECTION_INFO);
                     } else {
                         showConnectionInfoPopup();
@@ -585,10 +585,10 @@ public class PageInfoPopup implements ModalDialogView.Controller {
 
     @Override
     public void onDismiss() {
-        assert mNativePageInfoPopup != 0;
+        assert mNativePageInfoController != 0;
         mWebContentsObserver.destroy();
-        nativeDestroy(mNativePageInfoPopup);
-        mNativePageInfoPopup = 0;
+        nativeDestroy(mNativePageInfoController);
+        mNativePageInfoController = 0;
         if (mPendingRunAfterDismissTask != null) {
             mPendingRunAfterDismissTask.run();
             mPendingRunAfterDismissTask = null;
@@ -596,8 +596,8 @@ public class PageInfoPopup implements ModalDialogView.Controller {
     }
 
     private void recordAction(int action) {
-        if (mNativePageInfoPopup != 0) {
-            nativeRecordPageInfoAction(mNativePageInfoPopup, action);
+        if (mNativePageInfoController != 0) {
+            nativeRecordPageInfoAction(mNativePageInfoController, action);
         }
     }
 
@@ -671,14 +671,14 @@ public class PageInfoPopup implements ModalDialogView.Controller {
             }
         }
 
-        new PageInfoPopup(activity, tab, offlinePageUrl, offlinePageCreationDate, offlinePageState,
-                contentPublisher);
+        new PageInfoController(activity, tab, offlinePageUrl, offlinePageCreationDate,
+                offlinePageState, contentPublisher);
     }
 
-    private static native long nativeInit(PageInfoPopup popup, WebContents webContents);
+    private static native long nativeInit(PageInfoController controller, WebContents webContents);
 
-    private native void nativeDestroy(long nativePageInfoPopupAndroid);
+    private native void nativeDestroy(long nativePageInfoControllerAndroid);
 
     private native void nativeRecordPageInfoAction(
-            long nativePageInfoPopupAndroid, int action);
+            long nativePageInfoControllerAndroid, int action);
 }

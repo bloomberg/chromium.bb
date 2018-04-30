@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/android/page_info/page_info_popup_android.h"
+#include "chrome/browser/ui/android/page_info/page_info_controller_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
@@ -21,7 +21,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/PageInfoPopup_jni.h"
+#include "jni/PageInfoController_jni.h"
 #include "url/origin.h"
 
 using base::android::ConvertUTF16ToJavaString;
@@ -29,7 +29,7 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 
 // static
-static jlong JNI_PageInfoPopup_Init(
+static jlong JNI_PageInfoController_Init(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& obj,
@@ -38,12 +38,13 @@ static jlong JNI_PageInfoPopup_Init(
       content::WebContents::FromJavaWebContents(java_web_contents);
 
   return reinterpret_cast<intptr_t>(
-      new PageInfoPopupAndroid(env, obj, web_contents));
+      new PageInfoControllerAndroid(env, obj, web_contents));
 }
 
-PageInfoPopupAndroid::PageInfoPopupAndroid(JNIEnv* env,
-                                           jobject java_page_info_pop,
-                                           content::WebContents* web_contents) {
+PageInfoControllerAndroid::PageInfoControllerAndroid(
+    JNIEnv* env,
+    jobject java_page_info_pop,
+    content::WebContents* web_contents) {
   // Important to use GetVisibleEntry to match what's showing in the omnibox.
   content::NavigationEntry* nav_entry =
       web_contents->GetController().GetVisibleEntry();
@@ -53,7 +54,7 @@ PageInfoPopupAndroid::PageInfoPopupAndroid(JNIEnv* env,
   url_ = nav_entry->GetURL();
   web_contents_ = web_contents;
 
-  popup_jobject_.Reset(env, java_page_info_pop);
+  controller_jobject_.Reset(env, java_page_info_pop);
 
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents);
@@ -67,14 +68,14 @@ PageInfoPopupAndroid::PageInfoPopupAndroid(JNIEnv* env,
       nav_entry->GetURL(), security_info));
 }
 
-PageInfoPopupAndroid::~PageInfoPopupAndroid() {}
+PageInfoControllerAndroid::~PageInfoControllerAndroid() {}
 
-void PageInfoPopupAndroid::Destroy(JNIEnv* env,
-                                   const JavaParamRef<jobject>& obj) {
+void PageInfoControllerAndroid::Destroy(JNIEnv* env,
+                                        const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-void PageInfoPopupAndroid::RecordPageInfoAction(
+void PageInfoControllerAndroid::RecordPageInfoAction(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jint action) {
@@ -82,23 +83,24 @@ void PageInfoPopupAndroid::RecordPageInfoAction(
       static_cast<PageInfo::PageInfoAction>(action));
 }
 
-void PageInfoPopupAndroid::SetIdentityInfo(const IdentityInfo& identity_info) {
+void PageInfoControllerAndroid::SetIdentityInfo(
+    const IdentityInfo& identity_info) {
   JNIEnv* env = base::android::AttachCurrentThread();
   std::unique_ptr<PageInfoUI::SecurityDescription> security_description =
       GetSecurityDescription(identity_info);
 
-  Java_PageInfoPopup_setSecurityDescription(
-      env, popup_jobject_,
+  Java_PageInfoController_setSecurityDescription(
+      env, controller_jobject_,
       ConvertUTF16ToJavaString(env, security_description->summary),
       ConvertUTF16ToJavaString(env, security_description->details));
 }
 
-void PageInfoPopupAndroid::SetCookieInfo(
+void PageInfoControllerAndroid::SetCookieInfo(
     const CookieInfoList& cookie_info_list) {
   NOTIMPLEMENTED();
 }
 
-void PageInfoPopupAndroid::SetPermissionInfo(
+void PageInfoControllerAndroid::SetPermissionInfo(
     const PermissionInfoList& permission_info_list,
     ChosenObjectInfoList chosen_object_info_list) {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -138,8 +140,9 @@ void PageInfoPopupAndroid::SetPermissionInfo(
       base::string16 setting_title =
           PageInfoUI::PermissionTypeToUIString(permission);
 
-      Java_PageInfoPopup_addPermissionSection(
-          env, popup_jobject_, ConvertUTF16ToJavaString(env, setting_title),
+      Java_PageInfoController_addPermissionSection(
+          env, controller_jobject_,
+          ConvertUTF16ToJavaString(env, setting_title),
           static_cast<jint>(permission),
           static_cast<jint>(user_specified_settings_to_display[permission]));
     }
@@ -149,16 +152,16 @@ void PageInfoPopupAndroid::SetPermissionInfo(
     base::string16 object_title =
         PageInfoUI::ChosenObjectToUIString(*chosen_object);
 
-    Java_PageInfoPopup_addPermissionSection(
-        env, popup_jobject_, ConvertUTF16ToJavaString(env, object_title),
+    Java_PageInfoController_addPermissionSection(
+        env, controller_jobject_, ConvertUTF16ToJavaString(env, object_title),
         static_cast<jint>(chosen_object->ui_info.content_settings_type),
         static_cast<jint>(CONTENT_SETTING_ALLOW));
   }
 
-  Java_PageInfoPopup_updatePermissionDisplay(env, popup_jobject_);
+  Java_PageInfoController_updatePermissionDisplay(env, controller_jobject_);
 }
 
-base::Optional<ContentSetting> PageInfoPopupAndroid::GetSettingToDisplay(
+base::Optional<ContentSetting> PageInfoControllerAndroid::GetSettingToDisplay(
     const PermissionInfo& permission) {
   // All permissions should be displayed if they are non-default.
   if (permission.setting != CONTENT_SETTING_DEFAULT)

@@ -49,7 +49,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.UrlBar;
-import org.chromium.chrome.browser.page_info.PageInfoPopup;
+import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
@@ -190,8 +190,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             if (currentTab == null || currentTab.getWebContents() == null) return;
             Activity activity = currentTab.getWindowAndroid().getActivity().get();
             if (activity == null) return;
-            PageInfoPopup.show(
-                    activity, currentTab, getContentPublisher(), PageInfoPopup.OPENED_FROM_TOOLBAR);
+            PageInfoController.show(activity, currentTab, getContentPublisher(),
+                    PageInfoController.OPENED_FROM_TOOLBAR);
         });
     }
 

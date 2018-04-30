@@ -1728,7 +1728,7 @@ if (is_android) {
 
   java_cpp_enum("page_info_connection_type_javagen") {
     sources = [
-      "browser/ui/android/page_info/page_info_popup_android.h",
+      "browser/ui/android/page_info/page_info_controller_android.h",
     ]
   }
 

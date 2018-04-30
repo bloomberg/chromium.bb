@@ -36,7 +36,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.CompositorView;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
-import org.chromium.chrome.browser.page_info.PageInfoPopup;
+import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -494,8 +494,8 @@ public class VrShellImpl
             VrShellDelegate.requestToExitVr(new OnExitVrRequestListener() {
                 @Override
                 public void onSucceeded() {
-                    PageInfoPopup.show(mActivity, mActivity.getActivityTab(), null,
-                            PageInfoPopup.OPENED_FROM_VR);
+                    PageInfoController.show(mActivity, mActivity.getActivityTab(), null,
+                            PageInfoController.OPENED_FROM_VR);
                 }
 
                 @Override
@@ -504,8 +504,8 @@ public class VrShellImpl
             return;
         }
 
-        PageInfoPopup.show(
-                mActivity, mActivity.getActivityTab(), null, PageInfoPopup.OPENED_FROM_VR);
+        PageInfoController.show(
+                mActivity, mActivity.getActivityTab(), null, PageInfoController.OPENED_FROM_VR);
     }
 
     // Called because showing audio permission dialog isn't supported in VR. This happens when

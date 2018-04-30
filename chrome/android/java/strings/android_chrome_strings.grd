@@ -1954,7 +1954,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Added to Home screen
       </message>
 
-      <!-- PageInfoPopup (PageInfo dialog) -->
+      <!-- Page info popup -->
       <message name="IDS_PAGE_INFO_SITE_SETTINGS_BUTTON" desc="Text in the button that opens a website's Site Settings from the Page Info dialog.">
         Site Settings
       </message>
