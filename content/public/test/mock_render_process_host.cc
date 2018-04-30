@@ -439,9 +439,6 @@ void MockRenderProcessHost::SetWebRtcEventLogOutput(int lid, bool enabled) {}
 
 #endif
 
-void MockRenderProcessHost::ResumeDeferredNavigation(
-    const GlobalRequestID& request_id) {}
-
 bool MockRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
   IPC::Listener* listener = listeners_.Lookup(msg.routing_id());
   if (listener)

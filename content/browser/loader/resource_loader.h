@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -48,10 +47,6 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
 
   void StartRequest();
   void CancelRequest(bool from_renderer);
-
-  bool is_transferring() const { return is_transferring_; }
-  void MarkAsTransferring(const base::Closure& on_transfer_complete_callback);
-  void CompleteTransfer();
 
   net::URLRequest* request() { return request_.get(); }
   ResourceRequestInfoImpl* GetRequestInfo();
@@ -162,14 +157,6 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   std::unique_ptr<SSLClientAuthHandler> ssl_client_auth_handler_;
 
   base::TimeTicks read_deferral_start_time_;
-
-  // Indicates that we are in a state of being transferred to a new downstream
-  // consumer.  We are waiting for a notification to complete the transfer, at
-  // which point we'll receive a new ResourceHandler.
-  bool is_transferring_;
-
-  // Called when a navigation has finished transfer.
-  base::Closure on_transfer_complete_callback_;
 
   // Instrumentation add to investigate http://crbug.com/503306.
   // TODO(mmenke): Remove once bug is fixed.

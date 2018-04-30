@@ -81,45 +81,6 @@ void AppCacheInterceptor::GetExtraResponseInfo(net::URLRequest* request,
     handler->GetExtraResponseInfo(cache_id, manifest_url);
 }
 
-void AppCacheInterceptor::PrepareForCrossSiteTransfer(
-    net::URLRequest* request,
-    int old_process_id) {
-  AppCacheRequestHandler* handler = GetHandler(request);
-  if (!handler)
-    return;
-  handler->PrepareForCrossSiteTransfer(old_process_id);
-}
-
-void AppCacheInterceptor::CompleteCrossSiteTransfer(
-    net::URLRequest* request,
-    int new_process_id,
-    int new_host_id,
-    ResourceRequesterInfo* requester_info) {
-  // AppCache is supported only for renderer initiated requests.
-  DCHECK(requester_info->IsRenderer());
-  AppCacheRequestHandler* handler = GetHandler(request);
-  if (!handler)
-    return;
-  if (!handler->SanityCheckIsSameService(requester_info->appcache_service())) {
-    // This can happen when V2 apps and web pages end up in the same storage
-    // partition.
-    bad_message::ReceivedBadMessage(requester_info->filter(),
-                                    bad_message::ACI_WRONG_STORAGE_PARTITION);
-    return;
-  }
-  DCHECK_NE(kAppCacheNoHostId, new_host_id);
-  handler->CompleteCrossSiteTransfer(new_process_id, new_host_id);
-}
-
-void AppCacheInterceptor::MaybeCompleteCrossSiteTransferInOldProcess(
-    net::URLRequest* request,
-    int process_id) {
-  AppCacheRequestHandler* handler = GetHandler(request);
-  if (!handler)
-    return;
-  handler->MaybeCompleteCrossSiteTransferInOldProcess(process_id);
-}
-
 AppCacheInterceptor::AppCacheInterceptor() {
 }
 

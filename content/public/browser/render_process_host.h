@@ -48,7 +48,6 @@ class RenderProcessHostObserver;
 class RenderWidgetHost;
 class RendererAudioOutputStreamFactoryContext;
 class StoragePartition;
-struct GlobalRequestID;
 
 #if defined(OS_ANDROID)
 enum class ChildProcessImportance;
@@ -303,10 +302,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // identified locally within the RPH using the ID |lid|.
   virtual void SetWebRtcEventLogOutput(int lid, bool enabled) = 0;
 #endif
-
-  // Tells the ResourceDispatcherHost to resume a deferred navigation without
-  // transferring it to a new renderer process.
-  virtual void ResumeDeferredNavigation(const GlobalRequestID& request_id) = 0;
 
   // Binds interfaces exposed to the browser process from the renderer.
   virtual void BindInterface(const std::string& interface_name,

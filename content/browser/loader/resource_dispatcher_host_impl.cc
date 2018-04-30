@@ -443,7 +443,6 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
         (loader->GetRequestInfo()->detachable_handler() &&
          loader->GetRequestInfo()->detachable_handler()->is_detached()) ||
         loader->GetRequestInfo()->requester_info()->IsBrowserSideNavigation() ||
-        loader->is_transferring() ||
         loader->GetRequestInfo()->GetResourceType() ==
             RESOURCE_TYPE_SERVICE_WORKER);
   }
@@ -744,132 +743,6 @@ bool ResourceDispatcherHostImpl::IsRequestIDInUse(
   return false;
 }
 
-void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
-    ResourceRequesterInfo* requester_info,
-    int route_id,
-    int request_id,
-    const network::ResourceRequest& request_data,
-    LoaderMap::iterator iter,
-    network::mojom::URLLoaderRequest mojo_request,
-    network::mojom::URLLoaderClientPtr url_loader_client) {
-  DCHECK(requester_info->IsRenderer());
-  int child_id = requester_info->child_id();
-  ResourceRequestInfoImpl* info = iter->second->GetRequestInfo();
-  GlobalFrameRoutingId old_routing_id(request_data.transferred_request_child_id,
-                                      info->GetRenderFrameID());
-  GlobalRequestID old_request_id(request_data.transferred_request_child_id,
-                                 request_data.transferred_request_request_id);
-  GlobalFrameRoutingId new_routing_id(child_id, request_data.render_frame_id);
-  GlobalRequestID new_request_id(child_id, request_id);
-
-  // Clear out data that depends on |info| before updating it.
-  // We always need to move the memory stats to the new process.  In contrast,
-  // stats.num_requests is only tracked for some requests (those that require
-  // file descriptors for their shared memory buffer).
-  IncrementOutstandingRequestsMemory(-1, *info);
-  bool should_update_count = info->counted_as_in_flight_request();
-  if (should_update_count)
-    IncrementOutstandingRequestsCount(-1, info);
-
-  DCHECK(pending_loaders_.find(old_request_id) == iter);
-  std::unique_ptr<ResourceLoader> loader = std::move(iter->second);
-  ResourceLoader* loader_ptr = loader.get();
-  pending_loaders_.erase(iter);
-
-  // ResourceHandlers should always get state related to the request from the
-  // ResourceRequestInfo rather than caching it locally.  This lets us update
-  // the info object when a transfer occurs.
-  info->UpdateForTransfer(route_id, request_data.render_frame_id, request_id,
-                          requester_info, std::move(mojo_request),
-                          std::move(url_loader_client));
-
-  // Update maps that used the old IDs, if necessary.  Some transfers in tests
-  // do not actually use a different ID, so not all maps need to be updated.
-  pending_loaders_[new_request_id] = std::move(loader);
-  IncrementOutstandingRequestsMemory(1, *info);
-  if (should_update_count)
-    IncrementOutstandingRequestsCount(1, info);
-  if (old_routing_id != new_routing_id) {
-    if (blocked_loaders_map_.find(old_routing_id) !=
-            blocked_loaders_map_.end()) {
-      blocked_loaders_map_[new_routing_id] =
-          std::move(blocked_loaders_map_[old_routing_id]);
-      blocked_loaders_map_.erase(old_routing_id);
-    }
-  }
-
-  AppCacheInterceptor::CompleteCrossSiteTransfer(
-      loader_ptr->request(), child_id, request_data.appcache_host_id,
-      requester_info);
-
-  ServiceWorkerRequestHandler* handler =
-      ServiceWorkerRequestHandler::GetHandler(loader_ptr->request());
-  if (handler) {
-    if (!handler->SanityCheckIsSameContext(
-            requester_info->service_worker_context())) {
-      bad_message::ReceivedBadMessage(
-          requester_info->filter(), bad_message::RDHI_WRONG_STORAGE_PARTITION);
-    } else {
-      handler->CompleteCrossSiteTransfer(
-          child_id, request_data.service_worker_provider_id);
-    }
-  }
-}
-
-void ResourceDispatcherHostImpl::CompleteTransfer(
-    ResourceRequesterInfo* requester_info,
-    int request_id,
-    const network::ResourceRequest& request_data,
-    int route_id,
-    network::mojom::URLLoaderRequest mojo_request,
-    network::mojom::URLLoaderClientPtr url_loader_client) {
-  DCHECK(requester_info->IsRenderer());
-  // Caller should ensure that |request_data| is associated with a transfer.
-  DCHECK(request_data.transferred_request_child_id != -1 ||
-         request_data.transferred_request_request_id != -1);
-
-  if (!IsResourceTypeFrame(
-          static_cast<ResourceType>(request_data.resource_type))) {
-    // Transfers apply only to navigational requests - the renderer seems to
-    // have sent bogus IPC data.
-    bad_message::ReceivedBadMessage(
-        requester_info->filter(),
-        bad_message::RDH_TRANSFERRING_NONNAVIGATIONAL_REQUEST);
-    return;
-  }
-
-  // Attempt to find a loader associated with the deferred transfer request.
-  LoaderMap::iterator it = pending_loaders_.find(
-      GlobalRequestID(request_data.transferred_request_child_id,
-                      request_data.transferred_request_request_id));
-  if (it == pending_loaders_.end()) {
-    // Renderer sent transferred_request_request_id and/or
-    // transferred_request_child_id that doesn't have a corresponding entry on
-    // the browser side.
-    // TODO(lukasza): https://crbug.com/659613: Need to understand the scenario
-    // that can lead here (and then attempt to reintroduce a renderer kill
-    // below).
-    return;
-  }
-  ResourceLoader* pending_loader = it->second.get();
-
-  if (!pending_loader->is_transferring()) {
-    // Renderer sent transferred_request_request_id and/or
-    // transferred_request_child_id that doesn't correspond to an actually
-    // transferring loader on the browser side.
-    bad_message::ReceivedBadMessage(requester_info->filter(),
-                                    bad_message::RDH_REQUEST_NOT_TRANSFERRING);
-    return;
-  }
-
-  // If the request is transferring to a new process, we can update our
-  // state and let it resume with its existing ResourceHandlers.
-  UpdateRequestForTransfer(requester_info, route_id, request_id, request_data,
-                           it, std::move(mojo_request),
-                           std::move(url_loader_client));
-  pending_loader->CompleteTransfer();
-}
-
 void ResourceDispatcherHostImpl::BeginRequest(
     ResourceRequesterInfo* requester_info,
     int request_id,
@@ -920,15 +793,6 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // If we crash here, figure out what URL the renderer was requesting.
   // http://crbug.com/91398
   DEBUG_ALIAS_FOR_GURL(url_buf, request_data.url);
-
-  // If the request that's coming in is being transferred from another process,
-  // we want to reuse and resume the old loader rather than start a new one.
-  if (request_data.transferred_request_child_id != -1 ||
-      request_data.transferred_request_request_id != -1) {
-    CompleteTransfer(requester_info, request_id, request_data, route_id,
-                     std::move(mojo_request), std::move(url_loader_client));
-    return;
-  }
 
   ResourceContext* resource_context = nullptr;
   net::URLRequestContext* request_context = nullptr;
@@ -1476,20 +1340,6 @@ void ResourceDispatcherHostImpl::OnRenderViewHostSetIsLoading(int child_id,
   scheduler_->DeprecatedOnLoadingStateChanged(child_id, route_id, !is_loading);
 }
 
-void ResourceDispatcherHostImpl::MarkAsTransferredNavigation(
-    const GlobalRequestID& id,
-    const base::Closure& on_transfer_complete_callback) {
-  GetLoader(id)->MarkAsTransferring(on_transfer_complete_callback);
-}
-
-void ResourceDispatcherHostImpl::ResumeDeferredNavigation(
-    const GlobalRequestID& id) {
-  ResourceLoader* loader = GetLoader(id);
-  // The response we were meant to resume could have already been canceled.
-  if (loader)
-    loader->CompleteTransfer();
-}
-
 // The object died, so cancel and detach all requests associated with it except
 // for downloads and detachable resources, which belong to the browser process
 // even if initiated via a renderer.
@@ -1514,7 +1364,6 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(
   int route_id = global_routing_id.frame_routing_id;
   bool cancel_all_routes = (route_id == MSG_ROUTING_NONE);
 
-  bool any_requests_transferring = false;
   std::vector<GlobalRequestID> matching_requests;
   for (const auto& loader : pending_loaders_) {
     if (loader.first.child_id != child_id)
@@ -1525,16 +1374,13 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(
     GlobalRequestID id(child_id, loader.first.request_id);
     DCHECK(id == loader.first);
     // Don't cancel navigations that are expected to live beyond this process.
-    if (IsTransferredNavigation(id))
-      any_requests_transferring = true;
     if (cancel_all_routes || route_id == info->GetRenderFrameID()) {
       if (info->keepalive() && !cancel_all_routes) {
         // If the keepalive flag is set, that request will outlive the frame
         // deliberately, so we don't cancel it here.
       } else if (info->detachable_handler()) {
         info->detachable_handler()->Detach();
-      } else if (!info->IsDownload() && !info->is_stream() &&
-                 !IsTransferredNavigation(id)) {
+      } else if (!info->IsDownload() && !info->is_stream()) {
         matching_requests.push_back(id);
       }
     }
@@ -1555,14 +1401,6 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(
     if (iter != pending_loaders_.end())
       RemovePendingLoader(iter);
   }
-
-  // Don't clear the blocked loaders or offline policy maps if any of the
-  // requests in route_id are being transferred to a new process, since those
-  // maps will be updated with the new route_id after the transfer.  Otherwise
-  // we will lose track of this info when the old route goes away, before the
-  // new one is created.
-  if (any_requests_transferring)
-    return;
 
   // Now deal with blocked requests if any.
   if (!cancel_all_routes) {
@@ -2132,11 +1970,6 @@ int ResourceDispatcherHostImpl::MakeRequestID() {
 
 void ResourceDispatcherHostImpl::CancelRequestFromRenderer(
     GlobalRequestID request_id) {
-  // When the old renderer dies, it sends a message to us to cancel its
-  // requests.
-  if (IsTransferredNavigation(request_id))
-    return;
-
   ResourceLoader* loader = GetLoader(request_id);
 
   // It is possible that the request has been completed and removed from the
@@ -2386,12 +2219,6 @@ ResourceDispatcherHostImpl::HttpAuthRelationTypeOf(
 
 bool ResourceDispatcherHostImpl::allow_cross_origin_auth_prompt() {
   return allow_cross_origin_auth_prompt_;
-}
-
-bool ResourceDispatcherHostImpl::IsTransferredNavigation(
-    const GlobalRequestID& id) const {
-  ResourceLoader* loader = GetLoader(id);
-  return loader ? loader->is_transferring() : false;
 }
 
 ResourceLoader* ResourceDispatcherHostImpl::GetLoader(

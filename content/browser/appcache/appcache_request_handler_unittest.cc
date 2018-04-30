@@ -818,28 +818,6 @@ class AppCacheRequestHandlerTest
     TestFinished();
   }
 
-  void DestroyedServiceWithCrossSiteNav() {
-    EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah/"), host_,
-                                        RESOURCE_TYPE_MAIN_FRAME));
-    EXPECT_TRUE(handler_.get());
-    handler_->PrepareForCrossSiteTransfer(backend_impl_->process_id());
-    EXPECT_TRUE(handler_->host_for_cross_site_transfer_.get());
-
-    backend_impl_.reset();
-    mock_frontend_.reset();
-    mock_service_.reset();
-    mock_policy_.reset();
-    host_ = nullptr;
-
-    EXPECT_FALSE(handler_->host_for_cross_site_transfer_.get());
-    EXPECT_FALSE(handler_->MaybeLoadResource(nullptr));
-    EXPECT_FALSE(handler_->MaybeLoadFallbackForRedirect(
-        nullptr, GURL("http://blah/redirect")));
-    EXPECT_FALSE(handler_->MaybeLoadFallbackForResponse(nullptr));
-
-    TestFinished();
-  }
-
   // UnsupportedScheme -----------------------------
 
   void UnsupportedScheme() {
@@ -1063,11 +1041,6 @@ TEST_P(AppCacheRequestHandlerTest, DestroyedHostWithWaitingJob) {
 
 TEST_P(AppCacheRequestHandlerTest, DestroyedService) {
   RunTestOnIOThread(&AppCacheRequestHandlerTest::DestroyedService);
-}
-
-TEST_P(AppCacheRequestHandlerTest, DestroyedServiceWithCrossSiteNav) {
-  RunTestOnIOThread(
-      &AppCacheRequestHandlerTest::DestroyedServiceWithCrossSiteNav);
 }
 
 TEST_P(AppCacheRequestHandlerTest, UnsupportedScheme) {

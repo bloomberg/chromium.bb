@@ -189,14 +189,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
 
   // For navigations, whether this navigation should replace the current session
   // history entry on commit.
+  // TODO(csharrison): Look into whether this can be removed post-PlzNavigate.
   bool should_replace_current_entry = false;
-
-  // The following two members identify a previous request that has been
-  // created before this navigation has been transferred to a new process.
-  // This serves the purpose of recycling the old request.
-  // Unless this refers to a transferred navigation, these values are -1 and -1.
-  int transferred_request_child_id = -1;
-  int transferred_request_request_id = -1;
 
   // Whether or not we should allow the URL to download.
   bool allow_download = false;

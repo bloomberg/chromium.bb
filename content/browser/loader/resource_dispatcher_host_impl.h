@@ -126,16 +126,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Cancels the given request if it still exists.
   void CancelRequest(int child_id, int request_id);
 
-  // Marks the request, with its current |response|, as "parked". This
-  // happens if a request is redirected cross-site and needs to be
-  // resumed by a new process.
-  void MarkAsTransferredNavigation(
-      const GlobalRequestID& id,
-      const base::Closure& on_transfer_complete_callback);
-
-  // Resumes the request without transferring it to a new process.
-  void ResumeDeferredNavigation(const GlobalRequestID& id);
-
   // Returns the number of pending requests. This is designed for the unittests
   int pending_requests() const {
     return static_cast<int>(pending_loaders_.size());
@@ -555,26 +545,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   bool IsRequestIDInUse(const GlobalRequestID& id) const;
 
-  // Update the ResourceRequestInfo and internal maps when a request is
-  // transferred from one process to another.
-  void UpdateRequestForTransfer(
-      ResourceRequesterInfo* requester_info,
-      int route_id,
-      int request_id,
-      const network::ResourceRequest& request_data,
-      LoaderMap::iterator iter,
-      network::mojom::URLLoaderRequest mojo_request,
-      network::mojom::URLLoaderClientPtr url_loader_client);
-
-  // If |request_data| is for a request being transferred from another process,
-  // then CompleteTransfer method can be used to complete the transfer.
-  void CompleteTransfer(ResourceRequesterInfo* requester_info,
-                        int request_id,
-                        const network::ResourceRequest& request_data,
-                        int route_id,
-                        network::mojom::URLLoaderRequest mojo_request,
-                        network::mojom::URLLoaderClientPtr url_loader_client);
-
   void BeginRequest(ResourceRequesterInfo* requester_info,
                     int request_id,
                     const network::ResourceRequest& request_data,
@@ -659,13 +629,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   HttpAuthRelationType HttpAuthRelationTypeOf(const GURL& request_url,
                                               const GURL& first_party);
-
-  // Returns whether the URLRequest identified by |transferred_request_id| is
-  // currently in the process of being transferred to a different renderer.
-  // This happens if a request is redirected cross-site and needs to be resumed
-  // by a new process.
-  bool IsTransferredNavigation(
-      const GlobalRequestID& transferred_request_id) const;
 
   ResourceLoader* GetLoader(const GlobalRequestID& id) const;
   ResourceLoader* GetLoader(int child_id, int request_id) const;

@@ -47,8 +47,6 @@ AppCacheRequestHandler::AppCacheRequestHandler(
       cache_entry_not_found_(false),
       is_delivering_network_response_(false),
       maybe_load_resource_executed_(false),
-      old_process_id_(0),
-      old_host_id_(kAppCacheNoHostId),
       cache_id_(kAppCacheNoCacheId),
       service_(host_->service()),
       request_(std::move(request)),
@@ -222,37 +220,6 @@ void AppCacheRequestHandler::GetExtraResponseInfo(int64_t* cache_id,
   *manifest_url = manifest_url_;
 }
 
-void AppCacheRequestHandler::PrepareForCrossSiteTransfer(int old_process_id) {
-  if (!host_)
-    return;
-  AppCacheBackendImpl* backend = host_->service()->GetBackend(old_process_id);
-  DCHECK(backend) << "appcache detected likely storage partition mismatch";
-  old_process_id_ = old_process_id;
-  old_host_id_ = host_->host_id();
-  host_for_cross_site_transfer_ = backend->TransferHostOut(host_->host_id());
-  DCHECK_EQ(host_, host_for_cross_site_transfer_.get());
-}
-
-void AppCacheRequestHandler::CompleteCrossSiteTransfer(
-    int new_process_id, int new_host_id) {
-  if (!host_for_cross_site_transfer_.get())
-    return;
-  DCHECK_EQ(host_, host_for_cross_site_transfer_.get());
-  AppCacheBackendImpl* backend = host_->service()->GetBackend(new_process_id);
-  DCHECK(backend) << "appcache detected likely storage partition mismatch";
-  backend->TransferHostIn(new_host_id,
-                          std::move(host_for_cross_site_transfer_));
-}
-
-void AppCacheRequestHandler::MaybeCompleteCrossSiteTransferInOldProcess(
-    int old_process_id) {
-  if (!host_ || !host_for_cross_site_transfer_.get() ||
-      old_process_id != old_process_id_) {
-    return;
-  }
-  CompleteCrossSiteTransfer(old_process_id_, old_host_id_);
-}
-
 // static
 std::unique_ptr<AppCacheRequestHandler>
 AppCacheRequestHandler::InitializeForNavigationNetworkService(
@@ -286,13 +253,11 @@ void AppCacheRequestHandler::OnServiceDestructionImminent(
     AppCacheServiceImpl* service) {
   service_ = nullptr;
   if (!host_) {
-    DCHECK(!host_for_cross_site_transfer_);
     DCHECK(!job_);
     return;
   }
   host_->RemoveObserver(this);
   OnDestructionImminent(host_);
-  host_for_cross_site_transfer_.reset();
 }
 
 void AppCacheRequestHandler::DeliverAppCachedResponse(

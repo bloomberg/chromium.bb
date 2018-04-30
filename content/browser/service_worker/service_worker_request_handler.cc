@@ -312,28 +312,6 @@ void ServiceWorkerRequestHandler::MaybeCreateLoader(
   std::move(callback).Run({});
 }
 
-void ServiceWorkerRequestHandler::PrepareForCrossSiteTransfer(
-    int old_process_id) {
-  CHECK(!IsBrowserSideNavigationEnabled());
-}
-
-void ServiceWorkerRequestHandler::CompleteCrossSiteTransfer(
-    int new_process_id, int new_provider_id) {
-  CHECK(!IsBrowserSideNavigationEnabled());
-}
-
-void ServiceWorkerRequestHandler::MaybeCompleteCrossSiteTransferInOldProcess(
-    int old_process_id) {
-  CHECK(!IsBrowserSideNavigationEnabled());
-}
-
-bool ServiceWorkerRequestHandler::SanityCheckIsSameContext(
-    ServiceWorkerContextWrapper* wrapper) {
-  if (!wrapper)
-    return !context_;
-  return context_.get() == wrapper->context();
-}
-
 ServiceWorkerRequestHandler::~ServiceWorkerRequestHandler() {
 }
 

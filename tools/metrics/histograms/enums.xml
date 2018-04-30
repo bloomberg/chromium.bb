@@ -2862,7 +2862,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="25" label="OBSOLETE_DBMF_DB_NOT_OPEN_ON_CLOSE"/>
   <int value="26" label="OBSOLETE_DBMF_INVALID_ORIGIN_ON_SQLITE_ERROR"/>
   <int value="27" label="RDH_INVALID_PRIORITY"/>
-  <int value="28" label="RDH_REQUEST_NOT_TRANSFERRING"/>
+  <int value="28" label="OBSOLETE_RDH_REQUEST_NOT_TRANSFERRING"/>
   <int value="29" label="RDH_BAD_DOWNLOAD"/>
   <int value="30" label="OBSOLETE_NMF_NO_PERMISSION_SHOW"/>
   <int value="31" label="OBSOLETE_NMF_NO_PERMISSION_CLOSE"/>
@@ -2942,8 +2942,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="103" label="DWNLD_INVALID_SAVABLE_RESOURCE_LINKS_RESPONSE"/>
   <int value="104" label="DWNLD_INVALID_SERIALIZE_AS_MHTML_RESPONSE"/>
   <int value="105" label="BDH_DEVICE_NOT_ALLOWED_FOR_ORIGIN"/>
-  <int value="106" label="ACI_WRONG_STORAGE_PARTITION"/>
-  <int value="107" label="RDHI_WRONG_STORAGE_PARTITION"/>
+  <int value="106" label="OBSOLETE_ACI_WRONG_STORAGE_PARTITION"/>
+  <int value="107" label="OBSOLETE_RDHI_WRONG_STORAGE_PARTITION"/>
   <int value="108" label="RDH_INVALID_REQUEST_ID"/>
   <int value="109" label="BDH_SERVICE_NOT_ALLOWED_FOR_ORIGIN"/>
   <int value="110" label="WSI_UNEXPECTED_ADD_CHANNEL_REQUEST"/>
@@ -2984,8 +2984,8 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="OBSOLETE_SWDH_ENABLE_NAVIGATION_PRELOAD_INVALID_ORIGIN"/>
   <int value="145"
       label="OBSOLETE_SWDH_ENABLE_NAVIGATION_PRELOAD_BAD_REGISTRATION_ID"/>
-  <int value="146" label="RDH_TRANSFERRING_REQUEST_NOT_FOUND"/>
-  <int value="147" label="RDH_TRANSFERRING_NONNAVIGATIONAL_REQUEST"/>
+  <int value="146" label="OBSOLETE_RDH_TRANSFERRING_REQUEST_NOT_FOUND"/>
+  <int value="147" label="OBSOLETE_RDH_TRANSFERRING_NONNAVIGATIONAL_REQUEST"/>
   <int value="148" label="OBSOLETE_SWDH_GET_NAVIGATION_PRELOAD_STATE_NO_HOST"/>
   <int value="149"
       label="OBSOLETE_SWDH_GET_NAVIGATION_PRELOAD_STATE_INVALID_ORIGIN"/>
