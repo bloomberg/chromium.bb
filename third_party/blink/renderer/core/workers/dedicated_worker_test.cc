@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include "base/single_thread_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/task_type.h"

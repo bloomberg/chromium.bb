@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/client/audio/async_audio_frame_supplier.h"
 #include "remoting/client/audio/audio_stream_consumer.h"

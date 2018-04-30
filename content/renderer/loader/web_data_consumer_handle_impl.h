@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"

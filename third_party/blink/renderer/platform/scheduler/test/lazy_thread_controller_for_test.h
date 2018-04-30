@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_TEST_LAZY_THREAD_CONTROLLER_FOR_TEST_H_
 
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/base/thread_controller_impl.h"
 

@@ -4,6 +4,7 @@
 
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
+#include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/lib/task_runner_helper.h"
 
 namespace mojo {

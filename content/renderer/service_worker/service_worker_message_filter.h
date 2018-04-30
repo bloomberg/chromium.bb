@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_MESSAGE_FILTER_H_
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/renderer/worker_thread_message_filter.h"
 

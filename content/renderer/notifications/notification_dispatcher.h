@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "content/renderer/worker_thread_message_filter.h"
 

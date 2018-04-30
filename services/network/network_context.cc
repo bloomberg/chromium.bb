@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/optional.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"

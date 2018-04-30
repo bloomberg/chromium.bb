@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_INPUT_WIDGET_INPUT_HANDLER_MANAGER_H_
 #define CONTENT_RENDERER_INPUT_WIDGET_INPUT_HANDLER_MANAGER_H_
 
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_handler.mojom.h"

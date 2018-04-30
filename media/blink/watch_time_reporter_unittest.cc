@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "media/base/mock_media_log.h"
 #include "media/base/watch_time_keys.h"

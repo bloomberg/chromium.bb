@@ -11,6 +11,7 @@
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"

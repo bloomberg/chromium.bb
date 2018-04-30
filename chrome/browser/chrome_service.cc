@@ -5,6 +5,7 @@
 #include "chrome/browser/chrome_service.h"
 
 #include "base/no_destructor.h"
+#include "base/single_thread_task_runner.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/common/constants.mojom.h"
 #include "components/spellcheck/spellcheck_buildflags.h"

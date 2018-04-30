@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/numerics/ranges.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"

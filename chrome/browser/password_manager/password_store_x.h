@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 

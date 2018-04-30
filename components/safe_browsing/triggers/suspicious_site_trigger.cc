@@ -5,6 +5,7 @@
 #include "components/safe_browsing/triggers/suspicious_site_trigger.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/single_thread_task_runner.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"

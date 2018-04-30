@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 

@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/memory/singleton.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"

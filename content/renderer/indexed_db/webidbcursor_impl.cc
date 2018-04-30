@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/single_thread_task_runner.h"
 #include "content/renderer/indexed_db/indexed_db_dispatcher.h"
 #include "content/renderer/indexed_db/indexed_db_key_builders.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"

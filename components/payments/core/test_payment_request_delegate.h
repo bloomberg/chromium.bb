@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/test_address_normalizer.h"

@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list_threadsafe.h"
+#include "base/single_thread_task_runner.h"
 #include "chromecast/device/bluetooth/le/le_scan_manager.h"
 #include "chromecast/device/bluetooth/le/scan_filter.h"
 #include "chromecast/device/bluetooth/shlib/le_scanner.h"

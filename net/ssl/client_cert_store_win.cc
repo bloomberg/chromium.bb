@@ -17,6 +17,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "crypto/wincrypt_shim.h"

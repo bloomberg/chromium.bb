@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/viz/client/viz_client_export.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"

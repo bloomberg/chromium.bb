@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/tracing/public/cpp/perfetto/task_runner.h"

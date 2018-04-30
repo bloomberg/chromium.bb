@@ -6,6 +6,7 @@
 #define CC_TEST_PIXEL_TEST_H_
 
 #include "base/files/file_util.h"
+#include "base/single_thread_task_runner.h"
 #include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/trees/layer_tree_settings.h"

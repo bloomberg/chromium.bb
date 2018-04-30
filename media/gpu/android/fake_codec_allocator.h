@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/sequenced_task_runner.h"
 #include "media/base/android/mock_media_codec_bridge.h"
 #include "media/gpu/android/avda_codec_allocator.h"
 #include "media/gpu/android/avda_surface_bundle.h"

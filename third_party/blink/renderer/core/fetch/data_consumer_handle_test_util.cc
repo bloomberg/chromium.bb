@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/fetch/data_consumer_handle_test_util.h"
 
 #include <memory>
+#include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"

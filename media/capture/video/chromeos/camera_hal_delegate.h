@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "media/capture/video/chromeos/mojo/camera3.mojom.h"

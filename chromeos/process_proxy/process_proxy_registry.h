@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/thread.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/process_proxy/process_proxy.h"

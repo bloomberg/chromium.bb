@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_IN_PROCESS_DISPLAY_CLIENT_H_
 #define CONTENT_BROWSER_COMPOSITOR_IN_PROCESS_DISPLAY_CLIENT_H_
 
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"

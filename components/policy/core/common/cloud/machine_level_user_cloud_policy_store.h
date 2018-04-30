@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/sequenced_task_runner.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_store.h"
 
 namespace policy {

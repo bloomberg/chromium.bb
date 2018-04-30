@@ -4,6 +4,7 @@
 
 #include "services/device/serial/serial_device_enumerator_impl.h"
 
+#include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 

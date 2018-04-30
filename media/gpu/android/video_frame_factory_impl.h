@@ -6,6 +6,7 @@
 #define MEDIA_GPU_ANDROID_VIDEO_FRAME_FACTORY_IMPL_
 
 #include "base/optional.h"
+#include "base/single_thread_task_runner.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/ipc/service/command_buffer_stub.h"

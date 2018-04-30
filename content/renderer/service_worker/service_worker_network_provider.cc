@@ -5,6 +5,7 @@
 #include "content/renderer/service_worker/service_worker_network_provider.h"
 
 #include "base/atomic_sequence_num.h"
+#include "base/single_thread_task_runner.h"
 #include "content/common/navigation_params.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_provider_host_info.h"

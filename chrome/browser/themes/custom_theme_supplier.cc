@@ -5,6 +5,7 @@
 #include "chrome/browser/themes/custom_theme_supplier.h"
 
 #include "base/memory/ref_counted_memory.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"

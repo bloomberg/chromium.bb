@@ -7,6 +7,7 @@
 
 #include <unordered_map>
 
+#include "base/sequenced_task_runner.h"
 #include "base/time/default_tick_clock.h"
 #include "base/timer/timer.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"

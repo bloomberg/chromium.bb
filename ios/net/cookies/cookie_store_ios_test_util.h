@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "ios/net/cookies/cookie_store_ios_client.h"
 #include "net/cookies/cookie_change_dispatcher.h"
