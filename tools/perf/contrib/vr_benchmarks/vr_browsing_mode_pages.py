@@ -6,14 +6,16 @@ import re
 
 from telemetry import page
 from telemetry import story
+from telemetry.page import shared_page_state
 from devil.android.sdk import intent  # pylint: disable=import-error
 from contrib.vr_benchmarks import shared_android_vr_page_state as vr_state
 from contrib.vr_benchmarks.vr_sample_page import VrSamplePage
 from contrib.vr_benchmarks.vr_story_set import VrStorySet
 from page_sets import top_10_mobile
+from page_sets import key_mobile_sites_smooth as smooth_sites
 
 
-def _VrBrowsingInteraction(current_page, action_runner):
+def _EnterVrViaNfc(current_page, action_runner):
   def isNfcAppReady(android_app):
     del android_app
     # TODO(tiborg): Find a way to tell if the NFC app ran successfully.
@@ -32,6 +34,10 @@ def _VrBrowsingInteraction(current_page, action_runner):
   # Browsing Mode. Wait times are flaky.
   action_runner.Wait(2)
 
+
+def _EnterVrViaNfcWithMemory(current_page, action_runner):
+  _EnterVrViaNfc(current_page, action_runner)
+
   # MeasureMemory() waits for 10 seconds before measuring memory, which is
   # long enough for us to collect our other data, so no additional sleeps
   # necessary.
@@ -46,7 +52,7 @@ class Simple2dStillPage(VrSamplePage):
          sample_page=sample_page, page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
-    _VrBrowsingInteraction(self, action_runner)
+    _EnterVrViaNfcWithMemory(self, action_runner)
 
 
 class VrBrowsingModeWprPage(page.Page):
@@ -70,7 +76,7 @@ class VrBrowsingModeWprPage(page.Page):
     self._shared_page_state = None
 
   def RunPageInteractions(self, action_runner):
-    _VrBrowsingInteraction(self, action_runner)
+    _EnterVrViaNfcWithMemory(self, action_runner)
 
   def Run(self, shared_state):
     self._shared_page_state = shared_state
@@ -105,3 +111,109 @@ class VrBrowsingModeWprPageSet(VrStorySet):
     for url in top_10_mobile.URL_LIST:
       name = re.sub(r'\W+', '_', url)
       self.AddStory(VrBrowsingModeWprPage(self, url, name))
+
+
+class VrBrowsingModeWprSmoothnessPage(VrBrowsingModeWprPage):
+  """Hybrid of VrBrowsingModeWprPage and KeyMobileSitesSmoothPage."""
+  def __init__(self, page_set, url, name, extra_browser_args=None, **kwargs):
+    self._page_impl = smooth_sites.KeyMobileSitesSmoothPage(
+        url=url, page_set=page_set, name=name,
+        extra_browser_args=extra_browser_args, **kwargs)
+    super(VrBrowsingModeWprSmoothnessPage, self).__init__(
+        url=url,
+        page_set=page_set,
+        name=name,
+        extra_browser_args=extra_browser_args)
+
+  def RunPageInteractions(self, action_runner):
+    _EnterVrViaNfc(self, action_runner)
+    self._page_impl.RunPageInteractions(action_runner)
+
+
+class VrBrowsingModeWprSmoothnessPageWrapper(VrBrowsingModeWprPage):
+  """Wrapper class for running special pages in VR.
+
+  A number of pre-existing pages used for scroll testing require special
+  navigation and interaction steps, as opposed to just loading some URL and
+  scrolling. Since we need to inherit from a page that exposes the shared state
+  and/or platform during a story run, we can't just directly inherit from them.
+
+  This way, we're able to inherit from a VR page that exposes the shared state,
+  but re-use the navigation/interaction code from the non-VR pages while
+  avoiding things like multiple inheritance.
+  """
+
+  def __init__(self, page_set, name, page_class, extra_browser_args=None):
+    self._page_impl = page_class(
+        page_set=page_set, name=name, extra_browser_args=None)
+    super(VrBrowsingModeWprSmoothnessPageWrapper, self).__init__(
+        url=self._page_impl.url,
+        page_set=page_set,
+        name=name,
+        extra_browser_args=extra_browser_args)
+
+  def RunNavigateSteps(self, action_runner):
+    self._page_impl.RunNavigateSteps(action_runner)
+
+  def RunPageInteractions(self, action_runner):
+    _EnterVrViaNfc(self, action_runner)
+    self._page_impl.RunPageInteractions(action_runner)
+
+
+class VimeoPage(smooth_sites.KeyMobileSitesSmoothPage):
+  """Page created in the same manner as other smoothness pages, but only for VR.
+
+  Why: Video is a large use case for the VR browser, but Vimeo isn't popular
+       enough to warrant putting in the normal key_mobile_sites_smooth page set.
+  """
+
+  def __init__(self, page_set, name='', extra_browser_args=None,
+      shared_page_state_class=shared_page_state.SharedMobilePageState):
+    super(VimeoPage, self).__init__(
+        url='https://vimeo.com/search?q=Vr',
+        page_set=page_set,
+        name=name,
+        extra_browser_args=extra_browser_args,
+        shared_page_state_class=shared_page_state_class)
+
+  # Make sure we have enough results loaded to fully scroll.
+  def RunNavigateSteps(self, action_runner):
+    super(VimeoPage, self).RunNavigateSteps(action_runner)
+    action_runner.ScrollPage()
+    action_runner.ScrollPage(direction='up')
+
+
+class VrBrowsingModeWprSmoothnessPageSet(VrStorySet):
+  """Copy of KeyMobileSitesSmoothpageSet, but in the VR browser."""
+
+  def __init__(self):
+    super(VrBrowsingModeWprSmoothnessPageSet, self).__init__(
+        archive_data_file='data/key_mobile_sites/key_mobile_sites_smooth.json',
+        cloud_storage_bucket=story.PARTNER_BUCKET)
+
+    # Add pages that require special navigation or interaction code.
+    page_classes = [
+      (smooth_sites.CapitolVolkswagenPage, 'capitolvolkswagen'),
+      (smooth_sites.TheVergeArticlePage, 'theverge_article'),
+      (smooth_sites.CnnArticlePage, 'cnn_article'),
+      (smooth_sites.FacebookPage, 'facebook'),
+      (smooth_sites.YoutubeMobilePage, 'youtube'),
+      (smooth_sites.GoogleNewsMobilePage, 'google_news'),
+      (smooth_sites.LinkedInPage, 'linkedin'),
+      (smooth_sites.WowwikiPage, 'wowwiki'),
+      (smooth_sites.AmazonNicolasCagePage, 'amazon'),
+      (VimeoPage, 'vimeo'),
+    ]
+    for page_class, name in page_classes:
+      self.AddStory(VrBrowsingModeWprSmoothnessPageWrapper(
+          page_set=self, page_class=page_class, name=name))
+
+    # Add pages with custom tags.
+    for url, name in smooth_sites.FASTPATH_URLS:
+      self.AddStory(VrBrowsingModeWprSmoothnessPage(
+          url=url, page_set=self, name=name, tags=['fastpath']))
+
+    # Add normal pages.
+    for url, name in smooth_sites.URLS_LIST:
+      self.AddStory(VrBrowsingModeWprSmoothnessPage(
+          url=url, page_set=self, name=name))
