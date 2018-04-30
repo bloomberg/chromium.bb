@@ -23,6 +23,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "device_os": "O",
+              "device_type": "gobo",
               "os": "Android",
               "pool": "chrome.tests.perf-fyi"
             }
@@ -36,8 +38,6 @@
         },
         "trigger_script": {
           "args": [
-            "--multiple-trigger-configs",
-            "[{\"id\": \"build30-a7--device1\"}, {\"id\": \"build30-a7--device2\"}, {\"id\": \"build30-a7--device3\"}, {\"id\": \"build30-a7--device4\"}, {\"id\": \"build30-a7--device5\"}, {\"id\": \"build30-a7--device6\"}, {\"id\": \"build30-a7--device7\"}, {\"id\": \"build31-a7--device1\"}, {\"id\": \"build31-a7--device2\"}, {\"id\": \"build31-a7--device3\"}, {\"id\": \"build31-a7--device4\"}, {\"id\": \"build31-a7--device5\"}, {\"id\": \"build31-a7--device6\"}, {\"id\": \"build31-a7--device7\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -484,8 +484,6 @@
         },
         "trigger_script": {
           "args": [
-            "--multiple-trigger-configs",
-            "[{\"id\": \"build246-a9\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -528,8 +526,6 @@
         },
         "trigger_script": {
           "args": [
-            "--multiple-trigger-configs",
-            "[{\"id\": \"build246-a9\"}, {\"id\": \"build247-a9\"}, {\"id\": \"build248-a9\"}, {\"id\": \"build249-a9\"}, {\"id\": \"build250-a9\"}, {\"id\": \"build251-a9\"}, {\"id\": \"build252-a9\"}, {\"id\": \"build253-a9\"}, {\"id\": \"build254-a9\"}, {\"id\": \"build255-a9\"}, {\"id\": \"build256-a9\"}, {\"id\": \"build257-a9\"}, {\"id\": \"build258-a9\"}, {\"id\": \"build259-a9\"}, {\"id\": \"build260-a9\"}, {\"id\": \"build261-a9\"}, {\"id\": \"build262-a9\"}, {\"id\": \"build263-a9\"}, {\"id\": \"build264-a9\"}, {\"id\": \"build265-a9\"}, {\"id\": \"build266-a9\"}, {\"id\": \"build267-a9\"}, {\"id\": \"build268-a9\"}, {\"id\": \"build269-a9\"}, {\"id\": \"build270-a9\"}, {\"id\": \"build271-a9\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -571,8 +567,6 @@
         },
         "trigger_script": {
           "args": [
-            "--multiple-trigger-configs",
-            "[{\"id\": \"build247-a9\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -636,6 +630,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "gpu": "none",
               "os": "Linux",
               "pool": "chrome.tests.perf-fyi"
             }
@@ -649,8 +644,6 @@
         },
         "trigger_script": {
           "args": [
-            "--multiple-trigger-configs",
-            "[{\"id\": \"swarm77-c7\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -681,6 +674,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "gpu": "none",
               "os": "Linux",
               "pool": "chrome.tests.perf-fyi"
             }
@@ -694,8 +688,6 @@
         },
         "trigger_script": {
           "args": [
-            "--multiple-trigger-configs",
-            "[{\"id\": \"swarm77-c7\"}, {\"id\": \"swarm78-c7\"}, {\"id\": \"swarm79-c7\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],

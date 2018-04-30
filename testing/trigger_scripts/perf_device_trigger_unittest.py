@@ -13,18 +13,18 @@ class Args(object):
   def __init__(self):
     self.shards = 1
     self.dump_json = ''
-    self.multiple_trigger_configs = []
+    self.multiple_trigger_configs = None
     self.multiple_dimension_script_verbose = False
 
 
 class FakeTriggerer(perf_device_trigger.PerfDeviceTriggerer):
-  def __init__(self, bot_configs):
-    super(FakeTriggerer, self).__init__()
-    self._bot_configs = bot_configs
+  def __init__(self, args, swarming_args, files):
     self._bot_statuses = []
     self._swarming_runs = []
-    self._files = {}
+    self._files = files
     self._temp_file_id = 0
+    super(FakeTriggerer, self).__init__(args, swarming_args)
+
 
   def set_files(self, files):
     self._files = files
@@ -40,39 +40,69 @@ class FakeTriggerer(perf_device_trigger.PerfDeviceTriggerer):
   def read_json_from_temp_file(self, temp_file):
     return self._files[temp_file]
 
+  def read_encoded_json_from_temp_file(self, temp_file):
+    return self._files[temp_file]
+
   def write_json_to_file(self, merged_json, output_file):
     self._files[output_file] = merged_json
 
-  def parse_bot_configs(self, args):
-    pass
-
   def run_swarming(self, args, verbose):
+    del verbose #unused
     self._swarming_runs.append(args)
 
 
-PERF_BOT1 = {
-  'pool': 'Chrome-perf-fyi',
-  'id': 'build1'
-}
-
-PERF_BOT2 = {
-  'pool': 'Chrome-perf-fyi',
-  'id': 'build2'
-}
-
 class UnitTest(unittest.TestCase):
-  def basic_setup(self):
-    triggerer = FakeTriggerer(
-      [
-        PERF_BOT1,
-        PERF_BOT2
+  def setup_and_trigger(
+      self, previous_task_assignment_map, alive_bots, dead_bots):
+    args = Args()
+    args.shards = len(previous_task_assignment_map)
+    args.dump_json = 'output.json'
+    swarming_args = [
+        'trigger',
+        '--swarming',
+        'http://foo_server',
+        '--auth-service-account-json',
+        '/creds/test_service_account',
+        '--dimension',
+        'pool',
+        'chrome-perf-fyi',
+        '--dimension',
+        'os',
+        'windows',
+        '--',
+        'benchmark1',
       ]
-    )
-    # Note: the contents of these JSON files don't accurately reflect
-    # that produced by "swarming.py trigger". The unit tests only
-    # verify that shard 0's JSON is preserved.
-    triggerer.set_files({
-      'base_trigger_dimensions0.json': {
+
+    triggerer = FakeTriggerer(args, swarming_args,
+        self.get_files(args.shards, previous_task_assignment_map,
+                       alive_bots, dead_bots))
+    triggerer.trigger_tasks(
+      args,
+      swarming_args)
+    return triggerer
+
+  def get_files(self, num_shards, previous_task_assignment_map,
+                alive_bots, dead_bots):
+    files = {}
+    file_index = 0
+    files['base_trigger_dimensions%d.json' % file_index] = (
+        self.generate_list_of_eligible_bots_query_response(
+            alive_bots, dead_bots))
+    file_index = file_index + 1
+    # Perf device trigger will call swarming n times:
+    #   1. Once for all eligible bots
+    #   2. once per shard to determine last bot run
+    # Shard builders is a list of build ids that represents
+    # the last build that ran the shard that corresponds to that
+    # index.  If that shard hasn't been run before the entry
+    # should be an empty string.
+    for i in xrange(num_shards):
+      bot_id = previous_task_assignment_map.get(i)
+      files['base_trigger_dimensions%d.json' % file_index] = (
+          self.generate_last_task_to_shard_query_response(bot_id))
+      file_index = file_index + 1
+    for i in xrange(num_shards):
+      task = {
         'base_task_name': 'webgl_conformance_tests',
         'request': {
           'expiration_secs': 3600,
@@ -82,69 +112,152 @@ class UnitTest(unittest.TestCase):
         },
         'tasks': {
           'webgl_conformance_tests on NVIDIA GPU on Windows': {
-            'task_id': 'f001',
+            'task_id': 'f%d' % i,
           },
         },
-      },
-      'base_trigger_dimensions1.json': {
-        'tasks': {
-          'webgl_conformance_tests on NVIDIA GPU on Windows': {
-            'task_id': 'f002',
-          },
-        },
-      },
-    })
-    args = Args()
-    args.shards = 2
-    args.dump_json = 'output.json'
-    args.multiple_dimension_script_verbose = False
-    triggerer.trigger_tasks(
-      args,
-      [
-        'trigger',
-        '--dimension',
-        'pool',
-        'chrome-perf-fyi',
-        '--dimension',
-        'id',
-        'build1',
-        '--',
-        'benchmark1',
-      ])
-    return triggerer
+      }
+      files['base_trigger_dimensions%d.json' % file_index] = task
+      file_index = file_index + 1
+    return files
+
+  def generate_last_task_to_shard_query_response(self, bot_id):
+    if len(bot_id):
+      return {'items': [{'tags': [('id:%s' % bot_id)]}]}
+    return {}
+
+  def generate_list_of_eligible_bots_query_response(
+      self, alive_bots, dead_bots):
+    items = {'items': []}
+    for bot_id in alive_bots:
+      items['items'].append(
+          { 'bot_id': ('%s' % bot_id), 'is_dead': False, 'quarantined': False })
+    is_dead = True
+    for bot_id in dead_bots:
+      is_quarantined = (not is_dead)
+      items['items'].append({
+          'bot_id': ('%s' % bot_id),
+          'is_dead': is_dead,
+          'quarantined': is_quarantined
+      })
+      is_dead = (not is_dead)
+    return items
+
 
   def list_contains_sublist(self, main_list, sub_list):
     return any(sub_list == main_list[offset:offset + len(sub_list)]
                for offset in xrange(len(main_list) - (len(sub_list) - 1)))
 
-  def test_shard_env_vars_and_bot_id(self):
-    triggerer = self.basic_setup()
-    self.assertTrue(self.list_contains_sublist(
-      triggerer._swarming_runs[0], ['id', 'build1']))
-    self.assertTrue(self.list_contains_sublist(
-      triggerer._swarming_runs[1], ['id', 'build2']))
-    self.assertTrue(self.list_contains_sublist(
-      triggerer._swarming_runs[0], ['--tag', 'shard:0']))
-    self.assertTrue(self.list_contains_sublist(
-      triggerer._swarming_runs[1], ['--tag', 'shard:1']))
-    self.assertTrue(self.list_contains_sublist(
-      triggerer._swarming_runs[0], ['--env', 'GTEST_SHARD_INDEX', '0']))
-    self.assertTrue(self.list_contains_sublist(
-      triggerer._swarming_runs[1], ['--env', 'GTEST_SHARD_INDEX', '1']))
-    self.assertTrue(self.list_contains_sublist(
-      triggerer._swarming_runs[0], ['--env', 'GTEST_TOTAL_SHARDS', '2']))
-    self.assertTrue(self.list_contains_sublist(
-      triggerer._swarming_runs[1], ['--env', 'GTEST_TOTAL_SHARDS', '2']))
+  def assert_query_swarming_args(self, triggerer, num_shards):
+    # Assert the calls to query swarming send the right args
+    # First call is to get eligible bots and then one query
+    # per shard
+    for i in range(num_shards + 1):
+      self.assertTrue('query' in triggerer._swarming_runs[i])
+      self.assertTrue(self.list_contains_sublist(
+        triggerer._swarming_runs[i], ['-S', 'foo_server']))
+      self.assertTrue(self.list_contains_sublist(
+        triggerer._swarming_runs[i], ['--auth-service-account-json',
+                                      '/creds/test_service_account']))
 
-  def test_json_merging(self):
-    triggerer = self.basic_setup()
-    self.assertTrue('output.json' in triggerer._files)
-    output_json = triggerer._files['output.json']
-    self.assertTrue('base_task_name' in output_json)
-    self.assertTrue('request' in output_json)
-    self.assertEqual(output_json['request']['expiration_secs'], 3600)
-    self.assertEqual(
-      output_json['request']['properties']['execution_timeout_secs'], 3600)
+  def get_triggered_shard_to_bot(self, triggerer, num_shards):
+    self.assert_query_swarming_args(triggerer, num_shards)
+    triggered_map = {}
+    for run in triggerer._swarming_runs:
+      if not 'trigger' in run:
+        continue
+      bot_id = run[(run.index('id') + 1)]
+      shard = int(run[(run.index('GTEST_SHARD_INDEX') + 1)])
+      triggered_map[shard] = bot_id
+    return triggered_map
+
+
+  def test_all_healthy_shards(self):
+    triggerer = self.setup_and_trigger(
+        previous_task_assignment_map={0: 'build3', 1: 'build4', 2: 'build5'},
+        alive_bots=['build3', 'build4', 'build5'],
+        dead_bots=['build1', 'build2'])
+    expected_task_assignment = self.get_triggered_shard_to_bot(
+        triggerer, num_shards=3)
+    self.assertEquals(len(set(expected_task_assignment.values())), 3)
+
+    # All three bots were healthy so we should expect the task assignment to
+    # stay the same
+    self.assertEquals(expected_task_assignment.get(0), 'build3')
+    self.assertEquals(expected_task_assignment.get(1), 'build4')
+    self.assertEquals(expected_task_assignment.get(2), 'build5')
+
+  def test_previously_healthy_now_dead(self):
+    # Test that it swaps out build1 and build2 that are dead
+    # for two healthy bots
+    triggerer = self.setup_and_trigger(
+        previous_task_assignment_map={0: 'build1', 1: 'build2', 2: 'build3'},
+        alive_bots=['build3', 'build4', 'build5'],
+        dead_bots=['build1', 'build2'])
+    expected_task_assignment = self.get_triggered_shard_to_bot(
+        triggerer, num_shards=3)
+    self.assertEquals(len(set(expected_task_assignment.values())), 3)
+
+    # The first two should be assigned to one of the unassigned healthy bots
+    new_healthy_bots = ['build4', 'build5']
+    self.assertIn(expected_task_assignment.get(0), new_healthy_bots)
+    self.assertIn(expected_task_assignment.get(1), new_healthy_bots)
+    self.assertEquals(expected_task_assignment.get(2), 'build3')
+
+  def test_not_enough_healthy_bots(self):
+    triggerer = self.setup_and_trigger(
+        previous_task_assignment_map= {0: 'build1', 1: 'build2',
+                                       2: 'build3', 3: 'build4', 4: 'build5'},
+        alive_bots=['build3', 'build4', 'build5'],
+        dead_bots=['build1', 'build2'])
+    expected_task_assignment = self.get_triggered_shard_to_bot(
+        triggerer, num_shards=5)
+    self.assertEquals(len(set(expected_task_assignment.values())), 5)
+
+    # We have 5 shards and 5 bots that ran them, but two
+    # are now dead and there aren't any other healthy bots
+    # to swap out to.  Make sure they still assign to the
+    # same shards.
+    self.assertEquals(expected_task_assignment.get(0), 'build1')
+    self.assertEquals(expected_task_assignment.get(1), 'build2')
+    self.assertEquals(expected_task_assignment.get(2), 'build3')
+    self.assertEquals(expected_task_assignment.get(3), 'build4')
+    self.assertEquals(expected_task_assignment.get(4), 'build5')
+
+  def test_not_enough_healthy_bots_shard_not_seen(self):
+    triggerer = self.setup_and_trigger(
+        previous_task_assignment_map= {0: 'build1', 1: '',
+                                       2: 'build3', 3: 'build4', 4: 'build5'},
+        alive_bots=['build3', 'build4', 'build5'],
+        dead_bots=['build1', 'build2'])
+    expected_task_assignment = self.get_triggered_shard_to_bot(
+        triggerer, num_shards=5)
+    self.assertEquals(len(set(expected_task_assignment.values())), 5)
+
+    # Not enough healthy bots so make sure shard 0 is still assigned to its
+    # same dead bot.
+    self.assertEquals(expected_task_assignment.get(0), 'build1')
+    # Shard 1 had not been triggered yet, but there weren't enough
+    # healthy bots.  Make sure it got assigned to the other dead bot.
+    self.assertEquals(expected_task_assignment.get(1), 'build2')
+    # The rest of the assignments should stay the same.
+    self.assertEquals(expected_task_assignment.get(2), 'build3')
+    self.assertEquals(expected_task_assignment.get(3), 'build4')
+    self.assertEquals(expected_task_assignment.get(4), 'build5')
+
+  def test_shards_not_triggered_yet(self):
+    # First time this configuration has been seen.  Choose three
+    # healthy shards to trigger jobs on
+    triggerer = self.setup_and_trigger(
+        previous_task_assignment_map= {0: '', 1: '', 2: ''},
+        alive_bots=['build3', 'build4', 'build5'],
+        dead_bots=['build1', 'build2'])
+    expected_task_assignment = self.get_triggered_shard_to_bot(
+        triggerer, num_shards=3)
+    self.assertEquals(len(set(expected_task_assignment.values())), 3)
+    new_healthy_bots = ['build3', 'build4', 'build5']
+    self.assertIn(expected_task_assignment.get(0), new_healthy_bots)
+    self.assertIn(expected_task_assignment.get(1), new_healthy_bots)
+    self.assertIn(expected_task_assignment.get(2), new_healthy_bots)
 
 if __name__ == '__main__':
   unittest.main()
