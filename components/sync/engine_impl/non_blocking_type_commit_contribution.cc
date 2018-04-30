@@ -90,6 +90,7 @@ SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
       case sync_pb::CommitResponse::CONFLICT:
         DVLOG(1) << "Server reports conflict for commit message.";
         ++conflicting_commits;
+        status->increment_num_server_conflicts();
         break;
       case sync_pb::CommitResponse::SUCCESS: {
         ++successes;
@@ -101,6 +102,12 @@ SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
         response_data.sequence_number = commit_request.sequence_number;
         response_data.specifics_hash = commit_request.specifics_hash;
         response_list.push_back(response_data);
+
+        status->increment_num_successful_commits();
+        if (commit_request.entity->specifics.has_bookmark()) {
+          status->increment_num_successful_bookmark_commits();
+        }
+
         break;
       }
       case sync_pb::CommitResponse::OVER_QUOTA:
