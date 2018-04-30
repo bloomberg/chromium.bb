@@ -40,6 +40,7 @@ TEST_CONFIGS = [
   'wasm_llvm',
   'webports',
   'with_branch_heads',
+  'with_tags',
 ]
 
 

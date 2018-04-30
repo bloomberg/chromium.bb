@@ -199,7 +199,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--no_shallow')
     if with_branch_heads or cfg.with_branch_heads:
       cmd.append('--with_branch_heads')
-    if with_tags:
+    if with_tags or cfg.with_tags:
       cmd.append('--with_tags')
     if gerrit_no_reset:
       cmd.append('--gerrit_no_reset')

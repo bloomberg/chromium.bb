@@ -94,6 +94,13 @@ def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
         required=False,
         hidden=True),
 
+    # Check out refs/tags.
+    with_tags = Single(
+        bool,
+        empty_val=False,
+        required=False,
+        hidden=True),
+
     disable_syntax_validation = Single(bool, empty_val=False, required=False),
 
     USE_MIRROR = Static(bool(USE_MIRROR)),
@@ -368,6 +375,10 @@ def infradata_master_manager(c):
 @config_ctx()
 def with_branch_heads(c):
   c.with_branch_heads = True
+
+@config_ctx()
+def with_tags(c):
+  c.with_tags = True
 
 @config_ctx()
 def custom_tabs_client(c):
