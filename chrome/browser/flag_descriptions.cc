@@ -460,12 +460,6 @@ const char kEnableManualFallbacksFillingDescription[] =
     "might contain generation fallbacks or 'Show all saved passwords' "
     "fallback.";
 
-const char kEnableMaterialDesignBookmarksName[] =
-    "Enable Material Design bookmarks";
-const char kEnableMaterialDesignBookmarksDescription[] =
-    "If enabled, the chrome://bookmarks/ URL loads the Material Design "
-    "bookmarks page.";
-
 const char kEnableMaterialDesignExtensionsName[] =
     "Enable Material Design extensions";
 const char kEnableMaterialDesignExtensionsDescription[] =

@@ -11,7 +11,6 @@ GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/browser/prefs/incognito_mode_prefs.h"');
 GEN('#include "chrome/browser/ui/webui/md_bookmarks/md_bookmarks_browsertest.h"');
-GEN('#include "chrome/common/chrome_features.h"');
 
 function MaterialBookmarksBrowserTest() {}
 
@@ -19,8 +18,6 @@ MaterialBookmarksBrowserTest.prototype = {
   __proto__: PolymerTest.prototype,
 
   browsePreload: 'chrome://bookmarks',
-
-  featureList: ['features::kMaterialDesignBookmarks', ''],
 
   typedefCppFixture: 'MdBookmarksBrowserTest',
 

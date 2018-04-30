@@ -12,7 +12,6 @@
   </outputs>
   <release seq="1">
     <structures>
-      <structure name="IDR_BOOKMARK_MANAGER_MAIN" file="bookmark_manager/main.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
       <if expr="chromeos">
         <structure name="IDR_WALLPAPER_MANAGER_MAIN" file="chromeos/wallpaper_manager/main.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
         <if expr="not _google_chrome">
@@ -31,13 +30,6 @@
         <include name="IDR_BRAILLE_IME_MAIN_JS" file="chromeos/braille_ime/main.js" type="BINDATA" />
       </if>
 
-      <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MANAGER_SEARCH" file="bookmark_manager/images/bookmark_manager_search.png" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MANAGER_SEARCH_RTL" file="bookmark_manager/images/bookmark_manager_search_rtl.png" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MAIN_JS" file="bookmark_manager/js/main.js" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_BMM_LIST_JS" file="bookmark_manager/js/bmm/bookmark_list.js" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_BMM_TREE_JS" file="bookmark_manager/js/bmm/bookmark_tree.js" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_DND_JS" file="bookmark_manager/js/dnd.js" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_BMM_JS" file="bookmark_manager/js/bmm.js" type="BINDATA" />
       <!-- Material Design Bookmarks -->
       <include name="IDR_COMPONENT_MD_BOOKMARKS_BOOKMARKS_HTML" file="md_bookmarks/bookmarks.html" type="BINDATA" />
       <!-- Gaia auth extension -->

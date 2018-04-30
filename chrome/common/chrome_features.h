@@ -193,8 +193,6 @@ extern const base::Feature kMacFullSizeContentView;
 extern const base::Feature kMacSystemShareMenu;
 #endif
 
-extern const base::Feature kMaterialDesignBookmarks;
-
 #if defined(OS_MACOSX)
 extern const base::Feature kMacMaterialDesignDownloadShelf;
 #endif

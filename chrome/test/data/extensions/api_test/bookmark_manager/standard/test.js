@@ -43,13 +43,6 @@ document.addEventListener('paste', function (event) {
 });
 
 var tests = [
-  function getStrings() {
-    bookmarkManager.getStrings(pass(function(strings) {
-      assertEq('string', typeof strings['title']);
-      assertEq('string', typeof strings['search_button']);
-    }));
-  },
-
   function sortChildren() {
     folder = {
       parentId: '1',

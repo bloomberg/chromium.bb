@@ -2416,10 +2416,6 @@ const FeatureEntry kFeatureEntries[] = {
          autofill::switches::kEnableOfferUploadCreditCards,
          autofill::switches::kDisableOfferUploadCreditCards)},
 #endif  // TOOLKIT_VIEWS || OS_ANDROID
-    {"enable-md-bookmarks",
-     flag_descriptions::kEnableMaterialDesignBookmarksName,
-     flag_descriptions::kEnableMaterialDesignBookmarksDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kMaterialDesignBookmarks)},
     {"enable-md-incognito-ntp",
      flag_descriptions::kMaterialDesignIncognitoNTPName,
      flag_descriptions::kMaterialDesignIncognitoNTPDescription, kOsAndroid,

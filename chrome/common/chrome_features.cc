@@ -346,10 +346,6 @@ const base::Feature kMacSystemShareMenu{"MacSystemShareMenu",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-// Enables or disables the Material Design version of chrome://bookmarks.
-const base::Feature kMaterialDesignBookmarks{"MaterialDesignBookmarks",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_MACOSX)
 // Enables the Material Design download shelf on Mac.
 const base::Feature kMacMaterialDesignDownloadShelf{
