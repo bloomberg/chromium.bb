@@ -177,4 +177,15 @@ TEST_F(FieldTrialUtilTest, AssociateForcingFlagsFromFieldTrialConfig) {
   EXPECT_EQ("ForcedGroup3", base::FieldTrialList::FindFullName("TestTrial3"));
 }
 
+TEST_F(FieldTrialUtilTest, TestEscapeValue) {
+  std::string str = "trail.:/,*";
+  std::string escaped_str = EscapeValue(str);
+  EXPECT_EQ(escaped_str.find('.'), std::string::npos);
+  EXPECT_EQ(escaped_str.find(':'), std::string::npos);
+  EXPECT_EQ(escaped_str.find('/'), std::string::npos);
+  EXPECT_EQ(escaped_str.find(','), std::string::npos);
+  EXPECT_EQ(escaped_str.find('*'), std::string::npos);
+
+  EXPECT_EQ(str, UnescapeValue(escaped_str));
+}
 }  // namespace variations
