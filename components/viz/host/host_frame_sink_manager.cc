@@ -436,12 +436,6 @@ void HostFrameSinkManager::SwitchActiveAggregatedHitTestRegionList(
   // in-flight hit-test data.
   if (iter == display_hit_test_query_.end())
     return;
-
-  if (active_handle_index != 0u && active_handle_index != 1u) {
-    // TODO(riajiang): Report security fault. http://crbug.com/746470
-    NOTREACHED();
-    return;
-  }
   iter->second->SwitchActiveAggregatedHitTestRegionList(active_handle_index);
 }
 
