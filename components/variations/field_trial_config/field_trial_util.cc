@@ -21,12 +21,6 @@
 namespace variations {
 namespace {
 
-std::string UnescapeValue(const std::string& value) {
-  return net::UnescapeURLComponent(
-      value, net::UnescapeRule::PATH_SEPARATORS |
-                 net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
-}
-
 void AssociateParamsFromExperiment(
     const std::string& study_name,
     const FieldTrialTestingExperiment& experiment,
@@ -83,10 +77,30 @@ const FieldTrialTestingExperiment& ChooseExperiment(
 
 } // namespace
 
+std::string UnescapeValue(const std::string& value) {
+  return net::UnescapeURLComponent(
+      value, net::UnescapeRule::PATH_SEPARATORS |
+                 net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+}
+
 std::string EscapeValue(const std::string& value) {
   // This needs to be the inverse of UnescapeValue in the anonymous namespace
   // above.
-  return net::EscapeQueryParamValue(value, true /* use_plus */);
+  std::string net_escaped_str =
+      net::EscapeQueryParamValue(value, true /* use_plus */);
+
+  // net doesn't escape '.' and '*' but UnescapeValue() covers those cases.
+  std::string escaped_str;
+  escaped_str.reserve(net_escaped_str.length());
+  for (const char ch : net_escaped_str) {
+    if (ch == '.')
+      escaped_str.append("%2E");
+    else if (ch == '*')
+      escaped_str.append("%2A");
+    else
+      escaped_str.push_back(ch);
+  }
+  return escaped_str;
 }
 
 bool AssociateParamsFromString(const std::string& varations_string) {

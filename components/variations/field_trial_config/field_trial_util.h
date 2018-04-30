@@ -15,6 +15,9 @@ namespace variations {
 
 struct FieldTrialTestingConfig;
 
+// Unescapes special characters from the given string.
+std::string UnescapeValue(const std::string& value);
+
 // Escapes the trial name, or parameter name, or parameter value in a way that
 // makes it usable within variations::switches::kForceFieldTrialParams.
 std::string EscapeValue(const std::string& value);
