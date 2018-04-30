@@ -27,6 +27,15 @@ class FileManagerBrowserTest :
       public FileManagerBrowserTestBase,
       public ::testing::WithParamInterface<TestParameter> {
  public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    FileManagerBrowserTestBase::SetUpCommandLine(command_line);
+
+    if (shouldEnableLegacyEventDispatch()) {
+      command_line->AppendSwitchASCII("disable-blink-features",
+                                      "TrustedEventsDefaultAction");
+    }
+  }
+
   GuestMode GetGuestModeParam() const override {
     return std::get<0>(GetParam());
   }
@@ -37,6 +46,13 @@ class FileManagerBrowserTest :
 
   const char* GetTestManifestName() const override {
     return "file_manager_test_manifest.json";
+  }
+
+ private:
+  bool shouldEnableLegacyEventDispatch() {
+    const std::string test_case_name = GetTestCaseNameParam();
+    // crbug.com/482121 crbug.com/480491
+    return test_case_name.find("tabindex") != std::string::npos;
   }
 };
 
@@ -428,30 +444,26 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "tabindexFocusDirectorySelected")));
 
-// Fails on official cros trunk build. http://crbug.com/480491
-// TODO(crbug.com/836254) test broken when DISABLE removed.
 #if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
 #define MAYBE_TabindexOpenDialog DISABLED_TabindexOpenDialog
 #else
 #define MAYBE_TabindexOpenDialog TabindexOpenDialog
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_TabindexOpenDialog,
+    MAYBE_TabindexOpenDialog,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "tabindexOpenDialogDrive"),
         TestParameter(NOT_IN_GUEST_MODE, "tabindexOpenDialogDownloads"),
         TestParameter(IN_GUEST_MODE, "tabindexOpenDialogDownloads")));
 
-// Fails on official build. http://crbug.com/482121.
-// TODO(crbug.com/836254) test broken when DISABLE removed.
 #if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
 #define MAYBE_TabindexSaveFileDialog DISABLED_TabindexSaveFileDialog
 #else
 #define MAYBE_TabindexSaveFileDialog TabindexSaveFileDialog
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_TabindexSaveFileDialog,
+    MAYBE_TabindexSaveFileDialog,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "tabindexSaveFileDialogDrive"),

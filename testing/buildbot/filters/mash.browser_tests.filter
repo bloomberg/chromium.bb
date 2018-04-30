@@ -337,6 +337,8 @@
 -OpenVideoFiles/FileManagerBrowserTest.*
 -TabindexFocusDownloads/FileManagerBrowserTestWithLegacyEventDispatch.Test/0
 -TabindexFocusDownloads/FileManagerBrowserTestWithLegacyEventDispatch.Test/1
+-TabindexOpenDialog/FileManagerBrowserTest.*
+-TabindexSaveFileDialog/FileManagerBrowserTest.*
 -DeclarativeNetRequestResourceTypeBrowserTest.Test1/1
 -DeclarativeNetRequestResourceTypeBrowserTest.Test2/0
 -DeclarativeNetRequestResourceTypeBrowserTest.Test2/1
