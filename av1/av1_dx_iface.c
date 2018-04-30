@@ -223,7 +223,7 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
     // Skip any associated payload (there shouldn't be one, but just in case)
     if (data_sz < bytes_read + payload_size) return AOM_CODEC_CORRUPT_FRAME;
     data += bytes_read + payload_size;
-    data_sz -= bytes_read + payload_size;
+    data_sz -= (uint32_t)(bytes_read + payload_size);
 
     status = aom_read_obu_header_and_size(
         data, data_sz, si->is_annexb, &obu_header, &payload_size, &bytes_read);
@@ -235,7 +235,7 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
 
   // Read a few values from the sequence header payload
   data += bytes_read;
-  data_sz -= bytes_read;
+  data_sz -= (uint32_t)bytes_read;
   struct aom_read_bit_buffer rb = { data, data + data_sz, 0, NULL, NULL };
 
   av1_read_profile(&rb);  // profile
