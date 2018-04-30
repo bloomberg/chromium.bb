@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -23,6 +24,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/button/label_button_border.h"
 
 AvatarToolbarButton::AvatarToolbarButton(Profile* profile,
                                          views::ButtonListener* listener)
@@ -35,6 +37,12 @@ AvatarToolbarButton::AvatarToolbarButton(Profile* profile,
 
   SetImageAlignment(HorizontalAlignment::ALIGN_CENTER,
                     VerticalAlignment::ALIGN_MIDDLE);
+
+  // In non-touch mode we use a larger-than-normal icon size for avatars as 16dp
+  // is hard to read for user avatars. This constant is correspondingly smaller
+  // than GetLayoutInsets(TOOLBAR_BUTTON).
+  if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+    SetBorder(views::CreateEmptyBorder(gfx::Insets(4)));
 
   set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                               ui::EF_MIDDLE_MOUSE_BUTTON);
@@ -113,10 +121,8 @@ bool AvatarToolbarButton::ShouldShowGenericIcon() const {
 }
 
 gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() const {
-  const bool is_touch =
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
-  // TODO(pbos): Move these constants to LayoutProvider or LayoutConstants.
-  const int icon_size = is_touch ? 24 : 20;
+  const int icon_size =
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 24 : 20;
 
   const SkColor icon_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
