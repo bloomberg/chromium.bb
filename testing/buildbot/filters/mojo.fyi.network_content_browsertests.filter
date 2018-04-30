@@ -2,7 +2,7 @@
 # feature X that is already not working), please add it beside the existing
 # failures. Otherwise please reach out to network-service-dev@.
 
-# http://crbug.com/715640
+# https://crbug.com/715640
 -ServiceWorkerBrowserTest.FetchPageWithSaveData
 -ServiceWorkerBrowserTest.ImportsBustMemcache
 -ServiceWorkerBrowserTest.Reload
@@ -17,7 +17,7 @@
 # https://crbug.com/756312
 -ServiceWorkerVersionBrowserV8CacheTest.Restart
 
-# http://crbug.com/721398
+# https://crbug.com/721398
 -ClearSiteDataThrottleBrowserTest.CacheIntegrationTest
 -ClearSiteDataThrottleBrowserTest.CookiesIntegrationTest
 -ClearSiteDataThrottleBrowserTest.Credentials
@@ -29,17 +29,19 @@
 -ClearSiteDataThrottleBrowserTest.StorageServiceWorkersIntegrationTest
 -ClearSiteDataThrottleBrowserTest.Types
 
-# http://crbug.com/820060
+# https://crbug.com/820060
 -PreviewsStateBrowserTest.ShouldEnableLoFiModeNavigateBackThenForward
 -PreviewsStateBrowserTest.ShouldEnableLoFiModeOff
 -PreviewsStateBrowserTest.ShouldEnableLoFiModeOn
 -PreviewsStateBrowserTest.ShouldEnableLoFiModeReload
 -PreviewsStateBrowserTest.ShouldEnableLoFiModeReloadDisableLoFi
 
+# https://crbug.com/837666
+-NavigationHandleImplBrowserTest.RedirectToRendererDebugUrl
+
 -AsyncResourceHandlerBrowserTest/AsyncResourceHandlerBrowserTest.UploadProgress*
 -IsolatedDevToolsProtocolTest.ControlNavigationsChildFrames
 -NavigationHandleImplBrowserTest.ErrorCodeOnRedirect
--NavigationHandleImplBrowserTest.RedirectToRendererDebugUrl
 -RenderViewBrowserTest.ConfirmCacheInformationPlumbed
 -WebContentsImplBrowserTest.DownloadImage_Deny_FileImage
 
@@ -65,11 +67,11 @@
 -CrossSiteDocumentBlockingServiceWorkerTest.NetworkToServiceWorkerResponse
 
 # Flakes on Android.
-# http://crbug.com/827318
+# https://crbug.com/827318
 -RenderThreadImplBrowserTest.NonResourceDispatchIPCTasksDontGoThroughScheduler
 
 # Network service path needs some way to update the per-WebContents load state.
-# http://crbug.com/819663.
+# https://crbug.com/819663.
 -WebContentsImplBrowserTest.UpdateLoadState
 
 # NOTE: if adding an exclusion for an existing failure (e.g. additional test for
