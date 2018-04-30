@@ -12,6 +12,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -153,28 +154,35 @@ const SkColor kDefaultIconColor = SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
 }
 
 - (NSImage*)imageForHoverState:(HoverState)hoverState {
-  const gfx::VectorIcon* vectorIcon = nullptr;
+  const gfx::VectorIcon* vectorHighlightIcon = nullptr;
   SkColor vectorIconColor = gfx::kPlaceholderColor;
 
   switch (hoverState) {
     case kHoverStateNone:
-      vectorIcon = &kTabCloseNormalIcon;
-      vectorIconColor = iconColor_;
       break;
     case kHoverStateMouseOver:
       // For mouse over, the icon color is the fill color of the circle.
-      vectorIcon = &kTabCloseHoveredPressedIcon;
+      vectorHighlightIcon = &kTabCloseButtonHighlightIcon;
       vectorIconColor = SkColorSetARGB(0xFF, 0xDB, 0x44, 0x37);
       break;
     case kHoverStateMouseDown:
       // For mouse pressed, the icon color is the fill color of the circle.
-      vectorIcon = &kTabCloseHoveredPressedIcon;
+      vectorHighlightIcon = &kTabCloseButtonHighlightIcon;
       vectorIconColor = SkColorSetARGB(0xFF, 0xA8, 0x35, 0x2A);
       break;
   }
 
-  return NSImageFromImageSkia(
-      gfx::CreateVectorIcon(*vectorIcon, kTabCloseButtonSize, vectorIconColor));
+  const gfx::ImageSkia& iconImage = gfx::CreateVectorIcon(
+      kTabCloseNormalIcon, kTabCloseButtonSize, iconColor_);
+
+  if (vectorHighlightIcon) {
+    const gfx::ImageSkia& highlight = gfx::CreateVectorIcon(
+        *vectorHighlightIcon, kTabCloseButtonSize, vectorIconColor);
+    return NSImageFromImageSkia(
+        gfx::ImageSkiaOperations::CreateSuperimposedImage(highlight,
+                                                          iconImage));
+  }
+  return NSImageFromImageSkia(iconImage);
 }
 
 - (void)setHoverState:(HoverState)state {

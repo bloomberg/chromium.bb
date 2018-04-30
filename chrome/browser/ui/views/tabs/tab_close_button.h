@@ -33,7 +33,7 @@ class TabCloseButton : public views::ImageButton,
   // color to use. It must also be called when the background color of the tab
   // changes (this class does not track tab activation state), and when the
   // theme changes.
-  void SetTabColor(SkColor color);
+  void SetTabColor(SkColor color, bool tab_color_is_dark);
 
   // This is called whenever the |parent_tab| changes its active state.
   void ActiveStateChanged(const Tab* parent_tab);
@@ -50,6 +50,11 @@ class TabCloseButton : public views::ImageButton,
   // views::MaskedTargeterDelegate:
   views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
   bool GetHitTestMask(gfx::Path* mask) const override;
+
+  void GenerateImages(bool is_touch,
+                      SkColor normal_color,
+                      SkColor hover_color,
+                      SkColor pressed_color);
 
   MouseEventCallback mouse_event_callback_;
 

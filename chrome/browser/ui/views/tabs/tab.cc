@@ -922,6 +922,7 @@ void Tab::OnMouseCaptureLost() {
 
 void Tab::OnMouseEntered(const ui::MouseEvent& event) {
   hover_controller_.Show(views::GlowHoverController::SUBTLE);
+  Layout();
 }
 
 void Tab::OnMouseMoved(const ui::MouseEvent& event) {
@@ -931,6 +932,7 @@ void Tab::OnMouseMoved(const ui::MouseEvent& event) {
 
 void Tab::OnMouseExited(const ui::MouseEvent& event) {
   hover_controller_.Hide();
+  Layout();
 }
 
 void Tab::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -1207,8 +1209,10 @@ void Tab::UpdateIconVisibility() {
   const bool has_alert_icon =
       (alert_indicator_button_ ? alert_indicator_button_->showing_alert_state()
                                : data().alert_state) != TabAlertState::NONE;
-  const bool force_hide_close_button =
+  const bool hide_inactive_close_button =
       controller_->ShouldHideCloseButtonForInactiveTabs();
+  const bool show_close_button_on_hover =
+      controller_->ShouldShowCloseButtonOnHover();
 
   if (is_pinned) {
     // When the tab is pinned, we can show one of the two icons. Alert icon
@@ -1252,7 +1256,8 @@ void Tab::UpdateIconVisibility() {
       // will be occupied by the title of this tab.
       int title_width =
           (!showing_icon_ + !showing_alert_indicator_) * favicon_width;
-      if (!force_hide_close_button &&
+      if ((!hide_inactive_close_button ||
+           (show_close_button_on_hover && IsMouseHovered())) &&
           (title_width + close_button_width + extra_padding <=
            available_width)) {
         showing_close_button_ = true;
@@ -1311,7 +1316,9 @@ void Tab::OnButtonColorMaybeChanged() {
     title_->SetEnabledColor(title_color);
     alert_indicator_button_->OnParentTabButtonColorChanged();
     if (!MD::IsTouchOptimizedUiEnabled())
-      close_button_->SetTabColor(button_color_);
+      close_button_->SetTabColor(button_color_,
+                                 color_utils::IsDark(theme_provider->GetColor(
+                                     ThemeProperties::COLOR_TOOLBAR)));
   }
   if (MD::IsTouchOptimizedUiEnabled())
     close_button_->ActiveStateChanged(this);
