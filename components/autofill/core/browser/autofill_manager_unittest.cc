@@ -3663,9 +3663,13 @@ TEST_F(AutofillManagerTest, FormWithHiddenOrPresentationalSelects) {
   const char guid[] = "00000000-0000-0000-0000-000000000001";
   int response_page_id = 0;
   FormData response_data;
+  base::HistogramTester histogram_tester;
+
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
                                      MakeFrontendID(std::string(), guid),
                                      &response_page_id, &response_data);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.HiddenOrPresentationalSelectFieldsFilled", 2);
 
   ExpectFilledField("First name", "firstname", "Elvis", "text",
                     response_data.fields[0]);

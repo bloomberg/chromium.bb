@@ -1444,6 +1444,12 @@ void AutofillManager::FillOrPreviewDataModelForm(
     // will be sent to the renderer.
     FillFieldWithValue(cached_field, data_model, &result.fields[i],
                        should_notify, cvc);
+
+    if ((!cached_field->is_focusable ||
+         cached_field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION) &&
+        result.fields[i].is_autofilled) {
+      AutofillMetrics::LogHiddenOrPresentationalSelectFieldsFilled();
+    }
   }
 
   autofilled_form_signatures_.push_front(form_structure->FormSignatureAsStr());

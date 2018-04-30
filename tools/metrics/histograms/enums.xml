@@ -3892,6 +3892,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Has slow paths with non-AA paint"/>
 </enum>
 
+<enum name="BooleanHiddenPresentationalAutofilled">
+  <int value="0" label="Skipped"/>
+  <int value="1" label="Autofilled"/>
+</enum>
+
 <enum name="BooleanHit">
   <int value="0" label="Not_reached"/>
   <int value="1" label="Hit"/>

@@ -1150,6 +1150,12 @@ void AutofillMetrics::LogNumberOfCreditCardsDeletedForDisuse(size_t num_cards) {
 }
 
 // static
+void AutofillMetrics::LogHiddenOrPresentationalSelectFieldsFilled() {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.HiddenOrPresentationalSelectFieldsFilled",
+                        true);
+}
+
+// static
 void AutofillMetrics::LogNumberOfProfilesAtAutofillableFormSubmission(
     size_t num_profiles) {
   UMA_HISTOGRAM_COUNTS(
