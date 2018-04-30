@@ -193,7 +193,7 @@ public class ChildProcessConnectionTest {
         ChildProcessConnection connection = createDefaultTestConnection();
         assertNotNull(mFirstServiceConnection);
         connection.start(false /* useStrongBinding */, mServiceCallback);
-        Assert.assertTrue(connection.isInitialBindingBound());
+        Assert.assertTrue(connection.isModerateBindingBound());
         Assert.assertFalse(connection.didOnServiceConnectedForTesting());
         verify(mServiceCallback, never()).onChildStarted();
         verify(mServiceCallback, never()).onChildStartFailed(any());
@@ -216,7 +216,7 @@ public class ChildProcessConnectionTest {
         doReturn(false).when(mFirstServiceConnection).bind();
         connection.start(false /* useStrongBinding */, mServiceCallback);
 
-        Assert.assertFalse(connection.isInitialBindingBound());
+        Assert.assertFalse(connection.isModerateBindingBound());
         Assert.assertFalse(connection.didOnServiceConnectedForTesting());
         verify(mServiceCallback, never()).onChildStarted();
         verify(mServiceCallback, never()).onChildStartFailed(any());

@@ -57,7 +57,7 @@ public class ChildProcessLauncherIntegrationTest {
     }
 
     private static class TestChildProcessConnection extends ChildProcessConnection {
-        private RuntimeException mRemovedBothInitialAndStrongBinding;
+        private RuntimeException mRemovedBothModerateAndStrongBinding;
 
         public TestChildProcessConnection(Context context, ComponentName serviceName,
                 boolean bindToCaller, boolean bindAsExternalService,
@@ -69,30 +69,31 @@ public class ChildProcessLauncherIntegrationTest {
         @Override
         protected void unbind() {
             super.unbind();
-            if (mRemovedBothInitialAndStrongBinding == null) {
-                mRemovedBothInitialAndStrongBinding = new RuntimeException("unbind");
+            if (mRemovedBothModerateAndStrongBinding == null) {
+                mRemovedBothModerateAndStrongBinding = new RuntimeException("unbind");
             }
         }
 
         @Override
-        public void removeInitialBinding() {
-            super.removeInitialBinding();
-            if (mRemovedBothInitialAndStrongBinding == null && !isStrongBindingBound()) {
-                mRemovedBothInitialAndStrongBinding = new RuntimeException("removeInitialBinding");
+        public void removeModerateBinding() {
+            super.removeModerateBinding();
+            if (mRemovedBothModerateAndStrongBinding == null && !isStrongBindingBound()) {
+                mRemovedBothModerateAndStrongBinding =
+                        new RuntimeException("removeModerateBinding");
             }
         }
 
         @Override
         public void removeStrongBinding() {
             super.removeStrongBinding();
-            if (mRemovedBothInitialAndStrongBinding == null && !isInitialBindingBound()) {
-                mRemovedBothInitialAndStrongBinding = new RuntimeException("removeStrongBinding");
+            if (mRemovedBothModerateAndStrongBinding == null && !isModerateBindingBound()) {
+                mRemovedBothModerateAndStrongBinding = new RuntimeException("removeStrongBinding");
             }
         }
 
-        public void throwIfDroppedBothInitialAndStrongBinding() {
-            if (mRemovedBothInitialAndStrongBinding != null) {
-                throw mRemovedBothInitialAndStrongBinding;
+        public void throwIfDroppedBothModerateAndStrongBinding() {
+            if (mRemovedBothModerateAndStrongBinding != null) {
+                throw mRemovedBothModerateAndStrongBinding;
             }
         }
     }
@@ -119,7 +120,7 @@ public class ChildProcessLauncherIntegrationTest {
             @Override
             public void run() {
                 Assert.assertEquals(1, connections.size());
-                connections.get(0).throwIfDroppedBothInitialAndStrongBinding();
+                connections.get(0).throwIfDroppedBothModerateAndStrongBinding();
             }
         });
 
@@ -130,7 +131,7 @@ public class ChildProcessLauncherIntegrationTest {
             public void run() {
                 Assert.assertEquals(2, connections.size());
                 // connections.get(0).didDropBothInitialAndImportantBindings();
-                connections.get(1).throwIfDroppedBothInitialAndStrongBinding();
+                connections.get(1).throwIfDroppedBothModerateAndStrongBinding();
             }
         });
     }

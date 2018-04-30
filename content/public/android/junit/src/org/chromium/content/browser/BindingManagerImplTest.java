@@ -47,9 +47,8 @@ public class BindingManagerImplTest {
                 null /* serviceBundle */);
         connection.setPid(pid);
         connection.start(false /* useStrongBinding */, null /* serviceCallback */);
-        if (manager != null) {
-            manager.increaseRecency(connection);
-        }
+        manager.increaseRecency(connection);
+        connection.removeModerateBinding(); // Remove initial binding.
         return connection;
     }
 
