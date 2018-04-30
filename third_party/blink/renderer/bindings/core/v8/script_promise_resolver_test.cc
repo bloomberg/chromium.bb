@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -253,6 +254,32 @@ TEST_F(ScriptPromiseResolverTest, keepAliveUntilRejected) {
   ASSERT_TRUE(ScriptPromiseResolverKeepAlive::IsAlive());
 
   resolver->Reject("hello");
+  ThreadState::Current()->CollectGarbage(
+      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
+      BlinkGC::kEagerSweeping, BlinkGC::kForcedGC);
+  EXPECT_FALSE(ScriptPromiseResolverKeepAlive::IsAlive());
+}
+
+TEST_F(ScriptPromiseResolverTest, keepAliveWhileScriptForbidden) {
+  ScriptPromiseResolverKeepAlive::Reset();
+  ScriptPromiseResolver* resolver = nullptr;
+  {
+    ScriptState::Scope scope(GetScriptState());
+    resolver = ScriptPromiseResolverKeepAlive::Create(GetScriptState());
+  }
+
+  {
+    ScriptForbiddenScope forbidden;
+    resolver->Resolve("hello");
+
+    ThreadState::Current()->CollectGarbage(
+        BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
+        BlinkGC::kEagerSweeping, BlinkGC::kForcedGC);
+    EXPECT_TRUE(ScriptPromiseResolverKeepAlive::IsAlive());
+  }
+
+  base::RunLoop().RunUntilIdle();
+
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
       BlinkGC::kEagerSweeping, BlinkGC::kForcedGC);
