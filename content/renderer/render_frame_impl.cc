@@ -4684,12 +4684,6 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   // present.
   request.SetHTTPOriginIfNeeded(WebSecurityOrigin::CreateUnique());
 
-  // Attach |should_replace_current_entry| state to requests so that, should
-  // this navigation later require a request transfer, all state is preserved
-  // when it is re-created in the new process.
-  bool should_replace_current_entry =
-      document_loader->ReplacesCurrentHistoryItem();
-
   WebFrame* parent = frame_->Parent();
 
   ResourceType resource_type = WebURLRequestToResourceType(request);
@@ -4705,7 +4699,6 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   extra_data->set_allow_download(
       navigation_state->common_params().allow_download);
   extra_data->set_transition_type(transition_type);
-  extra_data->set_should_replace_current_entry(should_replace_current_entry);
   extra_data->set_navigation_response_override(std::move(response_override));
   bool is_for_no_state_prefetch =
       GetContentClient()->renderer()->IsPrefetchOnly(this, request);

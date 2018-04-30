@@ -50,10 +50,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   void set_transition_type(ui::PageTransition transition_type) {
     transition_type_ = transition_type;
   }
-  void set_should_replace_current_entry(
-      bool should_replace_current_entry) {
-    should_replace_current_entry_ = should_replace_current_entry;
-  }
   int service_worker_provider_id() const {
     return service_worker_provider_id_;
   }
@@ -164,7 +160,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   bool is_main_frame_;
   bool allow_download_;
   ui::PageTransition transition_type_;
-  bool should_replace_current_entry_;
   int service_worker_provider_id_;
   bool originated_from_service_worker_;
   blink::WebString custom_user_agent_;

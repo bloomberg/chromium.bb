@@ -187,11 +187,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // about this.
   int transition_type = 0;
 
-  // For navigations, whether this navigation should replace the current session
-  // history entry on commit.
-  // TODO(csharrison): Look into whether this can be removed post-PlzNavigate.
-  bool should_replace_current_entry = false;
-
   // Whether or not we should allow the URL to download.
   bool allow_download = false;
 
