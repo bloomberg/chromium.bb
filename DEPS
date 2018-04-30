@@ -69,8 +69,9 @@ vars = {
   'checkout_traffic_annotation_tools': 'checkout_configuration == "default"',
   'checkout_instrumented_libraries': 'checkout_linux and checkout_configuration == "default"',
 
-  # Define the default board to be targetted when building for CrOS.
-  'cros_board': 'amd64-generic',
+  # Default to the empty board. Desktop Chrome OS builds don't need cros SDK
+  # dependencies. Other Chrome OS builds should always define this explicitly.
+  'cros_board': '',
   # Surround the board var in quotes so gclient doesn't try parsing the string
   # as an expression.
   'cros_download_vm': '"{cros_board}" == "amd64-generic"',
@@ -2011,7 +2012,7 @@ hooks = [
     'name': 'cros_simplechrome_artifacts_with_vm',
     'pattern': '.',
     # Building for CrOS is only supported on linux currently.
-    'condition': '(checkout_chromeos and host_os == "linux") and cros_download_vm',
+    'condition': '((checkout_chromeos and host_os == "linux") and cros_download_vm) and ("{cros_board}" != "")',
     'action': [
       'src/third_party/chromite/bin/cros',
       'chrome-sdk',
@@ -2032,7 +2033,7 @@ hooks = [
     'name': 'cros_simplechrome_artifacts_with_no_vm',
     'pattern': '.',
     # Building for CrOS is only supported on linux currently.
-    'condition': '(checkout_chromeos and host_os == "linux") and not cros_download_vm',
+    'condition': '((checkout_chromeos and host_os == "linux") and not cros_download_vm) and ("{cros_board}" != "")',
     'action': [
       'src/third_party/chromite/bin/cros',
       'chrome-sdk',
