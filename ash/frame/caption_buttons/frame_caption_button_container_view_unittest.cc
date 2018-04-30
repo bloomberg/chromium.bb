@@ -11,6 +11,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/test/test_views.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -151,8 +152,7 @@ TEST_F(FrameCaptionButtonContainerViewTest,
   // Add an extra button to the left of the size button to verify that it is
   // repositioned similarly to the minimize button. This simulates the PWA menu
   // button being added to the left of the minimize button.
-  FrameCaptionButton* extra_button =
-      new FrameCaptionButton(&container, CAPTION_BUTTON_ICON_BACK);
+  views::View* extra_button = new views::StaticSizedView(gfx::Size(32, 32));
   container.AddChildViewAt(extra_button, 0);
 
   InitContainer(&container);

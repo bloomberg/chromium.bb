@@ -177,6 +177,7 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
           : 0);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
   SetLayoutManager(std::move(layout));
   tablet_mode_animation_.reset(new gfx::SlideAnimation(this));
   tablet_mode_animation_->SetTweenType(gfx::Tween::LINEAR);
@@ -322,6 +323,11 @@ void FrameCaptionButtonContainerView::Layout() {
   // pushes the buttons to the left of the size button into the center.
   if (tablet_mode_animation_->is_animating())
     AnimationProgressed(tablet_mode_animation_.get());
+
+  // The top right corner must be occupied by the close button for easy mouse
+  // access. This check is agnostic to RTL layout.
+  DCHECK_EQ(close_button_->y(), 0);
+  DCHECK_EQ(close_button_->bounds().right(), width());
 }
 
 const char* FrameCaptionButtonContainerView::GetClassName() const {
@@ -332,16 +338,18 @@ void FrameCaptionButtonContainerView::ChildPreferredSizeChanged(View* child) {
   PreferredSizeChanged();
 }
 
+void FrameCaptionButtonContainerView::ChildVisibilityChanged(View* child) {
+  PreferredSizeChanged();
+}
+
 void FrameCaptionButtonContainerView::AnimationEnded(
     const gfx::Animation* animation) {
   // Ensure that position is calculated at least once.
   AnimationProgressed(animation);
 
   double current_value = tablet_mode_animation_->GetCurrentValue();
-  if (current_value == 0.0) {
+  if (current_value == 0.0)
     size_button_->SetVisible(false);
-    PreferredSizeChanged();
-  }
 }
 
 void FrameCaptionButtonContainerView::AnimationProgressed(

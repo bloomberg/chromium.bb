@@ -242,14 +242,14 @@ void BrowserFrameHeaderAsh::AnimationProgressed(
 
 void BrowserFrameHeaderAsh::LayoutHeaderInternal() {
   UpdateCaptionButtons();
-  caption_button_container_->Layout();
-
   const gfx::Size caption_button_container_size =
       caption_button_container_->GetPreferredSize();
   caption_button_container_->SetBounds(
       view_->width() - caption_button_container_size.width(), 0,
       caption_button_container_size.width(),
       caption_button_container_size.height());
+
+  caption_button_container_->Layout();
 
   if (!window_icon_)
     return;
