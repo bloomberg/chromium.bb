@@ -15,6 +15,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
+#include "ios/web/public/browser_state.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/navigation_context.h"
@@ -88,12 +89,17 @@ class ITunesLinksHandlerWebStatePolicyDecider
   bool ShouldAllowResponse(NSURLResponse* response,
                            bool for_main_frame) override {
     // Don't allow rendering responses from URLs that can be handled by
-    // iTunesLinksHandler unless it's on iframe.
-    return !for_main_frame || !CanHandleUrl(net::GURLWithNSURL(response.URL));
+    // iTunesLinksHandler unless it's on iframe or the browsing mode is off the
+    // record.
+    return web_state()->GetBrowserState()->IsOffTheRecord() ||
+           !for_main_frame || !CanHandleUrl(net::GURLWithNSURL(response.URL));
   }
 
   bool ShouldAllowRequest(NSURLRequest* request,
                           ui::PageTransition transition) override {
+    // Only consider blocking the request if it's not of the record mode.
+    if (web_state()->GetBrowserState()->IsOffTheRecord())
+      return true;
     web::NavigationItem* pending_item =
         web_state()->GetNavigationManager()->GetPendingItem();
 
@@ -148,6 +154,10 @@ ITunesLinksHandlerTabHelper::ITunesLinksHandlerTabHelper(
 void ITunesLinksHandlerTabHelper::DidFinishNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
+  // Don't handle iTunse URL in off the record mode.
+  if (web_state->GetBrowserState()->IsOffTheRecord())
+    return;
+
   GURL url = navigation_context->GetUrl();
   // Whenever a navigation to iTunes product url is finished, launch StoreKit.
   if (ITunesLinksHandlerWebStatePolicyDecider::CanHandleUrl(url)) {
