@@ -68,6 +68,9 @@ class TabStrip : public views::View,
   // Returns whether or not strokes should be drawn around and under the tabs.
   static bool ShouldDrawStrokes();
 
+  // Returns the gap size between the pinned tabs and the non-pinned tabs.
+  static int GetPinnedToNonPinnedOffset();
+
   // Add and remove observers to changes within this TabStrip.
   void AddObserver(TabStripObserver* observer);
   void RemoveObserver(TabStripObserver* observer);
@@ -225,6 +228,7 @@ class TabStrip : public views::View,
   const ui::ListSelectionModel& GetSelectionModel() const override;
   bool SupportsMultipleSelection() override;
   bool ShouldHideCloseButtonForInactiveTabs() override;
+  bool ShouldShowCloseButtonOnHover() override;
   bool MaySetClip() override;
   void SelectTab(Tab* tab) override;
   void ExtendSelectionTo(Tab* tab) override;

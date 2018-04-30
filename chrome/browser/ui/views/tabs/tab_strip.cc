@@ -231,7 +231,8 @@ const TabSizeInfo& GetTabSizeInfo() {
   g_tab_size_info->min_inactive_width = Tab::GetMinimumInactiveSize().width();
   g_tab_size_info->max_size = Tab::GetStandardSize();
   g_tab_size_info->tab_overlap = Tab::GetOverlap();
-  g_tab_size_info->pinned_to_normal_offset = kPinnedToNonPinnedOffset;
+  g_tab_size_info->pinned_to_normal_offset =
+      TabStrip::GetPinnedToNonPinnedOffset();
   return *g_tab_size_info;
 }
 
@@ -316,6 +317,11 @@ TabStrip::~TabStrip() {
 // static
 bool TabStrip::ShouldDrawStrokes() {
   return MD::GetMode() != MD::MATERIAL_REFRESH;
+}
+
+// static
+int TabStrip::GetPinnedToNonPinnedOffset() {
+  return MD::GetMode() == MD::MATERIAL_REFRESH ? 0 : kPinnedToNonPinnedOffset;
 }
 
 void TabStrip::AddObserver(TabStripObserver* observer) {
@@ -651,7 +657,7 @@ void TabStrip::PrepareForCloseAt(int model_index, CloseTabSource source) {
                                 tab_being_removed->width() + Tab::GetOverlap();
     if (model_index == 0 && tab_being_removed->data().pinned &&
         !tab_at(1)->data().pinned) {
-      available_width_for_tabs_ -= kPinnedToNonPinnedOffset;
+      available_width_for_tabs_ -= GetPinnedToNonPinnedOffset();
     }
   }
 
@@ -804,7 +810,11 @@ bool TabStrip::SupportsMultipleSelection() {
 }
 
 bool TabStrip::ShouldHideCloseButtonForInactiveTabs() {
-  return touch_layout_ != nullptr;
+  return touch_layout_ != nullptr || MD::GetMode() == MD::MATERIAL_REFRESH;
+}
+
+bool TabStrip::ShouldShowCloseButtonOnHover() {
+  return MD::GetMode() == MD::MATERIAL_REFRESH;
 }
 
 bool TabStrip::MaySetClip() {
@@ -1231,7 +1241,7 @@ gfx::Size TabStrip::CalculatePreferredSize() const {
     const int min_selected_width = Tab::GetMinimumActiveSize().width();
     const int min_unselected_width = Tab::GetMinimumInactiveSize().width();
     if (remaining_tab_count > 0) {
-      needed_tab_width += kPinnedToNonPinnedOffset + min_selected_width +
+      needed_tab_width += GetPinnedToNonPinnedOffset() + min_selected_width +
                           ((remaining_tab_count - 1) * min_unselected_width);
     }
 
@@ -1661,7 +1671,7 @@ void TabStrip::CalculateBoundsForDraggedTabs(const Tabs& tabs,
   for (size_t i = 0; i < tabs.size(); ++i) {
     Tab* tab = tabs[i];
     if (i > 0 && tab->data().pinned != tabs[i - 1]->data().pinned)
-      x += kPinnedToNonPinnedOffset;
+      x += GetPinnedToNonPinnedOffset();
     gfx::Rect new_bounds = tab->bounds();
     new_bounds.set_origin(gfx::Point(x, 0));
     bounds->push_back(new_bounds);
@@ -1700,7 +1710,7 @@ int TabStrip::GetSizeNeededForTabs(const Tabs& tabs) {
     Tab* tab = tabs[i];
     width += tab->width();
     if (i > 0 && tab->data().pinned != tabs[i - 1]->data().pinned)
-      width += kPinnedToNonPinnedOffset;
+      width += GetPinnedToNonPinnedOffset();
   }
   if (!tabs.empty())
     width -= Tab::GetOverlap() * (tabs.size() - 1);

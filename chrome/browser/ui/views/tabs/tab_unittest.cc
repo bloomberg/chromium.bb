@@ -41,6 +41,7 @@ class FakeTabController : public TabController {
   bool ShouldHideCloseButtonForInactiveTabs() override {
     return false;
   }
+  bool ShouldShowCloseButtonOnHover() override { return false; }
   bool MaySetClip() override { return false; }
   void SelectTab(Tab* tab) override {}
   void ExtendSelectionTo(Tab* tab) override {}

@@ -38,6 +38,11 @@ class TabController {
   // to be hidden.
   virtual bool ShouldHideCloseButtonForInactiveTabs() = 0;
 
+  // Returns true if we should show the close button an inactive tab on mouse
+  // hover. This is predicated on ShouldHideCloseButtonForInactiveTabs()
+  // returning true.
+  virtual bool ShouldShowCloseButtonOnHover() = 0;
+
   // Returns true if ShouldPaintTab() could return a non-empty clip path.
   virtual bool MaySetClip() = 0;
 

@@ -130,24 +130,6 @@ const SkColor kDefaultColorToolbarStrokeThemeInactive =
     SkColorSetARGB(0x66, 0x4C, 0x4C, 0x4C);
 #endif  // OS_MACOSX
 
-// ----------------------------------------------------------------------------
-// Touch optimized UI color palette
-
-constexpr SkColor kDefaultTouchUiColorToolbar = SkColorSetRGB(0xFD, 0xFE, 0xFF);
-constexpr SkColor kDefaultTouchUiColorActiveFrame =
-    SkColorSetRGB(0xD0, 0xD2, 0xD6);
-constexpr SkColor kDefaultTouchUiColorInactiveFrame =
-    SkColorSetRGB(0xE3, 0xE5, 0xE8);
-constexpr SkColor kDefaultTouchUiColorInactiveFrameIncognito =
-    SkColorSetRGB(0x32, 0x36, 0x39);
-
-constexpr SkColor kDefaultTouchUiColorTabBackgroundInactive =
-    SkColorSetRGB(0xED, 0xEF, 0xF2);
-constexpr SkColor kDefaultTouchUiColorTabBackgroundInactiveIncognito =
-    SkColorSetRGB(0x28, 0x2C, 0x2F);
-
-// ----------------------------------------------------------------------------
-
 // Strings used in alignment properties.
 constexpr char kAlignmentCenter[] = "center";
 constexpr char kAlignmentTop[] = "top";
@@ -170,13 +152,11 @@ base::Optional<SkColor> MaybeGetDefaultColorForNewerMaterialUi(int id,
 
   switch (id) {
     case ThemeProperties::COLOR_FRAME:
-      return incognito ? gfx::kGoogleGrey900 : kDefaultTouchUiColorActiveFrame;
     case ThemeProperties::COLOR_FRAME_INACTIVE:
-      return incognito ? kDefaultTouchUiColorInactiveFrameIncognito
-                       : kDefaultTouchUiColorInactiveFrame;
+    case ThemeProperties::COLOR_BACKGROUND_TAB:
+      return incognito ? gfx::kGoogleGrey900 : gfx::kGoogleGrey200;
     case ThemeProperties::COLOR_TOOLBAR:
-      return incognito ? kDefaultTouchUiColorInactiveFrameIncognito
-                       : kDefaultTouchUiColorToolbar;
+      return incognito ? SkColorSetRGB(0x32, 0x36, 0x39) : SK_ColorWHITE;
 
     case ThemeProperties::COLOR_TAB_TEXT:
     case ThemeProperties::COLOR_BOOKMARK_TEXT:
@@ -189,13 +169,10 @@ base::Optional<SkColor> MaybeGetDefaultColorForNewerMaterialUi(int id,
     case ThemeProperties::COLOR_TAB_ALERT_AUDIO:
       return incognito ? gfx::kGoogleGrey400 : gfx::kGoogleGrey700;
 
-    case ThemeProperties::COLOR_BACKGROUND_TAB:
-      return incognito ? kDefaultTouchUiColorTabBackgroundInactiveIncognito
-                       : kDefaultTouchUiColorTabBackgroundInactive;
     case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_HOVER:
-      return incognito ? gfx::kGoogleRedDark600 : gfx::kGoogleRed600;
+      return incognito ? gfx::kGoogleGrey700 : gfx::kGoogleGrey200;
     case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_PRESSED:
-      return incognito ? gfx::kGoogleRedDark800 : gfx::kGoogleRed800;
+      return incognito ? gfx::kGoogleGrey600 : gfx::kGoogleGrey300;
     case ThemeProperties::COLOR_TAB_ALERT_RECORDING:
       return incognito ? gfx::kGoogleGrey400 : gfx::kGoogleRed600;
     case ThemeProperties::COLOR_TAB_ALERT_CAPTURING:
