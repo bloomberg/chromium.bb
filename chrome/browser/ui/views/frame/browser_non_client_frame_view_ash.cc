@@ -393,6 +393,11 @@ void BrowserNonClientFrameViewAsh::Layout() {
     AlignVerticalCenterWith(&text_bounds, caption_button_container_->bounds());
     frame_header_origin_text_->SetBoundsRect(text_bounds);
   }
+
+  // The top right corner must be occupied by a caption button for easy mouse
+  // access. This check is agnostic to RTL layout.
+  DCHECK_EQ(caption_button_container_->y(), 0);
+  DCHECK_EQ(caption_button_container_->bounds().right(), width());
 }
 
 const char* BrowserNonClientFrameViewAsh::GetClassName() const {
