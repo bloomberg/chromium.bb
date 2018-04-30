@@ -22,18 +22,17 @@
 #include "base/trace_event/blame_context.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test_count_uses_time_source.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test_task_time_observer.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/test_count_uses_time_source.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/test_task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/test_task_time_observer.h"
 #include "third_party/blink/renderer/platform/scheduler/base/thread_controller_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/base/virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue_sets.h"
-#include "third_party/blink/renderer/platform/scheduler/test/task_queue_manager_for_test.h"
-#include "third_party/blink/renderer/platform/scheduler/test/test_task_queue.h"
 
 using testing::AnyNumber;
 using testing::Contains;
@@ -87,7 +86,7 @@ class TaskQueueManagerTest : public testing::Test {
     // A null clock triggers some assertions.
     now_src_.Advance(base::TimeDelta::FromMicroseconds(1000));
     manager_ = TaskQueueManagerForTest::Create(
-        message_loop_.get(), GetSingleThreadTaskRunnerForTesting(), &now_src_);
+        message_loop_.get(), base::ThreadTaskRunnerHandle::Get(), &now_src_);
 
     for (size_t i = 0; i < num_queues; i++)
       runners_.push_back(CreateTaskQueue());
@@ -160,7 +159,7 @@ TEST_F(TaskQueueManagerTest,
   TestCountUsesTimeSource test_count_uses_time_source;
 
   manager_ = TaskQueueManagerForTest::Create(
-      nullptr, GetSingleThreadTaskRunnerForTesting(),
+      nullptr, base::ThreadTaskRunnerHandle::Get(),
       &test_count_uses_time_source);
   manager_->SetWorkBatchSize(6);
   manager_->AddTaskTimeObserver(&test_task_time_observer_);

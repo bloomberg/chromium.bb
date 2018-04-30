@@ -10,9 +10,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test_task_time_observer.h"
-#include "third_party/blink/renderer/platform/scheduler/test/task_queue_manager_for_test.h"
-#include "third_party/blink/renderer/platform/scheduler/test/test_task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/test_task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/test_task_time_observer.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
 
 namespace blink {

@@ -164,7 +164,13 @@ jumbo_source_set("test_support") {
   testonly = true
 
   sources = [
-    "base/test_task_time_observer.h",
+    "base/test/task_queue_manager_for_test.cc",
+    "base/test/task_queue_manager_for_test.h",
+    "base/test/test_count_uses_time_source.cc",
+    "base/test/test_count_uses_time_source.h",
+    "base/test/test_task_queue.cc",
+    "base/test/test_task_queue.h",
+    "base/test/test_task_time_observer.h",
     "test/fake_frame_scheduler.h",
     "test/fake_page_scheduler.h",
     "test/fake_renderer_scheduler.cc",
@@ -173,10 +179,6 @@ jumbo_source_set("test_support") {
     "test/lazy_thread_controller_for_test.cc",
     "test/lazy_thread_controller_for_test.h",
     "test/renderer_scheduler_test_support.cc",
-    "test/task_queue_manager_for_test.cc",
-    "test/task_queue_manager_for_test.h",
-    "test/test_task_queue.cc",
-    "test/test_task_queue.h",
   ]
 
   deps = [
@@ -194,8 +196,6 @@ jumbo_source_set("unit_tests") {
     "base/intrusive_heap_unittest.cc",
     "base/task_queue_manager_impl_unittest.cc",
     "base/task_queue_selector_unittest.cc",
-    "base/test_count_uses_time_source.cc",
-    "base/test_count_uses_time_source.h",
     "base/time_domain_unittest.cc",
     "base/work_queue_sets_unittest.cc",
     "base/work_queue_unittest.cc",

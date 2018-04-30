@@ -8,7 +8,7 @@
 #include <memory>
 #include "base/test/simple_test_tick_clock.h"
 #include "third_party/blink/public/platform/web_thread.h"
-#include "third_party/blink/renderer/platform/scheduler/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 

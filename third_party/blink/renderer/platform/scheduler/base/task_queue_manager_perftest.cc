@@ -19,11 +19,11 @@
 #include "testing/perf/perf_test.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test_task_time_observer.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/test_task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/test_task_time_observer.h"
 #include "third_party/blink/renderer/platform/scheduler/base/virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue_sets.h"
-#include "third_party/blink/renderer/platform/scheduler/test/task_queue_manager_for_test.h"
-#include "third_party/blink/renderer/platform/scheduler/test/test_task_queue.h"
 
 namespace blink {
 namespace scheduler {

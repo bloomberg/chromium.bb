@@ -1,9 +1,9 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_TEST_TEST_TASK_QUEUE_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_TEST_TEST_TASK_QUEUE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_TEST_TASK_QUEUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_TEST_TASK_QUEUE_H_
 
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
@@ -29,4 +29,4 @@ class TestTaskQueue : public TaskQueue {
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_TEST_TEST_TASK_QUEUE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_TEST_TASK_QUEUE_H_
