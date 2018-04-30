@@ -183,7 +183,7 @@ public class CronetUrlRequestTest {
 
     void runConnectionMigrationTest(boolean disableConnectionMigration) {
         // URLRequest load flags at net/base/load_flags_list.h.
-        int connectionMigrationLoadFlag = 1 << 17;
+        int connectionMigrationLoadFlag = nativeGetConnectionMigrationDisableLoadFlag();
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         callback.setAutoAdvance(false);
         // Create builder, start a request, and check if default load_flags are set correctly.
@@ -210,7 +210,6 @@ public class CronetUrlRequestTest {
     /**
      * Tests that disabling connection migration sets the URLRequest load flag correctly.
      */
-    @DisabledTest(message = "crbug.com/830707")
     @Test
     @SmallTest
     @Feature({"Cronet"})
@@ -2335,4 +2334,7 @@ public class CronetUrlRequestTest {
         callback.blockForDone();
         assertTrue(CronetTestUtil.nativeGetTaggedBytes(tag) > priorBytes);
     }
+
+    // Return connection migration disable load flag value.
+    private static native int nativeGetConnectionMigrationDisableLoadFlag();
 }
