@@ -97,8 +97,6 @@ void UpdateEngine::Update(bool is_foreground,
 
   // Calls out to get the corresponding CrxComponent data for the CRXs in this
   // update context.
-  DCHECK_EQ(ids.size(), update_context->ids.size());
-  DCHECK_EQ(update_context->ids.size(), update_context->components.size());
   std::vector<std::unique_ptr<CrxComponent>> crx_components =
       std::move(update_context->crx_data_callback).Run(update_context->ids);
   DCHECK_EQ(update_context->ids.size(), crx_components.size());
@@ -106,20 +104,37 @@ void UpdateEngine::Update(bool is_foreground,
   for (size_t i = 0; i != update_context->ids.size(); ++i) {
     const auto& id = update_context->ids[i];
 
-    DCHECK_EQ(id, GetCrxComponentID(*crx_components[i]));
-    DCHECK_EQ(1u, update_context->components.count(id));
-    DCHECK(update_context->components.at(id));
+    DCHECK(update_context->components[id]->state() == ComponentState::kNew);
 
-    auto& component = *update_context->components.at(id);
-    component.set_crx_component(std::move(crx_components[i]));
-    component.set_previous_version(component.crx_component()->version);
-    component.set_previous_fp(component.crx_component()->fingerprint);
+    auto& crx_component = crx_components[i];
+    if (crx_component) {
+      // This component can be checked for updates.
+      DCHECK_EQ(id, GetCrxComponentID(*crx_component));
+      auto& component = update_context->components[id];
+      component->set_crx_component(std::move(crx_component));
+      component->set_previous_version(component->crx_component()->version);
+      component->set_previous_fp(component->crx_component()->fingerprint);
+      update_context->components_to_check_for_updates.push_back(id);
+    } else {
+      // |CrxDataCallback| did not return a CrxComponent instance for this
+      // component, which most likely, has been uninstalled. This component
+      // is going to be transitioned to an error state when the its |Handle|
+      // method is called later on by the engine.
+      update_context->component_queue.push(id);
+    }
+  }
 
-    // Handle |kNew| state. This will transition the components to |kChecking|.
-    component.Handle(
+  if (update_context->components_to_check_for_updates.empty()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&UpdateEngine::HandleComponent,
+                                  base::Unretained(this), update_context));
+    return;
+  }
+
+  for (const auto& id : update_context->components_to_check_for_updates)
+    update_context->components[id]->Handle(
         base::BindOnce(&UpdateEngine::ComponentCheckingForUpdatesStart,
                        base::Unretained(this), update_context, id));
-  }
 }
 
 void UpdateEngine::ComponentCheckingForUpdatesStart(
@@ -139,7 +154,7 @@ void UpdateEngine::ComponentCheckingForUpdatesStart(
 
   ++update_context->num_components_ready_to_check;
   if (update_context->num_components_ready_to_check <
-      update_context->ids.size()) {
+      update_context->components_to_check_for_updates.size()) {
     return;
   }
 
@@ -156,7 +171,8 @@ void UpdateEngine::DoUpdateCheck(scoped_refptr<UpdateContext> update_context) {
       update_checker_factory_(config_, metadata_.get());
 
   update_context->update_checker->CheckForUpdates(
-      update_context->session_id, update_context->ids,
+      update_context->session_id,
+      update_context->components_to_check_for_updates,
       update_context->components, config_->ExtraRequestParams(),
       update_context->enabled_component_updates,
       base::BindOnce(&UpdateEngine::UpdateCheckDone, base::Unretained(this),
@@ -186,7 +202,7 @@ void UpdateEngine::UpdateCheckDone(scoped_refptr<UpdateContext> update_context,
 
   update_context->update_check_error = error;
 
-  for (const auto& id : update_context->ids) {
+  for (const auto& id : update_context->components_to_check_for_updates) {
     DCHECK_EQ(1u, update_context->components.count(id));
     DCHECK(update_context->components.at(id));
 
@@ -201,7 +217,8 @@ void UpdateEngine::ComponentCheckingForUpdatesComplete(
   DCHECK(update_context);
 
   ++update_context->num_components_checked;
-  if (update_context->num_components_checked < update_context->ids.size()) {
+  if (update_context->num_components_checked <
+      update_context->components_to_check_for_updates.size()) {
     return;
   }
 
@@ -215,7 +232,7 @@ void UpdateEngine::UpdateCheckComplete(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(update_context);
 
-  for (const auto& id : update_context->ids)
+  for (const auto& id : update_context->components_to_check_for_updates)
     update_context->component_queue.push(id);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -312,7 +329,7 @@ bool UpdateEngine::GetUpdateState(const std::string& id,
   for (const auto& context : update_contexts_) {
     const auto& components = context.second->components;
     const auto it = components.find(id);
-    if (it != components.end()) {
+    if (it != components.end() && it->second->crx_component()) {
       *update_item = it->second->GetCrxUpdateItem();
       return true;
     }
