@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_controller.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_data.h"
+#include "third_party/blink/renderer/modules/sensor/sensor_inspector_agent.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -25,10 +26,12 @@ DeviceOrientationInspectorAgent::~DeviceOrientationInspectorAgent() = default;
 
 DeviceOrientationInspectorAgent::DeviceOrientationInspectorAgent(
     InspectedFrames* inspected_frames)
-    : inspected_frames_(inspected_frames) {}
+    : inspected_frames_(inspected_frames),
+      sensor_agent_(new SensorInspectorAgent(inspected_frames->Root())) {}
 
 void DeviceOrientationInspectorAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(inspected_frames_);
+  visitor->Trace(sensor_agent_);
   InspectorBaseAgent::Trace(visitor);
 }
 
@@ -50,6 +53,7 @@ Response DeviceOrientationInspectorAgent::setDeviceOrientationOverride(
     Controller()->SetOverride(
         DeviceOrientationData::Create(alpha, beta, gamma, false));
   }
+  sensor_agent_->SetOrientationSensorOverride(alpha, beta, gamma);
   return Response::OK();
 }
 
@@ -58,6 +62,7 @@ Response DeviceOrientationInspectorAgent::clearDeviceOrientationOverride() {
                      false);
   if (Controller())
     Controller()->ClearOverride();
+  sensor_agent_->Disable();
   return Response::OK();
 }
 
@@ -66,6 +71,7 @@ Response DeviceOrientationInspectorAgent::disable() {
                      false);
   if (Controller())
     Controller()->ClearOverride();
+  sensor_agent_->Disable();
   return Response::OK();
 }
 
@@ -82,6 +88,7 @@ void DeviceOrientationInspectorAgent::Restore() {
     state_->getDouble(DeviceOrientationInspectorAgentState::kGamma, &gamma);
     Controller()->SetOverride(
         DeviceOrientationData::Create(alpha, beta, gamma, false));
+    sensor_agent_->SetOrientationSensorOverride(alpha, beta, gamma);
   }
 }
 

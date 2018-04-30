@@ -31,28 +31,33 @@ class SensorProviderProxy final
   ~SensorProviderProxy();
 
   SensorProxy* CreateSensorProxy(device::mojom::blink::SensorType, Page*);
-
   SensorProxy* GetSensorProxy(device::mojom::blink::SensorType);
+
+  void set_inspector_mode(bool flag) { inspector_mode_ = flag; }
+  bool inspector_mode() const { return inspector_mode_; }
 
   void Trace(blink::Visitor*) override;
 
  private:
-  friend class SensorProxy;  // To call getSensorProvider().
+  friend class SensorProxy;
 
+  // For SensorProviderProxy friends' use.
+  device::mojom::blink::SensorProvider* sensor_provider() const {
+    return sensor_provider_.get();
+  }
+  void RemoveSensorProxy(SensorProxy* proxy);
+  using SensorsSet = HeapHashSet<WeakMember<SensorProxy>>;
+  const SensorsSet& sensor_proxies() const { return sensor_proxies_; }
+
+  // For SensorProviderProxy personal use.
   explicit SensorProviderProxy(LocalFrame&);
   void InitializeIfNeeded();
   bool IsInitialized() const { return sensor_provider_.is_bound(); }
-
-  device::mojom::blink::SensorProvider* GetSensorProvider() const {
-    return sensor_provider_.get();
-  }
-
   void OnSensorProviderConnectionError();
-
-  using SensorsSet = HeapHashSet<WeakMember<SensorProxy>>;
   SensorsSet sensor_proxies_;
 
   device::mojom::blink::SensorProviderPtr sensor_provider_;
+  bool inspector_mode_;
 };
 
 }  // namespace blink
