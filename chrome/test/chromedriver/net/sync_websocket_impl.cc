@@ -55,16 +55,18 @@ bool SyncWebSocketImpl::Core::Connect(const GURL& url) {
   bool success = false;
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
-  // Try to connect up to 3 times, with 10 seconds delay in between.
-  base::TimeDelta waitTime = base::TimeDelta::FromSeconds(10);
-  for (int i = 0; i < 3; i++) {
+  // Connect with retries. The retry timeout starts at 1 second, with
+  // exponential backoff, up to 16 seconds. The maximum total wait time is
+  // about 31 seconds.
+  const int kMaxTimeout = 16;
+  for (int timeout = 1; timeout <= kMaxTimeout; timeout *= 2) {
     context_getter_->GetNetworkTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&SyncWebSocketImpl::Core::ConnectOnIO, this,
                                   url, &success, &event));
-    if (event.TimedWait(waitTime))
+    if (event.TimedWait(base::TimeDelta::FromSeconds(timeout)))
       break;
     LOG(WARNING) << "Timed out connecting to Chrome, "
-                 << (i < 2 ? "retrying..." : "giving up.");
+                 << (timeout < kMaxTimeout ? "retrying..." : "giving up.");
   }
   return success;
 }
