@@ -453,12 +453,9 @@ void CheckCanOpenURL(Browser* browser, const std::string& spec) {
 }
 
 // Verifies that access to the given url |spec| is blocked.
-void CheckURLIsBlocked(Browser* browser, const std::string& spec) {
-  GURL url(spec);
-  ui_test_utils::NavigateToURL(browser, url);
-  content::WebContents* contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ(url, contents->GetURL());
+void CheckURLIsBlockedInWebContents(content::WebContents* web_contents,
+                                    const GURL& url) {
+  EXPECT_EQ(url, web_contents->GetURL());
 
   base::string16 blocked_page_title;
   if (url.has_host()) {
@@ -467,17 +464,26 @@ void CheckURLIsBlocked(Browser* browser, const std::string& spec) {
     // Local file paths show the full URL.
     blocked_page_title = base::UTF8ToUTF16(url.spec());
   }
-  EXPECT_EQ(blocked_page_title, contents->GetTitle());
+  EXPECT_EQ(blocked_page_title, web_contents->GetTitle());
 
   // Verify that the expected error page is being displayed.
   bool result = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      contents,
+      web_contents,
       "var textContent = document.body.textContent;"
       "var hasError = textContent.indexOf('ERR_BLOCKED_BY_ADMINISTRATOR') >= 0;"
       "domAutomationController.send(hasError);",
       &result));
   EXPECT_TRUE(result);
+}
+
+// Verifies that access to the given url |spec| is blocked.
+void CheckURLIsBlocked(Browser* browser, const std::string& spec) {
+  GURL url(spec);
+  ui_test_utils::NavigateToURL(browser, url);
+  content::WebContents* contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  CheckURLIsBlockedInWebContents(contents, url);
 }
 
 // Downloads a file named |file| and expects it to be saved to |dir|, which
@@ -3293,9 +3299,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
 
 namespace {
 
-static const char* kRestoredURLs[] = {
-  "http://aaa.com/empty.html",
-  "http://bbb.com/empty.html",
+constexpr const char* kRestoredURLs[] = {
+    "http://aaa.com/empty.html", "http://bbb.com/empty.html",
 };
 
 bool IsNonSwitchArgument(const base::CommandLine::StringType& s) {
@@ -3391,7 +3396,32 @@ class RestoreOnStartupPolicyTest
       expected_urls_.push_back(GURL(kRestoredURLs[i]));
   }
 
+  void Blocked() {
+    // Verifies that URLs are blocked during session restore.
+    PolicyMap policies;
+    policies.Set(
+        key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        POLICY_SOURCE_CLOUD,
+        std::make_unique<base::Value>(SessionStartupPref::kPrefValueLast),
+        nullptr);
+    auto urls = std::make_unique<base::Value>(base::Value::Type::LIST);
+    for (const auto* url_string : kRestoredURLs)
+      urls->GetList().emplace_back(url_string);
+    policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                 POLICY_SOURCE_CLOUD, std::move(urls), nullptr);
+    provider_.UpdateChromePolicy(policies);
+    // This should restore the tabs opened at PRE_RunTest below, yet all should
+    // be blocked.
+    blocked_ = true;
+    for (size_t i = 0; i < arraysize(kRestoredURLs); ++i)
+      expected_urls_.emplace_back(kRestoredURLs[i]);
+  }
+
+  // URLs that are expected to be loaded.
   std::vector<GURL> expected_urls_;
+
+  // True if the loaded URLs should be blocked by policy.
+  bool blocked_ = false;
 };
 
 IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, PRE_RunTest) {
@@ -3419,22 +3449,34 @@ IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, PRE_RunTest) {
   }
 }
 
-// Flaky(crbug.com/701023)
-IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, DISABLED_RunTest) {
+// Flaky on Linux; see https://crbug.com/701023.
+#if defined(OS_LINUX)
+#define MAYBE_RunTest DISABLED_RunTest
+#else
+#define MAYBE_RunTest RunTest
+#endif
+IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, MAYBE_RunTest) {
   TabStripModel* model = browser()->tab_strip_model();
   int size = static_cast<int>(expected_urls_.size());
   EXPECT_EQ(size, model->count());
   for (int i = 0; i < size && i < model->count(); ++i) {
-    EXPECT_EQ(expected_urls_[i], model->GetWebContentsAt(i)->GetURL());
+    content::WebContents* web_contents = model->GetWebContentsAt(i);
+    content::WaitForLoadStop(web_contents);
+    if (blocked_)
+      CheckURLIsBlockedInWebContents(web_contents, expected_urls_[i]);
+    else if (expected_urls_[i] == GURL(chrome::kChromeUINewTabURL))
+      EXPECT_TRUE(search::IsInstantNTP(web_contents));
+    else
+      EXPECT_EQ(expected_urls_[i], web_contents->GetURL());
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
-    RestoreOnStartupPolicyTestInstance,
-    RestoreOnStartupPolicyTest,
-    testing::Values(&RestoreOnStartupPolicyTest::ListOfURLs,
-                    &RestoreOnStartupPolicyTest::NTP,
-                    &RestoreOnStartupPolicyTest::Last));
+INSTANTIATE_TEST_CASE_P(RestoreOnStartupPolicyTestInstance,
+                        RestoreOnStartupPolicyTest,
+                        testing::Values(&RestoreOnStartupPolicyTest::ListOfURLs,
+                                        &RestoreOnStartupPolicyTest::NTP,
+                                        &RestoreOnStartupPolicyTest::Last,
+                                        &RestoreOnStartupPolicyTest::Blocked));
 
 // Similar to PolicyTest but sets a couple of policies before the browser is
 // started.
