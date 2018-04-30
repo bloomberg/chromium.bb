@@ -258,6 +258,17 @@ TEST_F(UseCounterTest, SVGImageContextAnimatedCSSProperties) {
       [&](LocalFrame* frame) { use_counter.DidCommitLoad(frame); }, kSvgUrl);
 }
 
+TEST_F(UseCounterTest, CSSSelectorPseudoIS) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kCSSSelectorPseudoIS;
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<style>.a+:is(.b, .c+.d) { color: red; }</style>");
+  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+}
+
 // TODO(lunalu): When removing the legacy use counter and its tests, find
 // another way to test muting behavior.
 TEST_F(UseCounterTest, InspectorDisablesMeasurement) {

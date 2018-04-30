@@ -1910,6 +1910,7 @@ enum WebFeature {
   kShapeOutsideMarginBox = 2428,
   kPerformanceTimeline = 2429,
   kUserTiming = 2430,
+  kCSSSelectorPseudoIS = 2431,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

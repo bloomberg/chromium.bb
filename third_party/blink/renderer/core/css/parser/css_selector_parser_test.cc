@@ -499,6 +499,40 @@ TEST(CSSSelectorParserTest, InvalidPseudoMatchesArguments) {
   }
 }
 
+TEST(CSSSelectorParserTest, InvalidNestingPseudoIS) {
+  // :is() is currently not supported within these pseudo classes as they
+  // currently do not support complex selector arguments (:is() does support
+  // this and the expansion of :is() may provide complex selector arguments to
+  // these pseudo classes). Most of these test cases should eventually be
+  // removed once they support complex selector arguments.
+  const char* test_cases[] = {":-webkit-any(:is(.a))",
+                              "::cue(:is(.a))",
+                              ":cue(:is(.a))",
+                              ":host(:is(.a))",
+                              ":host-context(:is(.a))",
+                              ":lang(:is(.a))",
+                              ":not(:is(.a))",
+                              ":nth-child(:is(.a))",
+                              ":nth-last-child(:is(.a))",
+                              ":nth-last-of-type(:is(.a))",
+                              ":nth-of-type(:is(.a))",
+                              "::slotted(:is(.a))"};
+
+  CSSParserContext* context = CSSParserContext::Create(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
+  StyleSheetContents* sheet = StyleSheetContents::Create(context);
+
+  for (const char* test_case : test_cases) {
+    SCOPED_TRACE(test_case);
+    CSSTokenizer tokenizer(test_case);
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
+    CSSSelectorList list =
+        CSSSelectorParser::ParseSelector(range, context, sheet);
+    EXPECT_FALSE(list.IsValid());
+  }
+}
+
 namespace {
 
 const auto TagLocalName = [](const CSSSelector* selector) {

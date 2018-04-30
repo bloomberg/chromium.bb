@@ -29,6 +29,7 @@
 #include <memory>
 #include <vector>
 #include "third_party/blink/renderer/core/css/parser/css_parser_selector.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -56,7 +57,7 @@ CSSSelectorList CSSSelectorList::Copy() const {
   return list;
 }
 
-CSSSelectorList CSSSelectorList::ConcatenatePseudoMatchesExpansion(
+CSSSelectorList CSSSelectorList::ConcatenateListExpansion(
     const CSSSelectorList& expanded,
     const CSSSelectorList& original) {
   unsigned expanded_length = expanded.ComputeLength();
@@ -112,106 +113,128 @@ void AddToList(CSSSelector*& destination,
 void AddToList(CSSSelector*& destination,
                const CSSSelector* begin,
                const CSSSelector* end,
-               CSSSelector::RelationType relation,
-               bool IsLastInTagHistory) {
+               const CSSSelector* selector_to_expand) {
   for (const CSSSelector* current = begin; current != end; ++current) {
     new (destination) CSSSelector(*current);
     DCHECK_EQ(current + 1 == end, current->IsLastInTagHistory());
     if (current->IsLastInTagHistory()) {
-      destination->SetRelation(relation);
-      if (!IsLastInTagHistory)
+      destination->SetRelation(selector_to_expand->Relation());
+      if (!selector_to_expand->IsLastInTagHistory())
         destination->SetLastInTagHistory(false);
     }
+    if (selector_to_expand->GetPseudoType() == CSSSelector::kPseudoIS ||
+        selector_to_expand->IgnoreSpecificity())
+      destination->SetIgnoreSpecificity(true);
     destination->SetLastInSelectorList(false);
     destination->SetLastInOriginalList(false);
     destination++;
   }
 }
 
-CSSSelectorList CSSSelectorList::ExpandedFirstMatchesPseudo() const {
+CSSSelectorList CSSSelectorList::ExpandedFirstPseudoClass() const {
+  DCHECK(this->RequiresExpansion());
   unsigned original_length = this->ComputeLength();
-  std::vector<const CSSSelector*> matches_boundaries =
+  std::vector<const CSSSelector*> selector_boundaries =
       SelectorBoundaries(*this);
 
   size_t i = 0;
-  while (!matches_boundaries[i]->HasPseudoMatches()) {
+  CSSSelectorList transformed = this->Copy();
+  while (!selector_boundaries[i]->HasPseudoMatches() &&
+         !selector_boundaries[i]->HasPseudoIS())
     ++i;
+
+  const CSSSelector* selector_to_expand_begin = selector_boundaries[i];
+  const CSSSelector* selector_to_expand_end = selector_boundaries[i + 1];
+  size_t selector_to_expand_length =
+      selector_to_expand_end - selector_to_expand_begin;
+
+  const CSSSelector* simple_selector = selector_to_expand_begin;
+  while (simple_selector->GetPseudoType() != CSSSelector::kPseudoMatches &&
+         simple_selector->GetPseudoType() != CSSSelector::kPseudoIS) {
+    simple_selector = simple_selector->TagHistory();
   }
-  const CSSSelector* selector_with_matches_begin = matches_boundaries[i];
-  const CSSSelector* selector_with_matches_end = matches_boundaries[i + 1];
-  size_t selector_with_matches_length =
-      selector_with_matches_end - selector_with_matches_begin;
 
-  const CSSSelector* simple_matches = selector_with_matches_begin;
-  while (simple_matches->GetPseudoType() != CSSSelector::kPseudoMatches) {
-    simple_matches = simple_matches->TagHistory();
-  }
+  unsigned inner_selector_length =
+      simple_selector->SelectorList()->ComputeLength();
+  std::vector<const CSSSelector*> selector_arg_boundaries =
+      SelectorBoundaries(*simple_selector->SelectorList());
 
-  unsigned inner_matches_length =
-      simple_matches->SelectorList()->ComputeLength();
-  std::vector<const CSSSelector*> matches_arg_boundaries =
-      SelectorBoundaries(*simple_matches->SelectorList());
+  size_t num_args = selector_arg_boundaries.size() - 1;
+  unsigned other_selectors_length = original_length - selector_to_expand_length;
 
-  size_t num_matches_args = matches_arg_boundaries.size() - 1;
-  unsigned other_selectors_length =
-      original_length - selector_with_matches_length;
-
-  unsigned expanded_matches_length =
-      (selector_with_matches_length - 1) * num_matches_args +
-      inner_matches_length + other_selectors_length;
+  unsigned expanded_selector_list_length =
+      (selector_to_expand_length - 1) * num_args + inner_selector_length +
+      other_selectors_length;
 
   // Do not perform expansion if the selector list size is too large to create
   // RuleData
-  if (expanded_matches_length > 8192)
+  if (expanded_selector_list_length > 8192)
     return CSSSelectorList();
 
   CSSSelectorList list;
   list.selector_array_ =
       reinterpret_cast<CSSSelector*>(WTF::Partitions::FastMalloc(
-          WTF::Partitions::ComputeAllocationSize(expanded_matches_length,
+          WTF::Partitions::ComputeAllocationSize(expanded_selector_list_length,
                                                  sizeof(CSSSelector)),
           kCSSSelectorTypeName));
 
   CSSSelector* destination = list.selector_array_;
 
-  AddToList(destination, matches_boundaries[0], selector_with_matches_begin);
-  for (size_t i = 0; i < num_matches_args; ++i) {
-    AddToList(destination, selector_with_matches_begin, simple_matches);
-    AddToList(destination, matches_arg_boundaries[i],
-              matches_arg_boundaries[i + 1], simple_matches->Relation(),
-              simple_matches->IsLastInTagHistory());
-    AddToList(destination, simple_matches + 1, selector_with_matches_end);
+  AddToList(destination, selector_boundaries[0], selector_to_expand_begin);
+  for (size_t i = 0; i < num_args; ++i) {
+    AddToList(destination, selector_to_expand_begin, simple_selector);
+    AddToList(destination, selector_arg_boundaries[i],
+              selector_arg_boundaries[i + 1], simple_selector);
+    AddToList(destination, simple_selector + 1, selector_to_expand_end);
   }
-  AddToList(destination, selector_with_matches_end, matches_boundaries.back());
+  AddToList(destination, selector_to_expand_end, selector_boundaries.back());
 
-  DCHECK(destination == list.selector_array_ + expanded_matches_length);
+  DCHECK(destination == list.selector_array_ + expanded_selector_list_length);
 
-  list.selector_array_[expanded_matches_length - 1].SetLastInOriginalList(true);
-  list.selector_array_[expanded_matches_length - 1].SetLastInSelectorList(true);
+  list.selector_array_[expanded_selector_list_length - 1].SetLastInOriginalList(
+      true);
+  list.selector_array_[expanded_selector_list_length - 1].SetLastInSelectorList(
+      true);
 
   return list;
 }
 
-CSSSelectorList CSSSelectorList::TransformForPseudoMatches() {
+CSSSelectorList CSSSelectorList::TransformForListExpansion() {
   DCHECK_GT(this->ComputeLength(), 0u);
   DCHECK(
       this->selector_array_[this->ComputeLength() - 1].IsLastInOriginalList());
-  DCHECK(this->HasPseudoMatches());
+  DCHECK(this->RequiresExpansion());
 
   // Append the expanded form of matches to the original selector list
   CSSSelectorList transformed = this->Copy();
   do {
-    transformed = transformed.ExpandedFirstMatchesPseudo();
-  } while (transformed.HasPseudoMatches());
+    transformed = transformed.ExpandedFirstPseudoClass();
+  } while (transformed.RequiresExpansion());
 
   if (transformed.ComputeLength() == 0)
     return CSSSelectorList();
-  return CSSSelectorList::ConcatenatePseudoMatchesExpansion(transformed, *this);
+  return CSSSelectorList::ConcatenateListExpansion(transformed, *this);
 }
 
 bool CSSSelectorList::HasPseudoMatches() const {
   for (const CSSSelector* s = FirstForCSSOM(); s; s = Next(*s)) {
     if (s->HasPseudoMatches())
+      return true;
+  }
+  return false;
+}
+
+bool CSSSelectorList::HasPseudoIS() const {
+  for (const CSSSelector* s = FirstForCSSOM(); s; s = Next(*s)) {
+    if (s->HasPseudoIS())
+      return true;
+  }
+  return false;
+}
+
+bool CSSSelectorList::RequiresExpansion() const {
+  for (const CSSSelector* s = FirstForCSSOM(); s; s = Next(*s)) {
+    if (s->HasPseudoMatches() || s->HasPseudoIS())
       return true;
   }
   return false;
