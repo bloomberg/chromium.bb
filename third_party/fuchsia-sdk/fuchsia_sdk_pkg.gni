@@ -19,7 +19,6 @@ template("fuchsia_sdk_pkg") {
     json_representation = "$target_gen_dir/$pkg_name.fidl.json"
     output_gen_base = "$target_gen_dir/fidl"
     output_gen_dir = "$output_gen_base/fuchsia/cpp"
-    tables_file = "$output_gen_base/$pkg_name.fidl-tables.cc"
 
     action("${target_name}_response_file") {
       visibility = [ ":*" ]
@@ -35,7 +34,7 @@ template("fuchsia_sdk_pkg") {
 
       sources = []
       foreach(file, invoker.fidl_files) {
-        sources += [ "sdk/fidl/${pkg_name}/${file}" ]
+        sources += [ "sdk/pkg/${pkg_name}/${file}" ]
       }
 
       libraries_file = "$target_gen_dir/$pkg_name.fidl_libraries"
@@ -50,8 +49,6 @@ template("fuchsia_sdk_pkg") {
                rebase_path(response_file, root_build_dir),
                "--out-libraries",
                rebase_path(libraries_file, root_build_dir),
-               "--tables",
-               rebase_path(tables_file, root_build_dir),
                "--json",
                rebase_path(json_representation, root_build_dir),
                "--name",
@@ -94,7 +91,6 @@ template("fuchsia_sdk_pkg") {
 
       outputs = [
         json_representation,
-        tables_file,
       ]
 
       rebased_response_file = rebase_path(response_file, root_build_dir)
@@ -163,15 +159,11 @@ template("fuchsia_sdk_pkg") {
       if (!defined(deps)) {
         deps = []
       }
-      deps += [
-        ":${invoker.target_name}_compile",
-        ":${invoker.target_name}_cpp_gen",
-      ]
+      deps += [ ":${invoker.target_name}_cpp_gen" ]
 
       sources = [
         "$output_gen_dir/$pkg_name.cc",
         "$output_gen_dir/$pkg_name.h",
-        tables_file,
       ]
 
       assert(pkg_name != "fidl" && pkg_name != "fidl_cpp")

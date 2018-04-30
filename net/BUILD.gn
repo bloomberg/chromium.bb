@@ -2046,7 +2046,6 @@ component("net") {
         "cert/cert_database_fuchsia.cc",
         "cert/test_root_certs_fuchsia.cc",
       ]
-      deps += [ "//third_party/fuchsia-sdk:netstack" ]
     }
   } else {
     public_deps += [ "//native_client_sdk/src/libraries/nacl_io" ]
