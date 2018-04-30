@@ -568,8 +568,7 @@
     </style>
     <style name="ToolbarMenuButtonPhone" parent="ToolbarButton">
         <item name="android:layout_gravity">top</item>
-        <item name="android:layout_width">42dp</item>
-        <item name="android:paddingEnd">4dp</item>
+        <item name="android:paddingEnd">8dp</item>
         <item name="android:background">@null</item>
     </style>
     <style name="ToolbarMenuButtonTablet" parent="ToolbarButton">
