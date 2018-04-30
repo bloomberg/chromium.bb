@@ -77,7 +77,7 @@ content::WebUIDataSource* CreateWebRtcLogsUIHTMLSource() {
 ////////////////////////////////////////////////////////////////////////////////
 
 // The handler for Javascript messages for the chrome://webrtc-logs/ page.
-class WebRtcLogsDOMHandler : public WebUIMessageHandler {
+class WebRtcLogsDOMHandler final : public WebUIMessageHandler {
  public:
   explicit WebRtcLogsDOMHandler(Profile* profile);
   ~WebRtcLogsDOMHandler() override;
