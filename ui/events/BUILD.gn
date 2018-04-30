@@ -149,6 +149,7 @@ component("events") {
     "keyboard_hook_base.h",
     "keycodes/platform_key_map_win.cc",
     "keycodes/platform_key_map_win.h",
+    "mac/keyboard_hook_mac.mm",
     "null_event_targeter.cc",
     "null_event_targeter.h",
     "scoped_target_handler.cc",
@@ -180,7 +181,7 @@ component("events") {
   if (use_x11) {
     sources += [
       "x/events_x.cc",
-      "x/keyboard_hook_posix.cc",
+      "x/keyboard_hook_x11.cc",
     ]
     configs += [ "//build/config/linux:x11" ]
     deps += [
