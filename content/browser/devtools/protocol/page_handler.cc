@@ -1110,5 +1110,25 @@ Response PageHandler::StopLoading() {
   return Response::OK();
 }
 
+Response PageHandler::SetWebLifecycleState(const std::string& state) {
+  WebContentsImpl* web_contents = GetWebContents();
+  if (!web_contents)
+    return Response::Error("Not attached to a page");
+  if (state == Page::SetWebLifecycleState::StateEnum::Frozen) {
+    // TODO(fmeawad): Instead of forcing a visibility change, only allow
+    // freezing a page if it was already hidden.
+    web_contents->WasHidden();
+    web_contents->FreezePage();
+    return Response::OK();
+  }
+  if (state == Page::SetWebLifecycleState::StateEnum::Active) {
+    // Making the page visible should make it active as visible pages cannot be
+    // frozen.
+    web_contents->WasShown();
+    return Response::OK();
+  }
+  return Response::Error("Unidentified lifecycle state");
+}
+
 }  // namespace protocol
 }  // namespace content

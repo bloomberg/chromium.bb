@@ -4906,6 +4906,16 @@ domain Page
   # Tries to close page, running its beforeunload hooks, if any.
   experimental command close
 
+  # Tries to update the web lifecycle state of the page.
+  # It will transition the page to the given state according to:
+  # https://github.com/WICG/web-lifecycle/
+  experimental command setWebLifecycleState
+    parameters
+      # Target lifecycle state
+      enum state
+        frozen
+        active
+
   # Stops sending each frame in the `screencastFrame`.
   experimental command stopScreencast
 

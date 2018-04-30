@@ -154,6 +154,8 @@ class PageHandler : public DevToolsDomainHandler,
   void GetAppManifest(
       std::unique_ptr<GetAppManifestCallback> callback) override;
 
+  Response SetWebLifecycleState(const std::string& state) override;
+
  private:
   enum EncodingFormat { PNG, JPEG };
 
