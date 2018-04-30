@@ -181,3 +181,10 @@ fuchsia_sdk_pkg("fdio") {
     "include/fdio/watcher.h",
   ]
 }
+
+fuchsia_sdk_pkg("netstack") {
+  fidl_files = [
+    "net_address.fidl",
+    "netstack.fidl",
+  ]
+}
