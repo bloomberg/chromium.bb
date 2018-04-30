@@ -529,7 +529,6 @@ typedef struct InterModeSearchState {
   int single_newmv_rate[MAX_REF_MV_SERCH][REF_FRAMES];
   int single_newmv_valid[MAX_REF_MV_SERCH][REF_FRAMES];
   int64_t modelled_rd[MB_MODE_COUNT][REF_FRAMES];
-  int_mv frame_mv[MB_MODE_COUNT][REF_FRAMES];
 } InterModeSearchState;
 
 static INLINE int write_uniform_cost(int n, int v) {
@@ -8989,8 +8988,7 @@ static void sf_refine_fast_tx_type_search(
 // and easy to read and maintain.
 static void set_params_rd_pick_inter_mode(
     const AV1_COMP *cpi, MACROBLOCK *x, HandleInterModeArgs *args,
-    BLOCK_SIZE bsize, int mi_row, int mi_col,
-    int_mv frame_mv[MB_MODE_COUNT][REF_FRAMES], uint16_t ref_frame_skip_mask[2],
+    BLOCK_SIZE bsize, int mi_row, int mi_col, uint16_t ref_frame_skip_mask[2],
     uint32_t mode_skip_mask[REF_FRAMES],
     unsigned int ref_costs_single[REF_FRAMES],
     unsigned int ref_costs_comp[REF_FRAMES][REF_FRAMES],
@@ -9048,24 +9046,11 @@ static void set_params_rd_pick_inter_mode(
       assert(get_ref_frame_buffer(cpi, ref_frame) != NULL);
       setup_buffer_ref_mvs_inter(cpi, x, ref_frame, bsize, mi_row, mi_col,
                                  yv12_mb);
-      av1_find_best_ref_mvs(
-          cm->allow_high_precision_mv, x->mbmi_ext->ref_mvs[ref_frame],
-          &frame_mv[NEARESTMV][ref_frame], &frame_mv[NEARMV][ref_frame],
-          cm->cur_frame_force_integer_mv);
+      int_mv dummy_nearmv, dummy_nearestmv;
+      av1_find_best_ref_mvs(cm->allow_high_precision_mv,
+                            x->mbmi_ext->ref_mvs[ref_frame], &dummy_nearmv,
+                            &dummy_nearestmv, cm->cur_frame_force_integer_mv);
     }
-
-    frame_mv[NEWMV][ref_frame].as_int = INVALID_MV;
-    frame_mv[GLOBALMV][ref_frame].as_int =
-        gm_get_motion_vector(&cm->global_motion[ref_frame],
-                             cm->allow_high_precision_mv, bsize, mi_col, mi_row,
-                             cm->cur_frame_force_integer_mv)
-            .as_int;
-    frame_mv[NEW_NEWMV][ref_frame].as_int = INVALID_MV;
-    frame_mv[GLOBAL_GLOBALMV][ref_frame].as_int =
-        gm_get_motion_vector(&cm->global_motion[ref_frame],
-                             cm->allow_high_precision_mv, bsize, mi_col, mi_row,
-                             cm->cur_frame_force_integer_mv)
-            .as_int;
   }
 
   // TODO(zoeliu@google.com): To further optimize the obtaining of motion vector
@@ -9437,9 +9422,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
   // init params, set frame modes, speed features
   set_params_rd_pick_inter_mode(
-      cpi, x, &args, bsize, mi_row, mi_col, search_state.frame_mv,
-      search_state.ref_frame_skip_mask, search_state.mode_skip_mask,
-      ref_costs_single, ref_costs_comp, yv12_mb);
+      cpi, x, &args, bsize, mi_row, mi_col, search_state.ref_frame_skip_mask,
+      search_state.mode_skip_mask, ref_costs_single, ref_costs_comp, yv12_mb);
 
   for (int midx = 0; midx < MAX_MODES; ++midx) {
     int mode_index = mode_map[midx];
@@ -9481,15 +9465,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             continue;
         }
       }
-    }
-
-    if (is_inter_compound_mode(this_mode)) {
-      search_state.frame_mv[this_mode][ref_frame].as_int =
-          search_state.frame_mv[compound_ref0_mode(this_mode)][ref_frame]
-              .as_int;
-      search_state.frame_mv[this_mode][second_ref_frame].as_int =
-          search_state.frame_mv[compound_ref1_mode(this_mode)][second_ref_frame]
-              .as_int;
     }
 
     if ((search_state.ref_frame_skip_mask[0] & (1 << ref_frame)) &&
@@ -9743,12 +9718,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         this_rd = handle_inter_mode(
             cpi, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv, &disable_skip,
             cur_mvs, mi_row, mi_col, &args, search_state.best_rd);
-        if (have_newmv_in_inter_mode(this_mode)) {
-          for (i = 0; i < comp_pred + 1; ++i) {
-            search_state.frame_mv[this_mode][mbmi->ref_frame[i]].as_int =
-                cur_mvs[i].as_int;
-          }
-        }
 
         rate2 = rd_stats.rate;
         skippable = rd_stats.skip;
@@ -9764,7 +9733,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
            mbmi_ext->ref_mv_count[ref_frame_type] > 2) ||
           ((mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV) &&
            mbmi_ext->ref_mv_count[ref_frame_type] > 1)) {
-        int_mv backup_mv = search_state.frame_mv[NEARMV][ref_frame];
         MB_MODE_INFO backup_mbmi = *mbmi;
         int backup_skip = x->skip;
         int64_t tmp_ref_rd = this_rd;
@@ -9778,11 +9746,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
         uint8_t drl_ctx =
             av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx_offset);
-        // Dummy
-        int_mv backup_fmv[2];
-        backup_fmv[0] = search_state.frame_mv[NEWMV][ref_frame];
-        if (comp_pred)
-          backup_fmv[1] = search_state.frame_mv[NEWMV][second_ref_frame];
 
         rate2 += (rate2 < INT_MAX ? x->drl_mode_cost0[drl_ctx][0] : 0);
 
@@ -9871,7 +9834,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           clamp_mv2(&cur_mv.as_mv, xd);
 
           if (!mv_check_bounds(&x->mv_limits, &cur_mv.as_mv)) {
-            search_state.frame_mv[NEARMV][ref_frame] = cur_mv;
             av1_init_rd_stats(&tmp_rd_stats);
 
             args.modelled_rd = NULL;
@@ -9886,12 +9848,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                                            &tmp_rd_stats_y, &tmp_rd_stats_uv,
                                            &dummy_disable_skip, cur_mvs, mi_row,
                                            mi_col, &args, search_state.best_rd);
-            if (have_newmv_in_inter_mode(this_mode)) {
-              for (i = 0; i < comp_pred + 1; ++i) {
-                search_state.frame_mv[this_mode][mbmi->ref_frame[i]].as_int =
-                    cur_mvs[i].as_int;
-              }
-            }
             // Prevent pointers from escaping local scope
             args.single_newmv = search_state.single_newmv[0];
             args.single_newmv_rate = search_state.single_newmv_rate[0];
@@ -9943,10 +9899,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           }
         }
 
-        search_state.frame_mv[NEARMV][ref_frame] = backup_mv;
-        search_state.frame_mv[NEWMV][ref_frame] = backup_fmv[0];
-        if (comp_pred)
-          search_state.frame_mv[NEWMV][second_ref_frame] = backup_fmv[1];
         memcpy(x->blk_skip, x->blk_skip_drl,
                sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
       }
