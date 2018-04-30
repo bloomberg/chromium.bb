@@ -187,6 +187,7 @@ config("vs_code_analysis") {
 # :runtime_library vs. :compiler.
 config("runtime_library") {
   cflags = []
+  cflags_cc = []
 
   # Defines that set up the CRT.
   defines = [
@@ -219,7 +220,8 @@ config("runtime_library") {
   }
 
   if (use_custom_libcxx) {
-    cflags_cc = [ "-I" + rebase_path("$libcxx_prefix/include", root_build_dir) ]
+    cflags_cc +=
+        [ "-I" + rebase_path("$libcxx_prefix/include", root_build_dir) ]
     if (libcpp_is_static) {
       defines += [ "_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS" ]
     }
