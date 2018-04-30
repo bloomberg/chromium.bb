@@ -17,6 +17,7 @@ enum class Error {
   RETRY_LATER = 3,
   SERVICE_ERROR = 4,
   UPDATE_CHECK_ERROR = 5,
+  CRX_NOT_FOUND = 6,
 };
 
 // These errors are sent in pings. Add new values only to the bottom of

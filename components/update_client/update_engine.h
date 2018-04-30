@@ -157,10 +157,18 @@ struct UpdateContext : public base::RefCounted<UpdateContext> {
   // The time in seconds to wait until doing further update checks.
   int retry_after_sec = 0;
 
+  // Contains the ids of the components to check for updates. It is possible
+  // for a component to be uninstalled after it has been added in this context
+  // but before an update check is made. When this happens, the component won't
+  // have a CrxComponent instance, therefore, it can't be included in an
+  // update check.
+  std::vector<std::string> components_to_check_for_updates;
+
   int update_check_error = 0;
   size_t num_components_ready_to_check = 0;
   size_t num_components_checked = 0;
 
+  // Contains the ids of the components that the state machine must handle.
   base::queue<std::string> component_queue;
 
   // The time to wait before handling the update for a component.

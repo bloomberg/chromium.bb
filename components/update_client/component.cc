@@ -345,8 +345,13 @@ void Component::StateNew::DoHandle() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto& component = State::component();
-
-  TransitionState(std::make_unique<StateChecking>(&component));
+  if (component.crx_component()) {
+    TransitionState(std::make_unique<StateChecking>(&component));
+  } else {
+    component.error_code_ = static_cast<int>(Error::CRX_NOT_FOUND);
+    component.error_category_ = static_cast<int>(ErrorCategory::kServiceError);
+    TransitionState(std::make_unique<StateUpdateError>(&component));
+  }
 }
 
 Component::StateChecking::StateChecking(Component* component)
