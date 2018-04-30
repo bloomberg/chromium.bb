@@ -96,6 +96,7 @@ Bug(none) virtual/reporting-api/ [ Skip ]
 Bug(none) virtual/wheelscrolllatching/ [ Skip ]
 Bug(none) virtual/windows-directwrite/ [ Skip ]
 Bug(none) virtual/without-smil/ [ Skip ]
+Bug(none) virtual/blink-gen-property-trees/ [ Skip ]
 
 # Fail on SPv1, but succeed on SPv2
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Pass ]
