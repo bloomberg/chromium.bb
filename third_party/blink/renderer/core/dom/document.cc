@@ -2366,10 +2366,15 @@ void Document::UpdateStyleAndLayout() {
 }
 
 void Document::LayoutUpdated() {
+  DCHECK(GetFrame());
+  DCHECK(View());
+
+  // If we're restoring a scroll position from history, that takes precedence
+  // over scrolling to the anchor in the URL.
+  View()->ScrollAndFocusFragmentAnchor();
+
+  // Script run in the call above may detach the document.
   if (GetFrame() && View()) {
-    // If we're restoring a scroll position from history, that takes precedence
-    // over scrolling to the anchor in the URL.
-    View()->ScrollAndFocusFragmentAnchor();
     GetFrame()->Loader().RestoreScrollPositionAndViewState();
 
     // The focus call above can execute JS which can dirty layout. Ensure
