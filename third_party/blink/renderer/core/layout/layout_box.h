@@ -701,10 +701,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   LayoutUnit OverrideContentLogicalWidth() const;
   LayoutUnit OverrideContentLogicalHeight() const;
-  // TODO(rego): Probably at some point the next 2 methods can be removed if all
-  // the calls to override sizes consider the scrollbar size properly.
-  LayoutUnit OverrideContentAndScrollbarLogicalWidth() const;
-  LayoutUnit OverrideContentAndScrollbarLogicalHeight() const;
 
   LayoutUnit OverrideContainingBlockContentLogicalWidth() const;
   LayoutUnit OverrideContainingBlockContentLogicalHeight() const;

@@ -1431,20 +1431,6 @@ LayoutUnit LayoutBox::OverrideContentLogicalHeight() const {
       .ClampNegativeToZero();
 }
 
-// TODO(rego): Probably at some point we could remove this if all calls to
-// override sizes consider the scrollbar size properly.
-LayoutUnit LayoutBox::OverrideContentAndScrollbarLogicalWidth() const {
-  return (OverrideLogicalWidth() - BorderAndPaddingLogicalWidth())
-      .ClampNegativeToZero();
-}
-
-// TODO(rego): Probably at some point we could remove this if all calls to
-// override sizes consider the scrollbar size properly.
-LayoutUnit LayoutBox::OverrideContentAndScrollbarLogicalHeight() const {
-  return (OverrideLogicalHeight() - BorderAndPaddingLogicalHeight())
-      .ClampNegativeToZero();
-}
-
 // TODO (lajava) Shouldn't we implement these functions based on physical
 // direction ?.
 LayoutUnit LayoutBox::OverrideContainingBlockContentLogicalWidth() const {
@@ -3640,6 +3626,8 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
           IsOutOfFlowPositioned() ? Container() : ContainingBlock();
       while (cb->IsAnonymous())
         cb = cb->ContainingBlock();
+      bool has_perpendicular_containing_block =
+          cb->IsHorizontalWritingMode() != IsHorizontalWritingMode();
       LayoutUnit stretched_height(-1);
       if (cb->IsLayoutBlock()) {
         LayoutBlock* block = ToLayoutBlock(cb);
@@ -3648,10 +3636,9 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
           stretched_height =
               ToLayoutFlexibleBox(block->Parent())
                   ->ChildLogicalHeightForPercentageResolution(*block);
-        } else if (block->IsGridItem() && block->HasOverrideLogicalHeight()) {
-          // TODO(rego): Shouldn't we use OverrideContentLogicalHeight()
-          // directly, so scrollbar size gets subtracted?
-          stretched_height = block->OverrideContentAndScrollbarLogicalHeight();
+        } else if (block->IsGridItem() && block->HasOverrideLogicalHeight() &&
+                   !has_perpendicular_containing_block) {
+          stretched_height = block->OverrideContentLogicalHeight();
         }
       }
 
@@ -3676,11 +3663,10 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
       } else if (stretched_height != -1) {
         available_height = stretched_height;
       } else {
-        available_height =
-            IsHorizontalWritingMode() == cb->IsHorizontalWritingMode()
-                ? ContainingBlockLogicalHeightForContent(
-                      kIncludeMarginBorderPadding)
-                : ContainingBlockLogicalWidthForContent();
+        available_height = has_perpendicular_containing_block
+                               ? ContainingBlockLogicalWidthForContent()
+                               : ContainingBlockLogicalHeightForContent(
+                                     kIncludeMarginBorderPadding);
         // It is necessary to use the border-box to match WinIE's broken
         // box model.  This is essential for sizing inside
         // table cells using percentage heights.
