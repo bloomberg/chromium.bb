@@ -371,21 +371,21 @@ TEST_P(ErrorResilienceTestLarge, ParseAbilityTest) {
   // frame. Currently, this will cause an assertion failure.
   // Set an arbitrary error resilient (E) frame
   unsigned int num_error_resilient_frames = 1;
-  unsigned int error_resilient_frame_list[] = { 7 };
+  unsigned int error_resilient_frame_list[] = { 8 };
   SetErrorResilientFrames(num_error_resilient_frames,
                           error_resilient_frame_list);
   // Ensure that any invisible frames before the E frame are dropped
   SetInvisibleErrorFrames(num_error_resilient_frames,
                           error_resilient_frame_list);
   // Set all frames after the error resilient frame to not allow MFMV
-  unsigned int num_post_error_resilient_frames = 7;
-  unsigned int post_error_resilient_frame_list[] = { 8, 9, 10, 11, 12, 13, 14 };
+  unsigned int num_post_error_resilient_frames = 6;
+  unsigned int post_error_resilient_frame_list[] = { 9, 10, 11, 12, 13, 14 };
   SetNoMFMVFrames(num_post_error_resilient_frames,
                   post_error_resilient_frame_list);
 
   // Set a few frames before the E frame that are lost (not decoded)
-  unsigned int num_error_frames = 4;
-  unsigned int error_frame_list[] = { 3, 4, 5, 6 };
+  unsigned int num_error_frames = 5;
+  unsigned int error_frame_list[] = { 3, 4, 5, 6, 7 };
   SetErrorFrames(num_error_frames, error_frame_list);
 
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
