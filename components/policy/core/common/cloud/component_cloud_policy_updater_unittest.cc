@@ -85,7 +85,7 @@ class ComponentCloudPolicyUpdaterTest : public testing::Test {
   MockComponentCloudPolicyStoreDelegate store_delegate_;
   net::TestURLFetcherFactory fetcher_factory_;
   std::unique_ptr<ComponentCloudPolicyUpdater> updater_;
-  ComponentPolicyBuilder builder_;
+  ComponentCloudPolicyBuilder builder_;
   PolicyBundle expected_bundle_;
 
  private:
@@ -119,17 +119,15 @@ void ComponentCloudPolicyUpdaterTest::SetUp() {
   task_runner_ = new base::TestMockTimeTaskRunner();
   cache_.reset(new ResourceCache(temp_dir_.GetPath(), task_runner_));
   store_.reset(new ComponentCloudPolicyStore(&store_delegate_, cache_.get()));
-  store_->SetCredentials(ComponentPolicyBuilder::GetFakeAccountIdForTesting(),
-                         ComponentPolicyBuilder::kFakeToken,
-                         ComponentPolicyBuilder::kFakeDeviceId, public_key_,
-                         ComponentPolicyBuilder::kFakePublicKeyVersion);
+  store_->SetCredentials(PolicyBuilder::GetFakeAccountIdForTesting(),
+                         PolicyBuilder::kFakeToken,
+                         PolicyBuilder::kFakeDeviceId, public_key_,
+                         PolicyBuilder::kFakePublicKeyVersion);
   fetcher_factory_.set_remove_fetcher_on_delete(true);
   fetcher_backend_.reset(new ExternalPolicyDataFetcherBackend(
-      task_runner_,
-      scoped_refptr<net::URLRequestContextGetter>()));
+      task_runner_, scoped_refptr<net::URLRequestContextGetter>()));
   updater_.reset(new ComponentCloudPolicyUpdater(
-      task_runner_,
-      fetcher_backend_->CreateFrontend(task_runner_),
+      task_runner_, fetcher_backend_->CreateFrontend(task_runner_),
       store_.get()));
   ASSERT_EQ(store_->policy().end(), store_->policy().begin());
 }
@@ -205,8 +203,8 @@ TEST_F(ComponentCloudPolicyUpdaterTest, PolicyFetchResponseInvalid) {
   updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
 
   // Submit two valid policy fetch responses.
-  builder_.policy_data().set_username(ComponentPolicyBuilder::kFakeUsername);
-  builder_.policy_data().set_gaia_id(ComponentPolicyBuilder::kFakeGaiaId);
+  builder_.policy_data().set_username(PolicyBuilder::kFakeUsername);
+  builder_.policy_data().set_gaia_id(PolicyBuilder::kFakeGaiaId);
   builder_.policy_data().set_settings_entity_id(kTestExtension2);
   builder_.payload().set_download_url(kTestDownload2);
   updater_->UpdateExternalPolicy(
@@ -255,7 +253,7 @@ TEST_F(ComponentCloudPolicyUpdaterTest, PolicyFetchResponseBadSignature) {
 
 TEST_F(ComponentCloudPolicyUpdaterTest, PolicyFetchResponseWrongPublicKey) {
   // Submit a policy fetch response signed with a wrong signing key.
-  builder_.SetSigningKey(*ComponentPolicyBuilder::CreateTestOtherSigningKey());
+  builder_.SetSigningKey(*PolicyBuilder::CreateTestOtherSigningKey());
   updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
 
   task_runner_->RunUntilIdle();
@@ -268,7 +266,7 @@ TEST_F(ComponentCloudPolicyUpdaterTest,
        PolicyFetchResponseWrongPublicKeyVersion) {
   // Submit a policy fetch response containing different public key version.
   builder_.policy_data().set_public_key_version(
-      ComponentPolicyBuilder::kFakePublicKeyVersion + 1);
+      PolicyBuilder::kFakePublicKeyVersion + 1);
   updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
 
   task_runner_->RunUntilIdle();
@@ -280,9 +278,9 @@ TEST_F(ComponentCloudPolicyUpdaterTest,
 TEST_F(ComponentCloudPolicyUpdaterTest, PolicyFetchResponseDifferentPublicKey) {
   // Submit a policy fetch response signed with a different key and containing a
   // new public key version.
-  builder_.SetSigningKey(*ComponentPolicyBuilder::CreateTestOtherSigningKey());
+  builder_.SetSigningKey(*PolicyBuilder::CreateTestOtherSigningKey());
   builder_.policy_data().set_public_key_version(
-      ComponentPolicyBuilder::kFakePublicKeyVersion + 1);
+      PolicyBuilder::kFakePublicKeyVersion + 1);
   updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
 
   task_runner_->RunUntilIdle();

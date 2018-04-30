@@ -150,9 +150,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
     RunUntilIdle();
   }
 
-  void RunUntilIdle() {
-    base::RunLoop().RunUntilIdle();
-  }
+  void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
 
   void Connect() {
     client_ = new MockCloudPolicyClient();
@@ -161,7 +159,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
         client_, std::move(owned_cache_), request_context_, loop_.task_runner(),
         loop_.task_runner()));
 
-    client_->SetDMToken(ComponentPolicyBuilder::kFakeToken);
+    client_->SetDMToken(ComponentCloudPolicyBuilder::kFakeToken);
     EXPECT_EQ(1u, client_->types_to_fetch_.size());
     core_.Connect(std::unique_ptr<CloudPolicyClient>(client_));
     EXPECT_EQ(2u, client_->types_to_fetch_.size());
@@ -177,10 +175,10 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
 
   void LoadStore() {
     em::PolicyData* data = new em::PolicyData();
-    data->set_username(ComponentPolicyBuilder::kFakeUsername);
-    data->set_request_token(ComponentPolicyBuilder::kFakeToken);
-    data->set_device_id(ComponentPolicyBuilder::kFakeDeviceId);
-    data->set_public_key_version(ComponentPolicyBuilder::kFakePublicKeyVersion);
+    data->set_username(PolicyBuilder::kFakeUsername);
+    data->set_request_token(PolicyBuilder::kFakeToken);
+    data->set_device_id(PolicyBuilder::kFakeDeviceId);
+    data->set_public_key_version(PolicyBuilder::kFakePublicKeyVersion);
     store_.policy_.reset(data);
     store_.policy_signature_public_key_ = public_key_;
     store_.NotifyStoreLoaded();
@@ -196,14 +194,14 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
   }
 
   void PopulateCache() {
-    EXPECT_TRUE(cache_->Store(
-        "extension-policy", kTestExtension, CreateSerializedResponse()));
+    EXPECT_TRUE(cache_->Store("extension-policy", kTestExtension,
+                              CreateSerializedResponse()));
     EXPECT_TRUE(
         cache_->Store("extension-policy-data", kTestExtension, kTestPolicy));
 
     builder_.policy_data().set_settings_entity_id(kTestExtension2);
-    EXPECT_TRUE(cache_->Store(
-        "extension-policy", kTestExtension2, CreateSerializedResponse()));
+    EXPECT_TRUE(cache_->Store("extension-policy", kTestExtension2,
+                              CreateSerializedResponse()));
     EXPECT_TRUE(
         cache_->Store("extension-policy-data", kTestExtension2, kTestPolicy));
     builder_.policy_data().set_settings_entity_id(kTestExtension);
@@ -245,7 +243,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
   CloudPolicyCore core_;
   SchemaRegistry registry_;
   std::unique_ptr<ComponentCloudPolicyService> service_;
-  ComponentPolicyBuilder builder_;
+  ComponentCloudPolicyBuilder builder_;
   PolicyMap expected_policy_;
   std::string public_key_;
 };
@@ -580,10 +578,10 @@ TEST_F(ComponentCloudPolicyServiceTest, LoadInvalidPolicyFromCache) {
   // loaded, the other should be filtered out by the schema.
   builder_.payload().set_secure_hash(
       crypto::SHA256HashString(kInvalidTestPolicy));
-  EXPECT_TRUE(cache_->Store(
-      "extension-policy", kTestExtension, CreateSerializedResponse()));
-  EXPECT_TRUE(cache_->Store(
-      "extension-policy-data", kTestExtension, kInvalidTestPolicy));
+  EXPECT_TRUE(cache_->Store("extension-policy", kTestExtension,
+                            CreateSerializedResponse()));
+  EXPECT_TRUE(cache_->Store("extension-policy-data", kTestExtension,
+                            kInvalidTestPolicy));
 
   LoadStore();
   InitializeRegistry();
@@ -661,10 +659,9 @@ TEST_F(ComponentCloudPolicyServiceTest, KeyRotation) {
   EXPECT_TRUE(service_->is_initialized());
 
   // Send back a fake policy fetch response with the new signing key.
-  const int kNewPublicKeyVersion =
-      ComponentPolicyBuilder::kFakePublicKeyVersion + 1;
+  const int kNewPublicKeyVersion = PolicyBuilder::kFakePublicKeyVersion + 1;
   std::unique_ptr<crypto::RSAPrivateKey> new_signing_key =
-      ComponentPolicyBuilder::CreateTestOtherSigningKey();
+      PolicyBuilder::CreateTestOtherSigningKey();
   builder_.SetSigningKey(*new_signing_key);
   builder_.policy_data().set_public_key_version(kNewPublicKeyVersion);
   client_->SetPolicy(dm_protocol::kChromeExtensionPolicyType, kTestExtension,

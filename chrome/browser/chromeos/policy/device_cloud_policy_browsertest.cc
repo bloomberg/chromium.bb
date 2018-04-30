@@ -334,14 +334,14 @@ class SigninExtensionsDeviceCloudPolicyBrowserTestBase
   }
 
   static enterprise_management::PolicyFetchResponse BuildTestComponentPolicy() {
-    ComponentPolicyBuilder builder;
+    ComponentCloudPolicyBuilder builder;
     MakeTestComponentPolicyBuilder(&builder);
     return builder.policy();
   }
 
   static enterprise_management::ExternalPolicyData
   BuildTestComponentPolicyPayload() {
-    ComponentPolicyBuilder builder;
+    ComponentCloudPolicyBuilder builder;
     MakeTestComponentPolicyBuilder(&builder);
     return builder.payload();
   }
@@ -354,7 +354,8 @@ class SigninExtensionsDeviceCloudPolicyBrowserTestBase
     session_manager_client()->set_device_policy(device_policy()->GetBlob());
   }
 
-  static void MakeTestComponentPolicyBuilder(ComponentPolicyBuilder* builder) {
+  static void MakeTestComponentPolicyBuilder(
+      ComponentCloudPolicyBuilder* builder) {
     builder->policy_data().set_policy_type(
         dm_protocol::kChromeSigninExtensionPolicyType);
     builder->policy_data().set_settings_entity_id(kTestExtensionId);
