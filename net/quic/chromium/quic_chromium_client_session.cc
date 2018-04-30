@@ -1816,27 +1816,31 @@ void QuicChromiumClientSession::OnNetworkConnected(
   net_log_.AddEvent(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_NETWORK_CONNECTED,
       NetLog::Int64Callback("connected_network", network));
-  // If migration_pending_ is false, there was no migration pending or
-  // an earlier task completed migration.
-  if (!migration_pending_)
+  // If there was no migration pending and the path is not degrading, ignore
+  // this signal.
+  if (!migration_pending_ && !connection()->IsPathDegrading())
     return;
 
   current_connection_migration_cause_ = ON_NETWORK_CONNECTED;
-  // |migration_pending_| is true, there was no working network previously.
-  // |network| is now the only possible candidate, migrate immediately.
   if (migrate_session_on_network_change_v2_) {
-    MigrateImmediately(network);
+    if (migration_pending_) {
+      // |migration_pending_| is true, there was no working network previously.
+      // |network| is now the only possible candidate, migrate immediately.
+      MigrateImmediately(network);
+    } else {
+      // The connection is path degrading.
+      DCHECK(connection()->IsPathDegrading());
+      OnPathDegrading();
+    }
     return;
   }
 
-  if (!migrate_session_on_network_change_v2_) {
-    // TODO(jri): Ensure that OnSessionGoingAway is called consistently,
-    // and that it's always called at the same time in the whole
-    // migration process. Allows tests to be more uniform.
-    stream_factory_->OnSessionGoingAway(this);
-    Migrate(network, connection()->peer_address().impl().socket_address(),
-            /*close_session_on_error=*/true, net_log);
-  }
+  // TODO(jri): Ensure that OnSessionGoingAway is called consistently,
+  // and that it's always called at the same time in the whole
+  // migration process. Allows tests to be more uniform.
+  stream_factory_->OnSessionGoingAway(this);
+  Migrate(network, connection()->peer_address().impl().socket_address(),
+          /*close_session_on_error=*/true, net_log);
 }
 
 void QuicChromiumClientSession::OnNetworkDisconnected(
