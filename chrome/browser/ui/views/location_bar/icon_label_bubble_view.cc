@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -121,6 +122,11 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list)
 
   AddChildView(ink_drop_container_);
   ink_drop_container_->SetVisible(false);
+  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
+    // Ink drop ripple opacity.
+    set_ink_drop_visible_opacity(
+        GetOmniboxStateAlpha(OmniboxPartState::SELECTED));
+  }
 
   // Bubbles are given the full internal height of the location bar so that all
   // child views in the location bar have the same height. The visible height of
@@ -295,14 +301,25 @@ std::unique_ptr<views::InkDropRipple> IconLabelBubbleView::CreateInkDropRipple()
 
 std::unique_ptr<views::InkDropHighlight>
 IconLabelBubbleView::CreateInkDropHighlight() const {
-  return InkDropHostView::CreateDefaultInkDropHighlight(
-      gfx::RectF(ink_drop_container_->bounds()).CenterPoint(),
-      ink_drop_container_->size());
+  std::unique_ptr<views::InkDropHighlight> highlight =
+      CreateDefaultInkDropHighlight(
+          gfx::RectF(ink_drop_container_->bounds()).CenterPoint(),
+          ink_drop_container_->size());
+  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
+    highlight->set_visible_opacity(
+        GetOmniboxStateAlpha(OmniboxPartState::HOVERED));
+  }
+  return highlight;
 }
 
 SkColor IconLabelBubbleView::GetInkDropBaseColor() const {
-  return color_utils::DeriveDefaultIconColor(GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultColor));
+  const SkColor ink_color_opaque = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultColor);
+  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
+    // Opacity of the ink drop is set elsewhere, so just use full opacity here.
+    return ink_color_opaque;
+  }
+  return color_utils::DeriveDefaultIconColor(ink_color_opaque);
 }
 
 std::unique_ptr<views::InkDropMask> IconLabelBubbleView::CreateInkDropMask()

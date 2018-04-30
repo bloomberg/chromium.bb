@@ -25,17 +25,6 @@ constexpr ui::NativeTheme::ColorId kInvalidColorId =
     ui::NativeTheme::kColorId_NumColors;
 
 template <class T>
-constexpr T NormalHoveredSelectedOrBoth(OmniboxPartState state,
-                                        T normal,
-                                        T hovered,
-                                        T selected,
-                                        T hovered_and_selected) {
-  const T args[] = {normal, hovered, selected, hovered_and_selected};
-  DCHECK_LT(static_cast<size_t>(state), arraysize(args));
-  return args[static_cast<size_t>(state)];
-}
-
-template <class T>
 constexpr T NormalHoveredSelected(OmniboxPartState state,
                                   T normal,
                                   T hovered,
@@ -240,7 +229,7 @@ SkColor GetOmniboxColor(OmniboxPart part,
       // background for the best text AA result.
       return color_utils::BlendTowardOppositeLuma(
           dark ? gfx::kGoogleGrey800 : SK_ColorWHITE,
-          NormalHoveredSelectedOrBoth<SkAlpha>(state, 0x00, 0x0F, 0x14, 0x24));
+          gfx::ToRoundedInt(GetOmniboxStateAlpha(state) * 0xff));
     case OmniboxPart::LOCATION_BAR_TEXT_DEFAULT:
     case OmniboxPart::RESULTS_TEXT_DEFAULT:
       return dark ? gfx::kGoogleGrey100 : gfx::kGoogleGrey800;
@@ -271,4 +260,24 @@ SkColor GetOmniboxColor(OmniboxPart part,
       return GetLegacyColor(part, tint, state);
   }
   return gfx::kPlaceholderColor;
+}
+
+float GetOmniboxStateAlpha(OmniboxPartState state) {
+  // Use default alphas in non-newer Material style.
+  DCHECK(ui::MaterialDesignController::IsNewerMaterialUi());
+
+  switch (state) {
+    case OmniboxPartState::NORMAL:
+      return 0;
+    case OmniboxPartState::HOVERED:
+      return 0.08f;
+    case OmniboxPartState::SELECTED:
+      return 0.06f;
+    case OmniboxPartState::HOVERED_AND_SELECTED:
+      return GetOmniboxStateAlpha(OmniboxPartState::HOVERED) +
+             GetOmniboxStateAlpha(OmniboxPartState::SELECTED);
+    default:
+      NOTREACHED();
+      return 0;
+  }
 }
