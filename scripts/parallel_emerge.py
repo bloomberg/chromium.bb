@@ -40,6 +40,7 @@ import traceback
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_event
+from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import process_util
 from chromite.lib import proctitle
@@ -548,13 +549,14 @@ class DepGraphGenerator(object):
     # Calculate the install plan packages and append to temp file. They will be
     # used to calculate all the reverse dependencies on these change packages.
     if self.install_plan_filename:
-      install_plan_pkgs = []
-      for d in deps_info:
-        install_plan_pkgs.append(d)
-      # always write the file even if nothing to do, scripts expect existence.
-      with open(self.install_plan_filename, "a") as f:
-        f.write("%s " % " ".join(install_plan_pkgs))
-
+      # Always write the file even if nothing to do, scripts expect existence.
+      output = '\n'.join(deps_info)
+      if len(output) > 0:
+        # add a trailing newline only if the output is not empty.
+        output += '\n'
+      osutils.WriteFile(self.install_plan_filename,
+                        output,
+                        mode='a')
     return deps_tree, deps_info
 
   def PrintTree(self, deps, depth=""):
