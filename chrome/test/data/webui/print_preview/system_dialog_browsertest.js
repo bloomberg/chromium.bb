@@ -32,20 +32,8 @@ cr.define('system_dialog_browsertest', function() {
       print_preview.NativeLayer.setInstance(nativeLayer);
       PolymerTest.clearBody();
 
-      const initialSettings = {
-        isInKioskAutoPrintMode: false,
-        isInAppKioskMode: false,
-        thousandsDelimeter: ',',
-        decimalDelimeter: '.',
-        unitType: 1,
-        previewModifiable: true,
-        documentTitle: 'title',
-        documentHasSelection: true,
-        shouldPrintSelectionOnly: false,
-        printerName: 'FooDevice',
-        serializedAppStateStr: null,
-        serializedDefaultDestinationSelectionRulesStr: null
-      };
+      const initialSettings =
+          print_preview_test_utils.getDefaultInitialSettings();
       nativeLayer.setInitialSettings(initialSettings);
       nativeLayer.setLocalDestinationCapabilities(
           print_preview_test_utils.getCddTemplate(initialSettings.printerName));

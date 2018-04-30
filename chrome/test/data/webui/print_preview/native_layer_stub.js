@@ -129,7 +129,9 @@ cr.define('print_preview', function() {
 
     /** @override */
     getPrinterCapabilities(printerId, type) {
-      this.methodCalled('getPrinterCapabilities', printerId, type);
+      this.methodCalled('getPrinterCapabilities', {
+        destinationId: printerId, printerType: type
+      });
       if (type != print_preview.PrinterType.LOCAL_PRINTER)
         return Promise.reject();
       return this.localDestinationCapabilities_.get(printerId);

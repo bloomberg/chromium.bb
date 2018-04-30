@@ -1056,7 +1056,7 @@ cr.define('print_preview', function() {
       const key = this.getKey_(destination);
       const existingDestination = this.destinationMap_[key];
       if (existingDestination == null) {
-        destination.isRecent |=
+        destination.isRecent = destination.isRecent ||
             this.recentDestinations_.some(function(recent) {
               return (
                   destination.id == recent.id &&

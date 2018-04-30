@@ -3,6 +3,23 @@
 // found in the LICENSE file.
 
 cr.define('print_preview_test_utils', function() {
+  /** @return {!print_preview.NativeInitialSettings} */
+  function getDefaultInitialSettings() {
+    return {
+      isInKioskAutoPrintMode: false,
+      isInAppKioskMode: false,
+      thousandsDelimeter: ',',
+      decimalDelimeter: '.',
+      unitType: 1,
+      previewModifiable: true,
+      documentTitle: 'title',
+      documentHasSelection: true,
+      shouldPrintSelectionOnly: false,
+      printerName: 'FooDevice',
+      serializedAppStateStr: null,
+      serializedDefaultDestinationSelectionRulesStr: null
+    };
+  }
 
   /**
    * @param {string} printerId
@@ -113,6 +130,7 @@ cr.define('print_preview_test_utils', function() {
   }
 
   return {
+    getDefaultInitialSettings: getDefaultInitialSettings,
     getCddTemplate: getCddTemplate,
     getDefaultMediaSize: getDefaultMediaSize,
     getDefaultOrientation: getDefaultOrientation,

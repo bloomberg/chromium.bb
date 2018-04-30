@@ -141,8 +141,8 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function(){
       const callback =
           cr.isChromeOS ? 'setupPrinter' : 'getPrinterCapabilities';
       return nativeLayer_.whenCalled(callback).then(
-          function(actualDestId) {
-            assertEquals(destId, actualDestId);
+          function(args) {
+            assertEquals(destId, cr.isChromeOS ? args : args.destinationId);
           });
     });
 
@@ -169,7 +169,9 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function(){
           cr.isChromeOS ? 'setupPrinter' : 'getPrinterCapabilities';
       return Promise.all([nativeLayer_.whenCalled(callback), waiter]).then(
           function(results) {
-            assertEquals(destId, results[0]);
+            const actualId =
+                cr.isChromeOS ? results[0] : results[0].destinationId;
+            assertEquals(destId, actualId);
             // after setup succeeds, the destination should be selected.
             assertNotEquals(null, destinationStore_.selectedDestination);
             assertEquals(destId, destinationStore_.selectedDestination.id);
