@@ -22,7 +22,15 @@
         "--enable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
-      "os": "11.2"
+      "os": "11.2",
+      "comments": [
+        "Xcode 9.2 requires Mac OS 10.12+, but we still have 10.11 on some",
+        "bots. Once all swarming bots are upgraded, dimensions can be removed."
+      ],
+      "dimensions": [
+        { "os": "Mac-10.12", "pool": "Chrome" },
+        { "os": "Mac-10.13", "pool": "Chrome" }
+      ]
     },
     {
       "app": "ios_chrome_integration_egtests",
@@ -31,7 +39,11 @@
       ],
       "device type": "iPhone 6s",
       "os": "11.2",
-      "xctest": true
+      "xctest": true,
+      "dimensions": [
+        { "os": "Mac-10.12", "pool": "Chrome" },
+        { "os": "Mac-10.13", "pool": "Chrome" }
+      ]
     },
     {
       "app": "ios_chrome_integration_egtests",
@@ -40,7 +52,13 @@
       ],
       "device type": "iPad Air 2",
       "os": "10.0",
-      "xctest": true
+      "xctest": true,
+      "xcode build version": "8A218a",
+      "dimensions": [
+        { "os": "Mac-10.11.6", "pool": "Chrome" },
+        { "os": "Mac-10.12", "pool": "Chrome" },
+        { "os": "Mac-10.13", "pool": "Chrome" }
+      ]
     },
     {
       "app": "ios_chrome_integration_egtests",
@@ -49,7 +67,11 @@
       ],
       "device type": "iPhone 6s",
       "os": "11.2",
-      "xctest": true
+      "xctest": true,
+      "dimensions": [
+        { "os": "Mac-10.12", "pool": "Chrome" },
+        { "os": "Mac-10.13", "pool": "Chrome" }
+      ]
     },
     {
       "app": "ios_chrome_smoke_egtests",
@@ -58,7 +80,11 @@
       ],
       "device type": "iPhone 6s",
       "os": "11.2",
-      "xctest": true
+      "xctest": true,
+      "dimensions": [
+        { "os": "Mac-10.12", "pool": "Chrome" },
+        { "os": "Mac-10.13", "pool": "Chrome" }
+      ]
     },
     {
       "app": "ios_chrome_web_egtests",
@@ -67,7 +93,11 @@
       ],
       "device type": "iPhone 6s",
       "os": "11.2",
-      "xctest": true
+      "xctest": true,
+      "dimensions": [
+        { "os": "Mac-10.12", "pool": "Chrome" },
+        { "os": "Mac-10.13", "pool": "Chrome" }
+      ]
     },
     {
       "app": "ios_web_shell_egtests",
@@ -76,7 +106,11 @@
       ],
       "device type": "iPhone 6s",
       "os": "11.2",
-      "xctest": true
+      "xctest": true,
+      "dimensions": [
+        { "os": "Mac-10.12", "pool": "Chrome" },
+        { "os": "Mac-10.13", "pool": "Chrome" }
+      ]
     },
     {
       "app": "ios_chrome_ui_egtests",
@@ -85,7 +119,11 @@
       ],
       "device type": "iPhone 6s",
       "os": "11.2",
-      "xctest": true
+      "xctest": true,
+      "dimensions": [
+        { "os": "Mac-10.12", "pool": "Chrome" },
+        { "os": "Mac-10.13", "pool": "Chrome" }
+      ]
     }
   ]
 }
