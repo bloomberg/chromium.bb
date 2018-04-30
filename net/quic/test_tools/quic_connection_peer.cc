@@ -279,6 +279,11 @@ bool QuicConnectionPeer::HasRetransmittableFrames(
 }
 
 // static
+bool QuicConnectionPeer::GetNoStopWaitingFrames(QuicConnection* connection) {
+  return connection->no_stop_waiting_frames_;
+}
+
+// static
 void QuicConnectionPeer::SetNoStopWaitingFrames(QuicConnection* connection,
                                                 bool no_stop_waiting_frames) {
   connection->no_stop_waiting_frames_ = no_stop_waiting_frames;

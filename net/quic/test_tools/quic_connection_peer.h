@@ -120,6 +120,7 @@ class QuicConnectionPeer {
                                     float ack_decimation_delay);
   static bool HasRetransmittableFrames(QuicConnection* connection,
                                        QuicPacketNumber packet_number);
+  static bool GetNoStopWaitingFrames(QuicConnection* connection);
   static void SetNoStopWaitingFrames(QuicConnection* connection,
                                      bool no_stop_waiting_frames);
   static void SetMaxTrackedPackets(QuicConnection* connection,

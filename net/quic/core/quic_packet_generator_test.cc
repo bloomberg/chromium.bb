@@ -653,8 +653,11 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataLargeSendAckFalse) {
 }
 
 TEST_F(QuicPacketGeneratorTest, ConsumeDataLargeSendAckTrue) {
+  if (framer_.transport_version() > QUIC_VERSION_43) {
+    return;
+  }
   delegate_.SetCanNotWrite();
-  generator_.SetShouldSendAck(true);
+  generator_.SetShouldSendAck(true /* stop_waiting */);
   delegate_.SetCanWriteAnything();
 
   // Set up frames to write into the creator when control frames are written.
@@ -1035,6 +1038,9 @@ TEST_F(QuicPacketGeneratorTest, GenerateMtuDiscoveryPacket_SurroundedByData) {
 }
 
 TEST_F(QuicPacketGeneratorTest, DontCrashOnInvalidStopWaiting) {
+  if (framer_.transport_version() > QUIC_VERSION_43) {
+    return;
+  }
   // Test added to ensure the generator does not crash when an invalid frame is
   // added.  Because this is an indication of internal programming errors,
   // DFATALs are expected.

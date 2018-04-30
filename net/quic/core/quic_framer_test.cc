@@ -3399,6 +3399,9 @@ TEST_P(QuicFramerTest, AckFrameTwoTimeStampsMultipleAckBlocks) {
 }
 
 TEST_P(QuicFramerTest, NewStopWaitingFrame) {
+  if (version_.transport_version > QUIC_VERSION_43) {
+    return;
+  }
   // clang-format off
   PacketFragments packet = {
       // public flags (8 byte connection_id)
@@ -3477,6 +3480,9 @@ TEST_P(QuicFramerTest, NewStopWaitingFrame) {
 }
 
 TEST_P(QuicFramerTest, InvalidNewStopWaitingFrame) {
+  if (version_.transport_version > QUIC_VERSION_43) {
+    return;
+  }
   // clang-format off
   unsigned char packet[] = {
     // public flags (8 byte connection_id)
@@ -5986,6 +5992,9 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMaxAckBlocks) {
 }
 
 TEST_P(QuicFramerTest, BuildNewStopWaitingPacket) {
+  if (version_.transport_version > QUIC_VERSION_43) {
+    return;
+  }
   QuicPacketHeader header;
   header.connection_id = kConnectionId;
   header.reset_flag = false;

@@ -747,9 +747,13 @@ std::vector<TestParams> GetTestParams() {
   for (size_t i = 0; i < all_supported_versions.size(); ++i) {
     for (AckResponse ack_response :
          {AckResponse::kDefer, AckResponse::kImmediate}) {
-      for (bool stop_waiting : {true, false}) {
-        params.push_back(
-            TestParams(all_supported_versions[i], ack_response, stop_waiting));
+      for (bool no_stop_waiting : {true, false}) {
+        // After version 43, never use STOP_WAITING.
+        if (all_supported_versions[i].transport_version <= QUIC_VERSION_43 ||
+            no_stop_waiting) {
+          params.push_back(TestParams(all_supported_versions[i], ack_response,
+                                      no_stop_waiting));
+        }
       }
     }
   }
@@ -795,8 +799,12 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     SetQuicReloadableFlag(quic_respect_ietf_header, true);
     connection_.set_defer_send_in_response_to_packets(GetParam().ack_response ==
                                                       AckResponse::kDefer);
-    QuicConnectionPeer::SetNoStopWaitingFrames(&connection_,
-                                               GetParam().no_stop_waiting);
+    if (version().transport_version > QUIC_VERSION_43) {
+      EXPECT_TRUE(QuicConnectionPeer::GetNoStopWaitingFrames(&connection_));
+    } else {
+      QuicConnectionPeer::SetNoStopWaitingFrames(&connection_,
+                                                 GetParam().no_stop_waiting);
+    }
     connection_.set_visitor(&visitor_);
     if (connection_.session_decides_what_to_write()) {
       connection_.SetSessionNotifier(&notifier_);
@@ -2235,6 +2243,9 @@ TEST_P(QuicConnectionTest, AckNeedsRetransmittableFrames) {
 }
 
 TEST_P(QuicConnectionTest, LeastUnackedLower) {
+  if (GetParam().version.transport_version > QUIC_VERSION_43) {
+    return;
+  }
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
   SendStreamDataToPeer(1, "foo", 0, NO_FIN, nullptr);
@@ -5506,6 +5517,9 @@ TEST_P(QuicConnectionTest, ZeroBytePacket) {
 }
 
 TEST_P(QuicConnectionTest, MissingPacketsBeforeLeastUnacked) {
+  if (GetParam().version.transport_version > QUIC_VERSION_43) {
+    return;
+  }
   // Set the packet number of the ack packet to be least unacked (4).
   QuicPacketCreatorPeer::SetPacketNumber(&peer_creator_, 3);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
