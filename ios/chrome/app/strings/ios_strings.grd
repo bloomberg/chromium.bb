@@ -916,8 +916,8 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_OPTIONS_WEB_SERVICES_LABEL" desc="Title for group of web services items in Privacy settings table, including Show Suggestions, Preload Webpages, and Send Usage Data. [Length: 10em] [iOS only]">
         Web Services
       </message>
-      <message name="IDS_IOS_OVERSCROLL_ADD_TAB_LABEL" desc="The text to use for the tooltip for the overscroll add tab action. [Length: 20em] [iOS only]">
-        Add Tab
+      <message name="IDS_IOS_OVERSCROLL_NEW_TAB_LABEL" desc="The text to use for the tooltip for the overscroll new tab action. [Length: 20em] [iOS only]">
+        New Tab
       </message>
       <message name="IDS_IOS_OVERSCROLL_CLOSE_TAB_LABEL" desc="The text to use for the tooltip for the overscroll close tab action. [Length: 20em] [iOS only]">
         Close Tab
