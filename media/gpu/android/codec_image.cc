@@ -51,7 +51,10 @@ void CodecImage::SetDestructionCb(DestructionCb destruction_cb) {
 }
 
 gfx::Size CodecImage::GetSize() {
-  return output_buffer_->size();
+  // Return a nonzero size, to avoid GL errors, even if we dropped the codec
+  // buffer already.  Note that if we dropped it, there's no data in the
+  // texture anyway, so the old size doesn't matter.
+  return output_buffer_ ? output_buffer_->size() : gfx::Size(1, 1);
 }
 
 unsigned CodecImage::GetInternalFormat() {
