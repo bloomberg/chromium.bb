@@ -2785,9 +2785,6 @@ Customize this anytime in <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph n
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_HOME" desc="Content description for the home button.">
         Home
       </message>
-      <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_EXPAND" desc="Content description for the Chrome Home sheet expand button. Tapping the button expands a panel that displays content suggestions, downloads, bookmarks, and history.">
-        Expand navigation panel
-      </message>
       <message name="IDS_ACCESSIBILITY_BTN_REFRESH" desc="Content description for the refresh page button.">
         Refresh page
       </message>
