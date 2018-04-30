@@ -51,7 +51,10 @@ void HitTestQuery::OnAggregatedHitTestRegionListUpdated(
 
 void HitTestQuery::SwitchActiveAggregatedHitTestRegionList(
     uint8_t active_handle_index) {
-  DCHECK(active_handle_index == 0u || active_handle_index == 1u);
+  if (active_handle_index != 0u && active_handle_index != 1u) {
+    ReceivedBadMessageFromGpuProcess();
+    return;
+  }
   active_hit_test_list_ = static_cast<AggregatedHitTestRegion*>(
       handle_buffers_[active_handle_index].get());
   active_hit_test_list_size_ = handle_buffer_sizes_[active_handle_index];
