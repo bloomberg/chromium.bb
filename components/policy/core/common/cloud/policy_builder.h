@@ -152,7 +152,7 @@ class PolicyBuilder {
 
 // Type-parameterized PolicyBuilder extension that allows for building policy
 // blobs carrying protobuf payloads.
-template<typename PayloadProto>
+template <typename PayloadProto>
 class TypedPolicyBuilder : public PolicyBuilder {
  public:
   TypedPolicyBuilder();
@@ -178,12 +178,34 @@ class TypedPolicyBuilder : public PolicyBuilder {
   DISALLOW_COPY_AND_ASSIGN(TypedPolicyBuilder);
 };
 
+// PolicyBuilder extension that allows for building policy blobs carrying string
+// payloads.
+class StringPolicyBuilder : public PolicyBuilder {
+ public:
+  StringPolicyBuilder();
+  void set_payload(std::string payload) { payload_ = std::move(payload); }
+  const std::string& payload() const { return payload_; }
+  void clear_payload() { payload_.clear(); }
+
+  // PolicyBuilder:
+  void Build() override;
+
+ private:
+  std::string payload_;
+
+  DISALLOW_COPY_AND_ASSIGN(StringPolicyBuilder);
+};
+
 typedef TypedPolicyBuilder<enterprise_management::CloudPolicySettings>
     UserPolicyBuilder;
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-typedef TypedPolicyBuilder<enterprise_management::ExternalPolicyData>
-    ComponentPolicyBuilder;
+using ComponentCloudPolicyBuilder =
+    TypedPolicyBuilder<enterprise_management::ExternalPolicyData>;
+#endif
+
+#if defined(OS_CHROMEOS)
+using ComponentActiveDirectoryPolicyBuilder = StringPolicyBuilder;
 #endif
 
 }  // namespace policy
