@@ -331,7 +331,7 @@ enum class OverscrollViewState {
       _addTabLabel.textColor =
           [UIColor colorWithWhite:kSelectionColor alpha:1.0];
       _addTabLabel.text =
-          l10n_util::GetNSString(IDS_IOS_OVERSCROLL_ADD_TAB_LABEL);
+          l10n_util::GetNSString(IDS_IOS_OVERSCROLL_NEW_TAB_LABEL);
       [self addSubview:_addTabLabel];
       _refreshLabel = [[UILabel alloc] init];
       _refreshLabel.numberOfLines = 0;
