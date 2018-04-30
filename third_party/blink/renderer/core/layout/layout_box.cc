@@ -3542,13 +3542,16 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalWidthUsing(
     case kFillAvailable:
     case kPercent:
     case kCalculated: {
-      // FIXME: containingBlockLogicalWidthForContent() is wrong if the replaced
-      // element's writing-mode is perpendicular to the containing block's
-      // writing-mode. https://bugs.webkit.org/show_bug.cgi?id=46496
-      const LayoutUnit cw = IsOutOfFlowPositioned()
-                                ? ContainingBlockLogicalWidthForPositioned(
-                                      ToLayoutBoxModelObject(Container()))
-                                : ContainingBlockLogicalWidthForContent();
+      LayoutUnit cw;
+      if (IsOutOfFlowPositioned()) {
+        cw = ContainingBlockLogicalWidthForPositioned(
+            ToLayoutBoxModelObject(Container()));
+      } else {
+        cw = IsHorizontalWritingMode() ==
+                     ContainingBlock()->IsHorizontalWritingMode()
+                 ? ContainingBlockLogicalWidthForContent()
+                 : PerpendicularContainingBlockLogicalHeight();
+      }
       Length container_logical_width =
           ContainingBlock()->Style()->LogicalWidth();
       // FIXME: Handle cases when containing block width is calculated or
@@ -3666,20 +3669,18 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
             ValueForLength(logical_height, new_content_height));
       }
 
-      // FIXME: availableLogicalHeight() is wrong if the replaced element's
-      // writing-mode is perpendicular to the containing block's writing-mode.
-      // https://bugs.webkit.org/show_bug.cgi?id=46496
       LayoutUnit available_height;
       if (IsOutOfFlowPositioned()) {
         available_height = ContainingBlockLogicalHeightForPositioned(
             ToLayoutBoxModelObject(cb));
       } else if (stretched_height != -1) {
         available_height = stretched_height;
-      } else if (HasOverrideContainingBlockContentLogicalHeight()) {
-        available_height = OverrideContainingBlockContentLogicalHeight();
       } else {
         available_height =
-            ContainingBlockLogicalHeightForContent(kIncludeMarginBorderPadding);
+            IsHorizontalWritingMode() == cb->IsHorizontalWritingMode()
+                ? ContainingBlockLogicalHeightForContent(
+                      kIncludeMarginBorderPadding)
+                : ContainingBlockLogicalWidthForContent();
         // It is necessary to use the border-box to match WinIE's broken
         // box model.  This is essential for sizing inside
         // table cells using percentage heights.
