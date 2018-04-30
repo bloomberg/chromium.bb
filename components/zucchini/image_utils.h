@@ -8,9 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <string>
+
+#include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
+#include "base/strings/stringprintf.h"
 #include "components/zucchini/buffer_view.h"
 #include "components/zucchini/typed_value.h"
 
@@ -208,6 +212,15 @@ struct Element : public BufferRegion {
 struct ElementMatch {
   bool IsValid() const { return old_element.exe_type == new_element.exe_type; }
   ExecutableType exe_type() const { return old_element.exe_type; }
+
+  // Represents match as "#+#=#+#", where "#" denotes the integers:
+  //   [offset in "old", size in "old", offset in "new", size in "new"].
+  // Note that element type is omitted.
+  std::string ToString() const {
+    return base::StringPrintf("%" PRIuS "+%" PRIuS "=%" PRIuS "+%" PRIuS "",
+                              old_element.offset, old_element.size,
+                              new_element.offset, new_element.size);
+  }
 
   Element old_element;
   Element new_element;

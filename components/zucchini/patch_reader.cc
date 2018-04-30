@@ -4,7 +4,6 @@
 
 #include "components/zucchini/patch_reader.h"
 
-#include <algorithm>
 #include <type_traits>
 #include <utility>
 
