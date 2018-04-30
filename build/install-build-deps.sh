@@ -116,15 +116,16 @@ fi
 
 distro_codename=$(lsb_release --codename --short)
 distro_id=$(lsb_release --id --short)
-supported_codenames="(trusty|xenial|zesty|artful)"
+supported_codenames="(trusty|xenial|artful|bionic)"
 supported_ids="(Debian)"
 if [ 0 -eq "${do_unsupported-0}" ] && [ 0 -eq "${do_quick_check-0}" ] ; then
   if [[ ! $distro_codename =~ $supported_codenames &&
         ! $distro_id =~ $supported_ids ]]; then
     echo -e "ERROR: The only supported distros are\n" \
-      "\tUbuntu 14.04 (trusty)\n" \
-      "\tUbuntu 16.04 (xenial)\n" \
+      "\tUbuntu 14.04 LTS (trusty)\n" \
+      "\tUbuntu 16.04 LTS (xenial)\n" \
       "\tUbuntu 17.10 (artful)\n" \
+      "\tUbuntu 18.04 LTS (bionic)\n" \
       "\tDebian 8 (jessie) or later" >&2
     exit 1
   fi
@@ -168,7 +169,6 @@ dev_list="\
   libappindicator3-dev
   libasound2-dev
   libbrlapi-dev
-  libav-tools
   libbz2-dev
   libcairo2-dev
   libcap-dev
@@ -422,7 +422,7 @@ case $distro_codename in
     arm_list+=" g++-4.8-multilib-arm-linux-gnueabihf
                 gcc-4.8-multilib-arm-linux-gnueabihf"
     ;;
-  xenial|zesty|artful)
+  xenial|artful|bionic)
     arm_list+=" g++-5-multilib-arm-linux-gnueabihf
                 gcc-5-multilib-arm-linux-gnueabihf
                 gcc-arm-linux-gnueabihf"
@@ -508,7 +508,12 @@ fi
 if package_exists xfonts-mathml; then
   dev_list="${dev_list} xfonts-mathml"
 fi
-if package_exists php7.1-cgi; then
+if package_exists libav-tools; then
+  dev_list="${dev_list} libav-tools"
+fi
+if package_exists php7.2-cgi; then
+  dev_list="${dev_list} php7.2-cgi libapache2-mod-php7.2"
+elif package_exists php7.1-cgi; then
   dev_list="${dev_list} php7.1-cgi libapache2-mod-php7.1"
 elif package_exists php7.0-cgi; then
   dev_list="${dev_list} php7.0-cgi libapache2-mod-php7.0"
