@@ -28,10 +28,16 @@ namespace gfx {
 
 namespace {
 
+// The default size of a single side of the square canvas to which path
+// coordinates are relative, in device independent pixels.
+constexpr int kReferenceSizeDip = 48;
+
+constexpr int kEmptyIconSize = -1;
+
 // Retrieves the specified CANVAS_DIMENSIONS size from a PathElement.
 int GetCanvasDimensions(const PathElement* path) {
   if (!path)
-    return kReferenceSizeDip;
+    return kEmptyIconSize;
   return path[0].command == CANVAS_DIMENSIONS ? path[1].arg : kReferenceSizeDip;
 }
 
@@ -621,7 +627,12 @@ ImageSkia CreateVectorIconFromSource(const std::string& source,
 
 int GetDefaultSizeOfVectorIcon(const VectorIcon& icon) {
   if (icon.is_empty())
-    return -1;
+    return kEmptyIconSize;
+  DCHECK_EQ(icon.reps[icon.reps_size - 1].path[0].command, CANVAS_DIMENSIONS)
+      << " " << icon.name
+      << " has no size in its icon definition, and it seems unlikely you want "
+         "to display at the default of 48dip. Please specify a size in "
+         "CreateVectorIcon().";
   const PathElement* default_icon_path = icon.reps[icon.reps_size - 1].path;
   return GetCanvasDimensions(default_icon_path);
 }
