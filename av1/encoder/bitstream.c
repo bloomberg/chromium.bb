@@ -3476,9 +3476,21 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst,
     aom_wb_write_literal(&wb, operating_points_minus1_cnt,
                          OP_POINTS_MINUS1_BITS);
     int i;
+    if (operating_points_minus1_cnt == 0) {
+      cm->seq_params.operating_point_idc[0] = 0;
+    } else {
+      // Set operating_point_idc[] such that for the i-th operating point the
+      // first (operating_points_cnt-i) spatial layers and the first temporal
+      // layer are decoded Note that highest quality operating point should come
+      // first
+      for (i = 0; i < operating_points_minus1_cnt + 1; i++)
+        cm->seq_params.operating_point_idc[i] =
+            (~(~0u << (operating_points_minus1_cnt + 1 - i)) << 8) | 1;
+    }
+
     for (i = 0; i < operating_points_minus1_cnt + 1; i++) {
-      aom_wb_write_literal(&wb, 0,
-                           OP_POINTS_IDC_BITS);  // operating_point_idc[i]
+      aom_wb_write_literal(&wb, cm->seq_params.operating_point_idc[i],
+                           OP_POINTS_IDC_BITS);
       aom_wb_write_literal(&wb, 0, LEVEL_BITS);  // level[i]
 #if !CONFIG_BUFFER_MODEL
       aom_wb_write_literal(&wb, 0, 1);  // decoder_rate_model_present_flag[i]
