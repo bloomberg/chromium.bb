@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
@@ -19,7 +20,8 @@
 
 namespace {
 
-const char kCrostiniAppLaunchHistogram[] = "Crostini.AppLaunch";
+constexpr char kCrostiniAppLaunchHistogram[] = "Crostini.AppLaunch";
+constexpr char kCrostiniAppNamePrefix[] = "_crostini_";
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -124,4 +126,17 @@ std::string CryptohomeIdForProfile(Profile* profile) {
   std::string id = chromeos::ProfileHelper::GetUserIdHashFromProfile(profile);
   // Empty id means we're running in a test.
   return id.empty() ? "test" : id;
+}
+
+std::string AppNameFromCrostiniAppId(const std::string& id) {
+  return kCrostiniAppNamePrefix + id;
+}
+
+base::Optional<std::string> CrostiniAppIdFromAppName(
+    const std::string& app_name) {
+  if (!base::StartsWith(app_name, kCrostiniAppNamePrefix,
+                        base::CompareCase::SENSITIVE)) {
+    return base::nullopt;
+  }
+  return app_name.substr(strlen(kCrostiniAppNamePrefix));
 }

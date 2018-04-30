@@ -13,6 +13,7 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
@@ -29,7 +30,8 @@ class ChromeLauncherController;
 // Chrome OS shelf.
 class CrostiniAppWindowShelfController : public AppWindowLauncherController,
                                          public aura::EnvObserver,
-                                         public aura::WindowObserver {
+                                         public aura::WindowObserver,
+                                         public BrowserListObserver {
  public:
   explicit CrostiniAppWindowShelfController(ChromeLauncherController* owner);
   ~CrostiniAppWindowShelfController() override;
@@ -43,6 +45,9 @@ class CrostiniAppWindowShelfController : public AppWindowLauncherController,
   // aura::WindowObserver:
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
   void OnWindowDestroying(aura::Window* window) override;
+
+  // BrowserListObserver:
+  void OnBrowserAdded(Browser* browser) override;
 
  private:
   using AuraWindowToAppWindow =

@@ -343,10 +343,13 @@ WebContents* OpenApplicationWindow(const AppLaunchParams& params,
   Profile* const profile = params.profile;
   const Extension* const extension = GetExtension(params);
 
-  std::string app_name =
-      extension
-          ? web_app::GenerateApplicationNameFromExtensionId(extension->id())
-          : web_app::GenerateApplicationNameFromURL(url);
+  std::string app_name;
+  if (!params.override_app_name.empty())
+    app_name = params.override_app_name;
+  else if (extension)
+    app_name = web_app::GenerateApplicationNameFromExtensionId(extension->id());
+  else
+    app_name = web_app::GenerateApplicationNameFromURL(url);
 
   gfx::Rect initial_bounds;
   if (!params.override_bounds.IsEmpty()) {
