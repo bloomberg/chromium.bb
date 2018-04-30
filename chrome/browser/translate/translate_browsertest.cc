@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/base/ui_base_features.h"
+
 // This entire test suite relies on the translate infobar which has been removed
 // from Aura. The file should be ported to use the bubble.
-#if !defined(USE_AURA)
+#if !defined(USE_AURA) && !BUILDFLAG(MAC_VIEWS_BROWSER)
 
 #include <stddef.h>
 
@@ -34,7 +36,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "ui/base/ui_base_features.h"
 
 namespace {
 

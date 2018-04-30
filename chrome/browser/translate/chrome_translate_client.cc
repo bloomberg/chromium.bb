@@ -49,6 +49,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/metrics_proto/translate_event.pb.h"
+#include "ui/base/ui_base_features.h"
 #include "url/gurl.h"
 
 namespace {
@@ -231,7 +232,7 @@ void ChromeTranslateClient::ShowTranslateUI(
   if (error_type != translate::TranslateErrors::NONE)
     step = translate::TRANSLATE_STEP_TRANSLATE_ERROR;
 
-#if !defined(USE_AURA)
+#if !defined(USE_AURA) && !BUILDFLAG(MAC_VIEWS_BROWSER)
   if (!TranslateService::IsTranslateBubbleEnabled()) {
     // Infobar UI.
     translate::TranslateInfoBarDelegate::Create(
