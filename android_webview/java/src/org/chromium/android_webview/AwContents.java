@@ -63,7 +63,6 @@ import org.chromium.blink_public.web.WebReferrerPolicy;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
-import org.chromium.content.browser.AppWebMessagePort;
 import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.ContentViewCore;
@@ -2413,10 +2412,10 @@ public class AwContents implements SmartClipProvider {
     /**
      * Creates a message channel and returns the ports for each end of the channel.
      */
-    public AppWebMessagePort[] createMessageChannel() {
+    public MessagePort[] createMessageChannel() {
         if (TRACE) Log.i(TAG, "%s createMessageChannel", this);
         if (isDestroyedOrNoOperation(WARN)) return null;
-        return AppWebMessagePort.createPair();
+        return MessagePort.createPair();
     }
 
     public boolean hasAccessedInitialDocument() {
