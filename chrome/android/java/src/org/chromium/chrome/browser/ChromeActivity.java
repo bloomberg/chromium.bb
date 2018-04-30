@@ -105,7 +105,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
-import org.chromium.chrome.browser.page_info.PageInfoPopup;
+import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -1988,7 +1988,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 RecordUserAction.record("MobileMenuReload");
             }
         } else if (id == R.id.info_menu_id) {
-            PageInfoPopup.show(this, currentTab, null, PageInfoPopup.OPENED_FROM_MENU);
+            PageInfoController.show(this, currentTab, null, PageInfoController.OPENED_FROM_MENU);
         } else if (id == R.id.open_history_menu_id) {
             if (NewTabPage.isNTPUrl(currentTab.getUrl())) {
                 NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_HISTORY_MANAGER);

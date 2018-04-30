@@ -27,12 +27,12 @@ import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
 
 /**
- * Tests for PageInfoPopup.
+ * Tests for PageInfoController.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1"})
-public class PageInfoPopupTest {
+public class PageInfoControllerTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
@@ -51,35 +51,35 @@ public class PageInfoPopupTest {
     }
 
     /**
-     * Tests that PageInfoPopup can be instantiated and shown.
+     * Tests that PageInfoController can be instantiated and shown.
      */
     @Test
     @MediumTest
-    @Feature({"PageInfoPopup"})
+    @Feature({"PageInfoController"})
     @RetryOnFailure
     public void testShow() throws InterruptedException {
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            PageInfoPopup.show(mActivityTestRule.getActivity(),
+            PageInfoController.show(mActivityTestRule.getActivity(),
                     mActivityTestRule.getActivity().getActivityTab(), null,
-                    PageInfoPopup.OPENED_FROM_MENU);
+                    PageInfoController.OPENED_FROM_MENU);
         });
     }
 
     /**
-     * Tests that PageInfoPopup converts safe URLs to Unicode.
+     * Tests that PageInfoController converts safe URLs to Unicode.
      */
     @Test
     @MediumTest
-    @Feature({"PageInfoPopup"})
+    @Feature({"PageInfoController"})
     @RetryOnFailure
     public void testPageInfoUrl() throws InterruptedException {
         String testUrl = mTestServer.getURLWithHostName("xn--allestrungen-9ib.ch", "/");
         mActivityTestRule.loadUrlInTab(
                 testUrl, PageTransition.TYPED, mActivityTestRule.getActivity().getActivityTab());
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            PageInfoPopup pageInfo = new PageInfoPopup(mActivityTestRule.getActivity(),
+            PageInfoController pageInfo = new PageInfoController(mActivityTestRule.getActivity(),
                     mActivityTestRule.getActivity().getActivityTab(), null, null,
-                    PageInfoPopup.NOT_OFFLINE_PAGE, null);
+                    PageInfoController.NOT_OFFLINE_PAGE, null);
             PageInfoView pageInfoView = pageInfo.getPageInfoViewForTesting();
             // Test that the title contains the Unicode hostname rather than strict equality, as
             // the test server will be bound to a random port.

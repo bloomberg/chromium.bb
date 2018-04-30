@@ -899,7 +899,7 @@ void VrShell::OnUnsupportedMode(UiUnsupportedMode mode) {
     // kSearchEnginePromo should directly DOFF without showing a promo. So it
     // should never be used from VR ui thread.
     case UiUnsupportedMode::kSearchEnginePromo:
-    // Not sent by the UI but from PageInfoPopup.
+    // Not sent by the UI but from page info popup.
     case UiUnsupportedMode::kUnhandledConnectionInfo:
     // Should never be used as a mode.
     case UiUnsupportedMode::kCount:

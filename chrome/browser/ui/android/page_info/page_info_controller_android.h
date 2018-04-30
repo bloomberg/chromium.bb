@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ANDROID_PAGE_INFO_PAGE_INFO_POPUP_ANDROID_H_
-#define CHROME_BROWSER_UI_ANDROID_PAGE_INFO_PAGE_INFO_POPUP_ANDROID_H_
+#ifndef CHROME_BROWSER_UI_ANDROID_PAGE_INFO_PAGE_INFO_CONTROLLER_ANDROID_H_
+#define CHROME_BROWSER_UI_ANDROID_PAGE_INFO_PAGE_INFO_CONTROLLER_ANDROID_H_
 
 #include <jni.h>
 
@@ -30,12 +30,12 @@ enum PageInfoConnectionType {
 };
 
 // Android implementation of the page info UI.
-class PageInfoPopupAndroid : public PageInfoUI {
+class PageInfoControllerAndroid : public PageInfoUI {
  public:
-  PageInfoPopupAndroid(JNIEnv* env,
-                       jobject java_page_info,
-                       content::WebContents* web_contents);
-  ~PageInfoPopupAndroid() override;
+  PageInfoControllerAndroid(JNIEnv* env,
+                            jobject java_page_info,
+                            content::WebContents* web_contents);
+  ~PageInfoControllerAndroid() override;
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void RecordPageInfoAction(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj,
@@ -59,13 +59,13 @@ class PageInfoPopupAndroid : public PageInfoUI {
   std::unique_ptr<PageInfo> presenter_;
 
   // The java prompt implementation.
-  base::android::ScopedJavaGlobalRef<jobject> popup_jobject_;
+  base::android::ScopedJavaGlobalRef<jobject> controller_jobject_;
 
   GURL url_;
 
   content::WebContents* web_contents_;
 
-  DISALLOW_COPY_AND_ASSIGN(PageInfoPopupAndroid);
+  DISALLOW_COPY_AND_ASSIGN(PageInfoControllerAndroid);
 };
 
-#endif  // CHROME_BROWSER_UI_ANDROID_PAGE_INFO_PAGE_INFO_POPUP_ANDROID_H_
+#endif  // CHROME_BROWSER_UI_ANDROID_PAGE_INFO_PAGE_INFO_CONTROLLER_ANDROID_H_
