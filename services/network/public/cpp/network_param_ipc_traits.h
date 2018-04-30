@@ -277,7 +277,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::RequestContextFrameType,
 
 IPC_STRUCT_TRAITS_BEGIN(network::CORSErrorStatus)
   IPC_STRUCT_TRAITS_MEMBER(cors_error)
-  IPC_STRUCT_TRAITS_MEMBER(related_response_headers)
+  IPC_STRUCT_TRAITS_MEMBER(failed_parameter)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(network::URLLoaderCompletionStatus)
