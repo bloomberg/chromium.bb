@@ -171,7 +171,7 @@ class GaiaAuthFetcherTest : public testing::Test {
 class MockGaiaConsumer : public GaiaAuthConsumer {
  public:
   MockGaiaConsumer() {}
-  ~MockGaiaConsumer() {}
+  ~MockGaiaConsumer() override {}
 
   MOCK_METHOD1(OnClientLoginSuccess, void(const ClientLoginResult& result));
   MOCK_METHOD2(OnIssueAuthTokenSuccess, void(const std::string& service,
