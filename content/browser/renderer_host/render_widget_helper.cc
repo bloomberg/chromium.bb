@@ -68,19 +68,6 @@ RenderWidgetHelper* RenderWidgetHelper::FromProcessHostID(
   return (ci == g_widget_helpers.Get().end())? NULL : ci->second;
 }
 
-void RenderWidgetHelper::ResumeDeferredNavigation(
-    const GlobalRequestID& request_id) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&RenderWidgetHelper::OnResumeDeferredNavigation, this,
-                     request_id));
-}
-
-void RenderWidgetHelper::OnResumeDeferredNavigation(
-    const GlobalRequestID& request_id) {
-  resource_dispatcher_host_->ResumeDeferredNavigation(request_id);
-}
-
 void RenderWidgetHelper::CreateNewWidget(int opener_id,
                                          blink::WebPopupType popup_type,
                                          mojom::WidgetPtr widget,

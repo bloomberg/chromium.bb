@@ -36,10 +36,6 @@ struct GlobalRoutingID;
 class ResourceRequestInfoImpl : public ResourceRequestInfo,
                                 public base::SupportsUserData::Data {
  public:
-  using TransferCallback =
-      base::Callback<void(network::mojom::URLLoaderRequest,
-                          network::mojom::URLLoaderClientPtr)>;
-
   // Returns the ResourceRequestInfoImpl associated with the given URLRequest.
   CONTENT_EXPORT static ResourceRequestInfoImpl* ForRequest(
       net::URLRequest* request);
@@ -120,17 +116,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
     return requester_info_.get();
   }
 
-  // Updates the data associated with this request after it is is transferred
-  // to a new renderer process.  Not all data will change during a transfer.
-  // We do not expect the ResourceContext to change during navigation, so that
-  // does not need to be updated.
-  void UpdateForTransfer(int route_id,
-                         int render_frame_id,
-                         int request_id,
-                         ResourceRequesterInfo* requester_info,
-                         network::mojom::URLLoaderRequest url_loader_request,
-                         network::mojom::URLLoaderClientPtr url_loader_client);
-
   // Whether this request is part of a navigation that should replace the
   // current session history entry. This state is shuffled up and down the stack
   // for request transfers.
@@ -196,10 +181,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   void set_navigation_ui_data(
       std::unique_ptr<NavigationUIData> navigation_ui_data) {
     navigation_ui_data_ = std::move(navigation_ui_data);
-  }
-
-  void set_on_transfer(const TransferCallback& on_transfer) {
-    on_transfer_ = on_transfer;
   }
 
   void set_devtools_status(DevToolsStatus devtools_status) {
@@ -273,11 +254,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
 
   // Keeps upload body blobs alive for the duration of the request.
   BlobHandles blob_handles_;
-
-  // This callback is set by MojoAsyncResourceHandler to update its mojo binding
-  // and remote endpoint. This callback will be removed once PlzNavigate is
-  // shipped.
-  TransferCallback on_transfer_;
 
   std::string custom_cancel_reason_;
 

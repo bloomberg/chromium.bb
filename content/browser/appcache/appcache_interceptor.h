@@ -24,7 +24,6 @@ namespace content {
 class AppCacheHost;
 class AppCacheRequestHandler;
 class AppCacheServiceImpl;
-class ResourceRequesterInfo;
 
 // An interceptor to hijack requests and potentially service them out of
 // the appcache.
@@ -50,17 +49,6 @@ class CONTENT_EXPORT AppCacheInterceptor : public net::URLRequestInterceptor {
   static void GetExtraResponseInfo(net::URLRequest* request,
                                    int64_t* cache_id,
                                    GURL* manifest_url);
-
-  // Methods to support cross site navigations.
-  static void PrepareForCrossSiteTransfer(net::URLRequest* request,
-                                          int old_process_id);
-  static void CompleteCrossSiteTransfer(net::URLRequest* request,
-                                        int new_process_id,
-                                        int new_host_id,
-                                        ResourceRequesterInfo* requester_info);
-  static void MaybeCompleteCrossSiteTransferInOldProcess(
-      net::URLRequest* request,
-      int old_process_id);
 
   AppCacheInterceptor();
   ~AppCacheInterceptor() override;

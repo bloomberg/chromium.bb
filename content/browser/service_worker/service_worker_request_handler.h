@@ -143,18 +143,6 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
                          ResourceContext* resource_context,
                          LoaderCallback callback) override;
 
-  // These are obsolete, needed for non-PlzNavigate.
-  // TODO(falken): Remove these completely.
-  void PrepareForCrossSiteTransfer(int old_process_id);
-  void CompleteCrossSiteTransfer(int new_process_id,
-                                 int new_provider_id);
-  void MaybeCompleteCrossSiteTransferInOldProcess(
-      int old_process_id);
-
-  // Useful for detecting storage partition mismatches in the context of cross
-  // site transfer navigations.
-  bool SanityCheckIsSameContext(ServiceWorkerContextWrapper* wrapper);
-
  protected:
   ServiceWorkerRequestHandler(
       base::WeakPtr<ServiceWorkerContextCore> context,

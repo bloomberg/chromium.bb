@@ -347,26 +347,6 @@ GlobalRoutingID ResourceRequestInfoImpl::GetGlobalRoutingID() const {
   return GlobalRoutingID(GetChildID(), route_id_);
 }
 
-void ResourceRequestInfoImpl::UpdateForTransfer(
-    int route_id,
-    int render_frame_id,
-    int request_id,
-    ResourceRequesterInfo* requester_info,
-    network::mojom::URLLoaderRequest url_loader_request,
-    network::mojom::URLLoaderClientPtr url_loader_client) {
-  route_id_ = route_id;
-  render_frame_id_ = render_frame_id;
-  plugin_child_id_ = ChildProcessHost::kInvalidUniqueID;
-  request_id_ = request_id;
-  requester_info_ = requester_info;
-
-  // on_transfer_ is non-null only when MojoAsyncResourceHandler is used.
-  if (on_transfer_) {
-    on_transfer_.Run(std::move(url_loader_request),
-                     std::move(url_loader_client));
-  }
-}
-
 void ResourceRequestInfoImpl::ResetBody() {
   body_ = nullptr;
 }

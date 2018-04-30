@@ -48,13 +48,6 @@ class RenderWidgetHelper
   // store in a scoped_refptr.
   static RenderWidgetHelper* FromProcessHostID(int render_process_host_id);
 
-  // UI THREAD ONLY -----------------------------------------------------------
-
-  // These two functions provide the backend implementation of the
-  // corresponding functions in RenderProcessHost. See those declarations
-  // for documentation.
-  void ResumeDeferredNavigation(const GlobalRequestID& request_id);
-
   // IO THREAD ONLY -----------------------------------------------------------
   void CreateNewWidget(int opener_id,
                        blink::WebPopupType popup_type,
@@ -81,14 +74,6 @@ class RenderWidgetHelper
   void OnCreateFullscreenWidgetOnUI(int32_t opener_id,
                                     int32_t route_id,
                                     mojom::WidgetPtrInfo widget);
-
-  // Called on the IO thread to resume a paused navigation in the network
-  // stack without transferring it to a new renderer process.
-  void OnResumeDeferredNavigation(const GlobalRequestID& request_id);
-
-  // Called on the IO thread to resume a navigation paused immediately after
-  // receiving response headers.
-  void OnResumeResponseDeferredAtStart(const GlobalRequestID& request_id);
 
   int render_process_id_;
 

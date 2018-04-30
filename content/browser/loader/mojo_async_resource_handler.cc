@@ -40,11 +40,6 @@ constexpr size_t kMinAllocationSize = 2 * net::kMaxBytesToSniff;
 
 constexpr size_t kMaxChunkSize = 32 * 1024;
 
-void NotReached(network::mojom::URLLoaderRequest mojo_request,
-                network::mojom::URLLoaderClientPtr url_loader_client) {
-  NOTREACHED();
-}
-
 // Records histograms for the time spent between several events in the
 // MojoAsyncResourceHandler for a navigation.
 // - |response_started| is when the response's headers and metadata are
@@ -140,13 +135,6 @@ MojoAsyncResourceHandler::MojoAsyncResourceHandler(
   // the callback will never be called after |this| is destroyed.
   binding_.set_connection_error_with_reason_handler(base::BindOnce(
       &MojoAsyncResourceHandler::Cancel, base::Unretained(this)));
-
-  if (IsResourceTypeFrame(resource_type)) {
-    GetRequestInfo()->set_on_transfer(base::Bind(
-        &MojoAsyncResourceHandler::OnTransfer, weak_factory_.GetWeakPtr()));
-  } else {
-    GetRequestInfo()->set_on_transfer(base::Bind(&NotReached));
-  }
 }
 
 MojoAsyncResourceHandler::~MojoAsyncResourceHandler() {
@@ -655,16 +643,6 @@ MojoAsyncResourceHandler::CreateUploadProgressTracker(
     network::UploadProgressTracker::UploadProgressReportCallback callback) {
   return std::make_unique<network::UploadProgressTracker>(
       from_here, std::move(callback), request());
-}
-
-void MojoAsyncResourceHandler::OnTransfer(
-    network::mojom::URLLoaderRequest mojo_request,
-    network::mojom::URLLoaderClientPtr url_loader_client) {
-  binding_.Unbind();
-  binding_.Bind(std::move(mojo_request));
-  binding_.set_connection_error_with_reason_handler(base::BindOnce(
-      &MojoAsyncResourceHandler::Cancel, base::Unretained(this)));
-  url_loader_client_ = std::move(url_loader_client);
 }
 
 void MojoAsyncResourceHandler::SendUploadProgress(

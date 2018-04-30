@@ -130,8 +130,6 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
       const base::Location& from_here,
       network::UploadProgressTracker::UploadProgressReportCallback callback);
 
-  void OnTransfer(network::mojom::URLLoaderRequest mojo_request,
-                  network::mojom::URLLoaderClientPtr url_loader_client);
   void SendUploadProgress(const net::UploadProgress& progress);
   void OnUploadProgressACK();
   static void InitializeResourceBufferConstants();

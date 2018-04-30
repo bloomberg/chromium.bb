@@ -2146,11 +2146,6 @@ int RenderProcessHostImpl::GetNextRoutingID() {
   return widget_helper_->GetNextRoutingID();
 }
 
-void RenderProcessHostImpl::ResumeDeferredNavigation(
-    const GlobalRequestID& request_id) {
-  widget_helper_->ResumeDeferredNavigation(request_id);
-}
-
 void RenderProcessHostImpl::BindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
