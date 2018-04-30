@@ -140,7 +140,8 @@ static bool UpdateScroll(LocalFrameView& frame_view,
       context.current.scroll->GetMainThreadScrollingReasons();
   state.main_thread_scrolling_reasons =
       GetMainThreadScrollingReasons(frame_view, ancestor_reasons);
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
     state.compositor_element_id = frame_view.GetCompositorElementId();
 
   if (auto* existing_scroll = frame_view.ScrollNode()) {
@@ -534,7 +535,8 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
                            paint_offset_translation->Y());
     state.flattens_inherited_transform =
         context_.current.should_flatten_inherited_transform;
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+        RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
       state.rendering_context_id = context_.current.rendering_context_id;
     OnUpdate(properties_->UpdatePaintOffsetTranslation(
         context_.current.transform, std::move(state)));
@@ -663,7 +665,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
             ComputedStyle::kIncludeMotionPath,
             ComputedStyle::kIncludeIndependentTransformProperties);
 
-        if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+        if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+            RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
           // TODO(trchen): transform-style should only be respected if a
           // PaintLayer is created. If a node with transform-style: preserve-3d
           // does not exist in an existing rendering context, it establishes a
@@ -681,7 +684,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
       state.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
 
-      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+          RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
         state.backface_visibility =
             object_.HasHiddenBackface()
                 ? TransformPaintPropertyNode::BackfaceVisibility::kHidden
@@ -835,7 +839,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         state.blend_mode = WebCoreCompositeToSkiaComposite(kCompositeSourceOver,
                                                            style.BlendMode());
       }
-      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+          RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
         // We may begin to composite our subtree prior to an animation starts,
         // but a compositor element ID is only needed when an animation is
         // current.
@@ -856,7 +861,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         mask_state.output_clip = output_clip;
         mask_state.color_filter = CSSMaskPainter::MaskColorFilter(object_);
         mask_state.blend_mode = SkBlendMode::kDstIn;
-        if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+        if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+            RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
           mask_state.compositor_element_id =
               CompositorElementIdFromUniqueObjectId(
                   object_.UniqueId(),
@@ -876,7 +882,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         clip_path_state.local_transform_space = context_.current.transform;
         clip_path_state.output_clip = output_clip;
         clip_path_state.blend_mode = SkBlendMode::kDstIn;
-        if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+        if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+            RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
           clip_path_state.compositor_element_id =
               CompositorElementIdFromUniqueObjectId(
                   object_.UniqueId(),
@@ -951,7 +958,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
       // output pixel may depend on an input pixel outside of the output clip.
       // We should generate a special clip node to represent this expansion.
 
-      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+          RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
         // We may begin to composite our subtree prior to an animation starts,
         // but a compositor element ID is only needed when an animation is
         // current.
@@ -1318,7 +1326,8 @@ void FragmentPaintPropertyTreeBuilder::UpdatePerspective() {
                      ToLayoutSize(context_.current.paint_offset);
       state.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
-      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+          RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
         state.rendering_context_id = context_.current.rendering_context_id;
       OnUpdate(properties_->UpdatePerspective(context_.current.transform,
                                               std::move(state)));
@@ -1418,7 +1427,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
           full_context_.force_subtree_update = true;
       }
 
-      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+          RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
         state.compositor_element_id = scrollable_area->GetCompositorElementId();
 
       OnUpdate(
@@ -1436,7 +1446,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
       state.matrix.Translate(-scroll_offset.Width(), -scroll_offset.Height());
       state.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
-      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+          RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
         state.direct_compositing_reasons = CompositingReasonsForScroll(box);
         state.rendering_context_id = context_.current.rendering_context_id;
       }

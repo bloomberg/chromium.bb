@@ -267,6 +267,11 @@
     "args": ["--enable-slimming-paint-v2"]
   },
   {
+    "prefix": "blink-gen-property-trees",
+    "base": "paint/transparency",
+    "args": ["--enable-blink-gen-property-trees"]
+  },
+  {
     "prefix": "disable-spv175",
     "base": "compositing",
     "args": ["--disable-blink-features=SlimmingPaintV175"]
