@@ -67,8 +67,10 @@ static aom_codec_err_t read_obu_header(struct aom_read_bit_buffer *rb,
 
   header->size = 1;
 
-  // first bit is obu_forbidden_bit (0) according to R19
-  aom_rb_read_bit(rb);
+  if (aom_rb_read_bit(rb) != 0) {
+    // Forbidden bit. Must not be set.
+    return AOM_CODEC_CORRUPT_FRAME;
+  }
 
   header->type = (OBU_TYPE)aom_rb_read_literal(rb, 4);
 
