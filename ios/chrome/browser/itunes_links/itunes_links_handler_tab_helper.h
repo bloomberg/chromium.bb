@@ -32,10 +32,11 @@ enum class ITunesUrlsStoreKitHandlingResult {
 };
 
 // TabHelper which handles navigation to iTunes links.
-// If a navigation to web page for a product in iTunes App Store happens, this
-// helper will use StoreKitTabHelper to present the information of that product.
-// The goal of this class is to workaround a bug where appstore website serves
-// the wrong content for itunes.apple.com pages, see http://crbug.com/623016.
+// If a navigation to web page for a product in iTunes App Store happens while
+// in non off the record browsing mode, this helper will use StoreKitTabHelper
+// to present the information of that product. The goal of this class is to
+// workaround a bug where appstore website serves the wrong content for
+// itunes.apple.com pages, see http://crbug.com/623016.
 class ITunesLinksHandlerTabHelper
     : public web::WebStateObserver,
       public web::WebStateUserData<ITunesLinksHandlerTabHelper> {

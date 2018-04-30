@@ -8,11 +8,13 @@
 
 #include "base/observer_list.h"
 #include "base/test/histogram_tester.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/test/fakes/fake_store_kit_launcher.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -30,7 +32,10 @@ const char kITunesURLsHandlingResultHistogram[] =
 class ITunesLinksHandlerTabHelperTest : public PlatformTest {
  protected:
   ITunesLinksHandlerTabHelperTest()
-      : fake_launcher_([[FakeStoreKitLauncher alloc] init]) {
+      : fake_launcher_([[FakeStoreKitLauncher alloc] init]),
+        chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
+    web_state_.SetBrowserState(
+        chrome_browser_state_->GetOriginalChromeBrowserState());
     StoreKitTabHelper::CreateForWebState(&web_state_);
     std::unique_ptr<web::TestNavigationManager> test_navigation_manager =
         std::make_unique<web::TestNavigationManager>();
@@ -79,9 +84,11 @@ class ITunesLinksHandlerTabHelperTest : public PlatformTest {
     return web_state_.ShouldAllowResponse(response, main_frame);
   }
 
+  web::TestWebThreadBundle thread_bundle_;
   web::TestNavigationManager* navigation_manager_;
   FakeStoreKitLauncher* fake_launcher_;
   web::TestWebState web_state_;
+  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   base::HistogramTester histogram_tester_;
 };
 
@@ -107,6 +114,15 @@ TEST_F(ITunesLinksHandlerTabHelperTest, NonMatchingUrlsDoesntLaunchStoreKit) {
   EXPECT_FALSE(
       VerifyStoreKitLaunched("http://itunes.apple.com/app-bundle/id12345"));
   histogram_tester_.ExpectTotalCount(kITunesURLsHandlingResultHistogram, 0);
+}
+
+// Verifies that iTunes URLs are not handled when in off the record mode.
+TEST_F(ITunesLinksHandlerTabHelperTest, NoHandlingInOffTheRecordMode) {
+  std::string url = "http://itunes.apple.com/us/app/app_name/id123";
+  EXPECT_TRUE(VerifyStoreKitLaunched(url));
+  web_state_.SetBrowserState(
+      chrome_browser_state_->GetOffTheRecordChromeBrowserState());
+  EXPECT_FALSE(VerifyStoreKitLaunched(url));
 }
 
 // Verifies that navigating to URLs for a product hosted on iTunes AppStore
