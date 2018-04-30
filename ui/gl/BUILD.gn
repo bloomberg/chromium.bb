@@ -216,12 +216,17 @@ component("gl") {
       }
     }
 
-    if (is_posix || is_fuchsia) {
+    if (is_posix && !is_fuchsia) {
       # Windows has USE_EGL but doesn't support base::FileDescriptor
+      # Fuchsia is excluded due to a libsync dependency and because it's
+      # unknown if the required EGL_ANDROID_native_fence_sync extension works
+      # there. If it does and there's a use case, this could be revisited.
       sources += [
         "gl_fence_android_native_fence_sync.cc",
         "gl_fence_android_native_fence_sync.h",
       ]
+
+      deps += [ "//third_party/libsync" ]
     }
   }
   if (is_mac || use_egl) {
