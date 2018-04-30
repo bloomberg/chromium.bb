@@ -1665,12 +1665,24 @@ const char kPublic_Help[] =
   the target that owns the private header to allow the inclusion. See
   "gn help friend" for more.
 
+  When a binary target has no explicit or implicit public headers (a "public"
+  list is defined but is empty), GN assumes that the target can not propagate
+  any compile-time dependencies up the dependency tree. In this case, the build
+  can be parallelized more efficiently.
+  Say there are dependencies:
+    A (shared library) -> B (shared library) -> C (action).
+  Normally C must complete before any source files in A can compile (because
+  there might be generated includes). But when B explicitly declares no public
+  headers, C can execute in parallel with A's compile steps. C must still be
+  complete before any dependents link.
+
 Examples
 
   These exact files are public:
     public = [ "foo.h", "bar.h" ]
 
   No files are public (no targets may include headers from this one):
+    # This allows starting compile in dependent targets earlier.
     public = []
 )";
 

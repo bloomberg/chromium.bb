@@ -584,6 +584,14 @@ void Target::PullRecursiveHardDeps() {
     if (pair.ptr->hard_dep())
       recursive_hard_deps_.insert(pair.ptr);
 
+    // If |pair.ptr| is binary target and |pair.ptr| has no public header,
+    // |this| target does not need to have |pair.ptr|'s hard_deps as its
+    // hard_deps to start compiles earlier.
+    if (pair.ptr->IsBinary() && !pair.ptr->all_headers_public() &&
+        pair.ptr->public_headers().empty()) {
+      continue;
+    }
+
     // Recursive hard dependencies of all dependencies.
     recursive_hard_deps_.insert(pair.ptr->recursive_hard_deps().begin(),
                                 pair.ptr->recursive_hard_deps().end());
