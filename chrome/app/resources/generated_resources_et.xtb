@@ -912,7 +912,6 @@
 <translation id="2413749388954403953">Järjehoidjate kasutajaliidese muutmine</translation>
 <translation id="2422426094670600218">&lt;nimeta&gt;</translation>
 <translation id="2423578206845792524">Sa&amp;lvesta pilt nimega...</translation>
-<translation id="2424091190911472304">Käita alati saidil <ph name="ORIGIN" /></translation>
 <translation id="2425665904502185219">Failide kogumaht</translation>
 <translation id="2428510569851653187">Kirjeldage, mida te vahelehe kokkujooksmise ajal tegite</translation>
 <translation id="2431027948063157455">Google'i assistendi laadimine nurjus, kontrollige võrguühendust ja proovige uuesti.</translation>
@@ -1200,7 +1199,6 @@ Ma arvan, et see sait ei tohiks olla blokeeritud.</translation>
 <translation id="2838379631617906747">Installimine</translation>
 <translation id="2841837950101800123">Pakkuja</translation>
 <translation id="2843806747483486897">Muuda vaikeseadeid ...</translation>
-<translation id="2844111009524261443">Käita klõpsamisel</translation>
 <translation id="2845382757467349449">Kuva alati järjehoidjariba</translation>
 <translation id="2847759467426165163">Ülekandmine seadmesse</translation>
 <translation id="284805635805850872">Kas eemaldada kahjulik tarkvara?</translation>
@@ -1512,7 +1510,6 @@ Lisateabe saamiseks külastage meie <ph name="BEGIN_LINK" />abikeskust<ph name="
 <translation id="3308116878371095290">Sellel lehel takistati küpsiste seadistamine.</translation>
 <translation id="3308134619352333507">Nupp Peida</translation>
 <translation id="3308852433423051161">Google'i assistendi laadimine …</translation>
-<translation id="3309747692199697901">Käita alati kõikidel saitidel</translation>
 <translation id="3312424061798279731">Lubatud keeled</translation>
 <translation id="3313590242757056087">Selleks et määrata, milliseid veebisaite valvatav kasutaja näeb, saate seadistada
     piirangud ja seaded lehel <ph name="MANAGEMENT_URL" />.
@@ -1810,7 +1807,6 @@ Lisateabe saamiseks külastage meie <ph name="BEGIN_LINK" />abikeskust<ph name="
 <translation id="3759933321830434300">Veebilehtede osade blokeerimine</translation>
 <translation id="3760460896538743390">Uuri &amp;taustalehte</translation>
 <translation id="37613671848467444">&amp;Ava inkognito aknas</translation>
-<translation id="3763401818161139108">Käita alati saidil <ph name="ORIGIN" /></translation>
 <translation id="3764314093345384080">Üksikasjalik järguteave</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Ühendus USB-seadmega}other{Ühendus # USB-seadmega}}</translation>
 <translation id="3764986667044728669">Ei saa registreerida</translation>
@@ -2271,7 +2267,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4547992677060857254">Valitud fail sisaldab tundlikke faile. Kas soovite kindlasti anda kasutajale „$1” püsiva juurdepääsu selles kaustas kirjutamiseks?</translation>
 <translation id="4552031286893852992">Chrome blokeeris sellel saidil reklaamid, kuna sait esitab sekkuvaid reklaame.</translation>
 <translation id="4552089082226364758">Flash</translation>
-<translation id="4552495056028768700">Juurdepääs lehele</translation>
 <translation id="4552678318981539154">Ostke rohkem salvestusruumi</translation>
 <translation id="4554591392113183336">Välise laienduse versioon on sama või vanem mis olemasoleval.</translation>
 <translation id="4555769855065597957">Vari</translation>
@@ -3267,7 +3262,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6080515710685820702">Kas kasutate jagatud arvutit? Proovige avada inkognito aken.</translation>
 <translation id="6080689532560039067">Süsteemiaja kontrollimine</translation>
 <translation id="6082651258230788217">Tööriistaribal kuvamine</translation>
-<translation id="6086814797483779854">Käita klõpsamisel</translation>
 <translation id="6086846494333236931">Selle installis administraator</translation>
 <translation id="6087960857463881712">Lahe nägu</translation>
 <translation id="6089481419520884864">Lehe teisendamine</translation>
@@ -4407,7 +4401,6 @@ Rakenduse <ph name="APP_NAME" /> installimisel laaditakse alla <ph name="DOWNLOA
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> – seotud</translation>
 <translation id="7870730066603611552">Vaata sünkroonimisvalikud pärast seadistust üle</translation>
 <translation id="7870790288828963061">Ühtegi uuema versiooniga kioski rakendust ei leitud. Midagi pole värskendada. Eemaldage USB-mälupulk.</translation>
-<translation id="7874357055309047713">Käita alati kõikidel saitidel</translation>
 <translation id="7877451762676714207">Tundmatu serveriviga. Proovige uuesti või võtke ühendust serveri administraatoriga.</translation>
 <translation id="7877680364634660272">Tutvustus</translation>
 <translation id="7878562273885520351">Teie parool võib olla ohus</translation>
@@ -4757,7 +4750,6 @@ Inimesed, kelle ühendus on aeglane, ei pruugi teie sisu näha.</translation>
 <translation id="8428634594422941299">Selge</translation>
 <translation id="8431909052837336408">Muuda SIM-kaardi PIN-koodi</translation>
 <translation id="8434480141477525001">NaCl silumisport</translation>
-<translation id="8437331208797669910">Juurdepääs lehele</translation>
 <translation id="843760761634048214">Krediitkaardi salvestamine</translation>
 <translation id="8438328416656800239">Minge üle nutikale brauserile</translation>
 <translation id="8439506636278576865">Paku selles keeles olevate lehtede tõlkimist</translation>

@@ -909,7 +909,6 @@
 <translation id="2413749388954403953">Rediger brugergrænsefladen for bogmærker</translation>
 <translation id="2422426094670600218">&lt;ikke navngivet&gt;</translation>
 <translation id="2423578206845792524">&amp;Gem billede som...</translation>
-<translation id="2424091190911472304">Kør altid på <ph name="ORIGIN" /></translation>
 <translation id="2425665904502185219">Samlet filstørrelse</translation>
 <translation id="2428510569851653187">Beskriv, hvad du foretog dig, da fanen gik ned</translation>
 <translation id="2431027948063157455">Google Assistent kunne ikke indlæses. Tjek din netværksforbindelse, og prøv igen.</translation>
@@ -1198,7 +1197,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="2838379631617906747">Installerer</translation>
 <translation id="2841837950101800123">Udbyder</translation>
 <translation id="2843806747483486897">Skift standardindstillinger...</translation>
-<translation id="2844111009524261443">Kør ved klik</translation>
 <translation id="2845382757467349449">Vis altid bogmærkelinjen</translation>
 <translation id="2847759467426165163">Cast til</translation>
 <translation id="284805635805850872">Vil du slette den skadelige software?</translation>
@@ -1512,7 +1510,6 @@ Få flere oplysninger i <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</t
 <translation id="3308116878371095290">Denne side blev forhindret i at konfigurere cookies.</translation>
 <translation id="3308134619352333507">Skjul knap</translation>
 <translation id="3308852433423051161">Indlæser Google Assistent...</translation>
-<translation id="3309747692199697901">Kør altid på alle websites</translation>
 <translation id="3312424061798279731">Aktiverede sprog</translation>
 <translation id="3313590242757056087">Du kan angive, hvilke websites den administrerede bruger skal kunne se, ved at konfigurere begrænsninger
     og indstillinger på <ph name="MANAGEMENT_URL" />.
@@ -1810,7 +1807,6 @@ Få flere oplysninger i <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</t
 <translation id="3759933321830434300">Blokere dele af websiderne</translation>
 <translation id="3760460896538743390">Undersøg &amp;baggrundsside</translation>
 <translation id="37613671848467444">Åbn i &amp;inkognitovindue</translation>
-<translation id="3763401818161139108">Kør altid på <ph name="ORIGIN" /></translation>
 <translation id="3764314093345384080">Detaljerede buildoplysninger</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Kommuniker med en USB-enhed}one{Kommuniker med # USB-enheder}other{Kommuniker med # USB-enheder}}</translation>
 <translation id="3764986667044728669">Tilmelding mislykkedes</translation>
@@ -2271,7 +2267,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4547992677060857254">Den mappe, du har valgt, indeholder følsomme filer. Vil du give "$1" permanent skriveadgang til denne mappe?</translation>
 <translation id="4552031286893852992">Chrome blokerede annoncer på dette website, fordi websitet har tendens til at vise påtrængende annoncer.</translation>
 <translation id="4552089082226364758">Flash</translation>
-<translation id="4552495056028768700">Sideadgang</translation>
 <translation id="4552678318981539154">Køb mere lagerplads</translation>
 <translation id="4554591392113183336">Ekstern udvidelse er den samme version eller en ældre version end den eksisterende.</translation>
 <translation id="4555769855065597957">Skygge</translation>
@@ -3267,7 +3262,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6080515710685820702">Bruger du en delt computer? Prøv at åbne et inkognitovindue.</translation>
 <translation id="6080689532560039067">Se systemklokkeslættet</translation>
 <translation id="6082651258230788217">Vis på værktøjslinjen</translation>
-<translation id="6086814797483779854">Kør ved klik</translation>
 <translation id="6086846494333236931">Installeret af din administrator</translation>
 <translation id="6087960857463881712">Fantastisk-smiley</translation>
 <translation id="6089481419520884864">Destiller side</translation>
@@ -4407,7 +4401,6 @@ Installationen af <ph name="APP_NAME" /> downloader <ph name="DOWNLOAD_SIZE" /> 
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> er parret</translation>
 <translation id="7870730066603611552">Gennemgå indstillingerne for synkronisering efter konfigurationen</translation>
 <translation id="7870790288828963061">Der blev ikke fundet nogen terminalapps med en nyere version. Intet at opdatere. Fjern USB-stikket.</translation>
-<translation id="7874357055309047713">Kør altid på alle websites</translation>
 <translation id="7877451762676714207">Ukendt serverfejl. Prøv igen, eller kontakt serveradministratoren.</translation>
 <translation id="7877680364634660272">Rundvisning</translation>
 <translation id="7878562273885520351">Din adgangskode kan være kompromitteret</translation>
@@ -4756,7 +4749,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8428634594422941299">OK</translation>
 <translation id="8431909052837336408">Skift pinkode til SIM-kort</translation>
 <translation id="8434480141477525001">NaCl-fejlretningsport</translation>
-<translation id="8437331208797669910">Sideadgang</translation>
 <translation id="843760761634048214">Gem kreditkort</translation>
 <translation id="8438328416656800239">Skift til en smart browser</translation>
 <translation id="8439506636278576865">Tilbyd at oversætte sider på dette sprog</translation>

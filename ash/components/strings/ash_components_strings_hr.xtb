@@ -102,6 +102,7 @@
 <translation id="5236674127086649162">Ponovno učitavanje trenutačne stranice bez upotrebe predmemoriranog sadržaja</translation>
 <translation id="526651782186312376">Odabir teksta do početka retka</translation>
 <translation id="5316716239522500219">Zrcalni monitori</translation>
+<translation id="5487187679583934283">Započinje ili zaustavlja pisanje onoga što govorite</translation>
 <translation id="5541719484267030947">Dok povlačite karticu, pritisnite <ph name="ESC" /></translation>
 <translation id="5554139136362089836">Pretraživanje trenutačne stranice</translation>
 <translation id="5563050856984839829">Pritisnite <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> i kliknite vezu</translation>
@@ -144,6 +145,7 @@
 <translation id="6981982820502123353">Pristupačnost</translation>
 <translation id="7020813747703216897">Nisu pronađeni rezultati</translation>
 <translation id="7025325401470358758">Sljedeće okno</translation>
+<translation id="7076878155205969899">Isključivanje zvuka</translation>
 <translation id="7077383985738259936">Fokusiranje ili isticanje trake oznaka (ako se prikazuje)</translation>
 <translation id="7237562915163138771">Unesite web-adresu u adresnu traku, a zatim pritisnite <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Postavljanje uređaja u način mirovanja (obustavljanje)</translation>

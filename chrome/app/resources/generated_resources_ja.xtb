@@ -913,7 +913,6 @@
 <translation id="2413749388954403953">ブックマークのユーザー インターフェースの変更</translation>
 <translation id="2422426094670600218">&lt;名前なし&gt;</translation>
 <translation id="2423578206845792524">名前を付けて画像を保存(&amp;V)...</translation>
-<translation id="2424091190911472304"><ph name="ORIGIN" /> で常に実行</translation>
 <translation id="2425665904502185219">合計ファイルサイズ</translation>
 <translation id="2428510569851653187">タブのクラッシュ時に行っていた操作をご説明ください</translation>
 <translation id="2431027948063157455">Google アシスタントを読み込めませんでした。ネットワーク接続を確認してから、もう一度お試しください。</translation>
@@ -1201,7 +1200,6 @@
 <translation id="2838379631617906747">インストール中</translation>
 <translation id="2841837950101800123">提供元</translation>
 <translation id="2843806747483486897">デフォルトを変更...</translation>
-<translation id="2844111009524261443">クリックで実行</translation>
 <translation id="2845382757467349449">ブックマーク バーを常に表示</translation>
 <translation id="2847759467426165163">キャストするデバイス:</translation>
 <translation id="284805635805850872">有害なソフトウェアを削除しますか？</translation>
@@ -1513,7 +1511,6 @@
 <translation id="3308116878371095290">このページの Cookie は設定されませんでした。</translation>
 <translation id="3308134619352333507">ボタンを非表示にする</translation>
 <translation id="3308852433423051161">Google アシスタントを読み込んでいます...</translation>
-<translation id="3309747692199697901">すべてのサイトで常に実行</translation>
 <translation id="3312424061798279731">有効な言語</translation>
 <translation id="3313590242757056087">監視対象ユーザーがどのウェブサイトを閲覧できるかを設定するには、
     管理者が <ph name="MANAGEMENT_URL" /> で制限と設定を指定します。
@@ -1811,7 +1808,6 @@
 <translation id="3759933321830434300">一部のウェブページをブロックする</translation>
 <translation id="3760460896538743390">バックグラウンド ページの検証(&amp;B)</translation>
 <translation id="37613671848467444">シークレット ウィンドウで開く(&amp;I)</translation>
-<translation id="3763401818161139108"><ph name="ORIGIN" /> で常に実行</translation>
 <translation id="3764314093345384080">ビルド情報の詳細</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{1 台の USB デバイスと通信します}other{# 台の USB デバイスと通信します}}</translation>
 <translation id="3764986667044728669">登録できません</translation>
@@ -2272,7 +2268,6 @@
 <translation id="4547992677060857254">選択したフォルダには、機密ファイルが含まれています。このフォルダに対する永続的な書き込みアクセス権を「$1」に付与してもよろしいですか？</translation>
 <translation id="4552031286893852992">このサイトでは煩わしい広告がよく表示されるため、Chrome で広告がブロックされました。</translation>
 <translation id="4552089082226364758">Flash</translation>
-<translation id="4552495056028768700">ページへのアクセス</translation>
 <translation id="4552678318981539154">追加ストレージを購入</translation>
 <translation id="4554591392113183336">外部の拡張機能のバージョンが既存のバージョン以下です。</translation>
 <translation id="4555769855065597957">シャドウ</translation>
@@ -3268,7 +3263,6 @@
 <translation id="6080515710685820702">共有のパソコンをお使いの場合は、シークレット ウィンドウをご活用ください。</translation>
 <translation id="6080689532560039067">システムの時刻の確認</translation>
 <translation id="6082651258230788217">ツールバーに表示</translation>
-<translation id="6086814797483779854">クリックで実行</translation>
 <translation id="6086846494333236931">管理者によりインストールされています</translation>
 <translation id="6087960857463881712">エピック スマイリー</translation>
 <translation id="6089481419520884864">ページを抽出</translation>
@@ -4410,7 +4404,6 @@
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - ペア設定済み</translation>
 <translation id="7870730066603611552">設定後に同期オプションを確認する</translation>
 <translation id="7870790288828963061">新しいバージョンのキオスクアプリが見つかりませんでした。更新するものはありません。USB スティックを取り外してください。</translation>
-<translation id="7874357055309047713">すべてのサイトで常に実行</translation>
 <translation id="7877451762676714207">不明なサーバー エラーが発生しました。もう一度お試しになるか、サーバー管理者にご連絡ください。</translation>
 <translation id="7877680364634660272">使い方ガイド</translation>
 <translation id="7878562273885520351">パスワードが不正使用される可能性があります</translation>
@@ -4759,7 +4752,6 @@
 <translation id="8428634594422941299">OK</translation>
 <translation id="8431909052837336408">SIM PIN を変更</translation>
 <translation id="8434480141477525001">NaCl デバッグ ポート</translation>
-<translation id="8437331208797669910">ページへのアクセス</translation>
 <translation id="843760761634048214">クレジット カードを保存</translation>
 <translation id="8438328416656800239">スマートなブラウザをぜひご利用ください</translation>
 <translation id="8439506636278576865">この言語のページで翻訳ツールを表示する</translation>

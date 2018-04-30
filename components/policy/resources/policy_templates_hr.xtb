@@ -409,6 +409,27 @@
           Kada ovo pravilo nije postavljeno, ne prikazuje se dijaloški okvir upozorenja.
 
           Vrijednost pravila treba biti navedena u milisekundama. Vrijednosti se prilagođavaju kako bi bile manje ili jednake odgodi neaktivnosti.</translation>
+<translation id="2289578386193672044">Određuje popis aplikacija i proširenja koja se instaliraju u pozadini,
+          bez interakcije s korisnikom, i koje korisnik ne može deinstalirati
+          niti onemogućiti. Sva dopuštenja koja aplikacije/proširenja
+          zahtijevaju dodjeljuju se implicitno, bez interakcije s korisnikom,
+          uključujući sva dodatna dopuštenja koja bi buduće verzije
+          aplikacije/proširenja mogle zahtijevati. Osim toga, dopuštenja se dodjeljuju
+          za API-je proširenja enterprise.deviceAttributes i enterprise.platformKeys.
+          (Ta dva API-ja nisu dostupna aplikacijama/proširenjima koji nisu
+          prisilno instalirani.)
+
+          Ovo pravilo ima prednost pred potencijalno sukobljenim pravilom <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Ako se s popisa uklone aplikacija ili proširenje koji su prethodno bili prisilno instalirani, <ph name="PRODUCT_NAME" /> automatski će ih deinstalirati.
+
+          Za instance Windowsa koje nisu pridružene domeni <ph name="MS_AD_NAME" /> prisilna instalacija ograničena je na aplikacije i proširenja navedene u Chrome web-trgovini.
+
+          Korisnici mogu izmijeniti izvorni kôd proširenja pomoću Alata za razvojne programere (zbog čega proširenje može prestati funkcionirati). Ako to predstavlja problem, postavite pravilo <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Svaka stavka pravila niz je koji sadrži ID proširenja i URL za "ažuriranje" odvojene točkom sa zarezom (<ph name="SEMICOLON" />). ID proširenja niz je od 32 slova koji se primjerice može pronaći na <ph name="CHROME_EXTENSIONS_LINK" /> u načinu rada razvojnog programera. URL za "ažuriranje", ako se navede, treba usmjeravati na XML dokument manifesta ažuriranja kako je opisano u dokumentu <ph name="LINK_TO_EXTENSION_DOC1" />. Prema zadanim postavkama, upotrebljava se URL za ažuriranje Chrome web-trgovine (koji je trenutačno "https://clients2.google.com/service/update2/crx"). URL za "ažuriranje" postavljen u ovom pravilu upotrebljava se samo za prvo instaliranje, dok će se za daljnja ažuriranja proširenja upotrebljavati URL ažuriranja naveden u manifestu proširenja. Napominjemo i da je eksplicitno navođenje URL-a za "ažuriranje" bilo obavezno u verzijama preglednika <ph name="PRODUCT_NAME" /> zaključno s verzijom 67.
+
+          Na primjer, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalira aplikaciju <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> sa standardnog URL-a za "ažuriranje" Chrome web-trgovine. Više informacija o hostingu proširenja potražite ovdje: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+         Ako se to pravilo ne postavi, aplikacije ili proširenja neće se instalirati automatski i korisnik može deinstalirati bilo koju aplikaciju ili proširenje u pregledniku <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2292084646366244343">Proizvod <ph name="PRODUCT_NAME" /> može upotrebljavati Googleovu web-uslugu za ispravljanje pravopisnih pogrešaka. Ako je ta postavka omogućena, ta se usluga uvijek upotrebljava. Ako je ta postavka onemogućena, ta se usluga nikad ne upotrebljava.
 
       Provjera pravopisa još se uvijek može vršiti pomoću preuzetog rječnika; to pravilo upravlja samo upotrebom mrežne usluge.
@@ -697,6 +718,16 @@
           Pravilo nije obavezno. Ako nije postavljeno, neće se vršiti zamjena pojma za pretraživanje.
 
           Pravilo se primjenjuje samo ako je pravilo "DefaultSearchProviderEnabled" omogućeno.</translation>
+<translation id="3056439054015239107">
+      To se pravilo primjenjuje na zaslon za prijavu. Pogledajte i pravilo <ph name="SITE_PER_PROCESS_POLICY_NAME" /> koje se primjenjuje na korisničku sesiju. Preporučujemo da oba pravila postavite na istu vrijednost. Ako se vrijednosti ne podudaraju, možda će prilikom otvaranja korisničke sesije biti potrebno pričekati dok se ne primijeni vrijednost koja je određena korisničkim pravilom.
+      Možda biste trebali razmisliti o postavci pravila IsolateOrigins da biste
+      iskoristili prednosti obje značajke, izolacije i ograničenog utjecaja za
+      korisnike, koristeći IsolateOrigins s popisom web-lokacija koje želite izolirati.
+      Ova postavka, SitePerProcess, izolira sve web-lokacije.
+      Ako se to pravilo omogući, svaka će se web-lokacija izvoditi u svojem procesu.
+      Ako se to pravilo onemogući, neće doći do eksplicitne izolacije web-lokacija i onemogućit će se radne verzije postavki IsolateOrigins i SitePerProcess. Korisnici će i dalje moći ručno omogućiti SitePerProcess.
+      Ako se to pravilo ne konfigurira, korisnik će moći promijeniti tu postavku.
+      </translation>
 <translation id="306887062252197004">Ovo pravilo omogućuje korisnicima značajke WebDriver da nadjačaju
       pravila koja mogu ometati njezin rad.
 
@@ -855,6 +886,7 @@
 <translation id="3660562134618097814">Prenesi kolačiće SAML IdP-a tijekom prijave</translation>
 <translation id="3709266154059827597">Konfiguriraj crnu listu instalacije proširenja</translation>
 <translation id="3711895659073496551">Obustavi</translation>
+<translation id="3715569262675717862">Autentifikacija na temelju korisničkih certifikata</translation>
 <translation id="3736879847913515635">Omogućivanje dodavanja osobe u upravitelju korisnika</translation>
 <translation id="3737544779868348650">Naziv hosta mreže uređaja</translation>
 <translation id="3740754010292550733">Postavi razdoblje za obavijesti o ponovnom pokretanju radi ažuriranja</translation>
@@ -1842,6 +1874,15 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       U slučaju da prijavljivanje na drugi račun ne treba biti dopušteno u anonimnom načinu, razmislite o blokiranju tog načina rada pomoću pravila IncognitoModeAvailability.
 
       Napominjemo da će korisnici moći pristupiti Googleovim uslugama bez autentifikacije ako blokiraju kolačiće.</translation>
+<translation id="6738326937072482736">Konfigurira dostupnost i ponašanje funkcije ažuriranja <ph name="TPM_FIRMWARE_UPDATE_TPM" /> opreme.
+
+      Pojedinačne postavke mogu se navesti u JSON svojstvima:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: ako se postavi na <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, korisnici će moći pokrenuti tijek powerwasha da bi instalirali ažuriranje <ph name="TPM_FIRMWARE_UPDATE_TPM" /> opreme.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: ako se postavi na <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, korisnici će moći aktivirati tijek ažuriranja <ph name="TPM_FIRMWARE_UPDATE_TPM" /> opreme koji zadržava stanje na razini uređaja (uključujući registraciju organizacije), no gubi podatke korisnika. Taj je tijek ažuriranja dostupan od verzije 68.
+
+      Ako se to pravilo ne postavi, funkcija ažuriranja <ph name="TPM_FIRMWARE_UPDATE_TPM" /> opreme neće biti dostupna.</translation>
 <translation id="6757438632136860443">Omogućuje vam postavljanje popisa uzoraka URL-ova koji navode web-lokacije kojima je dopušteno pokretanje dodatka <ph name="FLASH_PLUGIN_NAME" />.
 
           Ako se to pravilo ne postavi, za sve web-lokacije upotrebljavat će se globalna zadana vrijednost iz pravila "DefaultPluginsSetting", ako je to pravilo postavljeno, ili vrijednost iz korisnikove osobne konfiguracije.</translation>
@@ -1860,6 +1901,16 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="687046793986382807">To se pravilo više ne primjenjuje od verzije 35 proizvoda <ph name="PRODUCT_NAME" />.
 
       Neovisno o vrijednosti opcije, informacije o memoriji prijavljuju se za stranicu, ali se prijavljene veličine kvantiziraju, a stopa ažuriranja ograničena je iz sigurnosnih razloga. Za dobivanje preciznih podataka u stvarnom vremenu upotrijebite alate kao što je Telemetrija.</translation>
+<translation id="6870914592443697993">
+      To se pravilo primjenjuje na zaslon za prijavu. Pogledajte i pravilo <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> koje se primjenjuje na korisničku sesiju. Preporučujemo da oba pravila postavite na istu vrijednost. Ako se vrijednosti ne podudaraju, možda će prilikom otvaranja korisničke sesije biti potrebno pričekati dok se ne primijeni vrijednost koja je određena korisničkim pravilom.
+      Ako se to pravilo omogući, svaki od navedenih izvora na popisu odijeljenom
+      zarezima izvodit će se u svojem procesu. Time će se također izolirati
+      izvori navedeni prema poddomenama, npr. ako se navede
+      https://example.com/ izolirat će se i https://foo.example.com/ kao dio
+      web-lokacije https://example.com/.
+      Ako se to pravilo onemogući, neće doći do eksplicitne izolacije web-lokacija i onemogućit će se radne verzije postavki IsolateOrigins i SitePerProcess. Korisnici će i dalje moći ručno omogućiti IsolateOrigins.
+      Ako se to pravilo ne konfigurira, za zaslon za prijavu upotrebljavat će se zadane postavke platforme za izolaciju web-lokacija.
+      </translation>
 <translation id="6894178810167845842">URL stranice nove kartice</translation>
 <translation id="6899705656741990703">Automatski detektiraj proxy postavke</translation>
 <translation id="6903814433019432303">To je pravilo aktivno samo u prodajnom načinu.
@@ -2099,6 +2150,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       Ako se postavi na False, ažuriranje je komponenti onemogućeno. No neke su komponente izuzete od tog pravila i dalje će se ažurirati, a to su komponente koje ne sadrže izvršni kôd, koje bitno ne mijenjaju ponašanje preglednika ili koje su važne za sigurnost.
       Primjeri takvih komponenti uključuju popise opozvanih certifikata i podatke Sigurnog pregledavanja.
       Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
+<translation id="7566878661979235378">Vrsta autentifikacije za SAML prijavu</translation>
 <translation id="757395965347379751">Kada je ta postavka omogućena, <ph name="PRODUCT_NAME" /> dopušta certifikate s SHA-1 potpisom ako se uspješno ovjere i povežu s lokalno instaliranim CA certifikatima.
 
       Napominjemo da to pravilo ovisi o tome dopušta li snop za potvrdu certifikata operativnog sustava SHA-1 potpise. Ako se ažuriranjem OS-a promijeni njegovo rukovanje SHA-1 certifikatima, to pravilo možda više neće imati utjecaja. Nadalje, to je pravilo predviđeno kao privremeno rješenje kako bi organizacije imale više vremena za napuštanje algoritma SHA-1. Pravilo će se ukloniti 1. siječnja 2019. ili oko tog datuma.
@@ -2263,6 +2315,16 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="7961779417826583251">Onemogući provedbu Transparentnosti certifikata za popis starih tijela za izdavanje certifikata</translation>
 <translation id="7974114691960514888">Ovo pravilo više se ne podržava. Omogućuje upotrebu STUN i relejnih poslužitelja prilikom povezivanja s udaljenim klijentom. Ako je ova postavka omogućena, onda ovo računalo može otkriti udaljena računala hostove i povezati se s njima, čak i ako su odvojena vatrozidom. Ako je ova postavka onemogućena, a izlazne UDP veze filtrirane su vatrozidom, onda se ovo računalo može jedino povezati s računalima hostovima unutar lokalne mreže.</translation>
 <translation id="7976157349247117979">Naziv odredišta za <ph name="PRODUCT_NAME" /></translation>
+<translation id="7978060394348264922">
+      Možda biste trebali razmisliti o postavci pravila IsolateOrigins da biste
+      iskoristili prednosti obje značajke, izolacije i ograničenog utjecaja za
+      korisnike, koristeći IsolateOrigins s popisom web-lokacija koje želite izolirati.
+      Ova postavka, SitePerProcess, izolira sve web-lokacije.
+      Ako se to pravilo omogući, svaka će se web-lokacija izvoditi u svojem procesu.
+      Ako se to pravilo onemogući, neće doći do eksplicitne izolacije web-lokacija i onemogućit će se radne verzije postavki IsolateOrigins i SitePerProcess. Korisnici će i dalje moći ručno omogućiti SitePerProcess.
+      Ako se to pravilo ne konfigurira, korisnik će moći promijeniti tu postavku.
+      U sustavu <ph name="PRODUCT_OS_NAME" /> preporučujemo da pravilo za uređaje <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> također postavite na istu vrijednost. Ako se vrijednosti koje navode ta dva pravila ne podudaraju, možda će prilikom otvaranja korisničke sesije biti potrebno pričekati dok se ne primijeni vrijednost koja je određena korisničkim pravilom.
+      </translation>
 <translation id="7980227303582973781">Nema posebnih ograničenja</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Zakreni zaslon 0 stupnjeva</translation>
@@ -2462,6 +2524,13 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
           Razdvojite više poslužitelja zarezima. Zamjenski su znakovi (*) dopušteni.
 
           Ako ne postavite ovo pravilo, <ph name="PRODUCT_NAME" /> pokušat će otkriti je li poslužitelj na intranetu te će jedino tada odgovoriti na IWA zahtjeve. Ako otkrije da se radi o poslužitelju na internetu, <ph name="PRODUCT_NAME" /> zanemarit će njegove IWA zahtjeve.</translation>
+<translation id="8667812577403206506">Omogućuje vam da odredite je li virtualnim računalima dopušteno pokretanje na OS-u Chrome.
+
+      Ako je pravilo postavljeno na True, uređaju je dopušteno pokretanje virtualnih računala.
+      Ako je pravilo postavljeno na False, uređaju nije dopušteno pokretanje virtualnih računala.
+      Kada se to pravilo promijeni na False, primjenjuje se na pokretanje novih virtualnih računala, ali ne isključuje virtualna računala koja su već pokrenuta.
+      Kada to pravilo nije postavljeno na upravljanom uređaju, uređaju nije dopušteno pokretanje virtualnih računala.
+      Neupravljanim je uređajima dopušteno pokretanje virtualnih računala.</translation>
 <translation id="8672321184841719703">Ciljna verzija automatskog ažuriranja</translation>
 <translation id="867410340948518937">U2F (univerzalna dvostruka autentifikacija)</translation>
 <translation id="8685024486845674965">Upozorenje o zaštiti zaporkom aktivira se ponovnom upotrebom zaporke</translation>
@@ -2576,6 +2645,7 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 
       To se pravilo ne bi trebalo omogućivati kada je pravilo <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> postavljeno na omogućeno jer ta značajka dijeli istu klijentsku funkciju. Sinkronizacija hostirana na Googleu u tom je slučaju potpuno onemogućena.</translation>
 <translation id="8955719471735800169">Natrag na vrh</translation>
+<translation id="8959992920425111821">Zadana konfiguracija</translation>
 <translation id="8960850473856121830">Uzorci na tom popisu usporedit će se sa sigurnosnim izvorištem
       URL-a koji šalje zahtjev. Ako se pronađe podudaranje, pristup uređajima
       za snimanje zvuka dopuštat će se bez upita.
@@ -2586,6 +2656,16 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="8976248126101463034">Dopusti autentifikaciju "gnubby" za hostove daljinskog pristupa</translation>
 <translation id="8976531594979650914">Upotrijebi zadani pisač sustava kao zadani</translation>
 <translation id="8992176907758534924">Ne dopuštaj web-lokacijama prikazivanje slika</translation>
+<translation id="9034729899149506577">
+      Ako se to pravilo omogući, svaki od navedenih izvora na popisu
+      odijeljenom zarezima izvodit će se u svojem procesu. Time će se također
+      izolirati izvori navedeni prema poddomenama, npr. ako se navede
+      https://example.com/, izolirat će se i https://foo.example.com/ kao dio
+      web-lokacije https://example.com/.
+      Ako se to pravilo onemogući, neće doći do eksplicitne izolacije web-lokacija i onemogućit će se radne verzije postavki IsolateOrigins i SitePerProcess. Korisnici će i dalje moći ručno omogućiti IsolateOrigins.
+      Ako se to pravilo ne konfigurira, korisnik će moći promijeniti tu postavku.
+      U sustavu <ph name="PRODUCT_OS_NAME" /> preporučujemo da pravilo za uređaje <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> također postavite na istu vrijednost. Ako se vrijednosti koje navode ta dva pravila ne podudaraju, možda će prilikom otvaranja korisničke sesije biti potrebno pričekati dok se ne primijeni vrijednost koja je određena korisničkim pravilom.
+      </translation>
 <translation id="9035964157729712237">ID-jevi proširenja za izuzimanje s crne liste</translation>
 <translation id="9042911395677044526">Omogućuje nametanje mrežne konfiguracije za primjenu po korisniku na uređaju <ph name="PRODUCT_OS_NAME" />. Mrežna je konfiguracija niz u formatu JSON, kao što je definirano formatom "Open Network Configuration" koji je opisan na adresi <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Odredi utječe li aktivnost videozapisa na upravljanje napajanjem</translation>
@@ -2630,6 +2710,13 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="9187743794267626640">Onemogući priključivanje vanjske pohrane</translation>
 <translation id="9197740283131855199">Postotak skaliranja odgode zatamnjivanja zaslona ako korisnik postane aktivan nakon zatamnjivanja</translation>
 <translation id="9200828125069750521">Parametri za URL slike koji upotrebljava POST</translation>
+<translation id="9210953373038593554">Konfigurira vrstu autentifikacije za SAML prijave.
+
+      Kada se to pravilo ne postavi ili se postavi na zadano (vrijednost 0), ponašanje SAML prijava određeno je preglednikom ovisno o drugim čimbenicima. U najjednostavnijem slučaju autentifikacija korisnika i zaštita predmemoriranih podataka korisnika temelje se na zaporkama koje su korisnici unijeli ručno.
+
+      Kada se to pravilo postavi na ClientCertificate (vrijednost 1), autentifikacija korisničkim certifikatom upotrebljava se za novo dodane korisnike koji se prijavljuju putem SAML-a. Za te se korisnike ne upotrebljavaju nikakve zaporke i njihovi se predmemorirani lokalni podaci štite pomoću odgovarajućih kriptografskih ključeva. Na primjer, ta postavka omogućuje konfiguriranje autentifikacije korisnika na temelju pametne kartice (napominjemo da se posredničke aplikacije za pametne kartice trebaju instalirati pomoću pravila DeviceLoginScreenAppInstallList).
+
+      To se pravilo primjenjuje samo na korisnike koji se autentificiraju putem SAML-a.</translation>
 <translation id="9213347477683611358">Konfigurira pozadinsku sliku koja se prikazuje na zaslonu za prijavu na razini uređaja ako na uređaju još nema prijavljenih korisnika. Pravilo se postavlja određivanjem URL-a s kojega uređaj s OS-om Chrome može preuzeti pozadinsku sliku i kriptografskog raspršivanja za provjeru integriteta preuzimanja. Slika mora biti u JPEG formatu i ne smije biti veća od 16 MB. URL-u se mora moći pristupiti bez autentifikacije. Pozadinska slika preuzima se i sprema u predmemoriju. Ponovo će se preuzeti svaki put kada se URL ili raspršivanje promijene.
 
       Pravilo se navodi kao niz koji izražava URL i sažetak u JSON obliku, na primjer:

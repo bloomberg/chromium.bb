@@ -735,6 +735,7 @@
 <translation id="6263376278284652872">Обележивачи домена <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Назад на безбедно</translation>
 <translation id="6276112860590028508">Странице са листе за читање ће се појавити овде</translation>
+<translation id="627746635834430766">Да бисте следећи пут платили брже, сачувајте картицу и адресу за обрачун на Google налогу.</translation>
 <translation id="6280223929691119688">Испорука на ову адресу није могућа. Изаберите другу адресу.</translation>
 <translation id="6282194474023008486">Поштански број</translation>
 <translation id="6290238015253830360">Предложени чланци се приказују овде</translation>
@@ -749,6 +750,7 @@
 <translation id="6355080345576803305">Замена јавне сесије</translation>
 <translation id="6358450015545214790">Шта ово значи?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{још 1 предлог}one{још # предлог}few{још # предлога}other{још # предлога}}</translation>
+<translation id="6387754724289022810">Да бисте следећи пут платили брже, сачувајте картицу и адресу за обрачун на Google налогу и овом уређају.</translation>
 <translation id="6397451950548600259">Софтвер на вашем рачунару онемогућава Chrome-у да се безбедно повеже на веб.</translation>
 <translation id="6404511346730675251">Измена обележивача</translation>
 <translation id="6410264514553301377">Унесите датум истека и CVC за картицу <ph name="CREDIT_CARD" /></translation>

@@ -912,7 +912,6 @@
 <translation id="2413749388954403953">Modifier l'interface utilisateur des favoris</translation>
 <translation id="2422426094670600218">&lt;sans nom&gt;</translation>
 <translation id="2423578206845792524">En&amp;registrer l'image sous...</translation>
-<translation id="2424091190911472304">Toujours exécuter pour <ph name="ORIGIN" /></translation>
 <translation id="2425665904502185219">Taille totale des fichiers</translation>
 <translation id="2428510569851653187">Décrivez ce que vous faisiez lorsque l'onglet a planté</translation>
 <translation id="2431027948063157455">Impossible de charger l'Assistant Google. Veuillez vérifier votre connexion réseau et réessayer.</translation>
@@ -1200,7 +1199,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2838379631617906747">Installation en cours…</translation>
 <translation id="2841837950101800123">Fournisseur</translation>
 <translation id="2843806747483486897">Modifier l'action par défaut…</translation>
-<translation id="2844111009524261443">Exécuter en cas de clic</translation>
 <translation id="2845382757467349449">Toujours afficher la barre de favoris</translation>
 <translation id="2847759467426165163">Caster sur</translation>
 <translation id="284805635805850872">Supprimer le logiciel malveillant ?</translation>
@@ -1512,7 +1510,6 @@ Pour en savoir plus, consultez notre <ph name="BEGIN_LINK" />Centre d'aide<ph na
 <translation id="3308116878371095290">Le stockage des cookies n'est pas autorisé pour cette page.</translation>
 <translation id="3308134619352333507">Masquer le bouton</translation>
 <translation id="3308852433423051161">Chargement de l'Assistant Google…</translation>
-<translation id="3309747692199697901">Toujours exécuter pour tous les sites</translation>
 <translation id="3312424061798279731">Langues activées</translation>
 <translation id="3313590242757056087">Pour définir les sites Web que l'utilisateur supervisé peut consulter, vous pouvez configurer des restrictions
     et des paramètres sur le site <ph name="MANAGEMENT_URL" />.
@@ -1810,7 +1807,6 @@ Pour en savoir plus, consultez notre <ph name="BEGIN_LINK" />Centre d'aide<ph na
 <translation id="3759933321830434300">Bloquer des parties de pages Web</translation>
 <translation id="3760460896538743390">Inspecter la page d'&amp;arrière-plan</translation>
 <translation id="37613671848467444">Ouvrir dans une fenêtre de &amp;navigation privée</translation>
-<translation id="3763401818161139108">Toujours exécuter pour <ph name="ORIGIN" /></translation>
 <translation id="3764314093345384080">Informations détaillées sur la version</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Communication avec un appareil USB}one{Communication avec # appareil USB}other{Communication avec # appareils USB}}</translation>
 <translation id="3764986667044728669">Impossible de s'inscrire</translation>
@@ -2271,7 +2267,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4547992677060857254">Le dossier que vous avez sélectionné contient des fichiers sensibles. Voulez-vous vraiment accorder à "$1" un accès en écriture permanent à ce dossier ?</translation>
 <translation id="4552031286893852992">Chrome a bloqué les annonces sur ce site, car ce dernier a tendance à afficher des annonces intrusives.</translation>
 <translation id="4552089082226364758">Flash</translation>
-<translation id="4552495056028768700">Accès à la page</translation>
 <translation id="4552678318981539154">Acheter de l'espace de stockage supplémentaire</translation>
 <translation id="4554591392113183336">La version d'extension externe est identique ou antérieure à la version existante.</translation>
 <translation id="4555769855065597957">Duplicata</translation>
@@ -3268,7 +3263,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6080515710685820702">Vous utilisez un ordinateur partagé ? Essayez d'ouvrir une fenêtre de navigation privée.</translation>
 <translation id="6080689532560039067">Vérifier l'heure du système</translation>
 <translation id="6082651258230788217">Afficher dans la barre d'outils</translation>
-<translation id="6086814797483779854">Exécuter en cas de clic</translation>
 <translation id="6086846494333236931">Installée par votre administrateur</translation>
 <translation id="6087960857463881712">Visage "Génial"</translation>
 <translation id="6089481419520884864">Convertir la page</translation>
@@ -4408,7 +4402,6 @@ Notez que la taille du téléchargement de l'application <ph name="APP_NAME" /> 
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> associé</translation>
 <translation id="7870730066603611552">Vérifier les options de synchronisation après la configuration</translation>
 <translation id="7870790288828963061">Aucune nouvelle version d'une application kiosque n'a été trouvée. Aucune mise à jour n'est disponible. Veuillez débrancher la clé USB.</translation>
-<translation id="7874357055309047713">Toujours exécuter pour tous les sites</translation>
 <translation id="7877451762676714207">Erreur serveur inconnue. Veuillez réessayer ou contacter l'administrateur du serveur.</translation>
 <translation id="7877680364634660272">Visite</translation>
 <translation id="7878562273885520351">Votre mot de passe a peut-être été piraté</translation>
@@ -4757,7 +4750,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8428634594422941299">OK</translation>
 <translation id="8431909052837336408">Modifier le code de la SIM</translation>
 <translation id="8434480141477525001">Port de débogage de Native Client</translation>
-<translation id="8437331208797669910">Accès à la page</translation>
 <translation id="843760761634048214">Enregistrer les informations de la carte de paiement</translation>
 <translation id="8438328416656800239">Passez à un navigateur intelligent</translation>
 <translation id="8439506636278576865">Proposer de traduire les pages dans cette langue</translation>
