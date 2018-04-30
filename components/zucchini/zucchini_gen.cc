@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/logging.h"
@@ -21,6 +22,7 @@
 #include "components/zucchini/equivalence_map.h"
 #include "components/zucchini/heuristic_ensemble_matcher.h"
 #include "components/zucchini/image_index.h"
+#include "components/zucchini/imposed_ensemble_matcher.h"
 #include "components/zucchini/patch_writer.h"
 #include "components/zucchini/reference_bytes_mixer.h"
 #include "components/zucchini/suffix_array.h"
@@ -317,13 +319,10 @@ bool GenerateExecutableElement(ExecutableType exe_type,
                           reference_bytes_mixer.get(), patch_writer);
 }
 
-/******** Exported Functions ********/
-
-status::Code GenerateEnsemble(ConstBufferView old_image,
-                              ConstBufferView new_image,
-                              EnsemblePatchWriter* patch_writer) {
-  std::unique_ptr<EnsembleMatcher> matcher =
-      std::make_unique<HeuristicEnsembleMatcher>(nullptr);
+status::Code GenerateEnsembleCommon(ConstBufferView old_image,
+                                    ConstBufferView new_image,
+                                    std::unique_ptr<EnsembleMatcher> matcher,
+                                    EnsemblePatchWriter* patch_writer) {
   if (!matcher->RunMatch(old_image, new_image)) {
     LOG(INFO) << "RunMatch() failed, generating raw patch.";
     return GenerateRaw(old_image, new_image, patch_writer);
@@ -418,6 +417,29 @@ status::Code GenerateEnsemble(ConstBufferView old_image,
     patch_writer->AddElement(std::move(new_lo_and_patch_element.second));
 
   return status::kStatusSuccess;
+}
+
+/******** Exported Functions ********/
+
+status::Code GenerateEnsemble(ConstBufferView old_image,
+                              ConstBufferView new_image,
+                              EnsemblePatchWriter* patch_writer) {
+  return GenerateEnsembleCommon(
+      old_image, new_image, std::make_unique<HeuristicEnsembleMatcher>(nullptr),
+      patch_writer);
+}
+
+status::Code GenerateEnsembleWithImposedMatches(
+    ConstBufferView old_image,
+    ConstBufferView new_image,
+    std::string imposed_matches,
+    EnsemblePatchWriter* patch_writer) {
+  if (imposed_matches.empty())
+    return GenerateEnsemble(old_image, new_image, patch_writer);
+
+  return GenerateEnsembleCommon(
+      old_image, new_image,
+      std::make_unique<ImposedEnsembleMatcher>(imposed_matches), patch_writer);
 }
 
 status::Code GenerateRaw(ConstBufferView old_image,

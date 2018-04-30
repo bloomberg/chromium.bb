@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <memory>
 #include <ostream>
-#include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -19,6 +19,7 @@
 #include "components/zucchini/element_detection.h"
 #include "components/zucchini/ensemble_matcher.h"
 #include "components/zucchini/heuristic_ensemble_matcher.h"
+#include "components/zucchini/imposed_ensemble_matcher.h"
 #include "components/zucchini/io_utils.h"
 
 namespace zucchini {
@@ -44,11 +45,10 @@ status::Code ReadReferences(ConstBufferView image,
     targets.erase(std::unique(targets.begin(), targets.end()), targets.end());
     size_t num_targets = targets.size();
 
-    out << "Type " << int(group.type_tag().value());
-    out << ": Pool=" << static_cast<uint32_t>(group.pool_tag().value());
-    out << ", width=" << group.width();
-    out << ", #locations=" << num_locations;
-    out << ", #targets=" << num_targets;
+    out << "Type " << int(group.type_tag().value())
+        << ": Pool=" << static_cast<uint32_t>(group.pool_tag().value())
+        << ", width=" << group.width() << ", #locations=" << num_locations
+        << ", #targets=" << num_targets;
     if (num_targets > 0) {
       double ratio = static_cast<double>(num_locations) / num_targets;
       out << " (ratio=" << base::StringPrintf("%.4f", ratio) << ")";
@@ -59,8 +59,8 @@ status::Code ReadReferences(ConstBufferView image,
       refs = group.GetReader(disasm.get());
 
       for (auto ref = refs->GetNext(); ref; ref = refs->GetNext()) {
-        out << "  " << AsHex<8>(ref->location);
-        out << " " << AsHex<8>(ref->target) << std::endl;
+        out << "  " << AsHex<8>(ref->location) << " " << AsHex<8>(ref->target)
+            << std::endl;
       }
     }
   }
@@ -112,14 +112,27 @@ status::Code DetectAll(ConstBufferView image,
 
 status::Code MatchAll(ConstBufferView old_image,
                       ConstBufferView new_image,
+                      std::string imposed_matches,
                       std::ostream& out) {
-  HeuristicEnsembleMatcher matcher(&out);
-  if (!matcher.RunMatch(old_image, new_image)) {
+  std::unique_ptr<EnsembleMatcher> matcher;
+  if (imposed_matches.empty()) {
+    matcher = std::make_unique<HeuristicEnsembleMatcher>(&out);
+  } else {
+    matcher =
+        std::make_unique<ImposedEnsembleMatcher>(std::move(imposed_matches));
+  }
+  if (!matcher->RunMatch(old_image, new_image)) {
     out << "RunMatch() failed.";
     return status::kStatusFatal;
   }
-  out << "Found " << matcher.matches().size() << " nontrivial matches and "
-      << matcher.num_identical() << " identical matches." << std::endl;
+  out << "Found " << matcher->matches().size() << " nontrivial matches and "
+      << matcher->num_identical() << " identical matches." << std::endl
+      << "To impose the same matches by command line, use: " << std::endl
+      << "  -impose=";
+  PrefixSep sep(",");
+  for (const ElementMatch& match : matcher->matches())
+    out << sep << match.ToString();
+  out << std::endl;
 
   return status::kStatusSuccess;
 }

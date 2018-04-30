@@ -21,4 +21,14 @@ TEST(ImageUtilsTest, CastExecutableTypeToString) {
   EXPECT_EQ("DEX ", CastExecutableTypeToString(kExeTypeDex));
 }
 
+TEST(ImageUtilsTest, ElementMatchToString) {
+  constexpr ExecutableType kAnyType = kExeTypeWin32X86;
+  EXPECT_EQ("1+2=3+4",
+            (ElementMatch{{{1, 2}, kAnyType}, {{3, 4}, kAnyType}}).ToString());
+  EXPECT_EQ(
+      "1000000000+1=0+1000000000",
+      (ElementMatch{{{1000000000, 1}, kAnyType}, {{0, 1000000000}, kAnyType}})
+          .ToString());
+}
+
 }  // namespace zucchini

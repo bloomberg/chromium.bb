@@ -6,6 +6,7 @@
 #define COMPONENTS_ZUCCHINI_ZUCCHINI_TOOLS_H_
 
 #include <iosfwd>
+#include <string>
 #include <vector>
 
 #include "components/zucchini/buffer_view.h"
@@ -29,8 +30,14 @@ status::Code DetectAll(ConstBufferView image,
                        std::vector<ConstBufferView>* sub_image_list);
 
 // Prints all matched regions from |old_image| to |new_image|.
+// |imposed_matches|, if non-empty, encodes custom element matching to override
+// the default element detection and matching heuristics, and is formatted as:
+//   "#+#=#+#,#+#=#+#,..."  (e.g., "1+2=3+4", "1+2=3+4,5+6=7+8"),
+// where "#+#=#+#" encodes a match as 4 unsigned integers:
+//   [offset in "old", size in "old", offset in "new", size in "new"].
 status::Code MatchAll(ConstBufferView old_image,
                       ConstBufferView new_image,
+                      std::string imposed_matches,
                       std::ostream& out);
 
 }  // namespace zucchini
