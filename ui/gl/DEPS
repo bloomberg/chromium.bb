@@ -1,6 +1,7 @@
 include_rules = [
   "+components/crash/core/common/crash_key.h",  # Remove after fixing crbug.com/724999.
   "+third_party/khronos",
+  "+third_party/libsync",
   "+third_party/skia",
   "+ui/events",
   "+ui/base/x",

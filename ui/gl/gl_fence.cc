@@ -18,7 +18,7 @@
 #include "ui/gl/gl_fence_apple.h"
 #endif
 
-#if defined(USE_EGL) && defined(OS_POSIX)
+#if defined(USE_EGL) && defined(OS_POSIX) && !defined(OS_FUCHSIA)
 #include "ui/gl/gl_fence_android_native_fence_sync.h"
 #include "ui/gl/gl_surface_egl.h"
 #endif
@@ -92,7 +92,7 @@ void GLFence::Invalidate() {
 }
 
 bool GLFence::IsGpuFenceSupported() {
-#if defined(USE_EGL) && defined(OS_POSIX)
+#if defined(USE_EGL) && defined(OS_POSIX) && !defined(OS_FUCHSIA)
   return gl::GLSurfaceEGL::IsAndroidNativeFenceSyncSupported();
 #else
   return false;
@@ -105,7 +105,7 @@ std::unique_ptr<GLFence> GLFence::CreateFromGpuFence(
   DCHECK(IsGpuFenceSupported());
   switch (gpu_fence.GetGpuFenceHandle().type) {
     case gfx::GpuFenceHandleType::kAndroidNativeFenceSync:
-#if defined(USE_EGL) && defined(OS_POSIX)
+#if defined(USE_EGL) && defined(OS_POSIX) && !defined(OS_FUCHSIA)
       return GLFenceAndroidNativeFenceSync::CreateFromGpuFence(gpu_fence);
 #else
       NOTREACHED();
@@ -120,7 +120,7 @@ std::unique_ptr<GLFence> GLFence::CreateFromGpuFence(
 // static
 std::unique_ptr<GLFence> GLFence::CreateForGpuFence() {
   DCHECK(IsGpuFenceSupported());
-#if defined(USE_EGL) && defined(OS_POSIX)
+#if defined(USE_EGL) && defined(OS_POSIX) && !defined(OS_FUCHSIA)
   return GLFenceAndroidNativeFenceSync::CreateForGpuFence();
 #endif
   NOTREACHED();
