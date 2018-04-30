@@ -125,9 +125,11 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeAckAndPingPacket(
   DVLOG(1) << "Adding frame: " << frames[0];
 
   QuicStopWaitingFrame stop_waiting;
-  stop_waiting.least_unacked = least_unacked;
-  frames.push_back(QuicFrame(&stop_waiting));
-  DVLOG(1) << "Adding frame: " << frames[1];
+  if (version_ <= QUIC_VERSION_43) {
+    stop_waiting.least_unacked = least_unacked;
+    frames.push_back(QuicFrame(&stop_waiting));
+    DVLOG(1) << "Adding frame: " << frames[1];
+  }
 
   frames.push_back(QuicFrame(QuicPingFrame()));
   DVLOG(1) << "Adding frame: " << frames[2];
@@ -218,9 +220,11 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
   DVLOG(1) << "Adding frame: " << frames[0];
 
   QuicStopWaitingFrame stop_waiting;
-  stop_waiting.least_unacked = least_unacked;
-  frames.push_back(QuicFrame(&stop_waiting));
-  DVLOG(1) << "Adding frame: " << frames[1];
+  if (version_ <= QUIC_VERSION_43) {
+    stop_waiting.least_unacked = least_unacked;
+    frames.push_back(QuicFrame(&stop_waiting));
+    DVLOG(1) << "Adding frame: " << frames[1];
+  }
 
   QuicRstStreamFrame rst(1, stream_id, error_code, bytes_written);
   frames.push_back(QuicFrame(&rst));
@@ -270,9 +274,11 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
   DVLOG(1) << "Adding frame: " << frames[0];
 
   QuicStopWaitingFrame stop_waiting;
-  stop_waiting.least_unacked = least_unacked;
-  frames.push_back(QuicFrame(&stop_waiting));
-  DVLOG(1) << "Adding frame: " << frames[1];
+  if (version_ <= QUIC_VERSION_43) {
+    stop_waiting.least_unacked = least_unacked;
+    frames.push_back(QuicFrame(&stop_waiting));
+    DVLOG(1) << "Adding frame: " << frames[1];
+  }
 
   QuicConnectionCloseFrame close;
   close.error_code = quic_error;
@@ -378,8 +384,10 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
   frames.push_back(ack_frame);
 
   QuicStopWaitingFrame stop_waiting;
-  stop_waiting.least_unacked = least_unacked;
-  frames.push_back(QuicFrame(&stop_waiting));
+  if (version_ <= QUIC_VERSION_43) {
+    stop_waiting.least_unacked = least_unacked;
+    frames.push_back(QuicFrame(&stop_waiting));
+  }
 
   std::unique_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
@@ -456,8 +464,10 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeAckAndDataPacket(
   frames.push_back(QuicFrame(&ack));
 
   QuicStopWaitingFrame stop_waiting;
-  stop_waiting.least_unacked = least_unacked;
-  frames.push_back(QuicFrame(&stop_waiting));
+  if (version_ <= QUIC_VERSION_43) {
+    stop_waiting.least_unacked = least_unacked;
+    frames.push_back(QuicFrame(&stop_waiting));
+  }
 
   QuicStreamFrame stream_frame(stream_id, fin, offset, data);
   frames.push_back(QuicFrame(&stream_frame));
@@ -932,9 +942,11 @@ QuicTestPacketMaker::MakeAckAndMultiplePriorityFramesPacket(
   DVLOG(1) << "Adding frame: " << frames[0];
 
   QuicStopWaitingFrame stop_waiting;
-  stop_waiting.least_unacked = least_unacked;
-  frames.push_back(QuicFrame(&stop_waiting));
-  DVLOG(1) << "Adding frame: " << frames[1];
+  if (version_ <= QUIC_VERSION_43) {
+    stop_waiting.least_unacked = least_unacked;
+    frames.push_back(QuicFrame(&stop_waiting));
+    DVLOG(1) << "Adding frame: " << frames[1];
+  }
 
   const bool exclusive = client_headers_include_h2_stream_dependency_;
   QuicStreamOffset header_offset = 0;

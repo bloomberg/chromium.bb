@@ -308,7 +308,7 @@ QuicConnection::QuicConnection(
       next_mtu_probe_at_(kPacketsBetweenMtuProbesBase),
       largest_received_packet_size_(0),
       write_error_occurred_(false),
-      no_stop_waiting_frames_(false),
+      no_stop_waiting_frames_(transport_version() > QUIC_VERSION_43),
       consecutive_num_packets_with_no_retransmittable_frames_(0),
       fill_up_link_during_probing_(false),
       probing_retransmission_pending_(false),
