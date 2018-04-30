@@ -83,19 +83,6 @@ bool MapStringToSharedOption(base::StringPiece value, SharedOption* output) {
   return true;
 }
 
-// Maps the given string to TargetVolume. Returns true on success.
-bool MapStringToTargetVolume(base::StringPiece value, TargetVolume* output) {
-  if (value == "drive")
-    *output = DRIVE_VOLUME;
-  else if (value == "local")
-    *output = LOCAL_VOLUME;
-  else if (value == "usb")
-    *output = USB_VOLUME;
-  else
-    return false;
-  return true;
-}
-
 // Maps the given string to base::Time. Returns true on success.
 bool MapStringToTime(base::StringPiece value, base::Time* time) {
   return base::Time::FromString(value.as_string().c_str(), time);
@@ -158,6 +145,20 @@ struct AddEntriesMessage {
                                    &MapStringToTargetVolume);
     converter->RegisterRepeatedMessage<TestEntryInfo>(
         "entries", &AddEntriesMessage::entries);
+  }
+
+  // Maps the given string to TargetVolume. Returns true on success.
+  static bool MapStringToTargetVolume(base::StringPiece value,
+                                      TargetVolume* output) {
+    if (value == "drive")
+      *output = DRIVE_VOLUME;
+    else if (value == "local")
+      *output = LOCAL_VOLUME;
+    else if (value == "usb")
+      *output = USB_VOLUME;
+    else
+      return false;
+    return true;
   }
 };
 
