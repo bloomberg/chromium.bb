@@ -1618,7 +1618,12 @@ int QuicChromiumClientSession::HandleWriteError(
       !stream_factory_->migrate_sessions_on_network_change()) {
     return error_code;
   }
-  net_log_.AddEvent(NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_WRITE_ERROR);
+  NetworkChangeNotifier::NetworkHandle current_network =
+      GetDefaultSocket()->GetBoundNetwork();
+
+  net_log_.AddEvent(NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_WRITE_ERROR,
+                    NetLog::Int64Callback("network", current_network));
+
   DCHECK(packet != nullptr);
   DCHECK_NE(ERR_IO_PENDING, error_code);
   DCHECK_GT(0, error_code);
@@ -1765,7 +1770,8 @@ void QuicChromiumClientSession::OnProbeNetworkSucceeded(
   }
 
   net_log_.AddEvent(
-      NetLogEventType::QUIC_CONNECTION_MIGRATION_SUCCESS_AFTER_PROBING);
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_SUCCESS_AFTER_PROBING,
+      NetLog::Int64Callback("migrate_to_network", network));
   if (network == default_network_) {
     DVLOG(1) << "Client successfully migrated to default network.";
     CancelMigrateBackToDefaultNetworkTimer();
@@ -1808,7 +1814,8 @@ void QuicChromiumClientSession::OnNetworkConnected(
     NetworkChangeNotifier::NetworkHandle network,
     const NetLogWithSource& net_log) {
   net_log_.AddEvent(
-      NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_NETWORK_CONNECTED);
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_NETWORK_CONNECTED,
+      NetLog::Int64Callback("connected_network", network));
   // If migration_pending_ is false, there was no migration pending or
   // an earlier task completed migration.
   if (!migration_pending_)
@@ -1848,7 +1855,8 @@ void QuicChromiumClientSession::OnNetworkDisconnectedV2(
     NetworkChangeNotifier::NetworkHandle disconnected_network,
     const NetLogWithSource& migration_net_log) {
   net_log_.AddEvent(
-      NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_NETWORK_DISCONNECTED);
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_NETWORK_DISCONNECTED,
+      NetLog::Int64Callback("disconnected_network", disconnected_network));
   LogMetricsOnNetworkDisconnected();
   if (!migrate_session_on_network_change_v2_)
     return;
@@ -1882,7 +1890,8 @@ void QuicChromiumClientSession::OnNetworkMadeDefault(
     NetworkChangeNotifier::NetworkHandle new_network,
     const NetLogWithSource& migration_net_log) {
   net_log_.AddEvent(
-      NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_NETWORK_MADE_DEFAULT);
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_NETWORK_MADE_DEFAULT,
+      NetLog::Int64Callback("new_default_network", new_network));
   LogMetricsOnNetworkMadeDefault();
 
   if (!migrate_session_on_network_change_ &&
