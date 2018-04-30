@@ -1345,8 +1345,9 @@ class UIResourceLostBeforeCommit : public UIResourceLostTestSimple {
   UIResourceId test_id1_;
 };
 
-// http://crbug.com/803532 : Flaky on Win 7 (dbg).
-#if defined(NDEBUG) || !defined(OS_WIN)
+// http://crbug.com/803532 : Flaky on Win 7 (dbg) and linux tsan
+#if (defined(NDEBUG) || !defined(OS_WIN)) && \
+    (!defined(THREAD_SANITIZER) || !defined(OS_LINUX))
 SINGLE_THREAD_TEST_F(UIResourceLostBeforeCommit);
 #endif
 MULTI_THREAD_TEST_F(UIResourceLostBeforeCommit);
