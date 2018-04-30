@@ -37,6 +37,12 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
                             extra_request_complete_info) override;
   void OnEventOccurred(const void* const event_key) override;
 
+ protected:
+  // Returns true if data saver feature is enabled in Chrome. Virtualized for
+  // testing.
+  virtual bool IsDataSaverEnabled(
+      content::NavigationHandle* navigation_handle) const;
+
  private:
   void RecordPreviewsTypes(const page_load_metrics::PageLoadExtraInfo& info);
 
@@ -46,6 +52,7 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
   bool noscript_seen_ = false;
   bool opt_out_occurred_ = false;
   bool origin_opt_out_occurred_ = false;
+  bool save_data_enabled_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
