@@ -1159,6 +1159,73 @@ public class AwAutofillTest {
             webServer.shutdown();
         }
     }
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testUserInitiatedJavascriptSelectControlChangeNotification() throws Throwable {
+        int cnt = 0;
+        TestWebServer webServer = TestWebServer.start();
+        final String data = "<!DOCTYPE html>"
+                + "<html>"
+                + "<body>"
+                + "<script>"
+                + "function myFunction() {"
+                + "  document.getElementById('color').value = 'blue';"
+                + "}"
+                + "</script>"
+                + "<form action='a.html' name='formname' id='formid'>"
+                + "<button onclick='myFunction();' autofocus>button </button>"
+                + "<select id='color' autofocus><option value='red'>red</option><option "
+                + "value='blue' id='blue'>blue</option></select>"
+                + "</form>"
+                + "</body>"
+                + "</html>";
+        try {
+            final String url = webServer.setResponse(FILE, data, null);
+            loadUrlSync(url);
+            // Change select control first shall start autofill session.
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_DPAD_CENTER);
+            cnt += waitForCallbackAndVerifyTypes(cnt,
+                    new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_VIEW_EXITED,
+                            AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
+            ArrayList<Pair<Integer, AutofillValue>> values = getChangedValues();
+            assertEquals(1, values.size());
+            assertTrue(values.get(0).second.isList());
+            assertEquals(1, values.get(0).second.getListValue());
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testJavascriptNotTriggerSelectControlChangeNotification() throws Throwable {
+        int cnt = 0;
+        TestWebServer webServer = TestWebServer.start();
+        final String data = "<!DOCTYPE html>"
+                + "<html>"
+                + "<body onload='myFunction();'>"
+                + "<script>"
+                + "function myFunction() {"
+                + "  document.getElementById('color').value = 'blue';"
+                + "}"
+                + "</script>"
+                + "<form action='a.html' name='formname' id='formid'>"
+                + "<button onclick='myFunction();' autofocus>button </button>"
+                + "<select id='color' autofocus><option value='red'>red</option><option "
+                + "value='blue' id='blue'>blue</option></select>"
+                + "</form>"
+                + "</body>"
+                + "</html>";
+        try {
+            final String url = webServer.setResponse(FILE, data, null);
+            loadUrlSync(url);
+            waitForCallbackAndVerifyTypes(cnt, new Integer[] {});
+        } finally {
+            webServer.shutdown();
+        }
+    }
 
     private void loadUrlSync(String url) throws Exception {
         mRule.loadUrlSync(
