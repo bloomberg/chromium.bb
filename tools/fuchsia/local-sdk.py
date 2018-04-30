@@ -38,14 +38,6 @@ def BuildForArch(arch):
       '--args=is_debug=false', build_dir)
   Run('scripts/fx', 'full-build')
 
-  # Also build the deprecated bootfs-based image.
-  # TODO(crbug.com/805057): Remove this once bootfs is turned down.
-  build_dir_bootfs = 'out/release-' + arch + '-bootfs'
-  Run('scripts/fx', 'set', arch,
-      '--packages=garnet/packages/sdk/bootfs', '--args=is_debug=false',
-      '--args=bootfs_packages=true', build_dir_bootfs)
-  Run('scripts/fx', 'full-build')
-
 
 def main(args):
   if len(args) != 1 or not os.path.isdir(args[0]):

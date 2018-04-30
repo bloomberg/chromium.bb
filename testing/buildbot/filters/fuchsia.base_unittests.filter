@@ -26,11 +26,6 @@
 -SysInfoTest.AmountOfMem
 -SysInfoTest.AmountOfTotalDiskSpace
 
-# Remove this filter once the migration to packages is complete.
-# See crbug.com/805057.
--NativeLibraryTest.LoadLibrary
--NativeLibraryTest.LoadLibraryPreferOwnSymbols
-
 # These tests are affected by an issue with cloning namespace entries from
 # inside a package. See https://crbug.com/826018
 -ProcessUtilTest.CloneAlternateDir

@@ -43,18 +43,12 @@ bool PathProviderFuchsia(int key, FilePath* result) {
     }
     case DIR_SOURCE_ROOT:
       *result = GetPackageRoot();
-      if (result->empty()) {
-        *result = FilePath("/system");
-      }
       return true;
     case DIR_CACHE:
       *result = FilePath("/data");
       return true;
     case DIR_ASSETS:
       *result = GetPackageRoot();
-      if (result->empty()) {
-        return PathService::Get(DIR_EXE, result);
-      }
       return true;
   }
   return false;
