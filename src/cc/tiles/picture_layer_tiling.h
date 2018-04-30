@@ -136,14 +136,9 @@ class CC_EXPORT PictureLayerTiling {
   gfx::Size tiling_size() const { return tiling_data_.tiling_size(); }
   gfx::Rect live_tiles_rect() const { return live_tiles_rect_; }
   gfx::Size tile_size() const { return tiling_data_.max_texture_size(); }
-  // PictureLayerTilingSet uses the scale component of the raster transform
-  // as the key for indexing and sorting. In theory we can have multiple
-  // tilings with the same scale but different translation, but currently
-  // we only allow tilings with unique scale for the sake of simplicity.
-  float contents_scale_key() const { return raster_transform_.scale(); }
-  const gfx::AxisTransform2d& raster_transform() const {
-    return raster_transform_;
-  }
+  float contents_scale_key() const { return raster_transform_.scale().width(); }
+  const gfx::SizeF& raster_scales() const { return raster_transform_.scale(); }
+  const gfx::AxisTransform2d& raster_transform() const { return raster_transform_; }
   const TilingData* tiling_data() const { return &tiling_data_; }
 
   Tile* TileAt(int i, int j) const {
