@@ -37,7 +37,7 @@ class TestChannel : public Channel {
   MOCK_METHOD0(ShutDownImpl, void());
   MOCK_METHOD0(LeakHandle, void());
 
-  void Write(MessagePtr message) {}
+  void Write(MessagePtr message) override {}
 
  protected:
   ~TestChannel() override {}
