@@ -1889,7 +1889,7 @@ void BaseRenderingContext2D::InflateStrokeRect(FloatRect& rect) const {
   else if (GetState().GetLineCap() == kSquareCap)
     delta *= kRoot2;
 
-  rect.Inflate(delta);
+  rect.Inflate(clampTo<float>(delta));
 }
 
 bool BaseRenderingContext2D::imageSmoothingEnabled() const {
