@@ -163,13 +163,9 @@ public class ChildProcessLauncherHelper {
 
     private long mNativeChildProcessLauncherHelper;
 
-    // Controls the strong binding.
-    private boolean mForeground;
-    // Roughly true when process has a pending navigation and is waiting to be swapped
-    // in. Controls the initial binding, which is bound initially.
-    private boolean mBoostPriorityForPendingViews = true;
-    // Explicit signal from content embedder. Controls both strong and moderate bindings.
-    private @ChildProcessImportance int mImportance = ChildProcessImportance.NORMAL;
+    // This is the current computed importance from all the inputs from setPriority.
+    // The initial value is MODERATE since a newly created connection has moderate bindings.
+    private @ChildProcessImportance int mEffectiveImportance = ChildProcessImportance.MODERATE;
 
     @CalledByNative
     private static FileDescriptorInfo makeFdInfo(
@@ -476,17 +472,27 @@ public class ChildProcessLauncherHelper {
             boostForPendingViews = false;
         }
 
+        @ChildProcessImportance
+        int newEffectiveImportance;
+        if ((foreground && frameDepth == 0) || importance == ChildProcessImportance.IMPORTANT) {
+            newEffectiveImportance = ChildProcessImportance.IMPORTANT;
+        } else if ((foreground && frameDepth > 0)
+                || importance == ChildProcessImportance.MODERATE) {
+            newEffectiveImportance = ChildProcessImportance.MODERATE;
+        } else {
+            newEffectiveImportance = ChildProcessImportance.NORMAL;
+        }
+
         // Add first and remove second.
-        if (!mForeground && foreground) {
-            connection.addStrongBinding();
+        if (newEffectiveImportance == ChildProcessImportance.IMPORTANT
+                && mEffectiveImportance != ChildProcessImportance.IMPORTANT) {
             BindingManager manager = getBindingManager();
             if (mUseBindingManager && manager != null) {
                 manager.increaseRecency(connection);
             }
         }
-        if (!mBoostPriorityForPendingViews && boostForPendingViews) connection.addModerateBinding();
-        if (mImportance != importance) {
-            switch (importance) {
+        if (mEffectiveImportance != newEffectiveImportance) {
+            switch (newEffectiveImportance) {
                 case ChildProcessImportance.NORMAL:
                     // Nothing to add.
                     break;
@@ -504,17 +510,12 @@ public class ChildProcessLauncherHelper {
             }
         }
 
-        if (mForeground && !foreground) connection.removeStrongBinding();
-        if (mBoostPriorityForPendingViews && !boostForPendingViews) {
-            connection.removeModerateBinding();
-        }
-
         if (mRanking != null) {
             mRanking.updateConnection(connection, foreground, frameDepth, importance);
         }
 
-        if (mImportance != importance) {
-            switch (mImportance) {
+        if (mEffectiveImportance != newEffectiveImportance) {
+            switch (mEffectiveImportance) {
                 case ChildProcessImportance.NORMAL:
                     // Nothing to remove.
                     break;
@@ -532,9 +533,7 @@ public class ChildProcessLauncherHelper {
             }
         }
 
-        mForeground = foreground;
-        mBoostPriorityForPendingViews = boostForPendingViews;
-        mImportance = importance;
+        mEffectiveImportance = newEffectiveImportance;
     }
 
     @CalledByNative
