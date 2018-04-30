@@ -32,21 +32,8 @@ cr.define('settings_sections_tests', function() {
 
     /** @override */
     setup(function() {
-      const initialSettings = {
-        isInKioskAutoPrintMode: false,
-        isInAppKioskMode: false,
-        thousandsDelimeter: ',',
-        decimalDelimeter: '.',
-        unitType: 1,
-        previewModifiable: true,
-        documentTitle: 'title',
-        documentHasSelection: true,
-        shouldPrintSelectionOnly: false,
-        printerName: 'FooDevice',
-        serializedAppStateStr: null,
-        serializedDefaultDestinationSelectionRulesStr: null
-      };
-
+      const initialSettings =
+          print_preview_test_utils.getDefaultInitialSettings();
       const nativeLayer = new print_preview.NativeLayerStub();
       nativeLayer.setInitialSettings(initialSettings);
       nativeLayer.setLocalDestinationCapabilities(

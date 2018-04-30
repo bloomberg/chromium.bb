@@ -396,3 +396,51 @@ TEST_F('PrintPreviewInvalidSettingsBrowserTest',
       invalid_settings_browsertest.TestNames
           .InvalidCertificateErrorReselectDestination);
 });
+
+PrintPreviewDestinationSelectTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/app.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../test_browser_proxy.js',
+      'native_layer_stub.js',
+      'print_preview_test_utils.js',
+      'destination_select_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return destination_select_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewDestinationSelectTest', 'SingleRecentDestination',
+    function() {
+  this.runMochaTest(destination_select_test.TestNames.SingleRecentDestination);
+});
+
+TEST_F('PrintPreviewDestinationSelectTest', 'MultipleRecentDestinations',
+    function() {
+  this.runMochaTest(
+      destination_select_test.TestNames.MultipleRecentDestinations);
+});
+
+TEST_F('PrintPreviewDestinationSelectTest', 'DefaultDestinationSelectionRules',
+    function() {
+  this.runMochaTest(
+      destination_select_test.TestNames.DefaultDestinationSelectionRules);
+});
+
+GEN('#if !defined(OS_CHROMEOS)');
+TEST_F('PrintPreviewDestinationSelectTest', 'SystemDefaultPrinterPolicy',
+    function() {
+  loadTimeData.overrideValues({useSystemDefaultPrinter: true});
+  this.runMochaTest(
+      destination_select_test.TestNames.SystemDefaultPrinterPolicy);
+});
+GEN('#endif');

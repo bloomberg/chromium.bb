@@ -344,21 +344,8 @@ cr.define('print_preview_test', function() {
     });
 
     setup(function() {
-      initialSettings = {
-        isInKioskAutoPrintMode: false,
-        isInAppKioskMode: false,
-        thousandsDelimeter: ',',
-        decimalDelimeter: '.',
-        unitType: 1,
-        previewModifiable: true,
-        documentTitle: 'title',
-        documentHasSelection: true,
-        shouldPrintSelectionOnly: false,
-        printerName: 'FooDevice',
-        serializedAppStateStr: null,
-        serializedDefaultDestinationSelectionRulesStr: null
-      };
-
+      initialSettings =
+          print_preview_test_utils.getDefaultInitialSettings();
       localDestinationInfos = [
         { printerName: 'FooName', deviceName: 'FooDevice' },
         { printerName: 'BarName', deviceName: 'BarDevice' },
@@ -1379,8 +1366,9 @@ cr.define('print_preview_test', function() {
       const initialSettingsSet = nativeLayer.whenCalled('getInitialSettings');
       return initialSettingsSet.then(function() {
         return nativeLayer.whenCalled('getPrinterCapabilities');
-      }).then(function(id) {
-        expectEquals('ID1', id);
+      }).then(function(args) {
+        expectEquals('ID1', args.destinationId);
+        expectEquals(print_preview.PrinterType.LOCAL, args.type);
         return nativeLayer.whenCalled('getPreview');
       }).then(function(previewArgs) {
         const ticket = JSON.parse(previewArgs.printTicket);
