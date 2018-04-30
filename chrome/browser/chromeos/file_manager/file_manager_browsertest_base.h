@@ -55,7 +55,7 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
 
  private:
   // Called during setup if needed, to create a drive integration service for
-  // the given Profile |profile|.
+  // the given |profile|. Caller owns the return result.
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile);
 
