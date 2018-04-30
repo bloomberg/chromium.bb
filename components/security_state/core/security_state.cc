@@ -19,6 +19,18 @@ namespace security_state {
 
 namespace {
 
+// Returns true if |url| is a blob: URL and its path parses as a GURL with a
+// nonsecure origin, and false otherwise. See
+// https://url.spec.whatwg.org/#origin.
+bool IsNonsecureBlobUrl(
+    const GURL& url,
+    const IsOriginSecureCallback& is_origin_secure_callback) {
+  if (!url.SchemeIs(url::kBlobScheme))
+    return false;
+  GURL inner_url(url.path());
+  return !is_origin_secure_callback.Run(inner_url);
+}
+
 // For nonsecure pages, sets |security_level| in |*security_info| based on the
 // provided information and the kMarkHttpAsFeature field trial. Also sets the
 // explanatory fields |incognito_downgraded_security_level| and
@@ -152,7 +164,8 @@ void SetSecurityLevelAndRelatedFields(
   if (!is_cryptographic_with_certificate) {
     if (!visible_security_state.is_error_page &&
         !is_origin_secure_callback.Run(url) &&
-        (url.IsStandard() || url.SchemeIs(url::kBlobScheme))) {
+        (url.IsStandard() ||
+         IsNonsecureBlobUrl(url, is_origin_secure_callback))) {
       SetSecurityLevelAndRelatedFieldsForNonSecureFieldTrial(
           visible_security_state.is_incognito,
           visible_security_state.is_error_page,
