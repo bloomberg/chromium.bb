@@ -36,11 +36,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kNewOverviewAnimations;
 // https://crbug.com/821608.
 ASH_PUBLIC_EXPORT extern const base::Feature kNewOverviewUi;
 
-// Enables swipe to close in overview mode.
-// TODO(sammiequon): Remove this after the feature is fully launched.
-// https://crbug.com/828646.
-ASH_PUBLIC_EXPORT extern const base::Feature kOverviewSwipeToClose;
-
 // Enables persistent window bounds in multi-displays scenario.
 // TODO(warx): Remove this after the feature is fully launched.
 // https://crbug.com/805046.
