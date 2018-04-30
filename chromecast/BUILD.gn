@@ -18,6 +18,10 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+declare_args() {
+  cast_test_extra_flags = ""
+}
+
 config("playready_config") {
   if (use_playready) {
     defines = [ "PLAYREADY_CDM_AVAILABLE" ]
@@ -365,7 +369,9 @@ cast_test_group_list("cast_test_lists") {
   runtime_deps_path = "$root_out_dir/tests/runtime_deps.json"
   run_list_path = "$root_out_dir/tests/run_test_list.txt"
 
-  additional_options = [ "--ozone-platform=headless --test-launcher-bot-mode" ]
+  additional_options = [
+    "--ozone-platform=headless --test-launcher-bot-mode $cast_test_extra_flags",
+  ]
 
   test_groups = [ ":cast_tests" ]
 
