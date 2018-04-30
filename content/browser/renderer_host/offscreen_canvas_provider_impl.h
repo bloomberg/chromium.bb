@@ -41,6 +41,12 @@ class CONTENT_EXPORT OffscreenCanvasProviderImpl
       const viz::FrameSinkId& frame_sink_id,
       viz::mojom::CompositorFrameSinkClientPtr client,
       viz::mojom::CompositorFrameSinkRequest request) override;
+  void CreateSimpleCompositorFrameSink(
+      const viz::FrameSinkId& parent_frame_sink_id,
+      const viz::FrameSinkId& frame_sink_id,
+      blink::mojom::OffscreenCanvasSurfaceClientPtr surface_client,
+      viz::mojom::CompositorFrameSinkClientPtr client,
+      viz::mojom::CompositorFrameSinkRequest request) override;
 
  private:
   friend class OffscreenCanvasProviderImplTest;

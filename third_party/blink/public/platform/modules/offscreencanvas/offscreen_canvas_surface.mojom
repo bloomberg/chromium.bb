@@ -27,4 +27,12 @@ interface OffscreenCanvasProvider {
   CreateCompositorFrameSink(viz.mojom.FrameSinkId frame_sink_id,
                             viz.mojom.CompositorFrameSinkClient client,
                             viz.mojom.CompositorFrameSink& sink);
+
+  // Ceate CompositorFrameSink directly in a single call (instead of going
+  // through both function above).
+  CreateSimpleCompositorFrameSink(viz.mojom.FrameSinkId parent_frame_sink_id,
+                                  viz.mojom.FrameSinkId frame_sink_id,
+                                  OffscreenCanvasSurfaceClient surface_client,
+                                  viz.mojom.CompositorFrameSinkClient client,
+                                  viz.mojom.CompositorFrameSink& sink);
 };
