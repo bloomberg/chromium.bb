@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/page_load_metrics/observers/ads_page_load_metrics_observer.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -20,6 +21,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
+
+namespace {
+const char kCrossOriginHistogramId[] =
+    "PageLoad.Clients.Ads.Google.FrameCounts.AdFrames.PerFrame.OriginStatus";
+}  // namespace
 
 class AdsPageLoadMetricsObserverBrowserTest
     : public subresource_filter::SubresourceFilterBrowserTest {
@@ -35,6 +41,63 @@ class AdsPageLoadMetricsObserverBrowserTest
 
   DISALLOW_COPY_AND_ASSIGN(AdsPageLoadMetricsObserverBrowserTest);
 };
+
+// Test that an embedded ad is same origin.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       OriginStatusMetricEmbedded) {
+  base::HistogramTester histogram_tester;
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/ads_observer/srcdoc_embedded_ad.html"));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  histogram_tester.ExpectUniqueSample(
+      kCrossOriginHistogramId,
+      AdsPageLoadMetricsObserver::AdOriginStatus::kSame, 1);
+}
+
+// Test that an empty embedded ad isn't reported at all.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       OriginStatusMetricEmbeddedEmpty) {
+  base::HistogramTester histogram_tester;
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/ads_observer/srcdoc_embedded_ad_empty.html"));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  histogram_tester.ExpectTotalCount(kCrossOriginHistogramId, 0);
+}
+
+// Test that an ad with the same origin as the main page is same origin.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       OriginStatusMetricSame) {
+  base::HistogramTester histogram_tester;
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/ads_observer/same_origin_ad.html"));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  histogram_tester.ExpectUniqueSample(
+      kCrossOriginHistogramId,
+      AdsPageLoadMetricsObserver::AdOriginStatus::kSame, 1);
+}
+
+// Test that an ad with a different origin as the main page is cross origin.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       OriginStatusMetricCross) {
+  // Note: Cannot navigate cross-origin without dynamically generating the URL.
+  base::HistogramTester histogram_tester;
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/iframe_blank.html"));
+  // Note that the initial iframe is not an ad, so the metric doesn't observe
+  // it initially as same origin.  However, on re-navigating to a cross
+  // origin site that has an ad at its origin, the ad on that page is cross
+  // origin from the original page.
+  NavigateIframeToURL(web_contents(), "test",
+                      embedded_test_server()->GetURL(
+                          "a.com", "/ads_observer/same_origin_ad.html"));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  histogram_tester.ExpectUniqueSample(
+      kCrossOriginHistogramId,
+      AdsPageLoadMetricsObserver::AdOriginStatus::kCross, 1);
+}
 
 // Test that a subframe that aborts (due to doc.write) doesn't cause a crash
 // if it continues to load resources.

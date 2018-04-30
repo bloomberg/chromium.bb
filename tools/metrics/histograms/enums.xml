@@ -8072,8 +8072,17 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="CrossOriginAd">
+  <obsolete>
+    Removed April 2018. New metric uses CrossOriginAdStatus.
+  </obsolete>
   <int value="0" label="Main Frame Origin same as Ad"/>
   <int value="1" label="Main Frame Origin differs from Ad"/>
+</enum>
+
+<enum name="CrossOriginAdStatus">
+  <int value="0" label="Ad Origin indeterminable"/>
+  <int value="1" label="Main Frame Origin same as Ad"/>
+  <int value="2" label="Main Frame Origin differs from Ad"/>
 </enum>
 
 <enum name="CrossOriginAutoplayResult">
