@@ -319,6 +319,17 @@ class SessionManagerClientImpl : public SessionManagerClient {
     return BlockingRetrievePolicy(descriptor, policy_out);
   }
 
+  void RetrievePolicy(const login_manager::PolicyDescriptor& descriptor,
+                      RetrievePolicyCallback callback) override {
+    CallRetrievePolicy(descriptor, std::move(callback));
+  }
+
+  RetrievePolicyResponseType BlockingRetrievePolicy(
+      const login_manager::PolicyDescriptor& descriptor,
+      std::string* policy_out) override {
+    return CallBlockingRetrievePolicy(descriptor, policy_out);
+  }
+
   void StoreDevicePolicy(const std::string& policy_blob,
                          VoidDBusMethodCallback callback) override {
     login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
@@ -339,6 +350,12 @@ class SessionManagerClientImpl : public SessionManagerClient {
                                      VoidDBusMethodCallback callback) override {
     login_manager::PolicyDescriptor descriptor = MakeChromePolicyDescriptor(
         login_manager::ACCOUNT_TYPE_DEVICE_LOCAL_ACCOUNT, account_name);
+    CallStorePolicy(descriptor, policy_blob, std::move(callback));
+  }
+
+  void StorePolicy(const login_manager::PolicyDescriptor& descriptor,
+                   const std::string& policy_blob,
+                   VoidDBusMethodCallback callback) override {
     CallStorePolicy(descriptor, policy_blob, std::move(callback));
   }
 
@@ -550,7 +567,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   // Blocking call to Session Manager to retrieve policy.
-  RetrievePolicyResponseType BlockingRetrievePolicy(
+  RetrievePolicyResponseType CallBlockingRetrievePolicy(
       const login_manager::PolicyDescriptor& descriptor,
       std::string* policy_out) {
     dbus::MethodCall method_call(
@@ -862,7 +879,7 @@ SessionManagerClient* SessionManagerClient::Create(
     return new SessionManagerClientImpl();
   DCHECK_EQ(FAKE_DBUS_CLIENT_IMPLEMENTATION, type);
   return new FakeSessionManagerClient(
-      FakeSessionManagerClient::USE_HOST_POLICY);
+      FakeSessionManagerClient::PolicyStorageType::kOnDisk);
 }
 
 }  // namespace chromeos

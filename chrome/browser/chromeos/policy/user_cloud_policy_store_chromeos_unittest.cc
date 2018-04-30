@@ -36,6 +36,7 @@ namespace em = enterprise_management;
 using RetrievePolicyResponseType =
     chromeos::SessionManagerClient::RetrievePolicyResponseType;
 
+using testing::_;
 using testing::AllOf;
 using testing::Eq;
 using testing::Mock;
@@ -43,7 +44,6 @@ using testing::Property;
 using testing::Return;
 using testing::SaveArg;
 using testing::SetArgPointee;
-using testing::_;
 
 namespace policy {
 
@@ -149,10 +149,10 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
 
   // Install an expectation on |observer_| for an error code.
   void ExpectError(CloudPolicyStore::Status error) {
-    EXPECT_CALL(observer_,
-                OnStoreError(AllOf(Eq(store_.get()),
-                                   Property(&CloudPolicyStore::status,
-                                            Eq(error)))));
+    EXPECT_CALL(
+        observer_,
+        OnStoreError(AllOf(Eq(store_.get()),
+                           Property(&CloudPolicyStore::status, Eq(error)))));
   }
 
   // Triggers a store_->Load() operation, handles the expected call to
@@ -324,7 +324,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreWithRotationValidationError) {
 
 TEST_F(UserCloudPolicyStoreChromeOSTest, StoreFail) {
   // Let store policy fail.
-  session_manager_client_->set_store_user_policy_success(false);
+  session_manager_client_->set_store_policy_success(false);
 
   ExpectError(CloudPolicyStore::STATUS_STORE_ERROR);
   store_->Store(policy_.policy());

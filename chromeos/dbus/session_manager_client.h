@@ -25,9 +25,10 @@ class Identification;
 }
 
 namespace login_manager {
+class PolicyDescriptor;
 class StartArcMiniContainerRequest;
 class UpgradeArcContainerRequest;
-}
+}  // namespace login_manager
 
 namespace chromeos {
 
@@ -187,6 +188,7 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
 
   // Fetches the device policy blob stored by the session manager.  Upon
   // completion of the retrieve attempt, we will call the provided callback.
+  // DEPRECATED, use RetrievePolicy() instead.
   virtual void RetrieveDevicePolicy(RetrievePolicyCallback callback) = 0;
 
   // Same as RetrieveDevicePolicy() but blocks until a reply is received, and
@@ -196,12 +198,14 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // considered acceptable (e.g. restarting the browser after a crash or after
   // a flag change).
   // TODO(crbug.com/160522): Get rid of blocking calls.
+  // DEPRECATED, use BlockingRetrievePolicy() instead.
   virtual RetrievePolicyResponseType BlockingRetrieveDevicePolicy(
       std::string* policy_out) = 0;
 
   // Fetches the user policy blob stored by the session manager for the given
   // |cryptohome_id|. Upon completion of the retrieve attempt, we will call the
   // provided callback.
+  // DEPRECATED, use RetrievePolicy() instead.
   virtual void RetrievePolicyForUser(
       const cryptohome::Identification& cryptohome_id,
       RetrievePolicyCallback callback) = 0;
@@ -213,18 +217,21 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // considered acceptable (e.g. restarting the browser after a crash or after
   // a flag change).
   // TODO(crbug.com/160522): Get rid of blocking calls.
+  // DEPRECATED, use BlockingRetrievePolicy() instead.
   virtual RetrievePolicyResponseType BlockingRetrievePolicyForUser(
       const cryptohome::Identification& cryptohome_id,
       std::string* policy_out) = 0;
 
   // Fetches the user policy blob for a hidden user home mount. |callback| is
   // invoked upon completition.
+  // DEPRECATED, use RetrievePolicy() instead.
   virtual void RetrievePolicyForUserWithoutSession(
       const cryptohome::Identification& cryptohome_id,
       RetrievePolicyCallback callback) = 0;
 
   // Fetches the policy blob associated with the specified device-local account
   // from session manager.  |callback| is invoked up on completion.
+  // DEPRECATED, use RetrievePolicy() instead.
   virtual void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_id,
       RetrievePolicyCallback callback) = 0;
@@ -236,8 +243,25 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // considered acceptable (e.g. restarting the browser after a crash or after
   // a flag change).
   // TODO(crbug.com/165022): Get rid of blocking calls.
+  // DEPRECATED, use BlockingRetrievePolicy() instead.
   virtual RetrievePolicyResponseType BlockingRetrieveDeviceLocalAccountPolicy(
       const std::string& account_id,
+      std::string* policy_out) = 0;
+
+  // Fetches a policy blob stored by the session manager. Invokes |callback|
+  // upon completion.
+  virtual void RetrievePolicy(const login_manager::PolicyDescriptor& descriptor,
+                              RetrievePolicyCallback callback) = 0;
+
+  // Same as RetrievePolicy() but blocks until a reply is
+  // received, and populates the policy synchronously. Returns SUCCESS when
+  // successful, or the corresponding error from enum in case of a failure.
+  // This may only be called in situations where blocking the UI thread is
+  // considered acceptable (e.g. restarting the browser after a crash or after
+  // a flag change).
+  // TODO(crbug.com/165022): Get rid of blocking calls.
+  virtual RetrievePolicyResponseType BlockingRetrievePolicy(
+      const login_manager::PolicyDescriptor& descriptor,
       std::string* policy_out) = 0;
 
   // Attempts to asynchronously store |policy_blob| as device policy.  Upon
@@ -259,6 +283,13 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
       const std::string& account_id,
       const std::string& policy_blob,
       VoidDBusMethodCallback callback) = 0;
+
+  // Sends a request to store a |policy_blob| to Session Manager. The storage
+  // location is determined by |descriptor|. The result of the operation is
+  // reported through |callback|.
+  virtual void StorePolicy(const login_manager::PolicyDescriptor& descriptor,
+                           const std::string& policy_blob,
+                           VoidDBusMethodCallback callback) = 0;
 
   // Returns whether session manager can be used to restart Chrome in order to
   // apply per-user session flags.

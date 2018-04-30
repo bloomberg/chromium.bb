@@ -152,7 +152,7 @@ TEST_F(DeviceSettingsServiceTest, StoreFailure) {
   EXPECT_EQ(DeviceSettingsService::STORE_KEY_UNAVAILABLE,
             device_settings_service_.status());
 
-  session_manager_client_.set_store_device_policy_success(false);
+  session_manager_client_.set_store_policy_success(false);
   device_settings_service_.Store(
       device_policy_.GetCopy(),
       base::Bind(&DeviceSettingsServiceTest::SetOperationCompleted,
