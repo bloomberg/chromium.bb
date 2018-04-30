@@ -7,7 +7,7 @@
 namespace base {
 namespace internal {
 
-WeakReference::Flag::Flag() : is_valid_(true) {
+WeakReference::Flag::Flag() {
   // Flags only become bound when checked for validity, or invalidated,
   // so that we can check that later validity/invalidation operations on
   // the same Flag take place on the same sequenced thread.
@@ -21,13 +21,17 @@ void WeakReference::Flag::Invalidate() {
   DCHECK(sequence_checker_.CalledOnValidSequence() || HasOneRef())
       << "WeakPtrs must be invalidated on the same sequenced thread.";
 #endif
-  is_valid_ = false;
+  invalidated_.Set();
 }
 
 bool WeakReference::Flag::IsValid() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_)
-      << "WeakPtrs must be checked on the same sequenced thread.";
-  return is_valid_;
+      << "Non-thread-safe WeakPtr operation performed on the wrong sequence.";
+  return !invalidated_.IsSet();
+}
+
+bool WeakReference::Flag::IsValidThreadSafe() const {
+  return !invalidated_.IsSet();
 }
 
 WeakReference::Flag::~Flag() = default;
@@ -42,8 +46,12 @@ WeakReference::WeakReference(WeakReference&& other) = default;
 
 WeakReference::WeakReference(const WeakReference& other) = default;
 
-bool WeakReference::is_valid() const {
+bool WeakReference::IsValid() const {
   return flag_ && flag_->IsValid();
+}
+
+bool WeakReference::IsValidThreadSafe() const {
+  return flag_ && flag_->IsValidThreadSafe();
 }
 
 WeakReferenceOwner::WeakReferenceOwner() = default;
@@ -68,17 +76,13 @@ void WeakReferenceOwner::Invalidate() {
 }
 
 WeakPtrBase::WeakPtrBase() = default;
-
 WeakPtrBase::~WeakPtrBase() = default;
-
 WeakPtrBase::WeakPtrBase(const WeakReference& ref, uintptr_t ptr)
     : ref_(ref), ptr_(ptr) {}
 
 WeakPtrFactoryBase::WeakPtrFactoryBase(uintptr_t ptr) : ptr_(ptr) {}
 
-WeakPtrFactoryBase::~WeakPtrFactoryBase() {
-  ptr_ = 0;
-}
+WeakPtrFactoryBase::~WeakPtrFactoryBase() = default;
 
 }  // namespace internal
 }  // namespace base

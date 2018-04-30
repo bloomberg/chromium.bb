@@ -48,13 +48,13 @@
 
 // ------------------------- IMPORTANT: Thread-safety -------------------------
 
-// Weak pointers may be passed safely between threads, but must always be
+// Weak pointers may be passed safely between sequences, but must always be
 // dereferenced and invalidated on the same SequencedTaskRunner otherwise
 // checking the pointer would be racey.
 //
 // To ensure correct use, the first time a WeakPtr issued by a WeakPtrFactory
 // is dereferenced, the factory and its WeakPtrs become bound to the calling
-// thread or current SequencedWorkerPool token, and cannot be dereferenced or
+// sequence or current SequencedWorkerPool token, and cannot be dereferenced or
 // invalidated on any other task runner. Bound WeakPtrs can still be handed
 // off to other task runners, e.g. to use to post tasks back to object on the
 // bound sequence.
@@ -64,8 +64,8 @@
 // destroyed, or new WeakPtr objects may be used, from a different sequence.
 //
 // Thus, at least one WeakPtr object must exist and have been dereferenced on
-// the correct thread to enforce that other WeakPtr objects will enforce they
-// are used on the desired thread.
+// the correct sequence to enforce that other WeakPtr objects will enforce they
+// are used on the desired sequence.
 
 #ifndef BASE_MEMORY_WEAK_PTR_H_
 #define BASE_MEMORY_WEAK_PTR_H_
@@ -78,6 +78,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
+#include "base/synchronization/atomic_flag.h"
 
 namespace base {
 
@@ -90,8 +91,13 @@ namespace internal {
 
 class BASE_EXPORT WeakReference {
  public:
-  // Although Flag is bound to a specific SequencedTaskRunner, it may be
-  // deleted from another via base::WeakPtr::~WeakPtr().
+  // Flag is more or less a ref-counted AtomicFlag. It's always set
+  // (invalidated) from the same sequence by WeakPtrFactory's WeakReferenceOwner
+  // but can be owned/freed by many threads by different WeakPtrs'
+  // WeakReference. It enforces slightly stricter threading requirements than
+  // AtomicFlag so that callers who call IsValid() verify they're on the proper
+  // sequence before using the underlying pointer as a result of that call
+  // (AtomicFlag::IsSet() doesn't have that requirement).
   class BASE_EXPORT Flag : public RefCountedThreadSafe<Flag> {
    public:
     Flag();
@@ -99,13 +105,21 @@ class BASE_EXPORT WeakReference {
     void Invalidate();
     bool IsValid() const;
 
+    // IsValidThreadSafe() is the same as IsValid() but doesn't enforce
+    // sequence-affinity. It can be used as an optimistic validity check but the
+    // underlying pointer shouldn't be used as a result of this returning
+    // true from any sequence other than the one bound to |sequence_checker_|
+    // as it may become invalid right after this call.
+    bool IsValidThreadSafe() const;
+
    private:
     friend class base::RefCountedThreadSafe<Flag>;
 
     ~Flag();
 
     SEQUENCE_CHECKER(sequence_checker_);
-    bool is_valid_;
+
+    AtomicFlag invalidated_;
   };
 
   WeakReference();
@@ -117,7 +131,8 @@ class BASE_EXPORT WeakReference {
   WeakReference& operator=(WeakReference&& other) = default;
   WeakReference& operator=(const WeakReference& other) = default;
 
-  bool is_valid() const;
+  bool IsValid() const;
+  bool IsValidThreadSafe() const;
 
  private:
   scoped_refptr<const Flag> flag_;
@@ -152,11 +167,16 @@ class BASE_EXPORT WeakPtrBase {
   WeakPtrBase& operator=(const WeakPtrBase& other) = default;
   WeakPtrBase& operator=(WeakPtrBase&& other) = default;
 
+  // Resets this specific WeakPtr instance (makes it invalid). This doesn't
+  // affect any copies of this WeakPtr.
+  // Deprecated: Prefer |my_weak_ptr = nullptr| to |my_weak_ptr.reset()|.
+  // Note: instances using reset() shouldn't be coupled with asynchronous usage
+  // of operator bool().
   void reset() {
-    // Resetting is only ever necessary on a valid pointer
+    // Resetting is only ever necessary on a valid pointer.
     // Checking validity has the side effect of verifying
     // we are on the right sequence.
-    if (ref_.is_valid()) {
+    if (ref_.IsValid()) {
       ref_ = internal::WeakReference();
       ptr_ = 0;
     }
@@ -167,9 +187,9 @@ class BASE_EXPORT WeakPtrBase {
 
   WeakReference ref_;
 
-  // This pointer is only valid when ref_.is_valid() is true.  Otherwise, its
-  // value is undefined (as opposed to nullptr). On the flipside, if the pointer
-  // is nullptr, this WeakPtr is guaranteed to be invalid."
+  // This pointer is only valid when ref_.is_valid() is true. Otherwise, its
+  // value is undefined (as opposed to 0). On the flipside, if the pointer
+  // is nullptr, this WeakPtr is guaranteed to be invalid.
   uintptr_t ptr_ = 0;
 };
 
@@ -237,6 +257,7 @@ class WeakPtr : public internal::WeakPtrBase {
     T* t = reinterpret_cast<U*>(other.ptr_);
     ptr_ = reinterpret_cast<uintptr_t>(t);
   }
+
   template <typename U>
   WeakPtr(WeakPtr<U>&& other) : WeakPtrBase(std::move(other)) {
     // Need to cast from U* to T* to do pointer adjustment in case of multiple
@@ -246,7 +267,7 @@ class WeakPtr : public internal::WeakPtrBase {
   }
 
   T* get() const {
-    return ref_.is_valid() ? reinterpret_cast<T*>(ptr_) : nullptr;
+    return ref_.IsValid() ? reinterpret_cast<T*>(ptr_) : nullptr;
   }
 
   T& operator*() const {
@@ -259,10 +280,16 @@ class WeakPtr : public internal::WeakPtrBase {
   }
 
   // Allow conditionals to test validity, e.g. if (weak_ptr) {...};
-  // We test for a null pointer value first (which can be invalidated
-  // by reset()). Direct access of ptr_ is favored to facilitate
-  // detection of improper access by TSAN
-  explicit operator bool() const { return ptr_ != 0 && ref_.is_valid(); }
+  // This call is thread-safe except on instances which use the deprecated
+  // reset() method. It is only safe to derefence |weak_ptr| after making this
+  // check if made from the sequence it is bound to (otherwise this call may
+  // only be used as an optimistic validity check).
+  explicit operator bool() const {
+    // This tests for a null pointer value first (which can be invalidated by
+    // reset()). Direct access of |ptr_| is favored to facilitate detection of
+    // improper access by TSAN.
+    return ptr_ && ref_.IsValidThreadSafe();
+  }
 
  private:
   friend class internal::SupportsWeakPtrBase;
