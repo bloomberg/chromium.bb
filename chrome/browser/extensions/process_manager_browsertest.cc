@@ -1589,8 +1589,13 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, HostedAppAlerts) {
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  GURL hosted_app_url("http://localhost/extensions/hosted_app/main.html");
-  NavigateToURL(hosted_app_url);
+  GURL hosted_app_url(embedded_test_server()->GetURL(
+      "localhost", "/extensions/hosted_app/main.html"));
+  {
+    content::TestNavigationObserver observer(tab);
+    NavigateToURL(hosted_app_url);
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+  }
   EXPECT_EQ(hosted_app_url, tab->GetLastCommittedURL());
   ProcessManager* pm = ProcessManager::Get(profile());
   EXPECT_EQ(extension, pm->GetExtensionForWebContents(tab));
