@@ -8,6 +8,7 @@
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/null_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"

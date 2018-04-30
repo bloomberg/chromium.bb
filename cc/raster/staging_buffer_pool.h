@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/memory_coordinator_client.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_provider.h"

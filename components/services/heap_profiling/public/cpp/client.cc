@@ -6,6 +6,7 @@
 
 #include "base/allocator/allocator_interception_mac.h"
 #include "base/files/platform_file.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/trace_event/malloc_dump_provider.h"

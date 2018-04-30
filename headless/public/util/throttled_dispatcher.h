@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/single_thread_task_runner.h"
 #include "headless/public/util/expedited_dispatcher.h"
 
 namespace headless {

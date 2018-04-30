@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "media/audio/audio_manager_base.h"
 
 namespace chromecast {

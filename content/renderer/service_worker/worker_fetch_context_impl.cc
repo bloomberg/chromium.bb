@@ -5,6 +5,7 @@
 #include "content/renderer/service_worker/worker_fetch_context_impl.h"
 
 #include "base/feature_list.h"
+#include "base/single_thread_task_runner.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/frame_messages.h"

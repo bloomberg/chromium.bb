@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/browser_state/off_the_record_chrome_browser_state_impl.h"
 
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/proxy_config/ios/proxy_service_factory.h"
 #include "components/proxy_config/pref_proxy_config_tracker.h"

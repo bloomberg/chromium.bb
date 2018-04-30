@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "components/feedback/feedback_uploader.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 

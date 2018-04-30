@@ -6,6 +6,7 @@
 #define STORAGE_BROWSER_TEST_TEST_FILE_SYSTEM_CONTEXT_H_
 
 #include "base/files/file_path.h"
+#include "base/single_thread_task_runner.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
 namespace storage {

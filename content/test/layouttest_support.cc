@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"

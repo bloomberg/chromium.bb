@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_MAIN_VIZ_MAIN_IMPL_H_
 
 #include "base/power_monitor/power_monitor.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "gpu/ipc/in_process_command_buffer.h"

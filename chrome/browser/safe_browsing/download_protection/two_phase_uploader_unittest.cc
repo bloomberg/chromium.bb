@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "chrome/browser/safe_browsing/local_two_phase_testserver.h"

@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "base/single_thread_task_runner.h"
 #include "base/time/default_tick_clock.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/public/v8_idle_task_runner.h"

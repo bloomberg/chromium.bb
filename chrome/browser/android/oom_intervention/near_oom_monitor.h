@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/process/process_metrics.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 

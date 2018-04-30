@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_VISUAL_VIEWPORT_H_
 
 #include <memory>
+#include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_scrollbar.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/core_export.h"

@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"

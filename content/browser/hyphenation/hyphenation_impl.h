@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_HYPHENATION_HYPHENATION_IMPL_H_
 
 #include "base/macros.h"
+#include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/blink/public/platform/modules/hyphenation/hyphenation.mojom.h"
 

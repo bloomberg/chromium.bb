@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRM_HOST_DRM_DEVICE_CONNECTOR_H_
 #define UI_OZONE_PLATFORM_DRM_HOST_DRM_DEVICE_CONNECTOR_H_
 
+#include "base/single_thread_task_runner.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/interfaces/device_cursor.mojom.h"
 #include "ui/ozone/public/interfaces/drm_device.mojom.h"

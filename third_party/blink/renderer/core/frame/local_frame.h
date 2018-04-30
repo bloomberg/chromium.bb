@@ -32,6 +32,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/mojom/loader/prefetch_url_loader_service.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/ax_object_cache.h"

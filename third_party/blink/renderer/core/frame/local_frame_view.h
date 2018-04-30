@@ -29,6 +29,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/shape_properties.h"
 #include "third_party/blink/public/platform/web_display_mode.h"
 #include "third_party/blink/public/platform/web_rect.h"

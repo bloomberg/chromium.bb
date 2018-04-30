@@ -4,6 +4,7 @@
 
 #include "ios/web/public/global_state/ios_global_state_configuration.h"
 
+#include "base/single_thread_task_runner.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web_view/internal/web_view_global_state_util.h"
 

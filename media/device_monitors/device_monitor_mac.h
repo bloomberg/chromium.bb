@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/media_export.h"

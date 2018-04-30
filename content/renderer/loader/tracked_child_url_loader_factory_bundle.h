@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_LOADER_TRACKED_CHILD_URL_LOADER_FACTORY_BUNDLE_H_
 #define CONTENT_RENDERER_LOADER_TRACKED_CHILD_URL_LOADER_FACTORY_BUNDLE_H_
 
+#include "base/sequenced_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 

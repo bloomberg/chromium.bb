@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/observer_list_threadsafe.h"
+#include "base/single_thread_task_runner.h"
 #include "chromecast/device/bluetooth/le/gatt_client_manager.h"
 #include "chromecast/device/bluetooth/shlib/gatt_client.h"
 

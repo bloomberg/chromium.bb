@@ -4,6 +4,7 @@
 
 #include "content/renderer/worker_thread_message_filter.h"
 
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/renderer/worker_thread_registry.h"

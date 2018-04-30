@@ -35,6 +35,7 @@
 #include <memory>
 #include "base/location.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"

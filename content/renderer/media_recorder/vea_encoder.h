@@ -8,6 +8,7 @@
 #include <queue>
 
 #include "base/containers/queue.h"
+#include "base/single_thread_task_runner.h"
 #include "content/renderer/media_recorder/video_track_recorder.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/size.h"

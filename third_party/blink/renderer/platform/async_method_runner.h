@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_ASYNC_METHOD_RUNNER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ASYNC_METHOD_RUNNER_H_
 
+#include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"

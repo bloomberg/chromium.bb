@@ -7,6 +7,7 @@
 
 #include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "media/capture/video/chromeos/camera_device_delegate.h"
 #include "media/capture/video/chromeos/mojo/camera3.mojom.h"
 #include "media/capture/video_capture_types.h"

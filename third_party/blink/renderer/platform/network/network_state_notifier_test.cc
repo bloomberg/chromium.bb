@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 
 #include "base/optional.h"
+#include "base/single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_connection_type.h"

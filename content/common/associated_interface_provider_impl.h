@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "content/common/associated_interfaces.mojom.h"
 
 namespace content {

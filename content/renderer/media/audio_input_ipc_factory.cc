@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/renderer/media/mojo_audio_input_ipc.h"
 #include "content/renderer/render_frame_impl.h"

@@ -12,6 +12,7 @@
 #include <unordered_set>
 
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/hit_report.h"
 #include "components/safe_browsing/db/v4_database.h"

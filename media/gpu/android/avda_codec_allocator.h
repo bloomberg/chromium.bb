@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
+#include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"

@@ -7,6 +7,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/threading/thread.h"
 #include "third_party/blink/public/platform/scheduler/child/webthread_base.h"

@@ -40,6 +40,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/power_monitor/power_observer.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/media/media_devices_manager.h"

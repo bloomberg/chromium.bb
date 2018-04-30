@@ -33,6 +33,7 @@
 
 #include <memory>
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/cors.mojom-blink.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"

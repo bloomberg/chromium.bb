@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 #include "components/password_manager/core/browser/password_store.h"
 
 namespace password_manager {

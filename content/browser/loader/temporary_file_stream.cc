@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/files/file_proxy.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/file_stream.h"

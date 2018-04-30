@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/fetch/fetch_manager.h"
 
 #include <memory>
+#include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/web_cors.h"
 #include "third_party/blink/public/platform/web_url_request.h"

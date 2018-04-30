@@ -6,6 +6,7 @@
 
 #include "base/format_macros.h"
 #include "base/process/process_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/download/downloader/in_progress/download_entry.h"
