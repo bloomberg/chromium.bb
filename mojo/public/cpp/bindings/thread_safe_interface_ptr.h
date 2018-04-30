@@ -192,7 +192,7 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
         response_->event.Signal();
     }
 
-    bool Accept(Message* message) {
+    bool Accept(Message* message) override {
       response_->message = std::move(*message);
       response_->received = true;
       response_->event.Signal();
