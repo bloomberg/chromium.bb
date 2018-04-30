@@ -1286,7 +1286,6 @@ jumbo_source_set("browser") {
     "renderer_host/input/synthetic_touchscreen_pinch_gesture.h",
     "renderer_host/input/tap_suppression_controller.cc",
     "renderer_host/input/tap_suppression_controller.h",
-    "renderer_host/input/tap_suppression_controller_client.h",
     "renderer_host/input/timeout_monitor.cc",
     "renderer_host/input/timeout_monitor.h",
     "renderer_host/input/touch_action_filter.cc",

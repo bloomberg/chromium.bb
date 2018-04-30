@@ -26,7 +26,6 @@ GestureEventQueue::Config::Config() {
 
 GestureEventQueue::GestureEventQueue(
     GestureEventQueueClient* client,
-    TouchpadTapSuppressionControllerClient* touchpad_client,
     FlingControllerClient* fling_client,
     const Config& config)
     : client_(client),
@@ -37,11 +36,9 @@ GestureEventQueue::GestureEventQueue(
           base::FeatureList::IsEnabled(features::kVsyncAlignedInputEvents)),
       debounce_interval_(config.debounce_interval),
       fling_controller_(this,
-                        touchpad_client,
                         fling_client,
                         config.fling_config) {
   DCHECK(client);
-  DCHECK(touchpad_client);
   DCHECK(fling_client);
 }
 

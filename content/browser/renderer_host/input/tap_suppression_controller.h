@@ -12,8 +12,6 @@
 
 namespace content {
 
-class TapSuppressionControllerClient;
-
 // The core controller for suppression of taps (touchpad or touchscreen)
 // immediately following a GestureFlingCancel event (caused by the same tap).
 // Only taps of sufficient speed and within a specified time window after a
@@ -29,27 +27,19 @@ class CONTENT_EXPORT TapSuppressionController {
     // The maximum time allowed between a GestureFlingCancel and its
     // corresponding tap down.
     base::TimeDelta max_cancel_to_down_time;
-
-    // The maximum time allowed between a single tap's down and up events.
-    base::TimeDelta max_tap_gap_time;
   };
 
-  TapSuppressionController(TapSuppressionControllerClient* client,
-                           const Config& config);
+  TapSuppressionController(const Config& config);
   virtual ~TapSuppressionController();
 
-  // Should be called whenever a GestureFlingCancel event is received.
-  void GestureFlingCancel();
-
-  // Should be called whenever an ACK for a GestureFlingCancel event is
-  // received. |processed| is true when the GestureFlingCancel actually stopped
-  // a fling and therefore should suppress the forwarding of the following tap.
-  void GestureFlingCancelAck(bool processed);
+  // Should be called whenever a GestureFlingCancel actually stopped a fling and
+  // therefore the controller should suppress the forwarding of the following
+  // tap.
+  void GestureFlingCancelStoppedFling();
 
   // Should be called whenever a tap down (touchpad or touchscreen) is received.
-  // Returns true if the tap down should be deferred. The caller is responsible
-  // for keeping the event for later release, if needed.
-  bool ShouldDeferTapDown();
+  // Returns true if the tap down should be suppressed.
+  bool ShouldSuppressTapDown();
 
   // Should be called whenever a tap ending event is received. Returns true if
   // the tap event should be suppressed.
@@ -57,33 +47,23 @@ class CONTENT_EXPORT TapSuppressionController {
 
  protected:
   virtual base::TimeTicks Now();
-  virtual void StartTapDownTimer(const base::TimeDelta& delay);
-  virtual void StopTapDownTimer();
-  void TapDownTimerExpired();
-
  private:
   friend class MockTapSuppressionController;
 
   enum State {
     DISABLED,
     NOTHING,
-    GFC_IN_PROGRESS,
-    TAP_DOWN_STASHED,
     LAST_CANCEL_STOPPED_FLING,
-    // When the stashed TapDown event is dropped or forwarded due to tap down
-    // timer expiration, the controller enters the SUPPRESSING_TAPS state.
-    // This state shows that the controller will suppress LongTap,
-    // TwoFingerTap, and TapCancel gesture events until the next tapDown event
-    // arrives.
+    // When the stashed TapDown event is dropped, the controller enters the
+    // SUPPRESSING_TAPS state. This state shows that the controller will
+    // suppress LongTap, TwoFingerTap, and TapCancel gesture events until the
+    // next tapDown event arrives.
     SUPPRESSING_TAPS,
   };
 
-  TapSuppressionControllerClient* client_;
-  base::OneShotTimer tap_down_timer_;
   State state_;
 
   base::TimeDelta max_cancel_to_down_time_;
-  base::TimeDelta max_tap_gap_time_;
 
   // TODO(rjkroege): During debugging, the event times did not prove reliable.
   // Replace the use of base::TimeTicks with an accurate event time when they

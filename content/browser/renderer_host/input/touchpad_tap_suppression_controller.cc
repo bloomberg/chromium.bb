@@ -7,46 +7,18 @@
 namespace content {
 
 TouchpadTapSuppressionController::TouchpadTapSuppressionController(
-    TouchpadTapSuppressionControllerClient* client,
     const TapSuppressionController::Config& config)
-    : client_(client), controller_(this, config) {
-}
+    : TapSuppressionController(config) {}
 
 TouchpadTapSuppressionController::~TouchpadTapSuppressionController() {}
 
-void TouchpadTapSuppressionController::GestureFlingCancel() {
-  controller_.GestureFlingCancel();
-}
-
-void TouchpadTapSuppressionController::GestureFlingCancelAck(bool processed) {
-  controller_.GestureFlingCancelAck(processed);
-}
-
-bool TouchpadTapSuppressionController::ShouldDeferMouseDown(
+bool TouchpadTapSuppressionController::ShouldSuppressMouseDown(
     const MouseEventWithLatencyInfo& event) {
-  bool should_defer = controller_.ShouldDeferTapDown();
-  if (should_defer)
-    stashed_mouse_down_ = event;
-  return should_defer;
+  return ShouldSuppressTapDown();
 }
 
 bool TouchpadTapSuppressionController::ShouldSuppressMouseUp() {
-  return controller_.ShouldSuppressTapEnd();
-}
-
-void TouchpadTapSuppressionController::DropStashedTapDown() {
-}
-
-void TouchpadTapSuppressionController::ForwardStashedGestureEvents() {
-  // Mouse downs are not handled by gesture event filter; so, they are
-  // immediately forwarded to the renderer.
-  client_->SendMouseEventImmediately(stashed_mouse_down_);
-}
-
-void TouchpadTapSuppressionController::ForwardStashedTapDown() {
-  // Mouse downs are not handled by gesture event filter; so, they are
-  // immediately forwarded to the renderer.
-  client_->SendMouseEventImmediately(stashed_mouse_down_);
+  return ShouldSuppressTapEnd();
 }
 
 }  // namespace content
