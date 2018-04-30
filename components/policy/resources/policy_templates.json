@@ -2180,7 +2180,7 @@
       },
       'example_value': False,
       'id': 375,
-      'caption': '''Safe Browsing enable state for trusted sources''',
+      'caption': '''Enable Safe Browsing for trusted sources''',
       'tags': ['local-data-access'],
       'desc': '''Identify if <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can allow download without Safe Browsing checks when it's from a trusted source.
 
