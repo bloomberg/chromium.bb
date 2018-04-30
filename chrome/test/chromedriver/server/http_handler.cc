@@ -142,12 +142,23 @@ HttpHandler::HttpHandler(
       CommandMapping(
           kGet, "session/:sessionId/window/rect",
           WrapToCommand("GetWindowRect", base::Bind(&ExecuteGetWindowRect))),
+
+      // minimize/maximize oss version
       CommandMapping(
           kPost, "session/:sessionId/window/:windowHandle/maximize",
           WrapToCommand("MaximizeWindow", base::Bind(&ExecuteMaximizeWindow))),
       CommandMapping(
           kPost, "session/:sessionId/window/:windowHandle/minimize",
           WrapToCommand("MinimizeWindow", base::Bind(&ExecuteMinimizeWindow))),
+
+      // minimize/maximize w3c version
+      CommandMapping(
+          kPost, "session/:sessionId/window/maximize",
+          WrapToCommand("MaximizeWindow", base::Bind(&ExecuteMaximizeWindow))),
+      CommandMapping(
+          kPost, "session/:sessionId/window/minimize",
+          WrapToCommand("MinimizeWindow", base::Bind(&ExecuteMinimizeWindow))),
+
       CommandMapping(kPost, "session/:sessionId/window/fullscreen",
                      WrapToCommand("FullscreenWindow",
                                    base::Bind(&ExecuteFullScreenWindow))),
