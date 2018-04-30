@@ -65,7 +65,7 @@
     });
   }
 
-  function waitForScrollAndCheck() {
+  function waitForScroll() {
     const MAX_FRAME = 500;
     return new Promise((resolve, reject) => {
       function tick(frames) {
@@ -80,26 +80,28 @@
     });
   }
 
-  window.onload = function() {
+  // Do a rAF before actually starting the test to ensure we leave enough time
+  // to commit layers to the compositor before we start scrolling.
+  window.onload = function() { requestAnimationFrame(() => {
     var rootscroller = document.querySelector('#rootscroller');
     document.rootScroller = rootscroller;
 
     promise_test( t => {
       const GESTURE_SOURCE_TYPE = 2; // MOUSE_INPUT from synthetic_gesture_params.h
       return scrollDown(500, 100, 100, GESTURE_SOURCE_TYPE, 1000)
-          .then(waitForScrollAndCheck)
-          .then(() => {
-            if (window.internals) {
-              assert_equals(window.internals.effectiveRootScroller(document),
-                            rootscroller,
-                            "Failed to set root scroller");
-            }
+        .then(waitForScroll)
+        .then(() => {
+          if (window.internals) {
+            assert_equals(window.internals.effectiveRootScroller(document),
+                          rootscroller,
+                          "Failed to set root scroller");
+          }
 
-            assert_greater_than(
-                document.scrollingElement.scrollTop, 0, "Document must be scrolled");
-            assert_equals(
-                rootscroller.scrollTop, 0, "RootScroller must not be scrolled");
-          });
+          assert_greater_than(
+              document.scrollingElement.scrollTop, 0, "Document must be scrolled");
+          assert_equals(
+              rootscroller.scrollTop, 0, "RootScroller must not be scrolled");
+        });
     }, "Gesture scrolling should scroll document.");
-  }
+  });}
 </script>
