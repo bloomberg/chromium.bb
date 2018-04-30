@@ -496,6 +496,23 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, WebContentsPrefsOpenInChrome) {
       browser()->tab_strip_model()->GetActiveWebContents());
 }
 
+// Tests that creating bookmark apps is disabled in incognito.
+IN_PROC_BROWSER_TEST_P(HostedAppTest, CreateShortcutDisabledInIncognito) {
+  ASSERT_TRUE(https_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  Browser* incognito_browser =
+      OpenURLOffTheRecord(profile(), GetSecureAppURL());
+  auto app_menu_model =
+      std::make_unique<AppMenuModel>(nullptr, incognito_browser);
+  app_menu_model->Init();
+  ui::MenuModel* model = app_menu_model.get();
+  int index = -1;
+  EXPECT_TRUE(app_menu_model->GetModelAndIndexForCommandId(
+      IDC_CREATE_HOSTED_APP, &model, &index));
+  EXPECT_FALSE(model->IsEnabledAt(index));
+}
+
 // Check that the location bar is shown correctly.
 IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBar) {
   ASSERT_TRUE(https_server()->Start());
