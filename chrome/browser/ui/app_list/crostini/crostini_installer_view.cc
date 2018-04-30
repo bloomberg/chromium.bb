@@ -102,7 +102,6 @@ bool CrostiniInstallerView::Accept() {
   progress_bar_ = new views::ProgressBar();
   AddChildView(progress_bar_);
 
-  GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
   StepProgress();
 
   // Kick off the Crostini Restart sequence. We will be added as an observer.
@@ -142,7 +141,8 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical,
-      provider->GetInsetsMetric(views::InsetsMetric::INSETS_DIALOG)));
+      provider->GetInsetsMetric(views::InsetsMetric::INSETS_DIALOG),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
   set_margins(provider->GetDialogInsetsForContentType(
       views::DialogContentType::TEXT, views::DialogContentType::TEXT));
 
@@ -173,6 +173,7 @@ void CrostiniInstallerView::StepProgress() {
   }
   SetMessageLabel();
   DialogModelChanged();
+  GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
 }
 
 void CrostiniInstallerView::HandleError(const base::string16& error_message) {
