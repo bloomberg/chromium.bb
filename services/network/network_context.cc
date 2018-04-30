@@ -28,9 +28,11 @@
 #include "net/dns/mapped_host_resolver.h"
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
+#include "net/http/failing_http_transaction_factory.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_auth_scheme.h"
+#include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_server_properties_manager.h"
@@ -663,6 +665,21 @@ void NetworkContext::AddHSTSForTesting(const std::string& host,
   net::TransportSecurityState* state =
       url_request_context_->transport_security_state();
   state->AddHSTS(host, expiry, include_subdomains);
+  std::move(callback).Run();
+}
+
+void NetworkContext::SetFailingHttpTransactionForTesting(
+    int32_t error_code,
+    SetFailingHttpTransactionForTestingCallback callback) {
+  net::HttpCache* cache(
+      url_request_context_->http_transaction_factory()->GetCache());
+  DCHECK(cache);
+  auto factory = std::make_unique<net::FailingHttpTransactionFactory>(
+      cache->GetSession(), static_cast<net::Error>(error_code));
+
+  // Throw away old version; since this is a a browser test, we don't
+  // need to restore the old state.
+  cache->SetHttpNetworkTransactionFactoryForTesting(std::move(factory));
   std::move(callback).Run();
 }
 

@@ -156,6 +156,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                          base::Time expiry,
                          bool include_subdomains,
                          AddHSTSForTestingCallback callback) override;
+  void SetFailingHttpTransactionForTesting(
+      int32_t rv,
+      SetFailingHttpTransactionForTestingCallback callback) override;
 
   // Called when the associated NetworkService is going away. Guaranteed to
   // destroy NetworkContext's URLRequestContext.

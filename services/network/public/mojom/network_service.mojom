@@ -326,6 +326,10 @@ interface NetworkContext {
   AddHSTSForTesting(string host,
                     mojo_base.mojom.Time expiry,
                     bool include_subdomains) => ();
+
+  [Sync]
+  // Will force the transaction to fail with the given error code.
+  SetFailingHttpTransactionForTesting(int32 rv) => ();
 };
 
 // The content/browser implementation of this SSLPrivateKey interface wraps the

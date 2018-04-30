@@ -418,19 +418,6 @@ class TestFailProvisionalLoadObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(TestFailProvisionalLoadObserver);
 };
 
-void InterceptNetworkTransactions(net::URLRequestContextGetter* getter,
-                                  net::Error error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  net::HttpCache* cache(
-      getter->GetURLRequestContext()->http_transaction_factory()->GetCache());
-  DCHECK(cache);
-  std::unique_ptr<net::HttpTransactionFactory> factory(
-      new net::FailingHttpTransactionFactory(cache->GetSession(), error));
-  // Throw away old version; since this is a a browser test, we don't
-  // need to restore the old state.
-  cache->SetHttpNetworkTransactionFactoryForTesting(std::move(factory));
-}
-
 // An interceptor that serves LinkDoctor responses.  It also notifies the
 // provided owner every time there is a new request.
 class LinkDoctorInterceptor : public net::URLRequestInterceptor {
@@ -1063,13 +1050,14 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, StaleCacheStatus) {
 
   // Reload same URL after forcing an error from the the network layer;
   // confirm that the error page is told the cached copy exists.
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
-      browser()->profile()->GetRequestContext();
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&InterceptNetworkTransactions,
-                     base::RetainedRef(url_request_context_getter),
-                     net::ERR_FAILED));
+  {
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    content::StoragePartition* partition =
+        content::BrowserContext::GetDefaultStoragePartition(
+            browser()->profile());
+    partition->GetNetworkContext()->SetFailingHttpTransactionForTesting(
+        net::ERR_FAILED);
+  }
 
   // With no navigation corrections to load, there's only one navigation.
   ui_test_utils::NavigateToURL(browser(), test_url);
@@ -1452,13 +1440,14 @@ IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
 
   // Reload same URL after forcing an error from the the network layer;
   // confirm that the error page is told the cached copy exists.
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
-      browser()->profile()->GetRequestContext();
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&InterceptNetworkTransactions,
-                     base::RetainedRef(url_request_context_getter),
-                     net::ERR_CONNECTION_FAILED));
+  {
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    content::StoragePartition* partition =
+        content::BrowserContext::GetDefaultStoragePartition(
+            browser()->profile());
+    partition->GetNetworkContext()->SetFailingHttpTransactionForTesting(
+        net::ERR_CONNECTION_FAILED);
+  }
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), test_url, 2);
