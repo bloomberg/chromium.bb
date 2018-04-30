@@ -11,6 +11,7 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/wayland_data_device.h"
+#include "ui/ozone/platform/wayland/wayland_data_device_manager.h"
 #include "ui/ozone/platform/wayland/wayland_data_source.h"
 #include "ui/ozone/platform/wayland/wayland_keyboard.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
@@ -41,6 +42,7 @@ class WaylandConnection : public PlatformEventSource,
   wl_shm* shm() { return shm_.get(); }
   xdg_shell* shell() { return shell_.get(); }
   zxdg_shell_v6* shell_v6() { return shell_v6_.get(); }
+  wl_seat* seat() { return seat_.get(); }
   wl_data_device* data_device() { return data_device_->data_device(); }
 
   WaylandWindow* GetWindow(gfx::AcceleratedWidget widget);
@@ -111,7 +113,6 @@ class WaylandConnection : public PlatformEventSource,
   std::map<gfx::AcceleratedWidget, WaylandWindow*> window_map_;
 
   wl::Object<wl_display> display_;
-  wl::Object<wl_data_device_manager> data_device_manager_;
   wl::Object<wl_registry> registry_;
   wl::Object<wl_compositor> compositor_;
   wl::Object<wl_seat> seat_;
@@ -119,6 +120,7 @@ class WaylandConnection : public PlatformEventSource,
   wl::Object<xdg_shell> shell_;
   wl::Object<zxdg_shell_v6> shell_v6_;
 
+  std::unique_ptr<WaylandDataDeviceManager> data_device_manager_;
   std::unique_ptr<WaylandDataDevice> data_device_;
   std::unique_ptr<WaylandDataSource> data_source_;
   std::unique_ptr<WaylandPointer> pointer_;

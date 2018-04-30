@@ -142,8 +142,7 @@ void WaylandConnection::OfferClipboardData(
     const ClipboardDelegate::DataMap& data_map,
     ClipboardDelegate::OfferDataClosure callback) {
   if (!data_source_) {
-    wl_data_source* data_source =
-        wl_data_device_manager_create_data_source(data_device_manager_.get());
+    wl_data_source* data_source = data_device_manager_->CreateSource();
     data_source_.reset(new WaylandDataSource(data_source));
     data_source_->set_connection(this);
     data_source_->WriteToClipboard(data_map);
@@ -264,8 +263,7 @@ void WaylandConnection::Global(void* data,
           << "No data device manager. Clipboard won't be fully functional";
       return;
     }
-    wl_data_device* data_device = wl_data_device_manager_get_data_device(
-        connection->data_device_manager_.get(), connection->seat_.get());
+    wl_data_device* data_device = connection->data_device_manager_->GetDevice();
     connection->data_device_.reset(
         new WaylandDataDevice(connection, data_device));
   } else if (!connection->shell_v6_ &&
@@ -305,8 +303,15 @@ void WaylandConnection::Global(void* data,
         base::WrapUnique(new WaylandOutput(output.release())));
   } else if (!connection->data_device_manager_ &&
              strcmp(interface, "wl_data_device_manager") == 0) {
-    connection->data_device_manager_ =
+    wl::Object<wl_data_device_manager> data_device_manager =
         wl::Bind<wl_data_device_manager>(registry, name, 1);
+    if (!data_device_manager) {
+      LOG(ERROR) << "Failed to bind to wl_data_device_manager global";
+      return;
+    }
+    connection->data_device_manager_.reset(
+        new WaylandDataDeviceManager(data_device_manager.release()));
+    connection->data_device_manager_->set_connection(connection);
   }
 
   connection->ScheduleFlush();

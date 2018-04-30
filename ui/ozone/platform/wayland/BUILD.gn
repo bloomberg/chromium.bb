@@ -24,6 +24,8 @@ source_set("wayland") {
     "wayland_cursor.h",
     "wayland_data_device.cc",
     "wayland_data_device.h",
+    "wayland_data_device_manager.cc",
+    "wayland_data_device_manager.h",
     "wayland_data_offer.cc",
     "wayland_data_offer.h",
     "wayland_data_source.cc",
