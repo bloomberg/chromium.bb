@@ -293,7 +293,7 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 
   // Anonymous constraint spaces are auto-sized. Don't let that affect
   // block-axis percentage resolution.
-  if (ConstraintSpace().IsAnonymous())
+  if (ConstraintSpace().IsAnonymous() || Node().IsAnonymous())
     child_percentage_size_ = ConstraintSpace().PercentageResolutionSize();
   else
     child_percentage_size_ = adjusted_size;
@@ -1645,7 +1645,6 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   space_builder.SetFragmentainerSpaceAtBfcStart(space_available);
   space_builder.SetFragmentationType(
       ConstraintSpace().BlockFragmentationType());
-
   return space_builder.ToConstraintSpace(writing_mode);
 }
 
