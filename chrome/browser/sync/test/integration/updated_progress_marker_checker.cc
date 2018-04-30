@@ -26,7 +26,17 @@ bool UpdatedProgressMarkerChecker::IsExitConditionSatisfied() {
   }
 
   const syncer::SyncCycleSnapshot& snap = service()->GetLastCycleSnapshot();
-  return snap.model_neutral_state().num_successful_commits == 0 &&
+  // Assuming the lack of ongoing remote changes, the progress marker can be
+  // considered updated when:
+  // 1. Progress markers are non-empty (which discards the default value for
+  //    GetLastCycleSnapshot() prior to the first sync cycle).
+  // 2. Our last sync cycle committed no changes (because commits are followed
+  //    by the test-only 'self-notify' cycle).
+  // 3. Sync is still active (e.g. no failures).
+  // 4. No pending local changes (which will ultimately generate new progress
+  //    markers once submitted to the server).
+  return !snap.download_progress_markers().empty() &&
+         snap.model_neutral_state().num_successful_commits == 0 &&
          service()->IsSyncActive() && !has_unsynced_items_.value();
 }
 
