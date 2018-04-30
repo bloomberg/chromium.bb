@@ -178,9 +178,6 @@ const CGFloat kAnimationDuration = 0.3;
                     title:(NSString*)title
             publisherName:(NSString*)publisherName
           publicationDate:(NSString*)publicationDate {
-  if (IsUIRefreshPhase1Enabled()) {
-    return [[self class] imageSize] + [[self class] standardSpacing];
-  } else {
     UILabel* titleLabel = [[UILabel alloc] init];
     [self configureTitleLabel:titleLabel];
     titleLabel.text = title;
@@ -193,15 +190,27 @@ const CGFloat kAnimationDuration = 0.3;
     CGSize sizeForLabels =
         CGSizeMake(width - [self labelMarginWithImage:hasImage], 500);
 
-    CGFloat labelHeight = 3 * [[self class] standardSpacing];
-    labelHeight += [titleLabel sizeThatFits:sizeForLabels].height;
-    CGFloat additionalInfoHeight =
-        [additionalInfoLabel sizeThatFits:sizeForLabels].height;
-    labelHeight += MAX(additionalInfoHeight, kFaviconSize);
+    if (IsUIRefreshPhase1Enabled()) {
+      CGFloat minimalHeight =
+          [[self class] imageSize] + [[self class] standardSpacing];
 
-    CGFloat minimalHeight = hasImage ? [[self class] imageSize] : 0;
-    minimalHeight += 2 * [[self class] standardSpacing];
-    return MAX(minimalHeight, labelHeight);
+      CGFloat labelHeight = [[self class] standardSpacing];
+      labelHeight += [titleLabel sizeThatFits:sizeForLabels].height;
+      labelHeight += [[self class] smallSpacing];
+      CGFloat additionalInfoHeight =
+          [additionalInfoLabel sizeThatFits:sizeForLabels].height;
+      labelHeight += MAX(additionalInfoHeight, kFaviconSize);
+      return MAX(minimalHeight, labelHeight);
+    } else {
+      CGFloat labelHeight = 3 * [[self class] standardSpacing];
+      labelHeight += [titleLabel sizeThatFits:sizeForLabels].height;
+      CGFloat additionalInfoHeight =
+          [additionalInfoLabel sizeThatFits:sizeForLabels].height;
+      labelHeight += MAX(additionalInfoHeight, kFaviconSize);
+
+      CGFloat minimalHeight = hasImage ? [[self class] imageSize] : 0;
+      minimalHeight += 2 * [[self class] standardSpacing];
+      return MAX(minimalHeight, labelHeight);
   }
 }
 
@@ -214,6 +223,16 @@ const CGFloat kAnimationDuration = 0.3;
 }
 
 #pragma mark - UIView
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  if (IsUIRefreshPhase1Enabled() &&
+      self.traitCollection.preferredContentSizeCategory !=
+          previousTraitCollection.preferredContentSizeCategory) {
+    [[self class] configureTitleLabel:_titleLabel];
+    _additionalInformationLabel.font = [[self class] additionalInformationFont];
+  }
+}
 
 // Implements -layoutSubviews as per instructions in documentation for
 // +[MDCCollectionViewCell cr_preferredHeightForWidth:forItem:].
@@ -247,9 +266,10 @@ const CGFloat kAnimationDuration = 0.3;
   if (IsUIRefreshPhase1Enabled()) {
     [NSLayoutConstraint activateConstraints:@[
       [_imageContainer.bottomAnchor
-          constraintLessThanOrEqualToAnchor:self.contentView.bottomAnchor],
-      [_faviconView.bottomAnchor
-          constraintEqualToAnchor:_imageContainer.bottomAnchor],
+          constraintLessThanOrEqualToAnchor:_faviconView.bottomAnchor],
+      [_faviconView.topAnchor
+          constraintGreaterThanOrEqualToAnchor:self.titleLabel.bottomAnchor
+                                      constant:[[self class] smallSpacing]]
     ]];
   } else {
     [NSLayoutConstraint activateConstraints:@[
