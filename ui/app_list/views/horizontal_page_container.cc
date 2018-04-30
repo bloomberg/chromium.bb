@@ -4,9 +4,9 @@
 
 #include "ui/app_list/views/horizontal_page_container.h"
 
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/chromeos_switches.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/pagination_controller.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/apps_container_view.h"

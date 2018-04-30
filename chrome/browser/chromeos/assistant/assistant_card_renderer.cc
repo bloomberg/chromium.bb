@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "ash/public/interfaces/ash_assistant_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/optional.h"
@@ -16,7 +17,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "ui/app_list/answer_card_contents_registry.h"
 #include "ui/views/controls/webview/web_contents_set_background_color.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/view.h"

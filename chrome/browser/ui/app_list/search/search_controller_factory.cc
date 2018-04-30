@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
@@ -24,8 +26,6 @@
 #include "chrome/browser/ui/app_list/search/webstore/webstore_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/arc/arc_util.h"
-#include "ui/app_list/app_list_features.h"
-#include "ui/app_list/app_list_switches.h"
 
 namespace app_list {
 

@@ -13,6 +13,8 @@
 #include <vector>
 
 #include "ash/app_list/model/search/search_box_model.h"
+#include "ash/public/cpp/app_list/answer_card_contents_registry.h"
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -20,8 +22,6 @@
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/app_list/answer_card_contents_registry.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"

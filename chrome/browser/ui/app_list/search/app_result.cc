@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/app_list/search/app_result.h"
 
+#include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/time/time.h"
-#include "ui/app_list/app_list_switches.h"
 
 namespace app_list {
 

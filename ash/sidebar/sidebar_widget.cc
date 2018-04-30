@@ -5,6 +5,7 @@
 #include "ash/sidebar/sidebar_widget.h"
 
 #include "ash/message_center/message_center_view.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
@@ -15,7 +16,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"

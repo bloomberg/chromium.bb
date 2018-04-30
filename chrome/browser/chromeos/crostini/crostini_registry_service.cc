@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
@@ -19,7 +20,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using vm_tools::apps::App;

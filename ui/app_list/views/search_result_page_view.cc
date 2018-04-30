@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <memory>
 
-#include "ui/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_util.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/app_list_main_view.h"

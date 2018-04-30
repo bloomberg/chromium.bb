@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/base/layout.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"

@@ -8,10 +8,10 @@
 #include <utility>
 
 #include "ash/app_list/model/search/search_result.h"
+#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/search_result_actions_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
 #include "ui/gfx/canvas.h"

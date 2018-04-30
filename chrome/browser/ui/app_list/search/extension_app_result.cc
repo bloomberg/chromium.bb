@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/search/extension_app_result.h"
 
+#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
 #include "chrome/browser/extensions/chrome_app_icon_service.h"
@@ -21,8 +23,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
-#include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_switches.h"
 #include "ui/events/event_constants.h"
 
 namespace app_list {

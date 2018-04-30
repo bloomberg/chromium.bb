@@ -16,6 +16,7 @@
 #include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/ash_export.h"
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/interfaces/app_list.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
@@ -24,7 +25,6 @@
 #include "components/sync/model/string_ordinal.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace ui {

@@ -9,12 +9,12 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/search/search_model.h"
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "ui/app_list/app_list_constants.h"
 
 namespace ash {
 

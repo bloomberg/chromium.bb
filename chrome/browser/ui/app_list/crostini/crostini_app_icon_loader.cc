@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/app_list/crostini/crostini_app_icon_loader.h"
 
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 
 CrostiniAppIconLoader::CrostiniAppIconLoader(Profile* profile,

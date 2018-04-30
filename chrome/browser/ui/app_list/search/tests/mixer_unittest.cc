@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
@@ -18,8 +20,6 @@
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_features.h"
 
 class FakeAppListModelUpdater;
 

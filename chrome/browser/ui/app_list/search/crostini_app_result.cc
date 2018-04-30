@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/app_list/search/crostini_app_result.h"
 
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_context_menu.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_icon_loader.h"
-#include "ui/app_list/app_list_constants.h"
 
 namespace app_list {
 

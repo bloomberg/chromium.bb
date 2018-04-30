@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "ash/app_list/model/app_list_model.h"
+#include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/menu_utils.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "ui/app_list/app_list_switches.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace app_list {

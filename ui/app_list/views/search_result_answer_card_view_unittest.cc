@@ -7,12 +7,12 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/app_list/answer_card_contents_registry.h"
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/app_list/answer_card_contents_registry.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/test/test_search_result.h"
 #include "ui/app_list/views/search_result_view.h"

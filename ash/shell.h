@@ -11,6 +11,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_observer.h"
 #include "ash/wm/cursor_manager_chromeos.h"
@@ -20,7 +21,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_switches.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/aura/window.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_target.h"

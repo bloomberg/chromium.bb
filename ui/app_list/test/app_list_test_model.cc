@@ -9,10 +9,10 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/image/image_skia.h"
 

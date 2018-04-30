@@ -5,8 +5,8 @@
 // vector_icons.h.template is used to generate vector_icons.h. Edit the former
 // rather than the latter.
 
-#ifndef UI_APP_LIST_VECTOR_ICONS_H_
-#define UI_APP_LIST_VECTOR_ICONS_H_
+#ifndef ASH_PUBLIC_CPP_APP_LIST_VECTOR_ICONS_H_
+#define ASH_PUBLIC_CPP_APP_LIST_VECTOR_ICONS_H_
 
 namespace gfx {
 struct VectorIcon;
@@ -23,4 +23,4 @@ TEMPLATE_PLACEHOLDER
 
 #undef VECTOR_ICON_TEMPLATE_H
 
-#endif  // UI_APP_LIST_VECTOR_ICONS_H_
+#endif  // ASH_PUBLIC_CPP_APP_LIST_VECTOR_ICONS_H_
