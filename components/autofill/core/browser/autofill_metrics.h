@@ -971,6 +971,10 @@ class AutofillMetrics {
                                         std::set<FormType> form_types,
                                         int developer_engagement_metrics);
 
+  // Log the number of hidden or presentational 'select' fields that were
+  // autofilled to support synthetic fields.
+  static void LogHiddenOrPresentationalSelectFieldsFilled();
+
   // Logs the the |ukm_entry_name| with the specified |url| and the specified
   // |metrics|. Returns whether the ukm was sucessfully logged.
   static bool LogUkm(ukm::UkmRecorder* ukm_recorder,
