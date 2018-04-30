@@ -31,6 +31,11 @@ class HttpAuthHandlerNtlmPortableTest : public PlatformTest {
   // Test input value defined in [MS-NLMP] Section 4.2.1.
   HttpAuthHandlerNtlmPortableTest() {
     http_auth_preferences_.reset(new MockAllowHttpAuthPreferences());
+    // Disable NTLMv2 for this end to end test because it's not possible
+    // to mock all the required dependencies for NTLMv2 from here. These
+    // tests are only of the overall flow, and the detailed tests of the
+    // contents of the protocol messages are in ntlm_client_unittest.cc
+    http_auth_preferences_->set_ntlm_v2_enabled(false);
     factory_.reset(new HttpAuthHandlerNTLM::Factory());
     factory_->set_http_auth_preferences(http_auth_preferences_.get());
     creds_ = AuthCredentials(
