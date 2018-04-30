@@ -34,25 +34,58 @@ namespace {
 
 const char kChromeInfobarURL[] = "chromeinternal://infobar/";
 
-// UX configuration for the layout of items.
-const CGFloat kLeftMarginOnFirstLineWhenIconAbsent = 20.0;
-const CGFloat kMinimumSpaceBetweenRightAndLeftAlignedWidgets = 30.0;
-const CGFloat kRightMargin = 10.0;
-const CGFloat kSpaceBetweenWidgets = 10.0;
+// UX configuration metrics for the layout of items.
+struct LayoutMetrics {
+  CGFloat left_margin_on_first_line_when_icon_absent;
+  CGFloat minimum_space_between_right_and_left_aligned_widgets;
+  CGFloat right_margin;
+  CGFloat space_between_widgets;
+  CGFloat close_button_inner_padding;
+  CGFloat button_height;
+  CGFloat button_margin;
+  CGFloat extra_button_margin_on_single_line;
+  CGFloat button_spacing;
+  CGFloat button_width_units;
+  CGFloat buttons_margin_top;
+  CGFloat close_button_margin_left;
+  CGFloat label_line_spacing;
+  CGFloat label_margin_bottom;
+  CGFloat extra_margin_between_label_and_button;
+  CGFloat label_margin_top;
+  CGFloat minimum_infobar_height;
+  CGFloat horizontal_space_between_icon_and_text;
+};
+
+// This defines the layout metrics for Chrome iOS legacy UI.
+// Some layout metrics defined as constants are inter-related.
 const CGFloat kCloseButtonInnerPadding = 16.0;
-const CGFloat kButtonHeight = 36.0;
-const CGFloat kButtonMargin = 16.0;
-const CGFloat kExtraButtonMarginOnSingleLine = 8.0;
-const CGFloat kButtonSpacing = 8.0;
-const CGFloat kButtonWidthUnits = 8.0;
-const CGFloat kButtonsTopMargin = kCloseButtonInnerPadding;
-const CGFloat kCloseButtonLeftMargin = 16.0;
-const CGFloat kLabelLineSpacing = 5.0;
-const CGFloat kLabelMarginBottom = 22.0;
-const CGFloat kExtraMarginBetweenLabelAndButton = 8.0;
-const CGFloat kLabelMarginTop = kButtonsTopMargin + 5.0;  // Baseline lowered.
-const CGFloat kMinimumInfobarHeight = 68.0;
-const CGFloat kHorizontalSpaceBetweenIconAndText = 16.0;
+const CGFloat kButtonsMarginTop = kCloseButtonInnerPadding;
+const CGFloat kLabelMarginTop = kButtonsMarginTop + 5.0;  // Baseline lowered.
+const LayoutMetrics kLayoutMetricsLegacy = {
+    20.0,  // left_margin_on_first_line_when_icon_absent
+    30.0,  // minimum_space_between_right_and_left_aligned_widgets
+    10.0,  // right_margin
+    10.0,  // space_between_widgets
+    kCloseButtonInnerPadding,
+    36.0,  // button_height
+    16.0,  // button_margin
+    8.0,   // extra_button_margin_on_single_line
+    8.0,   // button_spacing
+    8.0,   // button_width_units
+    kButtonsMarginTop,
+    16.0,  // close_button_margin_left
+    5.0,   // label_line_spacing
+    22.0,  // label_margin_bottom
+    8.0,   // extra_margin_between_label_and_button
+    kLabelMarginTop,
+    68.0,  // minimum_infobar_height
+    16.0   // horizontal_space_between_icon_and_text
+};
+
+// Returns the layout metrics data structure. Returned value is never nil.
+const LayoutMetrics* GetCurrentLayoutMetrics() {
+  return &kLayoutMetricsLegacy;
+}
 
 const int kButton2TitleColor = 0x4285f4;
 
@@ -84,9 +117,13 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
   UISwitch* switch_;
   CGFloat preferredTotalWidth_;
   CGFloat preferredLabelWidth_;
+  // Layout metrics for calculating item placement.
+  const LayoutMetrics* metrics_;
 }
 
 - (id)initWithLabel:(NSString*)labelText isOn:(BOOL)isOn {
+  metrics_ = GetCurrentLayoutMetrics();
+
   // Creates switch and label.
   UILabel* tempLabel = [[UILabel alloc] initWithFrame:CGRectZero];
   [tempLabel setTextAlignment:NSTextAlignmentNatural];
@@ -108,7 +145,8 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
       [[tempLabel text] cr_boundingSizeWithSize:maxSize font:[tempLabel font]];
   CGSize switchSize = [tempSwitch frame].size;
   CGRect frameRect = CGRectMake(
-      0, 0, labelSize.width + kSpaceBetweenWidgets + switchSize.width,
+      0, 0,
+      labelSize.width + metrics_->space_between_widgets + switchSize.width,
       std::max(labelSize.height, switchSize.height));
   self = [super initWithFrame:frameRect];
   if (!self)
@@ -148,7 +186,7 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
 
 - (CGFloat)heightRequiredForSwitchWithWidth:(CGFloat)width layout:(BOOL)layout {
   CGFloat widthLeftForLabel =
-      width - [switch_ frame].size.width - kSpaceBetweenWidgets;
+      width - [switch_ frame].size.width - metrics_->space_between_widgets;
   CGSize maxSize = CGSizeMake(widthLeftForLabel, CGFLOAT_MAX);
   CGSize labelSize =
       [[label_ text] cr_boundingSizeWithSize:maxSize font:[label_ font]];
@@ -163,7 +201,7 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
     [label_ setFrame:newLabelFrame];
     CGRect newSwitchFrame;
     newSwitchFrame.origin.x =
-        CGRectGetMaxX(newLabelFrame) + kSpaceBetweenWidgets;
+        CGRectGetMaxX(newLabelFrame) + metrics_->space_between_widgets;
     newSwitchFrame.origin.y = (viewHeight - [switch_ frame].size.height) / 2;
     newSwitchFrame.size = [switch_ frame].size;
     newSwitchFrame = AlignRectOriginAndSizeToPixels(newSwitchFrame);
@@ -248,6 +286,8 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
   UIButton* button2_;
   // Drop shadow.
   UIImageView* shadow_;
+  // Layout metrics for calculating item placement.
+  const LayoutMetrics* metrics_;
 }
 
 @synthesize visibleHeight = visibleHeight_;
@@ -257,6 +297,7 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
   self = [super initWithFrame:frame];
   if (self) {
     delegate_ = delegate;
+    metrics_ = GetCurrentLayoutMetrics();
     // Make the drop shadow.
     UIImage* shadowImage = [UIImage imageNamed:@"infobar_shadow"];
     shadow_ = [[UIImageView alloc] initWithImage:shadowImage];
@@ -282,9 +323,9 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
   CGFloat leftMargin = 0;
   if (imageView_) {
     leftMargin += CGRectGetMaxX([self frameOfIcon]);
-    leftMargin += kHorizontalSpaceBetweenIconAndText;
+    leftMargin += metrics_->horizontal_space_between_icon_and_text;
   } else {
-    leftMargin += kLeftMarginOnFirstLineWhenIconAbsent;
+    leftMargin += metrics_->left_margin_on_first_line_when_icon_absent;
     leftMargin += SafeAreaInsetsForView(self).left;
   }
   return leftMargin;
@@ -293,7 +334,8 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
 // Returns the width reserved for the close button.
 - (CGFloat)rightMarginOnFirstLine {
   return [closeButton_ imageView].image.size.width +
-         kCloseButtonInnerPadding * 2 + SafeAreaInsetsForView(self).right;
+         metrics_->close_button_inner_padding * 2 +
+         SafeAreaInsetsForView(self).right;
 }
 
 // Returns the horizontal space available between the icon and the close
@@ -325,7 +367,8 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
   // multiple of 8 to fit Material grid spacing requirements.
   CGFloat labelWidth =
       [button sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)].width;
-  return ceil(labelWidth / kButtonWidthUnits) * kButtonWidthUnits;
+  return ceil(labelWidth / metrics_->button_width_units) *
+         metrics_->button_width_units;
 }
 
 // Returns the width of the buttons if they are laid out on the first line.
@@ -333,7 +376,7 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
   CGFloat width = [self narrowestWidthOfButton:button1_] +
                   [self narrowestWidthOfButton:button2_];
   if (button1_ && button2_) {
-    width += kSpaceBetweenWidgets;
+    width += metrics_->space_between_widgets;
   }
   return width;
 }
@@ -350,7 +393,7 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
   BOOL rightWidgetsArePresent = button1_ || button2_ || switchView_;
   if (!leftWidgetsArePresent || !rightWidgetsArePresent)
     return 0;
-  return kMinimumSpaceBetweenRightAndLeftAlignedWidgets;
+  return metrics_->minimum_space_between_right_and_left_aligned_widgets;
 }
 
 // Returns the space required to separate the switch and the buttons.
@@ -359,7 +402,7 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
   BOOL switchIsPresent = (switchView_ != nil);
   if (!buttonsArePresent || !switchIsPresent)
     return 0;
-  return kSpaceBetweenWidgets;
+  return metrics_->space_between_widgets;
 }
 
 // Lays out |button| at the height |y| and in the position |position|.
@@ -397,7 +440,7 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
   CGFloat minWidth =
       std::min([self narrowestWidthOfButton:button], maxX - minX);
   CGFloat left = midpoint - minWidth / 2;
-  CGRect frame = CGRectMake(left, y, minWidth, kButtonHeight);
+  CGRect frame = CGRectMake(left, y, minWidth, metrics_->button_height);
   frame = AlignRectOriginAndSizeToPixels(frame);
   [button setFrame:frame];
 }
@@ -407,7 +450,7 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
                                     y:(CGFloat)y {
   CGFloat width = [self narrowestWidthOfButton:button];
   CGFloat leftEdge = rightEdge - width;
-  CGRect frame = CGRectMake(leftEdge, y, width, kButtonHeight);
+  CGRect frame = CGRectMake(leftEdge, y, width, metrics_->button_height);
   frame = AlignRectOriginAndSizeToPixels(frame);
   [button setFrame:frame];
   return leftEdge;
@@ -422,28 +465,30 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
       // Each button can fit in half the screen's width.
       if (layout) {
         // When there are two buttons on one line, they are positioned aligned
-        // right in the available space, spaced apart by kButtonSpacing.
+        // right in the available space, spaced apart by
+        // metrics_->button_spacing.
         CGFloat leftOfRightmostButton =
             [self layoutWideButtonAlignRight:button1_
                                    rightEdge:CGRectGetWidth(self.bounds) -
-                                             kButtonMargin -
+                                             metrics_->button_margin -
                                              SafeAreaInsetsForView(self).right
                                            y:heightOfFirstLine];
         [self layoutWideButtonAlignRight:button2_
-                               rightEdge:leftOfRightmostButton - kButtonSpacing
+                               rightEdge:leftOfRightmostButton -
+                                         metrics_->button_spacing
                                        y:heightOfFirstLine];
       }
-      return kButtonHeight;
+      return metrics_->button_height;
     } else {
       // At least one of the two buttons is larger than half the screen's width,
       // so |button2_| is placed underneath |button1_|.
       if (layout) {
         [self layoutWideButton:button1_ y:heightOfFirstLine position:CENTER];
         [self layoutWideButton:button2_
-                             y:heightOfFirstLine + kButtonHeight
+                             y:heightOfFirstLine + metrics_->button_height
                       position:CENTER];
       }
-      return 2 * kButtonHeight;
+      return 2 * metrics_->button_height;
     }
   }
   // There is at most 1 button to layout.
@@ -454,11 +499,11 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
       // available space.
       [self layoutWideButtonAlignRight:button
                              rightEdge:CGRectGetWidth(self.bounds) -
-                                       kButtonMargin -
+                                       metrics_->button_margin -
                                        SafeAreaInsetsForView(self).right
                                      y:heightOfFirstLine];
     }
-    return kButtonHeight;
+    return metrics_->button_height;
   }
   return 0;
 }
@@ -479,45 +524,50 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
   // Tests if the label, switch, and buttons can fit on a single line.
   if (widthOfLabel + widthOfButtonAndSwitch < spaceAvailableOnFirstLine) {
     // The label, switch, and buttons can fit on a single line.
-    requiredHeight = kMinimumInfobarHeight;
+    requiredHeight = metrics_->minimum_infobar_height;
     if (layout) {
       // Lays out the close button.
       CGRect buttonFrame = [self frameOfCloseButton:YES];
       [closeButton_ setFrame:buttonFrame];
       // Lays out the label.
       CGFloat labelHeight = [self heightRequiredForLabelWithWidth:widthOfLabel];
-      CGRect frame = CGRectMake([self leftMarginOnFirstLine],
-                                (kMinimumInfobarHeight - labelHeight) / 2,
-                                [self widthOfLabelOnASingleLine], labelHeight);
+      CGRect frame =
+          CGRectMake([self leftMarginOnFirstLine],
+                     (metrics_->minimum_infobar_height - labelHeight) / 2,
+                     [self widthOfLabelOnASingleLine], labelHeight);
       frame = AlignRectOriginAndSizeToPixels(frame);
       [label_ setFrame:frame];
       // Layouts the buttons.
       CGFloat buttonMargin =
-          rightMarginOnFirstLine + kExtraButtonMarginOnSingleLine;
+          rightMarginOnFirstLine + metrics_->extra_button_margin_on_single_line;
       if (button1_) {
         CGFloat width = [self narrowestWidthOfButton:button1_];
         CGFloat offset = width;
-        frame = CGRectMake(widthOfScreen - buttonMargin - offset,
-                           (kMinimumInfobarHeight - kButtonHeight) / 2, width,
-                           kButtonHeight);
+        frame = CGRectMake(
+            widthOfScreen - buttonMargin - offset,
+            (metrics_->minimum_infobar_height - metrics_->button_height) / 2,
+            width, metrics_->button_height);
         frame = AlignRectOriginAndSizeToPixels(frame);
         [button1_ setFrame:frame];
       }
       if (button2_) {
         CGFloat width = [self narrowestWidthOfButton:button2_];
         CGFloat offset = widthOfButtons;
-        frame = CGRectMake(widthOfScreen - buttonMargin - offset,
-                           (kMinimumInfobarHeight - kButtonHeight) / 2, width,
-                           frame.size.height = kButtonHeight);
+        frame = CGRectMake(
+            widthOfScreen - buttonMargin - offset,
+            (metrics_->minimum_infobar_height - metrics_->button_height) / 2,
+            width, frame.size.height = metrics_->button_height);
         frame = AlignRectOriginAndSizeToPixels(frame);
         [button2_ setFrame:frame];
       }
       // Lays out the switch view to the left of the buttons.
       if (switchView_) {
-        frame = CGRectMake(
-            widthOfScreen - buttonMargin - widthOfButtonAndSwitch,
-            (kMinimumInfobarHeight - [switchView_ frame].size.height) / 2.0,
-            preferredWidthOfSwitch, [switchView_ frame].size.height);
+        frame =
+            CGRectMake(widthOfScreen - buttonMargin - widthOfButtonAndSwitch,
+                       (metrics_->minimum_infobar_height -
+                        [switchView_ frame].size.height) /
+                           2.0,
+                       preferredWidthOfSwitch, [switchView_ frame].size.height);
         frame = AlignRectOriginAndSizeToPixels(frame);
         [switchView_ setFrame:frame];
       }
@@ -535,7 +585,7 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
     }
     if (widthOfLabel + preferredWidthOfSwitch < spaceAvailableOnFirstLine) {
       // The label and switch can fit on the first line.
-      heightOfLabelAndSwitch = kMinimumInfobarHeight;
+      heightOfLabelAndSwitch = metrics_->minimum_infobar_height;
       if (layout) {
         CGFloat labelHeight =
             [self heightRequiredForLabelWithWidth:widthOfLabel];
@@ -558,20 +608,21 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
       // The label and switch can't fit on the first line, so lay them out on
       // different lines.
       // Computes the height of the label, and optionally lays it out.
-      CGFloat labelMarginBottom = kLabelMarginBottom;
+      CGFloat labelMarginBottom = metrics_->label_margin_bottom;
       if (button1_ || button2_) {
         // Material features more padding between the label and the button than
         // the label and the bottom of the dialog when there is no button.
-        labelMarginBottom += kExtraMarginBetweenLabelAndButton;
+        labelMarginBottom += metrics_->extra_margin_between_label_and_button;
       }
       CGFloat heightOfLabelWithPadding =
           [self heightRequiredForLabelWithWidth:spaceAvailableOnFirstLine] +
-          kLabelMarginTop + labelMarginBottom;
+          metrics_->label_margin_top + labelMarginBottom;
       if (layout) {
-        CGRect labelFrame = CGRectMake(
-            [self leftMarginOnFirstLine], kLabelMarginTop,
-            spaceAvailableOnFirstLine,
-            heightOfLabelWithPadding - kLabelMarginTop - labelMarginBottom);
+        CGRect labelFrame =
+            CGRectMake([self leftMarginOnFirstLine], metrics_->label_margin_top,
+                       spaceAvailableOnFirstLine,
+                       heightOfLabelWithPadding - metrics_->label_margin_top -
+                           labelMarginBottom);
         labelFrame = AlignRectOriginAndSizeToPixels(labelFrame);
         [label_ setFrame:labelFrame];
       }
@@ -583,14 +634,15 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
         // call to |leftMarginOnFirstLine|.
         CGFloat widthAvailableForSwitchView = [self frame].size.width -
                                               [self leftMarginOnFirstLine] -
-                                              kRightMargin;
+                                              metrics_->right_margin;
         CGFloat heightOfSwitch = [switchView_
             heightRequiredForSwitchWithWidth:widthAvailableForSwitchView
                                       layout:layout];
         // If there are buttons underneath the switch, add padding.
         if (button1_ || button2_) {
-          heightOfSwitchWithPadding = heightOfSwitch + kSpaceBetweenWidgets +
-                                      kExtraMarginBetweenLabelAndButton;
+          heightOfSwitchWithPadding =
+              heightOfSwitch + metrics_->space_between_widgets +
+              metrics_->extra_margin_between_label_and_button;
         } else {
           heightOfSwitchWithPadding = heightOfSwitch;
         }
@@ -604,7 +656,7 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
       }
       heightOfLabelAndSwitch =
           std::max(heightOfLabelWithPadding + heightOfSwitchWithPadding,
-                   kMinimumInfobarHeight);
+                   metrics_->minimum_infobar_height);
     }
     // Lays out the button(s) under the label and switch.
     CGFloat heightOfButtons =
@@ -612,7 +664,7 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
                                               layout:layout];
     requiredHeight = heightOfLabelAndSwitch;
     if (heightOfButtons > 0)
-      requiredHeight += heightOfButtons + kButtonMargin;
+      requiredHeight += heightOfButtons + metrics_->button_margin;
   }
   // Take into account the bottom safe area.
   // The top safe area is ignored because at rest (i.e. not during animations)
@@ -768,7 +820,7 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
   NSMutableParagraphStyle* paragraphStyle =
       [[NSMutableParagraphStyle alloc] init];
   paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
-  paragraphStyle.lineSpacing = kLabelLineSpacing;
+  paragraphStyle.lineSpacing = metrics_->label_line_spacing;
   NSDictionary* attributes = @{
     NSParagraphStyleAttributeName : paragraphStyle,
     NSFontAttributeName : font,
@@ -881,8 +933,8 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
   DCHECK(closeButton_);
   // Add padding to increase the touchable area.
   CGSize closeButtonSize = [closeButton_ imageView].image.size;
-  closeButtonSize.width += kCloseButtonInnerPadding * 2;
-  closeButtonSize.height += kCloseButtonInnerPadding * 2;
+  closeButtonSize.width += metrics_->close_button_inner_padding * 2;
+  closeButtonSize.height += metrics_->close_button_inner_padding * 2;
   CGFloat x = CGRectGetMaxX(self.frame) - closeButtonSize.width -
               SafeAreaInsetsForView(self).right;
   // Aligns the close button at the top (height includes touch padding).
@@ -890,15 +942,16 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
   if (singleLineMode) {
     // On single-line mode the button is centered vertically.
     y = ui::AlignValueToUpperPixel(
-        (kMinimumInfobarHeight - closeButtonSize.height) * 0.5);
+        (metrics_->minimum_infobar_height - closeButtonSize.height) * 0.5);
   }
   return CGRectMake(x, y, closeButtonSize.width, closeButtonSize.height);
 }
 
 - (CGRect)frameOfIcon {
   CGSize iconSize = [imageView_ image].size;
-  CGFloat y = kButtonsTopMargin;
-  CGFloat x = kCloseButtonLeftMargin + SafeAreaInsetsForView(self).left;
+  CGFloat y = metrics_->buttons_margin_top;
+  CGFloat x =
+      metrics_->close_button_margin_left + SafeAreaInsetsForView(self).left;
   return CGRectMake(AlignValueToPixel(x), AlignValueToPixel(y), iconSize.width,
                     iconSize.height);
 }
@@ -921,15 +974,15 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
 #pragma mark - Testing
 
 - (CGFloat)minimumInfobarHeight {
-  return kMinimumInfobarHeight;
+  return metrics_->minimum_infobar_height;
 }
 
 - (CGFloat)buttonsHeight {
-  return kButtonHeight;
+  return metrics_->button_height;
 }
 
 - (CGFloat)buttonMargin {
-  return kButtonMargin;
+  return metrics_->button_margin;
 }
 
 - (const std::vector<std::pair<NSUInteger, NSRange>>&)linkRanges {
