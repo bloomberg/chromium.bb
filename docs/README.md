@@ -50,10 +50,9 @@ used when committed.
     Cast for Android (on a Linux host)
 *   [iOS Build Instructions](ios/build_instructions.md) - iOS target (on a MacOS
     host)
+*   [Chrome OS Build Instructions](chromeos_build_instructions.md) - Chrome OS
 *   [Linux Chromium ARM Recipes](linux_chromium_arm.md) - Recipes for building
     Chromium for ARM on Linux.
-*   [Common Build Tasks](common_build_tasks.md) - Recipes for slightly more
-    advanced build tasks
 *   [Chrome Component Build](component_build.md) - Faster builds using more
     libraries
 *   [Using the BuildRunner](using_build_runner.md) - Scripts that extract build
@@ -110,8 +109,6 @@ used when committed.
     compiler
 *   [Threading and Tasks in Chrome](threading_and_tasks.md) - How to run tasks
     and handle thread safety in Chrome.
-*   [Subtle Threading Bugs and Patterns to Avoid Them](subtle_threading_bugs.md) -
-    Threading pitfalls to avoid.
 *   [Callback<> and Bind()](callback.md) - All about Callbacks, Closures, and
     Bind().
 *   [Views Platform Styling](ui/views/platform_style.md) - How views are styled
@@ -158,7 +155,6 @@ used when committed.
     Diagnosing and fixing layout test flakiness due to ordering dependencies.
 *   [Running Layout Tests using `content_shell`](testing/layout_tests_in_content_shell.md) -
     Running layout tests by hand.
-*   [Testing Browser UI](testing/test_browser_ui.md) - Using TestBrowserUi
 *   [Web Platform Tests](testing/web_platform_tests.md) - Shared tests across
     browser vendors
 *   [Using Breakpad with `content_shell`](testing/using_breakpad_with_content_shell.md) -
@@ -312,9 +308,6 @@ used when committed.
     Chromium/IRC/Google
 *   [Documentation Best Practices](documentation_best_practices.md)
 *   [Documentation Guidelines](documentation_guidelines.md)
-*   [Shift-Based Development](shift_based_development.md) - An experiment in
-    handing off development of coordinated work between developers in different
-    time zones.
 *   [Chromium Browser vs Google Chrome](chromium_browser_vs_google_chrome.md) -
     What's the difference between _Chromium Browser_ and _Google Chrome_?
 *   [Proxy Auto Config using WPAD](proxy_auto_config.md) - How WPAD servers are
@@ -325,7 +318,6 @@ used when committed.
     directories are determined on all platforms.
 
 ### Probably Obsolete
-*   [Old Chrome OS build instructions](old_chromeos_build_instructions.md)
 *   [TPM Quick Reference](tpm_quick_ref.md) - Trusted Platform Module notes.
 *   [System Hardening Features](system_hardening_features.md) - A list of
     current and planned Chrome OS security features.
