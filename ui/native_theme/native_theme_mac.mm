@@ -155,8 +155,6 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
 
     case kColorId_FocusedBorderColor:
       return NSSystemColorToSkColor([NSColor keyboardFocusIndicatorColor]);
-    case kColorId_UnfocusedBorderColor:
-      return NSSystemColorToSkColor([NSColor controlColor]);
 
     default:
       break;
