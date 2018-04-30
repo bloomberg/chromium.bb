@@ -390,6 +390,8 @@ public class WebContentsTest {
                 mActivityTestRule.launchContentShellWithUrl(TEST_URL_1);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
         final WebContents webContents = activity.getActiveWebContents();
+        // Make sure visibility do not affect bindings.
+        ThreadUtils.runOnUiThreadBlocking(() -> webContents.onHide());
 
         final ChildProcessConnection connection = getSandboxedChildProcessConnection();
         ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(
