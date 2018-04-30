@@ -14,9 +14,6 @@ const CSSValue* WebkitLineClamp::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  if (range.Peek().GetType() != kNumberToken)
-    return nullptr;
-
   // When specifying number of lines, don't allow 0 as a valid value.
   return CSSPropertyParserHelpers::ConsumePositiveInteger(range);
 }
