@@ -47,8 +47,7 @@ class AdTrackerTest : public testing::Test {
   }
 
   bool AnyExecutingScriptsTaggedAsAdResource() {
-    return ad_tracker_->AnyExecutingScriptsTaggedAsAdResource(
-        &page_holder_->GetDocument());
+    return ad_tracker_->IsAdScriptInStack(&page_holder_->GetDocument());
   }
 
   void AppendToKnownAdScripts(const KURL& url) {
