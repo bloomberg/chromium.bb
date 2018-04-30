@@ -33,12 +33,12 @@ TestTaskFactory::~TestTaskFactory() {
 }
 
 bool TestTaskFactory::PostTask(PostNestedTask post_nested_task,
-                               const Closure& after_task_closure) {
+                               OnceClosure after_task_closure) {
   AutoLock auto_lock(lock_);
   return task_runner_->PostTask(
-      FROM_HERE,
-      BindOnce(&TestTaskFactory::RunTaskCallback, Unretained(this),
-               num_posted_tasks_++, post_nested_task, after_task_closure));
+      FROM_HERE, BindOnce(&TestTaskFactory::RunTaskCallback, Unretained(this),
+                          num_posted_tasks_++, post_nested_task,
+                          std::move(after_task_closure)));
 }
 
 void TestTaskFactory::WaitForAllTasksToRun() const {
@@ -49,7 +49,7 @@ void TestTaskFactory::WaitForAllTasksToRun() const {
 
 void TestTaskFactory::RunTaskCallback(size_t task_index,
                                       PostNestedTask post_nested_task,
-                                      const Closure& after_task_closure) {
+                                      OnceClosure after_task_closure) {
   if (post_nested_task == PostNestedTask::YES)
     PostTask(PostNestedTask::NO, Closure());
 
@@ -98,7 +98,7 @@ void TestTaskFactory::RunTaskCallback(size_t task_index,
   }
 
   if (!after_task_closure.is_null())
-    after_task_closure.Run();
+    std::move(after_task_closure).Run();
 }
 
 }  // namespace test
