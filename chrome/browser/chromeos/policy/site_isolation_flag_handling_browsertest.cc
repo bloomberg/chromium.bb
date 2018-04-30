@@ -277,7 +277,7 @@ class SiteIsolationFlagHandlingTest
     // user session.
     auto fake_session_manager_client =
         std::make_unique<FakeSessionManagerClient>(
-            FakeSessionManagerClient::USE_HOST_POLICY);
+            FakeSessionManagerClient::PolicyStorageType::kOnDisk);
     fake_session_manager_client_ = fake_session_manager_client.get();
     DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         std::move(fake_session_manager_client));
