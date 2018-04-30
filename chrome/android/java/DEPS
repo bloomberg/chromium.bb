@@ -22,7 +22,6 @@ include_rules = [
   "!content/public/android/java/src/org/chromium/content/app/ContentChildProcessServiceDelegate.java",
   "!content/public/android/java/src/org/chromium/content/browser/accessibility/WebContentsAccessibility.java",
   "!content/public/android/java/src/org/chromium/content/browser/ActivityContentVideoViewEmbedder.java",
-  "!content/public/android/java/src/org/chromium/content/browser/AppWebMessagePort.java",
   "!content/public/android/java/src/org/chromium/content/browser/BrowserStartupController.java",
   "!content/public/android/java/src/org/chromium/content/browser/ChildProcessCreationParams.java",
   "!content/public/android/java/src/org/chromium/content/browser/ChildProcessLauncherHelper.java",
