@@ -110,7 +110,7 @@ class ContentElementSceneTest : public UiTest {
  protected:
   std::unique_ptr<StrictMock<MockTextInputDelegate>> text_input_delegate_;
   std::unique_ptr<TestContentInputForwarder> input_forwarder_;
-  testing::Sequence in_sequence_;
+  testing::InSequence in_sequence_;
 };
 
 TEST_F(ContentElementSceneTest, WebInputFocus) {
@@ -119,21 +119,21 @@ TEST_F(ContentElementSceneTest, WebInputFocus) {
   // Set mock keyboard delegate.
   auto* kb = static_cast<Keyboard*>(scene_->GetUiElementByName(kKeyboard));
   auto kb_delegate = std::make_unique<StrictMock<MockKeyboardDelegate>>();
-  EXPECT_CALL(*kb_delegate, HideKeyboard()).InSequence(in_sequence_);
+  EXPECT_CALL(*kb_delegate, HideKeyboard());
   kb->SetKeyboardDelegate(kb_delegate.get());
 
   // Editing web input.
-  EXPECT_CALL(*text_input_delegate_, RequestFocus(_)).InSequence(in_sequence_);
-  EXPECT_CALL(*kb_delegate, ShowKeyboard()).InSequence(in_sequence_);
-  EXPECT_CALL(*kb_delegate, OnBeginFrame()).InSequence(in_sequence_);
-  EXPECT_CALL(*kb_delegate, SetTransform(_)).InSequence(in_sequence_);
+  EXPECT_CALL(*text_input_delegate_, RequestFocus(_));
+  EXPECT_CALL(*kb_delegate, ShowKeyboard());
+  EXPECT_CALL(*kb_delegate, OnBeginFrame());
+  EXPECT_CALL(*kb_delegate, SetTransform(_));
   ui_->ShowSoftInput(true);
   EXPECT_TRUE(OnBeginFrame());
 
   // Giving content focus should tell the delegate the focued field's content.
-  EXPECT_CALL(*text_input_delegate_, UpdateInput(_)).InSequence(in_sequence_);
-  EXPECT_CALL(*kb_delegate, OnBeginFrame()).InSequence(in_sequence_);
-  EXPECT_CALL(*kb_delegate, SetTransform(_)).InSequence(in_sequence_);
+  EXPECT_CALL(*text_input_delegate_, UpdateInput(_));
+  EXPECT_CALL(*kb_delegate, OnBeginFrame());
+  EXPECT_CALL(*kb_delegate, SetTransform(_));
   content->OnFocusChanged(true);
   EXPECT_TRUE(OnBeginFrame());
 
@@ -145,17 +145,16 @@ TEST_F(ContentElementSceneTest, WebInputFocus) {
   info.selection_end = 1;
   info.composition_start = 0;
   info.composition_end = 1;
-  EXPECT_CALL(*text_input_delegate_, UpdateInput(info))
-      .InSequence(in_sequence_);
-  EXPECT_CALL(*kb_delegate, OnBeginFrame()).InSequence(in_sequence_);
-  EXPECT_CALL(*kb_delegate, SetTransform(_)).InSequence(in_sequence_);
+  EXPECT_CALL(*text_input_delegate_, UpdateInput(info));
+  EXPECT_CALL(*kb_delegate, OnBeginFrame());
+  EXPECT_CALL(*kb_delegate, SetTransform(_));
   ui_->UpdateWebInputIndices(1, 1, 0, 1);
   EXPECT_TRUE(OnBeginFrame());
 
   // End editing.
-  EXPECT_CALL(*kb_delegate, HideKeyboard()).InSequence(in_sequence_);
-  EXPECT_CALL(*kb_delegate, OnBeginFrame()).InSequence(in_sequence_);
-  EXPECT_CALL(*kb_delegate, SetTransform(_)).InSequence(in_sequence_);
+  EXPECT_CALL(*kb_delegate, HideKeyboard());
+  EXPECT_CALL(*kb_delegate, OnBeginFrame());
+  EXPECT_CALL(*kb_delegate, SetTransform(_));
   ui_->ShowSoftInput(false);
   EXPECT_TRUE(OnBeginFrame());
 
@@ -163,9 +162,11 @@ TEST_F(ContentElementSceneTest, WebInputFocus) {
   EXPECT_FALSE(input_forwarder_->clear_focus_called());
   content->OnFocusChanged(false);
   EXPECT_TRUE(input_forwarder_->clear_focus_called());
+
   // OnBeginFrame on the keyboard delegate should be called despite of
   // visibility.
-  scene_->CallPerFrameCallbacks();
+  EXPECT_CALL(*kb_delegate, OnBeginFrame());
+  OnBeginFrame();
 }
 
 // Verify that we clear the model for the web input field when it loses focus to
@@ -179,8 +180,7 @@ TEST_F(ContentElementSceneTest, ClearWebInputInfoModel) {
   EXPECT_TRUE(OnBeginFrame());
 
   // Initial state gets pushed when the content element is focused.
-  EXPECT_CALL(*text_input_delegate_, UpdateInput(info))
-      .InSequence(in_sequence_);
+  EXPECT_CALL(*text_input_delegate_, UpdateInput(info));
   content->OnFocusChanged(true);
   EXPECT_TRUE(OnBeginFrame());
 
@@ -191,8 +191,7 @@ TEST_F(ContentElementSceneTest, ClearWebInputInfoModel) {
   // A cleared state gets pushed when the content element is focused. This is
   // needed because the user may have clicked another text field in the content,
   // so we shouldn't be pushing the stale state.
-  EXPECT_CALL(*text_input_delegate_, UpdateInput(TextInputInfo()))
-      .InSequence(in_sequence_);
+  EXPECT_CALL(*text_input_delegate_, UpdateInput(TextInputInfo()));
   content->OnFocusChanged(true);
   EXPECT_TRUE(OnBeginFrame());
 }

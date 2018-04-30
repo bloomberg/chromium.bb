@@ -1883,9 +1883,9 @@ void UiSceneCreator::CreateKeyboard() {
             }
           },
           base::Unretained(keyboard.get()))));
-
-  VR_BIND_VISIBILITY(keyboard,
-                     model->editing_input || model->editing_web_input);
+  VR_BIND_VISIBILITY(
+      keyboard, (model->editing_input || model->editing_web_input) &&
+                    model->active_modal_prompt_type == kModalPromptTypeNone);
   scene_->AddPerFrameCallback(base::BindRepeating(
       [](Keyboard* keyboard) { keyboard->AdvanceKeyboardFrameIfNeeded(); },
       base::Unretained(keyboard.get())));
