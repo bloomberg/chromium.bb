@@ -607,8 +607,9 @@ if (is_linux && is_clang) {
     defines = [ "NACL_LINUX=1" ]
     include_dirs = [ "../../../.." ]
 
-    # Do not use any sanitizers tools, which require a few symbols.
+    # Do not use any sanitizers or coverage tools, which require a few symbols.
     configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
+    configs -= [ "//build/config/coverage:default_coverage" ]
     configs += [ ":nonsfi_libc_free_nexe_config" ]
   }
 
