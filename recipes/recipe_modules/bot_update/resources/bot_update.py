@@ -41,6 +41,9 @@ CHROMIUM_SRC_URL = CHROMIUM_GIT_HOST + '/chromium/src.git'
 BRANCH_HEADS_REFSPEC = '+refs/branch-heads/*'
 TAGS_REFSPEC = '+refs/tags/*'
 
+# Regular expression to match sha1 git revision.
+COMMIT_HASH_RE = re.compile(r'[0-9a-f]{5,40}', re.IGNORECASE)
+
 # Regular expression that matches a single commit footer line.
 COMMIT_FOOTER_ENTRY_RE = re.compile(r'([^:]+):\s*(.*)')
 
@@ -550,7 +553,7 @@ def get_target_pin(solution_name, git_url, revisions):
   """Returns revision to be checked out if it is pinned, else None."""
   _, revision = _get_target_branch_and_revision(
       solution_name, git_url, revisions)
-  if revision.upper() != 'HEAD':
+  if COMMIT_HASH_RE.match(revision):
     return revision
   return None
 
