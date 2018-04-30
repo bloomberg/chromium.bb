@@ -1639,8 +1639,10 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_SuddenTerminationDisablerChanged,
 
 // Requests that the resource timing info be added to the performance entries of
 // a remote parent frame.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_ForwardResourceTimingToParent,
-                    content::ResourceTimingInfo)
+IPC_MESSAGE_ROUTED3(FrameHostMsg_ForwardResourceTimingToParent,
+                    content::ResourceTimingInfo,
+                    bool /* view_is_closing */,
+                    bool /* widget_is_closing */)
 
 // Dispatch a load event for this frame in the iframe element of an
 // out-of-process parent frame.

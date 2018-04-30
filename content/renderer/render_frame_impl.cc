@@ -4413,7 +4413,9 @@ void RenderFrameImpl::DidChangeThemeColor() {
 void RenderFrameImpl::ForwardResourceTimingToParent(
     const blink::WebResourceTimingInfo& info) {
   Send(new FrameHostMsg_ForwardResourceTimingToParent(
-      routing_id_, WebResourceTimingInfoToResourceTimingInfo(info)));
+      routing_id_, WebResourceTimingInfoToResourceTimingInfo(info),
+      render_view_->closing(),
+      render_widget_ ? render_widget_->closing() : false));
 }
 
 void RenderFrameImpl::DispatchLoad() {

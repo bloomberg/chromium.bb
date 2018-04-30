@@ -2402,12 +2402,18 @@ void RenderFrameHostImpl::OnAbortNavigation() {
 }
 
 void RenderFrameHostImpl::OnForwardResourceTimingToParent(
-    const ResourceTimingInfo& resource_timing) {
+    const ResourceTimingInfo& resource_timing,
+    bool view_is_closing,
+    bool widget_is_closing) {
   // Don't forward the resource timing if this RFH is pending deletion. This can
   // happen in a race where this RenderFrameHost finishes loading just after
   // the frame navigates away. See https://crbug.com/626802.
   if (!is_active())
     return;
+
+  DEBUG_ALIAS_FOR_CSTR(resource_name, resource_timing.name.c_str(), 128);
+  base::debug::Alias(&view_is_closing);
+  base::debug::Alias(&widget_is_closing);
 
   bool is_current = IsCurrent();
   bool has_parent = GetParent();
