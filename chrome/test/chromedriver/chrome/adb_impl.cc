@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/net/adb_client_socket.h"
+#include "net/base/net_errors.h"
 
 namespace {
 
@@ -48,11 +49,20 @@ class ResponseBuffer : public base::RefCountedThreadSafe<ResponseBuffer> {
             static_cast<int>(timeout.InSeconds())));
       ready_.TimedWait(timeout);
     }
-    if (result_ < 0)
+    if (result_ < 0) {
+      return Status(kUnknownError,
+                    "Failed to run adb command with networking error: " +
+                        net::ErrorToString(result_) +
+                        ". Is the adb server running? Extra response: <" +
+                        response_ + ">.");
+    }
+    if (result_ > 0) {
       return Status(
+          // TODO(crouleau): Use an error code that can differentiate this from
+          // the above networking error.
           kUnknownError,
-          "Failed to run adb command, is the adb server running? Error: " +
-              response_ + ".");
+          "The adb command failed. Extra response: <" + response_ + ">.");
+    }
     *response = response_;
     return Status(kOk);
   }

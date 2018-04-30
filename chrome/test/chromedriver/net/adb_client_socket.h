@@ -16,6 +16,7 @@ class AdbClientSocket {
   typedef base::Callback<void(int, const std::string&)> CommandCallback;
   typedef base::Callback<void(int result,
                               net::StreamSocket*)> SocketCallback;
+  typedef base::Callback<void(const std::string&)> ParserCallback;
 
   static void AdbQuery(int port,
                        const std::string& query,
@@ -51,38 +52,34 @@ class AdbClientSocket {
   void Connect(const net::CompletionCallback& callback);
 
   void SendCommand(const std::string& command,
-                   bool is_void,
+                   bool has_output,
                    bool has_length,
-                   const CommandCallback& callback);
+                   const CommandCallback& response_callback);
 
   std::unique_ptr<net::StreamSocket> socket_;
 
   void ReadResponse(const CommandCallback& callback,
-                    bool is_void,
+                    bool has_output,
                     bool has_length,
                     int result);
 
  private:
-  void OnResponseStatus(const CommandCallback& callback,
-                        bool is_void,
-                        bool has_length,
-                        scoped_refptr<net::IOBuffer> response_buffer,
-                        int result);
+  static void ReadStatusOutput(const CommandCallback& response_callback,
+                               scoped_refptr<net::IOBuffer> socket_buffer,
+                               int socket_result);
 
-  void OnResponseLength(const CommandCallback& callback,
-                        const std::string& response,
-                        scoped_refptr<net::IOBuffer> response_buffer,
-                        int result);
+  void ReadUntilEOF(const ParserCallback& parse_output_callback,
+                    const CommandCallback& response_callback,
+                    scoped_refptr<net::GrowableIOBuffer> socket_buffer,
+                    int socket_result);
 
-  void OnResponseData(const CommandCallback& callback,
-                      const std::string& response,
-                      scoped_refptr<net::IOBuffer> response_buffer,
-                      int bytes_left,
-                      int result);
+  static void ParseOutput(bool has_length,
+                          const CommandCallback& response_callback,
+                          const std::string& adb_output);
 
   int port_;
 
+  friend class AdbClientSocketTest;
   DISALLOW_COPY_AND_ASSIGN(AdbClientSocket);
 };
-
 #endif  // CHROME_TEST_CHROMEDRIVER_NET_ADB_CLIENT_SOCKET_H_
