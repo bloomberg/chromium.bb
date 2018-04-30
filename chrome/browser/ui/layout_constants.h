@@ -106,7 +106,6 @@ enum LayoutConstant {
 
   // The horizontal space between most items in the toolbar.
   TOOLBAR_STANDARD_SPACING,
-
 };
 
 enum LayoutInset {
