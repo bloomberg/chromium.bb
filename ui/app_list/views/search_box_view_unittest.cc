@@ -7,11 +7,11 @@
 #include <cctype>
 #include <map>
 
+#include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
-#include "ui/app_list/vector_icons/vector_icons.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/chromeos/search_box/search_box_view_delegate.h"

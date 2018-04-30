@@ -6,12 +6,12 @@
 
 #include <utility>
 
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/bind.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_context_menu.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/app_list/app_list_constants.h"
 
 // static
 const char CrostiniAppItem::kItemType[] = "CrostiniAppItem";

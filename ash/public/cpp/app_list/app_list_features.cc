@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 
+#include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
-#include "ui/app_list/app_list_switches.h"
 
 namespace app_list {
 namespace features {

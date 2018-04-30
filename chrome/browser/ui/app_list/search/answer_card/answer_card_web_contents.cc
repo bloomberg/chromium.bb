@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -22,7 +23,6 @@
 #include "content/public/common/renderer_preferences.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
-#include "ui/app_list/answer_card_contents_registry.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/native/native_view_host.h"

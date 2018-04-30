@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -16,9 +19,6 @@
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/vector_icons.h"
-#include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_features.h"
-#include "ui/app_list/vector_icons/vector_icons.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"

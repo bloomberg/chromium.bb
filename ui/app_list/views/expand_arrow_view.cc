@@ -7,11 +7,11 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/vector_icons/vector_icons.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/base/l10n/l10n_util.h"

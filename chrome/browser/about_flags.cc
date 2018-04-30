@@ -9,6 +9,7 @@
 #include <set>
 #include <utility>
 
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -116,7 +117,6 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "third_party/libaom/av1_buildflags.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_switches.h"
@@ -150,7 +150,7 @@
 #endif  // OS_MACOSX
 
 #if BUILDFLAG(ENABLE_APP_LIST)
-#include "ui/app_list/app_list_switches.h"
+#include "ash/public/cpp/app_list/app_list_switches.h"
 #endif  // ENABLE_APP_LIST
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

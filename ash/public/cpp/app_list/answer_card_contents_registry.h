@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_ANSWER_CARD_CONTENTS_REGISTRY_H_
-#define UI_APP_LIST_ANSWER_CARD_CONTENTS_REGISTRY_H_
+#ifndef ASH_PUBLIC_CPP_APP_LIST_ANSWER_CARD_CONTENTS_REGISTRY_H_
+#define ASH_PUBLIC_CPP_APP_LIST_ANSWER_CARD_CONTENTS_REGISTRY_H_
 
 #include <map>
 
+#include "ash/public/cpp/ash_public_export.h"
 #include "base/macros.h"
 #include "base/unguessable_token.h"
-#include "ui/app_list/app_list_export.h"
 
 namespace views {
 class View;
@@ -25,7 +25,7 @@ namespace app_list {
 // look up the view to show. On mash after the UI code migration, this class
 // will NOT be used at all. App list UI code would use the token to embed the
 // answer card content directly.
-class APP_LIST_EXPORT AnswerCardContentsRegistry {
+class ASH_PUBLIC_EXPORT AnswerCardContentsRegistry {
  public:
   AnswerCardContentsRegistry();
   ~AnswerCardContentsRegistry();
@@ -49,4 +49,4 @@ class APP_LIST_EXPORT AnswerCardContentsRegistry {
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_ANSWER_CARD_CONTENTS_REGISTRY_H_
+#endif  // ASH_PUBLIC_CPP_APP_LIST_ANSWER_CARD_CONTENTS_REGISTRY_H_

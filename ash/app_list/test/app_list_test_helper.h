@@ -9,7 +9,7 @@
 
 #include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/test/test_app_list_client.h"
-#include "ui/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_constants.h"
 
 namespace app_list {
 class AppListView;

@@ -4,8 +4,8 @@
 
 #include "ui/app_list/views/top_icon_animation_view.h"
 
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/image_view.h"

@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -24,7 +25,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user_names.h"
-#include "ui/app_list/app_list_switches.h"
 
 // Browser Test for AppListController that runs on all platforms supporting
 // app_list.

@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_result_tile_item_view.h"

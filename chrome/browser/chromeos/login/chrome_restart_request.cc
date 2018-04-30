@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <vector>
 
+#include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -46,7 +47,6 @@
 #include "media/media_buildflags.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
-#include "ui/app_list/app_list_switches.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display_switches.h"

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "ui/app_list/app_list_constants.h"
 
 ArcAppIconLoader::ArcAppIconLoader(Profile* profile,
                                    int icon_size,

@@ -5,8 +5,8 @@
 #include "ash/message_center/message_center_bubble.h"
 
 #include "ash/message_center/message_center_view.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/views/bubble/tray_bubble_view.h"

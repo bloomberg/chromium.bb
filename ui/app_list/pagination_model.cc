@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "ui/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ui/app_list/pagination_model_observer.h"
 #include "ui/gfx/animation/slide_animation.h"
 

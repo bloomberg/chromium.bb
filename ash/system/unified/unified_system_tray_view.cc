@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/unified_system_tray_view.h"
 
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_pods_container_view.h"
@@ -12,7 +13,6 @@
 #include "ash/system/unified/unified_system_info_view.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"

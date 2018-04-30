@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
@@ -17,8 +19,6 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/crx_file/id_util.h"
-#include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/vector_icons/vector_icons.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/paint_vector_icon.h"
 

@@ -75,9 +75,9 @@
 #include "ui/base/device_form_factor.h"
 
 #if BUILDFLAG(ENABLE_APP_LIST)
+#include "ash/public/cpp/app_list/app_list_switches.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
-#include "ui/app_list/app_list_switches.h"
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

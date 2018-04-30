@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
@@ -14,7 +15,6 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/search_engines/template_url.h"
-#include "ui/app_list/app_list_features.h"
 
 namespace app_list {
 namespace test {

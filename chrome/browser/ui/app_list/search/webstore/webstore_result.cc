@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
@@ -30,7 +31,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_urls.h"
 #include "net/base/url_util.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 

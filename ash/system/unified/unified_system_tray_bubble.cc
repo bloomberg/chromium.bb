@@ -4,12 +4,12 @@
 
 #include "ash/system/unified/unified_system_tray_bubble.h"
 
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"
-#include "ui/app_list/app_list_features.h"
 
 namespace ash {
 

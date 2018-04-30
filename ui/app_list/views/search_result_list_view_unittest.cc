@@ -11,10 +11,10 @@
 #include <utility>
 
 #include "ash/app_list/model/search/search_model.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/test/test_search_result.h"
 #include "ui/app_list/views/search_result_view.h"

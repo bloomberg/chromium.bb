@@ -6,13 +6,13 @@
 
 #include <utility>
 
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_operations.h"
 

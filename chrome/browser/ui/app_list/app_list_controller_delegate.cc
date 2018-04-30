@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -28,8 +30,6 @@
 #include "extensions/common/manifest_url_handlers.h"
 #include "net/base/url_util.h"
 #include "rlz/buildflags/buildflags.h"
-#include "ui/app_list/app_list_features.h"
-#include "ui/app_list/app_list_switches.h"
 #include "ui/gfx/geometry/rect.h"
 
 #if BUILDFLAG(ENABLE_RLZ)

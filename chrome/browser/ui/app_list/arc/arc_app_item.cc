@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_context_menu.h"
@@ -11,7 +12,6 @@
 #include "components/arc/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/app_sorting.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/gfx/image/image_skia.h"
 
 // static

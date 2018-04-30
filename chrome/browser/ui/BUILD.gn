@@ -3563,9 +3563,9 @@ split_static_library("ui") {
     deps += [
       # TODO(wutao): Put new icons resources to ash/public/cpp/vector_icons/
       # when UX provides them.
+      "//ash/public/cpp/app_list/vector_icons",
       "//ash/resources/vector_icons",
       "//ui/app_list",
-      "//ui/app_list/vector_icons",
       "//ui/views/mus/remote_view:remote_view_provider",
     ]
 

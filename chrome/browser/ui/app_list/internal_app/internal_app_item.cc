@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/app_list/internal_app/internal_app_item.h"
 
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // static

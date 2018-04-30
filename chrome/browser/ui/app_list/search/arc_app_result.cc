@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/app_list/search/arc_app_result.h"
 
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_context_menu.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
-#include "ui/app_list/app_list_constants.h"
 
 namespace {
 const char kArcAppPrefix[] = "arc://";
