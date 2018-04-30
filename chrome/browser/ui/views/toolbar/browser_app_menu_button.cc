@@ -74,8 +74,12 @@ BrowserAppMenuButton::BrowserAppMenuButton(ToolbarView* toolbar_view)
     set_ink_drop_visible_opacity(kTouchToolbarInkDropVisibleOpacity);
 
   if (ui::MaterialDesignController::IsNewerMaterialUi()) {
-    const int radii =
-        ChromeLayoutProvider::Get()->GetCornerRadiusMetric(EMPHASIS_MEDIUM);
+    // TODO(pbos): Remove conditional once Touchable uses the same corner
+    // metrics as Refresh.
+    const int radii = ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
+                          ? 8
+                          : ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+                                EMPHASIS_MEDIUM);
     set_ink_drop_corner_radii(radii, radii);
   }
 }

@@ -17,17 +17,6 @@
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 
-namespace {
-
-// Dimentions specific to the ink drop on the Browser's toolbar buttons when
-// the Touch-optimized UI is being used.
-constexpr int kTouchInkDropCornerRadius = 18;
-constexpr gfx::Size kTouchInkDropHighlightSize{2 * kTouchInkDropCornerRadius,
-                                               2 * kTouchInkDropCornerRadius};
-constexpr gfx::Insets kTouchInkDropInsets{6};
-
-}  // namespace
-
 constexpr float kTouchToolbarInkDropVisibleOpacity = 0.06f;
 constexpr float kTouchToolbarHighlightVisibleOpacity = 0.08f;
 
@@ -39,6 +28,31 @@ constexpr float kTouchToolbarHighlightVisibleOpacity = 0.08f;
 // TODO: Consider making ToolbarButton and AppMenuButton share a common base
 // class https://crbug.com/819854.
 
+// Creates insets for a host view so that when insetting from the host view
+// the resulting mask or inkdrop has the desired inkdrop size.
+template <class BaseInkDropHostView>
+gfx::Insets GetInkDropInsets(BaseInkDropHostView* host_view) {
+  gfx::Insets inkdrop_insets;
+  const gfx::Insets host_insets = host_view->GetInsets();
+  // If content is not centered (leftmost or rightmost toolbar button), inset
+  // the inkdrop mask accordingly.
+  if (host_insets.left() > host_insets.right()) {
+    inkdrop_insets +=
+        gfx::Insets(0, host_insets.left() - host_insets.right(), 0, 0);
+  } else if (host_insets.right() > host_insets.left()) {
+    inkdrop_insets +=
+        gfx::Insets(0, 0, 0, host_insets.right() - host_insets.left());
+  }
+
+  // Inset the inkdrop insets so that the end result matches the target inkdrop
+  // dimensions.
+  const gfx::Size host_size = host_view->size();
+  const int inkdrop_dimensions = GetLayoutConstant(LOCATION_BAR_HEIGHT);
+  inkdrop_insets += gfx::Insets((host_size.height() - inkdrop_dimensions) / 2);
+
+  return inkdrop_insets;
+}
+
 // Creates the appropriate ink drop for the calling button. When the touch-
 // optimized UI is not enabled, it uses the default implementation of the
 // calling button's base class (the template argument BaseInkDropHostView).
@@ -47,7 +61,7 @@ constexpr float kTouchToolbarHighlightVisibleOpacity = 0.08f;
 template <class BaseInkDropHostView>
 std::unique_ptr<views::InkDrop> CreateToolbarInkDrop(
     BaseInkDropHostView* host_view) {
-  if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+  if (!ui::MaterialDesignController::IsNewerMaterialUi())
     return host_view->BaseInkDropHostView::CreateInkDrop();
 
   auto ink_drop =
@@ -66,11 +80,11 @@ template <class BaseInkDropHostView>
 std::unique_ptr<views::InkDropRipple> CreateToolbarInkDropRipple(
     const BaseInkDropHostView* host_view,
     const gfx::Point& center_point) {
-  if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+  if (!ui::MaterialDesignController::IsNewerMaterialUi())
     return host_view->BaseInkDropHostView::CreateInkDropRipple();
 
   return std::make_unique<views::FloodFillInkDropRipple>(
-      host_view->size(), kTouchInkDropInsets, center_point,
+      host_view->size(), GetInkDropInsets(host_view), center_point,
       host_view->GetInkDropBaseColor(), host_view->ink_drop_visible_opacity());
 }
 
@@ -82,11 +96,14 @@ template <class BaseInkDropHostView>
 std::unique_ptr<views::InkDropHighlight> CreateToolbarInkDropHighlight(
     const BaseInkDropHostView* host_view,
     const gfx::Point& center_point) {
-  if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+  if (!ui::MaterialDesignController::IsNewerMaterialUi())
     return host_view->BaseInkDropHostView::CreateInkDropHighlight();
 
+  const int highlight_dimensions = GetLayoutConstant(LOCATION_BAR_HEIGHT);
+  const gfx::Size highlight_size(highlight_dimensions, highlight_dimensions);
+
   auto highlight = std::make_unique<views::InkDropHighlight>(
-      kTouchInkDropHighlightSize, kTouchInkDropCornerRadius,
+      highlight_size, host_view->ink_drop_large_corner_radius(),
       gfx::PointF(center_point), host_view->GetInkDropBaseColor());
   highlight->set_visible_opacity(kTouchToolbarHighlightVisibleOpacity);
   return highlight;
@@ -101,11 +118,12 @@ std::unique_ptr<views::InkDropHighlight> CreateToolbarInkDropHighlight(
 template <class BaseInkDropHostView>
 std::unique_ptr<views::InkDropMask> CreateToolbarInkDropMask(
     const BaseInkDropHostView* host_view) {
-  if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+  if (!ui::MaterialDesignController::IsNewerMaterialUi())
     return host_view->BaseInkDropHostView::CreateInkDropMask();
 
   return std::make_unique<views::RoundRectInkDropMask>(
-      host_view->size(), kTouchInkDropInsets, kTouchInkDropCornerRadius);
+      host_view->size(), GetInkDropInsets(host_view),
+      host_view->ink_drop_large_corner_radius());
 }
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_INK_DROP_UTIL_H_
