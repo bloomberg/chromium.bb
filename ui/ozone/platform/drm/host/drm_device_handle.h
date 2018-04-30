@@ -22,6 +22,7 @@ class DrmDeviceHandle {
 
   int fd() const { return file_.get(); }
   const base::FilePath& sys_path() { return sys_path_; }
+  bool has_atomic_capabilities() const { return has_atomic_capabilities_; }
 
   bool Initialize(const base::FilePath& dev_path,
                   const base::FilePath& sys_path);
@@ -32,6 +33,7 @@ class DrmDeviceHandle {
  private:
   base::FilePath sys_path_;
   base::ScopedFD file_;
+  bool has_atomic_capabilities_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DrmDeviceHandle);
 };

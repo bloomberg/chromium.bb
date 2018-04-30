@@ -133,6 +133,8 @@ DrmDisplayHostManager::DrmDisplayHostManager(
       LOG(FATAL) << "Failed to open primary graphics card";
       return;
     }
+    overlay_manager->set_supports_overlays(
+        primary_drm_device_handle_->has_atomic_capabilities());
     drm_devices_[primary_graphics_card_path_] =
         primary_graphics_card_path_sysfs;
   }

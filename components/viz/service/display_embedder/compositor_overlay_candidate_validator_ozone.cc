@@ -29,8 +29,8 @@ std::unique_ptr<OverlayProcessor::Strategy> MakeOverlayStrategy(
 }  // namespace
 
 // |overlay_candidates| is an object used to answer questions about possible
-// overlays configuarations.
-// |strategies_string| is a comma-separated string containing all the overaly
+// overlays configurations.
+// |strategies_string| is a comma-separated string containing all the overlay
 // strategies that should be returned by GetStrategies.
 // If |strategies_string| is empty "single-on-top,underlay" will be used as
 // default.
