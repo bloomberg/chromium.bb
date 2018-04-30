@@ -37,6 +37,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -47,6 +48,7 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/test_content_browser_client.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -79,6 +81,28 @@ void ResizeWebContentsView(Shell* shell, const gfx::Size& size,
       SizeContents(size);
 #endif  // defined(OS_MACOSX)
 }
+
+// Class to test that OverrideWebkitPrefs has been called for all relevant
+// RenderViewHosts.
+class NotifyPreferencesChangedTestContentBrowserClient
+    : public TestContentBrowserClient {
+ public:
+  NotifyPreferencesChangedTestContentBrowserClient() = default;
+
+  void OverrideWebkitPrefs(RenderViewHost* render_view_host,
+                           WebPreferences* prefs) override {
+    override_webkit_prefs_rvh_set_.insert(render_view_host);
+  }
+
+  const std::unordered_set<RenderViewHost*>& override_webkit_prefs_rvh_set() {
+    return override_webkit_prefs_rvh_set_;
+  }
+
+ private:
+  std::unordered_set<RenderViewHost*> override_webkit_prefs_rvh_set_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotifyPreferencesChangedTestContentBrowserClient);
+};
 
 class WebContentsImplBrowserTest : public ContentBrowserTest {
  public:
@@ -2238,6 +2262,34 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UpdateLoadState) {
   waiter.Wait(net::LOAD_STATE_WAITING_FOR_DELEGATE, paused_host);
   frame_pauser.ResumeNavigation();
   waiter.Wait(net::LOAD_STATE_IDLE, base::string16());
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NotifyPreferencesChanged) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHost* main_frame = web_contents->GetMainFrame();
+
+  // Navigate to a site with two iframes in different origins.
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,c)");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  auto* main_frame_rvh = main_frame->GetRenderViewHost();
+  auto* b_subframe_rvh = ChildFrameAt(main_frame, 0)->GetRenderViewHost();
+  auto* c_subframe_rvh = ChildFrameAt(main_frame, 1)->GetRenderViewHost();
+
+  NotifyPreferencesChangedTestContentBrowserClient new_client;
+  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
+
+  web_contents->NotifyPreferencesChanged();
+
+  // We should have updated the preferences for all three RenderViewHosts.
+  EXPECT_EQ(std::unordered_set<RenderViewHost*>(
+                {main_frame_rvh, b_subframe_rvh, c_subframe_rvh}),
+            new_client.override_webkit_prefs_rvh_set());
+
+  SetBrowserClientForTesting(old_client);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, PausePageScheduledTasks) {
