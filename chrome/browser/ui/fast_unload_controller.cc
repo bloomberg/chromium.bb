@@ -428,8 +428,14 @@ void FastUnloadController::ProcessPendingTabs(bool skip_beforeunload) {
   }
 
   if (is_calling_before_unload_handlers()) {
+    base::OnceCallback<void(bool)> on_close_confirmed = on_close_confirmed_;
+    // Reset |on_close_confirmed_| in case the callback tests
+    // |is_calling_before_unload_handlers()|, we want to return that calling
+    // is complete.
+    if (tabs_needing_unload_.empty())
+      on_close_confirmed_.Reset();
     if (!skip_beforeunload)
-      on_close_confirmed_.Run(true);
+      std::move(on_close_confirmed).Run(true);
     return;
   }
 
