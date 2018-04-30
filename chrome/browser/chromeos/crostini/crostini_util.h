@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/optional.h"
+
 class Profile;
 
 // Returns true if crostini is allowed to run.
@@ -25,6 +27,15 @@ bool IsCrostiniEnabled(Profile* profile);
 void LaunchCrostiniApp(Profile* profile, const std::string& app_id);
 
 std::string CryptohomeIdForProfile(Profile* profile);
+
+// The Terminal opens Crosh but overrides the Browser's app_name so that we can
+// identify it as the Crostini Terminal. In the future, we will also use these
+// for Crostini apps marked Terminal=true in their .desktop file.
+std::string AppNameFromCrostiniAppId(const std::string& id);
+
+// Returns nullopt for a non-Crostini app name.
+base::Optional<std::string> CrostiniAppIdFromAppName(
+    const std::string& app_name);
 
 constexpr char kCrostiniTerminalAppName[] = "Terminal";
 // We can use any arbitrary well-formed extension id for the Terminal app, this

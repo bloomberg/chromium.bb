@@ -63,6 +63,9 @@ struct AppLaunchParams {
   // position and dimensions.
   gfx::Rect override_bounds;
 
+  // If non-empty, use override_app_name in place of generating one normally.
+  std::string override_app_name;
+
   // If non-empty, information from the command line may be passed on to the
   // application.
   base::CommandLine command_line;
