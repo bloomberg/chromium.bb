@@ -9131,7 +9131,6 @@ static void set_params_rd_pick_inter_mode(
     // an unfiltered alternative. We allow near/nearest as well
     // because they may result in zero-zero MVs but be cheaper.
     if (cpi->rc.is_src_frame_alt_ref && (cpi->oxcf.arnr_max_frames == 0)) {
-      int_mv zeromv;
       ref_frame_skip_mask[0] = (1 << LAST_FRAME) | (1 << LAST2_FRAME) |
                                (1 << LAST3_FRAME) | (1 << BWDREF_FRAME) |
                                (1 << ALTREF2_FRAME) | (1 << GOLDEN_FRAME);
@@ -9139,19 +9138,16 @@ static void set_params_rd_pick_inter_mode(
       // TODO(zoeliu): To further explore whether following needs to be done for
       //               BWDREF_FRAME as well.
       mode_skip_mask[ALTREF_FRAME] = ~INTER_NEAREST_NEAR_ZERO;
-      zeromv.as_int =
-          gm_get_motion_vector(&cm->global_motion[ALTREF_FRAME],
-                               cm->allow_high_precision_mv, bsize, mi_col,
-                               mi_row, cm->cur_frame_force_integer_mv)
-              .as_int;
-      if (frame_mv[NEARMV][ALTREF_FRAME].as_int != zeromv.as_int)
+      const MV_REFERENCE_FRAME tmp_ref_frames[2] = { ALTREF_FRAME, NONE_FRAME };
+      int_mv near_mv, nearest_mv, global_mv;
+      get_this_mv(&nearest_mv, NEARESTMV, 0, 0, tmp_ref_frames, x->mbmi_ext);
+      get_this_mv(&near_mv, NEARMV, 0, 0, tmp_ref_frames, x->mbmi_ext);
+      get_this_mv(&global_mv, GLOBALMV, 0, 0, tmp_ref_frames, x->mbmi_ext);
+
+      if (near_mv.as_int != global_mv.as_int)
         mode_skip_mask[ALTREF_FRAME] |= (1 << NEARMV);
-      if (frame_mv[NEARESTMV][ALTREF_FRAME].as_int != zeromv.as_int)
+      if (nearest_mv.as_int != global_mv.as_int)
         mode_skip_mask[ALTREF_FRAME] |= (1 << NEARESTMV);
-      if (frame_mv[NEAREST_NEARESTMV][ALTREF_FRAME].as_int != zeromv.as_int)
-        mode_skip_mask[ALTREF_FRAME] |= (1 << NEAREST_NEARESTMV);
-      if (frame_mv[NEAR_NEARMV][ALTREF_FRAME].as_int != zeromv.as_int)
-        mode_skip_mask[ALTREF_FRAME] |= (1 << NEAR_NEARMV);
     }
   }
 
