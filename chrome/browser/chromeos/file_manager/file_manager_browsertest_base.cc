@@ -61,33 +61,6 @@ enum SharedOption {
   SHARED,
 };
 
-// Maps the given string to EntryType. Returns true on success.
-bool MapStringToEntryType(base::StringPiece value, EntryType* output) {
-  if (value == "file")
-    *output = FILE;
-  else if (value == "directory")
-    *output = DIRECTORY;
-  else
-    return false;
-  return true;
-}
-
-// Maps the given string to SharedOption. Returns true on success.
-bool MapStringToSharedOption(base::StringPiece value, SharedOption* output) {
-  if (value == "shared")
-    *output = SHARED;
-  else if (value == "none")
-    *output = NONE;
-  else
-    return false;
-  return true;
-}
-
-// Maps the given string to base::Time. Returns true on success.
-bool MapStringToTime(base::StringPiece value, base::Time* time) {
-  return base::Time::FromString(value.as_string().c_str(), time);
-}
-
 // Test data file or directory entry info.
 struct TestEntryInfo {
   TestEntryInfo() : type(FILE), shared_option(NONE) {}
@@ -128,6 +101,34 @@ struct TestEntryInfo {
                                    &TestEntryInfo::last_modified_time,
                                    &MapStringToTime);
   }
+
+  // Maps |value| to an EntryType. Returns true on success.
+  static bool MapStringToEntryType(base::StringPiece value, EntryType* type) {
+    if (value == "file")
+      *type = FILE;
+    else if (value == "directory")
+      *type = DIRECTORY;
+    else
+      return false;
+    return true;
+  }
+
+  // Maps |value| to SharedOption. Returns true on success.
+  static bool MapStringToSharedOption(base::StringPiece value,
+                                      SharedOption* option) {
+    if (value == "shared")
+      *option = SHARED;
+    else if (value == "none")
+      *option = NONE;
+    else
+      return false;
+    return true;
+  }
+
+  // Maps |value| to base::Time. Returns true on success.
+  static bool MapStringToTime(base::StringPiece value, base::Time* time) {
+    return base::Time::FromString(value.as_string().c_str(), time);
+  }
 };
 
 // Message from JavaScript to add entries.
@@ -147,15 +148,15 @@ struct AddEntriesMessage {
         "entries", &AddEntriesMessage::entries);
   }
 
-  // Maps the given string to TargetVolume. Returns true on success.
+  // Maps |value| to TargetVolume. Returns true on success.
   static bool MapStringToTargetVolume(base::StringPiece value,
-                                      TargetVolume* output) {
+                                      TargetVolume* volume) {
     if (value == "drive")
-      *output = DRIVE_VOLUME;
+      *volume = DRIVE_VOLUME;
     else if (value == "local")
-      *output = LOCAL_VOLUME;
+      *volume = LOCAL_VOLUME;
     else if (value == "usb")
-      *output = USB_VOLUME;
+      *volume = USB_VOLUME;
     else
       return false;
     return true;
