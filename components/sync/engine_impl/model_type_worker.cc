@@ -166,6 +166,7 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
   data.is_folder = update_entity.folder();
   data.parent_id = update_entity.parent_id_string();
   data.unique_position = update_entity.unique_position();
+  data.server_defined_unique_tag = update_entity.server_defined_unique_tag();
 
   // Deleted entities must use the default instance of EntitySpecifics in
   // order for EntityData to correctly reflect that they are deleted.
