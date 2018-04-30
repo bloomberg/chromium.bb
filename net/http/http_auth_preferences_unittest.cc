@@ -41,11 +41,11 @@ TEST(HttpAuthPreferencesTest, NegotiateEnablePort) {
 }
 
 #if defined(OS_POSIX)
-TEST(HttpAuthPreferencesTest, EnableNtlmV2) {
+TEST(HttpAuthPreferencesTest, DisableNtlmV2) {
   HttpAuthPreferences http_auth_preferences;
-  EXPECT_FALSE(http_auth_preferences.NtlmV2Enabled());
-  http_auth_preferences.set_ntlm_v2_enabled(true);
   EXPECT_TRUE(http_auth_preferences.NtlmV2Enabled());
+  http_auth_preferences.set_ntlm_v2_enabled(false);
+  EXPECT_FALSE(http_auth_preferences.NtlmV2Enabled());
 }
 #endif
 

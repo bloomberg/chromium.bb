@@ -44,7 +44,7 @@ HttpAuthPreferences::HttpAuthPreferences(
       negotiate_disable_cname_lookup_(false),
       negotiate_enable_port_(false),
 #if defined(OS_POSIX)
-      ntlm_v2_enabled_(false),
+      ntlm_v2_enabled_(true),
 #endif
 #if defined(OS_CHROMEOS)
       allow_gssapi_library_load_(allow_gssapi_library_load),
