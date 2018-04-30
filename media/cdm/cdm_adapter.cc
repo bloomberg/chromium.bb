@@ -684,6 +684,12 @@ std::unique_ptr<CallbackRegistration> CdmAdapter::RegisterNewKeyCB(
 
 Decryptor* CdmAdapter::GetDecryptor() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // When using HW secure codecs, we cannot and should not use the CDM instance
+  // to do decrypt and/or decode. Instead, we should use the CdmProxy.
+  if (cdm_config_.use_hw_secure_codecs)
+    return nullptr;
+
   return this;
 }
 
