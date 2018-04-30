@@ -27,7 +27,7 @@ class WebrtcPerfBenchmark(perf_benchmark.PerfBenchmark):
         '-*',
         'toplevel',
         # WebRTC
-        'webmediaplayerms',
+        'media',
     ]
 
     category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
