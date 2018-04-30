@@ -520,8 +520,6 @@ source_set("chromeos") {
     "customization/customization_wallpaper_downloader.h",
     "customization/customization_wallpaper_util.cc",
     "customization/customization_wallpaper_util.h",
-    "dbus/chrome_component_updater_service_provider_delegate.cc",
-    "dbus/chrome_component_updater_service_provider_delegate.h",
     "dbus/chrome_console_service_provider_delegate.cc",
     "dbus/chrome_console_service_provider_delegate.h",
     "dbus/chrome_display_power_service_provider_delegate.cc",
@@ -530,6 +528,8 @@ source_set("chromeos") {
     "dbus/chrome_proxy_resolution_service_provider_delegate.h",
     "dbus/chrome_virtual_file_request_service_provider_delegate.cc",
     "dbus/chrome_virtual_file_request_service_provider_delegate.h",
+    "dbus/component_updater_service_provider.cc",
+    "dbus/component_updater_service_provider.h",
     "dbus/finch_features_service_provider_delegate.cc",
     "dbus/finch_features_service_provider_delegate.h",
     "dbus/kiosk_info_service_provider.cc",
@@ -1750,6 +1750,7 @@ source_set("chromeos") {
 
 copy("dbus_service_files") {
   sources = [
+    "dbus/org.chromium.ComponentUpdaterService.conf",
     "dbus/org.chromium.ScreenLockService.conf",
   ]
   outputs = [

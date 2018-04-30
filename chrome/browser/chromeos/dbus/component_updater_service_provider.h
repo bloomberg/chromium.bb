@@ -1,9 +1,9 @@
-// Copyright (c) 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_SERVICES_COMPONENT_UPDATER_SERVICE_PROVIDER_H_
-#define CHROMEOS_DBUS_SERVICES_COMPONENT_UPDATER_SERVICE_PROVIDER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DBUS_COMPONENT_UPDATER_SERVICE_PROVIDER_H_
+#define CHROME_BROWSER_CHROMEOS_DBUS_COMPONENT_UPDATER_SERVICE_PROVIDER_H_
 
 #include <memory>
 #include <string>
@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/component_updater/cros_component_installer.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
@@ -43,7 +44,8 @@ namespace chromeos {
 //
 // % (returns empty response on success and error response on failure)
 class CHROMEOS_EXPORT ComponentUpdaterServiceProvider
-    : public CrosDBusService::ServiceProviderInterface {
+    : public CrosDBusService::ServiceProviderInterface,
+      public component_updater::CrOSComponentManager::Delegate {
  public:
   // Delegate interface providing additional resources to
   // ComponentUpdaterServiceProvider.
@@ -64,11 +66,15 @@ class CHROMEOS_EXPORT ComponentUpdaterServiceProvider
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
-  explicit ComponentUpdaterServiceProvider(std::unique_ptr<Delegate> delegate);
+  explicit ComponentUpdaterServiceProvider(
+      component_updater::CrOSComponentManager* cros_component_manager);
   ~ComponentUpdaterServiceProvider() override;
 
   // CrosDBusService::ServiceProviderInterface overrides:
   void Start(scoped_refptr<dbus::ExportedObject> exported_object) override;
+
+  // component_updater::CrOSComponentManager::Delegate overrides:
+  void EmitInstalledSignal(const std::string& component) override;
 
  private:
   // Called from ExportedObject when LoadComponent() is exported as a D-Bus
@@ -84,13 +90,22 @@ class CHROMEOS_EXPORT ComponentUpdaterServiceProvider
   // Callback executed after component loading operation is done.
   void OnLoadComponent(dbus::MethodCall* method_call,
                        dbus::ExportedObject::ResponseSender response_sender,
+                       component_updater::CrOSComponentManager::Error error,
                        const base::FilePath& result);
 
   // Called on UI thread in response to a D-Bus request.
   void UnloadComponent(dbus::MethodCall* method_call,
                        dbus::ExportedObject::ResponseSender response_sender);
 
-  std::unique_ptr<Delegate> delegate_;
+  // Implements EmitInstalledSignal.
+  void EmitInstalledSignalInternal(const std::string& component);
+
+  // A reference on ExportedObject for sending signals.
+  scoped_refptr<dbus::ExportedObject> exported_object_;
+
+  // Weak pointer to CrOSComponentManager to avoid calling BrowserProcess.
+  component_updater::CrOSComponentManager* cros_component_manager_;
+
   // Keep this last so that all weak pointers will be invalidated at the
   // beginning of destruction.
   base::WeakPtrFactory<ComponentUpdaterServiceProvider> weak_ptr_factory_;
@@ -100,4 +115,4 @@ class CHROMEOS_EXPORT ComponentUpdaterServiceProvider
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_SERVICES_COMPONENT_UPDATER_SERVICE_PROVIDER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DBUS_COMPONENT_UPDATER_SERVICE_PROVIDER_H_

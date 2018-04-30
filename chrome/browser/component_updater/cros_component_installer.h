@@ -85,8 +85,17 @@ class CrOSComponentManager {
     kDontMount,
   };
 
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+    // Broadcasts a D-Bus signal for a successful component installation.
+    virtual void EmitInstalledSignal(const std::string& component) = 0;
+  };
+
   CrOSComponentManager();
   ~CrOSComponentManager();
+
+  void SetDelegate(Delegate* delegate);
 
   // Installs a component and keeps it up-to-date. |load_callback| returns the
   // mount point path.
@@ -109,16 +118,22 @@ class CrOSComponentManager {
   // Removes the name and install path entry of a component.
   void UnregisterCompatiblePath(const std::string& name);
 
-  // Checks if the current installed component is compatible given a component
-  // |name|. If compatible, sets |path| to be its installed path.
-  bool IsCompatible(const std::string& name) const;
-
   // Returns installed path of a compatible component given |name|. Returns an
   // empty path if the component isn't compatible.
   base::FilePath GetCompatiblePath(const std::string& name) const;
 
+  // Called when a component is installed/updated.
+  // Broadcasts a D-Bus signal for a successful component installation.
+  void EmitInstalledSignal(const std::string& component);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest, RegisterComponent);
+  FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest,
+                           BPPPCompatibleCrOSComponent);
+  FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest, CompatibilityOK);
+  FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest,
+                           CompatibilityMissingManifest);
+  FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest, IsCompatibleOrNot);
 
   // Registers a component with a dedicated ComponentUpdateService instance.
   void Register(ComponentUpdateService* cus,
@@ -155,8 +170,15 @@ class CrOSComponentManager {
   // Registers component |configs| to be updated.
   void RegisterN(const std::vector<ComponentConfig>& configs);
 
+  // Checks if the current installed component is compatible given a component
+  // |name|.
+  bool IsCompatible(const std::string& name) const;
+
   // Maps from a compatible component name to its installed path.
   base::flat_map<std::string, base::FilePath> compatible_components_;
+
+  // A weak pointer to a Delegate for emitting D-Bus signal.
+  Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CrOSComponentManager);
 };
