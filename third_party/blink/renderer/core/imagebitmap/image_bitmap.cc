@@ -158,8 +158,10 @@ bool DstBufferSizeHasOverflow(const ImageBitmap::ParsedOptions& options) {
 
 SkImageInfo GetSkImageInfo(sk_sp<SkImage> skia_image) {
   SkColorType color_type = kN32_SkColorType;
-  if (skia_image->colorSpace() && skia_image->colorSpace()->gammaIsLinear())
+  if (skia_image->colorType() == kRGBA_F16_SkColorType ||
+      (skia_image->colorSpace() && skia_image->colorSpace()->gammaIsLinear())) {
     color_type = kRGBA_F16_SkColorType;
+  }
   return SkImageInfo::Make(skia_image->width(), skia_image->height(),
                            color_type, skia_image->alphaType(),
                            skia_image->refColorSpace());
