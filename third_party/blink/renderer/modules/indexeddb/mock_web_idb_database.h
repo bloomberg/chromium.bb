@@ -84,17 +84,7 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                     bool key_only,
                     WebIDBCallbacks*));
 
-  // Google Mock doesn't support methods with move-only arguments.
-  void Put(long long transaction_id,
-           long long object_store_id,
-           const WebData& value,
-           const WebVector<WebBlobInfo>&,
-           WebIDBKeyView primary_key,
-           WebIDBPutMode,
-           WebIDBCallbacks*,
-           const WebVector<long long>& index_ids,
-           WebVector<WebIndexKeys>) override;
-  MOCK_METHOD9(DoPut,
+  MOCK_METHOD9(Put,
                void(long long transaction_id,
                     long long object_store_id,
                     const WebData& value,
@@ -103,7 +93,7 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                     WebIDBPutMode,
                     WebIDBCallbacks*,
                     const WebVector<long long>& index_ids,
-                    const WebVector<WebIndexKeys>&));
+                    const WebVector<WebIndexKeys>));
 
   MOCK_METHOD5(SetIndexKeys,
                void(long long transaction_id,
