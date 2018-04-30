@@ -40,6 +40,9 @@ class FingerprintStorage {
   // Returns true if the user has exceeded fingerprint unlock attempts.
   bool ExceededUnlockAttempts() const;
 
+  // Returns true if user has enabled fingerprint to unlock device.
+  bool AuthenticationEnabled() const;
+
   int unlock_attempt_count() const { return unlock_attempt_count_; }
 
  private:
