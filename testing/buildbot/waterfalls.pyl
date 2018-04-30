@@ -1489,6 +1489,14 @@
           'empty_main',
         ],
       },
+      'linux-ozone-rel': {
+        'additional_compile_targets': [
+          'chrome',
+        ],
+        'test_suites': {
+          'gtest_tests': 'ozone_linux_gtests',
+        },
+      },
     },
   },
   {

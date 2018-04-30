@@ -345,6 +345,7 @@
       'Fuchsia x64': 'release_bot_fuchsia',
       'Ozone Linux': 'ozone_linux_release_bot',
       'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
+      'linux-ozone-rel': 'ozone_linux_release_bot',
     },
 
     'chromium.lkgr': {
@@ -611,7 +612,9 @@
       'leak_detection_linux': 'release_trybot',
       'linux-blink-heap-incremental-marking': 'debug_trybot_enable_blink_heap_incremental_marking',
       'linux-blink-heap-verification-try': 'release_trybot_enable_blink_heap_verification',
+      'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
       'linux-jumbo-rel': 'jumbo_release_bot_minimal_symbols',
+      'linux-ozone-rel': 'ozone_linux_release_trybot',
       'linux_arm': 'release_trybot_arm',
       'linux_chromium_archive_rel_ng': 'release_bot',
       'linux_chromium_asan_rel_ng': 'asan_lsan_release_trybot',
@@ -648,7 +651,6 @@
       'linux_site_isolation': 'release_trybot',
       'linux_upload_clang': 'release_bot',
       'linux_vr': 'vr_release_trybot',
-      'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
     },
 
     'tryserver.chromium.mac': {
@@ -1451,6 +1453,10 @@
 
     'ozone_linux_release_bot': [
       'ozone_linux', 'release_bot',
+    ],
+
+    'ozone_linux_release_trybot': [
+      'ozone_linux', 'release_trybot',
     ],
 
     'ozone_linux_release_trybot_compile_only': [
