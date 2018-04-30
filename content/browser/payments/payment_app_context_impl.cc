@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "content/browser/payments/payment_manager.h"
 
@@ -82,9 +81,9 @@ void PaymentAppContextImpl::CreatePaymentAppDatabaseOnIO(
 void PaymentAppContextImpl::CreatePaymentManagerOnIO(
     mojo::InterfaceRequest<payments::mojom::PaymentManager> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  PaymentManager* payment_manager =
-      new PaymentManager(this, std::move(request));
-  payment_managers_[payment_manager] = base::WrapUnique(payment_manager);
+  auto payment_manager =
+      std::make_unique<PaymentManager>(this, std::move(request));
+  payment_managers_[payment_manager.get()] = std::move(payment_manager);
 }
 
 void PaymentAppContextImpl::ShutdownOnIO() {
