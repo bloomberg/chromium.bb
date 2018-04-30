@@ -339,6 +339,11 @@ def gclient_sync(
   fd, gclient_output_file = tempfile.mkstemp(suffix='.json')
   os.close(fd)
 
+  # Some bots don't have git user name/email configured, which causes problems
+  # when rebasing.
+  git('config', 'user.name', 'chrome-bot')
+  git('config', 'user.email', 'chrome-bot@chromium.org')
+
   args = ['sync', '--verbose', '--reset', '--force',
          '--ignore_locks', '--output-json', gclient_output_file,
          '--nohooks', '--noprehooks', '--delete_unversioned_trees']
