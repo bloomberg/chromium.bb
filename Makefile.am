@@ -825,11 +825,13 @@ weston_simple_im_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 weston_info_SOURCES = 					\
 	clients/weston-info.c				\
 	shared/helpers.h
-nodist_weston_info_SOURCES =				\
-	protocol/presentation-time-protocol.c		\
-	protocol/presentation-time-client-protocol.h	\
-	protocol/linux-dmabuf-unstable-v1-protocol.c	\
-	protocol/linux-dmabuf-unstable-v1-client-protocol.h
+nodist_weston_info_SOURCES =					\
+	protocol/presentation-time-protocol.c			\
+	protocol/presentation-time-client-protocol.h		\
+	protocol/linux-dmabuf-unstable-v1-protocol.c		\
+	protocol/linux-dmabuf-unstable-v1-client-protocol.h	\
+	protocol/tablet-unstable-v2-protocol.c			\
+	protocol/tablet-unstable-v2-client-protocol.h
 weston_info_LDADD = $(WESTON_INFO_LIBS) libshared.la
 weston_info_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
@@ -889,6 +891,8 @@ BUILT_SOURCES +=					\
 	protocol/ivi-application-client-protocol.h	\
 	protocol/linux-dmabuf-unstable-v1-protocol.c	\
 	protocol/linux-dmabuf-unstable-v1-client-protocol.h		\
+	protocol/tablet-unstable-v2-protocol.c		\
+	protocol/tablet-unstable-v2-client-protocol.h			\
 	protocol/input-timestamps-unstable-v1-protocol.c		\
 	protocol/input-timestamps-unstable-v1-client-protocol.h
 
