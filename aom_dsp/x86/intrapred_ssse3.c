@@ -889,8 +889,7 @@ static INLINE void smooth_predictor_wxh(uint8_t *dst, ptrdiff_t stride,
   const __m128i scale_value =
       _mm_set1_epi16((uint16_t)(1 << sm_weight_log2_scale));
   const __m128i bottom_left = _mm_cvtsi32_si128((uint32_t)left[bh - 1]);
-  const __m128i dup16 =
-      _mm_set_epi32(0x01000100, 0x01000100, 0x01000100, 0x01000100);
+  const __m128i dup16 = _mm_set1_epi32(0x01000100);
   const __m128i top_right =
       _mm_shuffle_epi8(_mm_cvtsi32_si128((uint32_t)above[bw - 1]), dup16);
   const __m128i gat = _mm_set_epi32(0, 0, 0xe0c0a08, 0x6040200);
@@ -1256,8 +1255,7 @@ static INLINE void smooth_v_predictor_wxh(uint8_t *dst, ptrdiff_t stride,
   const __m128i zero = _mm_setzero_si128();
   const __m128i scale_value =
       _mm_set1_epi16((uint16_t)(1 << sm_weight_log2_scale));
-  const __m128i dup16 =
-      _mm_set_epi32(0x01000100, 0x01000100, 0x01000100, 0x01000100);
+  const __m128i dup16 = _mm_set1_epi32(0x01000100);
   const __m128i bottom_left =
       _mm_shuffle_epi8(_mm_cvtsi32_si128((uint32_t)left[bh - 1]), dup16);
   const __m128i gat = _mm_set_epi32(0, 0, 0xe0c0a08, 0x6040200);

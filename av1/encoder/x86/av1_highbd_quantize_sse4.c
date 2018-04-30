@@ -14,6 +14,7 @@
 
 #include "./av1_rtcd.h"
 #include "aom_dsp/aom_dsp_common.h"
+#include "aom_dsp/x86/synonyms.h"
 
 // Coefficient quantization phase 1
 // param[0-2] : rounding/quan/dequan constants
@@ -136,8 +137,8 @@ void av1_highbd_quantize_fp_sse4_1(
   const int round0 = ROUND_POWER_OF_TWO(round_ptr[0], log_scale);
 
   qparam[0] = _mm_set_epi32(round1, round1, round1, round0);
-  qparam[1] = _mm_set_epi32(0, quant_ptr[1], 0, quant_ptr[0]);
-  qparam[2] = _mm_set_epi32(0, dequant_ptr[1], 0, dequant_ptr[0]);
+  qparam[1] = xx_set_64_from_32i(quant_ptr[1], quant_ptr[0]);
+  qparam[2] = xx_set_64_from_32i(dequant_ptr[1], dequant_ptr[0]);
   qparam[3] = _mm_set_epi32(dequant_ptr[1], dequant_ptr[1], dequant_ptr[1],
                             dequant_ptr[0]);
 
@@ -147,8 +148,8 @@ void av1_highbd_quantize_fp_sse4_1(
 
   // update round/quan/dquan for AC
   qparam[0] = _mm_unpackhi_epi64(qparam[0], qparam[0]);
-  qparam[1] = _mm_set_epi32(0, quant_ptr[1], 0, quant_ptr[1]);
-  qparam[2] = _mm_set_epi32(0, dequant_ptr[1], 0, dequant_ptr[1]);
+  qparam[1] = xx_set1_64_from_32i(quant_ptr[1]);
+  qparam[2] = xx_set1_64_from_32i(dequant_ptr[1]);
   qparam[3] = _mm_set1_epi32(dequant_ptr[1]);
   quantize_coeff_phase2(qcoeff, dequant, &coeff_sign, qparam, shift, log_scale,
                         quanAddr, dquanAddr);

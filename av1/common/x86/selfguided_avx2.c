@@ -227,10 +227,10 @@ static void calc_ab(int32_t *A, int32_t *B, const int32_t *C, const int32_t *D,
   const __m256i rnd_res = round_for_shift(SGRPROJ_RECIP_BITS);
 
   // Set up masks
-  const __m128i ones32 = _mm_set_epi64x(0, 0xffffffffffffffffULL);
+  const __m128i ones32 = _mm_set_epi32(0, 0, 0xffffffff, 0xffffffff);
   __m256i mask[8];
   for (int idx = 0; idx < 8; idx++) {
-    const __m128i shift = _mm_set_epi64x(0, 8 * (8 - idx));
+    const __m128i shift = _mm_cvtsi32_si128(8 * (8 - idx));
     mask[idx] = _mm256_cvtepi8_epi32(_mm_srl_epi64(ones32, shift));
   }
 
@@ -361,10 +361,10 @@ static void calc_ab_fast(int32_t *A, int32_t *B, const int32_t *C,
   const __m256i rnd_res = round_for_shift(SGRPROJ_RECIP_BITS);
 
   // Set up masks
-  const __m128i ones32 = _mm_set_epi64x(0, 0xffffffffffffffffULL);
+  const __m128i ones32 = _mm_set_epi32(0, 0, 0xffffffff, 0xffffffff);
   __m256i mask[8];
   for (int idx = 0; idx < 8; idx++) {
-    const __m128i shift = _mm_set_epi64x(0, 8 * (8 - idx));
+    const __m128i shift = _mm_cvtsi32_si128(8 * (8 - idx));
     mask[idx] = _mm256_cvtepi8_epi32(_mm_srl_epi64(ones32, shift));
   }
 

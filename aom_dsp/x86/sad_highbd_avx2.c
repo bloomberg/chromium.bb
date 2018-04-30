@@ -15,6 +15,7 @@
 #include "./aom_dsp_rtcd.h"
 
 #include "aom/aom_integer.h"
+#include "aom_dsp/x86/synonyms_avx2.h"
 #include "aom_ports/mem.h"
 
 // SAD
@@ -700,12 +701,7 @@ unsigned int aom_highbd_sad128x128_avg_avx2(const uint8_t *src, int src_stride,
 static INLINE void get_4d_sad_from_mm256_epi32(const __m256i *v,
                                                uint32_t *res) {
   __m256i u0, u1, u2, u3;
-#if defined(_MSC_VER) && defined(_M_IX86) && _MSC_VER < 1900
-  const __m256i mask = _mm256_setr_epi32(UINT32_MAX, 0, UINT32_MAX, 0,
-                                         UINT32_MAX, 0, UINT32_MAX, 0);
-#else
-  const __m256i mask = _mm256_set1_epi64x(UINT32_MAX);
-#endif
+  const __m256i mask = yy_set1_64_from_32i(UINT32_MAX);
   __m128i sad;
 
   // 8 32-bit summation

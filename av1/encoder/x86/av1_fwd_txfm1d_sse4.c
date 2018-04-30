@@ -373,9 +373,9 @@ void av1_fadst4_new_sse4_1(const __m128i *input, __m128i *output,
     // stage 5
     stage_idx++;
     buf1[0] = buf0[0];
-    buf1[1] = _mm_sub_epi32(_mm_set1_epi32(0), buf0[2]);
+    buf1[1] = _mm_sub_epi32(_mm_setzero_si128(), buf0[2]);
     buf1[2] = buf0[3];
-    buf1[3] = _mm_sub_epi32(_mm_set1_epi32(0), buf0[1]);
+    buf1[3] = _mm_sub_epi32(_mm_setzero_si128(), buf0[1]);
 
     for (j = 0; j < 4; ++j) {
       output[j * col_num + col] = buf1[j];

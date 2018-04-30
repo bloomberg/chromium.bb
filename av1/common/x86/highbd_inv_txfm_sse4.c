@@ -1505,21 +1505,21 @@ static void iadst16x16_sse4_1(__m128i *in, __m128i *out, int bit) {
 
     // stage 9
     out[0 * col_num + col] = v[0];
-    out[1 * col_num + col] = _mm_sub_epi32(_mm_set1_epi32(0), v[8]);
+    out[1 * col_num + col] = _mm_sub_epi32(_mm_setzero_si128(), v[8]);
     out[2 * col_num + col] = v[12];
-    out[3 * col_num + col] = _mm_sub_epi32(_mm_set1_epi32(0), v[4]);
+    out[3 * col_num + col] = _mm_sub_epi32(_mm_setzero_si128(), v[4]);
     out[4 * col_num + col] = v[6];
-    out[5 * col_num + col] = _mm_sub_epi32(_mm_set1_epi32(0), v[14]);
+    out[5 * col_num + col] = _mm_sub_epi32(_mm_setzero_si128(), v[14]);
     out[6 * col_num + col] = v[10];
-    out[7 * col_num + col] = _mm_sub_epi32(_mm_set1_epi32(0), v[2]);
+    out[7 * col_num + col] = _mm_sub_epi32(_mm_setzero_si128(), v[2]);
     out[8 * col_num + col] = v[3];
-    out[9 * col_num + col] = _mm_sub_epi32(_mm_set1_epi32(0), v[11]);
+    out[9 * col_num + col] = _mm_sub_epi32(_mm_setzero_si128(), v[11]);
     out[10 * col_num + col] = v[15];
-    out[11 * col_num + col] = _mm_sub_epi32(_mm_set1_epi32(0), v[7]);
+    out[11 * col_num + col] = _mm_sub_epi32(_mm_setzero_si128(), v[7]);
     out[12 * col_num + col] = v[5];
-    out[13 * col_num + col] = _mm_sub_epi32(_mm_set1_epi32(0), v[13]);
+    out[13 * col_num + col] = _mm_sub_epi32(_mm_setzero_si128(), v[13]);
     out[14 * col_num + col] = v[9];
-    out[15 * col_num + col] = _mm_sub_epi32(_mm_set1_epi32(0), v[1]);
+    out[15 * col_num + col] = _mm_sub_epi32(_mm_setzero_si128(), v[1]);
   }
 }
 

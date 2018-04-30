@@ -27,14 +27,6 @@ static __m128i make_1012_mask(int ntaps) {
   return _mm_set_epi32(high, low, high, low);
 }
 
-// Zero-extend the given input operand to an entire __m128i register.
-//
-// Note that there's almost an intrinsic to do this but 32-bit Visual Studio
-// doesn't have _mm_set_epi64x so we have to do it by hand.
-static __m128i extend_32_to_128(uint32_t x) {
-  return _mm_set_epi32(0, 0, 0, x);
-}
-
 // Load an SSE register from p and bitwise AND with a.
 static __m128i load_and_128i(const void *p, __m128i a) {
   const __m128d ad = _mm_castsi128_pd(a);
@@ -54,7 +46,7 @@ static void hfilter8(const uint8_t *src, int src_stride, int16_t *dst, int w,
 
   int32_t round_add32 = (1 << round) / 2 + (1 << (bd + FILTER_BITS - 1));
   const __m128i round_add = _mm_set1_epi32(round_add32);
-  const __m128i round_shift = extend_32_to_128(round);
+  const __m128i round_shift = _mm_cvtsi32_si128(round);
 
   int x_qn = subpel_x_qn;
   for (int x = 0; x < w; ++x, x_qn += x_step_qn) {
@@ -157,7 +149,7 @@ static void vfilter8(const int16_t *src, int src_stride, uint8_t *dst,
   const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
   const int ntaps = 8;
 
-  const __m128i round_shift = extend_32_to_128(conv_params->round_1);
+  const __m128i round_shift = _mm_cvtsi32_si128(conv_params->round_1);
 
   const int32_t sub32 = ((1 << (offset_bits - conv_params->round_1)) +
                          (1 << (offset_bits - conv_params->round_1 - 1)));
@@ -324,7 +316,7 @@ static void highbd_hfilter8(const uint16_t *src, int src_stride, int16_t *dst,
 
   int32_t round_add32 = (1 << round) / 2 + (1 << (bd + FILTER_BITS - 1));
   const __m128i round_add = _mm_set1_epi32(round_add32);
-  const __m128i round_shift = extend_32_to_128(round);
+  const __m128i round_shift = _mm_cvtsi32_si128(round);
 
   int x_qn = subpel_x_qn;
   for (int x = 0; x < w; ++x, x_qn += x_step_qn) {
@@ -393,7 +385,7 @@ static void highbd_vfilter8(const int16_t *src, int src_stride, uint16_t *dst,
   const int offset_bits = bd + 2 * FILTER_BITS - conv_params->round_0;
   const int ntaps = 8;
 
-  const __m128i round_shift = extend_32_to_128(conv_params->round_1);
+  const __m128i round_shift = _mm_cvtsi32_si128(conv_params->round_1);
 
   const int32_t sub32 = ((1 << (offset_bits - conv_params->round_1)) +
                          (1 << (offset_bits - conv_params->round_1 - 1)));
