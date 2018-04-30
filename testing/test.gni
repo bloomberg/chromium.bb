@@ -19,6 +19,10 @@ if (is_fuchsia) {
   import("//build/config/fuchsia/package.gni")
 }
 
+if (is_chromeos) {
+  import("//build/config/chromeos/rules.gni")
+}
+
 # Define a test as an executable (or apk on Android) with the "testonly" flag
 # set.
 # Variable:
@@ -340,13 +344,9 @@ template("test") {
       }
       bundle_deps += [ ":$_resources_bundle_data" ]
     }
-  } else if (is_chromeos && getenv("SDK_VERSION") != "") {
-    # When the env var SDK_VERSION is set, assume we're in the cros chrome-sdk
+  } else if (is_chromeos && cros_board != "") {
+    # When the arg cros_board is set, assume we're in the cros chrome-sdk
     # building simplechrome.
-
-    import("//build/config/chromeos/rules.gni")
-
-    assert(getenv("SDK_BOARD") != "", "Must specify board to build for.")
 
     _gen_runner_target = "${target_name}__runner"
     _runtime_deps_file =
