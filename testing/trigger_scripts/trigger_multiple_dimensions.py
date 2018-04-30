@@ -121,11 +121,12 @@ class MultiDimensionTestTriggerer(base_test_triggerer.BaseTestTriggerer):
     self.query_swarming_for_bot_configs(verbose)
 
 def main():
-  triggerer =  MultiDimensionTestTriggerer()
   # setup args for common contract of base class
-  parser = triggerer.setup_parser_contract(
+  parser = base_test_triggerer.BaseTestTriggerer.setup_parser_contract(
       argparse.ArgumentParser(description=__doc__))
   args, remaining = parser.parse_known_args()
+
+  triggerer =  MultiDimensionTestTriggerer()
   return triggerer.trigger_tasks(args, remaining)
 
 

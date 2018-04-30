@@ -962,15 +962,16 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
       'tests': [
         {
           'isolate': 'performance_test_suite',
+          'num_shards': 26
         },
         {
           'isolate': 'net_perftests',
-          'shards': [0],
+          'num_shards': 1,
           'telemetry': False,
         },
         {
           'isolate': 'views_perftests',
-          'shards': [1],
+          'num_shards': 1,
           'telemetry': False,
         }
       ],
@@ -981,13 +982,6 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
         'gpu': '1002:6821'
       },
       'device_ids': [
-          'build246-a9', 'build247-a9', 'build248-a9', 'build249-a9',
-          'build250-a9', 'build251-a9', 'build252-a9', 'build253-a9',
-          'build254-a9', 'build255-a9', 'build256-a9', 'build257-a9',
-          'build258-a9', 'build259-a9', 'build260-a9', 'build261-a9',
-          'build262-a9', 'build263-a9', 'build264-a9', 'build265-a9',
-          'build266-a9', 'build267-a9', 'build268-a9', 'build269-a9',
-          'build270-a9', 'build271-a9'
       ],
     },
     'One Buildbot Step Test Builder': {
@@ -995,23 +989,22 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
         {
           'isolate': 'telemetry_perf_tests_without_chrome',
           'extra_args': ['--xvfb'],
+          'num_shards': 3
         },
         {
           'isolate': 'load_library_perf_tests',
-          'shards': [0],
+          'num_shards': 1,
           'telemetry': False,
         }
       ],
       'platform': 'linux',
       'dimension': {
+        'gpu': 'none',
         'pool': 'chrome.tests.perf-fyi',
         'os': 'Linux',
       },
       'testing': True,
       'device_ids': [
-          'swarm77-c7',
-          'swarm78-c7',
-          'swarm79-c7'
       ],
     },
     'Android Go': {
@@ -1019,19 +1012,17 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
         {
           'name': 'performance_test_suite',
           'isolate': 'performance_test_suite',
+          'num_shards': 14
         }
       ],
       'platform': 'android',
       'dimension': {
+        'device_os': 'O',
+        'device_type': 'gobo',
         'pool': 'chrome.tests.perf-fyi',
         'os': 'Android',
       },
       'device_ids': [
-          'build30-a7--device1', 'build30-a7--device2', 'build30-a7--device3',
-          'build30-a7--device4', 'build30-a7--device5', 'build30-a7--device6',
-          'build30-a7--device7', 'build31-a7--device1', 'build31-a7--device2',
-          'build31-a7--device3', 'build31-a7--device4', 'build31-a7--device5',
-          'build31-a7--device6', 'build31-a7--device7'
       ],
     }
   }
@@ -1057,6 +1048,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
         'os': 'Mac-10.12',
         'gpu': '8086:1626'
       },
+      'shards': 26,
       'device_ids': [
           'build41-a7', 'build42-a7', 'build43-a7', 'build44-a7',
           'build45-a7', 'build46-a7', 'build47-a7', 'build48-a7',
@@ -1128,12 +1120,15 @@ def add_common_test_properties(test_entry, tester_config, test_spec):
   test_entry['trigger_script'] = {
       'script': '//testing/trigger_scripts/perf_device_trigger.py',
       'args': [
-          '--multiple-trigger-configs',
-          json.dumps(dimensions),
           '--multiple-dimension-script-verbose',
           'True'
       ],
   }
+  # Only want to append multiple-trigger-configs if we don't support
+  # soft device affinity
+  if len(dimensions):
+    test_entry['trigger_script']['args'].append('--multiple-trigger-configs')
+    test_entry['trigger_script']['args'].append(json.dumps(dimensions))
   test_entry['merge'] = {
       'script': '//tools/perf/process_perf_results.py',
       'args': [
@@ -1210,7 +1205,12 @@ def generate_performance_test(tester_config, test):
       isolate_name
     ]
   }
+  # For now we either get shards from the number of devices specified
+  # or a test entry needs to specify the num shards if it supports
+  # soft device affinity.
   shards = add_common_test_properties(result, tester_config, test)
+  if not shards:
+    shards = test.get('num_shards')
   result['swarming'] = {
     # Always say this is true regardless of whether the tester
     # supports swarming. It doesn't hurt.

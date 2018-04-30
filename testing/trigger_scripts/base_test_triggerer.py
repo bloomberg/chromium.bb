@@ -30,13 +30,11 @@ SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 
 SWARMING_PY = os.path.join(SRC_DIR, 'tools', 'swarming_client', 'swarming.py')
 
-
 def strip_unicode(obj):
   """Recursively re-encodes strings as utf-8 inside |obj|. Returns the result.
   """
   if isinstance(obj, unicode):
     return obj.encode('utf-8', 'replace')
-
   if isinstance(obj, list):
     return list(map(strip_unicode, obj))
 
@@ -44,7 +42,6 @@ def strip_unicode(obj):
     new_obj = type(obj)(
         (strip_unicode(k), strip_unicode(v)) for k, v in obj.iteritems() )
     return new_obj
-
   return obj
 
 
@@ -116,6 +113,36 @@ class BaseTestTriggerer(object):
     if not all(isinstance(entry, dict) for entry in self._bot_configs):
       raise ValueError('Bot configurations must all be dictionaries')
 
+  # TODO(eyaich): Move the stateless logic that is specific to querying
+  # swarming to its own object to make trigger logic more clear.
+  def query_swarming(self, api, query_args, verbose,
+                     limit='0',
+                     server='chromium-swarm.appspot.com',
+                     service_account=None):
+    try:
+      temp_file = self.make_temp_file(prefix='base_trigger_dimensions',
+                                      suffix='.json')
+      encoded_args = urllib.urlencode(query_args)
+      args =['query',
+             '-S',
+             server,
+             '--limit',
+             limit,
+             '--json',
+             temp_file]
+      # Add in service account auth if present
+      if service_account:
+        args.append('--auth-service-account-json')
+        args.append(service_account)
+      # Append the query at the end
+      args.append(('%s?%s' % (api, encoded_args)))
+      ret = self.run_swarming(args, verbose)
+      if ret:
+        raise Exception('Error running swarming.py')
+      return self.read_encoded_json_from_temp_file(temp_file)
+    finally:
+      self.delete_temp_file(temp_file)
+
   def query_swarming_for_bot_configs(self, verbose):
     # Query Swarming to figure out which bots are available.
     for config in self._bot_configs:
@@ -125,34 +152,16 @@ class BaseTestTriggerer(object):
       # Ignore dead and quarantined bots.
       values.append(('is_dead', 'FALSE'))
       values.append(('quarantined', 'FALSE'))
-      query_arg = urllib.urlencode(values)
 
-      temp_file = self.make_temp_file(prefix='base_trigger_dimensions',
-                                      suffix='.json')
-      try:
-        ret = self.run_swarming(['query',
-                                 '-S',
-                                 'chromium-swarm.appspot.com',
-                                 '--limit',
-                                 '0',
-                                 '--json',
-                                 temp_file,
-                                 ('bots/count?%s' % query_arg)],
-                                verbose)
-        if ret:
-          raise Exception('Error running swarming.py')
-        with open(temp_file) as fp:
-          query_result = strip_unicode(json.load(fp))
-        # Summarize number of available bots per configuration.
-        count = int(query_result['count'])
-        # Be robust against errors in computation.
-        available = max(0, count - int(query_result['busy']))
-        self._bot_statuses.append({'total': count, 'available': available})
-        if verbose:
-          idx = len(self._bot_statuses) - 1
-          print 'Bot config %d: %s' % (idx, str(self._bot_statuses[idx]))
-      finally:
-        self.delete_temp_file(temp_file)
+      query_result = self.query_swarming('bots/count', values, verbose)
+      # Summarize number of available bots per configuration.
+      count = int(query_result['count'])
+      # Be robust against errors in computation.
+      available = max(0, count - int(query_result['busy']))
+      self._bot_statuses.append({'total': count, 'available': available})
+      if verbose:
+        idx = len(self._bot_statuses) - 1
+        print 'Bot config %d: %s' % (idx, str(self._bot_statuses[idx]))
     # Sum up the total count of all bots.
     self._total_bots = sum(x['total'] for x in self._bot_statuses)
     if verbose:
@@ -177,6 +186,9 @@ class BaseTestTriggerer(object):
   def read_json_from_temp_file(self, temp_file):
     with open(temp_file) as f:
       return json.load(f)
+
+  def read_encoded_json_from_temp_file(self, temp_file):
+    return strip_unicode(self.read_json_from_temp_file(temp_file))
 
   def write_json_to_file(self, merged_json, output_file):
     with open(output_file, 'w') as f:
@@ -266,13 +278,13 @@ class BaseTestTriggerer(object):
     self.write_json_to_file(merged_json, args.dump_json)
     return 0
 
-
-  def setup_parser_contract(self, parser):
-    parser.add_argument('--multiple-trigger-configs', type=str, required=True,
+  @staticmethod
+  def setup_parser_contract(parser):
+    parser.add_argument('--multiple-trigger-configs', type=str, required=False,
                         help='The Swarming configurations to trigger tasks on, '
                         'in the form of a JSON array of dictionaries (these are'
-                        ' Swarming dimension_sets). At least one entry in this '
-                        'dictionary is required.')
+                        ' Swarming dimension_sets). At least one entry is'
+                        'required if you dont override parse_bot_configs')
     parser.add_argument('--multiple-dimension-script-verbose', type=bool,
                         default=False, help='Turn on verbose logging')
     parser.add_argument('--dump-json', required=True,
