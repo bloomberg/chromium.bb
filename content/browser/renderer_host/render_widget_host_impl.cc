@@ -48,7 +48,6 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/display_util.h"
-#include "content/browser/renderer_host/frame_metadata_util.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/input/input_router_config_helper.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
@@ -413,9 +412,11 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   enable_viz_ = base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
 
   delegate_->RenderWidgetCreated(this);
+  render_frame_metadata_provider_.AddObserver(this);
 }
 
 RenderWidgetHostImpl::~RenderWidgetHostImpl() {
+  render_frame_metadata_provider_.RemoveObserver(this);
   if (!destroyed_)
     Destroy(false);
 }
@@ -2932,11 +2933,6 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
 
   last_frame_metadata_ = frame.metadata.Clone();
 
-  bool is_mobile_optimized = IsMobileOptimizedFrame(frame.metadata);
-  input_router_->NotifySiteIsMobileOptimized(is_mobile_optimized);
-  if (touch_emulator_)
-    touch_emulator_->SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
-
   if (enable_surface_synchronization_) {
     if (view_) {
       // If Surface Synchronization is on, then |new_content_rendering_timeout_|
@@ -3152,6 +3148,15 @@ bool RenderWidgetHostImpl::LockKeyboard() {
 void RenderWidgetHostImpl::UnlockKeyboard() {
   if (IsKeyboardLocked())
     view_->UnlockKeyboard();
+}
+
+void RenderWidgetHostImpl::OnRenderFrameMetadataChanged() {
+  bool is_mobile_optimized =
+      render_frame_metadata_provider_.LastRenderFrameMetadata()
+          .is_mobile_optimized;
+  input_router_->NotifySiteIsMobileOptimized(is_mobile_optimized);
+  if (touch_emulator_)
+    touch_emulator_->SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
 }
 
 }  // namespace content

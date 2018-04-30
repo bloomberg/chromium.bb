@@ -17,6 +17,7 @@ bool StructTraits<content::mojom::RenderFrameMetadataDataView,
          cc::RenderFrameMetadata* out) {
   out->root_background_color = data.root_background_color();
   out->is_scroll_offset_at_top = data.is_scroll_offset_at_top();
+  out->is_mobile_optimized = data.is_mobile_optimized();
   return data.ReadRootScrollOffset(&out->root_scroll_offset) &&
          data.ReadSelection(&out->selection);
 }
